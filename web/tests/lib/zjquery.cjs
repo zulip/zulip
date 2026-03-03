@@ -39,7 +39,7 @@ function make_zjquery() {
     const elems = new Map();
 
     function new_elem(selector, elements) {
-        const $elem = FakeJQuery(elements);
+        const $elem = new FakeJQuery(elements);
 
         // Create a proxy handler to detect missing stubs.
         //

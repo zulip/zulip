@@ -226,16 +226,22 @@ function dom_args(args) {
     });
 }
 
-// TODO: convert this to a true class
-exports.FakeJQuery = function (elements) {
-    return {
-        [Symbol.iterator]: Array.prototype.values,
-        __zjquery: true,
+{
+    exports.FakeJQuery = class {
+        [Symbol.iterator] = Array.prototype.values;
+        __zjquery = true;
+
+        constructor(elements) {
+            this.length = elements.length;
+            for (const [i, element] of elements.entries()) {
+                this[i] = element;
+            }
+        }
 
         get selector() {
             assert.equal(this.length, 1);
             return fake_element_state.get(this[0]).selector;
-        },
+        }
 
         addClass(class_names) {
             class_names = split_words(class_names);
@@ -243,17 +249,17 @@ exports.FakeJQuery = function (elements) {
                 element.classList.add(...class_names);
             }
             return this;
-        },
+        }
         after(...args) {
             assert.equal(this.length, 1);
             this[0].after(...dom_args(args));
             return this;
-        },
+        }
         append(...args) {
             assert.equal(this.length, 1);
             this[0].append(...dom_args(args));
             return this;
-        },
+        }
         attr(name, ...args) {
             assert.notEqual(name, undefined);
             if (args.length === 0) {
@@ -264,12 +270,12 @@ exports.FakeJQuery = function (elements) {
                 element.setAttribute(name, value);
             }
             return this;
-        },
+        }
         before(...args) {
             assert.equal(this.length, 1);
             this[0].before(...dom_args(args));
             return this;
-        },
+        }
         caret(...args) {
             if (args.length === 0) {
                 return this[0]?.selectionStart;
@@ -279,7 +285,7 @@ exports.FakeJQuery = function (elements) {
                 element.setSelectionRange(args[0], args[0]);
             }
             return this;
-        },
+        }
         children(children_selector = "*") {
             assert.equal(this.length, 1);
             const state = fake_element_state.get(this[0]);
@@ -289,7 +295,7 @@ exports.FakeJQuery = function (elements) {
                 );
             }
             return state.jquery_children_results.get(children_selector);
-        },
+        }
         closest(closest_selector) {
             assert.equal(this.length, 1);
             const state = fake_element_state.get(this[0]);
@@ -299,7 +305,7 @@ exports.FakeJQuery = function (elements) {
                 );
             }
             return state.jquery_closest_results.get(closest_selector);
-        },
+        }
         contents() {
             assert.equal(this.length, 1);
             const state = fake_element_state.get(this[0]);
@@ -309,7 +315,7 @@ exports.FakeJQuery = function (elements) {
                 );
             }
             return state.$jquery_contents;
-        },
+        }
         css(property, ...args) {
             if (args.length === 0 && typeof property === "string") {
                 if (!(0 in this)) {
@@ -347,7 +353,7 @@ exports.FakeJQuery = function (elements) {
                 }
             }
             return this;
-        },
+        }
         data(key, ...args) {
             if (args.length === 0) {
                 if (!(0 in this)) {
@@ -382,45 +388,45 @@ exports.FakeJQuery = function (elements) {
                 fake_element_state.get(element).jquery_data.set(key, value);
             }
             return this;
-        },
+        }
         detach() {
             for (const element of this) {
                 element.remove();
             }
             return this;
-        },
+        }
         each(callback) {
             for (const [index, element] of [...this].entries()) {
                 callback.call(element, index, element);
             }
             return this;
-        },
+        }
         empty() {
             for (const element of this) {
                 fake_element_state.get(element).jquery_find_results.clear();
                 element.innerHTML = "";
             }
             return this;
-        },
+        }
         expectOne() {
             // silently do nothing
             return this;
-        },
+        }
         fadeIn() {
             for (const element of this) {
                 fake_element_state.get(element).shown = true;
             }
             return this;
-        },
+        }
         fadeOut() {
             for (const element of this) {
                 fake_element_state.get(element).shown = false;
             }
             return this;
-        },
+        }
         fadeTo() {
             return this;
-        },
+        }
         find(child_selector) {
             assert.equal(this.length, 1);
             const $child = fake_element_state.get(this[0]).jquery_find_results.get(child_selector);
@@ -446,10 +452,10 @@ exports.FakeJQuery = function (elements) {
                 the "$child" zjquery element.
 
                 `);
-        },
+        }
         get(index) {
             return index === undefined ? [...this] : this[index];
-        },
+        }
         get_on_handler(event_type, child_selector) {
             assert.ok(0 in this);
             const state = fake_element_state.get(this[0]);
@@ -466,10 +472,10 @@ exports.FakeJQuery = function (elements) {
                 `no ${event_type} handler for ${state.selector} ${child_selector}`,
             );
             return handler;
-        },
+        }
         hasClass(class_name) {
             return [...this].some((element) => element.classList.contains(class_name));
-        },
+        }
         height(...args) {
             if (args.length === 0) {
                 if (!(0 in this)) {
@@ -492,13 +498,13 @@ exports.FakeJQuery = function (elements) {
                 );
             }
             return this;
-        },
+        }
         hide() {
             for (const element of this) {
                 fake_element_state.get(element).shown = false;
             }
             return this;
-        },
+        }
         html(...args) {
             if (args.length === 0) {
                 return this[0]?.innerHTML;
@@ -510,19 +516,19 @@ exports.FakeJQuery = function (elements) {
                 element.innerHTML = arg;
             }
             return this;
-        },
+        }
         insertAfter(...args) {
             args = dom_args(args);
             assert.equal(args.length, 1);
             args[0].after(...this);
             return this;
-        },
+        }
         insertBefore(...args) {
             args = dom_args(args);
             assert.equal(args.length, 1);
             args[0].before(...this);
             return this;
-        },
+        }
         is(arg) {
             switch (arg) {
                 case ":visible":
@@ -533,13 +539,13 @@ exports.FakeJQuery = function (elements) {
                 default:
                     return [...this].some((element) => element.matches(arg));
             }
-        },
+        }
         is_focused() {
             // is_focused is not a jQuery thing; this is
             // for our testing
             assert.ok(0 in this);
             return fake_element_state.get(this[0]).is_focused;
-        },
+        }
         next(next_selector = "*") {
             assert.equal(this.length, 1);
             const state = fake_element_state.get(this[0]);
@@ -549,7 +555,7 @@ exports.FakeJQuery = function (elements) {
                 );
             }
             return state.jquery_next_results.get(next_selector);
-        },
+        }
         off(event_type, ...args) {
             if (args.length === 0) {
                 for (const element of this) {
@@ -565,7 +571,7 @@ exports.FakeJQuery = function (elements) {
                 throw new Error("zjquery does not support this call sequence");
             }
             return this;
-        },
+        }
         on(event_type, ...args) {
             // parameters will either be
             //    (event_type, handler) or
@@ -606,7 +612,7 @@ exports.FakeJQuery = function (elements) {
                 }
             }
             return this;
-        },
+        }
         /* istanbul ignore next */
         one(event_type, handler) {
             return this.on(
@@ -616,11 +622,11 @@ exports.FakeJQuery = function (elements) {
                     return handler.call(this, ...args);
                 },
             );
-        },
+        }
         outerHeight(...args) {
             assert.equal(args.length, 0, "zjquery does not support this outerHeight() call");
             return 0 in this ? this[0].offsetHeight : undefined;
-        },
+        }
         parent() {
             assert.equal(this.length, 1);
             const state = fake_element_state.get(this[0]);
@@ -630,7 +636,7 @@ exports.FakeJQuery = function (elements) {
                 );
             }
             return state.$jquery_parent;
-        },
+        }
         parents(parents_selector = "*") {
             assert.equal(this.length, 1);
             const state = fake_element_state.get(this[0]);
@@ -643,12 +649,12 @@ exports.FakeJQuery = function (elements) {
                     state.selector,
             );
             return $result;
-        },
+        }
         prepend(...args) {
             assert.equal(this.length, 1);
             this[0].prepend(...dom_args(args));
             return this;
-        },
+        }
         prev(prev_selector = "*") {
             assert.equal(this.length, 1);
             const state = fake_element_state.get(this[0]);
@@ -658,7 +664,7 @@ exports.FakeJQuery = function (elements) {
                 );
             }
             return state.jquery_prev_results.get(prev_selector);
-        },
+        }
         prop(name, ...args) {
             if (args.length === 0) {
                 return this[0]?.[name];
@@ -668,7 +674,7 @@ exports.FakeJQuery = function (elements) {
                 element[name] = value;
             }
             return this;
-        },
+        }
         range(...args) {
             if (args.length === 0) {
                 return 0 in this
@@ -685,27 +691,27 @@ exports.FakeJQuery = function (elements) {
                 element.setSelectionRange(args[0], args[1]);
             }
             return this;
-        },
+        }
         removeAttr(name) {
             for (const element of this) {
                 element.removeAttribute(name);
             }
             return this;
-        },
+        }
         removeClass(class_names) {
             class_names = split_words(class_names);
             for (const element of this) {
                 element.classList.remove(...class_names);
             }
             return this;
-        },
+        }
         remove() {
             for (const element of this) {
                 element.remove();
                 fake_element_state.get(element).jquery_data.clear();
             }
             return this;
-        },
+        }
         removeData(keys) {
             keys = split_words(keys);
             for (const element of this) {
@@ -715,16 +721,16 @@ exports.FakeJQuery = function (elements) {
                 }
             }
             return this;
-        },
+        }
         replaceWith(...args) {
             assert.equal(this.length, 1);
             this[0].replaceWith(...dom_args(args));
             return this;
-        },
+        }
         set_children_results(selector, $result) {
             assert.equal(this.length, 1);
             fake_element_state.get(this[0]).jquery_children_results.set(selector, $result);
-        },
+        }
         set_closest_results(closest_selector, $jquery_object) {
             assert.equal(this.length, 1);
             assert.notEqual(
@@ -735,11 +741,11 @@ exports.FakeJQuery = function (elements) {
             fake_element_state
                 .get(this[0])
                 .jquery_closest_results.set(closest_selector, $jquery_object);
-        },
+        }
         set_contents($contents) {
             assert.equal(this.length, 1);
             fake_element_state.get(this[0]).$jquery_contents = $contents;
-        },
+        }
         set_find_results(find_selector, $jquery_object) {
             assert.equal(this.length, 1);
             assert.notEqual(
@@ -748,7 +754,7 @@ exports.FakeJQuery = function (elements) {
                 "Please make the 'find result' be something like $.create('unused')",
             );
             fake_element_state.get(this[0]).jquery_find_results.set(find_selector, $jquery_object);
-        },
+        }
         set_height(fake_height) {
             for (const element of this) {
                 fake_element_state
@@ -758,33 +764,33 @@ exports.FakeJQuery = function (elements) {
                         typeof fake_height === "number" ? `${fake_height}px` : fake_height,
                     );
             }
-        },
+        }
         set_matches(selector, value) {
             assert.equal(this.length, 1);
             fake_element_state.get(this[0]).match_results.set(selector, value);
-        },
+        }
         set_next_results(selector, $result) {
             assert.equal(this.length, 1);
             fake_element_state.get(this[0]).jquery_next_results.set(selector, $result);
-        },
+        }
         set_parent($parent_elem) {
             assert.equal(this.length, 1);
             fake_element_state.get(this[0]).$jquery_parent = $parent_elem;
-        },
+        }
         set_parents_result(selector, $result) {
             assert.equal(this.length, 1);
             fake_element_state.get(this[0]).jquery_parents_results.set(selector, $result);
-        },
+        }
         set_prev_results(selector, $result) {
             assert.equal(this.length, 1);
             fake_element_state.get(this[0]).jquery_prev_results.set(selector, $result);
-        },
+        }
         show() {
             for (const element of this) {
                 fake_element_state.get(element).shown = true;
             }
             return this;
-        },
+        }
         text(...args) {
             if (args.length === 0) {
                 return [...this].map((element) => element.textContent).join("");
@@ -798,18 +804,18 @@ exports.FakeJQuery = function (elements) {
                     )?.toString() ?? "";
             }
             return this;
-        },
+        }
         // Used by zjquery to support $($x) === $x
         to_$() {
             return this;
-        },
+        }
         toggle(show) {
             assert.ok([true, false].includes(show));
             for (const element of this) {
                 fake_element_state.get(element).shown = show;
             }
             return this;
-        },
+        }
         toggleClass(class_names, add) {
             class_names = split_words(class_names);
             for (const element of this) {
@@ -818,7 +824,7 @@ exports.FakeJQuery = function (elements) {
                 }
             }
             return this;
-        },
+        }
         trigger(event_arg, extra_args) {
             for (const element of this) {
                 const event = new FakeEvent(
@@ -852,7 +858,7 @@ exports.FakeJQuery = function (elements) {
                 }
             }
             return this;
-        },
+        }
         val(...args) {
             if (args.length === 0) {
                 return 0 in this ? (this[0].value ?? "") : undefined;
@@ -862,11 +868,9 @@ exports.FakeJQuery = function (elements) {
                 element.value = value;
             }
             return this;
-        },
+        }
         visible() {
             return [...this].some((element) => fake_element_state.get(element).shown);
-        },
-        length: elements.length,
-        ...elements,
+        }
     };
-};
+}
