@@ -228,7 +228,6 @@ run_test("paste_handler reverse linkify", ({override, override_rewire}) => {
         $textarea[0] = window.document.createElement("textarea");
         $textarea[0].value = "";
         $textarea.get = () => $textarea[0];
-        $textarea.val = () => $textarea[0].value;
         $textarea.range = () => ({start: 0, end: 0, text: "", length: 0});
         $textarea.caret = () => 0;
         inserted_text = undefined;
