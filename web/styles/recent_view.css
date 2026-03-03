@@ -389,6 +389,8 @@
     .recent_view_participant_overflow {
         /* 24px at 16px/1em */
         line-height: 1.5;
+        background-color: transparent;
+        color: var(--color-text-recent-view-last-msg-time);
     }
 
     & tr {
