@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {mock_banners} = require("./lib/compose_banner.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -142,7 +143,7 @@ test("config", () => {
 });
 
 test("show_error_message", ({mock_template}) => {
-    $("#compose_banners .upload_banner").length = 0;
+    mock_banners();
 
     let banner_shown = false;
     mock_template("compose_banner/upload_banner.hbs", false, (data) => {
@@ -166,8 +167,7 @@ test("show_error_message", ({mock_template}) => {
 });
 
 test("upload_files", async ({mock_template, override, override_rewire}) => {
-    $("#compose_banners .upload_banner").remove = noop;
-    $("#compose_banners .upload_banner").length = 0;
+    mock_banners();
 
     let files = [
         {
@@ -211,7 +211,6 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
         return "<banner-stub>";
     });
     override(realm, "max_file_upload_size_mib", 0);
-    $("#compose_banners .upload_banner .upload_msg").text("");
     await upload.upload_files(uppy, config, files);
     assert.ok(banner_shown);
 
@@ -229,7 +228,6 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
         markdown_preview_hide_button_clicked = true;
     });
     $("#compose-send-button").removeClass("disabled-message-send-controls");
-    $("#compose_banners .upload_banner").remove();
     $("#compose .undo_markdown_preview").css = (property) => {
         assert.equal(property, "display");
         return "flex";
@@ -450,7 +448,7 @@ test("copy_paste", ({override, override_rewire}) => {
 });
 
 test("uppy_events", ({override_rewire, mock_template}) => {
-    $("#compose_banners .upload_banner").length = 0;
+    mock_banners();
     override_rewire(compose_ui, "smart_insert_inline", noop);
     override_rewire(compose_validate, "validate_and_update_send_button_status", noop);
 
@@ -563,7 +561,6 @@ test("uppy_events", ({override_rewire, mock_template}) => {
         message: "Some error message",
     };
     const on_info_visible_callback = callbacks["info-visible"];
-    $("#compose_banners .upload_banner .upload_msg").text("");
     compose_ui_replace_syntax_called = false;
     const on_restriction_failed_callback = callbacks["restriction-failed"];
     on_info_visible_callback();
@@ -600,7 +597,6 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     });
 
     const on_upload_error_callback = callbacks["upload-error"];
-    $("#compose_banners .upload_banner .upload_msg").text("");
     compose_ui_replace_syntax_called = false;
     response = {
         body: {
@@ -624,7 +620,6 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     on_upload_error_callback(file, null, undefined);
     assert.ok(compose_ui_replace_syntax_called);
 
-    $("#compose_banners .upload_banner .upload_msg").text("");
     assert.ok(hide_upload_banner_called);
     $("textarea#compose-textarea").val("user modified text");
     on_upload_error_callback(file, null);
