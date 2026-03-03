@@ -178,6 +178,14 @@ export function should_offer_to_update_timezone(): boolean {
     );
 }
 
+export function show_rate_limit_banner(retry_seconds: number): void {
+    const $existing = $("#navbar_alerts_wrapper").find("[data-process='rate-limit']");
+    if ($existing.length > 0) {
+        return;
+    }
+    open_navbar_banner_and_resize(rate_limit_banner(retry_seconds));
+}
+
 const DESKTOP_NOTIFICATIONS_BANNER: AlertBanner = {
     process: "desktop-notifications",
     intent: "brand",
@@ -426,6 +434,26 @@ const time_zone_update_offer_banner = (): AlertBanner => {
                 custom_classes: "decline-time-zone-update",
             },
         ],
+        close_button: true,
+        custom_classes: "navbar-alert-banner",
+    };
+};
+
+const rate_limit_banner = (retry_seconds: number): AlertBanner => {
+    const minutes = Math.floor(retry_seconds / 60);
+    const seconds = retry_seconds % 60;
+    const time_str = minutes > 0 ? `${minutes} minutes ${seconds} seconds` : `${seconds} seconds`;
+    return {
+        process: "rate-limit",
+        intent: "danger",
+        label: $t(
+            {
+                defaultMessage:
+                    "You've exceeded Zulip's usage limits. Please close any extra Zulip tabs, and try again after {time}.",
+            },
+            {time: time_str},
+        ),
+        buttons: [],
         close_button: true,
         custom_classes: "navbar-alert-banner",
     };
@@ -707,10 +735,18 @@ export function initialize(): void {
                     open_navbar_banner_and_resize(time_zone_update_offer_banner());
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
+                $popper.on("click", ".rate-limit", () => {
+                    show_rate_limit_banner(125);
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
             },
             onHidden(instance) {
                 instance.destroy();
             },
         });
+    });
+
+    channel.set_rate_limit_handler((retry_seconds) => {
+        show_rate_limit_banner(retry_seconds);
     });
 }
