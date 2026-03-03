@@ -235,7 +235,6 @@ def get_old_unclaimed_attachments(
             has_other_messages=False,
         )
         .order_by("id")
-        .select_for_update(of=("self",))
     )
     old_archived_attachments = (
         ArchivedAttachment.objects.alias(
@@ -251,7 +250,6 @@ def get_old_unclaimed_attachments(
             has_other_messages=False,
         )
         .order_by("id")
-        .select_for_update(of=("self",))
     )
 
     return old_attachments, old_archived_attachments

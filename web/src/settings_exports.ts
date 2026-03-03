@@ -335,17 +335,23 @@ function maybe_show_notes_about_unusable_users_if_exported(
     export_type: settings_config.ExportTypeSlug,
 ): void {
     // Show warnings if there are users whose accounts will be inaccessible
-    // once exported. A user account will be inaccessible if they:
-    //  - Don’t consent to their private data being exported and “Standard
-    //    export” is selected.
-    //  - Have set their email visibility to “nobody” and “Public export”
-    //    is selected.
+    // once exported. A user account will be inaccessible if:
+    //  - In a standard export: they don’t consent to their private data
+    //    being exported AND their email visibility is set to "nobody".
+    //  - In a public export: they have set their email visibility to
+    //    “nobody”.
     let unusable_user_ids: number[] = [];
     const $warning_container = $("div#unusable-user-accounts-warning");
     $warning_container.empty();
     if (export_type === settings_config.export_type_values.full_with_consent.slug) {
         const non_consenting_users = get_export_consents_having_consent_value(false);
-        unusable_user_ids = non_consenting_users.map((user) => user.user_id);
+        unusable_user_ids = non_consenting_users
+            .filter(
+                (user) =>
+                    user.email_address_visibility ===
+                    settings_config.email_address_visibility_values.nobody.code,
+            )
+            .map((user) => user.user_id);
     } else if (export_type === settings_config.export_type_values.public.slug) {
         const users_with_inaccessible_email = get_export_consents_having_email_visibility_value(
             settings_config.email_address_visibility_values.nobody.code,

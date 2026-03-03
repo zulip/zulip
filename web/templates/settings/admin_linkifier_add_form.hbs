@@ -1,0 +1,23 @@
+<div id="add-linkifier-form">
+    <p>
+        {{t "For instance, you can add a linkifier that automatically turns #2468 into a link to the GitHub issue in the Zulip repository with:" }}
+    </p>
+    <ul>
+        <li>
+            {{t "Pattern" }}: <span class="rendered_markdown"><code>#(?P&lt;id&gt;[0-9]+)</code></span>
+        </li>
+        <li>
+            {{t "Example text to linkify" }}: <span class="rendered_markdown"><code>#2468</code></span>
+        </li>
+        <li>
+            {{t "URL template" }}: <span class="rendered_markdown"><code>https://github.com/zulip/zulip/issues/{id}</code></span>
+        </li>
+        <li>
+            {{t "Auto-convert pasted URLs matching the template to" }}: <span class="rendered_markdown"><code>#{id}</code></span>
+        </li>
+    </ul>
+    <form class="linkifier-add-form modal-form" id="add-linkifier-form-modal">
+        <div class="alert" id="add-linkifier-status"></div>
+        {{> linkifier_form_fields . }}
+    </form>
+</div>

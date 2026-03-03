@@ -8,18 +8,14 @@
   unread_count=unread_count
   }}
 <div class="inbox-streams-container inbox-folder-components">
-    {{#each (map_entries topics_dict) as |key_value_list|}}
-        {{#each (map_entries ../streams_dict) as |stream_key_value|}}
-            {{#if (and (eq stream_key_value.[1].folder_id ../../id) (eq stream_key_value.[0] key_value_list.[0]))}}
-            <div id="{{key_value_list.[0]}}" class="inbox-folder-channel">
-                {{> inbox_row stream_key_value.[1]}}
-                <div class="inbox-topic-container">
-                    {{#each (map_entries key_value_list.[1])}}
-                        {{> inbox_row this.[1]}}
-                    {{/each}}
-                </div>
+    {{#each stream_rows}}
+        <div id="{{stream_key}}" class="inbox-folder-channel">
+            {{> inbox_row stream_row}}
+            <div class="inbox-topic-container">
+                {{#each topic_rows}}
+                    {{> inbox_row .}}
+                {{/each}}
             </div>
-            {{/if}}
-        {{/each}}
+        </div>
     {{/each}}
 </div>

@@ -25,6 +25,7 @@ mock_esm("../src/message_lists", {
 });
 
 const compose_ui = zrequire("compose_ui");
+const linkifiers = zrequire("linkifiers");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 const user_status = zrequire("user_status");
@@ -269,6 +270,63 @@ run_test("compute_placeholder_text", ({override}) => {
         compose_ui.compute_placeholder_text(opts),
         $t({defaultMessage: "Message Alice and Bob"}),
     );
+});
+
+run_test("reverse_linkify_text", () => {
+    linkifiers.update_linkifier_rules([
+        {
+            id: 1,
+            pattern: "#(?P<id>\\d+)",
+            url_template: "https://tracker.example.com/issue/{id}",
+            reverse_template: "#{id}",
+        },
+    ]);
+    assert.equal(compose_ui.reverse_linkify_text("https://tracker.example.com/issue/42"), "#42");
+    assert.equal(
+        compose_ui.reverse_linkify_text(
+            "Links https://tracker.example.com/issue/42 and https://tracker.example.com/issue/43",
+        ),
+        "Links #42 and #43",
+    );
+    // Typo in rest of the URL.
+    assert.equal(compose_ui.reverse_linkify_text("https://tracker.example.com/issues/42"), null);
+    // {id} is absent is the URL.
+    assert.equal(compose_ui.reverse_linkify_text("https://tracker.example.com/issues/"), null);
+
+    // Check non HTTP schemes to make sure we don't creep in any HTTP specific
+    // code by mistake.
+    linkifiers.update_linkifier_rules([
+        {
+            id: 2,
+            pattern: "#(?P<id>\\d+)",
+            url_template: "zulip://issue/{id}",
+            reverse_template: "#{id}",
+        },
+    ]);
+    assert.equal(compose_ui.reverse_linkify_text("zulip://issue/42"), "#42");
+
+    // Use `{{` to escape `{`.
+    linkifiers.update_linkifier_rules([
+        {
+            id: 3,
+            pattern: "\\{(?P<id>\\d+)\\}",
+            url_template: "https://tracker.example.com/issue/{id}",
+            reverse_template: "{{{id}}}",
+        },
+    ]);
+    assert.equal(compose_ui.reverse_linkify_text("https://tracker.example.com/issue/42"), "{42}");
+
+    // Ignore reverse template that would not round-trip back to the URL.
+    linkifiers.update_linkifier_rules([
+        {
+            id: 4,
+            pattern: "#(?P<id>.+)",
+            url_template: "https://tracker.example.com/issue/{+id}",
+            reverse_template: "#{id}",
+        },
+    ]);
+    assert.equal(compose_ui.reverse_linkify_text("https://tracker.example.com/issue/a%2Fb"), null);
+    assert.equal(compose_ui.reverse_linkify_text("https://tracker.example.com/issue/a/b"), "#a/b");
 });
 
 run_test("quote_message", ({override, override_rewire}) => {

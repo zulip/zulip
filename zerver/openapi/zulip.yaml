@@ -1704,7 +1704,7 @@ paths:
                                       "path_id": "2/ce/2Xpnnwgh8JWKxBXtTfD6BHKV/zulip.txt",
                                       "size": 6,
                                       "create_time": 1594825414,
-                                      "messages": [],
+                                      "message_ids": [],
                                     },
                                   "upload_space_used": 6,
                                   "id": 0,
@@ -1745,7 +1745,7 @@ paths:
                                       "path_id": "2/ce/2Xpnnwgh8JWKxBXtTfD6BHKV/zulip.txt",
                                       "size": 6,
                                       "create_time": 1594825414,
-                                      "messages": [],
+                                      "message_ids": [],
                                     },
                                   "upload_space_used": 6,
                                   "id": 0,
@@ -4007,6 +4007,25 @@ paths:
                                         type: integer
                                         description: |
                                           The ID of the linkifier.
+                                      example_input:
+                                        type: string
+                                        nullable: true
+                                        description: |
+                                          An example input string that matches the linkifier's pattern.
+                                          This is required for reverse linkifiers.
+
+                                          **Changes**: New in Zulip 12.0 (feature level 471).
+                                      reverse_template:
+                                        type: string
+                                        nullable: true
+                                        description: |
+                                          A simple template using `{variable}` for variables that can
+                                          be used to generate the Markdown linkifier syntax, given a
+                                          URL matching the URL template.
+
+                                          `{{ "{{/}}" }}` can be used for literal `{/}` characters.
+
+                                          **Changes**: New in Zulip 12.0 (feature level 471).
                               example:
                                 {
                                   "type": "realm_linkifiers",
@@ -4016,6 +4035,8 @@ paths:
                                         "pattern": "#(?P<id>[123])",
                                         "url_template": "https://realm.com/my_realm_filter/{id}",
                                         "id": 1,
+                                        "example_input": "#1234",
+                                        "reverse_template": "#{id}",
                                       },
                                     ],
                                   "id": 0,
@@ -6683,11 +6704,7 @@ paths:
                               "path_id": "2/ce/DfOkzwdg_IwlrN3myw3KGtiJ/166050.jpg",
                               "size": 571946,
                               "create_time": 1588145417,
-                              "messages":
-                                [
-                                  {"id": 102, "date_sent": 1588145424},
-                                  {"id": 103, "date_sent": 1588145448},
-                                ],
+                              "message_ids": [102, 103],
                             },
                           ],
                         "upload_space_used": 571946,
@@ -10095,7 +10112,7 @@ paths:
                               "path_id": "2/5d/BD5NRptFxPDKY3RUKwhhup8r/1253601-1.jpg",
                               "size": 1339060,
                               "create_time": 1687984706,
-                              "messages": [],
+                              "message_ids": [],
                             },
                           ],
                       }
@@ -15574,6 +15591,25 @@ paths:
                               type: integer
                               description: |
                                 The ID of the linkifier.
+                            example_input:
+                              type: string
+                              nullable: true
+                              description: |
+                                An example input string that matches the linkifier's pattern.
+                                This is required for reverse linkifiers.
+
+                                **Changes**: New in Zulip 12.0 (feature level 471).
+                            reverse_template:
+                              type: string
+                              nullable: true
+                              description: |
+                                A simple template using `{variable}` for variables that can
+                                be used to generate the Markdown linkifier syntax, given a
+                                URL matching the URL template.
+
+                                `{{ "{{/}}" }}` can be used for literal `{/}` characters.
+
+                                **Changes**: New in Zulip 12.0 (feature level 471).
                     example:
                       {
                         "msg": "",
@@ -15583,6 +15619,8 @@ paths:
                               "pattern": "#(?P<id>[0-9]+)",
                               "url_template": "https://github.com/zulip/zulip/issues/{id}",
                               "id": 1,
+                              "example_input": "#1234",
+                              "reverse_template": "#{id}",
                             },
                           ],
                         "result": "success",
@@ -15642,6 +15680,31 @@ paths:
                   $ref: "#/components/schemas/LinkifierPattern"
                 url_template:
                   $ref: "#/components/schemas/LinkifierURLTemplate"
+                example_input:
+                  type: string
+                  nullable: true
+                  example: "#1234"
+                  description: |
+                    An example input string that matches the linkifier's pattern.
+                    This is required for reverse linkifiers.
+
+                    **Changes**: New in Zulip 12.0 (feature level 471).
+                reverse_template:
+                  type: string
+                  nullable: true
+                  example: "#{id}"
+                  description: |
+                    A simple template using `{variable}` for variables that can
+                    be used to generate the Markdown linkifier syntax, given a
+                    URL matching the URL template.
+
+                    `{{ "{{/}}" }}` can be used for literal `{/}` characters.
+
+                    Server verifies that variables extracted from example_input using
+                    url_pattern when passed to reverse_template returns example_input
+                    back to us.
+
+                    **Changes**: New in Zulip 12.0 (feature level 471).
               required:
                 - pattern
                 - url_template
@@ -15714,6 +15777,33 @@ paths:
                   $ref: "#/components/schemas/LinkifierPattern"
                 url_template:
                   $ref: "#/components/schemas/LinkifierURLTemplate"
+                example_input:
+                  type: string
+                  nullable: true
+                  example: "#1234"
+                  description: |
+                    An example input string that matches the linkifier's pattern.
+                    This is required for reverse linkifiers. Passing an empty string
+                    will set this field back to null.
+
+                    **Changes**: New in Zulip 12.0 (feature level 471).
+                reverse_template:
+                  type: string
+                  nullable: true
+                  example: "#{id}"
+                  description: |
+                    A simple template using `{variable}` for variables that can
+                    be used to generate the Markdown linkifier syntax, given a
+                    URL matching the URL template. Passing an empty string
+                    will set this field back to null.
+
+                    Server verifies that variables extracted from example_input using
+                    url_pattern when passed to reverse_template returns example_input
+                    back to us.
+
+                    `{{ "{{/}}" }}` can be used for literal `{/}` characters.
+
+                    **Changes**: New in Zulip 12.0 (feature level 471).
               required:
                 - pattern
                 - url_template
@@ -25830,34 +25920,19 @@ components:
 
             Changed in Zulip 3.0 (feature level 22). This field was
             previously a floating point number.
-        messages:
+        message_ids:
           type: array
           description: |
-            Contains basic details on any Zulip messages that have been
-            sent referencing this [uploaded file](/api/upload-file).
-            This includes messages sent by any user in the Zulip
-            organization who sent a message containing a link to the
-            uploaded file.
+            Array containing the IDs of messages that reference this
+            [uploaded file](/api/upload-file). This includes messages
+            sent by any user in the Zulip organization who sent a
+            message containing a link to the uploaded file.
+
+            **Changes**: In Zulip 12.0 (feature level 472), this
+            replaced the previous `messages` field, which was an array
+            of objects containing both `id` and `date_sent` properties.
           items:
-            type: object
-            additionalProperties: false
-            properties:
-              date_sent:
-                type: integer
-                description: |
-                  Time when the message was sent as a UNIX timestamp.
-
-                  **Changes**: Before Zulip 12.0 (feature level 443), this value
-                  was milliseconds since the epoch, not seconds.
-
-                  Changed in Zulip 3.0 (feature level 22). This
-                  field was previously strangely called `name` and was a floating
-                  point number.
-              id:
-                type: integer
-                description: |
-                  The unique message ID. Messages should always be
-                  displayed sorted by ID.
+            type: integer
     BasicChannel:
       allOf:
         - $ref: "#/components/schemas/BasicChannelBase"

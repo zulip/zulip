@@ -1,8 +1,10 @@
+from dataclasses import asdict
+
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
-from zerver.lib.channel_folders import get_channel_folder_dict, render_channel_folder_description
+from zerver.lib.channel_folders import get_channel_folder_data, render_channel_folder_description
 from zerver.lib.exceptions import JsonableError
 from zerver.models import ChannelFolder, Realm, RealmAuditLog, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
@@ -39,7 +41,7 @@ def check_add_channel_folder(
     event = dict(
         type="channel_folder",
         op="add",
-        channel_folder=get_channel_folder_dict(channel_folder),
+        channel_folder=asdict(get_channel_folder_data(channel_folder)),
     )
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 

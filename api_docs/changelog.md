@@ -20,6 +20,26 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 472**
+
+* [`GET /attachments`](/api/get-attachments), [`GET /events`](/api/get-events):
+  Previously, the `messages` field in `Attachment` was array of
+  objects containing `id` and `date_sent` properties. That has been replaced
+  by a `message_ids` field, which is a flat array of message IDs.
+
+**Feature level 471**
+
+* [`GET /events`](/api/get-events), [`GET /realm/linkifiers`](/api/get-linkifiers),
+  [`POST /realm/filters`](/api/add-linkifier),
+  [`PATCH /realm/filters/{filter_id}`](/api/update-linkifier):
+  Added `example_input` and `reverse_template` to linkifier objects.
+  `example_input` is a sample string matching the url_pattern for the linkifier.
+  `reverse_template` is a string that can process input params and turn a url into
+  it's abbreviated form.
+  `reverse_template` requires `example_input` to be provided.
+  Pass an empty string during PATCH to set either of these fields back to null, given
+  they satisfy the requirements stated above.
+
 **Feature level 470**
 
 * [`POST /remove_client_device`](/api/remove-client-device):

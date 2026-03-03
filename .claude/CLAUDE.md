@@ -176,6 +176,8 @@ Fixes #123.
 
 - `Fixes #123.` - Automatically closes the issue
 - `Fixes part of #123.` - Does not close (for partial fixes)
+- In a multi-commit PR, use `Fixes part of #123.` in earlier commits
+  and `Fixes #123.` in the final commit.
 - Never: `Partially fixes #123.` (GitHub ignores "partially")
 
 ### Rebasing Commits (Non-Interactive)

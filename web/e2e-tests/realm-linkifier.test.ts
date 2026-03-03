@@ -5,14 +5,17 @@ import type {Page} from "puppeteer";
 import * as common from "./lib/common.ts";
 
 async function test_add_linkifier(page: Page): Promise<void> {
-    await page.waitForSelector(".admin-linkifier-form", {visible: true});
-    await common.fill_form(page, "form.admin-linkifier-form", {
+    await page.click("#add-linkifier-button");
+    await common.wait_for_micromodal_to_open(page);
+    await page.waitForSelector("form.linkifier-add-form", {visible: true});
+    await common.fill_form(page, "form.linkifier-add-form", {
         pattern: "#(?P<id>[0-9]+)",
         url_template: "https://trac.example.com/ticket/{id}",
     });
-    await page.click('form.admin-linkifier-form button[type="submit"]');
+    await page.click(".dialog_submit_button");
+    await common.wait_for_micromodal_to_close(page);
 
-    const admin_linkifier_status_selector = "div#admin-linkifier-status";
+    const admin_linkifier_status_selector = "div#linkifier-field-status";
     await page.waitForSelector(admin_linkifier_status_selector, {visible: true});
     const admin_linkifier_status = await common.get_text_from_selector(
         page,
@@ -47,18 +50,23 @@ async function test_delete_linkifier(page: Page): Promise<void> {
 }
 
 async function test_add_invalid_linkifier_pattern(page: Page): Promise<void> {
-    await page.waitForSelector(".admin-linkifier-form", {visible: true});
-    await common.fill_form(page, "form.admin-linkifier-form", {
+    await page.click("#add-linkifier-button");
+    await common.wait_for_micromodal_to_open(page);
+    await page.waitForSelector("form.linkifier-add-form", {visible: true});
+    await common.fill_form(page, "form.linkifier-add-form", {
         pattern: "(foo",
         url_template: "https://trac.example.com/ticket/{id}",
     });
-    await page.click('form.admin-linkifier-form button[type="submit"]');
+    await page.click(".dialog_submit_button");
 
-    await page.waitForSelector("div#admin-linkifier-status", {visible: true});
+    await page.waitForSelector("div#add-linkifier-status", {visible: true});
     assert.strictEqual(
-        await common.get_text_from_selector(page, "div#admin-linkifier-status"),
+        await common.get_text_from_selector(page, "div#add-linkifier-status"),
         "Failed: Bad regular expression: missing ): (foo",
     );
+
+    await page.click(".dialog_exit_button");
+    await common.wait_for_micromodal_to_close(page);
 }
 
 async function test_edit_linkifier(page: Page): Promise<void> {
@@ -108,7 +116,7 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
         "Failed: Bad regular expression: bad repetition operator: ????",
     );
 
-    const edit_linkifier_template_status_selector = "div#edit-linkifier-template-status";
+    const edit_linkifier_template_status_selector = "div#linkifier-template-status";
     await page.waitForSelector(edit_linkifier_template_status_selector, {visible: true});
     const edit_linkifier_template_status = await common.get_text_from_selector(
         page,
@@ -117,7 +125,7 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
     assert.strictEqual(edit_linkifier_template_status, "Failed: Invalid URL template.");
 
     await page.click(".dialog_exit_button");
-    await page.waitForSelector(".micromodal", {hidden: true});
+    await common.wait_for_micromodal_to_close(page);
 
     await page.waitForSelector(".linkifier_row:nth-last-child(1)", {visible: true});
     assert.strictEqual(

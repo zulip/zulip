@@ -4,6 +4,7 @@ import copy
 import logging
 import time
 from collections.abc import Callable, Collection, Iterable, Sequence
+from dataclasses import asdict
 from typing import Any, Literal
 
 from django.conf import settings
@@ -838,9 +839,13 @@ def fetch_initial_state_data(
 
     if want("channel_folders"):
         if user_profile is None:
-            state["channel_folders"] = get_channel_folders_for_spectators(realm)
+            state["channel_folders"] = [
+                asdict(folder) for folder in get_channel_folders_for_spectators(realm)
+            ]
         else:
-            state["channel_folders"] = get_channel_folders_in_realm(user_profile.realm, True)
+            state["channel_folders"] = [
+                asdict(folder) for folder in get_channel_folders_in_realm(user_profile.realm, True)
+            ]
 
     if want("update_message_flags") and want("message"):
         # Keeping unread_msgs updated requires both message flag updates and

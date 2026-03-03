@@ -1046,11 +1046,6 @@ input[type="checkbox"] {
     }
 }
 
-#admin-linkifier-pattern-status,
-#admin-linkifier-template-status {
-    margin: 20px 0 0;
-}
-
 #organization-permissions {
     .dropdown-widget-button {
         color: var(--color-text-default);
@@ -2190,8 +2185,8 @@ label.preferences-radio-choice-label {
 }
 
 #edit-linkifier-form {
-    #edit-linkifier-pattern,
-    #edit-linkifier-url-template {
+    #linkifier-pattern,
+    #linkifier-url-template {
         width: 400px;
     }
 
@@ -2199,8 +2194,8 @@ label.preferences-radio-choice-label {
         margin-bottom: 4px;
     }
 
-    #edit-linkifier-pattern-status,
-    #edit-linkifier-template-status {
+    #linkifier-pattern-status,
+    #linkifier-template-status {
         margin-top: 10px;
     }
 

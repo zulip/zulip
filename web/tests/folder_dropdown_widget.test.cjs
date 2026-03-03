@@ -238,12 +238,15 @@ run_test("update_tooltip_for_folder_filter - Any folder", () => {
     let tippy_content;
     let tippy_target;
 
+    const body_stub = {};
+    global.document = {body: body_stub};
+
     util.the = ($element) => $element[0];
 
     tippy_default_stub = (element, options) => {
         tippy_target = element;
         tippy_content = options.content;
-        assert.equal(options.appendTo(), document.body);
+        assert.equal(options.appendTo(), body_stub);
     };
 
     const $element = $.create("#folder_filter_widget");
