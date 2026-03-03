@@ -559,6 +559,7 @@ test_ui("needs_subscribe_warning", async () => {
 });
 
 test_ui("warn_if_private_stream_is_linked", async ({mock_template}) => {
+    mock_banners();
     const $textarea = $("<textarea>").attr("id", "compose-textarea");
     stub_message_row($textarea);
     const test_sub = {
@@ -621,8 +622,6 @@ test_ui("warn_if_private_stream_is_linked", async ({mock_template}) => {
     // Simulate that the row was added to the DOM.
     const $warning_row = $("#compose_banners .private_stream_warning");
     $warning_row.attr("data-stream-id", "22");
-    $("#compose_banners .private_stream_warning").length = 1;
-    $("#compose_banners .private_stream_warning")[0] = $warning_row;
 
     // Now try to mention the same stream again. The template should
     // not render.
@@ -633,6 +632,7 @@ test_ui("warn_if_private_stream_is_linked", async ({mock_template}) => {
 });
 
 test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}) => {
+    mock_banners();
     const $textarea = $("<textarea>").attr("id", "compose-textarea");
     stub_message_row($textarea);
     compose_state.set_stream_id("");
@@ -719,8 +719,6 @@ test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}
     const $warning_row = $("#compose_banners .recipient_not_subscribed");
     $warning_row.attr("data-user-id", "34");
     $warning_row.attr("data-stream-id", "111");
-    $("#compose_banners .recipient_not_subscribed").length = 1;
-    $("#compose_banners .recipient_not_subscribed")[0] = $warning_row;
 
     // Now try to mention the same person again. The template should
     // not render.
