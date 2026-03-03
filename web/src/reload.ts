@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
@@ -263,7 +264,7 @@ export function initiate({
             // makes it simple to reason about: We know that reloads will be
             // spread over at least 5 minutes in all cases.
 
-            let idle_control: ReturnType<JQuery["idle"]>;
+            let reload_later: _.DebouncedFunc<() => void>;
             const random_variance = util.random_int(0, 1000 * 60 * 5);
             const unconditional_timeout = 1000 * 60 * 30 + random_variance;
             const composing_idle_timeout = 1000 * 60 * 7 + random_variance;
@@ -280,35 +281,28 @@ export function initiate({
             setTimeout(reload_from_idle, unconditional_timeout);
 
             reset_reload_timeout = function (trigger: "compose_start" | "compose_end"): void {
-                idle_control.cancel();
+                reload_later.cancel();
                 if (trigger === "compose_start") {
                     // If the user stops being idle and starts composing a
                     // message, switch to the compose-open timeouts.
-                    idle_control = $(document).idle({
-                        idle: composing_idle_timeout,
-                        onIdle: reload_from_idle,
-                    });
+                    reload_later = _.debounce(reload_from_idle, composing_idle_timeout);
                 } else {
                     // If the user sends their message or otherwise closes
                     // compose, we return them to the not-composing timeouts.
-                    idle_control = $(document).idle({
-                        idle: basic_idle_timeout,
-                        onIdle: reload_from_idle,
-                    });
+                    reload_later = _.debounce(reload_from_idle, basic_idle_timeout);
                 }
+                reload_later();
             };
 
             if (compose_state.composing()) {
-                idle_control = $(document).idle({
-                    idle: composing_idle_timeout,
-                    onIdle: reload_from_idle,
-                });
+                reload_later = _.debounce(reload_from_idle, composing_idle_timeout);
             } else {
-                idle_control = $(document).idle({
-                    idle: basic_idle_timeout,
-                    onIdle: reload_from_idle,
-                });
+                reload_later = _.debounce(reload_from_idle, basic_idle_timeout);
             }
+            reload_later();
+            $(window).on("focus keydown mousedown mousemove touchmove touchstart wheel", () => {
+                reload_later();
+            });
         },
         error(xhr) {
             server_reachable_check_failures += 1;
