@@ -31,7 +31,7 @@ function test_realms_domain_modal(override, add_realm_domain) {
         "input.new-realm-domain-allow-subdomains",
         $("<new-realm-domain-allow-subdomains-stub>"),
     );
-    $("<new-realm-domain-allow-subdomains-stub>")[0] = {};
+    $("<new-realm-domain-allow-subdomains-stub>")[0].checked = false;
 
     let posted;
     let success_callback;

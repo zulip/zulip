@@ -713,7 +713,7 @@ run_test("spoiler-header-empty-fill", () => {
 });
 
 function assert_clipboard_setup() {
-    assert.equal(clipboard_args[0], "copy-code-stub");
+    assert.equal(clipboard_args[0], $("<copy-code-button-stub>")[0]);
     const text = clipboard_args[1].text({
         to_$: () => ({
             parent: () => ({
@@ -738,10 +738,8 @@ function test_code_playground(mock_template, viewing_code) {
 
     $hilite.attr("data-code-language", "javascript");
 
-    const $code_buttons_container = $.create("code_buttons_container", {
-        children: ["copy-code-stub", "view-code-stub"],
-    });
-    const $copy_code_button = $.create("copy_code_button", {children: ["copy-code-stub"]});
+    const $code_buttons_container = $.create("code-buttons-container-stub");
+    const $copy_code_button = $("<copy-code-button-stub>");
     const $view_code_in_playground = $.create("view_code_in_playground");
 
     $code_buttons_container.set_find_results(".copy_codeblock", $copy_code_button);

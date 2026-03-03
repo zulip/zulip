@@ -32,16 +32,13 @@ set_realm(make_realm());
 initialize_user_settings({user_settings: {}});
 
 function init_simulated_scrolling() {
-    const elem = {
-        scrollTop: 0,
-        scrollHeight: 0,
-    };
-
-    $.create("#buddy_list_wrapper", {children: [elem]});
+    const $wrapper = $.create("#buddy_list_wrapper");
+    $wrapper[0].scrollHeight = 0;
+    $wrapper[0].scrollTop = 0;
 
     $("#buddy_list_wrapper_padding").set_height(0);
 
-    return elem;
+    return $wrapper[0];
 }
 
 const alice = make_user({
