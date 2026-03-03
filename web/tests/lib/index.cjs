@@ -42,11 +42,6 @@ require("@babel/register")({
     root: path.resolve(__dirname, "../.."),
 });
 
-// Create a helper function to avoid sneaky delays in tests.
-function immediate(f) {
-    return () => f();
-}
-
 // Find the files we need to run.
 const files = process.argv.slice(2);
 assert.notEqual(files.length, 0, "No tests found");
@@ -109,8 +104,6 @@ process.exitCode = 1;
         window.location.href = "http://zulip.zulipdev.com/#";
         namespace.set_global("localStorage", localStorage);
         ls_container.clear();
-        _.throttle = immediate;
-        _.debounce = immediate;
         zpage_billing_params.reset();
         zpage_params.reset();
 
