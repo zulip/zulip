@@ -40,15 +40,15 @@ EVENT_TO_FUNCTION_MAPPER: dict[str, Callable[[WildValue], tuple[str, str]]] = {
 }
 
 EVENT_TO_FUNCTION_MAPPER.update(
-    {event: handle_page_event for event in PAGE_EVENTS}
+    dict.fromkeys(PAGE_EVENTS, handle_page_event)
 )
 
 EVENT_TO_FUNCTION_MAPPER.update(
-    {event: handle_database_event for event in DATABASE_EVENTS}
+    dict.fromkeys(DATABASE_EVENTS, handle_database_event)
 )
 
 EVENT_TO_FUNCTION_MAPPER.update(
-    {event: handle_comment_event for event in COMMENT_EVENTS}
+    dict.fromkeys(COMMENT_EVENTS, handle_comment_event)
 )
 
 
