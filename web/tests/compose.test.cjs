@@ -489,17 +489,14 @@ test_ui("finish", ({override, override_rewire}) => {
         fake_compose_box.set_textarea_val("burrito");
         compose_state.set_message_type("stream");
 
-        fake_compose_box.set_textarea_toggle_class_function((classname, value) => {
-            assert.equal(classname, "invalid");
-            assert.equal(value, true);
-        });
-
+        assert.ok(!fake_compose_box.$content_textarea.hasClass("invalid"));
         fake_compose_box.set_textarea_val("");
 
         override_rewire(compose_ui, "compose_spinner_visible", false);
         const res = compose.finish();
         assert.equal(res, false);
 
+        assert.ok(fake_compose_box.$content_textarea.hasClass("invalid"));
         assert.ok(!fake_compose_box.is_recipient_not_subscribed_banner_visible());
         assert.ok(!fake_compose_box.is_submit_button_spinner_visible());
 

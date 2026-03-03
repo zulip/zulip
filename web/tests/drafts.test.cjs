@@ -249,8 +249,6 @@ test("snapshot_message", ({override}) => {
     override(user_pill, "get_user_ids", () => [aaron.user_id]);
     mock_banners();
 
-    $(".narrow_to_compose_recipients").toggleClass = noop;
-
     let curr_draft;
 
     function set_compose_state() {

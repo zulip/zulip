@@ -35,7 +35,6 @@ class FakeComposeBox {
 
         $("#compose_banners .user_not_subscribed").length = 0;
 
-        this.$content_textarea.toggleClass = noop;
         this.$content_textarea.set_height(50);
         this.$content_textarea.val("default message");
         this.$content_textarea.trigger("blur");
@@ -88,10 +87,6 @@ class FakeComposeBox {
 
     show_submit_button_spinner() {
         $(".compose-submit-button .loader").show();
-    }
-
-    set_textarea_toggle_class_function(f) {
-        this.$content_textarea.toggleClass = f;
     }
 
     is_recipient_not_subscribed_banner_visible() {

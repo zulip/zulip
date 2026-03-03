@@ -427,7 +427,7 @@ run_test("stream-links", ({mock_template}) => {
         `/#narrow/channel/${stream.stream_id}-random/topic/topic.20name.20.3E.20still.20the.20topic.20name`,
     );
     $stream_topic.replaceWith = noop;
-    $stream_topic.hasClass = (class_name) => class_name === "stream-topic";
+    $stream_topic.addClass("stream-topic");
     $stream_topic.text("#random > topic name > still the topic name");
 
     $content.set_find_results("a.stream", $array([$stream]));
@@ -466,7 +466,7 @@ run_test("topic-link (empty string topic)", ({mock_template}) => {
     $channel_topic.set_find_results(".highlight", false);
     $channel_topic.attr("href", `/#narrow/channel/${stream.stream_id}-random/topic/`);
     $channel_topic.replaceWith = noop;
-    $channel_topic.hasClass = (class_name) => class_name === "stream-topic";
+    $channel_topic.addClass("stream-topic");
     $channel_topic.html(`#random &gt; <em>${REALM_EMPTY_TOPIC_DISPLAY_NAME}</em>`);
     $content.set_find_results("a.stream-topic, a.message-link", $array([$channel_topic]));
 
@@ -504,7 +504,7 @@ run_test("message-links", ({mock_template}) => {
         `/#narrow/channel/${stream.stream_id}-${stream.name}/topic//near/123`,
     );
     $channel_topic_message.replaceWith = noop;
-    $channel_topic_message.hasClass = (class_name) => class_name === "message-link";
+    $channel_topic_message.addClass("message-link");
     $channel_topic_message.html(
         `#${stream.name} &gt; <em>${REALM_EMPTY_TOPIC_DISPLAY_NAME}</em> @ 💬`,
     );

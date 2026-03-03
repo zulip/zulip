@@ -30,7 +30,6 @@ run_test("private_message_recipient_emails", ({override}) => {
 
 run_test("has_full_recipient", ({override}) => {
     $(`#compose_banners .topic_resolved`).remove = noop;
-    $(".narrow_to_compose_recipients").toggleClass = noop;
 
     let user_ids;
     override(compose_pm_pill, "set_from_user_ids", (value) => {
