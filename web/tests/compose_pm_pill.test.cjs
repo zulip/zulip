@@ -111,7 +111,7 @@ run_test("pills", ({override}) => {
     }
 
     function input_pill_stub(opts) {
-        assert.equal(opts.$container, $pill_container_stub);
+        assert.equal(opts.$container[0], $pill_container_stub[0]);
         create_item_handler = opts.create_item_from_text;
         assert.ok(create_item_handler);
         return pills;

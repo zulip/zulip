@@ -167,12 +167,12 @@ run_test("find_li", ({override}) => {
     let $li = buddy_list.find_li({
         key: alice.user_id,
     });
-    assert.equal($li, $alice_li);
+    assert.equal($li[0], $alice_li[0]);
 
     $li = buddy_list.find_li({
         key: bob.user_id,
     });
-    assert.equal($li, $bob_li);
+    assert.equal($li[0], $bob_li[0]);
 });
 
 run_test("fill_screen_with_content early break on big list", ({override}) => {

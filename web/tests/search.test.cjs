@@ -78,7 +78,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     let opts;
     override(bootstrap_typeahead, "Typeahead", (input_element, opts_) => {
         opts = opts_;
-        assert.equal(input_element.$element, $search_query_box);
+        assert.equal(input_element.$element[0], $search_query_box[0]);
         assert.equal(opts.items, 999);
         assert.equal(opts.helpOnEmptyStrings, true);
         assert.equal(opts.matcher(), true);

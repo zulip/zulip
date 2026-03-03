@@ -121,8 +121,8 @@ function set_message_for_message_content($content, value) {
     $content.set_closest_results(".message_row", $message_row);
     $message_row.set_closest_results(".overlay-message-row", []);
     const message_id = 100;
-    rows.id = (message_row) => {
-        assert.equal(message_row, $message_row);
+    rows.id = ($message_row_) => {
+        assert.equal($message_row_[0], $message_row[0]);
         return message_id;
     };
     message_store.get = (message_id_opt) => {

@@ -1261,8 +1261,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     };
     override(pm_conversations, "get_partners", () => [100]);
     override(bootstrap_typeahead, "Typeahead", (input_element, options) => {
-        switch (input_element.$element) {
-            case $("input#stream_message_recipient_topic"): {
+        switch (input_element.$element[0]) {
+            case $("input#stream_message_recipient_topic")[0]: {
                 compose_state.set_stream_id(sweden_stream.stream_id);
                 const lear_user_data = [
                     {
@@ -1379,7 +1379,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
                 break;
             }
-            case $("#private_message_recipient"): {
+            case $("#private_message_recipient")[0]: {
                 pill_items = [];
 
                 // This should match the users added at the beginning of this test file.
@@ -1536,7 +1536,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
                 break;
             }
-            case $("textarea#compose-textarea"): {
+            case $("textarea#compose-textarea")[0]: {
                 // options.source()
                 //
                 // For now we only test that get_sorted_filtered_items has been
