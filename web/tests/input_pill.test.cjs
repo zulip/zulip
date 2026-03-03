@@ -508,7 +508,6 @@ run_test("exit button on pill", ({mock_template}) => {
         $(html).length = 1;
         return html;
     });
-    $(".narrow_to_compose_recipients").toggleClass = noop;
 
     const info = set_up();
 

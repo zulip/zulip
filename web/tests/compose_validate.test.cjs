@@ -249,22 +249,19 @@ test_ui("validate", ({mock_template, override}) => {
     assert.ok(compose_validate.validate());
 
     // For this first block, we should fail due to empty compose.
-    let expected_invalid_state = true;
     initialize_pm_pill(mock_template);
     compose_state.private_message_recipient_emails("welcome-bot@example.com");
-    $("textarea#compose-textarea").toggleClass = (classname, value) => {
-        assert.equal(classname, "invalid");
-        assert.equal(value, expected_invalid_state);
-    };
+    $("textarea#compose-textarea").removeClass("invalid");
     assert.ok(!compose_validate.validate());
     assert.ok(!$("#compose-send-button .loader").visible());
-    compose_validate.validate();
+    assert.ok($("textarea#compose-textarea").hasClass("invalid"));
 
     // Now add content to compose.
     add_content_to_compose_box();
-    expected_invalid_state = false;
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
+    $("textarea#compose-textarea").addClass("invalid");
     assert.ok(compose_validate.validate());
+    assert.ok(!$("textarea#compose-textarea").hasClass("invalid"));
 
     initialize_pm_pill(mock_template);
     add_content_to_compose_box();

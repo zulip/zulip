@@ -477,10 +477,8 @@ test_ui("narrowing", ({override_rewire}) => {
     assert.ok(!$("ul.filters li").hasClass("active-filter"));
     assert.ok($("<cars-sidebar-row-stub>").hasClass("active-filter"));
 
-    let removed_classes;
-    $("ul#stream_filters li").removeClass = (classes) => {
-        removed_classes = classes;
-    };
+    $("ul#stream_filters li").addClass("active-filter");
+    $("ul#stream_filters li").addClass("stream-expanded");
 
     let topics_closed;
     topic_list.close = () => {
@@ -488,7 +486,8 @@ test_ui("narrowing", ({override_rewire}) => {
     };
 
     stream_list.handle_message_view_deactivated();
-    assert.equal(removed_classes, "active-filter stream-expanded");
+    assert.ok(!$("ul#stream_filters li").hasClass("active-filter"));
+    assert.ok(!$("ul#stream_filters li").hasClass("stream-expanded"));
     assert.ok(topics_closed);
 });
 

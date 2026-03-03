@@ -91,8 +91,6 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
     override(realm, "custom_profile_fields", {});
     override(realm, "realm_default_external_accounts", JSON.stringify({}));
 
-    $("#admin_profile_fields_table .display_in_profile_summary_false").toggleClass = noop;
-
     const template_data = [];
     mock_template("settings/admin_profile_field_list.hbs", false, (data) => {
         template_data.push(data);

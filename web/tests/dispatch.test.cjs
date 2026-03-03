@@ -1191,13 +1191,10 @@ run_test("user_settings", ({override}) => {
 
     event = event_fixtures.user_settings__web_escape_navigates_to_home_view;
     override(user_settings, "web_escape_navigates_to_home_view", false);
-    let toggled = [];
-    $("#keyboard-shortcuts .go-to-home-view-hotkey-help").toggleClass = (cls) => {
-        toggled.push(cls);
-    };
+    $("#keyboard-shortcuts .go-to-home-view-hotkey-help").addClass("notdisplayed");
     dispatch(event);
+    assert.ok(!$("#go-to-home-view-hotkey-help").hasClass("notdisplayed"));
     assert_same(user_settings.web_escape_navigates_to_home_view, true);
-    assert_same(toggled, ["notdisplayed"]);
 
     let called = false;
     message_lists.current.rerender = () => {
@@ -1226,13 +1223,10 @@ run_test("user_settings", ({override}) => {
 
     event = event_fixtures.user_settings__high_contrast_mode;
     override(user_settings, "high_contrast_mode", false);
-    toggled = [];
-    $("body").toggleClass = (cls) => {
-        toggled.push(cls);
-    };
+    $("body").removeClass("high-contrast");
     dispatch(event);
     assert_same(user_settings.high_contrast_mode, true);
-    assert_same(toggled, ["high-contrast"]);
+    assert.ok($("body").hasClass("high-contrast"));
 
     event = event_fixtures.user_settings__web_mark_read_on_scroll_policy;
     override(user_settings, "web_mark_read_on_scroll_policy", 3);
