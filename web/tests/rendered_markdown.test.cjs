@@ -125,7 +125,6 @@ function set_message_for_message_content($content, value) {
         assert.equal(closest_opts, ".message_row");
         return $message_row;
     };
-    $message_row.length = 1;
     $message_row.closest = (closest_opts) => {
         assert.equal(closest_opts, ".overlay-message-row");
         return [];

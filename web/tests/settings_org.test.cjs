@@ -270,8 +270,6 @@ function test_sync_realm_settings({override}) {
         /* Test message content edit limit minutes sync */
         const $property_elem = $("#id_realm_message_content_edit_limit_minutes");
         const $property_dropdown_elem = $("#id_realm_message_content_edit_limit_seconds");
-        $property_elem.length = 1;
-        $property_dropdown_elem.length = 1;
         $property_elem.attr("id", "id_realm_message_content_edit_limit_minutes");
         $property_dropdown_elem.attr("id", "id_realm_message_content_edit_limit_seconds");
         $property_dropdown_elem.closest = () => $subsection_stub;
@@ -765,8 +763,6 @@ test("test combined_code_language_options", ({override}) => {
 
 test("misc", ({override}) => {
     override(current_user, "is_admin", false);
-    $("#user-avatar-upload-widget").length = 1;
-    $("#user_details_section").length = 1;
 
     override(realm, "realm_name_changes_disabled", false);
     override(realm, "server_name_changes_disabled", false);
