@@ -8,7 +8,7 @@ const assert = require("node:assert/strict");
     and then subsequent calls to $("#foo") get the
     same instance.
 */
-const {FakeJQuery} = require("./zjquery_element.cjs");
+const {default_element, FakeJQuery} = require("./zjquery_element.cjs");
 const FakeEvent = require("./zjquery_event.cjs");
 
 function verify_selector_for_zulip(selector) {
@@ -38,8 +38,8 @@ function verify_selector_for_zulip(selector) {
 function make_zjquery() {
     const elems = new Map();
 
-    function new_elem(selector, create_opts) {
-        const $elem = FakeJQuery(selector, {...create_opts});
+    function new_elem(selector, elements) {
+        const $elem = FakeJQuery(elements);
 
         // Create a proxy handler to detect missing stubs.
         //
@@ -104,16 +104,20 @@ function make_zjquery() {
         verify_selector_for_zulip(selector);
 
         if (!elems.has(selector)) {
-            const $elem = new_elem(selector);
+            const $elem = new_elem(selector, [default_element(selector)]);
+            $elem[0].to_$ = () => $elem;
             elems.set(selector, $elem);
         }
         return elems.get(selector);
     };
 
-    zjquery.create = function (name, opts) {
-        assert.ok(!elems.has(name), "You already created an object with this name!!");
-        const $elem = new_elem(name, opts);
-        elems.set(name, $elem);
+    zjquery.create = function (selector, opts) {
+        assert.ok(!elems.has(selector), "You already created an object with this name!!");
+        const $elem = new_elem(selector, opts?.elements ?? [default_element(selector)]);
+        if (!opts?.elements) {
+            $elem[0].to_$ = () => $elem;
+        }
+        elems.set(selector, $elem);
 
         return $elem;
     };

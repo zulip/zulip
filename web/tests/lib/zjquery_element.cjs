@@ -210,6 +210,15 @@ class FakeElement extends RejectMissing {
     }
 }
 
+exports.default_element = function (selector) {
+    const element = new FakeElement();
+    fake_element_state.get(element).selector = selector;
+    if (selector[0] === "<") {
+        element.innerHTML = selector;
+    }
+    return element;
+};
+
 function dom_args(args) {
     return args.flat().flatMap((arg) => {
         assert.equal(typeof arg, "object");
@@ -218,9 +227,10 @@ function dom_args(args) {
 }
 
 // TODO: convert this to a true class
-exports.FakeJQuery = function (selector, opts) {
-    const $self = {
+exports.FakeJQuery = function (elements) {
+    return {
         [Symbol.iterator]: Array.prototype.values,
+        __zjquery: true,
 
         get selector() {
             assert.equal(this.length, 1);
@@ -856,25 +866,7 @@ exports.FakeJQuery = function (selector, opts) {
         visible() {
             return [...this].some((element) => fake_element_state.get(element).shown);
         },
+        length: elements.length,
+        ...elements,
     };
-
-    if (opts.elements) {
-        for (const [i, element] of opts.elements.entries()) {
-            $self[i] = element;
-        }
-
-        $self.length = opts.elements.length;
-    } else {
-        $self.length = 1;
-        $self[0] = new FakeElement();
-        $self[0].to_$ = () => $self;
-        fake_element_state.get($self[0]).selector = selector;
-        if (selector[0] === "<") {
-            $self.html(selector);
-        }
-    }
-
-    $self.__zjquery = true;
-
-    return $self;
 };
