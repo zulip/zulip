@@ -352,8 +352,11 @@ test("message_is_notifiable", ({override}) => {
 });
 
 test("basic_notifications", () => {
-    $("<div>").set_find_results(".emoji", {text: () => ({contents: () => ({unwrap() {}})})});
-    $("<div>").set_find_results("span.katex", {each() {}});
+    const $emoji_stub = $.create("emoji-stub");
+    $emoji_stub.contents = () => ({unwrap() {}});
+    const $katex_stub = $.set_results("katex-stub", []);
+    $("<div>").set_find_results(".emoji", $emoji_stub);
+    $("<div>").set_find_results("span.katex", $katex_stub);
     $("<div>").children = () => [];
 
     let n; // Object for storing all notification data for assertions.
