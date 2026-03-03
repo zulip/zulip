@@ -2336,6 +2336,7 @@ body:not(.spectator-view) {
             text-decoration: none;
             background-color: var(--background-color-active-dropdown-item);
             outline: none;
+            border-radius: 4px;
 
             .dropdown-list-delete,
             .dropdown-list-edit,
@@ -2348,11 +2349,13 @@ body:not(.spectator-view) {
 
 .dropdown-list-container .list-item {
     color: var(--color-dropdown-item);
+    margin: 0 4px;
 
     &:focus,
     &.current_selection {
         background-color: var(--background-color-active-dropdown-item);
         outline: none;
+        border-radius: 4px;
     }
 }
 
