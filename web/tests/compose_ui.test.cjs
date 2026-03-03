@@ -112,11 +112,10 @@ run_test("autosize_textarea", ({override}) => {
 run_test("insert_syntax_and_focus", ({override}) => {
     $("textarea#compose-textarea").val("xyz ");
     $("textarea#compose-textarea").caret = () => 4;
-    $("textarea#compose-textarea")[0] = "compose-textarea";
     // Since we are using a third party library, we just
     // need to ensure it is being called with the right params.
     override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-        assert.equal(elt, "compose-textarea");
+        assert.equal(elt, $("textarea#compose-textarea")[0]);
         assert.equal(syntax, ":octopus: ");
     });
     compose_ui.insert_syntax_and_focus(":octopus:");
@@ -434,10 +433,9 @@ run_test("quote_message", ({override, override_rewire}) => {
             return this;
         }
     };
-    $("textarea#compose-textarea")[0] = "compose-textarea";
     $("textarea#compose-textarea").attr("id", "compose-textarea");
     override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-        assert.equal(elt, "compose-textarea");
+        assert.equal(elt, $("textarea#compose-textarea")[0]);
         assert.equal(syntax, "\n\ntranslated: [Quoting…]\n\n");
     });
 
@@ -461,7 +459,7 @@ run_test("quote_message", ({override, override_rewire}) => {
 
     function override_with_quote_text(quote_text) {
         override(text_field_edit, "replaceFieldText", (elt, old_syntax, new_syntax) => {
-            assert.equal(elt, "compose-textarea");
+            assert.equal(elt, $("textarea#compose-textarea")[0]);
             assert.equal(old_syntax, "translated: [Quoting…]");
             assert.equal(
                 new_syntax(),
@@ -476,7 +474,7 @@ run_test("quote_message", ({override, override_rewire}) => {
     }
     function override_with_forward_text(quote_text) {
         override(text_field_edit, "replaceFieldText", (elt, old_syntax, new_syntax) => {
-            assert.equal(elt, "compose-textarea");
+            assert.equal(elt, $("textarea#compose-textarea")[0]);
             assert.equal(old_syntax, "translated: [Quoting…]");
             assert.equal(
                 new_syntax(),
@@ -500,7 +498,7 @@ run_test("quote_message", ({override, override_rewire}) => {
     // If the caret is initially positioned at 0, it should not
     // add newlines before the quoted message.
     override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-        assert.equal(elt, "compose-textarea");
+        assert.equal(elt, $("textarea#compose-textarea")[0]);
         assert.equal(syntax, "translated: [Quoting…]\n\n");
     });
     set_compose_content_with_caret("%hello there");
@@ -566,7 +564,7 @@ run_test("quote_message", ({override, override_rewire}) => {
     // When there is already 1 newline before and after the caret,
     // only 1 newline is added before and after the quoted message.
     override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-        assert.equal(elt, "compose-textarea");
+        assert.equal(elt, $("textarea#compose-textarea")[0]);
         assert.equal(syntax, "\ntranslated: [Quoting…]\n");
     });
     set_compose_content_with_caret("1st line\n%\n2nd line");
@@ -581,7 +579,7 @@ run_test("quote_message", ({override, override_rewire}) => {
     // When there are many (>=2) newlines before and after the caret,
     // no newline is added before or after the quoted message.
     override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-        assert.equal(elt, "compose-textarea");
+        assert.equal(elt, $("textarea#compose-textarea")[0]);
         assert.equal(syntax, "translated: [Quoting…]");
     });
     set_compose_content_with_caret("lots of\n\n\n\n%\n\n\nnewlines");

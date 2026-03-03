@@ -273,7 +273,6 @@ function test_sync_realm_settings({override}) {
         $property_elem.attr("id", "id_realm_message_content_edit_limit_minutes");
         $property_dropdown_elem.attr("id", "id_realm_message_content_edit_limit_seconds");
         $property_dropdown_elem.closest = () => $subsection_stub;
-        $property_dropdown_elem[0] = "#id_realm_message_content_edit_limit_seconds";
 
         override(realm, "realm_message_content_edit_limit_seconds", 120);
 
@@ -295,10 +294,8 @@ function test_sync_realm_settings({override}) {
     {
         /* Test organization joining restrictions settings sync */
         const $property_elem = $("#id_realm_org_join_restrictions");
-        $property_elem.length = 1;
         $property_elem.attr("id", "id_realm_org_join_restrictions");
         $property_elem.closest = () => $subsection_stub;
-        $property_elem[0] = "#id_realm_org_join_restrictions";
 
         override(realm, "realm_emails_restricted_to_domains", true);
         override(realm, "realm_disallow_disposable_email_addresses", false);

@@ -88,9 +88,6 @@ function set_up() {
     };
 
     const $pill_input = $.create("pill_input");
-
-    $pill_input[0] = {};
-    $pill_input.length = 1;
     $pill_input.before = noop;
 
     const create_item_from_text = (text) => items[text];
@@ -116,8 +113,6 @@ function set_up() {
 run_test("copy from pill", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.ok(["BLUE", "RED"].includes(data.display_value));
-        $(html)[0] = `<pill-stub ${data.display_value}>`;
-        $(html).length = 1;
         return html;
     });
 
@@ -132,7 +127,7 @@ run_test("copy from pill", ({mock_template}) => {
 
     let copied_text;
 
-    const $pill_stub = "<pill-stub RED>";
+    const pill_stub = $(pill_html("RED"))[0];
 
     const originalEvent = new ClipboardEvent();
     originalEvent.clipboardData = {
@@ -146,7 +141,7 @@ run_test("copy from pill", ({mock_template}) => {
         preventDefault: noop,
     };
 
-    copy_handler.call($pill_stub, e);
+    copy_handler.call(pill_stub, e);
 
     assert.equal(copied_text, "RED");
 });
@@ -340,8 +335,6 @@ run_test("insert_remove", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         assert.ok(html.startsWith, "<div class='pill'");
-        $(html).length = 1;
-        $(html)[0] = `<pill-stub ${data.display_value}>`;
         return html;
     });
 
@@ -444,12 +437,9 @@ run_test("insert_remove", ({mock_template}) => {
     $prev_pill_stub.trigger("blur");
     assert.deepEqual(widget.items(), [items.blue, items.red]);
 
-    const $focus_pill_stub = {
-        prev: () => $prev_pill_stub,
-        next: () => $("<next-stub>"),
-        [0]: "<pill-stub RED>",
-        length: 1,
-    };
+    const $focus_pill_stub = $(pill_html("RED"));
+    $focus_pill_stub.prev = () => $prev_pill_stub;
+    $focus_pill_stub.next = () => $("<next-stub>");
 
     $container.set_find_results(".pill:focus", $focus_pill_stub);
 
@@ -484,8 +474,6 @@ run_test("exit button on pill", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         assert.ok(html.startsWith, "<div class='pill'");
-        $(html)[0] = `<pill-stub ${data.display_value}>`;
-        $(html).length = 1;
         return html;
     });
 
@@ -505,7 +493,7 @@ run_test("exit button on pill", ({mock_template}) => {
     }
 
     const $curr_pill_stub = {
-        [0]: "<pill-stub BLUE>",
+        [0]: $(pill_html("BLUE"))[0],
         length: 1,
     };
 
@@ -588,8 +576,6 @@ run_test("appendValue/clear", ({mock_template}) => {
     };
 
     $pill_input.before = noop;
-    $pill_input[0] = {};
-    $pill_input.length = 1;
 
     const widget = input_pill.create(config);
 
@@ -715,8 +701,6 @@ run_test("getPillByPredicate", ({mock_template}) => {
 run_test("updatePill", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
-        $(html)[0] = `<pill-stub ${data.display_value}>`;
-        $(html).length = 1;
         return html;
     });
 
@@ -742,7 +726,7 @@ run_test("updatePill", ({mock_template}) => {
     let element_replaced = false;
     blue_pill.$element.replaceWith = ($new_elem) => {
         element_replaced = true;
-        assert.equal($new_elem[0], "<pill-stub DARK BLUE>");
+        assert.equal($new_elem.html(), pill_html("DARK BLUE"));
     };
 
     widget.updatePill(blue_pill.$element[0], updated_blue_data);
@@ -750,7 +734,7 @@ run_test("updatePill", ({mock_template}) => {
     // Verify the pill element was replaced with new HTML
     assert.ok(element_replaced);
     // Verify that pill.$element was updated by updatePill
-    assert.equal(blue_pill.$element[0], "<pill-stub DARK BLUE>");
+    assert.equal(blue_pill.$element.html(), pill_html("DARK BLUE"));
     // Verify the pill's internal data was updated
     assert.equal(blue_pill.item.color_name, "DARK BLUE");
     assert.equal(blue_pill.item.description, "color of the deep ocean");

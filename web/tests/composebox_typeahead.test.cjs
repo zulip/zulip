@@ -1729,10 +1729,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     $stub_target.attr("id", "some_non_existing_id");
     $("form#send_message_form").trigger(event);
 
-    $("textarea#compose-textarea")[0] = {
-        selectionStart: 0,
-        selectionEnd: 0,
-    };
+    $("textarea#compose-textarea")[0].selectionStart = 0;
+    $("textarea#compose-textarea")[0].selectionEnd = 0;
     override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
         assert.equal(content, "\n");
     });

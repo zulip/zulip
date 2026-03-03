@@ -241,15 +241,14 @@ run_test("update_tooltip_for_folder_filter - Any folder", () => {
     };
 
     const $element = $.create("#folder_filter_widget");
-    $element.selector = "#folder_filter_widget";
-    $element[0] = {_tippy: {destroy: noop}, id: "folder_filter_widget"};
+    $element[0]._tippy = {destroy: noop};
 
     folder_dropdown_widget.update_tooltip_for_folder_filter(
         "folder_filter_widget",
         folder_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION,
     );
 
-    assert.equal(tippy_target.id, "folder_filter_widget");
+    assert.equal(tippy_target, $element[0]);
     assert.equal(tippy_content, "translated: Filter by folder");
 });
 
@@ -262,8 +261,7 @@ run_test("update_tooltip_for_folder_filter - Uncategorized", () => {
     };
 
     const $element = $.create("#folder_filter_widget");
-    $element.selector = "#folder_filter_widget";
-    $element[0] = {_tippy: {destroy: noop}};
+    $element[0]._tippy = {destroy: noop};
 
     folder_dropdown_widget.update_tooltip_for_folder_filter(
         "folder_filter_widget",
@@ -282,8 +280,7 @@ run_test("update_tooltip_for_folder_filter - specific folder", () => {
     };
 
     const $element = $.create("#folder_filter_widget");
-    $element.selector = "#folder_filter_widget";
-    $element[0] = {_tippy: {destroy: noop}};
+    $element[0]._tippy = {destroy: noop};
 
     folder_dropdown_widget.update_tooltip_for_folder_filter(
         "folder_filter_widget",
@@ -300,12 +297,9 @@ run_test("update_tooltip_for_folder_filter - destroy previous tooltip", () => {
     tippy_default_stub = () => {};
 
     const $element = $.create("#folder_filter_widget");
-    $element.selector = "#folder_filter_widget";
-    $element[0] = {
-        _tippy: {
-            destroy() {
-                destroy_called = true;
-            },
+    $element[0]._tippy = {
+        destroy() {
+            destroy_called = true;
         },
     };
 
@@ -322,9 +316,7 @@ run_test("update_tooltip_for_folder_filter - no previous tooltip", () => {
 
     tippy_default_stub = () => {};
 
-    const $element = $.create("#folder_filter_widget");
-    $element.selector = "#folder_filter_widget";
-    $element[0] = {}; // No _tippy property
+    $.create("#folder_filter_widget"); // No _tippy property
 
     assert.doesNotThrow(() => {
         folder_dropdown_widget.update_tooltip_for_folder_filter(

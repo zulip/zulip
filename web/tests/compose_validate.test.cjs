@@ -171,7 +171,6 @@ function initialize_pm_pill(mock_template) {
     $("#compose-send-button .loader").hide();
 
     const $pm_pill_container = $.create("fake-pm-pill-container");
-    $("#private_message_recipient")[0] = {};
     $("#private_message_recipient").set_parent($pm_pill_container);
     $pm_pill_container.set_find_results(".input", $("#private_message_recipient"));
     $("#private_message_recipient").before = noop;

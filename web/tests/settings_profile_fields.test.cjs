@@ -5,7 +5,6 @@ const assert = require("node:assert/strict");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
 
 const loading = mock_esm("../src/loading");
 
@@ -73,9 +72,6 @@ function test_populate(opts, template_data) {
 
         override(realm, "custom_profile_field_types", custom_profile_field_types);
         override(current_user, "is_admin", opts.is_admin);
-        const $table = $("#admin_profile_fields_table");
-
-        $table[0] = "stub";
 
         loading.destroy_indicator = noop;
 
