@@ -1,6 +1,6 @@
 import itertools
 from collections import defaultdict
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from datetime import timedelta
@@ -26,6 +26,7 @@ from zerver.actions.message_send import (
 from zerver.actions.uploads import AttachmentChangeResult, check_attachment_reference_change
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
 from zerver.lib import utils
+from zerver.lib.cache import cache_delete_many, to_dict_cache_key_id
 from zerver.lib.exceptions import (
     JsonableError,
     MessageMoveError,
@@ -859,9 +860,7 @@ def do_update_message(
     changed_messages = Message.objects.filter(id=target_message.id)
     changed_message_ids = [target_message.id]
     changed_messages_count = 1
-    save_changes_for_propagation_mode = lambda: Message.objects.filter(
-        id=target_message.id
-    ).select_related(*Message.DEFAULT_SELECT_RELATED)
+    save_changes_for_propagation_mode: Callable[[], None] = lambda: None
     if message_edit_request.propagate_mode in ["change_later", "change_all"]:
         # Other messages should only get topic/stream fields in their edit history.
         topic_only_edit_history_event: EditHistoryEvent = {
@@ -947,12 +946,17 @@ def do_update_message(
     # This does message.save(update_fields=[...])
     save_message_for_edit_use_case(message=target_message)
 
-    # This updates any later messages, if any.  It returns the
-    # freshly-fetched-from-the-database changed messages.
-    changed_messages = save_changes_for_propagation_mode()
+    # Execute the bulk UPDATE of topic/stream/edit_history fields
+    # for any propagated messages.
+    save_changes_for_propagation_mode()
 
-    realm_id = target_message.realm_id
-    event["message_ids"] = sorted(update_message_cache(changed_messages, realm_id))
+    # Invalidate the message cache for all changed messages.  They'll
+    # be lazily rebuilt from the database on next access.  The DB has
+    # up-to-date content for all of them: the target message was saved
+    # above, and propagated messages were updated by
+    # save_changes_for_propagation_mode().
+    cache_delete_many(to_dict_cache_key_id(msg_id) for msg_id in changed_message_ids)
+    event["message_ids"] = sorted(changed_message_ids)
 
     # The following blocks arranges that users who are subscribed to a
     # stream and can see history from before they subscribed get
