@@ -213,24 +213,11 @@ run_test("arrows on pills", ({mock_template}) => {
         });
     }
 
-    let prev_focused = false;
-    let next_focused = false;
-
+    const $prev_pill_stub = $.create("prev-pill-stub");
+    const $next_pill_stub = $.create("next-pill-stub");
     const $pill_stub = {
-        prev: () => ({
-            trigger(type) {
-                if (type === "focus") {
-                    prev_focused = true;
-                }
-            },
-        }),
-        next: () => ({
-            trigger(type) {
-                if (type === "focus") {
-                    next_focused = true;
-                }
-            },
-        }),
+        prev: () => $prev_pill_stub,
+        next: () => $next_pill_stub,
     };
 
     $container.set_find_results(".pill:focus", $pill_stub);
@@ -239,10 +226,10 @@ run_test("arrows on pills", ({mock_template}) => {
     // actually cause any real state changes here.  We stub out
     // the only interaction, which is to move the focus.
     test_key("ArrowLeft");
-    assert.ok(prev_focused);
+    assert.ok($prev_pill_stub.is(":focus"));
 
     test_key("ArrowRight");
-    assert.ok(next_focused);
+    assert.ok($next_pill_stub.is(":focus"));
 });
 
 run_test("left arrow on input", ({mock_template}) => {
@@ -408,8 +395,7 @@ run_test("insert_remove", ({mock_template}) => {
 
     let color_focused;
     function handle_event(color) {
-        return (event) => {
-            assert.equal(event, "focus");
+        return () => {
             color_focused = color;
         };
     }
@@ -417,7 +403,7 @@ run_test("insert_remove", ({mock_template}) => {
     const pills = widget._get_pills_for_testing();
     for (const pill of pills) {
         pill.$element.remove = set_colored_removed_func(pill.item.color_name);
-        pill.$element.trigger = handle_event(pill.item.color_name);
+        pill.$element.on("focus", handle_event(pill.item.color_name));
     }
 
     let key_handler = $container.get_on_handler("keydown", ".input");
@@ -438,13 +424,7 @@ run_test("insert_remove", ({mock_template}) => {
     const yellow_pill = pills.find((pill) => pill.item.color_name === "YELLOW");
     $container.set_find_results(".pill:focus", yellow_pill.$element);
 
-    let prev_pill_focused = false;
     const $prev_pill_stub = $("<prev-stub>");
-    $prev_pill_stub.trigger = (type) => {
-        if (type === "focus") {
-            prev_pill_focused = true;
-        }
-    };
     yellow_pill.$element.prev = () => $prev_pill_stub;
     yellow_pill.$element.next = () => $("<next-stub>");
 
@@ -458,10 +438,10 @@ run_test("insert_remove", ({mock_template}) => {
     );
     assert.ok(removed);
     assert.equal(color_removed, "YELLOW");
-    assert.ok(prev_pill_focused);
+    assert.ok($prev_pill_stub.is(":focus"));
     color_removed = undefined;
 
-    prev_pill_focused = false;
+    $prev_pill_stub.trigger("blur");
     assert.deepEqual(widget.items(), [items.blue, items.red]);
 
     const $focus_pill_stub = {
@@ -484,12 +464,12 @@ run_test("insert_remove", ({mock_template}) => {
     });
 
     assert.equal(color_removed, undefined);
-    assert.ok(prev_pill_focused);
+    assert.ok($prev_pill_stub.is(":focus"));
 
     // We should be able to remove the pill after marking it as not
     // disabled.
     red_pill.disabled = false;
-    prev_pill_focused = false;
+    $prev_pill_stub.trigger("blur");
     assert.deepEqual(widget.items(), [items.blue, items.red]);
 
     key_handler({
@@ -497,7 +477,7 @@ run_test("insert_remove", ({mock_template}) => {
         preventDefault: noop,
     });
     assert.equal(color_removed, "RED");
-    assert.ok(prev_pill_focused);
+    assert.ok($prev_pill_stub.is(":focus"));
 });
 
 run_test("exit button on pill", ({mock_template}) => {

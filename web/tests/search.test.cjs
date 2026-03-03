@@ -222,7 +222,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             default_prevented = true;
         },
     };
-    $search_query_box.is = () => false;
+    $search_query_box.trigger("blur");
     assert.equal(keydown(ev), undefined);
     assert.ok(!default_prevented);
 
@@ -231,7 +231,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     assert.ok(!default_prevented);
 
     ev.key = "Enter";
-    $search_query_box.is = () => true;
+    $search_query_box.trigger("focus");
     assert.equal(keydown(ev), undefined);
     assert.ok(default_prevented);
 
@@ -263,7 +263,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
 
     ev.key = "a";
     /* istanbul ignore next */
-    $search_query_box.is = () => false;
+    $search_query_box.trigger("blur");
     $searchbox_form.trigger(ev);
 
     let search_exited = false;
@@ -272,19 +272,15 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     });
 
     ev.key = "Enter";
-    $search_query_box.is = () => false;
+    $search_query_box.trigger("blur");
     $searchbox_form.trigger(ev);
     assert.ok(!search_exited);
 
     ev.key = "Enter";
-    $search_query_box.is = () => true;
+    $search_query_box.trigger("focus");
     $searchbox_form.trigger(ev);
     assert.ok(search_exited);
 
-    let is_blurred = false;
-    $search_query_box.on("blur", () => {
-        is_blurred = true;
-    });
     terms = [
         {
             negated: false,
@@ -298,9 +294,9 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     override_rewire(search, "is_using_input_method", true);
     $searchbox_form.trigger(ev);
     // No change on first Enter keyup event
-    assert.ok(!is_blurred);
+    assert.ok($search_query_box.is(":focus"));
     $searchbox_form.trigger(ev);
-    assert.ok(is_blurred);
+    assert.ok(!$search_query_box.is(":focus"));
 });
 
 run_test("initiate_search", ({override_rewire}) => {
