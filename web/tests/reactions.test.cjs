@@ -1276,7 +1276,7 @@ test("remove_reaction_from_view (last person to react)", ({override_rewire}) => 
     const $reaction_container = $.create("stub-reaction-container");
 
     const $our_reaction = stub_reaction(message_id, "unicode_emoji,1f3b1");
-    $our_reaction.parent = () => $reaction_container;
+    $our_reaction.set_parent($reaction_container);
 
     let removed;
     $our_reaction.parent().remove = () => {
