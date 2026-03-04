@@ -1530,8 +1530,7 @@ def build_message_edit_request(
         is_topic_edited=is_topic_edited,
         target_topic_name=target_topic_name,
         is_stream_edited=is_stream_edited,
-        is_nontrivial_move=is_stream_edited
-        or (is_topic_edited and not is_topic_case_only_rename),
+        is_nontrivial_move=is_stream_edited or (is_topic_edited and not is_topic_case_only_rename),
         topic_resolved=topic_resolved,
         topic_unresolved=topic_unresolved,
         orig_content=message.content,
