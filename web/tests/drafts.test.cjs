@@ -625,7 +625,7 @@ test("format_drafts", ({override, mock_template}) => {
 
     $.set_results(".drafts-list", []);
     $.set_results("#drafts_table .overlay-message-row", []);
-    $(".draft-selection-checkbox").filter = () => [];
+    $.set_results(".draft-selection-checkbox", []);
     drafts_overlay_ui.launch();
 });
 
@@ -774,6 +774,6 @@ test("filter_drafts", ({override, mock_template}) => {
 
     $.set_results(".drafts-list", []);
     $.set_results("#drafts_table .overlay-message-row", []);
-    $(".draft-selection-checkbox").filter = () => [];
+    $.set_results(".draft-selection-checkbox", []);
     drafts_overlay_ui.launch();
 });
