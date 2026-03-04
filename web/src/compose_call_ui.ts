@@ -70,7 +70,7 @@ export function generate_and_insert_audio_or_video_call_link(
             is_video_call: !is_audio_call,
         };
 
-        const make_oauth_call = (): void => {
+        const make_oauth_call = (from_token_callback?: boolean): void => {
             xhr = channel.post({
                 url: `/json/calls/${oauth_call_provider}/create`,
                 data: request,
@@ -114,6 +114,9 @@ export function generate_and_insert_audio_or_video_call_link(
                     }
                 },
             });
+            if (xhr && from_token_callback) {
+                compose_call.track_xhr_for_key(key, xhr);
+            }
         };
 
         if (
@@ -123,11 +126,9 @@ export function generate_and_insert_audio_or_video_call_link(
         ) {
             make_oauth_call();
         } else {
-            compose_call.update_oauth_provider_callback_for_key(
-                oauth_call_provider,
-                key,
-                make_oauth_call,
-            );
+            compose_call.update_oauth_provider_callback_for_key(oauth_call_provider, key, () => {
+                make_oauth_call(true);
+            });
             window.open(
                 window.location.protocol +
                     "//" +
