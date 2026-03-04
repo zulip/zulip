@@ -1275,3 +1275,16 @@ ul.modal-options-list {
 /* ==============================================================
  * END MODAL MARGIN OVERRIDES
  * ============================================================== */
+
+ /* RSVP meeting invite user input */
+
+#rsvp-invite-users-container {
+    width: 60%;
+    max-width: 300px;
+    min-height: 32px;
+}
+
+#rsvp-invite-users {
+    min-height: 24px;
+    line-height: 24px;
+}
