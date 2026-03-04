@@ -9,11 +9,33 @@ from zerver.lib.meeting_actions import (
     do_create_meeting,
     do_upsert_responses,
     get_ranked_slots,
+    get_realm_users,
+    get_stream_subscribers,
 )
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.models import Stream, UserProfile
 from zerver.models.meetings import Meeting
+
+
+@typed_endpoint
+def get_meeting_candidates(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    stream_name: str | None = None,
+) -> HttpResponse:
+    """GET /json/meetings/candidates
+
+    Returns the invite candidate list for the proposal modal.
+    If stream_name is given, returns that stream's subscribers (the common case
+    when the organizer is already in a channel). Otherwise returns all realm users.
+    """
+    if stream_name is not None:
+        users = get_stream_subscribers(user_profile, stream_name)
+    else:
+        users = get_realm_users(user_profile.realm)
+    return json_success(request, data={"users": users})
 
 
 def _get_meeting_or_error(meeting_id: int, realm_id: int) -> Meeting:
