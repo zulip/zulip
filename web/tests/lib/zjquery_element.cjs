@@ -87,12 +87,12 @@ class FakeElementState {
     jquery_closest_results = new Map();
     $jquery_contents = undefined;
     jquery_data = new Map();
-    jquery_find_results = new Map();
     jquery_next_results = new Map();
     $jquery_parent = undefined;
     jquery_parents_results = new Map();
     jquery_prev_results = new Map();
     match_results = new Map([["*", true]]);
+    query_results = new Map();
     selector = undefined;
     shown = false;
 }
@@ -197,6 +197,16 @@ class FakeElement extends RejectMissing {
             );
         }
         return state.match_results.get(selector);
+    }
+    querySelectorAll(selector) {
+        const state = fake_element_state.get(this);
+        const results = state.query_results.get(selector);
+        if (results) {
+            return results;
+        }
+        throw new Error(
+            `You need to call $(${JSON.stringify(state.selector)}).set_find_results(${JSON.stringify(selector)}, ...).`,
+        );
     }
     removeAttribute(name) {
         this.#attributes.delete(normalize_attribute(name));
@@ -407,7 +417,7 @@ function dom_args(args) {
         }
         empty() {
             for (const element of this) {
-                fake_element_state.get(element).jquery_find_results.clear();
+                fake_element_state.get(element).query_results.clear();
                 element.innerHTML = "";
             }
             return this;
@@ -440,31 +450,10 @@ function dom_args(args) {
                 ),
             );
         }
-        find(child_selector) {
-            assert.equal(this.length, 1);
-            const $child = fake_element_state.get(this[0]).jquery_find_results.get(child_selector);
-            if ($child) {
-                return $child;
-            }
-            if ($child === false) {
-                // This is deliberately set to simulate missing find results.
-                // Return an empty array, the most common check is
-                // if ($.find().length) { //success }
-                return [];
-            }
-            /* istanbul ignore next */
-            throw new Error(`
-                We need you to simulate the results of $(...).find(...)
-                by using set_find_results. You want something like this:
-
-                    const $container = ...;
-                    const $child = ...;
-                    $container.set_find_results("${child_selector}", $child);
-
-                Then calling $container.find("${child_selector}") will return
-                the "$child" zjquery element.
-
-                `);
+        find(selector) {
+            return new exports.FakeJQuery(
+                [...this].flatMap((element) => [...element.querySelectorAll(selector)]),
+            );
         }
         get(index) {
             return index === undefined ? [...this] : this[index];
@@ -762,14 +751,9 @@ function dom_args(args) {
             assert.equal(this.length, 1);
             fake_element_state.get(this[0]).$jquery_contents = $contents;
         }
-        set_find_results(find_selector, $jquery_object) {
+        set_find_results(selector, elements) {
             assert.equal(this.length, 1);
-            assert.notEqual(
-                $jquery_object,
-                undefined,
-                "Please make the 'find result' be something like $.create('unused')",
-            );
-            fake_element_state.get(this[0]).jquery_find_results.set(find_selector, $jquery_object);
+            fake_element_state.get(this[0]).query_results.set(selector, [...elements]);
         }
         set_height(fake_height) {
             for (const element of this) {

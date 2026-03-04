@@ -92,8 +92,8 @@ run_test("finding_related_objects", () => {
     assert.equal($emoji.attr("src"), "foo.png");
 
     // Sometimes you want to deliberately test paths that do not find an
-    // element. You can pass 'false' as the result for those cases.
-    $emoji.set_find_results(".random", false);
+    // element. You can pass [] as the result for those cases.
+    $emoji.set_find_results(".random", []);
     assert.equal($emoji.find(".random").length, 0);
     /*
     An important thing to understand is that zjquery doesn't truly

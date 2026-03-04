@@ -844,17 +844,12 @@ test_ui("test_warn_if_guest_in_dm_recipient", ({mock_template, override}) => {
     compose_state.private_message_recipient_emails("guest@example.com, new_guest@example.com");
     $.reset_selector(`#compose_banners .${CSS.escape(classname)}`);
     $banner = $(`#compose_banners .${CSS.escape(classname)}`);
-    let is_updated = false;
-    $banner.set_find_results(".banner_content", {
-        text(content) {
-            assert.equal(
-                content,
-                $t({defaultMessage: "Guest and New Guest are guests in this organization."}),
-            );
-            is_updated = true;
-        },
-    });
+    const $banner_content = $(`#compose_banners .${CSS.escape(classname)} .banner_content`);
+    $banner.set_find_results(".banner_content", $banner_content);
     compose_validate.warn_if_guest_in_dm_recipient();
-    assert.ok(is_updated);
+    assert.equal(
+        $banner_content.text(),
+        $t({defaultMessage: "Guest and New Guest are guests in this organization."}),
+    );
     assert.deepEqual(compose_state.get_recipient_guest_ids_for_dm_warning(), [33, 34]);
 });
