@@ -27828,7 +27828,8 @@ components:
         reactions:
           type: array
           description: |
-            Data on any reactions to the message.
+            Data on any [reactions](/help/emoji-reactions) to the message,
+            ordered chronologically from oldest to newest reaction.
           items:
             $ref: "#/components/schemas/EmojiReaction"
         recipient_id:
