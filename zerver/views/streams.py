@@ -59,6 +59,7 @@ from zerver.lib.exceptions import (
     CannotManageDefaultChannelError,
     JsonableError,
     OrganizationOwnerRequiredError,
+    PermissionDeniedError,
 )
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.message import bulk_access_stream_messages_query
@@ -465,7 +466,7 @@ def update_stream_backend(
         if stream.name.lower() != new_name.lower():
             # Check that the stream name is available (unless we are
             # are only changing the casing of the stream name).
-            check_stream_name_available(user_profile.realm, new_name)
+            check_stream_name_available(user_profile, new_name)
         do_rename_stream(stream, new_name, user_profile)
 
     if not isinstance(folder_id, MissingType):
@@ -714,8 +715,6 @@ def create_channel(
     realm = user_profile.realm
     request_settings_dict = locals()
 
-    check_stream_name_available(realm, name)
-
     folder: ChannelFolder | None = None
     if folder_id is not None:
         folder = get_channel_folder_by_id(folder_id, realm)
@@ -756,6 +755,15 @@ def create_channel(
     if default_push_notifications and not user_profile.is_realm_admin:
         raise JsonableError(_("Insufficient permission"))
 
+    new_subscribers: set[UserProfile] = set()
+    if len(subscribers) > 0:
+        new_subscribers = bulk_principals_to_user_profiles(subscribers, user_profile)
+
+    # Checked last, just before creating the channel, so that a user who
+    # would fail any other permission or validation check cannot use the
+    # collision error to detect a channel they cannot access.
+    check_stream_name_available(user_profile, name)
+
     group_settings_map = stream_group_settings_map[name]
     new_channel, created = create_stream_if_needed(
         realm,
@@ -793,7 +801,6 @@ def create_channel(
             data={"id": new_channel.id},
         )
 
-    new_subscribers = bulk_principals_to_user_profiles(subscribers, user_profile)
     bulk_add_subscriptions(
         realm,
         [new_channel],
@@ -916,11 +923,11 @@ def add_subscriptions_backend(
     )
 
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
-        raise JsonableError(
-            _("Unable to access channel ({channel_name}).").format(
-                channel_name=unauthorized_streams[0].name,
-            )
-        )
+        # This is returned even to a user with metadata access to the
+        # channel (rather than a "already exists" error), so that we do
+        # not confirm the channel's name to a user without content
+        # access to it.
+        raise PermissionDeniedError
     if len(streams_to_which_user_cannot_add_subscribers) > 0:
         raise JsonableError(_("Insufficient permission"))
 
