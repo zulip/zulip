@@ -7,6 +7,13 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import {media_breakpoints_num} from "./css_variables.ts";
 import * as message_viewport from "./message_viewport.ts";
+import {user_settings} from "./user_settings.ts";
+
+let recent_view_participants_rerender: (() => void) | null = null;
+
+export function set_recent_view_participants_rerender(rerender_func: (() => void) | null): void {
+    recent_view_participants_rerender = rerender_func;
+}
 
 function get_bottom_whitespace_height(): number {
     return message_viewport.height() * 0.4;
@@ -194,21 +201,27 @@ export function resize_sidebars(): void {
     $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
 }
 
-export function update_recent_view(): void {
-    const $recent_view_filter_container = $("#recent_view_filter_buttons");
+export function update_recent_view(rerender_view_if_needed = false): void {
+    const $middle_column = $(".app .column-middle");
 
     // Update max avatars to prevent participant avatars from overflowing.
     // These numbers are just based on speculation.
-    const recent_view_filters_width = $recent_view_filter_container.outerWidth(true) ?? 0;
-    if (!recent_view_filters_width) {
+    const middle_column_width = $middle_column.outerWidth() ?? 0;
+    if (!middle_column_width) {
         return;
     }
-    const num_avatars_narrow_window = 2;
-    const num_avatars_max = 4;
-    if (recent_view_filters_width < media_breakpoints_num.md) {
-        $(":root").css("--recent-view-max-avatars", `${num_avatars_narrow_window}`);
-    } else {
+    const prev_num_avatars_max = Number($(":root").css("--recent-view-max-avatars"));
+    let num_avatars_max = 4;
+    if (middle_column_width < (media_breakpoints_num.md * user_settings.web_font_size_px) / 16) {
+        num_avatars_max = 2;
+    }
+
+    if (prev_num_avatars_max !== num_avatars_max) {
         $(":root").css("--recent-view-max-avatars", `${num_avatars_max}`);
+
+        if (rerender_view_if_needed) {
+            recent_view_participants_rerender?.();
+        }
     }
 }
 

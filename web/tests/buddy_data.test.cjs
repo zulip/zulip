@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const _ = require("lodash");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_bot, make_user} = require("./lib/example_user.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {noop, run_test} = require("./lib/test.cjs");
@@ -45,64 +46,68 @@ initialize_user_settings({user_settings});
 // activity.test.cjs, but we should feel free to add direct tests
 // here.
 
-const selma = {
+const selma = make_user({
     user_id: 1000,
     full_name: "Human Selma",
     email: "selma@example.com",
-};
+});
 
-const me = {
+const me = make_user({
     user_id: 1001,
     full_name: "Human Myself",
     email: "self@example.com",
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@zulip.com",
     user_id: 1002,
     full_name: "Alice Smith",
-};
+});
 
-const fred = {
+const fred = make_user({
     email: "fred@zulip.com",
     user_id: 1003,
     full_name: "Fred Flintstone",
-};
+});
 
-const jill = {
+const jill = make_user({
     email: "jill@zulip.com",
     user_id: 1004,
     full_name: "Jill Hill",
-};
+});
 
-const mark = {
+const mark = make_user({
     email: "mark@zulip.com",
     user_id: 1005,
     full_name: "Marky Mark",
-};
+});
 
-const old_user = {
+const old_user = make_user({
     user_id: 9999,
     full_name: "Old User",
     email: "old_user@example.com",
-};
+});
 
-const bot = {
+const imported_user = make_user({
+    user_id: 10000,
+    full_name: "Imported user",
+    email: "imported-user@example.com",
+    is_imported_stub: true,
+});
+
+const bot = make_bot({
     user_id: 55555,
     full_name: "Red Herring Bot",
     email: "bot@example.com",
-    is_bot: true,
-    bot_owner_id: null,
-};
+});
 
-const bot_with_owner = {
+const bot_with_owner = make_bot({
     user_id: 55556,
     full_name: "Blue Herring Bot",
     email: "bot_with_owner@example.com",
-    is_bot: true,
     bot_owner_id: 1001,
     bot_owner_full_name: "Human Myself",
-};
+});
 
 function add_canned_users() {
     people.add_active_user(alice, "server_events");
@@ -579,6 +584,7 @@ test("compare_function", () => {
 
 test("user_last_seen_time_status", ({override}) => {
     page_params.presence_history_limit_days_for_web_app = 365;
+    people.add_active_user(old_user);
     set_presence(selma.user_id, "active");
     set_presence(me.user_id, "active");
 
@@ -609,6 +615,12 @@ test("user_last_seen_time_status", ({override}) => {
         assert.equal(user_id, old_user.user_id);
     };
     assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id, missing_callback), "");
+
+    people.add_active_user(imported_user);
+    assert.equal(
+        buddy_data.user_last_seen_time_status(imported_user.user_id),
+        "translated: Imported account not activated",
+    );
 });
 
 test("get_items_for_users", ({override}) => {

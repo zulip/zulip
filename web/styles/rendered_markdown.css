@@ -576,10 +576,11 @@
             min-width: 4em;
             min-height: 4em;
 
-            /* Constrain height to 10em, but otherwise keep
+            /* Constrain height based on the organization's
+               media preview size setting, but otherwise keep
                the width to the size of the gallery, and
                therefore the message area. */
-            max-height: 10em;
+            max-height: var(--media-preview-max-height);
             max-width: 100%;
 
             /* Allow height and width to grow as needed, though
@@ -691,9 +692,9 @@
             /* Since we do not yet read height and width
                values for media thumbnails, we carry forward
                reasonable dimensions for a landscape thumbnail
-               here. */
-            height: 8em;
-            width: 12em;
+               here, scaling with the image thumbnail size setting. */
+            height: var(--media-preview-max-height);
+            width: calc(var(--media-preview-max-height) * 1.5);
         }
     }
 

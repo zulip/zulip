@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -149,9 +150,13 @@ run_test("reply_message_stream", ({override}) => {
     const content = "hello";
 
     let send_message_args;
+    const tracked_local_ids = [];
 
     override(channel, "post", ({data}) => {
         send_message_args = data;
+    });
+    override(sent_messages, "start_tracking_message", ({local_id}) => {
+        tracked_local_ids.push(local_id);
     });
 
     override(current_user, "user_id", 44);
@@ -160,6 +165,7 @@ run_test("reply_message_stream", ({override}) => {
 
     transmit.reply_message(stream_message, content);
 
+    assert.deepEqual(tracked_local_ids, ["99"]);
     assert.deepEqual(send_message_args, {
         sender_id: 44,
         queue_id: 66,
@@ -172,11 +178,11 @@ run_test("reply_message_stream", ({override}) => {
 });
 
 run_test("reply_message_private", ({override}) => {
-    const fred = {
+    const fred = make_user({
         user_id: 3,
         email: "fred@example.com",
         full_name: "Fred Frost",
-    };
+    });
     people.add_active_user(fred);
 
     const pm_message = {

@@ -78,6 +78,7 @@ from zerver.actions.user_settings import (
     do_change_avatar_fields,
     do_change_password,
     do_change_tos_version,
+    do_change_user_date_joined,
     do_change_user_delivery_email,
     do_change_user_setting,
     do_regenerate_api_key,
@@ -1100,6 +1101,8 @@ class TestRealmAuditLog(ZulipTestCase):
             user.realm,
             pattern="#(?P<id>[123])",
             url_template="https://realm.com/my_realm_filter/{id}",
+            example_input="#1",
+            reverse_template="#{id}",
             acting_user=user,
         )
 
@@ -1107,6 +1110,8 @@ class TestRealmAuditLog(ZulipTestCase):
             pattern="#(?P<id>[123])",
             url_template="https://realm.com/my_realm_filter/{id}",
             id=linkifier_id,
+            example_input="#1",
+            reverse_template="#{id}",
         )
         expected_extra_data = {
             "realm_linkifiers": [*initial_linkifiers, added_linkfier],
@@ -1129,12 +1134,16 @@ class TestRealmAuditLog(ZulipTestCase):
             id=linkifier_id,
             pattern="#(?P<id>[0-9]+)",
             url_template="https://realm.com/my_realm_filter/issues/{id}",
+            example_input="#15",
+            reverse_template="#{id}",
             acting_user=user,
         )
         changed_linkifier = LinkifierDict(
             pattern="#(?P<id>[0-9]+)",
             url_template="https://realm.com/my_realm_filter/issues/{id}",
             id=linkifier_id,
+            example_input="#15",
+            reverse_template="#{id}",
         )
         expected_extra_data = {
             "realm_linkifiers": [*initial_linkifiers, changed_linkifier],
@@ -1160,6 +1169,8 @@ class TestRealmAuditLog(ZulipTestCase):
         removed_linkifier = {
             "pattern": "#(?P<id>[0-9]+)",
             "url_template": "https://realm.com/my_realm_filter/issues/{id}",
+            "example_input": "#15",
+            "reverse_template": "#{id}",
         }
         expected_extra_data = {
             "realm_linkifiers": initial_linkifiers,
@@ -1836,3 +1847,26 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assert_length(audit_log_entries, 1)
         self.assertEqual(audit_log_entries[0].modified_user, hamlet)
         self.assertEqual(audit_log_entries[0].extra_data, {})
+
+    def test_updating_date_joined(self) -> None:
+        hamlet = self.example_user("hamlet")
+        old_value = hamlet.date_joined
+
+        now = timezone_now()
+
+        do_change_user_date_joined(hamlet, now)
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=hamlet,
+            realm=hamlet.realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.USER_DATE_JOINED_CHANGED,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertEqual(audit_log_entries[0].modified_user, hamlet)
+        self.assertEqual(
+            audit_log_entries[0].extra_data,
+            {
+                RealmAuditLog.OLD_VALUE: old_value.isoformat(),
+                RealmAuditLog.NEW_VALUE: now.isoformat(),
+            },
+        )

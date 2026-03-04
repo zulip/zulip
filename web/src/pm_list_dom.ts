@@ -3,12 +3,8 @@ import _ from "lodash";
 import render_more_private_conversations from "../templates/more_pms.hbs";
 import render_pm_list_item from "../templates/pm_list_item.hbs";
 
+import type {PMListConversation} from "./pm_list_data.ts";
 import * as vdom from "./vdom.ts";
-
-// TODO/typescript: Move this to pm_list_data
-type PMListConversation = {
-    user_ids_string: string;
-};
 
 export type PMNode =
     | {

@@ -1,23 +1,24 @@
 {{#with attachment}}
 <tr class="uploaded_file_row" data-attachment-name="{{name}}" data-attachment-id="{{id}}">
     <td>
-        <a type="submit" class="tippy-zulip-delayed-tooltip" href="/user_uploads/{{path_id}}" target="_blank" rel="noopener noreferrer" data-tippy-content="{{t 'View file' }}">
+        <a type="submit" class="tippy-zulip-delayed-tooltip" href="/user_uploads/{{path_id}}" target="_blank"
+          rel="noopener noreferrer" data-tippy-content="{{t 'View file' }}">
             {{ name }}
         </a>
     </td>
     <td>{{ create_time_str }}</td>
     <td>
-        {{#unless (eq messages.length 0)}}
+        {{#unless (eq message_ids.length 0)}}
         <div class="attachment-messages">
-            {{#each messages}}
-                <a class="ind-message" href="/#narrow/id/{{ this.id }}">
-                    #{{ this.id }}
+            {{#each message_ids}}
+                <a class="ind-message" href="/#narrow/id/{{ this }}">
+                    #{{ this }}
                 </a>
             {{/each}}
         </div>
         {{/unless}}
     </td>
-    <td class="upload-size" >{{ size_str }}</td>
+    <td class="upload-size">{{ size_str }}</td>
     <td class="actions">
         <span class="edit-attachment-buttons">
             <a type="submit" href="/user_uploads/{{path_id}}" class="hidden-attachment-download" download></a>

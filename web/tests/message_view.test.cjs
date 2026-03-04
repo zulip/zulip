@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_bot, make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -75,30 +76,29 @@ function set_filter(terms) {
     return new Filter(terms);
 }
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 5,
     full_name: "Me Myself",
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: 23,
     full_name: "Alice Smith",
-};
+});
 
-const ray = {
+const ray = make_user({
     email: "ray@example.com",
     user_id: 22,
     full_name: "Raymond",
-};
+});
 
-const bot = {
+const bot = make_bot({
     email: "bot@example.com",
     user_id: 25,
     full_name: "Example Bot",
-    is_bot: true,
-};
+});
 
 const nobody = make_user_group({
     name: "role:nobody",
@@ -229,7 +229,7 @@ run_test("urls", () => {
     assert.deepEqual(user_ids, [5]);
 });
 
-run_test("show_empty_narrow_message", ({mock_template, override}) => {
+run_test("show_empty_narrow_message", ({mock_template, override, override_rewire}) => {
     settings_data.user_can_access_all_other_users = () => true;
     settings_data.user_has_permission_for_group_setting = () => true;
     override(realm, "stop_words", []);
@@ -589,6 +589,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         stream_id: my_stream_id,
     };
     stream_data.add_sub_for_tests(my_stream);
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     stream_data.subscribe_myself(my_stream);
     current_filter = set_filter([["stream", my_stream_id.toString()]]);
     const list = new MessageList({
@@ -1086,11 +1087,11 @@ run_test("narrow_compute_title", () => {
     assert.equal(narrow_title.compute_narrow_title(filter), "translated: Unknown channel");
 
     // Direct messages with narrows
-    const joe = {
+    const joe = make_user({
         email: "joe@example.com",
         user_id: 31,
         full_name: "joe",
-    };
+    });
     people.add_active_user(joe, "server_events");
 
     filter = new Filter([{operator: "dm", operand: [joe.user_id]}]);

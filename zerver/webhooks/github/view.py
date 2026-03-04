@@ -512,7 +512,7 @@ def get_team_body(helper: Helper) -> str:
     if "description" in changes:
         actor = get_sender_name(helper)
         new_description = payload["team"]["description"].tame(check_string)
-        return f"**{actor}** changed the team description to:\n\n~~~ quote\n{new_description}\n~~~"
+        return f"{actor} changed the team description to:\n\n~~~ quote\n{new_description}\n~~~"
     if "name" in changes:
         original_name = changes["name"]["from"].tame(check_string)
         new_name = payload["team"]["name"].tame(check_string)
@@ -626,7 +626,7 @@ def get_pull_request_auto_merge_body(helper: Helper) -> str:
 def get_pull_request_ready_for_review_body(helper: Helper) -> str:
     payload = helper.payload
 
-    message = "**{sender}** has marked [PR #{pr_number}]({pr_url}) as ready for review."
+    message = "{sender} has marked [PR #{pr_number}]({pr_url}) as ready for review."
     return message.format(
         sender=get_sender_name(helper),
         pr_number=payload["pull_request"]["number"].tame(check_int),
@@ -751,9 +751,9 @@ def get_pull_request_review_requested_body(helper: Helper) -> str:
     sender = get_sender_name(helper)
     pr_number = payload["pull_request"]["number"].tame(check_int)
     pr_url = payload["pull_request"]["html_url"].tame(check_string)
-    message = "**{sender}** requested {reviewers} for a review on [PR #{pr_number}]({pr_url})."
+    message = "{sender} requested {reviewers} for a review on [PR #{pr_number}]({pr_url})."
     message_with_title = (
-        "**{sender}** requested {reviewers} for a review on [PR #{pr_number} {title}]({pr_url})."
+        "{sender} requested {reviewers} for a review on [PR #{pr_number} {title}]({pr_url})."
     )
     body = message_with_title if include_title else message
 

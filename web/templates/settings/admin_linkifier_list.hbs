@@ -7,10 +7,16 @@
                 <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
             </span>
         {{/if}}
+        <span class="linkifier_example_input rendered_markdown">{{{rendered_example_input_html}}}</span>
+    </td>
+    <td>
         <span class="linkifier_pattern">{{pattern}}</span>
     </td>
     <td>
         <span class="linkifier_url_template">{{url_template}}</span>
+    </td>
+    <td>
+        <span class="linkifier_reverse_template">{{reverse_template}}</span>
     </td>
     {{#if ../can_modify}}
     <td class="no-select actions">

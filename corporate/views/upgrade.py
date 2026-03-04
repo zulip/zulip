@@ -13,7 +13,7 @@ from corporate.lib.decorator import (
     authenticated_remote_server_management_endpoint,
 )
 from corporate.models.plans import CustomerPlan
-from zerver.decorator import require_organization_member, zulip_login_required
+from zerver.decorator import require_billing_access, zulip_login_required
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.models import UserProfile
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 billing_logger = logging.getLogger("corporate.stripe")
 
 
-@require_organization_member
+@require_billing_access
 @typed_endpoint
 def upgrade(
     request: HttpRequest,

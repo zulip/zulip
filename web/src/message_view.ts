@@ -5,7 +5,6 @@ import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import * as activity_ui from "./activity_ui.ts";
-import {all_messages_data} from "./all_messages_data.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as channel from "./channel.ts";
@@ -49,6 +48,7 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popup_banners from "./popup_banners.ts";
+import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as resize from "./resize.ts";
@@ -101,7 +101,7 @@ export function changehash(
     trigger: string,
     remove_current_hash_from_history = false,
 ): void {
-    if (browser_history.state.changing_hash || remove_current_hash_from_history) {
+    if (browser_history.state.changing_hash) {
         // If we retargeted the narrow operation because a message was moved,
         // we want to have the current narrow hash in the browser history.
         if (trigger === "retarget message location") {
@@ -111,15 +111,26 @@ export function changehash(
     }
     message_viewport.stop_auto_scrolling();
 
-    if (trigger === "retarget topic location") {
-        // It is important to use `replaceState` rather than `replace`
-        // here for the `back` button to work; we don't want to use
-        // any metadata potentially stored by
-        // update_current_history_state_data associated with an old
-        // URL for the target conversation, and conceptually we want
-        // to replace the inaccurate/old URL for the conversation with
-        // the current/corrected value.
-        window.history.replaceState(null, "", newhash);
+    if (remove_current_hash_from_history) {
+        switch (trigger) {
+            case "retarget topic location":
+            case "stream/topic change":
+                // It is important to use `replaceState` rather than `replace`
+                // here for the `back` button to work; we don't want to use
+                // any metadata potentially stored by
+                // update_current_history_state_data associated with an old
+                // URL for the target conversation, and conceptually we want
+                // to replace the inaccurate/old URL for the conversation with
+                // the current/corrected value.
+                window.history.replaceState(null, "", newhash);
+                break;
+            case "retarget message location":
+            case "old_unreads_missing":
+                // We want to preserve the metadata associated with the current
+                // narrow in the browser history, so we use `location.replace` here.
+                window.location.replace(newhash);
+                break;
+        }
     } else {
         browser_history.set_hash(newhash);
     }
@@ -255,22 +266,21 @@ function create_and_update_message_list(
     // the current message list as we are trying to emulate the `hashchange`
     // workflow we have which calls `message_view.show` after hash is updated.
     if (opts.change_hash) {
-        let remove_current_hash_from_history = false;
-        let trigger = opts.trigger ?? "unknown";
-        if (opts.trigger === "old_unreads_missing") {
-            // We are not navigating user to a different place but want to
-            // keep user at the same place but avoid marking messages as read.
-            // Assuming current narrow doesn't have a `near` term,
-            // we replace the current history entry with
-            // the new hash which has a `near` term.
-            assert(!narrow_state.filter()!.has_operator("near"));
-            assert(msg_list.data.filter.has_operator("near"));
-            remove_current_hash_from_history = true;
-            trigger = "retarget message location";
-        }
-
+        const remove_current_hash_from_history = opts.remove_current_hash_from_history ?? false;
+        const trigger = opts.trigger ?? "unknown";
         update_hash_to_match_filter(filter, trigger, remove_current_hash_from_history);
         opts.show_more_topics = browser_history.get_current_state_show_more_topics() ?? false;
+    }
+
+    // To keep the behaviour of `n` key consistent and the memory of
+    // `topics_kept_unread_by_user` as recent as possible, we clear it.
+    if (
+        !opts.trigger ||
+        !["next_topic_unread_hotkey", "old_unreads_missing", "retarget message location"].includes(
+            opts.trigger,
+        )
+    ) {
+        topic_generator.reset_topics_kept_unread_by_user();
     }
 
     // Show the new set of messages. It is important to set message_lists.current to
@@ -377,7 +387,12 @@ export function try_rendering_locally_for_same_narrow(
     }
 
     message_lists.current.data.filter = filter;
-    update_hash_to_match_filter(filter, "retarget message location");
+    const remove_current_hash_from_history = opts.remove_current_hash_from_history ?? false;
+    update_hash_to_match_filter(
+        filter,
+        "retarget message location",
+        remove_current_hash_from_history,
+    );
     message_view_header.render_title_area();
     return true;
 }
@@ -391,6 +406,7 @@ export type ShowMessageViewOpts = {
     then_select_id?: number | undefined;
     then_select_offset?: number | undefined;
     show_more_topics?: boolean;
+    remove_current_hash_from_history?: boolean;
 };
 
 export function get_id_info(): TargetMessageIdInfo {
@@ -742,7 +758,7 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
             // Reset the collapsed status of messages rows.
             condense.condense_and_collapse(message_lists.current.view.$list.find(".message_row"));
             message_edit.restore_edit_state_after_message_view_change();
-            submessage.process_widget_rows_in_list(message_lists.current);
+            submessage.render_widget_rows_in_list(message_lists.current);
             message_feed_top_notices.update_top_of_narrow_notices(msg_list);
 
             // We may need to scroll to the selected message after swapping
@@ -795,7 +811,12 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                             // We've already adjusted our filter via
                             // filter.try_adjusting_for_moved_with_target, and
                             // should update the URL hash accordingly.
-                            update_hash_to_match_filter(filter, "retarget topic location");
+                            const remove_current_hash_from_history = true;
+                            update_hash_to_match_filter(
+                                filter,
+                                "retarget topic location",
+                                remove_current_hash_from_history,
+                            );
                             // Since filter is updated, we need to handle various things
                             // like updating the message view header title, unread banner
                             // based on the updated filter.
@@ -890,8 +911,14 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                         // make sense, and checks like is_conversation_view_with_near do not
                         // handle that combination correctly.
                         terms = terms.filter((term) => term.operator !== "with");
+                        // We are not navigating user to a different place but want to
+                        // keep user at the same place but avoid marking messages as read.
+                        // Assuming current narrow doesn't have a `near` term,
+                        // we replace the current history entry with
+                        // the new hash which has a `near` term.
                         const opts = {
                             trigger: "old_unreads_missing",
+                            remove_current_hash_from_history: true,
                         };
                         show(terms, opts);
                         const new_message_list_id = message_lists.current?.id;
@@ -984,14 +1011,14 @@ function navigate_to_anchor_message(opts: {
     if (is_anchor_fetched(message_lists.current.data)) {
         select_msg_id(message_list_data_to_target_message_id(message_lists.current.data));
         return;
-    } else if (is_anchor_fetched(all_messages_data) && anchor !== "date") {
+    } else if (is_anchor_fetched(recent_view_messages_data) && anchor !== "date") {
         // We can load messages into `msg_list_data` but we don't know
         // the fetch status until we contact server. If we are contacting the
         // server, it is better to just fetch the required messages instead
         // of just fetching status.
         //
         // So, a cheaper check is to see if we have found the anchor in
-        // `all_messages_data`, and if we have, we can say `msg_list_data`
+        // `recent_view_messages_data`, and if we have, we can say `msg_list_data`
         // will also have the anchor (for oldest / newest anchors at least).
         //
         // We skip this for date anchor since message_list_data_to_target_message_id
@@ -1005,8 +1032,8 @@ function navigate_to_anchor_message(opts: {
             excludes_muted_topics: message_lists.current.data.excludes_muted_topics,
             excludes_muted_users: message_lists.current.data.excludes_muted_users,
         });
-        load_local_messages(msg_list_data, all_messages_data);
-        // It is still possible that `all_messages_data` doesn't have any messages
+        load_local_messages(msg_list_data, recent_view_messages_data);
+        // It is still possible that `recent_view_messages_data` doesn't have any messages
         // for the current narrow, so we check for that.
         if (!msg_list_data.visibly_empty()) {
             select_anchor_using_data(msg_list_data);

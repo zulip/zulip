@@ -246,6 +246,7 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
 
 export const simple_dropdown_realm_settings_schema = z.pick(realm_schema, {
     realm_org_type: true,
+    realm_media_preview_size: true,
     realm_message_edit_history_visibility_policy: true,
     realm_topics_policy: true,
 });
@@ -1623,14 +1624,20 @@ export function disable_opening_typeahead_on_clicking_label($container: JQuery):
     $group_setting_labels.off("click");
 }
 
-export function disable_group_permission_setting($containers: JQuery): void {
+export function disable_group_permission_setting($containers: JQuery, placeholder?: string): void {
     $containers.find(".input").prop("contenteditable", false);
+    if (placeholder !== undefined) {
+        $containers.find(".input").attr("data-placeholder", placeholder);
+    }
     $containers.closest(".input-group").addClass("group_setting_disabled");
     disable_opening_typeahead_on_clicking_label($containers.closest(".input-group"));
 }
 
-export function enable_group_permission_setting($containers: JQuery): void {
+export function enable_group_permission_setting($containers: JQuery, placeholder?: string): void {
     $containers.find(".input").prop("contenteditable", true);
+    if (placeholder !== undefined) {
+        $containers.find(".input").attr("data-placeholder", placeholder);
+    }
     $containers.closest(".input-group").removeClass("group_setting_disabled");
     enable_opening_typeahead_on_clicking_label($containers.closest(".input-group"));
 }

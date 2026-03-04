@@ -5,6 +5,8 @@ const assert = require("node:assert/strict");
 const {parseOneAddress} = require("email-addresses");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user, Role} = require("./lib/example_user.cjs");
 const {mock_esm, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -33,43 +35,43 @@ initialize_user_settings({user_settings: {}});
 const stream_message = "stream";
 const direct_message = "private";
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
-};
+});
 
-const joe = {
+const joe = make_user({
     email: "joe@example.com",
     user_id: 31,
     full_name: "joe",
-};
+});
 
-const steve = {
+const steve = make_user({
     email: "STEVE@foo.com",
     user_id: 32,
     full_name: "steve",
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: 33,
     full_name: "alice",
-    is_guest: true,
-};
+    role: Role.GUEST,
+});
 
-const jeff = {
+const jeff = make_user({
     email: "jeff@foo.com",
     user_id: 34,
     full_name: "jeff",
-};
+});
 
-const annie = {
+const annie = make_user({
     email: "annie@foo.com",
     user_id: 35,
     full_name: "annie",
-    is_guest: true,
-};
+    role: Role.GUEST,
+});
 
 // Add users to `valid_user_ids`.
 const source = "server_events";
@@ -100,10 +102,10 @@ function get_predicate(raw_terms) {
 }
 
 function make_sub(name, stream_id) {
-    const sub = {
+    const sub = make_stream({
         name,
         stream_id,
-    };
+    });
     stream_data.add_sub_for_tests(sub);
 }
 
@@ -114,15 +116,15 @@ function new_stream_id() {
 }
 
 const foo_stream_id = new_stream_id();
-const foo_sub = {
+const foo_sub = make_stream({
     name: "Foo",
     stream_id: foo_stream_id,
-};
+});
 
-const general_sub = {
+const general_sub = make_stream({
     name: "general",
     stream_id: new_stream_id(),
-};
+});
 stream_data.add_sub_for_tests(general_sub);
 
 const invalid_sub_id = new_stream_id();
@@ -945,9 +947,12 @@ test("new_style_terms", () => {
     assert.ok(filter.can_bucket_by("channel"));
 });
 
-test("public_terms", ({override, override_rewire}) => {
+test("public_terms", ({override}) => {
     stream_data.clear_subscriptions();
     const some_channel_id = new_stream_id();
+    const default_channel_id = new_stream_id();
+    make_sub("default", default_channel_id);
+
     let terms = [
         {operator: "channel", operand: some_channel_id.toString()},
         {operator: "in", operand: "all"},
@@ -960,17 +965,10 @@ test("public_terms", ({override, override_rewire}) => {
         {operator: "topic", operand: "bar"},
     ];
     override(page_params, "narrow_stream", undefined);
-    override_rewire(stream_data, "get_sub_by_name", (name) => {
-        assert.equal(name, "default");
-        return {
-            name,
-            some_channel_id,
-        };
-    });
     assert_same_terms(filter.public_terms(), expected_terms);
     assert.ok(filter.can_bucket_by("channel"));
 
-    terms = [{operator: "channel", operand: some_channel_id.toString()}];
+    terms = [{operator: "channel", operand: default_channel_id.toString()}];
     filter = new Filter(terms);
     override(page_params, "narrow_stream", "default");
     assert_same_terms(filter.public_terms(), []);
@@ -1120,6 +1118,28 @@ test("predicate_basics", ({override}) => {
     // 9999999 doesn't exist, testing no match
     assert.ok(!predicate({type: stream_message, stream_id: 9999999}));
     assert.ok(!predicate({type: direct_message}));
+
+    // Three or more terms: channel + topic + is:starred.
+    predicate = get_predicate([
+        ["channel", foo_stream_id.toString()],
+        ["topic", "Bar"],
+        ["is", "starred"],
+    ]);
+    assert.ok(
+        predicate({type: stream_message, stream_id: foo_stream_id, topic: "bar", starred: true}),
+    );
+    assert.ok(
+        !predicate({type: stream_message, stream_id: foo_stream_id, topic: "bar", starred: false}),
+    );
+    assert.ok(
+        !predicate({
+            type: stream_message,
+            stream_id: foo_stream_id,
+            topic: "whatever",
+            starred: true,
+        }),
+    );
+    assert.ok(!predicate({type: direct_message, starred: true}));
 
     // For old channels that we are no longer subscribed to, we may not have
     // a subscription, but these should still match by channel name.
@@ -1311,6 +1331,14 @@ test("predicate_basics", ({override}) => {
         predicate({
             type: direct_message,
             display_recipient: [{id: joe.user_id}, {id: steve.user_id}],
+        }),
+    );
+
+    // A 1:1 DM message should not match a group DM predicate.
+    assert.ok(
+        !predicate({
+            type: direct_message,
+            display_recipient: [{id: joe.user_id}],
         }),
     );
 

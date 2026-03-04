@@ -26,8 +26,7 @@ Each bot has a **name**, **profile picture**, **email**, **bot type** and **API 
 
 * The **name** and **profile picture** play the same role they do for human users. They
   are the most visible attributes of a bot.
-* The **email** is not used for anything, and will likely be removed in a
-  future version of Zulip.
+* The **email** is used for [HTTP Basic authentication](/api/http-headers).
 * The **bot type** determines what the bot can and can't do (see below).
 * The **API key** is how the bot identifies itself to Zulip. Anyone with the
   bot's API key can impersonate the bot.

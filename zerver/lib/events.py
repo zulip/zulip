@@ -4,6 +4,7 @@ import copy
 import logging
 import time
 from collections.abc import Callable, Collection, Iterable, Sequence
+from dataclasses import asdict
 from typing import Any, Literal
 
 from django.conf import settings
@@ -29,6 +30,7 @@ from zerver.lib.channel_folders import (
 )
 from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
+from zerver.lib.devices import get_devices
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import get_default_external_accounts
 from zerver.lib.i18n import get_available_language_codes
@@ -54,7 +56,6 @@ from zerver.lib.narrow_predicate import check_narrow_for_events
 from zerver.lib.navigation_views import get_navigation_views_for_user
 from zerver.lib.onboarding_steps import get_next_onboarding_steps
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
-from zerver.lib.push_notifications import get_push_devices
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
 from zerver.lib.scheduled_messages import (
@@ -642,6 +643,8 @@ def fetch_initial_state_data(
             realm.topics_policy == RealmTopicsPolicyEnum.disable_empty_topic.value
         )
 
+        state["realm_uuid"] = str(realm.uuid)
+
     if want("realm_user_settings_defaults"):
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         state["realm_user_settings_defaults"] = {}
@@ -836,9 +839,13 @@ def fetch_initial_state_data(
 
     if want("channel_folders"):
         if user_profile is None:
-            state["channel_folders"] = get_channel_folders_for_spectators(realm)
+            state["channel_folders"] = [
+                asdict(folder) for folder in get_channel_folders_for_spectators(realm)
+            ]
         else:
-            state["channel_folders"] = get_channel_folders_in_realm(user_profile.realm, True)
+            state["channel_folders"] = [
+                asdict(folder) for folder in get_channel_folders_in_realm(user_profile.realm, True)
+            ]
 
     if want("update_message_flags") and want("message"):
         # Keeping unread_msgs updated requires both message flag updates and
@@ -946,14 +953,8 @@ def fetch_initial_state_data(
         # See Giphy comment above; Tenor API keys work similarly.
         state["tenor_api_key"] = settings.TENOR_API_KEY or ""
 
-    if want("push_device"):
-        state["push_devices"] = {} if user_profile is None else get_push_devices(user_profile)
-
-    if user_profile is None:
-        # To ensure we have the correct user state set.
-        assert state["is_admin"] is False
-        assert state["is_owner"] is False
-        assert state["is_guest"] is True
+    if want("device"):
+        state["devices"] = {} if user_profile is None else get_devices(user_profile)
 
     return state
 
@@ -1364,11 +1365,7 @@ def apply_event(
         elif event["op"] == "update":
             for bot in state["realm_bots"]:
                 if bot["user_id"] == event["bot"]["user_id"]:
-                    if "owner_id" in event["bot"]:
-                        bot_owner_id = event["bot"]["owner_id"]
-                        bot["owner_id"] = bot_owner_id
-                    else:
-                        bot.update(event["bot"])
+                    bot.update(event["bot"])
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "stream":
@@ -1530,6 +1527,13 @@ def apply_event(
             for key, value in event["data"].items():
                 if key == "max_file_upload_size_mib":
                     state["max_file_upload_size_mib"] = value
+                    continue
+
+                if key == "rendered_description":
+                    # realm_rendered_description field is not included in
+                    # the state data returned by fetch_initial_state_data,
+                    # and is added separately to the page_params data
+                    # returned to clients in build_page_params_for_home_load.
                     continue
 
                 state["realm_" + key] = value
@@ -2004,9 +2008,36 @@ def apply_event(
     elif event["type"] == "restart":
         # The Tornado process restarted.  This has no effect; we ignore it.
         pass
-    elif event["type"] == "push_device":
-        state["push_devices"][str(event["push_account_id"])]["status"] = event["status"]
-        state["push_devices"][str(event["push_account_id"])]["error_code"] = event.get("error_code")
+    elif event["type"] == "device":
+        if event["op"] == "add":
+            state["devices"][str(event["device_id"])] = {
+                "push_key_id": None,
+                "push_token_id": None,
+                "pending_push_token_id": None,
+                "push_token_last_updated_timestamp": None,
+                "push_registration_error_code": None,
+            }
+        elif event["op"] == "remove":
+            del state["devices"][str(event["device_id"])]
+        elif event["op"] == "update":
+            if "push_key_id" in event:
+                state["devices"][str(event["device_id"])]["push_key_id"] = event["push_key_id"]
+            if "push_token_id" in event:
+                state["devices"][str(event["device_id"])]["push_token_id"] = event["push_token_id"]
+            if "pending_push_token_id" in event:
+                state["devices"][str(event["device_id"])]["pending_push_token_id"] = event[
+                    "pending_push_token_id"
+                ]
+            if "push_token_last_updated_timestamp" in event:
+                state["devices"][str(event["device_id"])]["push_token_last_updated_timestamp"] = (
+                    event["push_token_last_updated_timestamp"]
+                )
+            if "push_registration_error_code" in event:
+                state["devices"][str(event["device_id"])]["push_registration_error_code"] = event[
+                    "push_registration_error_code"
+                ]
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     else:
         raise AssertionError("Unexpected event type {}".format(event["type"]))
 

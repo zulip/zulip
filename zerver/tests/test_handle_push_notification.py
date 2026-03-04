@@ -11,6 +11,7 @@ from typing_extensions import override
 
 from analytics.models import RealmCount
 from zerver.actions.message_delete import do_delete_messages
+from zerver.actions.message_edit import check_update_message
 from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -475,6 +476,51 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                 ],
             )
 
+    def test_message_moved_to_inaccessible_stream(self) -> None:
+        """Simulates the race where a message is moved to a private stream
+        the user doesn't have access to before handling push notifications."""
+        user_profile = self.example_user("hamlet")
+        realm = user_profile.realm
+        admin = self.example_user("desdemona")
+
+        # Send a message in a public stream where hamlet is subscribed.
+        stream = get_stream("Denmark", realm)
+        self.subscribe(user_profile, stream.name)
+        self.subscribe(admin, stream.name)
+        message_id = self.send_stream_message(admin, stream.name, topic_name="test topic")
+        missed_message = {
+            "message_id": message_id,
+            "trigger": NotificationTriggers.STREAM_PUSH,
+        }
+
+        # Move the message to a private stream hamlet is not subscribed to.
+        private_stream = self.make_stream("private stream", invite_only=True)
+        self.subscribe(admin, private_stream.name)
+        check_update_message(
+            user_profile=admin,
+            message_id=message_id,
+            stream_id=private_stream.id,
+            propagate_mode="change_all",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+        )
+
+        # This mock.patch() should be assertNoLogs once that feature
+        # is added to Python.
+        with (
+            mock.patch("zerver.lib.push_notifications.uses_notification_bouncer") as mock_check,
+            mock.patch("logging.info") as mock_logging_info,
+            mock.patch(
+                "zerver.lib.push_notifications.push_notifications_configured", return_value=True
+            ) as mock_push_notifications,
+        ):
+            handle_push_notification(user_profile.id, missed_message)
+            mock_push_notifications.assert_called_once()
+            # Check we didn't proceed through and didn't log anything.
+            mock_check.assert_not_called()
+            mock_logging_info.assert_not_called()
+
     def test_send_notifications_to_bouncer(self) -> None:
         self.setup_apns_tokens()
         self.setup_fcm_tokens()
@@ -612,7 +658,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         # * 1 : `get_user_profile_by_id`
         # * 2 : `access_message_and_usermessage` (Fetch Message + UserMessage)
         # * 1 : update fetched user_message flag
-        # * 3 : fetch PushDeviceToken, update RealmCount, fetch PushDevice
+        # * 3 : fetch PushDeviceToken, update RealmCount, fetch Device
         message = self.get_message(
             Recipient.PERSONAL,
             type_id=self.personal_recipient_user.id,

@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from datetime import timedelta
+from datetime import datetime, timedelta
 from enum import Enum
 
 from django.conf import settings
@@ -11,7 +11,7 @@ from confirmation.models import Confirmation, create_confirmation_link
 from confirmation.settings import STATUS_REVOKED, STATUS_USED
 from zerver.actions.message_send import send_user_profile_update_notification
 from zerver.actions.presence import do_update_user_presence
-from zerver.lib.avatar import avatar_url
+from zerver.lib.avatar import avatar_url, generate_and_upload_jdenticon_avatar
 from zerver.lib.cache import (
     bulk_flush_users,
     cache_delete,
@@ -46,7 +46,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.users import bot_owner_user_ids, get_user_profile_by_id
+from zerver.models.users import get_user_profile_by_id
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -248,12 +248,6 @@ def do_change_full_name(
         dict(type="realm_user", op="update", person=payload),
         get_user_ids_who_can_access_user(user_profile),
     )
-    if user_profile.is_bot:
-        send_event_on_commit(
-            user_profile.realm,
-            dict(type="realm_bot", op="update", bot=payload),
-            bot_owner_user_ids(user_profile),
-        )
 
     if notify:
         changes: list[UserProfileChangeDict] = [
@@ -342,20 +336,6 @@ def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -
         event_time=event_time,
     )
 
-    if user_profile.is_bot:
-        send_event_on_commit(
-            user_profile.realm,
-            dict(
-                type="realm_bot",
-                op="update",
-                bot=dict(
-                    user_id=user_profile.id,
-                    api_key=new_api_key,
-                ),
-            ),
-            bot_owner_user_ids(user_profile),
-        )
-
     event = {"type": "clear_push_device_tokens", "user_profile_id": user_profile.id}
     queue_event_on_commit("deferred_work", event)
 
@@ -369,21 +349,6 @@ def bulk_regenerate_api_keys(user_profile_ids: Iterable[int]) -> None:
 
 
 def notify_avatar_url_change(user_profile: UserProfile) -> None:
-    if user_profile.is_bot:
-        bot_event = dict(
-            type="realm_bot",
-            op="update",
-            bot=dict(
-                user_id=user_profile.id,
-                avatar_url=avatar_url(user_profile),
-            ),
-        )
-        send_event_on_commit(
-            user_profile.realm,
-            bot_event,
-            bot_owner_user_ids(user_profile),
-        )
-
     payload = dict(
         avatar_source=user_profile.avatar_source,
         avatar_url=avatar_url(user_profile),
@@ -429,11 +394,26 @@ def do_change_avatar_fields(
 
 def do_scrub_avatar_images(user: UserProfile, *, acting_user: UserProfile | None) -> None:
     old_version = user.avatar_version
+    # Note: while scrubbing, no need to generate and upload
+    # avatar when default_avatar_source is jdenticon.
     do_change_avatar_fields(
-        user, UserProfile.AVATAR_FROM_GRAVATAR, skip_notify=True, acting_user=acting_user
+        user, user.realm.default_avatar_source, skip_notify=True, acting_user=acting_user
     )
     for version in range(1, old_version + 1):
         delete_avatar_image(user, version)
+
+
+def set_avatar_to_default(user_profile: UserProfile, *, acting_user: UserProfile | None) -> None:
+    default_avatar_source = user_profile.realm.default_avatar_source
+
+    if user_profile.avatar_source == default_avatar_source:  # nocoverage
+        return
+
+    if default_avatar_source == UserProfile.AVATAR_FROM_JDENTICON:
+        generate_and_upload_jdenticon_avatar(
+            user_profile, realm_uuid=str(user_profile.realm.uuid), future=True
+        )
+    do_change_avatar_fields(user_profile, default_avatar_source, acting_user=acting_user)
 
 
 def update_scheduled_email_notifications_time(
@@ -710,3 +690,30 @@ def bulk_change_user_setting(
                 force_send_update=True,
             )
         )
+
+
+@transaction.atomic(durable=True)
+def do_change_user_date_joined(user_profile: UserProfile, date_joined: datetime) -> None:
+    old_date_joined = user_profile.date_joined
+    user_profile.date_joined = date_joined
+    user_profile.save(update_fields=["date_joined"])
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        acting_user=user_profile,
+        modified_user=user_profile,
+        event_type=AuditLogEventType.USER_DATE_JOINED_CHANGED,
+        event_time=event_time,
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_date_joined.isoformat(),
+            RealmAuditLog.NEW_VALUE: date_joined.isoformat(),
+        },
+    )
+
+    payload = dict(user_id=user_profile.id, date_joined=date_joined.isoformat(timespec="minutes"))
+    send_event_on_commit(
+        user_profile.realm,
+        dict(type="realm_user", op="update", person=payload),
+        get_user_ids_who_can_access_user(user_profile),
+    )

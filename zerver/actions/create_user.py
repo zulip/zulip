@@ -26,7 +26,7 @@ from zerver.actions.users import (
     get_service_dicts_for_bot,
     send_update_events_for_anonymous_group_settings,
 )
-from zerver.lib.avatar import avatar_url
+from zerver.lib.avatar import generate_and_upload_jdenticon_avatar
 from zerver.lib.create_user import create_user
 from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.email_notifications import enqueue_welcome_emails, send_account_registered_email
@@ -482,24 +482,12 @@ def created_bot_event(user_profile: UserProfile) -> dict[str, Any]:
     default_events_register_stream_name = stream_name(user_profile.default_events_register_stream)
 
     bot = dict(
-        email=user_profile.email,
         user_id=user_profile.id,
-        full_name=user_profile.full_name,
-        bot_type=user_profile.bot_type,
-        is_active=user_profile.is_active,
-        api_key=user_profile.api_key,
         default_sending_stream=default_sending_stream_name,
         default_events_register_stream=default_events_register_stream_name,
         default_all_public_streams=user_profile.default_all_public_streams,
-        avatar_url=avatar_url(user_profile),
         services=get_service_dicts_for_bot(user_profile.id),
     )
-
-    # Set the owner key only when the bot has an owner.
-    # The default bots don't have an owner. So don't
-    # set the owner key while reactivating them.
-    if user_profile.bot_owner_id is not None:
-        bot["owner_id"] = user_profile.bot_owner_id
 
     return dict(type="realm_bot", op="add", bot=bot)
 
@@ -520,7 +508,7 @@ def do_create_user(
     bot_owner: UserProfile | None = None,
     tos_version: str | None = None,
     timezone: str = "",
-    avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
+    avatar_source: str | None = None,
     default_language: str | None = None,
     default_sending_stream: Stream | None = None,
     default_events_register_stream: Stream | None = None,
@@ -559,6 +547,9 @@ def do_create_user(
         enable_marketing_emails=enable_marketing_emails,
         email_address_visibility=email_address_visibility,
     )
+
+    if user_profile.avatar_source == UserProfile.AVATAR_FROM_JDENTICON:
+        generate_and_upload_jdenticon_avatar(user_profile, str(realm.uuid), future=False)
 
     event_time = user_profile.date_joined
     if not acting_user:
@@ -779,22 +770,11 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
             list(user_profile.realm.get_human_admin_users().values_list("id", flat=True)),
         )
 
-    if user_profile.is_bot:
-        event = dict(
-            type="realm_bot",
-            op="update",
-            bot=dict(
-                user_id=user_profile.id,
-                is_active=True,
-            ),
-        )
-        send_event_on_commit(user_profile.realm, event, bot_owner_user_ids(user_profile))
+    if user_profile.is_bot and bot_owner_changed:
+        from zerver.actions.bots import send_bot_owner_update_events
 
-        if bot_owner_changed:
-            from zerver.actions.bots import send_bot_owner_update_events
-
-            assert acting_user is not None
-            send_bot_owner_update_events(user_profile, acting_user, previous_owner)
+        assert acting_user is not None
+        send_bot_owner_update_events(user_profile, acting_user, previous_owner)
 
     subscribed_recipient_ids = Subscription.objects.filter(
         user_profile_id=user_profile.id, active=True, recipient__type=Recipient.STREAM

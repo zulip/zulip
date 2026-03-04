@@ -3,6 +3,11 @@
 const assert = require("node:assert/strict");
 
 const {mock_banners} = require("./lib/compose_banner.cjs");
+const {
+    quote_message_template,
+    forward_channel_message_template,
+    forward_direct_message_template,
+} = require("./lib/compose_helpers.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
@@ -14,6 +19,14 @@ const $ = require("./lib/zjquery.cjs");
 
 const {set_current_user} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
+const {initialize_user_settings} = zrequire("user_settings");
+const {will_produce_broken_stream_topic_link} = zrequire("topic_link_util");
+
+initialize_user_settings({
+    user_settings: {
+        default_language: "en",
+    },
+});
 
 const nobody = make_user_group({
     name: "role:nobody",
@@ -31,9 +44,7 @@ const everyone = make_user_group({
 });
 user_groups.initialize({realm_user_groups: [nobody, everyone]});
 
-set_global("document", {
-    to_$: () => $("document-stub"),
-});
+set_global("document", {});
 
 set_global("requestAnimationFrame", (func) => func());
 
@@ -55,7 +66,6 @@ const compose_ui = mock_esm("../src/compose_ui", {
     set_focus: noop,
     compute_placeholder_text: noop,
 });
-const hash_util = mock_esm("../src/hash_util");
 const narrow_state = mock_esm("../src/narrow_state", {
     set_compose_defaults: noop,
     filter: noop,
@@ -89,6 +99,12 @@ mock_esm("../src/popovers", {
 mock_esm("../src/saved_snippets_ui", {
     setup_saved_snippets_dropdown_widget_if_needed: noop,
 });
+mock_esm("../src/dropdown_widget", {
+    DropdownWidget: function DropdownWidget() {
+        this.current_value = undefined;
+        this.setup = noop;
+    },
+});
 
 const people = zrequire("people");
 
@@ -100,6 +116,7 @@ const message_lists = zrequire("message_lists");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("compose_recipient");
 const {set_realm} = zrequire("state_data");
+const sub_store = zrequire("sub_store");
 
 const realm = make_realm({
     realm_topics_policy: "disable_empty_topic",
@@ -139,6 +156,7 @@ function test(label, f) {
 
         people.init();
         compose_state.set_message_type(undefined);
+        compose_recipient.initialize();
         f(helpers);
     });
 }
@@ -471,6 +489,27 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     };
     people.add_active_user(steve);
 
+    const alice = {
+        user_id: 101,
+        email: "alice@example.com",
+        full_name: "Alice",
+    };
+    people.add_active_user(alice);
+
+    const bob = {
+        user_id: 102,
+        email: "bob@example.com",
+        full_name: "Bob",
+    };
+    people.add_active_user(bob);
+
+    const clara = {
+        user_id: 103,
+        email: "clara@example.com",
+        full_name: "Clara",
+    };
+    people.add_active_user(clara);
+
     override_rewire(compose_actions, "complete_starting_tasks", noop);
     override_rewire(compose_actions, "clear_textarea", noop);
     override_private_message_recipient_ids({override});
@@ -486,11 +525,15 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         replaced = true;
     });
 
-    const denmark_stream = make_stream({
+    const channel_id = 20;
+    const channel_object = {
         subscribed: false,
         name: "Denmark",
-        stream_id: 20,
-    });
+        stream_id: channel_id,
+    };
+    const denmark_stream = make_stream(channel_object);
+
+    sub_store.add_hydrated_sub(channel_id, channel_object);
 
     selected_message = {
         type: "stream",
@@ -498,10 +541,8 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         topic: "python",
         sender_full_name: "Steve Stephenson",
         sender_id: 90,
+        id: 10,
     };
-    hash_util.by_conversation_and_time_url = () =>
-        "https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado";
-
     let success_function;
     override(channel, "get", (opts) => {
         success_function = opts.success;
@@ -536,9 +577,12 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     $("textarea#compose-textarea").attr("id", "compose-textarea");
 
     replaced = false;
-    expected_replacement =
-        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n```quote\nTesting.\n```";
-
+    expected_replacement = quote_message_template({
+        channel_object,
+        selected_message,
+        fence: "```",
+        content: "Testing.",
+    });
     quote_message(opts);
 
     run_success_callback();
@@ -552,6 +596,13 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     replaced = false;
 
     override(compose_ui, "insert_and_scroll_into_view", noop);
+
+    expected_replacement = forward_channel_message_template({
+        channel_object,
+        selected_message,
+        fence: "```",
+        content: "Testing.",
+    });
 
     quote_message(opts);
 
@@ -570,9 +621,17 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         sender_full_name: "Steve Stephenson",
         sender_id: 90,
         raw_content: "Testing.",
+        id: 10,
     };
 
     replaced = false;
+    expected_replacement = quote_message_template({
+        channel_object,
+        selected_message,
+        fence: "```",
+        content: "Testing.",
+    });
+
     disallow(channel, "get");
     quote_message(opts);
     assert.ok(replaced);
@@ -583,6 +642,12 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         forward_message: true,
     };
     replaced = false;
+    expected_replacement = forward_channel_message_template({
+        channel_object,
+        selected_message,
+        fence: "```",
+        content: "Testing.",
+    });
     quote_message(opts);
     assert.ok(replaced);
 
@@ -598,11 +663,17 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         sender_full_name: "Steve Stephenson",
         sender_id: 90,
         raw_content: "```\nmultiline code block\nshoudln't mess with quotes\n```",
+        id: 10,
     };
 
     replaced = false;
-    expected_replacement =
-        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n````quote\n```\nmultiline code block\nshoudln't mess with quotes\n```\n````";
+    expected_replacement = quote_message_template({
+        channel_object,
+        selected_message,
+        fence: "````",
+        content: selected_message.raw_content,
+    });
+
     quote_message(opts);
     assert.ok(replaced);
 
@@ -611,6 +682,253 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         forward_message: true,
     };
     replaced = false;
+    expected_replacement = forward_channel_message_template({
+        channel_object,
+        selected_message,
+        fence: "````",
+        content: selected_message.raw_content,
+    });
+    quote_message(opts);
+    assert.ok(replaced);
+
+    // Group direct message to 3 other users
+    let group_dm_recipients = [steve, alice, bob, clara];
+    selected_message = {
+        type: "private",
+        sender_full_name: steve.full_name,
+        sender_id: 90,
+        display_recipient: group_dm_recipients.map((user) => ({
+            email: user.email,
+            full_name: user.full_name,
+            id: user.user_id,
+        })),
+        id: 101,
+        raw_content: "Hi yall",
+    };
+
+    expected_replacement = forward_direct_message_template({
+        direct_message: selected_message,
+        dm_recipient_string: `@_**${alice.full_name}**, @_**${bob.full_name}**, and @_**${clara.full_name}**`,
+        fence: "```",
+        content: selected_message.raw_content,
+    });
+
+    opts = {
+        reply_type: "personal",
+        message_id: selected_message.id,
+        forward_message: true,
+    };
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
+    quote_message(opts);
+    assert.ok(replaced);
+
+    // Group direct message to only 2 other users
+    group_dm_recipients = [steve, alice, bob];
+    selected_message = {
+        type: "private",
+        sender_full_name: steve.full_name,
+        sender_id: 90,
+        display_recipient: group_dm_recipients.map((user) => ({
+            email: user.email,
+            full_name: user.full_name,
+            id: user.user_id,
+        })),
+        id: 102,
+        raw_content: "Hi you two",
+    };
+
+    expected_replacement = forward_direct_message_template({
+        direct_message: selected_message,
+        dm_recipient_string: `@_**${alice.full_name}** and @_**${bob.full_name}**`,
+        fence: "```",
+        content: selected_message.raw_content,
+    });
+
+    opts = {
+        reply_type: "personal",
+        message_id: selected_message.id,
+        forward_message: true,
+    };
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
+    quote_message(opts);
+    assert.ok(replaced);
+
+    // Other's group direct message
+    group_dm_recipients = [steve, alice, bob];
+    selected_message = {
+        type: "private",
+        sender_full_name: bob.full_name,
+        sender_id: bob.user_id,
+        display_recipient: group_dm_recipients.map((user) => ({
+            email: user.email,
+            full_name: user.full_name,
+            id: user.user_id,
+        })),
+        id: 102,
+        raw_content: "Oh hi",
+    };
+
+    expected_replacement = forward_direct_message_template({
+        direct_message: selected_message,
+        dm_recipient_string: `@_**${alice.full_name}** and @_**${steve.full_name}**`,
+        fence: "```",
+        content: selected_message.raw_content,
+    });
+
+    opts = {
+        reply_type: "personal",
+        message_id: selected_message.id,
+        forward_message: true,
+    };
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
+    quote_message(opts);
+    assert.ok(replaced);
+
+    // Direct message to other user
+    let dm_recipients = [steve, alice];
+    selected_message = {
+        type: "private",
+        sender_full_name: steve.full_name,
+        sender_id: 90,
+        display_recipient: dm_recipients.map((user) => ({
+            email: user.email,
+            full_name: user.full_name,
+            id: user.user_id,
+        })),
+        id: 102,
+        raw_content: "Hi Alice",
+    };
+
+    expected_replacement = forward_direct_message_template({
+        direct_message: selected_message,
+        dm_recipient_string: `@_**${alice.full_name}**`,
+        fence: "```",
+        content: selected_message.raw_content,
+    });
+
+    opts = {
+        reply_type: "personal",
+        message_id: selected_message.id,
+        forward_message: true,
+    };
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
+    quote_message(opts);
+    assert.ok(replaced);
+
+    // Other user's direct message
+    dm_recipients = [steve, alice];
+    selected_message = {
+        type: "private",
+        sender_full_name: alice.full_name,
+        sender_id: alice.user_id,
+        display_recipient: dm_recipients.map((user) => ({
+            email: user.email,
+            full_name: user.full_name,
+            id: user.user_id,
+        })),
+        id: 103,
+        raw_content: "Hi Steve",
+    };
+
+    expected_replacement = forward_direct_message_template({
+        direct_message: selected_message,
+        dm_recipient_string: `@_**${steve.full_name}**`,
+        fence: "```",
+        content: selected_message.raw_content,
+    });
+
+    opts = {
+        reply_type: "personal",
+        message_id: selected_message.id,
+        forward_message: true,
+    };
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
+    quote_message(opts);
+    assert.ok(replaced);
+
+    // One's own direct message
+    dm_recipients = [steve];
+    selected_message = {
+        type: "private",
+        sender_full_name: alice.full_name,
+        sender_id: steve.user_id,
+        display_recipient: dm_recipients.map((user) => ({
+            email: user.email,
+            full_name: user.full_name,
+            id: user.user_id,
+        })),
+        id: 104,
+        raw_content: "It's just me",
+    };
+
+    expected_replacement = forward_direct_message_template({
+        direct_message: selected_message,
+        dm_recipient_string: `@_**${steve.full_name}**`,
+        fence: "```",
+        content: selected_message.raw_content,
+    });
+
+    opts = {
+        reply_type: "personal",
+        message_id: selected_message.id,
+        forward_message: true,
+    };
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
+    quote_message(opts);
+    assert.ok(replaced);
+
+    const topic_with_invalid_characters = "[zulip/zulip>topic]";
+    assert.ok(will_produce_broken_stream_topic_link(topic_with_invalid_characters));
+
+    selected_message = {
+        type: "stream",
+        stream_id: denmark_stream.stream_id,
+        topic: topic_with_invalid_characters,
+        sender_full_name: steve.full_name,
+        sender_id: steve.user_id,
+        raw_content: "test invalid topic",
+        id: 11,
+    };
+    opts = {
+        reply_type: "personal",
+        forward_message: true,
+        message_id: selected_message.id,
+    };
+
+    const html_entity_encoded_topic_name = "&#91;zulip/zulip&gt;topic&#93;";
+    const url_encoded_topic_name = ".5Bzulip.2Fzulip.3Etopic.5D";
+
+    const near_url = `http://zulip.zulipdev.com/#narrow/channel/${selected_message.stream_id}-${channel_object.name}/topic/${url_encoded_topic_name}/near/${selected_message.id}`;
+    const with_url = `#narrow/channel/${selected_message.stream_id}-${channel_object.name}/topic/${url_encoded_topic_name}/with/${selected_message.id}`;
+    const topic_link_syntax = `[#${channel_object.name} > ${html_entity_encoded_topic_name}](${with_url})`;
+
+    const fence = "```";
+    expected_replacement = `translated: @_**${selected_message.sender_full_name}|${selected_message.sender_id}** [said](${near_url}) in ${topic_link_syntax}:
+${fence}quote
+${selected_message.raw_content}
+${fence}`;
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
     quote_message(opts);
     assert.ok(replaced);
 
@@ -621,13 +939,15 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     opts = {
         trigger: "hotkey",
     };
+    const selected_string = "Hello world";
     override_rewire(compose_reply, "selection_within_message_id", () => 50);
-    override_rewire(compose_reply, "get_message_selection", () => "Hello world");
+    override_rewire(compose_reply, "get_message_selection", () => selected_string);
 
     const stub = make_stub();
     override_rewire(compose_reply, "respond_to_message", stub.f);
 
     const highlighted_message = {
+        id: 50,
         type: "stream",
         stream_id: denmark_stream.stream_id,
         topic: "test",
@@ -635,8 +955,12 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         sender_id: 90,
         raw_content: "[unselected text] Hello world [some extra text that is also not selected]",
     };
-    expected_replacement =
-        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n```quote\nHello world\n```";
+    expected_replacement = quote_message_template({
+        channel_object,
+        selected_message: highlighted_message,
+        fence: "```",
+        content: "Hello world",
+    });
     override(message_lists.current, "get", (id) => (id === 50 ? highlighted_message : undefined));
     quote_message(opts);
     const {opts: opts_when_message_has_selection} = stub.get_args("opts");
@@ -651,8 +975,13 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     override_rewire(compose_reply, "selection_within_message_id", () => undefined);
     override(message_lists.current, "selected_id", () => 100);
     override(message_lists.current, "get", (id) => (id === 100 ? message_with_pointer : undefined));
-    expected_replacement =
-        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n```quote\n[unselected text] Hello world [some extra text that is also not selected]\n```";
+
+    expected_replacement = quote_message_template({
+        channel_object,
+        selected_message: message_with_pointer,
+        fence: "```",
+        content: message_with_pointer.raw_content,
+    });
     quote_message(opts);
     const {opts: opts_when_message_has_no_selection} = stub.get_args("opts");
     assert.equal(opts_when_message_has_no_selection.trigger, "hotkey");

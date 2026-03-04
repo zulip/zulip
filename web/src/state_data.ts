@@ -222,6 +222,7 @@ export const user_schema = z.intersection(
         avatar_url: z.nullish(z.string()),
         avatar_version: z.number(),
         profile_data: z.optional(z.record(z.coerce.number<string>(), profile_datum_schema)),
+        is_imported_stub: z.boolean(),
         // used for fake user objects.
         is_missing_server_data: z.optional(z.boolean()),
         // used for inaccessible user objects.
@@ -408,6 +409,8 @@ export const realm_linkifier_schema = z.object({
     pattern: z.string(),
     url_template: z.string(),
     id: z.number(),
+    example_input: z.optional(z.nullable(z.string())),
+    reverse_template: z.optional(z.nullable(z.string())),
 });
 
 export const realm_report_message_types = z.object({
@@ -455,6 +458,8 @@ export const realm_schema = z.object({
         zoom: z.optional(z.object({name: z.string(), id: z.number()})),
         zoom_server_to_server: z.optional(z.object({name: z.string(), id: z.number()})),
         big_blue_button: z.optional(z.object({name: z.string(), id: z.number()})),
+        constructor_groups: z.optional(z.object({name: z.string(), id: z.number()})),
+        nextcloud_talk: z.optional(z.object({name: z.string(), id: z.number()})),
     }),
     realm_avatar_changes_disabled: z.boolean(),
     realm_bot_domain: z.string(),
@@ -542,6 +547,7 @@ export const realm_schema = z.object({
             ),
         }),
     ),
+    realm_media_preview_size: z.number(),
     realm_inline_image_preview: z.boolean(),
     realm_inline_url_embed_preview: z.boolean(),
     realm_invite_required: z.boolean(),

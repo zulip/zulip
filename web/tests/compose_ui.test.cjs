@@ -2,7 +2,13 @@
 
 const assert = require("node:assert/strict");
 
+const {
+    forward_channel_message_template,
+    quote_message_template,
+} = require("./lib/compose_helpers.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -19,10 +25,10 @@ mock_esm("../src/message_lists", {
 });
 
 const compose_ui = zrequire("compose_ui");
+const linkifiers = zrequire("linkifiers");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 const user_status = zrequire("user_status");
-const hash_util = mock_esm("../src/hash_util");
 const channel = mock_esm("../src/channel");
 const compose_reply = zrequire("compose_reply");
 const compose_actions = zrequire("compose_actions");
@@ -30,21 +36,22 @@ const message_lists = zrequire("message_lists");
 const text_field_edit = mock_esm("text-field-edit");
 const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
+const sub_store = zrequire("sub_store");
 
 const realm = make_realm({realm_topics_policy: "allow_empty_topic"});
 set_realm(realm);
 initialize_user_settings({user_settings: {}});
 
-const alice = {
+const alice = make_user({
     email: "alice@zulip.com",
     user_id: 101,
     full_name: "Alice",
-};
-const bob = {
+});
+const bob = make_user({
     email: "bob@zulip.com",
     user_id: 102,
     full_name: "Bob",
-};
+});
 
 people.add_active_user(alice);
 people.add_active_user(bob);
@@ -200,11 +207,11 @@ run_test("compute_placeholder_text", ({override}) => {
         $t({defaultMessage: "Compose your message here"}),
     );
 
-    const stream_all = {
+    const stream_all = make_stream({
         subscribed: true,
         name: "all",
         stream_id: 2,
-    };
+    });
     stream_data.add_sub_for_tests(stream_all);
     opts.stream_id = stream_all.stream_id;
     assert.equal(compose_ui.compute_placeholder_text(opts), $t({defaultMessage: "Message #all"}));
@@ -265,26 +272,120 @@ run_test("compute_placeholder_text", ({override}) => {
     );
 });
 
+run_test("reverse_linkify_text", () => {
+    linkifiers.update_linkifier_rules([
+        {
+            id: 1,
+            pattern: "#(?P<id>\\d+)",
+            url_template: "https://tracker.example.com/issue/{id}",
+            reverse_template: "#{id}",
+        },
+    ]);
+    assert.equal(compose_ui.reverse_linkify_text("https://tracker.example.com/issue/42"), "#42");
+    assert.equal(
+        compose_ui.reverse_linkify_text(
+            "Links https://tracker.example.com/issue/42 and https://tracker.example.com/issue/43",
+        ),
+        "Links #42 and #43",
+    );
+    // Typo in rest of the URL.
+    assert.equal(compose_ui.reverse_linkify_text("https://tracker.example.com/issues/42"), null);
+    // {id} is absent is the URL.
+    assert.equal(compose_ui.reverse_linkify_text("https://tracker.example.com/issues/"), null);
+
+    // Check non HTTP schemes to make sure we don't creep in any HTTP specific
+    // code by mistake.
+    linkifiers.update_linkifier_rules([
+        {
+            id: 2,
+            pattern: "#(?P<id>\\d+)",
+            url_template: "zulip://issue/{id}",
+            reverse_template: "#{id}",
+        },
+    ]);
+    assert.equal(compose_ui.reverse_linkify_text("zulip://issue/42"), "#42");
+
+    // Use `{{` to escape `{`.
+    linkifiers.update_linkifier_rules([
+        {
+            id: 3,
+            pattern: "\\{(?P<id>\\d+)\\}",
+            url_template: "https://tracker.example.com/issue/{id}",
+            reverse_template: "{{{id}}}",
+        },
+    ]);
+    assert.equal(compose_ui.reverse_linkify_text("https://tracker.example.com/issue/42"), "{42}");
+
+    // Ignore reverse template that would not round-trip back to the URL.
+    linkifiers.update_linkifier_rules([
+        {
+            id: 4,
+            pattern: "#(?P<id>.+)",
+            url_template: "https://tracker.example.com/issue/{+id}",
+            reverse_template: "#{id}",
+        },
+    ]);
+    assert.equal(compose_ui.reverse_linkify_text("https://tracker.example.com/issue/a%2Fb"), null);
+    assert.equal(compose_ui.reverse_linkify_text("https://tracker.example.com/issue/a/b"), "#a/b");
+
+    // When reverse linkifier URL templates overlap, the first matching
+    // linkifier should determine the shortened text.
+    linkifiers.update_linkifier_rules([
+        {
+            id: 5,
+            pattern: "flutter#(?P<id>\\d+)",
+            url_template: "https://github.com/zulip/zulip-flutter/pull/{id}",
+            reverse_template: "flutter#{id}",
+        },
+        {
+            id: 6,
+            pattern: "(?P<repo>[a-zA-Z0-9_-]+)#(?P<id>\\d+)",
+            url_template: "https://github.com/zulip/{repo}/pull/{id}",
+            reverse_template: "{repo}#{id}",
+        },
+    ]);
+    assert.equal(
+        compose_ui.reverse_linkify_text("https://github.com/zulip/zulip-flutter/pull/123"),
+        "flutter#123",
+    );
+
+    linkifiers.update_linkifier_rules([
+        {
+            id: 6,
+            pattern: "(?P<repo>[a-zA-Z0-9_-]+)#(?P<id>\\d+)",
+            url_template: "https://github.com/zulip/{repo}/pull/{id}",
+            reverse_template: "{repo}#{id}",
+        },
+        {
+            id: 5,
+            pattern: "flutter#(?P<id>\\d+)",
+            url_template: "https://github.com/zulip/zulip-flutter/pull/{id}",
+            reverse_template: "flutter#{id}",
+        },
+    ]);
+    assert.equal(
+        compose_ui.reverse_linkify_text("https://github.com/zulip/zulip-flutter/pull/123"),
+        "zulip-flutter#123",
+    );
+});
+
 run_test("quote_message", ({override, override_rewire}) => {
-    const devel_stream = {
+    const devel_stream = make_stream({
         subscribed: false,
         name: "devel",
         stream_id: 20,
-    };
+    });
+
+    sub_store.add_hydrated_sub(devel_stream.stream_id, devel_stream);
 
     const selected_message = {
         type: "stream",
         stream_id: devel_stream.stream_id,
-        topic: "python",
+        topic: "Tornado",
         sender_full_name: "Steve Stephenson",
         sender_id: 90,
+        id: 100,
     };
-
-    override(
-        hash_util,
-        "by_conversation_and_time_url",
-        () => "https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado",
-    );
 
     override(message_lists.current, "get", (id) => (id === 100 ? selected_message : undefined));
 
@@ -368,10 +469,27 @@ run_test("quote_message", ({override, override_rewire}) => {
             assert.equal(old_syntax, "translated: [Quoting…]");
             assert.equal(
                 new_syntax(),
-                "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n" +
-                    "```quote\n" +
-                    `${quote_text}\n` +
-                    "```",
+                quote_message_template({
+                    channel_object: devel_stream,
+                    selected_message,
+                    fence: "```",
+                    content: quote_text,
+                }),
+            );
+        });
+    }
+    function override_with_forward_text(quote_text) {
+        override(text_field_edit, "replaceFieldText", (elt, old_syntax, new_syntax) => {
+            assert.equal(elt, "compose-textarea");
+            assert.equal(old_syntax, "translated: [Quoting…]");
+            assert.equal(
+                new_syntax(),
+                forward_channel_message_template({
+                    channel_object: devel_stream,
+                    selected_message,
+                    fence: "```",
+                    content: quote_text,
+                }),
             );
         });
     }
@@ -444,7 +562,7 @@ run_test("quote_message", ({override, override_rewire}) => {
     compose_reply.quote_message({forward_message: true});
     assert.ok(new_message);
 
-    override_with_quote_text(quote_text);
+    override_with_forward_text(quote_text);
     run_success_callback();
 
     reset_test_state();
@@ -1296,12 +1414,13 @@ run_test("get_focus_area", ({override}) => {
         "#compose_select_recipient_widget_wrapper",
     );
 
-    stream_data.add_sub_for_tests({
-        message_type: "stream",
-        name: "fun",
-        stream_id: 4,
-        topics_policy: "inherit",
-    });
+    stream_data.add_sub_for_tests(
+        make_stream({
+            name: "fun",
+            stream_id: 4,
+            topics_policy: "inherit",
+        }),
+    );
 
     override(realm, "realm_topics_policy", "disable_empty_topic");
     assert.equal(

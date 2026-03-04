@@ -3050,7 +3050,7 @@ class RegistrationTakeoverFlowTest(ZulipTestCase):
             ],
         )
 
-        # HttpError:
+        # Status code
         responses.add(
             method=responses.GET,
             url=base_url,
@@ -3061,7 +3061,7 @@ class RegistrationTakeoverFlowTest(ZulipTestCase):
                 "/api/v1/remotes/server/register/verify_challenge",
                 {"hostname": self.hostname, "access_token": access_token},
             )
-        self.assert_json_error(result, "Error response received from the host: 403")
+        self.assert_json_error(result, "Unexpected status code received from the host: 403")
         self.assertIn(
             "verify_registration_transfer:host:example.com|exception:", mock_log.output[0]
         )
@@ -3132,12 +3132,72 @@ class RegistrationTakeoverFlowTest(ZulipTestCase):
             "verify_registration_transfer:host:example.com|exception:", mock_log.output[0]
         )
 
+        # JSONDecodeError
+        responses.add(
+            method=responses.GET,
+            url=base_url,
+            status=200,
+            body="",
+        )
+        with self.assertLogs("zilencer.views", level="INFO") as mock_log:
+            result = self.client_post(
+                "/api/v1/remotes/server/register/verify_challenge",
+                {"hostname": self.hostname, "access_token": access_token},
+            )
+        self.assert_json_error(
+            result, "An error occurred while parsing the response from the host."
+        )
+        self.assertIn(
+            "verify_registration_transfer:host:example.com|exception:", mock_log.output[0]
+        )
+
+        # KeyError
+        responses.add(
+            method=responses.GET,
+            url=base_url,
+            status=200,
+            body=orjson.dumps({"other": "response"}),
+        )
+        with self.assertLogs("zilencer.views", level="INFO") as mock_log:
+            result = self.client_post(
+                "/api/v1/remotes/server/register/verify_challenge",
+                {"hostname": self.hostname, "access_token": access_token},
+            )
+        self.assert_json_error(
+            result, "An error occurred while parsing the response from the host."
+        )
+        self.assertIn(
+            "verify_registration_transfer:host:example.com|exception:", mock_log.output[0]
+        )
+
     def test_initiate_flow_for_unregistered_domain(self) -> None:
         result = self.client_post(
             "/api/v1/remotes/server/register/transfer",
             {"hostname": "unregistered.example.com"},
         )
         self.assert_json_error(result, "unregistered.example.com not yet registered")
+
+    @override_settings(
+        RATE_LIMITING=True,
+        RATE_LIMITING_RULES=settings.RATE_LIMITING_RULES
+        | {"transfer_remote_server_registration_endpoint_by_ip": [(10, 2)]},
+    )
+    def test_transfer_endpoint_rate_limiting(self) -> None:
+        for hostname in ["zulip1.example.com", "zulip2.example.com"]:
+            result = self.client_post(
+                "/api/v1/remotes/server/register/transfer",
+                {"hostname": hostname},
+            )
+            self.assert_json_error(result, f"{hostname} not yet registered")
+
+        result = self.client_post(
+            "/api/v1/remotes/server/register/transfer",
+            {"hostname": "zulip3.example.com"},
+        )
+        self.assertEqual(result.status_code, 429)
+        data = result.json()
+        self.assertEqual(data.get("result"), "error")
+        self.assertIn("API usage exceeded rate limit", data.get("msg"))
 
     def test_serve_verification_secret_endpoint(self) -> None:
         result = self.client_get(

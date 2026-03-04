@@ -163,6 +163,24 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         $("#searchbox-input-container").toggleClass("focused", false);
     });
 
+    $("#searchbox-input-container").on("keydown", (e) => {
+        if (e.key === "Enter" && $("#searchbox .navbar-search.expanded").length === 0) {
+            // Prevent propagation, and wait for the keyup to open search, because
+            // we also need to prevent propagation there to not have the event caught
+            // by the typeahead event handlers.
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
+
+    $("#searchbox-input-container").on("keyup", (e) => {
+        if (e.key === "Enter" && $("#searchbox .navbar-search.expanded").length === 0) {
+            initiate_search();
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
+
     search_pill_widget = search_pill.create_pills($pill_container);
     search_pill_widget.onPillRemove(() => {
         search_input_has_changed = true;
@@ -171,13 +189,6 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
     $search_query_box.on("change", () => {
         search_typeahead.lookup(false);
     });
-
-    // Data storage for the typeahead.
-    // TODO: This map has become very redundant now. We needed this earlier to
-    // to associate search string to its respective "description_html". This currently
-    // now just maps search string to "search_string". We should just remove this when
-    // we change Suggestion object to simple strings.
-    let search_map = new Map<string, search_suggestion.Suggestion>();
 
     const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element: $search_query_box,
@@ -197,9 +208,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
                 Filter.parse(query),
                 add_current_filter,
             );
-            // Update our global search_map hash
-            search_map = suggestions.lookup_table;
-            return suggestions.strings;
+            return suggestions;
         },
         non_tippy_parent_element: "#searchbox_form",
         items: search_suggestion.max_num_of_search_results,
@@ -207,9 +216,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         stopAdvance: true,
         requireHighlight: false,
         item_html(item: string, query: string): string {
-            const obj = search_map.get(item);
-            assert(obj !== undefined);
-            return search_pill.generate_pills_html(obj, query);
+            return search_pill.generate_pills_html(item, query);
         },
         // When the user starts typing new search operands,
         // we want to highlight the first typeahead row by default
@@ -434,6 +441,7 @@ export function rewire_exit_search(value: typeof exit_search): void {
 
 export let open_search_bar_and_close_narrow_description = (clear = false): void => {
     reset_searchbox(clear);
+    $("#search_query").attr("contenteditable", "true");
     $(".navbar-search").addClass("expanded");
     $("#message_view_header").addClass("hidden");
     popovers.hide_all();
@@ -455,6 +463,7 @@ export function close_search_bar_and_open_narrow_description(): void {
         search_pill_widget.clear(true);
     }
 
+    $("#search_query").attr("contenteditable", "false");
     $(".navbar-search").removeClass("expanded");
     $("#message_view_header").removeClass("hidden");
 

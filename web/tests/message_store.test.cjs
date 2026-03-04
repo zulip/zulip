@@ -3,10 +3,13 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 
+const stream_data = zrequire("stream_data");
 mock_esm("../src/electron_bridge", {
     electron_bridge: {},
 });
@@ -34,47 +37,49 @@ const {initialize_user_settings} = zrequire("user_settings");
 set_realm(make_realm());
 initialize_user_settings({user_settings: {}});
 
-const denmark = {
+const denmark = make_stream({
     subscribed: false,
     name: "Denmark",
     stream_id: 20,
-};
+});
 
-const devel = {
+const devel = make_stream({
     subscribed: true,
     name: "Devel",
     stream_id: 21,
-};
+});
+stream_data.add_sub_for_tests(denmark);
+stream_data.add_sub_for_tests(devel);
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 101,
     full_name: "Me Myself",
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: 102,
     full_name: "Alice",
-};
+});
 
-const bob = {
+const bob = make_user({
     email: "bob@example.com",
     user_id: 103,
     full_name: "Bob",
-};
+});
 
-const cindy = {
+const cindy = make_user({
     email: "cindy@example.com",
     user_id: 104,
     full_name: "Cindy",
-};
+});
 
-const denise = {
+const denise = make_user({
     email: "denise@example.com",
     user_id: 105,
     full_name: "Denise ",
-};
+});
 
 people.add_active_user(me);
 people.add_active_user(alice);
@@ -112,6 +117,7 @@ test("process_new_message", () => {
         id: 2067,
         reactions: [],
         avatar_url: `/avatar/${me.user_id}`,
+        submessages: [],
     };
     message = message_helper.process_new_message({
         type: "server_message",
@@ -164,6 +170,7 @@ test("process_new_message", () => {
         id: 2068,
         reactions: [],
         avatar_url: `/avatar/${denise.user_id}`,
+        submessages: [],
     };
 
     message = message_helper.process_new_message({
@@ -520,4 +527,40 @@ test("get_message_ids_in_stream", () => {
 
     assert.deepEqual(message_store.get_message_ids_in_stream(devel.stream_id), [100, 103]);
     assert.deepEqual(message_store.get_message_ids_in_stream(denmark.stream_id), [102]);
+});
+
+test("maybe_update_raw_content", () => {
+    const message1 = {
+        raw_content: undefined,
+        type: "stream",
+        stream: devel.name,
+        stream_id: devel.stream_id,
+    };
+
+    const message2 = {
+        raw_content: undefined,
+        type: "stream",
+        stream: denmark.name,
+        stream_id: denmark.stream_id,
+    };
+
+    const message3 = {
+        raw_content: "should be reset",
+        type: "stream",
+        stream: denmark.name,
+        stream_id: denmark.stream_id,
+    };
+
+    message_store.maybe_update_raw_content(message1, "hello world");
+    message_store.maybe_update_raw_content(message2, "hello world");
+    message_store.maybe_update_raw_content(message3, "hello world");
+    // It is safe to update raw_content of messages
+    // we will be receiving events for.
+    assert.equal(message1.raw_content, "hello world");
+    // It is not safe to update raw_content of messages
+    // we won't be receiving events for.
+    assert.equal(message2.raw_content, undefined);
+    // We should reset accidentally cached raw_content for messages
+    // we don't receive update events for.
+    assert.equal(message3.raw_content, undefined);
 });

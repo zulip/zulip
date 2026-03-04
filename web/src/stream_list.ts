@@ -1444,9 +1444,11 @@ export function set_event_handlers({
         if (scroll_position > pm_list_height) {
             $("#toggle-direct-messages-section-icon").addClass("rotate-icon-right");
             $("#toggle-direct-messages-section-icon").removeClass("rotate-icon-down");
+            pm_list.set_temporarily_collapsed(true);
         } else {
             $("#toggle-direct-messages-section-icon").addClass("rotate-icon-down");
             $("#toggle-direct-messages-section-icon").removeClass("rotate-icon-right");
+            pm_list.set_temporarily_collapsed(false);
         }
     }
 

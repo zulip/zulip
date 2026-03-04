@@ -81,6 +81,10 @@ export function toggle(opts: {
         if ($elem.hasClass("disabled")) {
             return false;
         }
+        if ($elem.css("display") === "none") {
+            return false;
+        }
+
         meta.$ind_tab.removeClass("selected");
 
         $elem.addClass("selected");

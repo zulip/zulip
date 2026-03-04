@@ -156,6 +156,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
             instance.setContent(ui_util.parse_html(content));
         },
         onMount(instance) {
+            popover_menus.focus_popover(instance);
             const $popper = $(instance.popper);
             popover_menus.popover_instances.stream_actions_popover = instance;
             ui_util.show_left_sidebar_menu_icon(elt);
@@ -832,6 +833,12 @@ export async function build_move_topic_to_stream_popover(
         }
 
         assert(new_topic_name !== undefined);
+
+        // Don't show this warning in case only rename.
+        if (new_topic_name.trim().toLowerCase() === args.topic_name.trim().toLowerCase()) {
+            return false;
+        }
+
         let stream_id: number;
         if (stream_widget_value === undefined) {
             // Set stream_id to current_stream_id since the user is not

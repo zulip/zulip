@@ -1,7 +1,6 @@
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import {all_messages_data} from "./all_messages_data.ts";
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
@@ -21,8 +20,10 @@ import {raw_message_schema} from "./message_store.ts";
 import * as message_util from "./message_util.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as narrow_banner from "./narrow_banner.ts";
+import * as navbar_alerts from "./navbar_alerts.ts";
 import {page_params} from "./page_params.ts";
 import * as popup_banners from "./popup_banners.ts";
+import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import {narrow_operator_schema} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
@@ -686,6 +687,12 @@ export function set_initial_pointer_and_offset({
     initial_narrow_offset = narrow_offset;
 }
 
+function post_initial_backfill_for_all_messages_done(): void {
+    initial_backfill_for_all_messages_done = true;
+    emoji_frequency.initialize_frequently_used_emojis();
+    navbar_alerts.check_and_show_muted_messages_banner();
+}
+
 export function initialize(finished_initial_fetch: () => void): void {
     const fetch_target_day_timestamp =
         Date.now() / 1000 - consts.target_days_of_history * 24 * 60 * 60;
@@ -700,28 +707,25 @@ export function initialize(finished_initial_fetch: () => void): void {
         }
 
         if (data.found_oldest) {
-            initial_backfill_for_all_messages_done = true;
-            emoji_frequency.initialize_frequently_used_emojis();
+            post_initial_backfill_for_all_messages_done();
             return;
         }
 
         // Stop once we've hit the minimum backfill quantity of
         // messages if we've received a message older than
         // `target_days_of_history`.
-        const latest_message = all_messages_data.first();
+        const latest_message = recent_view_messages_data.first();
         assert(latest_message !== undefined);
         if (
-            all_messages_data.num_items() >= consts.minimum_initial_backfill_size &&
+            recent_view_messages_data.num_items() >= consts.minimum_initial_backfill_size &&
             latest_message.timestamp < fetch_target_day_timestamp
         ) {
-            initial_backfill_for_all_messages_done = true;
-            emoji_frequency.initialize_frequently_used_emojis();
+            post_initial_backfill_for_all_messages_done();
             return;
         }
 
-        if (all_messages_data.num_items() >= consts.maximum_initial_backfill_size) {
-            initial_backfill_for_all_messages_done = true;
-            emoji_frequency.initialize_frequently_used_emojis();
+        if (recent_view_messages_data.num_items() >= consts.maximum_initial_backfill_size) {
+            post_initial_backfill_for_all_messages_done();
             return;
         }
 
@@ -738,18 +742,22 @@ export function initialize(finished_initial_fetch: () => void): void {
                 anchor: oldest_id,
                 num_before: consts.catch_up_batch_size,
                 num_after: 0,
-                msg_list_data: all_messages_data,
+                msg_list_data: recent_view_messages_data,
                 cont: load_more,
             });
         }, consts.catch_up_backfill_delay);
     }
 
-    // Since `all_messages_data` contains continuous message history
+    // Since `recent_view_messages_data` contains continuous message history
     // which always contains the latest message, it makes sense for
     // Recent view to display the same data and be in sync.
-    all_messages_data.set_add_messages_callback((messages, rows_order_changed) => {
+    recent_view_messages_data.set_add_messages_callback((messages, rows_order_changed) => {
         try {
-            recent_view_ui.process_messages(messages, rows_order_changed, all_messages_data);
+            recent_view_ui.process_messages(
+                messages,
+                rows_order_changed,
+                recent_view_messages_data,
+            );
         } catch (error) {
             blueslip.error("Error in recent_view_ui.process_messages", undefined, error);
         }
@@ -766,7 +774,7 @@ export function initialize(finished_initial_fetch: () => void): void {
         // Since we backfill a lot more messages here compared to rendered message list,
         // we can try populating them if we can do so locally.
         for (const msg_list_data of message_list_data_cache.all()) {
-            if (msg_list_data === all_messages_data) {
+            if (msg_list_data === recent_view_messages_data) {
                 continue;
             }
 
@@ -784,12 +792,15 @@ export function initialize(finished_initial_fetch: () => void): void {
 
             // This callback is only called when backfilling messages,
             // so we need to check for the presence of any message from
-            // the message list in the all_messages_data to
+            // the message list in the recent_view_messages_data to
             // check for continuous message history for the message list.
             const first_message = msg_list_data.first();
             assert(first_message !== undefined);
-            if (all_messages_data.get(first_message.id) !== undefined) {
-                const messages_to_populate = all_messages_data.message_range(0, first_message.id);
+            if (recent_view_messages_data.get(first_message.id) !== undefined) {
+                const messages_to_populate = recent_view_messages_data.message_range(
+                    0,
+                    first_message.id,
+                );
                 if (msg_list_data.rendered_message_list_id) {
                     const msg_list = message_lists.rendered_message_lists.get(
                         msg_list_data.rendered_message_list_id,
@@ -812,7 +823,7 @@ export function initialize(finished_initial_fetch: () => void): void {
         anchor: "newest",
         num_before: consts.initial_backfill_fetch_size,
         num_after: 0,
-        msg_list_data: all_messages_data,
+        msg_list_data: recent_view_messages_data,
         cont: load_more,
     });
 }

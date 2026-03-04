@@ -24,6 +24,7 @@ import * as emoji_picker from "./emoji_picker.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as gif_state from "./gif_state.ts";
 import * as inbox_ui from "./inbox_ui.ts";
+import * as inbox_util from "./inbox_util.ts";
 import * as information_density from "./information_density.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as linkifiers from "./linkifiers.ts";
@@ -49,6 +50,7 @@ import * as realm_logo from "./realm_logo.ts";
 import * as realm_playground from "./realm_playground.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import * as recent_view_util from "./recent_view_util.ts";
 import * as reload from "./reload.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as saved_snippets from "./saved_snippets.ts";
@@ -91,6 +93,7 @@ import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import * as submessage from "./submessage.ts";
 import * as theme from "./theme.ts";
+import * as thumbnail from "./thumbnail.ts";
 import {group_setting_value_schema} from "./types.ts";
 import * as typing_events from "./typing_events.ts";
 import * as unread_ops from "./unread_ops.ts";
@@ -123,6 +126,7 @@ export function dispatch_normal_event(event) {
                 case "add": {
                     channel_folders.add(event.channel_folder);
                     inbox_ui.complete_rerender();
+                    recent_view_ui.complete_rerender();
                     settings_folders.populate_channel_folders();
                     stream_ui_updates.update_folder_dropdown_visibility();
                     break;
@@ -131,6 +135,7 @@ export function dispatch_normal_event(event) {
                     channel_folders.update(event);
                     if (event.data.name !== undefined) {
                         inbox_ui.complete_rerender();
+                        recent_view_ui.complete_rerender();
                         stream_list.update_streams_sidebar();
                         stream_settings_ui.update_channel_folder_name(event.channel_folder_id);
                     }
@@ -148,6 +153,7 @@ export function dispatch_normal_event(event) {
                     stream_list.update_streams_sidebar();
                     settings_folders.populate_channel_folders();
                     inbox_ui.complete_rerender();
+                    recent_view_ui.complete_rerender();
                     break;
                 default:
                     blueslip.error("Unexpected event type channel_folder/" + event.op);
@@ -195,10 +201,12 @@ export function dispatch_normal_event(event) {
         case "has_zoom_token":
             current_user.has_zoom_token = event.value;
             if (event.value) {
-                for (const callback of compose_call.zoom_token_callbacks.values()) {
+                for (const callback of compose_call.oauth_call_provider_token_callbacks
+                    .get("zoom")
+                    .values()) {
                     callback();
                 }
-                compose_call.zoom_token_callbacks.clear();
+                compose_call.oauth_call_provider_token_callbacks.get("zoom").clear();
             }
             break;
 
@@ -308,6 +316,7 @@ export function dispatch_normal_event(event) {
                 direct_message_permission_group: noop,
                 email_changes_disabled: settings_account.update_email_change_display,
                 disallow_disposable_email_addresses: noop,
+                media_preview_size: thumbnail.update_thumbnails,
                 inline_image_preview: noop,
                 inline_url_embed_preview: noop,
                 invite_required: noop,
@@ -483,13 +492,15 @@ export function dispatch_normal_event(event) {
 
         case "realm_bot":
             switch (event.op) {
-                case "add":
+                case "add": {
                     bot_data.add(event.bot);
-                    if (event.bot.owner_id === current_user.user_id) {
+                    const user = people.get_by_user_id(event.bot.user_id);
+                    if (user.bot_owner_id === current_user.user_id) {
                         settings_bots.redraw_your_bots_list();
                         settings_bots.toggle_bot_config_download_container();
                     }
                     break;
+                }
                 case "delete":
                     bot_data.del(event.bot.user_id);
                     settings_bots.redraw_your_bots_list();
@@ -497,13 +508,6 @@ export function dispatch_normal_event(event) {
                     break;
                 case "update":
                     bot_data.update(event.bot.user_id, event.bot);
-                    if ("owner_id" in event.bot) {
-                        settings_bots.redraw_your_bots_list();
-                        settings_bots.toggle_bot_config_download_container();
-                    }
-                    if ("is_active" in event.bot) {
-                        settings_bots.toggle_bot_config_download_container();
-                    }
                     break;
                 default:
                     blueslip.error("Unexpected event type realm_bot/" + event.op);
@@ -716,6 +720,16 @@ export function dispatch_normal_event(event) {
                         history_public_to_subscribers: event.history_public_to_subscribers,
                         is_web_public: event.is_web_public,
                     });
+                    if (inbox_util.should_complete_rerender_for_channel_property(event.property)) {
+                        inbox_ui.complete_rerender();
+                    }
+                    if (
+                        recent_view_util.should_complete_rerender_for_channel_property(
+                            event.property,
+                        )
+                    ) {
+                        recent_view_ui.complete_rerender();
+                    }
                     settings_streams.update_default_streams_table();
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
@@ -762,6 +776,8 @@ export function dispatch_normal_event(event) {
                             stream_id,
                         );
                     }
+                    inbox_ui.complete_rerender();
+                    recent_view_ui.complete_rerender();
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
                 default:

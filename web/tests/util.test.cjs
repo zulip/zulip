@@ -3,10 +3,9 @@
 const assert = require("node:assert/strict");
 
 const _ = require("lodash");
-const MockDate = require("mockdate");
 
 const {make_realm} = require("./lib/example_realm.cjs");
-const {set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
+const {clock, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const blueslip = zrequire("blueslip");
@@ -408,18 +407,18 @@ run_test("get_remaining_time", () => {
     // Set a random start time
     const start_time = new Date(1000).getTime();
     // Set current time to 400ms ahead of the start time
-    MockDate.set(start_time + 400);
+    clock.setSystemTime(start_time + 400);
     const duration = 500;
     let expected_remaining_time = 100;
     assert.equal(util.get_remaining_time(start_time, duration), expected_remaining_time);
 
     // When current time is greater than start time + duration
     // Set current time to 100ms after the start time + duration
-    MockDate.set(start_time + duration + 100);
+    clock.setSystemTime(start_time + duration + 100);
     expected_remaining_time = 0;
     assert.equal(util.get_remaining_time(start_time, duration), expected_remaining_time);
 
-    MockDate.reset();
+    clock.reset();
 });
 
 run_test("get_custom_time_in_minutes", () => {

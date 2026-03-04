@@ -669,6 +669,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             "/activity/remote/support",
             {
                 "remote_server_id": f"{remote_server_with_upgrade.id}",
+                "remote_server_deactivation_reason": "tos_violation",
                 "remote_server_status": "deactivated",
             },
         )
@@ -687,6 +688,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             "/activity/remote/support",
             {
                 "remote_server_id": f"{remote_server_no_upgrade.id}",
+                "remote_server_deactivation_reason": "tos_violation",
                 "remote_server_status": "deactivated",
             },
         )
@@ -708,6 +710,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 '<span class="remote-label">Remote server: deactivated</span>',
                 "♻️ Reactivate server:",
                 "<b>Acting user</b>: iago@zulip.com",
+                "<b>Deactivation reason</b>: tos_violation",
             ],
             result,
         )
@@ -767,7 +770,7 @@ class TestSupportEndpoint(ZulipTestCase):
     def test_realm_support_view_queries(self) -> None:
         iago = self.example_user("iago")
         self.login_user(iago)
-        with self.assert_database_query_count(23):
+        with self.assert_database_query_count(22):
             result = self.client_get("/activity/support", {"q": "zulip"}, subdomain="zulip")
             self.assertEqual(result.status_code, 200)
 

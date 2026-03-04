@@ -1,3 +1,8 @@
+---
+name: debug-node-coverage
+description: "Debug node test coverage failures. Use when ./tools/test-js-with-node --coverage reports lines missing coverage."
+---
+
 # Debugging Node Test Coverage Failures
 
 When `./tools/test-js-with-node --coverage` fails with lines missing

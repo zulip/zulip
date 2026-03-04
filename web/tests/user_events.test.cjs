@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_bot, make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -19,7 +20,13 @@ const settings_account = mock_esm("../src/settings_account", {
     add_or_remove_owner_from_role_dropdown() {},
     update_user_own_role_dropdown_state() {},
 });
-const settings_bots = mock_esm("../src/settings_bots");
+const settings_bots = mock_esm("../src/settings_bots", {
+    redraw_your_bots_list() {},
+    toggle_bot_config_download_container() {},
+});
+mock_esm("../src/settings_panel_menu", {
+    update_imported_users_tab() {},
+});
 mock_esm("../src/settings_users", {
     update_user_data() {},
     update_view_on_deactivate() {},
@@ -72,6 +79,7 @@ mock_esm("../src/settings_streams", {
     maybe_disable_widgets() {},
 });
 
+const bot_data = zrequire("bot_data");
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
 const {set_current_user, set_realm} = zrequire("state_data");
@@ -81,13 +89,12 @@ const current_user = {};
 set_current_user(current_user);
 set_realm(make_realm());
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
-    is_admin: true,
     role: settings_config.user_role_values.member.code,
-};
+});
 
 function initialize() {
     people.init();
@@ -100,12 +107,12 @@ initialize();
 run_test("updates", ({override}) => {
     let person;
 
-    const isaac = {
+    const isaac = make_user({
         email: "isaac@example.com",
         delivery_email: null,
         user_id: 32,
         full_name: "Isaac Newton",
-    };
+    });
     people.add_active_user(isaac);
 
     override(navbar_alerts, "maybe_toggle_empty_required_profile_fields_banner", noop);
@@ -266,14 +273,20 @@ run_test("updates", ({override}) => {
     assert.ok(updated);
     assert.ok(confirm_banner_hidden);
 
-    const test_bot = {
+    const test_bot = make_bot({
         email: "test-bot@example.com",
         user_id: 35,
         full_name: "Test Bot",
-        is_bot: true,
         bot_owner_id: isaac.id,
-    };
+    });
     people.add_active_user(test_bot);
+    bot_data.add({
+        default_all_public_streams: true,
+        default_events_register_stream: "register stream test",
+        default_sending_stream: "sending stream test",
+        user_id: 35,
+        services: [],
+    });
 
     user_events.update_person({user_id: test_bot.user_id, bot_owner_id: me.user_id});
     person = people.get_by_email(test_bot.email);
@@ -341,4 +354,14 @@ run_test("updates", ({override}) => {
     assert.ok(bot_data_updated);
     assert.ok(pm_list_updated);
     assert.ok(compose_pill_updated);
+
+    const imported_user = {
+        email: "imoreted-user@example.com",
+        delivery_email: null,
+        user_id: 33,
+        full_name: "Imported user",
+        is_imported_stub: true,
+    };
+    people.add_active_user(imported_user);
+    user_events.update_person({user_id: imported_user.user_id, is_imported_stub: false});
 });

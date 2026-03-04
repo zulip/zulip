@@ -7,12 +7,12 @@ import render_more_topics_spinner from "../templates/more_topics_spinner.hbs";
 import render_topic_list_item from "../templates/topic_list_item.hbs";
 import render_topic_list_new_topic from "../templates/topic_list_new_topic.hbs";
 
-import {all_messages_data} from "./all_messages_data.ts";
 import * as blueslip from "./blueslip.ts";
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as popover_menus from "./popover_menus.ts";
+import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
@@ -68,12 +68,18 @@ export function clear(): void {
 }
 
 export function close(): void {
-    zoomed = false;
     clear();
-    ui_util.enable_left_sidebar_search();
+    if (zoomed) {
+        zoomed = false;
+        ui_util.enable_left_sidebar_search();
+    }
 }
 
 export function zoom_out(): void {
+    if (!zoomed) {
+        return;
+    }
+
     zoomed = false;
     ui_util.enable_left_sidebar_search();
 
@@ -197,18 +203,18 @@ export function is_full_topic_history_available(
 
     function all_topics_in_cache(sub: StreamSubscription): boolean {
         // Checks whether this browser's cache of contiguous messages
-        // (used to locally render narrows) in all_messages_data has all
-        // messages from a given stream. Because all_messages_data is a range,
+        // (used to locally render narrows) in recent_view_messages_data has all
+        // messages from a given stream. Because recent_view_messages_data is a range,
         // we just need to compare it to the range of history on the stream.
 
         // If the cache isn't initialized, it's a clear false.
-        if (all_messages_data === undefined || all_messages_data.empty()) {
+        if (recent_view_messages_data === undefined || recent_view_messages_data.empty()) {
             return false;
         }
 
         // If the cache doesn't have the latest messages, we can't be sure
         // we have all topics.
-        if (!all_messages_data.fetch_status.has_found_newest()) {
+        if (!recent_view_messages_data.fetch_status.has_found_newest()) {
             return false;
         }
 
@@ -219,7 +225,7 @@ export function is_full_topic_history_available(
             return true;
         }
 
-        const first_cached_message = all_messages_data.first_including_muted();
+        const first_cached_message = recent_view_messages_data.first_including_muted();
         if (sub.first_message_id < first_cached_message!.id) {
             // Missing the oldest topics in this stream in our cache.
             return false;
@@ -474,7 +480,15 @@ export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
             .find(".stream-list-subsection-header")
             .outerHeight(true) ?? 0;
     sticky_header_height += channel_folder_header_height;
-    scroll_util.scroll_element_into_container($selected_topic, $container, sticky_header_height);
+    const $topic_list = $selected_topic.closest(".topic-list");
+    const topic_list_height = $topic_list.outerHeight(true) ?? 0;
+    const available_topic_height = ($container.height() ?? 0) - sticky_header_height;
+
+    let $scroll_target = $selected_topic;
+    if (topic_list_height <= available_topic_height) {
+        $scroll_target = $topic_list;
+    }
+    scroll_util.scroll_element_into_container($scroll_target, $container, sticky_header_height);
 }
 
 // For zooming, we only do topic-list stuff here...let stream_list
@@ -582,7 +596,19 @@ export function setup_topic_search_typeahead(): void {
             const pills = topic_filter_pill_widget!.items();
             const current_syntaxes = new Set(pills.map((pill) => pill.syntax));
             const query = $("#topic_filter_query").text().trim();
+            const has_locally_available_resolved_topics =
+                stream_topic_history.stream_has_locally_available_resolved_topics(stream_id);
             return topic_filter_pill.filter_options.filter((option) => {
+                if (!has_locally_available_resolved_topics && option.syntax.endsWith("resolved")) {
+                    // Technically, it could still be useful to show
+                    // the is:resolved option, as local data is not
+                    // complete. But because zooming the topic list
+                    // does the topic history fetch, it's reasonable to
+                    // ignore that possibility and just only show the
+                    // resolved topic options if we can confirm
+                    // they're relevant.
+                    return false;
+                }
                 if (current_syntaxes.has(option.syntax)) {
                     return false;
                 }

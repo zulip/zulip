@@ -169,9 +169,11 @@
        Chrome 105) that do not support dynamic viewport
        units. 100% is the legacy full-height value. */
     --full-height-dynamic-viewport: 100%;
+    --gif-scroll-container-height: 80vh;
 
     @supports (height: 100dvh) {
         --full-height-dynamic-viewport: 100dvh;
+        --gif-scroll-container-height: 80dvh;
     }
 
     /*
@@ -315,6 +317,9 @@
     --sidebar-bottom-spacing: 25px;
     --sidebar-filter-bottom-spacing: 3px;
 
+    /* 5px / 16px em */
+    --left-sidebar-direct-messages-bottom-divider-padding: 0.3125em;
+
     /* We base sidebar row heights on their line heights.
        Prominent rows include things like headers (e.g., VIEWS)
        as well as navigation items. Everything else takes
@@ -362,6 +367,9 @@
     --topic-actions-popover-min-width: 200px;
     --user-card-popover-min-width: 200px;
     --stream-card-popover-min-width: 16.4285em;
+
+    /* Image and video thumbnail sizing; updated via JavaScript */
+    --media-preview-max-height: 10em;
 
     /* Information density and typography values */
     /* The legacy values here are updated via JavaScript */
@@ -728,6 +736,14 @@
     --input-vertical-padding: 4px;
     --input-border-width: 1px;
 
+    /* Message date divider variables */
+    --date-divider-text-padding: 12px;
+    --date-divider-line-gap: 4px;
+    --date-divider-right-edge-offset: 2px;
+    --date-divider-line-inset: calc(
+        var(--date-divider-text-padding) - var(--date-divider-line-gap)
+    );
+
     /* Colors used across the app */
     --color-date: light-dark(hsl(0deg 0% 15% / 75%), hsl(0deg 0% 100% / 75%));
     --color-background-private-message-header: light-dark(
@@ -834,6 +850,10 @@
     --color-navbar-bottom-border: light-dark(
         hsl(0deg 0% 80%),
         hsl(0deg 0% 0% / 60%)
+    );
+    --color-left-sidebar-direct-messages-bottom-divider: light-dark(
+        hsl(0deg 0% 0% / 15%),
+        hsl(0deg 0% 100% / 15%)
     );
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: light-dark(
@@ -1149,10 +1169,6 @@
         hsl(0deg 0% 88%),
         hsl(211deg 18% 25%)
     );
-    --color-background-recent-view-selected: light-dark(
-        hsl(0deg 11% 93%),
-        hsl(228deg 11% 17%)
-    );
     --color-background-recent-view-table-thead-th: light-dark(
         var(--grey-50),
         hsl(0deg 0% 100% / 10%)
@@ -1208,7 +1224,7 @@
         hsl(0deg 0% 100% / 80%)
     );
     --color-compose-send-control-button: light-dark(
-        hsl(240deg 30% 50% / 80%),
+        hsl(240deg 30% 50% / 95%),
         hsl(240deg 30% 70%)
     );
     --color-compose-send-control-button-background: transparent;
@@ -1263,7 +1279,7 @@
         var(--color-compose-collapsed-reply-button-area-border)
     );
     --color-compose-embedded-button-text-color: light-dark(
-        hsl(231deg 20% 55%),
+        hsl(231deg 20% 46%),
         hsl(231deg 30% 65%)
     );
     --color-compose-embedded-button-text-color-hover: light-dark(
@@ -2323,6 +2339,20 @@
     --background-color-active-dropdown-item: light-dark(
         hsl(220deg 12% 4.9% / 5%),
         hsl(220deg 12% 100% / 7%)
+    );
+    --background-color-current-selection-dropdown-item: color-mix(
+        in srgb,
+        var(--color-active-dropdown-item) 7%,
+        transparent
+    );
+    --background-color-current-setting-dropdown-item: color-mix(
+        in srgb,
+        var(--purple-500) 13%,
+        transparent
+    );
+    --color-current-setting-dropdown-item: light-dark(
+        var(--purple-700),
+        var(--purple-300)
     );
     --background-color-active-typeahead-item: light-dark(
         hsl(220deg 12% 4.9% / 5%),

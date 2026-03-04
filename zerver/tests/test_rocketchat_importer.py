@@ -120,7 +120,7 @@ class RocketChatImporter(ZulipTestCase):
         user = user_handler.get_user(user_id)
 
         self.assertEqual(user["full_name"], rocketchat_data["user"][0]["name"])
-        self.assertEqual(user["avatar_source"], "G")
+        self.assertEqual(user["avatar_source"], "J")
         self.assertEqual(user["delivery_email"], "rocket.cat-bot@zulip.com")
         self.assertEqual(user["email"], "rocket.cat-bot@zulip.com")
         self.assertEqual(user["full_name"], "Rocket.Cat")
@@ -140,7 +140,7 @@ class RocketChatImporter(ZulipTestCase):
         user = user_handler.get_user(user_id)
 
         self.assertEqual(user["full_name"], rocketchat_data["user"][2]["name"])
-        self.assertEqual(user["avatar_source"], "G")
+        self.assertEqual(user["avatar_source"], "J")
         self.assertEqual(user["delivery_email"], "harrypotter@email.com")
         self.assertEqual(user["email"], "harrypotter@email.com")
         self.assertEqual(user["full_name"], "Harry Potter")
@@ -349,7 +349,7 @@ class RocketChatImporter(ZulipTestCase):
         domain_name = "zulip.com"
 
         user_handler = UserHandler()
-        subscriber_handler = SubscriberHandler()
+        subscriber_handler = SubscriberHandler[str]()
         user_id_mapper = IdMapper[str]()
         stream_id_mapper = IdMapper[str]()
 
@@ -458,7 +458,7 @@ class RocketChatImporter(ZulipTestCase):
         domain_name = "zulip.com"
 
         user_handler = UserHandler()
-        subscriber_handler = SubscriberHandler()
+        subscriber_handler = SubscriberHandler[str]()
         user_id_mapper = IdMapper[str]()
         direct_message_group_id_mapper = IdMapper[str]()
 
@@ -516,7 +516,7 @@ class RocketChatImporter(ZulipTestCase):
         domain_name = "zulip.com"
 
         user_handler = UserHandler()
-        subscriber_handler = SubscriberHandler()
+        subscriber_handler = SubscriberHandler[str]()
         user_id_mapper = IdMapper[str]()
         direct_message_group_id_mapper = IdMapper[str]()
 
@@ -622,7 +622,7 @@ class RocketChatImporter(ZulipTestCase):
         domain_name = "zulip.com"
 
         user_handler = UserHandler()
-        subscriber_handler = SubscriberHandler()
+        subscriber_handler = SubscriberHandler[str]()
         user_id_mapper = IdMapper[str]()
         stream_id_mapper = IdMapper[str]()
         direct_message_group_id_mapper = IdMapper[str]()

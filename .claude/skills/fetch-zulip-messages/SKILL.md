@@ -1,3 +1,9 @@
+---
+name: fetch-zulip-messages
+description: "Fetch messages from a Zulip narrow URL (chat.zulip.org). Use when the user shares a Zulip conversation link, when you encounter a Zulip link in a GitHub issue or PR, or when a Zulip conversation references another Zulip thread that may be relevant."
+argument-hint: "[url]"
+---
+
 # Fetch Zulip Web-Public Messages
 
 When a user shares a Zulip URL (e.g., `https://chat.zulip.org/#narrow/channel/...`),

@@ -7,7 +7,7 @@ from django.db.models.signals import post_delete, post_save
 from django.utils.translation import gettext_lazy
 from typing_extensions import override
 
-from zerver.lib.cache import cache_set, cache_with_key
+from zerver.lib.cache import cache_delete, cache_with_key
 from zerver.models.realms import Realm
 
 
@@ -128,12 +128,7 @@ def flush_realm_emoji(*, instance: RealmEmoji, **kwargs: object) -> None:
         # such an object shouldn't have been cached yet, and this
         # function will be called again when file_name is set.
         return
-    realm_id = instance.realm_id
-    cache_set(
-        get_all_custom_emoji_for_realm_cache_key(realm_id),
-        get_all_custom_emoji_for_realm_uncached(realm_id),
-        timeout=3600 * 24 * 7,
-    )
+    cache_delete(get_all_custom_emoji_for_realm_cache_key(instance.realm_id))
 
 
 post_save.connect(flush_realm_emoji, sender=RealmEmoji)

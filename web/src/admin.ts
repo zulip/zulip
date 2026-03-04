@@ -38,6 +38,9 @@ const admin_settings_label = {
     realm_signup_announcements_stream: $t({defaultMessage: "New user announcements"}),
     realm_zulip_update_announcements_stream: $t({defaultMessage: "Zulip update announcements"}),
     realm_moderation_request_channel: $t({defaultMessage: "Moderation requests"}),
+    realm_media_preview_size: $t({
+        defaultMessage: "Size of images and videos in messages",
+    }),
     realm_inline_image_preview: $t({
         defaultMessage: "Show previews of uploaded and linked images and videos",
     }),
@@ -106,6 +109,7 @@ function insert_tip_box(): void {
         .not("#admin-user-list")
         .not("#admin-active-users-list")
         .not("#admin-deactivated-users-list")
+        .not("#admin-imported-users-list")
         .prepend($(tip_box_html));
 }
 
@@ -207,6 +211,8 @@ export function build_page(): void {
         realm_logo_url: realm.realm_logo_url,
         realm_night_logo_source: realm.realm_night_logo_source,
         realm_night_logo_url,
+        realm_media_preview_size: realm.realm_media_preview_size,
+        realm_media_preview_size_values: settings_config.realm_media_preview_size_values,
         realm_topics_policy: realm.realm_topics_policy,
         realm_topics_policy_values: settings_config.get_realm_topics_policy_values(),
         empty_string_topic_display_name: util.get_final_topic_display_name(""),
@@ -288,6 +294,8 @@ export function build_page(): void {
         active_user_list_dropdown_widget_name: settings_users.active_user_list_dropdown_widget_name,
         deactivated_user_list_dropdown_widget_name:
             settings_users.deactivated_user_list_dropdown_widget_name,
+        imported_user_list_dropdown_widget_name:
+            settings_users.imported_user_list_dropdown_widget_name,
         gif_help_link,
         ...get_realm_level_notification_settings(),
         all_bots_list_dropdown_widget_name: settings_bots.all_bots_list_dropdown_widget_name,

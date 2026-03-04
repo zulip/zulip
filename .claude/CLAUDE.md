@@ -14,7 +14,7 @@ more maintainable and easier to read.
 
 Before writing any code, you must understand:
 
-1. What the existing and code does and why, including the relevant help center or
+1. What the existing code does and why, including the relevant help center or
    developer-facing documentation.
 2. What problem you're solving, in its full scope.
 3. Why your approach is the right solution, and available alternatives.
@@ -60,9 +60,17 @@ Before writing code, explain the plan:
 
 Structure changes as clean commits:
 
-- Backend and API changes (with tests and API doc changes documented fully using
-  the `tools/create-api-changelog` double-entry changelog system)
-- Frontend UI changes (with tests and user-facing documentation updates)
+- Backend and API changes (with tests and API doc changes documented
+  fully using our double-entry changelog system). When starting an API
+  change, reread `docs/documentation/api.md` to review the process for
+  documenting an API change. You'll run `tools/create-api-changelog`
+  to create an `api_docs/unmerged.d/ZF-RANDOM.md` file. Never update
+  `API_FEATURE_LEVEL` manually. **Changes** entries should use the
+  "New in Zulip 12.0 (Feature level RANDOM)" pattern, which will be
+  replaced with the final feature level when the changes are merged.
+- Frontend UI changes (with tests and user-facing documentation
+  updates). Remember to plan to use your visual test skill to check
+  your work whenever you change web app code (HTML, CSS, JS).
 
 Each commit should be self-contained, highly readable and reviewable
 using `git show --color-moved`, and pass lint/tests independently. If
@@ -94,13 +102,24 @@ Zulip has over 185,000 words of developer documentation. Before working on any a
 
 - **Be consistent with existing code.** Look at surrounding code and follow
   the same patterns, as this is a thoughtfully crafted codebase.
+- **Use clear, greppable names** for functions, arguments, variables, and
+  tests. Future developers will `git grep` for relevant terms when
+  researching a problem, so names should communicate purpose clearly.
 - Keep everything well factored for maintainability. Avoid duplicating
   code, especially where access control or subtle correctness is involved.
 - Run `./tools/lint` to catch style issues before committing, including mypy issues.
 - JavaScript/TypeScript code must use `const` or `let`, never `var`.
 - Avoid lodash in favor of modern ECMAScript primitives where available,
   keeping in mind our browserlist.
+- Prefer writing code that is readable without explanation over heavily
+  commented code using clever tricks. Comments should explain "why" when
+  the reason isn't obvious, not narrate "what" the code does.
 - Comments should have a line to themself except for CSS px math.
+- **Review CSS for redundant rules.** After writing CSS, review the
+  full set of rules affecting the same elements. Look for rules that
+  are immediately overridden by a more specific selector, duplicated
+  selector lists, or cases where scoping (e.g., `:not()`) would
+  eliminate the need for an override.
 
 See: https://zulip.readthedocs.io/en/latest/contributing/code-style.html
 
@@ -146,7 +165,7 @@ Fixes #123.
 
 **Commit summary format:**
 
-- Before color is a lower-case brief gesture at subsystem (ex: "nginx" config) or
+- Before the colon is a lower-case brief gesture at subsystem (ex: "nginx" config) or
   feature (ex: "compose" for the compose box) being modified.
 - Use a period at the end of the summary
 - Example: `compose: Fix cursor position after emoji insertion.`
@@ -157,7 +176,37 @@ Fixes #123.
 
 - `Fixes #123.` - Automatically closes the issue
 - `Fixes part of #123.` - Does not close (for partial fixes)
+- In a multi-commit PR, use `Fixes part of #123.` in earlier commits
+  and `Fixes #123.` in the final commit.
 - Never: `Partially fixes #123.` (GitHub ignores "partially")
+
+### Rebasing Commits (Non-Interactive)
+
+Since `git rebase -i` requires an interactive editor, use
+`GIT_SEQUENCE_EDITOR` to supply the todo list via a script:
+
+1. **Updating the HEAD commit:** If the commit you need to modify is
+   already at HEAD, just use `git commit --amend` directly. The
+   fixup+rebase workflow below is only needed for non-HEAD commits.
+
+2. **Squashing fixups into existing commits:** Create fixup commits with
+   `git commit --fixup=<target-hash>`, then write a shell script that
+   outputs the desired todo (with `pick` and `fixup` lines in order)
+   and run:
+
+   ```bash
+   GIT_SEQUENCE_EDITOR=/path/to/todo-script.sh git rebase -i <base>
+   ```
+
+   Note: `--autosquash` alone without `-i` does **not** reorder or
+   squash anything.
+
+3. **Rewording commit messages:** In the todo script, use `exec` lines:
+   ```
+   pick <hash> Original message
+   exec GIT_EDITOR=/path/to/new-msg-script.sh git commit --amend
+   ```
+   where the message script writes the new commit message to `$1`.
 
 ## Testing Requirements
 
@@ -196,19 +245,56 @@ tests.
 ./tools/test-backend zerver/webhooks/<integration>
 ```
 
+### Manual Testing for UI Changes
+
+If a PR makes frontend changes, manually verify the affected UI. This
+catches issues that automated tests miss:
+
+**Visual appearance:**
+
+- Is the new UI consistent with similar elements (fonts, colors, sizes)?
+- Is alignment correct, both vertically and horizontally?
+- Do clickable elements have hover behavior consistent with similar UI?
+- If elements can be disabled, does the disabled state look right?
+- Did the change accidentally affect other parts of the UI? Use
+  `git grep` to check if modified CSS is used elsewhere.
+- Check all of the above in both light and dark themes.
+
+**Responsiveness and internationalization:**
+
+- Does the UI look good at different window sizes, including mobile?
+- Would the UI break if translated strings were 1.5x longer than English?
+
+**Functionality:**
+
+- Are live updates working as expected?
+- Is keyboard navigation, including tabbing to interactive elements, working?
+- If the feature affects the message view, try different narrows: topic,
+  channel, Combined feed, direct messages.
+- If the feature affects the compose box, test both channel messages and
+  direct messages, and both ways of resizing.
+- If the feature requires elevated permissions, test as both a user who
+  has permissions and one who does not.
+- Think about feature interactions: could banners overlap? What about
+  resolved/unresolved topics? Collapsed or muted messages?
+
 ## Self-Review Checklist
 
 Before finalizing, verify:
 
+- [ ] The PR addresses all points described in the issue
 - [ ] All relevant tests pass locally
 - [ ] Code follows existing patterns in the codebase
+- [ ] Names (functions, variables, tests) are clear and greppable
 - [ ] Commit messages, comments, and PR description are well done.
 - [ ] Each commit is a minimal coherent idea
 - [ ] No debugging code or unnecessary comments remain
 - [ ] Type annotations are complete and correct
 - [ ] User-facing strings are tagged for translation
+- [ ] User-facing error messages are clear and actionable
 - [ ] No secrets or credentials are hardcoded
 - [ ] Documentation is updated if behavior changes
+- [ ] Refactoring is complete (`git grep` for remaining occurrences)
 - [ ] Security audit of changes. Always check for XSS in UI changes
       and for incorrect access control in server changes.
 
@@ -295,11 +381,20 @@ faster and easier to just plan and write them well the first time.
 
 ### PR Description Should:
 
-1. Explain **why** the change is needed, not just what changed
-2. Describe how you tested the change
-3. Include screenshots for UI changes
-4. Link to relevant issues or discussions
-5. Complete the self-review checklist
+Output the PR description in a markdown code block so that formatting
+(bold, headers, checkboxes, etc.) copy-pastes correctly into GitHub.
+
+1. Start with a `Fixes: #...` line linking the issue being addressed.
+2. Explain **why** the change is needed, not just what changed.
+3. Describe how you tested the change, using checkbox format for the
+   test plan (e.g., `- [x] ./tools/test-backend ...`).
+4. Include screenshots for UI changes.
+5. Link to relevant issues or discussions.
+6. Call out any open questions, concerns, or decisions you are uncertain
+   about, so they can be resolved during review.
+7. Include the self-review checklist from
+   `.github/pull_request_template.md` using checkbox format (`- [x]` /
+   `- [ ]`), checking off all applicable items.
 
 ### PR Description Should Not:
 
@@ -346,6 +441,8 @@ Recommend pausing for discussion when:
 3. Propose the refactoring approach
 4. Implement in commits that each leave the codebase working
 5. No behavior changes unless explicitly discussed
+6. Verify completeness: use `git grep` to find all occurrences and
+   confirm nothing was missed
 
 ## Key Documentation Links
 
@@ -354,6 +451,7 @@ Recommend pausing for discussion when:
 - Commit discipline: https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html
 - Testing overview: https://zulip.readthedocs.io/en/latest/testing/testing.html
 - Backend tests: https://zulip.readthedocs.io/en/latest/testing/testing-with-django.html
+- Code review: https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html
 - mypy guide: https://zulip.readthedocs.io/en/latest/testing/mypy.html
 
 ## Repository Structure Quick Reference
@@ -375,6 +473,32 @@ tools/            # Development and testing scripts
 docs/             # ReadTheDocs documentation source
 ```
 
+## Help Center Documentation
+
+Help center articles are MDX files in `starlight_help/src/content/docs/`.
+Images go in `starlight_help/src/images`. Include files go in the `include/`
+subdirectory with an `_` prefix (e.g., `_AdminOnly.mdx`). New articles need
+a sidebar entry in `starlight_help/astro.config.mjs`.
+
+See `docs/documentation/helpcenter.md` for the full writing guide. Key points:
+
+- **Bold** UI element names (e.g., **Settings** page, **Save changes** button).
+- Do not specify default values or list out options in instructions — the user
+  can see them in the UI.
+- Do not use "we" to refer to Zulip; use "you" for the reader.
+- Fewer words is better; many users have English as a second language.
+- Use `<kbd>Enter</kbd>` for keyboard keys (non-Mac; auto-translated for Mac).
+- Common components and their imports:
+  ```
+  import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+  import FlattenedSteps from "../../components/FlattenedSteps.astro";
+  import NavigationSteps from "../../components/NavigationSteps.astro";
+  import ZulipTip from "../../components/ZulipTip.astro";
+  import ZulipNote from "../../components/ZulipNote.astro";
+  import AdminOnly from "../include/_AdminOnly.mdx";
+  import SaveChanges from "../include/_SaveChanges.mdx";
+  ```
+
 ## Zulip Chat Links
 
 When you encounter a Zulip narrow URL (e.g., from `chat.zulip.org` in a
@@ -393,3 +517,8 @@ message content.
 ./tools/run-mypy            # Run type checker
 git grep "pattern"          # Search codebase (use extensively!)
 ```
+
+If a tool complains that provision is outdated, run `./tools/provision`
+to fix it. Do not use `--skip-provision-check` to work around the
+error; the check exists because tests and linters depend on provisioned
+dependencies being current.

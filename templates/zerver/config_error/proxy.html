@@ -3,7 +3,7 @@
     {%- if docker_config -%}
         <code>LOADBALANCER_IPS</code> in your Docker image's environment
     {%- else -%}
-        <code>ips</code> in the <code>loadbalancers</code> section of <code>/etc/zulip/zulip.conf</code>
+        <code>ips</code> in the <code>[loadbalancer]</code> section of <code>/etc/zulip/zulip.conf</code>
     {%- endif -%}
 {%- endmacro %}
 

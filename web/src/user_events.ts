@@ -8,6 +8,7 @@ import * as z from "zod/mini";
 
 import * as activity_ui from "./activity_ui.ts";
 import * as blueslip from "./blueslip.ts";
+import * as bot_data from "./bot_data.ts";
 import {buddy_list} from "./buddy_list.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
@@ -22,6 +23,7 @@ import * as settings_config from "./settings_config.ts";
 import * as settings_exports from "./settings_exports.ts";
 import * as settings_linkifiers from "./settings_linkifiers.ts";
 import * as settings_org from "./settings_org.ts";
+import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_profile_fields from "./settings_profile_fields.ts";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults.ts";
 import * as settings_streams from "./settings_streams.ts";
@@ -89,6 +91,15 @@ export const update_person = function update(event: UserUpdate): void {
             current_user.delivery_email = delivery_email;
             settings_account.hide_confirm_email_banner();
         }
+
+        if (
+            user.is_bot &&
+            (current_user.is_admin ||
+                (user.bot_owner_id !== null && people.is_my_user_id(user.bot_owner_id)))
+        ) {
+            assert(delivery_email !== null);
+            bot_data.update(event.user_id, {user_id: event.user_id, email: delivery_email});
+        }
     }
 
     if ("full_name" in event) {
@@ -102,6 +113,13 @@ export const update_person = function update(event: UserUpdate): void {
         if (people.is_my_user_id(event.user_id)) {
             current_user.full_name = event.full_name;
             settings_account.update_full_name(event.full_name);
+        }
+        if (
+            user.is_bot &&
+            (current_user.is_admin ||
+                (user.bot_owner_id !== null && people.is_my_user_id(user.bot_owner_id)))
+        ) {
+            bot_data.update(event.user_id, {user_id: event.user_id, full_name: event.full_name});
         }
     }
 
@@ -173,6 +191,11 @@ export const update_person = function update(event: UserUpdate): void {
                 "src",
                 `${event.avatar_url_medium}`,
             );
+            if (current_user.avatar_source === "G") {
+                $("#user-avatar-source").show();
+            } else {
+                $("#user-avatar-source").hide();
+            }
         }
 
         message_live_update.update_avatar(user.user_id, event.avatar_url);
@@ -219,10 +242,25 @@ export const update_person = function update(event: UserUpdate): void {
         assert(user.is_bot);
         user.bot_owner_id = event.bot_owner_id;
         user_profile.update_profile_modal_ui(user, event);
+        if (current_user.is_admin) {
+            // Non-admins only have bots they own in bot_data, and receive
+            // realm_bot/add or realm_bot/delete events when ownership changes,
+            // so their bot_data is already up to date at this point.
+            bot_data.update(event.user_id, {user_id: event.user_id, owner_id: event.bot_owner_id});
+        }
+        settings_bots.redraw_your_bots_list();
+        settings_bots.toggle_bot_config_download_container();
     }
 
     if ("is_active" in event) {
         const is_bot_user = user.is_bot;
+        if (
+            is_bot_user &&
+            (current_user.is_admin ||
+                (user.bot_owner_id !== null && people.is_my_user_id(user.bot_owner_id)))
+        ) {
+            bot_data.update(event.user_id, {user_id: event.user_id, is_active: event.is_active});
+        }
         if (event.is_active) {
             people.add_active_user(user);
             settings_users.update_view_on_reactivate(event.user_id, is_bot_user);
@@ -243,9 +281,18 @@ export const update_person = function update(event: UserUpdate): void {
         settings_account.maybe_update_deactivate_account_button();
         if (is_bot_user) {
             settings_bots.update_bot_data(event.user_id);
+            settings_bots.toggle_bot_config_download_container();
         } else if (!event.is_active) {
             // A human user deactivated, update 'Export permissions' table.
             settings_exports.remove_export_consent_data_and_redraw(event.user_id);
         }
+        if (user.is_imported_stub) {
+            settings_panel_menu.update_imported_users_tab();
+        }
+    }
+
+    if ("is_imported_stub" in event) {
+        user.is_imported_stub = false;
+        settings_panel_menu.update_imported_users_tab(true, true);
     }
 };

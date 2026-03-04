@@ -49,6 +49,7 @@ const messages = {
         flags: ["has_alert_word"],
         subject: "copenhagen",
         reactions: [],
+        submessages: [],
         // note we don't have every field that a "real" message
         // would have, and that can be fine
     },

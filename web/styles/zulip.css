@@ -1,3 +1,7 @@
+#download-mac-alt {
+    margin-top: 10px;
+}
+
 html {
     overflow: hidden scroll;
     overscroll-behavior-y: none;
@@ -128,16 +132,6 @@ button {
         padding: 0;
         border: 0;
     }
-}
-
-input,
-button,
-select {
-    font-family: "Source Sans 3 VF", sans-serif;
-    /* Disable bootstrap size CSS; we want to use our default font size on
-       body for input elements. */
-    line-height: normal;
-    font-size: inherit;
 }
 
 blockquote p {
@@ -680,10 +674,6 @@ body.has-overlay-scrollbar {
     position: relative;
 }
 
-input {
-    font-family: "Source Sans 3 VF", sans-serif;
-}
-
 /* Override browsers that use
    `cursor: default` */
 label,
@@ -1003,6 +993,7 @@ div.focused-message-list.is-conversation-view .recipient_row {
     color: var(--color-text-default);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
+    font-family: inherit;
 
     transition:
         border-color linear 0.2s,
@@ -1188,11 +1179,12 @@ nav {
 
         .nav-logo {
             display: inline-block;
-            height: 1.25em; /* 20px at 16px em */
+            height: auto;
+            max-height: 1.5625em; /* 25px at 16px/1em */
             max-width: var(--realm-logo-max-width);
 
             @media (height < $short_navbar_cutoff_height) {
-                height: 0.9375em; /* 15px at 16px em */
+                max-height: 1.1719em; /* 18.75px at 16px/1em */
             }
         }
 
@@ -1397,6 +1389,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
+    font-family: inherit;
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -1533,6 +1526,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     .exit {
         font-size: 1.5rem;
         font-weight: 600;
+        font-family: inherit;
         background-color: transparent;
         border: none;
         position: absolute;
@@ -2126,24 +2120,33 @@ body:not(.spectator-view) {
         justify-content: center;
         cursor: pointer;
 
-        &:hover #scroll-to-bottom-button {
-            background: hsl(240deg 96% 68%);
+        #scroll-to-bottom-button,
+        #scroll-to-bottom-button-underlay {
+            width: 2.5em; /* 40px at 16px em */
+            height: 2.5em; /* 40px at 16px em */
+            border-radius: 50%;
         }
 
         #scroll-to-bottom-button {
-            text-align: center;
-            width: 2.5em; /* 40px at 16px em */
-            height: 2.5em; /* 40px at 16px em */
-            background: hsl(240deg 96% 68% / 50%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-
-            & .scroll-to-bottom-icon {
-                color: hsl(0deg 0% 100%);
-                margin: 0 auto;
-                font-size: 1.3125em; /* 21px at 16px em */
+            > .zulip-icon {
+                /* We increase the icon size for better visibility */
+                font-size: 1.5em; /* 24px at 16px em */
             }
+
+            &:active {
+                clip-path: none;
+            }
+        }
+
+        #scroll-to-bottom-button-underlay {
+            position: absolute;
+            background-color: var(--color-background-stream-message-content);
+            opacity: 0.7;
+            z-index: -1;
+        }
+
+        &:hover #scroll-to-bottom-button {
+            backdrop-filter: blur(40px);
         }
     }
 }
@@ -2196,6 +2199,11 @@ body:not(.spectator-view) {
 }
 
 .dropdown-list-container {
+    .dropdown-list-viewport-padding {
+        padding-top: 4px;
+        padding-bottom: 4px;
+    }
+
     .dropdown-list-wrapper {
         /* Sync with `max-height` in dropdown_widget. */
         max-height: 210px;
@@ -2342,36 +2350,51 @@ body:not(.spectator-view) {
             }
         }
     }
-}
-
-.dropdown-list-container .list-item {
-    color: var(--color-dropdown-item);
-
-    &:focus,
-    &.current_selection {
-        background-color: var(--background-color-active-dropdown-item);
-        outline: none;
-    }
-}
-
-.inbox-filter-dropdown-list-container,
-.recent-view-filter-dropdown-list-container,
-.folder-filter-dropdown-list-container,
-.stream_settings_filter-dropdown-list-container,
-.user_group_visibility_settings-dropdown-list-container {
-    overflow: visible;
 
     .list-item {
-        &:focus {
+        border-radius: 4px;
+        margin: 0 4px;
+        position: relative;
+        color: var(--color-dropdown-item);
+
+        &:focus,
+        &.current_selection {
+            outline: none;
+        }
+
+        &:focus::before,
+        &.current_selection::before {
+            content: "";
+            position: absolute;
+            left: -3px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background-color: var(--color-outline-focus);
             border-radius: 4px;
-            outline: 1px solid var(--color-outline-focus) !important;
-            outline-offset: -2px;
-            background-color: transparent;
+        }
+
+        .dropdown-list-item-common-styles {
+            padding: 5px 6px;
+            border-radius: 4px;
         }
 
         &.current_user_setting {
-            background-color: var(--background-color-active-dropdown-item);
-            outline: none;
+            background-color: var(
+                --background-color-current-setting-dropdown-item
+            );
+
+            .dropdown-list-text-selected,
+            .setting-disabled-option-text {
+                color: var(--color-current-setting-dropdown-item);
+            }
+
+            &:hover,
+            &:active {
+                background-color: var(
+                    --background-color-current-setting-dropdown-item
+                );
+            }
         }
     }
 }

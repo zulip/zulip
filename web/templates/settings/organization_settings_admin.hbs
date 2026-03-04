@@ -77,11 +77,10 @@
                 {{> settings_save_discard_widget section_name="onboarding" show_save_discard_buttons=true }}
             </div>
             <div class="organization-settings-parent">
-                {{#if development}}
                 <div class="input-group">
                     <label class="settings-field-label">
                         {{admin_settings_label.realm_default_avatar_source}}
-                        {{> ../help_link_widget link="/help/configure-default-new-user-settings" }}
+                        {{> ../help_link_widget link="/help/configure-default-profile-pictures" }}
                     </label>
                     <div class="default_avatar_source_values settings-highlight-box prop-element" id="id_realm_default_avatar_source" data-setting-widget-type="radio-group" data-setting-choice-type="string">
                         {{#each (object_values default_avatar_source_values)}}
@@ -107,7 +106,6 @@
                         {{/each}}
                     </div>
                 </div>
-                {{/if}}
 
                 {{> settings_checkbox
                   setting_name="realm_enable_welcome_message_custom_text"
@@ -238,6 +236,13 @@
                   is_checked=realm_enable_read_receipts
                   label=admin_settings_label.realm_enable_read_receipts
                   label_parens_text=admin_settings_label.realm_enable_read_receipts_parens_text}}
+
+                <div class="input-group">
+                    <label for="id_realm_media_preview_size" class="settings-field-label">{{admin_settings_label.realm_media_preview_size}}</label>
+                    <select name="realm_media_preview_size" id="id_realm_media_preview_size" class="prop-element settings_select bootstrap-focus-style" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=realm_media_preview_size_values}}
+                    </select>
+                </div>
 
                 {{#if server_inline_image_preview}}
                 {{> settings_checkbox

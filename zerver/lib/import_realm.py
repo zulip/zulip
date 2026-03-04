@@ -29,10 +29,11 @@ from zerver.actions.realm_settings import (
     do_set_realm_new_stream_announcements_stream,
     do_set_realm_zulip_update_announcements_stream,
 )
-from zerver.actions.user_settings import do_change_avatar_fields
+from zerver.actions.user_settings import set_avatar_to_default
+from zerver.lib.avatar import generate_and_upload_jdenticon_avatar
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.bulk_create import bulk_set_users_or_streams_recipient_fields
-from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableName
+from zerver.lib.export import Field, Path, Record, TableName, date_fields_for_table
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import get_last_message_id
@@ -91,6 +92,7 @@ from zerver.models import (
     RealmAuthenticationMethod,
     RealmDomain,
     RealmEmoji,
+    RealmExport,
     RealmFilter,
     RealmPlayground,
     RealmUserDefault,
@@ -116,7 +118,7 @@ from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_hash
-from zerver.models.users import get_system_bot, get_user_profile_by_id
+from zerver.models.users import ExternalAuthID, get_system_bot, get_user_profile_by_id
 from zproject.backends import AUTH_BACKEND_NAME_MAP
 
 ImportedTableData: TypeAlias = dict[str, list[Record]]
@@ -187,6 +189,8 @@ ID_MAP: dict[str, dict[int, int]] = {
     "channelfolder": {},
     "navigationview": {},
     "submessage": {},
+    "externalauthid": {},
+    "realmexport": {},
 }
 
 id_map_to_list: dict[str, dict[int, list[int]]] = {
@@ -247,7 +251,7 @@ def update_id_map(table: TableName, old_id: int, new_id: int) -> None:
 
 def fix_datetime_fields(data: ImportedTableData, table: TableName) -> None:
     for item in data[table]:
-        for field_name in DATE_FIELDS[table]:
+        for field_name in date_fields_for_table(table):
             if item[field_name] is not None:
                 item[field_name] = datetime.fromtimestamp(item[field_name], tz=timezone.utc)
 
@@ -937,7 +941,7 @@ def process_avatars(record: dict[str, Any]) -> None:
             user_profile.id,
         )
         # Delete the record of the avatar to avoid 404s.
-        do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        set_avatar_to_default(user_profile, acting_user=None)
 
 
 def process_emojis(
@@ -1455,6 +1459,12 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         user_profile.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
     UserProfile.objects.bulk_create(user_profiles)
 
+    # Update date_joined field here so that we do not need to worry about
+    # conversion time and import time being different.
+    UserProfile.objects.filter(realm=realm, is_imported_stub=True).update(
+        date_joined=timezone_now()
+    )
+
     channel_folders = ChannelFolder.objects.filter(id__in=channel_folder_id_to_creator_id.keys())
     for channel_folder in channel_folders:
         channel_folder.creator_id = channel_folder_id_to_creator_id[channel_folder.id]
@@ -1759,6 +1769,14 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         default_user_profile_id=None,  # Fail if there is no user set
     )
 
+    # We need to generate Jdenticon avatars while importing Zulip export data
+    # as well because the export data doesn't include them. Jdenticon avatar
+    # is deterministically generated using a combination of user ID and realm UUID
+    # as input value. Since user ID possibly changes on import, the resulting
+    # Jdenticon would differ. We regenerate it here using the current user ID.
+    for user_profile in UserProfile.objects.filter(avatar_source=UserProfile.AVATAR_FROM_JDENTICON):
+        generate_and_upload_jdenticon_avatar(user_profile, str(realm.uuid), future=False)
+
     # We need to have this check as the emoji files may not
     # be present in import data from other services.
     if os.path.exists(os.path.join(import_dir, "emoji")):
@@ -1888,6 +1906,20 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         update_model_ids(UserStatus, data, "userstatus")
         re_map_realm_emoji_codes(data, table_name="zerver_userstatus")
         bulk_import_model(data, UserStatus)
+
+    if "zerver_externalauthid" in data:
+        fix_datetime_fields(data, "zerver_externalauthid")
+        re_map_foreign_keys(data, "zerver_externalauthid", "user", related_table="user_profile")
+        re_map_foreign_keys(data, "zerver_externalauthid", "realm", related_table="realm")
+        update_model_ids(ExternalAuthID, data, "externalauthid")
+        bulk_import_model(data, ExternalAuthID)
+
+    if "zerver_realmexport" in data:
+        fix_datetime_fields(data, "zerver_realmexport")
+        re_map_foreign_keys(data, "zerver_realmexport", "acting_user", related_table="user_profile")
+        re_map_foreign_keys(data, "zerver_realmexport", "realm", related_table="realm")
+        update_model_ids(RealmExport, data, "realmexport")
+        bulk_import_model(data, RealmExport)
 
     # Do attachments AFTER message data is loaded.
     logging.info("Importing attachment data from %s", attachments_file)

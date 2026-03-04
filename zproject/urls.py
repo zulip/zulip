@@ -61,6 +61,7 @@ from zerver.views.custom_profile_fields import (
     update_realm_custom_profile_field,
     update_user_custom_profile_data,
 )
+from zerver.views.devices import register_device, remove_device
 from zerver.views.digest import digest_page
 from zerver.views.documentation import MarkdownDirectoryView, integrations_catalog, integrations_doc
 from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_drafts
@@ -260,6 +261,7 @@ from zerver.views.users import (
     deactivate_bot_backend,
     deactivate_user_backend,
     deactivate_user_own_backend,
+    get_bot_api_key,
     get_bots_backend,
     get_member_backend,
     get_members_backend,
@@ -275,9 +277,11 @@ from zerver.views.users import (
 )
 from zerver.views.video_calls import (
     complete_zoom_user,
+    create_nextcloud_talk_url,
     deauthorize_zoom_user,
     get_bigbluebutton_url,
     join_bigbluebutton,
+    make_constructor_groups_video_call,
     make_zoom_video_call,
     register_zoom_user,
 )
@@ -374,6 +378,7 @@ v1_api_and_json_patterns = [
     rest_path("users/<int:user_id>/subscriptions/<int:stream_id>", GET=get_subscription_backend),
     rest_path("users/<email>", GET=get_user_by_email, PATCH=update_user_by_email_api),
     rest_path("bots", GET=get_bots_backend, POST=add_bot_backend),
+    rest_path("bots/<int:bot_id>/api_key", GET=get_bot_api_key),
     rest_path("bots/<int:bot_id>/api_key/regenerate", POST=regenerate_bot_api_key),
     rest_path("bots/<int:bot_id>", PATCH=patch_bot_backend, DELETE=deactivate_bot_backend),
     # invites -> zerver.views.invite
@@ -610,10 +615,16 @@ v1_api_and_json_patterns = [
     rest_path("calls/zoom/create", POST=make_zoom_video_call),
     # Used to generate a BigBlueButton video call URL
     rest_path("calls/bigbluebutton/create", GET=get_bigbluebutton_url),
+    # Used to generate a Constructor Groups video call URL
+    rest_path("calls/constructorgroups/create", POST=make_constructor_groups_video_call),
+    # Used to generate a Nextcloud Talk video call URL
+    rest_path("calls/nextcloud_talk/create", POST=create_nextcloud_talk_url),
     # export/realm -> zerver.views.realm_export
     rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
     rest_path("export/realm/<int:export_id>", DELETE=delete_realm_export),
     rest_path("export/realm/consents", GET=get_users_export_consents),
+    rest_path("register_client_device", POST=register_device),
+    rest_path("remove_client_device", POST=remove_device),
 ]
 
 # These views serve pages (HTML). As such, their internationalization

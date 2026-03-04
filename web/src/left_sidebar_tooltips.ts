@@ -138,7 +138,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ".stream-list-section-container .add-stream-tooltip",
+        target: ".stream-list-section-container .add-stream-tooltip, .left-sidebar-controls .channel-new-topic-button",
         appendTo: () => document.body,
     });
 

@@ -70,4 +70,31 @@ def process_zcommands(content: str, user_profile: UserProfile) -> dict[str, Any]
                 setting_value=False,
             )
         )
+    
+
+    elif command == "realm_users":
+        from zerver.models.meetings import get_realm_users_list
+        msg = get_realm_users_list(user_profile.realm)
+        return dict(msg=msg)
+    elif command.startswith("channel_users"):
+        from zerver.models.meetings import get_channel_users_list
+        parts = command.split()
+        channel_name = parts[1] if len(parts) > 1 else "test-channel"
+        msg = get_channel_users_list(user_profile, channel_name)
+        return dict(msg=msg)
+    elif command.startswith("add "):
+        from zerver.models.meetings import add_persons_to_channel_by_id
+        parts = command.split()
+        if len(parts) < 3:
+            raise JsonableError(_("Usage: /add <channel_name> <user_id1> <user_id2> ..."))
+        
+        try:
+            channel_name = parts[1]
+            user_ids = [int(uid) for uid in parts[2:]]
+        except ValueError:
+            raise JsonableError(_("Usage: /add <channel_name> <user_id1> <user_id2> ..."))
+            
+        msg = add_persons_to_channel_by_id(user_profile, channel_name, user_ids)
+        return dict(msg=msg)
+
     raise JsonableError(_("No such command: {command}").format(command=command))

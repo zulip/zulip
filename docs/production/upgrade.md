@@ -31,9 +31,9 @@ Business](https://zulip.com/plans/#self-hosted), or reach out to
 
 :::{important}
 
-Be sure to follow the additional instructions if you're [using
-docker-zulip][docker-upgrade], have [patched Zulip](modify.md), or have
-[modified Zulip-managed configuration
+Be sure to follow the additional instructions if you're {doc}`using
+Docker <docker:how-to/compose-upgrading>`, have [patched
+Zulip](modify.md), or have [modified Zulip-managed configuration
 files](#preserving-local-changes-to-service-configuration-files).
 
 :::
@@ -91,8 +91,8 @@ If you run into any issues or need to roll back the upgrade, see the
 
 :::{important}
 
-If you are upgrading docker-zulip, please follow [these
-instructions](https://github.com/zulip/docker-zulip#upgrading-from-a-git-repository).
+If your deployment is using Docker, please follow {ref}`these
+instructions <docker:how-to/compose-upgrading:upgrading from a git repository>`.
 
 :::
 
@@ -115,16 +115,16 @@ To upgrade to a branch from Git, simply run:
 
 ```bash
 # Upgrade to an official release
-/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 9.4
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 11.5
 
 # Upgrade to a maintenance branch
-/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 9.x
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 11.x
 
 # Upgrade to the Zulip Cloud branch
 /home/zulip/deployments/current/scripts/upgrade-zulip-from-git zulip-cloud-current
 
 # Upgrade to the `main` branch
-/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 9.4
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git main
 ```
 
 Zulip will automatically fetch the relevant Git commit and upgrade to
@@ -368,8 +368,6 @@ To upgrade the version of PostgreSQL on the Zulip server:
 
 You should now be able to navigate to the Zulip server's URL and
 confirm everything is working correctly.
-
-[docker-upgrade]: https://github.com/zulip/docker-zulip#upgrading-the-zulip-container
 
 ## Upgrading the operating system
 

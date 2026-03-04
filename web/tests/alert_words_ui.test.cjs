@@ -49,8 +49,7 @@ run_test("rerender_alert_words_ui", ({mock_template}) => {
     assert.equal(list_widget_create_called, true);
 });
 
-run_test("remove_alert_word", ({override_rewire}) => {
-    override_rewire(alert_words_ui, "rerender_alert_words_ui", noop);
+run_test("remove_alert_word", () => {
     alert_words_ui.set_up_alert_words();
 
     const $word_list = $("#alert-words-table");

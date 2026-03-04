@@ -159,7 +159,7 @@ def update_messages_for_topic_edit(
     message_edit_request: StreamMessageEditRequest,
     edit_history_event: EditHistoryEvent,
     last_edit_time: datetime,
-) -> tuple[QuerySet[Message], Callable[[], QuerySet[Message]]]:
+) -> tuple[QuerySet[Message], Callable[[], None]]:
     # Uses index: zerver_message_realm_recipient_upper_subject
     old_stream = message_edit_request.orig_stream
     messages = Message.objects.filter(
@@ -224,18 +224,8 @@ def update_messages_for_topic_edit(
     if message_edit_request.is_topic_edited:
         update_fields["subject"] = message_edit_request.target_topic_name
 
-    # The update will cause the 'messages' query to no longer match
-    # any rows; we capture the set of matching ids first, do the
-    # update, and then return a fresh collection -- so we know their
-    # metadata has been updated for the UPDATE command, and the caller
-    # can update the remote cache with that.
-    message_ids = [edited_message.id, *messages.values_list("id", flat=True)]
-
-    def propagate() -> QuerySet[Message]:
+    def propagate() -> None:
         messages.update(**update_fields)
-        return Message.objects.filter(id__in=message_ids).select_related(
-            *Message.DEFAULT_SELECT_RELATED
-        )
 
     return messages, propagate
 

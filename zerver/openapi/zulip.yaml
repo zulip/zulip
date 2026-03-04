@@ -355,9 +355,13 @@ paths:
                                         avatar_source:
                                           type: string
                                           description: |
-                                            The new avatar data source type for the user.
+                                            The new avatar data source type for the user. Valid values are:
 
-                                            Valid values are `G` (gravatar) and `U` (uploaded by user).
+                                            - "G" = Hosted by Gravatar
+                                            - "J" = Generated using Jdenticon
+                                            - "U" = Uploaded by user
+
+                                            **Changes**: The "J" value is new in Zulip 12.0 (feature level 466).
                                         avatar_url_medium:
                                           type: string
                                           description: |
@@ -558,6 +562,24 @@ paths:
                                         is_imported_stub:
                                           type: boolean
                                           description: This value is always `false`.
+                                    - type: object
+                                      additionalProperties: false
+                                      description: |
+                                        Sent when the `date_joined` value is updated after an
+                                        imported stub user or a user created via the API logs
+                                        in for the first time.
+
+                                        **Changes**: New in Zulip 12.0 (feature level 475).
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The ID of the user affected by this change.
+                                        date_joined:
+                                          type: string
+                                          description: |
+                                            The time when the user logged in to their account
+                                            for the first time.
                               additionalProperties: false
                               example:
                                 {
@@ -922,6 +944,21 @@ paths:
                                     [message-flags]: /api/update-message-flags#available-flags
                                   items:
                                     type: string
+                                local_message_id:
+                                  type: string
+                                  description: |
+                                    For clients supporting
+                                    [local echo](https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#local-echo).
+                                    Only present if [`local_id`](/api/send-message#parameter-local_id) and
+                                    [`queue_id`](/api/send-message#parameter-queue_id) were passed by the
+                                    client when the message was sent to the server.
+
+                                    The same unique string-format identifier chosen by the client to identify
+                                    the locally echoed message (which was the value passed as the `local_id`
+                                    parameter). This lets the client know unambiguously that it should
+                                    replace the locally echoed message, rather than adding this new message
+                                    (which would be correct if the user had sent the new message from another
+                                    device).
                               additionalProperties: false
                               example:
                                 {
@@ -1685,7 +1722,7 @@ paths:
                                       "path_id": "2/ce/2Xpnnwgh8JWKxBXtTfD6BHKV/zulip.txt",
                                       "size": 6,
                                       "create_time": 1594825414,
-                                      "messages": [],
+                                      "message_ids": [],
                                     },
                                   "upload_space_used": 6,
                                   "id": 0,
@@ -1726,7 +1763,7 @@ paths:
                                       "path_id": "2/ce/2Xpnnwgh8JWKxBXtTfD6BHKV/zulip.txt",
                                       "size": 6,
                                       "create_time": 1594825414,
-                                      "messages": [],
+                                      "message_ids": [],
                                     },
                                   "upload_space_used": 6,
                                   "id": 0,
@@ -1775,13 +1812,12 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to a user's clients when the metadata in the
-                                `push_devices` dictionary for the user changes.
+                                Event sent to a user's clients when they [register a device](/api/register-client-device).
 
-                                Helps clients to live-update the `push_devices` dictionary
+                                Helps clients to live-update the `devices` dictionary
                                 returned in [`POST /register`](/api/register-queue) response.
 
-                                **Changes**: New in Zulip 11.0 (feature level 406).
+                                **Changes**: New in Zulip 12.0 (feature level 468).
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1789,45 +1825,128 @@ paths:
                                   allOf:
                                     - $ref: "#/components/schemas/EventTypeSchema"
                                     - enum:
-                                        - push_device
-                                push_account_id:
-                                  type: integer
-                                  description: |
-                                    The push account ID for this client registration.
-
-                                    See [`POST /mobile_push/register`](/api/register-push-device)
-                                    for details on push account IDs.
-
-                                    **Changes**: Prior to Zulip 12.0 (feature level 450),
-                                    the integer value was expressed as a string.
-                                status:
+                                        - device
+                                op:
                                   type: string
                                   enum:
-                                    - active
-                                    - failed
-                                    - pending
+                                    - add
+                                device_id:
+                                  type: integer
                                   description: |
-                                    The updated registration status. Will be `"active"`, `"failed"`, or
-                                    `"pending"`.
-                                error_code:
+                                    The ID of the new registered device.
+                              example:
+                                {
+                                  "id": 1,
+                                  "type": "device",
+                                  "op": "add",
+                                  "device_id": 1144,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to a user's clients when they deregister a device.
+
+                                Helps clients to live-update the `devices` dictionary
+                                returned in [`POST /register`](/api/register-queue) response.
+
+                                **Changes**: New in Zulip 12.0 (feature level 468).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - device
+                                op:
+                                  type: string
+                                  enum:
+                                    - remove
+                                device_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the device which deregistered.
+                              example:
+                                {
+                                  "id": 1,
+                                  "type": "device",
+                                  "op": "remove",
+                                  "device_id": 1144,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to a user's clients when the metadata in the
+                                `devices` dictionary for the user changes.
+
+                                Helps clients to live-update the `devices` dictionary
+                                returned in [`POST /register`](/api/register-queue) response.
+
+                                Besides `id`, `type`, `op`, and `device_id`, all other fields
+                                are optional. Only fields whose values needs to be updated are
+                                included in the event.
+
+                                **Changes**: New in Zulip 12.0 (feature level 468).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - device
+                                op:
+                                  type: string
+                                  enum:
+                                    - update
+                                device_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the registered device whose metadata changed.
+                                push_key_id:
+                                  type: integer
+                                  description: |
+                                    ID to reference the encryption key used to encrypt
+                                    push notifications sent to the device.
+                                push_token_id:
                                   type: string
                                   nullable: true
                                   description: |
-                                    If the status is `"failed"`, a [Zulip API error
-                                    code](/api/rest-error-handling) indicating the type of failure that
-                                    occurred.
+                                    ID to reference the token provided by FCM/APNs to the device,
+                                    which is registered to the push bouncer service.
+
+                                    A `null` value means the referenced token expired.
+                                pending_push_token_id:
+                                  type: string
+                                  nullable: true
+                                  description: |
+                                    ID to reference the token provided by FCM/APNs to the device,
+                                    whose registration is in progress to the push bouncer service.
+
+                                    A `null` value means the pending registration succeeded.
+                                push_token_last_updated_timestamp:
+                                  type: integer
+                                  description: |
+                                    The UNIX timestamp for the last time when `pending_push_token_id`
+                                    was set to a new non-null value, in UTC seconds.
+                                push_registration_error_code:
+                                  type: string
+                                  nullable: true
+                                  description: |
+                                    If the push registration failed, a [Zulip API error code](/api/rest-error-handling)
+                                    indicating the type of failure that occurred.
 
                                     The following error codes have recommended client behavior:
 
                                     - `"INVALID_BOUNCER_PUBLIC_KEY"` - Inform the user to update app.
                                     - `"REQUEST_EXPIRED` - Retry with a fresh payload.
-                                      If the status is "failed", an error code explaining the failure.
                               example:
                                 {
-                                  "id": 1,
-                                  "type": "push_device",
-                                  "push_account_id": 1234,
-                                  "status": "active",
+                                  "id": 2,
+                                  "type": "device",
+                                  "op": "update",
+                                  "device_id": 12,
+                                  "push_key_id": 57,
                                 }
                             - type: object
                               additionalProperties: false
@@ -3906,6 +4025,25 @@ paths:
                                         type: integer
                                         description: |
                                           The ID of the linkifier.
+                                      example_input:
+                                        type: string
+                                        nullable: true
+                                        description: |
+                                          An example input string that matches the linkifier's pattern.
+                                          This is required for reverse linkifiers.
+
+                                          **Changes**: New in Zulip 12.0 (feature level 471).
+                                      reverse_template:
+                                        type: string
+                                        nullable: true
+                                        description: |
+                                          A simple template using `{variable}` for variables that can
+                                          be used to generate the Markdown linkifier syntax, given a
+                                          URL matching the URL template.
+
+                                          `{{ "{{/}}" }}` can be used for literal `{/}` characters.
+
+                                          **Changes**: New in Zulip 12.0 (feature level 471).
                               example:
                                 {
                                   "type": "realm_linkifiers",
@@ -3915,6 +4053,8 @@ paths:
                                         "pattern": "#(?P<id>[123])",
                                         "url_template": "https://realm.com/my_realm_filter/{id}",
                                         "id": 1,
+                                        "example_input": "#1234",
+                                        "reverse_template": "#{id}",
                                       },
                                     ],
                                   "id": 0,
@@ -4265,18 +4405,11 @@ paths:
                                   "op": "add",
                                   "bot":
                                     {
-                                      "email": "test-bot@zulip.testserver",
                                       "user_id": 36,
-                                      "full_name": "Foo Bot",
-                                      "bot_type": 1,
-                                      "is_active": true,
-                                      "api_key": "6hc6MC9mpNFvoo0gSOWnZEq4aJEn8UNK",
                                       "default_sending_stream": null,
                                       "default_events_register_stream": null,
                                       "default_all_public_streams": false,
-                                      "avatar_url": "https://secure.gravatar.com/avatar/af8abc2537d283b212a6bd4d1289956d?d=identicon&version=1",
                                       "services": [],
-                                      "owner_id": 10,
                                     },
                                   "id": 1,
                                 }
@@ -4292,6 +4425,15 @@ paths:
 
                                 Only organization administrators and the user who owns the bot will
                                 receive this event.
+
+                                **Changes**: Starting from Zulip 12.0 (feature level 474),
+                                this event is not sent when updating bot's avatar, email, name or
+                                owner and also when reactivating or deactivating a bot.
+
+                                Starting from Zulip 12.0 (feature level 474), this event is
+                                no longer sent when a bot's API key is regenerated. Clients now
+                                use [`GET /bots/{bot_id}/api_key`](/api/get-bot-api-key) to get
+                                api key for the bot.
                               additionalProperties: false
                               properties:
                                 id:
@@ -4427,11 +4569,14 @@ paths:
                                 events into the corresponding [realm/update_dict](#realm-update_dict)
                                 event and then process that.
 
-                                **Changes**: Removed `extra_data` optional property in Zulip 10.0
-                                (feature level 306). The `extra_data` used to include an
-                                `upload_quota` field when changed property was `plan_type`. The
-                                server now sends a standard `realm/update_dict` event for plan
-                                changes.
+                                **Changes**: Removed the `rendered_description` property in
+                                Zulip 12.0 (feature level 464). It had been briefly present only
+                                since feature level 462 and can be safely ignored by all clients.
+
+                                Removed `extra_data` optional property in Zulip 10.0 (feature level 306).
+                                The `extra_data` used to include an `upload_quota` field when changed
+                                property was `plan_type`. The server now sends a standard
+                                `realm/update_dict` event for plan changes.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -4991,6 +5136,9 @@ paths:
                                         - "G" = Hosted by Gravatar
                                         - "J" = Generated using Jdenticon
 
+                                        Note that "U" is not a supported value here, since there is
+                                        no such thing as a "default" user-uploaded avatar.
+
                                         **Changes**: New in Zulip 12.0 (feature level 456).
                                     default_code_block_language:
                                       type: string
@@ -5133,6 +5281,22 @@ paths:
                                       type: string
                                       description: |
                                         The URL of the organization's [profile icon](/help/create-your-organization-profile).
+                                    media_preview_size:
+                                      type: integer
+                                      enum:
+                                        - 100
+                                        - 150
+                                        - 200
+                                      description: |
+                                        The organization's policy for the size of image and video
+                                        thumbnails in messages, expressed as a percentage of the
+                                        default height. Currently, only certain values are permitted.
+
+                                        - `100`: 100% height (the default).
+                                        - `150`: 150% height.
+                                        - `200`: 200% height.
+
+                                        **Changes**: New in Zulip 12.0 (feature level 469).
                                     inline_image_preview:
                                       type: boolean
                                       description: |
@@ -5404,6 +5568,23 @@ paths:
                                         indicated timestamp is near.
 
                                         **Changes**: New in Zulip 8.0 (feature level 231).
+                                    rendered_description:
+                                      type: string
+                                      description: |
+                                        Note: Only present if the changed property was `description`.
+
+                                        The organization description rendered as HTML, intended to
+                                        be used when displaying the organization description in a UI.
+
+                                        One should use the standard Zulip rendered_markdown CSS when
+                                        displaying this content so that emoji, LaTeX, and other syntax
+                                        work correctly. And any client-side security logic for
+                                        user-generated message content should be applied when displaying
+                                        this HTML as though it were the body of a Zulip message.
+
+                                        **Changes**: New in Zulip 12.0 (feature level 464). Previously
+                                        in feature levels 462-463, an `update` event had been sent
+                                        when updating the realm's `description`.
                                     require_e2ee_push_notifications:
                                       type: boolean
                                       description: |
@@ -5490,11 +5671,19 @@ paths:
                                         - 3 = Zoom (User OAuth integration)
                                         - 4 = BigBlueButton
                                         - 5 = Zoom (Server to Server OAuth integration)
+                                        - 6 = Constructor Groups
+                                        - 7 = Nextcloud Talk
 
                                         Note that only one of the [Zoom integrations][zoom-video-calls] can
                                         be configured on a Zulip server.
 
-                                        **Changes**: In Zulip 10.0 (feature level 353), added the Zoom Server
+                                        **Changes**: In Zulip 12.0 (feature level 465), added the
+                                        Constructor Groups option.
+
+                                        In Zulip 12.0 (feature level 460), added the
+                                        Constructor Groups option.
+
+                                        In Zulip 10.0 (feature level 353), added the Zoom Server
                                         to Server OAuth option.
 
                                         In Zulip 3.0 (feature level 1), added the None option
@@ -5522,7 +5711,7 @@ paths:
                                         This organization's configured custom message for Welcome Bot
                                         to send to new user accounts, in Zulip Markdown format.
 
-                                        Maximum length is 8000 characters.
+                                        Maximum length is 8000 Unicode code points.
 
                                         **Changes**: New in Zulip 11.0 (feature level 416).
                                     zulip_update_announcements_stream_id:
@@ -6535,11 +6724,7 @@ paths:
                               "path_id": "2/ce/DfOkzwdg_IwlrN3myw3KGtiJ/166050.jpg",
                               "size": 571946,
                               "create_time": 1588145417,
-                              "messages":
-                                [
-                                  {"id": 102, "date_sent": 1588145424},
-                                  {"id": 103, "date_sent": 1588145448},
-                                ],
+                              "message_ids": [102, 103],
                             },
                           ],
                         "upload_space_used": 571946,
@@ -8421,21 +8606,27 @@ paths:
                   description: |
                     For clients supporting
                     [local echo](https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#local-echo),
-                    the [event queue](/api/register-queue)
-                    ID for the client. If passed, `local_id` is required. If the message is
-                    successfully sent, the server will include `local_id` in the `message` event
-                    that the client with this `queue_id` will receive notifying it of the new message
-                    via [`GET /events`](/api/get-events). This lets the client know unambiguously
-                    that it should replace the locally echoed message, rather than adding this new
-                    message (which would be correct if the user had sent the new message from another
-                    device).
+                    the [event queue](/api/register-queue) ID for the client.
+
+                    If passed, `local_id` is required.
+
+                    If the message is successfully sent, the server will include
+                    `local_message_id` in the [`message` event](/api/get-events#message) that
+                    the client with this `queue_id` will receive.
                   example: "fb67bf8a-c031-47cc-84cf-ed80accacda8"
                 local_id:
                   type: string
                   description: |
-                    For clients supporting local echo, a unique string-format identifier
-                    chosen freely by the client; the server will pass it back to the client without
-                    inspecting it, as described in the `queue_id` description.
+                    For clients supporting
+                    [local echo](https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#local-echo),
+                    a unique string-format identifier chosen freely by the client.
+
+                    If passed, `queue_id` is required.
+
+                    If the message is successfully sent, the server will pass it back to
+                    the client without inspecting it as `local_message_id` in the
+                    [`message` event](/api/get-events#message) that the client with the
+                    above `queue_id` will receive.
                   example: "100.01"
                 read_by_sender:
                   type: boolean
@@ -9941,7 +10132,7 @@ paths:
                               "path_id": "2/5d/BD5NRptFxPDKY3RUKwhhup8r/1253601-1.jpg",
                               "size": 1339060,
                               "create_time": 1687984706,
-                              "messages": [],
+                              "message_ids": [],
                             },
                           ],
                       }
@@ -10137,9 +10328,9 @@ paths:
       summary: Report a message
       tags: ["messages"]
       description: |
-        Sends a notification to the organization's moderation request channel,
-        if it is configured, that reports the targeted message for review and
-        moderation.
+        Sends a notification to the organization's [moderation request
+        channel](/help/enable-moderation-requests), if it is configured, that
+        reports the targeted message for [review and moderation](/help/report-a-message).
 
         Clients should check the `moderation_request_channel` realm setting to
         decide whether to show the option to report messages in the UI.
@@ -10164,20 +10355,21 @@ paths:
                   description: |
                     The reason that best describes why the current user is reporting the
                     target message for moderation.
+
+                    Must be one of the `key` values in the `server_report_message_types`
+                    field in the [`POST /register`](/api/register-queue) response.
+
+                    **Changes**: Prior to Zulip 12.0 (feature level 435), the allowed
+                    values for this parameter were limited to: `"harassment"`,
+                    `"inappropriate"`, `"norms"`, `"other"`, `"spam"`.
                   type: string
-                  enum:
-                    - spam
-                    - harassment
-                    - inappropriate
-                    - norms
-                    - other
                   example: harassment
                 description:
                   description: |
                     A short description with additional context about why the current user
                     is reporting the target message for moderation.
 
-                    Clients should limit this string to a maximum length of 1000 characters.
+                    Clients should limit this string to 1000 Unicode code points.
 
                     If the `report_type` parameter is `"other"`, this parameter is required,
                     and its value cannot be an empty string.
@@ -10635,7 +10827,11 @@ paths:
         Administrator endpoint for changing the [status](/help/status-and-availability) of
         another user.
 
-        **Changes**: New in Zulip 11.0 (feature level 407).
+        **Changes**: Prior to Zulip 12.0 (feature level 473), only
+        bots could not access this API endpoint, regardless of the
+        role of the bot.
+
+        New in Zulip 11.0 (feature level 407).
       x-requires-administrator: true
       requestBody:
         required: false
@@ -10650,7 +10846,7 @@ paths:
                     The text content of the status message. Sending the empty string
                     will clear the user's status.
 
-                    **Note**: The limit on the size of the message is 60 characters.
+                    **Note**: The limit on the size of the message is 60 Unicode code points.
                   example: on vacation
                 emoji_name:
                   type: string
@@ -10688,9 +10884,6 @@ paths:
 
                     **Changes**: New in Zulip 5.0 (feature level 86).
                   example: unicode_emoji
-            encoding:
-              away:
-                contentType: application/json
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
@@ -11028,9 +11221,22 @@ paths:
                       date_joined:
                         type: string
                         description: |
-                          The time the requesting user's account was created.
+                          The time when the user joined. For users imported from other
+                          applications and users created via the API, this is set to the
+                          account creation time until the user logs in for the first time,
+                          after which it is updated to that login time.
 
-                          **Changes**: New in Zulip 3.0 (feature level 10).
+                          For imported users, clients can use the `is_imported_stub` flag
+                          to determine how to display this field: when `is_imported_stub`
+                          is `true`, the user has not yet logged in and this value is the
+                          account creation time during import; when `is_imported_stub` is
+                          `false`, this value reflects when the user first logged in.
+
+                          **Changes**: Starting with Zulip 12.0 (feature level 475),
+                          this field is updated when an imported stub user or a user created
+                          via the API logs in for the first time.
+
+                          New in Zulip 3.0 (feature level 10).
                         example: "2019-10-20T07:50:53.728864+00:00"
                       max_message_id:
                         type: integer
@@ -11173,6 +11379,47 @@ paths:
 
                       An example JSON error response when the current user is the only
                       organization owner in the organization:
+  /users/me/api_key/regenerate:
+    post:
+      operationId: regenerate-api-key
+      summary: Regenerate your API key
+      tags: ["users"]
+      description: |
+        !!! warn ""
+
+             **Note**: Users should treat their Zulip API key as
+             [carefully as they would their password](/help/protect-your-account).
+
+        Generate a new API key for the user making the request.
+
+        Changing a user's API key will immediately log them out of Zulip
+        on devices registered for [mobile push notifications][mobile-push].
+
+        [mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      api_key:
+                        type: string
+                        description: The new API key for the user.
+                    required:
+                      - api_key
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "api_key": "a1b2c3d4e5f6g7h8i9j0",
+                      }
   /users/me/alert_words:
     get:
       operationId: get-alert-words
@@ -11656,7 +11903,7 @@ paths:
                     The text content of the status message. Sending the empty string
                     will clear the user's status.
 
-                    **Note**: The limit on the size of the message is 60 characters.
+                    **Note**: The limit on the size of the message is 60 Unicode code points.
                   example: on vacation
                 away:
                   deprecated: true
@@ -12702,9 +12949,9 @@ paths:
             schema:
               type: object
               properties:
-                push_account_id:
+                device_id:
                   description: |
-                    The push account ID for the device to which to send the test notification.
+                    The ID for the device to which to send the test notification.
 
                     If this parameter is not submitted, the E2EE test notification will
                     be sent to all of the user's devices registered on the server.
@@ -12712,10 +12959,14 @@ paths:
                     A mobile client should pass this parameter, to avoid triggering a test
                     notification for other clients.
 
-                    See [`POST /mobile_push/register`](/api/register-push-device)
-                    for details on push account IDs.
+                    See [`POST /register_client_device`](/api/register-client-device)
+                    for details on device ID.
+
+                    **Changes**: New in Zulip 12.0 (feature level 468).
+
+                    Previously, `push_account_id` was used.
                   type: integer
-                  example: 111222
+                  example: 1144
       responses:
         "200":
           description: Success.
@@ -12754,9 +13005,24 @@ paths:
       summary: Register E2EE push device
       tags: ["mobile"]
       description: |
-        Register a device to receive end-to-end encrypted mobile push notifications.
+        Register a device to receive end-to-end encrypted mobile push notifications,
+        or update such a registration.
 
-        **Changes**: New in Zulip 11.0 (feature level 406).
+        To perform an initial registration, clients must provide both the
+        push key fields (`push_key` and `push_key_id`) and the token fields
+        (`token_kind`, `token_id`, `bouncer_public_key`, and `encrypted_push_registration`).
+
+        Once registered, clients should use this endpoint to rotate `push_key` or
+        FCM/APNs provided token:
+
+        - **Rotate push key**: Provide only the push key fields.
+        - **Rotate token**: Provide only the token fields.
+
+        **Changes**: In Zulip 12.0 (feature level 468), the endpoint
+        was significantly redesigned to support rotation of `push_key` and
+        token provided by FCM/APNs.
+
+        New in Zulip 11.0 (feature level 406).
       requestBody:
         required: true
         content:
@@ -12764,20 +13030,19 @@ paths:
             schema:
               type: object
               properties:
-                token_kind:
+                device_id:
                   description: |
-                    Whether the token was generated by FCM or APNs.
-                  type: string
-                  enum:
-                    - fcm
-                    - apns
-                  example: "fcm"
-                push_account_id:
+                    The ID of the device to configure for push notifications.
+
+                    See [`POST /register_client_device`](/api/register-client-device)
+                    for how to obtain a device ID.
+                  type: integer
+                  example: 1
+                push_key_id:
                   description: |
-                    A random integer generated by the client that will be included
-                    in mobile push notifications along with encrypted payloads to
-                    identify pushes as being related to this registration.
-                    Must be unique in the client's table of accounts.
+                    A random unsigned 32-bit integer generated by the client as an identifier
+                    for `push_key`. It will be included in mobile push notifications
+                    along with encrypted payloads to identify the `push_key` to decrypt.
                   type: integer
                   example: 2408
                 push_key:
@@ -12809,6 +13074,22 @@ paths:
                     did not have a natural way to support multiple cryptosystems.
                   type: string
                   example: "MTaUDJDMWypQ1WufZ1NRTHSSvgYtXh1qVNSjN3aBiEFt"
+                token_kind:
+                  description: |
+                    Whether the token was generated by FCM or APNs.
+                  type: string
+                  enum:
+                    - fcm
+                    - apns
+                  example: "fcm"
+                token_id:
+                  description: |
+                    Identifier for the FCM/APNs provided token to the device,
+                    produced by taking the first 8 bytes of the SHA-256 hash of
+                    the token, then encoding those bytes using standard Base64 encoding
+                    as defined in RFC 4648.
+                  type: string
+                  example: "hGsEWGmyyfI="
                 bouncer_public_key:
                   description: |
                     Which of the bouncer's public keys the client used to encrypt the
@@ -12818,6 +13099,9 @@ paths:
                     and the new public key is baked into a new client release. Because
                     the bouncer routinely rotates key, this field clarifies which
                     public key the client is using.
+
+                    The public key is encoded using standard Base64 encoding as defined
+                    in RFC 4648.
                   type: string
                   example: "bouncer-public-key"
                 encrypted_push_registration:
@@ -12832,11 +13116,7 @@ paths:
                   type: string
                   example: "encrypted-push-registration-data"
               required:
-                - token_kind
-                - push_account_id
-                - push_key
-                - bouncer_public_key
-                - encrypted_push_registration
+                - device_id
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
@@ -12884,12 +13164,15 @@ paths:
                     being registered belongs.
                   type: string
                   example: "9aa61d0b-8ce5-488d-8e9e-fedc346e6836"
-                push_account_id:
+                token_id:
                   description: |
-                    The `push_account_id` value provided by the mobile client
+                    The `token_id` value provided by the mobile client
                     to [register E2EE push device](/api/register-push-device).
-                  type: integer
-                  example: 2408
+
+                    **Changes**: New in Zulip 12.0 (feature level 468),
+                    replacing `push_account_id`.
+                  type: string
+                  example: "+wKIhyAx/Eg="
                 encrypted_push_registration:
                   description: |
                     The `encrypted_push_registration` value provided by the mobile client
@@ -12904,30 +13187,12 @@ paths:
                   example: "bouncer-public-key"
               required:
                 - realm_uuid
-                - push_account_id
+                - token_id
                 - encrypted_push_registration
                 - bouncer_public_key
       responses:
         "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccessBase"
-                  - required:
-                      - device_id
-                    additionalProperties: false
-                    properties:
-                      result: {}
-                      msg: {}
-                      ignored_parameters_unsupported: {}
-                      device_id:
-                        type: integer
-                        description: |
-                          Unique identifier assigned by the bouncer for the registration.
-                        example: 2408
-                    example: {"device_id": 2408, "msg": "", "result": "success"}
+          $ref: "#/components/responses/SimpleSuccess"
         "400":
           description: Bad request.
           content:
@@ -12982,6 +13247,68 @@ paths:
                     description: |
                       An example JSON response for when no realm is registered for
                       the authenticated server on the bouncer for the given `realm_uuid`:
+  /register_client_device:
+    post:
+      operationId: register-client-device
+      summary: Register a logged-in device
+      tags: ["mobile"]
+      description: |
+        Logged-in mobile devices use this endpoint as an initial step to
+        register themselves, before registering for E2EE push notifications.
+
+        This endpoint is currently not useful for clients other than mobile.
+
+        **Changes**: New in Zulip 12.0 (feature level 468).
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    required:
+                      - device_id
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      device_id:
+                        type: integer
+                        description: |
+                          The ID of the newly registered device.
+                    example: {"msg": "", "device_id": 2, "result": "success"}
+  /remove_client_device:
+    post:
+      operationId: remove-client-device
+      summary: Remove a registered device
+      tags: ["mobile"]
+      description: |
+        Mobile devices use this endpoint to remove their device record
+        registered using [`POST /register_client_device`](/api/register-client-device)
+        when the user logs out.
+
+        This endpoint is currently not useful for clients other than mobile.
+
+        **Changes**: New in Zulip 12.0 (feature level 470).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                device_id:
+                  description: |
+                    The ID of the device to remove.
+                  type: integer
+                  example: 2
+              required:
+                - device_id
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /user_topics:
     post:
       operationId: update-user-topic
@@ -15301,6 +15628,25 @@ paths:
                               type: integer
                               description: |
                                 The ID of the linkifier.
+                            example_input:
+                              type: string
+                              nullable: true
+                              description: |
+                                An example input string that matches the linkifier's pattern.
+                                This is required for reverse linkifiers.
+
+                                **Changes**: New in Zulip 12.0 (feature level 471).
+                            reverse_template:
+                              type: string
+                              nullable: true
+                              description: |
+                                A simple template using `{variable}` for variables that can
+                                be used to generate the Markdown linkifier syntax, given a
+                                URL matching the URL template.
+
+                                `{{ "{{/}}" }}` can be used for literal `{/}` characters.
+
+                                **Changes**: New in Zulip 12.0 (feature level 471).
                     example:
                       {
                         "msg": "",
@@ -15310,6 +15656,8 @@ paths:
                               "pattern": "#(?P<id>[0-9]+)",
                               "url_template": "https://github.com/zulip/zulip/issues/{id}",
                               "id": 1,
+                              "example_input": "#1234",
+                              "reverse_template": "#{id}",
                             },
                           ],
                         "result": "success",
@@ -15369,6 +15717,31 @@ paths:
                   $ref: "#/components/schemas/LinkifierPattern"
                 url_template:
                   $ref: "#/components/schemas/LinkifierURLTemplate"
+                example_input:
+                  type: string
+                  nullable: true
+                  example: "#1234"
+                  description: |
+                    An example input string that matches the linkifier's pattern.
+                    This is required for reverse linkifiers.
+
+                    **Changes**: New in Zulip 12.0 (feature level 471).
+                reverse_template:
+                  type: string
+                  nullable: true
+                  example: "#{id}"
+                  description: |
+                    A simple template using `{variable}` for variables that can
+                    be used to generate the Markdown linkifier syntax, given a
+                    URL matching the URL template.
+
+                    `{{ "{{/}}" }}` can be used for literal `{/}` characters.
+
+                    Server verifies that variables extracted from example_input using
+                    url_pattern when passed to reverse_template returns example_input
+                    back to us.
+
+                    **Changes**: New in Zulip 12.0 (feature level 471).
               required:
                 - pattern
                 - url_template
@@ -15441,6 +15814,33 @@ paths:
                   $ref: "#/components/schemas/LinkifierPattern"
                 url_template:
                   $ref: "#/components/schemas/LinkifierURLTemplate"
+                example_input:
+                  type: string
+                  nullable: true
+                  example: "#1234"
+                  description: |
+                    An example input string that matches the linkifier's pattern.
+                    This is required for reverse linkifiers. Passing an empty string
+                    will set this field back to null.
+
+                    **Changes**: New in Zulip 12.0 (feature level 471).
+                reverse_template:
+                  type: string
+                  nullable: true
+                  example: "#{id}"
+                  description: |
+                    A simple template using `{variable}` for variables that can
+                    be used to generate the Markdown linkifier syntax, given a
+                    URL matching the URL template. Passing an empty string
+                    will set this field back to null.
+
+                    Server verifies that variables extracted from example_input using
+                    url_pattern when passed to reverse_template returns example_input
+                    back to us.
+
+                    `{{ "{{/}}" }}` can be used for literal `{/}` characters.
+
+                    **Changes**: New in Zulip 12.0 (feature level 471).
               required:
                 - pattern
                 - url_template
@@ -15920,7 +16320,7 @@ paths:
                     Welcome Bot to new users that join the organization via this
                     invitation.
 
-                    Maximum length is 8000 characters.
+                    Maximum length is 8000 Unicode code points.
 
                     Only organization administrators can use this feature; for other
                     users, the value is always `null`.
@@ -16129,7 +16529,7 @@ paths:
                     Welcome Bot to new users that join the organization via this
                     invitation.
 
-                    Maximum length is 8000 characters.
+                    Maximum length is 8000 Unicode code points.
 
                     Only organization administrators can use this feature; for other
                     users, the value is always `null`.
@@ -16365,7 +16765,7 @@ paths:
                     Custom message text, in Zulip Markdown format, to be used for
                     this test message.
 
-                    Maximum length is 8000 characters.
+                    Maximum length is 8000 Unicode code points.
                   type: string
                   maxLength: 8000
                   example: "Welcome to Zulip! We're excited to have you on board."
@@ -16904,7 +17304,7 @@ paths:
                       max_reminder_note_length:
                         type: integer
                         description: |
-                          The maximum allowed length for a reminder note.
+                          The maximum allowed length for a reminder note, in Unicode code points.
 
                           **Changes**: New in Zulip 11.0 (feature level 415).
                       max_stream_name_length:
@@ -17317,6 +17717,14 @@ paths:
                           administrator, this will include all bots in the organization. Otherwise,
                           it will only include bots owned by the user (either because the user created
                           the bot or an administrator transferred the bot's ownership to the user).
+
+                          **Changes**: Removed `avatar_url`, `bot_type`, `email`, `full_name`, `is_active`
+                          and `owner_id` fields from the dictionary in Zulip 12.0 (feature level 474).
+                          Clients can get all these data from the corresponding user object.
+
+                          Removed `api_key` field from the dictionary in Zulip 12.0 (feature level 474).
+                          Clients now use [`GET /bots/{bot_id}/api_key`](/api/get-bot-api-key)
+                          to get api key for the bot.
                       realm_embedded_bots:
                         type: array
                         items:
@@ -18445,34 +18853,53 @@ paths:
                           [Tenor API TOS](https://developers.google.com/tenor/guides/api-terms).
 
                           **Changes**: New in Zulip 12.0 (feature level 442).
-                      push_devices:
+                      devices:
                         type: object
                         description: |
-                          Present if `push_device` is present in `fetch_event_types`.
+                          Present if `device` is present in `fetch_event_types`.
 
-                          Dictionary where each entry describes the user's push device's
-                          registration status and error code (if registration failed).
+                          Dictionary where each entry describes the user's logged-in devices,
+                          registered using [`POST /register_client_device`](/api/register-client-device).
 
-                          **Changes**: New in Zulip 11.0 (feature level 406).
+                          **Changes**: New in Zulip 12.0 (feature level 468).
                         additionalProperties:
                           description: |
-                            `{push_account_id}`: Dictionary containing the details of
-                            a push device with the push account ID as the key.
+                            `{device_id}`: Dictionary containing the details of
+                            a device with the device ID as the key.
                           type: object
                           additionalProperties: false
                           properties:
-                            status:
-                              type: string
+                            push_key_id:
+                              type: integer
+                              nullable: true
                               description: |
-                                The push account's registration status.
-                                Either `"active"`, `"pending"`, or `"failed"`.
-                            error_code:
+                                ID to reference the encryption key used to encrypt
+                                push notifications sent to the device.
+                            push_token_id:
                               type: string
                               nullable: true
                               description: |
-                                If the status is `"failed"`, a [Zulip API error
-                                code](/api/rest-error-handling) indicating the type of failure that
-                                occurred.
+                                ID to reference the token provided by FCM/APNs to the device,
+                                which is registered to the push bouncer service.
+                            pending_push_token_id:
+                              type: string
+                              nullable: true
+                              description: |
+                                ID to reference the token provided by FCM/APNs to the device,
+                                whose registration is in progress to the push bouncer service.
+                            push_token_last_updated_timestamp:
+                              type: integer
+                              nullable: true
+                              description: |
+                                The UNIX timestamp for the last time when `pending_push_token_id`
+                                was set to a new non-null value, in UTC seconds.
+                            push_registration_error_code:
+                              type: string
+                              nullable: true
+                              description: |
+                                If the push registration failed, a [Zulip API error
+                                code](/api/rest-error-handling) indicating the type of
+                                failure that occurred.
 
                                 The following error codes have recommended client behavior:
 
@@ -18997,6 +19424,24 @@ paths:
                               to be of type integer and did not accept anonymous user groups.
 
                               New in Zulip 8.0 (feature level 209).
+                      realm_media_preview_size:
+                        type: integer
+                        enum:
+                          - 100
+                          - 150
+                          - 200
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The organization's policy for the size of image and video
+                          thumbnails in messages, expressed as a percentage of the
+                          default height. Currently, only certain values are permitted.
+
+                          - `100`: 100% height (the default).
+                          - `150`: 150% height.
+                          - `200`: 200% height.
+
+                          **Changes**: New in Zulip 12.0 (feature level 469).
                       realm_inline_image_preview:
                         type: boolean
                         description: |
@@ -19196,11 +19641,19 @@ paths:
                           - 3 = Zoom (User OAuth integration)
                           - 4 = BigBlueButton
                           - 5 = Zoom (Server to Server OAuth integration)
+                          - 6 = Constructor Groups
+                          - 7 = Nextcloud Talk
 
                           Note that only one of the [Zoom integrations][zoom-video-calls] can
                           be configured on a Zulip server.
 
-                          **Changes**: In Zulip 10.0 (feature level 353), added the Zoom Server
+                          **Changes**: In Zulip 12.0 (feature level 465), added the
+                          Nextcloud Talk option.
+
+                          In Zulip 12.0 (feature level 460), added the
+                          Constructor Groups option.
+
+                          In Zulip 10.0 (feature level 353), added the Zoom Server
                           to Server OAuth option.
 
                           In Zulip 3.0 (feature level 1), added the None option
@@ -19520,6 +19973,18 @@ paths:
 
                           **Changes**: New in Zulip 9.0 (feature level 257), replacing the
                           deprecated `realm_uri`.
+                      realm_uuid:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          A unique identifier for the organization, expected to be stable
+                          even if the organization migrates between hosting environments.
+
+                          Used as the salt for Jdenticon avatars; Clients that prefer to compute
+                          Jdenticon avatars may use `{realm_uuid}:{user_id}` as the Jdenticon key.
+
+                          **Changes**: New in Zulip 12.0 (feature level 466).
                       realm_available_video_chat_providers:
                         type: object
                         description: |
@@ -19781,6 +20246,9 @@ paths:
 
                           - "G" = Hosted by Gravatar
                           - "J" = Generated using Jdenticon
+
+                          Note that "U" is not a supported value here, since there is
+                          no such thing as a "default" user-uploaded avatar.
 
                           **Changes**: New in Zulip 12.0 (feature level 456).
                       jitsi_server_url:
@@ -20708,9 +21176,14 @@ paths:
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
-                          The avatar data source type for the current user.
+                          The avatar data source type for the current user. Valid values are:
 
-                          Valid values are `G` (gravatar) and `U` (uploaded by user).
+                          - "G" = Hosted by Gravatar
+                          - "J" = Generated using Jdenticon
+                          - "U" = Uploaded by user
+
+                          **Changes**: The "J" value is new in Zulip 12.0 (feature level 466).
+                          The avatar data source type for the current user.
                       avatar_url_medium:
                         type: string
                         description: |
@@ -23621,7 +24094,7 @@ paths:
                   type: array
                   items:
                     type: integer
-                  example: [16, 12]
+                  example: [17, 12]
                 announce:
                   description: |
                     This determines whether [notification bot](/help/configure-automated-notices)
@@ -24326,7 +24799,7 @@ paths:
                   example: true
                   default: false
             encoding:
-              allow_deactivated:
+              include_deactivated_groups:
                 contentType: application/json
       responses:
         "200":
@@ -25040,6 +25513,106 @@ paths:
                       }
                     description: |
                       An example JSON response when the channel folder ID is invalid:
+  /bots/{bot_id}/api_key:
+    get:
+      operationId: get-bot-api-key
+      summary: Get a bot's API key
+      tags: ["users"]
+      description: |
+        Fetch the API key for a bot user. Only the bot's owner and
+        organization administrators have access to a bot's API key.
+
+        **Changes**: New in Zulip 12.0 (feature level 463).
+      parameters:
+        - $ref: "#/components/parameters/BotId"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      api_key:
+                        type: string
+                        description: |
+                          The API key for the bot.
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "api_key": "hkA04ZYcqXKalvYMA8OeXSfzUOLrtbZv",
+                      }
+
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "No such bot",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response when the bot ID is invalid:
+  /bots/{bot_id}/api_key/regenerate:
+    post:
+      operationId: regenerate-bot-api-key
+      summary: Regenerate a bot's API key
+      tags: ["users"]
+      description: |
+        Generate a new API key for a bot user. Only the bot's owner and
+        organization administrators have access to a bot's API key.
+      parameters:
+        - $ref: "#/components/parameters/BotId"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      api_key:
+                        type: string
+                        description: |
+                          The new API key for the bot.
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "api_key": "hkA04ZYcqXKalvYMA8OeXSfzUOLrtbZv",
+                      }
+
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "No such bot",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response when the bot ID is invalid:
   /real-time:
     # This entry is a hack; it exists to give us a place to put the text
     # documenting the parameters for call_on_each_event and friends.
@@ -25285,6 +25858,92 @@ paths:
                         "url": "/calls/bigbluebutton/join?meeting_id=%22zulip-something%22&password=%22something%22&checksum=%22somechecksum%22",
                       }
 
+  /calls/nextcloud_talk/create:
+    post:
+      tags: ["channels"]
+      operationId: create-nextcloud-talk-video-call
+      summary: Create Nextcloud Talk video call
+      description: |
+        Create a video call URL for a Nextcloud Talk video call. Requires
+        [Nextcloud Talk](/integrations/nextcloud-talk) to be configured on the
+        Zulip server.
+
+        **Changes**: New in Zulip 12.0 (feature level 465).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - room_name
+              properties:
+                room_name:
+                  type: string
+                  description: |
+                    Room name for the Nextcloud Talk conversation.
+                  example: "#Test > team check-in"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      url:
+                        description: |
+                          The URL for the Nextcloud Talk conversation.
+                        type: string
+                        example: "https://nextcloud.example.com/index.php/call/abc123xyz"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "url": "https://nextcloud.example.com/index.php/call/abc123xyz",
+                      }
+
+  /calls/constructorgroups/create:
+    post:
+      tags: ["channels"]
+      operationId: create-constructor-groups-video-call
+      summary: Create Constructor Groups video call
+      description: |
+        Create a video call URL for a Constructor Groups video call.
+        Requires [Constructor Groups](/integrations/constructor-groups)
+        to be configured on the Zulip server.
+
+        **Changes**: New in Zulip 12.0 (feature level 460).
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      url:
+                        description: |
+                          The URL for the Constructor Groups video call.
+                        type: string
+                        example: "https://example.constructor.app/groups/room/room-123"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "url": "https://example.constructor.app/groups/room/room-123",
+                      }
+
 components:
   #######################
   # Security definitions
@@ -25355,34 +26014,19 @@ components:
 
             Changed in Zulip 3.0 (feature level 22). This field was
             previously a floating point number.
-        messages:
+        message_ids:
           type: array
           description: |
-            Contains basic details on any Zulip messages that have been
-            sent referencing this [uploaded file](/api/upload-file).
-            This includes messages sent by any user in the Zulip
-            organization who sent a message containing a link to the
-            uploaded file.
+            Array containing the IDs of messages that reference this
+            [uploaded file](/api/upload-file). This includes messages
+            sent by any user in the Zulip organization who sent a
+            message containing a link to the uploaded file.
+
+            **Changes**: In Zulip 12.0 (feature level 472), this
+            replaced the previous `messages` field, which was an array
+            of objects containing both `id` and `date_sent` properties.
           items:
-            type: object
-            additionalProperties: false
-            properties:
-              date_sent:
-                type: integer
-                description: |
-                  Time when the message was sent as a UNIX timestamp.
-
-                  **Changes**: Before Zulip 12.0 (feature level 443), this value
-                  was milliseconds since the epoch, not seconds.
-
-                  Changed in Zulip 3.0 (feature level 22). This
-                  field was previously strangely called `name` and was a floating
-                  point number.
-              id:
-                type: integer
-                description: |
-                  The unique message ID. Messages should always be
-                  displayed sorted by ID.
+            type: integer
     BasicChannel:
       allOf:
         - $ref: "#/components/schemas/BasicChannelBase"
@@ -25658,26 +26302,12 @@ components:
         - additionalProperties: false
           properties:
             user_id: {}
-            full_name: {}
-            api_key: {}
             default_sending_stream:
               nullable: true
             default_events_register_stream:
               nullable: true
             default_all_public_streams: {}
-            avatar_url: {}
-            owner_id:
-              nullable: true
             services: {}
-            is_active:
-              type: boolean
-              description: |
-                A boolean describing whether the user account has been deactivated.
-
-                **Changes**: New in Zulip 8.0 (feature level 222). Previously
-                we sent `realm_user` event with `op` field set to `remove`
-                when deactivating a bot and `realm_user` event with `op`
-                field set to `add` when reactivating a bot.
     BasicBotBase:
       type: object
       properties:
@@ -25685,14 +26315,6 @@ components:
           type: integer
           description: |
             The user ID of the bot.
-        full_name:
-          type: string
-          description: |
-            The full name of the bot.
-        api_key:
-          type: string
-          description: |
-            The API key of the bot which it uses to make API requests.
         default_sending_stream:
           type: string
           nullable: true
@@ -25709,17 +26331,6 @@ components:
           type: boolean
           description: |
             Whether the bot can send messages to all channels by default.
-        avatar_url:
-          type: string
-          description: |
-            The URL of the bot's avatar.
-        owner_id:
-          type: integer
-          nullable: true
-          description: |
-            The user ID of the bot's owner.
-
-            If `null`, the bot has no owner.
         services:
           type: array
           description: |
@@ -25771,38 +26382,25 @@ components:
         - $ref: "#/components/schemas/BasicBotBase"
         - description: |
             Object containing details of a bot.
+
+            **Changes**: Removed `avatar_url`, `bot_type`, `email`,
+            `full_name`, `is_active` and `owner_id` fields from the
+            dictionary in Zulip 12.0 (feature level 474). Clients
+            can get all these data from the corresponding user object.
+
+            Removed `api_key` field from the dictionary in
+            Zulip 12.0 (feature level 474). Clients now use
+            [`GET /bots/{bot_id}/api_key`](/api/get-bot-api-key) to get
+            api key for the bot.
           additionalProperties: false
           properties:
             user_id: {}
-            full_name: {}
-            api_key: {}
             default_sending_stream:
               nullable: true
             default_events_register_stream:
               nullable: true
             default_all_public_streams: {}
-            avatar_url: {}
-            owner_id:
-              nullable: true
             services: {}
-            email:
-              type: string
-              description: |
-                The email of the bot.
-            bot_type:
-              type: integer
-              nullable: true
-              description: |
-                An integer describing the type of bot:
-
-                - `1` for a `Generic` bot.
-                - `2` for an `Incoming webhook` bot.
-                - `3` for an `Outgoing webhook` bot.
-                - `4` for an `Embedded` bot.
-            is_active:
-              type: boolean
-              description: |
-                A boolean describing whether the user account has been deactivated.
     BotConfiguration:
       type: object
       description: |
@@ -27898,7 +28496,20 @@ components:
         date_joined:
           type: string
           description: |
-            The time the user account was created.
+            The time when the user joined. For users imported from other
+            applications and users created via the API, this is set to the
+            account creation time until the user logs in for the first time,
+            after which it is updated to that login time.
+
+            For imported users, clients can use the `is_imported_stub` flag
+            to determine how to display this field: when `is_imported_stub`
+            is `true`, the user has not yet logged in and this value is the
+            account creation time during import; when `is_imported_stub` is
+            `false`, this value reflects when the user first logged in.
+
+            **Changes**: Starting with Zulip 12.0 (feature level 475),
+            this field is updated when an imported stub user or a user created
+            via the API logs in for the first time.
         is_active:
           type: boolean
           description: |
@@ -29307,4 +29918,13 @@ components:
       schema:
         type: integer
       example: 1
+      required: true
+    BotId:
+      name: bot_id
+      in: path
+      description: |
+        The user ID of the target bot.
+      schema:
+        type: integer
+      example: 17
       required: true

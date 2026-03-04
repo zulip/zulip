@@ -1,5 +1,7 @@
+import $ from "jquery";
 import type * as z from "zod/mini";
 
+import * as message_lists from "./message_lists.ts";
 import {realm} from "./state_data.ts";
 import type {thumbnail_format_schema} from "./state_data.ts";
 
@@ -9,6 +11,24 @@ export const thumbnail_formats: ThumbnailFormat[] = [];
 
 export let preferred_format: ThumbnailFormat;
 export let animated_format: ThumbnailFormat;
+
+const DEFAULT_PREVIEW_SIZE_EM = 10;
+
+export function set_media_preview_size_css_variable(): void {
+    const size_em = (realm.realm_media_preview_size / 100) * DEFAULT_PREVIEW_SIZE_EM;
+    $(":root").css("--media-preview-max-height", `${size_em}em`);
+}
+
+export function get_media_preview_size(): number {
+    return (realm.realm_media_preview_size / 100) * DEFAULT_PREVIEW_SIZE_EM;
+}
+
+export function update_thumbnails(): void {
+    set_media_preview_size_css_variable();
+    for (const msg_list of message_lists.all_rendered_message_lists()) {
+        msg_list.rerender();
+    }
+}
 
 export function initialize(): void {
     // Go looking for the size closest to 840px wide.  We assume all browsers

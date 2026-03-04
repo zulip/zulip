@@ -87,6 +87,9 @@ function _get_topic_link_content(opts: {
     const stream_id = stream.stream_id;
     const escape = html_escape_markdown_syntax_characters;
     if (topic_name !== undefined) {
+        // This URL is relative, unlike the absolute URLs we use in quoting a message.
+        // See discussion:
+        //   https://chat.zulip.org/#narrow/channel/101-design/topic/.E2.9C.94.20.22quote.20message.22.20uses.20absolute.20URL.20instead.20of.20realm-rela.2E.2E.2E/near/2325588
         const stream_topic_url = hash_util.by_stream_topic_url(stream_id, topic_name);
         const topic_display_name = util.get_final_topic_display_name(topic_name);
         if (message_id !== undefined) {
@@ -123,6 +126,7 @@ export function get_fallback_markdown_link(
     stream_name: string,
     topic_name?: string,
     message_id?: string,
+    only_link_syntax = false,
 ): string {
     // Helper that should only be called by other methods in this file.
 
@@ -134,17 +138,23 @@ export function get_fallback_markdown_link(
         topic_name,
         message_id,
     });
-    return as_markdown_link_syntax(label_text_markdown, url);
+    return only_link_syntax
+        ? label_text_markdown
+        : as_markdown_link_syntax(label_text_markdown, url);
 }
 
-export function get_stream_topic_link_syntax(stream_name: string, topic_name: string): string {
-    // If the topic name is such that it will generate an invalid #**stream>topic** syntax,
-    // we revert to generating the normal markdown syntax for a link.
+export function get_stream_topic_link_syntax(
+    stream_name: string,
+    topic_name: string,
+    only_link_syntax = false,
+): string {
+    // If the topic/stream name would produce an invalid #**stream>topic** syntax, fall back
+    // to markdown link syntax. If only_link_syntax is true, only the link label is returned.
     if (
         will_produce_broken_stream_topic_link(topic_name) ||
         will_produce_broken_stream_topic_link(stream_name)
     ) {
-        return get_fallback_markdown_link(stream_name, topic_name);
+        return get_fallback_markdown_link(stream_name, topic_name, undefined, only_link_syntax);
     }
     return `#**${stream_name}>${topic_name}**`;
 }

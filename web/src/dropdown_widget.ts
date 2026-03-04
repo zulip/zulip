@@ -4,6 +4,7 @@ import * as tippy from "tippy.js";
 
 import render_dropdown_current_value_not_in_options from "../templates/dropdown_current_value_not_in_options.hbs";
 import render_dropdown_disabled_state from "../templates/dropdown_disabled_state.hbs";
+import render_dropdown_italic_state from "../templates/dropdown_italic_state.hbs";
 import render_dropdown_list from "../templates/dropdown_list.hbs";
 import render_dropdown_list_container from "../templates/dropdown_list_container.hbs";
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
@@ -34,6 +35,7 @@ export type Option = {
     description?: string;
     is_direct_message?: boolean;
     is_setting_disabled?: boolean;
+    make_italic?: boolean;
     stream?: StreamSubscription;
     bold_current_selection?: boolean;
     has_delete_icon?: boolean;
@@ -91,6 +93,7 @@ export type DropdownWidgetOptions = {
     // When this is set, pressing tab will move focus to the target element.
     tab_moves_focus_to_target?: string | (() => string);
     search_placeholder_text?: string;
+    sort_list_by_filter_value?: (items: Option[], filter_value: string) => Option[];
 };
 
 export class DropdownWidget {
@@ -139,6 +142,7 @@ export class DropdownWidget {
     // here, so should be generalized or reworked.
     item_clicked = false;
     search_placeholder_text: string;
+    sort_list_by_filter_value: ((items: Option[], filter_value: string) => Option[]) | undefined;
 
     constructor(options: DropdownWidgetOptions) {
         this.widget_name = options.widget_name;
@@ -180,6 +184,7 @@ export class DropdownWidget {
         this.tab_moves_focus_to_target = options.tab_moves_focus_to_target;
         this.current_hover_index = 0;
         this.search_placeholder_text = options.search_placeholder_text ?? "";
+        this.sort_list_by_filter_value = options.sort_list_by_filter_value;
     }
 
     init(): void {
@@ -398,6 +403,7 @@ export class DropdownWidget {
                             },
                         },
                         $simplebar_container: $popper.find(".dropdown-list-wrapper"),
+                        sort_by_filter_value: this.sort_list_by_filter_value,
                     },
                 );
 
@@ -765,6 +771,8 @@ export class DropdownWidget {
 
         if (option.is_setting_disabled) {
             $(this.widget_value_selector).html(render_dropdown_disabled_state({name: option.name}));
+        } else if (option.make_italic) {
+            $(this.widget_value_selector).html(render_dropdown_italic_state({name: option.name}));
         } else if (option.stream) {
             $(this.widget_value_selector).html(
                 render_inline_decorated_channel_name({

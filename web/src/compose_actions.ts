@@ -34,6 +34,7 @@ import * as saved_snippets_ui from "./saved_snippets_ui.ts";
 import * as spectators from "./spectators.ts";
 import * as stream_data from "./stream_data.ts";
 import * as util from "./util.ts";
+import * as add_meeting from "./add_meeting_ui.ts"
 
 // Opts sent to `compose_actions.start`.
 type ComposeActionsStartOpts = {
@@ -213,6 +214,7 @@ export let complete_starting_tasks = (opts: ComposeActionsOpts): void => {
 
     maybe_scroll_up_selected_message(opts);
     compose_fade.start_compose(opts.message_type);
+    message_viewport.bottom_of_feed.reset();
     reload.maybe_reset_pending_reload_timeout("compose_start");
     compose_recipient.update_compose_area_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
@@ -498,6 +500,8 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
     complete_starting_tasks(opts);
 
     saved_snippets_ui.setup_saved_snippets_dropdown_widget_if_needed();
+
+    add_meeting.setup_add_meeting_dropdown_widget_if_needed();
 };
 
 export function rewire_start(value: typeof start): void {
@@ -531,7 +535,7 @@ export let cancel = (): void => {
     call_hooks(compose_cancel_hooks);
     compose_state.set_message_type(undefined);
     compose_pm_pill.clear();
-    $(document).trigger("compose_canceled.zulip");
+    message_viewport.bottom_of_feed.reset();
     reload.maybe_reset_pending_reload_timeout("compose_end");
 };
 

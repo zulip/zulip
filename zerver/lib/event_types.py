@@ -28,18 +28,13 @@ class EventAlertWords(BaseEvent):
     alert_words: list[str]
 
 
-class AttachmentMessage(BaseModel):
-    id: int
-    date_sent: int
-
-
 class Attachment(BaseModel):
     id: int
     name: str
     size: int
     path_id: str
     create_time: int
-    messages: list[AttachmentMessage]
+    message_ids: list[int]
 
 
 class EventAttachmentAdd(BaseEvent):
@@ -290,11 +285,27 @@ class EventOnboardingSteps(BaseEvent):
     onboarding_steps: list[OnboardingSteps]
 
 
-class EventPushDevice(BaseEvent):
-    type: Literal["push_device"]
-    push_account_id: int
-    status: Literal["active", "failed", "pending"]
-    error_code: str | None = None
+class EventDeviceAdd(BaseEvent):
+    type: Literal["device"]
+    op: Literal["add"]
+    device_id: int
+
+
+class EventDeviceRemove(BaseEvent):
+    type: Literal["device"]
+    op: Literal["remove"]
+    device_id: int
+
+
+class EventDeviceUpdate(BaseEvent):
+    type: Literal["device"]
+    op: Literal["update"]
+    device_id: int
+    push_key_id: int | None = None
+    push_token_id: str | None = None
+    pending_push_token_id: str | None = None
+    push_token_last_updated_timestamp: int | None = None
+    push_registration_error_code: str | None = None
 
 
 class NavigationViewFields(BaseModel):
@@ -400,16 +411,9 @@ class BotServicesEmbedded(BaseModel):
 
 class Bot(BaseModel):
     user_id: int
-    api_key: str
-    avatar_url: str
-    bot_type: int
     default_all_public_streams: bool
     default_events_register_stream: str | None
     default_sending_stream: str | None
-    email: str
-    full_name: str
-    is_active: bool
-    owner_id: int
     services: list[BotServicesOutgoing | BotServicesEmbedded]
 
 
@@ -435,14 +439,9 @@ class BotTypeForUpdateCore(BaseModel):
 
 class BotTypeForUpdate(BotTypeForUpdateCore):
     # TODO: fix types to avoid optional fields
-    api_key: str | None = None
-    avatar_url: str | None = None
     default_all_public_streams: bool | None = None
     default_events_register_stream: str | None = None
     default_sending_stream: str | None = None
-    full_name: str | None = None
-    is_active: bool | None = None
-    owner_id: int | None = None
     services: list[BotServicesOutgoing | BotServicesEmbedded] | None = None
 
 
@@ -522,6 +521,8 @@ class RealmLinkifier(BaseModel):
     pattern: str
     url_template: str
     id: int
+    example_input: str | None = None
+    reverse_template: str | None = None
 
 
 class EventRealmLinkifiers(BaseEvent):
@@ -584,6 +585,11 @@ class MessageContentEditLimitSecondsData(BaseModel):
 class RealmTopicsPolicyData(BaseModel):
     topics_policy: str
     mandatory_topics: bool
+
+
+class RealmDescriptionData(BaseModel):
+    description: str
+    rendered_description: str
 
 
 class NightLogoData(BaseModel):
@@ -650,6 +656,7 @@ class EventRealmUpdate(BaseEvent):
     op: Literal["update"]
     property: str
     value: bool | int | str | None
+    rendered_description: str | None = None
 
 
 class RealmUser(BaseModel):
@@ -758,6 +765,11 @@ class PersonIsImportedStub(BaseModel):
     is_imported_stub: bool
 
 
+class PersonDateJoined(BaseModel):
+    user_id: int
+    date_joined: str
+
+
 class EventRealmUserUpdate(BaseEvent):
     type: Literal["realm_user"]
     op: Literal["update"]
@@ -765,6 +777,7 @@ class EventRealmUserUpdate(BaseEvent):
         PersonAvatarFields
         | PersonBotOwnerId
         | PersonCustomProfileField
+        | PersonDateJoined
         | PersonDeliveryEmail
         | PersonEmail
         | PersonFullName

@@ -6,6 +6,8 @@ const {mock_banners} = require("./lib/compose_banner.cjs");
 const {FakeComposeBox} = require("./lib/compose_helpers.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_cross_realm_bot, make_user, Role} = require("./lib/example_user.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_channel_get} = require("./lib/mock_channel.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
@@ -49,45 +51,45 @@ set_current_user(current_user);
 const user_settings = {default_language: "en"};
 initialize_user_settings({user_settings});
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
     date_joined: new Date(),
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: 31,
     full_name: "Alice",
-};
+});
 
-const bob = {
+const bob = make_user({
     email: "bob@example.com",
     user_id: 32,
     full_name: "Bob",
-    is_admin: true,
-};
+    role: Role.ADMINISTRATOR,
+});
 
-const guest = {
+const guest = make_user({
     email: "guest@example.com",
     user_id: 33,
     full_name: "Guest",
-    is_guest: true,
-};
+    role: Role.GUEST,
+});
 
-const moderator = {
+const moderator = make_user({
     email: "moderator@example.com",
     user_id: 34,
     full_name: "Charlie",
-    is_moderator: true,
-};
+    role: Role.MODERATOR,
+});
 
-const social_sub = {
+const social_sub = make_stream({
     stream_id: 101,
     name: "social",
     subscribed: true,
-};
+});
 stream_data.add_sub_for_tests(social_sub);
 
 people.add_active_user(me);
@@ -97,13 +99,11 @@ people.add_active_user(alice);
 people.add_active_user(bob);
 people.add_active_user(guest);
 
-const welcome_bot = {
+const welcome_bot = make_cross_realm_bot({
     email: "welcome-bot@example.com",
     user_id: 4,
     full_name: "Welcome Bot",
-    is_bot: true,
-    // cross realm bots have no owner
-};
+});
 
 people.add_cross_realm_user(welcome_bot);
 
@@ -184,46 +184,6 @@ function initialize_pm_pill(mock_template) {
 
     mock_banners();
 }
-
-test_ui("validate_stream_message_address_info", ({mock_template, override}) => {
-    // For this test we basically only use FakeComposeBox
-    // to set up the DOM environment. We don't assert about
-    // any side effects on the DOM, since the scope of this
-    // test is mostly to make sure the template gets rendered.
-    new FakeComposeBox();
-
-    override(realm, "realm_can_access_all_users_group", everyone.id);
-
-    const party_sub = {
-        stream_id: 101,
-        name: "party",
-        subscribed: true,
-        can_add_subscribers_group: nobody.id,
-        can_subscribe_group: nobody.id,
-    };
-    stream_data.add_sub_for_tests(party_sub);
-    assert.ok(compose_validate.validate_stream_message_address_info(party_sub));
-
-    party_sub.subscribed = false;
-    stream_data.add_sub_for_tests(party_sub);
-    let user_not_subscribed_rendered = false;
-    mock_template("compose_banner/compose_banner.hbs", true, (data, html) => {
-        assert.equal(data.classname, compose_banner.CLASSNAMES.user_not_subscribed);
-        user_not_subscribed_rendered = true;
-        return html;
-    });
-    assert.ok(!compose_validate.validate_stream_message_address_info(party_sub));
-    assert.ok(user_not_subscribed_rendered);
-
-    party_sub.name = "Frontend";
-    party_sub.stream_id = 102;
-    stream_data.add_sub_for_tests(party_sub);
-    user_not_subscribed_rendered = false;
-
-    assert.ok(!compose_validate.validate_stream_message_address_info(party_sub));
-
-    assert.ok(user_not_subscribed_rendered);
-});
 
 test_ui("validate", ({mock_template, override}) => {
     function add_content_to_compose_box() {
@@ -345,12 +305,18 @@ test_ui("validate", ({mock_template, override}) => {
     }
 });
 
-test_ui("test_stream_wildcard_mention_allowed", ({override, override_rewire}) => {
+test_ui("test_stream_wildcard_mention_allowed", ({override}) => {
     override(current_user, "user_id", me.user_id);
 
     // First, check for large streams (>15 subscribers) where the wildcard mention
-    // policy matters.
-    override_rewire(peer_data, "get_subscriber_count", () => 16);
+    // policy matters. Set 16 subscribers so is_recipient_large_stream() returns true.
+    const large_stream = {stream_id: 100, name: "Denmark"};
+    stream_data.add_sub_for_tests(large_stream);
+    compose_state.set_stream_id(large_stream.stream_id);
+    peer_data.set_subscribers(
+        large_stream.stream_id,
+        Array.from({length: 16}, (_, i) => i + 1),
+    );
 
     override(realm, "realm_can_mention_many_users_group", everyone.id);
     override(current_user, "user_id", guest.user_id);
@@ -383,7 +349,7 @@ test_ui("test_stream_wildcard_mention_allowed", ({override, override_rewire}) =>
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 });
 
-test_ui("validate_stream_message", ({override, override_rewire, mock_template}) => {
+test_ui("validate_stream_message", ({override, mock_template}) => {
     // This test is in kind of continuation to test_validate but since it is
     // primarily used to get coverage over functions called from validate()
     // we are separating it up in different test. Though their relative position
@@ -407,10 +373,10 @@ test_ui("validate_stream_message", ({override, override_rewire, mock_template}) 
     assert.ok(compose_validate.validate());
     assert.ok(!$("#compose-all-everyone").visible());
 
-    override_rewire(peer_data, "get_subscriber_count", (stream_id) => {
-        assert.equal(stream_id, 101);
-        return 16;
-    });
+    peer_data.set_subscribers(
+        special_sub.stream_id,
+        Array.from({length: 16}, (_, i) => i + 1),
+    );
     let stream_wildcard_warning_rendered = false;
     $("#compose_banner_area .wildcard_warning").length = 0;
     mock_template("compose_banner/stream_wildcard_warning.hbs", false, (data) => {
@@ -446,11 +412,31 @@ test_ui("test_stream_posting_permission", ({mock_template, override}) => {
         subscribed: true,
         can_send_message_group: admin.id,
         can_create_topic_group: everyone.id,
+        can_add_subscribers_group: everyone.id,
     };
 
     stream_data.add_sub_for_tests(sub_stream_102);
     compose_state.topic("topic102");
     compose_state.set_stream_id(sub_stream_102.stream_id);
+
+    sub_stream_102.subscribed = false;
+    let user_not_subscribed_rendered = false;
+    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+        assert.equal(data.classname, compose_banner.CLASSNAMES.user_not_subscribed);
+        assert.equal(
+            data.banner_text,
+            $t({
+                defaultMessage:
+                    "You're not subscribed to this channel. You will not be notified if other users reply to your message.",
+            }),
+        );
+        user_not_subscribed_rendered = true;
+        return "<banner-stub>";
+    });
+    assert.ok(!compose_validate.validate());
+    assert.ok(user_not_subscribed_rendered);
+
+    sub_stream_102.subscribed = true;
 
     let banner_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {

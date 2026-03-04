@@ -5,9 +5,9 @@ Given a standard Zulip narrow URL, fetches messages using the
 unauthenticated spectator API endpoint. Only works for web-public channels.
 
 Usage:
-    tools/fetch-zulip-web-public-messages URL
-    tools/fetch-zulip-web-public-messages --num-before 200 --num-after 50 URL
-    tools/fetch-zulip-web-public-messages --json URL
+    fetch-zulip-web-public-messages URL
+    fetch-zulip-web-public-messages --num-before 200 --num-after 50 URL
+    fetch-zulip-web-public-messages --json URL
 """
 
 import argparse

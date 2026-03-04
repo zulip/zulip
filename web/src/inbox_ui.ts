@@ -15,6 +15,7 @@ import render_users_with_status_icons from "../templates/users_with_status_icons
 import * as animate from "./animate.ts";
 import * as buddy_data from "./buddy_data.ts";
 import * as channel_folders from "./channel_folders.ts";
+import * as compose_actions from "./compose_actions.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_state from "./compose_state.ts";
 import * as dialog_widget from "./dialog_widget.ts";
@@ -174,6 +175,12 @@ type ChannelFolderContext = {
     order: number;
 };
 
+type FolderStreamRowsContext = {
+    stream_key: string;
+    stream_row: StreamContext;
+    topic_rows: TopicContext[];
+};
+
 const channel_folder_context_properties: (keyof ChannelFolderContext)[] = [
     "header_id",
     "is_header_visible",
@@ -255,7 +262,7 @@ const RIGHT_NAVIGATION_KEYS = ["right_arrow", "vim_right"];
 let is_waiting_for_revive_current_focus = true;
 // Used to store the last scroll position of the inbox before
 // it is hidden to avoid scroll jumping when it is shown again.
-let last_scroll_offset: number | undefined;
+let last_scroll_offset = 0;
 
 function get_row_from_conversation_key(key: string): JQuery {
     return $(`#${CSS.escape(CONVERSATION_ID_PREFIX + key)}`);
@@ -420,7 +427,10 @@ export function hide(): void {
 }
 
 function get_topic_key(stream_id: number, topic: string): string {
-    return stream_id + ":" + topic;
+    // Topic names are case-preserving for display, but case insensitive
+    // otherwise. We convert the topic key to lowercase to ensure that
+    // topic keys with different casing are not treated differently.
+    return stream_id + ":" + topic.toLowerCase();
 }
 
 function get_stream_key(stream_id: number): string {
@@ -719,12 +729,15 @@ function format_topic(
 }
 
 function insert_stream(stream_key: string): void {
-    const channel_folder_id = streams_dict.get(stream_key)!.folder_id;
+    const stream_row = streams_dict.get(stream_key)!;
+    const channel_folder_id = stream_row.folder_id;
     const sorted_stream_keys = get_sorted_stream_keys(channel_folder_id);
     const stream_index = sorted_stream_keys.indexOf(stream_key);
+    const stream_topics_data = topics_dict.get(stream_key)!;
     const rendered_stream = render_inbox_stream_container({
-        topics_dict: new Map([[stream_key, topics_dict.get(stream_key)]]),
-        streams_dict,
+        stream_key,
+        stream_row,
+        topic_rows: [...stream_topics_data.values()],
     });
     const $channel_folder_header = $(`#${get_channel_folder_header_id(channel_folder_id)}`);
     if (stream_index === 0) {
@@ -826,6 +839,25 @@ function get_sorted_stream_topic_dict(): Map<string, Map<string, TopicContext>> 
     }
 
     return sorted_topic_dict;
+}
+
+function get_folder_stream_rows(folder_id: number): FolderStreamRowsContext[] {
+    const stream_rows: FolderStreamRowsContext[] = [];
+    for (const stream_key of get_sorted_stream_keys(folder_id)) {
+        const stream_row = streams_dict.get(stream_key);
+        if (stream_row?.folder_id !== folder_id) {
+            continue;
+        }
+
+        const stream_topics_data = topics_dict.get(stream_key)!;
+        stream_rows.push({
+            stream_key,
+            stream_row,
+            topic_rows: [...stream_topics_data.values()],
+        });
+    }
+
+    return stream_rows;
 }
 
 function get_sorted_row_dict<T extends DirectMessageContext | TopicContext>(
@@ -1262,15 +1294,17 @@ export function complete_rerender(coming_from_other_views = false): void {
         } else {
             channel_view_topic_widget = undefined;
             const {has_visible_unreads, ...additional_context} = reset_data();
+            const folders_with_stream_rows = [...channel_folders_dict.values()].map((folder) => ({
+                ...folder,
+                stream_rows: get_folder_stream_rows(folder.id),
+            }));
             $("#inbox-pane").html(
                 render_inbox_view({
                     normal_view: true,
                     search_val: search_keyword,
                     INBOX_SEARCH_ID,
                     dms_dict,
-                    topics_dict,
-                    streams_dict,
-                    channel_folders_dict,
+                    folders_with_stream_rows,
                     show_channel_folder_toggle: channel_folders.user_has_folders(),
                     ...additional_context,
                 }),
@@ -1281,16 +1315,15 @@ export function complete_rerender(coming_from_other_views = false): void {
         }
 
         if (coming_from_other_views) {
-            if (last_scroll_offset !== undefined) {
-                // It is important to restore the scroll position as soon
-                // as the rendering is complete to avoid scroll jumping.
-                window.scrollTo(0, last_scroll_offset);
-            } else {
-                // If the focus is not on the inbox rows, the inbox view scrolls
-                // down when moving from other views to the inbox view. To avoid
-                // this, we scroll to top before restoring focus via revive_current_focus.
-                window.scrollTo(0, 0);
-            }
+            // Scrolling to last offset here
+            // is important to restore the scroll position as soon
+            // as the rendering is complete to avoid scroll jumping.
+            //
+            // This also avoids the bug where
+            // if the focus is not on the inbox rows, the inbox view scrolls
+            // down when moving from other views to the inbox view. To avoid
+            // this, we scroll to top before restoring focus via revive_current_focus.
+            window.scrollTo(0, last_scroll_offset);
         }
 
         revive_current_focus();
@@ -1980,8 +2013,7 @@ function bulk_insert_channel_folders(channel_folders: Set<number>): void {
         if (channel_folders.has(folder_id)) {
             const $folder_row_html = render_inbox_folder_with_channels({
                 ...folder_context,
-                topics_dict,
-                streams_dict,
+                stream_rows: get_folder_stream_rows(folder_id),
             });
             if (index === 0) {
                 const $dm_container = $("#inbox-direct-messages-container");
@@ -2000,6 +2032,10 @@ function bulk_insert_channel_folders(channel_folders: Set<number>): void {
 }
 
 export function update(): void {
+    requestAnimationFrame(update_internal);
+}
+
+export function update_internal(): void {
     // Since inbox shows a vast amount of sorted data,
     // doing surgical updates for everything is hard.
     // So, we focus on updating commonly changed data
@@ -2201,7 +2237,7 @@ export function update(): void {
     // the update was triggered by user. This can mean `row_focus` can
     // be out of bounds, so we need to fix that.
     if (update_triggered_by_user) {
-        setTimeout(revive_current_focus, 0);
+        revive_current_focus();
         update_triggered_by_user = false;
     } else {
         if (row_focus >= get_all_rows().length) {
@@ -2511,7 +2547,7 @@ export function initialize({hide_other_views}: {hide_other_views: () => void}): 
         complete_rerender();
     });
 
-    $(document).on("compose_canceled.zulip", () => {
+    compose_actions.register_compose_cancel_hook(() => {
         if (inbox_util.is_visible()) {
             revive_current_focus();
         }

@@ -539,6 +539,7 @@ export default defineConfig({
                             label: "Configure default new user settings",
                             link: "/configure-default-new-user-settings",
                         },
+                        "configure-default-profile-pictures",
                         "custom-profile-fields",
                         "invite-new-users",
                         "restrict-account-creation",

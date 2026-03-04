@@ -12,6 +12,7 @@ const {
     stub_buddy_list_elements,
 } = require("./lib/buddy_list.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -43,23 +44,23 @@ function init_simulated_scrolling() {
     return elem;
 }
 
-const alice = {
+const alice = make_user({
     email: "alice@zulip.com",
     user_id: 10,
     full_name: "Alice Smith",
-};
+});
 people.add_active_user(alice);
-const bob = {
+const bob = make_user({
     email: "bob@zulip.com",
     user_id: 15,
     full_name: "Bob Smith",
-};
+});
 people.add_active_user(bob);
-const chris = {
+const chris = make_user({
     email: "chris@zulip.com",
     user_id: 20,
     full_name: "Chris Smith",
-};
+});
 people.add_active_user(chris);
 const $alice_li = $.create("alice-stub");
 const $bob_li = $.create("bob-stub");
@@ -198,11 +199,11 @@ run_test("fill_screen_with_content early break on big list", ({override}) => {
     const user_ids = [];
 
     _.times(num_users, (i) => {
-        const person = {
+        const person = make_user({
             email: "foo" + i + "@zulip.com",
             user_id: 100 + i,
             full_name: "Somebody " + i,
-        };
+        });
         people.add_active_user(person);
         user_ids.push(person.user_id);
     });
@@ -255,11 +256,11 @@ run_test("big_list", ({override, override_rewire}) => {
     $("#buddy-list-other-users .empty-list-message").length = 1;
 
     _.times(num_users, (i) => {
-        const person = {
+        const person = make_user({
             email: "foo" + i + "@zulip.com",
             user_id: 100 + i,
             full_name: "Somebody " + i,
-        };
+        });
         people.add_active_user(person);
         if (i < 100 || i % 2 === 0) {
             buddy_list_add_user_matching_view(person.user_id, $.create("stub" + i));

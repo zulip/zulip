@@ -32,7 +32,14 @@ import * as util from "./util.ts";
     API documentation) without a ton of copying.
 */
 
-export const demote_inactive_streams_values = {
+type SettingDescription<T> = {
+    code: T;
+    description: string;
+};
+export const demote_inactive_streams_values: Record<
+    "automatic" | "always" | "never",
+    SettingDescription<number>
+> = {
     automatic: {
         code: 1,
         description: $t({defaultMessage: "Automatic"}),
@@ -47,7 +54,10 @@ export const demote_inactive_streams_values = {
     },
 };
 
-export const web_mark_read_on_scroll_policy_values = {
+export const web_mark_read_on_scroll_policy_values: Record<
+    "always" | "conversation_only" | "never",
+    SettingDescription<number>
+> = {
     always: {
         code: 1,
         description: $t({defaultMessage: "Always"}),
@@ -62,7 +72,10 @@ export const web_mark_read_on_scroll_policy_values = {
     },
 };
 
-export const web_channel_default_view_values = {
+export const web_channel_default_view_values: Record<
+    "top_topic_in_channel" | "top_unread_topic_in_channel" | "list_of_topics" | "channel_feed",
+    SettingDescription<number>
+> = {
     top_topic_in_channel: {
         code: 1,
         description: $t({defaultMessage: "Top topic in the channel"}),
@@ -82,18 +95,9 @@ export const web_channel_default_view_values = {
 };
 
 export const user_list_style_values: {
-    compact: {
-        code: number;
-        description: string;
-    };
-    with_status: {
-        code: number;
-        description: string;
-    };
-    with_avatar: {
-        code: number;
-        description: string;
-    };
+    compact: SettingDescription<number>;
+    with_status: SettingDescription<number>;
+    with_avatar: SettingDescription<number>;
 } = {
     compact: {
         code: 1,
@@ -109,7 +113,10 @@ export const user_list_style_values: {
     },
 };
 
-export const web_animate_image_previews_values = {
+export const web_animate_image_previews_values: Record<
+    "always" | "on_hover" | "never",
+    SettingDescription<string>
+> = {
     always: {
         code: "always",
         description: $t({defaultMessage: "Always"}),
@@ -124,7 +131,10 @@ export const web_animate_image_previews_values = {
     },
 };
 
-export const resolved_topic_notice_auto_read_policy_values = {
+export const resolved_topic_notice_auto_read_policy_values: Record<
+    "always" | "except_followed" | "never",
+    SettingDescription<string>
+> = {
     always: {
         code: "always",
         description: $t({defaultMessage: "Always"}),
@@ -139,7 +149,10 @@ export const resolved_topic_notice_auto_read_policy_values = {
     },
 };
 
-export const web_stream_unreads_count_display_policy_values = {
+export const web_stream_unreads_count_display_policy_values: Record<
+    "all_streams" | "unmuted_streams" | "no_streams",
+    SettingDescription<number>
+> = {
     all_streams: {
         code: 1,
         description: $t({defaultMessage: "All channels"}),
@@ -154,7 +167,10 @@ export const web_stream_unreads_count_display_policy_values = {
     },
 };
 
-export const web_home_view_values = {
+export const web_home_view_values: Record<
+    "inbox" | "recent" | "all_messages",
+    SettingDescription<string>
+> = {
     inbox: {
         code: "inbox",
         description: $t({defaultMessage: "Inbox"}),
@@ -170,15 +186,9 @@ export const web_home_view_values = {
 };
 
 type ColorScheme = "automatic" | "dark" | "light";
-export type ColorSchemeValues = Record<
-    ColorScheme,
-    {
-        code: number;
-        description: string;
-    }
->;
+export type ColorSchemeValues = Record<ColorScheme, SettingDescription<number>>;
 
-export const color_scheme_values = {
+export const color_scheme_values: ColorSchemeValues = {
     automatic: {
         code: 1,
         description: $t({defaultMessage: "Automatic (follows system settings)"}),
@@ -236,7 +246,10 @@ export const get_settings_render_only = (): SettingsRenderOnly => ({
     web_line_height_percent: page_params.development_environment,
 });
 
-export const email_address_visibility_values = {
+export const email_address_visibility_values: Record<
+    "everyone" | "members" | "moderators" | "admins_only" | "nobody",
+    SettingDescription<number>
+> = {
     everyone: {
         code: 1,
         description: $t({defaultMessage: "Admins, moderators, members and guests"}),
@@ -282,7 +295,10 @@ export const common_policy_values = {
     },
 };
 
-export const message_edit_history_visibility_policy_values = {
+export const message_edit_history_visibility_policy_values: Record<
+    "always" | "moves_only" | "never",
+    SettingDescription<string>
+> = {
     always: {
         code: "all",
         description: $t({defaultMessage: "Show edits and moves"}),
@@ -297,10 +313,22 @@ export const message_edit_history_visibility_policy_values = {
     },
 };
 
-type PolicyValue = {
-    code: string;
-    description: string;
-};
+type PolicyValue = SettingDescription<string>;
+
+export const realm_media_preview_size_values: SettingDescription<number>[] = [
+    {
+        code: 100,
+        description: $t({defaultMessage: "Small"}),
+    },
+    {
+        code: 150,
+        description: $t({defaultMessage: "Medium"}),
+    },
+    {
+        code: 200,
+        description: $t({defaultMessage: "Large"}),
+    },
+];
 
 type RealmTopicsPolicyValues = {
     allow_empty_topic: PolicyValue;
@@ -402,7 +430,7 @@ export const msg_edit_limit_dropdown_values = time_limit_dropdown_values;
 export const msg_delete_limit_dropdown_values = time_limit_dropdown_values;
 export const msg_move_limit_dropdown_values = time_limit_dropdown_values;
 
-export const waiting_period_threshold_dropdown_values = [
+export const waiting_period_threshold_dropdown_values: SettingDescription<number | string>[] = [
     {
         description: $t({defaultMessage: "None"}),
         code: 0,
@@ -419,7 +447,10 @@ export const waiting_period_threshold_dropdown_values = [
 
 export const retain_message_forever = -1;
 
-export const user_role_values = {
+export const user_role_values: Record<
+    "guest" | "member" | "moderator" | "admin" | "owner",
+    SettingDescription<number>
+> = {
     guest: {
         code: 600,
         description: $t({defaultMessage: "Guest"}),
@@ -442,11 +473,26 @@ export const user_role_values = {
     },
 };
 
-export const all_org_type_values = {
-    // When org_type was added to the database model, 'unspecified'
-    // was the default for existing organizations. To discourage
-    // organizations keeping (or selecting) it as an option, we
-    // use an empty string for its description.
+// When org_type was added to the database model, 'unspecified'
+// was the default for existing organizations. To discourage
+// organizations keeping (or selecting) it as an option, we
+// use an empty string for its description.
+export const all_org_type_values: Record<
+    | "unspecified"
+    | "business"
+    | "opensource"
+    | "education_nonprofit"
+    | "education"
+    | "research"
+    | "event"
+    | "nonprofit"
+    | "government"
+    | "political_group"
+    | "community"
+    | "personal"
+    | "other",
+    SettingDescription<number>
+> = {
     unspecified: {
         code: 0,
         description: "",
@@ -1190,7 +1236,10 @@ export const all_notifications = (settings_object: Settings): AllNotifications =
     },
 });
 
-export const realm_name_in_email_notifications_policy_values = {
+export const realm_name_in_email_notifications_policy_values: Record<
+    "automatic" | "always" | "never",
+    SettingDescription<number>
+> = {
     automatic: {
         code: 1,
         description: $t({defaultMessage: "Automatic"}),
@@ -1205,7 +1254,10 @@ export const realm_name_in_email_notifications_policy_values = {
     },
 };
 
-export const desktop_icon_count_display_values = {
+export const desktop_icon_count_display_values: Record<
+    "messages" | "dm_mention_followed_topic" | "dm_mention" | "none",
+    SettingDescription<number>
+> = {
     messages: {
         code: 1,
         description: $t({defaultMessage: "All unread messages"}),
@@ -1269,7 +1321,10 @@ export const system_user_groups_list = [
 
 export const alternate_members_group_typeahead_matching_name = $t({defaultMessage: "Members"});
 
-export const user_topic_visibility_policy_values = {
+export const user_topic_visibility_policy_values: Record<
+    "followed" | "muted" | "unmuted" | "inherit",
+    SettingDescription<number>
+> = {
     followed: {
         code: 3,
         description: $t({defaultMessage: "Followed"}),
@@ -1288,7 +1343,10 @@ export const user_topic_visibility_policy_values = {
     },
 };
 
-export const automatically_follow_or_unmute_topics_policy_values = {
+export const automatically_follow_or_unmute_topics_policy_values: Record<
+    "participation" | "send" | "initiation" | "never",
+    SettingDescription<number>
+> = {
     participation: {
         code: 1,
         description: $t({defaultMessage: "Topics I participate in"}),
@@ -1405,7 +1463,10 @@ export const realm_plan_types = {
 
 export const no_folder_selected = -1;
 
-export const default_avatar_source_values = {
+export const default_avatar_source_values: Record<
+    "jdenticon" | "gravatar",
+    SettingDescription<string>
+> = {
     jdenticon: {
         code: "J",
         description: $t({defaultMessage: "Default"}),

@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import render_selected_group_title from "../templates/user_group_settings/selected_group_title.hbs";
+
 import {$t_html} from "./i18n.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
@@ -19,6 +21,26 @@ export function reset_active_group_id(): void {
     active_group_id = undefined;
 }
 
+export function set_right_panel_title(group: UserGroup): void {
+    const group_name = user_groups.get_display_group_name(group.name);
+    $("#groups_overlay .user-group-info-title").html(
+        render_selected_group_title({
+            group_name,
+            group_id: group.id,
+            is_system_group: group.is_system_group,
+            is_direct_member: user_groups.is_direct_member_of(
+                people.my_current_user_id(),
+                group.id,
+            ),
+        }),
+    );
+    if (group.deactivated) {
+        $("#groups_overlay .deactivated-user-group-icon-right").show();
+    } else {
+        $("#groups_overlay .deactivated-user-group-icon-right").hide();
+    }
+}
+
 export const show_user_group_settings_pane = {
     nothing_selected() {
         $("#groups_overlay .settings, #user-group-creation").hide();
@@ -34,13 +56,7 @@ export const show_user_group_settings_pane = {
         $("#groups_overlay .nothing-selected, #user-group-creation").hide();
         $("#groups_overlay .settings").show();
         set_active_group_id(group.id);
-        const group_name = user_groups.get_display_group_name(group.name);
-        $("#groups_overlay .user-group-info-title").text(group_name).addClass("showing-info-title");
-        if (group.deactivated) {
-            $("#groups_overlay .deactivated-user-group-icon-right").show();
-        } else {
-            $("#groups_overlay .deactivated-user-group-icon-right").hide();
-        }
+        set_right_panel_title(group);
         resize.resize_settings_overlay($("#groups_overlay_container"));
     },
     create_user_group(container_name = "configure_user_group_settings", group_name?: string) {
@@ -50,9 +66,9 @@ export const show_user_group_settings_pane = {
                 $t_html({defaultMessage: "Configure new group settings"}),
             );
         } else {
-            $("#groups_overlay .user-group-info-title")
-                .text($t_html({defaultMessage: "Add members to {group_name}"}, {group_name}))
-                .addClass("showing-info-title");
+            $("#groups_overlay .user-group-info-title").text(
+                $t_html({defaultMessage: "Add members to {group_name}"}, {group_name}),
+            );
         }
         update_footer_buttons(container_name);
         $(`.${CSS.escape(container_name)}`).show();

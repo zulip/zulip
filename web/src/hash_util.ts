@@ -362,7 +362,7 @@ export function validate_group_settings_hash(hash: string): string {
         return group_edit_url(group, right_side_tab);
     }
 
-    const valid_section_values = ["new", "your", "all"];
+    const valid_section_values = ["new", "your", "all", "roles"];
     if (section === undefined || !valid_section_values.includes(section)) {
         blueslip.info("invalid section for groups: " + section);
         return "#groups/your";

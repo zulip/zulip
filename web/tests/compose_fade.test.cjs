@@ -3,6 +3,8 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_jquery, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -31,23 +33,23 @@ const {set_realm} = zrequire("state_data");
 const realm = make_realm();
 set_realm(realm);
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: 31,
     full_name: "Alice",
-};
+});
 
-const bob = {
+const bob = make_user({
     email: "bob@example.com",
     user_id: 32,
     full_name: "Bob",
-};
+});
 
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
@@ -56,11 +58,11 @@ people.add_active_user(alice);
 people.add_active_user(bob);
 
 run_test("set_focused_recipient", () => {
-    const sub = {
+    const sub = make_stream({
         stream_id: 101,
         name: "social",
         subscribed: true,
-    };
+    });
 
     stream_data.clear_subscriptions();
     stream_data.add_sub_for_tests(sub);
@@ -84,11 +86,11 @@ run_test("set_focused_recipient", () => {
 
 run_test("want_normal_display", ({override}) => {
     const stream_id = 110;
-    const sub = {
+    const sub = make_stream({
         stream_id,
         name: "display testing",
         subscribed: true,
-    };
+    });
 
     stream_data.clear_subscriptions();
 

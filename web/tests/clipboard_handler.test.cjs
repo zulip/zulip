@@ -4,6 +4,8 @@ const assert = require("node:assert/strict");
 
 const {JSDOM} = require("jsdom");
 
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {zrequire, mock_esm} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -17,22 +19,21 @@ const clipboard_handler = zrequire("clipboard_handler");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 
-const hamlet = {
+const hamlet = make_user({
     user_id: 15,
     email: "hamlet@example.com",
     full_name: "Hamlet",
-};
+});
 
 people.add_active_user(hamlet);
 
 run_test("copy_link_to_clipboard", async ({override}) => {
-    const stream = {
+    const stream = make_stream({
         name: "Stream",
         description: "Color and Lights",
         stream_id: 1,
         subscribed: true,
-        type: "stream",
-    };
+    });
     stream_data.add_sub_for_tests(stream);
     const {window} = new JSDOM();
     global.document = window.document;

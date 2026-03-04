@@ -183,7 +183,7 @@ export type TimeRender = {
     needs_update: boolean;
 };
 
-export let render_now = (time: Date, today = new Date(), display_year?: boolean): TimeRender => {
+export function render_now(time: Date, today = new Date(), display_year?: boolean): TimeRender {
     let time_str = "";
     let needs_update = false;
     // render formal time to be used for tippy tooltip
@@ -218,20 +218,20 @@ export let render_now = (time: Date, today = new Date(), display_year?: boolean)
         formal_time_str,
         needs_update,
     };
-};
-
-export function rewire_render_now(value: typeof render_now): void {
-    render_now = value;
 }
 
 // Relative time rendering for use in most screens like Recent conversations.
-export function relative_time_string_from_date(date: Date): string {
+export function relative_time_string_from_date(date: Date, use_minutes_short_form = false): string {
     const current_date = new Date();
     const minutes = differenceInMinutes(current_date, date);
     if (minutes <= 2) {
         return $t({defaultMessage: "Just now"});
     }
     if (minutes < 60) {
+        if (use_minutes_short_form) {
+            return $t({defaultMessage: "{minutes} min ago"}, {minutes});
+        }
+
         return $t({defaultMessage: "{minutes} minutes ago"}, {minutes});
     }
 

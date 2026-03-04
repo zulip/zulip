@@ -118,10 +118,11 @@ class LocalUploadBackend(ZulipUploadBackend):
         )
 
     @override
-    def delete_message_attachment(self, path_id: str) -> None:
+    def delete_message_attachment(self, path_id: str, *, raw_path: bool = False) -> None:
         delete_local_file("files", path_id)
-        delete_local_file("files", f"{path_id}.info")
-        delete_local_file("files", f"thumbnail/{path_id}/", directory=True)
+        if not raw_path:
+            delete_local_file("files", f"{path_id}.info")
+            delete_local_file("files", f"thumbnail/{path_id}/", directory=True)
 
     @override
     def all_message_attachments(
@@ -149,7 +150,10 @@ class LocalUploadBackend(ZulipUploadBackend):
         return "/user_avatars/" + self.get_avatar_path(hash_key, medium)
 
     @override
-    def get_avatar_contents(self, file_path: str) -> tuple[bytes, str]:
+    def get_avatar_contents(self, file_path: str, avatar_source: str) -> tuple[bytes, str]:
+        # Currently, only used in codepaths where avatar_source = "U".
+        # We can extend it for avatar_source = "J", if required.
+        assert avatar_source is UserProfile.AVATAR_FROM_USER
         image_data = b"".join(read_local_file("avatars", file_path + ".original"))
         content_type = guess_type(file_path)[0]
         return image_data, content_type or "application/octet-stream"

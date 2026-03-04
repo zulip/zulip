@@ -9,6 +9,7 @@ import render_image_editor_modal from "../templates/image_editor_modal.hbs";
 import * as blueslip from "./blueslip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
+import {SUPPORTED_IMAGE_TYPES, is_supported_image_type} from "./upload.ts";
 import * as util from "./util.ts";
 
 export type UploadWidget = {
@@ -21,27 +22,6 @@ export type UploadFunction = (file: File, night: boolean | null, icon: boolean) 
 const default_max_file_size = 5;
 
 let uppy_widget: Uppy<Meta, Body> | undefined;
-
-// These formats do not need to be universally understood by clients; they are all
-// converted, server-side, currently to PNGs.  This list should be kept in sync with
-// the THUMBNAIL_ACCEPT_IMAGE_TYPES in zerver/lib/thumbnail.py
-const supported_types = [
-    "image/avif",
-    "image/gif",
-    "image/heic",
-    "image/jpeg",
-    "image/png",
-    "image/tiff",
-    "image/webp",
-];
-
-function is_image_format(file: File): boolean {
-    const type = file.type;
-    if (!type) {
-        return false;
-    }
-    return supported_types.includes(type);
-}
 
 export function build_widget(
     // function returns a jQuery file input object
@@ -97,7 +77,7 @@ export function build_widget(
         return false;
     });
 
-    get_file_input().attr("accept", supported_types.toString());
+    get_file_input().attr("accept", [...SUPPORTED_IMAGE_TYPES].toString());
     get_file_input().on("change", (e) => {
         if (e.target.files?.[0] === undefined) {
             $input_error.hide();
@@ -112,7 +92,7 @@ export function build_widget(
                 );
                 $input_error.show();
                 clear();
-            } else if (!is_image_format(file)) {
+            } else if (!is_supported_image_type(file.type)) {
                 $input_error.text($t({defaultMessage: "File type is not supported."}));
                 $input_error.show();
                 clear();
@@ -162,7 +142,7 @@ function ensure_file(resized_img: File | Blob, original_file: File): File {
 function set_up_uppy_widget(property_name: "realm_icon" | "realm_logo" | "user_avatar"): void {
     uppy_widget = new Uppy<Meta, Body>({
         restrictions: {
-            allowedFileTypes: supported_types,
+            allowedFileTypes: [...SUPPORTED_IMAGE_TYPES],
             maxNumberOfFiles: 1,
         },
     }).use(ImageEditor, {
@@ -187,7 +167,9 @@ function set_up_uppy_widget(property_name: "realm_icon" | "realm_logo" | "user_a
             dragMode: "move",
             minCropBoxHeight: 50,
             background: true,
-            aspectRatio: property_name === "realm_logo" ? 8 : 1,
+            initialAspectRatio: property_name === "realm_logo" ? 8 : 1,
+            // For realm logo, crop box is not restricted to any aspect ratio.
+            aspectRatio: property_name === "realm_logo" ? Number.NaN : 1,
         },
     });
 }
@@ -318,7 +300,7 @@ export function build_direct_upload_widget(
         return false;
     });
 
-    get_file_input().attr("accept", supported_types.toString());
+    get_file_input().attr("accept", [...SUPPORTED_IMAGE_TYPES].toString());
     get_file_input().on("change", (e) => {
         if (e.target.files?.[0] === undefined) {
             $input_error.hide();
@@ -333,7 +315,7 @@ export function build_direct_upload_widget(
                 );
                 $input_error.show();
                 clear();
-            } else if (!is_image_format(file)) {
+            } else if (!is_supported_image_type(file.type)) {
                 $input_error.text($t({defaultMessage: "File type is not supported."}));
                 $input_error.show();
                 clear();

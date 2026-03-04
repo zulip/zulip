@@ -143,6 +143,17 @@ export function process(message_content: string): boolean {
         return true;
     }
 
+    if (content.startsWith("/add ") || content === "/realm_users" || content.startsWith("/channel_users")) {
+        send({
+            command: content,
+            on_success(raw_data) {
+                const data = data_schema.parse(raw_data);
+                tell_user(data.msg);
+            },
+        });
+        return true;
+    }
+
     // It is incredibly important here to return false
     // if we don't see an actual zcommand, so that compose.ts
     // knows this is a normal message.

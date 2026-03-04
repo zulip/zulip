@@ -420,7 +420,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         # state + 1/user with a UserTopic row for the events data)
         # beyond what is typical were there not UserTopic records to
         # update. Ideally, we'd eliminate the per-user component.
-        with self.assert_database_query_count(28):
+        with self.assert_database_query_count(24):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -517,7 +517,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(30):
+        with self.assert_database_query_count(25):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -547,7 +547,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         ]
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
-        with self.assert_database_query_count(36):
+        with self.assert_database_query_count(31):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -580,7 +580,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         set_topic_visibility_policy(desdemona, muted_topics, UserTopic.VisibilityPolicy.MUTED)
         set_topic_visibility_policy(cordelia, muted_topics, UserTopic.VisibilityPolicy.MUTED)
 
-        with self.assert_database_query_count(32):
+        with self.assert_database_query_count(28):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -603,7 +603,7 @@ class MessageMoveTopicTest(ZulipTestCase):
         second_message_id = self.send_stream_message(
             hamlet, stream_name, topic_name="changed topic name", content="Second message"
         )
-        with self.assert_database_query_count(26):
+        with self.assert_database_query_count(22):
             check_update_message(
                 user_profile=desdemona,
                 message_id=second_message_id,
@@ -682,7 +682,7 @@ class MessageMoveTopicTest(ZulipTestCase):
             users_to_be_notified_via_muted_topics_event.append(user_topic.user_profile_id)
 
         change_all_topic_name = "Topic 1 edited"
-        with self.assert_database_query_count(33):
+        with self.assert_database_query_count(29):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -2142,6 +2142,34 @@ class MessageMoveTopicTest(ZulipTestCase):
 
         self.assertEqual(read_user_ids, {hamlet.id})
         self.assertEqual(unread_user_ids, {cordelia.id, admin_user.id})
+
+    def test_case_only_topic_rename_does_not_is_nontrivial_move(self) -> None:
+        admin_user = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        stream = self.make_stream("stream", hamlet.realm)
+
+        self.subscribe(admin_user, stream.name)
+        self.subscribe(hamlet, stream.name)
+
+        old_topic_name = "old topic"
+        new_topic_name = "Old Topic"
+        message_id = self.send_stream_message(hamlet, stream.name, topic_name=old_topic_name)
+
+        result = self.api_patch(
+            hamlet,
+            "/api/v1/messages/" + str(message_id),
+            {
+                "topic": new_topic_name,
+                "send_notification_to_old_thread": "true",
+                "send_notification_to_new_thread": "true",
+            },
+        )
+        self.assert_json_success(result)
+
+        messages_in_topic = get_topic_messages(admin_user, stream, new_topic_name)
+        self.assert_length(messages_in_topic, 1)
+        self.assertEqual(messages_in_topic[0].id, message_id)
+        self.assertEqual(messages_in_topic[0].content, "test content")
 
     @override_settings(RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS=60)
     def test_mark_topic_as_resolved_within_grace_period(self) -> None:

@@ -3,9 +3,10 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_channel_get} = require("./lib/mock_channel.cjs");
-const {set_global, mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {clock, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
@@ -29,12 +30,6 @@ mock_esm("../src/buddy_list", {
     buddy_list: fake_buddy_list,
 });
 
-function mock_setTimeout() {
-    set_global("setTimeout", (func) => {
-        func();
-    });
-}
-
 const popovers = mock_esm("../src/popovers");
 const presence = mock_esm("../src/presence");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
@@ -50,27 +45,27 @@ const stream_data = zrequire("stream_data");
 const realm = make_realm();
 set_realm(realm);
 
-const me = {
+const me = make_user({
     email: "me@zulip.com",
     user_id: 999,
     full_name: "Me Myself",
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@zulip.com",
     user_id: 1,
     full_name: "Alice Smith",
-};
-const fred = {
+});
+const fred = make_user({
     email: "fred@zulip.com",
     user_id: 2,
     full_name: "Fred Flintstone",
-};
-const jill = {
+});
+const jill = make_user({
     email: "jill@zulip.com",
     user_id: 3,
     full_name: "Jill Hill",
-};
+});
 
 const all_user_ids = [alice.user_id, fred.user_id, jill.user_id, me.user_id];
 const ordered_user_ids = [me.user_id, alice.user_id, fred.user_id, jill.user_id];
@@ -92,6 +87,7 @@ function test(label, f) {
 function set_input_val(val) {
     $("input.user-list-filter").val(val);
     $("input.user-list-filter").trigger("input");
+    clock.runAll();
 }
 
 function stub_buddy_list_empty_list_message_lengths() {
@@ -198,7 +194,6 @@ test("fetch on search", async ({override}) => {
 test("blur search right", ({override}) => {
     override(sidebar_ui, "show_userlist_sidebar", noop);
     override(popovers, "hide_all", noop);
-    mock_setTimeout();
 
     $("input.user-list-filter").closest = (selector) => {
         assert.equal(selector, ".app-main [class^='column-']");
@@ -208,13 +203,13 @@ test("blur search right", ({override}) => {
     $("input.user-list-filter").trigger("blur");
     assert.equal($("input.user-list-filter").is_focused(), false);
     activity_ui.initiate_search();
+    clock.runAll();
     assert.equal($("input.user-list-filter").is_focused(), true);
 });
 
 test("blur search left", ({override}) => {
     override(sidebar_ui, "show_streamlist_sidebar", noop);
     override(popovers, "hide_all", noop);
-    mock_setTimeout();
 
     $("input.user-list-filter").closest = (selector) => {
         assert.equal(selector, ".app-main [class^='column-']");
@@ -224,6 +219,7 @@ test("blur search left", ({override}) => {
     $("input.user-list-filter").trigger("blur");
     assert.equal($("input.user-list-filter").is_focused(), false);
     activity_ui.initiate_search();
+    clock.runAll();
     assert.equal($("input.user-list-filter").is_focused(), true);
 });
 

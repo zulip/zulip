@@ -28,6 +28,7 @@ const ls_key = "left_sidebar_direct_messages_collapsed_state";
 const ls_schema = z._default(z.boolean(), false);
 const ls = localstorage();
 let private_messages_collapsed = false;
+let temporarily_collapsed = false;
 let last_direct_message_count: number | undefined;
 
 // The direct messages section can be zoomed in to view more messages.
@@ -52,8 +53,13 @@ export function set_count(count: number): void {
 
 export function close(): void {
     private_messages_collapsed = true;
+    set_temporarily_collapsed(false);
     ls.set(ls_key, private_messages_collapsed);
     update_private_messages();
+}
+
+export function set_temporarily_collapsed(value: boolean): void {
+    temporarily_collapsed = value;
 }
 
 export function _build_direct_messages_list(opts: {
@@ -95,14 +101,16 @@ function set_dom_to(new_dom: vdom.Tag<PMNode>): void {
 export function update_private_messages(): void {
     const is_left_sidebar_search_active = ui_util.get_left_sidebar_search_term() !== "";
     const is_dm_section_expanded = is_left_sidebar_search_active || !private_messages_collapsed;
-    $("#toggle-direct-messages-section-icon").toggleClass(
-        "rotate-icon-down",
-        is_dm_section_expanded,
-    );
-    $("#toggle-direct-messages-section-icon").toggleClass(
-        "rotate-icon-right",
-        !is_dm_section_expanded,
-    );
+    if (!temporarily_collapsed) {
+        $("#toggle-direct-messages-section-icon").toggleClass(
+            "rotate-icon-down",
+            is_dm_section_expanded,
+        );
+        $("#toggle-direct-messages-section-icon").toggleClass(
+            "rotate-icon-right",
+            !is_dm_section_expanded,
+        );
+    }
 
     let search_term = "";
     if (zoomed) {
@@ -130,7 +138,10 @@ export function update_private_messages(): void {
         !all_conversations_shown ||
         // If there is no search term, always show the header.
         !search_term;
-    $("#direct-messages-section-header").toggleClass("hidden-by-filters", !is_header_visible);
+    $("#left_sidebar_scroll_container").toggleClass(
+        "direct-messages-hidden-by-filters",
+        !is_header_visible,
+    );
 
     if (!is_dm_section_expanded) {
         // In the collapsed state, we will still display the current
@@ -165,6 +176,7 @@ export function update_private_messages(): void {
 
 export function expand(): void {
     private_messages_collapsed = false;
+    set_temporarily_collapsed(false);
     ls.set(ls_key, private_messages_collapsed);
     update_private_messages();
 }
@@ -328,6 +340,9 @@ function zoom_in(): void {
 }
 
 function zoom_out(): void {
+    if (!zoomed) {
+        return;
+    }
     zoomed = false;
     ui_util.enable_left_sidebar_search();
     clear_search();
