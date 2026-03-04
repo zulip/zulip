@@ -4408,11 +4408,11 @@ paths:
                                 Only organization administrators and the user who owns the bot will
                                 receive this event.
 
-                                **Changes**: Starting from Zulip 12.0 (feature level ZF-1ba2c3),
+                                **Changes**: Starting from Zulip 12.0 (feature level 474),
                                 this event is not sent when updating bot's avatar, email, name or
                                 owner and also when reactivating or deactivating a bot.
 
-                                Starting from Zulip 12.0 (feature level ZF-1ba2c3), this event is
+                                Starting from Zulip 12.0 (feature level 474), this event is
                                 no longer sent when a bot's API key is regenerated. Clients now
                                 use [`GET /bots/{bot_id}/api_key`](/api/get-bot-api-key) to get
                                 api key for the bot.
@@ -17688,10 +17688,10 @@ paths:
                           the bot or an administrator transferred the bot's ownership to the user).
 
                           **Changes**: Removed `avatar_url`, `bot_type`, `email`, `full_name`, `is_active`
-                          and `owner_id` fields from the dictionary in Zulip 12.0 (feature level ZF-1ba2c3).
+                          and `owner_id` fields from the dictionary in Zulip 12.0 (feature level 474).
                           Clients can get all these data from the corresponding user object.
 
-                          Removed `api_key` field from the dictionary in Zulip 12.0 (feature level ZF-1ba2c3).
+                          Removed `api_key` field from the dictionary in Zulip 12.0 (feature level 474).
                           Clients now use [`GET /bots/{bot_id}/api_key`](/api/get-bot-api-key)
                           to get api key for the bot.
                       realm_embedded_bots:
@@ -26354,11 +26354,11 @@ components:
 
             **Changes**: Removed `avatar_url`, `bot_type`, `email`,
             `full_name`, `is_active` and `owner_id` fields from the
-            dictionary in Zulip 12.0 (feature level ZF-1ba2c3). Clients
+            dictionary in Zulip 12.0 (feature level 474). Clients
             can get all these data from the corresponding user object.
 
             Removed `api_key` field from the dictionary in
-            Zulip 12.0 (feature level ZF-1ba2c3). Clients now use
+            Zulip 12.0 (feature level 474). Clients now use
             [`GET /bots/{bot_id}/api_key`](/api/get-bot-api-key) to get
             api key for the bot.
           additionalProperties: false
