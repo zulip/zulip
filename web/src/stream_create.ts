@@ -407,8 +407,11 @@ function create_stream(): void {
             // The rest of the work is done via the subscribe event we will get
         },
         error(xhr): void {
-            const error_message = z.object({msg: z.optional(z.string())}).parse(xhr.responseJSON);
-            if (error_message?.msg?.includes("access")) {
+            const parsed_error = z
+                .object({code: z.optional(z.string())})
+                .safeParse(xhr.responseJSON);
+
+            if (parsed_error.success && parsed_error.data.code === "PERMISSION_DENIED") {
                 // If we can't access the stream, we can safely
                 // assume it's a duplicate stream that we are not invited to.
                 //
