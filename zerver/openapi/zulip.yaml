@@ -569,7 +569,7 @@ paths:
                                         imported stub user or a user created via the API logs
                                         in for the first time.
 
-                                        **Changes**: New in Zulip 12.0 (feature level ZF-658515).
+                                        **Changes**: New in Zulip 12.0 (feature level 475).
                                       properties:
                                         user_id:
                                           type: integer
@@ -11232,7 +11232,7 @@ paths:
                           account creation time during import; when `is_imported_stub` is
                           `false`, this value reflects when the user first logged in.
 
-                          **Changes**: Starting with Zulip 12.0 (feature level ZF-658515),
+                          **Changes**: Starting with Zulip 12.0 (feature level 475),
                           this field is updated when an imported stub user or a user created
                           via the API logs in for the first time.
 
@@ -28507,7 +28507,7 @@ components:
             account creation time during import; when `is_imported_stub` is
             `false`, this value reflects when the user first logged in.
 
-            **Changes**: Starting with Zulip 12.0 (feature level ZF-658515),
+            **Changes**: Starting with Zulip 12.0 (feature level 475),
             this field is updated when an imported stub user or a user created
             via the API logs in for the first time.
         is_active:

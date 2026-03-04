@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 475**
+
+* [`GET /events`](/api/get-events): `realm_user` events with `op: "update"`
+  are now sent when the `date_joined` field is updated after an imported
+  stub user or a user created via the API logs in for the first time.
+* [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email),
+  [`GET /users/me`](/api/get-own-user): The `date_joined` field is initially
+  set to the account creation time and is updated to the time of first login
+  for imported stub users and users created via the API.
+
 **Feature level 474**
 
 * [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
