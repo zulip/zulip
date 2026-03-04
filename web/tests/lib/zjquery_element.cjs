@@ -87,7 +87,6 @@ class FakeElementState {
     $jquery_contents = undefined;
     jquery_data = new Map();
     jquery_next_results = new Map();
-    $jquery_parent = undefined;
     jquery_parents_results = new Map();
     jquery_prev_results = new Map();
     match_results = new Map([["*", true]]);
@@ -632,15 +631,12 @@ function dom_args(args) {
             assert.equal(args.length, 0, "zjquery does not support this outerHeight() call");
             return 0 in this ? this[0].offsetHeight : undefined;
         }
-        parent() {
-            assert.equal(this.length, 1);
-            const state = fake_element_state.get(this[0]);
-            if (state.$jquery_parent === undefined) {
-                throw new Error(
-                    `You need to call $(${JSON.stringify(state.selector)}).set_parent(...)`,
-                );
-            }
-            return state.$jquery_parent;
+        parent(selector = "*") {
+            return new exports.FakeJQuery(
+                [...this]
+                    .map((element) => element.parentNode)
+                    .filter((parent) => parent !== null && parent.matches(selector)),
+            );
         }
         parents(parents_selector = "*") {
             assert.equal(this.length, 1);
@@ -768,7 +764,8 @@ function dom_args(args) {
         }
         set_parent($parent_elem) {
             assert.equal(this.length, 1);
-            fake_element_state.get(this[0]).$jquery_parent = $parent_elem;
+            assert.equal($parent_elem.length, 1);
+            this[0].parentNode = $parent_elem[0];
         }
         set_parents_result(selector, $result) {
             assert.equal(this.length, 1);

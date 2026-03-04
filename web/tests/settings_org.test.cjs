@@ -176,7 +176,8 @@ function test_change_save_button_state() {
         $discard_button,
     } = createSaveButtons("msg-editing");
     $save_button_header.attr("id", "org-msg-editing");
-    $("#org-msg-editing").set_closest_results(".channel-permissions", {});
+    $save_button_header.set_matches(".subsection-header", true);
+    $save_button_header.set_closest_results(".channel-permissions", {});
 
     {
         settings_components.change_save_button_state($save_button_controls, "unsaved");
