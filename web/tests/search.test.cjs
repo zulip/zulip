@@ -300,7 +300,7 @@ run_test("initiate_search", ({override_rewire}) => {
     override_rewire(search, "open_search_bar_and_close_narrow_description", () => {
         search_bar_opened = true;
     });
-    $(".navbar-search.expanded").length = 0;
+    $.set_results(".navbar-search.expanded", []);
     $("#search_query").text("");
     search.initiate_search();
     assert.ok(typeahead_forced_open);

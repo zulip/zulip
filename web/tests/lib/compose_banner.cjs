@@ -20,11 +20,10 @@ exports.mock_banners = () => {
     $("#compose_banners .error").remove = noop;
     $("#compose_banners .upload_banner").remove = noop;
 
-    const $stub = $.create("stub_to_remove");
+    const $stub = $.set_results("stub_to_remove", []);
     const $cb = $("#compose_banners");
 
     $stub.remove = noop;
-    $stub.length = 0;
 
     $cb.closest = () => [];
     $cb.set_find_results(".no_post_permissions", $stub);

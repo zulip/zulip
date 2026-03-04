@@ -197,8 +197,7 @@ test("activate", ({override}) => {
 
     // Test incoming widget events
 
-    const $empty_row = $.create("<empty row>");
-    $empty_row.length = 0;
+    const $empty_row = $.set_results("<empty row>", []);
 
     let expected_message_id;
 
