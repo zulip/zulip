@@ -857,6 +857,9 @@ h4.user_group_setting_subsection_title {
     .sub-info-box,
     .group-info-box {
         margin-right: 0.25em; /* 4px at 16px font size */
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
 
         .top-bar,
         .bottom-bar {
@@ -875,10 +878,6 @@ h4.user_group_setting_subsection_title {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-        }
-
-        .top-bar .stream-name,
-        .bottom-bar .description {
             margin-right: 0.75em; /* 12px at 16px font size */
         }
 
@@ -894,12 +893,13 @@ h4.user_group_setting_subsection_title {
             margin-right: 0.3125em; /* 5px at 16px font size */
         }
 
-        .top-bar .stream-name {
+        .top-bar .stream-name,
+        .top-bar .group-name {
             font-weight: 600;
         }
 
         .bottom-bar {
-            line-height: 1.5;
+            line-height: 1.2;
         }
     }
 
