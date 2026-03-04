@@ -289,7 +289,7 @@
 .popover-group-menu-info {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 0;
     padding: 3px var(--user-group-popover-horizontal-padding);
 }
 
@@ -297,13 +297,19 @@
     display: flex;
     align-items: flex-start;
     gap: 5px;
-    /* 18px at 15px/1em */
-    font-size: 1.2em;
+    margin-bottom: 4px;
+    /* 15px at 15px/1em */
+    font-size: 1em;
     font-weight: 600;
-    /* 20px at 18px/1em */
+    /* 17px at 15px/1em */
     line-height: 1.1111em;
     color: var(--color-text-full-name);
     overflow-wrap: anywhere;
+
+    .popover-menu-icon {
+        /* Reset icon size to match channel icon (~17px) */
+        font-size: 0.8333em;
+    }
 }
 
 .popover-group-menu-description {
