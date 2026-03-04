@@ -71,10 +71,7 @@
             );
         }
 
-        #left_bar_compose_reply_button_big,
-        #new_conversation_button {
-            /* Keep the new message button sized to match
-               adjacent buttons. */
+        #left_bar_compose_reply_button_big {
             font-size: inherit;
             font-family: inherit;
             min-width: inherit;
@@ -85,6 +82,37 @@
             background: var(--color-compose-embedded-button-background);
             border-radius: 3px;
             line-height: var(--line-height-compose-buttons);
+            width: 100%;
+            text-align: left;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+
+            display: flex;
+            align-items: center;
+            gap: 5px;
+
+            .dm-recipient-pills {
+                display: flex;
+                border: none;
+                flex-wrap: nowrap;
+                background-color: transparent;
+                padding: 0;
+                pointer-events: none;
+
+                .pill {
+                    margin: 0;
+                    flex-shrink: 0;
+                }
+
+                .exit {
+                    display: none;
+                }
+            }
+
+            .pill-container {
+                overflow: hidden;
+            }
         }
 
         .compose-reply-button-wrapper {
@@ -93,16 +121,15 @@
             overflow: hidden;
         }
 
-        #left_bar_compose_reply_button_big {
-            width: 100%;
-            text-align: left;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-        }
-
         #new_conversation_button {
             /* Remove the  `padding` to prevent margin from affecting parent height. */
+            font-size: inherit;
+            font-family: inherit;
+            outline: none;
+            border: none;
+            background: var(--color-compose-embedded-button-background);
+            border-radius: 3px;
+            line-height: var(--line-height-compose-buttons);
             padding: 0 10px;
             min-width: inherit;
             margin: 1px;

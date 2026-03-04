@@ -14,13 +14,15 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as stream_data from "./stream_data.ts";
+import * as user_pill from "./user_pill.ts";
 import * as util from "./util.ts";
 
 type RecipientLabel = {
     label_text: string;
-    has_empty_string_topic?: boolean;
-    stream_name?: string;
-    is_dm_with_self?: boolean;
+    has_empty_string_topic?: boolean | undefined;
+    stream_name?: string | undefined;
+    is_dm_with_self?: boolean | undefined;
+    user_pills_html?: string | undefined;
 };
 
 function get_stream_recipient_label(stream_id: number, topic: string): RecipientLabel | undefined {
@@ -40,14 +42,25 @@ function get_stream_recipient_label(stream_id: number, topic: string): Recipient
 function get_direct_message_recipient_label(user_ids: number[]): RecipientLabel {
     let label_text = "";
     let is_dm_with_self = false;
+    let user_pills_html;
     if (people.is_direct_message_conversation_with_self(user_ids)) {
         is_dm_with_self = true;
     } else {
         label_text = message_store.get_pm_full_names(user_ids);
+        user_pills_html = user_ids
+            .map((id) => {
+                const pill_data = user_pill.create_item_from_user_id(id.toString(), []);
+                if (pill_data) {
+                    return user_pill.generate_pill_html(pill_data, false);
+                }
+                return "";
+            })
+            .join("");
     }
     const recipient_label: RecipientLabel = {
         label_text,
         is_dm_with_self,
+        user_pills_html,
     };
     return recipient_label;
 }
@@ -251,6 +264,7 @@ export function update_recipient_text_for_reply_button(
             is_dm_with_self: recipient_label.is_dm_with_self,
             empty_string_topic_display_name,
             label_text: recipient_label.label_text,
+            user_pills_html: recipient_label.user_pills_html,
         });
         $("#left_bar_compose_reply_button_big").html(rendered_recipient_label);
     } else {
