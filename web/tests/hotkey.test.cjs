@@ -106,11 +106,19 @@ message_lists.current = {
         return 42;
     },
     selected_row() {
+        const $emoji_message_control_button_container = $.create(
+            "emoji-message-control-button-container-stub",
+        );
+        $emoji_message_control_button_container.set_closest_results(
+            ".message_control_button",
+            $.create("emoji-message-control-button-stub"),
+        );
         const $row = $.create("selected-row-stub");
-        $row.set_find_results(".message-actions-menu-button", ["<menu-button-stub>"]);
-        $row.set_find_results(".message_controls .emoji-message-control-button-container", {
-            closest: () => ({css: () => "none"}),
-        });
+        $row.set_find_results(".message-actions-menu-button", $.create("menu-button-stub"));
+        $row.set_find_results(
+            ".message_controls .emoji-message-control-button-container",
+            $emoji_message_control_button_container,
+        );
         return $row;
     },
     selected_message() {
