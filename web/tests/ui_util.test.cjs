@@ -11,13 +11,13 @@ const ui_util = zrequire("ui_util");
 run_test("potentially_collapse_quotes", ({override_rewire}) => {
     const $element = $.create("message-content");
 
-    $element.set_children_results("*", [
-        $.create("normal paragraph 1"),
-        $.create("blockquote"),
-        $.create("normal paragraph 2"),
-        $.create("user said paragraph"),
-        $.create("message quote"),
-        $.create("normal paragraph 3"),
+    $element.set_children([
+        $.create("normal paragraph 1")[0],
+        $.create("blockquote")[0],
+        $.create("normal paragraph 2")[0],
+        $.create("user said paragraph")[0],
+        $.create("message quote")[0],
+        $.create("normal paragraph 3")[0],
     ]);
     override_rewire(ui_util, "get_collapsible_status_array", () => [
         false,
@@ -35,14 +35,14 @@ run_test("potentially_collapse_quotes", ({override_rewire}) => {
     assert.equal(collapsed, true);
     let expected_texts = ["never-been-set", "[…]", "never-been-set", "[…]", "", "never-been-set"];
     assert.deepEqual(
-        $element.children().map(($el) => $el.text()),
+        [...$element.children()].map((element) => element.textContent),
         expected_texts,
     );
 
-    $element.set_children_results("*", [
-        $.create("normal paragraph 4"),
-        $.create("normal paragraph 5"),
-        $.create("normal paragraph 6"),
+    $element.set_children([
+        $.create("normal paragraph 4")[0],
+        $.create("normal paragraph 5")[0],
+        $.create("normal paragraph 6")[0],
     ]);
     override_rewire(ui_util, "get_collapsible_status_array", () => [false, false, false]);
     // For all non-collapsible elements, none should be collapsed.
@@ -50,14 +50,14 @@ run_test("potentially_collapse_quotes", ({override_rewire}) => {
     assert.equal(collapsed, false);
     expected_texts = ["never-been-set", "never-been-set", "never-been-set"];
     assert.deepEqual(
-        $element.children().map(($el) => $el.text()),
+        [...$element.children()].map((element) => element.textContent),
         expected_texts,
     );
 
-    $element.set_children_results("*", [
-        $.create("blockquote 1"),
-        $.create("blockquote 2"),
-        $.create("blockquote 3"),
+    $element.set_children([
+        $.create("blockquote 1")[0],
+        $.create("blockquote 2")[0],
+        $.create("blockquote 3")[0],
     ]);
     override_rewire(ui_util, "get_collapsible_status_array", () => [true, true, true]);
     // For all collapsible elements, none should be collapsed.
@@ -65,7 +65,7 @@ run_test("potentially_collapse_quotes", ({override_rewire}) => {
     assert.equal(collapsed, false);
     expected_texts = ["never-been-set", "never-been-set", "never-been-set"];
     assert.deepEqual(
-        $element.children().map(($el) => $el.text()),
+        [...$element.children()].map((element) => element.textContent),
         expected_texts,
     );
 });

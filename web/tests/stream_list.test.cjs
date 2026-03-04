@@ -397,12 +397,13 @@ test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
 
     mock_template("filter_topics.hbs", false, () => "<filter-topics-stub>");
     let filter_topics_appended = false;
-    $stream_li1.set_children_results("div.bottom_left_row", {
-        append($element) {
-            assert.equal($element.selector, "<filter-topics-stub>");
-            filter_topics_appended = true;
-        },
-    });
+    const $bottom_left_row = $.create("bottom-left-row-stub");
+    $bottom_left_row.set_matches("div.bottom_left_row", true);
+    $stream_li1.set_children($bottom_left_row);
+    $bottom_left_row[0].append = (element) => {
+        assert.equal(element, $("<filter-topics-stub>")[0]);
+        filter_topics_appended = true;
+    };
     stream_list.zoom_in_topics(42);
 
     assert.ok(!$stream_li1.hasClass("hide"));
