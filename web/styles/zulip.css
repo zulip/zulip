@@ -2388,13 +2388,6 @@ body:not(.spectator-view) {
             .setting-disabled-option-text {
                 color: var(--color-current-setting-dropdown-item);
             }
-
-            &:hover,
-            &:active {
-                background-color: var(
-                    --background-color-current-setting-dropdown-item
-                );
-            }
         }
     }
 }
