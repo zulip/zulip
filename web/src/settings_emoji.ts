@@ -138,7 +138,8 @@ export function populate_emoji(): void {
                 const matches_search = item.name.toLowerCase().includes(value);
 
                 // check if the "show only my emojis" filter is active
-                const show_only_my_emojis = ($("#show-my-emojis-only")[0] as HTMLInputElement).checked;
+                const $filter_checkbox = $("#show-my-emojis-only");
+        const show_only_my_emojis = util.the($filter_checkbox).checked;
 
                 if (show_only_my_emojis) {
                     // return true only if it matches search AND was authored by the current user
