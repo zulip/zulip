@@ -476,7 +476,7 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertTrue(self.custom_field_exists_in_realm(field.id))
         self.assertEqual(user_profile.customprofilefieldvalue_set.count(), self.original_count)
 
-        do_remove_realm_custom_profile_field(realm, field)
+        do_remove_realm_custom_profile_field(realm, field, acting_user=user_profile)
 
         self.assertFalse(self.custom_field_exists_in_realm(field.id))
         self.assertEqual(user_profile.customprofilefieldvalue_set.count(), self.original_count - 1)
@@ -826,10 +826,15 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_update_is_aware_of_uniqueness(self) -> None:
         self.login("iago")
         realm = get_realm("zulip")
-        field_1 = try_add_realm_custom_profile_field(realm, "Phone", CustomProfileField.SHORT_TEXT)
+        field_1 = try_add_realm_custom_profile_field(
+            realm, "Phone", CustomProfileField.SHORT_TEXT, acting_user=self.example_user("iago")
+        )
 
         field_2 = try_add_realm_custom_profile_field(
-            realm, "Phone 1", CustomProfileField.SHORT_TEXT
+            realm,
+            "Phone 1",
+            CustomProfileField.SHORT_TEXT,
+            acting_user=self.example_user("iago"),
         )
 
         self.assertTrue(self.custom_field_exists_in_realm(field_1.id))
@@ -991,6 +996,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             name="Quote",
             hint="Saying or phrase which you known for.",
             field_type=CustomProfileField.SHORT_TEXT,
+            acting_user=self.example_user("iago"),
         )
 
         iago = self.example_user("iago")

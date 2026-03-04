@@ -1727,7 +1727,10 @@ class NormalActionsTest(BaseAction):
 
         with self.verify_action() as events:
             try_add_realm_custom_profile_field(
-                realm=realm, name="Expertise", field_type=CustomProfileField.LONG_TEXT
+                realm=realm,
+                name="Expertise",
+                field_type=CustomProfileField.LONG_TEXT,
+                acting_user=self.example_user("iago"),
             )
         check_custom_profile_fields("events[0]", events[0])
 
@@ -1743,11 +1746,14 @@ class NormalActionsTest(BaseAction):
                 name=name,
                 hint=hint,
                 display_in_profile_summary=display_in_profile_summary,
+                acting_user=self.example_user("iago"),
             )
         check_custom_profile_fields("events[0]", events[0])
 
         with self.verify_action() as events:
-            do_remove_realm_custom_profile_field(realm, field)
+            do_remove_realm_custom_profile_field(
+                realm, field, acting_user=self.example_user("iago")
+            )
         check_custom_profile_fields("events[0]", events[0])
 
     def test_pronouns_type_support_in_custom_profile_fields_events(self) -> None:
@@ -1757,7 +1763,9 @@ class NormalActionsTest(BaseAction):
         hint = "What pronouns should people use for you?"
 
         with self.verify_action(pronouns_field_type_supported=True) as events:
-            try_update_realm_custom_profile_field(realm, field, name, hint=hint)
+            try_update_realm_custom_profile_field(
+                realm, field, name, hint=hint, acting_user=self.example_user("iago")
+            )
         check_custom_profile_fields("events[0]", events[0])
         [pronouns_field] = (
             field_obj for field_obj in events[0]["fields"] if field_obj["id"] == field.id
@@ -1766,7 +1774,13 @@ class NormalActionsTest(BaseAction):
 
         hint = "What pronouns should people use to refer you?"
         with self.verify_action(pronouns_field_type_supported=False) as events:
-            try_update_realm_custom_profile_field(realm=realm, field=field, name=name, hint=hint)
+            try_update_realm_custom_profile_field(
+                realm=realm,
+                field=field,
+                name=name,
+                hint=hint,
+                acting_user=self.example_user("iago"),
+            )
         check_custom_profile_fields("events[0]", events[0])
         [pronouns_field] = (
             field_obj for field_obj in events[0]["fields"] if field_obj["id"] == field.id
