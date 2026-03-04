@@ -58,6 +58,13 @@ from zerver.views.devices import register_device, remove_device
 from zerver.views.digest import digest_page
 from zerver.views.documentation import MarkdownDirectoryView, integrations_catalog, integrations_doc
 from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_drafts
+from zerver.views.meetings import (
+    confirm_meeting,
+    create_meeting,
+    get_meeting,
+    get_meeting_responses,
+    upsert_meeting_responses,
+)
 from zerver.views.events_register import events_register_backend
 from zerver.views.health import health
 from zerver.views.home import accounts_accept_terms, desktop_home, doc_permalinks_view, home
@@ -382,6 +389,11 @@ v1_api_and_json_patterns = [
     # Endpoints for syncing drafts.
     rest_path("drafts", GET=fetch_drafts, POST=create_drafts),
     rest_path("drafts/<int:draft_id>", PATCH=edit_draft, DELETE=delete_draft),
+    # Meeting scheduling endpoints.
+    rest_path("meetings", POST=create_meeting),
+    rest_path("meetings/<int:meeting_id>", GET=get_meeting),
+    rest_path("meetings/<int:meeting_id>/responses", GET=get_meeting_responses, PATCH=upsert_meeting_responses),
+    rest_path("meetings/<int:meeting_id>/confirm", POST=confirm_meeting),
     # navigation_views -> zerver.views.navigation_views
     rest_path("navigation_views", GET=get_navigation_views, POST=add_navigation_view),
     rest_path(
