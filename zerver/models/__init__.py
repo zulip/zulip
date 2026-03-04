@@ -32,6 +32,9 @@ from zerver.models.messages import OnboardingUserMessage as OnboardingUserMessag
 from zerver.models.messages import Reaction as Reaction
 from zerver.models.messages import SubMessage as SubMessage
 from zerver.models.messages import UserMessage as UserMessage
+from zerver.models.meetings import Meeting as Meeting
+from zerver.models.meetings import MeetingResponse as MeetingResponse
+from zerver.models.meetings import MeetingSlot as MeetingSlot
 from zerver.models.muted_users import MutedUser as MutedUser
 from zerver.models.navigation_views import NavigationView as NavigationView
 from zerver.models.onboarding_steps import OnboardingStep as OnboardingStep
