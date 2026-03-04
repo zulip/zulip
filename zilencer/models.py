@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from typing import Literal
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -307,6 +308,12 @@ class PreregistrationRemoteServerBillingUser(AbstractRemoteServerBillingUser):
     next_page = models.TextField(null=True)
 
     created_user = models.ForeignKey(RemoteServerBillingUser, null=True, on_delete=models.SET_NULL)
+
+
+RemoteServerDeactivationReasonType = Literal[
+    "owner_request",
+    "tos_violation",
+]
 
 
 class RemoteZulipServerAuditLog(AbstractRealmAuditLog):
