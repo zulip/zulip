@@ -91,7 +91,11 @@ export const update_person = function update(event: UserUpdate): void {
             settings_account.hide_confirm_email_banner();
         }
 
-        if (user.is_bot) {
+        if (
+            user.is_bot &&
+            (current_user.is_admin ||
+                (user.bot_owner_id !== null && people.is_my_user_id(user.bot_owner_id)))
+        ) {
             assert(delivery_email !== null);
             bot_data.update(event.user_id, {user_id: event.user_id, email: delivery_email});
         }
@@ -109,7 +113,11 @@ export const update_person = function update(event: UserUpdate): void {
             current_user.full_name = event.full_name;
             settings_account.update_full_name(event.full_name);
         }
-        if (user.is_bot) {
+        if (
+            user.is_bot &&
+            (current_user.is_admin ||
+                (user.bot_owner_id !== null && people.is_my_user_id(user.bot_owner_id)))
+        ) {
             bot_data.update(event.user_id, {user_id: event.user_id, full_name: event.full_name});
         }
     }
@@ -233,14 +241,23 @@ export const update_person = function update(event: UserUpdate): void {
         assert(user.is_bot);
         user.bot_owner_id = event.bot_owner_id;
         user_profile.update_profile_modal_ui(user, event);
-        bot_data.update(event.user_id, {user_id: event.user_id, owner_id: event.bot_owner_id});
+        if (current_user.is_admin) {
+            // Non-admins only have bots they own in bot_data, and receive
+            // realm_bot/add or realm_bot/delete events when ownership changes,
+            // so their bot_data is already up to date at this point.
+            bot_data.update(event.user_id, {user_id: event.user_id, owner_id: event.bot_owner_id});
+        }
         settings_bots.redraw_your_bots_list();
         settings_bots.toggle_bot_config_download_container();
     }
 
     if ("is_active" in event) {
         const is_bot_user = user.is_bot;
-        if (is_bot_user) {
+        if (
+            is_bot_user &&
+            (current_user.is_admin ||
+                (user.bot_owner_id !== null && people.is_my_user_id(user.bot_owner_id)))
+        ) {
             bot_data.update(event.user_id, {user_id: event.user_id, is_active: event.is_active});
         }
         if (event.is_active) {
