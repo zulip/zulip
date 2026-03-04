@@ -205,6 +205,8 @@ class OpenAPIArgumentsTest(ZulipTestCase):
     # This will be filled during test_openapi_arguments:
     checked_endpoints: set[str] = set()
     pending_endpoints = {
+        #### For current endpoint documentation priorities see
+        #### https://chat.zulip.org/#narrow/channel/412-api-documentation/topic/Undocumented.20endpoint.20priorities/with/2397881
         #### TODO: These endpoints are a priority to document:
         # These are a priority to document but don't match our normal URL schemes
         # and thus may be complicated to document with our current tooling.
@@ -215,14 +217,15 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         #### These realm administration settings are valuable to document:
         # Delete a data export.
         "/export/realm/{export_id}",
-        # Manage default streams and default stream groups
-        "/default_stream_groups/create",
-        "/default_stream_groups/{group_id}",
-        "/default_stream_groups/{group_id}/streams",
         # Single-stream settings alternative to the bulk endpoint
         # users/me/subscriptions/properties; probably should just be a
         # section of the same page.
         "/users/me/subscriptions/{stream_id}",
+        # Default stream groups are an unfinished feature and therefore
+        # shouldn't be added to the documentation until that's completed.
+        "/default_stream_groups/create",
+        "/default_stream_groups/{group_id}",
+        "/default_stream_groups/{group_id}/streams",
         #### Mobile-app only endpoints; important for mobile developers.
         # Mobile interface for development environment login
         "/dev_list_users",
