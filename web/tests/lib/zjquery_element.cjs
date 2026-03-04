@@ -24,7 +24,7 @@ function FakeElement(selector, opts) {
 
     const $self = {
         length: 1,
-        [0]: {textContent: text},
+        [0]: {textContent: text, to_$: () => $self},
         [Symbol.iterator]: Array.prototype.values,
         addClass(class_name) {
             classes.set(class_name, true);
