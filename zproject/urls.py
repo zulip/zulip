@@ -69,6 +69,7 @@ from zerver.views.meetings import (
     confirm_meeting,
     create_meeting,
     get_meeting,
+    get_meeting_candidates,
     get_meeting_responses,
     upsert_meeting_responses,
 )
@@ -399,6 +400,7 @@ v1_api_and_json_patterns = [
     rest_path("drafts/<int:draft_id>", PATCH=edit_draft, DELETE=delete_draft),
     # Meeting scheduling endpoints.
     rest_path("meetings", POST=create_meeting),
+    rest_path("meetings/candidates", GET=get_meeting_candidates),
     rest_path("meetings/<int:meeting_id>", GET=get_meeting),
     rest_path("meetings/<int:meeting_id>/responses", GET=get_meeting_responses, PATCH=upsert_meeting_responses),
     rest_path("meetings/<int:meeting_id>/confirm", POST=confirm_meeting),

@@ -2,12 +2,16 @@
 Business logic for the meeting scheduling feature.
 
 Flow summary:
-  1. Organizer calls do_create_meeting() — creates Meeting + MeetingSlots, optionally
-     creates a dedicated stream, subscribes invitees, and posts a proposal message.
-  2. Attendees call do_upsert_responses() to record availability per slot.
-  3. After the deadline, check_meeting_deadlines() (management command) transitions
+  1. Organizer calls get_stream_subscribers() or get_realm_users() to build
+     the invite candidate list shown in the proposal modal.
+  2. Organizer calls do_create_meeting() — creates Meeting + MeetingSlots,
+     creates a private stream in the "meetings" folder (or reuses an existing
+     one), subscribes invitees, and posts a proposal message.
+  3. Attendees call do_upsert_responses() to record availability per slot.
+  4. After the deadline, check_meeting_deadlines() (management command) transitions
      status to DEADLINE_PASSED and notifies the owner via DM.
-  4. Organizer calls do_confirm_meeting() to pick the winning slot and broadcast the result.
+  5. Organizer calls do_confirm_meeting() to pick the winning slot and broadcast
+     the result.
 """
 
 from datetime import datetime, timezone
@@ -15,12 +19,42 @@ from datetime import datetime, timezone
 from django.db.models import Count, Q
 
 from zerver.actions.message_send import internal_send_private_message, internal_send_stream_message
-from zerver.actions.streams import bulk_add_subscriptions
+from zerver.actions.streams import bulk_add_subscriptions, get_subscriber_ids
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.streams import create_stream_if_needed
+from zerver.lib.streams import access_stream_by_name, create_stream_if_needed
 from zerver.models import Stream, UserProfile
+from zerver.models.channel_folders import ChannelFolder
 from zerver.models.meetings import Meeting, MeetingResponse, MeetingSlot
+from zerver.models.realms import Realm
 
+
+# ---------------------------------------------------------------------------
+# Candidate-list helpers (used by the proposal modal to populate invitee picker)
+# ---------------------------------------------------------------------------
+
+def get_realm_users(realm: Realm) -> list[dict[str, object]]:
+    """Return id + name for every active non-bot user in the realm."""
+    return list(
+        UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
+        .order_by("full_name")
+        .values("id", "full_name")
+    )
+
+
+def get_stream_subscribers(requesting_user: UserProfile, stream_name: str) -> list[dict[str, object]]:
+    """Return id + name for every active subscriber of the named stream."""
+    stream, _ = access_stream_by_name(requesting_user, stream_name)
+    user_ids = get_subscriber_ids(stream, requesting_user=requesting_user)
+    return list(
+        UserProfile.objects.filter(id__in=user_ids, is_active=True)
+        .order_by("full_name")
+        .values("id", "full_name")
+    )
+
+
+# ---------------------------------------------------------------------------
+# Meeting lifecycle
+# ---------------------------------------------------------------------------
 
 def do_create_meeting(
     owner: UserProfile,
@@ -29,9 +63,8 @@ def do_create_meeting(
     slots: list[tuple[datetime, datetime | None]],
     deadline: datetime,
     invite_user_ids: list[int],
-    # When True the server will create a new private stream for this meeting
-    # and subscribe all invitees to it. When False the owner must supply an
-    # existing stream_id via stream.
+    # When True the server creates a new private stream in the "meetings" folder
+    # and subscribes all invitees. When False the owner must supply an existing stream.
     create_channel: bool,
     stream: Stream | None = None,
 ) -> Meeting:
@@ -44,11 +77,14 @@ def do_create_meeting(
         raise JsonableError("At least one time slot is required.")
 
     if create_channel:
+        # All meeting streams live in a shared "meetings" folder for discoverability.
+        folder, _ = ChannelFolder.objects.get_or_create(realm=realm, name="meetings")
         stream_name = f"meeting: {topic}"
         stream, _created = create_stream_if_needed(
             realm,
             stream_name,
             invite_only=True,
+            folder=folder,
             acting_user=owner,
         )
         invited_users = list(
