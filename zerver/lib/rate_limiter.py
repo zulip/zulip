@@ -40,35 +40,35 @@ class RateLimitedObject(ABC):
         else:
             self.backend = RedisRateLimiterBackend
 
-    def rate_limit(self) -> tuple[bool, float]:
-        # Returns (ratelimited, secs_to_freedom)
+    def _rate_limit_entity(self) -> tuple[bool, float, int, float]:
+        # Returns (ratelimited, secs_to_freedom, calls_remaining, secs_to_reset)
         return self.backend.rate_limit_entity(
             self.key(), self.get_rules(), self.max_api_calls(), self.max_api_window()
         )
 
+    def rate_limit(self) -> tuple[bool, float]:
+        # Returns (ratelimited, secs_to_freedom)
+        ratelimited, secs_to_freedom, _, _ = self._rate_limit_entity()
+        return ratelimited, secs_to_freedom
+
     def rate_limit_request(self, request: HttpRequest) -> None:
         from zerver.lib.request import RequestNotes
 
-        ratelimited, time = self.rate_limit()
+        ratelimited, secs_to_freedom, calls_remaining, secs_to_reset = self._rate_limit_entity()
         request_notes = RequestNotes.get_notes(request)
 
         request_notes.ratelimits_applied.append(
             RateLimitResult(
                 entity=self,
-                secs_to_freedom=time,
-                remaining=0,
+                secs_to_freedom=secs_to_freedom if ratelimited else secs_to_reset,
+                remaining=0 if ratelimited else calls_remaining,
                 over_limit=ratelimited,
             )
         )
         # Abort this request if the user is over their rate limits
         if ratelimited:
             # Pass information about what kind of entity got limited in the exception:
-            raise RateLimitedError(time)
-
-        calls_remaining, seconds_until_reset = self.api_calls_left()
-
-        request_notes.ratelimits_applied[-1].remaining = calls_remaining
-        request_notes.ratelimits_applied[-1].secs_to_freedom = seconds_until_reset
+            raise RateLimitedError(secs_to_freedom)
 
     def block_access(self, seconds: int) -> None:
         """Manually blocks an entity for the desired number of seconds"""
@@ -217,8 +217,8 @@ class RateLimiterBackend(ABC):
     @abstractmethod
     def rate_limit_entity(
         cls, entity_key: str, rules: list[tuple[int, int]], max_api_calls: int, max_api_window: int
-    ) -> tuple[bool, float]:
-        # Returns (ratelimited, secs_to_freedom)
+    ) -> tuple[bool, float, int, float]:
+        # Returns (ratelimited, secs_to_freedom, calls_remaining, secs_to_reset)
         pass
 
 
@@ -325,13 +325,13 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
     @override
     def rate_limit_entity(
         cls, entity_key: str, rules: list[tuple[int, int]], max_api_calls: int, max_api_window: int
-    ) -> tuple[bool, float]:
+    ) -> tuple[bool, float, int, float]:
         now = time.time()
         if entity_key in cls.timestamps_blocked_until:
             # Check whether the key is manually blocked.
             if now < cls.timestamps_blocked_until[entity_key]:
                 blocking_ttl = cls.timestamps_blocked_until[entity_key] - now
-                return True, blocking_ttl
+                return True, blocking_ttl, 0, 0.0
             else:
                 del cls.timestamps_blocked_until[entity_key]
 
@@ -340,9 +340,12 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
             ratelimited, time_till_free = cls.need_to_limit(entity_key, time_window, max_count)
 
             if ratelimited:
-                break
+                return True, time_till_free, 0, 0.0
 
-        return ratelimited, time_till_free
+        calls_remaining, secs_to_reset = cls.get_api_calls_left(
+            entity_key, max_api_window, max_api_calls
+        )
+        return False, 0.0, calls_remaining, secs_to_reset
 
 
 class RedisRateLimiterBackend(RateLimiterBackend):
@@ -511,7 +514,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
     @override
     def rate_limit_entity(
         cls, entity_key: str, rules: list[tuple[int, int]], max_api_calls: int, max_api_window: int
-    ) -> tuple[bool, float]:
+    ) -> tuple[bool, float, int, float]:
         ratelimited, time = cls.is_ratelimited(entity_key, rules)
 
         if not ratelimited:
@@ -522,7 +525,13 @@ class RedisRateLimiterBackend(RateLimiterBackend):
                 # rate-limit users who are hitting the API so hard we can't update our stats.
                 ratelimited = True
 
-        return ratelimited, time
+        if ratelimited:
+            return True, time, 0, 0.0
+
+        calls_remaining, secs_to_reset = cls.get_api_calls_left(
+            entity_key, max_api_window, max_api_calls
+        )
+        return False, 0.0, calls_remaining, secs_to_reset
 
 
 class RateLimitResult:
