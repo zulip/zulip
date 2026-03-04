@@ -1,3 +1,10 @@
+:root {
+    /* Actual navbar height is determined by label padding
+       (16px top/bottom) and line-height (28px): 16 + 28 + 16 = 60px.
+       Keep this variable in sync with those values. */
+    --navbar-height: 60px;
+}
+
 details summary::-webkit-details-marker {
     /* Hide the default arrow on Safari. */
     display: none;
@@ -222,7 +229,7 @@ details summary::-webkit-details-marker {
     display: none;
     /* To account for scrollbar if any present. */
     right: 15px;
-    top: 60px;
+    top: var(--navbar-height);
     width: 44px;
     height: 44px;
     background-size: 32px;
@@ -248,7 +255,7 @@ details summary::-webkit-details-marker {
 
 .top-menu-submenu {
     position: absolute;
-    top: 60px;
+    top: var(--navbar-height);
     display: flex;
     gap: 16px;
     opacity: 0;
@@ -386,7 +393,7 @@ details summary::-webkit-details-marker {
     top: 0;
     left: 0;
     right: 0;
-    height: 60px;
+    height: var(--navbar-height);
 
     overflow: auto;
     font-style: normal;
@@ -532,7 +539,7 @@ details summary::-webkit-details-marker {
     z-index: 1;
     transition: 0.3s;
     transition-property: background, backdrop-filter;
-    height: 60px;
+    height: var(--navbar-height);
     overflow: hidden;
     display: flex;
     justify-content: space-between;
