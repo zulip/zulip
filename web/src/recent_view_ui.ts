@@ -1472,7 +1472,7 @@ export function update_participants_column_class(): void {
         .addClass(
             max_avatars === 0
                 ? "recent-view-participants-hidden"
-                : max_avatars === 3
+                : max_avatars === 2
                   ? "recent-view-participants-3"
                   : "",
         );

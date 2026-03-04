@@ -229,7 +229,7 @@ export function update_recent_view(rerender_view_if_needed = false): void {
         middle_column_width <
         (media_breakpoints_num.md * user_settings.web_font_size_px) / 16
     ) {
-        num_avatars_max = 3;
+        num_avatars_max = 2;
     }
 
     if (prev_num_avatars_max !== num_avatars_max) {
