@@ -778,12 +778,12 @@ test("main_file_drop_edit_mode", ({override, override_rewire}) => {
     override(rows, "get_message_id", () => 40);
 
     // Edit box which registered the event handler no longer exists.
-    $drag_drop_container.set_closest_results("html", {length: 0});
+    $drag_drop_container.set_closest_results("html", []);
 
     drop_handler(drop_event);
     assert.equal(upload_files_called, false);
 
-    $drag_drop_container.set_closest_results("html", {length: 1});
+    $drag_drop_container.set_closest_results("html", $.create("html"));
 
     // Drag and dropped in one of the edit boxes. The event would be taken care of by
     // drag_drop_container event handlers.
