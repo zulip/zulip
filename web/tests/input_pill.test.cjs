@@ -241,23 +241,14 @@ run_test("left arrow on input", ({mock_template}) => {
 
     const key_handler = $container.get_on_handler("keydown", ".input");
 
-    let last_pill_focused = false;
-
     const $pill_stub = $.create("pill-stub");
-    $pill_stub.last = () => ({
-        trigger(type) {
-            if (type === "focus") {
-                last_pill_focused = true;
-            }
-        },
-    });
     $container.set_find_results(".pill", $pill_stub);
 
     key_handler({
         key: "ArrowLeft",
     });
 
-    assert.ok(last_pill_focused);
+    assert.ok($pill_stub.is(":focus"));
 });
 
 run_test("comma", ({mock_template}) => {
