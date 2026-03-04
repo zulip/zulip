@@ -18,6 +18,7 @@ from zerver.lib.exceptions import (
     JsonableError,
     MissingAuthenticationError,
     OrganizationOwnerRequiredError,
+    PermissionDeniedError,
 )
 from zerver.lib.stream_subscription import (
     get_guest_user_ids_for_streams,
@@ -1049,13 +1050,26 @@ def get_web_public_streams_queryset(realm: Realm) -> QuerySet[Stream]:
     )
 
 
-def check_stream_name_available(realm: Realm, name: str) -> None:
+def check_stream_name_available(acting_user: UserProfile, name: str) -> None:
     check_stream_name(name)
     try:
-        get_stream(name, realm)
-        raise ChannelExistsError(name)
+        stream = get_stream(name, acting_user.realm)
     except Stream.DoesNotExist:
-        pass
+        return
+
+    assert stream.recipient_id is not None
+    try:
+        sub: Subscription | None = Subscription.objects.get(
+            user_profile=acting_user, recipient_id=stream.recipient_id, active=True
+        )
+    except Subscription.DoesNotExist:
+        sub = None
+
+    if check_basic_stream_access(
+        acting_user, stream, is_subscribed=sub is not None, require_content_access=False
+    ):
+        raise ChannelExistsError(name)
+    raise PermissionDeniedError
 
 
 def access_stream_by_name(
