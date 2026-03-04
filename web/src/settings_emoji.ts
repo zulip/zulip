@@ -134,7 +134,18 @@ export function populate_emoji(): void {
                 .closest(".settings-section")
                 .find<HTMLInputElement>("input.search"),
             predicate(item, value) {
-                return item.name.toLowerCase().includes(value);
+                // check if the emoji name matches the search input
+                const matches_search = item.name.toLowerCase().includes(value);
+
+                // check if the "show only my emojis" filter is active
+                const show_only_my_emojis = $("#show-my-emojis-only").prop("checked");
+
+                if (show_only_my_emojis) {
+                    // return true only if it matches search AND was authored by the current user
+                    return matches_search && people.is_my_user_id(item.author_id!);
+                }
+                // return search results
+                return matches_search;
             },
             onupdate() {
                 scroll_util.reset_scrollbar($emoji_table);
@@ -317,6 +328,11 @@ export function set_up(): void {
 
     // Populate emoji table
     populate_emoji();
+
+    // Re-render the emoji table whenever the "Show only my emojis" checkbox is toggled
+    $("#emoji-settings").on("change", "#show-my-emojis-only", () => {
+        populate_emoji();
+    });
 
     $(".admin_emoji_table").on("click", ".delete", function (e) {
         e.preventDefault();
