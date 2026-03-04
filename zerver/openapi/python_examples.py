@@ -194,8 +194,8 @@ def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> 
         ],
         authorization_errors_fatal=True,
     )
-    assert_error_response(result)
-    validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "400")
+    assert_error_response(result, code="PERMISSION_DENIED")
+    validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "403")
 
 
 @openapi_test_function("/realm/presence:get")

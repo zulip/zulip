@@ -12496,17 +12496,32 @@ paths:
           content:
             application/json:
               schema:
+                $ref: "#/components/schemas/CodedError"
+              examples:
+                BadRequest:
+                  value:
+                    result: error
+                    msg: Bad request.
+                    code: BAD_REQUEST
+        "403":
+          description: Permission denied.
+          content:
+            application/json:
+              schema:
                 allOf:
                   - $ref: "#/components/schemas/CodedError"
-                  - example:
-                      {
-                        "msg": "Unable to access channel (private).",
-                        "result": "error",
-                        "code": "BAD_REQUEST",
-                      }
-                    description: |
-                      An example JSON response for when the requesting user does not have
-                      access to a private channel and `"authorization_errors_fatal": true`:
+                  - type: object
+                    properties:
+                      code:
+                        type: string
+                        enum:
+                          - PERMISSION_DENIED
+              examples:
+                PermissionDenied:
+                  value:
+                    result: error
+                    msg: Permission denied.
+                    code: PERMISSION_DENIED
     patch:
       operationId: update-subscriptions
       summary: Update subscriptions
