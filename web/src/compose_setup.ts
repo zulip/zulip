@@ -95,6 +95,9 @@ export function initialize(): void {
             if (recipient_widget_hidden) {
                 compose_validate.warn_if_topic_resolved(false);
             }
+            compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings(
+                $<HTMLTextAreaElement>("textarea#compose-textarea").expectOne(),
+            );
             const compose_text_length = compose_validate.check_overflow_text(
                 $("#send_message_form"),
             );

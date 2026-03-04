@@ -733,6 +733,82 @@ test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}
     assert.ok(!new_banner_rendered);
 });
 
+test_ui("maybe_clear_stale_recipient_not_subscribed_warnings", () => {
+    const $textarea = $("<textarea>").attr("id", "compose-textarea");
+    stub_message_row($textarea);
+
+    const $banner_container = $("#compose_banners");
+    const alice_mention = people.get_mention_syntax(alice.full_name, alice.user_id, false);
+
+    // No banners: no-op.
+    $banner_container.set_find_results(
+        ".recipient_not_subscribed",
+        $.create("rnsub-case1-coll", {children: []}),
+    );
+    $textarea.val("text without any mention");
+    compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+
+    // Canonical @**Name** form.
+    const $banner_present = $.create("rnsub-case2-banner");
+    $banner_present.attr("data-user-id", String(alice.user_id));
+    $banner_container.set_find_results(
+        ".recipient_not_subscribed",
+        $.create("rnsub-case2-coll", {children: [$banner_present]}),
+    );
+    $textarea.val(`Hello ${alice_mention} here.`);
+    compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+
+    // Banner removed when mention is deleted.
+    const $banner_stale = $.create("rnsub-case3-banner");
+    $banner_stale.attr("data-user-id", String(alice.user_id));
+    let banner_stale_removed = false;
+    $banner_stale.remove = () => {
+        banner_stale_removed = true;
+    };
+    $banner_container.set_find_results(
+        ".recipient_not_subscribed",
+        $.create("rnsub-case3-coll", {children: [$banner_stale]}),
+    );
+    $textarea.val("Hello, how are you?");
+    compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+    assert.ok(banner_stale_removed);
+
+    // @**|user_id** form.
+    const $banner_id_form = $.create("rnsub-case4-banner");
+    $banner_id_form.attr("data-user-id", String(alice.user_id));
+    $banner_container.set_find_results(
+        ".recipient_not_subscribed",
+        $.create("rnsub-case4-coll", {children: [$banner_id_form]}),
+    );
+    $textarea.val(`Hello @**|${alice.user_id}** how are you?`);
+    compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+
+    // @**Name|user_id** form.
+    const $banner_name_and_id = $.create("rnsub-case5-banner");
+    $banner_name_and_id.attr("data-user-id", String(alice.user_id));
+    $banner_container.set_find_results(
+        ".recipient_not_subscribed",
+        $.create("rnsub-case5-coll", {children: [$banner_name_and_id]}),
+    );
+    $textarea.val(`Hello @**${alice.full_name}|${alice.user_id}** how are you?`);
+    compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+
+    // Unknown user_id treated as stale.
+    const $banner_unknown_user = $.create("rnsub-case6-banner");
+    $banner_unknown_user.attr("data-user-id", "99999");
+    let banner_unknown_removed = false;
+    $banner_unknown_user.remove = () => {
+        banner_unknown_removed = true;
+    };
+    $banner_container.set_find_results(
+        ".recipient_not_subscribed",
+        $.create("rnsub-case6-coll", {children: [$banner_unknown_user]}),
+    );
+    $textarea.val("No mention here.");
+    compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+    assert.ok(banner_unknown_removed);
+});
+
 test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     mock_banners();
     $("#compose_banners .topic_resolved").length = 0;
