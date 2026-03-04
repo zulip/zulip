@@ -27503,12 +27503,8 @@ components:
               description: |
                 The ID of the user who added the reaction.
 
-                **Changes**: New in Zulip 3.0 (feature level 2). The `user`
-                object is deprecated and will be removed in the future.
-
-                In Zulip 10.0 (feature level 328), the deprecated `user` object
-                was removed which contained the following properties: `id`, `email`,
-                `full_name` and `is_mirror_dummy`.
+                **Changes**: New in Zulip 3.0 (feature level 2), which
+                deprecated the `user` object.
     EmojiBase:
       type: object
       properties:
@@ -27835,6 +27831,11 @@ components:
           description: |
             Data on any [reactions](/help/emoji-reactions) to the message,
             ordered chronologically from oldest to newest reaction.
+
+            **Changes**: In Zulip 10.0 (feature level 328), the deprecated `user`
+            object was removed from the data for each reaction. It contained the
+            following information about the user who added the reaction: `id`,
+            `email`, `full_name` and `is_mirror_dummy`.
           items:
             $ref: "#/components/schemas/EmojiReaction"
         recipient_id:
