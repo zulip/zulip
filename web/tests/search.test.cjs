@@ -164,7 +164,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                     terms,
                     search.search_pill_widget,
                     false,
-                    $search_query_box.text,
+                    (text) => $search_query_box.text(text),
                 );
             };
 
@@ -244,11 +244,8 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         for (const pill of pills) {
             pill.$element.remove = noop;
         }
-        search_pill.set_search_bar_contents(
-            terms,
-            search.search_pill_widget,
-            false,
-            $search_query_box.text,
+        search_pill.set_search_bar_contents(terms, search.search_pill_widget, false, (text) =>
+            $search_query_box.text(text),
         );
     };
 
