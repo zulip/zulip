@@ -253,7 +253,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
 
     const $no_streams_message = $(".no-streams-to-show");
     const $child_element = $(".subscribed_streams_tab_empty_text");
-    $no_streams_message.set_children_results("*", $child_element);
+    $no_streams_message.set_children($child_element);
 
     let ui_called = false;
     scroll_util.reset_scrollbar = ($elem) => {
