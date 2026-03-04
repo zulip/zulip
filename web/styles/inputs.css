@@ -67,6 +67,8 @@
 
     /* Special styles for input with pills */
     &.has-input-pills .pill-container {
+        grid-area: input-element;
+
         .input {
             flex-grow: 1;
             /* Override default values in web/styles/input_pill.css  */
@@ -92,6 +94,20 @@
 
             box-shadow: 0 0 5px var(--color-box-shadow-input-focus);
         }
+    }
+
+    &.has-input-pills.has-input-icon .pill-container {
+        padding-left: calc(
+            var(--input-icon-starting-offset) + var(--input-icon-width) +
+                var(--input-icon-content-gap)
+        );
+    }
+
+    &.has-input-pills.has-input-button .pill-container {
+        padding-right: calc(
+            var(--input-button-content-gap) + var(--input-button-width) +
+                var(--input-button-ending-offset)
+        );
     }
 }
 
@@ -138,7 +154,8 @@
     /* Specific styles for filter input with pills */
     &.has-input-pills {
         &:not(:has(.pill)):has(.input:empty) {
-            .input-element {
+            .input-element,
+            .pill-container {
                 padding-right: 0.5em;
             }
 
@@ -147,8 +164,12 @@
             }
         }
 
-        &:has(.pill):not(:has(.input:empty)) .input-element {
-            @extend .input-active-styles;
+        &:has(.pill),
+        &:has(.input:not(:empty)) {
+            .input-element,
+            .pill-container {
+                @extend .input-active-styles;
+            }
         }
     }
 }
