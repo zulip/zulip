@@ -79,11 +79,11 @@ class FakeStyle extends RejectMissing {
 }
 
 class FakeElementState {
+    closest_results = new Map();
     computed_style = new FakeStyle();
     event_handlers = new Map();
     delegated_event_handlers = new Map();
     is_focused = false;
-    jquery_closest_results = new Map();
     $jquery_contents = undefined;
     jquery_data = new Map();
     jquery_next_results = new Map();
@@ -179,6 +179,15 @@ class FakeElement extends RejectMissing {
         fake_element_state.set(this, new FakeElementState());
     }
     append() {}
+    closest(selector) {
+        const state = fake_element_state.get(this);
+        if (!state.closest_results.has(selector)) {
+            throw new Error(
+                `You need to call $(${JSON.stringify(state.selector)}).set_closest_results(${JSON.stringify(selector)}, ...)`,
+            );
+        }
+        return state.closest_results.get(selector);
+    }
     hasAttribute(name) {
         return this.#attributes.has(normalize_attribute(name));
     }
@@ -306,15 +315,10 @@ function dom_args(args) {
                 ),
             );
         }
-        closest(closest_selector) {
-            assert.equal(this.length, 1);
-            const state = fake_element_state.get(this[0]);
-            if (!state.jquery_closest_results.has(closest_selector)) {
-                throw new Error(
-                    `You need to call $(${JSON.stringify(state.selector)}).set_closest_results(${JSON.stringify(closest_selector)}, ...)`,
-                );
-            }
-            return state.jquery_closest_results.get(closest_selector);
+        closest(selector) {
+            return new exports.FakeJQuery(
+                [...this].flatMap((element) => element.closest(selector) ?? []),
+            );
         }
         contents() {
             assert.equal(this.length, 1);
@@ -732,16 +736,9 @@ function dom_args(args) {
             assert.equal(this.length, 1);
             this[0].children = [...elements];
         }
-        set_closest_results(closest_selector, $jquery_object) {
+        set_closest_results(selector, elements) {
             assert.equal(this.length, 1);
-            assert.notEqual(
-                $jquery_object,
-                undefined,
-                "Please make the 'find result' be something like $.create('unused')",
-            );
-            fake_element_state
-                .get(this[0])
-                .jquery_closest_results.set(closest_selector, $jquery_object);
+            fake_element_state.get(this[0]).closest_results.set(selector, elements[0] ?? null);
         }
         set_contents($contents) {
             assert.equal(this.length, 1);
