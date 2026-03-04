@@ -2342,7 +2342,7 @@
     );
     --background-color-current-selection-dropdown-item: color-mix(
         in srgb,
-        var(--color-active-dropdown-item) 7%,
+        var(--color-active-dropdown-item) 2%,
         transparent
     );
     --background-color-current-setting-dropdown-item: color-mix(

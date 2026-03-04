@@ -2360,6 +2360,13 @@ body:not(.spectator-view) {
         &:focus,
         &.current_selection {
             outline: none;
+            background-color: var(
+                --background-color-current-selection-dropdown-item
+            );
+
+            &:not(.current_user_setting):hover {
+                background-color: transparent;
+            }
         }
 
         &:focus::before,
