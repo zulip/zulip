@@ -883,7 +883,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         # settings are set to not allow adding subgroups after creating
         # the group.
         self.login("othello")
-        self.assertEqual(realm.can_manage_all_groups.named_user_group.name, SystemGroups.OWNERS)
+        self.assertEqual(
+            realm.can_manage_all_groups_group.named_user_group.name, SystemGroups.OWNERS
+        )
 
         admins_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
@@ -1588,7 +1590,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             admins_group,
             acting_user=None,
         )
@@ -1601,7 +1603,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             members_group,
             acting_user=None,
         )
@@ -1627,13 +1629,13 @@ class UserGroupAPITestCase(UserGroupTestCase):
         support_group.save()
 
         # Check moderators can deactivate groups if they are allowed by
-        # can_manage_all_groups even when they are not members of the group.
+        # can_manage_all_groups_group even when they are not members of the group.
         admins_group = NamedUserGroup.objects.get(
             name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             admins_group,
             acting_user=None,
         )
@@ -1646,7 +1648,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             moderators_group,
             acting_user=None,
         )
@@ -1660,7 +1662,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             admins_group,
             acting_user=None,
         )
@@ -1707,7 +1709,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
-            realm, "can_manage_all_groups", moderators_group, acting_user=None
+            realm, "can_manage_all_groups_group", moderators_group, acting_user=None
         )
         # Check that group that is subgroup of another group cannot be deactivated.
         result = self.client_post(f"/json/user_groups/{leadership_group.id}/deactivate")
@@ -1928,7 +1930,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             admins_group,
             acting_user=None,
         )
@@ -1944,7 +1946,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             members_group,
             acting_user=None,
         )
@@ -1974,7 +1976,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             admins_group,
             acting_user=None,
         )
@@ -1987,7 +1989,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             moderators_group,
             acting_user=None,
         )
@@ -2000,7 +2002,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             admins_group,
             acting_user=None,
         )
@@ -2305,7 +2307,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_create_groups",
+            "can_create_groups_group",
             admins_group,
             acting_user=None,
         )
@@ -2320,7 +2322,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_create_groups",
+            "can_create_groups_group",
             moderators_group,
             acting_user=None,
         )
@@ -2331,7 +2333,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         # Check if members of a NamedUserGroup are allowed to create user groups.
         do_change_realm_permission_group_setting(
             realm,
-            "can_create_groups",
+            "can_create_groups_group",
             aaron_group,
             acting_user=None,
         )
@@ -2346,7 +2348,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_create_groups",
+            "can_create_groups_group",
             anonymous_group,
             acting_user=None,
         )
@@ -2364,7 +2366,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_create_groups",
+            "can_create_groups_group",
             members_group,
             acting_user=None,
         )
@@ -2378,7 +2380,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_create_groups",
+            "can_create_groups_group",
             full_members_group,
             acting_user=None,
         )
@@ -2440,7 +2442,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             admins_group,
             acting_user=None,
         )
@@ -2454,7 +2456,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             moderators_group,
             acting_user=None,
         )
@@ -2468,7 +2470,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             members_group,
             acting_user=None,
         )
@@ -2495,7 +2497,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             full_members_group,
             acting_user=None,
         )
@@ -2563,7 +2565,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             nobody_group,
             acting_user=None,
         )
@@ -2651,7 +2653,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             admins_group,
             acting_user=None,
         )
@@ -2667,7 +2669,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             moderators_group,
             acting_user=None,
         )
@@ -2683,7 +2685,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             othello_group,
             acting_user=None,
         )
@@ -2699,7 +2701,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             anonymous_group,
             acting_user=None,
         )
@@ -2721,7 +2723,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             members_group,
             acting_user=None,
         )
@@ -2729,7 +2731,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         # User with role member but not part of the target group should
         # be allowed to add members to the group if they are part of
-        # `can_manage_all_groups`.
+        # `can_manage_all_groups_group`.
         check_adding_members_to_group("cordelia")
         check_removing_members_from_group("cordelia")
 
@@ -2743,7 +2745,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             full_members_group,
             acting_user=None,
         )
@@ -2760,7 +2762,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         # Full members who are not part of the target group should
         # be allowed to add members to the group if they are part of
-        # `can_manage_all_groups`.
+        # `can_manage_all_groups_group`.
         check_adding_members_to_group("cordelia")
         check_removing_members_from_group("cordelia")
 
@@ -2811,7 +2813,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             nobody_group,
             acting_user=None,
         )
@@ -2918,7 +2920,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             nobody_group,
             acting_user=None,
         )
@@ -2996,7 +2998,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         # to nobody to test can_join_group in isolation.
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             nobody_group,
             acting_user=None,
         )
@@ -3121,12 +3123,12 @@ class UserGroupAPITestCase(UserGroupTestCase):
             nobody_group,
             acting_user=None,
         )
-        self.assertEqual(realm.can_manage_all_groups.named_user_group, nobody_group)
+        self.assertEqual(realm.can_manage_all_groups_group.named_user_group, nobody_group)
         check_adding_yourself_to_group("iago", "Insufficient permission")
 
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             admins_group,
             acting_user=None,
         )
@@ -3144,7 +3146,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         # isolation.
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             nobody_group,
             acting_user=None,
         )
@@ -3266,7 +3268,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             owners_group,
             acting_user=None,
         )
@@ -3496,7 +3498,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             nobody_group,
             acting_user=None,
         )
@@ -3573,7 +3575,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_adding_subgroups_to_group("desdemona")
         check_adding_subgroups_to_group("othello")
 
-        # Check permission as per can_manage_all_groups setting.
+        # Check permission as per can_manage_all_groups_group setting.
         do_change_user_group_permission_setting(
             support_group,
             "can_manage_group",
@@ -3586,7 +3588,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             setting_group,
             acting_user=None,
         )
@@ -3627,7 +3629,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
         do_change_realm_permission_group_setting(
-            realm, "can_manage_all_groups", nobody_group, acting_user=None
+            realm, "can_manage_all_groups_group", nobody_group, acting_user=None
         )
 
         owners_group = NamedUserGroup.objects.get(
@@ -3671,7 +3673,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_remove_subgroups_from_group("othello")
 
         # Set can_manage_group setting to nobody, so we can test
-        # can_manage_all_groups behavior.
+        # can_manage_all_groups_group behavior.
         do_change_user_group_permission_setting(
             support_group,
             "can_manage_group",
@@ -3681,7 +3683,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             owners_group,
             acting_user=None,
         )
@@ -3691,7 +3693,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         # Test case when setting is set to a non-system group.
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             test_group,
             acting_user=None,
         )
@@ -3705,7 +3707,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         do_change_realm_permission_group_setting(
             realm,
-            "can_manage_all_groups",
+            "can_manage_all_groups_group",
             setting_group,
             acting_user=None,
         )

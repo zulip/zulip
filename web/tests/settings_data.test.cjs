@@ -344,7 +344,7 @@ run_test("can_manage_user_group", ({override}) => {
     assert.ok(!settings_data.can_manage_user_group(students.id));
 
     page_params.is_spectator = false;
-    override(realm, "realm_can_manage_all_groups", admins.id);
+    override(realm, "realm_can_manage_all_groups_group", admins.id);
     override(current_user, "user_id", 3);
     assert.ok(!settings_data.can_manage_user_group(students.id));
 
@@ -361,7 +361,7 @@ run_test("can_manage_user_group", ({override}) => {
     assert.ok(!settings_data.can_manage_user_group(students.id));
 
     // User with role member and not part of the group.
-    override(realm, "realm_can_manage_all_groups", members.id);
+    override(realm, "realm_can_manage_all_groups_group", members.id);
     override(current_user, "user_id", 3);
     assert.ok(settings_data.can_manage_user_group(students.id));
 
@@ -369,7 +369,7 @@ run_test("can_manage_user_group", ({override}) => {
     override(current_user, "user_id", 2);
     assert.ok(settings_data.can_manage_user_group(students.id));
 
-    override(realm, "realm_can_manage_all_groups", admins.id);
+    override(realm, "realm_can_manage_all_groups_group", admins.id);
     override(current_user, "user_id", 2);
     assert.ok(!settings_data.can_manage_user_group(students.id));
 
@@ -391,7 +391,7 @@ function test_user_group_permission_setting(override, setting_name, permission_f
     user_groups.initialize({
         realm_user_groups: [admins, moderators, members, nobody, students, deactivated_group],
     });
-    override(realm, "realm_can_manage_all_groups", nobody.id);
+    override(realm, "realm_can_manage_all_groups_group", nobody.id);
 
     page_params.is_spectator = true;
     assert.ok(!permission_func(students.id));
@@ -432,11 +432,11 @@ function test_user_group_permission_setting(override, setting_name, permission_f
     assert.ok(!permission_func(students.id));
 
     // User can join the group if they can manage the group which depends
-    // on can_manage_group and realm.can_manage_all_groups settings.
+    // on can_manage_group and realm.can_manage_all_groups_group settings.
     override(current_user, "user_id", 4);
     assert.ok(permission_func(students.id));
 
-    override(realm, "realm_can_manage_all_groups", moderators.id);
+    override(realm, "realm_can_manage_all_groups_group", moderators.id);
     override(current_user, "user_id", 2);
     assert.ok(permission_func(students.id));
 
@@ -453,7 +453,7 @@ run_test("can_join_user_group", ({override}) => {
 
     // User can join the group if they have permission to add others
     // in the group.
-    override(realm, "realm_can_manage_all_groups", nobody.id);
+    override(realm, "realm_can_manage_all_groups_group", nobody.id);
     const event = {
         group_id: students.id,
         data: {
@@ -487,7 +487,7 @@ run_test("can_leave_user_group", ({override}) => {
 
     // User can leave the group if they have permission to remove
     // others from the group.
-    override(realm, "realm_can_manage_all_groups", nobody.id);
+    override(realm, "realm_can_manage_all_groups_group", nobody.id);
     const event = {
         group_id: students.id,
         data: {
@@ -583,12 +583,15 @@ run_test("user_can_create_public_streams", () => {
 });
 
 run_test("user_can_create_user_groups", () => {
-    test_realm_group_settings("realm_can_create_groups", settings_data.user_can_create_user_groups);
+    test_realm_group_settings(
+        "realm_can_create_groups_group",
+        settings_data.user_can_create_user_groups,
+    );
 });
 
 run_test("user_can_manage_all_groups", () => {
     test_realm_group_settings(
-        "realm_can_manage_all_groups",
+        "realm_can_manage_all_groups_group",
         settings_data.user_can_manage_all_groups,
     );
 });
