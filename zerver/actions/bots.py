@@ -11,9 +11,17 @@ from zerver.tornado.django_api import send_event_on_commit
 def send_bot_owner_update_events(
     user_profile: UserProfile, bot_owner: UserProfile, previous_owner: UserProfile | None
 ) -> None:
-    # For admins, update event is sent instead of delete/add
-    # event. bot_data of admin contains all the
-    # bots and none of them should be removed/(added again).
+    # Since `bot_owner_id` is included in the user profile dict we need
+    # to update the users dict with the new bot owner id
+    event = dict(
+        type="realm_user",
+        op="update",
+        person=dict(
+            user_id=user_profile.id,
+            bot_owner_id=bot_owner.id,
+        ),
+    )
+    send_event_on_commit(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
     # Delete the bot from previous owner's bot data.
     if previous_owner and not previous_owner.is_realm_admin:
@@ -35,18 +43,6 @@ def send_bot_owner_update_events(
     if not bot_owner.is_realm_admin:
         add_event = created_bot_event(user_profile)
         send_event_on_commit(user_profile.realm, add_event, {bot_owner.id})
-
-    # Since `bot_owner_id` is included in the user profile dict we need
-    # to update the users dict with the new bot owner id
-    event = dict(
-        type="realm_user",
-        op="update",
-        person=dict(
-            user_id=user_profile.id,
-            bot_owner_id=bot_owner.id,
-        ),
-    )
-    send_event_on_commit(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
 
 @transaction.atomic(durable=True)
