@@ -99,6 +99,11 @@ export function popover_items_handle_keyboard(key: string, $items?: JQuery): voi
     }
 }
 
+export function focus_popover(instance: tippy.Instance): void {
+    const $items = get_popover_items_for_instance(instance);
+    focus_first_popover_item($items);
+}
+
 export function focus_first_popover_item($items: JQuery | undefined, index = 0): void {
     if (!$items) {
         return;
