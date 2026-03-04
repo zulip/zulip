@@ -56,13 +56,16 @@
             <div class="heading-markers-and-unreads">
                 <span class="unread_count"></span>
             </div>
+            <div class="dm-section-menu-icon">
+                <i class="zulip-icon zulip-icon-more-vertical" aria-label="{{t 'Direct messages options'}}"></i>
+            </div>
             <div class="zoom-out-hide direct-messages-search-section left-sidebar-filter-input-container">
                 {{#> components/input_wrapper input_type="filter-input" icon="search" input_button_icon="close"}}
                     <input type="text" class="input-element direct-messages-list-filter" autocomplete="off" placeholder="{{t 'Filter direct messages' }}" />
                 {{/components/input_wrapper}}
             </div>
         </div>
-        <div class="direct-messages-container zoom-out hidden-for-spectators">
+        <div id="direct-messages-list-container" class="direct-messages-container zoom-out hidden-for-spectators">
             <div id="direct-messages-list"></div>
         </div>
         <div class="direct-message-section-bottom-divider-container">

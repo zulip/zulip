@@ -307,6 +307,7 @@ export function build_page(): void {
                 realm_user_settings_defaults.web_line_height_percent,
             ),
         default_avatar_source_values: settings_config.default_avatar_source_values,
+        direct_messages_section_values: settings_config.direct_messages_section_values,
     };
 
     const rendered_admin_tab = render_admin_tab(options);
