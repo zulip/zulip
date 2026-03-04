@@ -428,6 +428,15 @@ function dom_args(args) {
         fadeTo() {
             return this;
         }
+        filter(arg) {
+            return new exports.FakeJQuery(
+                [...this].filter(
+                    typeof arg === "function"
+                        ? (element, index) => arg.call(element, index, element)
+                        : (element) => element.matches(arg),
+                ),
+            );
+        }
         find(child_selector) {
             assert.equal(this.length, 1);
             const $child = fake_element_state.get(this[0]).jquery_find_results.get(child_selector);
