@@ -72,6 +72,7 @@ from zilencer.models import (
     RemoteRealm,
     RemoteRealmBillingUser,
     RemoteServerBillingUser,
+    RemoteServerDeactivationReasonType,
     RemoteZulipServer,
 )
 
@@ -784,6 +785,7 @@ def remote_servers_support(
     modify_plan: ModifyPlan | None = None,
     delete_fixed_price_next_plan: Json[bool] = False,
     remote_server_status: RemoteServerStatus | None = None,
+    remote_server_deactivation_reason: RemoteServerDeactivationReasonType | None = None,
     complimentary_access_plan: Annotated[
         str, AfterValidator(lambda x: check_date("complimentary_access_plan", x))
     ]
@@ -889,8 +891,11 @@ def remote_servers_support(
                 )
             else:
                 assert remote_server_status == "deactivated"
+                assert remote_server_deactivation_reason is not None
                 try:
-                    remote_server_status_billing_session.do_deactivate_remote_server()
+                    remote_server_status_billing_session.do_deactivate_remote_server(
+                        remote_server_deactivation_reason
+                    )
                     context["success_message"] = (
                         f"Remote server ({remote_server.hostname}) deactivated."
                     )
@@ -992,6 +997,7 @@ def remote_servers_support(
     )
     context["get_remote_realm_billing_user_emails"] = get_remote_realm_billing_user_emails_as_string
     context["SPONSORED_PLAN_TYPE"] = RemoteZulipServer.PLAN_TYPE_COMMUNITY
+    context["DEACTIVATION_REASONS"] = get_args(RemoteServerDeactivationReasonType)
     context["remote_support_view"] = True
 
     return render(

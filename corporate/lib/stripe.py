@@ -64,6 +64,7 @@ from zilencer.models import (
     RemoteRealmAuditLog,
     RemoteRealmBillingUser,
     RemoteServerBillingUser,
+    RemoteServerDeactivationReasonType,
     RemoteZulipServer,
     RemoteZulipServerAuditLog,
     get_remote_realm_guest_and_non_guest_count,
@@ -5461,7 +5462,9 @@ class RemoteServerBillingSession(BillingSession):
         )
 
     @transaction.atomic(durable=True)
-    def do_deactivate_remote_server(self) -> None:
+    def do_deactivate_remote_server(
+        self, deactivation_reason: RemoteServerDeactivationReasonType = "owner_request"
+    ) -> None:
         if self.remote_server.deactivated:
             billing_logger.warning(
                 "Cannot deactivate remote server with ID %d, server has already been deactivated.",
@@ -5507,6 +5510,9 @@ class RemoteServerBillingSession(BillingSession):
             event_time=timezone_now(),
             acting_support_user=self.support_staff,
             acting_remote_user=self.remote_billing_user,
+            extra_data={
+                "deactivation_reason": deactivation_reason,
+            },
         )
 
 
