@@ -13,6 +13,266 @@ log][commit-log] for an up-to-date list of all changes.
 
 _Unreleased_
 
+#### Highlights
+
+- Redesigned the Recent Conversations view with a new table layout,
+  one-line topic and DM display, folder filter dropdown, improved
+  column sizing and alignment, and better behavior on touchscreens and
+  narrow viewports.
+- Redesigned all confirmation modals with new header, footer, overlay,
+  and compact mode support.
+- Added Tenor as an alternative GIF picker service alongside GIPHY.
+  Organizations can now configure either provider, and the picker now
+  uses a two-column layout with keyboard navigation.
+- Added support for reverse linkification: pasting a URL that matches
+  a linkifier pattern now auto-converts to the short form. Added new
+  `reverse_template` and `example_input` fields for configuring
+  linkifiers.
+- Added a jump-to-date picker in the message feed. Users can click a
+  date separator and navigate to any date in the conversation history.
+- Added support for admins to modify and bulk-change non-sensitive
+  settings for other users.
+- Added a "Deactivate as spammer" option for administrators, which
+  renames the user, removes their avatar, and deletes their messages.
+- Added a new `Device` model for tracking logged-in devices, with API
+  endpoints for registration and removal, and a devices map in the
+  `/register` response.
+- Added a new organization setting for media preview size, controlling
+  image and video thumbnail sizes in message content.
+- Added Nextcloud Talk and Constructor Groups as video call provider
+  options.
+- Added Jdenticon as a configurable default avatar source for new
+  users, with a new organization setting.
+- Added a channel-level "who can create topics" permission setting.
+- Added a `mentions` search operator for filtering messages where the
+  user is mentioned.
+- Added support for searching topics from all subscribed channels in
+  the search typeahead.
+- Added inline image markdown syntax (`![alt text](url)`) for uploaded
+  images and audio files.
+- Added image cropping support for realm logo, realm icon, and user
+  avatar uploads.
+- Migrated the help center to Starlight (Astro-based static site
+  generator) with full-text search via Pagefind, new home page, and
+  aggressive caching.
+- Removed legacy Zephyr mirroring support.
+- Added support for PostgreSQL 18, including defaulting to
+  `io_method=io_uring` on PostgreSQL 18 for better performance.
+- Added support for multiple OIDC Identity Providers.
+- Added a Microsoft Teams data import converter.
+- Added a Discord data import tool (for DiscordChatExporter exports).
+
+#### Full feature changelog
+
+- Redesigned the hidden message display for muted users: now shows the
+  muted user's avatar and name, with a reveal button and a reminder
+  line.
+- Redesigned the bot management settings panel with consolidated
+  "All bots" / "Your bots" tabbed views, status-based filtering,
+  common action buttons, and the ability to download bot config.
+  Personal bot settings now redirects to the organization settings
+  panel.
+- Redesigned the user profile modal with scrollable group membership
+  and subscribed channels lists.
+- Redesigned the update-read-flag progress banners with a loading
+  indicator.
+- Added a message reporting feature ("Report message") with
+  configurable report types and settings UI.
+- Added a "frequently used" section to the emoji picker.
+- Added a scheduled reminder indicator on messages with pending
+  reminders.
+- Added a reminders view in the built-in navigation views.
+- Added `In-Reply-To` and `References` headers to missed message
+  notification emails.
+- Added an expand/collapse-all-sections toggle in the left sidebar
+  filter menu.
+- Added left sidebar search showing all channels/DMs/views matching
+  the search prefix for each section header.
+- Added `is:followed` filter for topics in the left sidebar.
+- Added a three-dot menu on folder headers in the left sidebar for
+  managing the folder or viewing channels.
+- Added a channel folder preview modal for non-admin users.
+- Added ability to filter channels by folder in channel settings.
+- Added animated collapse/expand for channels and folders in inbox.
+- Added a "new topic" button at the bottom of the zoomed topic list.
+- Added combined `#channel>topic` pills in search suggestions.
+- Added a copy button for text external account fields in user
+  profiles.
+- Added many new default external account types with icons, renamed
+  Twitter to X, and made URL pattern optional for external accounts.
+- Added a Roles tab in group settings.
+- Added a "Permissions" tab for channel settings, splitting out
+  permission settings from the General tab.
+- Added a keyboard shortcut (`Shift+Y`) to open the set-status modal.
+- Added a hotkey to copy link to the currently selected message.
+- Added an icon in message headers to copy a nicely formatted topic
+  link.
+- Added support for opening media in the lightbox from scheduled
+  messages and message edit history.
+- Added YouTube videos opening at the correct timestamp in the
+  lightbox.
+- Added a `+` button for adding DM recipients in the compose box.
+- Added a keyboard shortcut for inline code spans (backtick wrapping).
+- Added support for pasting content from a code block to wrap in a
+  language-specific fenced code block.
+- Added a "drop anywhere" overlay when dragging a file to upload.
+- Added support for rendering large emoji on emoji-only messages.
+- Added todo widget task entry via Enter key.
+- Added a button to reset user settings to default, with saved indicator.
+- Added a warning icon for overridden emojis in settings.
+- Added buttons for common bot actions in the bot management table.
+- Added a realm setting to disable channel event messages.
+- Added an `owner_full_content_access` realm setting.
+- Added Estonian (et) locale.
+- Added a Notion incoming webhook integration.
+- Added a Redmine webhook integration.
+- Added a dbt Cloud webhook integration.
+- Added GitLab webhook support for emoji reaction events, design
+  comments, and an option to ignore events from private projects.
+- Added GitHub webhook support for `repository_advisory` events and
+  silent mentions for linked GitHub profiles.
+- Added the Intercom webhook integration rewrite with full support for
+  ticket, conversation, contact, and company events.
+- Improved channel filtering to use any-order word-prefix matching.
+- Improved topic filtering to use any-order word-prefix matching.
+- Improved user mention typeahead to match on custom profile fields
+  (external accounts, short text), showing matched fields in secondary
+  text.
+- Improved the language picker to sort languages by display name and
+  show each language name in its own script.
+- Improved how the message edit box is now resizable with a drag handle.
+- Improved Markdown table rendering with cell vertical alignment and
+  better white-space wrapping.
+- Improved digest emails with `#` before channel name in headers and
+  italicized "general chat" for empty topics.
+- Improved the left sidebar to visually separate the DM section from
+  channels and keep the DM header pinned.
+- Improved the left sidebar `n` key to prioritize uncollapsed folders
+  and auto-expand inactive/muted sections when all channels are in
+  those sections.
+- Improved user pills to show "deactivated" status with real-time
+  updates, and present purple group pills across the UI with proper
+  bot and deactivated user icons.
+- Improved the GIF picker with a subtle outline on hover and focus
+  management when closing with Escape.
+- Improved the invite user modal with tab switcher moved to header.
+- Improved settings tabs and buttons in the right panel to wrap
+  properly on narrow screens.
+- Improved the settings sidebar with focus outlines and fixed keyboard
+  navigation.
+- Improved the scroll-to-bottom button with a blur-on-hover effect.
+- Improved the compose box to show a clear error when dragging folders.
+- Improved the export options UI with clearer names and support for
+  full export without consent when `owner_full_content_access` is set.
+- Improved HSTS headers: added `preload` and `includeSubdomains`,
+  increased max-age to 1 year.
+- Improved security headers: added `Cross-Origin-Opener-Policy` and
+  `Referrer-Policy` headers.
+- Improved webhook security by checking HMAC signatures with
+  `constant_time_compare`.
+- Improved rate limiting with better "Try again in ..." error pages
+  and a link to rate-limiting documentation.
+- Improved rate limiter to block IPv6 addresses by /64 prefix instead
+  of per-IP.
+- Improved push notification encryption by switching to symmetric
+  cryptography.
+- Improved the integrations page to no longer be a single-page app,
+  with better URL scheme for categories and documentation pages.
+- Improved the email mirror to put the subject in the message body for
+  topic-less channels.
+- Improved error reporting with a new
+  `ZulipExceptionReporterFilter` that masks POST data and settings.
+- Improved notification emails for admin-initiated profile changes
+  (name changes, role changes, custom profile field updates).
+- Improved handling of revoked invitations to preserve objects and
+  record audit log entries.
+- Improved draft overlays with placeholder text for drafts with no
+  channel or DM recipient selected.
+- Improved invalid timestamp rendering to show plain text instead of
+  erroring.
+- Improved Markdown to linkify RFC 2392 `mid:` URLs.
+- Improved the "unsupported browser" warning shown on load, with alert
+  in navbar.
+- Improved dark theme colors across todo widget, poll widget, feedback
+  container, read receipts, tippy styles, and input elements.
+- Improved topic list to show the most recent unmuted topics and
+  reduce max topics shown.
+- Improved `PASSWORD_MIN_LENGTH` from 6 to 8.
+- Improved channel settings to show "(archived)" in edit modal heading
+  for archived channels.
+- Improved how topic name case changes are reflected in the inbox view.
+- Rebranded Clubhouse webhook integration to Shortcut.
+- Rebranded HelloSign integration as Dropbox Sign.
+- Renamed `bitbucket2` integration to `bitbucket`.
+- Renamed `giphy_rating` setting to `gif_rating_policy`.
+- Renamed "Joined" to "Created" in bot profile.
+- Removed the Twitter integration.
+- Removed the Pivotal webhook integration (service shut down).
+- Removed the Insping webhook integration (service shut down).
+- Removed the Bitbucket Server and Bitbucket Enterprise integrations.
+- Removed the Jira plugin integration (only the Jira webhook remains).
+- Rebuilt emoji names with `emoji-datasource` 16.0.0.
+- Fixed video not working when using lightbox carousel.
+- Fixed the Recent Conversations view not fully updating after topic
+  edits.
+- Fixed topic suggestion display name for empty topics in search.
+- Fixed combined feed selected message ID lost on server reload.
+- Fixed the `has:image` filter being broken.
+- Fixed the `:smile:` emoji name mapping.
+- Fixed various scroll-to-bottom button hiding issues in topic views
+  and non-message views.
+- Fixed several compose box bugs: overflowing underline in mention
+  warnings, duplicating banners, typeahead overflowing on mobile.
+- Fixed the left sidebar not highlighting the DM header when viewing
+  all DMs.
+- Fixed various settings overlay issues on narrow screens.
+- Fixed user profile modal closing when clicking channel/group links.
+- Fixed message edit cache invalidation for propagated messages on
+  topic edit.
+- Fixed bugged back button when moving messages.
+- Fixed several issues with hidden topics and muted users in message
+  data.
+- Fixed digest email error when including archived channel messages.
+- Fixed error pages crashing from missing request language.
+- Fixed several minor bugs with keyboard shortcuts, typeahead, and
+  focus management.
+- Fixed unreliable spoiler toggle during text selection.
+- Fixed text selection not working for clicks in message view.
+- Fixed color picker showing incorrect initial color.
+- Fixed the `upgrade-zulip-from-git` script for refname parsing.
+- Improved Slack import: added self-serve import via web dashboard,
+  Slack `blocks` and `attachments` syntax processing, integration bot
+  message conversion, email visibility configuration, parallel upload
+  processing, and better instructions for large exports.
+- Improved Mattermost import: fixed buggy sender ID and DM recipient
+  generation, streamlined conversion logic, and improved logging.
+- Added data import tool for Discord (DiscordChatExporter exports).
+- Added Microsoft Teams data import converter.
+- Improved export tooling with parallel file downloading, streaming
+  iterators for JSON, and parallel UserMessage data rewriting.
+- Improved performance of message filtering predicates on the hot path.
+- Improved performance of push notification handling by avoiding
+  duplicate payload computation and skipping users without registered
+  devices.
+- Improved performance of memcached by switching to zstd compression
+  and skipping pickling for JSON-encoded strings.
+- Improved performance of message import (parallelized, ~2.4x
+  speedup).
+- Improved performance of per-request caching for topic links.
+- Improved performance of soft deactivation by using iterators instead
+  of building full lists.
+- Improved performance of `find_first_unread_anchor` by reducing
+  unnecessary database queries.
+- Improved performance of email notifications by avoiding repeated
+  header calculations.
+- Improved performance by fetching recent traffic for all channels at
+  once instead of per-channel.
+- Improved default PostgreSQL `random_page_cost` to 1.1 for better
+  query planner behavior on SSDs.
+- Updated dependencies, including Django, Node.js, and JavaScript
+  libraries.
+- Updated translations.
+
 ### Upgrade notes for 12.0
 
 - The `LDAP_SYNCHRONIZED_GROUPS_BY_REALM` setting for LDAP group
@@ -20,6 +280,18 @@ _Unreleased_
   synced but don't exist in the Zulip organization. Starting in 12.0,
   such groups will be created automatically when syncing the groups
   for a user who should be a member of that group.
+- Legacy Zephyr mirroring support has been completely removed.
+- The `giphy_rating` setting has been renamed to `gif_rating_policy`,
+  reflecting support for both GIPHY and Tenor as GIF providers.
+- The `realm_is_zephyr_mirror_realm` field has been removed from the
+  API.
+- The legacy notification and display settings deprecated in previous
+  releases have been removed (API feature level 439).
+- The `remove-fcm-token` and `remove-apns-token` API endpoints have
+  been deprecated in favor of the new Device management API.
+- The `messages` field in the attachments API has been replaced with
+  `message_ids`.
+- `PASSWORD_MIN_LENGTH` has been increased from 6 to 8.
 
 ## Zulip Server 11.x series
 
