@@ -803,6 +803,38 @@ def regenerate_api_key(client: Client) -> None:
     client.api_key = result["api_key"]
 
 
+@openapi_test_function("/bots/{bot_id}/api_key:get")
+def get_bot_api_key(client: Client) -> None:
+    bot_id = 17
+    ensure_users([bot_id], ["default-bot"])
+
+    # {code_example|start}
+    # Fetch a bot's API key, given the bot's ID.
+    result = client.call_endpoint(
+        url=f"/bots/{bot_id}/api_key",
+        method="GET",
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/bots/{bot_id}/api_key", "get", "200")
+
+
+@openapi_test_function("/bots/{bot_id}/api_key/regenerate:post")
+def regenerate_bot_api_key(client: Client) -> None:
+    bot_id = 17
+    ensure_users([bot_id], ["default-bot"])
+
+    # {code_example|start}
+    # Generate a new API key for a bot, given the bot's ID.
+    result = client.call_endpoint(
+        url=f"/bots/{bot_id}/api_key/regenerate",
+        method="POST",
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/bots/{bot_id}/api_key/regenerate", "post", "200")
+
+
 @openapi_test_function("/get_stream_id:get")
 def get_stream_id(client: Client) -> int:
     name = "python-test"
@@ -2176,6 +2208,12 @@ def test_invitations(client: Client) -> None:
     resend_email_invitation(client)
 
 
+def test_api_key_endpoints(client: Client) -> None:
+    get_bot_api_key(client)
+    regenerate_bot_api_key(client)
+    regenerate_api_key(client)
+
+
 def test_the_api(client: Client, nonadmin_client: Client, owner_client: Client) -> None:
     get_user_agent(client)
     test_users(client, owner_client)
@@ -2186,7 +2224,7 @@ def test_the_api(client: Client, nonadmin_client: Client, owner_client: Client) 
     test_errors(client)
     test_invitations(client)
     test_welcome_bot_custom_message(client)
-    regenerate_api_key(client)
+    test_api_key_endpoints(client)
 
     sys.stdout.flush()
     if REGISTERED_TEST_FUNCTIONS != CALLED_TEST_FUNCTIONS:
