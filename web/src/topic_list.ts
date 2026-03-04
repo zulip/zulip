@@ -11,6 +11,7 @@ import {all_messages_data} from "./all_messages_data.ts";
 import * as blueslip from "./blueslip.ts";
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
+import * as left_sidebar_filter from "./left_sidebar_filter.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -450,9 +451,8 @@ export function rebuild_left_sidebar($stream_li: JQuery, stream_id: number): voi
 
     clear();
     const widget = new LeftSidebarTopicListWidget($stream_li, stream_id);
-    widget.build();
-
     active_widgets.set(stream_id, widget);
+    widget.build();
 }
 
 export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
@@ -547,6 +547,10 @@ export function get_left_sidebar_topic_search_term(): string {
 }
 
 export function get_typeahead_search_pills_syntax(): string {
+    if (!zoomed) {
+        return left_sidebar_filter.get_effective_topics_state_for_search();
+    }
+
     return topic_filter_pill.get_single_pill_syntax(
         topic_filter_pill_widget?.items() ?? [],
         "Multiple pills found in left sidebar topic search input.",
