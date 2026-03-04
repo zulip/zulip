@@ -391,6 +391,7 @@
         line-height: 1.5;
         background-color: transparent;
         color: var(--color-text-recent-view-last-msg-time);
+        text-align: left;
     }
 
     & tr {
