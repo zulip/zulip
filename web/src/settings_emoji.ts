@@ -138,11 +138,11 @@ export function populate_emoji(): void {
                 const matches_search = item.name.toLowerCase().includes(value);
 
                 // check if the "show only my emojis" filter is active
-                const show_only_my_emojis = $("#show-my-emojis-only").prop("checked");
+                const show_only_my_emojis = ($("#show-my-emojis-only")[0] as HTMLInputElement).checked;
 
                 if (show_only_my_emojis) {
                     // return true only if it matches search AND was authored by the current user
-                    return matches_search && people.is_my_user_id(item.author_id!);
+                    return matches_search && people.is_my_user_id(item.author_id);
                 }
                 // return search results
                 return matches_search;
