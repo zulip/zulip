@@ -1018,6 +1018,10 @@ ul.popover-group-menu-member-list {
                 background: var(--color-background-hover-popover-menu);
             }
 
+            &:focus:not(:focus-visible) {
+                outline: none;
+            }
+
             &:active {
                 background: var(--color-background-active-popover-menu);
             }
