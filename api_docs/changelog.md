@@ -20,6 +20,42 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 475**
+
+* [`GET /events`](/api/get-events): `realm_user` events with `op: "update"`
+  are now sent when the `date_joined` field is updated after an imported
+  stub user or a user created via the API logs in for the first time.
+* [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email),
+  [`GET /users/me`](/api/get-own-user): The `date_joined` field is initially
+  set to the account creation time and is updated to the time of first login
+  for imported stub users and users created via the API.
+
+**Feature level 474**
+
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  Removed `api_key` field from bot objects.
+* [`GET /events`](/api/get-events): `realm_bot/update` event is no longer
+  sent when a bot's api key is regenerated.
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  Removed `avatar_url`, `bot_type`, `email`, `full_name`, `is_active` and
+  `owner_id` fields from bot objects.
+* [`GET /events`](/api/get-events): `realm_bot/update` event is no longer
+  sent when updating a bot's avatar, email, name, or owner and also when
+  deactivating or reactivating a bot.
+
+**Feature level 473**
+
+- [`POST /users/{user_id}/status`](/api/update-status-for-user): Bots
+  with administrator permissions can now use this endpoint.
+
+**Feature level 472**
+
+* [`GET /attachments`](/api/get-attachments), [`GET /events`](/api/get-events):
+  Previously, the `messages` field in `Attachment` was array of
+  objects containing `id` and `date_sent` properties. That has been replaced
+  by a `message_ids` field, which is a flat array of message IDs.
+
 **Feature level 471**
 
 * [`GET /events`](/api/get-events), [`GET /realm/linkifiers`](/api/get-linkifiers),

@@ -156,6 +156,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
             instance.setContent(ui_util.parse_html(content));
         },
         onMount(instance) {
+            popover_menus.focus_popover(instance);
             const $popper = $(instance.popper);
             popover_menus.popover_instances.stream_actions_popover = instance;
             ui_util.show_left_sidebar_menu_icon(elt);

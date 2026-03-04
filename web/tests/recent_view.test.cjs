@@ -210,9 +210,10 @@ mock_esm("../src/channel_folders", {
 });
 mock_esm("../src/folder_dropdown_widget", {
     FOLDER_FILTERS: {
-        UNCATEGORIZED_DROPDOWN_OPTION: -1,
-        ANY_FOLDER_DROPDOWN_OPTION: -2,
+        UNCATEGORIZED_DROPDOWN_OPTION: -101,
+        ANY_FOLDER_DROPDOWN_OPTION: -102,
     },
+    get_tooltip_text_for_folder_filter: () => "Filter by folder",
 });
 const dropdown_widget = mock_esm("../src/dropdown_widget");
 dropdown_widget.DropdownWidget = function DropdownWidget() {
@@ -501,6 +502,7 @@ test("test_recent_view_show", ({override, mock_template}) => {
         search_val: "",
         is_spectator: false,
         show_folder_filter: false,
+        folder_filter_tooltip: "Filter by folder",
     };
 
     activity_ui.set_cursor_and_filter();
@@ -543,6 +545,7 @@ test("test_filter_is_spectator", ({mock_template}) => {
         search_val: "",
         is_spectator: true,
         show_folder_filter: false,
+        folder_filter_tooltip: "Filter by folder",
     };
     let row_data;
     let i;
@@ -578,6 +581,7 @@ test("test_no_filter", ({mock_template}) => {
         search_val: "",
         is_spectator: false,
         show_folder_filter: false,
+        folder_filter_tooltip: "Filter by folder",
     };
     let row_data;
     let i;
@@ -703,6 +707,7 @@ test("test_filter_pm", ({mock_template}) => {
         search_val: "",
         is_spectator: false,
         show_folder_filter: false,
+        folder_filter_tooltip: "Filter by folder",
     };
 
     const expected_users_with_icons = [
@@ -753,6 +758,7 @@ test("test_filter_participated", ({mock_template}) => {
             search_val: "",
             is_spectator: false,
             show_folder_filter: false,
+            folder_filter_tooltip: "Filter by folder",
         });
     });
 
@@ -1241,7 +1247,7 @@ test("test_folder_filter", () => {
     );
 
     // "Uncategorized" filter — stream4 (no folder) visible, stream1 (folder A) hidden.
-    rt.set_folder_filter_for_tests(-1);
+    rt.set_folder_filter_for_tests(-101);
     assert.equal(
         rt.filters_should_hide_row({last_msg_id: 1, participated: true, type: "stream"}),
         true,
@@ -1258,7 +1264,7 @@ test("test_folder_filter", () => {
     );
 
     // Reset to "Any folder" — all visible again.
-    rt.set_folder_filter_for_tests(-2);
+    rt.set_folder_filter_for_tests(-102);
     assert.equal(
         rt.filters_should_hide_row({last_msg_id: 1, participated: true, type: "stream"}),
         false,

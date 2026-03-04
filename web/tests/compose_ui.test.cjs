@@ -327,6 +327,46 @@ run_test("reverse_linkify_text", () => {
     ]);
     assert.equal(compose_ui.reverse_linkify_text("https://tracker.example.com/issue/a%2Fb"), null);
     assert.equal(compose_ui.reverse_linkify_text("https://tracker.example.com/issue/a/b"), "#a/b");
+
+    // When reverse linkifier URL templates overlap, the first matching
+    // linkifier should determine the shortened text.
+    linkifiers.update_linkifier_rules([
+        {
+            id: 5,
+            pattern: "flutter#(?P<id>\\d+)",
+            url_template: "https://github.com/zulip/zulip-flutter/pull/{id}",
+            reverse_template: "flutter#{id}",
+        },
+        {
+            id: 6,
+            pattern: "(?P<repo>[a-zA-Z0-9_-]+)#(?P<id>\\d+)",
+            url_template: "https://github.com/zulip/{repo}/pull/{id}",
+            reverse_template: "{repo}#{id}",
+        },
+    ]);
+    assert.equal(
+        compose_ui.reverse_linkify_text("https://github.com/zulip/zulip-flutter/pull/123"),
+        "flutter#123",
+    );
+
+    linkifiers.update_linkifier_rules([
+        {
+            id: 6,
+            pattern: "(?P<repo>[a-zA-Z0-9_-]+)#(?P<id>\\d+)",
+            url_template: "https://github.com/zulip/{repo}/pull/{id}",
+            reverse_template: "{repo}#{id}",
+        },
+        {
+            id: 5,
+            pattern: "flutter#(?P<id>\\d+)",
+            url_template: "https://github.com/zulip/zulip-flutter/pull/{id}",
+            reverse_template: "flutter#{id}",
+        },
+    ]);
+    assert.equal(
+        compose_ui.reverse_linkify_text("https://github.com/zulip/zulip-flutter/pull/123"),
+        "zulip-flutter#123",
+    );
 });
 
 run_test("quote_message", ({override, override_rewire}) => {

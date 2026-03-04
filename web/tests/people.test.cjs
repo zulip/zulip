@@ -4,13 +4,12 @@ const assert = require("node:assert/strict");
 
 const {parseISO} = require("date-fns");
 const _ = require("lodash");
-const MockDate = require("mockdate");
 
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_bot, make_cross_realm_bot, make_user, Role} = require("./lib/example_user.cjs");
 const {$t} = require("./lib/i18n.cjs");
-const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
+const {clock, mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
@@ -288,6 +287,13 @@ const stewie = make_user({
     },
 });
 
+const imported_user = {
+    email: "imported-user@example.com",
+    user_id: 1205,
+    full_name: "Imported user",
+    is_imported_stub: true,
+};
+
 function get_all_persons() {
     return people.filter_all_persons(() => true);
 }
@@ -427,6 +433,20 @@ run_test("basics", ({override}) => {
 
     // get_users_from_ids
     assert.deepEqual(people.get_users_from_ids([me.user_id, isaac.user_id]), [me, isaac]);
+
+    // Test with imported user.
+    people.add_active_user(imported_user);
+    assert.equal(people.get_realm_active_human_user_ids().length, 3);
+    assert.equal(people.get_realm_active_human_user_ids_for_users_panel().length, 2);
+    assert.equal(people.get_realm_active_imported_stub_user_ids().length, 1);
+
+    // Check get_realm_active_imported_stub_user_ids does not include deactivated users.
+    assert.equal(people.get_non_active_human_ids().length, 0);
+    people.deactivate(imported_user);
+    assert.equal(people.get_realm_active_human_user_ids().length, 2);
+    assert.equal(people.get_realm_active_human_user_ids_for_users_panel().length, 2);
+    assert.equal(people.get_realm_active_imported_stub_user_ids().length, 0);
+    assert.equal(people.get_non_active_human_ids().length, 1);
 });
 
 run_test("sort_but_pin_current_user_on_top with me", () => {
@@ -652,7 +672,7 @@ run_test("bot_custom_profile_data", () => {
 
 run_test("user_timezone", ({override}) => {
     initialize();
-    MockDate.set(parseISO("20130208T080910").getTime());
+    clock.setSystemTime(parseISO("20130208T080910").getTime());
 
     override(user_settings, "twenty_four_hour_time", true);
     assert.equal(people.get_user_time(me.user_id), "00:09");
@@ -663,7 +683,7 @@ run_test("user_timezone", ({override}) => {
 
 run_test("utcToZonedTime", ({override}) => {
     initialize();
-    MockDate.set(parseISO("20130208T080910").getTime());
+    clock.setSystemTime(parseISO("20130208T080910").getTime());
     override(user_settings, "twenty_four_hour_time", true);
 
     assert.deepEqual(people.get_user_time(unknown_user.user_id), undefined);
@@ -1719,7 +1739,7 @@ run_test("get_users_that_match_role_ids", () => {
 
 // reset to native Date()
 run_test("reset MockDate", () => {
-    MockDate.reset();
+    clock.reset();
 });
 
 run_test("fetch_users retry", async ({override, override_rewire}) => {
@@ -1753,6 +1773,7 @@ run_test("fetch_users retry", async ({override, override_rewire}) => {
                     avatar_url: "",
                     avatar_version: 1,
                     is_bot: false,
+                    is_imported_stub: false,
                 },
             ],
             result: "success",
@@ -1791,6 +1812,7 @@ run_test("fetch_users", async ({override}) => {
             avatar_url: "",
             avatar_version: 1,
             is_bot: false,
+            is_imported_stub: false,
         },
         {
             email: "alice@example.com",
@@ -1806,6 +1828,7 @@ run_test("fetch_users", async ({override}) => {
             avatar_url: "",
             avatar_version: 1,
             is_bot: false,
+            is_imported_stub: false,
         },
     ];
 
@@ -1934,6 +1957,7 @@ run_test("fetch_users corner case", async ({override, override_rewire}) => {
             avatar_url: "",
             avatar_version: 1,
             is_bot: false,
+            is_imported_stub: false,
         },
         {
             email: "alice@example.com",
@@ -1949,6 +1973,7 @@ run_test("fetch_users corner case", async ({override, override_rewire}) => {
             avatar_url: "",
             avatar_version: 1,
             is_bot: false,
+            is_imported_stub: false,
         },
     ];
     const second_request_response = [
@@ -1966,6 +1991,7 @@ run_test("fetch_users corner case", async ({override, override_rewire}) => {
             avatar_url: "",
             avatar_version: 1,
             is_bot: false,
+            is_imported_stub: false,
         },
     ];
 

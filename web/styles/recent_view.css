@@ -177,6 +177,13 @@
     #recent-view-search-wrapper {
         flex-grow: 1;
         margin-bottom: var(--recent-topics-filters-gap);
+        /* Prevent the search input outline from being clipped
+           by the overflow:hidden ancestor at fractional browser
+           zoom levels. Applied on both sides because this
+           element can wrap to its own line at narrow widths.
+           2px because 1px can round to 0 device pixels at
+           certain fractional zoom levels (e.g., 80%). */
+        margin-inline: 2px;
     }
 
     .button-recent-filters {
@@ -655,6 +662,11 @@
 #recent-view-filter_widget {
     display: inline-flex;
     width: 10.7142em; /* 150px at 14px em */
+    /* Prevent the outline from being clipped by the
+       overflow:hidden ancestor at fractional browser
+       zoom levels. 2px because 1px can round to 0
+       device pixels at certain zoom levels (e.g., 80%). */
+    margin-left: 2px;
     /* 1.5px 6px at 16px/1em */
     padding: 0 0.375em;
     /* Matching to the height of the filter search box. */

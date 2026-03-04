@@ -20,6 +20,8 @@ const $ = require("./lib/zjquery.cjs");
 const {set_current_user} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
+const {will_produce_broken_stream_topic_link} = zrequire("topic_link_util");
+
 initialize_user_settings({
     user_settings: {
         default_language: "en",
@@ -97,6 +99,12 @@ mock_esm("../src/popovers", {
 mock_esm("../src/saved_snippets_ui", {
     setup_saved_snippets_dropdown_widget_if_needed: noop,
 });
+mock_esm("../src/dropdown_widget", {
+    DropdownWidget: function DropdownWidget() {
+        this.current_value = undefined;
+        this.setup = noop;
+    },
+});
 
 const people = zrequire("people");
 
@@ -148,6 +156,7 @@ function test(label, f) {
 
         people.init();
         compose_state.set_message_type(undefined);
+        compose_recipient.initialize();
         f(helpers);
     });
 }
@@ -879,6 +888,43 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         message_id: selected_message.id,
         forward_message: true,
     };
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
+    quote_message(opts);
+    assert.ok(replaced);
+
+    const topic_with_invalid_characters = "[zulip/zulip>topic]";
+    assert.ok(will_produce_broken_stream_topic_link(topic_with_invalid_characters));
+
+    selected_message = {
+        type: "stream",
+        stream_id: denmark_stream.stream_id,
+        topic: topic_with_invalid_characters,
+        sender_full_name: steve.full_name,
+        sender_id: steve.user_id,
+        raw_content: "test invalid topic",
+        id: 11,
+    };
+    opts = {
+        reply_type: "personal",
+        forward_message: true,
+        message_id: selected_message.id,
+    };
+
+    const html_entity_encoded_topic_name = "&#91;zulip/zulip&gt;topic&#93;";
+    const url_encoded_topic_name = ".5Bzulip.2Fzulip.3Etopic.5D";
+
+    const near_url = `http://zulip.zulipdev.com/#narrow/channel/${selected_message.stream_id}-${channel_object.name}/topic/${url_encoded_topic_name}/near/${selected_message.id}`;
+    const with_url = `#narrow/channel/${selected_message.stream_id}-${channel_object.name}/topic/${url_encoded_topic_name}/with/${selected_message.id}`;
+    const topic_link_syntax = `[#${channel_object.name} > ${html_entity_encoded_topic_name}](${with_url})`;
+
+    const fence = "```";
+    expected_replacement = `translated: @_**${selected_message.sender_full_name}|${selected_message.sender_id}** [said](${near_url}) in ${topic_link_syntax}:
+${fence}quote
+${selected_message.raw_content}
+${fence}`;
     replaced = false;
     override(message_lists.current, "get", (id) =>
         id === selected_message.id ? selected_message : undefined,

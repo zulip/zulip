@@ -399,7 +399,11 @@ def access_message(
         if lock_message:
             # We want to lock only the `Message` row, and not the related fields
             # because the `Message` row only has a possibility of races.
-            base_query = base_query.select_for_update(of=("self",))
+            # This is used in the message deletion codepath, so we need no_key=False
+            # to acquire a FOR UPDATE lock.
+            # TODO: We can easily change the lock_message argument to instead take an enum
+            # for caller to specify whether no_key=False or True should be used.
+            base_query = base_query.select_for_update(of=("self",), no_key=False)
         message = base_query.get(id=message_id)
     except Message.DoesNotExist:
         raise JsonableError(_("Invalid message(s)"))
@@ -441,7 +445,9 @@ def access_message_and_usermessage(
         if lock_message:
             # We want to lock only the `Message` row, and not the related fields
             # because the `Message` row only has a possibility of races.
-            base_query = base_query.select_for_update(of=("self",))
+            # This isn't used in any message deletion codepaths, so we can use
+            # no_key=True.
+            base_query = base_query.select_for_update(of=("self",), no_key=True)
         message = base_query.get(id=message_id)
     except Message.DoesNotExist:
         raise JsonableError(_("Invalid message(s)"))

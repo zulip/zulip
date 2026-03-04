@@ -74,7 +74,7 @@ function is_somebody_else_profile_open(): boolean {
 
 function handle_invalid_section_url(section: "bots" | "users", settings_tab: string): string {
     const valid_tab_values = {
-        users: new Set(["active", "deactivated", "invitations"]),
+        users: new Set(["active", "imported", "deactivated", "invitations"]),
         bots: new Set(["all-bots", "your-bots"]),
     };
 

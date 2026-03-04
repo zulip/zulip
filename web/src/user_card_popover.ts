@@ -237,6 +237,8 @@ type UserCardPopoverData = {
     can_manage_user: boolean;
     is_system_bot?: boolean;
     bot_owner?: User;
+    is_imported_stub: boolean;
+    show_last_active_status: boolean;
 };
 
 export let fetch_presence_for_popover = (user_id: number): void => {
@@ -244,7 +246,8 @@ export let fetch_presence_for_popover = (user_id: number): void => {
         return;
     }
 
-    if (!people.is_active_user_or_system_bot(user_id) || people.get_by_user_id(user_id).is_bot) {
+    const user = people.get_by_user_id(user_id);
+    if (!people.is_active_user_or_system_bot(user_id) || user.is_bot || user.is_imported_stub) {
         return;
     }
 
@@ -381,6 +384,8 @@ function get_user_card_popover_data(
         can_mute,
         can_unmute,
         can_manage_user,
+        is_imported_stub: user.is_imported_stub,
+        show_last_active_status: is_active && !user.is_bot && !user.is_imported_stub,
     };
 
     if (user.is_bot) {

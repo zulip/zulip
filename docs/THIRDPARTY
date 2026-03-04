@@ -728,11 +728,6 @@ Copyright: 2012 Twitter, Inc.
 License: Apache-2.0
 Comment: Bootstrap typeahead.  The software has been modified.
 
-Files: web/third/jquery-idle/jquery.idle.js
-Copyright: 2011-2013 Henrique Boaventura
-License: Expat
-Comment: The software has been modified.
-
 Files: web/third/marked/*
 Copyright: 2011-2013 Christopher Jeffrey
 License: Expat

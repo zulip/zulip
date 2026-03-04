@@ -1179,11 +1179,12 @@ nav {
 
         .nav-logo {
             display: inline-block;
-            height: 1.25em; /* 20px at 16px em */
+            height: auto;
+            max-height: 1.5625em; /* 25px at 16px/1em */
             max-width: var(--realm-logo-max-width);
 
             @media (height < $short_navbar_cutoff_height) {
-                height: 0.9375em; /* 15px at 16px em */
+                max-height: 1.1719em; /* 18.75px at 16px/1em */
             }
         }
 
@@ -2198,6 +2199,11 @@ body:not(.spectator-view) {
 }
 
 .dropdown-list-container {
+    .dropdown-list-viewport-padding {
+        padding-top: 4px;
+        padding-bottom: 4px;
+    }
+
     .dropdown-list-wrapper {
         /* Sync with `max-height` in dropdown_widget. */
         max-height: 210px;
@@ -2344,36 +2350,51 @@ body:not(.spectator-view) {
             }
         }
     }
-}
-
-.dropdown-list-container .list-item {
-    color: var(--color-dropdown-item);
-
-    &:focus,
-    &.current_selection {
-        background-color: var(--background-color-active-dropdown-item);
-        outline: none;
-    }
-}
-
-.inbox-filter-dropdown-list-container,
-.recent-view-filter-dropdown-list-container,
-.folder-filter-dropdown-list-container,
-.stream_settings_filter-dropdown-list-container,
-.user_group_visibility_settings-dropdown-list-container {
-    overflow: visible;
 
     .list-item {
-        &:focus {
+        border-radius: 4px;
+        margin: 0 4px;
+        position: relative;
+        color: var(--color-dropdown-item);
+
+        &:focus,
+        &.current_selection {
+            outline: none;
+        }
+
+        &:focus::before,
+        &.current_selection::before {
+            content: "";
+            position: absolute;
+            left: -3px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background-color: var(--color-outline-focus);
             border-radius: 4px;
-            outline: 1px solid var(--color-outline-focus) !important;
-            outline-offset: -2px;
-            background-color: transparent;
+        }
+
+        .dropdown-list-item-common-styles {
+            padding: 5px 6px;
+            border-radius: 4px;
         }
 
         &.current_user_setting {
-            background-color: var(--background-color-active-dropdown-item);
-            outline: none;
+            background-color: var(
+                --background-color-current-setting-dropdown-item
+            );
+
+            .dropdown-list-text-selected,
+            .setting-disabled-option-text {
+                color: var(--color-current-setting-dropdown-item);
+            }
+
+            &:hover,
+            &:active {
+                background-color: var(
+                    --background-color-current-setting-dropdown-item
+                );
+            }
         }
     }
 }

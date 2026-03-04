@@ -63,11 +63,10 @@ def send_e2ee_push_notification_apple(
     results = apns_context.loop.run_until_complete(send_all_notifications())
 
     for remote_push_device, result in results:
-        log_context = log_context % remote_push_device.token
         result_info = get_info_from_apns_result(
             result,
             remote_push_device,
-            log_context,
+            log_context % remote_push_device.token,
         )
 
         if result_info.successfully_sent:
@@ -114,11 +113,12 @@ def send_e2ee_push_notification_android(
 
         remote_push_device = fcm_remote_push_devices[idx]
         token = remote_push_device.token
-        log_context = log_context % token
 
         if response.success:
             successfully_sent_count += 1
-            logger.info("FCM: Sent message with ID: %s %s", response.message_id, log_context)
+            logger.info(
+                "FCM: Sent message with ID: %s %s", response.message_id, log_context % token
+            )
         else:
             error = response.exception
             if isinstance(error, FCMUnregisteredError):
@@ -130,7 +130,7 @@ def send_e2ee_push_notification_android(
             else:
                 logger.warning(
                     "FCM: Delivery failed %s: %s:%s",
-                    log_context,
+                    log_context % token,
                     error.__class__,
                     error,
                 )

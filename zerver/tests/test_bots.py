@@ -168,7 +168,6 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_success(users_result)
 
     def test_add_bot(self) -> None:
-        hamlet = self.example_user("hamlet")
         self.login("hamlet")
         self.assert_num_bots_equal(0)
         with self.capture_send_event_calls(expected_num_events=4) as events:
@@ -186,18 +185,11 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                 type="realm_bot",
                 op="add",
                 bot=dict(
-                    email="hambot-bot@zulip.testserver",
                     user_id=bot.id,
-                    bot_type=bot.bot_type,
-                    full_name="The Bot of Hamlet",
-                    is_active=True,
-                    api_key=result["api_key"],
-                    avatar_url=result["avatar_url"],
                     default_sending_stream=None,
                     default_events_register_stream=None,
                     default_all_public_streams=False,
                     services=[],
-                    owner_id=hamlet.id,
                 ),
             ),
             event["event"],
@@ -338,7 +330,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login_user(user)
         self.assert_num_bots_equal(0)
         with self.capture_send_event_calls(expected_num_events=4) as events:
-            result = self.create_bot()
+            self.create_bot()
         self.assert_num_bots_equal(1)
 
         email = "hambot-bot@zulip.testserver"
@@ -350,18 +342,11 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                 type="realm_bot",
                 op="add",
                 bot=dict(
-                    email="hambot-bot@zulip.testserver",
                     user_id=bot.id,
-                    bot_type=bot.bot_type,
-                    full_name="The Bot of Hamlet",
-                    is_active=True,
-                    api_key=result["api_key"],
-                    avatar_url=result["avatar_url"],
                     default_sending_stream=None,
                     default_events_register_stream=None,
                     default_all_public_streams=False,
                     services=[],
-                    owner_id=user.id,
                 ),
             ),
             event["event"],
@@ -449,18 +434,11 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                 type="realm_bot",
                 op="add",
                 bot=dict(
-                    email="hambot-bot@zulip.testserver",
                     user_id=profile.id,
-                    full_name="The Bot of Hamlet",
-                    bot_type=profile.bot_type,
-                    is_active=True,
-                    api_key=result["api_key"],
-                    avatar_url=result["avatar_url"],
                     default_sending_stream="Denmark",
                     default_events_register_stream=None,
                     default_all_public_streams=False,
                     services=[],
-                    owner_id=user_profile.id,
                 ),
             ),
             event["event"],
@@ -532,18 +510,11 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                 type="realm_bot",
                 op="add",
                 bot=dict(
-                    email="hambot-bot@zulip.testserver",
-                    full_name="The Bot of Hamlet",
                     user_id=bot_profile.id,
-                    bot_type=bot_profile.bot_type,
-                    is_active=True,
-                    api_key=result["api_key"],
-                    avatar_url=result["avatar_url"],
                     default_sending_stream=None,
                     default_events_register_stream="Denmark",
                     default_all_public_streams=False,
                     services=[],
-                    owner_id=user_profile.id,
                 ),
             ),
             event["event"],

@@ -1073,6 +1073,7 @@ h4.user_group_setting_subsection_title {
 
             .input {
                 pointer-events: none;
+                min-height: var(--height-input-pill);
             }
         }
     }

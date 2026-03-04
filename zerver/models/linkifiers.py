@@ -10,10 +10,7 @@ from typing_extensions import override
 from zerver.lib import cache
 from zerver.lib.cache import cache_delete, cache_with_key
 from zerver.lib.exceptions import MissingDependentParameterError
-from zerver.lib.per_request_cache import (
-    flush_per_request_cache,
-    return_same_value_during_entire_request,
-)
+from zerver.lib.per_request_cache import cache_for_current_request, flush_per_request_cache
 from zerver.lib.types import LinkifierDict
 from zerver.models.realms import Realm
 
@@ -174,7 +171,7 @@ def get_linkifiers_cache_key(realm_id: int) -> str:
     return f"{cache.KEY_PREFIX}:all_linkifiers_for_realm:{realm_id}"
 
 
-@return_same_value_during_entire_request
+@cache_for_current_request
 @cache_with_key(get_linkifiers_cache_key, timeout=3600 * 24 * 7)
 def linkifiers_for_realm(realm_id: int) -> list[LinkifierDict]:
     return [
@@ -193,6 +190,7 @@ def flush_linkifiers(*, instance: RealmFilter, **kwargs: object) -> None:
     realm_id = instance.realm_id
     cache_delete(get_linkifiers_cache_key(realm_id))
     flush_per_request_cache("linkifiers_for_realm")
+    flush_per_request_cache("topic_links")
 
 
 post_save.connect(flush_linkifiers, sender=RealmFilter)

@@ -214,7 +214,7 @@ function open_linkifier_add_form(): void {
         modal_title_html: $t_html({defaultMessage: "Add a new linkifier"}),
         help_link: "/help/add-a-custom-linkifier",
         modal_content_html,
-        modal_submit_button_text: $t({defaultMessage: "Add linkifier"}),
+        modal_submit_button_text: $t({defaultMessage: "Add"}),
         id: "add-linkifier-modal",
         form_id: "add-linkifier-form-modal",
         on_click() {

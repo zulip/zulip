@@ -184,9 +184,9 @@ For the purposes of this tutorial, this new setting will be called
 :::{tip}
 
 A useful tool that we'll highlight throughout this tutorial is
-`git-grep`. If you're unfamiliar with using `git-grep`, then check out
+`git grep`. If you're unfamiliar with using `git grep`, then check out
 [this blog post](https://laurynmm.github.io/2021/12/22/git-grep.html)
-for an introduction to it, as well as the [official `git-grep`
+for an introduction to it, as well as the [official `git grep`
 documentation](https://git-scm.com/docs/git-grep.)
 
 :::
@@ -322,7 +322,7 @@ all active users in an realm.
 
 :::{tip}
 
-Use git-grep to find and read the `do_set_realm_property`
+Use `git grep` to find and read the `do_set_realm_property`
 function. Are there `property_types` that are handled differently in
 that function? Which ones? Does the function indicate why?
 
@@ -534,7 +534,7 @@ documentation to learn more about the backend testing framework.
 :::{tip}
 
 Pick one of the other `Realm.property_types` settings and
-use `git-grep` to find examples of backend tests that were written for
+use `git grep` to find examples of backend tests that were written for
 that setting: `git grep REALM_SETTING zerver/tests/`.
 
 :::
@@ -602,7 +602,7 @@ is a `settings_checkbox` partial template already set up for you to reuse.
 
 :::{tip}
 
-Use `git-grep` to see where the other realm settings in the
+Use `git grep` to see where the other realm settings in the
 "Message feed" section of that template are in the `web/` directory.
 
 Also, if you're not familiar with the organization settings modal, log in
@@ -667,7 +667,7 @@ the associated function to update the application's UI, if necessary.
 
 Now that you've got the admin checkbox set up to toggle your new feature
 on and off, you should work on implementing your fantastic idea! Remember
-to use `git-grep` to help as you become familiar with the codebase.
+to use `git grep` to help as you become familiar with the codebase.
 
 ### Manually test
 
@@ -709,7 +709,7 @@ behavior of the setting you just created.
 :::{tip}
 
 If you've identified a similar feature on the frontend to the
-one that you're creating, use your `git-grep` skills to find and read
+one that you're creating, use your `git grep` skills to find and read
 through the frontend tests for that feature.
 
 :::

@@ -49,10 +49,17 @@ export function is_supported_image_type(file_type: string): boolean {
 
 // This list should be kept identical to the one defined as
 // AUDIO_INLINE_MIME_TYPES defined in zerver/lib/mime_types.py
-const SUPPORTED_AUDIO_TYPES = new Set([".aac", ".flac", ".mp4", ".mpeg", ".wav", ".webm"]);
+const SUPPORTED_AUDIO_TYPES = new Set([
+    "audio/aac",
+    "audio/flac",
+    "audio/mp4",
+    "audio/mpeg",
+    "audio/wav",
+    "audio/webm",
+]);
 
-function is_supported_audio_type(file_name: string): boolean {
-    return SUPPORTED_AUDIO_TYPES.has(file_name.slice(file_name.lastIndexOf(".")));
+function is_supported_audio_type(file_type: string): boolean {
+    return SUPPORTED_AUDIO_TYPES.has(file_type);
 }
 
 export function compose_upload_cancel(): void {
@@ -614,7 +621,7 @@ export function setup_upload(config: Config): Uppy<ZulipMeta, TusBody> {
 
         const filtered_filename = file.name.replaceAll("[", "").replaceAll("]", "");
         let syntax_to_insert = "[" + filtered_filename + "](" + file.meta.zulip_url + ")";
-        if (is_supported_image_type(file.type) || is_supported_audio_type(file.name)) {
+        if (is_supported_image_type(file.type) || is_supported_audio_type(file.type)) {
             syntax_to_insert = "!" + syntax_to_insert;
         }
 

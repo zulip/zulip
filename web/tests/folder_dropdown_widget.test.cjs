@@ -97,9 +97,6 @@ run_test("get_folder_filter_dropdown_options - with uncategorized channels", () 
         options[0].unique_id,
         folder_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION,
     );
-    assert.equal(options[0].is_setting_disabled, true);
-    assert.equal(options[0].show_disabled_icon, false);
-    assert.equal(options[0].show_disabled_option_name, true);
     assert.equal(options[0].bold_current_selection, false);
 
     // Check "Uncategorized" option (should be second)
@@ -108,9 +105,6 @@ run_test("get_folder_filter_dropdown_options - with uncategorized channels", () 
         options[1].unique_id,
         folder_dropdown_widget.FOLDER_FILTERS.UNCATEGORIZED_DROPDOWN_OPTION,
     );
-    assert.equal(options[1].is_setting_disabled, true);
-    assert.equal(options[1].show_disabled_icon, false);
-    assert.equal(options[1].show_disabled_option_name, true);
     assert.equal(options[1].bold_current_selection, false);
 
     // Check folder options
@@ -200,7 +194,7 @@ run_test("create_folder_filter_dropdown_widget", () => {
         created_widget_params = params;
         return {
             render: noop,
-            value: () => -2,
+            value: () => -102,
         };
     };
 

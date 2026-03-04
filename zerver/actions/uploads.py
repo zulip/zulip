@@ -94,7 +94,7 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
     with delete_message_attachments(delete_from=(ImageAttachment, Attachment)) as delete_one:
         for path_id in (
             old_unclaimed_attachments.values_list("path_id", flat=True)
-            .select_for_update(of=("self",))
+            .select_for_update(of=("self",), no_key=False)
             .iterator()
         ):
             delete_one(path_id)
@@ -103,7 +103,7 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
     ) as delete_one:
         for path_id in (
             old_unclaimed_archived_attachments.values_list("path_id", flat=True)
-            .select_for_update(of=("self",))
+            .select_for_update(of=("self",), no_key=False)
             .iterator()
         ):
             delete_one(path_id)
@@ -123,7 +123,9 @@ def check_attachment_reference_change(
 
     to_remove = list(prev_attachments - new_attachments)
     if len(to_remove) > 0:
-        attachments_to_update = Attachment.objects.filter(path_id__in=to_remove).select_for_update()
+        attachments_to_update = Attachment.objects.filter(path_id__in=to_remove).select_for_update(
+            no_key=True
+        )
         message.attachment_set.remove(*attachments_to_update)
 
     sender = message.sender

@@ -86,17 +86,39 @@ export function popover_items_handle_keyboard(key: string, $items?: JQuery): voi
         return;
     }
 
+    // If the focused item doesn't have a visible focus ring (e.g., it was
+    // focused programmatically when the popover opened via mouse click rather
+    // than keyboard navigation), treat the navigation position as unset so
+    // that the first arrow key press shows the focus ring on item 1 rather
+    // than skipping to item 2. We blur first because calling .focus() on an
+    // already-focused element is a no-op and won't trigger :focus-visible.
+    const focused_item_has_focus_ring =
+        index !== -1 && document.activeElement?.matches(":focus-visible") === true;
+    if (
+        !focused_item_has_focus_ring &&
+        index !== -1 &&
+        document.activeElement instanceof HTMLElement
+    ) {
+        document.activeElement.blur();
+    }
+    const nav_index = focused_item_has_focus_ring ? index : -1;
+
     if (key === "down_arrow" || key === "vim_down") {
         [...$items]
-            .slice(index === -1 ? 0 : index + 1)
+            .slice(nav_index === -1 ? 0 : nav_index + 1)
             .find((item) => item.getClientRects().length)
             ?.focus();
     } else if (key === "up_arrow" || key === "vim_up") {
         [...$items]
-            .slice(0, index === -1 ? $items.length : index)
+            .slice(0, nav_index === -1 ? $items.length : nav_index)
             .findLast((item) => item.getClientRects().length)
             ?.focus();
     }
+}
+
+export function focus_popover(instance: tippy.Instance): void {
+    const $items = get_popover_items_for_instance(instance);
+    focus_first_popover_item($items);
 }
 
 export function focus_first_popover_item($items: JQuery | undefined, index = 0): void {

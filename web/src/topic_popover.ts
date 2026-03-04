@@ -124,6 +124,8 @@ export function initialize(): void {
                     return;
                 }
 
+                popover_menus.focus_popover(instance);
+
                 $popper.on("change", "input[name='sidebar-topic-visibility-select']", (e) => {
                     const start_time = Date.now();
                     const visibility_policy = Number.parseInt(

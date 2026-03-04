@@ -447,3 +447,10 @@ def regenerate_api_key_test_user() -> dict[str, object]:
     # Change authentication line to allow test_client to regenerate its own key.
     AUTHENTICATION_LINE[0] = f"{test_user.email}:{test_user_api_key}"
     return {}
+
+
+@openapi_param_value_generator(["/bots/{bot_id}/api_key/regenerate:post"])
+def regenerate_bot_api_key_test() -> dict[str, object]:
+    bot = UserProfile.objects.filter(is_bot=True, realm=get_realm("zulip")).first()
+    assert bot is not None
+    return {"bot_id": bot.id}

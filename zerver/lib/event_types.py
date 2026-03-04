@@ -28,18 +28,13 @@ class EventAlertWords(BaseEvent):
     alert_words: list[str]
 
 
-class AttachmentMessage(BaseModel):
-    id: int
-    date_sent: int
-
-
 class Attachment(BaseModel):
     id: int
     name: str
     size: int
     path_id: str
     create_time: int
-    messages: list[AttachmentMessage]
+    message_ids: list[int]
 
 
 class EventAttachmentAdd(BaseEvent):
@@ -416,16 +411,9 @@ class BotServicesEmbedded(BaseModel):
 
 class Bot(BaseModel):
     user_id: int
-    api_key: str
-    avatar_url: str
-    bot_type: int
     default_all_public_streams: bool
     default_events_register_stream: str | None
     default_sending_stream: str | None
-    email: str
-    full_name: str
-    is_active: bool
-    owner_id: int
     services: list[BotServicesOutgoing | BotServicesEmbedded]
 
 
@@ -451,14 +439,9 @@ class BotTypeForUpdateCore(BaseModel):
 
 class BotTypeForUpdate(BotTypeForUpdateCore):
     # TODO: fix types to avoid optional fields
-    api_key: str | None = None
-    avatar_url: str | None = None
     default_all_public_streams: bool | None = None
     default_events_register_stream: str | None = None
     default_sending_stream: str | None = None
-    full_name: str | None = None
-    is_active: bool | None = None
-    owner_id: int | None = None
     services: list[BotServicesOutgoing | BotServicesEmbedded] | None = None
 
 
@@ -782,6 +765,11 @@ class PersonIsImportedStub(BaseModel):
     is_imported_stub: bool
 
 
+class PersonDateJoined(BaseModel):
+    user_id: int
+    date_joined: str
+
+
 class EventRealmUserUpdate(BaseEvent):
     type: Literal["realm_user"]
     op: Literal["update"]
@@ -789,6 +777,7 @@ class EventRealmUserUpdate(BaseEvent):
         PersonAvatarFields
         | PersonBotOwnerId
         | PersonCustomProfileField
+        | PersonDateJoined
         | PersonDeliveryEmail
         | PersonEmail
         | PersonFullName

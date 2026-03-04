@@ -121,9 +121,17 @@ def get_user_group_by_id_in_realm(
         if for_read:
             user_group = NamedUserGroup.objects.get(id=user_group_id, realm_for_sharding=realm)
         else:
-            user_group = NamedUserGroup.objects.select_for_update().get(
-                id=user_group_id, realm_for_sharding=realm
-            )
+            user_group = NamedUserGroup.objects.select_for_update(
+                # We never fully DELETE NamedUserGroup rows; however, we do want this getter
+                # to prevent the addition of new users to the group while we hold the lock,
+                # to block with hypothetical other codepath that might try to modify memberships
+                # without taking an appropriate explicit lock.
+                # Ideally, we would wish to also prevent the deletion of group memberships for the
+                # duration of the lock even if the transaction doing the deletion forgets to take
+                # its own FOR UPDATE lock on this group, but SELECT FOR UPDATE does not offer
+                # that possibility. We accept this as a limitation for now.
+                no_key=False,
+            ).get(id=user_group_id, realm_for_sharding=realm)
 
         if not allow_deactivated and user_group.deactivated:
             raise JsonableError(_("User group is deactivated."))
@@ -333,7 +341,12 @@ def lock_subgroups_with_respect_to_supergroup(
         recursive_subgroups = list(
             get_recursive_subgroups_for_groups(
                 potential_subgroup_ids, acting_user.realm
-            ).select_for_update(nowait=True)
+            ).select_for_update(
+                nowait=True,
+                # We want to prevent insertion of new memberships to these rows while
+                # the lock is held.
+                no_key=False,
+            )
         )
         # TODO: This select_for_update query is subject to deadlocking, and
         # better error handling is needed. We may use
@@ -460,7 +473,7 @@ def update_or_create_user_group_for_setting(
     )
     user_group.direct_members.set(member_users)
 
-    potential_subgroups = NamedUserGroup.objects.select_for_update().filter(
+    potential_subgroups = NamedUserGroup.objects.select_for_update(no_key=True).filter(
         realm_for_sharding=realm, id__in=direct_subgroups
     )
     group_ids_found = [group.id for group in potential_subgroups]

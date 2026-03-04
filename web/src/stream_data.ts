@@ -337,16 +337,20 @@ export function delete_sub(stream_id: number): void {
     stream_info.delete(stream_id);
 }
 
-export function get_non_default_stream_names(): {name: string; unique_id: number}[] {
+export function get_default_stream_options(): {
+    name: string;
+    unique_id: number;
+    stream: StreamSubscription;
+}[] {
     let subs = [...stream_info.values()];
     subs = subs.filter(
         (sub) => !is_default_stream_id(sub.stream_id) && !sub.invite_only && !sub.is_archived,
     );
-    const names = subs.map((sub) => ({
+    return subs.map((sub) => ({
         name: sub.name,
         unique_id: sub.stream_id,
+        stream: sub,
     }));
-    return names;
 }
 
 export function get_unsorted_subs(): StreamSubscription[] {

@@ -430,7 +430,7 @@ def try_deliver_one_scheduled_message() -> bool:
             delivered=False,
             failed=False,
         )
-        .select_for_update()
+        .select_for_update(no_key=True)
         .first()
     )
 

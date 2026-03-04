@@ -332,6 +332,36 @@ export class BuddyList extends BuddyListConf {
         );
     }
 
+    // Attach load handlers to avatar images so that the preload
+    // background is removed once the image finishes loading. Also
+    // handles already-cached images by checking img.complete.
+    //
+    // By selecting only .avatar-preload-background containers, we
+    // skip images that have already been processed, avoiding duplicate
+    // handlers when this is called repeatedly (e.g., on scroll).
+    clear_avatar_preload_backgrounds(): void {
+        $("#user-list .avatar-preload-background img").each(function (this: HTMLElement) {
+            const $img = $(this);
+            const $picture = $img.closest(".avatar-preload-background");
+            $img.on("load", () => {
+                $picture.removeClass("avatar-preload-background");
+            });
+            // If the image is already cached, remove the preload
+            // background immediately.
+            // This fixes avatar-preload-background from briefly showing
+            // when reloading page.
+            if (
+                this instanceof HTMLImageElement &&
+                this.complete &&
+                // naturalWidth > 0 guard ensures broken images keep
+                // the preload background as a placeholder.
+                this.naturalWidth > 0
+            ) {
+                $picture.removeClass("avatar-preload-background");
+            }
+        });
+    }
+
     populate(opts: {all_user_ids: number[]}): void {
         this.render_count = 0;
         this.$participants_list.empty();
@@ -387,18 +417,6 @@ export class BuddyList extends BuddyListConf {
         background_task.run_async_function_without_await(
             this.update_empty_list_placeholders.bind(this),
         );
-
-        // `populate` always rerenders all user rows, so we need new load handlers.
-        // This logic only does something is a user has enabled the setting to
-        // view avatars in the buddy list, and otherwise the jQuery selector will
-        // always be the empty set.
-        $("#user-list .user-profile-picture img")
-            .off("load")
-            .on("load", function (this: HTMLElement) {
-                $(this)
-                    .closest(".user-profile-picture")
-                    .toggleClass("avatar-preload-background", false);
-            });
     }
 
     // We show "No matching users" if a section is empty during search.
@@ -1107,6 +1125,7 @@ export class BuddyList extends BuddyListConf {
         }
 
         this.display_or_hide_sections();
+        this.clear_avatar_preload_backgrounds();
         background_task.run_async_function_without_await(
             this.update_empty_list_placeholders.bind(this),
         );
@@ -1156,6 +1175,7 @@ export class BuddyList extends BuddyListConf {
             });
         }
         background_task.run_async_function_without_await(this.render_section_headers.bind(this));
+        this.clear_avatar_preload_backgrounds();
     }
 
     start_scroll_handler(): void {

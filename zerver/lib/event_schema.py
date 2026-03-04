@@ -113,6 +113,7 @@ from zerver.lib.event_types import (
     PersonAvatarFields,
     PersonBotOwnerId,
     PersonCustomProfileField,
+    PersonDateJoined,
     PersonDeliveryEmail,
     PersonEmail,
     PersonFullName,
@@ -274,6 +275,7 @@ PERSON_TYPES: dict[str, type[BaseModel]] = dict(
     avatar_fields=PersonAvatarFields,
     bot_owner_id=PersonBotOwnerId,
     custom_profile_field=PersonCustomProfileField,
+    date_joined=PersonDateJoined,
     delivery_email=PersonDeliveryEmail,
     email=PersonEmail,
     full_name=PersonFullName,
@@ -374,11 +376,11 @@ def check_modern_presence(var_name: str, event: dict[str, object], user_id: int)
 def check_realm_bot_add(
     var_name: str,
     event: dict[str, object],
+    bot_type: int,
 ) -> None:
     _check_realm_bot_add(var_name, event)
 
     assert isinstance(event["bot"], dict)
-    bot_type = event["bot"]["bot_type"]
 
     services = event["bot"]["services"]
 

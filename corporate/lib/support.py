@@ -34,6 +34,7 @@ from zilencer.models import (
     RemoteRealm,
     RemoteRealmCount,
     RemoteServerBillingUser,
+    RemoteServerDeactivationReasonType,
     RemoteZulipServer,
     RemoteZulipServerAuditLog,
     get_remote_realm_guest_and_non_guest_count,
@@ -112,7 +113,7 @@ class DeactivationData:
     event_time: datetime
     acting_user: UserProfile | None
     billing_user: RemoteServerBillingUser | None
-    reason: RealmDeactivationReasonType | None
+    reason: RealmDeactivationReasonType | RemoteServerDeactivationReasonType | None
 
 
 @dataclass
@@ -486,6 +487,8 @@ def get_deactivation_data(audit_log: RealmAuditLog | RemoteZulipServerAuditLog) 
             billing_user = audit_log.acting_remote_user
         elif audit_log.acting_support_user:
             acting_user = audit_log.acting_support_user
+        if audit_log.extra_data:
+            reason = audit_log.extra_data.get("deactivation_reason", None)
 
     return DeactivationData(
         event_time=event_time,
