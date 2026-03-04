@@ -991,10 +991,6 @@ ul.popover-group-menu-member-list {
     .link-item {
         outline: none;
 
-        &:focus-within {
-            background: var(--color-background-hover-popover-menu);
-        }
-
         .popover-menu-label,
         .popover-menu-icon {
             margin-top: 2px;
@@ -1019,6 +1015,7 @@ ul.popover-group-menu-member-list {
                 /* Override the default focus style */
                 outline: 1px solid var(--color-outline-focus) !important;
                 outline-offset: -1px;
+                background: var(--color-background-hover-popover-menu);
             }
 
             &:active {
