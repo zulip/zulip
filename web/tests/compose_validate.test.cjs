@@ -373,7 +373,7 @@ test_ui("validate_stream_message", ({override, mock_template}) => {
         Array.from({length: 16}, (_, i) => i + 1),
     );
     let stream_wildcard_warning_rendered = false;
-    $("#compose_banner_area .wildcard_warning").length = 0;
+    $.set_results("#compose_banner_area .wildcard_warning", []);
     mock_template("compose_banner/stream_wildcard_warning.hbs", false, (data) => {
         stream_wildcard_warning_rendered = true;
         assert.equal(data.subscriber_count, 16);

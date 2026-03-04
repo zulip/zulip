@@ -508,7 +508,7 @@ test("marked_subscribed (normal)", ({override, override_rewire}) => {
     });
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
 
-    $("#channels_overlay_container .stream-row:not(.notdisplayed)").length = 0;
+    $.set_results("#channels_overlay_container .stream-row:not(.notdisplayed)", []);
     override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     stream_events.mark_subscribed(sub, [], "blue");
 
@@ -547,7 +547,7 @@ test("marked_subscribed (color)", ({override, override_rewire}) => {
     override(color_data, "pick_color", () => "green");
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
 
-    $("#channels_overlay_container .stream-row:not(.notdisplayed)").length = 0;
+    $.set_results("#channels_overlay_container .stream-row:not(.notdisplayed)", []);
 
     // narrow state is undefined
     {
@@ -579,7 +579,7 @@ test("marked_subscribed (emails)", ({override, override_rewire}) => {
     override(stream_settings_ui, "update_settings_for_subscribed", subs_stub.f);
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
 
-    $("#channels_overlay_container .stream-row:not(.notdisplayed)").length = 0;
+    $.set_results("#channels_overlay_container .stream-row:not(.notdisplayed)", []);
 
     assert.ok(!stream_data.is_subscribed(sub.stream_id));
 
@@ -610,7 +610,7 @@ test("mark_unsubscribed (update_settings_for_unsubscribed)", ({override, overrid
     override(unread_ui, "update_unread_counts", noop);
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
 
-    $("#channels_overlay_container .stream-row:not(.notdisplayed)").length = 0;
+    $.set_results("#channels_overlay_container .stream-row:not(.notdisplayed)", []);
 
     stream_events.mark_unsubscribed(sub);
     const args = stub.get_args("sub");
@@ -638,7 +638,7 @@ test("mark_unsubscribed (render_title_area)", ({override, override_rewire}) => {
     override(unread_ui, "hide_unread_banner", noop);
     override(user_profile, "update_user_profile_streams_list_for_users", noop);
 
-    $("#channels_overlay_container .stream-row:not(.notdisplayed)").length = 0;
+    $.set_results("#channels_overlay_container .stream-row:not(.notdisplayed)", []);
 
     stream_events.mark_unsubscribed(sub);
 

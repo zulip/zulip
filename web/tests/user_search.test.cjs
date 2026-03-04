@@ -91,8 +91,8 @@ function set_input_val(val) {
 }
 
 function stub_buddy_list_empty_list_message_lengths() {
-    $("#buddy-list-users-matching-view .empty-list-message").length = 0;
-    $("#buddy-list-other-users .empty-list-message").length = 0;
+    $.set_results("#buddy-list-users-matching-view .empty-list-message", []);
+    $.set_results("#buddy-list-other-users .empty-list-message", []);
 }
 
 test("clear_search with button", ({override}) => {
