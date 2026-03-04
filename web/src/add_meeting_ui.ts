@@ -9,15 +9,12 @@ import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as narrow_state from "./narrow_state.ts"
+import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as pill_typeahead from "./pill_typeahead.ts";
 import * as rows from "./rows.ts";
-import * as stream_data from "./stream_data.ts";
+import * as typeahead_helper from "./typeahead_helper.ts";
 import * as user_pill from "./user_pill.ts";
-
-
-
-
 
 let add_meeting_widget: dropdown_widget.DropdownWidget | undefined;
 let add_meeting_dropdown: tippy.Instance | undefined;
@@ -56,18 +53,40 @@ function update_rsvp_submit_button_state(): void {
     }
 }
 
-function get_channel_users() {
+function populate_user_dropdown(): void {
     const stream_id = narrow_state.stream_id();
 
     if (!stream_id) {
-        return []
+        return;
     }
 
-    const user_ids = peer_data.get_subscribers(stream_id);
+    const user_ids = peer_data.get_subscriber_ids_assert_loaded(stream_id);
+    const $dropdown = $("#rsvp-user-dropdown");
 
-    return user_ids
-        .map((id) => people.get_by_user_id(id))
-        .filter(Boolean);
+    $dropdown.empty();
+
+    for (const id of user_ids) {
+        const user = people.get_by_user_id(id);
+
+        if (!user) {
+            continue;
+        }
+
+        const item = {
+            type: "user",
+            user,
+        };
+
+        const html = typeahead_helper.render_person(item);
+        const $option = $(`<div class="rsvp-user-option">${html}</div>`);
+
+        $option.on("click", () => {
+            user_pill.append_user(user, invite_users_widget);
+            $("#rsvp-user-dropdown").hide();
+        });
+
+        $dropdown.append($option);
+    }
 }
 
 let invite_users_widget: any;
@@ -85,6 +104,18 @@ function rsvp_meeting_modal_post_render(): void {
     $("#rsvp-invite-users").on("focus", () => {
         $("#rsvp-invite-users").trigger("input");
     });
+
+    $("#rsvp-user-dropdown-button").on("click", () => {
+    const $dropdown = $("#rsvp-user-dropdown");
+
+    if ($dropdown.is(":visible")) {
+        $dropdown.hide();
+        return;
+    }
+
+    populate_user_dropdown();
+    $dropdown.show();
+});
 }
 
 function on_add_all_users_click(): void {
