@@ -28,6 +28,7 @@ def do_add_linkifier(
     url_template: str,
     example_input: str | None = None,
     reverse_template: str | None = None,
+    alternative_url_templates: list[str] | None = None,
     *,
     acting_user: UserProfile | None,
 ) -> int:
@@ -35,6 +36,8 @@ def do_add_linkifier(
     url_template = url_template.strip()
     example_input = normalize_optional_text(example_input)
     reverse_template = normalize_optional_text(reverse_template)
+    if alternative_url_templates is None:
+        alternative_url_templates = []
     # This makes sure that the new linkifier is always ordered the last modulo
     # the rare race condition.
     max_order = RealmFilter.objects.aggregate(Max("order"))["order__max"]
@@ -45,6 +48,7 @@ def do_add_linkifier(
             url_template=url_template,
             example_input=example_input,
             reverse_template=reverse_template,
+            alternative_url_templates=alternative_url_templates,
         )
     else:
         linkifier = RealmFilter(
@@ -53,6 +57,7 @@ def do_add_linkifier(
             url_template=url_template,
             example_input=example_input,
             reverse_template=reverse_template,
+            alternative_url_templates=alternative_url_templates,
             order=max_order + 1,
         )
     linkifier.full_clean()
@@ -72,7 +77,7 @@ def do_add_linkifier(
                 id=linkifier.id,
                 example_input=example_input,
                 reverse_template=reverse_template,
-                alternative_url_templates=[],
+                alternative_url_templates=linkifier.alternative_url_templates,
             ),
         },
     )
@@ -112,6 +117,7 @@ def do_remove_linkifier(
                 "url_template": url_template,
                 "example_input": realm_linkifier.example_input,
                 "reverse_template": realm_linkifier.reverse_template,
+                "alternative_url_templates": realm_linkifier.alternative_url_templates,
             },
         },
     )
@@ -126,6 +132,7 @@ def do_update_linkifier(
     url_template: str,
     example_input: str | None = None,
     reverse_template: str | None = None,
+    alternative_url_templates: list[str] | None = None,
     *,
     acting_user: UserProfile | None,
 ) -> None:
@@ -136,6 +143,8 @@ def do_update_linkifier(
     linkifier.url_template = url_template
     linkifier.example_input = normalize_optional_text(example_input)
     linkifier.reverse_template = normalize_optional_text(reverse_template)
+    if alternative_url_templates is not None:
+        linkifier.alternative_url_templates = alternative_url_templates
 
     # Validation of fields is done by full_clean.
     linkifier.full_clean()
@@ -146,6 +155,8 @@ def do_update_linkifier(
         update_fields.append("example_input")
     if reverse_template is not None:
         update_fields.append("reverse_template")
+    if alternative_url_templates is not None:
+        update_fields.append("alternative_url_templates")
     linkifier.save(update_fields=update_fields)
 
     realm_linkifiers = linkifiers_for_realm(realm.id)
@@ -162,7 +173,7 @@ def do_update_linkifier(
                 id=linkifier.id,
                 example_input=linkifier.example_input,
                 reverse_template=linkifier.reverse_template,
-                alternative_url_templates=[],
+                alternative_url_templates=linkifier.alternative_url_templates,
             ),
         },
     )

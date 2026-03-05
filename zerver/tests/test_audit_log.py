@@ -1103,6 +1103,7 @@ class TestRealmAuditLog(ZulipTestCase):
             url_template="https://realm.com/my_realm_filter/{id}",
             example_input="#1",
             reverse_template="#{id}",
+            alternative_url_templates=["https://realm.com/my_realm_filter/pull/{id}"],
             acting_user=user,
         )
 
@@ -1112,7 +1113,7 @@ class TestRealmAuditLog(ZulipTestCase):
             id=linkifier_id,
             example_input="#1",
             reverse_template="#{id}",
-            alternative_url_templates=[],
+            alternative_url_templates=["https://realm.com/my_realm_filter/pull/{id}"],
         )
         expected_extra_data = {
             "realm_linkifiers": [*initial_linkifiers, added_linkfier],
@@ -1137,6 +1138,10 @@ class TestRealmAuditLog(ZulipTestCase):
             url_template="https://realm.com/my_realm_filter/issues/{id}",
             example_input="#15",
             reverse_template="#{id}",
+            alternative_url_templates=[
+                "https://realm.com/my_realm_filter/pull/{id}",
+                "https://realm.com/my_realm_filter/discussions/{id}",
+            ],
             acting_user=user,
         )
         changed_linkifier = LinkifierDict(
@@ -1145,7 +1150,10 @@ class TestRealmAuditLog(ZulipTestCase):
             id=linkifier_id,
             example_input="#15",
             reverse_template="#{id}",
-            alternative_url_templates=[],
+            alternative_url_templates=[
+                "https://realm.com/my_realm_filter/pull/{id}",
+                "https://realm.com/my_realm_filter/discussions/{id}",
+            ],
         )
         expected_extra_data = {
             "realm_linkifiers": [*initial_linkifiers, changed_linkifier],
@@ -1173,6 +1181,10 @@ class TestRealmAuditLog(ZulipTestCase):
             "url_template": "https://realm.com/my_realm_filter/issues/{id}",
             "example_input": "#15",
             "reverse_template": "#{id}",
+            "alternative_url_templates": [
+                "https://realm.com/my_realm_filter/pull/{id}",
+                "https://realm.com/my_realm_filter/discussions/{id}",
+            ],
         }
         expected_extra_data = {
             "realm_linkifiers": initial_linkifiers,
