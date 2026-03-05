@@ -548,17 +548,67 @@ function do_mark_unread_by_narrow(
                         narrow,
                     );
                 },
+                rollback_local_echo() {
+                    // do_mark_unread_by_narrow does not use local echo.
+                },
             });
         },
     });
 }
 
 function do_mark_unread_by_ids(message_ids_to_update: number[]): void {
-    // TODO: Add support for locally echoing when we're offline.
+    // Cancel any pending "mark as read" requests for these messages
+    // to prevent conflicting flags from being sent to the server.
+    message_flags.send_read.remove_from_queue(message_ids_to_update);
+
+    // Build a synthetic MessageDetails object from locally available
+    // message data, then dispatch through the same code path as a
+    // real server event. This ensures all UI and state updates are
+    // handled identically to a server-delivered event.
+    const message_details: MessageDetails = {};
+    const locally_echoed_ids: number[] = [];
+    for (const message_id of message_ids_to_update) {
+        const message = message_store.get(message_id);
+        if (message) {
+            locally_echoed_ids.push(message_id);
+            if (message.type === "private") {
+                message_details[message_id] = {
+                    type: "private",
+                    mentioned: message.mentioned,
+                    user_ids: people.pm_with_user_ids(message) ?? [],
+                };
+            } else {
+                // unmuted_stream_msg must mirror the server-side logic in
+                // zerver/lib/message.py:format_unread_message_details.
+                // If the server logic changes, update this accordingly.
+                message_details[message_id] = {
+                    type: "stream",
+                    mentioned: message.mentioned,
+                    stream_id: message.stream_id,
+                    topic: message.topic,
+                    unmuted_stream_msg: unread.is_message_in_unmuted_context(message),
+                };
+            }
+        }
+    }
+
+    // Dispatch synthetic event for local echo.
+    // process_unread_messages_event is idempotent: when the real
+    // server event arrives, get_read_message_ids() will filter
+    // out already-processed messages.
+    if (locally_echoed_ids.length > 0) {
+        process_unread_messages_event({
+            message_ids: locally_echoed_ids,
+            message_details,
+        });
+    }
+
     void channel.post({
         url: "/json/messages/flags",
         data: {messages: JSON.stringify(message_ids_to_update), op: "remove", flag: "read"},
         success(raw_data) {
+            // State was already updated by local echo; the server
+            // event will be filtered by get_read_message_ids().
             show_read_flag_update_success_banner("unread", message_ids_to_update.length);
 
             const data = update_flags_for_response_schema.parse(raw_data);
@@ -573,6 +623,14 @@ function do_mark_unread_by_ids(message_ids_to_update: number[]): void {
                 retry() {
                     do_mark_unread_by_ids(message_ids_to_update);
                 },
+                rollback_local_echo() {
+                    // Reverse the local echo by marking messages
+                    // as read again, so the UI reflects the true
+                    // server state.
+                    if (locally_echoed_ids.length > 0) {
+                        process_read_messages_event(locally_echoed_ids);
+                    }
+                },
             });
         },
     });
@@ -580,11 +638,13 @@ function do_mark_unread_by_ids(message_ids_to_update: number[]): void {
 
 function handle_mark_unread_from_here_error(
     xhr: JQuery.jqXHR<unknown>,
-    {retry}: {retry: () => void},
+    {retry, rollback_local_echo}: {retry: () => void; rollback_local_echo: () => void},
 ): void {
     let parsed;
     if (xhr.readyState === 0) {
-        // client cancelled the request
+        // Client is offline or request was cancelled.
+        // Keep the local echo in place; the user can retry
+        // when back online.
     } else if (
         (parsed = z
             .object({code: z.literal("RATE_LIMIT_HIT"), ["retry-after"]: z.number()})
@@ -594,6 +654,9 @@ function handle_mark_unread_from_here_error(
         const milliseconds_to_wait = 1000 * parsed.data["retry-after"];
         setTimeout(retry, milliseconds_to_wait);
     } else {
+        // Non-retryable server error; rollback the local echo
+        // since the server rejected the request.
+        rollback_local_echo();
         // TODO: Ideally, this case would communicate the
         // failure to the user, with some manual retry
         // offered, since the most likely cause is a 502.
