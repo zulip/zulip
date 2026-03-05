@@ -92,11 +92,7 @@ export const update_person = function update(event: UserUpdate): void {
             settings_account.hide_confirm_email_banner();
         }
 
-        if (
-            user.is_bot &&
-            (current_user.is_admin ||
-                (user.bot_owner_id !== null && people.is_my_user_id(user.bot_owner_id)))
-        ) {
+        if (user.is_bot && bot_data.get(event.user_id) !== undefined) {
             assert(delivery_email !== null);
             bot_data.update(event.user_id, {user_id: event.user_id, email: delivery_email});
         }
@@ -114,11 +110,7 @@ export const update_person = function update(event: UserUpdate): void {
             current_user.full_name = event.full_name;
             settings_account.update_full_name(event.full_name);
         }
-        if (
-            user.is_bot &&
-            (current_user.is_admin ||
-                (user.bot_owner_id !== null && people.is_my_user_id(user.bot_owner_id)))
-        ) {
+        if (user.is_bot && bot_data.get(event.user_id) !== undefined) {
             bot_data.update(event.user_id, {user_id: event.user_id, full_name: event.full_name});
         }
     }
@@ -254,11 +246,7 @@ export const update_person = function update(event: UserUpdate): void {
 
     if ("is_active" in event) {
         const is_bot_user = user.is_bot;
-        if (
-            is_bot_user &&
-            (current_user.is_admin ||
-                (user.bot_owner_id !== null && people.is_my_user_id(user.bot_owner_id)))
-        ) {
+        if (is_bot_user && bot_data.get(event.user_id) !== undefined) {
             bot_data.update(event.user_id, {user_id: event.user_id, is_active: event.is_active});
         }
         if (event.is_active) {
