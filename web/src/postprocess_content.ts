@@ -337,9 +337,25 @@ export function postprocess_content(html: string): string {
             // content (or is the first in the message) and need to create a
             // gallery for it, and perhaps other adjacent sibling media elements,
             // if they exist.
-            gallery_element = inertDocument.createElement("div");
+            if (elt.classList.contains("message-media-gallery-image")) {
+                // Because inline images may be presented in galleries in the middle
+                // of a paragraph, we create those as `<span>` elements. That prevents
+                // the client-side markdown from doing a slipshod job of inserting
+                // empty `<p>` elements or leaving orphaned text nodes around a `<div>`,
+                // which isn't allowed to appear inside of a `<p>`.
+                gallery_element = inertDocument.createElement("span");
+            } else {
+                // However, for legacy galleries that always appear after a paragraph,
+                // we create a `<div>` element.
+                gallery_element = inertDocument.createElement("div");
+            }
+
+            // Regardless of what element the gallery is, we add the
+            // .message-thumbnail-gallery class, whose CSS selectors
+            // will style this as a flexbox regardless.
             gallery_element.classList.add("message-thumbnail-gallery");
-            // We insert the gallery just before the media element we've found
+
+            // We insert a new gallery just before the media element we've found
             elt.before(gallery_element);
         }
 

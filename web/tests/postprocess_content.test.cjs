@@ -193,7 +193,7 @@ run_test("inline_image_galleries", ({override}) => {
             "</span>" +
             "</p>" +
             "<p>" +
-            '<div class="message-thumbnail-gallery">' +
+            '<span class="message-thumbnail-gallery">' +
             '<span class="message-media-inline-image message-media-gallery-image">' +
             '<a href="/user_uploads/path/to/image-wide.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
             '<img alt="image" class="inline-image media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" loading="lazy" width="900" height="600" style="width: 15em;">' +
@@ -204,7 +204,7 @@ run_test("inline_image_galleries", ({override}) => {
             '<img alt="image" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/image-tall.png" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" loading="lazy" width="600" height="900" style="width: 6.666666666666667em;">' +
             "</a>" +
             "</span>" +
-            "</div>" +
+            "</span>" +
             "</p>",
     );
 });
