@@ -556,7 +556,7 @@
             cursor: pointer;
 
             &:focus-visible {
-                outline: 1px solid var(--color-user-profile-list-item-hover);
+                outline: 1px solid var(--color-outline-focus);
                 outline-offset: -2px;
             }
         }
@@ -583,6 +583,11 @@
 
         &:focus-visible {
             opacity: 1;
+            /* TODO: We need to consolidate icon-button outline to this
+               outline color and separately define outline colors to specific
+               elements if needed. We should remove this after that. */
+            outline: 1px solid var(--color-outline-focus) !important;
+            outline-offset: -2px;
         }
     }
 }
