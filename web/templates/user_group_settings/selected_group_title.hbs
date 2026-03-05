@@ -1,7 +1,9 @@
 <div class="selected-group-title">
     <div class="selected-group">
         <span class="selected-group-name" data-tippy-content="{{group_name}}">{{group_name}}</span>
-        <i class="fa fa-ban deactivated-user-icon deactivated-user-group-icon-right"></i>
+        <div class="large-icon">
+            <i class="zulip-icon zulip-icon-deactivated-circle deactivated-user-group-icon-right" aria-hidden="true"></i>
+        </div>
     </div>
     {{#unless is_system_group}}
         <div class="button-group selected-group-buttons" data-group-id="{{group_id}}">
