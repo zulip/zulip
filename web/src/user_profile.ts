@@ -1675,14 +1675,6 @@ export function initialize(): void {
         browser_history.go_to_location("#settings/profile");
     });
 
-    $("body").on(
-        "click",
-        "#user-profile-modal .user-profile-channel-row, .user-profile-group-row",
-        () => {
-            hide_user_profile();
-        },
-    );
-
     bot_helper.initialize_bot_click_handlers();
 
     new ClipboardJS(".copy-link-to-user-profile", {
