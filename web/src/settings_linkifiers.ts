@@ -6,6 +6,7 @@ import * as z from "zod/mini";
 import render_admin_linkifier_add_form from "../templates/settings/admin_linkifier_add_form.hbs";
 import render_admin_linkifier_edit_form from "../templates/settings/admin_linkifier_edit_form.hbs";
 import render_admin_linkifier_list from "../templates/settings/admin_linkifier_list.hbs";
+import render_linkifier_alternative_url_template from "../templates/settings/linkifier_alternative_url_template.hbs";
 
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
@@ -47,6 +48,31 @@ export function maybe_disable_widgets(): void {
     }
 }
 
+function add_alternative_url_template_row($container: JQuery, value = ""): void {
+    const row_html = render_linkifier_alternative_url_template({value});
+    $container.append($(row_html));
+}
+
+function populate_alternative_url_templates($modal: JQuery, templates: string[]): void {
+    const $container = $modal.find("#linkifier-alternative-url-templates");
+    for (const template of templates) {
+        add_alternative_url_template_row($container, template);
+    }
+    // Always ensure there is one empty row at the end.
+    add_alternative_url_template_row($container);
+}
+
+function read_alternative_url_templates_from_form($modal: JQuery): string[] {
+    const templates: string[] = [];
+    $modal.find(".alternative-url-template-row input").each(function () {
+        const value = $(this).val();
+        if (typeof value === "string" && value.trim() !== "") {
+            templates.push(value.trim());
+        }
+    });
+    return templates;
+}
+
 function open_linkifier_edit_form(linkifier_id: number): void {
     const linkifiers_list = realm.realm_linkifiers;
     const linkifier = linkifiers_list.find((linkifier) => linkifier.id === linkifier_id);
@@ -78,11 +104,21 @@ function open_linkifier_edit_form(linkifier_id: number): void {
             .find<HTMLInputElement>("input#linkifier-reverse-template")
             .val()!
             .trim();
-        const data = {pattern, url_template, example_input, reverse_template};
+        const alternative_url_templates = read_alternative_url_templates_from_form($modal);
+        const data = {
+            pattern,
+            url_template,
+            example_input,
+            reverse_template,
+            alternative_url_templates: JSON.stringify(alternative_url_templates),
+        };
         const $pattern_status = $modal.find("#linkifier-pattern-status").expectOne();
         const $template_status = $modal.find("#linkifier-template-status").expectOne();
         const $example_input_status = $modal.find("#linkifier-example-status").expectOne();
         const $reverse_template_status = $modal.find("#linkifier-reverse-status").expectOne();
+        const $alternative_url_templates_status = $modal
+            .find("#linkifier-alternative-url-templates-status")
+            .expectOne();
         const $dialog_error_element = $modal.find("#dialog_error").expectOne();
         const opts = {
             success_continuation() {
@@ -101,6 +137,7 @@ function open_linkifier_edit_form(linkifier_id: number): void {
                         $template_status,
                         $example_input_status,
                         $reverse_template_status,
+                        $alternative_url_templates_status,
                         $dialog_error_element,
                     );
                 } else {
@@ -133,10 +170,10 @@ function open_linkifier_edit_form(linkifier_id: number): void {
             submit_linkifier_form(dialog_widget_id);
         },
         on_shown() {
-            const $pattern_input = $(`#${CSS.escape(dialog_widget_id)}`).find<HTMLInputElement>(
-                "input#linkifier-pattern",
-            );
+            const $modal = $(`#${CSS.escape(dialog_widget_id)}`);
+            const $pattern_input = $modal.find<HTMLInputElement>("input#linkifier-pattern");
             ui_util.place_caret_at_end(util.the($pattern_input));
+            populate_alternative_url_templates($modal, linkifier.alternative_url_templates ?? []);
         },
     });
 }
@@ -156,6 +193,9 @@ function open_linkifier_add_form(): void {
         const $template_status = $modal.find("#linkifier-template-status").expectOne();
         const $example_input_status = $modal.find("#linkifier-example-status").expectOne();
         const $reverse_template_status = $modal.find("#linkifier-reverse-status").expectOne();
+        const $alternative_url_templates_status = $modal
+            .find("#linkifier-alternative-url-templates-status")
+            .expectOne();
         const $add_linkifier_button = $modal.find(".dialog_submit_button").expectOne();
         $add_linkifier_button.prop("disabled", true);
         $linkifier_status.hide();
@@ -163,6 +203,7 @@ function open_linkifier_add_form(): void {
         $template_status.hide();
         $example_input_status.hide();
         $reverse_template_status.hide();
+        $alternative_url_templates_status.hide();
 
         const pattern = $modal.find<HTMLInputElement>("input#linkifier-pattern").val()!.trim();
         const url_template = $modal
@@ -190,9 +231,17 @@ function open_linkifier_add_form(): void {
             return;
         }
 
+        const alternative_url_templates = read_alternative_url_templates_from_form($modal);
+
         void channel.post({
             url: "/json/realm/filters",
-            data: {pattern, url_template, example_input, reverse_template},
+            data: {
+                pattern,
+                url_template,
+                example_input,
+                reverse_template,
+                alternative_url_templates: JSON.stringify(alternative_url_templates),
+            },
             success() {
                 $add_linkifier_button.prop("disabled", false);
                 dialog_widget.close();
@@ -213,6 +262,7 @@ function open_linkifier_add_form(): void {
                         $template_status,
                         $example_input_status,
                         $reverse_template_status,
+                        $alternative_url_templates_status,
                         $linkifier_status,
                     );
                 }
@@ -231,10 +281,12 @@ function open_linkifier_add_form(): void {
             submit_linkifier_form(dialog_widget_id);
         },
         on_shown() {
-            const $pattern_input = $(`#${CSS.escape(dialog_widget_id)}`).find<HTMLInputElement>(
-                "input#linkifier-pattern",
-            );
+            const $modal = $(`#${CSS.escape(dialog_widget_id)}`);
+            const $pattern_input = $modal.find<HTMLInputElement>("input#linkifier-pattern");
             ui_util.place_caret_at_end(util.the($pattern_input));
+            // Add one empty row for alternative URL templates.
+            const $container = $modal.find("#linkifier-alternative-url-templates");
+            add_alternative_url_template_row($container);
         },
     });
 }
@@ -258,6 +310,7 @@ function handle_linkifier_api_error(
     template_status: JQuery,
     example_input_status: JQuery,
     reverse_template_status: JQuery,
+    alternative_url_templates_status: JQuery,
     linkifier_status: JQuery,
 ): void {
     // The endpoint uses the Django ValidationError system for error
@@ -291,6 +344,16 @@ function handle_linkifier_api_error(
             reverse_template_status,
         );
     }
+    if (errors["alternative_url_templates"] !== undefined) {
+        ui_report.error(
+            $t_html(
+                {defaultMessage: "Failed: {error}"},
+                {error: errors["alternative_url_templates"][0]},
+            ),
+            undefined,
+            alternative_url_templates_status,
+        );
+    }
     if (errors["__all__"] !== undefined) {
         ui_report.error(
             $t_html({defaultMessage: "Failed: {error}"}, {error: errors["__all__"][0]}),
@@ -320,6 +383,7 @@ export function populate_linkifiers(linkifiers_data: RealmLinkifiers): void {
                     pattern: linkifier.pattern,
                     url_template: linkifier.url_template,
                     reverse_template: linkifier.reverse_template ?? "",
+                    alternative_url_templates: linkifier.alternative_url_templates ?? [],
                     id: linkifier.id,
                 },
                 can_modify: current_user.is_admin,
@@ -335,7 +399,10 @@ export function populate_linkifiers(linkifiers_data: RealmLinkifiers): void {
                     item.pattern.toLowerCase().includes(value) ||
                     item.url_template.toLowerCase().includes(value) ||
                     (item.example_input ?? "").toLowerCase().includes(value) ||
-                    (item.reverse_template ?? "").toLowerCase().includes(value)
+                    (item.reverse_template ?? "").toLowerCase().includes(value) ||
+                    (item.alternative_url_templates ?? []).some((template) =>
+                        template.toLowerCase().includes(value),
+                    )
                 );
             },
             onupdate() {
@@ -399,5 +466,24 @@ export function build_page(): void {
         e.preventDefault();
         e.stopPropagation();
         open_linkifier_add_form();
+    });
+
+    // Auto-add a new empty row when user types in the last alternative
+    // URL template row, following the same pattern as profile field choices.
+    $(document).on(
+        "input",
+        "#linkifier-alternative-url-templates .alternative-url-template-row input",
+        function () {
+            const $row = $(this).closest(".alternative-url-template-row");
+            if ($row.next().hasClass("alternative-url-template-row")) {
+                return;
+            }
+            const $container = $row.parent();
+            add_alternative_url_template_row($container);
+        },
+    );
+
+    $(document).on("click", ".delete-alternative-url-template", function () {
+        $(this).closest(".alternative-url-template-row").remove();
     });
 }

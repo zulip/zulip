@@ -16,6 +16,11 @@
         <span class="linkifier_url_template">{{url_template}}</span>
     </td>
     <td>
+        {{#each alternative_url_templates}}
+            <span class="linkifier_alternative_url_template">{{this}}</span>
+        {{/each}}
+    </td>
+    <td>
         <span class="linkifier_reverse_template">{{reverse_template}}</span>
     </td>
     {{#if ../can_modify}}

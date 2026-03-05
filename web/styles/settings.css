@@ -1051,6 +1051,25 @@ input[type="checkbox"] {
     td:first-child {
         white-space: nowrap;
     }
+
+    .linkifier_alternative_url_template {
+        display: block;
+    }
+}
+
+.alternative-url-template-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+
+    & input {
+        flex: 1;
+    }
+
+    &:last-child .delete-alternative-url-template {
+        visibility: hidden;
+    }
 }
 
 #organization-permissions {

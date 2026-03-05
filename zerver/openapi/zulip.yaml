@@ -15774,6 +15774,7 @@ paths:
                   type: array
                   items:
                     type: string
+                  example: ["https://github.com/zulip/zulip/pull/{id}"]
                   description: |
                     An array of additional [RFC 6570][rfc6570] compliant URL
                     template strings that are used for reverse linkification
@@ -15889,6 +15890,7 @@ paths:
                   type: array
                   items:
                     type: string
+                  example: ["https://github.com/zulip/zulip/pull/{id}"]
                   description: |
                     An array of additional [RFC 6570][rfc6570] compliant URL
                     template strings that are used for reverse linkification
