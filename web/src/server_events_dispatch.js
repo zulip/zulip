@@ -1141,11 +1141,6 @@ export function dispatch_normal_event(event) {
                             message_details: event.message_details,
                         });
                     }
-                    message_events.update_views_filtered_on_message_property(
-                        event.messages,
-                        "is-unread",
-                        new_value,
-                    );
                     break;
             }
             break;

@@ -70,6 +70,7 @@ import * as markdown from "./markdown.ts";
 import * as markdown_config from "./markdown_config.ts";
 import * as message_actions_popover from "./message_actions_popover.ts";
 import * as message_edit_history from "./message_edit_history.ts";
+import * as message_events from "./message_events.ts";
 import * as message_fetch from "./message_fetch.ts";
 import * as message_list_hover from "./message_list_hover.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
@@ -677,7 +678,9 @@ export async function initialize_everything(state_data) {
             message_view.narrow_by_topic(message_id, {trigger: "compose_notification"});
         },
     });
-    unread_ops.initialize();
+    unread_ops.initialize({
+        update_views_callback: message_events.update_views_filtered_on_message_property,
+    });
     gear_menu.initialize();
     navbar_help_menu.initialize();
     gif_picker_ui.initialize();

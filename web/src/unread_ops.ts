@@ -34,6 +34,13 @@ import * as watchdog from "./watchdog.ts";
 let update_read_flag_banner_displayed = false;
 let unsubscribed_ignored_channels: number[] = [];
 
+// Late-bound reference to message_events.update_views_filtered_on_message_property,
+// injected via initialize() to avoid a circular import
+// (unread_ops → message_events → message_events_util → unread_ops).
+let update_views_filtered_on_message_property:
+    | ((ids: number[], prop: string, value: boolean) => void)
+    | undefined;
+
 // We might want to use a slightly smaller batch for the first
 // request, because empirically, the first request can be
 // significantly slower, likely due to the database warming up its
@@ -630,6 +637,7 @@ export function process_read_messages_event(message_ids: number[]): void {
     }
 
     unread_ui.update_unread_counts();
+    update_views_filtered_on_message_property?.(message_ids, "is-unread", false);
 }
 
 export function process_unread_messages_event({
@@ -716,6 +724,7 @@ export function process_unread_messages_event({
     }
 
     unread_ui.update_unread_counts(true);
+    update_views_filtered_on_message_property?.(message_ids, "is-unread", true);
 }
 
 // Takes a list of messages and marks them as read.
@@ -872,7 +881,13 @@ export function viewport_is_visible_and_focused(): boolean {
     return true;
 }
 
-export function initialize(): void {
+export function initialize({
+    update_views_callback,
+}: {
+    update_views_callback: (ids: number[], prop: string, value: boolean) => void;
+}): void {
+    update_views_filtered_on_message_property = update_views_callback;
+
     $(window)
         .on("focus", () => {
             window_focused = true;
