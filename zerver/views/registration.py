@@ -115,6 +115,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.constants import MAX_LANGUAGE_ID_LENGTH
+from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.prereg_users import RealmCreationStatus
 from zerver.models.realm_audit_logs import AuditLogEventType, RealmAuditLog
 from zerver.models.realms import (
@@ -123,7 +124,6 @@ from zerver.models.realms import (
     EmailContainsPlusError,
     get_org_type_display_name,
     get_realm,
-    name_changes_disabled,
 )
 from zerver.models.streams import get_default_stream_groups
 from zerver.models.users import (
@@ -263,6 +263,20 @@ def get_selected_realm_default_language_name(
         return None
 
     return get_language_name(prereg_realm.default_language)
+
+
+def name_changes_disallowed_for_registration(realm: Realm | None) -> bool:
+    if settings.NAME_CHANGES_DISABLED:
+        return True
+
+    if realm is None:
+        # realm is None when a new realm is being created.
+        return False
+
+    return (
+        get_realm_system_groups_name_dict(realm.id).get(realm.can_change_own_name_group_id)
+        != SystemGroups.EVERYONE
+    )
 
 
 @add_google_analytics
@@ -641,7 +655,7 @@ def registration_helper(
             )
     else:
         postdata = request.POST.copy()
-        if name_changes_disabled(realm):
+        if name_changes_disallowed_for_registration(realm):
             # If we populate profile information via LDAP and we have a
             # verified name from you on file, use that. Otherwise, fall
             # back to the full name in the request.
@@ -914,7 +928,7 @@ def registration_helper(
         "email": email,
         "key": key,
         "full_name": request.session.get("authenticated_full_name", None),
-        "lock_name": name_validated and name_changes_disabled(realm),
+        "lock_name": name_validated and name_changes_disallowed_for_registration(realm),
         # password_auth_enabled is normally set via our context processor,
         # but for the registration form, there is no logged in user yet, so
         # we have to set it here.
@@ -1624,9 +1638,9 @@ def create_demo_organization(
     else:
         default_language_code = get_browser_language_code(request)
         initial_data = {
-            "realm_default_language": "en"
-            if default_language_code is None
-            else default_language_code,
+            "realm_default_language": (
+                "en" if default_language_code is None else default_language_code
+            ),
         }
         if settings.USING_CAPTCHA and settings.ALTCHA_HMAC_KEY:
             form = CaptchaDemoRegistrationForm(request=request, initial=initial_data)

@@ -433,6 +433,14 @@ class PermissionTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
         old_name = hamlet.full_name
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=iago.realm, is_system_group=True
+        )
+        # Admins can still change any user's name even when own-name changes are
+        # disallowed for everyone else.
+        do_change_realm_permission_group_setting(
+            iago.realm, "can_change_own_name_group", nobody_group, acting_user=None
+        )
         req = dict(full_name=new_name)
         result = self.client_patch(f"/json/users/{hamlet.id}", req)
         self.assert_json_success(result)
