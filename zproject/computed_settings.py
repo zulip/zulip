@@ -442,13 +442,6 @@ CACHES: dict[str, dict[str, object]] = {
 # Merge any local overrides with the default rules.
 RATE_LIMITING_RULES = {**DEFAULT_RATE_LIMITING_RULES, **RATE_LIMITING_RULES}
 
-# List of domains that, when applied to a request in a Tornado process,
-# will be handled with the separate in-memory rate limiting backend for Tornado,
-# which has its own buckets separate from the default backend.
-# In principle, it should be impossible to make requests to tornado that fall into
-# other domains, but we use this list as an extra precaution.
-RATE_LIMITING_DOMAINS_FOR_TORNADO = ["api_by_user", "api_by_ip"]
-
 # These ratelimits are also documented publicly at
 # https://zulip.readthedocs.io/en/latest/production/email-gateway.html
 RATE_LIMITING_MIRROR_REALM_RULES = [

@@ -11,7 +11,6 @@ from zerver.lib.rate_limiter import (
     RateLimitedUser,
     RateLimiterBackend,
     RedisRateLimiterBackend,
-    TornadoInMemoryRateLimiterBackend,
     readable_expiry_string_for_html,
     readable_expiry_string_for_plaintext,
 )
@@ -185,57 +184,6 @@ class RedisRateLimiterBackendTest(RateLimiterBackendBase):
 
         obj.block_access(1)
         self.make_request(obj, expect_ratelimited=True, verify_api_calls_left=False)
-
-
-class TornadoInMemoryRateLimiterBackendTest(RateLimiterBackendBase):
-    backend = TornadoInMemoryRateLimiterBackend
-
-    @override
-    def api_calls_left_from_history(
-        self, history: list[float], max_window: int, max_calls: int, now: float
-    ) -> tuple[int, float]:
-        reset_time = 0.0
-        for timestamp in history:
-            reset_time = max(reset_time, timestamp) + (max_window / max_calls)
-
-        calls_left = (now + max_window - reset_time) * max_calls // max_window
-        calls_left = int(calls_left)
-
-        return calls_left, reset_time - now
-
-    def test_used_in_tornado(self) -> None:
-        user_profile = self.example_user("hamlet")
-        ipv4_addr = "192.168.0.123"
-        ipv6_addr = "2002:DB8::21f:5bff:febf:ce22:1111"
-
-        with self.settings(RUNNING_INSIDE_TORNADO=True):
-            user_obj = RateLimitedUser(user_profile, domain="api_by_user")
-            ipv4_obj = RateLimitedIPAddr(ipv4_addr, domain="api_by_ip")
-            ipv6_obj = RateLimitedIPAddr(ipv6_addr, domain="api_by_ip")
-
-        self.assertEqual(user_obj.backend, TornadoInMemoryRateLimiterBackend)
-        self.assertEqual(ipv4_obj.backend, TornadoInMemoryRateLimiterBackend)
-        self.assertEqual(ipv6_obj.backend, TornadoInMemoryRateLimiterBackend)
-
-        with self.settings(RUNNING_INSIDE_TORNADO=True):
-            user_obj = RateLimitedUser(user_profile, domain="some_domain")
-            ipv4_obj = RateLimitedIPAddr(ipv4_addr, domain="some_domain")
-            ipv6_obj = RateLimitedIPAddr(ipv6_addr, domain="some_domain")
-
-        self.assertEqual(user_obj.backend, RedisRateLimiterBackend)
-        self.assertEqual(ipv4_obj.backend, RedisRateLimiterBackend)
-        self.assertEqual(ipv6_obj.backend, RedisRateLimiterBackend)
-
-    def test_block_access(self) -> None:
-        obj = self.create_object("test", [(2, 5)])
-        start_time = time.time()
-
-        obj.block_access(1)
-        with mock.patch("time.time", return_value=start_time):
-            self.make_request(obj, expect_ratelimited=True, verify_api_calls_left=False)
-
-        with mock.patch("time.time", return_value=start_time + 1.01):
-            self.make_request(obj, expect_ratelimited=False, verify_api_calls_left=False)
 
 
 class RateLimitedObjectsTest(ZulipTestCase):
