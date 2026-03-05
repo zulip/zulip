@@ -632,7 +632,7 @@ run_test("emoji", ({override}) => {
     const $content = get_content_element();
     const $emoji = $.create("emoji-stub");
     $emoji.attr("title", "tada");
-    $emoji.set_contents({unwrap() {}});
+    $emoji.set_contents([]);
     $content.set_find_results(".emoji", $emoji);
     override(user_settings, "emojiset", "text");
 
