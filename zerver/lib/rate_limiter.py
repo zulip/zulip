@@ -3,10 +3,11 @@ import time
 from abc import ABC, abstractmethod
 from datetime import timedelta
 from ipaddress import IPv6Network, ip_network
-from typing import Optional, cast
+from pathlib import Path
+from typing import Optional
 
 import orjson
-import redis
+import redis.commands.core
 from circuitbreaker import CircuitBreakerError, circuit
 from django.conf import settings
 from django.http import HttpRequest
@@ -21,16 +22,12 @@ from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.redis_utils import get_redis_client
 from zerver.models import UserProfile
 
-# Implement a rate-limiting scheme inspired by the one described here, but heavily modified
-# https://www.domaintools.com/resources/blog/rate-limiting-with-redis
+# Rate limiting using the GCRA (Generic Cell Rate Algorithm), a leaky-bucket
+# variant that stores one TAT (Theoretical Arrival Time) per rule in Redis.
 
 client = get_redis_client()
 
 logger = logging.getLogger(__name__)
-
-
-class RateLimiterLockingError(Exception):
-    pass
 
 
 class RateLimitedObject(ABC):
@@ -349,18 +346,30 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
 
 
 class RedisRateLimiterBackend(RateLimiterBackend):
+    _script: redis.commands.core.Script | None = None
+
+    # When True, pass time.time() to the Lua script instead of using
+    # Redis TIME.  This lets tests control the rate-limiting clock via
+    # mock.patch("time.time") or time_machine without wall-clock sleeps.
+    _testing_clock: bool = settings.TEST_SUITE
+
     @classmethod
-    def get_keys(cls, entity_key: str) -> list[str]:
-        return [
-            f"{redis_utils.REDIS_KEY_PREFIX}ratelimit:{entity_key}:{keytype}"
-            for keytype in ["list", "zset", "block"]
-        ]
+    def get_keys(cls, entity_key: str) -> tuple[str, str]:
+        prefix = f"{redis_utils.REDIS_KEY_PREFIX}ratelimit:{entity_key}"
+        return f"{prefix}:gcra", f"{prefix}:block"
+
+    @classmethod
+    def _get_script(cls) -> redis.commands.core.Script:
+        if cls._script is None:
+            script_text = Path(__file__).with_suffix(".lua").read_text()
+            cls._script = client.register_script(script_text)
+        return cls._script
 
     @classmethod
     @override
     def block_access(cls, entity_key: str, seconds: int) -> None:
         """Manually blocks an entity for the desired number of seconds"""
-        _, _, blocking_key = cls.get_keys(entity_key)
+        _, blocking_key = cls.get_keys(entity_key)
         with client.pipeline() as pipe:
             pipe.set(blocking_key, 1)
             pipe.expire(blocking_key, seconds)
@@ -369,7 +378,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
     @classmethod
     @override
     def unblock_access(cls, entity_key: str) -> None:
-        _, _, blocking_key = cls.get_keys(entity_key)
+        _, blocking_key = cls.get_keys(entity_key)
         client.delete(blocking_key)
 
     @classmethod
@@ -383,155 +392,48 @@ class RedisRateLimiterBackend(RateLimiterBackend):
     def get_api_calls_left(
         cls, entity_key: str, range_seconds: int, max_calls: int
     ) -> tuple[int, float]:
-        list_key, set_key, _ = cls.get_keys(entity_key)
-        # Count the number of values in our sorted set
-        # that are between now and the cutoff
-        now = time.time()
-        boundary = now - range_seconds
+        gcra_key, _ = cls.get_keys(entity_key)
+        if cls._testing_clock:
+            now = time.time()
+        else:  # nocoverage
+            redis_time = client.time()
+            now = redis_time[0] + redis_time[1] / 1_000_000
+        field = f"{range_seconds}:{max_calls}"
+        stored_tat = client.hget(gcra_key, field)
+        if stored_tat is None:
+            return max_calls, 0
 
-        with client.pipeline() as pipe:
-            # Count how many API calls in our range have already been made
-            pipe.zcount(set_key, boundary, now)
-            # Get the newest call so we can calculate when the ratelimit
-            # will reset to 0
-            pipe.lindex(list_key, 0)
-
-            results = pipe.execute()
-
-        count: int = results[0]
-        newest_call: bytes | None = results[1]
-
-        calls_left = max_calls - count
-        if newest_call is not None:
-            time_reset = now + (range_seconds - (now - float(newest_call)))
-        else:
-            time_reset = now
-
-        return calls_left, time_reset - now
-
-    @classmethod
-    def is_ratelimited(cls, entity_key: str, rules: list[tuple[int, int]]) -> tuple[bool, float]:
-        """Returns a tuple of (rate_limited, time_till_free)"""
-        assert rules
-        list_key, _set_key, blocking_key = cls.get_keys(entity_key)
-
-        # Go through the rules from shortest to longest,
-        # seeing if this user has violated any of them. First
-        # get the timestamps for each nth items
-        with client.pipeline() as pipe:
-            for _, request_count in rules:
-                pipe.lindex(list_key, request_count - 1)  # 0-indexed list
-
-            # Get blocking info
-            pipe.get(blocking_key)
-            pipe.ttl(blocking_key)
-
-            rule_timestamps: list[bytes | None] = pipe.execute()
-
-        # Check if there is a manual block on this API key
-        blocking_ttl_b = rule_timestamps.pop()
-        key_blocked = rule_timestamps.pop()
-
-        if key_blocked is not None:
-            # We are manually blocked. Report for how much longer we will be
-            if blocking_ttl_b is None:  # nocoverage # defensive code, this should never happen
-                blocking_ttl = 0.5
-            else:
-                blocking_ttl = int(blocking_ttl_b)
-            return True, blocking_ttl
-
-        now = time.time()
-        for timestamp, (range_seconds, num_requests) in zip(rule_timestamps, rules, strict=False):
-            # Check if the nth timestamp is newer than the associated rule. If so,
-            # it means we've hit our limit for this rule
-            if timestamp is None:
-                continue
-
-            boundary = float(timestamp) + range_seconds
-            if boundary >= now:
-                free = boundary - now
-                return True, free
-
-        return False, 0.0
-
-    @classmethod
-    def incr_ratelimit(cls, entity_key: str, max_api_calls: int, max_api_window: int) -> None:
-        """Increases the rate-limit for the specified entity"""
-        list_key, set_key, _ = cls.get_keys(entity_key)
-        now = time.time()
-
-        # Start Redis transaction
-        with client.pipeline() as pipe:
-            count = 0
-            while True:
-                try:
-                    # To avoid a race condition between getting the element we might trim from our list
-                    # and removing it from our associated set, we abort this whole transaction if
-                    # another agent manages to change our list out from under us
-                    # When watching a value, the pipeline is set to Immediate mode
-                    pipe.watch(list_key)
-
-                    # Get the last elem that we'll trim (so we can remove it from our sorted set)
-                    last_val = cast(  # mypy doesn’t know the pipe is in immediate mode
-                        bytes | None, pipe.lindex(list_key, max_api_calls - 1)
-                    )
-
-                    # Restart buffered execution
-                    pipe.multi()
-
-                    # Add this timestamp to our list
-                    pipe.lpush(list_key, now)
-
-                    # Trim our list to the oldest rule we have
-                    pipe.ltrim(list_key, 0, max_api_calls - 1)
-
-                    # Add our new value to the sorted set that we keep
-                    # We need to put the score and val both as timestamp,
-                    # as we sort by score but remove by value
-                    pipe.zadd(set_key, {str(now): now})
-
-                    # Remove the trimmed value from our sorted set, if there was one
-                    if last_val is not None:
-                        pipe.zrem(set_key, last_val)
-
-                    # Set the TTL for our keys as well
-                    api_window = max_api_window
-                    pipe.expire(list_key, api_window)
-                    pipe.expire(set_key, api_window)
-
-                    pipe.execute()
-
-                    # If no exception was raised in the execution, there were no transaction conflicts
-                    break
-                except redis.WatchError:  # nocoverage # Ideally we'd have a test for this.
-                    if count > 10:
-                        raise RateLimiterLockingError
-                    count += 1
-
-                    continue
+        tat = float(stored_tat)
+        calls_remaining = max(0, int((now + range_seconds - tat) * max_calls // range_seconds))
+        secs_to_reset = tat - now
+        return calls_remaining, secs_to_reset
 
     @classmethod
     @override
     def rate_limit_entity(
         cls, entity_key: str, rules: list[tuple[int, int]], max_api_calls: int, max_api_window: int
     ) -> tuple[bool, float, int, float]:
-        ratelimited, time = cls.is_ratelimited(entity_key, rules)
+        assert rules
+        gcra_key, block_key = cls.get_keys(entity_key)
 
-        if not ratelimited:
-            try:
-                cls.incr_ratelimit(entity_key, max_api_calls, max_api_window)
-            except RateLimiterLockingError:
-                logger.warning("Deadlock trying to incr_ratelimit for %s", entity_key)
-                # rate-limit users who are hitting the API so hard we can't update our stats.
-                ratelimited = True
+        # Build args: num_rules, w1, l1, w2, l2, ...[, now]
+        # The Lua script uses Redis TIME internally for clock
+        # consistency; tests may pass a trailing timestamp override.
+        args: list[float | int] = [len(rules)]
+        for window, limit in rules:
+            args.append(window)
+            args.append(limit)
+        if cls._testing_clock:
+            args.append(time.time())
 
-        if ratelimited:
-            return True, time, 0, 0.0
+        result = cls._get_script()(keys=[block_key, gcra_key], args=args)
 
-        calls_remaining, secs_to_reset = cls.get_api_calls_left(
-            entity_key, max_api_window, max_api_calls
-        )
-        return False, 0.0, calls_remaining, secs_to_reset
+        ratelimited = result[0] == b"1"
+        secs_to_freedom = float(result[1])
+        calls_remaining = int(result[2])
+        secs_to_reset = float(result[3])
+
+        return ratelimited, secs_to_freedom, calls_remaining, secs_to_reset
 
 
 class RateLimitResult:
