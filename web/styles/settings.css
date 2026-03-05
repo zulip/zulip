@@ -1065,6 +1065,21 @@ input[type="checkbox"] {
     }
 }
 
+.alternative-url-template-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+
+    & input {
+        flex: 1;
+    }
+
+    &:last-child .delete-alternative-url-template {
+        visibility: hidden;
+    }
+}
+
 #organization-permissions {
     .dropdown-widget-button {
         color: var(--color-text-default);
