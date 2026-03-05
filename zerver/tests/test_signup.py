@@ -987,7 +987,7 @@ class LoginTest(ZulipTestCase):
             # We're over the allowed limit, so the next attempt, even with the correct
             # password, will get blocked.
             result = self.login_with_return(email)
-            self.assert_in_success_response(["Try again in 10 seconds"], result)
+            self.assert_in_success_response(["Try again in 5 seconds"], result)
 
         # After time passes, we should be able to log in.
         with patch("time.time", return_value=start_time + 11):
