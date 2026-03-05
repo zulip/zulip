@@ -1907,6 +1907,7 @@ class MarkdownLinkifierTest(ZulipTestCase):
                     "url_template": "whatever",
                     "example_input": "whatever",
                     "reverse_template": "whatever",
+                    "alternative_url_templates": [],
                 }
             ],
         )
@@ -1925,6 +1926,7 @@ class MarkdownLinkifierTest(ZulipTestCase):
                         "url_template": "whatever",
                         "example_input": "whatever",
                         "reverse_template": "whatever",
+                        "alternative_url_templates": [],
                     }
                 ],
             )

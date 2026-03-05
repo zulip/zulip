@@ -1112,6 +1112,7 @@ class TestRealmAuditLog(ZulipTestCase):
             id=linkifier_id,
             example_input="#1",
             reverse_template="#{id}",
+            alternative_url_templates=[],
         )
         expected_extra_data = {
             "realm_linkifiers": [*initial_linkifiers, added_linkfier],
@@ -1144,6 +1145,7 @@ class TestRealmAuditLog(ZulipTestCase):
             id=linkifier_id,
             example_input="#15",
             reverse_template="#{id}",
+            alternative_url_templates=[],
         )
         expected_extra_data = {
             "realm_linkifiers": [*initial_linkifiers, changed_linkifier],

@@ -72,6 +72,7 @@ def do_add_linkifier(
                 id=linkifier.id,
                 example_input=example_input,
                 reverse_template=reverse_template,
+                alternative_url_templates=[],
             ),
         },
     )
@@ -161,6 +162,7 @@ def do_update_linkifier(
                 id=linkifier.id,
                 example_input=linkifier.example_input,
                 reverse_template=linkifier.reverse_template,
+                alternative_url_templates=[],
             ),
         },
     )
