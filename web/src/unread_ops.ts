@@ -643,8 +643,9 @@ function handle_mark_unread_from_here_error(
     let parsed;
     if (xhr.readyState === 0) {
         // Client is offline or request was cancelled.
-        // Keep the local echo in place; the user can retry
-        // when back online.
+        // Keep the local echo in place and retry the server
+        // request when connectivity is restored.
+        window.addEventListener("online", retry, {once: true});
     } else if (
         (parsed = z
             .object({code: z.literal("RATE_LIMIT_HIT"), ["retry-after"]: z.number()})

@@ -266,9 +266,20 @@ run_test("do_mark_unread_by_ids - no rollback when offline", ({override}) => {
     assert.equal(message_store.get(80).unread, true);
 
     // Simulate offline error (readyState === 0).
+    let online_callback;
+    window.addEventListener = (event, callback, options) => {
+        assert.equal(event, "online");
+        assert.deepEqual(options, {once: true});
+        online_callback = callback;
+    };
     channel_post_opts.error({readyState: 0});
 
     // Local echo should be kept in place (not rolled back).
     assert.equal(message_store.get(80).unread, true);
     assert.deepEqual(unread.get_unread_message_ids([80]), [80]);
+
+    // Verify that the retry is registered and fires on reconnect.
+    assert.ok(online_callback);
+    online_callback();
+    assert.ok(channel_post_opts);
 });
