@@ -1023,6 +1023,9 @@
     /* margin on either side to let the border of
        .edit-content-container show through. */
     margin: 0 1px;
+    /* Display before Save/Cancel visually, even though
+       it comes after them in the DOM (for Tab order). */
+    order: -1;
 }
 
 .message_edit_save .loader {
@@ -1072,6 +1075,12 @@
     }
 
     .edit-controls {
+        /* Use flex column layout so that we can use `order`
+           to keep the formatting buttons row visually above
+           the Save/Cancel buttons, while the DOM order has
+           Save/Cancel first for correct Tab key navigation. */
+        display: flex;
+        flex-direction: column;
         margin-left: 0;
         margin-top: 0;
     }
