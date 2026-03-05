@@ -18,13 +18,6 @@ from zerver.forms import LoggingSetPasswordForm
 from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
 from zerver.lib.rest import rest_path
 from zerver.lib.url_redirects import DOCUMENTATION_REDIRECTS, get_integration_category_redirects
-from zerver.tornado.views import (
-    cleanup_event_queue,
-    get_events,
-    get_events_internal,
-    notify,
-    web_reload_clients,
-)
 from zerver.views.alert_words import add_alert_words, list_alert_words, remove_alert_words
 from zerver.views.antispam import get_challenge
 from zerver.views.attachments import list_by_user, remove
@@ -295,8 +288,7 @@ INTEGRATION_CATEGORY_REDIRECT_PATHS = [
 
 # NB: There are several other pieces of code which route requests by URL:
 #
-#   - runtornado.py has its own URL list for Tornado views.  See the
-#     invocation of web.Application in that file.
+#   - tornado_urls.py has its own URL list for Tornado views.
 #
 #   - The nginx config knows which URLs to route to Django or Tornado.
 #
@@ -593,12 +585,6 @@ v1_api_and_json_patterns = [
     rest_path("users/me/muted_users/<int:muted_user_id>", POST=mute_user, DELETE=unmute_user),
     # used to register for an event queue in tornado
     rest_path("register", POST=(events_register_backend, {"allow_anonymous_user_web"})),
-    # events -> zerver.tornado.views
-    rest_path(
-        "events",
-        GET=(get_events, {"narrow_user_session_cache"}),
-        DELETE=(cleanup_event_queue, {"narrow_user_session_cache"}),
-    ),
     # Used to generate a Zoom video call URL
     rest_path("calls/zoom/create", POST=make_zoom_video_call),
     # Used to generate a BigBlueButton video call URL
@@ -896,14 +882,17 @@ for app_name in settings.EXTRA_INSTALLED_APPS:
         urls += [path("", include(f"{app_name}.urls"))]
         i18n_urls += import_string(f"{app_name}.urls.i18n_urlpatterns")
 
-# Used internally for communication between command-line, tusd, Django,
-# and Tornado processes
+# Used internally for communication between tusd and Django,
 urls += [
-    path("api/internal/notify_tornado", notify),
     path("api/internal/tusd", handle_tusd_hook),
-    path("api/internal/web_reload_clients", web_reload_clients),
-    path("api/v1/events/internal", get_events_internal),
 ]
+
+if settings.TEST_SUITE:
+    # Tests talk directly to Tornado APIs via the Django server, so
+    # include those URLs for convenience
+    urls += [
+        path("", include("zproject.tornado_urls")),
+    ]
 
 # Python Social Auth
 

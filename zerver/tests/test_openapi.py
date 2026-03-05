@@ -558,6 +558,7 @@ so maybe we shouldn't include it in pending_endpoints.
         """
 
         from zilencer import urls as zilencer_urlconf
+        from zproject import tornado_urls as tornado_urlconf
         from zproject import urls as urlconf
 
         # We loop through all the API patterns, looking in particular
@@ -567,6 +568,7 @@ so maybe we shouldn't include it in pending_endpoints.
             urlconf.v1_api_and_json_patterns
             + urlconf.v1_api_mobile_patterns
             + zilencer_urlconf.v1_api_bouncer_patterns
+            + tornado_urlconf.api_and_json_patterns
         ):
             methods_endpoints: dict[str, Any] = {}
             if p.callback not in [rest_dispatch, remote_server_dispatch]:
