@@ -84,7 +84,6 @@ class FakeElementState {
     event_handlers = new Map();
     delegated_event_handlers = new Map();
     is_focused = false;
-    $jquery_contents = undefined;
     jquery_data = new Map();
     jquery_next_results = new Map();
     jquery_prev_results = new Map();
@@ -320,14 +319,7 @@ function dom_args(args) {
             );
         }
         contents() {
-            assert.equal(this.length, 1);
-            const state = fake_element_state.get(this[0]);
-            if (state.$jquery_contents === undefined) {
-                throw new Error(
-                    `You need to call $(${JSON.stringify(state.selector)}).set_contents(...)`,
-                );
-            }
-            return state.$jquery_contents;
+            return new exports.FakeJQuery([...this].flatMap((element) => [...element.childNodes]));
         }
         css(property, ...args) {
             if (args.length === 0 && typeof property === "string") {
@@ -736,9 +728,9 @@ function dom_args(args) {
             assert.equal(this.length, 1);
             fake_element_state.get(this[0]).closest_results.set(selector, elements[0] ?? null);
         }
-        set_contents($contents) {
+        set_contents(nodes) {
             assert.equal(this.length, 1);
-            fake_element_state.get(this[0]).$jquery_contents = $contents;
+            this[0].childNodes = [...nodes];
         }
         set_find_results(selector, elements) {
             assert.equal(this.length, 1);
@@ -846,6 +838,13 @@ function dom_args(args) {
                 } else if (event.type === "blur" || event.type === "focusout") {
                     state.is_focused = false;
                 }
+            }
+            return this;
+        }
+        unwrap(...args) {
+            assert.equal(args.length, 0, "zjquery does not support this unwrap() call");
+            for (const element of this) {
+                element.parentNode.replaceWith(element.childNodes);
             }
             return this;
         }

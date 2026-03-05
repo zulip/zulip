@@ -354,7 +354,7 @@ test("message_is_notifiable", ({override}) => {
 test("basic_notifications", () => {
     const $emoji_stub = $.create("emoji-stub");
     $emoji_stub.set_matches("img", false);
-    $emoji_stub.set_contents({unwrap() {}});
+    $emoji_stub.set_contents([]);
     const $katex_stub = $.set_results("katex-stub", []);
     $("<div>").set_find_results(".emoji", $emoji_stub);
     $("<div>").set_find_results("span.katex", $katex_stub);
