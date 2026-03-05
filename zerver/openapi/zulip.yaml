@@ -4042,6 +4042,19 @@ paths:
                                           `{{ "{{/}}" }}` can be used for literal `{/}` characters.
 
                                           **Changes**: New in Zulip 12.0 (feature level 471).
+                                      alternative_url_templates:
+                                        type: array
+                                        items:
+                                          type: string
+                                        description: |
+                                          An array of additional [RFC 6570][rfc6570] compliant URL
+                                          template strings that are used for reverse linkification
+                                          (converting pasted URLs to linkifier pattern text). These
+                                          templates have no effect on forward linkification.
+
+                                          [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
+
+                                          **Changes**: New in Zulip 12.0 (feature level e2b257).
                               example:
                                 {
                                   "type": "realm_linkifiers",
@@ -4053,6 +4066,10 @@ paths:
                                         "id": 1,
                                         "example_input": "#1234",
                                         "reverse_template": "#{id}",
+                                        "alternative_url_templates":
+                                          [
+                                            "https://realm.com/my_realm_filter/issue/{id}",
+                                          ],
                                       },
                                     ],
                                   "id": 0,
@@ -15655,6 +15672,19 @@ paths:
                                 `{{ "{{/}}" }}` can be used for literal `{/}` characters.
 
                                 **Changes**: New in Zulip 12.0 (feature level 471).
+                            alternative_url_templates:
+                              type: array
+                              items:
+                                type: string
+                              description: |
+                                An array of additional [RFC 6570][rfc6570] compliant URL
+                                template strings that are used for reverse linkification
+                                (converting pasted URLs to linkifier pattern text). These
+                                templates have no effect on forward linkification.
+
+                                [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
+
+                                **Changes**: New in Zulip 12.0 (feature level e2b257).
                     example:
                       {
                         "msg": "",
@@ -15666,6 +15696,8 @@ paths:
                               "id": 1,
                               "example_input": "#1234",
                               "reverse_template": "#{id}",
+                              "alternative_url_templates":
+                                ["https://github.com/zulip/zulip/pull/{id}"],
                             },
                           ],
                         "result": "success",
@@ -15750,9 +15782,26 @@ paths:
                     back to us.
 
                     **Changes**: New in Zulip 12.0 (feature level 471).
+                alternative_url_templates:
+                  type: array
+                  items:
+                    type: string
+                  example: ["https://github.com/zulip/zulip/pull/{id}"]
+                  description: |
+                    An array of additional [RFC 6570][rfc6570] compliant URL
+                    template strings that are used for reverse linkification
+                    (converting pasted URLs to linkifier pattern text). These
+                    templates have no effect on forward linkification.
+
+                    [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
+
+                    **Changes**: New in Zulip 12.0 (feature level e2b257).
               required:
                 - pattern
                 - url_template
+            encoding:
+              alternative_url_templates:
+                contentType: application/json
       responses:
         "200":
           description: Success.
@@ -15849,9 +15898,26 @@ paths:
                     `{{ "{{/}}" }}` can be used for literal `{/}` characters.
 
                     **Changes**: New in Zulip 12.0 (feature level 471).
+                alternative_url_templates:
+                  type: array
+                  items:
+                    type: string
+                  example: ["https://github.com/zulip/zulip/pull/{id}"]
+                  description: |
+                    An array of additional [RFC 6570][rfc6570] compliant URL
+                    template strings that are used for reverse linkification
+                    (converting pasted URLs to linkifier pattern text). These
+                    templates have no effect on forward linkification.
+
+                    [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
+
+                    **Changes**: New in Zulip 12.0 (feature level e2b257).
               required:
                 - pattern
                 - url_template
+            encoding:
+              alternative_url_templates:
+                contentType: application/json
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
