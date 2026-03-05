@@ -573,6 +573,15 @@
             margin: 0;
         }
     }
+
+    .hidden-remove-button {
+        visibility: visible;
+        transition: opacity 0.3s ease;
+
+        &:focus-visible {
+            opacity: 1;
+        }
+    }
 }
 
 .user-profile-name-heading {
