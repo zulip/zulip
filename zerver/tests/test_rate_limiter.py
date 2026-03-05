@@ -165,11 +165,14 @@ class RedisRateLimiterBackendTest(RateLimiterBackendBase):
     def api_calls_left_from_history(
         self, history: list[float], max_window: int, max_calls: int, now: float
     ) -> tuple[int, float]:
-        latest_timestamp = history[-1]
-        relevant_requests = [t for t in history if t >= now - max_window]
-        relevant_requests_amount = len(relevant_requests)
+        reset_time = 0.0
+        for timestamp in history:
+            reset_time = max(reset_time, timestamp) + (max_window / max_calls)
 
-        return max_calls - relevant_requests_amount, latest_timestamp + max_window - now
+        calls_left = (now + max_window - reset_time) * max_calls // max_window
+        calls_left = int(calls_left)
+
+        return calls_left, reset_time - now
 
     def test_block_access(self) -> None:
         """
