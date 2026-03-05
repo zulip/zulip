@@ -7,6 +7,7 @@ import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 import ZulipIconCircle from "../../../../static/images/logo/zulip-icon-circle.svg";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
+import ImagesAndVideosIntro from "../include/_ImagesAndVideosIntro.mdx";
 import ModifyLinkText from "../include/_ModifyLinkText.mdx";
 import StartComposing from "../include/_StartComposing.mdx";
 
@@ -14,25 +15,22 @@ import AttachmentIcon from "~icons/zulip-icon/attachment";
 import MobileCameraIcon from "~icons/zulip-icon/mobile-camera";
 import MobileImageIcon from "~icons/zulip-icon/mobile-image";
 
-Zulip supports attaching multiple files to messages, including images,
-documents, sound, and video. You can edit the names of the files others see
-after you [upload](#uploading-files) or
-[share](#sharing-files-from-other-mobile-apps) them.
+You can attach multiple files to messages, including images, documents, videos,
+and sound files.
 
-For images and videos, a small preview will be shown directly in the message, if
-there are up to 24 attachments. People reading the message can click on the
-preview to [view the full-size image or video](/help/view-images-and-videos).
+<ImagesAndVideosIntro />
 
 ## Uploading files
+
+Images, videos and sound files you upload will be previewed directly in your
+message. Other files will appear as named links for downloading. You can rename
+files after uploading.
 
 <Tabs>
   <TabItem label="Via drag-and-drop">
     <FlattenedSteps>
       1. Drag and drop one or more files anywhere in the Zulip app,
          whether or not the compose box is open.
-         Zulip will upload the files, and insert named links using
-         [Markdown formatting](/help/format-your-message-using-markdown#links):
-         `[Link text](URL)`.
 
       <ModifyLinkText />
     </FlattenedSteps>
@@ -48,9 +46,6 @@ preview to [view the full-size image or video](/help/view-images-and-videos).
       <StartComposing />
 
       1. Copy and paste one or more files into the compose box.
-         Zulip will upload the files, and insert named links using
-         [Markdown formatting](/help/format-your-message-using-markdown#links):
-         `[Link text](URL)`.
 
       <ModifyLinkText />
     </FlattenedSteps>
@@ -67,9 +62,6 @@ preview to [view the full-size image or video](/help/view-images-and-videos).
 
       1. Click the **paperclip** (<AttachmentIcon />)
          icon at the bottom of the compose box to select one or more files.
-         Zulip will upload the files, and insert named links using
-         [Markdown formatting](/help/format-your-message-using-markdown#links):
-         `[Link text](URL)`.
 
       <ModifyLinkText />
     </FlattenedSteps>
@@ -87,10 +79,7 @@ preview to [view the full-size image or video](/help/view-images-and-videos).
          **paperclip** (<AttachmentIcon />),
          **image** (<MobileImageIcon />),
          or **camera** (<MobileCameraIcon />)
-         button at the bottom of the app to select one or more files. Zulip will
-         upload the files, and insert named links using
-         [Markdown formatting](/help/format-your-message-using-markdown#links):
-         `[Link text](URL)`.
+         button at the bottom of the app to select one or more files.
 
       <ModifyLinkText />
     </FlattenedSteps>
@@ -137,18 +126,6 @@ When pasting a large amount of text, you can convert it to a text file upload.
     </Steps>
   </TabItem>
 </Tabs>
-
-## Named file example
-
-### What you type
-
-```
-[A whale of a good time](/user_uploads/1/46/IPvysqXEtiTG1ZdNBrwAZODi/whale-time.png)
-```
-
-### What it looks like
-
-![Markdown image](../../images/markdown-image.png)
 
 ## File upload limits
 
