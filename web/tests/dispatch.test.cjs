@@ -297,6 +297,9 @@ run_test("attachments", ({override}) => {
 });
 
 run_test("user groups", ({override}) => {
+    const name_change_display_stub = make_stub();
+    override(settings_account, "update_name_change_display", name_change_display_stub.f);
+
     let event = event_fixtures.user_group__add;
     user_groups.add(
         make_user_group({
@@ -400,6 +403,8 @@ run_test("user groups", ({override}) => {
         assert_same(group.name, event.data.name);
         assert_same(group.description, event.data.description);
     }
+
+    assert.equal(name_change_display_stub.num_calls, 4);
 });
 
 run_test("custom profile fields", ({override}) => {

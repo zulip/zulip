@@ -320,7 +320,7 @@ def update_user_backend(
         do_change_user_role(target, role, acting_user=user_profile, notify=True)
 
     if full_name is not None and target.full_name != full_name and full_name.strip() != "":
-        # We don't respect `name_changes_disabled` here because the request
+        # We don't respect `can_change_own_name_group` here because the request
         # is on behalf of the administrator.
         check_change_full_name(target, full_name, user_profile)
 

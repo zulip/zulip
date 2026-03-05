@@ -417,19 +417,26 @@ class RealmTest(ZulipTestCase):
     def test_unauthorized_name_change(self) -> None:
         data = {"full_name": "Sir Hamlet"}
         user_profile = self.example_user("hamlet")
+        old_full_name = user_profile.full_name
         self.login_user(user_profile)
-        do_set_realm_property(user_profile.realm, "name_changes_disabled", True, acting_user=None)
+        admin_group = NamedUserGroup.objects.get(
+            realm=user_profile.realm,
+            name=SystemGroups.ADMINISTRATORS,
+            is_system_group=True,
+        ).usergroup_ptr
+        do_change_realm_permission_group_setting(
+            user_profile.realm,
+            "can_change_own_name_group",
+            admin_group,
+            acting_user=None,
+        )
         url = "/json/settings"
         result = self.client_patch(url, data)
         self.assertEqual(result.status_code, 200)
         # Since the setting fails silently, no message is returned
         self.assert_in_response("", result)
-        # Realm admins can change their name even setting is disabled.
-        data = {"full_name": "New Iago"}
-        self.login("iago")
-        url = "/json/settings"
-        result = self.client_patch(url, data)
-        self.assert_json_success(result)
+        user_profile.refresh_from_db()
+        self.assertEqual(user_profile.full_name, old_full_name)
 
     def test_do_deactivate_realm_clears_user_realm_cache(self) -> None:
         """The main complicated thing about deactivating realm names is

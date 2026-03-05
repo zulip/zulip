@@ -287,6 +287,7 @@ export function dispatch_normal_event(event) {
                 can_access_all_users_group: noop,
                 can_add_custom_emoji_group: settings_emoji.update_custom_emoji_ui,
                 can_add_subscribers_group: noop,
+                can_change_own_name_group: settings_account.update_name_change_display,
                 can_create_bots_group: settings_bots.update_bot_permissions_ui,
                 can_create_groups: user_group_edit.update_group_creation_ui,
                 can_create_private_channel_group: noop,
@@ -328,7 +329,6 @@ export function dispatch_normal_event(event) {
                 move_messages_within_stream_limit_seconds: message_edit.update_inline_topic_edit_ui,
                 message_retention_days: noop,
                 name: narrow_title.redraw_title,
-                name_changes_disabled: settings_account.update_name_change_display,
                 new_stream_announcements_stream_id: stream_ui_updates.update_announce_stream_option,
                 org_type: noop,
                 push_notifications_enabled: noop,
@@ -1154,7 +1154,8 @@ export function dispatch_normal_event(event) {
             break;
         }
 
-        case "user_group":
+        case "user_group": {
+            let should_update_name_change_display = false;
             switch (event.op) {
                 case "add": {
                     const user_group = user_groups.add(event.group);
@@ -1166,10 +1167,12 @@ export function dispatch_normal_event(event) {
                 case "add_members":
                     user_groups.add_members(event.group_id, event.user_ids);
                     user_group_edit.handle_member_edit_event(event.group_id, event.user_ids);
+                    should_update_name_change_display = true;
                     break;
                 case "remove_members":
                     user_groups.remove_members(event.group_id, event.user_ids);
                     user_group_edit.handle_member_edit_event(event.group_id, event.user_ids);
+                    should_update_name_change_display = true;
                     break;
                 case "add_subgroups":
                     user_groups.add_subgroups(event.group_id, event.direct_subgroup_ids);
@@ -1177,6 +1180,7 @@ export function dispatch_normal_event(event) {
                         event.group_id,
                         event.direct_subgroup_ids,
                     );
+                    should_update_name_change_display = true;
                     break;
                 case "remove_subgroups":
                     user_groups.remove_subgroups(event.group_id, event.direct_subgroup_ids);
@@ -1184,6 +1188,7 @@ export function dispatch_normal_event(event) {
                         event.group_id,
                         event.direct_subgroup_ids,
                     );
+                    should_update_name_change_display = true;
                     break;
                 case "update": {
                     const group_id = event.group_id;
@@ -1196,7 +1201,11 @@ export function dispatch_normal_event(event) {
                     blueslip.error("Unexpected event type user_group/" + event.op);
                     break;
             }
+            if (should_update_name_change_display) {
+                settings_account.update_name_change_display();
+            }
             break;
+        }
 
         case "user_status":
             if (event.status_text !== undefined) {
