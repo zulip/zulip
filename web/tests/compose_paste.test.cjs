@@ -7,15 +7,36 @@ const {JSDOM} = require("jsdom");
 const katex_tests = require("../../zerver/tests/fixtures/katex_test_cases.json");
 const {parse} = require("../src/markdown.ts");
 
-const {zrequire, set_global} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
+const $ = require("./lib/zjquery.cjs");
 
 const {window} = new JSDOM();
 
+const text_field_edit = mock_esm("text-field-edit", {insertTextIntoField: noop});
+
 const compose_paste = zrequire("compose_paste");
+const compose_ui = zrequire("compose_ui");
+const linkifiers = zrequire("linkifiers");
+const markdown = zrequire("markdown");
+const markdown_config = zrequire("markdown_config");
 const stream_data = zrequire("stream_data");
+const {initialize_user_settings} = zrequire("user_settings");
 
 set_global("document", {});
+class ClipboardEvent {
+    constructor({clipboardData} = {}) {
+        this.clipboardData = clipboardData;
+    }
+}
+set_global("ClipboardEvent", ClipboardEvent);
+initialize_user_settings({
+    user_settings: {
+        translate_emoticons: false,
+    },
+});
+markdown.initialize(markdown_config.get_helpers());
+
 stream_data.add_sub_for_tests({
     stream_id: 4,
     name: "Rome",
@@ -108,6 +129,142 @@ run_test("maybe_transform_html", () => {
     paste_html = "<div><div>Hello</div><div>World!</div></div>";
     paste_text = "Hello\nWorld!";
     assert.equal(compose_paste.maybe_transform_html(paste_html, paste_text), paste_html);
+});
+
+run_test("paste_handler reverse linkify", ({override, override_rewire}) => {
+    global.document = window.document;
+    global.window = window;
+    global.Node = window.Node;
+    global.HTMLElement = window.HTMLElement;
+    global.HTMLAnchorElement = window.HTMLAnchorElement;
+    global.HTMLTextAreaElement = window.HTMLTextAreaElement;
+
+    linkifiers.update_linkifier_rules([
+        {
+            id: 1,
+            pattern: "#D(?P<id>[0-9]{2,8})",
+            url_template: "https://github.com/zulip/zulip-desktop/pull/{id}",
+            reverse_template: "#D{id}",
+            alternative_url_templates: ["https://github.com/zulip/zulip-desktop/issues/{id}"],
+        },
+    ]);
+
+    let inserted_text;
+    let undo_texts;
+
+    override_rewire(compose_ui, "insert_and_scroll_into_view", (text) => {
+        inserted_text = text;
+    });
+
+    override(text_field_edit, "insertTextIntoField", (_textarea, text) => {
+        undo_texts.push(text);
+    });
+
+    const html_with_formatting = `
+        <p>
+        <span class="katex">
+            <span class="katex-mathml">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+                <semantics>
+                <mrow>
+                    <mi>x</mi>
+                    <mo>+</mo>
+                    <mi>y</mi>
+                    <mn>2</mn>
+                </mrow>
+                <annotation encoding="application/x-tex">x + y2</annotation>
+                </semantics>
+            </math>
+            </span>
+            <span class="katex-html" aria-hidden="true">
+            <span class="base">
+                <span class="mord mathnormal">x</span>
+                <span class="mbin">+</span>
+            </span>
+            <span class="base">
+                <span class="mord mathnormal">y</span>
+                <span class="mord">2</span>
+            </span>
+            </span>
+        </span>
+        <del>test</del>
+        <a href="https://github.com/zulip/zulip-desktop/pull/1359">https://github.com/zulip/zulip-desktop/pull/1359</a>
+        </p>`;
+
+    const test_cases = [
+        {
+            // Reverse linkify should preserve formatting when pasting HTML.
+            paste_html: html_with_formatting,
+            paste_text:
+                "x\n+\ny\n2\nx + y2\nx+y2 test https://github.com/zulip/zulip-desktop/pull/1359",
+            expected: "$$x + y2$$ ~~test~~ #D1359",
+            // When paste_html is a real value, there are two undo states:
+            // first undo reverses the reverse linkify (back to formatted text),
+            // second undo reverses the formatting (back to plain text).
+            expected_undo_texts: [
+                "x\n+\ny\n2\nx + y2\nx+y2 test https://github.com/zulip/zulip-desktop/pull/1359",
+                "$$x + y2$$ ~~test~~ https://github.com/zulip/zulip-desktop/pull/1359",
+            ],
+        },
+        {
+            // Reverse linkify should work for URL only text.
+            paste_html: "",
+            paste_text: "https://github.com/zulip/zulip-desktop/pull/1359",
+            expected: "#D1359",
+            expected_undo_texts: ["https://github.com/zulip/zulip-desktop/pull/1359"],
+        },
+        {
+            // Reverse linkify should work in plain text with surrounding text.
+            paste_html: "",
+            paste_text: "https://github.com/zulip/zulip-desktop/pull/1359 dummy text.",
+            expected: "#D1359 dummy text.",
+            expected_undo_texts: ["https://github.com/zulip/zulip-desktop/pull/1359 dummy text."],
+        },
+        {
+            // Reverse linkify should work for alternative URL templates.
+            paste_html: "",
+            paste_text: "https://github.com/zulip/zulip-desktop/issues/42",
+            expected: "#D42",
+            expected_undo_texts: ["https://github.com/zulip/zulip-desktop/issues/42"],
+        },
+    ];
+
+    for (const test_case of test_cases) {
+        const $textarea = $("textarea#compose-textarea");
+        // Put the cursor at the start with no selected text.
+        // The URL paste path checks this before it reaches reverse-linkify.
+        $textarea[0] = window.document.createElement("textarea");
+        $textarea[0].value = "";
+        $textarea.get = () => $textarea[0];
+        $textarea.val = () => $textarea[0].value;
+        $textarea.range = () => ({start: 0, end: 0, text: "", length: 0});
+        $textarea.caret = () => 0;
+        inserted_text = undefined;
+        undo_texts = [];
+
+        const event = {
+            originalEvent: new ClipboardEvent({
+                clipboardData: {
+                    getData(format) {
+                        if (format === "text/html") {
+                            return test_case.paste_html;
+                        }
+                        return test_case.paste_text;
+                    },
+                },
+            }),
+            preventDefault() {},
+            stopPropagation() {},
+        };
+
+        compose_paste.paste_handler.call($textarea, event, noop);
+        assert.equal(inserted_text, test_case.expected, test_case.paste_text);
+        assert.deepEqual(
+            undo_texts,
+            test_case.expected_undo_texts,
+            `undo texts for: ${test_case.paste_text}`,
+        );
+    }
 });
 
 run_test("paste_handler_converter", () => {

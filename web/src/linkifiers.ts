@@ -10,6 +10,7 @@ type LinkifierMap = Map<
         url_template: Template;
         group_number_to_name: Record<number, string>;
         reverse_template: string | null;
+        alternative_url_templates: Template[];
     }
 >;
 const linkifier_map: LinkifierMap = new Map();
@@ -102,10 +103,14 @@ export function update_linkifier_rules(linkifiers: Linkifier[]): void {
             continue;
         }
 
+        const alternative_url_templates = (linkifier.alternative_url_templates ?? []).map(
+            (template_string) => new Template(template_string),
+        );
         linkifier_map.set(regex, {
             url_template,
             group_number_to_name,
             reverse_template: linkifier.reverse_template ?? null,
+            alternative_url_templates,
         });
     }
 }

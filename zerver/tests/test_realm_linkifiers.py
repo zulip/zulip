@@ -338,6 +338,130 @@ class RealmFilterTest(ZulipTestCase):
         result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
         self.assert_json_error(result, "Invalid URL template.")
 
+    def test_alternative_url_templates_validation(self) -> None:
+        realm = self.example_user("iago").realm
+
+        # Valid alternative URL template passes clean().
+        linkifier = RealmFilter(
+            realm=realm,
+            pattern=r"#(?P<id>[0-9]+)",
+            url_template="https://github.com/zulip/zulip/issues/{id}",
+            alternative_url_templates=["https://github.com/zulip/zulip/pull/{id}"],
+        )
+        linkifier.clean()
+
+        # Invalid RFC 6570 template is rejected.
+        linkifier.alternative_url_templates = ["https://example.com/{foo"]
+        with self.assertRaises(ValidationError, msg="Invalid URL template."):
+            linkifier.clean()
+
+        # Variable not in pattern is rejected.
+        linkifier.alternative_url_templates = ["https://example.com/{other}"]
+        with self.assertRaisesRegex(
+            ValidationError,
+            "Group 'other' in alternative URL template is not present in linkifier pattern.",
+        ):
+            linkifier.clean()
+
+        # Missing pattern group in alternative template is rejected.
+        linkifier.pattern = r"(?P<org>[a-z]+)#(?P<id>[0-9]+)"
+        linkifier.url_template = "https://github.com/{org}/issues/{id}"
+        linkifier.alternative_url_templates = ["https://github.com/zulip/pull/{id}"]
+        with self.assertRaisesRegex(
+            ValidationError,
+            "Group 'org' in linkifier pattern is not present in alternative URL template.",
+        ):
+            linkifier.clean()
+
+    def test_alternative_url_templates(self) -> None:
+        self.login("iago")
+
+        # Create a linkifier with alternative URL templates.
+        data = {
+            "pattern": r"#(?P<id>[0-9]+)",
+            "url_template": "https://github.com/zulip/zulip/issues/{id}",
+            "alternative_url_templates": orjson.dumps(
+                ["https://github.com/zulip/zulip/pull/{id}"]
+            ).decode(),
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        linkifier_id = self.assert_json_success(result)["id"]
+
+        # Verify the alternative URL templates are returned.
+        result = self.client_get("/json/realm/linkifiers")
+        linkifiers = self.assert_json_success(result)["linkifiers"]
+        self.assert_length(linkifiers, 1)
+        self.assertEqual(
+            linkifiers[0]["alternative_url_templates"],
+            ["https://github.com/zulip/zulip/pull/{id}"],
+        )
+
+        # Update to add more alternative URL templates.
+        data = {
+            "pattern": r"#(?P<id>[0-9]+)",
+            "url_template": "https://github.com/zulip/zulip/issues/{id}",
+            "alternative_url_templates": orjson.dumps(
+                [
+                    "https://github.com/zulip/zulip/pull/{id}",
+                    "https://github.com/zulip/zulip/discussions/{id}",
+                ]
+            ).decode(),
+        }
+        result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
+        self.assert_json_success(result)
+
+        result = self.client_get("/json/realm/linkifiers")
+        linkifiers = self.assert_json_success(result)["linkifiers"]
+        self.assertEqual(
+            linkifiers[0]["alternative_url_templates"],
+            [
+                "https://github.com/zulip/zulip/pull/{id}",
+                "https://github.com/zulip/zulip/discussions/{id}",
+            ],
+        )
+
+        # Update to clear alternative URL templates.
+        data = {
+            "pattern": r"#(?P<id>[0-9]+)",
+            "url_template": "https://github.com/zulip/zulip/issues/{id}",
+            "alternative_url_templates": orjson.dumps([]).decode(),
+        }
+        result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
+        self.assert_json_success(result)
+
+        result = self.client_get("/json/realm/linkifiers")
+        linkifiers = self.assert_json_success(result)["linkifiers"]
+        self.assertEqual(linkifiers[0]["alternative_url_templates"], [])
+
+        # Invalid RFC 6570 template should be rejected.
+        data = {
+            "pattern": r"#(?P<id>[0-9]+)",
+            "url_template": "https://github.com/zulip/zulip/issues/{id}",
+            "alternative_url_templates": orjson.dumps(["https://example.com/{foo"]).decode(),
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "Invalid URL template.")
+
+        # Variable not in pattern should be rejected.
+        data["alternative_url_templates"] = orjson.dumps(["https://example.com/{other}"]).decode()
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(
+            result,
+            "Group 'other' in alternative URL template is not present in linkifier pattern.",
+        )
+
+        # Missing pattern group in alternative template should be rejected.
+        data["pattern"] = r"(?P<org>[a-z]+)#(?P<id>[0-9]+)"
+        data["url_template"] = "https://github.com/{org}/issues/{id}"
+        data["alternative_url_templates"] = orjson.dumps(
+            ["https://github.com/zulip/pull/{id}"]
+        ).decode()
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(
+            result,
+            "Group 'org' in linkifier pattern is not present in alternative URL template.",
+        )
+
     def test_valid_urls(self) -> None:
         valid_urls = [
             "http://example.com/",

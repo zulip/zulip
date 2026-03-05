@@ -523,6 +523,7 @@ class RealmLinkifier(BaseModel):
     id: int
     example_input: str | None = None
     reverse_template: str | None = None
+    alternative_url_templates: list[str] = []
 
 
 class EventRealmLinkifiers(BaseEvent):

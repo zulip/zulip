@@ -94,6 +94,7 @@ class RealmFilter(models.Model):
     url_template = models.TextField(validators=[url_template_validator])
     example_input = models.TextField(blank=True, null=True)
     reverse_template = models.TextField(blank=True, null=True)
+    alternative_url_templates = models.JSONField(default=list, blank=True)
     # Linkifiers are applied in a message/topic in order; the processing order
     # is important when there are overlapping patterns.
     order = models.IntegerField(default=0)
@@ -166,6 +167,33 @@ class RealmFilter(models.Model):
                 params={"name": name},
             )
 
+        for alternative_template in self.alternative_url_templates:
+            url_template_validator(alternative_template)
+
+            alternative_template_variables = set(
+                uri_template.URITemplate(alternative_template).variable_names
+            )
+
+            missing_in_pattern = alternative_template_variables - group_set
+            if len(missing_in_pattern) > 0:
+                name = min(missing_in_pattern)
+                raise ValidationError(
+                    _(
+                        "Group %(name)r in alternative URL template is not present in linkifier pattern."
+                    ),
+                    params={"name": name},
+                )
+
+            missing_in_alternative = group_set - alternative_template_variables
+            if len(missing_in_alternative) > 0:
+                name = min(missing_in_alternative)
+                raise ValidationError(
+                    _(
+                        "Group %(name)r in linkifier pattern is not present in alternative URL template."
+                    ),
+                    params={"name": name},
+                )
+
 
 def get_linkifiers_cache_key(realm_id: int) -> str:
     return f"{cache.KEY_PREFIX}:all_linkifiers_for_realm:{realm_id}"
@@ -181,6 +209,7 @@ def linkifiers_for_realm(realm_id: int) -> list[LinkifierDict]:
             id=linkifier.id,
             example_input=linkifier.example_input,
             reverse_template=linkifier.reverse_template,
+            alternative_url_templates=linkifier.alternative_url_templates,
         )
         for linkifier in RealmFilter.objects.filter(realm_id=realm_id).order_by("order")
     ]
