@@ -44,6 +44,9 @@ async function test_reactivation_confirmation_modal(page: Page, fullname: string
 async function test_deactivate_user(page: Page): Promise<void> {
     const cordelia_user_row = await user_row(page, common.fullname.cordelia);
     await page.waitForSelector(cordelia_user_row, {visible: true});
+    // Wait for the presence-data fetch in `settings_users.populate_users`
+    // to complete and the table to re-render.
+    await page.waitForSelector(cordelia_user_row + " .loading-placeholder", {hidden: true});
     await page.waitForSelector(cordelia_user_row + " .zulip-icon-user-x");
     await page.click(cordelia_user_row + " .deactivate");
     await common.wait_for_micromodal_to_open(page);
