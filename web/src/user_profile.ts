@@ -504,7 +504,7 @@ export function get_custom_profile_field_data(
             profile_field.is_user_field = true;
             profile_field.value = field_value.value;
             break;
-        case field_types.SELECT.id: {
+        case field_types.DROPDOWN.id: {
             const field_choice_dict = settings_components.select_field_data_schema.parse(
                 JSON.parse(field.field_data),
             );
@@ -512,7 +512,7 @@ export function get_custom_profile_field_data(
             break;
         }
         case field_types.SHORT_TEXT.id:
-        case field_types.LONG_TEXT.id:
+        case field_types.PARAGRAPH.id:
             profile_field.value = field_value.value;
             profile_field.rendered_value = field_value.rendered_value;
             break;

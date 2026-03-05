@@ -1728,7 +1728,7 @@ class NormalActionsTest(BaseAction):
 
         with self.verify_action() as events:
             try_add_realm_custom_profile_field(
-                realm=realm, name="Expertise", field_type=CustomProfileField.LONG_TEXT
+                realm=realm, name="Expertise", field_type=CustomProfileField.PARAGRAPH
             )
         check_custom_profile_fields("events[0]", events[0])
 
