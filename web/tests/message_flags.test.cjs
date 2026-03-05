@@ -286,6 +286,8 @@ run_test("read_empty_data", ({override}) => {
 
     // send read to obtain success callback
     send_read([{locally_echoed: false, id: 1}]);
+    // Ensure the throttled server_request fires.
+    clock.tick(1100);
 
     // verify early return on empty data
     const success_callback = channel_post_opts.success;
