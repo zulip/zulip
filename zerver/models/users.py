@@ -1,3 +1,4 @@
+import time
 from email.headerregistry import Address
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional
@@ -1035,10 +1036,61 @@ def maybe_get_user_profile_by_api_key(api_key: str) -> UserProfile | None:
         return None
 
 
+# In-process cache for Tornado: avoids a memcached round-trip
+# (network + zstd decompress + pickle unpickle) on every request.
+# Entries expire after TORNADO_USER_PROFILE_CACHE_TTL_SECS, and are
+# also flushed by process_notification on user/realm change events.
+TORNADO_USER_PROFILE_CACHE_TTL_SECS = 120
+_tornado_user_profile_cache: dict[str, tuple[float, UserProfile]] = {}
+
+
+def flush_tornado_user_profile_cache(*, user_id: int | None = None) -> None:
+    """Flush the in-process user profile cache.
+
+    If user_id is given, flush only entries for that user;
+    otherwise flush the entire cache (e.g. on realm deactivation).
+    """
+    if user_id is None:
+        _tornado_user_profile_cache.clear()
+    else:
+        to_delete = [
+            key
+            for key, (_, profile) in _tornado_user_profile_cache.items()
+            if profile.id == user_id
+        ]
+        for key in to_delete:
+            del _tornado_user_profile_cache[key]
+
+
+def gc_tornado_user_profile_cache() -> None:
+    """Remove expired entries.  Called from gc_event_queues."""
+    now = time.time()
+    to_delete = [
+        key
+        for key, (ts, _) in _tornado_user_profile_cache.items()
+        if now - ts >= TORNADO_USER_PROFILE_CACHE_TTL_SECS
+    ]
+    for key in to_delete:
+        del _tornado_user_profile_cache[key]
+
+
 def get_user_profile_by_api_key(api_key: str) -> UserProfile:
+    if settings.RUNNING_INSIDE_TORNADO:
+        now = time.time()
+        cached = _tornado_user_profile_cache.get(api_key)
+        if cached is not None:
+            ts, profile = cached
+            if now - ts < TORNADO_USER_PROFILE_CACHE_TTL_SECS:
+                _tornado_user_profile_cache[api_key] = (now, profile)
+                return profile
+            del _tornado_user_profile_cache[api_key]
+
     user_profile = maybe_get_user_profile_by_api_key(api_key)
     if user_profile is None:
         raise UserProfile.DoesNotExist
+
+    if settings.RUNNING_INSIDE_TORNADO:
+        _tornado_user_profile_cache[api_key] = (time.time(), user_profile)
 
     return user_profile
 

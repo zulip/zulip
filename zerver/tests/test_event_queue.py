@@ -1,9 +1,11 @@
+import datetime
 import time
 from collections.abc import Callable, Collection
 from typing import Any
 from unittest import mock
 
 import orjson
+import time_machine
 from django.http import HttpRequest, HttpResponse
 from typing_extensions import override
 
@@ -18,6 +20,13 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, dummy_handler, mock_queue_publish
 from zerver.models import Device, Recipient, Subscription, UserProfile, UserTopic
 from zerver.models.streams import get_stream
+from zerver.models.users import (
+    TORNADO_USER_PROFILE_CACHE_TTL_SECS,
+    _tornado_user_profile_cache,
+    flush_tornado_user_profile_cache,
+    gc_tornado_user_profile_cache,
+    get_user_profile_by_api_key,
+)
 from zerver.tornado.event_queue import (
     ClientDescriptor,
     access_client_descriptor,
@@ -25,6 +34,7 @@ from zerver.tornado.event_queue import (
     maybe_enqueue_notifications,
     missedmessage_hook,
     persistent_queue_filename,
+    process_notification,
 )
 from zerver.tornado.views import cleanup_event_queue, get_events
 
@@ -1527,3 +1537,168 @@ class EventQueueTest(ZulipTestCase):
 
         queue.prune(1)
         self.verify_to_dict_end_to_end(client)
+
+
+class TornadoUserProfileCacheTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        _tornado_user_profile_cache.clear()
+        self.addCleanup(_tornado_user_profile_cache.clear)
+
+    def test_cache_hit_avoids_lookup(self) -> None:
+        hamlet = self.example_user("hamlet")
+        with self.settings(RUNNING_INSIDE_TORNADO=True):
+            get_user_profile_by_api_key(hamlet.api_key)
+            with mock.patch("zerver.models.users.maybe_get_user_profile_by_api_key") as mock_lookup:
+                result = get_user_profile_by_api_key(hamlet.api_key)
+                mock_lookup.assert_not_called()
+            self.assertEqual(result.id, hamlet.id)
+
+    def test_cache_not_used_outside_tornado(self) -> None:
+        hamlet = self.example_user("hamlet")
+        with self.settings(RUNNING_INSIDE_TORNADO=False):
+            get_user_profile_by_api_key(hamlet.api_key)
+        self.assert_length(_tornado_user_profile_cache, 0)
+
+    def test_ttl_expiry(self) -> None:
+        hamlet = self.example_user("hamlet")
+        with time_machine.travel(
+            datetime.datetime(2030, 1, 1, tzinfo=datetime.timezone.utc), tick=False
+        ) as traveller:
+            with self.settings(RUNNING_INSIDE_TORNADO=True):
+                get_user_profile_by_api_key(hamlet.api_key)
+
+            traveller.shift(datetime.timedelta(seconds=TORNADO_USER_PROFILE_CACHE_TTL_SECS))
+            with (
+                self.settings(RUNNING_INSIDE_TORNADO=True),
+                mock.patch(
+                    "zerver.models.users.maybe_get_user_profile_by_api_key",
+                    return_value=hamlet,
+                ) as mock_lookup,
+            ):
+                get_user_profile_by_api_key(hamlet.api_key)
+                mock_lookup.assert_called_once()
+
+    def test_ttl_refresh_on_hit(self) -> None:
+        hamlet = self.example_user("hamlet")
+        with time_machine.travel(
+            datetime.datetime(2030, 1, 1, tzinfo=datetime.timezone.utc), tick=False
+        ) as traveller:
+            with self.settings(RUNNING_INSIDE_TORNADO=True):
+                get_user_profile_by_api_key(hamlet.api_key)
+
+            # Access at +90s refreshes the TTL.
+            traveller.shift(datetime.timedelta(seconds=90))
+            with self.settings(RUNNING_INSIDE_TORNADO=True):
+                get_user_profile_by_api_key(hamlet.api_key)
+
+            # At +180s (90s after refresh), entry is still alive.
+            traveller.shift(datetime.timedelta(seconds=90))
+            with (
+                self.settings(RUNNING_INSIDE_TORNADO=True),
+                mock.patch(
+                    "zerver.models.users.maybe_get_user_profile_by_api_key",
+                ) as mock_lookup,
+            ):
+                get_user_profile_by_api_key(hamlet.api_key)
+                mock_lookup.assert_not_called()
+
+    def test_flush_by_user_id(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        with self.settings(RUNNING_INSIDE_TORNADO=True):
+            get_user_profile_by_api_key(hamlet.api_key)
+            get_user_profile_by_api_key(othello.api_key)
+        self.assert_length(_tornado_user_profile_cache, 2)
+
+        flush_tornado_user_profile_cache(user_id=hamlet.id)
+        self.assert_length(_tornado_user_profile_cache, 1)
+        self.assertNotIn(hamlet.api_key, _tornado_user_profile_cache)
+        self.assertIn(othello.api_key, _tornado_user_profile_cache)
+
+    def test_flush_all(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        with self.settings(RUNNING_INSIDE_TORNADO=True):
+            get_user_profile_by_api_key(hamlet.api_key)
+            get_user_profile_by_api_key(othello.api_key)
+        self.assert_length(_tornado_user_profile_cache, 2)
+
+        flush_tornado_user_profile_cache()
+        self.assert_length(_tornado_user_profile_cache, 0)
+
+    def test_gc_removes_expired_keeps_fresh(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        with time_machine.travel(
+            datetime.datetime(2030, 1, 1, tzinfo=datetime.timezone.utc), tick=False
+        ) as traveller:
+            # Populate hamlet.
+            with self.settings(RUNNING_INSIDE_TORNADO=True):
+                get_user_profile_by_api_key(hamlet.api_key)
+
+            # Populate othello 90s later.
+            traveller.shift(datetime.timedelta(seconds=90))
+            with self.settings(RUNNING_INSIDE_TORNADO=True):
+                get_user_profile_by_api_key(othello.api_key)
+
+            # GC at +TTL: hamlet expired, othello still fresh.
+            traveller.shift(datetime.timedelta(seconds=TORNADO_USER_PROFILE_CACHE_TTL_SECS - 90))
+            gc_tornado_user_profile_cache()
+
+        self.assertNotIn(hamlet.api_key, _tornado_user_profile_cache)
+        self.assertIn(othello.api_key, _tornado_user_profile_cache)
+
+    def test_process_notification_realm_user_update(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        with self.settings(RUNNING_INSIDE_TORNADO=True):
+            get_user_profile_by_api_key(hamlet.api_key)
+            get_user_profile_by_api_key(othello.api_key)
+
+        process_notification(
+            {
+                "event": {
+                    "type": "realm_user",
+                    "op": "update",
+                    "person": {"user_id": hamlet.id},
+                },
+                "users": [],
+            }
+        )
+        self.assertNotIn(hamlet.api_key, _tornado_user_profile_cache)
+        self.assertIn(othello.api_key, _tornado_user_profile_cache)
+
+    def test_process_notification_realm_user_remove(self) -> None:
+        hamlet = self.example_user("hamlet")
+        with self.settings(RUNNING_INSIDE_TORNADO=True):
+            get_user_profile_by_api_key(hamlet.api_key)
+
+        process_notification(
+            {
+                "event": {
+                    "type": "realm_user",
+                    "op": "remove",
+                    "person": {"user_id": hamlet.id},
+                },
+                "users": [],
+            }
+        )
+        self.assert_length(_tornado_user_profile_cache, 0)
+
+    def test_process_notification_realm_deactivated(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        with self.settings(RUNNING_INSIDE_TORNADO=True):
+            get_user_profile_by_api_key(hamlet.api_key)
+            get_user_profile_by_api_key(othello.api_key)
+
+        process_notification(
+            {
+                "event": {"type": "realm", "op": "deactivated"},
+                "users": [],
+            }
+        )
+        self.assert_length(_tornado_user_profile_cache, 0)
