@@ -594,6 +594,9 @@ v1_api_and_json_patterns = [
     # used to register for an event queue in tornado
     rest_path("register", POST=(events_register_backend, {"allow_anonymous_user_web"})),
     # events -> zerver.tornado.views
+    # In production, nginx routes these to Tornado; they are in this
+    # file so the test suite can resolve them.  Keep in sync with
+    # zproject/tornado_urls.py.
     rest_path(
         "events",
         GET=(get_events, {"narrow_user_session_cache"}),
@@ -897,7 +900,9 @@ for app_name in settings.EXTRA_INSTALLED_APPS:
         i18n_urls += import_string(f"{app_name}.urls.i18n_urlpatterns")
 
 # Used internally for communication between command-line, tusd, Django,
-# and Tornado processes
+# and Tornado processes.  The Tornado endpoints must also exist in
+# zproject/tornado_urls.py; they are here so the test suite can
+# resolve them.
 urls += [
     path("api/internal/notify_tornado", notify),
     path("api/internal/tusd", handle_tusd_hook),
