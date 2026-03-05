@@ -744,33 +744,39 @@ function expand_url_template_from_match(
 
 function reverse_linkify_segment(segment: string): string | null {
     const linkifier_map = linkifiers.get_linkifier_map();
-    for (const [pattern, {url_template, group_number_to_name, reverse_template}] of linkifier_map) {
+    for (const [
+        pattern,
+        {url_template, group_number_to_name, reverse_template, alternative_url_templates},
+    ] of linkifier_map) {
         if (!reverse_template) {
             continue;
         }
 
-        const template_context = url_template.match(segment);
-        if (!template_context) {
-            continue;
-        }
+        const all_templates = [url_template, ...alternative_url_templates];
+        for (const template of all_templates) {
+            const template_context = template.match(segment);
+            if (!template_context) {
+                continue;
+            }
 
-        const reversed_text = expand_reverse_template(reverse_template, template_context);
-        pattern.lastIndex = 0;
-        const match = pattern.exec(reversed_text);
-        if (!match) {
-            continue;
-        }
+            const reversed_text = expand_reverse_template(reverse_template, template_context);
+            pattern.lastIndex = 0;
+            const match = pattern.exec(reversed_text);
+            if (!match) {
+                continue;
+            }
 
-        // Validate that expanding the captured groups round-trips to the original URL.
-        const expanded_url = expand_url_template_from_match(
-            match,
-            url_template,
-            group_number_to_name,
-        );
-        if (expanded_url !== segment) {
-            continue;
+            // Validate that expanding the captured groups round-trips to the original URL.
+            const expanded_url = expand_url_template_from_match(
+                match,
+                template,
+                group_number_to_name,
+            );
+            if (expanded_url !== segment) {
+                continue;
+            }
+            return reversed_text;
         }
-        return reversed_text;
     }
     return null;
 }
