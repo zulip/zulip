@@ -1,4 +1,4 @@
-Add organization domain
+# Add organization domain
 
 {generate_code_example(curl)|/realm/domains|example|user=hamlet}
 

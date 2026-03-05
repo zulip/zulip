@@ -1,4 +1,4 @@
-Remove organization domain
+# Remove organization domain
 
 {generate_code_example(curl)|/realm/domains/{domain}|example|user=hamlet}
 
