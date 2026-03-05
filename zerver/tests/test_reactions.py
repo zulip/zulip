@@ -1255,4 +1255,4 @@ class ReactionAPIEventTest(EmojiReactionBase):
             m.side_effect = AssertionError(
                 "Events should be sent only after the transaction commits."
             )
-            notify_reaction_update(hamlet, message, reaction, "stuff")
+            notify_reaction_update(hamlet, message, reaction, "add")
