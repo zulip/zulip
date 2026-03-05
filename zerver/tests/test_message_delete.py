@@ -276,17 +276,37 @@ class DeleteMessageTest(ZulipTestCase):
         with self.capture_send_event_calls(expected_num_events=8) as events:
             do_delete_messages(realm, messages, acting_user=None)
 
-        expected_events: list[dict[str, Any]] = [
-            {
-                "type": "delete_message",
-                "message_ids": [dm_id_1],
-                "message_type": "private",
-            },
-            {
-                "type": "delete_message",
-                "message_ids": [dm_id_2],
-                "message_type": "private",
-            },
+        actual_events = [event["event"] for event in events]
+        self.assert_length(actual_events, 8)
+
+        # Messages are grouped by (recipient_id, topic) via a database
+        # GROUP BY with no explicit ORDER BY, so the order of event
+        # groups is non-deterministic. With PREFER_DIRECT_MESSAGE_GROUP,
+        # DM recipient IDs change from PERSONAL to DIRECT_MESSAGE_GROUP
+        # type, which shifts where DM events appear relative to channel
+        # events. We verify events by category rather than by position.
+
+        # Verify DM delete events (order-independent).
+        dm_delete_events = [
+            e
+            for e in actual_events
+            if e["type"] == "delete_message" and e["message_type"] == "private"
+        ]
+        self.assert_length(dm_delete_events, 2)
+        dm_message_id_sets = [set(e["message_ids"]) for e in dm_delete_events]
+        self.assertIn({dm_id_1}, dm_message_id_sets)
+        self.assertIn({dm_id_2}, dm_message_id_sets)
+
+        # Verify channel events maintain their expected relative order.
+        # Within a channel, topic groups are processed deterministically
+        # (same recipient_id), and each group produces a paired
+        # (first_message_id update, delete_message) sequence.
+        channel_events = [
+            e
+            for e in actual_events
+            if not (e["type"] == "delete_message" and e["message_type"] == "private")
+        ]
+        expected_channel_events: list[dict[str, Any]] = [
             {
                 "type": "stream",
                 "op": "update",
@@ -334,11 +354,8 @@ class DeleteMessageTest(ZulipTestCase):
             },
         ]
 
-        actual_events = [event["event"] for event in events]
-
-        self.assert_length(actual_events, len(expected_events))
-
-        for actual, expected in zip(actual_events, expected_events, strict=True):
+        self.assert_length(channel_events, len(expected_channel_events))
+        for actual, expected in zip(channel_events, expected_channel_events, strict=True):
             for key, value in expected.items():
                 if key == "message_ids":
                     self.assertEqual(set(actual[key]), set(value))
