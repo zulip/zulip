@@ -386,88 +386,156 @@ function setup_compose_to_quote_single_message(message_id: number, opts: QuoteMe
     );
 }
 
-function generate_replace_content(
-    message: Message,
-    raw_content: string,
-    forward_message: boolean | undefined,
-): string {
-    let content;
-    const sender_mention = `@_**${message.sender_full_name}|${message.sender_id}**`;
+type QuoteContext = "INCLUDE_SENDER" | "INCLUDE_SENDER_AND_RECIPIENT" | "INCLUDE_NOTHING";
 
-    if (!forward_message) {
-        // Final message looks like:
-        //     @_**Iago|5** [said](link to message):
-        //     ```quote
-        //     message content
-        //     ```
-        content = $t(
-            {defaultMessage: "{username} [said]({link_to_message}):"},
-            {
-                username: sender_mention,
-                link_to_message: hash_util.by_conversation_and_time_url(message),
-            },
-        );
-    } else if (message.type === "stream") {
-        const link = internal_url.by_stream_topic_url(
-            message.stream_id,
-            message.topic,
-            sub_store.maybe_get_stream_name,
-            message.id,
-        );
-        const channel_name = sub_store.maybe_get_stream_name(message.stream_id)!;
-        const topic_link_syntax = topic_link_util.get_stream_topic_link_syntax(
-            channel_name,
-            message.topic,
-            true,
-        );
-        // Final message looks like:
-        //     @_**Iago|5** [said](link to message) in [#channel > topic](link to topic):
-        //     ```quote
-        //     message content
-        //     ```
-        // Keep syntax in sync with channel message reminder format in zerver/lib/reminders.py
-        content = $t(
-            {
-                defaultMessage: "{username} [said]({link_to_message}) in {topic_link_syntax}:",
-            },
-            {
-                username: sender_mention,
-                link_to_message: hash_util.by_conversation_and_time_url(message),
-                topic_link_syntax: topic_link_util.as_markdown_link_syntax(topic_link_syntax, link),
-            },
-        );
-    } else {
-        const dm_user_ids = people.all_user_ids_in_pm(message)!;
-        const recipient_user_ids =
-            dm_user_ids.length > 1
-                ? dm_user_ids.filter((id) => id !== message.sender_id)
-                : [message.sender_id];
-        const recipient_users = recipient_user_ids.map((recipient_id) =>
-            people.get_by_user_id(recipient_id),
-        );
-        // Final message looks like:
-        //     @_**Iago|5** [said](link to message) to {direct message recipient mentions}:
-        //     ```quote
-        //     message content
-        //     ```
-        // Keep syntax in sync with direct message reminder format in zerver/lib/reminders.py
-        content = $t(
-            {
-                defaultMessage:
-                    "{username} [said]({link_to_message}) to {list_of_recipient_mentions}:",
-            },
-            {
-                username: sender_mention,
-                link_to_message: hash_util.by_conversation_and_time_url(message),
-                list_of_recipient_mentions: people.get_user_mentions_for_display(
-                    recipient_users,
-                    true,
-                ),
-            },
-        );
+// Returns what context the line before the quote block having the quoted message content
+// should contain.
+function get_quote_context_for_message(info: {
+    forward_message: boolean | undefined;
+    current_message: Message;
+    previous_message: Message | undefined;
+    is_first_message_from_quote_chain: boolean | undefined;
+}): QuoteContext {
+    const {current_message, previous_message, forward_message, is_first_message_from_quote_chain} =
+        info;
+    if (is_first_message_from_quote_chain) {
+        return "INCLUDE_SENDER_AND_RECIPIENT";
+    }
+    if (previous_message) {
+        if (all_messages_have_same_recipient([current_message, previous_message])) {
+            // We don't include the sender or the recipient details
+            // for a message that has the same (sender, recipient) pair
+            // as the previous message.
+            if (current_message.sender_id === previous_message.sender_id) {
+                return "INCLUDE_NOTHING";
+            }
+            // We include the sender context in case only the sender
+            // differs compared to the previous message.
+            return "INCLUDE_SENDER";
+        }
+        return "INCLUDE_SENDER_AND_RECIPIENT";
     }
 
-    content += "\n";
+    // This message is quoted individually and not is part
+    // of some collection of quoted messages
+    if (!forward_message) {
+        return "INCLUDE_SENDER";
+    }
+    return "INCLUDE_SENDER_AND_RECIPIENT";
+}
+
+type ReplaceContentOpts = {
+    message: Message;
+    raw_content: string;
+    forward_message: boolean | undefined;
+    previous_message?: Message;
+    is_first_message_from_quote_chain?: boolean;
+};
+
+function generate_replace_content(info: ReplaceContentOpts): string {
+    const {
+        message,
+        raw_content,
+        forward_message,
+        previous_message,
+        is_first_message_from_quote_chain,
+    } = info;
+    let content;
+    const sender_mention = `@_**${message.sender_full_name}|${message.sender_id}**`;
+    const required_quote_context = get_quote_context_for_message({
+        current_message: message,
+        previous_message,
+        forward_message,
+        is_first_message_from_quote_chain,
+    });
+    switch (required_quote_context) {
+        case "INCLUDE_SENDER":
+            // Final message looks like:
+            //     @_**Iago|5** [said](link to message):
+            //     ```quote
+            //     message content
+            //     ```
+            content = $t(
+                {defaultMessage: "{username} [said]({link_to_message}):"},
+                {
+                    username: sender_mention,
+                    link_to_message: hash_util.by_conversation_and_time_url(message),
+                },
+            );
+            content += "\n";
+            break;
+        case "INCLUDE_SENDER_AND_RECIPIENT":
+            if (message.type === "stream") {
+                const link = internal_url.by_stream_topic_url(
+                    message.stream_id,
+                    message.topic,
+                    sub_store.maybe_get_stream_name,
+                    message.id,
+                );
+                const channel_name = sub_store.maybe_get_stream_name(message.stream_id)!;
+                const topic_link_syntax = topic_link_util.get_stream_topic_link_syntax(
+                    channel_name,
+                    message.topic,
+                    true,
+                );
+                // Final message looks like:
+                //     @_**Iago|5** [said](link to message) in [#channel > topic](link to topic):
+                //     ```quote
+                //     message content
+                //     ```
+                // Keep syntax in sync with channel message reminder format in zerver/lib/reminders.py
+                content = $t(
+                    {
+                        defaultMessage:
+                            "{username} [said]({link_to_message}) in {topic_link_syntax}:",
+                    },
+                    {
+                        username: sender_mention,
+                        link_to_message: hash_util.by_conversation_and_time_url(message),
+                        topic_link_syntax: topic_link_util.as_markdown_link_syntax(
+                            topic_link_syntax,
+                            link,
+                        ),
+                    },
+                );
+                content += "\n";
+            } else {
+                const dm_user_ids = people.all_user_ids_in_pm(message)!;
+                const recipient_user_ids =
+                    dm_user_ids.length > 1
+                        ? dm_user_ids.filter((id) => id !== message.sender_id)
+                        : [message.sender_id];
+                const recipient_users = recipient_user_ids.map((recipient_id) =>
+                    people.get_by_user_id(recipient_id),
+                );
+                // Final message looks like:
+                //     @_**Iago|5** [said](link to message) to {direct message recipient mentions}:
+                //     ```quote
+                //     message content
+                //     ```
+                // Keep syntax in sync with direct message reminder format in zerver/lib/reminders.py
+                content = $t(
+                    {
+                        defaultMessage:
+                            "{username} [said]({link_to_message}) to {list_of_recipient_mentions}:",
+                    },
+                    {
+                        username: sender_mention,
+                        link_to_message: hash_util.by_conversation_and_time_url(message),
+                        list_of_recipient_mentions: people.get_user_mentions_for_display(
+                            recipient_users,
+                            true,
+                        ),
+                    },
+                );
+                content += "\n";
+            }
+            break;
+        case "INCLUDE_NOTHING":
+            content = "";
+            break;
+    }
+
     const fence = fenced_code.get_unused_fence(raw_content);
     content += `${fence}quote\n${raw_content}\n${fence}`;
     return content;
@@ -677,12 +745,20 @@ function quote_multiple_messages(opts: QuoteMessageOpts): void {
         }
 
         let content_string = "";
-        for (const {message, quote_content} of quote_assets) {
-            content_string += generate_replace_content(
+        for (let i = 0; i < quote_assets.length; i += 1) {
+            const {message, quote_content} = quote_assets[i]!;
+            const previous_quote_asset = i > 0 ? quote_assets[i - 1] : undefined;
+            const info: ReplaceContentOpts = {
                 message,
-                quote_content,
-                opts.forward_message,
-            );
+                raw_content: quote_content,
+                forward_message: opts.forward_message,
+            };
+            if (previous_quote_asset) {
+                info.previous_message = previous_quote_asset.message;
+            } else {
+                info.is_first_message_from_quote_chain = true;
+            }
+            content_string += generate_replace_content(info);
             content_string += "\n\n";
         }
 
@@ -714,7 +790,11 @@ function quote_single_message(opts: QuoteMessageOpts): void {
     }
 
     if (message && quote_content) {
-        const content = generate_replace_content(message, quote_content, opts.forward_message);
+        const content = generate_replace_content({
+            message,
+            raw_content: quote_content,
+            forward_message: opts.forward_message,
+        });
         replace_quoting_placeholder_with({content, forward_message: opts.forward_message});
         return;
     }
@@ -726,11 +806,11 @@ function quote_single_message(opts: QuoteMessageOpts): void {
             const data = single_message_content_schema.parse(raw_data);
             assert(data.message.content_type === "text/x-markdown");
             message_store.maybe_update_raw_content(message, data.message.content);
-            const content = generate_replace_content(
+            const content = generate_replace_content({
                 message,
-                data.message.content,
-                opts.forward_message,
-            );
+                raw_content: data.message.content,
+                forward_message: opts.forward_message,
+            });
             replace_quoting_placeholder_with({content, forward_message: opts.forward_message});
         },
         // We set a timeout here to trigger usage of the fallback markdown via the
@@ -746,7 +826,11 @@ function quote_single_message(opts: QuoteMessageOpts): void {
             // We try to access message.raw_content one last time here, just in case
             // it was populated during the waiting time.
             const md = message.raw_content ?? compose_paste.paste_handler_converter(message_html);
-            const content = generate_replace_content(message, md, opts.forward_message);
+            const content = generate_replace_content({
+                message,
+                raw_content: md,
+                forward_message: opts.forward_message,
+            });
             replace_quoting_placeholder_with({content, forward_message: opts.forward_message});
         },
     });
