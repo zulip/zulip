@@ -1,3 +1,4 @@
+import time
 from email.headerregistry import Address
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional
@@ -1035,10 +1036,73 @@ def maybe_get_user_profile_by_api_key(api_key: str) -> UserProfile | None:
         return None
 
 
+# In-process cache for Tornado: avoids a memcached round-trip (network
+# + zstd decompress + pickle unpickle) on every request.  Entries are
+# considered fresh for TORNADO_USER_PROFILE_CACHE_TTL_SECS, which is
+# refreshed every request.  They are always expired
+# TORNADO_USER_PROFILE_CACHE_END_TTL_SECS after the initial cache
+# full, to ensure that the cache cannot accidentally have stale data
+# indefinitely.  They are flushed by process_notification on
+# user/realm change events.
+TORNADO_USER_PROFILE_CACHE_TTL_SECS = 120
+TORNADO_USER_PROFILE_CACHE_END_TTL_SECS = 60 * 10
+_tornado_user_profile_cache: dict[str, tuple[float, float, UserProfile]] = {}
+
+
+def flush_tornado_user_profile_cache(*, user_id: int | None = None) -> None:
+    """Flush the in-process user profile cache.
+
+    If user_id is given, flush only entries for that user;
+    otherwise flush the entire cache (e.g. on realm deactivation).
+    """
+    if user_id is None:
+        _tornado_user_profile_cache.clear()
+    else:
+        to_delete = [
+            key
+            for key, (_, _, profile) in _tornado_user_profile_cache.items()
+            if profile.id == user_id
+        ]
+        for key in to_delete:
+            del _tornado_user_profile_cache[key]
+
+
+def gc_tornado_user_profile_cache() -> None:
+    """Remove expired entries.  Called from gc_event_queues."""
+    now = time.time()
+    to_delete = [
+        key
+        for key, (ts, end_ts, _) in _tornado_user_profile_cache.items()
+        if now - ts >= TORNADO_USER_PROFILE_CACHE_TTL_SECS or now >= end_ts
+    ]
+    for key in to_delete:
+        del _tornado_user_profile_cache[key]
+
+
 def get_user_profile_by_api_key(api_key: str) -> UserProfile:
+    if settings.RUNNING_INSIDE_TORNADO:
+        now = time.time()
+        cached = _tornado_user_profile_cache.get(api_key)
+        if cached is not None:
+            ts, end_ts, profile = cached
+            if now - ts < TORNADO_USER_PROFILE_CACHE_TTL_SECS and now < end_ts:
+                # Advance the part of the TTL which gets refreshed,
+                # but leave the end_ttl unchanged.
+                _tornado_user_profile_cache[api_key] = (now, end_ts, profile)
+                return profile
+            del _tornado_user_profile_cache[api_key]
+
     user_profile = maybe_get_user_profile_by_api_key(api_key)
     if user_profile is None:
         raise UserProfile.DoesNotExist
+
+    if settings.RUNNING_INSIDE_TORNADO:
+        now = time.time()
+        _tornado_user_profile_cache[api_key] = (
+            now,
+            now + TORNADO_USER_PROFILE_CACHE_END_TTL_SECS,
+            user_profile,
+        )
 
     return user_profile
 
