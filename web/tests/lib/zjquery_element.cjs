@@ -87,9 +87,9 @@ class FakeElementState {
     $jquery_contents = undefined;
     jquery_data = new Map();
     jquery_next_results = new Map();
-    jquery_parents_results = new Map();
     jquery_prev_results = new Map();
     match_results = new Map([["*", true]]);
+    parents_results = new Map();
     query_results = new Map();
     selector = undefined;
     shown = false;
@@ -638,18 +638,18 @@ function dom_args(args) {
                     .filter((parent) => parent !== null && parent.matches(selector)),
             );
         }
-        parents(parents_selector = "*") {
-            assert.equal(this.length, 1);
-            const state = fake_element_state.get(this[0]);
-            const $result = state.jquery_parents_results.get(parents_selector);
-            assert.ok(
-                $result,
-                "You need to call set_parents_result for " +
-                    parents_selector +
-                    " in " +
-                    state.selector,
+        parents(selector = "*") {
+            return new exports.FakeJQuery(
+                [...this].flatMap((element) => {
+                    const state = fake_element_state.get(element);
+                    if (!state.parents_results.has(selector)) {
+                        throw new Error(
+                            `You need to call $(${JSON.stringify(state.selector)}).set_parents_result(${JSON.stringify(selector)}, ...)`,
+                        );
+                    }
+                    return state.parents_results.get(selector);
+                }),
             );
-            return $result;
         }
         prepend(...args) {
             assert.equal(this.length, 1);
@@ -767,9 +767,9 @@ function dom_args(args) {
             assert.equal($parent_elem.length, 1);
             this[0].parentNode = $parent_elem[0];
         }
-        set_parents_result(selector, $result) {
+        set_parents_result(selector, elements) {
             assert.equal(this.length, 1);
-            fake_element_state.get(this[0]).jquery_parents_results.set(selector, $result);
+            fake_element_state.get(this[0]).parents_results.set(selector, [...elements]);
         }
         set_prev_results(selector, $result) {
             assert.equal(this.length, 1);
