@@ -557,6 +557,8 @@ class NarrowBuilder:
             if user_profiles == []:
                 return query.where(maybe_negate(false()))
 
+            all_user_ids = {u.id for u in user_profiles} | {self.user_profile.id}
+
             recipient = recipient_for_user_profiles(
                 user_profiles=user_profiles,
                 forwarded_mirror_message=False,
@@ -568,11 +570,19 @@ class NarrowBuilder:
         except (JsonableError, ValidationError):
             raise BadNarrowOperatorError("unknown user in " + str(operand))
         except DirectMessageGroup.DoesNotExist:
-            # Group DM where direct message group doesn't exist
-            return query.where(maybe_negate(false()))
+            # Group DM where direct message group doesn't exist.
+            # For 3+ person groups, no messages can exist.
+            if len(all_user_ids) > 2:
+                return query.where(maybe_negate(false()))
+            # For 1:1 DMs, fall through to query PERSONAL recipients only
+            recipient = None
 
-        # Group direct message
-        if recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+        # Group direct message (3+ participants)
+        if (
+            recipient is not None
+            and recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+            and len(all_user_ids) > 2
+        ):
             cond = column("recipient_id", Integer) == recipient.id
             return query.where(maybe_negate(cond))
 
@@ -593,6 +603,14 @@ class NarrowBuilder:
             # complex query to get messages between these two users
             # with either of them as the sender.
             self_recipient_id = self.user_profile.recipient_id
+            other_recipient_id = other_participant.recipient_id
+
+            # Include messages from both PERSONAL and DM group recipients.
+            # This handles the migration period where messages may exist
+            # with either recipient type.
+            group_recipient: Iterable[ClauseElement] = tuple()
+            if recipient and recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+                group_recipient = (column("recipient_id", Integer) == recipient.id,)
             cond = and_(
                 column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
                 column("realm_id", Integer) == self.realm.id,
@@ -603,18 +621,28 @@ class NarrowBuilder:
                     ),
                     and_(
                         column("sender_id", Integer) == self.user_profile.id,
-                        column("recipient_id", Integer) == recipient.id,
+                        column("recipient_id", Integer) == other_recipient_id,
                     ),
+                    *group_recipient,
                 ),
             )
+
             return query.where(maybe_negate(cond))
 
         # Direct message with self
+        # Build condition for PERSONAL recipients (bidirectional)
+        # Include messages from both PERSONAL and DM group recipients
+        personal_cond = column("recipient_id", Integer) == self.user_profile.recipient_id
+        if recipient is not None and recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+            personal_cond = or_(
+                personal_cond,
+                column("recipient_id", Integer) == recipient.id,
+            )
         cond = and_(
             column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
             column("realm_id", Integer) == self.realm.id,
             column("sender_id", Integer) == self.user_profile.id,
-            column("recipient_id", Integer) == recipient.id,
+            personal_cond,
         )
         return query.where(maybe_negate(cond))
 

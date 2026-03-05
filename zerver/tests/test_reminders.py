@@ -76,7 +76,8 @@ class RemindersTest(ZulipTestCase):
             f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/test/near/{msg_id}) in [#Verona > test](#narrow/channel/3-Verona/topic/test/with/{msg_id}):\n```quote\n{msg_content}\n```"
         )
 
-    def test_schedule_reminder(self) -> None:
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_schedule_reminder_using_personal_recipient(self) -> None:
         self.login("hamlet")
         content = "Test message"
         scheduled_delivery_timestamp = int(time.time() + 86400)
@@ -91,7 +92,7 @@ class RemindersTest(ZulipTestCase):
             self.get_channel_message_reminder_content(content, message_id),
         )
         # Recipient and sender are the same for reminders.
-        self.assertEqual(scheduled_message.recipient.type_id, self.example_user("hamlet").id)
+        self.assertEqual(scheduled_message.recipient, self.example_user("hamlet").recipient)
         self.assertEqual(scheduled_message.sender, self.example_user("hamlet"))
         self.assertEqual(
             scheduled_message.scheduled_timestamp,
@@ -105,6 +106,7 @@ class RemindersTest(ZulipTestCase):
 
         # Scheduling a direct message with user IDs is successful.
         othello = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
         message_id = self.send_dm_from_hamlet_to_othello(content)
         result = self.do_schedule_reminder(message_id, scheduled_delivery_timestamp)
         self.assert_json_success(result)
@@ -113,8 +115,8 @@ class RemindersTest(ZulipTestCase):
             scheduled_message.content,
             self.get_dm_reminder_content(content, message_id, [othello]),
         )
-        self.assertEqual(scheduled_message.recipient.type_id, self.example_user("hamlet").id)
-        self.assertEqual(scheduled_message.sender, self.example_user("hamlet"))
+        self.assertEqual(scheduled_message.recipient, hamlet.recipient)
+        self.assertEqual(scheduled_message.sender, hamlet)
         self.assertEqual(
             scheduled_message.scheduled_timestamp,
             timestamp_to_datetime(scheduled_delivery_timestamp),
