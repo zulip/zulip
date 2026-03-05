@@ -145,6 +145,7 @@ run_test("paste_handler reverse linkify", ({override, override_rewire}) => {
             pattern: "#D(?P<id>[0-9]{2,8})",
             url_template: "https://github.com/zulip/zulip-desktop/pull/{id}",
             reverse_template: "#D{id}",
+            alternative_url_templates: ["https://github.com/zulip/zulip-desktop/issues/{id}"],
         },
     ]);
 
@@ -218,6 +219,13 @@ run_test("paste_handler reverse linkify", ({override, override_rewire}) => {
             paste_text: "https://github.com/zulip/zulip-desktop/pull/1359 dummy text.",
             expected: "#D1359 dummy text.",
             expected_undo_texts: ["https://github.com/zulip/zulip-desktop/pull/1359 dummy text."],
+        },
+        {
+            // Reverse linkify should work for alternative URL templates.
+            paste_html: "",
+            paste_text: "https://github.com/zulip/zulip-desktop/issues/42",
+            expected: "#D42",
+            expected_undo_texts: ["https://github.com/zulip/zulip-desktop/issues/42"],
         },
     ];
 

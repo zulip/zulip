@@ -367,6 +367,59 @@ run_test("reverse_linkify_text", () => {
         compose_ui.reverse_linkify_text("https://github.com/zulip/zulip-flutter/pull/123"),
         "zulip-flutter#123",
     );
+
+    // Alternative URL templates: match URLs against both primary and alternatives.
+    linkifiers.update_linkifier_rules([
+        {
+            id: 7,
+            pattern: "#(?P<id>\\d+)",
+            url_template: "https://github.com/zulip/zulip/issues/{id}",
+            reverse_template: "#{id}",
+            alternative_url_templates: ["https://github.com/zulip/zulip/pull/{id}"],
+        },
+    ]);
+    // Primary URL template still works.
+    assert.equal(
+        compose_ui.reverse_linkify_text("https://github.com/zulip/zulip/issues/123"),
+        "#123",
+    );
+    // Alternative URL template also works.
+    assert.equal(
+        compose_ui.reverse_linkify_text("https://github.com/zulip/zulip/pull/456"),
+        "#456",
+    );
+    // Non-matching URL returns null.
+    assert.equal(compose_ui.reverse_linkify_text("https://github.com/zulip/zulip/wiki/789"), null);
+
+    // Multiple alternative URL templates.
+    linkifiers.update_linkifier_rules([
+        {
+            id: 8,
+            pattern: "#(?P<id>\\d+)",
+            url_template: "https://github.com/zulip/zulip/issues/{id}",
+            reverse_template: "#{id}",
+            alternative_url_templates: [
+                "https://github.com/zulip/zulip/pull/{id}",
+                "https://github.com/zulip/zulip/discussions/{id}",
+            ],
+        },
+    ]);
+    assert.equal(
+        compose_ui.reverse_linkify_text("https://github.com/zulip/zulip/discussions/42"),
+        "#42",
+    );
+
+    // Alternative templates with no reverse_template are ignored.
+    linkifiers.update_linkifier_rules([
+        {
+            id: 9,
+            pattern: "#(?P<id>\\d+)",
+            url_template: "https://github.com/zulip/zulip/issues/{id}",
+            reverse_template: null,
+            alternative_url_templates: ["https://github.com/zulip/zulip/pull/{id}"],
+        },
+    ]);
+    assert.equal(compose_ui.reverse_linkify_text("https://github.com/zulip/zulip/pull/123"), null);
 });
 
 run_test("quote_message", ({override, override_rewire}) => {
