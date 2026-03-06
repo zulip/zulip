@@ -211,8 +211,8 @@ run_test("arrows on pills", ({mock_template}) => {
     const $prev_pill_stub = $.create("prev-pill-stub");
     const $next_pill_stub = $.create("next-pill-stub");
     const $pill_stub = $.create("pill-stub");
-    $pill_stub.set_prev_results("*", $prev_pill_stub);
-    $pill_stub.set_next_results("*", $next_pill_stub);
+    $pill_stub.set_prev($prev_pill_stub);
+    $pill_stub.set_next($next_pill_stub);
 
     $container.set_find_results(".pill:focus", $pill_stub);
 
@@ -408,8 +408,8 @@ run_test("insert_remove", ({mock_template}) => {
     $container.set_find_results(".pill:focus", yellow_pill.$element);
 
     const $prev_pill_stub = $("<prev-stub>");
-    yellow_pill.$element.set_prev_results("*", $prev_pill_stub);
-    yellow_pill.$element.set_next_results("*", $("<next-stub>"));
+    yellow_pill.$element.set_prev($prev_pill_stub);
+    yellow_pill.$element.set_next($("<next-stub>"));
 
     key_handler = $container.get_on_handler("keydown", ".pill");
     key_handler.call(
@@ -428,8 +428,8 @@ run_test("insert_remove", ({mock_template}) => {
     assert.deepEqual(widget.items(), [items.blue, items.red]);
 
     const $focus_pill_stub = $(pill_html("RED"));
-    $focus_pill_stub.set_prev_results("*", $prev_pill_stub);
-    $focus_pill_stub.set_next_results("*", $("<next-stub>"));
+    $focus_pill_stub.set_prev($prev_pill_stub);
+    $focus_pill_stub.set_next($("<next-stub>"));
 
     $container.set_find_results(".pill:focus", $focus_pill_stub);
 
