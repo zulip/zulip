@@ -1088,10 +1088,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             found_url.result[0] for found_url in found_urls if not found_url.family.in_blockquote
         }
 
-        # Set has_link and similar flags whenever a message is processed by Markdown
+        # Update message.has_link attribute.
         if self.zmd.zulip_message:
             self.zmd.zulip_message.has_link = len(found_urls) > 0
-            self.zmd.zulip_message.has_image = False  # This is updated in self.add_a
 
             for url in unique_urls:
                 maybe_add_attachment_path_id(url, self.zmd)
@@ -2189,7 +2188,11 @@ class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
             assert isinstance(img, Element)
             img = self.zulip_specific_src_changes(img)
             if img is not None:
+                # Update message.has_image attribute.
+                if self.zmd.zulip_message:
+                    self.zmd.zulip_message.has_image = True
                 return img, match_start, index
+
         return None, None, None
 
 
