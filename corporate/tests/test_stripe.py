@@ -22,6 +22,7 @@ import stripe
 import time_machine
 from django.conf import settings
 from django.core import signing
+from django.test import override_settings
 from django.urls.resolvers import get_resolver
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now as timezone_now
@@ -7433,6 +7434,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_approve_realm_sponsorship(self) -> None:
         realm = get_realm("zulip")
         self.assertNotEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)

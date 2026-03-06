@@ -4,6 +4,7 @@ from unittest import mock
 import orjson
 import requests
 import responses
+from django.test import override_settings
 
 from version import ZULIP_VERSION
 from zerver.actions.create_user import do_create_user
@@ -118,6 +119,7 @@ class DoRestCallTests(ZulipTestCase):
         _helper("")
         _helper(None)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_retry_request(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
         mock_event = self.mock_event(bot_user)
@@ -179,6 +181,7 @@ The webhook got a response with status code *500*.""",
             self.assertEqual(resp, None)
         self.assert_length(logs.output, 1)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_fail_request(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
         mock_event = self.mock_event(bot_user)
@@ -240,6 +243,7 @@ The webhook got a response with status code *400*.""",
             }
             self.assertLessEqual(headers.items(), prepared_request.headers.items())
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_error_handling(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
         mock_event = self.mock_event(bot_user)
@@ -270,6 +274,7 @@ The webhook got a response with status code *400*.""",
 
             self.assertEqual(i.output, log_output)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_request_exception(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
         mock_event = self.mock_event(bot_user)
@@ -302,6 +307,7 @@ I'm a generic exception :(
         assert bot_user.bot_owner is not None
         self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_jsonable_exception(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
         mock_event = self.mock_event(bot_user)
@@ -331,6 +337,7 @@ The outgoing webhook server attempted to send a message in Zulip, but that reque
         assert bot_user.bot_owner is not None
         self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_invalid_response_format(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
         mock_event = self.mock_event(bot_user)
@@ -358,6 +365,7 @@ The outgoing webhook server attempted to send a message in Zulip, but that reque
         assert bot_user.bot_owner is not None
         self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_invalid_json_in_response(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
         mock_event = self.mock_event(bot_user)
@@ -466,6 +474,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         self.assertEqual(qotd_req["message"]["content"], "some content")
         self.assertEqual(qotd_req["message"]["sender_id"], sender.id)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     @responses.activate
     def test_pm_to_outgoing_webhook_bot(self) -> None:
         bot_owner = self.example_user("othello")
@@ -496,6 +505,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             Recipient.PERSONAL,
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     @responses.activate
     def test_pm_to_outgoing_webhook_bot_for_407_error_code(self) -> None:
         bot_owner = self.example_user("othello")
@@ -564,6 +574,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         self.assertEqual(last_message.topic_name(), "bar")
         self.assert_message_stream_name(last_message, "Denmark")
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     @responses.activate
     def test_stream_message_failure_to_outgoing_webhook_bot(self) -> None:
         realm = get_realm("zulip")

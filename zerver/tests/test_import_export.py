@@ -894,6 +894,7 @@ class RealmImportExportTest(ExportFile):
         exported_huddle_ids = self.get_set(realm_data["zerver_huddle"], "id")
         self.assertEqual(exported_huddle_ids, set())
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_export_realm_with_member_consent(self) -> None:
         realm = Realm.objects.get(string_id="zulip")
 

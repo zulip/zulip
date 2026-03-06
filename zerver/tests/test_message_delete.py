@@ -4,6 +4,7 @@ from unittest import mock
 
 import orjson
 from django.db import IntegrityError
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_delete import do_delete_messages
@@ -240,6 +241,7 @@ class DeleteMessageTest(ZulipTestCase):
         self.assertCountEqual([first_msg_id, second_msg_id], events[1]["event"]["message_ids"])
         self.assertCountEqual([cordelia.id, iago.id], events[1]["users"])
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_do_delete_messages_grouping_logic(self) -> None:
         realm = get_realm("zulip")
         cordelia = self.example_user("cordelia")

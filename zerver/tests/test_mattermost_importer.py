@@ -723,6 +723,7 @@ class MatterMostImporter(MattermostImportTestBase):
             {malfoy_id, pansy_id},
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_convert_direct_message_group_data(self) -> None:
         fixture_file_name = self.fixture_file_name(
             "export.json", "mattermost_fixtures/direct_channel"
@@ -1237,6 +1238,7 @@ class MatterMostImporter(MattermostImportTestBase):
 
         self.verify_emoji_code_foreign_keys()
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_do_convert_data_with_direct_messages(self) -> None:
         mattermost_data_dir = self.fixture_file_name("direct_channel", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
