@@ -1014,7 +1014,7 @@ input[type="checkbox"] {
 
 .add-new-playground-box {
     & button {
-        margin-left: calc(10em + 20px) !important;
+        margin-left: calc(10em + 20px);
     }
     margin-bottom: 15px;
 
@@ -2189,6 +2189,15 @@ label.preferences-radio-choice-label {
         .profile_field_name,
         .profile_field_hint {
             min-width: 8em;
+        }
+    }
+    .add-new-playground-box {
+        #submit_playground_button {
+            margin-left: 0;
+            width: calc(
+                100% - var(--input-horizontal-padding) -
+                    var(--input-border-width)
+            );
         }
     }
 }
