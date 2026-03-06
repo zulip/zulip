@@ -217,10 +217,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         #### These realm administration settings are valuable to document:
         # Delete a data export.
         "/export/realm/{export_id}",
-        # Single-stream settings alternative to the bulk endpoint
-        # users/me/subscriptions/properties; probably should just be a
-        # section of the same page.
-        "/users/me/subscriptions/{stream_id}",
         # Default stream groups are an unfinished feature and therefore
         # shouldn't be added to the documentation until that's completed.
         "/default_stream_groups/create",
@@ -996,14 +992,9 @@ class OpenAPIRegexTest(ZulipTestCase):
         # Some of the undocumented endpoints which are very similar to
         # some of the documented endpoints.
         assert find_openapi_endpoint("/users/me/presence") is None
-        assert find_openapi_endpoint("/users/me/subscriptions/23") is None
         assert find_openapi_endpoint("/users/iago/subscriptions/23") is None
         assert find_openapi_endpoint("/messages/matches_narrow") is None
         # Making sure documented endpoints are matched correctly.
-        assert (
-            find_openapi_endpoint("/users/23/subscriptions/21")
-            == "/users/{user_id}/subscriptions/{stream_id}"
-        )
         assert (
             find_openapi_endpoint("/users/iago@zulip.com/presence")
             == "/users/{user_id_or_email}/presence"
