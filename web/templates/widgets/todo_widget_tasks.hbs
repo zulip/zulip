@@ -12,6 +12,11 @@
                 <strong>{{ task }}</strong>{{#if desc }}: {{ desc }}{{/if}}
                 {{/if}}
             </span>
+            {{#unless completed}}
+            <button class="convert-to-task-btn" data-task="{{ task }}" data-desc="{{ desc }}" title="Add to My Tasks">
+                Add to My Tasks
+            </button>
+            {{/unless}}
         </label>
     </li>
 {{/each}}

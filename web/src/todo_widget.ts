@@ -13,12 +13,51 @@ import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import * as channel from "./channel.ts";
 import type {Event} from "./widget_data.ts";
 import type {AnyWidgetData} from "./widget_schema.ts";
 
 // Any single user should send add a finite number of tasks
 // to a todo list. We arbitrarily pick this value.
 const MAX_IDX = 1000;
+
+function create_task_from_todo(message_id: number, title: string, description: string): void {
+    const url = `/json/messages/${message_id}/tasks`;
+    
+    // Check if task already exists by checking for buttons with checkmark
+    const $btn = $(`.convert-to-task-btn[data-task="${title.replace(/"/g, '\\"')}"]`);
+    if ($btn.hasClass('task-added')) {
+        blueslip.warn("Task already added");
+        return;
+    }
+    
+    // Disable button and show loading
+    $btn.prop('disabled', true).text('Adding...');
+    
+    channel.post({
+        url,
+        data: {
+            title,
+            description,
+        },
+        success: (response: any) => {
+            blueslip.info("Task created successfully", response);
+            
+            // Mark button as added with checkmark
+            $btn.addClass('task-added')
+                .prop('disabled', true)
+                .text('✓ Added')
+                .css('background-color', '#28a745')
+                .css('color', 'white');
+        },
+        error: (xhr: JQuery.jqXHR) => {
+            blueslip.error("Failed to create task", xhr);
+            
+            // Restore button on error
+            $btn.prop('disabled', false).text('Add to My Tasks');
+        },
+    });
+}
 
 export const todo_widget_extra_data_schema = z.object({
     task_list_title: z.optional(z.string()),
@@ -531,6 +570,23 @@ export function activate({
 
             const data = task_data.handle.strike.outbound(key);
             callback(data);
+        });
+
+        // Handle "Convert to Task" button clicks
+        $elem.find(".convert-to-task-btn").on("click", (e) => {
+            e.stopPropagation();
+            
+            const $btn = $(e.target);
+            const taskTitle = $btn.attr("data-task");
+            const taskDesc = $btn.attr("data-desc") || "";
+            
+            if (!taskTitle) {
+                blueslip.warn("No task title found");
+                return;
+            }
+            
+            // Call the backend API to create a task
+            create_task_from_todo(message.id, taskTitle, taskDesc);
         });
 
         update_add_task_button();

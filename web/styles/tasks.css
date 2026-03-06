@@ -1,0 +1,211 @@
+/* Tasks Overlay Styles */
+#tasks-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: none;
+}
+
+.tasks-overlay-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: var(--body-background-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tasks-overlay-header h2 {
+    margin: 0;
+    color: var(--body-text-color);
+}
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--body-text-color);
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.close-button:hover {
+    background: var(--button-hover-background-color);
+}
+
+.tasks-overlay-content {
+    background: var(--body-background-color);
+    height: calc(100% - 80px);
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.filter-tabs button {
+    background: var(--button-background-color);
+    color: var(--button-text-color);
+    border: 1px solid var(--button-border-color);
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.filter-tabs button:hover {
+    background: var(--button-hover-background-color);
+}
+
+.filter-tabs button.active {
+    background: var(--button-selected-background-color);
+    border-color: var(--button-selected-border-color);
+}
+
+.tasks-list {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.task-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background: var(--body-background-color);
+    transition: all 0.2s;
+}
+
+.task-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-color: var(--link-color);
+}
+
+.task-item.completed {
+    opacity: 0.7;
+    background: var(--message-read-background-color);
+}
+
+.task-checkbox {
+    margin-right: 15px;
+    margin-top: 2px;
+}
+
+.task-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.task-title {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 5px;
+    color: var(--body-text-color);
+}
+
+.task-item.completed .task-title {
+    text-decoration: line-through;
+    color: var(--muted-text-color);
+}
+
+.task-meta {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 12px;
+    color: var(--muted-text-color);
+    margin-bottom: 5px;
+}
+
+.task-creator {
+    font-weight: 500;
+}
+
+.task-due-date {
+    color: var(--warning-color);
+    font-weight: 500;
+}
+
+.task-message-link {
+    color: var(--link-color);
+    text-decoration: none;
+    margin-left: auto;
+}
+
+.task-message-link:hover {
+    text-decoration: underline;
+}
+
+.task-description {
+    font-size: 14px;
+    color: var(--body-text-color);
+    margin-top: 8px;
+    line-height: 1.4;
+}
+
+.task-actions {
+    margin-left: 15px;
+}
+
+.delete-task-btn {
+    background: var(--error-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: background-color 0.2s;
+}
+
+.delete-task-btn:hover {
+    background: var(--error-hover-color);
+}
+
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    font-size: 18px;
+    color: var(--muted-text-color);
+}
+
+.loading-spinner::after {
+    content: "";
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border-color);
+    border-top: 3px solid var(--link-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
