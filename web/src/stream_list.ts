@@ -19,6 +19,7 @@ import * as compose_actions from "./compose_actions.ts";
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as left_sidebar_filter from "./left_sidebar_filter.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import {localstorage} from "./localstorage.ts";
 import * as mouse_drag from "./mouse_drag.ts";
@@ -340,12 +341,14 @@ export function build_stream_list(force_rerender: boolean): void {
     //
     // The main logic to build the list is in stream_list_sort.ts
     const streams = stream_data.subscribed_stream_ids();
-    const stream_groups = stream_list_sort.sort_groups(
-        streams,
-        ui_util.get_left_sidebar_search_term(),
-    );
+    const search_term = ui_util.get_left_sidebar_search_term();
+    const topics_state = left_sidebar_filter.get_effective_topics_state_for_search();
+    const stream_groups = stream_list_sort.sort_groups(streams, search_term, topics_state);
+    const is_left_sidebar_search_active = search_term !== "" || topics_state !== "";
 
     if (stream_groups.same_as_before && !force_rerender) {
+        set_sections_states();
+        $("#streams_list").toggleClass("is_searching", is_left_sidebar_search_active);
         return;
     }
 
@@ -413,10 +416,10 @@ export function build_stream_list(force_rerender: boolean): void {
                 section.id !== "pinned-streams",
             );
         }
-        // If a section appears empty, due to only having inactive or muted channels,
-        // we collapse it, since there's nothing to easily see. But don't do this during
-        // search, since sections can enter that state temporarily.
-        if (!searching()) {
+        // If a section appears empty due to only having inactive or muted channels,
+        // we collapse it. But don't do this while any sidebar filter is active,
+        // since sections can enter that state temporarily.
+        if (!is_left_sidebar_search_active) {
             if (!is_empty && section.default_visible_streams.length === 0) {
                 collapsed_sections.add(section.id);
                 sections_with_only_inactive_or_muted.add(section.id);
@@ -433,8 +436,8 @@ export function build_stream_list(force_rerender: boolean): void {
     update_stream_section_mention_indicators();
     update_unread_counts_visibility();
     set_sections_states();
-    // Show inactive channels when user starts typing.
-    $("#streams_list").toggleClass("is_searching", ui_util.get_left_sidebar_search_term() !== "");
+    // Show inactive channels while sidebar filtering is active.
+    $("#streams_list").toggleClass("is_searching", is_left_sidebar_search_active);
 }
 
 export function mention_counts_by_section(): Map<
@@ -575,21 +578,22 @@ function restore_collapsed_sections_state(): void {
 }
 
 export let set_sections_states = function (): void {
-    if (ui_util.get_left_sidebar_search_term() === "") {
-        // Restore the collapsed state of sections.
-        for (const section_id of collapsed_sections) {
-            const $container = $(`#stream-list-${section_id}-container`);
-            // This can happen if the section isn't currently visible
-            // (e.g. the setting to show folders is off).
-            if ($container.length === 0) {
-                continue;
-            }
-            $container.toggleClass("collapsed", true);
-            $container
-                .find(".stream-list-section-toggle")
-                .toggleClass("rotate-icon-down", false)
-                .toggleClass("rotate-icon-right", true);
+    const is_left_sidebar_search_active =
+        ui_util.get_left_sidebar_search_term() !== "" ||
+        left_sidebar_filter.get_effective_topics_state_for_search() !== "";
+    const restore_collapsed_state = !is_left_sidebar_search_active;
+    for (const section_id of collapsed_sections) {
+        const $container = $(`#stream-list-${section_id}-container`);
+        // This can happen if the section isn't currently visible
+        // (e.g. the setting to show folders is off).
+        if ($container.length === 0) {
+            continue;
         }
+        $container.toggleClass("collapsed", restore_collapsed_state);
+        $container
+            .find(".stream-list-section-toggle")
+            .toggleClass("rotate-icon-down", !restore_collapsed_state)
+            .toggleClass("rotate-icon-right", restore_collapsed_state);
     }
     for (const section_id of sections_showing_inactive_or_muted) {
         $(`#stream-list-${section_id}-container`).toggleClass("showing-inactive-or-muted", true);
@@ -1281,7 +1285,12 @@ export function on_sidebar_channel_click(
     e: JQuery.ClickEvent | null,
     show_channel_feed: (stream_id: number, trigger: string) => void,
 ): void {
-    clear_search();
+    const had_search_term = ui_util.get_left_sidebar_search_term() !== "";
+    left_sidebar_filter.clear_query_without_updating();
+    if (had_search_term) {
+        $("#left-sidebar-filter-input").trigger("input");
+    }
+    $("#left-sidebar-filter-query").trigger("blur");
     if (e !== null) {
         e.preventDefault();
         e.stopPropagation();
@@ -1501,14 +1510,21 @@ function toggle_inactive_or_muted_channels($section_container: JQuery): void {
 }
 
 export function searching(): boolean {
-    return $(".left-sidebar-search-input").expectOne().is(":focus");
+    const $filter_input = $("#left-sidebar-filter-query").expectOne();
+    if ($filter_input.is(":focus")) {
+        return true;
+    }
+
+    return $("#left-sidebar-filter-input .pill").is(":focus");
 }
 
 export function clear_search(): void {
-    const $filter = $(".left-sidebar-search-input").expectOne();
-    if ($filter.val() !== "") {
-        $filter.val("");
-        $filter.trigger("input");
+    const $filter = $("#left-sidebar-filter-query").expectOne();
+    const has_search_value = $filter.text().trim() !== "";
+    const has_topic_state_filter = left_sidebar_filter.get_topics_state() !== "";
+    if (has_search_value || has_topic_state_filter) {
+        $("#left-sidebar-search .input-close-filter-button").trigger("click");
+        return;
     }
     $filter.trigger("blur");
 }

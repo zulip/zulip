@@ -42,11 +42,14 @@ mock_esm("../src/unread", {
 
 const {Filter} = zrequire("../src/filter");
 const left_sidebar_navigation_area = zrequire("left_sidebar_navigation_area");
+const left_sidebar_filter = zrequire("left_sidebar_filter");
 const stream_data = zrequire("stream_data");
 const stream_list = zrequire("stream_list");
 stream_list.set_update_inbox_channel_view_callback(noop);
 const stream_list_sort = zrequire("stream_list_sort");
+const stream_topic_history = zrequire("stream_topic_history");
 const user_groups = zrequire("user_groups");
+const user_topics = zrequire("user_topics");
 const {initialize_user_settings} = zrequire("user_settings");
 const settings_config = zrequire("settings_config");
 mock_esm("../src/settings_data", {
@@ -157,6 +160,7 @@ function test_ui(label, f) {
     run_test(label, (helpers) => {
         stream_data.clear_subscriptions();
         stream_list.stream_sidebar.rows.clear();
+        $("#left-sidebar-filter-query").text("");
         f(helpers);
     });
 }
@@ -173,6 +177,7 @@ test_ui("create_sidebar_row", ({override, override_rewire, mock_template}) => {
     override_rewire(stream_list, "update_dom_with_unread_counts", noop);
     override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
     override_rewire(left_sidebar_navigation_area, "update_dom_with_unread_counts", noop);
+    override_rewire(stream_list, "set_sections_states", noop);
 
     const pinned_streams = [];
     $("#stream-list-pinned-streams")[0].append = (...streams) => {
@@ -284,6 +289,79 @@ test_ui("pinned_streams_never_inactive", ({mock_template, override_rewire}) => {
 
     row.update_whether_active();
     assert.ok(!$devel_sidebar.hasClass("inactive_stream"));
+});
+
+test_ui("clear_search", () => {
+    const scenarios = [
+        {
+            search_term: "",
+            expected_filter_events: ["blur"],
+            expected_close_button_events: [],
+        },
+        {
+            search_term: "de",
+            expected_filter_events: [],
+            expected_close_button_events: ["click"],
+        },
+    ];
+
+    for (const scenario of scenarios) {
+        const $filter = $("#left-sidebar-filter-query");
+        $filter.text(scenario.search_term);
+        const filter_events = [];
+        $filter.trigger = (event_name) => {
+            filter_events.push(event_name);
+        };
+
+        const close_button_events = [];
+        const $close_button = $("#left-sidebar-search .input-close-filter-button");
+        $close_button.trigger = (event_name) => {
+            close_button_events.push(event_name);
+        };
+
+        stream_list.clear_search();
+
+        assert.deepEqual(filter_events, scenario.expected_filter_events);
+        assert.deepEqual(close_button_events, scenario.expected_close_button_events);
+    }
+});
+
+test_ui("on_sidebar_channel_click_keeps_topic_state_filter", ({override_rewire}) => {
+    stream_data.add_sub_for_tests(develSub);
+
+    override_rewire(left_sidebar_filter, "left_sidebar_filter_pill_widget", {
+        items: () => [{syntax: "is:followed"}],
+    });
+
+    const scenarios = [
+        {search_term: "de", expected_container_events: ["input"]},
+        {search_term: "", expected_container_events: []},
+    ];
+
+    for (const scenario of scenarios) {
+        const $filter = $("#left-sidebar-filter-query");
+        const $pill_container = $("#left-sidebar-filter-input");
+        $filter.text(scenario.search_term);
+        $filter.empty = () => {
+            $filter.text("");
+            return $filter;
+        };
+
+        const container_events = [];
+        $pill_container.trigger = (event_name) => {
+            container_events.push(event_name);
+        };
+
+        let show_channel_feed_called = false;
+        stream_list.on_sidebar_channel_click(develSub.stream_id, null, () => {
+            show_channel_feed_called = true;
+        });
+
+        assert.deepEqual(container_events, scenario.expected_container_events);
+        assert.equal($filter.text(), "");
+        assert.equal(left_sidebar_filter.get_topics_state(), "is:followed");
+        assert.ok(show_channel_feed_called);
+    }
 });
 
 function add_row(sub) {
@@ -535,6 +613,56 @@ test_ui("sort_streams", ({override_rewire, mock_template}) => {
     assert.ok(stream_list.stream_sidebar.has_row_for(stream_id));
     stream_list.remove_sidebar_row(stream_id);
     assert.ok(!stream_list.stream_sidebar.has_row_for(stream_id));
+});
+
+test_ui("build_stream_list_ignores_non_applicable_topic_state_filter", ({override_rewire}) => {
+    $("#left-sidebar-filter-query").text("");
+    $("#streams_list").toggleClass("is_searching", false);
+
+    override_rewire(stream_list, "update_dom_with_unread_counts", noop);
+    override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
+    override_rewire(left_sidebar_navigation_area, "update_dom_with_unread_counts", noop);
+    override_rewire(stream_list, "set_sections_states", noop);
+
+    initialize_stream_data();
+    stream_list.build_stream_list(true);
+
+    const subs = [develSub, RomeSub, testSub, announceSub, DenmarkSub, carSub];
+    for (const sub of subs) {
+        const history = stream_topic_history.find_or_create(sub.stream_id);
+        history.add_or_update("followed topic", 2);
+        user_topics.update_user_topics(
+            sub.stream_id,
+            sub.name,
+            "followed topic",
+            user_topics.all_visibility_policies.FOLLOWED,
+            1,
+        );
+    }
+
+    override_rewire(left_sidebar_filter, "left_sidebar_filter_pill_widget", {
+        items: () => [{syntax: "is:followed"}],
+    });
+
+    const stream_groups = stream_list_sort.sort_groups(
+        stream_data.subscribed_stream_ids(),
+        "",
+        "is:followed",
+    );
+    assert.ok(stream_groups.same_as_before);
+
+    let set_sections_states_called = false;
+    override_rewire(stream_list, "set_sections_states", () => {
+        set_sections_states_called = true;
+    });
+
+    stream_list.build_stream_list(false);
+
+    assert.ok(set_sections_states_called);
+    assert.ok(!$("#streams_list").hasClass("is_searching"));
+
+    stream_topic_history.reset();
+    user_topics.set_user_topics([]);
 });
 
 test_ui("separators_only_pinned_and_dormant", ({override_rewire}) => {
