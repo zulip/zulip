@@ -2200,6 +2200,13 @@ label.preferences-radio-choice-label {
             );
         }
     }
+
+    .settings_panel_list_header {
+        & .search-container {
+            margin-bottom: 0.5em;
+        }
+    }
+
 }
 
 @media (width < $ml_min) {
