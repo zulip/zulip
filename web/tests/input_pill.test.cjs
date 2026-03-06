@@ -439,14 +439,12 @@ run_test("insert_remove", ({mock_template}) => {
     $container.set_find_results(".pill:focus", yellow_pill.$element);
 
     let prev_pill_focused = false;
-    const $prev_pill_stub = $("<prev-stub>");
-    $prev_pill_stub.trigger = (type) => {
+    const red_pill = pills.find((pill) => pill.item.color_name === "RED");
+    red_pill.$element.trigger = (type) => {
         if (type === "focus") {
             prev_pill_focused = true;
         }
     };
-    yellow_pill.$element.prev = () => $prev_pill_stub;
-    yellow_pill.$element.next = () => $("<next-stub>");
 
     key_handler = $container.get_on_handler("keydown", ".pill");
     key_handler.call(
@@ -464,18 +462,17 @@ run_test("insert_remove", ({mock_template}) => {
     prev_pill_focused = false;
     assert.deepEqual(widget.items(), [items.blue, items.red]);
 
-    const $focus_pill_stub = {
-        prev: () => $prev_pill_stub,
-        next: () => $("<next-stub>"),
-        [0]: "<pill-stub RED>",
-        length: 1,
-    };
+    $container.set_find_results(".pill:focus", red_pill.$element);
 
-    $container.set_find_results(".pill:focus", $focus_pill_stub);
-
-    const red_pill = pills.find((pill) => pill.item.color_name === "RED");
     // Disabled pill should not be removed.
     red_pill.disabled = true;
+
+    const blue_pill = pills.find((pill) => pill.item.color_name === "BLUE");
+    blue_pill.$element.trigger = (type) => {
+        if (type === "focus") {
+            prev_pill_focused = true;
+        }
+    };
 
     key_handler = $container.get_on_handler("keydown", ".pill");
     key_handler({
