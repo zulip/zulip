@@ -3,6 +3,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import render_editable_pill from "../templates/editable_pill.hbs";
 import render_input_pill from "../templates/input_pill.hbs";
 
 import * as keydown_util from "./keydown_util.ts";
@@ -63,6 +64,7 @@ type InputPillStore<ItemType> = {
     split_text_on_comma: boolean;
     convert_to_pill_on_enter: boolean;
     show_outline_on_invalid_input: boolean;
+    setupTypeahead?: ($input: JQuery) => void;
 };
 
 // These are the functions that are exposed to other modules.
@@ -84,6 +86,7 @@ export type InputPillContainer<ItemType> = {
     onPillExpand: (callback: (pill: JQuery) => void) => void;
     onTextInputHook: (callback: () => void) => void;
     createPillonPaste: (callback: () => void) => void;
+    addSetupTypeahead: (callback: ($input: JQuery) => void) => void;
     clear: (quiet?: boolean) => void;
     clear_text: () => void;
     getCurrentText: () => string | null;
@@ -298,29 +301,20 @@ export function create<ItemType extends {type: string}>(
             return store.pills.find((pill) => pill.$element[0] === element);
         },
 
-        // This searches for a pill using a predicate function and returns it,
-        // or undefined if no pill matches.
         getPillByPredicate(
             predicate: (item: ItemType) => boolean,
         ): InputPill<ItemType> | undefined {
             return store.pills.find((pill) => predicate(pill.item));
         },
 
-        // Updates a pill's item data and refreshes its HTML representation in-place.
-        // This is useful for real-time updates like user deactivated status.
         updatePill(element: HTMLElement, new_item: ItemType): void {
             const pill = this.getByElement(element);
             if (!pill) {
                 return;
             }
 
-            // Update the item data
             pill.item = new_item;
-
-            // Regenerate the pill HTML with updated data
             const pill_html = funcs.generatePillHtml(new_item, pill.disabled);
-
-            // Replace the pill element in the DOM
             const $new_element = $(pill_html);
             pill.$element.replaceWith($new_element);
             pill.$element = $new_element;
@@ -341,7 +335,109 @@ export function create<ItemType extends {type: string}>(
             }
             return true;
         },
+
+        startEditingPill(pill: InputPill<ItemType>): void {
+            if (pill.disabled) {
+                return;
+            }
+            if (editing_pill !== undefined) {
+                return;
+            }
+            editing_pill = pill;
+
+            const text = store.get_text_from_item(pill.item);
+            const $edit = $(render_editable_pill());
+            $edit.text(text);
+
+            pill.$element.before($edit);
+            pill.$element.detach();
+
+            $edit.trigger("focus");
+            ui_util.place_caret_at_end($edit[0]!);
+
+            if (store.setupTypeahead !== undefined) {
+                store.setupTypeahead($edit);
+            }
+
+            $edit.on("keydown", (e) => {
+                if (keydown_util.is_enter_event(e)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    funcs.commitEditingPill($edit, false);
+                } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    funcs.cancelEditingPill($edit);
+                }
+            });
+
+            // Pass triggered_by_blur so commit doesn't steal focus and cause
+            // an infinite loop; guard against Enter/Escape having already
+            // cleared editing_pill before blur fires.
+            $edit.on("blur", () => {
+                if (editing_pill === pill) {
+                    funcs.commitEditingPill($edit, true);
+                }
+            });
+        },
+
+        commitEditingPill($edit: JQuery, triggered_by_blur: boolean): void {
+            if (editing_pill === undefined) {
+                return;
+            }
+            const pill = editing_pill;
+            editing_pill = undefined;
+
+            const text = $edit.text().trim();
+
+            if (text.length === 0) {
+                // pill.$element is detached but still referenced in store.pills.
+                $edit.remove();
+                funcs.removePill(pill.$element[0]!, "close");
+                if (!triggered_by_blur) {
+                    store.$input.trigger("focus");
+                }
+                return;
+            }
+
+            // Remove first so appendPill()'s duplicate check allows an unchanged value.
+            funcs.removePill(pill.$element[0]!, "close");
+            const success = funcs.appendPill(text);
+
+            if (success) {
+                // Move the new pill into the edit span's position.
+                const $new_pill = store.pills.at(-1)!.$element;
+                $edit.before($new_pill);
+                $edit.remove();
+                if (!triggered_by_blur) {
+                    store.$input.trigger("focus");
+                }
+            } else {
+                // quiet=false so onPillCreate fires to keep state consistent.
+                funcs.appendValidatedData(pill.item, pill.disabled, false);
+                const $restored = store.pills.at(-1)!.$element;
+                $edit.before($restored);
+                $edit.remove();
+                if (!triggered_by_blur) {
+                    $restored.trigger("focus");
+                }
+            }
+        },
+
+        cancelEditingPill($edit: JQuery): void {
+            if (editing_pill === undefined) {
+                return;
+            }
+            const pill = editing_pill;
+            editing_pill = undefined;
+            $edit.before(pill.$element);
+            $edit.remove();
+            pill.$element.trigger("focus");
+        },
     };
+
+    // Declared after funcs so the edit methods can close over it.
+    let editing_pill: InputPill<ItemType> | undefined;
 
     {
         store.$parent.on("keydown", ".input", function (this: HTMLElement, e) {
@@ -455,6 +551,25 @@ export function create<ItemType extends {type: string}>(
                     e.preventDefault();
                     break;
                 }
+                case "Enter": {
+                    e.preventDefault();
+                    const pill = funcs.getByElement(util.the($pill));
+                    if (pill !== undefined) {
+                        funcs.startEditingPill(pill);
+                    }
+                    break;
+                }
+            }
+        });
+
+        store.$parent.on("dblclick", ".pill", function (this: HTMLElement, e) {
+            if ($(e.target).closest(".exit, .expand").length > 0) {
+                return;
+            }
+            e.preventDefault();
+            const pill = funcs.getByElement(this);
+            if (pill !== undefined) {
+                funcs.startEditingPill(pill);
             }
         });
 
@@ -557,6 +672,10 @@ export function create<ItemType extends {type: string}>(
 
         createPillonPaste(callback) {
             store.createPillonPaste = callback;
+        },
+
+        addSetupTypeahead(callback) {
+            store.setupTypeahead = callback;
         },
 
         clear(quiet?: boolean) {
