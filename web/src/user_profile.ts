@@ -1675,14 +1675,120 @@ export function initialize(): void {
 
     $("body").on(
         "keydown",
-        ".user-stream-list .view-stream-card, .user-group-list .view_user_group",
+        ".stream-list-container .stream-search, .group-list-container .group-search",
         function (this: HTMLElement, e) {
-            if (e.key !== "Enter") {
-                return;
+            const $container = $(this).closest(".stream-list-container, .group-list-container");
+            if (e.key === "ArrowDown") {
+                e.preventDefault();
+                e.stopPropagation();
+                $container.find(".modal-item-list .list-row-content").first().trigger("focus");
+            } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                e.stopPropagation();
+                $container.find(".modal-item-list .list-row-content").last().trigger("focus");
             }
-            e.preventDefault();
-            e.stopPropagation();
-            $(this).trigger("click");
+        },
+    );
+
+    $("body").on("keydown", ".modal-item-list .list-row-content", function (this: HTMLElement, e) {
+        const $row = $(this).closest(".modal-list-item");
+        switch (e.key) {
+            case "Enter": {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).trigger("click");
+                break;
+            }
+            case "ArrowLeft":
+            case "ArrowRight": {
+                const $remove_button = $row.find(".hidden-remove-button");
+                if ($remove_button.length === 0) {
+                    return;
+                }
+                e.preventDefault();
+                e.stopPropagation();
+                $remove_button.trigger("focus");
+                break;
+            }
+            case "ArrowDown": {
+                e.preventDefault();
+                e.stopPropagation();
+                const $next_item = $row.next(".modal-list-item");
+                if ($next_item.length > 0) {
+                    $next_item.find(".list-row-content").trigger("focus");
+                } else {
+                    $(this)
+                        .closest(".stream-list-container, .group-list-container")
+                        .find(".stream-search, .group-search")
+                        .trigger("focus");
+                }
+                break;
+            }
+            case "ArrowUp": {
+                e.preventDefault();
+                e.stopPropagation();
+                const $prev_item = $row.prev(".modal-list-item");
+                if ($prev_item.length > 0) {
+                    $prev_item.find(".list-row-content").trigger("focus");
+                } else {
+                    $(this)
+                        .closest(".stream-list-container, .group-list-container")
+                        .find(".stream-search, .group-search")
+                        .trigger("focus");
+                }
+                break;
+            }
+        }
+    });
+
+    $("body").on(
+        "keydown",
+        ".modal-item-list .hidden-remove-button",
+        function (this: HTMLElement, e) {
+            const $row = $(this).closest(".modal-list-item");
+            switch (e.key) {
+                case "ArrowLeft":
+                case "ArrowRight": {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $row.find(".list-row-content").trigger("focus");
+                    break;
+                }
+                case "ArrowDown": {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const $next_item = $row.next(".modal-list-item");
+                    const $next_button = $next_item.find(".hidden-remove-button");
+                    if ($next_item.length > 0 && $next_button.length > 0) {
+                        $next_button.trigger("focus");
+                    } else {
+                        $(this)
+                            .closest(".stream-list-container, .group-list-container")
+                            .find(".stream-search, .group-search")
+                            .trigger("focus");
+                    }
+                    break;
+                }
+                case "ArrowUp": {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const $prev_item = $row.prev(".modal-list-item");
+                    if ($prev_item.length > 0) {
+                        const $prev_button = $prev_item.find(".hidden-remove-button");
+                        if ($prev_button.length > 0) {
+                            $prev_button.trigger("focus");
+                        } else {
+                            $prev_item.find(".list-row-content").trigger("focus");
+                        }
+                    } else {
+                        $(this)
+                            .closest(".stream-list-container, .group-list-container")
+                            .find(".stream-search, .group-search")
+                            .trigger("focus");
+                    }
+                    break;
+                }
+            }
         },
     );
 
