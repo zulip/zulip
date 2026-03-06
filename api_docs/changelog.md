@@ -3033,8 +3033,9 @@ No changes; feature level used for Zulip 7.0 release.
 
 **Feature level 160**
 
-* `POST /api/v1/jwt/fetch_api_key`: Added new endpoint to fetch API
-  keys using JSON Web Token (JWT) authentication.
+* [`POST /api/v1/jwt/fetch_api_key`](/api/jwt-fetch-api-key): Added
+  new endpoint to fetch API keys using JSON Web Token (JWT)
+  authentication.
 * `accounts/login/jwt/`: Adjusted format of requests to undocumented,
   optional endpoint for JWT authentication log in support.
 

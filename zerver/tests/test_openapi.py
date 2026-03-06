@@ -255,7 +255,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/rest-error-handling",
         # Zulip outgoing webhook payload
         "/zulip-outgoing-webhook",
-        "/jwt/fetch_api_key",
         #### Bouncer endpoints
         # Higher priority to document
         "/remotes/push/e2ee/notify",
@@ -274,6 +273,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
     documented_post_only_endpoints = {
         "fetch_api_key",
         "dev_fetch_api_key",
+        "jwt/fetch_api_key",
     }
 
     # Endpoints where the documentation is currently failing our
