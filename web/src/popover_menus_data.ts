@@ -10,6 +10,7 @@ import {$t} from "./i18n.ts";
 import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
+import type {Message} from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -21,6 +22,7 @@ import * as starred_messages from "./starred_messages.ts";
 import {current_user, realm, realm_billing} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
+import * as timerender from "./timerender.ts";
 import {num_unread_for_topic} from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
@@ -455,4 +457,195 @@ function is_topic_definitely_empty(stream_id: number, topic: string): boolean {
     }
 
     return true;
+}
+
+const MAX_SUGGESTED_DATES = 4;
+// When picking a date near each slice boundary, search this
+// many positions in each direction for a better choice.
+const SEARCH_RADIUS = 2;
+
+type DateGroup = {
+    date_string: string;
+    timestamp: number;
+    preceding_quiet_days: number;
+    message_count: number;
+};
+
+export type ScrollToDateSuggestion = {
+    label: string;
+    iso_date_string: string;
+};
+
+// Cache the formatter to avoid creating a new Intl.DateTimeFormat
+// on every call. Invalidated when the display timezone changes.
+let date_key_formatter: Intl.DateTimeFormat | undefined;
+let date_key_timezone: string | undefined;
+
+function get_date_key(timestamp: number): string {
+    // Group by calendar day in the user's display timezone, so that
+    // grouping is consistent with the date labels shown in the popover.
+    if (date_key_formatter === undefined || date_key_timezone !== timerender.display_time_zone) {
+        date_key_timezone = timerender.display_time_zone;
+        date_key_formatter = new Intl.DateTimeFormat("en-US", {
+            timeZone: date_key_timezone,
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+        });
+    }
+    const parts = date_key_formatter.formatToParts(new Date(timestamp * 1000));
+    const year = parts.find((part) => part.type === "year")!.value;
+    const month = parts.find((part) => part.type === "month")!.value;
+    const day = parts.find((part) => part.type === "day")!.value;
+    return `${year}-${month}-${day}`;
+}
+
+// Compute the gap in days between two YYYY-MM-DD date strings.
+// Since these are already calendar dates in the display timezone,
+// we parse them as UTC to avoid browser-local timezone issues.
+function date_string_gap_days(prev_key: string, curr_key: string): number {
+    const prev_ms = Date.parse(prev_key + "T00:00:00Z");
+    const curr_ms = Date.parse(curr_key + "T00:00:00Z");
+    return Math.round((curr_ms - prev_ms) / 86_400_000);
+}
+
+// Format a date for display: "February 12" for the current year,
+// "February 12, 2025" for older years.
+function format_date_label(timestamp: number, now_year: string): string {
+    const date = new Date(timestamp * 1000);
+    const date_year = get_date_key(timestamp).slice(0, 4);
+    if (date_year === now_year) {
+        return timerender.get_localized_date_or_time_for_format(date, "long_dayofyear");
+    }
+    return timerender.get_localized_date_or_time_for_format(date, "long_dayofyear_year");
+}
+
+// Group messages by calendar date, tracking the days of silence
+// before each date and the number of messages on that date.
+function build_date_groups(messages: Message[]): DateGroup[] {
+    const groups: DateGroup[] = [];
+    let current_group: DateGroup | undefined;
+
+    for (const message of messages) {
+        const date_key = get_date_key(message.timestamp);
+        if (current_group?.date_string !== date_key) {
+            const preceding_quiet_days =
+                current_group === undefined
+                    ? 0
+                    : date_string_gap_days(current_group.date_string, date_key);
+            current_group = {
+                date_string: date_key,
+                timestamp: message.timestamp,
+                preceding_quiet_days,
+                message_count: 0,
+            };
+            groups.push(current_group);
+        }
+        current_group.message_count += 1;
+    }
+
+    return groups;
+}
+
+// Compute cumulative message counts from per-group counts.
+// cumulative[i] is the total messages in groups 0..i (inclusive).
+function compute_cumulative_counts(groups: DateGroup[]): number[] {
+    const cumulative: number[] = [];
+    let total = 0;
+    for (const group of groups) {
+        total += group.message_count;
+        cumulative.push(total);
+    }
+    return cumulative;
+}
+
+// Find the index in cumulative whose value is closest to target.
+function closest_index(cumulative: number[], target: number): number {
+    let best = 0;
+    let best_distance = Math.abs(cumulative[0]! - target);
+    for (let i = 1; i < cumulative.length; i += 1) {
+        const distance = Math.abs(cumulative[i]! - target);
+        if (distance < best_distance) {
+            best = i;
+            best_distance = distance;
+        }
+    }
+    return best;
+}
+
+// Compute up to MAX_SUGGESTED_DATES dates to offer in the
+// "Scroll to" popover, drawn from the locally cached messages.
+//
+// Algorithm: divide the message volume into equal slices, then
+// for each slice boundary, prefer a nearby date with a long
+// silence before it (the start of a new conversation burst).
+export function get_scroll_to_date_suggestions(messages: Message[]): ScrollToDateSuggestion[] {
+    if (messages.length === 0) {
+        return [];
+    }
+
+    const date_groups = build_date_groups(messages);
+
+    // Exclude today — the user is likely already there.
+    const today_key = get_date_key(Date.now() / 1000);
+    const filtered_groups = date_groups.filter((group) => group.date_string !== today_key);
+
+    if (filtered_groups.length === 0) {
+        return [];
+    }
+
+    const now_year = today_key.slice(0, 4);
+
+    // If there are few enough unique dates, just suggest all of them.
+    if (filtered_groups.length <= MAX_SUGGESTED_DATES) {
+        return filtered_groups.map((group) => ({
+            label: format_date_label(group.timestamp, now_year),
+            iso_date_string: new Date(group.timestamp * 1000).toISOString(),
+        }));
+    }
+
+    const cumulative = compute_cumulative_counts(filtered_groups);
+    const total = cumulative.at(-1)!;
+
+    const selected_indices = new Set<number>();
+
+    // Split the message volume into equal slices (e.g. 20%, 40%,
+    // 60%, 80%) and pick one date near each boundary.
+    for (let slice = 1; slice <= MAX_SUGGESTED_DATES; slice += 1) {
+        const slice_breakpoint = (total * slice) / (MAX_SUGGESTED_DATES + 1);
+        const nearest = closest_index(cumulative, slice_breakpoint);
+
+        // Look at nearby dates (±SEARCH_RADIUS) and prefer the
+        // one with the longest quiet period before it, since
+        // that marks where a conversation restarted.
+        const search_start = Math.max(0, nearest - SEARCH_RADIUS);
+        const search_end = Math.min(filtered_groups.length - 1, nearest + SEARCH_RADIUS);
+
+        let best = nearest;
+        // If the nearest date was already picked, treat its
+        // silence as -1 so any other candidate will win.
+        let longest_silence = selected_indices.has(nearest)
+            ? -1
+            : filtered_groups[nearest]!.preceding_quiet_days;
+        // Among nearby dates not already picked, find the one
+        // with the longest quiet period before it.
+        for (let i = search_start; i <= search_end; i += 1) {
+            if (
+                !selected_indices.has(i) &&
+                filtered_groups[i]!.preceding_quiet_days > longest_silence
+            ) {
+                best = i;
+                longest_silence = filtered_groups[i]!.preceding_quiet_days;
+            }
+        }
+
+        selected_indices.add(best);
+    }
+
+    // Sort since selected_indices is a set.
+    const sorted_indices = [...selected_indices].toSorted((a, b) => a - b);
+    return sorted_indices.map((i) => ({
+        label: format_date_label(filtered_groups[i]!.timestamp, now_year),
+        iso_date_string: new Date(filtered_groups[i]!.timestamp * 1000).toISOString(),
+    }));
 }
