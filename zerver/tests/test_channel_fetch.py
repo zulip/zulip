@@ -857,6 +857,7 @@ class GetSubscribersTest(ZulipTestCase):
                 self.assert_length(sub["partial_subscribers"], 3)
                 self.assertIsNone(sub.get("subscribers"))
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_gather_subscriptions(self) -> None:
         """
         gather_subscriptions returns correct results with only 3 queries
