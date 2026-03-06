@@ -58,9 +58,20 @@
         border-radius: 3px;
         cursor: pointer;
         opacity: 0.7;
-        transition: opacity 0.2s;
+        transition: all 0.2s;
 
         &:hover {
+            opacity: 1;
+        }
+
+        &:disabled {
+            opacity: 1;
+            cursor: not-allowed;
+        }
+
+        &.task-added {
+            background: #28a745;
+            border-color: #28a745;
             opacity: 1;
         }
     }

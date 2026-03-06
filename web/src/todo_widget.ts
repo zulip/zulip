@@ -24,6 +24,16 @@ const MAX_IDX = 1000;
 function create_task_from_todo(message_id: number, title: string, description: string): void {
     const url = `/json/messages/${message_id}/tasks`;
     
+    // Check if task already exists by checking for buttons with checkmark
+    const $btn = $(`.convert-to-task-btn[data-task="${title.replace(/"/g, '\\"')}"]`);
+    if ($btn.hasClass('task-added')) {
+        blueslip.warn("Task already added");
+        return;
+    }
+    
+    // Disable button and show loading
+    $btn.prop('disabled', true).text('Adding...');
+    
     channel.post({
         url,
         data: {
@@ -32,10 +42,19 @@ function create_task_from_todo(message_id: number, title: string, description: s
         },
         success: (response: any) => {
             blueslip.info("Task created successfully", response);
-            // You could add UI feedback here, like hiding the button or showing a success message
+            
+            // Mark button as added with checkmark
+            $btn.addClass('task-added')
+                .prop('disabled', true)
+                .text('✓ Added')
+                .css('background-color', '#28a745')
+                .css('color', 'white');
         },
         error: (xhr: JQuery.jqXHR) => {
             blueslip.error("Failed to create task", xhr);
+            
+            // Restore button on error
+            $btn.prop('disabled', false).text('Add to My Tasks');
         },
     });
 }
