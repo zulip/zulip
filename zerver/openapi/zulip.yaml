@@ -14503,6 +14503,14 @@ paths:
                     drafts stored in clients.
                   type: boolean
                   example: true
+                enable_smooth_scroll_navigation:
+                  description: |
+                    Whether to enable smooth scrolling when navigating messages with keyboard
+                    shortcuts (up/down arrows). When enabled, if the next/previous message is
+                    not fully visible in the viewport, the view will scroll smoothly to bring
+                    it into view instead of jumping directly to it.
+                  type: boolean
+                  example: false
                 translate_emoticons:
                   description: |
                     Whether to [translate emoticons to emoji](/help/configure-emoticon-translations)
@@ -14968,6 +14976,8 @@ paths:
               color_scheme:
                 contentType: application/json
               enable_drafts_synchronization:
+                contentType: application/json
+              enable_smooth_scroll_navigation:
                 contentType: application/json
               translate_emoticons:
                 contentType: application/json
@@ -18514,6 +18524,13 @@ paths:
 
                               This does not do anything (like sending events) to delete local copies of
                               drafts stored in clients.
+                          enable_smooth_scroll_navigation:
+                            type: boolean
+                            description: |
+                              Whether to enable smooth scrolling when navigating messages with keyboard
+                              shortcuts (up/down arrows). When enabled, if the next/previous message is
+                              not fully visible in the viewport, the view will scroll smoothly to bring
+                              it into view instead of jumping directly to it.
                           enable_stream_desktop_notifications:
                             type: boolean
                             description: |
@@ -21056,6 +21073,13 @@ paths:
 
                               This does not do anything (like sending events) to delete local copies of
                               drafts stored in clients.
+                          enable_smooth_scroll_navigation:
+                            type: boolean
+                            description: |
+                              Whether to enable smooth scrolling when navigating messages with keyboard
+                              shortcuts (up/down arrows). When enabled, if the next/previous message is
+                              not fully visible in the viewport, the view will scroll smoothly to bring
+                              it into view instead of jumping directly to it.
                           email_notifications_batching_period_seconds:
                             type: integer
                             description: |
@@ -22049,6 +22073,12 @@ paths:
                     drafts stored in clients.
 
                     **Changes**: New in Zulip 5.0 (feature level 87).
+                enable_smooth_scroll_navigation:
+                  description: |
+                    Whether to enable smooth scrolling when navigating messages with keyboard
+                    shortcuts (up/down arrows). When enabled, if the next/previous message is
+                    not fully visible in the viewport, the view will scroll smoothly to bring
+                    it into view instead of jumping directly to it.
                   type: boolean
                   example: true
                 translate_emoticons:
@@ -22637,6 +22667,8 @@ paths:
               color_scheme:
                 contentType: application/json
               enable_drafts_synchronization:
+                contentType: application/json
+              enable_smooth_scroll_navigation:
                 contentType: application/json
               translate_emoticons:
                 contentType: application/json

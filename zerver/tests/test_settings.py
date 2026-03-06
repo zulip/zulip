@@ -229,6 +229,9 @@ class ChangeSettingsTest(ZulipTestCase):
         for user_setting in boolean_settings:
             self.check_for_toggle_param_patch("/json/settings", user_setting)
 
+    def test_enable_smooth_scroll_navigation(self) -> None:
+        self.check_for_toggle_param_patch("/json/settings", "enable_smooth_scroll_navigation")
+
     def test_wrong_old_password(self) -> None:
         self.login("hamlet")
         result = self.client_patch(
