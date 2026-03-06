@@ -321,7 +321,7 @@ function setup_compose_for_quoting_dm_conversations(opts: QuoteMessageOpts): voi
     $("#private_message_recipient").trigger("focus");
 }
 
-function all_messages_have_same_recipient(messages: Message[]): boolean {
+export function all_messages_have_same_recipient(messages: Message[]): boolean {
     assert(messages.length > 0);
     const first_message = messages[0]!;
 
@@ -344,7 +344,7 @@ function all_messages_have_same_recipient(messages: Message[]): boolean {
     );
 }
 
-function all_messages_have_same_channel(messages: Message[]): boolean {
+export function all_messages_have_same_channel(messages: Message[]): boolean {
     assert(messages.length > 0);
     const first_message = messages[0]!;
     if (first_message.type !== "stream") {
@@ -354,7 +354,7 @@ function all_messages_have_same_channel(messages: Message[]): boolean {
     return messages.every((msg) => msg.type === "stream" && msg.stream_id === target_stream_id);
 }
 
-function all_messages_are_private(messages: Message[]): boolean {
+export function all_messages_are_private(messages: Message[]): boolean {
     assert(messages.length > 0);
     const first_message = messages[0]!;
     if (first_message.type !== "private") {
@@ -390,7 +390,7 @@ type QuoteContext = "INCLUDE_SENDER" | "INCLUDE_SENDER_AND_RECIPIENT" | "INCLUDE
 
 // Returns what context the line before the quote block having the quoted message content
 // should contain.
-function get_quote_context_for_message(info: {
+export function get_quote_context_for_message(info: {
     forward_message: boolean | undefined;
     current_message: Message;
     previous_message: Message | undefined;
@@ -584,12 +584,12 @@ type QuoteAsset = {
     quote_content: string;
 };
 
-function maybe_hydrate_messages_with_raw_content(
+export let maybe_hydrate_messages_with_raw_content = (
     message_ids: number[],
     on_success: () => void,
     on_error: () => void,
     timeout?: number,
-): void {
+): void => {
     const message_ids_with_missing_raw_content = message_ids.filter((id) => {
         const message = message_store.get(id);
         if (message?.raw_content) {
@@ -628,9 +628,15 @@ function maybe_hydrate_messages_with_raw_content(
             on_error();
         },
     });
+};
+
+export function rewire_maybe_hydrate_messages_with_raw_content(
+    value: typeof maybe_hydrate_messages_with_raw_content,
+): void {
+    maybe_hydrate_messages_with_raw_content = value;
 }
 
-function process_quote_assets_for_messages(
+export function process_quote_assets_for_messages(
     message_ids: number[],
     callback: (quote_assets: QuoteAsset[]) => void,
 ): void {
@@ -678,7 +684,7 @@ type MultipleMessageStatus =
     | "MESSAGES_WITH_NOTHING_IN_COMMON"
     | "MESSAGES_WITH_SAME_RECIPIENT";
 
-function get_multi_message_quote_status(
+export function get_multi_message_quote_status(
     messages: Message[],
     is_forwarding: boolean | undefined,
 ): MultipleMessageStatus {
@@ -702,7 +708,7 @@ function get_multi_message_quote_status(
     return "MESSAGES_WITH_NOTHING_IN_COMMON";
 }
 
-function quote_multiple_messages(opts: QuoteMessageOpts): void {
+export function quote_multiple_messages(opts: QuoteMessageOpts): void {
     const highlighted_message_ids = get_highlighted_message_ids();
     assert(highlighted_message_ids !== undefined && highlighted_message_ids.length > 1);
     process_quote_assets_for_messages(highlighted_message_ids, (quote_assets: QuoteAsset[]) => {
