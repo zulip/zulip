@@ -43,7 +43,7 @@ const admin_settings_label = {
         defaultMessage: "Size of images and videos in messages",
     }),
     realm_inline_image_preview: $t({
-        defaultMessage: "Show previews of uploaded and linked images and videos",
+        defaultMessage: "Show previews of linked images and videos",
     }),
     realm_inline_url_embed_preview: $t({defaultMessage: "Show previews of linked websites"}),
     realm_send_welcome_emails: $t({defaultMessage: "Send emails introducing Zulip to new users"}),
