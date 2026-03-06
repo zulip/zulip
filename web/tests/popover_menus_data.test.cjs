@@ -68,6 +68,28 @@ mock_esm("../src/group_permission_settings", {
         };
     },
 });
+mock_esm("../src/timerender", {
+    display_time_zone: "UTC",
+    get_localized_date_or_time_for_format(date) {
+        // Return a simple date string for testing.
+        const d = new Date(date);
+        const months = [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+        ];
+        return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+    },
+});
 
 const current_user = {};
 set_current_user(current_user);
@@ -306,4 +328,101 @@ test("not_my_message_view_source_and_move", ({override}) => {
     assert.equal(response.view_source_menu_item, "translated: View original message");
     assert.equal(response.editability_menu_item, undefined);
     assert.equal(response.move_message_menu_item, "translated: Move messages");
+});
+
+// Helper to create a minimal message object with a given timestamp.
+function make_message(id, timestamp) {
+    return {id, timestamp};
+}
+
+function date_timestamp(date_string) {
+    return new Date(date_string + "T12:00:00").getTime() / 1000;
+}
+
+run_test("get_scroll_to_date_suggestions - empty messages", () => {
+    const result = popover_menus_data.get_scroll_to_date_suggestions([]);
+    assert.deepEqual(result, []);
+});
+
+run_test("get_scroll_to_date_suggestions - all messages today", () => {
+    const today = new Date();
+    const today_ts = today.getTime() / 1000;
+    const messages = [make_message(1, today_ts), make_message(2, today_ts + 60)];
+    const result = popover_menus_data.get_scroll_to_date_suggestions(messages);
+    assert.deepEqual(result, []);
+});
+
+run_test("get_scroll_to_date_suggestions - few unique dates", () => {
+    // With 3 unique dates (all in the past), all should be suggested.
+    const messages = [
+        make_message(1, date_timestamp("2025-01-10")),
+        make_message(2, date_timestamp("2025-01-10")),
+        make_message(3, date_timestamp("2025-02-15")),
+        make_message(4, date_timestamp("2025-03-20")),
+    ];
+    const result = popover_menus_data.get_scroll_to_date_suggestions(messages);
+    assert.equal(result.length, 3);
+    // Verify chronological order.
+    assert.ok(result[0].iso_date_string < result[1].iso_date_string);
+    assert.ok(result[1].iso_date_string < result[2].iso_date_string);
+});
+
+run_test("get_scroll_to_date_suggestions - many dates with gaps", () => {
+    // Simulate a conversation with bursts separated by gaps.
+    // Burst 1: Jan 5-7 (9 messages)
+    // Gap: 20 days
+    // Burst 2: Jan 27-28 (8 messages)
+    // Gap: 15 days
+    // Burst 3: Feb 12-14 (10 messages)
+    // Gap: 25 days
+    // Burst 4: Mar 11-12 (8 messages)
+    const messages = [];
+    let id = 1;
+    // 4 bursts of conversation separated by multi-week gaps.
+    for (const [count, date] of [
+        // Burst 1
+        [3, "2025-01-05"],
+        [3, "2025-01-06"],
+        [3, "2025-01-07"],
+        // Burst 2
+        [4, "2025-01-27"],
+        [4, "2025-01-28"],
+        // Burst 3
+        [4, "2025-02-12"],
+        [3, "2025-02-13"],
+        [3, "2025-02-14"],
+        // Burst 4
+        [4, "2025-03-11"],
+        [4, "2025-03-12"],
+    ]) {
+        for (let i = 0; i < count; i += 1) {
+            messages.push(make_message(id, date_timestamp(date)));
+            id += 1;
+        }
+    }
+
+    const result = popover_menus_data.get_scroll_to_date_suggestions(messages);
+    // We have 10 unique dates across 4 bursts; expect 3-4 suggestions.
+    assert.ok(result.length >= 3 && result.length <= 4);
+    // Verify chronological order.
+    for (let i = 1; i < result.length; i += 1) {
+        assert.ok(result[i - 1].iso_date_string < result[i].iso_date_string);
+    }
+    // The algorithm should prefer dates at the start of bursts (after gaps).
+    // Jan 27 has a 20-day gap before it, Feb 12 has a 15-day gap,
+    // Mar 11 has a 25-day gap — these should appear as suggestions.
+    const iso_dates = result.map((s) => s.iso_date_string.slice(0, 10));
+    // Burst-start dates (Jan 27, Feb 12, Mar 11) should be well represented.
+    const burst_starts = new Set(["2025-01-27", "2025-02-12", "2025-03-11"]);
+    const burst_start_count = iso_dates.filter((d) => burst_starts.has(d)).length;
+    assert.ok(burst_start_count >= 2, `Expected >=2 burst starts, got ${burst_start_count}`);
+});
+
+run_test("get_scroll_to_date_suggestions - single date in the past", () => {
+    const messages = [
+        make_message(1, date_timestamp("2025-06-15")),
+        make_message(2, date_timestamp("2025-06-15")),
+    ];
+    const result = popover_menus_data.get_scroll_to_date_suggestions(messages);
+    assert.equal(result.length, 1);
 });
