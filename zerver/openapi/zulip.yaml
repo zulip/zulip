@@ -104,6 +104,114 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiKeyResponse"
+  /jwt/fetch_api_key:
+    post:
+      operationId: jwt-fetch-api-key
+      summary: Fetch an API key (JWT)
+      tags: ["authentication"]
+      description: |
+        This API endpoint is used by clients to implement JSON Web Token
+        (JWT) authentication. Given a JWT identifying a Zulip user, it
+        returns a Zulip API key that the client can use to make requests
+        as the user.
+
+        !!! warn ""
+
+            **Note:** This endpoint is only useful for Zulip servers/organizations
+            with [JSON web token authentication][prod-jwt-auth] enabled.
+
+        See the [API keys](/api/api-keys) documentation for more details
+        on how to manage API keys manually.
+
+        **Changes**: New in Zulip 7.0 (feature level 160).
+
+        [prod-jwt-auth]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#json-web-tokens-jwt
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                token:
+                  description: |
+                    A JSON Web Token for the target user.
+
+                    The token payload must contain a custom `email` claim with the target
+                    user's email address, e.g., `{"email": "<target user email>"}`.
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImhhbWxldEB6dWxpcC5jb20ifQ.EsHxSVt54zPR-ywgPH54TB1FYmrGKsfq7hsQEhp_9w0"
+                include_profile:
+                  type: boolean
+                  default: false
+                  example: false
+                  description: |
+                    Whether to include a `user` object containing the target
+                    user's profile details in the response.
+              required:
+                - token
+      security: []
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - required:
+                      - api_key
+                      - email
+                    additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      api_key:
+                        type: string
+                        description: |
+                          The API key that can be used to authenticate as the requested user.
+                      email:
+                        type: string
+                        description: |
+                          The email address of the user who owns the API key.
+                      user:
+                        description: |
+                          Only present if `include_profile` parameter was set to `true`.
+
+                          A dictionary with data on the target user.
+                        allOf:
+                          - $ref: "#/components/schemas/UserBase"
+                          - additionalProperties: false
+                            properties:
+                              user_id: {}
+                              delivery_email:
+                                nullable: true
+                              email: {}
+                              full_name: {}
+                              date_joined: {}
+                              is_active: {}
+                              is_owner: {}
+                              is_admin: {}
+                              is_guest: {}
+                              is_bot: {}
+                              bot_type:
+                                nullable: true
+                              bot_owner_id:
+                                nullable: true
+                              role: {}
+                              timezone: {}
+                              avatar_url:
+                                nullable: true
+                              avatar_version: {}
+                              is_imported_stub: {}
+                    example:
+                      {
+                        "api_key": "gjA04ZYcqXKalvYMA8OeXSfzUOLrtbZv",
+                        "email": "hamlet@zulip.com",
+                        "msg": "",
+                        "result": "success",
+                      }
   /dev_fetch_api_key:
     post:
       operationId: dev-fetch-api-key

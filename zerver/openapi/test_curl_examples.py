@@ -25,6 +25,8 @@ from zerver.openapi.curl_param_value_generators import (
 from zerver.openapi.openapi import get_endpoint_from_operationid
 
 UNTESTED_GENERATED_CURL_EXAMPLES = {
+    # Requires organization-specific JWT_AUTH_KEYS configuration.
+    "jwt-fetch-api-key",
     # Would need push notification bouncer set up to test the
     # generated curl example for the following three endpoints.
     "e2ee-test-notify",
