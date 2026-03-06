@@ -2396,3 +2396,9 @@ li.topic-list-item {
         top: 0;
     }
 }
+
+#left_sidebar_scroll_container:has(.direct-messages-container.zoom-in) {
+    .direct-message-section-bottom-divider-container {
+        display: none;
+    }
+}
