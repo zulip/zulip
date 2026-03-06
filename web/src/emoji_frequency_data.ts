@@ -6,8 +6,17 @@ import type * as typeahead from "./typeahead.ts";
 
 const EMOJI_PICKER_ROW_LENGTH = 6;
 const MAX_FREQUENTLY_USED_EMOJIS = 5 * EMOJI_PICKER_ROW_LENGTH;
-const CURRENT_USER_REACTION_WEIGHT = 5;
-const POPULAR_EMOJIS_BONUS_WEIGHT = 12;
+const CURRENT_USER_REACTION_WEIGHT = 1;
+
+// The maximum ratio of importance given to others' reactions
+// compared to yours.
+const IMPORTANCE_RATIO = CURRENT_USER_REACTION_WEIGHT / 5;
+const OTHER_USER_REACTION_WEIGHT = CURRENT_USER_REACTION_WEIGHT * IMPORTANCE_RATIO;
+const POPULAR_EMOJIS_BONUS_WEIGHT = 2.4 * CURRENT_USER_REACTION_WEIGHT;
+
+// The maximum score contribution by others' usage of an emoji.
+const OTHERS_SCORE_CAP = 40 * CURRENT_USER_REACTION_WEIGHT;
+const MINIMUM_SCORE_TO_BE_FEATURED = 2 * CURRENT_USER_REACTION_WEIGHT;
 
 type ReactionUsage = {
     emoji_code: string;
@@ -40,7 +49,16 @@ function compute_score(info: {
     const {is_popular, others_count, my_count} = info;
     const popular_emoji_bonus = is_popular ? POPULAR_EMOJIS_BONUS_WEIGHT : 0;
 
-    const score = my_count * CURRENT_USER_REACTION_WEIGHT + others_count + popular_emoji_bonus;
+    // We limit the total score contribution from other users so it asymptotically
+    // approaches OTHERS_SCORE_CAP. For example, if the cap is 40, a user
+    // reacting ~41 times (weighted at 1.0) is mathematically guaranteed to
+    // outscore an infinite number of reactions from other users.
+    const score =
+        Math.max(my_count - 0.5, 0) * CURRENT_USER_REACTION_WEIGHT +
+        Math.min(OTHER_USER_REACTION_WEIGHT, OTHERS_SCORE_CAP / others_count) *
+            Math.max(others_count - 0.5, 0) +
+        popular_emoji_bonus;
+
     return score;
 }
 
@@ -68,7 +86,10 @@ export function preferred_emoji_list(): typeahead.EmojiItem[] {
 
     const top_frequently_used_emojis = [];
     for (const emoji of sorted_emoji_scores) {
-        if (top_frequently_used_emojis.length === MAX_FREQUENTLY_USED_EMOJIS || emoji.score < 10) {
+        if (
+            top_frequently_used_emojis.length === MAX_FREQUENTLY_USED_EMOJIS ||
+            emoji.score < MINIMUM_SCORE_TO_BE_FEATURED
+        ) {
             break;
         }
         assert(emoji !== undefined);
