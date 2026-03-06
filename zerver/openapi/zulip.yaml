@@ -13805,18 +13805,28 @@ paths:
                     properties:
                       domains:
                         type: array
-                        description: A list of configured organization domains.
+                        description: |
+                          A list of configured organization domains.
                         items:
                           type: object
                           properties:
                             domain:
                               type: string
                               description: The domain name.
-                              example: "zulip.com"
                             allow_subdomains:
                               type: boolean
-                              description: Whether subdomains of this domain are allowed.
-                              example: true
+                              description: Whether subdomains are allowed.
+              example:
+                {
+                  "result": "success",
+                  "msg": "",
+                  "domains": [
+                    {
+                      "domain": "zulip.com",
+                      "allow_subdomains": true
+                    }
+                  ]
+                }
 
     post:
       summary: Add organization domain
@@ -13853,6 +13863,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/JsonSuccessBase"
+              example:
+                {
+                  "result": "success",
+                  "msg": ""
+                }
 
   /realm/domains/{domain}:
     patch:
@@ -13889,6 +13904,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/JsonSuccessBase"
+              example:
+                {
+                  "result": "success",
+                  "msg": ""
+                }
 
     delete:
       summary: Remove organization domain
@@ -13912,7 +13932,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccessBase"                    
+                $ref: "#/components/schemas/JsonSuccessBase"
+              example:
+                {
+                  "result": "success",
+                  "msg": ""
+                }                    
   /realm/emoji/{emoji_name}:
     post:
       operationId: upload-custom-emoji
