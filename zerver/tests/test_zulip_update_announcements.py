@@ -4,6 +4,7 @@ from unittest import mock
 
 import time_machine
 from django.conf import settings
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -405,6 +406,7 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
         )
         self.assertEqual(remove_single_newlines(input_text), expected_output)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_zulip_updates_for_realm_imported_from_other_product(self) -> None:
         with mock.patch(
             "zerver.lib.zulip_update_announcements.zulip_update_announcements",
