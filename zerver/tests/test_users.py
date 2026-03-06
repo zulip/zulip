@@ -62,9 +62,11 @@ from zerver.lib.users import (
     Account,
     access_user_by_id,
     access_user_by_id_including_cross_realm,
+    check_can_access_user,
     get_accounts_for_email,
     get_cross_realm_dicts,
     get_inaccessible_user_ids,
+    get_users_involved_in_dms_with_target_users,
     user_ids_to_users,
 )
 from zerver.lib.utils import assert_is_not_none
@@ -3736,6 +3738,55 @@ class GetProfileTest(ZulipTestCase):
 
         inaccessible_user_ids = get_inaccessible_user_ids([bot.id, hamlet.id, othello.id], polonius)
         self.assertEqual(inaccessible_user_ids, {othello.id})
+
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_check_can_access_user_with_personal_message_history(self) -> None:
+        self.set_up_db_for_testing_user_access()
+
+        polonius = self.example_user("polonius")
+        prospero = self.example_user("prospero")
+        desdemona = self.example_user("desdemona")
+
+        # prospero and polonius had personal messages history
+        self.assertTrue(check_can_access_user(prospero, polonius))
+
+        # no personal messages history between desdemona and polonius
+        self.assertFalse(check_can_access_user(desdemona, polonius))
+
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_get_users_involved_in_dms_excludes_deactivated_users(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        realm = hamlet.realm
+
+        self.send_personal_message(hamlet, othello, "Hello othello!")
+        self.send_personal_message(hamlet, cordelia, "Hello cordelia!")
+        self.send_personal_message(othello, hamlet, "Hello back from othello!")
+
+        # Before deactivation, both users should be in DM participants
+        users_involved_before = get_users_involved_in_dms_with_target_users(
+            [hamlet], realm, include_deactivated_users=False
+        )
+        self.assertIn(othello.id, users_involved_before[hamlet.id])
+        self.assertIn(cordelia.id, users_involved_before[hamlet.id])
+
+        do_deactivate_user(othello, acting_user=None)
+
+        # After deactivation with include_deactivated_users=False,
+        # othello should be excluded
+        users_involved_after = get_users_involved_in_dms_with_target_users(
+            [hamlet], realm, include_deactivated_users=False
+        )
+        self.assertNotIn(othello.id, users_involved_after[hamlet.id])
+        self.assertIn(cordelia.id, users_involved_after[hamlet.id])
+
+        # With include_deactivated_users=True, othello should be included
+        users_involved_with_deactivated = get_users_involved_in_dms_with_target_users(
+            [hamlet], realm, include_deactivated_users=True
+        )
+        self.assertIn(othello.id, users_involved_with_deactivated[hamlet.id])
+        self.assertIn(cordelia.id, users_involved_with_deactivated[hamlet.id])
 
     def test_get_users_for_spectators(self) -> None:
         # Checks that spectators can fetch users data.
