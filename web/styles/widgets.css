@@ -45,6 +45,23 @@
         font-weight: 400;
     }
 
+    .convert-to-task-btn {
+        font-size: 0.8em;
+        padding: 2px 6px;
+        margin-left: 8px;
+        background: var(--button-background-color);
+        color: var(--button-text-color);
+        border: 1px solid var(--button-border-color);
+        border-radius: 3px;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+
     & label.checkbox {
         display: flex; /* Arrange that a multi-line description line wraps properly. */
         /* Keep checkboxes vertically aligned, including with multi-line tasks. */

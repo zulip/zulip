@@ -104,3 +104,25 @@ def update_task(
         "completed": task.completed,
         "completed_at": task.completed_at.isoformat() if task.completed_at else None,
     })
+
+@require_POST
+@typed_endpoint
+@transaction.atomic(durable=True)
+def delete_task(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    task_id: int,
+) -> HttpResponse:
+    """Delete a task"""
+    try:
+        task = Task.objects.select_related().get(id=task_id)
+    except Task.DoesNotExist:
+        return JsonResponse({"error": "Task not found"}, status=404)
+    
+    # Only assignee or creator can delete
+    if user_profile.id not in [task.assignee.id, task.creator.id]:
+        return JsonResponse({"error": "Permission denied"}, status=403)
+    
+    task.delete()
+    return json_success(request, {"message": "Task deleted successfully"})
