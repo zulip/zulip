@@ -41,6 +41,53 @@ const alert_regex_replacements = new Map<string, string>([
     ["'", "(?:'|&#39;)"],
 ]);
 
+/**
+ * Wraps alert words in html with <span class='alert-word'>.
+ * Uses the same word-boundary and in-tag logic as process_message.
+ * Safe to call with any HTML snippet (e.g. link inner HTML).
+ */
+export function highlight_alert_words_in_html(html: string): string {
+    if (my_alert_words.length === 0) {
+        return html;
+    }
+
+    let content = html;
+
+    for (const word of my_alert_words) {
+        const clean = _.escapeRegExp(word).replaceAll(
+            /["&'<>]/g,
+            (c) => alert_regex_replacements.get(c)!,
+        );
+
+        // Include '>' and ';' as valid pre-word boundaries to handle HTML entities like &gt;
+        const before_punctuation = "\\s|^|>|;|[\\\\(\"'.,:\\[{]";
+        const after_punctuation = "(?=\\s)|$|<|[\\\\)\"'\\\\?!:.,;\\]!]";
+
+        const regex = new RegExp(`(${before_punctuation})(${clean})(${after_punctuation})`, "ig");
+        content = content.replace(
+            regex,
+            (
+                match: string,
+                before: string,
+                word: string,
+                after: string,
+                offset: number,
+                full_content: string,
+            ) => {
+                const pre_match = full_content.slice(0, offset);
+                const check_string = pre_match + match.slice(0, -1);
+                const in_tag = check_string.lastIndexOf("<") > check_string.lastIndexOf(">");
+                if (in_tag) {
+                    return before + word + after;
+                }
+                return before + "<span class='alert-word'>" + word + "</span>" + after;
+            },
+        );
+    }
+
+    return content;
+}
+
 export function process_message(message: Message): void {
     // Parsing for alert words is expensive, so we rely on the host
     // to tell us there any alert words to even look for.
