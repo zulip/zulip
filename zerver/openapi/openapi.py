@@ -181,27 +181,22 @@ openapi_spec = OpenAPISpec(OPENAPI_SPEC_PATH)
 
 
 def get_schema(endpoint: str, method: str, status_code: str) -> dict[str, Any]:
-    if len(status_code) == 3 and (
-        "oneOf"
-        in openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
-            "content"
-        ]["application/json"]["schema"]
-    ):
-        # Currently at places where multiple schemas are defined they only
-        # differ in example so either can be used.
-        status_code += "_0"
     if len(status_code) == 3:
-        schema = openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][
+        media_type = openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][
             status_code
-        ]["content"]["application/json"]["schema"]
-        return schema
-    else:
-        subschema_index = int(status_code[4])
-        status_code = status_code[0:3]
-        schema = openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][
-            status_code
-        ]["content"]["application/json"]["schema"]["oneOf"][subschema_index]
-        return schema
+        ]["content"]["application/json"]
+        if "oneOf" in media_type["schema"] and "examples" not in media_type:
+            # When oneOf subschemas carry their own examples (legacy
+            # pattern), pick the first subschema by default.
+            status_code += "_0"
+        else:
+            return media_type["schema"]
+    subschema_index = int(status_code[4])
+    status_code = status_code[0:3]
+    schema = openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
+        "content"
+    ]["application/json"]["schema"]["oneOf"][subschema_index]
+    return schema
 
 
 def get_openapi_fixture(
@@ -209,15 +204,17 @@ def get_openapi_fixture(
 ) -> list[dict[str, Any]]:
     """Fetch a fixture from the full spec object."""
     if "example" not in get_schema(endpoint, method, status_code):
-        return openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
-            "content"
-        ]["application/json"]["examples"].values()
-    return [
-        {
-            "description": get_schema(endpoint, method, status_code)["description"],
-            "value": get_schema(endpoint, method, status_code)["example"],
-        }
-    ]
+        base_status_code = status_code[:3]
+        return list(
+            openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][
+                base_status_code
+            ]["content"]["application/json"]["examples"].values()
+        )
+    schema = get_schema(endpoint, method, status_code)
+    fixture: dict[str, Any] = {"value": schema["example"]}
+    if "description" in schema:
+        fixture["description"] = schema["description"]
+    return [fixture]
 
 
 def get_curl_include_exclude(endpoint: str, method: str) -> list[dict[str, Any]]:
@@ -266,17 +263,26 @@ def generate_openapi_fixture(endpoint: str, method: str) -> list[str]:
     for status_code in sorted(
         openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"]
     ):
-        if (
-            "oneOf"
-            in openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
-                "content"
-            ]["application/json"]["schema"]
-        ):
-            subschema_count = len(
-                openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][status_code][
-                    "content"
-                ]["application/json"]["schema"]["oneOf"]
-            )
+        media_type = openapi_spec.openapi()["paths"][endpoint][method.lower()]["responses"][
+            status_code
+        ]["content"]["application/json"]
+
+        # If examples are defined at the media type level, use those
+        # directly regardless of whether the schema uses oneOf.
+        if "examples" in media_type:
+            for example in media_type["examples"].values():
+                fixture_json = json.dumps(
+                    example["value"], indent=4, sort_keys=True, separators=(",", ": ")
+                )
+                if "description" in example:
+                    fixture.extend(example["description"].strip().splitlines())
+                fixture.append("``` json")
+                fixture.extend(fixture_json.splitlines())
+                fixture.append("```")
+            continue
+
+        if "oneOf" in media_type["schema"]:
+            subschema_count = len(media_type["schema"]["oneOf"])
         else:
             subschema_count = 1
         for subschema_index in range(subschema_count):
@@ -468,14 +474,31 @@ def validate_test_response(request: Request, response: Response) -> bool:
     # Return true for endpoints with only response documentation remaining
     if (endpoint, method) in EXCLUDE_DOCUMENTED_ENDPOINTS:  # nocoverage
         return True
-    # Code is not declared but appears in various 400 responses. If
-    # common, it can be added to 400 response schema
-    if status_code.startswith("4") or status_code == "502":
-        # This return statement should ideally be not here. But since
-        # we have not defined 400 responses for various paths this has
-        # been added as all 400 have the same schema.  When all 400
-        # response have been defined this should be removed.
+    # If the method is not documented for this endpoint, skip validation.
+    if method not in openapi_spec.openapi()["paths"][endpoint]:
+        return False
+    # Skip validation for error responses that are not documented in
+    # the OpenAPI spec. Documented error responses are validated.
+    if (
+        status_code.startswith("4") or status_code == "502"
+    ) and status_code not in openapi_spec.openapi()["paths"][endpoint][method]["responses"]:
         return True
+
+    # Framework error codes that can appear on any endpoint due to
+    # generic request parsing/validation logic.  These are documented
+    # at /rest-error-handling rather than per-endpoint.
+    if status_code.startswith("4") or status_code == "502":
+        try:
+            content = orjson.loads(response.data or b"")
+        except orjson.JSONDecodeError:
+            content = {}
+        if content.get("code") in {
+            "REQUEST_VARIABLE_MISSING",
+            "REQUEST_VARIABLE_INVALID",
+            "REQUEST_CONFUSING_VAR",
+            "EXPECTATION_MISMATCH",
+        }:
+            return True
 
     try:
         openapi_spec.spec().validate_response(request, response)
