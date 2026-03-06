@@ -210,6 +210,7 @@ test_ui("validate", ({mock_template, override}) => {
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
     assert.ok(!compose_validate.validate());
     assert.ok(pm_recipient_error_rendered);
+    assert.ok(!$("textarea#compose-textarea").prop("disabled"));
 
     pm_recipient_error_rendered = false;
 
@@ -217,10 +218,12 @@ test_ui("validate", ({mock_template, override}) => {
     compose_state.private_message_recipient_emails("bob@example.com");
     assert.ok(compose_validate.validate());
     assert.ok(!pm_recipient_error_rendered);
+    assert.ok(!$("textarea#compose-textarea").prop("disabled"));
 
     override(realm, "realm_direct_message_initiator_group", admin.id);
     assert.ok(compose_validate.validate());
     assert.ok(!pm_recipient_error_rendered);
+    assert.ok(!$("textarea#compose-textarea").prop("disabled"));
 
     override(realm, "realm_direct_message_permission_group", admin.id);
     assert.ok(compose_validate.validate());
@@ -241,12 +244,14 @@ test_ui("validate", ({mock_template, override}) => {
     });
     assert.ok(!compose_validate.validate());
     assert.ok(deactivated_user_error_rendered);
+    assert.ok($("textarea#compose-textarea").prop("disabled"));
 
     initialize_pm_pill(mock_template);
     add_content_to_compose_box();
     compose_state.private_message_recipient_emails("welcome-bot@example.com");
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
     assert.ok(compose_validate.validate());
+    assert.ok(!$("textarea#compose-textarea").prop("disabled"));
 
     // For this first block, we should fail due to empty compose.
     let expected_invalid_state = true;
@@ -258,6 +263,7 @@ test_ui("validate", ({mock_template, override}) => {
     };
     assert.ok(!compose_validate.validate());
     assert.ok(!$("#compose-send-button .loader").visible());
+    assert.ok(!$("textarea#compose-textarea").prop("disabled"));
     compose_validate.validate();
 
     // Now add content to compose.
@@ -265,6 +271,7 @@ test_ui("validate", ({mock_template, override}) => {
     expected_invalid_state = false;
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
     assert.ok(compose_validate.validate());
+    assert.ok(!$("textarea#compose-textarea").prop("disabled"));
 
     initialize_pm_pill(mock_template);
     add_content_to_compose_box();
@@ -282,6 +289,8 @@ test_ui("validate", ({mock_template, override}) => {
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
     assert.ok(!compose_validate.validate());
     assert.ok(empty_stream_error_rendered);
+    // compose textarea should be disabled after deactivated error.
+    assert.ok(!$("textarea#compose-textarea").prop("disabled"));
 
     const denmark = {
         stream_id: 100,
@@ -302,7 +311,32 @@ test_ui("validate", ({mock_template, override}) => {
         missing_topic_error_rendered = false;
         assert.ok(!compose_validate.validate());
         assert.ok(missing_topic_error_rendered);
+        assert.ok(!$("textarea#compose-textarea").prop("disabled"));
     }
+
+    compose_state.set_message_type("private");
+    compose_state.private_message_recipient_emails("bob@example.com");
+
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+
+    let dm_disabled_error_rendered = false;
+
+    mock_template("compose_banner/cannot_send_direct_message_error.hbs", false, (data) => {
+        assert.equal(data.classname, compose_banner.CLASSNAMES.cannot_send_direct_message);
+        dm_disabled_error_rendered = true;
+        return "<banner-stub>";
+    });
+    $(`#compose_banners .cannot_send_direct_message`).length = 0;
+
+    assert.ok(!compose_validate.validate());
+    assert.ok(dm_disabled_error_rendered);
+    // compose textarea should be disabled when direct message is disabled.
+    assert.ok($("textarea#compose-textarea").prop("disabled"));
+
+    compose_state.set_message_type("stream");
+
+    assert.ok(!compose_validate.validate());
+    assert.ok(!$("textarea#compose-textarea").prop("disabled"));
 });
 
 test_ui("test_stream_wildcard_mention_allowed", ({override}) => {

@@ -701,6 +701,9 @@ export function initialize(): void {
         // to the recipient row
         compose_recipient.set_high_attention_recipient_row();
         $compose_recipient.addClass("recently-focused");
+        // Check if the recipient has any invalid user and show
+        // error banner
+        compose_validate.validate_private_message(false);
     });
 
     $("input#stream_message_recipient_topic, #private_message_recipient").on("blur", () => {
