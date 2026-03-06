@@ -6,8 +6,17 @@ import type * as typeahead from "./typeahead.ts";
 
 const EMOJI_PICKER_ROW_LENGTH = 6;
 const MAX_FREQUENTLY_USED_EMOJIS = 5 * EMOJI_PICKER_ROW_LENGTH;
-const CURRENT_USER_REACTION_WEIGHT = 5;
-const POPULAR_EMOJIS_BONUS_WEIGHT = 12;
+const CURRENT_USER_REACTION_WEIGHT = 1;
+
+// The maximum ratio of importance given to others' reactions
+// compared to yours.
+const IMPORTANCE_RATIO = 1 / 5;
+const OTHER_USER_REACTION_WEIGHT = CURRENT_USER_REACTION_WEIGHT * IMPORTANCE_RATIO;
+const POPULAR_EMOJIS_BONUS_WEIGHT = 2.4 * CURRENT_USER_REACTION_WEIGHT;
+
+// The maximum score contribution by others' usage of an emoji.
+const OTHERS_SCORE_CAP = 40 * CURRENT_USER_REACTION_WEIGHT;
+const MINIMUM_SCORE_TO_BE_FEATURED = 2 * CURRENT_USER_REACTION_WEIGHT;
 
 type ReactionUsage = {
     emoji_code: string;
@@ -32,15 +41,33 @@ function get_key_for_popular_emoji_map(info: {emoji_type: string; emoji_code: st
     return [emoji_type, emoji_code].join(",");
 }
 
+function get_other_users_total_emoji_usage(): number {
+    let count = 0;
+    for (const usage of reaction_data.values()) {
+        count += usage.message_ids.size - usage.current_user_reacted_message_ids.size;
+    }
+    return count;
+}
+
 function compute_score(info: {
     is_popular: boolean;
-    others_count: number;
+    others_count_for_current_emoji: number;
     my_count: number;
+    others_count_for_all_emoji: number;
 }): number {
-    const {is_popular, others_count, my_count} = info;
+    const {is_popular, others_count_for_current_emoji, my_count, others_count_for_all_emoji} = info;
     const popular_emoji_bonus = is_popular ? POPULAR_EMOJIS_BONUS_WEIGHT : 0;
 
-    const score = my_count * CURRENT_USER_REACTION_WEIGHT + others_count + popular_emoji_bonus;
+    // We limit the total score contribution from other users so it asymptotically
+    // approaches OTHERS_SCORE_CAP. For example, if the cap is 40, a user
+    // reacting ~41 times (weighted at 1.0) is mathematically guaranteed to
+    // outscore an infinite number of reactions from other users.
+    const score =
+        CURRENT_USER_REACTION_WEIGHT * Math.max(my_count - 0.5, 0) +
+        Math.min(OTHER_USER_REACTION_WEIGHT, OTHERS_SCORE_CAP / others_count_for_all_emoji) *
+            Math.max(others_count_for_current_emoji - 0.5, 0) +
+        popular_emoji_bonus;
+
     return score;
 }
 
@@ -48,11 +75,18 @@ function get_scored_emoji_for_usage(usage: ReactionUsage): ScoredEmoji {
     const {emoji_code, emoji_type} = usage;
     const emoji_id = get_key_for_popular_emoji_map({emoji_code, emoji_type});
 
+    const others_count_for_all_emoji = get_other_users_total_emoji_usage();
     const is_popular = popular_emoji_map.has(emoji_id);
-    const others_count = usage.message_ids.size - usage.current_user_reacted_message_ids.size;
+    const others_count_for_current_emoji =
+        usage.message_ids.size - usage.current_user_reacted_message_ids.size;
     const my_count = usage.current_user_reacted_message_ids.size;
 
-    const score = compute_score({is_popular, my_count, others_count});
+    const score = compute_score({
+        is_popular,
+        my_count,
+        others_count_for_current_emoji,
+        others_count_for_all_emoji,
+    });
     return {
         score,
         emoji_code,
@@ -68,7 +102,10 @@ export function preferred_emoji_list(): typeahead.EmojiItem[] {
 
     const top_frequently_used_emojis = [];
     for (const scored_emoji of sorted_scored_emojis) {
-        if (top_frequently_used_emojis.length === MAX_FREQUENTLY_USED_EMOJIS || scored_emoji.score < 10) {
+        if (
+            top_frequently_used_emojis.length === MAX_FREQUENTLY_USED_EMOJIS ||
+            scored_emoji.score < MINIMUM_SCORE_TO_BE_FEATURED
+        ) {
             break;
         }
         assert(scored_emoji !== undefined);
