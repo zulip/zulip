@@ -153,6 +153,14 @@ export function postprocess_content(html: string): string {
             if (image_elt_prev_element_sibling?.tagName?.toLowerCase() === "br") {
                 image_elt_prev_element_sibling.remove();
             }
+        } else if (is_media_run_inline_with_text(inline_img_elt)) {
+            // When an inline image opens a message, we use CSS to adjust
+            // the space added to the start of the image, keeping it flush
+            // with the message box.
+            const image_elt_prev_sibling_node = inline_img_elt.previousSibling;
+            if (image_elt_prev_sibling_node === null) {
+                inline_img_elt.classList.add("image-opens-message");
+            }
         }
 
         const media_link = inertDocument.createElement("a");
