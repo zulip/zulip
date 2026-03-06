@@ -1,10 +1,10 @@
-<li class="stream-list-item" role="presentation" data-stream-id="{{stream_id}}">
+<li class="stream-list-item modal-list-item" role="presentation" data-stream-id="{{stream_id}}">
     <div class="modal-channel-list-row hidden-remove-button-row">
         <span class="modal-channel-list-row-content">
             <span class="stream-privacy-original-color-{{stream_id}} stream-privacy filter-icon" style="color: {{stream_color}}">
                 {{> stream_privacy . }}
             </span>
-            <span class="pill user-stream-name" data-stream-id="{{stream_id}}" tabindex="0">{{name}}</span>
+            <span class="pill user-stream-name list-item-name" data-stream-id="{{stream_id}}" tabindex="0">{{name}}</span>
         </span>
         <div class="remove-button-wrapper">
             {{#if show_unsubscribe_button}}
