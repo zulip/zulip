@@ -224,6 +224,27 @@
         }
     }
 
+    .editable-pill {
+        flex: 0 1 auto;
+        display: inline-flex;
+        align-items: center;
+        height: var(--height-input-pill);
+        box-sizing: border-box;
+        min-width: 2em;
+        padding: 0 var(--input-pill-side-padding);
+        border-radius: 4px;
+        background-color: var(--color-background-input-pill);
+        /* Inset box-shadow shows focus without affecting layout,
+           matching the technique used on .pill:focus. */
+        box-shadow: 0 0 0 1px var(--color-focus-outline-input-pill) inset;
+        white-space: nowrap;
+        cursor: text;
+        outline: none;
+        overflow-wrap: normal;
+        /* Match .pill-value so text height looks identical to a rendered pill. */
+        line-height: 1.5;
+    }
+
     &.not-editable-by-user {
         cursor: not-allowed;
 
