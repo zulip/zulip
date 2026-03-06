@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
@@ -38,6 +39,7 @@ const settings_config = zrequire("settings_config");
 const settings_org = zrequire("settings_org");
 const {set_current_user, set_realm} = zrequire("state_data");
 const pygments_data = zrequire("pygments_data");
+const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
 const current_user = {};
@@ -257,6 +259,93 @@ function test_extract_property_name() {
         settings_components.extract_property_name($("#id-realm-allow-message-deleting")),
         "realm_allow_message_deleting",
     );
+}
+
+function test_realm_can_change_name_group_property_changed({override}) {
+    const members = make_user_group({
+        name: "role:members",
+        id: 2,
+        members: new Set([1]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+    });
+
+    override(realm, "realm_can_change_name_group", members.id);
+    const previous_widget = settings_components.group_setting_widget_map.get(
+        "realm_can_change_name_group",
+    );
+    settings_components.group_setting_widget_map.set("realm_can_change_name_group", {
+        items: () => [{type: "user_group", group_id: members.id}],
+    });
+
+    const $name_change_group_elem = $("#id_realm_can_change_name_group");
+    $name_change_group_elem.attr("id", "id_realm_can_change_name_group");
+    $name_change_group_elem[0] = "#id_realm_can_change_name_group";
+
+    assert.equal(
+        settings_components.check_realm_settings_property_changed($name_change_group_elem[0]),
+        false,
+    );
+
+    if (previous_widget === undefined) {
+        settings_components.group_setting_widget_map.delete("realm_can_change_name_group");
+    } else {
+        settings_components.group_setting_widget_map.set(
+            "realm_can_change_name_group",
+            previous_widget,
+        );
+    }
+}
+
+function test_realm_can_change_name_group_request_data({override}) {
+    const admins = make_user_group({
+        name: "role:administrators",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+    });
+    const members = make_user_group({
+        name: "role:members",
+        id: 2,
+        members: new Set([2]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+    });
+
+    override(realm, "realm_can_change_name_group", admins.id);
+
+    const previous_widget = settings_components.group_setting_widget_map.get(
+        "realm_can_change_name_group",
+    );
+    settings_components.group_setting_widget_map.set("realm_can_change_name_group", {
+        items: () => [{type: "user_group", group_id: members.id}],
+    });
+
+    const $subsection_stub = $.create("org-subsection-group-setting-request-stub");
+    const $name_change_group_elem = $("#id_realm_can_change_name_group");
+    $name_change_group_elem.attr("id", "id_realm_can_change_name_group");
+    $name_change_group_elem.attr("data-setting-widget-type", "group-setting-type");
+    $subsection_stub.set_find_results(".prop-element", [$name_change_group_elem]);
+
+    const request_data =
+        settings_components.populate_data_for_realm_settings_request($subsection_stub);
+    assert.equal(
+        request_data.can_change_name_group,
+        JSON.stringify({
+            new: members.id,
+            old: admins.id,
+        }),
+    );
+
+    if (previous_widget === undefined) {
+        settings_components.group_setting_widget_map.delete("realm_can_change_name_group");
+    } else {
+        settings_components.group_setting_widget_map.set(
+            "realm_can_change_name_group",
+            previous_widget,
+        );
+    }
 }
 
 function test_sync_realm_settings({override}) {
@@ -611,6 +700,7 @@ test("set_up", ({override, override_rewire}) => {
             ".subsection-header .subsection-changes-discard button",
         ),
     );
+    test_realm_can_change_name_group_property_changed({override});
 });
 
 test("test get_organization_settings_options", () => {
@@ -764,32 +854,51 @@ test("test combined_code_language_options", ({override}) => {
 });
 
 test("misc", ({override}) => {
+    const admin_user_id = 1;
+    const member_user_id = 2;
+    const admins = make_user_group({
+        name: "role:administrators",
+        id: 1,
+        members: new Set([admin_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+    });
+    const members = make_user_group({
+        name: "role:members",
+        id: 2,
+        members: new Set([member_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([admins.id]),
+    });
+    const nobody = make_user_group({
+        name: "role:nobody",
+        id: 3,
+        members: new Set(),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+    });
+    user_groups.initialize({realm_user_groups: [admins, members, nobody]});
+
     override(current_user, "is_admin", false);
+    override(current_user, "is_guest", false);
+    override(current_user, "user_id", member_user_id);
     $("#user-avatar-upload-widget").length = 1;
     $("#user_details_section").length = 1;
 
-    override(realm, "realm_name_changes_disabled", false);
+    override(realm, "realm_can_change_name_group", members.id);
     override(realm, "server_name_changes_disabled", false);
     settings_account.update_name_change_display();
     assert.ok(!$("#full_name").prop("disabled"));
     assert.ok(!$("#full_name_input_container").hasClass("disabled_setting_tooltip"));
     assert.ok(!$("label[for='full_name']").hasClass("cursor-text"));
 
-    override(realm, "realm_name_changes_disabled", true);
-    override(realm, "server_name_changes_disabled", false);
+    override(realm, "realm_can_change_name_group", admins.id);
     settings_account.update_name_change_display();
     assert.ok($("#full_name").prop("disabled"));
     assert.ok($("#full_name_input_container").hasClass("disabled_setting_tooltip"));
     assert.ok($("label[for='full_name']").hasClass("cursor-text"));
 
-    override(realm, "realm_name_changes_disabled", true);
-    override(realm, "server_name_changes_disabled", true);
-    settings_account.update_name_change_display();
-    assert.ok($("#full_name").prop("disabled"));
-    assert.ok($("#full_name_input_container").hasClass("disabled_setting_tooltip"));
-    assert.ok($("label[for='full_name']").hasClass("cursor-text"));
-
-    override(realm, "realm_name_changes_disabled", false);
+    override(realm, "realm_can_change_name_group", members.id);
     override(realm, "server_name_changes_disabled", true);
     settings_account.update_name_change_display();
     assert.ok($("#full_name").prop("disabled"));
@@ -823,8 +932,11 @@ test("misc", ({override}) => {
     settings_account.update_avatar_change_display();
     assert.ok($("#user-avatar-upload-widget .image_upload_button").hasClass("hide"));
 
-    // If organization admin, these UI elements are never disabled.
+    // If organization admin, these UI elements are not disabled.
     override(current_user, "is_admin", true);
+    override(current_user, "user_id", admin_user_id);
+    override(realm, "realm_can_change_name_group", admins.id);
+    override(realm, "server_name_changes_disabled", false);
     settings_account.update_name_change_display();
     assert.ok(!$("#full_name").prop("disabled"));
     assert.ok(!$("#full_name_input_container").hasClass("disabled_setting_tooltip"));
@@ -835,4 +947,46 @@ test("misc", ({override}) => {
 
     settings_account.update_avatar_change_display();
     assert.ok(!$("#user-avatar-upload-widget .image_upload_button").hasClass("hide"));
+});
+
+test("test realm_can_change_name_group request data", ({override}) => {
+    test_realm_can_change_name_group_request_data({override});
+});
+
+test("test realm_can_change_name_group property changed restores existing widget", ({override}) => {
+    const existing_widget = {
+        items: () => [{type: "user_group", group_id: 1}],
+    };
+    assert.deepEqual(existing_widget.items(), [{type: "user_group", group_id: 1}]);
+    settings_components.group_setting_widget_map.set(
+        "realm_can_change_name_group",
+        existing_widget,
+    );
+
+    test_realm_can_change_name_group_property_changed({override});
+
+    assert.equal(
+        settings_components.group_setting_widget_map.get("realm_can_change_name_group"),
+        existing_widget,
+    );
+    settings_components.group_setting_widget_map.delete("realm_can_change_name_group");
+});
+
+test("test realm_can_change_name_group request data restores existing widget", ({override}) => {
+    const existing_widget = {
+        items: () => [{type: "user_group", group_id: 1}],
+    };
+    assert.deepEqual(existing_widget.items(), [{type: "user_group", group_id: 1}]);
+    settings_components.group_setting_widget_map.set(
+        "realm_can_change_name_group",
+        existing_widget,
+    );
+
+    test_realm_can_change_name_group_request_data({override});
+
+    assert.equal(
+        settings_components.group_setting_widget_map.get("realm_can_change_name_group"),
+        existing_widget,
+    );
+    settings_components.group_setting_widget_map.delete("realm_can_change_name_group");
 });

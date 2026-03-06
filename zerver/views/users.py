@@ -319,9 +319,15 @@ def update_user_backend(
 
         do_change_user_role(target, role, acting_user=user_profile, notify=True)
 
-    if full_name is not None and target.full_name != full_name and full_name.strip() != "":
-        # We don't respect `name_changes_disabled` here because the request
-        # is on behalf of the administrator.
+    # When admins use this endpoint to edit another user, they act on that
+    # user's behalf. But for admin self-edits, respect can_change_name_group
+    # for consistency with the /json/settings API.
+    if (
+        full_name is not None
+        and target.full_name != full_name
+        and full_name.strip() != ""
+        and (target.id != user_profile.id or user_profile.has_permission("can_change_name_group"))
+    ):
         check_change_full_name(target, full_name, user_profile)
 
     if profile_data is not None:

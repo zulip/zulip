@@ -5474,14 +5474,15 @@ paths:
                                       type: string
                                       description: |
                                         The name of the organization, used in login pages etc.
-                                    name_changes_disabled:
-                                      type: boolean
-                                      description: |
-                                        Indicates whether users are
-                                        [allowed to change](/help/restrict-name-and-email-changes) their name
-                                        via the Zulip UI in this organization. Typically disabled
-                                        in organizations syncing this type of account information from
-                                        an external user database like LDAP.
+                                    can_change_name_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who are allowed to change their own name in the organization.
+
+                                            **Changes**: New in Zulip 12.0 (feature level ZF-fca704). Previously,
+                                            this behavior was controlled by the `name_changes_disabled` boolean setting.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     night_logo_source:
                                       type: string
                                       description: |
@@ -19547,16 +19548,18 @@ paths:
 
                           **Changes**: New in Zulip 9.0 (feature level 246). Previously, the Zulip
                           server could not be configured to enforce unique names.
-                      realm_name_changes_disabled:
-                        type: boolean
-                        description: |
-                          Present if `realm` is present in `fetch_event_types`.
+                      realm_can_change_name_group:
+                        allOf:
+                          - description: |
+                              Present if `realm` is present in `fetch_event_types`.
 
-                          Indicates whether users are
-                          [allowed to change](/help/restrict-name-and-email-changes) their name
-                          via the Zulip UI in this organization. Typically disabled
-                          in organizations syncing this type of account information from
-                          an external user database like LDAP.
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who are allowed to change their own name in the organization.
+
+                              **Changes**: New in Zulip 12.0 (feature level ZF-fca704). Previously,
+                              this behavior was controlled by the `realm_name_changes_disabled`
+                              boolean setting.
+                          - $ref: "#/components/schemas/GroupSettingValue"
                       realm_avatar_changes_disabled:
                         type: boolean
                         description: |
@@ -20436,7 +20439,7 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether the server allows name changes. Similar to
-                          `realm_name_changes_disabled` but based on the `NAME_CHANGES_DISABLED`
+                          `realm_can_change_name_group` but based on the `NAME_CHANGES_DISABLED`
                           Zulip server level setting.
                       server_needs_upgrade:
                         type: boolean

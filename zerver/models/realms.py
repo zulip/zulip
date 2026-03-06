@@ -258,7 +258,6 @@ class Realm(models.Model):
     REALM_TOPICS_POLICY_TYPES = list(RealmTopicsPolicyEnum)
 
     require_unique_names = models.BooleanField(default=False)
-    name_changes_disabled = models.BooleanField(default=False)
     email_changes_disabled = models.BooleanField(default=False)
     avatar_changes_disabled = models.BooleanField(default=False)
 
@@ -305,6 +304,11 @@ class Realm(models.Model):
 
     move_messages_between_streams_limit_seconds = models.PositiveIntegerField(
         default=DEFAULT_MOVE_MESSAGE_LIMIT_SECONDS, null=True
+    )
+
+    # UserGroup whose members are allowed to change their name.
+    can_change_name_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
     # Who in the organization is allowed to add custom emojis.
@@ -771,7 +775,6 @@ class Realm(models.Model):
         move_messages_within_stream_limit_seconds=int | None,
         message_retention_days=int,
         name=str,
-        name_changes_disabled=bool,
         push_notifications_enabled=bool,
         require_e2ee_push_notifications=bool,
         require_unique_names=bool,
@@ -803,6 +806,11 @@ class Realm(models.Model):
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
+        ),
+        can_change_name_group=GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
         ),
         can_add_custom_emoji_group=GroupPermissionSetting(
             allow_nobody_group=True,
@@ -1318,10 +1326,8 @@ def require_unique_names(realm: Realm | None) -> bool:
     return realm.require_unique_names
 
 
-def name_changes_disabled(realm: Realm | None) -> bool:
-    if realm is None:
-        return settings.NAME_CHANGES_DISABLED
-    return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
+def name_changes_disabled(_realm: Realm | None) -> bool:
+    return settings.NAME_CHANGES_DISABLED
 
 
 def avatar_changes_disabled(realm: Realm) -> bool:

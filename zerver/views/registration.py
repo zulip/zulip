@@ -101,6 +101,7 @@ from zerver.lib.typed_endpoint_validators import (
 )
 from zerver.lib.upload import all_message_attachments
 from zerver.lib.url_encoding import append_url_query_string
+from zerver.lib.user_groups import get_recursive_subgroups, get_system_user_group_by_name
 from zerver.lib.users import get_accounts_for_email
 from zerver.models import (
     Message,
@@ -114,6 +115,7 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.constants import MAX_LANGUAGE_ID_LENGTH
+from zerver.models.groups import SystemGroups
 from zerver.models.prereg_users import RealmCreationStatus
 from zerver.models.realm_audit_logs import AuditLogEventType, RealmAuditLog
 from zerver.models.realms import (
@@ -122,7 +124,6 @@ from zerver.models.realms import (
     EmailContainsPlusError,
     get_org_type_display_name,
     get_realm,
-    name_changes_disabled,
 )
 from zerver.models.streams import get_default_stream_groups
 from zerver.models.users import (
@@ -262,6 +263,30 @@ def get_selected_realm_default_language_name(
         return None
 
     return get_language_name(prereg_realm.default_language)
+
+
+def name_changes_disallowed_for_role(
+    realm: Realm | None, role: int, prereg_group_ids: Iterable[int] = ()
+) -> bool:
+    if settings.NAME_CHANGES_DISABLED or realm is None:
+        return settings.NAME_CHANGES_DISABLED
+
+    setting_group_id = realm.can_change_name_group_id
+    setting_config = Realm.REALM_PERMISSION_GROUP_SETTINGS["can_change_name_group"]
+    if not setting_config.allow_everyone_group and role == UserProfile.ROLE_GUEST:
+        return True
+
+    role_group_name = NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[role]["name"]
+    role_group = get_system_user_group_by_name(role_group_name, realm.id)
+    relevant_group_ids = [role_group.id, *prereg_group_ids]
+
+    # New users invited as members are immediately full members when the
+    # waiting period is disabled.
+    if role == UserProfile.ROLE_MEMBER and realm.waiting_period_threshold == 0:
+        full_members_group = get_system_user_group_by_name(SystemGroups.FULL_MEMBERS, realm.id)
+        relevant_group_ids.append(full_members_group.id)
+
+    return not get_recursive_subgroups(setting_group_id).filter(id__in=relevant_group_ids).exists()
 
 
 @add_google_analytics
@@ -471,6 +496,16 @@ def registration_helper(
         prereg_user = prereg_object
         password_required = prereg_object.password_required
         role = prereg_object.invited_as
+    prereg_group_ids: list[int] | None = None
+
+    def get_prereg_group_ids() -> list[int]:
+        nonlocal prereg_group_ids
+        if prereg_group_ids is None:
+            if prereg_user is None:
+                prereg_group_ids = []
+            else:
+                prereg_group_ids = list(prereg_user.groups.values_list("id", flat=True))
+        return prereg_group_ids
 
     try:
         validators.validate_email(email)
@@ -640,15 +675,16 @@ def registration_helper(
             )
     else:
         postdata = request.POST.copy()
-        if name_changes_disabled(realm):
+        authenticated_full_name = request.session.get("authenticated_full_name")
+        if authenticated_full_name is not None and name_changes_disallowed_for_role(
+            realm, role, get_prereg_group_ids()
+        ):
             # If we populate profile information via LDAP and we have a
             # verified name from you on file, use that. Otherwise, fall
             # back to the full name in the request.
-            try:
-                postdata.update(full_name=request.session["authenticated_full_name"])
-                name_validated = True
-            except KeyError:
-                pass
+            postdata.update(full_name=authenticated_full_name)
+            name_validated = True
+
         form = RegistrationForm(postdata, realm_creation=realm_creation, realm=realm)
 
     if not (password_auth_enabled(realm) and password_required):
@@ -904,7 +940,8 @@ def registration_helper(
         "email": email,
         "key": key,
         "full_name": request.session.get("authenticated_full_name", None),
-        "lock_name": name_validated and name_changes_disabled(realm),
+        "lock_name": name_validated
+        and name_changes_disallowed_for_role(realm, role, get_prereg_group_ids()),
         # password_auth_enabled is normally set via our context processor,
         # but for the registration form, there is no logged in user yet, so
         # we have to set it here.

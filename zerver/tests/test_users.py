@@ -447,6 +447,30 @@ class PermissionTest(ZulipTestCase):
             f"**Old full name:** {old_name}\n- **New full name:** {new_name}", message.content
         )
 
+    def test_admin_cannot_change_own_full_name_when_disallowed_by_group(self) -> None:
+        self.login("iago")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        old_iago_name = iago.full_name
+
+        nobody_group = NamedUserGroup.objects.get(
+            realm_for_sharding=iago.realm, is_system_group=True, name=SystemGroups.NOBODY
+        )
+        do_change_realm_permission_group_setting(
+            iago.realm, "can_change_name_group", nobody_group, acting_user=None
+        )
+        self.assertFalse(iago.has_permission("can_change_name_group"))
+
+        result = self.client_patch(f"/json/users/{iago.id}", dict(full_name="Blocked Name"))
+        self.assert_json_success(result)
+        iago.refresh_from_db()
+        self.assertEqual(iago.full_name, old_iago_name)
+
+        result = self.client_patch(f"/json/users/{hamlet.id}", dict(full_name="Updated By Admin"))
+        self.assert_json_success(result)
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.full_name, "Updated By Admin")
+
     def test_non_admin_cannot_change_full_name(self) -> None:
         self.login("hamlet")
         req = dict(full_name="new name")
@@ -1306,6 +1330,25 @@ class UpdateUserByEmailEndpointTest(ZulipTestCase):
         self.assert_json_success(result)
         hamlet.refresh_from_db()
         self.assertEqual(hamlet.full_name, "Newname3")
+
+    def test_admin_cannot_change_own_full_name_by_email_when_disallowed_by_group(self) -> None:
+        self.login("iago")
+        iago = self.example_user("iago")
+        old_name = iago.full_name
+
+        nobody_group = NamedUserGroup.objects.get(
+            realm_for_sharding=iago.realm, is_system_group=True, name=SystemGroups.NOBODY
+        )
+        do_change_realm_permission_group_setting(
+            iago.realm, "can_change_name_group", nobody_group, acting_user=None
+        )
+
+        result = self.client_patch(
+            f"/json/users/{iago.delivery_email}", dict(full_name="Blocked Name")
+        )
+        self.assert_json_success(result)
+        iago.refresh_from_db()
+        self.assertEqual(iago.full_name, old_name)
 
 
 class AdminChangeUserEmailTest(ZulipTestCase):

@@ -140,21 +140,27 @@ run_test("user_can_change_email", ({override}) => {
 run_test("user_can_change_name", ({override}) => {
     const can_change_name = settings_data.user_can_change_name;
 
-    override(current_user, "is_admin", true);
-    assert.equal(can_change_name(), true);
+    group_permission_settings.get_group_permission_setting_config = () => ({
+        allow_everyone_group: true,
+    });
+    user_groups.initialize({realm_user_groups: [admins, members, nobody]});
 
     override(current_user, "is_admin", false);
-    override(realm, "realm_name_changes_disabled", true);
-    override(realm, "server_name_changes_disabled", false);
-    assert.equal(can_change_name(), false);
-
-    override(realm, "realm_name_changes_disabled", false);
+    override(current_user, "user_id", members.id);
+    override(realm, "realm_can_change_name_group", members.id);
     override(realm, "server_name_changes_disabled", false);
     assert.equal(can_change_name(), true);
 
-    override(realm, "realm_name_changes_disabled", false);
+    override(realm, "realm_can_change_name_group", admins.id);
+    assert.equal(can_change_name(), false);
+
     override(realm, "server_name_changes_disabled", true);
     assert.equal(can_change_name(), false);
+
+    override(current_user, "is_admin", true);
+    override(current_user, "user_id", admins.id);
+    override(realm, "realm_can_change_name_group", admins.id);
+    assert.equal(can_change_name(), true);
 });
 
 run_test("user_can_change_avatar", ({override}) => {

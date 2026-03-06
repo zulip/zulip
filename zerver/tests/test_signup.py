@@ -23,12 +23,14 @@ from zerver.actions.default_streams import do_add_default_stream, do_create_defa
 from zerver.actions.invites import do_invite_users
 from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
     do_deactivate_realm,
     do_scrub_realm,
     do_set_realm_authentication_methods,
     do_set_realm_property,
     do_set_realm_user_default_setting,
 )
+from zerver.actions.user_groups import create_user_group_in_database
 from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.decorator import do_two_factor_login
 from zerver.forms import HomepageForm
@@ -63,6 +65,7 @@ from zerver.lib.test_helpers import (
     ratelimit_rule,
     reset_email_visibility_to_everyone_in_zulip_realm,
 )
+from zerver.lib.user_groups import get_system_user_group_by_name
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -80,6 +83,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
 )
+from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.streams import get_stream
@@ -90,6 +94,7 @@ from zerver.views.auth import (
     start_two_factor_auth,
 )
 from zerver.views.development.registration import confirmation_key
+from zerver.views.registration import name_changes_disallowed_for_role
 from zproject.backends import ExternalAuthDataDict, ExternalAuthResult, email_auth_enabled
 
 if TYPE_CHECKING:
@@ -2961,7 +2966,7 @@ class UserSignUpTest(ZulipTestCase):
                 HTTP_HOST=subdomain + ".testserver",
             )
 
-            with patch("zerver.views.registration.name_changes_disabled", return_value=True):
+            with self.settings(NAME_CHANGES_DISABLED=True):
                 result = self.submit_reg_form_for_user(
                     email,
                     password,
@@ -2971,6 +2976,244 @@ class UserSignUpTest(ZulipTestCase):
             user_profile = UserProfile.objects.get(delivery_email=email)
             # Name comes from LDAP session.
             self.assertEqual(user_profile.full_name, "New LDAP fullname")
+
+    @override_settings(
+        AUTHENTICATION_BACKENDS=(
+            "zproject.backends.ZulipLDAPAuthBackend",
+            "zproject.backends.ZulipDummyBackend",
+        )
+    )
+    def test_ldap_registration_when_name_change_group_disallows_invited_role(self) -> None:
+        password = self.ldap_password("newuser")
+        email = "newuser@zulip.com"
+        subdomain = "zulip"
+
+        self.init_default_ldap_database()
+        ldap_user_attr_map = {"full_name": "cn"}
+
+        with patch("zerver.views.registration.get_subdomain", return_value=subdomain):
+            result = self.client_post("/register/", {"email": email})
+
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
+        )
+        result = self.client_get(result["Location"])
+        self.assert_in_response("check your email", result)
+
+        realm = get_realm(subdomain)
+        admins_group = get_system_user_group_by_name(SystemGroups.ADMINISTRATORS, realm.id)
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_change_name_group",
+            admins_group,
+            acting_user=None,
+        )
+
+        with self.settings(
+            POPULATE_PROFILE_VIA_LDAP=True,
+            LDAP_APPEND_DOMAIN="zulip.com",
+            AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+        ):
+            # Click confirmation link. This sets the `authenticated_full_name`
+            # session value used when name edits are disallowed.
+            result = self.submit_reg_form_for_user(
+                email,
+                password,
+                full_name="Ignore",
+                from_confirmation="1",
+                # Pass HTTP_HOST for the target subdomain
+                HTTP_HOST=subdomain + ".testserver",
+            )
+
+            result = self.submit_reg_form_for_user(
+                email,
+                password,
+                full_name="Edited Name",
+                # Pass HTTP_HOST for the target subdomain
+                HTTP_HOST=subdomain + ".testserver",
+            )
+
+        user_profile = UserProfile.objects.get(delivery_email=email)
+        # Name comes from LDAP session, not user-submitted form value.
+        self.assertEqual(user_profile.full_name, "New LDAP fullname")
+
+    @override_settings(
+        AUTHENTICATION_BACKENDS=(
+            "zproject.backends.EmailAuthBackend",
+            "zproject.backends.ZulipLDAPUserPopulator",
+            "zproject.backends.ZulipDummyBackend",
+        )
+    )
+    def test_ldap_registration_when_name_change_group_allows_full_members(self) -> None:
+        password = self.ldap_password("newuser")
+        email = "newuser@zulip.com"
+        subdomain = "zulip"
+
+        self.init_default_ldap_database()
+        ldap_user_attr_map = {"full_name": "cn"}
+
+        with patch("zerver.views.registration.get_subdomain", return_value=subdomain):
+            result = self.client_post("/register/", {"email": email})
+
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
+        )
+        result = self.client_get(result["Location"])
+        self.assert_in_response("check your email", result)
+
+        realm = get_realm(subdomain)
+        full_members_group = get_system_user_group_by_name(SystemGroups.FULL_MEMBERS, realm.id)
+        do_set_realm_property(realm, "waiting_period_threshold", 0, acting_user=None)
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_change_name_group",
+            full_members_group,
+            acting_user=None,
+        )
+
+        with self.settings(
+            POPULATE_PROFILE_VIA_LDAP=True,
+            LDAP_APPEND_DOMAIN="zulip.com",
+            AUTH_LDAP_BIND_PASSWORD="",
+            AUTH_LDAP_USER_DN_TEMPLATE="uid=%(user)s,ou=users,dc=zulip,dc=com",
+            AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+        ):
+            # Click confirmation link. This sets the `authenticated_full_name`
+            # session value.
+            self.submit_reg_form_for_user(
+                email,
+                password,
+                full_name="Ignore",
+                from_confirmation="1",
+                # Pass HTTP_HOST for the target subdomain
+                HTTP_HOST=subdomain + ".testserver",
+            )
+
+            self.submit_reg_form_for_user(
+                email,
+                password,
+                full_name="Edited Name",
+                # Pass HTTP_HOST for the target subdomain
+                HTTP_HOST=subdomain + ".testserver",
+            )
+
+        user_profile = UserProfile.objects.get(delivery_email=email)
+        # Name comes from user-submitted form value when full members are allowed.
+        self.assertEqual(user_profile.full_name, "Edited Name")
+
+    def test_name_changes_disallowed_for_guest_when_everyone_group_is_not_allowed(self) -> None:
+        realm = get_realm("zulip")
+        setting_config = Realm.REALM_PERMISSION_GROUP_SETTINGS["can_change_name_group"]
+
+        with patch.object(setting_config, "allow_everyone_group", False):
+            self.assertTrue(name_changes_disallowed_for_role(realm, UserProfile.ROLE_GUEST))
+
+    def test_realm_creation_name_lock_check_uses_empty_prereg_group_ids(self) -> None:
+        email = "new-realm-coverage@example.com"
+        realm_subdomain = f"coverage{UserProfile.objects.count()}"
+        realm_name = "Coverage Realm"
+
+        result = self.submit_realm_creation_form(
+            email,
+            realm_subdomain=realm_subdomain,
+            realm_name=realm_name,
+        )
+        self.assertEqual(result.status_code, 302)
+
+        session = self.client.session
+        session["authenticated_full_name"] = "Validated Full Name"
+        session.save()
+
+        with patch(
+            "zerver.views.registration.name_changes_disallowed_for_role", return_value=False
+        ) as mock:
+            result = self.submit_reg_form_for_user(
+                email,
+                "x",
+                full_name="Ignored Full Name",
+                key=find_key_by_email(email),
+                realm_subdomain=realm_subdomain,
+                realm_name=realm_name,
+            )
+
+        self.assertIn(result.status_code, [200, 302])
+        self.assertEqual(mock.call_count, 1)
+        self.assertIsNone(mock.call_args.args[0])
+        self.assertEqual(mock.call_args.args[1], UserProfile.ROLE_REALM_OWNER)
+        self.assertEqual(mock.call_args.args[2], [])
+
+    @override_settings(
+        AUTHENTICATION_BACKENDS=(
+            "zproject.backends.EmailAuthBackend",
+            "zproject.backends.ZulipLDAPUserPopulator",
+            "zproject.backends.ZulipDummyBackend",
+        )
+    )
+    def test_ldap_registration_when_name_change_group_allows_invite_group(self) -> None:
+        password = self.ldap_password("newuser")
+        email = "newuser@zulip.com"
+        subdomain = "zulip"
+
+        self.init_default_ldap_database()
+        ldap_user_attr_map = {"full_name": "cn"}
+
+        with patch("zerver.views.registration.get_subdomain", return_value=subdomain):
+            result = self.client_post("/register/", {"email": email})
+
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
+        )
+        result = self.client_get(result["Location"])
+        self.assert_in_response("check your email", result)
+
+        realm = get_realm(subdomain)
+        allowed_group = create_user_group_in_database(
+            "can-change-name", [], realm, acting_user=self.example_user("hamlet")
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_change_name_group",
+            allowed_group,
+            acting_user=None,
+        )
+
+        key = find_key_by_email(email)
+        confirmation = Confirmation.objects.get(confirmation_key=key)
+        prereg_user = confirmation.content_object
+        assert isinstance(prereg_user, PreregistrationUser)
+        prereg_user.groups.add(allowed_group)
+
+        with self.settings(
+            POPULATE_PROFILE_VIA_LDAP=True,
+            LDAP_APPEND_DOMAIN="zulip.com",
+            AUTH_LDAP_BIND_PASSWORD="",
+            AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+            AUTH_LDAP_USER_DN_TEMPLATE="uid=%(user)s,ou=users,dc=zulip,dc=com",
+        ):
+            # Click confirmation link. This sets `authenticated_full_name`.
+            result = self.submit_reg_form_for_user(
+                email,
+                password,
+                full_name="Ignore",
+                from_confirmation="1",
+                # Pass HTTP_HOST for the target subdomain
+                HTTP_HOST=subdomain + ".testserver",
+            )
+            self.assert_in_success_response(["id_full_name"], result)
+
+            result = self.submit_reg_form_for_user(
+                email,
+                password,
+                full_name="Edited Name",
+                # Pass HTTP_HOST for the target subdomain
+                HTTP_HOST=subdomain + ".testserver",
+            )
+
+        user_profile = UserProfile.objects.get(delivery_email=email)
+        self.assertEqual(user_profile.full_name, "Edited Name")
 
     @override_settings(
         AUTHENTICATION_BACKENDS=(
@@ -3330,7 +3573,7 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_get(result["Location"])
         self.assert_in_response("check your email", result)
 
-        with patch("zerver.views.registration.name_changes_disabled", return_value=True):
+        with self.settings(NAME_CHANGES_DISABLED=True):
             result = self.submit_reg_form_for_user(
                 email,
                 password,

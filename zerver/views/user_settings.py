@@ -529,7 +529,10 @@ def json_change_settings(
             do_start_email_change_process(user_profile, new_email)
 
     if full_name is not None and user_profile.full_name != full_name:
-        if name_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
+        name_change_disallowed = (
+            name_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin
+        ) or not user_profile.has_permission("can_change_name_group")
+        if name_change_disallowed:
             # Failingly silently is fine -- they can't do it through the UI, so
             # they'd have to be trying to break the rules.
             pass
