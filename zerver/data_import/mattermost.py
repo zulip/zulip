@@ -910,8 +910,8 @@ def write_emoticon_data(
         shutil.copyfile(source_path, target_path)
 
         return dict(
-            path=target_path,
-            s3_path=target_path,
+            path=target_sub_path,
+            s3_path=target_sub_path,
             file_name=target_fn,
             realm_id=realm_id,
             name=data["name"],

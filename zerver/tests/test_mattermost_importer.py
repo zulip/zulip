@@ -877,14 +877,19 @@ class MatterMostImporter(MattermostImportTestBase):
         exported_emoji_path = self.fixture_file_name(
             mattermost_data["emoji"][0]["image"], "mattermost_fixtures"
         )
-        self.assertTrue(filecmp.cmp(records_json[0]["path"], exported_emoji_path))
+        emoji_dir = os.path.join(output_dir, "emoji")
+        self.assertTrue(
+            filecmp.cmp(os.path.join(emoji_dir, records_json[0]["path"]), exported_emoji_path)
+        )
 
         self.assertEqual(records_json[1]["file_name"], "tick")
         self.assertEqual(records_json[1]["realm_id"], 3)
         exported_emoji_path = self.fixture_file_name(
             mattermost_data["emoji"][1]["image"], "mattermost_fixtures"
         )
-        self.assertTrue(filecmp.cmp(records_json[1]["path"], exported_emoji_path))
+        self.assertTrue(
+            filecmp.cmp(os.path.join(emoji_dir, records_json[1]["path"]), exported_emoji_path)
+        )
 
     def test_process_message_attachments(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures/direct_channel")
