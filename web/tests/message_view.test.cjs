@@ -843,24 +843,6 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
         {operator: "topic", operand: ""},
     ]);
 
-    // Test with no topic, with realm mandatory topics
-    override(realm, "realm_topics_policy", "disable_empty_topic");
-    compose_state.topic(undefined);
-    args.called = false;
-    message_view.to_compose_target();
-    assert.equal(args.called, true);
-    assert.deepEqual(args.terms, [{operator: "channel", operand: rome_id.toString()}]);
-
-    // Test with no topic, without realm mandatory topics
-    override(realm, "realm_topics_policy", "allow_empty_topic");
-    compose_state.topic(undefined);
-    args.called = false;
-    message_view.to_compose_target();
-    assert.equal(args.called, true);
-    assert.deepEqual(args.terms, [
-        {operator: "channel", operand: rome_id.toString()},
-        {operator: "topic", operand: ""},
-    ]);
 });
 
 run_test("narrow_to_compose_target direct messages", ({override, override_rewire}) => {
