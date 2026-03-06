@@ -24,9 +24,14 @@
             <span>{{t "Invite Users" }}</span>
             <a id="rsvp-add-all-users" class="rsvp-add-all-users-link">{{t "ADD ALL USERS IN CURRENT CHANNEL" }}</a>
         </div>
-        <div class="pill-container pill-container-outlined" id="rsvp-invite-users-container">
-            <div class="input" contenteditable="true" id="rsvp-invite-users" placeholder="{{t 'Add users' }}"></div>
+        <div class="pill-container pill-container-outlined rsvp-invite-users-container" id="rsvp-invite-users-container">
+            <div id="rsvp-invite-users" class="input" contenteditable="true" data-placeholder="{{t 'Add users' }}" style="min-height: 32px;"></div>
+            <button type="button" id="rsvp-user-dropdown-button" class="button small">
+                ▼
+            </button>
             <button type="button" class="button small add-user-button">+</button>
+
+            <div id="rsvp-user-dropdown" class="rsvp-user-dropdown"></div>
         </div>
 
         <label class="checkbox rsvp-create-channel-label">
@@ -35,3 +40,4 @@
         </label>
     </form>
 </div>
+
