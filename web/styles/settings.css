@@ -2191,6 +2191,7 @@ label.preferences-radio-choice-label {
             min-width: 8em;
         }
     }
+
     .add-new-playground-box {
         #submit_playground_button {
             margin-left: 0;
@@ -2207,6 +2208,11 @@ label.preferences-radio-choice-label {
         }
     }
 
+    .tab-switcher.org-user-settings-switcher {
+        gap: 0.5em;
+        display: flex;
+        flex-wrap: wrap;
+    }
 }
 
 @media (width < $ml_min) {
