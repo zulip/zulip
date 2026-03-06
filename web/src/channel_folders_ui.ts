@@ -494,14 +494,3 @@ export function handle_editing_channel_folder(folder_id: number): void {
         },
     });
 }
-
-export function initialize(): void {
-    $("body").on("keydown", ".folder-stream-list .pill", function (this: HTMLElement, e) {
-        if (e.key !== "Enter") {
-            return;
-        }
-        e.preventDefault();
-        e.stopPropagation();
-        $(this).trigger("click");
-    });
-}
