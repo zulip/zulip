@@ -35,7 +35,9 @@ from zerver.models.users import get_system_bot, get_user
 
 
 class DemoCreationTest(ZulipTestCase):
-    @override_settings(OPEN_REALM_CREATION=True, DEMO_ORG_DEADLINE_DAYS=30)
+    @override_settings(
+        OPEN_REALM_CREATION=True, DEMO_ORG_DEADLINE_DAYS=30, PREFER_DIRECT_MESSAGE_GROUP=True
+    )
     def test_create_demo_organization(self) -> None:
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         notification_bot = get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id)
@@ -606,7 +608,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(user.realm, realm)
         self.assertFalse(user.enable_marketing_emails)
 
-    @override_settings(OPEN_REALM_CREATION=True)
+    @override_settings(OPEN_REALM_CREATION=True, PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_create_regular_realm_welcome_bot_direct_message(self) -> None:
         password = "test"
         string_id = "custom-test"
@@ -671,7 +673,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
         self.assertNotIn("I've kicked off some conversations", welcome_msg.content)
 
-    @override_settings(OPEN_REALM_CREATION=True)
+    @override_settings(OPEN_REALM_CREATION=True, PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_create_education_organization_welcome_bot_direct_message(self) -> None:
         password = "test"
         string_id = "custom-test"
@@ -721,7 +723,7 @@ class RealmCreationTest(ZulipTestCase):
         self.assertNotIn("getting started guide", welcome_msg.content)
         self.assertIn("using Zulip for a class guide", welcome_msg.content)
 
-    @override_settings(OPEN_REALM_CREATION=True)
+    @override_settings(OPEN_REALM_CREATION=True, PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_create_realm_with_custom_language(self) -> None:
         email = "user1@test.com"
         password = "test"

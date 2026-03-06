@@ -5,6 +5,7 @@ from unittest import mock
 
 import orjson
 import time_machine
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_edit import get_mentions_for_message_updates
@@ -217,6 +218,7 @@ class EditMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(Message.objects.get(id=msg_id).topic_name(), "edited")
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_fetch_message_from_id(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
