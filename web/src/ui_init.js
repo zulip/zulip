@@ -956,8 +956,8 @@ window.toggleTask = function(taskId, completed) {
 window.deleteTask = function(taskId) {
     if (confirm("Are you sure you want to delete this task?")) {
         $.ajax({
-            url: `/json/tasks/${taskId}`,
-            method: "DELETE",
+            url: `/json/tasks/${taskId}/delete`,
+            method: "POST",
             success: () => {
                 loadTasks(); // Reload tasks to update UI
             },

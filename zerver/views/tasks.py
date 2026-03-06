@@ -79,8 +79,12 @@ def update_task(
     task_id: int,
 ) -> HttpResponse:
     """Update task completion status"""
+    # Check if this is actually a DELETE request
+    if request.POST.get('_method') == 'DELETE':
+        return delete_task(request, user_profile, task_id=task_id)
+    
     try:
-        task = Task.objects.select_related().get(id=task_id)
+        task = Task.objects.select_related('assignee', 'creator').get(id=task_id)
     except Task.DoesNotExist:
         return JsonResponse({"error": "Task not found"}, status=404)
     
@@ -116,7 +120,7 @@ def delete_task(
 ) -> HttpResponse:
     """Delete a task"""
     try:
-        task = Task.objects.select_related().get(id=task_id)
+        task = Task.objects.select_related('assignee', 'creator').get(id=task_id)
     except Task.DoesNotExist:
         return JsonResponse({"error": "Task not found"}, status=404)
     
