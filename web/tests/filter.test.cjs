@@ -1388,6 +1388,11 @@ test("predicate_basics", ({override}) => {
     );
     assert.ok(!predicate({type: stream_message}));
 
+    const inline_img_msg = {
+        content:
+            '<p><img alt="Screenshot" class="inline-image" data-original-content-type="image/png" data-original-dimensions="1488x1130" data-original-src="/user_uploads/randompath/test.png" src="/user_uploads/thumbnail/randompath/test.png/840x560.webp"></p>',
+    };
+
     const img_msg = {
         // Even though the HTML class `message_inline_image` is modified
         // in post_process for rendered message, the raw content stays the same.
@@ -1432,6 +1437,7 @@ test("predicate_basics", ({override}) => {
     };
 
     predicate = get_predicate([["has", "non_valid_operand"]]);
+    assert.ok(!predicate(inline_img_msg));
     assert.ok(!predicate(img_msg));
     assert.ok(!predicate(non_img_attachment_msg));
     assert.ok(!predicate(link_msg));
@@ -1445,6 +1451,8 @@ test("predicate_basics", ({override}) => {
     }
 
     const has_link = get_predicate([["has", "link"]]);
+    set_find_results_for_msg_content(inline_img_msg, "a", []);
+    assert.ok(!has_link(inline_img_msg));
     set_find_results_for_msg_content(img_msg, "a", ["stub"]);
     assert.ok(has_link(img_msg));
     set_find_results_for_msg_content(non_img_attachment_msg, "a", ["stub"]);
@@ -1455,6 +1463,8 @@ test("predicate_basics", ({override}) => {
     assert.ok(!has_link(no_has_filter_matching_msg));
 
     const has_attachment = get_predicate([["has", "attachment"]]);
+    set_find_results_for_msg_content(inline_img_msg, "a[href^='/user_uploads']", []);
+    assert.ok(!has_attachment(inline_img_msg));
     set_find_results_for_msg_content(img_msg, "a[href^='/user_uploads']", ["stub"]);
     assert.ok(has_attachment(img_msg));
     set_find_results_for_msg_content(non_img_attachment_msg, "a[href^='/user_uploads']", ["stub"]);
@@ -1465,13 +1475,16 @@ test("predicate_basics", ({override}) => {
     assert.ok(!has_attachment(no_has_filter_matching_msg));
 
     const has_image = get_predicate([["has", "image"]]);
-    set_find_results_for_msg_content(img_msg, ".message_inline_image", ["stub"]);
+    const image_selector_string = ".message_inline_image, .inline-image";
+    set_find_results_for_msg_content(inline_img_msg, image_selector_string, ["stub"]);
+    assert.ok(has_image(inline_img_msg));
+    set_find_results_for_msg_content(img_msg, image_selector_string, ["stub"]);
     assert.ok(has_image(img_msg));
-    set_find_results_for_msg_content(non_img_attachment_msg, ".message_inline_image", []);
+    set_find_results_for_msg_content(non_img_attachment_msg, image_selector_string, []);
     assert.ok(!has_image(non_img_attachment_msg));
-    set_find_results_for_msg_content(link_msg, ".message_inline_image", []);
+    set_find_results_for_msg_content(link_msg, image_selector_string, []);
     assert.ok(!has_image(link_msg));
-    set_find_results_for_msg_content(no_has_filter_matching_msg, ".message_inline_image", []);
+    set_find_results_for_msg_content(no_has_filter_matching_msg, image_selector_string, []);
     assert.ok(!has_image(no_has_filter_matching_msg));
 
     const has_reaction = get_predicate([["has", "reaction"]]);
