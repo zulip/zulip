@@ -7,7 +7,6 @@ from unittest import mock
 import time_machine
 from django.apps import apps
 from django.db.models import Sum
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Literal
 from typing_extensions import override
@@ -723,7 +722,6 @@ class TestCountStats(AnalyticsTestCase):
         )
         self.assertTableState(StreamCount, [], [])
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_1_to_1_and_self_messages_sent_by_message_type_using_direct_message_group(self) -> None:
         stat = COUNT_STATS["messages_sent:message_type:day"]
         self.current_property = stat.property

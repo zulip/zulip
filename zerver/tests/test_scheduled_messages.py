@@ -301,6 +301,7 @@ class ScheduledMessageTest(ZulipTestCase):
         )
         self.assertTrue(scheduled_message.failed)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_too_late_to_deliver_scheduled_message(self) -> None:
         expected_failure_message = "Message could not be sent at the scheduled time."
         self.create_scheduled_message()

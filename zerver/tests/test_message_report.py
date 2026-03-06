@@ -471,8 +471,8 @@ class ReportMessageTest(ZulipTestCase):
             submitted_report=reports.last(),
         )
 
-    @time_machine.travel(MOCKED_DATE_SENT, tick=False)
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
+    @time_machine.travel(MOCKED_DATE_SENT, tick=False)
     def test_personal_message_report_using_direct_message_group(self) -> None:
         dm_recipient = self.hamlet
         direct_message_group = get_or_create_direct_message_group(
