@@ -246,6 +246,8 @@
 }
 
 .hidden-remove-button-row:hover
+    .hidden-remove-button:not(:has(.button-loading-indicator)),
+.hidden-remove-button-row:focus-within
     .hidden-remove-button:not(:has(.button-loading-indicator)) {
     opacity: 1;
     pointer-events: auto;
