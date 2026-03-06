@@ -524,6 +524,15 @@
     }
 
     .message-media-inline-image:not(.message-media-gallery-image) {
+        margin: 0 0.125em; /* 2px at 16px/1em */
+
+        &:has(.image-opens-message) {
+            /* When a message opens with an inline image, don't
+               present any margin before the image starts (e.g.,
+               to the left in LTR languages). */
+            margin-inline-start: 0;
+        }
+
         .media-anchor-element {
             /* We want the image to behave as inline, which the
                .message-media-inline-image will ensure, but in
