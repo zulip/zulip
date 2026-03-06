@@ -837,3 +837,206 @@ $(() => {
         initialize_everything(state_data);
     }
 });
+
+// Load tasks function
+function loadTasks() {
+    $.ajax({
+        url: "/json/users/me/tasks",
+        method: "GET",
+        success: (response) => {
+            const tasks = response.tasks || [];
+            displayTasks(tasks);
+        },
+        error: (xhr) => {
+            console.error("Failed to load tasks:", xhr);
+            $("#tasks-content").html(`
+                <div style="color: #d32f2f; text-align: center; padding: 40px 0;">
+                    <p>❌ Failed to load tasks</p>
+                    <p style="font-size: 14px; margin-top: 10px;">Please try again later.</p>
+                </div>
+            `);
+        }
+    });
+}
+
+function displayTasks(tasks) {
+    if (tasks.length === 0) {
+        $("#tasks-content").html(`
+            <div style="color: #666; text-align: center; padding: 40px 0;">
+                <p>📋 No tasks yet!</p>
+                <p style="font-size: 14px; margin-top: 10px;">Use /todo in messages to create tasks, then click "→ Task" to assign them.</p>
+            </div>
+        `);
+        return;
+    }
+
+    const tasksHtml = tasks.map(task => `
+        <div style="
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: ${task.completed ? '#f5f5f5' : '#fff'};
+        ">
+            <div style="display: flex; align-items: flex-start;">
+                <div style="margin-right: 12px; margin-top: 2px;">
+                    <input type="checkbox" 
+                           ${task.completed ? 'checked' : ''} 
+                           style="cursor: pointer;"
+                           onchange="toggleTask(${task.task_id}, this.checked)">
+                </div>
+                <div style="flex: 1;">
+                    <div style="
+                        font-weight: 600;
+                        font-size: 16px;
+                        margin-bottom: 5px;
+                        color: ${task.completed ? '#999' : '#333'};
+                        ${task.completed ? 'text-decoration: line-through;' : ''}
+                    ">
+                        ${task.title}
+                    </div>
+                    ${task.description ? `
+                        <div style="color: #666; font-size: 14px; margin-bottom: 8px;">
+                            ${task.description}
+                        </div>
+                    ` : ''}
+                    <div style="font-size: 12px; color: #999;">
+                        From: ${task.creator_full_name} • 
+                        Created: ${new Date(task.created_at).toLocaleDateString()}
+                        ${task.due_date ? ` • Due: ${new Date(task.due_date).toLocaleDateString()}` : ''}
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <a href="#narrow/stream/${task.message_id}" 
+                           style="color: #1976d2; text-decoration: none; font-size: 12px;">
+                            View Message →
+                        </a>
+                    </div>
+                </div>
+                <div style="margin-left: 12px;">
+                    <button onclick="deleteTask(${task.task_id})" 
+                            style="
+                                background: #d32f2f;
+                                color: white;
+                                border: none;
+                                border-radius: 50%;
+                                width: 24px;
+                                height: 24px;
+                                cursor: pointer;
+                                font-size: 16px;
+                            ">&times;</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    $("#tasks-content").html(`
+        <div style="max-height: 400px; overflow-y: auto;">
+            ${tasksHtml}
+        </div>
+    `);
+}
+
+// Toggle task completion
+window.toggleTask = function(taskId, completed) {
+    $.ajax({
+        url: `/json/tasks/${taskId}`,
+        method: "POST",
+        data: { completed: completed },
+        success: () => {
+            loadTasks(); // Reload tasks to update UI
+        },
+        error: (xhr) => {
+            console.error("Failed to update task:", xhr);
+            alert("Failed to update task. Please try again.");
+        }
+    });
+};
+
+// Delete task
+window.deleteTask = function(taskId) {
+    if (confirm("Are you sure you want to delete this task?")) {
+        $.ajax({
+            url: `/json/tasks/${taskId}`,
+            method: "DELETE",
+            success: () => {
+                loadTasks(); // Reload tasks to update UI
+            },
+            error: (xhr) => {
+                console.error("Failed to delete task:", xhr);
+                alert("Failed to delete task. Please try again.");
+            }
+        });
+    }
+};
+
+// Test tasks button
+$(document).ready(() => {
+    console.log("UI init loaded, checking for tasks button...");
+    $("#tasks-toggle-button").on("click", () => {
+        console.log("Tasks button clicked!");
+        
+        // Create simple tasks overlay if it doesn't exist
+        if ($("#tasks-overlay").length === 0) {
+            const overlayHtml = `
+                <div id="tasks-overlay" style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    z-index: 1000;
+                    display: none;
+                ">
+                    <div style="
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: white;
+                        padding: 30px;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                        max-width: 600px;
+                        width: 90%;
+                    ">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0; color: #333;">My Tasks</h2>
+                            <button id="close-tasks" style="
+                                background: none;
+                                border: none;
+                                font-size: 24px;
+                                cursor: pointer;
+                                color: #666;
+                            ">&times;</button>
+                        </div>
+                        <div id="tasks-content">
+                            <div style="color: #666; text-align: center; padding: 40px 0;">
+                                <p>Loading tasks...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $("body").append(overlayHtml);
+            
+            // Close button handler
+            $("#close-tasks").on("click", () => {
+                $("#tasks-overlay").hide();
+            });
+            
+            // Close on background click
+            $("#tasks-overlay").on("click", (e) => {
+                if (e.target.id === "tasks-overlay") {
+                    $("#tasks-overlay").hide();
+                }
+            });
+        }
+        
+        // Show the overlay
+        $("#tasks-overlay").show();
+        
+        // Load tasks
+        loadTasks();
+    });
+});

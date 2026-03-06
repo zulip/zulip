@@ -2,6 +2,9 @@
     margin-bottom: var(--markdown-interelement-space-px);
 }
 
+/* Import tasks overlay styles */
+@import url('./tasks.css');
+
 .widget-choices {
     & ul {
         padding: 3px;
