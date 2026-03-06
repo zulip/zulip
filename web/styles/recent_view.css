@@ -320,10 +320,10 @@
         vertical-align: middle;
         list-style-type: none;
         margin: auto; /* Centers vertically / horizontally in flex container. */
-        /* 24px at 15px/1em */
-        height: 1.6em;
-        /* 4px at 15px/1em */
-        padding: 0.267em 0;
+        /* 24px at 16px/1em */
+        height: 1.5em;
+        /* 4px at 16px/1em */
+        padding: 0.25em 0;
         border-radius: 6px;
         overflow: hidden;
 
@@ -343,8 +343,8 @@
     }
 
     .recent_view_participant_item {
-        /* 24px at 15px/1em */
-        height: 1.6em;
+        /* 24px at 16px/1em */
+        height: 1.5em;
         margin: 0;
         padding: 0 var(--recent-view-participant-item-padding-x);
         position: relative;
@@ -371,8 +371,8 @@
         border: 0;
         /* Keep the rounded corners from ballooning
            to a circle at smaller font sizes.
-           6px at 15px/1em */
-        border-radius: 0.4em;
+           6px at 16px/1em */
+        border-radius: 0.375em;
         color: var(--color-recent-view-participant-overflow-text);
         display: block;
         height: 100%;
@@ -450,7 +450,6 @@
         background-color: var(--color-background-recent-view-table-thead-th);
         overflow: hidden;
         color: var(--color-text-recent-view-table-thead-th);
-        font-size: 0.9375em; /* 15px at 16px/1em */
         text-transform: uppercase;
         font-weight: 600;
         line-height: 1.25em; /* 20px at 16px/1em */
@@ -463,7 +462,7 @@
 
         .table-sortable-arrow {
             align-self: center;
-            font-size: 1.0667em; /* 16px at 15px/1em */
+            font-size: 1em; /* 16px at 16px/1em */
             transform: rotate(180deg);
             opacity: 0;
             transition: opacity 100ms ease-out;
@@ -496,7 +495,7 @@
         }
 
         .zulip-icon-chevron-right {
-            font-size: 1em; /* 15px at 15px/1em */
+            font-size: 0.9375em; /* 15px at 16px/1em */
             align-self: center;
             color: hsl(0deg 0% 60%);
             padding: 0 0.125em; /* 2px at 16px/1em */
@@ -504,9 +503,8 @@
     }
 
     .recent-view-topic-header {
-        /* Match horizontal padding with non header rows */
-        /* NOTE that headers use 15px font-size. */
-        padding: 0.25em 0.533em; /* 8px at 16px/1em */
+        /* Match horizontal padding with non header rows. */
+        padding: 0.25em 0.5em; /* 4px 8px at 16px/1em */
         /* th no longer has data-sort; the individual sort spans handle
            cursor and hover. */
         cursor: default;
@@ -515,14 +513,13 @@
             /* Match the row grid so "Channel" and "Conversation" sort
                spans align with channel and topic text in rows. Sort
                arrows are inside the spans, so 3 columns suffice.
-               1.0667em = 16px at 15px/1em, matching the 1em (16px
+               1em = 16px at 16px/1em, matching the 1em (16px
                at 16px/1em) privacy icon width in data rows. */
             display: grid;
             grid-template-columns:
                 min(
                     calc(
-                        var(--longest-subscribed-channel-name-width) +
-                            1.0667em + 8px
+                        var(--longest-subscribed-channel-name-width) + 1em + 8px
                     ),
                     33.3%
                 )
@@ -539,8 +536,8 @@
             cursor: pointer;
             /* Negative margin compensates the padding so the pill hover
                highlight doesn't push adjacent elements out of alignment. */
-            padding: 0.133em 0.267em; /* 2px 4px at 15px/1em */
-            margin: -0.133em -0.267em;
+            padding: 0.125em 0.25em; /* 2px 4px at 16px/1em */
+            margin: -0.125em -0.25em;
             border-radius: 3px;
             transition: background-color 100ms ease-in-out;
 
@@ -566,19 +563,17 @@
         .recent-view-conversation-sort-header {
             /* Prevent hover pill highlight from extending into
                the adjacent unread sort column. */
-            margin-right: 0.333em; /* 5px at 15px/1em */
+            margin-right: 0.3125em; /* 5px at 16px/1em */
         }
 
         .recent-view-unread-sort-header {
-            margin-right: -0.1667em; /* 2.5px at 15px/1em */
+            margin-right: -0.1563em; /* 2.5px at 16px/1em */
             justify-self: end;
         }
     }
 
     .recent_topic_users,
     .recent-view-participants-header {
-        /* Use same font size for header and row to ease calculations */
-        font-size: 0.9375em; /* 15px at 16px/1em */
         padding-right: 0;
         padding-left: var(--recent-view-participants-padding-x-start);
         width: calc(
