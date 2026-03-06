@@ -35,6 +35,14 @@ import * as util from "./util.ts";
 type MessageType = "stream" | "private";
 
 let compose_select_recipient_dropdown_widget: DropdownWidget;
+let stream_message_topic_typeahead: {helpOnEmptyStrings: boolean; showOnFocus: boolean} | undefined;
+
+export function set_stream_message_topic_typeahead(typeahead: {
+    helpOnEmptyStrings: boolean;
+    showOnFocus: boolean;
+}): void {
+    stream_message_topic_typeahead = typeahead;
+}
 
 function composing_to_current_topic_narrow(): boolean {
     // If the narrow state's stream ID or topic is undefined, then
@@ -267,6 +275,14 @@ export let on_compose_select_recipient_update = (): void => {
         // Update stream name in the recipient box.
         const stream_id = compose_state.stream_id();
         update_recipient_label(stream_id);
+
+        // Update topic typeahead to auto-show suggestions when topic
+        // creation is disabled, helping users select from existing topics.
+        if (stream_id && stream_message_topic_typeahead) {
+            const can_create_topics = stream_data.can_create_new_topics_in_stream(stream_id);
+            stream_message_topic_typeahead.helpOnEmptyStrings = !can_create_topics;
+            stream_message_topic_typeahead.showOnFocus = !can_create_topics;
+        }
     }
 
     update_on_recipient_change();
