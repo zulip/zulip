@@ -788,3 +788,184 @@ run_test("updatePill", ({mock_template}) => {
     assert.equal(blue_pill.item.color_name, "DARK BLUE");
     assert.equal(blue_pill.item.description, "color of the deep ocean");
 });
+
+// Helper: set up a widget with blue+red pills; each pill $element has [0],
+// length, remove, and the required stubs for edit tests.
+function set_up_for_editing(mock_template) {
+    mock_template("input_pill.hbs", true, (data, html) => {
+        $(html)[0] = `<pill-stub ${data.display_value}>`;
+        $(html).length = 1;
+        return html;
+    });
+    mock_template("editable_pill.hbs", false, () => "<div class='editable-pill'>");
+
+    const info = set_up();
+    const {config, $container, $pill_input, items} = info;
+
+    $pill_input.before = noop;
+
+    const widget = input_pill.create(config);
+    widget.appendValue("blue,red");
+
+    const pills = widget._get_pills_for_testing();
+    // Stub DOM operations on each pill element that editing triggers.
+    for (const pill of pills) {
+        pill.$element.remove = noop;
+        pill.$element.detach = noop;
+        pill.$element.before = noop;
+    }
+
+    return {widget, pills, $container, $pill_input, items};
+}
+
+// Returns the editable span captured when startEditingPill inserts it.
+function start_editing_pill_via_dblclick($container, pill) {
+    let $captured_edit;
+    pill.$element.before = ($elem) => {
+        $captured_edit = $elem;
+    };
+
+    const dblclick_handler = $container.get_on_handler("dblclick", ".pill");
+    dblclick_handler.call(pill.$element[0], {
+        target: {
+            to_$: () => ({
+                closest(_sel) {
+                    return {length: 0};
+                },
+            }),
+        },
+        preventDefault: noop,
+    });
+
+    return $captured_edit;
+}
+
+run_test("dblclick starts in-place editing", ({mock_template}) => {
+    const {widget, pills, $container} = set_up_for_editing(mock_template);
+
+    const blue_pill = pills[0];
+    assert.equal(blue_pill.item.color_name, "BLUE");
+
+    const $edit = start_editing_pill_via_dblclick($container, blue_pill);
+
+    // An editable element was inserted where the blue pill was.
+    assert.ok($edit !== undefined);
+    // The blue pill is still tracked in the store (just detached from DOM).
+    assert.equal(widget._get_pills_for_testing().length, 2);
+    // The edit element is initialised with the pill's text value.
+    assert.equal($edit.text(), "BLUE");
+});
+
+run_test("Enter key commits in-place edit", ({mock_template}) => {
+    const {widget, pills, $container, items} = set_up_for_editing(mock_template);
+
+    const blue_pill = pills[0];
+    const $edit = start_editing_pill_via_dblclick($container, blue_pill);
+
+    // Set up stubs on $edit that commitEditingPill will call.
+    let new_pill_positioned = false;
+    $edit.remove = noop;
+    $edit.before = () => {
+        new_pill_positioned = true;
+    };
+
+    // Simulate the user typing "yellow" in the editable span.
+    $edit.text("yellow");
+
+    const edit_keydown = $edit.get_on_handler("keydown");
+    edit_keydown({
+        key: "Enter",
+        preventDefault: noop,
+        stopPropagation: noop,
+    });
+
+    // The new pill should be positioned in place.
+    assert.ok(new_pill_positioned);
+    // The store now contains red + yellow (blue was replaced).
+    assert.deepEqual(
+        widget.items().map((i) => i.color_name),
+        ["RED", "YELLOW"],
+    );
+    assert.deepEqual(widget.items()[1], items.yellow);
+});
+
+run_test("empty edit deletes the pill", ({mock_template}) => {
+    const {widget, pills, $container} = set_up_for_editing(mock_template);
+
+    const blue_pill = pills[0];
+    const $edit = start_editing_pill_via_dblclick($container, blue_pill);
+
+    $edit.remove = noop;
+
+    // User cleared all text.
+    $edit.text("");
+
+    const edit_keydown = $edit.get_on_handler("keydown");
+    edit_keydown({
+        key: "Enter",
+        preventDefault: noop,
+        stopPropagation: noop,
+    });
+
+    // Only the red pill remains.
+    assert.deepEqual(
+        widget.items().map((i) => i.color_name),
+        ["RED"],
+    );
+});
+
+run_test("Escape cancels in-place edit", ({mock_template}) => {
+    const {widget, pills, $container} = set_up_for_editing(mock_template);
+
+    const blue_pill = pills[0];
+    const $edit = start_editing_pill_via_dblclick($container, blue_pill);
+
+    $edit.remove = noop;
+    let original_pill_restored = false;
+    $edit.before = ($elem) => {
+        // cancelEditingPill passes back pill.$element.
+        if ($elem === blue_pill.$element) {
+            original_pill_restored = true;
+        }
+    };
+
+    const edit_keydown = $edit.get_on_handler("keydown");
+    edit_keydown({
+        key: "Escape",
+        preventDefault: noop,
+        stopPropagation: noop,
+    });
+
+    // The original pill is restored in place.
+    assert.ok(original_pill_restored);
+    // The store still has both pills.
+    assert.deepEqual(
+        widget.items().map((i) => i.color_name),
+        ["BLUE", "RED"],
+    );
+});
+
+run_test("Enter on focused pill starts editing", ({mock_template}) => {
+    const {pills, $container} = set_up_for_editing(mock_template);
+
+    const blue_pill = pills[0];
+
+    // Capture the edit element via the before stub.
+    let $edit_captured;
+    blue_pill.$element.before = ($elem) => {
+        $edit_captured = $elem;
+    };
+
+    // The ".pill" keydown handler uses find(".pill:focus") to locate the pill.
+    $container.set_find_results(".pill:focus", blue_pill.$element);
+
+    const pill_keydown = $container.get_on_handler("keydown", ".pill");
+    pill_keydown({
+        key: "Enter",
+        preventDefault: noop,
+    });
+
+    // Editing started: the editable span was inserted.
+    assert.ok($edit_captured !== undefined);
+    assert.equal($edit_captured.text(), "BLUE");
+});

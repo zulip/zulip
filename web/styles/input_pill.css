@@ -224,6 +224,29 @@
         }
     }
 
+    .editable-pill {
+        /* Override .input flex behaviour so the editable pill sizes to its
+           content rather than stretching to fill remaining container width. */
+        flex: 0 1 auto;
+        display: inline-flex;
+        align-items: center;
+        height: var(--height-input-pill);
+        box-sizing: border-box;
+        min-width: 2em;
+        padding: 0 var(--input-pill-side-padding);
+        border-radius: 4px;
+        background-color: var(--color-background-input-pill);
+        /* Use an inset box-shadow to show focus without affecting layout,
+           matching the technique used on .pill:focus. */
+        box-shadow: 0 0 0 1px var(--color-focus-outline-input-pill) inset;
+        white-space: nowrap;
+        cursor: text;
+        outline: none;
+        /* Reset .input overrides not appropriate for a pill-shaped element. */
+        overflow-wrap: normal;
+        line-height: 1;
+    }
+
     &.not-editable-by-user {
         cursor: not-allowed;
 
