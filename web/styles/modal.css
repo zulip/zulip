@@ -526,8 +526,7 @@
         border-radius: 4px;
         color: var(--color-dropdown-item);
 
-        .modal-group-list-row-content,
-        .modal-channel-list-row-content {
+        .list-row-content {
             display: flex;
             overflow: hidden;
             border-radius: 4px;
@@ -549,24 +548,19 @@
             padding-right: 3px;
         }
 
-        .user-group-name,
-        .user-stream-name {
+        .list-item-name {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
     }
 
-    .subscription-group-list,
-    .subscription-stream-list,
-    .edit-channel-folder-stream-list {
+    .modal-list-scroll-container {
         /* We set max-height to remaining height of stream-list-container
             so that we don't clip it. Search field height takes up 2em of total. */
         height: calc(100% - 2em);
 
-        .user-group-list,
-        .user-stream-list,
-        .folder-stream-list {
+        .modal-item-list {
             list-style: none;
             margin: 0;
         }
