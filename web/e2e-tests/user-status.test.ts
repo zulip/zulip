@@ -34,20 +34,20 @@ async function test_user_status(page: Page): Promise<void> {
 
     // Manually adding everything.
     await page.type(".user-status", "Busy");
-    const tada_emoji_selector = ".emoji-1f389";
+    const laughing_emoji_selector = ".emoji-1f606";
     await page.click(".status-emoji-wrapper .smiley-icon");
     // Wait until emoji popover is opened.
-    await page.waitForSelector(`.emoji-popover  ${tada_emoji_selector}`, {visible: true});
-    await page.click(`.emoji-popover  ${tada_emoji_selector}`);
+    await page.waitForSelector(`.emoji-popover ${laughing_emoji_selector}`, {visible: true});
+    await page.click(`.emoji-popover  ${laughing_emoji_selector}`);
     await page.waitForSelector(".emoji-picker-popover", {hidden: true});
-    await page.waitForSelector(`.selected-emoji${tada_emoji_selector}`);
+    await page.waitForSelector(`.selected-emoji${laughing_emoji_selector}`);
 
     await page.click("#set-user-status-modal .dialog_submit_button");
     // It should close the modal after saving.
     await page.waitForSelector("#set-user-status-modal", {hidden: true});
 
     // Check if the emoji is added in user presence list.
-    await page.waitForSelector(`.user-presence-link .status-emoji${tada_emoji_selector}`);
+    await page.waitForSelector(`.user-presence-link .status-emoji${laughing_emoji_selector}`);
 }
 
 async function user_status_test(page: Page): Promise<void> {
