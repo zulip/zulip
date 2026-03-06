@@ -454,7 +454,7 @@ v1_api_and_json_patterns = [
     rest_path( "messages/<int:message_id>/tasks", POST=create_task,),
     rest_path("users/me/tasks", GET=list_my_tasks),
     rest_path("tasks/<int:task_id>", POST=update_task),
-    rest_path("tasks/<int:task_id>", DELETE=delete_task),
+    rest_path("tasks/<int:task_id>/delete", POST=delete_task),
     
 
     # read_receipts -> zerver.views.read_receipts
