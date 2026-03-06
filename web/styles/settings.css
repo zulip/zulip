@@ -1053,6 +1053,16 @@ input[type="checkbox"] {
     td:first-child {
         white-space: nowrap;
     }
+
+    th.convert-url-heading {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    td.convert-cell {
+        text-align: center;
+    }
 }
 
 #organization-permissions {
