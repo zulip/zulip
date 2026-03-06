@@ -19,7 +19,6 @@ const used_module_mocks = new Set();
 const used_templates = new Set();
 
 const jquery_path = require.resolve("jquery");
-const real_jquery_path = require.resolve("./real_jquery.cjs");
 
 let in_mid_render = false;
 let jquery_function;
@@ -34,7 +33,7 @@ function load(request, parent, isMain) {
     } else if (filename.endsWith(".hbs") && filename.startsWith(template_path + path.sep)) {
         const actual_render = actual_load(request, parent, isMain);
         return template_stub({filename, actual_render});
-    } else if (filename === jquery_path && parent.filename !== real_jquery_path) {
+    } else if (filename === jquery_path) {
         return jquery_function || $;
     }
 
