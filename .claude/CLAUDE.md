@@ -381,6 +381,10 @@ faster and easier to just plan and write them well the first time.
 
 ### PR Description Should:
 
+When opening a pull request, prefix the PR title with `[ai]` (e.g.,
+`[ai] compose: Fix cursor position after emoji insertion.`). Use
+`upstream/main` as the base branch.
+
 Output the PR description in a markdown code block so that formatting
 (bold, headers, checkboxes, etc.) copy-pastes correctly into GitHub.
 

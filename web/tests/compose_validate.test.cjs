@@ -152,29 +152,20 @@ function test_ui(label, f) {
 }
 
 function stub_message_row($textarea) {
-    const $stub = $.create("message_row_stub");
-    $textarea.closest = (selector) => {
-        assert.equal(selector, ".message_row");
-        $stub.length = 0;
-        return $stub;
-    };
+    const $stub = $.set_results("message_row_stub", []);
+    $textarea.set_closest_results(".message_row", $stub);
 }
 
 function initialize_pm_pill(mock_template) {
     $.clear_all_elements();
 
-    $(".message_comp").css = (property) => {
-        assert.equal(property, "display");
-        return "block";
-    };
     $("#compose-send-button").trigger("focus");
     $("#compose-send-button .loader").hide();
 
     const $pm_pill_container = $.create("fake-pm-pill-container");
-    $("#private_message_recipient")[0] = {};
     $("#private_message_recipient").set_parent($pm_pill_container);
     $pm_pill_container.set_find_results(".input", $("#private_message_recipient"));
-    $("#private_message_recipient").before = noop;
+    $("#private_message_recipient")[0].before = noop;
 
     compose_pm_pill.initialize({
         on_pill_create_or_remove: compose_recipient.update_compose_area_placeholder_text,
@@ -249,22 +240,19 @@ test_ui("validate", ({mock_template, override}) => {
     assert.ok(compose_validate.validate());
 
     // For this first block, we should fail due to empty compose.
-    let expected_invalid_state = true;
     initialize_pm_pill(mock_template);
     compose_state.private_message_recipient_emails("welcome-bot@example.com");
-    $("textarea#compose-textarea").toggleClass = (classname, value) => {
-        assert.equal(classname, "invalid");
-        assert.equal(value, expected_invalid_state);
-    };
+    $("textarea#compose-textarea").removeClass("invalid");
     assert.ok(!compose_validate.validate());
     assert.ok(!$("#compose-send-button .loader").visible());
-    compose_validate.validate();
+    assert.ok($("textarea#compose-textarea").hasClass("invalid"));
 
     // Now add content to compose.
     add_content_to_compose_box();
-    expected_invalid_state = false;
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
+    $("textarea#compose-textarea").addClass("invalid");
     assert.ok(compose_validate.validate());
+    assert.ok(!$("textarea#compose-textarea").hasClass("invalid"));
 
     initialize_pm_pill(mock_template);
     add_content_to_compose_box();
@@ -378,7 +366,7 @@ test_ui("validate_stream_message", ({override, mock_template}) => {
         Array.from({length: 16}, (_, i) => i + 1),
     );
     let stream_wildcard_warning_rendered = false;
-    $("#compose_banner_area .wildcard_warning").length = 0;
+    $.set_results("#compose_banner_area .wildcard_warning", []);
     mock_template("compose_banner/stream_wildcard_warning.hbs", false, (data) => {
         stream_wildcard_warning_rendered = true;
         assert.equal(data.subscriber_count, 16);
@@ -562,6 +550,7 @@ test_ui("needs_subscribe_warning", async () => {
 });
 
 test_ui("warn_if_private_stream_is_linked", async ({mock_template}) => {
+    mock_banners();
     const $textarea = $("<textarea>").attr("id", "compose-textarea");
     stub_message_row($textarea);
     const test_sub = {
@@ -624,8 +613,6 @@ test_ui("warn_if_private_stream_is_linked", async ({mock_template}) => {
     // Simulate that the row was added to the DOM.
     const $warning_row = $("#compose_banners .private_stream_warning");
     $warning_row.attr("data-stream-id", "22");
-    $("#compose_banners .private_stream_warning").length = 1;
-    $("#compose_banners .private_stream_warning")[0] = $warning_row;
 
     // Now try to mention the same stream again. The template should
     // not render.
@@ -636,6 +623,7 @@ test_ui("warn_if_private_stream_is_linked", async ({mock_template}) => {
 });
 
 test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}) => {
+    mock_banners();
     const $textarea = $("<textarea>").attr("id", "compose-textarea");
     stub_message_row($textarea);
     compose_state.set_stream_id("");
@@ -722,8 +710,6 @@ test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}
     const $warning_row = $("#compose_banners .recipient_not_subscribed");
     $warning_row.attr("data-user-id", "34");
     $warning_row.attr("data-stream-id", "111");
-    $("#compose_banners .recipient_not_subscribed").length = 1;
-    $("#compose_banners .recipient_not_subscribed")[0] = $warning_row;
 
     // Now try to mention the same person again. The template should
     // not render.
@@ -735,7 +721,8 @@ test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}
 
 test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     mock_banners();
-    $("#compose_banners .topic_resolved").length = 0;
+    $.reset_selector("#compose_banners .topic_resolved");
+    $.set_results("#compose_banners .topic_resolved", []);
     override(realm, "realm_can_resolve_topics_group", everyone.id);
 
     let error_shown = false;
@@ -832,7 +819,8 @@ test_ui("test_warn_if_guest_in_dm_recipient", ({mock_template, override}) => {
 
     // to show warning for guest emails, banner should be created
     realm.realm_enable_guest_user_dm_warning = true;
-    $banner.length = 0;
+    $.reset_selector(`#compose_banners .${CSS.escape(classname)}`);
+    $banner = $.set_results(`#compose_banners .${CSS.escape(classname)}`, []);
     compose_validate.warn_if_guest_in_dm_recipient();
     assert.ok(is_active);
     assert.deepEqual(compose_state.get_recipient_guest_ids_for_dm_warning(), [33]);
@@ -854,19 +842,14 @@ test_ui("test_warn_if_guest_in_dm_recipient", ({mock_template, override}) => {
 
     initialize_pm_pill(mock_template);
     compose_state.private_message_recipient_emails("guest@example.com, new_guest@example.com");
+    $.reset_selector(`#compose_banners .${CSS.escape(classname)}`);
     $banner = $(`#compose_banners .${CSS.escape(classname)}`);
-    $banner.length = 1;
-    let is_updated = false;
-    $banner.set_find_results(".banner_content", {
-        text(content) {
-            assert.equal(
-                content,
-                $t({defaultMessage: "Guest and New Guest are guests in this organization."}),
-            );
-            is_updated = true;
-        },
-    });
+    const $banner_content = $(`#compose_banners .${CSS.escape(classname)} .banner_content`);
+    $banner.set_find_results(".banner_content", $banner_content);
     compose_validate.warn_if_guest_in_dm_recipient();
-    assert.ok(is_updated);
+    assert.equal(
+        $banner_content.text(),
+        $t({defaultMessage: "Guest and New Guest are guests in this organization."}),
+    );
     assert.deepEqual(compose_state.get_recipient_guest_ids_for_dm_warning(), [33, 34]);
 });

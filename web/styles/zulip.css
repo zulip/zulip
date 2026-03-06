@@ -1179,12 +1179,11 @@ nav {
 
         .nav-logo {
             display: inline-block;
-            height: auto;
-            max-height: 1.5625em; /* 25px at 16px/1em */
+            height: 1.25em; /* 20px at 16px em */
             max-width: var(--realm-logo-max-width);
 
             @media (height < $short_navbar_cutoff_height) {
-                max-height: 1.1719em; /* 18.75px at 16px/1em */
+                height: 0.9375em; /* 15px at 16px em */
             }
         }
 
@@ -2360,6 +2359,13 @@ body:not(.spectator-view) {
         &:focus,
         &.current_selection {
             outline: none;
+            background-color: var(
+                --background-color-current-selection-dropdown-item
+            );
+
+            &:not(.current_user_setting):hover {
+                background-color: transparent;
+            }
         }
 
         &:focus::before,
@@ -2387,13 +2393,6 @@ body:not(.spectator-view) {
             .dropdown-list-text-selected,
             .setting-disabled-option-text {
                 color: var(--color-current-setting-dropdown-item);
-            }
-
-            &:hover,
-            &:active {
-                background-color: var(
-                    --background-color-current-setting-dropdown-item
-                );
             }
         }
     }

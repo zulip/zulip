@@ -88,7 +88,6 @@ test("activate", ({override}) => {
     // Both widgetize.render and widgetize.handle_event are tested
     // here to use the "caching" of widgets.
     const $row = $.create("<stub message row>");
-    $row.length = 1;
     $row.attr("id", `message-row-${message_lists.current.id}-2909`);
     const $message_content = $.create(`#message-row-${message_lists.current.id}-2909`);
     $row.set_find_results(".message_content", $message_content);
@@ -98,12 +97,12 @@ test("activate", ({override}) => {
     $row.set_find_results(".widget-content", $widget_content);
 
     let is_widget_elem_inserted = false;
-    let $inserted_elem;
+    let inserted_element;
 
-    $message_content.append = ($elem) => {
+    $message_content[0].append = (element) => {
         is_widget_elem_inserted = true;
-        $inserted_elem = $elem;
-        assert.ok($elem.hasClass("widget-content"));
+        inserted_element = element;
+        assert.ok(element.classList.contains("widget-content"));
     };
 
     const activate_opts = {
@@ -184,7 +183,7 @@ test("activate", ({override}) => {
 
     assert.ok(is_widget_rendered);
     assert.ok(is_widget_elem_inserted);
-    assert.equal($inserted_elem, $widget_elem);
+    assert.equal(inserted_element, $widget_elem[0]);
 
     // Test render without a widget should return early
     is_widget_rendered = false;
@@ -198,8 +197,7 @@ test("activate", ({override}) => {
 
     // Test incoming widget events
 
-    const $empty_row = $.create("<empty row>");
-    $empty_row.length = 0;
+    const $empty_row = $.set_results("<empty row>", []);
 
     let expected_message_id;
 

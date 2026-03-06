@@ -512,7 +512,7 @@ test("test_recent_view_show", ({override, mock_template}) => {
         return "<recent_view table stub>";
     });
 
-    mock_template("recent_view_row.hbs", false, noop);
+    mock_template("recent_view_row.hbs", false, () => "<recent-view-row-stub>");
 
     let buddy_list_populated = false;
     override(buddy_list, "populate", () => {
@@ -520,8 +520,6 @@ test("test_recent_view_show", ({override, mock_template}) => {
     });
 
     stub_out_filter_buttons();
-    // We don't test the css calls; we just skip over them.
-    $("#mark_read_on_scroll_state_banner").toggleClass = noop;
 
     rt.clear_for_tests();
     rt.set_filters_for_tests();
@@ -552,6 +550,7 @@ test("test_filter_is_spectator", ({mock_template}) => {
 
     mock_template("recent_view_table.hbs", false, (data) => {
         assert.deepEqual(data, expected);
+        return "<recent-view-table-stub>";
     });
 
     mock_template("recent_view_row.hbs", false, (data) => {
@@ -588,6 +587,7 @@ test("test_no_filter", ({mock_template}) => {
 
     mock_template("recent_view_table.hbs", false, (data) => {
         assert.deepEqual(data, expected);
+        return "<recent-view-table-stub>";
     });
 
     mock_template("recent_view_row.hbs", false, (data) => {
@@ -717,6 +717,7 @@ test("test_filter_pm", ({mock_template}) => {
 
     mock_template("recent_view_table.hbs", false, (data) => {
         assert.deepEqual(data, expected);
+        return "<recent-view-table-stub>";
     });
 
     mock_template("users_with_status_icons.hbs", false, (data) => {
@@ -726,6 +727,7 @@ test("test_filter_pm", ({mock_template}) => {
 
     mock_template("recent_view_row.hbs", true, (_data, html) => {
         assert.ok(html.startsWith('<tr id="recent_conversation'));
+        return "<recent-view-row-stub>";
     });
 
     rt.clear_for_tests();
@@ -760,11 +762,12 @@ test("test_filter_participated", ({mock_template}) => {
             show_folder_filter: false,
             folder_filter_tooltip: "Filter by folder",
         });
+        return "<recent-view-table-stub>";
     });
 
     mock_template("recent_view_filters.hbs", false, (data) => {
         assert.equal(data.filter_participated, expected_filter_participated);
-        return "<recent_view table stub>";
+        return "<recent-view-filters-stub>";
     });
 
     const row_data = generate_topic_data([
@@ -887,9 +890,10 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     rt.clear_for_tests();
     rt.set_filters_for_tests();
 
-    mock_template("recent_view_table.hbs", false, noop);
+    mock_template("recent_view_table.hbs", false, () => "<recent-view-table-stub>");
     mock_template("recent_view_row.hbs", true, (_data, html) => {
         assert.ok(html.startsWith('<tr id="recent_conversation'));
+        return "<recent-view-row-stub>";
     });
 
     stub_out_filter_buttons();
@@ -1016,8 +1020,8 @@ test("basic assertions", ({mock_template, override_rewire}) => {
 });
 
 test("test_reify_local_echo_message", ({mock_template}) => {
-    mock_template("recent_view_table.hbs", false, noop);
-    mock_template("recent_view_row.hbs", false, noop);
+    mock_template("recent_view_table.hbs", false, () => "<recent-view-table-stub>");
+    mock_template("recent_view_row.hbs", false, () => "<recent-view-row-stub>");
 
     rt.clear_for_tests();
     rt.set_filters_for_tests();

@@ -111,12 +111,11 @@ run_test("autosize_textarea", ({override}) => {
 
 run_test("insert_syntax_and_focus", ({override}) => {
     $("textarea#compose-textarea").val("xyz ");
-    $("textarea#compose-textarea").caret = () => 4;
-    $("textarea#compose-textarea")[0] = "compose-textarea";
+    $("textarea#compose-textarea").caret(4);
     // Since we are using a third party library, we just
     // need to ensure it is being called with the right params.
     override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-        assert.equal(elt, "compose-textarea");
+        assert.equal(elt, $("textarea#compose-textarea")[0]);
         assert.equal(syntax, ":octopus: ");
     });
     compose_ui.insert_syntax_and_focus(":octopus:");
@@ -403,53 +402,17 @@ run_test("quote_message", ({override, override_rewire}) => {
         });
     }
 
-    // zjquery does not simulate caret handling, so we provide
-    // our own versions of val() and caret()
-    let textarea_val = "";
-    let textarea_caret_pos;
-
-    $("textarea#compose-textarea").val = function () {
-        return textarea_val;
-    };
-
-    $("textarea#compose-textarea").caret = function (arg) {
-        if (arg === undefined) {
-            return textarea_caret_pos;
-        }
-        if (typeof arg === "number") {
-            textarea_caret_pos = arg;
-            return this;
-        }
-
-        /* This next block of mocking code is currently unused, but
-           is preserved, since it may be useful in the future. */
-        /* istanbul ignore next */
-        {
-            if (typeof arg !== "string") {
-                console.info(arg);
-                throw new Error("We expected the actual code to pass in a string.");
-            }
-
-            const before = textarea_val.slice(0, textarea_caret_pos);
-            const after = textarea_val.slice(textarea_caret_pos);
-
-            textarea_val = before + arg + after;
-            textarea_caret_pos += arg.length;
-            return this;
-        }
-    };
-    $("textarea#compose-textarea")[0] = "compose-textarea";
     $("textarea#compose-textarea").attr("id", "compose-textarea");
     override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-        assert.equal(elt, "compose-textarea");
+        assert.equal(elt, $("textarea#compose-textarea")[0]);
         assert.equal(syntax, "\n\ntranslated: [Quoting…]\n\n");
     });
 
     function set_compose_content_with_caret(content) {
         const caret_position = content.indexOf("%");
         content = content.slice(0, caret_position) + content.slice(caret_position + 1); // remove the "%"
-        textarea_val = content;
-        textarea_caret_pos = caret_position;
+        $("textarea#compose-textarea").val(content);
+        $("textarea#compose-textarea").caret(caret_position);
         $("textarea#compose-textarea").trigger("focus");
     }
 
@@ -458,14 +421,14 @@ run_test("quote_message", ({override, override_rewire}) => {
         delete selected_message.raw_content;
 
         // Reset compose-box state.
-        textarea_val = "";
-        textarea_caret_pos = 0;
+        $("textarea#compose-textarea").val("");
+        $("textarea#compose-textarea").caret(0);
         $("textarea#compose-textarea").trigger("blur");
     }
 
     function override_with_quote_text(quote_text) {
         override(text_field_edit, "replaceFieldText", (elt, old_syntax, new_syntax) => {
-            assert.equal(elt, "compose-textarea");
+            assert.equal(elt, $("textarea#compose-textarea")[0]);
             assert.equal(old_syntax, "translated: [Quoting…]");
             assert.equal(
                 new_syntax(),
@@ -480,7 +443,7 @@ run_test("quote_message", ({override, override_rewire}) => {
     }
     function override_with_forward_text(quote_text) {
         override(text_field_edit, "replaceFieldText", (elt, old_syntax, new_syntax) => {
-            assert.equal(elt, "compose-textarea");
+            assert.equal(elt, $("textarea#compose-textarea")[0]);
             assert.equal(old_syntax, "translated: [Quoting…]");
             assert.equal(
                 new_syntax(),
@@ -504,7 +467,7 @@ run_test("quote_message", ({override, override_rewire}) => {
     // If the caret is initially positioned at 0, it should not
     // add newlines before the quoted message.
     override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-        assert.equal(elt, "compose-textarea");
+        assert.equal(elt, $("textarea#compose-textarea")[0]);
         assert.equal(syntax, "translated: [Quoting…]\n\n");
     });
     set_compose_content_with_caret("%hello there");
@@ -516,8 +479,8 @@ run_test("quote_message", ({override, override_rewire}) => {
 
     override_rewire(compose_reply, "respond_to_message", () => {
         // Reset compose state to replicate the re-opening of compose-box.
-        textarea_val = "";
-        textarea_caret_pos = 0;
+        $("textarea#compose-textarea").val("");
+        $("textarea#compose-textarea").caret(0);
         $("textarea#compose-textarea").trigger("focus");
     });
 
@@ -570,7 +533,7 @@ run_test("quote_message", ({override, override_rewire}) => {
     // When there is already 1 newline before and after the caret,
     // only 1 newline is added before and after the quoted message.
     override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-        assert.equal(elt, "compose-textarea");
+        assert.equal(elt, $("textarea#compose-textarea")[0]);
         assert.equal(syntax, "\ntranslated: [Quoting…]\n");
     });
     set_compose_content_with_caret("1st line\n%\n2nd line");
@@ -585,7 +548,7 @@ run_test("quote_message", ({override, override_rewire}) => {
     // When there are many (>=2) newlines before and after the caret,
     // no newline is added before or after the quoted message.
     override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-        assert.equal(elt, "compose-textarea");
+        assert.equal(elt, $("textarea#compose-textarea")[0]);
         assert.equal(syntax, "translated: [Quoting…]");
     });
     set_compose_content_with_caret("lots of\n\n\n\n%\n\n\nnewlines");
@@ -597,18 +560,12 @@ run_test("quote_message", ({override, override_rewire}) => {
 });
 
 run_test("set_compose_box_top", () => {
-    let compose_top = "";
-    $("#compose").css = (arg, val) => {
-        assert.equal(arg, "top");
-        compose_top = val;
-    };
-
     $("#navbar-fixed-container").set_height(50);
     compose_ui.set_compose_box_top(true);
-    assert.equal(compose_top, "50px");
+    assert.equal($("#compose")[0].style.getPropertyValue("top"), "50px");
 
     compose_ui.set_compose_box_top(false);
-    assert.equal(compose_top, "");
+    assert.equal($("#compose")[0].style.getPropertyValue("top"), "");
 });
 
 run_test("test_compose_height_changes", ({override, override_rewire}) => {
@@ -635,17 +592,7 @@ run_test("test_compose_height_changes", ({override, override_rewire}) => {
 });
 
 const $textarea = $("textarea#compose-textarea");
-$textarea.get = () => ({
-    setSelectionRange(start, end) {
-        $textarea.range = () => ({
-            start,
-            end,
-            text: $textarea.val().slice(start, end),
-            length: end - start,
-        });
-    },
-    click() {},
-});
+$textarea[0].click = () => {};
 
 // The argument `text_representation` is a string representing the text
 // in the compose box, where `<` and `>` denote the start and end of any
@@ -653,23 +600,12 @@ $textarea.get = () => ({
 // To work as expected, the string must contain either a `|`, or a `<`
 // followed by a `>` with some text in between.
 function init_textarea_state(text_representation) {
-    $textarea.val = () => text_representation.replaceAll(/[<>|]/g, "");
-    $textarea.range = text_representation.includes("|")
-        ? () => ({
-              start: text_representation.indexOf("|"),
-              end: text_representation.indexOf("|"),
-              text: "",
-              length: 0,
-          })
-        : () => ({
-              start: text_representation.indexOf("<"),
-              end: text_representation.indexOf(">") - 1,
-              text: text_representation.slice(
-                  text_representation.indexOf("<") + 1,
-                  text_representation.indexOf(">"),
-              ),
-              length: text_representation.indexOf(">") - text_representation.indexOf("<") - 1,
-          });
+    $textarea.val(text_representation.replaceAll(/[<>|]/g, ""));
+    if (text_representation.includes("|")) {
+        $textarea.caret(text_representation.indexOf("|"));
+    } else {
+        $textarea.range(text_representation.indexOf("<"), text_representation.indexOf(">") - 1);
+    }
 }
 
 // Returns a string representing the text in the compose box, of the same
@@ -687,7 +623,7 @@ run_test("format_text - bold and italic", ({override, override_rewire}) => {
         "insert_and_scroll_into_view",
         (content, _textarea, replace_all) => {
             assert.ok(replace_all);
-            $textarea.val = () => content;
+            $textarea.val(content);
         },
     );
     override(
@@ -700,19 +636,11 @@ run_test("format_text - bold and italic", ({override, override_rewire}) => {
                 $textarea.val().slice($textarea.range().start, $textarea.range().end) +
                 syntax_end +
                 $textarea.val().slice($textarea.range().end);
-            $textarea.val = () => new_val;
-            const new_range = {
-                start: $textarea.range().start + syntax_start.length,
-                end: $textarea.range().end + syntax_start.length,
-                text: $textarea
-                    .val()
-                    .slice(
-                        $textarea.range().start + syntax_start.length,
-                        $textarea.range().end + syntax_start.length,
-                    ),
-                length: $textarea.range().end - $textarea.range().start,
-            };
-            $textarea.range = () => new_range;
+            $textarea.val(new_val);
+            $textarea.range(
+                $textarea.range().start + syntax_start.length,
+                $textarea.range().end + syntax_start.length,
+            );
         },
     );
 
@@ -782,7 +710,7 @@ run_test("format_text - bulleted and numbered lists", ({override_rewire}) => {
         "insert_and_scroll_into_view",
         (content, _textarea, replace_all) => {
             assert.ok(replace_all);
-            $textarea.val = () => content;
+            $textarea.val(content);
         },
     );
 
@@ -843,7 +771,7 @@ run_test("format_text - strikethrough", ({override, override_rewire}) => {
         "insert_and_scroll_into_view",
         (content, _textarea, replace_all) => {
             assert.ok(replace_all);
-            $textarea.val = () => content;
+            $textarea.val(content);
         },
     );
     override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
@@ -853,19 +781,11 @@ run_test("format_text - strikethrough", ({override, override_rewire}) => {
             $textarea.val().slice($textarea.range().start, $textarea.range().end) +
             syntax_end +
             $textarea.val().slice($textarea.range().end);
-        $textarea.val = () => new_val;
-        const new_range = {
-            start: $textarea.range().start + syntax_start.length,
-            end: $textarea.range().end + syntax_start.length,
-            text: $textarea
-                .val()
-                .slice(
-                    $textarea.range().start + syntax_start.length,
-                    $textarea.range().end + syntax_start.length,
-                ),
-            length: $textarea.range().end - $textarea.range().start,
-        };
-        $textarea.range = () => new_range;
+        $textarea.val(new_val);
+        $textarea.range(
+            $textarea.range().start + syntax_start.length,
+            $textarea.range().end + syntax_start.length,
+        );
     });
 
     // Strikethrough selected text
@@ -895,7 +815,7 @@ run_test("format_text - latex", ({override, override_rewire}) => {
         "insert_and_scroll_into_view",
         (content, _textarea, replace_all) => {
             assert.ok(replace_all);
-            $textarea.val = () => content;
+            $textarea.val(content);
         },
     );
     override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
@@ -905,19 +825,11 @@ run_test("format_text - latex", ({override, override_rewire}) => {
             $textarea.val().slice($textarea.range().start, $textarea.range().end) +
             syntax_end +
             $textarea.val().slice($textarea.range().end);
-        $textarea.val = () => new_val;
-        const new_range = {
-            start: $textarea.range().start + syntax_start.length,
-            end: $textarea.range().end + syntax_start.length,
-            text: $textarea
-                .val()
-                .slice(
-                    $textarea.range().start + syntax_start.length,
-                    $textarea.range().end + syntax_start.length,
-                ),
-            length: $textarea.range().end - $textarea.range().start,
-        };
-        $textarea.range = () => new_range;
+        $textarea.val(new_val);
+        $textarea.range(
+            $textarea.range().start + syntax_start.length,
+            $textarea.range().end + syntax_start.length,
+        );
     });
 
     // Latex selected text
@@ -966,7 +878,7 @@ run_test("format_text - code", ({override, override_rewire}) => {
         "insert_and_scroll_into_view",
         (content, _textarea, replace_all) => {
             assert.ok(replace_all);
-            $textarea.val = () => content;
+            $textarea.val(content);
         },
     );
     override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
@@ -976,19 +888,11 @@ run_test("format_text - code", ({override, override_rewire}) => {
             $textarea.val().slice($textarea.range().start, $textarea.range().end) +
             syntax_end +
             $textarea.val().slice($textarea.range().end);
-        $textarea.val = () => new_val;
-        const new_range = {
-            start: $textarea.range().start + syntax_start.length,
-            end: $textarea.range().end + syntax_start.length,
-            text: $textarea
-                .val()
-                .slice(
-                    $textarea.range().start + syntax_start.length,
-                    $textarea.range().end + syntax_start.length,
-                ),
-            length: $textarea.range().end - $textarea.range().start,
-        };
-        $textarea.range = () => new_range;
+        $textarea.val(new_val);
+        $textarea.range(
+            $textarea.range().start + syntax_start.length,
+            $textarea.range().end + syntax_start.length,
+        );
     });
 
     // Code selected text
@@ -1037,7 +941,7 @@ run_test("format_text - quote", ({override, override_rewire}) => {
         "insert_and_scroll_into_view",
         (content, _textarea, replace_all) => {
             assert.ok(replace_all);
-            $textarea.val = () => content;
+            $textarea.val(content);
         },
     );
     override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
@@ -1047,19 +951,11 @@ run_test("format_text - quote", ({override, override_rewire}) => {
             $textarea.val().slice($textarea.range().start, $textarea.range().end) +
             syntax_end +
             $textarea.val().slice($textarea.range().end);
-        $textarea.val = () => new_val;
-        const new_range = {
-            start: $textarea.range().start + syntax_start.length,
-            end: $textarea.range().end + syntax_start.length,
-            text: $textarea
-                .val()
-                .slice(
-                    $textarea.range().start + syntax_start.length,
-                    $textarea.range().end + syntax_start.length,
-                ),
-            length: $textarea.range().end - $textarea.range().start,
-        };
-        $textarea.range = () => new_range;
+        $textarea.val(new_val);
+        $textarea.range(
+            $textarea.range().start + syntax_start.length,
+            $textarea.range().end + syntax_start.length,
+        );
     });
 
     // Quote selected text
@@ -1101,7 +997,7 @@ run_test("format_text - spoiler", ({override, override_rewire}) => {
         "insert_and_scroll_into_view",
         (content, _textarea, replace_all) => {
             assert.ok(replace_all);
-            $textarea.val = () => content;
+            $textarea.val(content);
         },
     );
     override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
@@ -1111,7 +1007,7 @@ run_test("format_text - spoiler", ({override, override_rewire}) => {
             $textarea.val().slice($textarea.range().start, $textarea.range().end) +
             syntax_end +
             $textarea.val().slice($textarea.range().end);
-        $textarea.val = () => new_val;
+        $textarea.val(new_val);
         // Since, the original selection is not retained for spoiler,
         // resetting range on wrapping selection is not required.
     });
@@ -1173,7 +1069,7 @@ run_test("format_text - link", ({override, override_rewire}) => {
         "insert_and_scroll_into_view",
         (content, _textarea, replace_all) => {
             assert.ok(replace_all);
-            $textarea.val = () => content;
+            $textarea.val(content);
         },
     );
     override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
@@ -1183,7 +1079,7 @@ run_test("format_text - link", ({override, override_rewire}) => {
             $textarea.val().slice($textarea.range().start, $textarea.range().end) +
             syntax_end +
             $textarea.val().slice($textarea.range().end);
-        $textarea.val = () => new_val;
+        $textarea.val(new_val);
         // Since, the original selection is not retained for spoiler,
         // resetting range on wrapping selection is not required.
     });

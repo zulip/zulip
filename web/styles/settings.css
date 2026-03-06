@@ -385,7 +385,8 @@ select.settings_select {
 }
 
 #admin-active-users-list,
-#admin-bot-list {
+#admin-bot-list,
+#personal-bot-list {
     .table tr:first-of-type td {
         border-top: none;
     }
@@ -396,7 +397,8 @@ select.settings_select {
     }
 }
 
-#admin-bot-list .user-status-settings {
+#admin-bot-list .user-status-settings,
+#personal-bot-list .user-status-settings {
     display: flex;
     justify-content: flex-end;
 }
@@ -1046,6 +1048,13 @@ input[type="checkbox"] {
     }
 }
 
+.admin_linkifiers_table {
+    th:first-child,
+    td:first-child {
+        white-space: nowrap;
+    }
+}
+
 #organization-permissions {
     .dropdown-widget-button {
         color: var(--color-text-default);
@@ -1367,6 +1376,22 @@ label.preferences-radio-choice-label {
 
 .open-user-form {
     min-width: initial !important;
+}
+
+#show_api_key {
+    .api-key-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .copy-button {
+            padding: 0;
+
+            &:focus {
+                outline: none;
+            }
+        }
+    }
 }
 
 #api_key_buttons {
@@ -2085,7 +2110,8 @@ label.preferences-radio-choice-label {
     }
 
     #admin-user-list,
-    #admin-bot-list {
+    #admin-bot-list,
+    #personal-bot-list {
         .user_row {
             .user_name,
             .email {
@@ -2104,7 +2130,8 @@ label.preferences-radio-choice-label {
 
 @media (width < $sm_min) {
     #admin-user-list,
-    #admin-bot-list {
+    #admin-bot-list,
+    #personal-bot-list {
         .user_row,
         .table-sticky-headers {
             .bot_type,

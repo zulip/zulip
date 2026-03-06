@@ -435,7 +435,7 @@ run_test("onboarding_steps", () => {
 });
 
 run_test("invites_changed", ({override}) => {
-    $.create("#admin-invites-list", {children: ["stub"]});
+    $.set_results("#admin-invites-list", ["stub"]);
     const event = event_fixtures.invites_changed;
     const stub = make_stub();
     override(settings_invites, "set_up", stub.f);
@@ -849,6 +849,7 @@ run_test("realm_bot add", ({override}) => {
     override(bot_data, "add", bot_stub.f);
     override(settings_bots, "redraw_your_bots_list", noop);
     override(settings_bots, "toggle_bot_config_download_container", noop);
+    override(settings_bots, "update_lock_icon_in_sidebar", noop);
 
     dispatch(event);
 
@@ -863,6 +864,7 @@ run_test("realm_bot delete", ({override}) => {
     override(bot_data, "del", bot_stub.f);
     override(settings_bots, "redraw_your_bots_list", noop);
     override(settings_bots, "toggle_bot_config_download_container", noop);
+    override(settings_bots, "update_lock_icon_in_sidebar", noop);
 
     dispatch(event);
     assert.equal(bot_stub.num_calls, 1);
@@ -1189,13 +1191,10 @@ run_test("user_settings", ({override}) => {
 
     event = event_fixtures.user_settings__web_escape_navigates_to_home_view;
     override(user_settings, "web_escape_navigates_to_home_view", false);
-    let toggled = [];
-    $("#keyboard-shortcuts .go-to-home-view-hotkey-help").toggleClass = (cls) => {
-        toggled.push(cls);
-    };
+    $("#keyboard-shortcuts .go-to-home-view-hotkey-help").addClass("notdisplayed");
     dispatch(event);
+    assert.ok(!$("#go-to-home-view-hotkey-help").hasClass("notdisplayed"));
     assert_same(user_settings.web_escape_navigates_to_home_view, true);
-    assert_same(toggled, ["notdisplayed"]);
 
     let called = false;
     message_lists.current.rerender = () => {
@@ -1224,13 +1223,10 @@ run_test("user_settings", ({override}) => {
 
     event = event_fixtures.user_settings__high_contrast_mode;
     override(user_settings, "high_contrast_mode", false);
-    toggled = [];
-    $("body").toggleClass = (cls) => {
-        toggled.push(cls);
-    };
+    $("body").removeClass("high-contrast");
     dispatch(event);
     assert_same(user_settings.high_contrast_mode, true);
-    assert_same(toggled, ["high-contrast"]);
+    assert.ok($("body").hasClass("high-contrast"));
 
     event = event_fixtures.user_settings__web_mark_read_on_scroll_policy;
     override(user_settings, "web_mark_read_on_scroll_policy", 3);

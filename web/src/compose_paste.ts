@@ -710,6 +710,8 @@ function do_paste_text(
     paste_text: string,
     $textarea: JQuery<HTMLTextAreaElement>,
 ): void {
+    let text_to_insert: string;
+
     if (paste_html) {
         const text = paste_handler_converter(paste_html, $textarea);
         const trimmed_paste_text = paste_text.trim();
@@ -720,10 +722,21 @@ function do_paste_text(
             // pre-formatting syntax.
             add_text_and_select(trimmed_paste_text, $textarea);
         }
-        compose_ui.insert_and_scroll_into_view(text, $textarea);
+        text_to_insert = text;
     } else {
-        compose_ui.insert_and_scroll_into_view(paste_text, $textarea);
+        text_to_insert = paste_text;
     }
+
+    const reverse_linkified_text = compose_ui.reverse_linkify_text(text_to_insert);
+    if (reverse_linkified_text) {
+        // For reverse linkification, we want the first undo state
+        // to have original URLs instead of the reverse linkified version.
+        // The second undo state would then contain the plain text
+        // version, if paste_html was truthy.
+        add_text_and_select(text_to_insert, $textarea);
+        text_to_insert = reverse_linkified_text;
+    }
+    compose_ui.insert_and_scroll_into_view(text_to_insert, $textarea);
 }
 
 export function paste_handler(
@@ -748,6 +761,7 @@ export function paste_handler(
         const existing_text = $textarea.val() ?? "";
         const paste_text = clipboardData.getData("text");
         let paste_html = clipboardData.getData("text/html");
+        const reverse_linkified_text = compose_ui.reverse_linkify_text(paste_text);
         // Trim the paste_text to accommodate sloppy copying
         const trimmed_paste_text = paste_text.trim();
         const pasted_text_length = paste_text.length;
@@ -813,18 +827,11 @@ export function paste_handler(
                     event.stopPropagation();
                     replace_pasted_text($textarea, trimmed_paste_text, syntax_text + " ");
                 }
-                return;
-            }
-        }
-        // Keep this outside the `isUrl(trimmed_paste_text)` code just above.
-        // `reverse_linkify_text` can still transform URL-like text inside a larger
-        // string that is not itself a valid URL, based on our configured url patterns.
-        if (!compose_ui.cursor_inside_code_block($textarea) && !compose_ui.shift_pressed) {
-            const reversed_text = compose_ui.reverse_linkify_text(trimmed_paste_text);
-            if (reversed_text) {
-                event.preventDefault();
-                event.stopPropagation();
-                replace_pasted_text($textarea, trimmed_paste_text, reversed_text);
+                if (reverse_linkified_text !== null) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    replace_pasted_text($textarea, paste_text, reverse_linkified_text);
+                }
                 return;
             }
         }
@@ -834,7 +841,7 @@ export function paste_handler(
         // if not, we proceed with the default formatted paste.
         if (
             !compose_ui.cursor_inside_code_block($textarea) &&
-            paste_html &&
+            (paste_html || reverse_linkified_text !== null) &&
             !compose_ui.shift_pressed
         ) {
             if (is_single_image(paste_html)) {

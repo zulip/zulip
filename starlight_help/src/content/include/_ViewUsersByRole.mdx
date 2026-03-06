@@ -1,8 +1,23 @@
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 
-<FlattenedSteps>
-  <NavigationSteps target="settings/users" />
+<Tabs>
+  <TabItem label="Via organization settings">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/users" />
 
-  1. Select the desired role from the dropdown above the **Users** table.
-</FlattenedSteps>
+      1. Select the desired role from the dropdown above the **Users** table.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Via group settings">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/group/roles" />
+
+      1. Select a role.
+      1. Select the **Members** tab on the right.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>

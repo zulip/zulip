@@ -14252,15 +14252,17 @@ paths:
                     user's profile (or in a more easily accessible "small profile").
 
                     At most 2 profile fields may have this property be true in a given
-                    organization. The "Paragraph" [profile field types][profile-field-types]
-                    profile field types cannot be selected to be displayed in profile summaries.
+                    organization.
 
-                    The "Person picker" profile field is also not supported, but that is likely to
+                    The "Person picker" profile field is not supported, but that is likely to
                     be temporary.
 
                     [profile-field-types]: /help/custom-profile-fields#profile-field-types
 
-                    **Changes**: New in Zulip 6.0 (feature level 146).
+                    **Changes**: Before Zulip 12.0 (feature level 476), the
+                    "Paragraph" field type was not supported.
+
+                    New in Zulip 6.0 (feature level 146).
                   type: boolean
                   example: true
                 required:
@@ -26537,12 +26539,15 @@ components:
           description: |
             Whether the custom profile field, display or not on the user card.
 
-            Must be false for `Paragraph` and `Person picker`
+            Must be false for `Person picker`
             [profile field types](/help/custom-profile-fields#profile-field-types).
 
             This field is only included when its value is `true`.
 
-            **Changes**: New in Zulip 6.0 (feature level 146).
+            **Changes**: Before Zulip 12.0 (feature level 476), the
+            "Paragraph" field type was not supported.
+
+            New in Zulip 6.0 (feature level 146).
           default: false
         required:
           type: boolean
@@ -27498,12 +27503,8 @@ components:
               description: |
                 The ID of the user who added the reaction.
 
-                **Changes**: New in Zulip 3.0 (feature level 2). The `user`
-                object is deprecated and will be removed in the future.
-
-                In Zulip 10.0 (feature level 328), the deprecated `user` object
-                was removed which contained the following properties: `id`, `email`,
-                `full_name` and `is_mirror_dummy`.
+                **Changes**: New in Zulip 3.0 (feature level 2), which
+                deprecated the `user` object.
     EmojiBase:
       type: object
       properties:
@@ -27828,7 +27829,13 @@ components:
         reactions:
           type: array
           description: |
-            Data on any reactions to the message.
+            Data on any [reactions](/help/emoji-reactions) to the message,
+            ordered chronologically from oldest to newest reaction.
+
+            **Changes**: In Zulip 10.0 (feature level 328), the deprecated `user`
+            object was removed from the data for each reaction. It contained the
+            following information about the user who added the reaction: `id`,
+            `email`, `full_name` and `is_mirror_dummy`.
           items:
             $ref: "#/components/schemas/EmojiReaction"
         recipient_id:

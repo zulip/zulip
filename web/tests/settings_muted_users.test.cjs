@@ -72,17 +72,9 @@ run_test("settings", ({override}) => {
 
     const $unmute_button = $.create("settings-unmute-user");
     const $fake_row = $('tr[data-user-id="5"]');
-    $unmute_button.closest = (opts) => {
-        assert.equal(opts, "tr");
-        return $fake_row;
-    };
+    $unmute_button.set_closest_results("tr", $fake_row);
 
-    let row_attribute_fetched = false;
-    $fake_row.attr = (opts) => {
-        assert.equal(opts, "data-user-id");
-        row_attribute_fetched += 1;
-        return "5";
-    };
+    $fake_row.attr("data-user-id", "5");
 
     let unmute_user_called = false;
     channel.del = (payload) => {
@@ -93,7 +85,6 @@ run_test("settings", ({override}) => {
 
     unmute_click_handler.call($unmute_button, event);
     assert.ok(unmute_user_called);
-    assert.ok(row_attribute_fetched);
 
     let mute_user_called = false;
     channel.post = (payload) => {

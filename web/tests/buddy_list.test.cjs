@@ -32,16 +32,13 @@ set_realm(make_realm());
 initialize_user_settings({user_settings: {}});
 
 function init_simulated_scrolling() {
-    const elem = {
-        scrollTop: 0,
-        scrollHeight: 0,
-    };
-
-    $.create("#buddy_list_wrapper", {children: [elem]});
+    const $wrapper = $.create("#buddy_list_wrapper");
+    $wrapper[0].scrollHeight = 0;
+    $wrapper[0].scrollTop = 0;
 
     $("#buddy_list_wrapper_padding").set_height(0);
 
-    return elem;
+    return $wrapper[0];
 }
 
 const alice = make_user({
@@ -113,15 +110,15 @@ run_test("split list", ({override, override_rewire}) => {
     override(padded_widget, "update_padding", noop);
 
     let appended_to_users_matching_view = false;
-    $("#buddy-list-users-matching-view").append = ($element) => {
-        if ($element.selector === "<html-stub>") {
+    $("#buddy-list-users-matching-view")[0].append = (element) => {
+        if (element.innerHTML === "<html-stub>") {
             appended_to_users_matching_view = true;
         }
     };
 
     let appended_to_other_users = false;
-    $("#buddy-list-other-users").append = ($element) => {
-        if ($element.selector === "<html-stub>") {
+    $("#buddy-list-other-users")[0].append = (element) => {
+        if (element.innerHTML === "<html-stub>") {
             appended_to_other_users = true;
         }
     };
@@ -170,12 +167,12 @@ run_test("find_li", ({override}) => {
     let $li = buddy_list.find_li({
         key: alice.user_id,
     });
-    assert.equal($li, $alice_li);
+    assert.equal($li[0], $alice_li[0]);
 
     $li = buddy_list.find_li({
         key: bob.user_id,
     });
-    assert.equal($li, $bob_li);
+    assert.equal($li[0], $bob_li[0]);
 });
 
 run_test("fill_screen_with_content early break on big list", ({override}) => {
@@ -252,8 +249,10 @@ run_test("big_list", ({override, override_rewire}) => {
     // Here we're just saying both lists are rendered as empty from start,
     // which doesn't actually happen, since I don't know how to properly
     // get it set in the middle of buddy_list.populate().
-    $("#buddy-list-users-matching-view .empty-list-message").length = 1;
-    $("#buddy-list-other-users .empty-list-message").length = 1;
+    $.reset_selector("#buddy-list-users-matching-view .empty-list-message");
+    $("#buddy-list-users-matching-view .empty-list-message")[0].remove = noop;
+    $.reset_selector("#buddy-list-other-users .empty-list-message");
+    $("#buddy-list-users-matching-view .empty-list-message")[0].remove = noop;
 
     _.times(num_users, (i) => {
         const person = make_user({

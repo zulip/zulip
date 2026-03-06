@@ -8,7 +8,6 @@ const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
 const dropdown_widget = mock_esm("../src/dropdown_widget");
-const util = mock_esm("../src/util");
 
 let tippy_default_stub = noop;
 let tippy_instance;
@@ -235,8 +234,6 @@ run_test("update_tooltip_for_folder_filter - Any folder", () => {
     const body_stub = {};
     global.document = {body: body_stub};
 
-    util.the = ($element) => $element[0];
-
     tippy_default_stub = (element, options) => {
         tippy_target = element;
         tippy_content = options.content;
@@ -244,15 +241,14 @@ run_test("update_tooltip_for_folder_filter - Any folder", () => {
     };
 
     const $element = $.create("#folder_filter_widget");
-    $element.selector = "#folder_filter_widget";
-    $element[0] = {_tippy: {destroy: noop}, id: "folder_filter_widget"};
+    $element[0]._tippy = {destroy: noop};
 
     folder_dropdown_widget.update_tooltip_for_folder_filter(
         "folder_filter_widget",
         folder_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION,
     );
 
-    assert.equal(tippy_target.id, "folder_filter_widget");
+    assert.equal(tippy_target, $element[0]);
     assert.equal(tippy_content, "translated: Filter by folder");
 });
 
@@ -260,15 +256,12 @@ run_test("update_tooltip_for_folder_filter - Uncategorized", () => {
     initialize_folders();
     let tippy_content;
 
-    util.the = ($element) => $element[0];
-
     tippy_default_stub = (_element, options) => {
         tippy_content = options.content;
     };
 
     const $element = $.create("#folder_filter_widget");
-    $element.selector = "#folder_filter_widget";
-    $element[0] = {_tippy: {destroy: noop}};
+    $element[0]._tippy = {destroy: noop};
 
     folder_dropdown_widget.update_tooltip_for_folder_filter(
         "folder_filter_widget",
@@ -282,15 +275,12 @@ run_test("update_tooltip_for_folder_filter - specific folder", () => {
     const folders = initialize_folders();
     let tippy_content;
 
-    util.the = ($element) => $element[0];
-
     tippy_default_stub = (_element, options) => {
         tippy_content = options.content;
     };
 
     const $element = $.create("#folder_filter_widget");
-    $element.selector = "#folder_filter_widget";
-    $element[0] = {_tippy: {destroy: noop}};
+    $element[0]._tippy = {destroy: noop};
 
     folder_dropdown_widget.update_tooltip_for_folder_filter(
         "folder_filter_widget",
@@ -304,17 +294,12 @@ run_test("update_tooltip_for_folder_filter - destroy previous tooltip", () => {
     const folders = initialize_folders();
     let destroy_called = false;
 
-    util.the = ($element) => $element[0];
-
     tippy_default_stub = () => {};
 
     const $element = $.create("#folder_filter_widget");
-    $element.selector = "#folder_filter_widget";
-    $element[0] = {
-        _tippy: {
-            destroy() {
-                destroy_called = true;
-            },
+    $element[0]._tippy = {
+        destroy() {
+            destroy_called = true;
         },
     };
 
@@ -329,13 +314,9 @@ run_test("update_tooltip_for_folder_filter - destroy previous tooltip", () => {
 run_test("update_tooltip_for_folder_filter - no previous tooltip", () => {
     const folders = initialize_folders();
 
-    util.the = ($element) => $element[0];
-
     tippy_default_stub = () => {};
 
-    const $element = $.create("#folder_filter_widget");
-    $element.selector = "#folder_filter_widget";
-    $element[0] = {}; // No _tippy property
+    $.create("#folder_filter_widget"); // No _tippy property
 
     assert.doesNotThrow(() => {
         folder_dropdown_widget.update_tooltip_for_folder_filter(

@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 476**
+
+* [`POST /realm/profile_fields`](/api/create-custom-profile-field),
+  [`GET /realm/profile_fields`](/api/get-custom-profile-fields) The
+  `display_in_profile_summary` parameter can now be set to true for the
+  `Paragraph` field type.
+
 **Feature level 475**
 
 * [`GET /events`](/api/get-events): `realm_user` events with `op: "update"`

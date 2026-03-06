@@ -19,7 +19,6 @@ const used_module_mocks = new Set();
 const used_templates = new Set();
 
 const jquery_path = require.resolve("jquery");
-const real_jquery_path = require.resolve("./real_jquery.cjs");
 
 let in_mid_render = false;
 let jquery_function;
@@ -34,7 +33,7 @@ function load(request, parent, isMain) {
     } else if (filename.endsWith(".hbs") && filename.startsWith(template_path + path.sep)) {
         const actual_render = actual_load(request, parent, isMain);
         return template_stub({filename, actual_render});
-    } else if (filename === jquery_path && parent.filename !== real_jquery_path) {
+    } else if (filename === jquery_path) {
         return jquery_function || $;
     }
 
@@ -70,18 +69,23 @@ function template_stub({filename, actual_render}) {
 
         const data = args[0];
 
+        let html;
         if (exercise_template) {
             // If our dev wants to exercise the actual template, then do so.
             // We set the in_mid_render bool so that included (i.e. partial)
             // templates get rendered.
             in_mid_render = true;
-            const html = actual_render(...args);
+            html = actual_render(...args);
             in_mid_render = false;
-
-            return f(data, html);
         }
 
-        return f(data);
+        const mock_html = f(data, html);
+        assert.equal(
+            typeof mock_html,
+            "string",
+            `The template mock for ${filename} must return a string`,
+        );
+        return mock_html;
     };
 }
 

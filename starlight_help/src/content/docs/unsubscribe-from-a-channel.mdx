@@ -7,13 +7,31 @@ import {TabItem, Tabs} from "@astrojs/starlight/components";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import KeyboardTip from "../../components/KeyboardTip.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
 import ChannelActions from "../include/_ChannelActions.mdx";
 import ChannelLongPressMenu from "../include/_ChannelLongPressMenu.mdx";
 import MobileChannels from "../include/_MobileChannels.mdx";
 
 import SubscriberCheckIcon from "~icons/zulip-icon/subscriber-check";
 
-You can always unsubscribe from any channel in Zulip.
+You can always unsubscribe from any channel in Zulip. Unsubscribing from a
+channel removes conversations in that channel from your [inbox](/help/inbox),
+[recent conversations](/help/recent-conversations), and [left
+sidebar](/help/left-sidebar). New messages will not appear in your [combined
+feed](/help/combined-feed), and you will not receive [@-mention
+notifications](/help/dm-mention-alert-notifications) in channels you're not
+subscribed to. The app doesn't track your unread messages in unsubscribed
+channels.
+
+<ZulipTip>
+  Unsubscribe from channels where you don't plan to read the conversations. You
+  can still follow [a link to a specific
+  conversation](/help/link-to-a-message-or-conversation#link-to-a-topic-within-zulip)
+  in any channel you have content access to.
+
+  Alternatively, you can [mute channels](/help/mute-a-channel) to avoid
+  receiving notifications for messages you are not interested in.
+</ZulipTip>
 
 <Tabs>
   <TabItem label="Desktop/Web">
@@ -71,4 +89,5 @@ You can always unsubscribe from any channel in Zulip.
 
 ## Related articles
 
+* [Introduction to channels](/help/introduction-to-channels)
 * [Manage a user's channel subscriptions](/help/manage-user-channel-subscriptions)

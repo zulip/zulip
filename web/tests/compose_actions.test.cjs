@@ -150,10 +150,6 @@ function override_private_message_recipient_ids({override}) {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        // We don't test the css calls; we just skip over them.
-        $("#compose").css = noop;
-        $(".new_message_textarea").css = noop;
-
         people.init();
         compose_state.set_message_type(undefined);
         compose_recipient.initialize();
@@ -162,12 +158,8 @@ function test(label, f) {
 }
 
 function stub_message_row($textarea) {
-    const $stub = $.create("message_row_stub");
-    $textarea.closest = (selector) => {
-        assert.equal(selector, ".message_row");
-        $stub.length = 0;
-        return $stub;
-    };
+    const $stub = $.set_results("message_row_stub", []);
+    $textarea.set_closest_results(".message_row", $stub);
 }
 
 test("initial_state", () => {
@@ -197,7 +189,7 @@ test("start", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_recipient, "update_recipient_row_attention_level", noop);
     override_rewire(stream_data, "can_post_messages_in_stream", () => true);
     override_rewire(stream_data, "can_create_new_topics_in_stream", () => true);
-    mock_template("inline_decorated_channel_name.hbs", false, noop);
+    mock_template("inline_decorated_channel_name.hbs", false, () => "");
 
     let compose_defaults;
     override(narrow_state, "set_compose_defaults", () => compose_defaults);
@@ -350,7 +342,7 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_validate, "update_posting_policy_banner_post_validation", noop);
     override_rewire(compose_recipient, "update_recipient_row_attention_level", noop);
     override_private_message_recipient_ids({override});
-    mock_template("inline_decorated_channel_name.hbs", false, noop);
+    mock_template("inline_decorated_channel_name.hbs", false, () => "");
 
     override(realm, "realm_direct_message_permission_group", nobody.id);
     override(realm, "realm_direct_message_initiator_group", everyone.id);
@@ -416,7 +408,7 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     $elem.set_find_results(".message-limit-indicator", $indicator);
 
     override_private_message_recipient_ids({override});
-    mock_template("inline_decorated_channel_name.hbs", false, noop);
+    mock_template("inline_decorated_channel_name.hbs", false, () => "");
 
     override_rewire(stream_data, "can_post_messages_in_stream", () => true);
 
@@ -573,7 +565,6 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         }
     });
 
-    $("textarea#compose-textarea").caret = noop;
     $("textarea#compose-textarea").attr("id", "compose-textarea");
 
     replaced = false;

@@ -878,6 +878,10 @@ input.settings_text_input {
            so that the scrollbar appears to reach all the way
            to the bottom of the content. */
         padding-bottom: 0;
+        /* Override the `min-width: auto` default for grid
+           items so the SimpleBar container can shrink on
+           window resize. */
+        min-width: 0;
     }
 }
 

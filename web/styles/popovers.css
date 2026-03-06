@@ -1052,6 +1052,12 @@ ul.popover-group-menu-member-list {
     .popover-menu-icon {
         position: relative;
         top: -1px;
+
+        &.zulip-icon-id-card {
+            /* Override the top value for the id card icon,
+            since it looks more visually centered */
+            top: 0;
+        }
     }
 
     .info-density-controls {

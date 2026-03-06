@@ -79,6 +79,7 @@ export type CustomProfileFieldData = {
     required: boolean;
     value: string;
     rendered_value?: string | null | undefined;
+    is_long_text: boolean;
     subtype?: string;
     link?: string;
 };
@@ -488,6 +489,7 @@ export function get_custom_profile_field_data(
         is_user_field: false,
         is_link: field_type === field_types.URL.id,
         is_external_account: field_type === field_types.EXTERNAL_ACCOUNT.id,
+        is_long_text: field_type === field_types.LONG_TEXT.id,
         type: field_type,
         display_in_profile_summary: field.display_in_profile_summary,
         required: field.required,

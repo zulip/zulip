@@ -124,11 +124,11 @@ export function maybe_disable_widgets(): void {
 const DEFAULT_PLACEHOLDER = $t({defaultMessage: "Add roles, groups or users"});
 const NOBODY_DISABLED_PLACEHOLDER = $t({defaultMessage: "Nobody"});
 const NOBODY_ENABLED_PLACEHOLDER = $t({
-    defaultMessage: "Nobody. You can add roles, groups or users.",
+    defaultMessage: "Nobody. Add roles, groups or users",
 });
 const ADMINS_DISABLED_PLACEHOLDER = $t({defaultMessage: "Administrators"});
 const ADMINS_ENABLED_PLACEHOLDER = $t({
-    defaultMessage: "Administrators. You can add roles, groups or users.",
+    defaultMessage: "Administrators. Add roles, groups or users",
 });
 
 function set_special_org_permission_placeholders(enabled: boolean): void {

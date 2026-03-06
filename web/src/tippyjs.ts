@@ -679,6 +679,7 @@ export function initialize(): void {
         target: [
             ".custom-profile-field-value",
             ".copy-custom-profile-field-link",
+            ".copy-custom-profile-field-long-text",
             "#popover-menu-copy-email",
             ".personal-menu-clear-status",
             ".user-card-clear-status-button",
