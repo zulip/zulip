@@ -85,8 +85,6 @@ class FakeElementState {
     delegated_event_handlers = new Map();
     is_focused = false;
     jquery_data = new Map();
-    jquery_next_results = new Map();
-    jquery_prev_results = new Map();
     match_results = new Map([["*", true]]);
     parents_results = new Map();
     query_results = new Map();
@@ -542,15 +540,12 @@ function dom_args(args) {
         last() {
             return new exports.FakeJQuery([...this].slice(-1));
         }
-        next(next_selector = "*") {
-            assert.equal(this.length, 1);
-            const state = fake_element_state.get(this[0]);
-            if (!state.jquery_next_results.has(next_selector)) {
-                throw new Error(
-                    `You need to call $(${JSON.stringify(state.selector)}).set_next_results(${JSON.stringify(next_selector)}, ...)`,
-                );
-            }
-            return state.jquery_next_results.get(next_selector);
+        next(selector = "*") {
+            return new exports.FakeJQuery(
+                [...this]
+                    .map((element) => element.nextElementSibling)
+                    .filter((next) => next !== null && next.matches(selector)),
+            );
         }
         off(event_type, ...args) {
             if (args.length === 0) {
@@ -648,15 +643,12 @@ function dom_args(args) {
             this[0].prepend(...dom_args(args));
             return this;
         }
-        prev(prev_selector = "*") {
-            assert.equal(this.length, 1);
-            const state = fake_element_state.get(this[0]);
-            if (!state.jquery_prev_results.has(prev_selector)) {
-                throw new Error(
-                    `You need to call $(${JSON.stringify(state.selector)}).set_prev_results(${JSON.stringify(prev_selector)}, ...)`,
-                );
-            }
-            return state.jquery_prev_results.get(prev_selector);
+        prev(selector = "*") {
+            return new exports.FakeJQuery(
+                [...this]
+                    .map((element) => element.previousElementSibling)
+                    .filter((prev) => prev !== null && prev.matches(selector)),
+            );
         }
         prop(name, ...args) {
             if (args.length === 0) {
@@ -750,9 +742,10 @@ function dom_args(args) {
             assert.equal(this.length, 1);
             fake_element_state.get(this[0]).match_results.set(selector, value);
         }
-        set_next_results(selector, $result) {
+        set_next($result) {
             assert.equal(this.length, 1);
-            fake_element_state.get(this[0]).jquery_next_results.set(selector, $result);
+            assert.equal($result.length, 1);
+            this[0].nextElementSibling = $result[0];
         }
         set_parent($parent_elem) {
             assert.equal(this.length, 1);
@@ -763,9 +756,10 @@ function dom_args(args) {
             assert.equal(this.length, 1);
             fake_element_state.get(this[0]).parents_results.set(selector, [...elements]);
         }
-        set_prev_results(selector, $result) {
+        set_prev($result) {
             assert.equal(this.length, 1);
-            fake_element_state.get(this[0]).jquery_prev_results.set(selector, $result);
+            assert.equal($result.length, 1);
+            this[0].previousElementSibling = $result[0];
         }
         show() {
             for (const element of this) {
