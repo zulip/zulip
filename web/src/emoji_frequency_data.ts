@@ -140,6 +140,7 @@ export function initialize_data(info: {
                 message_ids: new Set(),
                 current_user_reacted_message_ids: new Set(),
             });
+            continue;
         }
         const reaction = reaction_data.get(emoji_id);
         assert(reaction !== undefined);
