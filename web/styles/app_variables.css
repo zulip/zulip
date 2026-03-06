@@ -381,6 +381,9 @@
     --markdown-interelement-doubled-space-px: calc(
         var(--markdown-interelement-space-px) * 2
     );
+    --markdown-interelement-halved-space-px: calc(
+        var(--markdown-interelement-space-px) / 2
+    );
     /* Certain elements need to be fitted perfectly to
        the line height; the length here can be used to set
        precise heights, and in the case of square elements,

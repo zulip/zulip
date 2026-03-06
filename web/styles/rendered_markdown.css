@@ -508,6 +508,14 @@
         margin-bottom: var(--markdown-interelement-space-px);
     }
 
+    /* When a gallery appears inside a paragraph, we equalize
+       the space above and below the gallery. Thanks to margin
+       collapsing, this value will have no effect when a gallery
+       is the last element in a paragraph. */
+    p .message-thumbnail-gallery {
+        margin: var(--markdown-interelement-halved-space-px) 0;
+    }
+
     /* We used to use this for certain dropbox previews, we are keeping
        this around as to not break any previous instances of these
        previews. */
