@@ -378,12 +378,8 @@ export class TopicListWidget {
     }
 }
 
-function filter_topics_left_sidebar(topic_names: string[]): string[] {
+function filter_topics_left_sidebar(topic_names: string[], stream_id: number): string[] {
     const search_term = get_left_sidebar_topic_search_term();
-    const stream_id = active_stream_id();
-    if (stream_id === undefined) {
-        return topic_names;
-    }
     return topic_list_data.filter_topics_by_search_term(
         stream_id,
         topic_names,
@@ -394,7 +390,9 @@ function filter_topics_left_sidebar(topic_names: string[]): string[] {
 
 export class LeftSidebarTopicListWidget extends TopicListWidget {
     constructor($stream_li: JQuery, my_stream_id: number) {
-        super($stream_li, my_stream_id, filter_topics_left_sidebar);
+        super($stream_li, my_stream_id, (topic_names) =>
+            filter_topics_left_sidebar(topic_names, my_stream_id),
+        );
     }
 
     override build(spinner = false): void {
@@ -441,15 +439,24 @@ export function get_stream_li(): JQuery | undefined {
     return $stream_li;
 }
 
-export function rebuild_left_sidebar($stream_li: JQuery, stream_id: number): void {
-    const active_widget = active_widgets.get(stream_id);
+export function rebuild_left_sidebar(
+    $stream_li: JQuery,
+    stream_id: number,
+    for_search = false,
+): void {
+    if (!for_search && [...active_widgets.values()].length > 1) {
+        clear();
+    }
 
+    const active_widget = active_widgets.get(stream_id);
     if (active_widget) {
         active_widget.build();
         return;
     }
 
-    clear();
+    if (!for_search) {
+        clear();
+    }
     const widget = new LeftSidebarTopicListWidget($stream_li, stream_id);
     widget.build();
 
