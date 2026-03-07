@@ -228,7 +228,8 @@ export const user_schema = z.intersection(
 
 export const server_emoji_schema = z.object({
     id: z.string(),
-    author_id: z.number(),
+    author_id: z.nullable(z.number()),
+    created_at: z.number(),
     deactivated: z.boolean(),
     name: z.string(),
     source_url: z.string(),

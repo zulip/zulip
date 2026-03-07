@@ -116,7 +116,7 @@ export function populate_emoji(): void {
         get_item: ListWidget.default_get_item,
         modifier_html(item) {
             const author = item.author
-                ? {...item.author, is_active: people.is_person_active(item.author_id)}
+                ? {...item.author, is_active: people.is_person_active(item.author_id!)}
                 : "";
             return render_admin_emoji_list({
                 emoji: {
