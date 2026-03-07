@@ -221,6 +221,14 @@ function set_oldest_message_date(msg_list_data: MessageListData): void {
     }
 }
 
+function get_time_string(): string {
+    const time_obj = new Date(oldest_message_timestamp * 1000);
+    return timerender.get_localized_date_or_time_for_format(
+        time_obj,
+        "full_weekday_dayofyear_year_time",
+    );
+}
+
 function update_load_more_banner(): void {
     if (loading_state === NO_MESSAGES_LOADED) {
         return;
@@ -249,11 +257,7 @@ function update_load_more_banner(): void {
     }
 
     const $banner_text = $(".recent-view-load-more-container .last-fetched-message");
-    const time_obj = new Date(oldest_message_timestamp * 1000);
-    const time_string = timerender.get_localized_date_or_time_for_format(
-        time_obj,
-        "full_weekday_dayofyear_year_time",
-    );
+    const time_string = get_time_string();
     $banner_text.text($t({defaultMessage: "Showing messages since {time_string}."}, {time_string}));
 
     if (is_backfill_in_progress) {
