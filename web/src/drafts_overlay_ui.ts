@@ -164,8 +164,15 @@ function update_rendered_drafts(
 
 const keyboard_handling_context: messages_overlay_ui.Context = {
     get_items_ids() {
-        const draft_arrow = drafts.draft_model.get();
-        return Object.getOwnPropertyNames(draft_arrow);
+        const draft_ids: string[] = [];
+        for (const row of document.querySelectorAll<HTMLElement>(
+            "#drafts_table .overlay-message-row",
+        )) {
+            const id = row.dataset["draftId"];
+            assert(id !== undefined);
+            draft_ids.push(id);
+        }
+        return draft_ids;
     },
     on_enter() {
         // This handles when pressing Enter while looking at drafts.
