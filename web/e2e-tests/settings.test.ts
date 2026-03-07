@@ -138,6 +138,13 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
     await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
+    // Wait for the bot to appear in the local data store, since the
+    // bot_add event may not have been processed yet when the modal closes.
+    await page.waitForFunction(
+        (bot_name: string) => zulip_test.get_user_id_from_name(bot_name) !== undefined,
+        {},
+        "Bot 1",
+    );
     const user_id = await common.get_user_id_from_name(page, "Bot 1");
     await open_manage_bot_tab(page, user_id!);
 
@@ -188,6 +195,13 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
     await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
+    // Wait for the bot to appear in the local data store, since the
+    // bot_add event may not have been processed yet when the modal closes.
+    await page.waitForFunction(
+        (bot_name: string) => zulip_test.get_user_id_from_name(bot_name) !== undefined,
+        {},
+        "Bot 2",
+    );
     const user_id = await common.get_user_id_from_name(page, "Bot 2");
     await open_manage_bot_tab(page, user_id!);
 
