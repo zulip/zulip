@@ -238,6 +238,28 @@ test("message_is_notifiable", ({override}) => {
     assert.equal(message_notifications.should_send_audible_notification(message), true);
     assert.equal(message_notifications.message_is_notifiable(message), false);
 
+    // Case 7a: If a message is in a muted stream
+    //  and has a wildcard mention with channel-specific wildcard_mentions_notify=true,
+    //  DO notify the user (channel-specific setting overrides channel muting)
+    muted.wildcard_mentions_notify = true;
+    message = {
+        id: 50,
+        content: "message number 5a",
+        sent_by_me: false,
+        notification_sent: false,
+        mentioned: true,
+        mentioned_me_directly: false,
+        type: "stream",
+        stream_id: muted.stream_id,
+        topic: "whatever",
+    };
+    assert.equal(message_notifications.message_is_notifiable(message), true);
+    assert.equal(message_notifications.should_send_desktop_notification(message), true);
+    assert.equal(message_notifications.should_send_audible_notification(message), true);
+
+    // Reset state
+    muted.wildcard_mentions_notify = null;
+
     // Case 8: If a message is in a muted stream
     //  and does mention the user DIRECTLY,
     //  DO notify the user
