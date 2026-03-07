@@ -1124,15 +1124,63 @@ export let get_suggestions = function (
     // only make one people_getter to avoid duplicate work
     const people_getter = make_people_getter(last);
 
-    function get_people(
-        flavor: "dm" | "sender" | "dm-including",
-    ): (last: NarrowCanonicalTermSuggestion, base_terms: NarrowCanonicalTerm[]) => Suggestion[] {
-        return function (
-            last: NarrowCanonicalTermSuggestion,
-            base_terms: NarrowCanonicalTerm[],
-        ): Suggestion[] {
-            return get_person_suggestions(people_getter, last, base_terms, flavor);
-        };
+    function get_people_suggestions(
+        last: NarrowCanonicalTermSuggestion,
+        base_terms: NarrowCanonicalTerm[],
+    ): Suggestion[] {
+        const person_operators: ("dm" | "sender" | "dm-including")[] = page_params.is_spectator
+            ? ["sender"]
+            : ["dm", "sender", "dm-including"];
+        const all_person_suggestions: Suggestion[] = [];
+
+        for (const operator of person_operators) {
+            const suggestions = get_person_suggestions(people_getter, last, base_terms, operator);
+            all_person_suggestions.push(...suggestions);
+        }
+
+        all_person_suggestions.sort((a, b) => {
+            const term_a = Filter.convert_suggestion_to_term(util.the(Filter.parse(a)));
+            const term_b = Filter.convert_suggestion_to_term(util.the(Filter.parse(b)));
+
+            // Should normally be valid, but avoid crashing on edge suggestions.
+            if (term_a === undefined || term_b === undefined) {
+                return 0;
+            }
+
+            let active_a: boolean;
+            switch (term_a.operator) {
+                case "dm":
+                case "dm-including":
+                    active_a = term_a.operand.every((user_id) => people.is_person_active(user_id));
+                    break;
+                case "sender":
+                    active_a = people.is_person_active(term_a.operand);
+                    break;
+                default:
+                    return 0;
+            }
+
+            let active_b: boolean;
+            switch (term_b.operator) {
+                case "dm":
+                case "dm-including":
+                    active_b = term_b.operand.every((user_id) => people.is_person_active(user_id));
+                    break;
+                case "sender":
+                    active_b = people.is_person_active(term_b.operand);
+                    break;
+                default:
+                    return 0;
+            }
+
+            if (active_a !== active_b) {
+                return active_a ? -1 : 1;
+            }
+
+            return 0;
+        });
+
+        return all_person_suggestions;
     }
 
     // Remember to update the spectator list when changing this.
@@ -1148,9 +1196,7 @@ export let get_suggestions = function (
         get_is_filter_suggestions,
         get_sent_by_me_suggestions,
         get_channel_suggestions,
-        get_people("dm"),
-        get_people("sender"),
-        get_people("dm-including"),
+        get_people_suggestions,
         get_topic_suggestions,
         get_has_filter_suggestions,
     ];
@@ -1161,7 +1207,7 @@ export let get_suggestions = function (
             get_operator_suggestions,
             get_is_filter_suggestions,
             get_channel_suggestions,
-            get_people("sender"),
+            get_people_suggestions,
             get_topic_suggestions,
             get_has_filter_suggestions,
         ];
