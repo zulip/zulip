@@ -393,6 +393,9 @@ def update_realm(
             data["jitsi_server_url"] = jitsi_server_url
 
     if workplace_users_group is not None:
+        # Remove this when the feature is ready for production.
+        assert settings.DEVELOPMENT
+
         if not realm_eligible_for_non_workplace_pricing(realm):
             raise JsonableError(
                 _("Organization is not eligible for discounted pricing for non workplace users.")
