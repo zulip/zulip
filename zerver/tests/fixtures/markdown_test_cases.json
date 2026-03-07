@@ -1467,6 +1467,21 @@
       "New logic with trailing dot: Go to https://podcasts.google.com?feed=abc.",
       "<p>New logic with trailing dot: Go to <a href=\"https://podcasts.google.com?feed=abc\">https://podcasts.google.com?feed=abc</a>.</p>",
       "Go to https://podcasts.google.com?feed=abc."
+    ],
+    [
+      "obsidian://open?vault=MyVault",
+      "<p>%s</p>",
+      "obsidian://open?vault=MyVault"
+    ],
+    [
+    "zotero://select/library/items/C495WKPX",
+    "<p>%s</p>",
+    "zotero://select/library/items/C495WKPX"
+    ],
+    [
+      "hansoft://Project/Task/12345",
+      "<p>%s</p>",
+      "hansoft://Project/Task/12345"
     ]
   ]
 }
