@@ -481,9 +481,22 @@ def csrf_failure(request: HttpRequest, reason: str = "") -> HttpResponse:
 
 class LocaleMiddleware(DjangoLocaleMiddleware):
     @override
+    def process_request(self, request: HttpRequest) -> None:
+        # Avoid the expensive is_language_prefix_patterns_used() and
+        # get_language_from_request() calls for API endpoints, which
+        # always return JSON and never use i18n URL prefixes.
+        if request.path.startswith(("/api/", "/json/")):
+            request.LANGUAGE_CODE = settings.LANGUAGE_CODE
+            return
+        super().process_request(request)
+
+    @override
     def process_response(
         self, request: HttpRequest, response: HttpResponseBase
     ) -> HttpResponseBase:
+        if request.path.startswith(("/api/", "/json/")):
+            return response
+
         # This is the same as the default LocaleMiddleware, minus the
         # logic that redirects 404's that lack a prefixed language in
         # the path into having a language.  See

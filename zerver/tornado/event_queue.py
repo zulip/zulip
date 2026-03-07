@@ -31,6 +31,7 @@ from zerver.lib.queue import queue_json_publish_rollback_unsafe, retry_event
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
 from zerver.middleware import async_request_timer_restart
 from zerver.models import CustomProfileField, Message
+from zerver.models.users import flush_tornado_user_profile_cache, gc_tornado_user_profile_cache
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
 from zerver.tornado.handlers import finish_handler, get_handler_by_id, handler_stats_string
@@ -576,6 +577,7 @@ def gc_event_queues(port: int) -> None:
     # being removed because they are guaranteed to be idle (because
     # they are expired) and thus not have a current handler.
     do_gc_event_queues(to_remove, affected_users, affected_realms)
+    gc_tornado_user_profile_cache()
 
     if settings.PRODUCTION:
         logging.info(
@@ -1690,6 +1692,13 @@ def process_notification(notice: Mapping[str, Any]) -> None:
     event: Mapping[str, Any] = notice["event"]
     users: list[int] | list[Mapping[str, Any]] = notice["users"]
     start_time = time.perf_counter()
+
+    # Flush the in-process user profile cache on events that change
+    # user or realm state relevant to authentication/authorization.
+    if event["type"] == "realm_user" and event["op"] in ("update", "remove"):
+        flush_tornado_user_profile_cache(user_id=event["person"]["user_id"])
+    elif event["type"] == "realm" and event["op"] == "deactivated":
+        flush_tornado_user_profile_cache()
 
     if event["type"] == "message":
         process_message_event(event, cast(list[Mapping[str, Any]], users))

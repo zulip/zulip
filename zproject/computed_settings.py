@@ -300,6 +300,9 @@ RUNNING_INSIDE_TORNADO = (
     len(sys.argv) > 1 and "manage.py" in sys.argv[0] and sys.argv[1] == "runtornado"
 )
 
+if RUNNING_INSIDE_TORNADO:
+    ROOT_URLCONF = "zproject.tornado_urls"
+
 SILENCED_SYSTEM_CHECKS = [
     # auth.W004 checks that the UserProfile field named by USERNAME_FIELD has
     # `unique=True`.  For us this is `email`, and it's unique only per-realm.
