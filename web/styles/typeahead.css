@@ -197,28 +197,28 @@
 
 /* For FontAwesome icons and zulip icons used in place of images for some users. */
 .typeahead-image {
-    flex: 0 0 auto;
+    display: grid;
     position: relative;
+    grid-template-rows: 1fr 1fr; /* reserve space for status */
+    grid-template-columns: 1fr;
     height: 1.3125em; /* 21px at 16px/1em */
     width: 1.3125em; /* 21px at 16px/1em */
     border-radius: 4px;
 
     .typeahead-image-avatar {
         border-radius: 4px;
-        /* Override bootstrap img */
-        vertical-align: baseline;
     }
 
     .user-circle {
-        position: absolute;
-        /* This is smaller than the sidebar because avatars here are smaller */
+        grid-row: 2 / 3;
+        justify-self: last baseline;
         font-size: 0.4375em; /* 7px at 16px/1em */
         line-height: 1;
-        bottom: -0.5px;
-        right: -0.5px;
         background-color: var(--color-background-dropdown-widget);
         padding: 1px;
         border-radius: 50%;
+
+        transform: translate(0.5px, -8.5px);
 
         &.user-circle-offline {
             display: none;
