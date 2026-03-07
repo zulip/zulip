@@ -47,22 +47,23 @@
 
         .stream_topic_separator {
             line-height: 0;
+            display: flex;
+            align-items: center;
             color: var(--color-message-header-icon-non-interactive);
             position: relative;
-            top: 0.5px;
+            height: 100%;
         }
 
         .stream_topic {
-            display: inline-block;
+            display: flex;
+            align-items: center;
             padding: 5px 6px 5px 2px;
-            height: 1.2142em; /* 17px at 14px em */
-            line-height: 1.2142em; /* 17px at 14px em */
+            height: 100%;
+            box-sizing: border-box;
             overflow: hidden;
             text-overflow: ellipsis;
 
             .message_label_clickable.narrows_by_topic {
-                position: relative;
-                top: 0.5px;
                 overflow: hidden;
                 text-overflow: ellipsis;
 
@@ -222,7 +223,7 @@
                 var(--color-background);
 
             .recipient_row_date {
-                display: block;
+                display: flex;
             }
         }
     }
@@ -233,10 +234,8 @@
     align-items: center;
     gap: 5px;
     padding: 5px 2px 5px 10px;
-    height: 1.2142em; /* 17px at 14px em */
-    line-height: 1.2142em; /* 17px at 14px em */
-    position: relative;
-    top: 0.5px;
+    height: 100%;
+    box-sizing: border-box;
     text-decoration: none;
     font-weight: 600;
     overflow: hidden;
@@ -281,6 +280,7 @@
     display: flex;
     flex-grow: 1;
     align-items: center;
+    height: 100%;
 }
 
 .on_hover_topic_read {
@@ -299,6 +299,8 @@
     text-align: right;
     display: flex;
     align-items: center;
+    height: 100%;
+    box-sizing: border-box;
     font-style: normal;
     font-weight: 600;
     line-height: 17px; /* identical to box height, or 131% */
@@ -311,7 +313,7 @@
         display: none;
 
         .sticky_header & {
-            display: block;
+            display: flex;
         }
     }
 
