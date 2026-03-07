@@ -721,7 +721,18 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
     IncomingWebhookIntegration(
         "helloworld", ["misc"], [WebhookScreenshotConfig("hello.json")], display_name="Hello World"
     ),
-    IncomingWebhookIntegration("heroku", ["deployment"], [WebhookScreenshotConfig("deploy.txt")]),
+    IncomingWebhookIntegration(
+        "heroku",
+        ["deployment"],
+        [WebhookScreenshotConfig("build_create.json")],
+        url_options=[
+            WebhookUrlOption(
+                name="only_failed_events",
+                label="Only failed events",
+                validator=check_bool,
+            )
+        ],
+    ),
     IncomingWebhookIntegration(
         "homeassistant",
         ["misc"],
