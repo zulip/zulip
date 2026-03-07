@@ -5992,11 +5992,15 @@ paths:
                                         - 6 = Constructor Groups
                                         - 7 = Nextcloud Talk
                                         - 8 = Webex (User OAuth integration)
+                                        - 9 = Integrated Zulip calling (LiveKit)
 
                                         Note that only one of the [Zoom integrations][zoom-video-calls] can
                                         be configured on a Zulip server.
 
-                                        **Changes**: In Zulip 12.0 (feature level 493),
+                                        **Changes**: In Zulip 13.0 (feature level ZF-a43758) added the
+                                        Integrated Zulip calling (LiveKit) option.
+
+                                        In Zulip 12.0 (feature level 493),
                                         added the Webex OAuth option.
 
                                         In Zulip 12.0 (feature level 465), added the
@@ -20925,11 +20929,15 @@ paths:
                           - 6 = Constructor Groups
                           - 7 = Nextcloud Talk
                           - 8 = Webex (User OAuth integration)
+                          - 9 = Integrated Zulip calling (LiveKit)
 
                           Note that only one of the [Zoom integrations][zoom-video-calls] can
                           be configured on a Zulip server.
 
-                          **Changes**: In Zulip 12.0 (feature level 493), added the
+                          **Changes**: in Zulip 13.0 (feature level ZF-a43758), added the
+                          Integrated Zulip calling (LiveKit) option.
+
+                          In Zulip 12.0 (feature level 493), added the
                           Webex OAuth option.
 
                           In Zulip 12.0 (feature level 465), added the
@@ -27314,6 +27322,61 @@ paths:
                         "msg": "",
                         "result": "success",
                         "url": "https://example.constructor.app/groups/room/room-123",
+                      }
+
+  /calls/livekit/create:
+    post:
+      tags: ["channels"]
+      operationId: create-livekit-video-call
+      summary: Create LiveKit video call
+      description: |
+        Create a video call URL for a LiveKit video call.
+        Requires LiveKit to be configured on the Zulip server.
+
+        **Changes**: New in Zulip 13.0 (feature level ZF-a43758).
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                is_video_call:
+                  type: boolean
+                  description: |
+                    Whether this is a video call (as opposed to a voice-only
+                    call).
+                  default: true
+                  example: true
+                room_display_name:
+                  type: string
+                  description: |
+                    A human-readable name shown in the call page header.
+                  default: ""
+                  example: "#general > deploy call"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      url:
+                        description: |
+                          The URL for the LiveKit video call join page.
+                        type: string
+                        example: "/calls/livekit/join?call=signed-token"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "url": "/calls/livekit/join?call=signed-token",
                       }
 
 components:

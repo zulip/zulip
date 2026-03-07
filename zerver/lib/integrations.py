@@ -1175,7 +1175,14 @@ INTEGRATIONS_WITHOUT_SCREENSHOTS = (
     # Outgoing integrations
     | {"atolio", "email", "onyx"}
     # Video call integrations
-    | {"big-blue-button", "constructor-groups", "jitsi", "nextcloud-talk", "webex", "zoom"}
+    | {
+        "big-blue-button",
+        "constructor-groups",
+        "jitsi",
+        "nextcloud-talk",
+        "webex",
+        "zoom",
+    }
     | {
         # these integrations do not send messages
         "giphy",

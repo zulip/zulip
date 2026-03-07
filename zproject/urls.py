@@ -265,10 +265,12 @@ from zerver.views.users import (
 from zerver.views.video_calls import (
     complete_webex_user,
     complete_zoom_user,
+    create_livekit_call,
     create_nextcloud_talk_url,
     deauthorize_zoom_user,
     get_bigbluebutton_url,
     join_bigbluebutton,
+    join_livekit_call,
     make_constructor_groups_video_call,
     make_webex_video_call,
     make_zoom_video_call,
@@ -603,6 +605,8 @@ v1_api_and_json_patterns = [
     rest_path("calls/constructorgroups/create", POST=make_constructor_groups_video_call),
     # Used to generate a Nextcloud Talk video call URL
     rest_path("calls/nextcloud_talk/create", POST=create_nextcloud_talk_url),
+    # Used to generate a LiveKit video call URL
+    rest_path("calls/livekit/create", POST=create_livekit_call),
     # export/realm -> zerver.views.realm_export
     rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
     rest_path("export/realm/<int:export_id>", DELETE=delete_realm_export),
@@ -739,6 +743,8 @@ i18n_urls = [
     path("calls/webex/complete", complete_webex_user),
     # Used to join a BigBlueButton video call
     path("calls/bigbluebutton/join", join_bigbluebutton),
+    # Used to join a LiveKit video call
+    path("calls/livekit/join", join_livekit_call),
     # Integrations documentation
     path(
         "integrations/",
