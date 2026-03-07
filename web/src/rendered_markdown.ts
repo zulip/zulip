@@ -10,6 +10,7 @@ import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import render_mention_content_wrapper from "../templates/mention_content_wrapper.hbs";
 import render_topic_link from "../templates/topic_link.hbs";
 
+import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as hash_util from "./hash_util.ts";
@@ -121,6 +122,7 @@ export function set_name_in_mention_element(
 }
 
 export const update_elements = ($content: JQuery): void => {
+    const message = get_message_for_message_content($content);
     // Set the rtl class if the text has an rtl direction
     if (rtl.get_direction($content.text()) === "rtl") {
         $content.addClass("rtl");
@@ -138,7 +140,6 @@ export const update_elements = ($content: JQuery): void => {
     // personal and stream wildcard mentions
     $content.find(".user-mention").each(function (): void {
         const user_id = get_user_id_for_mention_button(this);
-        const message = get_message_for_message_content($content);
         const user_is_bot =
             user_id !== undefined && user_id !== "*" && people.is_valid_bot_user(user_id);
         // We give special highlights to the mention buttons
@@ -185,8 +186,6 @@ export const update_elements = ($content: JQuery): void => {
     });
 
     $content.find(".topic-mention").each(function (): void {
-        const message = get_message_for_message_content($content);
-
         if (message && message.topic_wildcard_mentioned) {
             $(this).addClass("user-mention-me");
         }
@@ -258,13 +257,19 @@ export const update_elements = ($content: JQuery): void => {
                 href: narrow_url,
             };
             if ($(this).hasClass("stream-topic")) {
-                const topic_link_html = render_topic_link({
+                let topic_link_html = render_topic_link({
                     channel_id: channel_topic.stream_id,
                     ...context,
                 });
+                if (message?.alerted) {
+                    topic_link_html = alert_words.highlight_alert_words(topic_link_html);
+                }
                 $(this).replaceWith($(topic_link_html));
             } else {
-                const message_link_html = render_channel_message_link(context);
+                let message_link_html = render_channel_message_link(context);
+                if (message?.alerted) {
+                    message_link_html = alert_words.highlight_alert_words(message_link_html);
+                }
                 $(this).replaceWith($(message_link_html));
             }
         }
