@@ -193,9 +193,14 @@ function clear_message_divider(message_container: MessageContainer): void {
     message_container.date_divider_html = undefined;
 }
 
+function message_was_moved_from_another_stream(message: Message): boolean {
+    return message.edit_history?.some((entry) => entry.prev_stream !== undefined) ?? false;
+}
+
 function update_message_divider(opts: {
     prev_msg_container: MessageContainer | undefined;
     curr_msg_container: MessageContainer;
+    last_non_moved_historical: boolean | undefined;
 }): void {
     Object.assign(
         opts.curr_msg_container,
@@ -203,6 +208,7 @@ function update_message_divider(opts: {
             prev_message: opts.prev_msg_container?.msg,
             curr_message: opts.curr_msg_container.msg,
             display_year: !same_year(opts.curr_msg_container.msg, opts.prev_msg_container?.msg),
+            last_non_moved_historical: opts.last_non_moved_historical,
         }),
     );
 }
@@ -211,6 +217,7 @@ function get_message_divider_data(opts: {
     prev_message: Message | undefined;
     curr_message: Message;
     display_year: boolean;
+    last_non_moved_historical?: boolean | undefined;
 }): {
     want_date_divider: boolean;
     want_subscription_status_divider: boolean;
@@ -219,10 +226,14 @@ function get_message_divider_data(opts: {
     const prev_message = opts.prev_message;
     const curr_message = opts.curr_message;
     const display_year = opts.display_year;
+    const last_non_moved_historical = opts.last_non_moved_historical;
     let want_subscription_status_divider = false;
 
-    if (prev_message) {
-        want_subscription_status_divider = prev_message?.historical !== curr_message.historical;
+    if (
+        last_non_moved_historical !== undefined &&
+        !message_was_moved_from_another_stream(curr_message)
+    ) {
+        want_subscription_status_divider = last_non_moved_historical !== curr_message.historical;
     }
 
     if (!prev_message || same_day(curr_message, prev_message)) {
@@ -506,6 +517,9 @@ export class MessageListView {
     message_containers: Map<number, MessageContainer>;
     _message_groups: MessageGroup[];
 
+    _first_non_moved_message_id: number | undefined;
+    _last_non_moved_message_id: number | undefined;
+
     // For performance reasons, this module renders at most
     // _RENDER_WINDOW_SIZE messages into the DOM at a time, and
     // will transparently adjust which messages are rendered
@@ -700,17 +714,20 @@ export class MessageListView {
 
     maybe_add_subscription_marker_to_group(
         group: MessageGroup,
-        last_message: Message | undefined,
+        last_non_moved_historical: boolean | undefined,
         first_message: Message,
     ): void {
-        const markers = this.get_possible_group_subscription_markers(last_message, first_message);
+        const markers = this.get_possible_group_subscription_markers(
+            last_non_moved_historical,
+            first_message,
+        );
         if (markers) {
             Object.assign(group, markers);
         }
     }
 
     get_possible_group_subscription_markers(
-        last_message: Message | undefined,
+        last_non_moved_historical: boolean | undefined,
         first_message: Message,
     ): SubscriptionMarkers | undefined {
         // The `historical` flag is present on messages which were
@@ -724,11 +741,14 @@ export class MessageListView {
         if (!this.list.data.filter.has_operator("channel")) {
             return undefined;
         }
-        if (last_message === undefined) {
+        if (
+            last_non_moved_historical === undefined ||
+            message_was_moved_from_another_stream(first_message)
+        ) {
             return undefined;
         }
 
-        const last_subscribed = !last_message.historical;
+        const last_subscribed = !last_non_moved_historical;
         const first_subscribed = !first_message.historical;
         assert(first_message.type === "stream");
         const stream_id = first_message.stream_id;
@@ -753,13 +773,20 @@ export class MessageListView {
         return undefined;
     }
 
-    build_message_groups(messages: Message[]): MessageGroup[] {
+    build_message_groups(messages: Message[]): {
+        new_message_groups: MessageGroup[];
+        first_non_moved_message_id: number | undefined;
+        last_non_moved_message_id: number | undefined;
+    } {
         const new_message_groups: MessageGroup[] = [];
 
         let current_group: MessageGroup;
         let current_group_message_containers: MessageContainer[] = [];
 
         let prev_message_container: MessageContainer | undefined;
+        let last_non_moved_historical: boolean | undefined;
+        let last_non_moved_message_id: number | undefined;
+        let first_non_moved_message_id: number | undefined;
 
         const add_message_container_to_group = (message_container: MessageContainer): void => {
             current_group_message_containers.push(message_container);
@@ -773,7 +800,10 @@ export class MessageListView {
                 message_for_next_group,
                 same_day(message_for_next_group, prev_message),
                 !same_year(message_for_next_group, prev_message),
-                this.get_possible_group_subscription_markers(prev_message, message_for_next_group),
+                this.get_possible_group_subscription_markers(
+                    last_non_moved_historical,
+                    message_for_next_group,
+                ),
             );
         };
 
@@ -810,6 +840,7 @@ export class MessageListView {
                     prev_message: prev_message_container.msg,
                     curr_message: message,
                     display_year: year_changed,
+                    last_non_moved_historical,
                 });
                 want_date_divider = divider_data.want_date_divider;
                 want_subscription_status_divider = divider_data.want_subscription_status_divider;
@@ -864,17 +895,26 @@ export class MessageListView {
             };
             add_message_container_to_group(message_container);
 
+            this.message_containers.set(message_container.msg.id, message_container);
+
             prev_message_container = message_container;
+
+            if (!message_was_moved_from_another_stream(message_container.msg)) {
+                first_non_moved_message_id ??= message_container.msg.id;
+                last_non_moved_historical = message_container.msg.historical;
+                last_non_moved_message_id = message_container.msg.id;
+            }
         }
 
         finish_group();
 
-        return new_message_groups;
+        return {new_message_groups, first_non_moved_message_id, last_non_moved_message_id};
     }
 
     join_message_groups(
         first_group: MessageGroup | undefined,
         second_group: MessageGroup | undefined,
+        last_non_moved_historical: boolean | undefined,
     ): boolean {
         // join_message_groups will combine groups if they have the
         // same_recipient and the view supports collapsing, otherwise
@@ -909,14 +949,19 @@ export class MessageListView {
         // We may need to add a subscription marker after merging the groups.
         this.maybe_add_subscription_marker_to_group(
             second_group,
-            last_msg_container?.msg,
+            last_non_moved_historical,
             first_msg_container.msg,
         );
 
         return false;
     }
 
-    merge_message_groups(new_message_groups: MessageGroup[], where: string): RenderingPlan {
+    merge_message_groups(
+        new_message_groups: MessageGroup[],
+        where: string,
+        first_non_moved_message_id: number | undefined,
+        last_non_moved_message_id: number | undefined,
+    ): RenderingPlan {
         // merge_message_groups takes a list of new messages groups to add to
         // this._message_groups and a location where to merge them currently
         // top or bottom. It returns an object of changes which needed to be
@@ -936,13 +981,33 @@ export class MessageListView {
         };
         let first_group;
         let second_group;
+        let first_group_last_message_id;
+        let second_group_first_message_id;
+        let first_group_last_message;
+        let second_group_first_message;
 
         if (where === "top") {
             first_group = new_message_groups.at(-1);
+            first_group_last_message_id = last_non_moved_message_id;
+            second_group_first_message_id = this._first_non_moved_message_id;
+            this._first_non_moved_message_id = first_non_moved_message_id;
             second_group = this._message_groups[0];
         } else {
             first_group = this._message_groups.at(-1);
+            if (first_group === undefined) {
+                this._first_non_moved_message_id = first_non_moved_message_id;
+            }
+            first_group_last_message_id = this._last_non_moved_message_id;
+            second_group_first_message_id = first_non_moved_message_id;
+            this._last_non_moved_message_id = last_non_moved_message_id;
             second_group = new_message_groups[0];
+        }
+
+        if (first_group_last_message_id) {
+            first_group_last_message = this.message_containers.get(first_group_last_message_id);
+        }
+        if (second_group_first_message_id) {
+            second_group_first_message = this.message_containers.get(second_group_first_message_id);
         }
 
         let prev_msg_container;
@@ -954,12 +1019,22 @@ export class MessageListView {
         const curr_msg_container = second_group.message_containers[0];
         assert(curr_msg_container !== undefined);
 
-        const was_joined = this.join_message_groups(first_group, second_group);
+        const was_joined = this.join_message_groups(
+            first_group,
+            second_group,
+            first_group_last_message?.msg.historical,
+        );
         if (was_joined) {
             update_message_divider({
                 prev_msg_container,
                 curr_msg_container,
+                last_non_moved_historical: first_group_last_message?.msg.historical,
             });
+            if (second_group_first_message) {
+                second_group_first_message.want_subscription_status_divider =
+                    first_group_last_message?.msg.historical !==
+                    second_group_first_message.msg.historical;
+            }
         } else {
             clear_message_divider(curr_msg_container);
         }
@@ -1191,9 +1266,15 @@ export class MessageListView {
             }
         };
 
-        const new_message_groups = this.build_message_groups(messages);
+        const {new_message_groups, first_non_moved_message_id, last_non_moved_message_id} =
+            this.build_message_groups(messages);
         const message_containers = new_message_groups.flatMap((group) => group.message_containers);
-        const message_actions = this.merge_message_groups(new_message_groups, where);
+        const message_actions = this.merge_message_groups(
+            new_message_groups,
+            where,
+            first_non_moved_message_id,
+            last_non_moved_message_id,
+        );
         const new_dom_elements = [];
         let $rendered_groups;
         let $dom_messages;
@@ -1202,7 +1283,6 @@ export class MessageListView {
 
         for (const message_container of message_containers) {
             this.set_edited_notice_locations(message_container);
-            this.message_containers.set(message_container.msg.id, message_container);
         }
 
         // Render new message groups on the top
