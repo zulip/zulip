@@ -1,4 +1,6 @@
-from typing import Any
+from typing import Literal
+
+from typing_extensions import TypedDict
 
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.emoji import check_emoji_request, get_emoji_data
@@ -17,16 +19,36 @@ from zerver.models import Message, Reaction, UserProfile
 from zerver.tornado.django_api import send_event_on_commit
 
 
+class ReactionEventUserDict(TypedDict):
+    user_id: int
+    email: str
+    full_name: str
+
+
+class ReactionEvent(TypedDict):
+    type: Literal["reaction"]
+    op: Literal["add", "remove"]
+    user_id: int
+    user: ReactionEventUserDict
+    message_id: int
+    emoji_name: str
+    emoji_code: str
+    reaction_type: str
+
+
 def notify_reaction_update(
-    user_profile: UserProfile, message: Message, reaction: Reaction, op: str
+    user_profile: UserProfile,
+    message: Message,
+    reaction: Reaction,
+    op: Literal["add", "remove"],
 ) -> None:
-    user_dict = {
+    user_dict: ReactionEventUserDict = {
         "user_id": user_profile.id,
         "email": user_profile.email,
         "full_name": user_profile.full_name,
     }
 
-    event: dict[str, Any] = {
+    event: ReactionEvent = {
         "type": "reaction",
         "op": op,
         "user_id": user_profile.id,
