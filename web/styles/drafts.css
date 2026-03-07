@@ -76,3 +76,37 @@
         width: 15px;
     }
 }
+
+#draft-overlay-tab-switcher {
+    display: flex;
+    justify-content: center;
+    margin: 8px 0 4px;
+}
+
+.outbox-actions-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+
+    .select-outbox-button {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-right: 25px;
+        padding-left: 15px;
+        padding-right: 15px;
+
+        &:focus {
+            background-color: hsl(0deg 0% 93%);
+        }
+    }
+
+    .select-state-indicator {
+        width: 15px;
+    }
+
+    @media (width < $lg_min) {
+        margin-top: 5px;
+        width: 100%;
+    }
+}

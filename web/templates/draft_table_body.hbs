@@ -7,6 +7,7 @@
                     <span class="exit-sign">&times;</span>
                 </div>
                 <div id="draft_overlay_banner_container" class="banner-container banner-wrapper"></div>
+                <div id="draft-overlay-tab-switcher"></div>
                 <div class="header-body">
                     <div class="drafts-header-note">
                         <div class="overlay-keyboard-shortcuts">
@@ -26,9 +27,26 @@
                             <i class="fa fa-square-o select-state-indicator" aria-hidden="true"></i>
                         </button>
                     </div>
+                    <div class="outbox-actions-group" style="display: none;">
+                        <div class="resend-selected-outbox-button-container">
+                            {{> ./components/icon_button intent="neutral" custom_classes="resend-selected-outbox-button" icon="refresh" disabled=true }}
+                        </div>
+                        <div class="cancel-selected-outbox-button-container">
+                            {{> ./components/icon_button intent="danger" custom_classes="cancel-selected-outbox-button" icon="times" disabled=true }}
+                        </div>
+                        <button class="action-button action-button-subtle-neutral select-outbox-button" role="checkbox" aria-checked="false">
+                            <span>{{t "Select all" }}</span>
+                            <i class="fa fa-square-o select-state-indicator" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
-            {{> drafts_list context }}
+            <div class="drafts-tab-pane">
+                {{> drafts_list context }}
+            </div>
+            <div class="outbox-tab-pane" style="display: none;">
+                {{> outbox_list context }}
+            </div>
         </div>
     </div>
 </div>
