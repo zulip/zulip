@@ -61,6 +61,10 @@ const realm_available_video_chat_providers = {
         id: 7,
         name: "Nextcloud Talk",
     },
+    livekit: {
+        id: 8,
+        name: "LiveKit",
+    },
 };
 
 function test(label, f) {
@@ -394,6 +398,13 @@ test("test_constructor_groups_video_chat_button_toggle enabled", ({override}) =>
         "realm_video_chat_provider",
         realm_available_video_chat_providers.constructor_groups.id,
     );
+    override(window, "to_$", () => $("window-stub"));
+    compose_setup.initialize();
+    assert.equal($(".compose-control-buttons-container .video_link").visible(), true);
+});
+
+test("test_livekit_video_chat_button_toggle enabled", ({override}) => {
+    override(realm, "realm_video_chat_provider", realm_available_video_chat_providers.livekit.id);
     override(window, "to_$", () => $("window-stub"));
     compose_setup.initialize();
     assert.equal($(".compose-control-buttons-container .video_link").visible(), true);

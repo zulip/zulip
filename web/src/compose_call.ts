@@ -116,7 +116,8 @@ export function compute_show_audio_chat_button(): boolean {
             get_jitsi_server_url() !== null) ||
         realm.realm_video_chat_provider === available_providers.zoom?.id ||
         realm.realm_video_chat_provider === available_providers.big_blue_button?.id ||
-        realm.realm_video_chat_provider === available_providers.zoom_server_to_server?.id
+        realm.realm_video_chat_provider === available_providers.zoom_server_to_server?.id ||
+        realm.realm_video_chat_provider === available_providers.livekit?.id
     ) {
         return true;
     }

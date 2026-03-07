@@ -460,6 +460,7 @@ export const realm_schema = z.object({
         big_blue_button: z.optional(z.object({name: z.string(), id: z.number()})),
         constructor_groups: z.optional(z.object({name: z.string(), id: z.number()})),
         nextcloud_talk: z.optional(z.object({name: z.string(), id: z.number()})),
+        livekit: z.optional(z.object({name: z.string(), id: z.number()})),
     }),
     realm_avatar_changes_disabled: z.boolean(),
     realm_bot_domain: z.string(),

@@ -676,6 +676,10 @@ class Realm(models.Model):
             "name": "Nextcloud Talk",
             "id": 7,
         },
+        "livekit": {
+            "name": "LiveKit",
+            "id": 8,
+        },
     }
 
     video_chat_provider = models.PositiveSmallIntegerField(
@@ -1116,6 +1120,12 @@ class Realm(models.Model):
                 settings.NEXTCLOUD_SERVER is None
                 or settings.NEXTCLOUD_TALK_USERNAME is None
                 or settings.NEXTCLOUD_TALK_PASSWORD is None
+            ):
+                continue
+            if provider == "livekit" and (
+                settings.LIVEKIT_URL is None
+                or settings.LIVEKIT_API_KEY is None
+                or settings.LIVEKIT_API_SECRET is None
             ):
                 continue
             enabled_video_chat_providers[provider] = self.VIDEO_CHAT_PROVIDERS[provider]
