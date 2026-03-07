@@ -1,6 +1,7 @@
 /* This module provides relevant data to render popovers that require multiple args.
    This helps keep the popovers code small and keep it focused on rendering side of things. */
 
+import {differenceInCalendarDays} from "date-fns";
 import assert from "minimalistic-assert";
 
 import * as buddy_data from "./buddy_data.ts";
@@ -10,6 +11,7 @@ import {$t} from "./i18n.ts";
 import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
+import type {Message} from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -21,6 +23,7 @@ import * as starred_messages from "./starred_messages.ts";
 import {current_user, realm, realm_billing} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
+import * as timerender from "./timerender.ts";
 import {num_unread_for_topic} from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
@@ -455,4 +458,190 @@ function is_topic_definitely_empty(stream_id: number, topic: string): boolean {
     }
 
     return true;
+}
+
+const MAX_SUGGESTED_DATES = 4;
+// When snapping a volume-quantile boundary to a nearby date,
+// look this many entries in each direction for the best gap.
+const SNAP_WINDOW = 2;
+
+type DateGroup = {
+    date_string: string;
+    timestamp: number;
+    gap_days: number;
+};
+
+export type ScrollToDateSuggestion = {
+    label: string;
+    iso_date_string: string;
+};
+
+// Format a date for display: "February 12" for the current year,
+// "February 12, 2025" for older years.
+function format_date_label(timestamp: number): string {
+    const date = new Date(timestamp * 1000);
+    // Compare years in the display timezone.
+    const date_year = get_date_key(timestamp).slice(0, 4);
+    const now_year = get_date_key(Date.now() / 1000).slice(0, 4);
+    if (date_year === now_year) {
+        return timerender.get_localized_date_or_time_for_format(date, "long_dayofyear");
+    }
+    return timerender.get_localized_date_or_time_for_format(date, "long_dayofyear_year");
+}
+
+function get_date_key(timestamp: number): string {
+    // Group by calendar day in the user's display timezone, so that
+    // grouping is consistent with the date labels shown in the popover.
+    const formatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: timerender.display_time_zone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+    });
+    const parts = formatter.formatToParts(new Date(timestamp * 1000));
+    const year = parts.find((p) => p.type === "year")!.value;
+    const month = parts.find((p) => p.type === "month")!.value;
+    const day = parts.find((p) => p.type === "day")!.value;
+    return `${year}-${month}-${day}`;
+}
+
+// Group messages by calendar date and compute the gap (in days)
+// before each date.
+function build_date_groups(messages: Message[]): DateGroup[] {
+    const groups: DateGroup[] = [];
+    let prev_date_key: string | undefined;
+
+    for (const message of messages) {
+        const date_key = get_date_key(message.timestamp);
+        if (date_key === prev_date_key) {
+            continue;
+        }
+
+        let gap_days = 0;
+        if (prev_date_key !== undefined) {
+            const prev_date = new Date(prev_date_key + "T00:00:00");
+            const curr_date = new Date(date_key + "T00:00:00");
+            gap_days = differenceInCalendarDays(curr_date, prev_date);
+        }
+
+        groups.push({
+            date_string: date_key,
+            timestamp: message.timestamp,
+            gap_days,
+        });
+        prev_date_key = date_key;
+    }
+
+    return groups;
+}
+
+// Compute the cumulative message count at each date group boundary.
+// Returns an array where cumulative[i] is the total number of messages
+// on or before date_groups[i].
+function compute_cumulative_counts(messages: Message[], date_groups: DateGroup[]): number[] {
+    const cumulative: number[] = Array.from<number>({length: date_groups.length}).fill(0);
+    let group_idx = 0;
+    let count = 0;
+
+    for (const message of messages) {
+        const date_key = get_date_key(message.timestamp);
+        while (
+            group_idx < date_groups.length - 1 &&
+            date_groups[group_idx + 1]!.date_string <= date_key
+        ) {
+            cumulative[group_idx] = count;
+            group_idx += 1;
+        }
+        count += 1;
+    }
+    // Fill remaining entries.
+    for (let i = group_idx; i < date_groups.length; i += 1) {
+        cumulative[i] = count;
+    }
+
+    return cumulative;
+}
+
+// Find the index in cumulative whose value is closest to target.
+function closest_index(cumulative: number[], target: number): number {
+    let best = 0;
+    let best_dist = Math.abs(cumulative[0]! - target);
+    for (let i = 1; i < cumulative.length; i += 1) {
+        const dist = Math.abs(cumulative[i]! - target);
+        if (dist < best_dist) {
+            best = i;
+            best_dist = dist;
+        }
+    }
+    return best;
+}
+
+// Compute up to MAX_SUGGESTED_DATES dates to offer in the
+// "Scroll to" popover, drawn from the locally cached messages.
+//
+// Algorithm: divide the message volume into equal slices using
+// quantile boundaries, then snap each boundary to the nearby date
+// with the largest preceding gap (a "batch start").
+export function get_scroll_to_date_suggestions(messages: Message[]): ScrollToDateSuggestion[] {
+    if (messages.length === 0) {
+        return [];
+    }
+
+    const date_groups = build_date_groups(messages);
+
+    // Exclude today — the user is likely already there.
+    const today_key = get_date_key(Date.now() / 1000);
+    const filtered_groups = date_groups.filter((g) => g.date_string !== today_key);
+
+    if (filtered_groups.length === 0) {
+        return [];
+    }
+
+    // If there are few enough unique dates, just suggest all of them.
+    if (filtered_groups.length <= MAX_SUGGESTED_DATES) {
+        return filtered_groups.map((g) => ({
+            label: format_date_label(g.timestamp),
+            iso_date_string: new Date(g.timestamp * 1000).toISOString(),
+        }));
+    }
+
+    // Compute cumulative message counts across the filtered groups.
+    // We need counts that correspond to filtered_groups, so we
+    // recompute using only messages whose dates survived filtering.
+    const filtered_date_set = new Set(filtered_groups.map((g) => g.date_string));
+    const filtered_messages = messages.filter((m) =>
+        filtered_date_set.has(get_date_key(m.timestamp)),
+    );
+    const cumulative = compute_cumulative_counts(filtered_messages, filtered_groups);
+    const total = filtered_messages.length;
+
+    const selected_indices = new Set<number>();
+
+    for (let k = 1; k <= MAX_SUGGESTED_DATES; k += 1) {
+        const target = (total * k) / (MAX_SUGGESTED_DATES + 1);
+        const center = closest_index(cumulative, target);
+
+        // Look at a window around the center and pick the date
+        // with the largest gap before it.
+        const lo = Math.max(0, center - SNAP_WINDOW);
+        const hi = Math.min(filtered_groups.length - 1, center + SNAP_WINDOW);
+
+        let best_idx = center;
+        let best_gap = filtered_groups[center]!.gap_days;
+        for (let i = lo; i <= hi; i += 1) {
+            if (!selected_indices.has(i) && filtered_groups[i]!.gap_days > best_gap) {
+                best_idx = i;
+                best_gap = filtered_groups[i]!.gap_days;
+            }
+        }
+
+        selected_indices.add(best_idx);
+    }
+
+    // Return in chronological order.
+    const sorted_indices = [...selected_indices].toSorted((a, b) => a - b);
+    return sorted_indices.map((i) => ({
+        label: format_date_label(filtered_groups[i]!.timestamp),
+        iso_date_string: new Date(filtered_groups[i]!.timestamp * 1000).toISOString(),
+    }));
 }
