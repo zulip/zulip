@@ -1789,13 +1789,29 @@ paths:
                                 attachment:
                                   type: object
                                   description: |
-                                    Dictionary containing the ID of the deleted attachment.
+                                    Dictionary containing the ID of the deleted attachment and
+                                    the IDs of messages that contained it.
                                   additionalProperties: false
                                   properties:
                                     id:
                                       type: integer
                                       description: |
                                         The ID of the deleted attachment.
+                                    message_ids:
+                                      type: array
+                                      description: |
+                                        Array containing the IDs of messages that contained
+                                        this attachment. Clients can use this to update the UI
+                                        for these messages to reflect that the attachment is
+                                        no longer available.
+                                      items:
+                                        type: integer
+                                    path_id:
+                                      type: string
+                                      description: |
+                                        The upload path of the deleted attachment. Clients can
+                                        use this to identify and remove inline previews for the
+                                        deleted file.
                                 upload_space_used:
                                   type: integer
                                   description: |
@@ -1805,7 +1821,12 @@ paths:
                                 {
                                   "type": "attachment",
                                   "op": "remove",
-                                  "attachment": {"id": 1},
+                                  "attachment":
+                                    {
+                                      "id": 1,
+                                      "message_ids": [190],
+                                      "path_id": "2/ab/file.txt",
+                                    },
                                   "upload_space_used": 0,
                                   "id": 0,
                                 }
@@ -26042,7 +26063,7 @@ components:
             sent by any user in the Zulip organization who sent a
             message containing a link to the uploaded file.
 
-            **Changes**: In Zulip 12.0 (feature level 472), this
+            **Changes**: In Zulip 12.0 (feature level ZF-af2d4c), this
             replaced the previous `messages` field, which was an array
             of objects containing both `id` and `date_sent` properties.
           items:

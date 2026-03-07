@@ -46,6 +46,8 @@ class EventAttachmentAdd(BaseEvent):
 
 class AttachmentFieldForEventAttachmentRemove(BaseModel):
     id: int
+    message_ids: list[int]
+    path_id: str
 
 
 class EventAttachmentRemove(BaseEvent):
