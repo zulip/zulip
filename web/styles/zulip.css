@@ -343,6 +343,16 @@ p.n-margin {
         align-items: center;
         margin-left: auto;
     }
+
+    &.download-feedback-widget {
+        cursor: pointer;
+
+        .feedback_title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
 }
 
 #navbar-fixed-container {
