@@ -147,8 +147,11 @@
         }
 
         &:focus {
-            outline: none;
             text-decoration: none;
+        }
+
+        &:focus:not(:focus-visible) {
+            outline: none;
         }
 
         .private_message_header_icon {

@@ -547,7 +547,7 @@
         }
 
         &:focus-visible {
-            outline: 1px solid var(--color-outline-user-profile-list-item);
+            outline: 1px solid var(--color-outline-focus);
             outline-offset: -2px;
         }
 
