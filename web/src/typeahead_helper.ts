@@ -481,11 +481,6 @@ const get_user_matches_with_quality = <UserType extends UserOrMentionPillData | 
     worst_users: () => UserType[];
 } => {
     const users_name_results = typeahead.triage_raw(query, users, (p) => p.user.full_name);
-    const users_name_good_matches = [
-        ...users_name_results.exact_matches,
-        ...users_name_results.begins_with_case_sensitive_matches,
-        ...users_name_results.begins_with_case_insensitive_matches,
-    ];
     const users_name_okay_matches = [...users_name_results.word_boundary_matches];
 
     const email_results = typeahead.triage_raw(
@@ -495,19 +490,50 @@ const get_user_matches_with_quality = <UserType extends UserOrMentionPillData | 
     );
     const email_good_matches = [
         ...email_results.exact_matches,
+        ...email_results.begins_with_exact_diacritic_matches,
         ...email_results.begins_with_case_sensitive_matches,
         ...email_results.begins_with_case_insensitive_matches,
     ];
     const email_okay_matches = [...email_results.word_boundary_matches];
-    const best_users = (): UserType[] => [
-        ...sort_relevance(users_name_good_matches),
-        ...sort_relevance(users_name_okay_matches),
-    ];
+
+    const lower_query = query.toLowerCase();
+    const normalized_query = typeahead.remove_diacritics(lower_query);
+    const query_has_diacritics = lower_query !== normalized_query;
+
+    const best_users = (): UserType[] => {
+        if (query_has_diacritics) {
+            return [
+                ...sort_relevance([
+                    ...users_name_results.exact_matches,
+                    ...users_name_results.begins_with_exact_diacritic_matches,
+                ]),
+                ...sort_relevance([
+                    ...users_name_results.begins_with_case_sensitive_matches,
+                    ...users_name_results.begins_with_case_insensitive_matches,
+                ]),
+                ...sort_relevance(users_name_okay_matches),
+            ];
+        }
+
+        const users_name_good_matches = [
+            ...users_name_results.exact_matches,
+            ...users_name_results.begins_with_exact_diacritic_matches,
+            ...users_name_results.begins_with_case_sensitive_matches,
+            ...users_name_results.begins_with_case_insensitive_matches,
+        ];
+        return [
+            ...sort_relevance(users_name_good_matches),
+            ...sort_relevance(users_name_okay_matches),
+        ];
+    };
+
     const ok_users = (): UserType[] => [
         ...sort_relevance(email_good_matches),
         ...sort_relevance(email_okay_matches),
     ];
+
     const worst_users = (): UserType[] => sort_relevance(email_results.no_matches);
+
     return {best_users, ok_users, worst_users};
 };
 

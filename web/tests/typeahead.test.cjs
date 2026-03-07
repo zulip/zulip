@@ -170,6 +170,42 @@ run_test("triage: prioritise word boundary matches to arbitrary substring matche
     );
 });
 
+run_test("triage: prioritize exact diacritic matches over normalized matches", () => {
+    const exact_a = {name: "a"};
+    const exact_diacritic = {name: "ą"};
+    const aaron = {name: "aaron"};
+    const aa = {name: "Aa"};
+    const adam_pl = {name: "Ądam"};
+    const john_a = {name: "John a"};
+    const zoe = {name: "Zoe"};
+
+    const users = [exact_a, exact_diacritic, aaron, aa, adam_pl, john_a, zoe];
+
+    assert.deepEqual(
+        typeahead.triage("a", users, (r) => r.name),
+        {
+            matches: [exact_a, aaron, aa, john_a],
+            rest: [exact_diacritic, adam_pl, zoe],
+        },
+    );
+
+    assert.deepEqual(
+        typeahead.triage("A", users, (r) => r.name),
+        {
+            matches: [exact_a, aa, aaron, john_a],
+            rest: [exact_diacritic, adam_pl, zoe],
+        },
+    );
+
+    assert.deepEqual(
+        typeahead.triage("ą", users, (r) => r.name),
+        {
+            matches: [exact_diacritic, adam_pl, exact_a, aaron, aa, john_a],
+            rest: [zoe],
+        },
+    );
+});
+
 function sort_emojis(emojis, query) {
     return typeahead.sort_emojis(emojis, query).map((emoji) => emoji.emoji_name);
 }
