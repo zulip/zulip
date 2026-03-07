@@ -14,6 +14,7 @@ async function navigate_to_user_list(page: Page): Promise<void> {
     await page.click(organization_settings);
 
     await page.waitForSelector("#settings_overlay_container.show", {visible: true});
+    await page.waitForSelector("li[data-section='users']", {visible: true});
     await page.click("li[data-section='users']");
     await page.waitForSelector("#admin-user-list.show", {visible: true});
 }
@@ -108,10 +109,13 @@ async function test_deactivated_users_section(page: Page): Promise<void> {
 }
 
 async function test_bot_deactivation_and_reactivation(page: Page): Promise<void> {
+    await page.waitForSelector(".org-settings-list li[data-section='bots']", {visible: true});
     await page.click(".org-settings-list li[data-section='bots']");
+    await page.waitForSelector("#admin-bot-list.show", {visible: true});
 
     const default_bot_user_row = await user_row(page, "Zulip Default Bot");
 
+    await page.waitForSelector(default_bot_user_row + " .deactivate", {visible: true});
     await page.click(default_bot_user_row + " .deactivate");
     await common.wait_for_micromodal_to_open(page);
 

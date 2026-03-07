@@ -86,6 +86,7 @@ async function test_change_password(page: Page): Promise<void> {
 async function test_get_api_key(page: Page): Promise<void> {
     await page.click('[data-section="account-and-privacy"]');
     const show_change_api_key_selector = "#api_key_button";
+    await page.waitForSelector(show_change_api_key_selector, {visible: true});
     await page.click(show_change_api_key_selector);
 
     const get_api_key_button_selector = "#get_api_key_button";
@@ -115,6 +116,7 @@ async function test_get_api_key(page: Page): Promise<void> {
 }
 
 async function test_webhook_bot_creation(page: Page): Promise<void> {
+    await page.waitForSelector("#personal-bot-list .add-a-new-bot", {visible: true});
     await page.click("#personal-bot-list .add-a-new-bot");
     await common.wait_for_micromodal_to_open(page);
     assert.strictEqual(
@@ -165,6 +167,7 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
 }
 
 async function test_normal_bot_creation(page: Page): Promise<void> {
+    await page.waitForSelector("#personal-bot-list .add-a-new-bot", {visible: true});
     await page.click("#personal-bot-list .add-a-new-bot");
     await common.wait_for_micromodal_to_open(page);
     assert.strictEqual(
@@ -207,6 +210,7 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
 }
 
 async function test_botserverrc(page: Page): Promise<void> {
+    await page.waitForSelector("#personal-bot-list .download-botserverrc-file", {visible: true});
     await page.click("#personal-bot-list .download-botserverrc-file");
     await page.waitForSelector(
         '#personal-bot-list .hidden-botserverrc-download[href^="data:application"]',
