@@ -17,7 +17,10 @@ export function message_has_link(message_content: string): boolean {
 }
 
 export function message_has_image(message_content: string): boolean {
-    return is_element_in_message_content(message_content, ".message_inline_image");
+    return (
+        is_element_in_message_content(message_content, ".message_inline_image") ||
+        is_element_in_message_content(message_content, ".inline-image")
+    );
 }
 
 export function message_has_attachment(message_content: string): boolean {
