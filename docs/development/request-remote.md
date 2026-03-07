@@ -5,7 +5,8 @@ orphan: true
 # How to request a remote Zulip development instance
 
 Under specific circumstances, typically during sprints, hackathons, and
-Google Code-in, Zulip can provide you with a virtual machine with the
+other mentorship events (like GSoC application periods or Outreachy
+internships), Zulip can provide you with a virtual machine with the
 development environment already set up.
 
 The machines (droplets) are being generously provided by
