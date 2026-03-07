@@ -237,6 +237,11 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/realm/subdomain/{subdomain}",
         # API for Zoom video calls.  Unclear if this can support other apps.
         "/calls/zoom/create",
+        # Internal step of the LiveKit call page flow; mints the
+        # short-lived JWT on Join click. Not meant to be called by
+        # third-party clients (they get the join URL from
+        # /calls/livekit/create).
+        "/calls/livekit/token",
         #### The following are fake endpoints that live in our zulip.yaml
         #### for tooling convenience reasons, and should eventually be moved.
         # Real-time-events endpoint
