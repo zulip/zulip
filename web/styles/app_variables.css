@@ -179,24 +179,30 @@
     /*
     This is the header, aka the navbar.
     */
-    --header-height: 2.5em; /* 40px at 16px em */
+    --header-height: 2.5em;
+    /* 40px at 16px em */
     --header-line-height: 40px;
+
     /*
     At 600px, the header starts taking up more than 5%
     of the screen. We make it shorter to leave more space
     to see the rest of the app. */
     @media (height < $short_navbar_cutoff_height) {
-        --header-height: 1.875em; /* 30px at 16px em */
+        --header-height: 1.875em;
+        /* 30px at 16px em */
     }
 
     /*
     Height of the search box, which appears in the header.
     */
-    --search-box-height: 2em; /* 32px at 16px em */
-    --search-box-width: 9.375em; /* 150px at 16px em */
+    --search-box-height: 2em;
+    /* 32px at 16px em */
+    --search-box-width: 9.375em;
+    /* 150px at 16px em */
 
     @media (width < $md_min) {
-        --search-box-width: 2.5em; /* 40px at 16px em */
+        --search-box-width: 2.5em;
+        /* 40px at 16px em */
     }
 
     /*
@@ -204,10 +210,12 @@
         is reduced to fit the available space.
     */
     @media (height < $short_navbar_cutoff_height) {
-        --search-box-height: 1.75em; /* 28px at 16px em */
+        --search-box-height: 1.75em;
+        /* 28px at 16px em */
     }
 
-    --search-pill-label-min-width: 2.5em; /* 35px at 14px/em */
+    --search-pill-label-min-width: 2.5em;
+    /* 35px at 14px/em */
 
     /*
     This is the space for the searchbar's search icon, and the left padding
@@ -275,7 +283,8 @@
     --left-sidebar-max-width: calc(
         20.6429em - var(--left-sidebar-right-margin)
     );
-    --realm-logo-max-width: 12.5em; /* 200px at 16px em */
+    --realm-logo-max-width: 12.5em;
+    /* 200px at 16px em */
     /* Value updated on realm_logo.render() */
     --realm-logo-current-width: var(--realm-logo-max-width);
     /* 10px is just extra margin for content separation */
@@ -301,7 +310,8 @@
     /* The width of the icon is reduced by 2px, to account for 2px
        of top and bottom margin needed for hover backgrounds to
        not touch the row outline. */
-    --left-sidebar-header-icon-width: calc(1.7142em - 2px); /* 24px / 14px em */
+    --left-sidebar-header-icon-width: calc(1.7142em - 2px);
+    /* 24px / 14px em */
     /* Space between section in the left sidebar. */
     --left-sidebar-sections-vertical-gutter: 8px;
     /* The legacy value here is 25px; that's the unitless legacy line-height
@@ -331,9 +341,12 @@
        Prominent rows include things like headers (e.g., VIEWS)
        as well as navigation items. Everything else takes
        the smaller line-height. */
-    --line-height-sidebar-row-prominent: 1.7142em; /* 24px / 14px em */
-    --line-height-sidebar-row: 1.5714em; /* 22px / 14px em */
-    --line-height-sidebar-row-with-avatars: 1.3571em; /* 19px / 14px em */
+    --line-height-sidebar-row-prominent: 1.7142em;
+    /* 24px / 14px em */
+    --line-height-sidebar-row: 1.5714em;
+    /* 22px / 14px em */
+    --line-height-sidebar-row-with-avatars: 1.3571em;
+    /* 19px / 14px em */
     --line-height-sidebar-topic-inner: 1.2em;
     /* This spacing value is to compensate for the
        additional space of the prominent row-height
@@ -355,7 +368,8 @@
     --right-sidebar-avatar-width: 2em;
     --right-sidebar-avatar-height: var(--right-sidebar-avatar-width);
     --right-sidebar-avatar-right-margin: 0.85ch;
-    --right-sidebar-presence-circle-width: 1.4285em; /* 20px at 14px em */
+    --right-sidebar-presence-circle-width: 1.4285em;
+    /* 20px at 14px em */
     /* toggle + avatar + avatar margin + 2px border */
     --right-sidebar-text-indent-with-avatar: calc(
         var(--right-sidebar-header-icon-toggle-width) / 2 +
@@ -370,7 +384,8 @@
     /* Tippy popover related values */
     --navbar-popover-menu-min-width: 230px;
     --message-actions-popover-min-width: 230px;
-    --user-group-info-popover-min-width: 16.4285em; /* 230px / 14px em */
+    --user-group-info-popover-min-width: 16.4285em;
+    /* 230px / 14px em */
     --topic-actions-popover-min-width: 200px;
     --user-card-popover-min-width: 200px;
     --stream-card-popover-min-width: 16.4285em;
@@ -387,9 +402,6 @@
     --markdown-interelement-space-px: 5px;
     --markdown-interelement-doubled-space-px: calc(
         var(--markdown-interelement-space-px) * 2
-    );
-    --markdown-interelement-halved-space-px: calc(
-        var(--markdown-interelement-space-px) / 2
     );
     /* Certain elements need to be fitted perfectly to
        the line height; the length here can be used to set
@@ -561,7 +573,7 @@
     */
     --compose-send-controls-width: 112px;
 
-    @media ((width >= $sm_min) and (width < $mc_min)) {
+    @media ((width >=$sm_min) and (width < $mc_min)) {
         --compose-send-controls-width: 62px;
     }
 
@@ -576,8 +588,10 @@
     /*
     User group info popover elements and values.
     */
-    --user-group-popover-horizontal-padding: 0.6666em; /* 10px at 15px/1em */
-    --user-group-popover-icon-text-gap: 0.3125em; /* 5px at 16px/1em */
+    --user-group-popover-horizontal-padding: 0.6666em;
+    /* 10px at 15px/1em */
+    --user-group-popover-icon-text-gap: 0.3125em;
+    /* 5px at 16px/1em */
 
     /*
     This isn't scaled with font-size because the flatpickr is a third
@@ -624,8 +638,10 @@
     --length-user-pill-height: calc(var(--height-input-pill) - 2px);
     /* Fills whole pill height. */
     --length-search-pill-image: var(--length-user-pill-height);
-    --length-input-pill-exit: 1.1429em; /* 16px at 14px/em */
-    --input-pill-side-padding: 0.3571em; /* 5px at 14px/em */
+    --length-input-pill-exit: 1.1429em;
+    /* 16px at 14px/em */
+    --input-pill-side-padding: 0.3571em;
+    /* 5px at 14px/em */
     --vertical-spacing-input-pill: 2px;
     --outer-spacing-input-pill-container: var(--vertical-spacing-input-pill);
     --horizontal-spacing-input-pill: 6px;
@@ -643,12 +659,15 @@
     --overlay-container-height: 95vh;
     --overlay-container-max-height: 1000px;
     /* The width of the settings sidebar. */
-    --settings-sidebar-width: 18.2142em; /* 255px at 14px/em */
+    --settings-sidebar-width: 18.2142em;
+    /* 255px at 14px/em */
     /* .two-pane-settings-header and .settings-header */
-    --settings-overlay-header-height: 3.2143em; /* 45px at 14px/em */
+    --settings-overlay-header-height: 3.2143em;
+    /* 45px at 14px/em */
     /* .display-type and .list-toggler-container
        in subscriptions and user group settings overlays */
-    --settings-overlay-subheader-height: 3.1429em; /* 44px at 14px/em */
+    --settings-overlay-subheader-height: 3.1429em;
+    /* 44px at 14px/em */
     --settings-overlay-header-button-height: 2em;
     /* Informational overlay */
     --informational-overlay-max-width: 43.75em;
@@ -721,25 +740,34 @@
     );
 
     /* Banner grid layout variables */
-    --banner-horizontal-padding: 0.8125em; /* 13px at 16px/1em */
-    --banner-vertical-padding: 0.3125em; /* 5px at 16px/1em */
+    --banner-horizontal-padding: 0.8125em;
+    /* 13px at 16px/1em */
+    --banner-vertical-padding: 0.3125em;
+    /* 5px at 16px/1em */
     --banner-grid-template-areas: " . . banner-close-button banner-close-button"
         ". banner-content banner-close-button banner-close-button"
         ". . banner-close-button banner-close-button";
     --banner-grid-template-columns: var(--banner-horizontal-padding)
         minmax(0, 1fr) minmax(0, auto) var(--banner-horizontal-padding);
-    --banner-grid-template-rows: 0.3125em auto 0.3125em; /* 5px at 16px/1em */
+    --banner-grid-template-rows: 0.3125em auto 0.3125em;
+    /* 5px at 16px/1em */
 
     /* Popup banner related variables */
     --popup-banner-translate-y-distance: 100px;
 
     /* Input grid layout variables */
-    --input-icon-starting-offset: 0.5em; /* 8px at 16px/1em */
-    --input-icon-width: 1em; /* 16px at 16px/1em */
-    --input-icon-content-gap: 0.4375em; /* 7px at 16px/1em */
-    --input-button-content-gap: 0.25em; /* 4px at 16px/1em */
-    --input-button-width: 1.5em; /* 24px at 16px/1em */
-    --input-button-ending-offset: 0.125em; /* 2px at 16px/1em */
+    --input-icon-starting-offset: 0.5em;
+    /* 8px at 16px/1em */
+    --input-icon-width: 1em;
+    /* 16px at 16px/1em */
+    --input-icon-content-gap: 0.4375em;
+    /* 7px at 16px/1em */
+    --input-button-content-gap: 0.25em;
+    /* 4px at 16px/1em */
+    --input-button-width: 1.5em;
+    /* 24px at 16px/1em */
+    --input-button-ending-offset: 0.125em;
+    /* 2px at 16px/1em */
 
     /* Input padding and border variables */
     --input-horizontal-padding: 6px;
@@ -864,23 +892,6 @@
     --color-left-sidebar-direct-messages-bottom-divider: light-dark(
         hsl(0deg 0% 0% / 15%),
         hsl(0deg 0% 100% / 15%)
-    );
-    --color-left-sidebar-inner-box-shadow: light-dark(
-        hsl(0deg 0% 0% / 20%),
-        hsl(0deg 0% 0% / 80%)
-    );
-    --color-left-sidebar-middle-box-shadow: var(--color-background);
-    --color-left-sidebar-outer-box-shadow: light-dark(
-        hsl(0deg 0% 94% / 20%),
-        hsl(0deg 0% 11% / 30%)
-    );
-    --color-left-sidebar-middle-box-shadow-hover: light-dark(
-        hsl(244deg 36% 91%),
-        hsl(240deg 19% 24%)
-    );
-    --color-left-sidebar-outer-box-shadow-hover: light-dark(
-        hsl(240deg 100% 50% / 7%),
-        hsl(240deg 100% 75% / 20%)
     );
     --color-unread-marker: hsl(217deg 64% 59%);
     --color-masked-unread-marker: light-dark(
@@ -1148,9 +1159,12 @@
 
     /* Recent view */
     --recent-view-max-avatars: 4;
-    --recent-view-participant-item-width: 1.5em; /* 24px at 16px / 1em */
-    --recent-view-participant-item-padding-x: 0.0938em; /* 1.5px at 16px / 1em */
-    --recent-view-participants-padding-x-start: 0.25em; /* 4px at 16px / 1em */
+    --recent-view-participant-item-width: 1.5em;
+    /* 24px at 16px / 1em */
+    --recent-view-participant-item-padding-x: 0.0938em;
+    /* 1.5px at 16px / 1em */
+    --recent-view-participants-padding-x-start: 0.25em;
+    /* 4px at 16px / 1em */
     --color-border-recent-view-row: light-dark(
         hsl(0deg 0% 87%),
         hsl(0deg 0% 0% / 20%)
@@ -2136,8 +2150,10 @@
     );
 
     /* Inbox view constants - Values from Figma design */
-    --width-inbox-search: calc(27.4375em); /* 439px / 16px em */
-    --width-inbox-filters-dropdown: 10.7142em; /* 150px / 14px em */
+    --width-inbox-search: calc(27.4375em);
+    /* 439px / 16px em */
+    --width-inbox-filters-dropdown: 10.7142em;
+    /* 150px / 14px em */
     --color-background-inbox-no-unreads-illustration: light-dark(
         hsl(147deg 57% 25%),
         hsl(147deg 40% 55%)
@@ -2328,7 +2344,8 @@
     /* The SVG must be adjusted when changing the border color above. */
     --svg-url-rendered-checkbox: url("../images/checkbox.svg");
     /* Nested checkboxes in settings menu */
-    --settings-nested-checkbox-vertical-margins: 0.3125em 0; /* 5px at 16px */
+    --settings-nested-checkbox-vertical-margins: 0.3125em 0;
+    /* 5px at 16px */
 
     /* Theme-dependent SVGs */
     --svg-url-thumbnail-loader: url("../images/loading/loader-black.svg");
@@ -2920,6 +2937,10 @@
         hsl(0deg 0% 100%),
         hsl(0deg 0% 0% / 20%)
     );
+    --color-background-disabled-legacy-input: light-dark(
+        hsl(0deg 0% 93%),
+        hsl(0deg 0% 0% / 20%)
+    );
     --color-border-legacy-input: light-dark(
         hsl(0deg 0% 80%),
         hsl(0deg 0% 0% / 60%)
@@ -2927,6 +2948,11 @@
     --color-border-legacy-input-focus: light-dark(
         hsl(206deg 80% 62% / 80%),
         hsl(0deg 0% 0% / 90%)
+    );
+    /* Dropdown setting disabled option (e.g. "No language set") */
+    --color-text-setting-disabled-option: light-dark(
+        hsl(38deg 46% 54%),
+        hsl(38deg 46% 54%)
     );
     --color-text-input: light-dark(hsl(0deg 0% 14%), hsl(0deg 0% 95%));
     /* TODO: Light mode uses browser-default white

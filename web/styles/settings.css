@@ -88,7 +88,8 @@ h3,
 
 #change_password_modal,
 #change_email_modal {
-    width: 34.2857em; /* 480px at 14px/em */
+    width: 34.2857em;
+    /* 480px at 14px/em */
     max-width: 90vw;
 }
 
@@ -156,6 +157,7 @@ h3,
         margin-bottom: 0;
     }
 }
+
 /* Show yellow outline when organization description is empty,
    matching the compose box "approaching limit" warning style. */
 .admin-realm-description.empty-description:not(:disabled) {
@@ -182,7 +184,8 @@ h3,
 
 .play_notification_sound {
     .notification-sound-icon {
-        font-size: 1.5714em; /* 22px at 14px / em */
+        font-size: 1.5714em;
+        /* 22px at 14px / em */
         /* Visually center with chevron in select
         by setting the line-height equal to the height
         of select which is equal to - 1.4em + 8px (4px
@@ -299,7 +302,8 @@ h3,
     }
 
     .loading_indicator_text {
-        font-size: 0.8571em; /* 12px at 14px/em */
+        font-size: 0.8571em;
+        /* 12px at 14px/em */
         font-weight: 400;
         vertical-align: middle;
         line-height: inherit;
@@ -337,7 +341,8 @@ h3,
         max-width: 100%;
         padding-top: 4px;
         padding-bottom: 4px;
-        height: 1.4em; /* To match height of input elements */
+        height: 1.4em;
+        /* To match height of input elements */
     }
 
     .account-settings-heading {
@@ -358,14 +363,14 @@ h3,
     padding: 0 25px 0 6px;
     color: var(--color-text-default);
     border-radius: 4px;
-    border: 1px solid hsl(0deg 0% 80%);
+    border: 1px solid var(--color-border-legacy-input);
     cursor: pointer;
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--color-background-legacy-input);
     font-size: inherit;
 
     &:disabled {
         cursor: not-allowed;
-        background-color: hsl(0deg 0% 93%);
+        background-color: var(--color-background-disabled-legacy-input);
 
         /* This is reset for other browsers to use Chrome's opacity. */
         opacity: 0.7;
@@ -429,12 +434,14 @@ select.settings_select {
         display: flex;
         align-items: center;
         margin: 0;
-        margin-left: 0.5em; /* The spinner is left-justified with a slight left margin to look good. */
+        margin-left: 0.5em;
+        /* The spinner is left-justified with a slight left margin to look good. */
     }
 }
 
 .input-group {
-    margin: 0 0 1.25em; /* 20px at 16px/em */
+    margin: 0 0 1.25em;
+    /* 20px at 16px/em */
 
     & label.checkbox + label {
         cursor: pointer;
@@ -558,7 +565,8 @@ input[type="checkbox"] {
 
 .admin-realm-form {
     & h3 {
-        margin: calc(0.3125 * var(--base-font-size-px)) 0; /* 5px 0 at 16px font size. */
+        margin: calc(0.3125 * var(--base-font-size-px)) 0;
+        /* 5px 0 at 16px font size. */
     }
 
     .subsection-header h3 {
@@ -570,7 +578,8 @@ input[type="checkbox"] {
 .notification-settings-form {
     .subsection-header h3 {
         display: inline-block;
-        margin: calc(0.3125 * var(--base-font-size-px)) 0; /* 5px 0 at 16px font size. */
+        margin: calc(0.3125 * var(--base-font-size-px)) 0;
+        /* 5px 0 at 16px font size. */
     }
 
     .tip {
@@ -692,7 +701,8 @@ input[type="checkbox"] {
         }
 
         .toggle-advanced-configurations-icon {
-            font-size: 1.4286em; /* 20px at 14px / em */
+            font-size: 1.4286em;
+            /* 20px at 14px / em */
         }
     }
 
@@ -793,8 +803,10 @@ input[type="checkbox"] {
     }
 
     .loading_indicator_spinner {
-        width: 0.9283em; /* 13px at 14px/em */
-        height: 1.4286em; /* 20px at 14px/em */
+        width: 0.9283em;
+        /* 13px at 14px/em */
+        height: 1.4286em;
+        /* 20px at 14px/em */
         margin: 0;
     }
 
@@ -814,7 +826,8 @@ input[type="checkbox"] {
     }
 
     .settings-save-checkmark {
-        width: 0.9285em; /* 13px at 14px/em */
+        width: 0.9285em;
+        /* 13px at 14px/em */
     }
 }
 
@@ -915,7 +928,8 @@ input[type="checkbox"] {
 .settings-profile-user-field.editable-date-field {
     display: grid;
     grid-template-areas: "datepicker close-button";
-    grid-template-columns: minmax(0, 1fr) 1.4285em; /* 20px at 14px em */
+    grid-template-columns: minmax(0, 1fr) 1.4285em;
+    /* 20px at 14px em */
     align-items: center;
     width: var(--modal-input-width);
 
@@ -1017,6 +1031,7 @@ input[type="checkbox"] {
     & button {
         margin-left: calc(10em + 20px) !important;
     }
+
     margin-bottom: 15px;
 
     .checkbox {
@@ -1297,7 +1312,8 @@ label.preferences-radio-choice-label {
 }
 
 .emojiset_choices {
-    width: 25em; /* 350px / 14px em */
+    width: 25em;
+    /* 350px / 14px em */
 
     .emoji {
         height: 22px;
@@ -1306,7 +1322,8 @@ label.preferences-radio-choice-label {
 }
 
 .default_avatar_source_values {
-    width: 25em; /* 400px / 16px em */
+    width: 25em;
+    /* 400px / 16px em */
 
     .preferences-radio-choice-label {
         align-items: center;
@@ -1318,28 +1335,35 @@ label.preferences-radio-choice-label {
 
         input[type="radio"] {
             top: 0;
-            margin-right: 0.5em; /* 8px / 16px em */
+            margin-right: 0.5em;
+            /* 8px / 16px em */
         }
     }
 
     .right {
         display: flex;
-        gap: 0.5em; /* 8px / 16px em */
+        gap: 0.5em;
+        /* 8px / 16px em */
     }
 
     .avatar {
-        height: 2.625em; /* 42px / 16px em */
-        width: 2.625em; /* 42px / 16px em */
-        border-radius: 0.25em; /* 4px / 16px em */
+        height: 2.625em;
+        /* 42px / 16px em */
+        width: 2.625em;
+        /* 42px / 16px em */
+        border-radius: 0.25em;
+        /* 4px / 16px em */
     }
 }
 
 .user_list_style_values {
-    max-width: 25em; /* 350px / 14px em */
+    max-width: 25em;
+    /* 350px / 14px em */
 
     .preferences-radio-choice-label {
         display: grid;
-        grid-template-columns: 10.7143em auto; /* 150px / 14px em */
+        grid-template-columns: 10.7143em auto;
+        /* 150px / 14px em */
         justify-content: left;
         margin-right: 6px;
 
@@ -1422,7 +1446,8 @@ label.preferences-radio-choice-label {
 #settings_page {
     height: 95vh;
     width: 97vw;
-    max-width: 73.1429em; /* 1024px at 14px em */
+    max-width: 73.1429em;
+    /* 1024px at 14px em */
     margin: 2.5vh auto;
     overflow: hidden;
     border-radius: 4px;
@@ -1470,7 +1495,8 @@ label.preferences-radio-choice-label {
 
                 .ind-tab {
                     width: auto;
-                    min-width: 6.7857em; /* 95px at 14px em */
+                    min-width: 6.7857em;
+                    /* 95px at 14px em */
                 }
             }
         }
@@ -1602,7 +1628,8 @@ label.preferences-radio-choice-label {
         .exit {
             font-weight: 600;
             position: absolute;
-            right: 0.7142em; /* 10px at 14px em */
+            right: 0.7142em;
+            /* 10px at 14px em */
             color: hsl(0deg 0% 67%);
             cursor: pointer;
         }
@@ -1712,7 +1739,8 @@ label.preferences-radio-choice-label {
 
         .datepicker {
             cursor: default;
-            padding-right: 1.4285em; /* 20px at 14px em */
+            padding-right: 1.4285em;
+            /* 20px at 14px em */
             /* full input width minus right padding and
                6px left padding from .settings_text_input
                and 1px border on each side */
@@ -1813,27 +1841,35 @@ label.preferences-radio-choice-label {
     .info-density-controls {
         .reset-user-setting-to-default {
             display: inline-flex;
-            padding: 0.1875em; /* 3px at 16px */
-            margin-left: 0.1875em; /* 3px at 16px */
+            padding: 0.1875em;
+            /* 3px at 16px */
+            margin-left: 0.1875em;
+            /* 3px at 16px */
 
             position: relative;
-            top: -0.0625em; /* 1px at 16px */
+            top: -0.0625em;
+            /* 1px at 16px */
 
             .zulip-icon {
-                width: 1em; /* 15px at 16px */
-                height: 1em; /* 15px at 16px */
-                font-size: 0.9375em; /* 15px at 16px */
+                width: 1em;
+                /* 15px at 16px */
+                height: 1em;
+                /* 15px at 16px */
+                font-size: 0.9375em;
+                /* 15px at 16px */
             }
         }
     }
 
     .general_notifications .reset-user-setting-to-default {
         font-size: 1.2em;
-        margin-top: 0.3125em; /* 6px at 16px */
+        margin-top: 0.3125em;
+        /* 6px at 16px */
         /* This is needed to adjust the gap property used
         for flex layout so that button is not too far from
         the heading. */
-        margin-left: -0.5em; /* 9.6px at 16px */
+        margin-left: -0.5em;
+        /* 9.6px at 16px */
     }
 }
 
@@ -2070,8 +2106,8 @@ label.preferences-radio-choice-label {
             top: var(--settings-overlay-header-height);
             background-color: var(--color-background-modal);
             border: none;
-
-            transition: left 0.3s ease; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+            /* stylelint-disable-next-line plugin/no-low-performance-animation-properties */
+            transition: left 0.3s ease;
             z-index: 10;
 
             &.show {
