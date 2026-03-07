@@ -1,8 +1,10 @@
 import hashlib
 import hmac
+import json
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
+import requests
 from django.http import HttpRequest, QueryDict
 from django.http.response import HttpResponse
 from django.test import override_settings
@@ -23,6 +25,7 @@ from zerver.lib.webhooks.common import (
     MissingHTTPEventHeaderError,
     call_fixture_to_headers,
     check_send_webhook_message,
+    fetch_api_data,
     get_event_header,
     guess_zulip_user_from_external_account,
     standardize_headers,
@@ -351,3 +354,53 @@ class MissingEventHeaderTestCase(WebhookTestCase):
     @override
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("groove", fixture_name, file_type="json")
+
+
+class TestFetchApiData(ZulipTestCase):
+    @patch("zerver.lib.webhooks.common.WebhookApiSession.get")
+    def test_fetch_api_data_success(self, mock_get: MagicMock) -> None:
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"name": "Test User"}
+        mock_get.return_value = mock_response
+
+        result = fetch_api_data(
+            "https://api.example.com/users/123",
+            integration_name="TestIntegration",
+            headers={"Authorization": "Bearer token"},
+        )
+        self.assertEqual(result, {"name": "Test User"})
+
+    @patch("zerver.lib.webhooks.common.WebhookApiSession.get")
+    def test_fetch_api_data_http_error(self, mock_get: MagicMock) -> None:
+        mock_response = MagicMock()
+        mock_response.status_code = 404
+        mock_get.return_value = mock_response
+
+        result = fetch_api_data(
+            "https://api.example.com/users/123", integration_name="TestIntegration"
+        )
+        self.assertIsNone(result)
+
+    @patch("zerver.lib.webhooks.common.WebhookApiSession.get")
+    def test_fetch_api_data_request_exception(self, mock_get: MagicMock) -> None:
+
+        mock_get.side_effect = requests.ConnectionError("Connection failed")
+
+        result = fetch_api_data(
+            "https://api.example.com/users/123", integration_name="TestIntegration"
+        )
+        self.assertIsNone(result)
+
+    @patch("zerver.lib.webhooks.common.WebhookApiSession.get")
+    def test_fetch_api_data_invalid_json(self, mock_get: MagicMock) -> None:
+
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.side_effect = json.JSONDecodeError("", "", 0)
+        mock_get.return_value = mock_response
+
+        result = fetch_api_data(
+            "https://api.example.com/users/123", integration_name="TestIntegration"
+        )
+        self.assertIsNone(result)
