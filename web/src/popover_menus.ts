@@ -37,7 +37,9 @@ type PopoverName =
     | "color_picker_popover"
     | "show_folders_sidebar"
     | "show_folders_inbox"
-    | "send_later_options";
+    | "send_later_options"
+    | "show_channels_sidebar"
+    | "read_receipt_popover";
 
 export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     compose_control_buttons: null,
@@ -63,6 +65,8 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     show_folders_sidebar: null,
     show_folders_inbox: null,
     send_later_options: null,
+    show_channels_sidebar: null,
+    read_receipt_popover: null,
 };
 
 // Font size in em for popover derived from popover font size being
