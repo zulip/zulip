@@ -271,9 +271,10 @@ export function generate_and_insert_audio_or_video_call_link(
                     compose_call_session.maybe_run_xhr_callback(xhr, callback);
                 };
 
+                const room_display_name = `${get_recipient_label()?.label_text ?? ""} call`;
                 xhr = channel.post({
                     url: "/json/calls/livekit/create",
-                    data: {is_video_call: !is_audio_call},
+                    data: {is_video_call: !is_audio_call, room_display_name},
                     success: handle_success,
                     error: handle_error,
                 });
