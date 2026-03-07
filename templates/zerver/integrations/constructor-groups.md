@@ -54,6 +54,7 @@ source video conferencing solution. You can configure Zulip to use
 - [BigBlueButton integration](/integrations/big-blue-button)
 - [Nextcloud Talk integration](/integrations/nextcloud-talk)
 - [Webex integration](/integrations/webex)
+- [LiveKit integration](/integrations/livekit)
 
 [constructor-groups-api-docs]: https://developer.perculus.com/v2-en
 [constructor-groups]: https://constructor.tech/products/learning/groups
