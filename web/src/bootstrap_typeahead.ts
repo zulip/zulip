@@ -267,12 +267,20 @@ export class Typeahead<ItemType extends string | object> {
     // Used to determine whether the typeahead should be shown,
     // when the user clicks anywhere on the input element.
     showOnClick: boolean;
+    // Used to determine whether the typeahead should be shown,
+    // when the input element gains focus.
+    showOnFocus: boolean;
     // Used for custom situations where we want to hide the typeahead
     // after selecting an option, instead of the default call to lookup().
     hideAfterSelect: () => boolean;
     hideOnEmptyAfterBackspace: boolean;
     // Used for adding a custom classname to the typeahead link.
     getCustomItemClassname: ((item: ItemType) => string) | undefined;
+    // Used to suppress displaying the typeahead for specific
+    // queries. If provided and returns true, the typeahead will be hidden.
+    shouldSuppressShowCallback:
+        | ((query: string, items: ItemType[], input_element: TypeaheadInputElement) => boolean)
+        | undefined;
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
@@ -315,9 +323,11 @@ export class Typeahead<ItemType extends string | object> {
         this.shouldHighlightFirstResult = options.shouldHighlightFirstResult ?? (() => true);
         this.updateElementContent = options.updateElementContent ?? true;
         this.showOnClick = options.showOnClick ?? true;
+        this.showOnFocus = options.showOnFocus ?? false;
         this.hideAfterSelect = options.hideAfterSelect ?? (() => true);
         this.hideOnEmptyAfterBackspace = options.hideOnEmptyAfterBackspace ?? false;
         this.getCustomItemClassname = options.getCustomItemClassname;
+        this.shouldSuppressShowCallback = options.shouldSuppressShowCallback;
         this.listen();
     }
 
@@ -564,6 +574,10 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     process(items: ItemType[]): this {
+        if (this.shouldSuppressShowCallback?.(this.query, items, this.input_element)) {
+            return this.shown ? this.hide() : this;
+        }
+
         const matching_items = $.grep(items, (item) => this.matcher(item, this.query));
 
         const final_items = this.sorter(matching_items, this.query);
@@ -679,6 +693,7 @@ export class Typeahead<ItemType extends string | object> {
             .on("keypress", this.keypress.bind(this))
             .on("keyup", this.keyup.bind(this))
             .on("click", this.element_click.bind(this))
+            .on("focus", this.element_focus.bind(this))
             .on("keydown", this.keydown.bind(this))
             .on("typeahead.refreshPosition", this.refreshPosition.bind(this));
 
@@ -699,7 +714,7 @@ export class Typeahead<ItemType extends string | object> {
     unlisten(): void {
         this.hide();
         this.$container.remove();
-        const events = ["blur", "keydown", "keyup", "keypress", "click"];
+        const events = ["blur", "keydown", "keyup", "keypress", "click", "focus"];
         for (const event of events) {
             $(this.input_element.$element).off(event);
         }
@@ -909,6 +924,13 @@ export class Typeahead<ItemType extends string | object> {
         this.lookup(false);
     }
 
+    element_focus(): void {
+        if (!this.showOnFocus) {
+            return;
+        }
+        this.lookup(false);
+    }
+
     click(e: JQuery.ClickEvent): void {
         e.stopPropagation();
         e.preventDefault();
@@ -984,6 +1006,12 @@ type TypeaheadOptions<ItemType> = {
     shouldHighlightFirstResult?: () => boolean;
     updateElementContent?: boolean;
     showOnClick?: boolean;
+    showOnFocus?: boolean;
     hideAfterSelect?: () => boolean;
     getCustomItemClassname?: (item: ItemType) => string;
+    shouldSuppressShowCallback?: (
+        query: string,
+        items: ItemType[],
+        input_element: TypeaheadInputElement,
+    ) => boolean;
 };
