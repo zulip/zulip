@@ -1,3 +1,10 @@
+:root {
+    /* Actual navbar height is determined by label padding
+       (16px top/bottom) and line-height (28px): 16 + 28 + 16 = 60px.
+       Keep this variable in sync with those values. */
+    --navbar-height: 60px;
+}
+
 details summary::-webkit-details-marker {
     /* Hide the default arrow on Safari. */
     display: none;
@@ -213,7 +220,9 @@ details summary::-webkit-details-marker {
 }
 
 .top-menu-tab-input-unselect:not(:checked) + .top-menu-submenu-backdrop {
-    height: 334px;
+    /* Fill viewport below navbar so .top-menu (overflow: hidden)
+       doesn't clip the scrollable submenu area. */
+    height: calc(100vh - var(--navbar-height));
     opacity: 1;
 }
 
@@ -222,7 +231,7 @@ details summary::-webkit-details-marker {
     display: none;
     /* To account for scrollbar if any present. */
     right: 15px;
-    top: 60px;
+    top: var(--navbar-height);
     width: 44px;
     height: 44px;
     background-size: 32px;
@@ -248,7 +257,7 @@ details summary::-webkit-details-marker {
 
 .top-menu-submenu {
     position: absolute;
-    top: 60px;
+    top: var(--navbar-height);
     display: flex;
     gap: 16px;
     opacity: 0;
@@ -258,11 +267,37 @@ details summary::-webkit-details-marker {
 }
 
 #case-studies-submenu {
-    flex-wrap: wrap;
     width: 1000px;
+    /* Prevent the submenu from being clipped by .top-menu's
+       overflow: hidden. The offset approximates the horizontal
+       position of the Case studies tab. */
+    max-width: calc(100vw - 400px);
+
+    @media (width > 1311px) {
+        /* On wide screens, display all three category columns
+           side by side instead of wrapping the third column. */
+        flex-wrap: nowrap;
+        width: 1100px;
+        left: -200px;
+        /* 200px left offset shifts the starting position,
+           so the effective tab offset is smaller. */
+        max-width: calc(100vw - 250px);
+    }
+
+    @media (width <= 1311px) {
+        flex-wrap: wrap;
+    }
 
     @media (width <= 1100px) {
         width: 600px;
+        max-width: none;
+    }
+
+    & > .top-menu-submenu-column {
+        @media (width > 1311px) {
+            /* Allow columns to share space evenly. */
+            flex-shrink: 1;
+        }
     }
 }
 
@@ -312,12 +347,23 @@ details summary::-webkit-details-marker {
 .top-menu-tab-input:checked ~ .top-menu-submenu {
     opacity: 1;
     visibility: visible;
+    max-height: calc(100vh - var(--navbar-height));
+    overflow-y: auto;
+    /* Fade bottom edge to hint at scrollable content. */
+    mask-image: linear-gradient(
+        to bottom,
+        hsl(0deg 0% 0%) calc(100% - 24px),
+        transparent 100%
+    );
 }
 
 .top-menu-submenu-column {
     display: flex;
     flex-direction: column;
     padding-top: 16px;
+    /* Bottom padding provides space for the scroll fade
+       indicator so no content is obscured at end of scroll. */
+    padding-bottom: 24px;
     flex-shrink: 0;
     max-width: 420px;
 
@@ -386,7 +432,7 @@ details summary::-webkit-details-marker {
     top: 0;
     left: 0;
     right: 0;
-    height: 60px;
+    height: var(--navbar-height);
 
     overflow: auto;
     font-style: normal;
@@ -532,7 +578,7 @@ details summary::-webkit-details-marker {
     z-index: 1;
     transition: 0.3s;
     transition-property: background, backdrop-filter;
-    height: 60px;
+    height: var(--navbar-height);
     overflow: hidden;
     display: flex;
     justify-content: space-between;
