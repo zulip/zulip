@@ -11,6 +11,8 @@ supported by Zulip are:
 - [BigBlueButton](https://zulip.com/integrations/big-blue-button)
 - [Constructor Groups](https://zulip.com/integrations/constructor-groups)
 - [Nextcloud Talk](https://zulip.com/integrations/nextcloud-talk)
+- [LiveKit](#livekit), an open-source WebRTC SFU for scalable video
+  calls hosted on your own infrastructure.
 
 By default, Zulip uses the [cloud version of Jitsi Meet](https://meet.jit.si/)
 as its call provider. This page documents the configurations required to support
@@ -195,3 +197,48 @@ integration on a self-hosted Zulip installation, you'll need to have access
 to a Nextcloud server (version 22+) with the Talk app enabled. See
 documentation to configure the Nextcloud Talk video call integration
 [here](https://zulip.com/integrations/nextcloud-talk).
+
+## LiveKit
+
+To use the [LiveKit](https://livekit.io/) video call integration on a
+self-hosted Zulip installation, you'll need a LiveKit server instance.
+LiveKit is an open-source WebRTC SFU (Selective Forwarding Unit) that
+provides scalable, low-latency video and voice calls.
+
+### Prerequisites
+
+- A LiveKit server (v1.5+). You can [self-host
+  LiveKit](https://docs.livekit.io/home/self-hosting/deployment/) or
+  use [LiveKit Cloud](https://cloud.livekit.io/).
+- An API key and secret for your LiveKit server.
+
+### Port requirements
+
+If you self-host LiveKit, ensure these ports are accessible:
+
+| Port        | Protocol | Purpose                   |
+| ----------- | -------- | ------------------------- |
+| 7880        | TCP      | Signal server (WebSocket) |
+| 7881        | TCP      | RTC over TCP              |
+| 50000–60000 | UDP      | WebRTC media              |
+
+### Configure your Zulip server
+
+1. In `/etc/zulip/zulip-secrets.conf`, set `livekit_api_key` and
+   `livekit_api_secret` to your LiveKit server's API key and secret.
+
+2. In `/etc/zulip/settings.py`, set `LIVEKIT_URL` to your LiveKit
+   server's WebSocket URL, e.g., `"wss://livekit.example.com"`.
+
+3. Restart the Zulip server with
+   `/home/zulip/deployments/current/scripts/restart-server`.
+
+This enables LiveKit support in your Zulip server. Finally,
+[configure LiveKit as the video call
+provider](https://zulip.com/help/configure-call-provider)
+in the Zulip organizations where you want to use it.
+
+### Optional: Puppet profile
+
+If you manage your Zulip server with Puppet, an optional profile is
+available for LiveKit (`zulip::profile::livekit`).

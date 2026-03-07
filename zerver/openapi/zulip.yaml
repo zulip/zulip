@@ -25964,6 +25964,56 @@ paths:
                         "url": "https://example.constructor.app/groups/room/room-123",
                       }
 
+  /calls/livekit/create:
+    post:
+      tags: ["channels"]
+      operationId: create-livekit-video-call
+      summary: Create LiveKit video call
+      description: |
+        Create a video call URL for a LiveKit video call.
+        Requires [LiveKit](/production/video-calls#livekit)
+        to be configured on the Zulip server.
+
+        **Changes**: New in Zulip 12.0 (Feature level RANDOM).
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                is_video_call:
+                  type: boolean
+                  description: |
+                    Whether this is a video call (as opposed to a voice-only
+                    call).
+                  default: true
+                  example: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      url:
+                        description: |
+                          The URL for the LiveKit video call join page.
+                        type: string
+                        example: "/calls/livekit/join?livekit=signed-token"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "url": "/calls/livekit/join?livekit=signed-token",
+                      }
+
 components:
   #######################
   # Security definitions
