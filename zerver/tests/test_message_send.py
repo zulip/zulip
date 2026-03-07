@@ -25,6 +25,7 @@ from zerver.actions.message_send import (
     internal_send_private_message,
     internal_send_stream_message,
     internal_send_stream_message_by_name,
+    send_pm_if_not_authorized_to_stream,
     send_rate_limited_pm_notification_to_bot_owner,
 )
 from zerver.actions.realm_settings import (
@@ -52,7 +53,6 @@ from zerver.lib.message import get_raw_unread_data, get_recent_private_conversat
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.stream_subscription import create_stream_subscription
-from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     get_user_messages,
@@ -159,6 +159,7 @@ class MessagePOSTTest(ZulipTestCase):
         bot = self.create_test_bot(
             short_name="whatever",
             user_profile=cordelia,
+            full_name="Whatever Bot",
         )
         result = self.api_post(
             bot,
@@ -174,78 +175,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         msg = self.get_last_message()
         expected = (
-            "Your bot `whatever-bot@zulip.testserver` tried to send a message to "
-            "channel ID 99999, but there is no channel with that ID."
-        )
-        self.assertEqual(msg.content, expected)
-
-    def test_message_to_stream_with_no_subscribers(self) -> None:
-        """
-        Sending a message to an empty stream succeeds, but sends a warning
-        to the owner.
-        """
-        realm = get_realm("zulip")
-        cordelia = self.example_user("cordelia")
-        bot = self.create_test_bot(
-            short_name="whatever",
-            user_profile=cordelia,
-        )
-        stream = create_stream_if_needed(realm, "Acropolis")[0]
-        result = self.api_post(
-            bot,
-            "/api/v1/messages",
-            {
-                "type": "channel",
-                "to": orjson.dumps(stream.name).decode(),
-                "content": "Stream message to an empty stream by name.",
-                "topic": "Test topic for empty stream name message",
-            },
-        )
-        self.assert_json_success(result)
-
-        msg = self.get_last_message()
-        expected = "Stream message to an empty stream by name."
-        self.assertEqual(msg.content, expected)
-
-        msg = self.get_second_to_last_message()
-        expected = (
-            "Your bot `whatever-bot@zulip.testserver` tried to send a message to "
-            "channel #**Acropolis**. The channel exists but does not have any subscribers."
-        )
-        self.assertEqual(msg.content, expected)
-
-    def test_message_to_stream_with_no_subscribers_by_id(self) -> None:
-        """
-        Sending a message to an empty stream succeeds, but sends a warning
-        to the owner.
-        """
-        realm = get_realm("zulip")
-        cordelia = self.example_user("cordelia")
-        bot = self.create_test_bot(
-            short_name="whatever",
-            user_profile=cordelia,
-        )
-        stream = create_stream_if_needed(realm, "Acropolis")[0]
-        result = self.api_post(
-            bot,
-            "/api/v1/messages",
-            {
-                "type": "channel",
-                "to": orjson.dumps([stream.id]).decode(),
-                "content": "Stream message to an empty stream by id.",
-                "topic": "Test topic for empty stream id message",
-            },
-        )
-        self.assert_json_success(result)
-
-        msg = self.get_last_message()
-        expected = "Stream message to an empty stream by id."
-        self.assertEqual(msg.content, expected)
-
-        msg = self.get_second_to_last_message()
-        expected = (
-            "Your bot `whatever-bot@zulip.testserver` tried to send a message to "
-            "channel #**Acropolis**. The channel exists but does not have any subscribers."
+            "@_**Whatever Bot** failed to send a message because there is no channel with ID 99999."
         )
         self.assertEqual(msg.content, expected)
 
@@ -3696,7 +3626,7 @@ class CheckMessageTest(ZulipTestCase):
 
     def test_bot_pm_feature(self) -> None:
         """We send a direct message to a bot's owner if their bot sends a
-        message to an unsubscribed stream"""
+        message to a non-existent stream"""
         parent = self.example_user("othello")
         bot = do_create_user(
             email="othello-bot@zulip.com",
@@ -3717,34 +3647,74 @@ class CheckMessageTest(ZulipTestCase):
         message_content = "whatever"
         old_count = message_stream_count(parent)
 
-        # Try sending to stream that doesn't exist sends a reminder to
-        # the sender
+        # Try sending to stream that doesn't exist sends a reminder to the sender
+        with self.assertRaises(JsonableError):
+            check_message(sender, client, addressee, message_content)
+        new_count = message_stream_count(parent)
+        self.assertEqual(new_count, old_count + 1)
+
+        recent_msg = most_recent_message(parent).content
+        self.assertIn(f"@_**{bot.full_name}**", recent_msg)
+        self.assertIn(f"#**{stream_name}**", recent_msg)
+        self.assertIn("does not exist", recent_msg)
+        self.assertIn("[Create it](#channels/new)", recent_msg)
+
+        self.make_stream(stream_name)
+
+        # Send message to existing stream with no subscribers
+        # This should succeed WITHOUT sending a notification
+        ret = check_message(sender, client, addressee, message_content)
+        new_count = message_stream_count(parent)
+        self.assertEqual(new_count, old_count + 1)
+
+        self.assertEqual(ret.message.sender.email, "othello-bot@zulip.com")
+        self.assertEqual(ret.message.content, message_content)
+
+    def test_bot_pm_feature_for_access_denied(self) -> None:
+        """We send a direct message to a bot's owner if their bot tries to
+        send a message to a stream it doesn't have access to"""
+        parent = self.example_user("othello")
+        bot = do_create_user(
+            email="othello-bot@zulip.com",
+            password="",
+            realm=parent.realm,
+            full_name="Othello Bot",
+            bot_type=UserProfile.DEFAULT_BOT,
+            bot_owner=parent,
+            acting_user=None,
+        )
+        bot.last_reminder = None
+        sender = bot
+        client = make_client(name="test suite")
+        stream_name = "private_stream"
+        topic_name = "test"
+        message_content = "whatever"
+
+        # Create a private stream that the bot doesn't have access to
+        stream = self.make_stream(stream_name, invite_only=True)
+        addressee = Addressee.for_stream(stream, topic_name)
+        old_count = message_stream_count(parent)
+
+        # Try sending to stream that bot doesn't have access to
         with self.assertRaises(JsonableError):
             check_message(sender, client, addressee, message_content)
 
         new_count = message_stream_count(parent)
         self.assertEqual(new_count, old_count + 1)
-        self.assertIn("that channel does not exist.", most_recent_message(parent).content)
 
-        # Try sending to stream that exists with no subscribers soon
-        # after; due to rate-limiting, this should send nothing.
-        self.make_stream(stream_name)
-        ret = check_message(sender, client, addressee, message_content)
-        new_count = message_stream_count(parent)
-        self.assertEqual(new_count, old_count + 1)
+        recent_msg = most_recent_message(parent).content
+        self.assertIn("@_**Othello Bot**", recent_msg)
+        self.assertIn(f"[#{stream_name}](#channels/{stream.id}/{stream_name})", recent_msg)
+        self.assertIn("doesn't have permission to do so", recent_msg)
+        self.assertIn("[Update permissions]", recent_msg)
+        self.assertIn(f"#channels/{stream.id}/{stream_name}/permissions", recent_msg)
+        wrong_realm = get_realm("zephyr")
+        old_count = message_stream_count(parent)
 
-        # Try sending to stream that exists with no subscribers longer
-        # after; this should send an error to the bot owner that the
-        # stream doesn't exist
-        assert sender.last_reminder is not None
-        sender.last_reminder -= timedelta(hours=1)
-        sender.save(update_fields=["last_reminder"])
-        ret = check_message(sender, client, addressee, message_content)
+        send_pm_if_not_authorized_to_stream(stream, wrong_realm, bot)
 
         new_count = message_stream_count(parent)
-        self.assertEqual(new_count, old_count + 2)
-        self.assertEqual(ret.message.sender.email, "othello-bot@zulip.com")
-        self.assertIn("does not have any subscribers", most_recent_message(parent).content)
+        self.assertEqual(new_count, old_count)
 
     def test_bot_pm_error_handling(self) -> None:
         # This just test some defensive code.
