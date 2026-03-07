@@ -1,0 +1,10 @@
+{% extends "zerver/base.html" %}
+{% set entrypoint = "common" %}
+
+{% block title %}
+<title>{{ _("Video call") }} | Zulip</title>
+{% endblock %}
+
+{% block content %}
+<div id="livekit-call-container"></div>
+{% endblock %}
