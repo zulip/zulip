@@ -1727,7 +1727,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         fragment = lxml.html.fromstring(test_data)
         fix_spoilers_in_html(fragment, "en")
         actual_output = lxml.html.tostring(fragment, encoding="unicode")
-        expected_output = '<div><div class="spoiler-block">\n\n<p><a>header</a> text <span class="spoiler-title" title="Open Zulip to see the spoiler content">(Open Zulip to see the spoiler content)</span></p>\n</div>\n\n<p>outside spoiler</p></div>'
+        expected_output = '<div><div class="spoiler-block">\n\n<p><a>header</a> text <span class="spoiler-title" title="View spoiler content in Zulip"> View spoiler content in Zulip</span></p>\n</div>\n\n<p>outside spoiler</p></div>'
         self.assertEqual(actual_output, expected_output)
 
         # test against our markdown_test_cases so these features do not get out of sync.
@@ -1748,7 +1748,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
     def test_spoilers_in_text_emails(self) -> None:
         content = "@**King Hamlet**\n\n```spoiler header text\nsecret-text\n```"
         msg_id = self.send_stream_message(self.example_user("othello"), "Denmark", content)
-        verify_body_include = ["header text", "Open Zulip to see the spoiler content"]
+        verify_body_include = ["header text", "View spoiler content in Zulip"]
         verify_body_does_not_include = ["secret-text"]
         email_subject = "#Denmark > test"
         self._test_cases(
