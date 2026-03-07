@@ -202,6 +202,11 @@ CONSTRUCTOR_GROUPS_URL = get_secret("constructor_groups_url", development_only=T
 # development; this is useful since there are no public Nextcloud Talk servers.
 NEXTCLOUD_SERVER = get_secret("nextcloud_server", development_only=True)
 
+# LiveKit video call integration.
+# Set to the WebSocket URL of your LiveKit server,
+# e.g., "wss://livekit.example.com" or "ws://127.0.0.1:7880".
+LIVEKIT_URL: str | None = None
+
 # Max state storage per user
 # TODO: Add this to zproject/prod_settings_template.py once stateful bots are fully functional.
 USER_STATE_SIZE_LIMIT = 10000000

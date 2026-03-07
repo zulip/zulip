@@ -538,6 +538,9 @@ CONSTRUCTOR_GROUPS_SECRET_KEY = get_secret("constructor_groups_secret_key")
 NEXTCLOUD_TALK_USERNAME = get_secret("nextcloud_talk_username")
 NEXTCLOUD_TALK_PASSWORD = get_secret("nextcloud_talk_password")
 
+LIVEKIT_API_KEY = get_secret("livekit_api_key")
+LIVEKIT_API_SECRET = get_secret("livekit_api_secret")
+
 # These are the bots that Zulip sends automated messages as.
 INTERNAL_BOTS = [
     {
