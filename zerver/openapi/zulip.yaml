@@ -104,6 +104,69 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiKeyResponse"
+  /jwt/fetch_api_key:
+    post:
+      operationId: jwt-fetch-api-key
+      summary: Fetch an API key (JWT)
+      tags: ["authentication"]
+      description: |
+        This API endpoint is used by clients that implement JSON Web Token
+        (JWT) authentication. Given a JWT identifying a Zulip user, it
+        returns a Zulip API key that the client can use to make requests
+        as the user.
+
+        This endpoint is only useful for Zulip servers/organizations with
+        `JWT_AUTH_KEYS` configured.
+
+        The JWT should be sent in the `token` parameter. The token payload
+        must contain an `email` claim with the target user's email address.
+
+        If `include_profile` is set to `true`, the response also includes
+        a `user` object with that user's profile details.
+
+        !!! warn ""
+
+            **Note:** This endpoint is only available when **JWT_AUTH_KEYS**
+            is configured for the organization. Zulip uses that setting
+            to validate the token signature before returning an API key.
+
+            See [JWT authentication](https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#json-web-tokens-jwt)
+            for configuration instructions.
+
+        See the [API keys](/api/api-keys) documentation for more details
+        on how to manage API keys manually.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                token:
+                  description: |
+                    A JSON Web Token (JWT) for the target user.
+
+                    The token payload must contain an `email` claim with the
+                    target user's email address.
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImhhbWxldEB6dWxpcC5jb20ifQ.EsHxSVt54zPR-ywgPH54TB1FYmrGKsfq7hsQEhp_9w0"
+                include_profile:
+                  type: boolean
+                  default: false
+                  example: false
+                  description: |
+                    Whether to include a `user` object containing the target
+                    user's profile details in the response.
+              required:
+                - token
+      security: []
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JwtApiKeyResponse"
   /dev_fetch_api_key:
     post:
       operationId: dev-fetch-api-key
@@ -28844,6 +28907,34 @@ components:
               "msg": "",
               "result": "success",
               "user_id": 5,
+            }
+    JwtApiKeyResponse:
+      allOf:
+        - $ref: "#/components/schemas/JsonSuccessBase"
+        - required:
+            - api_key
+            - email
+          additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+            ignored_parameters_unsupported: {}
+            api_key:
+              type: string
+              description: |
+                The API key that can be used to authenticate as the requested user.
+            email:
+              type: string
+              description: |
+                The email address of the user who owns the API key.
+            user:
+              $ref: "#/components/schemas/User"
+          example:
+            {
+              "api_key": "gjA04ZYcqXKalvYMA8OeXSfzUOLrtbZv",
+              "email": "hamlet@zulip.com",
+              "msg": "",
+              "result": "success",
             }
     CodedError:
       allOf:
