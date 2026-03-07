@@ -5,7 +5,7 @@ import orjson
 from zerver.lib.message import truncate_topic
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
-from zerver.models import CustomProfileField
+from zerver.models import CustomProfileField, Message
 from zerver.models.realms import get_realm
 
 TOPIC_REPO = "public-repo"
@@ -158,9 +158,8 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("issues__edited_body", expected_topic_name, expected_message)
 
     def test_issues_edited_title(self) -> None:
-        long_title = "This is a very long issue title used to exceed Zulip's maximum topic length so that truncation logic is exercised when the issue title is edited via the GitHub webhook"
-        expected_topic_name = truncate_topic(f"test-repo / issue #6 {long_title}")
-        expected_message = "Pritesh-30 edited [issue #6](https://github.com/Pritesh-30/test-repo/issues/6):\n\n~~~ quote\nThe body of the issue is edited.\n~~~"
+        expected_topic_name = "zulip-test / issue #33 New Short Title."
+        expected_message = "DhruvShetty22 edited [issue #33](https://github.com/DhruvShetty22/zulip-test/issues/33):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
         self.check_webhook("issues__edited_title", expected_topic_name, expected_message)
 
     def test_issue_comment_msg(self) -> None:
@@ -183,14 +182,40 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("issue_comment__pull_request_comment", TOPIC_PR, expected_message)
 
     def test_issue_msg(self) -> None:
-        expected_message = "baxterthehacker opened [issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
-        self.check_webhook("issues", TOPIC_ISSUE, expected_message)
+        long_title = "This is a very long Issue title to test topic truncation when renaming."
+        expected_topic_name = truncate_topic(f"zulip-test / issue #33 {long_title}")
+        expected_message = "DhruvShetty22 opened [issue #33](https://github.com/DhruvShetty22/zulip-test/issues/33):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
+        self.check_webhook("issues__opened", expected_topic_name, expected_message)
+
+    def test_pull_request_title_edit_moves_topic(self) -> None:
+        old_topic = "public-repo / PR #1 This is a very long Pull request titl..."
+        new_topic = "public-repo / PR #1 New Short Title"
+        opened_message = "baxterthehacker opened [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `baxterthehacker:changes` to `baxterthehacker:master`:\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
+        edited_message = (
+            "baxterthehacker edited [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
+        )
+        self.check_webhook("pull_request__opened", old_topic, opened_message)
+        self.check_webhook("pull_request__edited_title", new_topic, edited_message)
+        self.assertFalse(
+            Message.objects.filter(realm=self.test_user.realm, subject=old_topic).exists()
+        )
+
+    def test_issue_title_edit_moves_topic(self) -> None:
+        old_topic = "zulip-test / issue #33 This is a very long Issue title to..."
+        opened_message = "DhruvShetty22 opened [issue #33](https://github.com/DhruvShetty22/zulip-test/issues/33):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
+        new_topic = "zulip-test / issue #33 New Short Title."
+        edited_message = "DhruvShetty22 edited [issue #33](https://github.com/DhruvShetty22/zulip-test/issues/33):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
+        self.check_webhook("issues__opened", old_topic, opened_message)
+        self.check_webhook("issues__edited_title", new_topic, edited_message)
+        self.assertFalse(
+            Message.objects.filter(realm=self.test_user.realm, subject=old_topic).exists()
+        )
 
     def test_issue_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
-        expected_message = "baxterthehacker opened [issue #2 Spelling error in the README file](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
-        self.check_webhook("issues", expected_topic_name, expected_message)
+        expected_message = "DhruvShetty22 opened [issue #33 This is a very long Issue title to test topic truncation when renaming.](https://github.com/DhruvShetty22/zulip-test/issues/33)\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
+        self.check_webhook("issues__opened", expected_topic_name, expected_message)
 
     def test_issue_assigned(self) -> None:
         expected_message = "sbansal1999 assigned sbansal1999 to [issue #7](https://github.com/sbansal1999/testing-gh/issues/7)."
@@ -282,8 +307,12 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("member", TOPIC_REPO, expected_message)
 
     def test_pull_request_opened_msg(self) -> None:
+        long_title = (
+            "This is a very long Pull request title to test topic truncation when renaming."
+        )
+        expected_topic_name = truncate_topic(f"public-repo / PR #1 {long_title}")
         expected_message = "baxterthehacker opened [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `baxterthehacker:changes` to `baxterthehacker:master`:\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
-        self.check_webhook("pull_request__opened", TOPIC_PR, expected_message)
+        self.check_webhook("pull_request__opened", expected_topic_name, expected_message)
 
     def test_pull_request_opened_with_preassigned_assignee_msg(self) -> None:
         expected_topic_name = "Scheduler / PR #4 Improve README"
@@ -295,7 +324,7 @@ class GitHubWebhookTest(WebhookTestCase):
     def test_pull_request_opened_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic_name = "notifications"
-        expected_message = "baxterthehacker opened [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1) from `baxterthehacker:changes` to `baxterthehacker:master`:\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
+        expected_message = "baxterthehacker opened [PR #1 This is a very long Pull request title to test topic truncation when renaming](https://github.com/baxterthehacker/public-repo/pull/1) from `baxterthehacker:changes` to `baxterthehacker:master`:\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
         self.check_webhook("pull_request__opened", expected_topic_name, expected_message)
 
     def test_pull_request_synchronized_msg(self) -> None:
@@ -444,14 +473,15 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("push__tag", TOPIC_REPO, expected_message)
 
     def test_pull_request_edited_msg(self) -> None:
+        expected_topic = "public-repo / PR #1 New Short Title"
         expected_message = (
             "baxterthehacker edited [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
         )
-        self.check_webhook("pull_request__edited", TOPIC_PR, expected_message)
+        self.check_webhook("pull_request__edited_title", expected_topic, expected_message)
 
     def test_pull_request_edited_with_body_change(self) -> None:
         expected_message = "cozyrohan edited [PR #1](https://github.com/cozyrohan/public-repo/pull/1):\n\n~~~ quote\nPR EDITED\n~~~"
-        self.check_webhook("pull_request__edited_with_body_change", TOPIC_PR, expected_message)
+        self.check_webhook("pull_request__edited_body", TOPIC_PR, expected_message)
 
     def test_pull_request_synchronized_with_body(self) -> None:
         expected_message = "baxterthehacker updated [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
