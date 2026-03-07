@@ -1033,17 +1033,37 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
     // When doing bulk rerender, we assume that order of rows are not going
     // to change by default. Row insertion can still change the order but
     // we ensure the list remains sorted after insertion.
+    //
+    // Save whether all rows were rendered before updating the data,
+    // so we know if it's safe to use render() for new items below.
+    const was_all_rendered = topics_widget.all_rendered();
     topics_widget.replace_list_data(get_list_data_for_widget(), false);
     topics_widget.filter_and_sort();
-    // Iterate in the order of which the rows should be present so that
+    // Iterate in the order in which the rows should be present so that
     // we are not inserting rows without any rows being present around them.
+    let processed_count = 0;
     for (const topic_data of topics_widget.get_rendered_list()) {
+        if (processed_count >= row_keys.length) {
+            break;
+        }
         const msg = message_store.get(topic_data.last_msg_id);
         assert(msg !== undefined);
         const topic_key = recent_view_util.get_key_from_message(msg);
         if (row_keys.includes(topic_key)) {
             inplace_rerender(topic_key, true);
+            processed_count += 1;
         }
+    }
+    // New conversations from backfilled old messages sort at the end
+    // of the list, beyond the current render offset. Use render() to
+    // efficiently batch-append them in a single DOM operation, rather
+    // than inserting one at a time via insert_rendered_row.
+    //
+    // We can only use render() when the DOM already had all rows up
+    // to the render offset (was_all_rendered), ensuring new items
+    // start right at the offset boundary with no gap.
+    if (processed_count < row_keys.length && was_all_rendered) {
+        topics_widget.render(row_keys.length - processed_count);
     }
     setTimeout(revive_current_focus, 0);
 }
