@@ -1,0 +1,492 @@
+/* Videoconference UIs are conventionally dark to reduce glare on video
+   feeds, so this page uses a fixed dark palette instead of the app's
+   light/dark theme variables. */
+#livekit-call-container {
+    --livekit-accent: hsl(200deg 60% 40%);
+    --livekit-accent-hover: hsl(200deg 60% 50%);
+    --livekit-focus: hsl(200deg 100% 50%);
+    --livekit-danger: hsl(0deg 70% 45%);
+    --livekit-danger-hover: hsl(0deg 70% 55%);
+    --livekit-surface-1: hsl(0deg 0% 25%);
+    --livekit-surface-1-hover: hsl(0deg 0% 35%);
+
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: hsl(0deg 0% 7%);
+    color: hsl(0deg 0% 100%);
+    font-family: "Open Sans", sans-serif;
+    color-scheme: dark;
+}
+
+/* Round icon button shared between the prejoin preview and the in-call
+   controls. Context-specific size and layout is applied by the caller. */
+.livekit-round-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: var(--livekit-surface-1);
+    color: hsl(0deg 0% 100%);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.livekit-round-button:hover:not(:disabled) {
+    background: var(--livekit-surface-1-hover);
+}
+
+.livekit-round-button:focus-visible {
+    outline: 2px solid var(--livekit-focus);
+    outline-offset: 2px;
+}
+
+.livekit-round-button.active {
+    background: var(--livekit-accent);
+}
+
+.livekit-round-button.active:hover:not(:disabled) {
+    background: var(--livekit-accent-hover);
+}
+
+.livekit-round-button[aria-pressed="false"] {
+    opacity: 0.6;
+}
+
+.livekit-round-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .livekit-round-button {
+        transition: none;
+    }
+}
+
+/* Author `display` rules below override the [hidden] attribute's
+   user-agent `display: none`. Restore it inside our root so all our
+   elements toggle correctly via the `hidden` attribute. */
+#livekit-call-container [hidden] {
+    display: none;
+}
+
+#livekit-call-main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+#livekit-call-header {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 10px 16px;
+    background: hsl(0deg 0% 12%);
+    border-bottom: 1px solid hsl(0deg 0% 20%);
+}
+
+#livekit-call-meeting-title {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+#livekit-call-status {
+    text-align: center;
+    padding: 8px;
+    font-size: 14px;
+    color: hsl(0deg 0% 80%);
+    min-height: 30px;
+}
+
+#livekit-call-status:empty {
+    display: none;
+}
+
+#livekit-call-participants {
+    flex: 1;
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 8px;
+    overflow: hidden;
+}
+
+#livekit-call-participants.livekit-call-focus-mode {
+    grid-template-columns: 1fr 20em;
+}
+
+#livekit-call-focus-stage {
+    display: none;
+    gap: 8px;
+    min-height: 0;
+    overflow: hidden;
+}
+
+#livekit-call-participants.livekit-call-focus-mode #livekit-call-focus-stage {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+}
+
+#livekit-call-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20em, 1fr));
+    /* Rows stretch to fill the container; min height keeps tiles usable
+       and triggers scrolling once participants overflow vertically. */
+    grid-auto-rows: minmax(14em, 1fr);
+    gap: 8px;
+    overflow: auto;
+    min-height: 0;
+}
+
+#livekit-call-participants.livekit-call-focus-mode #livekit-call-grid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: 11em;
+    align-content: start;
+}
+
+.livekit-call-participant-tile {
+    position: relative;
+    background: hsl(0deg 0% 15%);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 14em;
+}
+
+#livekit-call-participants.livekit-call-focus-mode
+    #livekit-call-grid
+    .livekit-call-participant-tile {
+    min-height: 0;
+}
+
+#livekit-call-focus-stage .livekit-call-screenshare-tile {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+}
+
+.livekit-call-participant-tile.livekit-call-local {
+    border: 2px solid var(--livekit-focus);
+}
+
+.livekit-call-participant-name {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    background: hsl(0deg 0% 0% / 60%);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    z-index: 2;
+}
+
+.livekit-call-participant-avatar {
+    width: 2.7em;
+    height: 2.7em;
+    border-radius: 50%;
+    background: var(--livekit-accent);
+    color: hsl(0deg 0% 100%);
+    font-size: 36px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    user-select: none;
+}
+
+.livekit-call-media {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: hsl(0deg 0% 7%);
+    z-index: 1;
+}
+
+/* Mirror the local camera self-view, matching the pre-join preview and
+   the convention set by Google Meet / Zoom. Screen share is left
+   unmirrored. */
+.livekit-call-participant-tile.livekit-call-local
+    .livekit-call-media[data-source="camera"] {
+    transform: scaleX(-1);
+}
+
+.livekit-call-media.livekit-call-muted {
+    display: none;
+}
+
+.livekit-call-screenshare {
+    object-fit: contain;
+    background: hsl(0deg 0% 0%);
+}
+
+#livekit-call-controls {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px;
+    background: hsl(0deg 0% 12%);
+}
+
+#livekit-call-controls .livekit-round-button {
+    width: 4em;
+    height: 4em;
+    font-size: 26px;
+}
+
+#livekit-call-controls #livekit-call-leave {
+    background: var(--livekit-danger);
+}
+
+#livekit-call-controls #livekit-call-leave:hover:not(:disabled) {
+    background: var(--livekit-danger-hover);
+}
+
+@media (width <= 600px) {
+    #livekit-call-grid {
+        grid-template-columns: 1fr;
+    }
+
+    #livekit-call-participants.livekit-call-focus-mode {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 8em;
+    }
+
+    #livekit-call-participants.livekit-call-focus-mode #livekit-call-grid {
+        grid-template-columns: none;
+        grid-auto-flow: column;
+        grid-auto-columns: 11em;
+        grid-auto-rows: 1fr;
+        overflow: auto hidden;
+    }
+
+    #livekit-call-controls .livekit-round-button {
+        width: 3.25em;
+        height: 3.25em;
+        font-size: 22px;
+    }
+}
+
+#livekit-prejoin {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    overflow: auto;
+}
+
+#livekit-prejoin-card {
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: hsl(0deg 0% 12%);
+    border: 1px solid hsl(0deg 0% 20%);
+    border-radius: 12px;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+#livekit-prejoin-title {
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+#livekit-prejoin-preview {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: hsl(0deg 0% 7%);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#livekit-prejoin-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Mirror the local preview so it feels like a mirror, as most
+       conferencing apps do. */
+    transform: scaleX(-1);
+    background: hsl(0deg 0% 7%);
+}
+
+#livekit-prejoin-video-off {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: hsl(0deg 0% 100%);
+}
+
+#livekit-prejoin-avatar-letter {
+    width: 2.3em;
+    height: 2.3em;
+    border-radius: 50%;
+    background: var(--livekit-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 56px;
+    font-weight: 600;
+    text-transform: uppercase;
+    user-select: none;
+}
+
+#livekit-prejoin-preview-controls {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 2;
+}
+
+.livekit-prejoin-toggle {
+    width: 2.75em;
+    height: 2.75em;
+    font-size: 18px;
+}
+
+#livekit-prejoin-meter {
+    height: 6px;
+    background: hsl(0deg 0% 20%);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+#livekit-prejoin-meter-bar {
+    height: 100%;
+    width: 100%;
+    transform: scaleX(0);
+    transform-origin: left center;
+    background: hsl(140deg 60% 45%);
+    transition: transform 0.05s linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #livekit-prejoin-meter-bar {
+        transition: none;
+    }
+}
+
+#livekit-prejoin-status {
+    text-align: center;
+    font-size: 13px;
+    color: hsl(0deg 0% 80%);
+    min-height: 1em;
+}
+
+#livekit-prejoin-status:empty {
+    display: none;
+}
+
+#livekit-prejoin-error {
+    text-align: center;
+    font-size: 13px;
+    color: hsl(0deg 90% 75%);
+    background: hsl(0deg 40% 20%);
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+#livekit-prejoin-devices {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#livekit-prejoin-devices label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    color: hsl(0deg 0% 80%);
+}
+
+#livekit-prejoin-devices select {
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid hsl(0deg 0% 25%);
+    background: hsl(0deg 0% 15%);
+    color: hsl(0deg 0% 100%);
+    font-size: 14px;
+    font-family: inherit;
+}
+
+#livekit-prejoin-devices select:focus-visible {
+    outline: 2px solid var(--livekit-focus);
+    outline-offset: 1px;
+}
+
+#livekit-prejoin-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+#livekit-prejoin-actions button {
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    font-size: 14px;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+#livekit-prejoin-cancel {
+    background: var(--livekit-surface-1);
+    color: hsl(0deg 0% 100%);
+}
+
+#livekit-prejoin-cancel:hover {
+    background: var(--livekit-surface-1-hover);
+}
+
+#livekit-prejoin-join {
+    background: var(--livekit-accent);
+    color: hsl(0deg 0% 100%);
+}
+
+#livekit-prejoin-join:hover {
+    background: var(--livekit-accent-hover);
+}
+
+#livekit-prejoin-actions button:focus-visible {
+    outline: 2px solid var(--livekit-focus);
+    outline-offset: 2px;
+}
+
+@media (width <= 480px) {
+    #livekit-prejoin-card {
+        padding: 16px;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+    }
+
+    #livekit-prejoin-actions {
+        flex-direction: column-reverse;
+    }
+
+    #livekit-prejoin-actions button {
+        width: 100%;
+    }
+}
