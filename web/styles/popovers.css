@@ -236,24 +236,13 @@
 
 .hidden-remove-button {
     opacity: 0;
-    visibility: hidden;
-    transition:
-        opacity 0.3s ease,
-        visibility 0.3s ease;
-    pointer-events: none;
 }
 
-.hidden-remove-button:has(.button-loading-indicator) {
-    visibility: visible;
-    cursor: default;
+.hidden-remove-button-row:hover .hidden-remove-button,
+.hidden-remove-button:focus,
+.hidden-remove-button-row:focus-within .hidden-remove-button,
+.hidden-remove-button-row:focus .hidden-remove-button {
     opacity: 1;
-}
-
-.hidden-remove-button-row:hover
-    .hidden-remove-button:not(:has(.button-loading-indicator)) {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
 }
 
 #stream-actions-menu-popover,
