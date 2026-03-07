@@ -35,11 +35,13 @@ const compose_state = zrequire("compose_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const server_events_dispatch = zrequire("server_events_dispatch");
-const {set_realm} = zrequire("state_data");
+const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const sub_store = zrequire("sub_store");
 
 const realm = make_realm();
+const current_user = {is_guest: false};
+set_current_user(current_user);
 set_realm(realm);
 
 people.add_active_user(test_user);
@@ -236,8 +238,15 @@ test("stream delete (normal)", ({override, override_rewire}) => {
     override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
 
     stream_data.subscribe_myself(devel_sub);
+    stream_data.set_realm_default_streams(event.stream_ids);
 
-    override(settings_streams, "update_default_streams_table", noop);
+    let updates = 0;
+    override(settings_streams, "update_default_streams_table", () => {
+        updates += 1;
+        for (const stream_id of event.stream_ids) {
+            assert.equal(stream_data.is_default_stream_id(stream_id), false);
+        }
+    });
 
     const removed_stream_ids = [];
 
@@ -253,6 +262,7 @@ test("stream delete (normal)", ({override, override_rewire}) => {
     dispatch(event);
 
     assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
+    assert.equal(updates, 1);
 });
 
 test("stream delete (special streams)", ({override, override_rewire}) => {
