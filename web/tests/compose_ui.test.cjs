@@ -1446,3 +1446,54 @@ run_test("get_focus_area", ({override}) => {
         "input#stream_message_recipient_topic",
     );
 });
+
+run_test("handle_list_indent", () => {
+    function make_list_textarea(val, selectionStart, selectionEnd) {
+        const elem = {
+            value: val,
+            selectionStart,
+            selectionEnd,
+            setSelectionRange(start, end) {
+                this.selectionStart = start;
+                this.selectionEnd = end;
+            },
+        };
+        return {length: 1, 0: elem, trigger: noop};
+    }
+
+    {
+        const $t = make_list_textarea("- Item 1\n- Item 2", 9, 9);
+        assert.ok(compose_ui.handle_list_indent($t, true));
+        assert.equal($t[0].value, "- Item 1\n  - Item 2");
+    }
+
+    {
+        const $t = make_list_textarea("- Item 1\n  - Item 2", 11, 11);
+        assert.ok(compose_ui.handle_list_indent($t, false));
+        assert.equal($t[0].value, "- Item 1\n- Item 2");
+    }
+
+    {
+        const $t = make_list_textarea("Hello world", 5, 5);
+        assert.equal(compose_ui.handle_list_indent($t, true), false);
+        assert.equal($t[0].value, "Hello world");
+    }
+
+    {
+        const $t = make_list_textarea("- Item 1", 3, 3);
+        assert.equal(compose_ui.handle_list_indent($t, false), false);
+    }
+
+    {
+        const val = "- Item 1\n- Item 2\n- Item 3";
+        const $t = make_list_textarea(val, 0, val.length);
+        assert.ok(compose_ui.handle_list_indent($t, true));
+        assert.equal($t[0].value, "  - Item 1\n  - Item 2\n  - Item 3");
+    }
+
+    {
+        const $t = make_list_textarea("1. Item 1", 0, 0);
+        assert.ok(compose_ui.handle_list_indent($t, true));
+        assert.equal($t[0].value, "  1. Item 1");
+    }
+});

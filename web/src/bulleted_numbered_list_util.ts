@@ -10,3 +10,5 @@ export const is_numbered = (line: string): boolean => /^\d+\. /.test(line);
 export const strip_bullet = (line: string): string => line.slice(2);
 
 export const strip_numbering = (line: string): string => line.slice(line.indexOf(" ") + 1);
+
+export const is_list_item = (line: string): boolean => /^\s*([-*+]|\d+\.) /.test(line);
