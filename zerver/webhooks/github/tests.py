@@ -163,6 +163,14 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "Pritesh-30 edited [issue #6](https://github.com/Pritesh-30/test-repo/issues/6):\n\n~~~ quote\nThe body of the issue is edited.\n~~~"
         self.check_webhook("issues__edited_title", expected_topic_name, expected_message)
 
+    def test_issue_edited_compact(self) -> None:
+        self.url = self.build_webhook_url(compact_edit="true")
+        expected_topic_name = "test-repo / issue #6 New Issue edited"
+        expected_message = (
+            "Pritesh-30 edited [issue #6](https://github.com/Pritesh-30/test-repo/issues/6)."
+        )
+        self.check_webhook("issues__edited_body", expected_topic_name, expected_message)
+
     def test_issue_comment_msg(self) -> None:
         expected_message = "baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/issues/2#issuecomment-99262140) on [issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nYou are totally right! I'll get this fixed right away.\n~~~"
         self.check_webhook("issue_comment", TOPIC_ISSUE, expected_message)
@@ -451,6 +459,13 @@ class GitHubWebhookTest(WebhookTestCase):
 
     def test_pull_request_edited_with_body_change(self) -> None:
         expected_message = "cozyrohan edited [PR #1](https://github.com/cozyrohan/public-repo/pull/1):\n\n~~~ quote\nPR EDITED\n~~~"
+        self.check_webhook("pull_request__edited_with_body_change", TOPIC_PR, expected_message)
+
+    def test_pull_request_edited_compact(self) -> None:
+        self.url = self.build_webhook_url(compact_edit="true")
+        expected_message = (
+            "cozyrohan edited [PR #1](https://github.com/cozyrohan/public-repo/pull/1)."
+        )
         self.check_webhook("pull_request__edited_with_body_change", TOPIC_PR, expected_message)
 
     def test_pull_request_synchronized_with_body(self) -> None:
