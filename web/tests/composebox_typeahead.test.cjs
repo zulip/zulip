@@ -656,19 +656,21 @@ const make_emoji = (emoji_dict) => ({
     type: "emoji",
 });
 
-// Sorted by name
+// Empty query: compare_users_for_pms sorts alphabetically
+// by full_name (no recipient count, no partners, no name-length
+// tiebreaker without a query).
 const sorted_user_list = [
-    ali_item,
-    alice_item,
-    cordelia_item,
-    hal_item, // Early Hal
-    gael_item,
-    harry_item,
+    ali_item, // Ali
+    alice_item, // Alice
+    cordelia_item, // Cordelia, Lear's daughter
+    hal_item, // Earl Hal
+    gael_item, // Gaël Twin
+    harry_item, // Harry
     hamlet_item, // King Hamlet
-    lear_item,
+    lear_item, // King Lear
     twin1_item, // Mark Twin
-    twin2_item,
-    othello_item,
+    twin2_item, // Mark Twin
+    othello_item, // Othello, the Moor of Venice
 ];
 
 function test(label, f) {
@@ -1382,20 +1384,21 @@ test("initialize", ({override, override_rewire, mock_template}) => {
             case $("#private_message_recipient")[0]: {
                 pill_items = [];
 
-                // This should match the users added at the beginning of this test file.
+                // Empty query: alphabetical by full_name (no recipient
+                // count or PM partners), then groups, then bot.
                 let actual_value = options.source("");
                 let expected_value = [
-                    ali_item,
-                    alice_item,
-                    cordelia_item,
-                    hal_item,
-                    gael_item,
-                    harry_item,
-                    hamlet_item,
-                    lear_item,
-                    twin1_item,
-                    twin2_item,
-                    othello_item,
+                    ali_item, // Ali
+                    alice_item, // Alice
+                    cordelia_item, // Cordelia, Lear's daughter
+                    hal_item, // Earl Hal
+                    gael_item, // Gaël Twin
+                    harry_item, // Harry
+                    hamlet_item, // King Hamlet
+                    lear_item, // King Lear
+                    twin1_item, // Mark Twin
+                    twin2_item, // Mark Twin
+                    othello_item, // Othello, the Moor of Venice
                     hamletcharacters,
                     backend,
                     call_center,
@@ -1931,22 +1934,24 @@ test("begins_typeahead", ({override, override_rewire}) => {
     ]);
 
     const mention_all = broadcast_item(ct.broadcast_mentions()[0]);
+    // No stream context and no PM partners: broadcast sorts before
+    // all non-partner users; bots alphabetical by full_name.
     const users_and_all_mention = [
-        ...sorted_user_list,
         mention_all,
-        notification_bot_item,
-        welcome_bot_item,
+        ...sorted_user_list,
+        notification_bot_item, // Notification Bot
+        welcome_bot_item, // Welcome Bot
     ];
     const users_and_user_groups = [
         ...sorted_user_list,
-        // alphabetical
+        // Groups alphabetical by display name.
         hamletcharacters, // "Characters of Hamlet"
         backend,
-        call_center, // "folks working in support",
+        call_center, // "folks working in support"
         admins,
         members,
-        notification_bot_item,
-        welcome_bot_item,
+        notification_bot_item, // Notification Bot
+        welcome_bot_item, // Welcome Bot
     ];
     const mention_everyone = broadcast_item(ct.broadcast_mentions()[1]);
     function mentions_with_silent_marker(mentions, is_silent) {
@@ -1964,47 +1969,57 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("@_*", mentions_with_silent_marker(users_and_user_groups, true));
     assert_typeahead_equals("@**", mentions_with_silent_marker(users_and_all_mention, false));
     assert_typeahead_equals("@_**", mentions_with_silent_marker(users_and_user_groups, true));
+    // "o" is anywhere in each name; Othello starts with "o" so
+    // sorts first.  Broadcast before non-partner users (no PM
+    // partners in test), then bots by name length (shorter first).
     assert_typeahead_equals(
         "test @**o",
         mentions_with_silent_marker(
             [
-                othello_item,
-                cordelia_item,
-                mention_everyone,
-                notification_bot_item,
-                welcome_bot_item,
+                othello_item, // Othello starts with "o"
+                mention_everyone, // broadcast: before non-partner users
+                cordelia_item, // "Cordelia" contains "o"
+                welcome_bot_item, // Welcome Bot
+                notification_bot_item, // Notification Bot
             ],
             false,
         ),
     );
     assert_typeahead_equals(
         "test @_**o",
-
         mentions_with_silent_marker(
-            [othello_item, cordelia_item, admins, members, notification_bot_item, welcome_bot_item],
+            [othello_item, cordelia_item, admins, members, welcome_bot_item, notification_bot_item],
             true,
         ),
     );
+    // Same as @**o above.
     assert_typeahead_equals(
         "test @*o",
         mentions_with_silent_marker(
             [
                 othello_item,
-                cordelia_item,
                 mention_everyone,
-                notification_bot_item,
+                cordelia_item,
                 welcome_bot_item,
+                notification_bot_item,
             ],
             false,
         ),
     );
+    // "k" matches: "King Hamlet" and "King Lear" start with "k"
+    // (best, shorter name first); "Mark Twin" x2 contain "k" (ok,
+    // word-boundary match); "backend" group also matches.
     assert_typeahead_equals(
         "test @_*k",
         mentions_with_silent_marker(
-            [hamlet_item, lear_item, twin1_item, twin2_item, backend],
+            [lear_item, hamlet_item, twin1_item, twin2_item, backend],
             true,
         ),
     );
+    // "h": Harry starts with "h" (best); Earl Hal and King Hamlet
+    // have word-boundary match (ok, shorter name first); Cordelia and
+    // Othello contain "h" but no word-boundary match (worst,
+    // shorter name first).
     assert_typeahead_equals(
         "test @*h",
         mentions_with_silent_marker(
@@ -2029,20 +2044,23 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("@_* ", []);
     assert_typeahead_equals("@** ", []);
     assert_typeahead_equals("@_** ", []);
+    // "i" has no name-start match; all users whose name contains "i"
+    // are in the worst tier, sorted by name length (shorter first);
+    // equal-length names alphabetical by full_name.
     assert_typeahead_equals(
         "test\n@i",
         mentions_with_silent_marker(
             [
-                ali_item,
-                alice_item,
-                cordelia_item,
-                gael_item,
-                hamlet_item,
-                lear_item,
-                twin1_item,
-                twin2_item,
-                othello_item,
-                notification_bot_item,
+                ali_item, // Ali (3)
+                alice_item, // Alice (5)
+                gael_item, // Gaël Twin (9)
+                lear_item, // King Lear (9)
+                twin1_item, // Mark Twin (9)
+                twin2_item, // Mark Twin (9)
+                hamlet_item, // King Hamlet (11)
+                cordelia_item, // Cordelia, Lear's daughter (25)
+                othello_item, // Othello, the Moor of Venice (28)
+                notification_bot_item, // Notification Bot (bot tier)
             ],
             false,
         ),
@@ -2051,35 +2069,38 @@ test("begins_typeahead", ({override, override_rewire}) => {
         "test\n@_i",
         mentions_with_silent_marker(
             [
-                ali_item,
-                alice_item,
-                cordelia_item,
-                gael_item,
-                hamlet_item,
-                lear_item,
-                twin1_item,
-                twin2_item,
-                othello_item,
-                admins,
-                notification_bot_item,
+                ali_item, // Ali (3)
+                alice_item, // Alice (5)
+                gael_item, // Gaël Twin (9)
+                lear_item, // King Lear (9)
+                twin1_item, // Mark Twin (9)
+                twin2_item, // Mark Twin (9)
+                hamlet_item, // King Hamlet (11)
+                cordelia_item, // Cordelia, Lear's daughter (25)
+                othello_item, // Othello, the Moor of Venice (28)
+                admins, // group: admins
+                notification_bot_item, // Notification Bot (bot tier)
             ],
             true,
         ),
     );
+    // "l": King Lear and Cordelia have word-boundary match on "Lear"
+    // (best, shorter name first).  Broadcast before non-partner
+    // users (worst); remaining users by name length; then bot.
     assert_typeahead_equals(
         "test\n @l",
         mentions_with_silent_marker(
             [
-                cordelia_item,
-                lear_item,
-                ali_item,
-                alice_item,
-                hal_item,
-                gael_item,
-                hamlet_item,
-                othello_item,
-                mention_all,
-                welcome_bot_item,
+                lear_item, // King *L*ear (9)
+                cordelia_item, // Cordelia, *L*ear's daughter (25)
+                mention_all, // broadcast "all" (before non-partners)
+                ali_item, // Ali (3)
+                alice_item, // Alice (5)
+                hal_item, // Earl Hal (8)
+                gael_item, // Gaël Twin (9)
+                hamlet_item, // King Hamlet (11)
+                othello_item, // Othello, the Moor of Venice (28)
+                welcome_bot_item, // Welcome Bot (bot tier)
             ],
             false,
         ),
@@ -2088,8 +2109,8 @@ test("begins_typeahead", ({override, override_rewire}) => {
         "test\n @_l",
         mentions_with_silent_marker(
             [
-                cordelia_item,
                 lear_item,
+                cordelia_item,
                 ali_item,
                 alice_item,
                 hal_item,
@@ -2110,15 +2131,16 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("@_ zuli", []);
     assert_typeahead_equals(" @zuli", []);
     assert_typeahead_equals(" @_zuli", []);
+    // Same ordering logic as @**o above.
     assert_typeahead_equals(
         "test @o",
         mentions_with_silent_marker(
             [
                 othello_item,
-                cordelia_item,
                 mention_everyone,
-                notification_bot_item,
+                cordelia_item,
                 welcome_bot_item,
+                notification_bot_item,
             ],
             false,
         ),
@@ -2126,7 +2148,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals(
         "test @_o",
         mentions_with_silent_marker(
-            [othello_item, cordelia_item, admins, members, notification_bot_item, welcome_bot_item],
+            [othello_item, cordelia_item, admins, members, welcome_bot_item, notification_bot_item],
             true,
         ),
     );
@@ -2609,7 +2631,8 @@ test("typeahead_results", ({override}) => {
     assert_mentions_matches("oor ", []);
     assert_mentions_matches("oor o", []);
     assert_mentions_matches("oor of venice", []);
-    assert_mentions_matches("King ", [not_silent(hamlet_item), not_silent(lear_item)]);
+    // Both start with "King "; shorter name first: Lear (9) < Hamlet (11).
+    assert_mentions_matches("King ", [not_silent(lear_item), not_silent(hamlet_item)]);
     assert_mentions_matches("King H", [not_silent(hamlet_item)]);
     assert_mentions_matches("King L", [not_silent(lear_item)]);
     assert_mentions_matches("delia lear", []);
@@ -2628,33 +2651,37 @@ test("typeahead_results", ({override}) => {
     // Verify we suggest only the first matching stream wildcard mention,
     // irrespective of how many equivalent stream wildcard mentions match.
     const mention_everyone = not_silent(broadcast_item(ct.broadcast_mentions()[1]));
-    // Here, we suggest only "everyone" instead of both the matching
-    // "everyone" and "stream" wildcard mentions.
+    // compose_state is "stream" here, so broadcasts sort before users.
+    // "everyone" and Earl Hal start with "e" (best, broadcast first);
+    // remaining users contain "e" (worst, shorter name first); then
+    // groups and bots.
     assert_mentions_matches("e", [
-        not_silent(mention_everyone),
-        not_silent(hal_item),
-        not_silent(alice_item),
-        not_silent(cordelia_item),
-        not_silent(gael_item),
-        not_silent(hamlet_item),
-        not_silent(lear_item),
-        not_silent(othello_item),
-        not_silent(hamletcharacters),
-        not_silent(call_center),
-        not_silent(welcome_bot_item),
+        not_silent(mention_everyone), // broadcast: "everyone" starts with "e"
+        not_silent(hal_item), // Earl Hal (8) starts with "e"
+        not_silent(alice_item), // Alice (5)
+        not_silent(gael_item), // Gaël Twin (9)
+        not_silent(lear_item), // King Lear (9)
+        not_silent(hamlet_item), // King Hamlet (11)
+        not_silent(cordelia_item), // Cordelia, Lear's daughter (25)
+        not_silent(othello_item), // Othello, the Moor of Venice (28)
+        not_silent(hamletcharacters), // group
+        not_silent(call_center), // group
+        not_silent(welcome_bot_item), // Welcome Bot (bot tier)
     ]);
 
     // Verify we suggest both 'the first matching stream wildcard' and
     // 'topic wildcard' mentions. Not only one matching wildcard mention.
     const mention_topic = broadcast_item(ct.broadcast_mentions()[4]);
-    // Here, we suggest both "everyone" and "topic".
+    // Othello starts with "o" (best); everyone/topic broadcasts and
+    // Cordelia contain "o" (worst, broadcasts first in stream mode,
+    // then user); bots by name length (shorter first).
     assert_mentions_matches("o", [
-        not_silent(othello_item),
-        not_silent(mention_everyone),
-        not_silent(mention_topic),
-        not_silent(cordelia_item),
-        not_silent(notification_bot_item),
-        not_silent(welcome_bot_item),
+        not_silent(othello_item), // Othello starts with "o"
+        not_silent(mention_everyone), // broadcast (stream mode: first)
+        not_silent(mention_topic), // broadcast (stream mode: first)
+        not_silent(cordelia_item), // "Cordelia" contains "o"
+        not_silent(welcome_bot_item), // Welcome Bot
+        not_silent(notification_bot_item), // Notification Bot
     ]);
 
     // Autocomplete by slash commands.
