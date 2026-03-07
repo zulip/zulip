@@ -59,6 +59,7 @@ from zerver.lib.exceptions import (
     CannotManageDefaultChannelError,
     JsonableError,
     OrganizationOwnerRequiredError,
+    PermissionDeniedError,
 )
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.message import bulk_access_stream_messages_query
@@ -898,11 +899,7 @@ def add_subscriptions_backend(
     )
 
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
-        raise JsonableError(
-            _("Unable to access channel ({channel_name}).").format(
-                channel_name=unauthorized_streams[0].name,
-            )
-        )
+        raise PermissionDeniedError
     if len(streams_to_which_user_cannot_add_subscribers) > 0:
         raise JsonableError(_("Insufficient permission"))
 
