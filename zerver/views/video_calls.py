@@ -76,22 +76,16 @@ class UnknownZoomUserError(JsonableError):
 
 class ConstructorGroupsService:
     def __init__(self) -> None:
-        if not self._is_configured():
+        if (
+            (url := settings.CONSTRUCTOR_GROUPS_URL) is None
+            or (access_key := settings.CONSTRUCTOR_GROUPS_ACCESS_KEY) is None
+            or (secret_key := settings.CONSTRUCTOR_GROUPS_SECRET_KEY) is None
+        ):
             raise CreateVideoCallFailedError("Constructor Groups")
 
-        self.access_key = settings.CONSTRUCTOR_GROUPS_ACCESS_KEY
-        self.secret_key = settings.CONSTRUCTOR_GROUPS_SECRET_KEY
-        self.base_url = (
-            settings.CONSTRUCTOR_GROUPS_URL.rstrip("/") if settings.CONSTRUCTOR_GROUPS_URL else ""
-        )
-
-    @staticmethod
-    def _is_configured() -> bool:
-        return (
-            settings.CONSTRUCTOR_GROUPS_URL is not None
-            and settings.CONSTRUCTOR_GROUPS_ACCESS_KEY is not None
-            and settings.CONSTRUCTOR_GROUPS_SECRET_KEY is not None
-        )
+        self.access_key = access_key
+        self.secret_key = secret_key
+        self.base_url = url.rstrip("/")
 
     def _make_authenticated_request(
         self, method: str, endpoint: str, data: dict[str, Any] | None = None
@@ -554,8 +548,12 @@ def make_constructor_groups_video_call(
 
     room_data = service.get_or_create_default_room(
         creator_email=user_profile.delivery_email,
-        name=f"{user_profile.full_name}'s Zulip room",
-        fallback_name=f"{user_profile.full_name}'s Zulip room ({user_profile.realm_id}-{user_profile.id})",
+        name=_("{full_name}'s Zulip room").format(full_name=user_profile.full_name),
+        fallback_name=_("{full_name}'s Zulip room ({org_id}-{user_id})").format(
+            full_name=user_profile.full_name,
+            org_id=user_profile.realm_id,
+            user_id=user_profile.id,
+        ),
     )
 
     room_url = room_data.get("url", "")
