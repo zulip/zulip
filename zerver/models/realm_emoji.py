@@ -4,6 +4,7 @@ from django.core.validators import MinLengthValidator, RegexValidator
 from django.db import models
 from django.db.models import CASCADE, Q
 from django.db.models.signals import post_delete, post_save
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext_lazy
 from typing_extensions import override
 
@@ -18,6 +19,7 @@ class EmojiInfo(TypedDict):
     deactivated: bool
     author_id: int | None
     still_url: str | None
+    created_at: int
 
 
 def get_all_custom_emoji_for_realm_cache_key(realm_id: int) -> str:
@@ -51,6 +53,9 @@ class RealmEmoji(models.Model):
     is_animated = models.BooleanField(default=False)
 
     deactivated = models.BooleanField(default=False)
+
+    # When the emoji was created (for calculating new emoji bonuses)
+    created_at = models.DateTimeField(default=timezone_now, db_index=True)
 
     PATH_ID_TEMPLATE = "{realm_id}/emoji/images/{emoji_file_name}"
     STILL_PATH_ID_TEMPLATE = "{realm_id}/emoji/images/still/{emoji_filename_without_extension}.png"
@@ -92,6 +97,7 @@ def get_all_custom_emoji_for_realm_uncached(realm_id: int) -> dict[str, EmojiInf
             deactivated=realm_emoji.deactivated,
             author_id=author_id,
             still_url=None,
+            created_at=int(realm_emoji.created_at.timestamp() * 1000),
         )
 
         if realm_emoji.is_animated:

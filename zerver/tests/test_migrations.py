@@ -4,6 +4,7 @@
 # You can also read
 #   https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
 # to get a tutorial on the framework that inspired this feature.
+from datetime import datetime, timezone
 from unittest import skip
 from unittest.mock import patch
 
@@ -55,3 +56,45 @@ class RenameUserHotspot(MigrationsTestCase):
         fields_name = {field.name for field in OnboardingStep._meta.get_fields()}
 
         self.assertEqual(fields_name, expected_field_names)
+
+
+class RealmEmojiCreatedAtMigration(MigrationsTestCase):  # nocoverage
+    """Tests for migration 0769_realmemoji_created_at.
+
+    Verifies that the field is absent before the migration, present after,
+    defaults to the epoch sentinel (not timezone_now), and that the migration
+    contains both AddField and RunPython (the RealmAuditLog backfill).
+    """
+
+    migrate_from = "0768_realmauditlog_scrubbed"
+    migrate_to = "0769_realmemoji_created_at"
+
+    @override
+    def setUpBeforeMigration(self, apps: StateApps) -> None:
+        RealmEmoji = apps.get_model("zerver", "RealmEmoji")
+        field_names = {field.name for field in RealmEmoji._meta.get_fields()}
+        self.assertNotIn("created_at", field_names)
+
+    def test_created_at_field_added_with_epoch_default(self) -> None:
+        from django.db.migrations.loader import MigrationLoader
+
+        RealmEmoji = self.apps.get_model("zerver", "RealmEmoji")
+
+        field_names = {field.name for field in RealmEmoji._meta.get_fields()}
+        self.assertIn("created_at", field_names)
+
+        # Default must be the epoch sentinel, not a callable like timezone_now.
+        created_at_field = RealmEmoji._meta.get_field("created_at")
+        epoch = datetime(1970, 1, 1, tzinfo=timezone.utc)
+        self.assertEqual(created_at_field.default, epoch)
+        self.assertFalse(callable(created_at_field.default))
+
+        # Both AddField and RunPython must be present — the backfill is mandatory.
+        loader = MigrationLoader(None, ignore_no_migrations=True)
+        migration = loader.get_migration("zerver", "0769_realmemoji_created_at")
+        from django.db.migrations.operations.special import RunPython
+        from django.db.migrations.operations.fields import AddField
+
+        self.assertEqual(len(migration.operations), 2)
+        self.assertIsInstance(migration.operations[0], AddField)
+        self.assertIsInstance(migration.operations[1], RunPython)
