@@ -480,6 +480,22 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
         $("textarea#compose-textarea").trigger("focus");
         has_topic_focus = false;
     }
+
+    // If user cannot create new topics and there's no existing empty topic,
+    // show "Topic" placeholder consistently (like mandatory topic channels).
+    const stream_id = compose_state.stream_id();
+    if (
+        stream_id !== undefined &&
+        !stream_data.can_create_new_topics_in_stream(stream_id) &&
+        stream_topic_history.has_history_for(stream_id)
+    ) {
+        const existing_topics = stream_topic_history.get_recent_topic_names(stream_id);
+        if (!existing_topics.includes("")) {
+            $input.attr("placeholder", $t({defaultMessage: "Topic"}));
+            return;
+        }
+    }
+
     // Otherwise, we have some adjustments to make to display:
     // * a placeholder with the default topic name stylized
     // * the empty string topic stylized
