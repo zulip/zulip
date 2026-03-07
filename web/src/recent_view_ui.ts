@@ -123,6 +123,14 @@ let is_waiting_for_revive_current_focus = true;
 let last_scroll_offset: number | undefined;
 let hide_other_views_callback: (() => void) | undefined;
 
+// Scroll position before user started searching, so we can
+// restore it when the search is cleared.
+let pre_search_scroll_position = 0;
+// ID of the last message in the focused row before search, so we
+// can restore focus to the same conversation when search is cleared.
+let pre_search_topic_last_msg_id: number | undefined;
+let previous_search_term = "";
+
 export function set_hide_other_views(callback: () => void): void {
     hide_other_views_callback = callback;
 }
@@ -2104,6 +2112,10 @@ export function initialize({
         change_focused_element($(e.target), "click");
     });
 
+    $("body").on("click", "#recent-view-search-wrapper .input-close-filter-button", () => {
+        set_default_focus();
+    });
+
     $("body").on("click", "#recent-view-content-table .on_hover_topic_read", (e) => {
         e.stopPropagation();
         assert(e.currentTarget instanceof HTMLElement);
@@ -2221,9 +2233,55 @@ export function initialize({
         "input",
         "#recent_view_search",
         _.debounce(() => {
-            // Reset focus to first row on new search.
-            row_focus = 0;
-            update_filters_view();
+            const search_term = $<HTMLInputElement>("#recent_view_search").val() ?? "";
+            const is_previous_search_term_empty = previous_search_term === "";
+            previous_search_term = search_term;
+
+            if (search_term !== "" && is_previous_search_term_empty) {
+                // Store original scroll position and focused topic to be
+                // restored later, before the table is re-rendered.
+                pre_search_scroll_position = window.scrollY;
+                if (topics_widget !== undefined) {
+                    const current_list = topics_widget.get_current_list();
+                    const focused_topic = current_list[row_focus];
+                    pre_search_topic_last_msg_id = focused_topic?.last_msg_id;
+                }
+            }
+
+            if (search_term === "") {
+                // Restore focus to the topic that was focused before search.
+                if (topics_widget !== undefined && pre_search_topic_last_msg_id !== undefined) {
+                    // We need to find the index after redraw since the
+                    // list is re-rendered and indices may have changed.
+                    row_focus = 0;
+                    update_filters_view();
+                    const current_list = topics_widget.get_current_list();
+                    const topic_index = current_list.findIndex(
+                        (topic) => topic.last_msg_id === pre_search_topic_last_msg_id,
+                    );
+                    if (topic_index !== -1) {
+                        row_focus = topic_index;
+                    }
+                    // The initial render might not have rendered enough
+                    // rows for the target row_focus. Calling render()
+                    // will use get_min_load_count to extend rendering
+                    // if needed.
+                    topics_widget.render();
+                    set_table_focus(row_focus, col_focus);
+                    pre_search_topic_last_msg_id = undefined;
+                } else {
+                    row_focus = 0;
+                    update_filters_view();
+                }
+                // Restore previous scroll position when search is cleared.
+                window.scrollTo(0, pre_search_scroll_position);
+            } else {
+                // Reset focus to first row on new search.
+                row_focus = 0;
+                update_filters_view();
+                // Always scroll to top when there is a search term present.
+                window.scrollTo(0, 0);
+            }
             // Wait for user to go idle before initiating search.
         }, 300),
     );
