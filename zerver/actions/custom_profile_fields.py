@@ -1,6 +1,7 @@
 from collections.abc import Iterable
 
 import orjson
+import phonenumbers
 from django.db import transaction
 from django.utils.translation import gettext as _
 
@@ -191,6 +192,16 @@ def do_update_user_custom_profile_data_if_changed(
         field_value, created = CustomProfileFieldValue.objects.get_or_create(
             user_profile=user_profile, field_id=custom_profile_field["id"]
         )
+
+        if field_value.field.field_type == CustomProfileField.PHONE_NUMBER:
+            try:
+                parsed = phonenumbers.parse(str(custom_profile_field["value"]), "US")
+                clean_number = phonenumbers.format_number(
+                    parsed, phonenumbers.PhoneNumberFormat.E164
+                )
+                custom_profile_field["value"] = clean_number
+            except Exception:  # nocoverage
+                pass  # nocoverage
 
         # field_value.value is a TextField() so we need to have field["value"]
         # in string form to correctly make comparisons and assignments.

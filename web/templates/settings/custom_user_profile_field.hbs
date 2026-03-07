@@ -27,6 +27,8 @@
         <input id="id_custom_profile_field_input_{{ field.id }}" class="custom_user_field_value {{#if for_manage_user_modal}}modal_url_input{{else}}settings_url_input{{/if}}" name="{{ field.id }}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="2048" {{#unless editable_by_user}}disabled{{/unless}}/>
         {{else if is_pronouns_field}}
         <input id="id_custom_profile_field_input_{{ field.id }}" class="custom_user_field_value pronouns_type_field {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" name="{{ field.id }}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" {{#unless editable_by_user}}disabled{{/unless}}/>
+        {{else if is_phone_number_field}}
+        <input id="id_custom_profile_field_input_{{ field.id }}" class="custom_user_field_value phone_type_field {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" name="{{ field.id }}" type="tel" value="{{ field_value.value }}" maxlength="50" {{#unless editable_by_user}}disabled{{/unless}}/>
         {{else}}
         <input id="id_custom_profile_field_input_{{ field.id }}" class="custom_user_field_value {{#if for_manage_user_modal}}modal_text_input{{else}}settings_text_input{{/if}}" name="{{ field.id }}" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" {{#unless editable_by_user}}disabled{{/unless}}/>
         {{/if}}
