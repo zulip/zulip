@@ -20,6 +20,7 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as markdown from "./markdown.ts";
 import * as message_store from "./message_store.ts";
 import * as message_util from "./message_util.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -1219,6 +1220,15 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
         blueslip.debug("Invalid compose state: Message too long");
         is_validating_compose_box = false;
         return false;
+    }
+
+    if (show_banner) {
+        const disallowed_group = markdown.get_first_disallowed_group_mention(message_content);
+        if (disallowed_group) {
+            compose_banner.show_user_group_mention_not_allowed_error(disallowed_group);
+            is_validating_compose_box = false;
+            return false;
+        }
     }
 
     if (upload_in_progress) {

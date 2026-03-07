@@ -447,3 +447,21 @@ run_test("test reify_message_id", ({override}) => {
     assert.equal(history.max_message_id, 110);
     assert.equal(history.topics.get("test").message_id, 110);
 });
+
+run_test("try_deliver_locally disallowed group mention", ({override}) => {
+    override(markdown, "contains_backend_only_syntax", () => false);
+    override(markdown, "get_first_disallowed_group_mention", () => "restricted");
+
+    const message_request = {
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "test",
+        content: "test @*restricted*",
+        sender_email: "iago@zulip.com",
+        sender_full_name: "Iago",
+        sender_id: 123,
+    };
+
+    const message = echo.try_deliver_locally(message_request, noop);
+    assert.equal(message, undefined);
+});

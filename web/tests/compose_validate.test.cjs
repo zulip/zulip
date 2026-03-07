@@ -16,6 +16,9 @@ const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 
 const channel = mock_esm("../src/channel");
+const markdown = mock_esm("../src/markdown", {
+    get_first_disallowed_group_mention: () => null,
+});
 
 const compose_banner = zrequire("compose_banner");
 const compose_pm_pill = zrequire("compose_pm_pill");
@@ -291,6 +294,37 @@ test_ui("validate", ({mock_template, override}) => {
         assert.ok(!compose_validate.validate());
         assert.ok(missing_topic_error_rendered);
     }
+
+    let disallowed_group_error_rendered = false;
+    mock_template("compose_banner/user_group_mention_not_allowed_error.hbs", false, (data) => {
+        assert.equal(data.classname, compose_banner.CLASSNAMES.user_group_mention_not_allowed);
+        assert.equal(data.group_name, "staff");
+        disallowed_group_error_rendered = true;
+        return "<banner-stub>";
+    });
+
+    override(markdown, "get_first_disallowed_group_mention", () => "staff");
+
+    denmark.subscribed = true;
+    denmark.can_send_message_group = everyone.id;
+    denmark.can_create_topic_group = everyone.id;
+    stream_data.add_sub_for_tests(denmark);
+
+    const {current_user: state_data_current_user} = zrequire("state_data");
+    Object.assign(state_data_current_user, {
+        user_id: 30,
+        is_admin: false,
+        is_guest: false,
+        is_owner: false,
+    });
+
+    // We need to set a valid topic and non-empty content to reach the group validation
+    compose_state.topic("topic102");
+    compose_state.message_content("Hello @*staff*");
+    $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
+
+    assert.ok(!compose_validate.validate());
+    assert.ok(disallowed_group_error_rendered);
 });
 
 test_ui("test_stream_wildcard_mention_allowed", ({override}) => {
