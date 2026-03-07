@@ -5,6 +5,7 @@ import render_reminder_list from "../templates/reminder_list.hbs";
 import render_reminders_overlay from "../templates/reminders_overlay.hbs";
 
 import * as browser_history from "./browser_history.ts";
+import * as lightbox from "./lightbox.ts";
 import * as message_reminder from "./message_reminder.ts";
 import type {Reminder} from "./message_reminder.ts";
 import * as messages_overlay_ui from "./messages_overlay_ui.ts";
@@ -129,6 +130,26 @@ export function remove_reminder_id(reminder_id: number): void {
 }
 
 export function initialize(): void {
+    $("body").on("click", ".reminder-row .restore-overlay-message", (e) => {
+        const $img = $(e.target).closest("img");
+        if ($img.length > 0) {
+            e.stopPropagation();
+            e.preventDefault();
+            overlays.close_overlay("reminders");
+            lightbox.handle_inline_media_element_click($img, true);
+            return;
+        }
+
+        const $video = $(e.target).closest("video");
+        if ($video.length > 0) {
+            e.stopPropagation();
+            e.preventDefault();
+            overlays.close_overlay("reminders");
+            lightbox.handle_inline_media_element_click($video, true);
+            return;
+        }
+    });
+
     $("body").on("click", ".reminder-row .delete-overlay-message", (e) => {
         const scheduled_msg_id = $(e.currentTarget)
             .closest(".reminder-row")
