@@ -547,6 +547,9 @@ def get_muting_users_cache_key(muted_user_id: int) -> str:
     return f"muting_users_list:{muted_user_id}"
 
 
+# TODO: Implement get_followed_users_cache_key
+
+
 def get_realm_used_upload_space_cache_key(realm_id: int) -> str:
     return f"realm_used_upload_space:{realm_id}"
 
@@ -678,6 +681,9 @@ def flush_user_profile(
 def flush_muting_users_cache(*, instance: "MutedUser", **kwargs: object) -> None:
     mute_object = instance
     cache_delete(get_muting_users_cache_key(mute_object.muted_user_id))
+
+
+# TODO: Implement flush_followed_users_cache
 
 
 # Called by models/realms.py to flush various caches whenever we save

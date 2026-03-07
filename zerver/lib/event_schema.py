@@ -37,6 +37,7 @@ from zerver.lib.event_types import (
     EventDraftsAdd,
     EventDraftsRemove,
     EventDraftsUpdate,
+    EventFollowedUsers,
     EventHasZoomToken,
     EventHeartbeat,
     EventInvitesChanged,
@@ -184,6 +185,7 @@ check_direct_message = make_checker(EventDirectMessage)
 check_draft_add = make_checker(EventDraftsAdd)
 check_draft_remove = make_checker(EventDraftsRemove)
 check_draft_update = make_checker(EventDraftsUpdate)
+check_followed_users = make_checker(EventFollowedUsers)
 check_heartbeat = make_checker(EventHeartbeat)
 check_invites_changed = make_checker(EventInvitesChanged)
 check_message = make_checker(EventMessage)
