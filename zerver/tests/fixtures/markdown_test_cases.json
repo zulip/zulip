@@ -1472,6 +1472,16 @@
       "obsidian://open?vault=MyVault",
       "<p>%s</p>",
       "obsidian://open?vault=MyVault"
+    ],
+    [
+    "zotero://select/library/items/C495WKPX",
+    "<p>%s</p>",
+    "zotero://select/library/items/C495WKPX"
+    ],
+    [
+      "hansoft://Project/Task/12345",
+      "<p>%s</p>",
+      "hansoft://Project/Task/12345"
     ]
   ]
 }

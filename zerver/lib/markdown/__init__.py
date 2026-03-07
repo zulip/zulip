@@ -85,6 +85,8 @@ html_safelisted_schemes = (
     "mailto",
     "matrix",
     "obsidian",
+    "zotero",
+    "hansoft",
     "mms",
     "news",
     "nntp",
@@ -99,7 +101,7 @@ html_safelisted_schemes = (
     "wtai",
     "xmpp",
 )
-auto_linked_schemes = ["https?", "obsidian"]
+auto_linked_schemes = ["https?", "obsidian", "zotero", "hansoft"]
 allowed_schemes = ("http", "https", "ftp", "file", "mid", *html_safelisted_schemes)
 
 
