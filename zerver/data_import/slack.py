@@ -53,6 +53,7 @@ from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
     get_user_full_name,
+    get_zulip_mention_for_slack_user,
     process_slack_block_and_attachment,
 )
 from zerver.lib.emoji import codepoint_to_name
@@ -1067,6 +1068,20 @@ def channel_message_to_zerver_message(
     total_skipped_user_messages = 0
     thread_counter: dict[str, int] = defaultdict(int)
     thread_map: dict[str, str] = {}
+    slack_channel_id_to_name = dict(added_channels.items())
+
+    def channel_mention_processor(slack_channel_id: str) -> str | None:  # nocoverage
+        if slack_channel_id in slack_channel_id_to_name:
+            return f"#**{slack_channel_id_to_name[slack_channel_id]}**"
+        else:
+            return None
+
+    def user_mention_processor(slack_user_id: str) -> tuple[str, int] | None:  # nocoverage
+        if mention := get_zulip_mention_for_slack_user(slack_user_id, None, users):
+            return (mention, slack_user_id_to_zulip_user_id[slack_user_id])
+        else:
+            return None
+
     for message in all_messages:
         slack_user_id = get_message_sending_user(message)
         if not slack_user_id:
@@ -1086,18 +1101,27 @@ def channel_message_to_zerver_message(
         ]:
             continue
 
-        raw_content = process_slack_block_and_attachment(
-            (to_wild_value("message", json.dumps(message))),
-        )
+        if message["text"] and not message.get("blocks"):
+            # Very old Slack exports might not use the blocks and attachments
+            # based formatting yet. This probably don't happen often.
 
-        try:
-            content, mentioned_user_ids, has_link = convert_to_zulip_markdown(
-                raw_content, users, added_channels, slack_user_id_to_zulip_user_id
+            try:
+                content, mentioned_user_ids, has_link = convert_to_zulip_markdown(
+                    message["text"], users, added_channels, slack_user_id_to_zulip_user_id
+                )
+            except Exception:
+                print("Slack message unexpectedly missing text representation:")
+                print(orjson.dumps(message, option=orjson.OPT_INDENT_2).decode())
+                continue
+        else:
+            result = process_slack_block_and_attachment(
+                to_wild_value("message", json.dumps(message)),
+                channel_mention_processor,
+                user_mention_processor,
             )
-        except Exception:
-            print("Slack message unexpectedly missing text representation:")
-            print(orjson.dumps(message, option=orjson.OPT_INDENT_2).decode())
-            continue
+            content = result.content
+            mentioned_user_ids = result.mentioned_user_ids
+            has_link = result.has_link
         rendered_content = None
 
         if "channel_name" in message:
