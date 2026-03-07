@@ -1210,7 +1210,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             f"http://zulip.testserver/user_avatars/{realm.id}/emoji/images/{realm_emoji_file_name}"
         )
         verify_body_include = [
-            f'<img alt=":green_tick:" src="{realm_emoji_url}" title="green tick" height="20" width="20">'
+            f'<img alt=":green_tick:" src="{realm_emoji_url}" data-emoji-name="green tick" height="20" width="20">'
         ]
         email_subject = "DMs with Othello, the Moor of Venice"
         self._test_cases(
@@ -1230,7 +1230,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             "Extremely personal message with a hamburger :hamburger:!",
         )
         verify_body_include = [
-            '<img alt=":hamburger:" src="http://testserver/static/generated/emoji/images-twitter-64/1f354.png" title="hamburger" height="20" width="20">'
+            '<img alt=":hamburger:" src="http://testserver/static/generated/emoji/images-twitter-64/1f354.png" data-emoji-name="hamburger" height="20" width="20">'
         ]
         email_subject = "DMs with Othello, the Moor of Venice"
         self._test_cases(
@@ -1763,7 +1763,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         # An emoji.
         test_data = (
             '<p>See <span aria-label="cloud with lightning and rain" class="emoji emoji-26c8"'
-            ' role="img" title="cloud with lightning and'
+            ' role="img" data-emoji-name="cloud with lightning and'
             ' rain">:cloud_with_lightning_and_rain:</span>.</p>'
         )
         fragment = lxml.html.fromstring(test_data)
@@ -1772,7 +1772,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
         expected_output = (
             '<p>See <img alt=":cloud_with_lightning_and_rain:"'
             ' src="http://testserver/static/generated/emoji/images-google-64/26c8.png"'
-            ' title="cloud with lightning and rain" height="20" width="20">.</p>'
+            ' data-emoji-name="cloud with lightning and rain" height="20" width="20">.</p>'
         )
         self.assertEqual(actual_output, expected_output)
 
