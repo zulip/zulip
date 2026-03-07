@@ -1,10 +1,13 @@
 from unittest.mock import MagicMock, patch
 
+from zerver.actions.custom_profile_fields import try_add_realm_default_custom_profile_field
 from zerver.lib.request import RequestNotes
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.validator import wrap_wild_value
+from zerver.models import UserProfile
 from zerver.models.clients import get_client
+from zerver.models.realms import get_realm
 from zerver.webhooks.bitbucket.view import get_user_info
 
 TOPIC = "Repository name"
@@ -455,3 +458,34 @@ class BitbucketHookTests(WebhookTestCase):
         del dct["nickname"]
 
         self.assertEqual(get_user_info(request, wrap_wild_value("request", dct)), "Unknown user")
+
+    def test_get_user_info_with_atlassian_account_id_match(self) -> None:
+        # Test that a Zulip user is matched by their Atlassian account ID
+        realm = get_realm("zulip")
+        atlassian_field = try_add_realm_default_custom_profile_field(realm, "atlassian")
+
+        hamlet = self.example_user("hamlet")
+        test_account_id = "557058:c0b72ad0-1cb5-4018-9cdc-0cde8492c443"
+        self.set_user_custom_profile_data(
+            hamlet, [{"id": atlassian_field.id, "value": test_account_id}]
+        )
+
+        request = HostRequestMock()
+        request.content_type = "application/json"
+        request.user = self.test_user
+        assert isinstance(request.user, UserProfile)
+        RequestNotes.get_notes(request).client = get_client("test")
+
+        # User with matching account_id should return silent mention
+        dct = dict(
+            account_id=test_account_id,
+            display_name="Tomasz",
+            nickname="kolaszek",
+        )
+        result = get_user_info(request, wrap_wild_value("request", dct))
+        self.assertEqual(result, f"@_**{hamlet.full_name}|{hamlet.id}**")
+
+        # User without matching account_id should fall back to display_name
+        dct["account_id"] = "non-existent-account-id"
+        result = get_user_info(request, wrap_wild_value("request", dct))
+        self.assertEqual(result, "Tomasz")
