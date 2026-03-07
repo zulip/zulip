@@ -229,6 +229,11 @@ function get_time_string(): string {
     );
 }
 
+function get_loaded_messages_text(): string {
+    const time_string = get_time_string();
+    return $t({defaultMessage: "Showing messages since {time_string}."}, {time_string});
+}
+
 function update_load_more_banner(): void {
     if (loading_state === NO_MESSAGES_LOADED) {
         return;
@@ -257,8 +262,7 @@ function update_load_more_banner(): void {
     }
 
     const $banner_text = $(".recent-view-load-more-container .last-fetched-message");
-    const time_string = get_time_string();
-    $banner_text.text($t({defaultMessage: "Showing messages since {time_string}."}, {time_string}));
+    $banner_text.text(get_loaded_messages_text());
 
     if (is_backfill_in_progress) {
         // Keep the button disabled and the loading indicator running
