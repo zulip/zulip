@@ -268,6 +268,81 @@ function get_channel_suggestions(
     });
 }
 
+// This function enables multi-channel selection by allowing users to add
+// more channels to an existing channel term (similar to get_group_suggestions for DM).
+function get_group_channel_suggestions(
+    last: NarrowCanonicalTermSuggestion,
+    terms: NarrowCanonicalTerm[],
+): Suggestion[] {
+    // We only suggest group channels once a term with a valid channel already exists
+    if (terms.length === 0) {
+        return [];
+    }
+    const last_complete_term = terms.at(-1)!;
+    if (last_complete_term.operator !== "channel" && last_complete_term.operator !== "channels") {
+        return [];
+    }
+
+    // If they started typing since a channel pill, we'll parse that as "search"
+    // but they might actually want to add another channel.
+    let existing_channel_ids: string[];
+    let query: string;
+    if (last.operator === "search") {
+        query = last.operand;
+    } else if (last.operator === "") {
+        query = "";
+    } else {
+        // If they already started another term with another operator, we're
+        // no longer dealing with a group channel situation.
+        return [];
+    }
+
+    if (last_complete_term.operator === "channel") {
+        existing_channel_ids = [last_complete_term.operand];
+    } else {
+        // We only support grouped channel suggestions for explicit channel ID lists.
+        if (!last_complete_term.operand.includes(",")) {
+            return [];
+        }
+        existing_channel_ids = last_complete_term.operand.split(",").map((id) => id.trim());
+    }
+    const existing_ids = new Set(existing_channel_ids);
+
+    let channels = stream_data.subscribed_streams();
+
+    // Filter out channels that are already in the operand
+    channels = channels.filter((channel_name) => {
+        const sub = stream_data.get_sub_by_name(channel_name);
+        if (sub === undefined) {
+            return false;
+        }
+        return !existing_ids.has(sub.stream_id.toString());
+    });
+
+    // Filter by query
+    if (query !== "") {
+        channels = channels.filter((channel_name) => channel_matches_query(channel_name, query));
+    }
+
+    channels = typeahead_helper.sorter(query, channels, (x) => x);
+
+    // Take top 15 channels
+    channels = channels.slice(0, 15);
+
+    return channels.map((channel_name) => {
+        const channel = stream_data.get_sub_by_name(channel_name);
+        assert(channel !== undefined);
+        const new_channel_ids = [...existing_channel_ids, channel.stream_id.toString()];
+        const term: NarrowTerm = {
+            operator: "channels",
+            operand: new_channel_ids.join(","),
+            negated: last_complete_term.negated,
+        };
+        const search_string = Filter.unparse([term]);
+        return search_string;
+    });
+}
+
 function get_group_suggestions(
     group_operator: "dm" | "dm-including",
 ): (last: NarrowCanonicalTermSuggestion, terms: NarrowCanonicalTerm[]) => Suggestion[] {
@@ -929,6 +1004,20 @@ function suggestion_search_string(suggestion_line: SuggestionLine): string {
     return search_strings.join(" ");
 }
 
+function get_channel_term_from_single_suggestion(
+    suggestion: Suggestion,
+): Extract<NarrowCanonicalTerm, {operator: "channel" | "channels"}> | undefined {
+    const parsed_terms = Filter.parse(suggestion);
+    if (parsed_terms.length !== 1) {
+        return undefined;
+    }
+    const term = Filter.convert_suggestion_to_term(parsed_terms[0]!);
+    if (term === undefined || (term.operator !== "channel" && term.operator !== "channels")) {
+        return undefined;
+    }
+    return term;
+}
+
 function suggestions_for_empty_search_query(): SuggestionLine[] {
     // Since the context here is an **empty** search query, we assume
     // that there is no `near:` operator. So it's safe to use
@@ -1011,6 +1100,31 @@ class Attacher {
                     new_search_string.includes(last_base_string)
                 ) {
                     suggestion_line = [...this.base.slice(0, -1), suggestion];
+                } else if (
+                    // When we add a channel to a channel group, we
+                    // replace the last channel pill.
+                    (new_search_string.startsWith("channels:") ||
+                        new_search_string.startsWith("-channels:")) &&
+                    (last_base_string.startsWith("channel:") ||
+                        last_base_string.startsWith("-channel:") ||
+                        last_base_string.startsWith("channels:") ||
+                        last_base_string.startsWith("-channels:"))
+                ) {
+                    const last_channel_term =
+                        get_channel_term_from_single_suggestion(last_base_string);
+                    const new_channel_term =
+                        get_channel_term_from_single_suggestion(new_search_string);
+                    const last_ids =
+                        last_channel_term?.operand.split(",").map((id) => id.trim()) ?? [];
+                    const new_ids =
+                        new_channel_term?.operand.split(",").map((id) => id.trim()) ?? [];
+                    const should_replace =
+                        last_ids.length > 0 && last_ids.every((id) => new_ids.includes(id));
+                    if (should_replace) {
+                        suggestion_line = [...this.base.slice(0, -1), suggestion];
+                    } else {
+                        suggestion_line = [...this.base, suggestion];
+                    }
                 } else {
                     suggestion_line = [...this.base, suggestion];
                 }
@@ -1143,6 +1257,7 @@ export let get_suggestions = function (
         // searching user probably is looking to make a group DM.
         get_group_suggestions("dm"),
         get_group_suggestions("dm-including"),
+        get_group_channel_suggestions,
         get_channels_filter_suggestions,
         get_operator_suggestions,
         get_is_filter_suggestions,

@@ -647,6 +647,14 @@ test("basics", () => {
     filter = new Filter(terms);
     assert.ok(filter.is_channel_view());
 
+    terms = [{operator: "channel", operand: "", negated: false}];
+    filter = new Filter(terms);
+    assert.ok(!filter.is_channel_view());
+
+    terms = [{operator: "channel", operand: "1,2", negated: false}];
+    filter = new Filter(terms);
+    assert.ok(!filter.is_channel_view());
+
     // Throw error on invalid operator.
     assert.throws(() => get_predicate([["bogus", "33"]]), {
         name: "$ZodError",
@@ -1763,6 +1771,10 @@ test("describe", ({mock_template, override}) => {
         {operator: "is", operand: "starred"},
     ];
     string = "messages in #devel, starred messages";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+    narrow = [{operator: "channels", operand: `${devel_id},999`}];
+    string = "messages in channels # devel, #999";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     const river_id = new_stream_id();
@@ -3170,4 +3182,116 @@ run_test("get_stringified_narrow_for_server_query", () => {
         narrow,
         '[{"operator":"channel","operand":1,"negated":false},{"operator":"topic","operand":"bar","negated":false}]',
     );
+});
+
+run_test("multi_channel_predicate", () => {
+    // Create test channels
+    const channel1 = {name: "Channel 1", stream_id: 101};
+    const channel2 = {name: "Channel 2", stream_id: 102};
+    const channel3 = {name: "Channel 3", stream_id: 103};
+    stream_data.add_sub_for_tests(channel1);
+    stream_data.add_sub_for_tests(channel2);
+    stream_data.add_sub_for_tests(channel3);
+
+    // Multi-channel predicate with comma-separated IDs
+    const predicate = get_predicate([["channels", "101,102"]]);
+
+    // Should match messages in any of the specified channels
+    const msg_in_channel1 = {type: "stream", stream_id: 101};
+    const msg_in_channel2 = {type: "stream", stream_id: 102};
+    const msg_in_channel3 = {type: "stream", stream_id: 103};
+    const dm_msg = {type: "private"};
+
+    assert.ok(predicate(msg_in_channel1));
+    assert.ok(predicate(msg_in_channel2));
+    assert.ok(!predicate(msg_in_channel3));
+    assert.ok(!predicate(dm_msg));
+
+    // Invalid operands should never match.
+    const invalid_predicate = get_predicate([["channels", "101,foo"]]);
+    assert.ok(!invalid_predicate(msg_in_channel1));
+});
+
+run_test("multi_channel_is_valid_canonical_term", () => {
+    // is_valid_canonical_term handles multi-channel (comma-separated IDs)
+    const channel1 = {name: "Test1", stream_id: 201};
+    const channel2 = {name: "Test2", stream_id: 202};
+    stream_data.add_sub_for_tests(channel1);
+    stream_data.add_sub_for_tests(channel2);
+
+    // Multi-channel with valid IDs
+    let term = {operator: "channels", operand: "201,202", negated: false};
+    assert.ok(Filter.is_valid_canonical_term(term));
+
+    // Multi-channel with numeric-looking IDs (even if streams don't exist)
+    term = {operator: "channels", operand: "999,888", negated: false};
+    assert.ok(Filter.is_valid_canonical_term(term));
+
+    // Single ID is not valid for channels operator.
+    term = {operator: "channels", operand: "999", negated: false};
+    assert.ok(!Filter.is_valid_canonical_term(term));
+
+    // Mixed token operand is invalid.
+    term = {operator: "channels", operand: "999,foo", negated: false};
+    assert.ok(!Filter.is_valid_canonical_term(term));
+
+    // Duplicate IDs are invalid.
+    term = {operator: "channels", operand: "999,999", negated: false};
+    assert.ok(!Filter.is_valid_canonical_term(term));
+});
+
+run_test("multi_channel_is_common_narrow", () => {
+    // is_common_narrow returns false for multi-channel search
+    const channel1 = {name: "Common1", stream_id: 301};
+    const channel2 = {name: "Common2", stream_id: 302};
+    stream_data.add_sub_for_tests(channel1);
+    stream_data.add_sub_for_tests(channel2);
+
+    // Single channel is a common narrow
+    let filter = new Filter([{operator: "channel", operand: "301"}]);
+    assert.ok(filter.is_common_narrow());
+
+    // Multi-channel is NOT a common narrow
+    filter = new Filter([{operator: "channels", operand: "301,302"}]);
+    assert.ok(!filter.is_common_narrow());
+});
+
+run_test("multi_channel_redirect_url", () => {
+    // generate_redirect_url returns '#' for multi-channel
+    const channel1 = {name: "Redirect1", stream_id: 401};
+    stream_data.add_sub_for_tests(channel1);
+
+    // Single channel + topic + search gets a proper redirect
+    let filter = new Filter([
+        {operator: "channel", operand: "401"},
+        {operator: "topic", operand: "test"},
+        {operator: "search", operand: "keyword"},
+    ]);
+    let redirect_url = filter.generate_redirect_url();
+    assert.ok(redirect_url !== "#");
+
+    // Multi-channel + topic + search redirects to home
+    filter = new Filter([
+        {operator: "channels", operand: "401,402"},
+        {operator: "topic", operand: "test"},
+        {operator: "search", operand: "keyword"},
+    ]);
+    redirect_url = filter.generate_redirect_url();
+    assert.equal(redirect_url, "#");
+
+    // Single channel (without topic) + search gets a proper redirect
+    filter = new Filter([
+        {operator: "channel", operand: "401"},
+        {operator: "search", operand: "keyword"},
+    ]);
+    redirect_url = filter.generate_redirect_url();
+    assert.ok(redirect_url !== "#");
+
+    // Multi-channel + search redirects to home
+    filter = new Filter([
+        {operator: "channels", operand: "401,402"},
+        {operator: "search", operand: "keyword"},
+    ]);
+    redirect_url = filter.generate_redirect_url();
+    assert.equal(redirect_url, "#");
 });

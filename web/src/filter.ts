@@ -157,11 +157,27 @@ function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) =>
         }
 
         case "channel": {
-            const target_id = Number(term.operand);
-            return (message) => message.type === "stream" && message.stream_id === target_id;
+            return (message) =>
+                message.type === "stream" && message.stream_id.toString() === term.operand;
         }
 
         case "channels":
+            if (term.operand.includes(",")) {
+                const channel_id_strings = term.operand
+                    .split(",")
+                    .map((id) => id.trim())
+                    .filter((id) => id !== "");
+                if (
+                    channel_id_strings.length < 2 ||
+                    !channel_id_strings.every((id) => /^\d+$/.test(id)) ||
+                    new Set(channel_id_strings).size !== channel_id_strings.length
+                ) {
+                    return () => false;
+                }
+                const channel_ids = new Set(channel_id_strings);
+                return (message) =>
+                    message.type === "stream" && channel_ids.has(message.stream_id.toString());
+            }
             switch (term.operand) {
                 case "public":
                     return (message) => {
@@ -583,7 +599,23 @@ export class Filter {
             case "channel":
                 return stream_data.get_sub_by_id_string(term.operand) !== undefined;
             case "channels":
-                return channels_operands.has(term.operand);
+                if (channels_operands.has(term.operand)) {
+                    return true;
+                }
+                if (!term.operand.includes(",")) {
+                    return false;
+                }
+                {
+                    const channel_ids = term.operand
+                        .split(",")
+                        .map((id) => id.trim())
+                        .filter((id) => id !== "");
+                    return (
+                        channel_ids.length >= 2 &&
+                        channel_ids.every((id) => /^\d+$/.test(id)) &&
+                        new Set(channel_ids).size === channel_ids.length
+                    );
+                }
             case "topic":
                 return true;
             case "sender":
@@ -640,12 +672,10 @@ export class Filter {
         result += term.operator;
 
         // Using `||` instead of `array.includes` to help with type checking.
-        if (
-            term.operator === "is" ||
-            term.operator === "has" ||
-            term.operator === "in" ||
-            term.operator === "channels"
-        ) {
+        if (term.operator === "is" || term.operator === "has" || term.operator === "in") {
+            result += "-" + term.operand;
+        }
+        if (term.operator === "channels" && channels_operands.has(term.operand)) {
             result += "-" + term.operand;
         }
 
@@ -831,6 +861,21 @@ export class Filter {
                 return {
                     type: "plain_text",
                     content: this.describe_channels_operator(term.negated ?? false, term.operand),
+                };
+            }
+            if (term.operator === "channels" && term.operand.includes(",")) {
+                const channel_names = term.operand
+                    .split(",")
+                    .map((id) => id.trim())
+                    .filter((id) => id !== "")
+                    .map((id) => stream_data.get_sub_by_id_string(id)?.name ?? id);
+                const prefix_for_operator = term.negated
+                    ? "exclude messages in channels #"
+                    : "messages in channels #";
+                return {
+                    type: "prefix_for_operator",
+                    prefix_for_operator,
+                    operand: channel_names.join(", #"),
                 };
             }
             const prefix_for_operator = Filter.operator_to_prefix(term.operator, term.negated);
@@ -1294,9 +1339,8 @@ export class Filter {
             return "/#narrow/has/reaction/sender/me";
         }
         if (_.isEqual(term_types, ["channel", "topic", "search"])) {
-            const sub = stream_data.get_sub_by_id_string(
-                this.terms_with_operator("channel")[0]!.operand,
-            );
+            const channel_operand = this.terms_with_operator("channel")[0]!.operand;
+            const sub = stream_data.get_sub_by_id_string(channel_operand);
             // if channel does not exist, redirect to home view
             if (!sub) {
                 return "#";
@@ -1317,9 +1361,8 @@ export class Filter {
         if (term_types[1] === "search") {
             switch (term_types[0]) {
                 case "channel": {
-                    const sub = stream_data.get_sub_by_id_string(
-                        this.terms_with_operator("channel")[0]!.operand,
-                    );
+                    const channel_operand = this.terms_with_operator("channel")[0]!.operand;
+                    const sub = stream_data.get_sub_by_id_string(channel_operand);
                     // if channel does not exist, redirect to home view
                     if (!sub) {
                         return "#";
@@ -1833,11 +1876,18 @@ export class Filter {
     }
 
     is_channel_view(): boolean {
-        return (
-            this._terms.length === 1 &&
-            this._terms[0] !== undefined &&
-            Filter.term_type(this._terms[0]) === "channel"
-        );
+        if (this._terms.length !== 1) {
+            return false;
+        }
+        const channel_terms = this.terms_with_operator("channel");
+        if (channel_terms.length !== 1) {
+            return false;
+        }
+        const channel_operand = channel_terms[0]!.operand;
+        if (channel_operand === "" || channel_operand.includes(",")) {
+            return false;
+        }
+        return true;
     }
 
     may_contain_multiple_conversations(): boolean {

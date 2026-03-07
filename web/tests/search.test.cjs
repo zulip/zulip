@@ -57,13 +57,13 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     mock_template("search_list_item.hbs", true, (_data, html) => html);
     mock_template("search_description.hbs", true, (_data, html) => html);
 
-    let expected_pill_display_value = "";
-    let input_pill_displayed = false;
-    mock_template("input_pill.hbs", true, (data, html) => {
-        assert.equal(data.display_value, expected_pill_display_value);
-        input_pill_displayed = true;
+    let channel_pill_displayed = false;
+    mock_template("search_channel_pill.hbs", true, (_data, html) => {
+        channel_pill_displayed = true;
         return html;
     });
+
+    let input_pill_displayed = false;
 
     override_rewire(search_suggestion, "max_num_of_search_results", 999);
     let terms;
@@ -113,13 +113,11 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             const search_suggestions = ["ver", "stream:Verona"];
 
             /* Test highlighter */
-            let description_html = "Search for ver";
-            let expected_value = `<div class="search_list_item">\n            <div class="description">Search for ver</div>\n    \n</div>\n`;
+            const description_html = "Search for ver";
+            let expected_value = `<div class="search_list_item">\n            <div class="description">${description_html}</div>\n    \n</div>\n`;
             assert.equal(opts.item_html(search_suggestions[0], "ver"), expected_value);
 
-            const search_string = "channel: Verona";
-            description_html = "Messages in #Verona";
-            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n            ${search_string}\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">${description_html}</div>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="channel-pill-container pill" tabindex=0>\n    <span class="pill-label">channel:\n    </span>\n        <div class="pill" data-stream-id="1">\n            <span class="pill-label">\n                <span class="pill-value">Verona</span>\n            </span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    <div class="description">Messages in #Verona</div>\n</div>\n`;
             assert.equal(opts.item_html(search_suggestions[1], "ver"), expected_value);
 
             /* Test sorter */
@@ -175,7 +173,6 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                     operand: "ver",
                 },
             ];
-            expected_pill_display_value = null;
             _setup(terms);
             input_pill_displayed = false;
             mock_pill_removes(search.search_pill_widget);
@@ -190,19 +187,20 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                     operand: verona_stream_id,
                 },
             ];
-            expected_pill_display_value = "channel: Verona";
             _setup(terms);
             input_pill_displayed = false;
+            channel_pill_displayed = false;
             mock_pill_removes(search.search_pill_widget);
             assert.equal(opts.updater(`channel:${verona_stream_id}`), "");
-            assert.ok(input_pill_displayed);
+            assert.ok(channel_pill_displayed);
 
             override_rewire(search, "is_using_input_method", true);
             _setup(terms);
             input_pill_displayed = false;
+            channel_pill_displayed = false;
             mock_pill_removes(search.search_pill_widget);
             assert.equal(opts.updater(`channel:${verona_stream_id}`), "");
-            assert.ok(input_pill_displayed);
+            assert.ok(channel_pill_displayed);
         }
     }
 
@@ -284,7 +282,6 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             operand: "ver",
         },
     ];
-    expected_pill_display_value = "ver";
     _setup(terms);
     ev.key = "Enter";
     override_rewire(search, "is_using_input_method", true);
@@ -341,4 +338,68 @@ run_test("set_search_bar_contents with duplicate pills", () => {
         operand: "attachment",
         negated: false,
     });
+});
+
+run_test("search_channel_pill_term_normalization", () => {
+    const single_channel_widget = {
+        items() {
+            return [
+                {
+                    type: "search_channel",
+                    operator: "channels",
+                    negated: false,
+                    channels: [
+                        {
+                            stream_id: 1,
+                            name: "Verona",
+                            color: "blue",
+                            invite_only: false,
+                            is_web_public: false,
+                        },
+                    ],
+                },
+            ];
+        },
+    };
+    assert.deepEqual(search_pill.get_current_search_pill_terms(single_channel_widget), [
+        {operator: "channel", operand: "1", negated: false},
+    ]);
+
+    const duplicate_channel_widget = {
+        items() {
+            return [
+                {
+                    type: "search_channel",
+                    operator: "channels",
+                    negated: true,
+                    channels: [
+                        {
+                            stream_id: 1,
+                            name: "Verona",
+                            color: "blue",
+                            invite_only: false,
+                            is_web_public: false,
+                        },
+                        {
+                            stream_id: 1,
+                            name: "Verona",
+                            color: "blue",
+                            invite_only: false,
+                            is_web_public: false,
+                        },
+                        {
+                            stream_id: 2,
+                            name: "Denmark",
+                            color: "green",
+                            invite_only: false,
+                            is_web_public: false,
+                        },
+                    ],
+                },
+            ];
+        },
+    };
+    assert.deepEqual(search_pill.get_current_search_pill_terms(duplicate_channel_widget), [
+        {operator: "channels", operand: "1,2", negated: true},
+    ]);
 });
