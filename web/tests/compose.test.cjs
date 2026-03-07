@@ -68,6 +68,7 @@ const echo = zrequire("echo");
 const people = zrequire("people");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
+stream_data.set_channel_has_topic_name(() => false);
 const compose_validate = zrequire("compose_validate");
 const {initialize_user_settings} = zrequire("user_settings");
 
