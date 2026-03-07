@@ -973,6 +973,7 @@ VIDEO_CALL_INTEGRATIONS: list[Integration] = [
     Integration(
         "nextcloud-talk", ["video-calling", "communication"], display_name="Nextcloud Talk"
     ),
+    Integration("webex", ["video-calling", "communication"]),
     Integration("zoom", ["video-calling", "communication"]),
 ]
 
@@ -1158,7 +1159,7 @@ INTEGRATIONS_WITHOUT_SCREENSHOTS = (
     # Outgoing integrations
     | {"email", "onyx"}
     # Video call integrations
-    | {"big-blue-button", "constructor-groups", "jitsi", "nextcloud-talk", "zoom"}
+    | {"big-blue-button", "constructor-groups", "jitsi", "nextcloud-talk", "webex", "zoom"}
     | {
         # these integrations do not send messages
         "giphy",

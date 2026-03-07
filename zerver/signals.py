@@ -113,11 +113,14 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
 
 
 @receiver(user_logged_out)
-def clear_zoom_token_on_logout(
+def clear_call_tokens_on_logout(
     sender: object, *, user: UserProfile | None, **kwargs: object
 ) -> None:
     # Loaded lazily so django.setup() succeeds before static asset generation
     from zerver.actions.video_calls import do_set_video_call_provider_token
 
-    if user is not None and user.third_party_api_state.get("zoom") is not None:
-        do_set_video_call_provider_token(user, "zoom", None)
+    if user is not None:
+        if user.third_party_api_state.get("zoom") is not None:
+            do_set_video_call_provider_token(user, "zoom", None)
+        if user.third_party_api_state.get("webex") is not None:
+            do_set_video_call_provider_token(user, "webex", None)

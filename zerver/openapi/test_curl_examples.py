@@ -33,10 +33,11 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     # Having a message for a specific user available to test this endpoint
     # is tricky for testing.
     "delete-reminder",
-    # Would need Constructor Groups credentials configured to test this endpoint.
+    # Video call endpoints that need the third-party call provider
+    # to be configured to test the curl example for the endpoint.
     "create-constructor-groups-video-call",
-    # Would need Nextcloud Talk server configured to test this endpoint.
     "create-nextcloud-talk-video-call",
+    "create-webex-video-call",
 }
 
 
