@@ -129,6 +129,26 @@ bot_handler.update_message(dict(
     content=str(self.number), # string with which to update message with
 ))
 ```
+## bot_handler.react
+
+`bot_handler.react(message, emoji_name)`: Add an emoji reaction to a
+Zulip message as the bot user.
+
+### Arguments
+
+* `message`: A dictionary describing the Zulip message to react to
+  (the `message` argument passed to `handle_message`)
+* `emoji_name`: The name of the emoji to react with (e.g., `"wave"`,
+  `"thumbs_up"`)
+
+To find an emoji's name, hover over any message and click the smiley
+face icon, then hover over the emoji you want to use.
+
+### Example implementation
+
+```python
+bot_handler.react(message, "wave")
+```
 
 ## bot\_handler.storage
 
