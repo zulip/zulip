@@ -7,6 +7,10 @@ html {
     overscroll-behavior-y: none;
     width: calc(100% - var(--disabled-scrollbar-width));
 }
+.message_feed_container {
+    width: calc(100% - var(--disabled-scrollbar-width));
+}
+
 
 body,
 html {
