@@ -3296,6 +3296,31 @@ class RealmAPITest(ZulipTestCase):
         realm.refresh_from_db()
         self.assertEqual(realm.workplace_users_group_id, hamletcharacters_group.id)
 
+    def test_changing_workplace_users_group_requires_dev_environment(self) -> None:
+        realm = get_realm("zulip")
+        self.login("iago")
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm
+        )
+        params = {"workplace_users_group": orjson.dumps({"new": moderators_group.id}).decode()}
+        with (
+            self.settings(DEVELOPMENT=False),
+            self.assertRaises(AssertionError),
+            self.assertLogs("django.request", "ERROR") as error_log,
+        ):
+            self.client_patch("/json/realm", params)
+        self.assertTrue(
+            "ERROR:django.request:Internal Server Error: /json/realm" in error_log.output[0]
+        )
+        self.assertTrue("AssertionError" in error_log.output[0])
+
+        with self.settings(DEVELOPMENT=True):
+            result = self.client_patch("/json/realm", params)
+        self.assert_json_success(result)
+        realm.refresh_from_db()
+        self.assertEqual(realm.workplace_users_group_id, moderators_group.id)
+
     def test_updating_workplace_users_group_based_on_realm_plan(self) -> None:
         realm = get_realm("zulip")
         self.login("desdemona")
