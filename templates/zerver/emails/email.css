@@ -32,7 +32,7 @@ table.layout {
     width: 100%;
 }
 
-table.layout > tbody > tr > td {
+table.layout>tbody>tr>td {
     font-family: sans-serif;
     font-size: 14px;
     vertical-align: top;
@@ -234,12 +234,15 @@ p.digest_paragraph,
 }
 
 .hot_convo_recipient_block {
-    border: 1px solid #000;
+    border: 1px solid #d6d6d6;
+    border-radius: 7px;
 }
 
 .hot_convo_recipient_header {
     background-color: #9ec9ff;
-    border-bottom: 1px solid #000;
+    border: 1px solid #e6e6e6;
+    border-bottom-color: #f2f2f2;
+    border-radius: 7px 7px 0 0;
     font-weight: bold;
     padding: 2px;
 }
@@ -314,6 +317,7 @@ p.digest_paragraph,
 }
 
 @media all {
+
     /* See https://templates.mailchimp.com/development/css/client-specific-styles/;
        ExternalClass is something Microsoft Outlook adds to emails. */
     .ExternalClass {
