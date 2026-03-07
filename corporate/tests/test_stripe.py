@@ -22,6 +22,7 @@ import stripe
 import time_machine
 from django.conf import settings
 from django.core import signing
+from django.test import override_settings
 from django.urls.resolvers import get_resolver
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now as timezone_now
@@ -7433,6 +7434,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_approve_realm_sponsorship(self) -> None:
         realm = get_realm("zulip")
         self.assertNotEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)
@@ -7449,22 +7451,24 @@ class TestSupportBillingHelpers(StripeTestCase):
         sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
 
         # Organization owners get the notification bot message
-        desdemona_recipient = self.example_user("desdemona").recipient
+        bot_and_desdemona_recipient = self.get_dm_group_recipient(
+            sender, self.example_user("desdemona")
+        )
         message_to_owner = Message.objects.filter(
-            realm_id=realm.id, sender=sender.id, recipient=desdemona_recipient
+            realm_id=realm.id, sender=sender.id, recipient=bot_and_desdemona_recipient
         ).first()
         assert message_to_owner is not None
         self.assertEqual(message_to_owner.content, expected_message)
-        self.assertEqual(message_to_owner.recipient.type, Recipient.PERSONAL)
+        self.assertEqual(message_to_owner.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
         # Hamlet is in `can_manage_billing_group` so should get the notification bot message
-        hamlet_recipient = self.example_user("hamlet").recipient
+        bot_and_hamlet_recipient = self.get_dm_group_recipient(sender, self.example_user("hamlet"))
         message_to_hamlet = Message.objects.filter(
-            realm_id=realm.id, sender=sender.id, recipient=hamlet_recipient
+            realm_id=realm.id, sender=sender.id, recipient=bot_and_hamlet_recipient
         ).last()
         assert message_to_hamlet is not None
         self.assertEqual(message_to_hamlet.content, expected_message)
-        self.assertEqual(message_to_hamlet.recipient.type, Recipient.PERSONAL)
+        self.assertEqual(message_to_hamlet.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
     def test_update_realm_sponsorship_status(self) -> None:
         lear = get_realm("lear")

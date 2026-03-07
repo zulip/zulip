@@ -5,6 +5,7 @@ from unittest import mock
 
 import orjson
 import time_machine
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_edit import get_mentions_for_message_updates
@@ -217,6 +218,7 @@ class EditMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(Message.objects.get(id=msg_id).topic_name(), "edited")
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_fetch_message_from_id(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
@@ -229,7 +231,10 @@ class EditMessageTest(ZulipTestCase):
         response_dict = self.assert_json_success(result)
         self.assertEqual(response_dict["raw_content"], "Outgoing direct message")
         self.assertEqual(response_dict["message"]["id"], msg_id)
-        self.assertEqual(response_dict["message"]["recipient_id"], cordelia.recipient_id)
+        self.assertEqual(
+            response_dict["message"]["recipient_id"],
+            self.get_dm_group_recipient(hamlet, cordelia).id,
+        )
         self.assertEqual(response_dict["message"]["flags"], ["read"])
         self.assertEqual(response_dict["message"][TOPIC_NAME], "")
 
@@ -241,7 +246,10 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(response_dict["raw_content"], "Incoming direct message")
         self.assertEqual(response_dict["message"]["id"], msg_id)
         # Incoming DMs show the recipient_id that outgoing DMs would.
-        self.assertEqual(response_dict["message"]["recipient_id"], cordelia.recipient_id)
+        self.assertEqual(
+            response_dict["message"]["recipient_id"],
+            self.get_dm_group_recipient(hamlet, cordelia).id,
+        )
         self.assertEqual(response_dict["message"]["flags"], [])
         self.assertEqual(response_dict["message"][TOPIC_NAME], "")
 

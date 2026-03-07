@@ -392,6 +392,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
             self.assertFalse(user_message.flags.read.is_set)
             self.assertFalse(user_message.flags.historical.is_set)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_tracked_onboarding_topics_first_messages_marked_starred(self) -> None:
         """
         Realms with tracked onboarding messages have only
@@ -438,10 +439,11 @@ class AddNewUserHistoryTest(ZulipTestCase):
 
         # Initial DM sent by welcome bot is also starred.
         initial_direct_user_message = UserMessage.objects.get(
-            user_profile=hamlet, message__recipient__type=Recipient.PERSONAL
+            user_profile=hamlet, message__recipient__type=Recipient.DIRECT_MESSAGE_GROUP
         )
         self.assertTrue(initial_direct_user_message.flags.starred.is_set)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_auto_subbed_to_personals(self) -> None:
         """
         Newly created users are auto-subbed to the ability to receive
@@ -455,7 +457,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
         new_messages_count = message_stream_count(user_profile)
         self.assertEqual(new_messages_count, old_messages_count + 1)
 
-        recipient = Recipient.objects.get(type_id=user_profile.id, type=Recipient.PERSONAL)
+        recipient = self.get_dm_group_recipient(user_profile)
         message = most_recent_message(user_profile)
         self.assertEqual(message.recipient, recipient)
 
@@ -1049,6 +1051,7 @@ class LoginTest(ZulipTestCase):
         self.assert_in_response("Please try a different URL", result)
         self.assert_logged_in_user_id(None)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_register(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
 
@@ -1067,7 +1070,7 @@ class LoginTest(ZulipTestCase):
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
         with (
-            self.assert_database_query_count(96),
+            self.assert_database_query_count(105),
             self.assert_memcached_count(18),
             self.captureOnCommitCallbacks(execute=True),
         ):
@@ -3576,7 +3579,7 @@ class UserSignUpTest(ZulipTestCase):
         assert user_profile is not None
         self.assert_logged_in_user_id(user_profile.id)
 
-    @override_settings(TERMS_OF_SERVICE_VERSION=None)
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True, TERMS_OF_SERVICE_VERSION=None)
     def test_dev_user_registration_create_demo_realm(self) -> None:
         result = self.client_post("/devtools/register_demo_realm/")
         self.assertEqual(result.status_code, 302)
@@ -3616,7 +3619,7 @@ class UserSignUpTest(ZulipTestCase):
         welcome_msg = Message.objects.filter(
             realm_id=realm.id,
             sender__email="welcome-bot@zulip.com",
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
         ).latest("id")
         self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
 
