@@ -53,6 +53,7 @@ from requests import HTTPError
 from social_core.backends.apple import AppleIdAuth
 from social_core.backends.azuread import AzureADOAuth2
 from social_core.backends.base import BaseAuth
+from social_core.backends.discord import DiscordOAuth2
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, GithubTeamOAuth2
 from social_core.backends.gitlab import GitLabOAuth2
 from social_core.backends.google import GoogleOAuth2
@@ -239,6 +240,12 @@ def apple_auth_enabled(
     realm: Realm | None = None, realm_authentication_methods: dict[str, bool] | None = None
 ) -> bool:
     return auth_enabled_helper(["Apple"], realm, realm_authentication_methods)
+
+
+def discord_auth_enabled(
+    realm: Realm | None = None, realm_authentication_methods: dict[str, bool] | None = None
+) -> bool:
+    return auth_enabled_helper(["Discord"], realm, realm_authentication_methods)
 
 
 def saml_auth_enabled(
@@ -2814,7 +2821,7 @@ class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):
     def get_verified_emails(self, *args: Any, **kwargs: Any) -> list[str]:
         verified_emails: list[str] = []
         details = kwargs["response"]
-        email_verified = details.get("email_verified")
+        email_verified = details.get("email_verified", False)
         if email_verified:
             verified_emails.append(details["email"])
         return verified_emails
@@ -3008,6 +3015,54 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
             # We have an open PR to python-social-auth to clean this up.
             self.logger.info("/complete/apple/: %s", str(e))
             return None
+
+
+@external_auth_method
+class DiscordAuthBackend(SocialAuthMixin, DiscordOAuth2):
+    # Default ["identify"] scope from social_core.backends.DiscordOAuth2
+    # not sufficient to get email from /users/@me API endpoint
+    DEFAULT_SCOPE = ["identify email"]
+
+    sort_order = 120
+    auth_backend_name = "Discord"
+    name = "discord"
+    display_icon = staticfiles_storage.url("images/authentication_backends/discord-icon.png")
+
+    def get_verified_emails(self, *args: Any, **kwargs: Any) -> list[str]:
+        # Discord account emails are only verified if specified as such
+        # with the verified boolean field of the user object
+        verified_emails: list[str] = []
+        details = kwargs["response"]
+        email_verified = details.get("verified", False)
+        if email_verified:
+            verified_emails.append(details["email"])
+        return verified_emails
+
+    @override
+    def get_user_details(self, response: dict[str, Any]) -> dict[str, Any]:
+        # Translate discord user object fields to corresponding auth details.
+        # Reference: https://docs.discord.com/developers/resources/user#user-object
+        id = response.get("id")
+        name = response.get("global_name")
+        email = response.get("email", "")
+
+        # Build avatar URL from avatar hash field
+        avatar_hash = response.get("avatar")
+        avatar_extension = "png"
+        # Potentially support animated Discord avatars
+        animated_prefix = "a_" if avatar_extension == "gif" else ""
+        # TODO: figure out whether to scrape and upload avatar
+        _avatar_url = f"https://cdn.discordapp.com/avatars/{id}/{animated_prefix}{avatar_hash}.{avatar_extension}"
+
+        # prevent updating User with empty strings
+        user_details = {
+            "username": name,
+            "fullname": name,
+            "first_name": None,
+            "last_name": None,
+            "email": email,
+        }
+        return user_details
 
 
 class ZulipSAMLIdentityProvider(SAMLIdentityProvider):
