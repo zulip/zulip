@@ -7,20 +7,33 @@
 
 {% block content %}
 <div id="livekit-call-container">
+    <div id="livekit-header">
+        <div id="livekit-meeting-title">
+            {% if page_params.is_video_call %}
+                {{ _("Video call:") }}
+            {% else %}
+                {{ _("Voice call:") }}
+            {% endif %}
+            <span id="livekit-meeting-room">{{ page_params.room_name }}</span>
+        </div>
+    </div>
     <div id="livekit-status" aria-live="polite">{{ _("Connecting…") }}</div>
-    <div id="livekit-participants"></div>
+    <div id="livekit-participants">
+        <div id="livekit-focus-stage"></div>
+        <div id="livekit-grid"></div>
+    </div>
     <div id="livekit-controls">
-        <button id="livekit-toggle-mic" type="button" aria-label="{{ _('Toggle microphone') }}" aria-pressed="true">
+        <button id="livekit-toggle-mic" type="button" aria-label="{{ _('Toggle microphone') }}" aria-pressed="false">
             <i class="zulip-icon zulip-icon-mic" aria-hidden="true"></i>
         </button>
-        <button id="livekit-toggle-camera" type="button" aria-label="{{ _('Toggle camera') }}" aria-pressed="true">
-            <i class="zulip-icon zulip-icon-camera" aria-hidden="true"></i>
+        <button id="livekit-toggle-camera" type="button" aria-label="{{ _('Toggle camera') }}" aria-pressed="false">
+            <i class="zulip-icon zulip-icon-video-call" aria-hidden="true"></i>
         </button>
         <button id="livekit-toggle-screenshare" type="button" aria-label="{{ _('Toggle screen sharing') }}" aria-pressed="false">
             <i class="zulip-icon zulip-icon-monitor" aria-hidden="true"></i>
         </button>
         <button id="livekit-leave" type="button" aria-label="{{ _('Leave call') }}">
-            <i class="zulip-icon zulip-icon-phone-off" aria-hidden="true"></i>
+            <i class="zulip-icon zulip-icon-log-out" aria-hidden="true"></i>
         </button>
     </div>
 </div>
