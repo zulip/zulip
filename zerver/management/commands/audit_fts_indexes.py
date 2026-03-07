@@ -14,8 +14,10 @@ class Command(ZulipBaseCommand):
                 """
                 UPDATE zerver_message
                 SET search_tsvector =
-                to_tsvector('zulip.english_us_search', subject || rendered_content)
-                WHERE to_tsvector('zulip.english_us_search', subject || rendered_content) != search_tsvector
+                to_tsvector('zulip.english_us_search',
+                    subject || regexp_replace(rendered_content, '</?span[^>]*>', '', 'g'))
+                WHERE to_tsvector('zulip.english_us_search',
+                    subject || regexp_replace(rendered_content, '</?span[^>]*>', '', 'g')) != search_tsvector
             """
             )
 

@@ -86,7 +86,7 @@ def update_fts_columns(conn: psycopg2.extensions.connection) -> int:
                 )
             else:
                 update_sql = SQL(
-                   "search_tsvector = to_tsvector('zulip.english_us_search',"
+                    "search_tsvector = to_tsvector('zulip.english_us_search',"
                     " subject || regexp_replace(rendered_content, '</?span[^>]*>', '', 'g'))"
                 )
             cursor.execute(
