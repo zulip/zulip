@@ -561,7 +561,7 @@ export class MessageList {
         $recipient_row.find(".stream_topic").show();
         $recipient_row.find(".topic_edit").empty();
         $recipient_row.find(".topic_edit").hide();
-        $recipient_row.find(".recipient-bar-control").show();
+        $recipient_row.find(".recipient-bar-control").not(".hide").show();
     }
 
     reselect_selected_id(): void {
