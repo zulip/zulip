@@ -29,35 +29,39 @@ const me = make_user({
     email: "me@zulip.com",
     user_id: 101,
     full_name: "Me Myself",
-    date_joined: 0,
 });
 
 const alice = make_user({
     email: "alice@zulip.com",
     user_id: 1,
     full_name: "Alice Smith",
-    date_joined: 0,
+    // User created via the API who never logged in.
+    // In production, such users have no date_joined field.
+    date_joined: undefined,
 });
 
 const fred = make_user({
     email: "fred@zulip.com",
     user_id: 2,
     full_name: "Fred Flintstone",
-    date_joined: 0,
 });
 
 const sally = make_user({
     email: "sally@example.com",
     user_id: 3,
     full_name: "Sally Jones",
-    date_joined: 0,
+    // User created via the API who never logged in.
+    // In production, such users have no date_joined field.
+    date_joined: undefined,
 });
 
 const zoe = make_user({
     email: "zoe@example.com",
     user_id: 6,
     full_name: "Zoe Yang",
-    date_joined: 0,
+    // User created via the API who never logged in.
+    // In production, such users have no date_joined field.
+    date_joined: undefined,
 });
 
 const bot = make_bot({
@@ -78,7 +82,6 @@ const jane = make_user({
     email: "jane@zulip.com",
     user_id: 9,
     full_name: "Jane Doe",
-    date_joined: 0,
 });
 
 people.add_active_user(me);
@@ -229,6 +232,8 @@ test("set_presence_info", () => {
     });
     assert.equal(presence.get_status(zoe.user_id), "offline");
     assert.equal(presence.last_active_date(zoe.user_id), undefined);
+    assert.strictEqual(zoe.date_joined, undefined);
+    assert.strictEqual(presence.presence_info.get(zoe.user_id).last_active, undefined);
 
     assert.ok(!presence.presence_info.has(bot.user_id));
     assert.equal(presence.get_status(bot.user_id), "offline");
