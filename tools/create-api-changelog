@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --preview-features=target-workspace-discovery --script  # -*-python-*-
 import os
 import random
 import subprocess

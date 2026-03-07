@@ -1,17 +1,24 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --preview-features=target-workspace-discovery --script  # -*-python-*-
 import argparse
 import os
 import shlex
 import subprocess
 import sys
+from collections.abc import Iterable
 
 import requests
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from scripts.lib.zulip_tools import ENDC, FAIL, OKGREEN
+from tools.lib.test_script import (
+    add_provision_check_override_param,
+    assert_provisioning_status_ok,
+    find_js_test_files,
+    prepare_puppeteer_run,
+)
+from tools.lib.test_server import test_server_running
+from zerver.lib.test_fixtures import reset_zulip_test_database
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-from zerver.lib.test_fixtures import reset_zulip_test_database
 
 # Request the special webpack setup for frontend integration tests,
 # where webpack assets are compiled up front rather than running in
@@ -31,23 +38,6 @@ usage = """test-js-with-puppeteer [options]
     test-js-with-puppeteer navi # Run a single test file navigation.test.ts
     test-js-with-puppeteer login.test.ts compose.test.ts # Run a few test files
     test-js-with-puppeteer login compose # Run a few test files, login.test.ts and compose.test.ts here"""
-
-sys.path.insert(0, ZULIP_PATH)
-
-# check for the venv
-from tools.lib import sanity_check
-
-sanity_check.check_venv(__file__)
-
-from collections.abc import Iterable
-
-from tools.lib.test_script import (
-    add_provision_check_override_param,
-    assert_provisioning_status_ok,
-    find_js_test_files,
-    prepare_puppeteer_run,
-)
-from tools.lib.test_server import test_server_running
 
 parser = argparse.ArgumentParser(usage)
 

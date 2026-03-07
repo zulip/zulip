@@ -1,14 +1,8 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --only-group=prod --preview-features=target-workspace-discovery --script  # -*-python-*-
 import configparser
 import os
 import sys
 from collections import defaultdict
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(BASE_DIR)
-from scripts.lib.setup_path import setup_path
-
-setup_path()
 
 from django.core.management import ManagementUtility, get_commands
 from django.core.management.color import color_style

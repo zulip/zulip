@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --preview-features=target-workspace-discovery --script  # -*-python-*-
 
 """
 This tool is for updating API key field `zuliprc` files of dummy users
@@ -13,11 +13,10 @@ import configparser
 import os
 import shlex
 import subprocess
-import sys
+
+from scripts.lib.zulip_tools import is_vagrant_env_host
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, ZULIP_PATH)
-from scripts.lib.zulip_tools import is_vagrant_env_host
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument(
