@@ -75,12 +75,19 @@ export class PanZoomControl {
             // Check if the image has been panned out of view.
             this.constrainImage(e);
 
-            // Don't remove the noclose attribute on this overlay until after paint,
-            // otherwise it will be removed too early and close the lightbox
-            // unintentionally.
-            setTimeout(() => {
+            // We want to treat tiny "drag" events as closing via the
+            // onclick (below).  If the drag is large, we delay the
+            // noclose unsetting until after the repaint (when the
+            // click event has fired).  If the drag is tiny, we remove
+            // the noclose immediately, before the onclick checks it.
+            const {x, y} = e.getTransform();
+            if (Math.abs(x) + Math.abs(y) > 10) {
+                setTimeout(() => {
+                    $("#lightbox_overlay").data("noclose", false);
+                }, 0);
+            } else {
                 $("#lightbox_overlay").data("noclose", false);
-            }, 0);
+            }
         });
 
         this.panzoom.on("zoom", (e: PanZoom) => {
