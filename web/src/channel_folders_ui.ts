@@ -3,8 +3,8 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
+import render_channel_list_item from "../templates/channel_list_item.hbs";
 import render_confirm_archive_channel_folder from "../templates/confirm_dialog/confirm_archive_channel_folder.hbs";
-import render_stream_list_item from "../templates/stream_list_item.hbs";
 import render_create_channel_folder_modal from "../templates/stream_settings/create_channel_folder_modal.hbs";
 import render_edit_channel_folder_modal from "../templates/stream_settings/edit_channel_folder_modal.hbs";
 
@@ -16,7 +16,6 @@ import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget, DropdownWidgetOptions} from "./dropdown_widget.ts";
-import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
@@ -194,13 +193,12 @@ export function handle_archiving_channel_folder(folder_id: number): void {
 }
 
 function format_channel_item_html(stream: StreamSubscription): string {
-    return render_stream_list_item({
+    return render_channel_list_item({
         name: stream.name,
         stream_id: stream.stream_id,
         stream_color: stream.color,
         invite_only: stream.invite_only,
         is_web_public: stream.is_web_public,
-        stream_edit_url: hash_util.channels_settings_edit_url(stream, "general"),
         can_manage_folder: settings_data.can_user_manage_folder(),
     });
 }
