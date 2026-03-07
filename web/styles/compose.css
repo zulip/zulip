@@ -642,7 +642,7 @@
 
 #compose {
     position: fixed;
-    bottom: 0;
+    bottom: var(--keyboard-offset, 0);
     left: 0;
     z-index: 4;
 }
