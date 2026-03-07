@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from urllib.parse import quote, unquote
 
 from zerver.lib.test_classes import WebhookTestCase
@@ -223,6 +223,52 @@ Adding a comment. Oh, what a comment it is!
         self.check_webhook(
             "comment_created_no_issue_details", expected_topic_name, expected_message
         )
+
+    def test_comment_event_comment_created_with_account_mention(self) -> None:
+        expected_topic_name = "CPG-12: Test for zulip."
+        expected_message = """Harsh Meena commented on [CPG-12: Test for zulip.](https://harshmeena.atlassian.net/browse/CPG-12)\n``` quote\nThis should work ~ **Harsh Meena**\n```"""
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "displayName": "Harsh Meena",
+        }
+
+        self.url = self.build_webhook_url(
+            email="test@example.com",
+            jira_api_token="test-token",
+        )
+        with patch("zerver.webhooks.jira.view.requests.get", return_value=mock_response):
+            self.check_webhook(
+                "comment_created_with_account_mention",
+                expected_topic_name,
+                expected_message,
+            )
+
+    def test_comment_event_comment_created_with_account_mention_no_credentials(self) -> None:
+        expected_topic_name = "CPG-12: Test for zulip."
+        expected_message = """Harsh Meena commented on [CPG-12: Test for zulip.](https://harshmeena.atlassian.net/browse/CPG-12)\n``` quote\nThis should work ~ [~accountid:6420c1740152b5f4f9f28a08]\n```"""
+        self.check_webhook(
+            "comment_created_with_account_mention",
+            expected_topic_name,
+            expected_message,
+        )
+
+    def test_comment_event_comment_created_with_account_mention_api_failure(self) -> None:
+        expected_topic_name = "CPG-12: Test for zulip."
+        expected_message = """Harsh Meena commented on [CPG-12: Test for zulip.](https://harshmeena.atlassian.net/browse/CPG-12)\n``` quote\nThis should work ~ **Unknown Jira user**\n```"""
+        mock_response = MagicMock()
+        mock_response.status_code = 500
+
+        self.url = self.build_webhook_url(
+            email="test@example.com",
+            jira_api_token="test-token",
+        )
+        with patch("zerver.webhooks.jira.view.requests.get", return_value=mock_response):
+            self.check_webhook(
+                "comment_created_with_account_mention",
+                expected_topic_name,
+                expected_message,
+            )
 
     def test_comment_event_comment_edited(self) -> None:
         expected_topic_name = "SP-1: Add support for newer format Jira issue comment events"
