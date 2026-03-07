@@ -508,10 +508,6 @@ export function update_settings_for_unsubscribed(slim_sub: StreamSubscription): 
     if (!stream_data.can_toggle_subscription(sub)) {
         stream_ui_updates.update_add_subscriptions_elements(sub);
     }
-    if (current_user.is_guest) {
-        stream_edit.open_edit_panel_empty();
-    }
-
     // Remove private streams from subscribed streams list.
     stream_ui_updates.update_stream_row_in_settings_tab(sub);
     stream_ui_updates.update_permissions_banner(sub);
@@ -758,6 +754,12 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()): 
     }
     update_empty_left_panel_message();
 
+    // If the currently selected channel is no longer visible under the
+    // active filters, clear the right panel.
+    if ($(".stream-row.active").hasClass("notdisplayed")) {
+        stream_edit.empty_right_panel();
+    }
+
     update_folder_filter_button(left_panel_params);
 
     // return this for test convenience
@@ -821,9 +823,6 @@ export function switch_stream_tab(tab_name: string): void {
     }
 
     redraw_left_panel();
-    if ($(".stream-row.active").hasClass("notdisplayed")) {
-        stream_edit.empty_right_panel();
-    }
     stream_edit.setup_subscriptions_tab_hash(tab_name);
 }
 
