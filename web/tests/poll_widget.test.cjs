@@ -9,6 +9,9 @@ const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 
+mock_esm("../src/rendered_markdown", {
+    update_elements() {},
+});
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
 });
@@ -55,6 +58,7 @@ run_test("PollData my question", () => {
     assert.deepEqual(data, {
         options: [],
         question: "Favorite color?",
+        rendered_question_html: "",
     });
 
     const question_event = {
@@ -68,6 +72,7 @@ run_test("PollData my question", () => {
     assert.deepEqual(data, {
         options: [],
         question: "best plan?",
+        rendered_question_html: "",
     });
 
     const option_event = {
@@ -83,6 +88,7 @@ run_test("PollData my question", () => {
         options: [
             {
                 option: "release now",
+                rendered_option_html: "",
                 names: "",
                 count: 0,
                 key: "99,1",
@@ -90,6 +96,7 @@ run_test("PollData my question", () => {
             },
         ],
         question: "best plan?",
+        rendered_question_html: "",
     });
 
     let vote_event = {
@@ -105,6 +112,7 @@ run_test("PollData my question", () => {
         options: [
             {
                 option: "release now",
+                rendered_option_html: "",
                 names: "Me Myself",
                 count: 1,
                 key: "99,1",
@@ -112,6 +120,7 @@ run_test("PollData my question", () => {
             },
         ],
         question: "best plan?",
+        rendered_question_html: "",
     });
 
     vote_event = {
@@ -127,6 +136,7 @@ run_test("PollData my question", () => {
         options: [
             {
                 option: "release now",
+                rendered_option_html: "",
                 names: "Me Myself, Alice Lee",
                 count: 2,
                 key: "99,1",
@@ -134,6 +144,7 @@ run_test("PollData my question", () => {
             },
         ],
         question: "best plan?",
+        rendered_question_html: "",
     });
 
     const invalid_vote_event = {
@@ -176,6 +187,7 @@ run_test("PollData my question", () => {
         options: [
             {
                 option: "release now",
+                rendered_option_html: "",
                 names: "Alice Lee",
                 count: 1,
                 key: "99,1",
@@ -183,6 +195,7 @@ run_test("PollData my question", () => {
             },
         ],
         question: "best plan?",
+        rendered_question_html: "",
     });
 });
 
@@ -212,6 +225,7 @@ run_test("wrong person editing question", () => {
     assert.deepEqual(data_holder.get_widget_data(), {
         options: [],
         question: "Favorite color?",
+        rendered_question_html: "",
     });
 });
 
@@ -425,4 +439,96 @@ run_test("activate own poll", ({mock_template}) => {
         $poll_question_submit.trigger("click");
         assert.deepEqual(out_data, undefined);
     }
+});
+
+run_test("PollData with rendered content", () => {
+    const is_my_poll = false;
+    const question = "When to meet?";
+    const options = ["10am :tada:", "11am"];
+    const rendered_question_html = "<p>When to meet?</p>";
+    const rendered_options_html = ['<p>10am <span class="emoji">:tada:</span></p>', "<p>11am</p>"];
+
+    const data_holder = new PollData({
+        current_user_id: me.user_id,
+        message_sender_id: alice.user_id,
+        is_my_poll,
+        question,
+        options,
+        rendered_question_html,
+        rendered_options_html,
+        comma_separated_names: people.get_full_names_for_poll_option,
+        report_error_function: blueslip.warn,
+    });
+
+    const data = data_holder.get_widget_data();
+
+    // Rendered question is passed through.
+    assert.equal(data.rendered_question_html, rendered_question_html);
+
+    // Rendered options are passed through.
+    assert.equal(data.options[0].rendered_option_html, rendered_options_html[0]);
+    assert.equal(data.options[1].rendered_option_html, rendered_options_html[1]);
+
+    // Raw text is preserved.
+    assert.equal(data.options[0].option, "10am :tada:");
+    assert.equal(data.options[1].option, "11am");
+});
+
+run_test("PollData with rendered new_option event", () => {
+    const is_my_poll = false;
+    const question = "Pick one";
+
+    const data_holder = new PollData({
+        current_user_id: me.user_id,
+        message_sender_id: alice.user_id,
+        is_my_poll,
+        question,
+        options: [],
+        comma_separated_names: people.get_full_names_for_poll_option,
+        report_error_function: blueslip.warn,
+    });
+
+    // Simulate a new_option event with rendered content from the server.
+    const option_event = {
+        type: "new_option",
+        idx: 1,
+        option: "**bold choice**",
+        rendered_option_html: "<p><strong>bold choice</strong></p>",
+    };
+
+    data_holder.handle_new_option_event(alice.user_id, option_event);
+    const data = data_holder.get_widget_data();
+
+    assert.equal(data.options[0].option, "**bold choice**");
+    assert.equal(data.options[0].rendered_option_html, "<p><strong>bold choice</strong></p>");
+});
+
+run_test("PollData without rendered fields (backward compat)", () => {
+    const is_my_poll = false;
+    const question = "Old poll?";
+    const options = ["yes", "no"];
+
+    // Simulate old data without rendered fields.
+    const data_holder = new PollData({
+        current_user_id: me.user_id,
+        message_sender_id: alice.user_id,
+        is_my_poll,
+        question,
+        options,
+        comma_separated_names: people.get_full_names_for_poll_option,
+        report_error_function: blueslip.warn,
+    });
+
+    const data = data_holder.get_widget_data();
+
+    // Without rendered fields, rendered_question_html and rendered_option_html
+    // should be empty strings (fallback).
+    assert.equal(data.rendered_question_html, "");
+    assert.equal(data.options[0].rendered_option_html, "");
+    assert.equal(data.options[1].rendered_option_html, "");
+
+    // Raw text still works.
+    assert.equal(data.question, "Old poll?");
+    assert.equal(data.options[0].option, "yes");
+    assert.equal(data.options[1].option, "no");
 });
