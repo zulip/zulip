@@ -96,7 +96,7 @@ async function create_stream(page: Page): Promise<void> {
     // We redirect to the channel message view.
     await page.waitForSelector("#subscription_overlay", {hidden: true});
     await page.waitForSelector(
-        `xpath///*[${common.has_class_x("message-header-navbar-title")} and text()="Puppeteer"]`,
+        `xpath///*[${common.has_class_x("decorated-channel-name")} and text()="Puppeteer"]`,
     );
 
     await page.waitForSelector(".message-header-stream-settings-button");

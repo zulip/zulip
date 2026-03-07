@@ -3,14 +3,16 @@ import assert from "minimalistic-assert";
 
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_message_view_header from "../templates/message_view_header.hbs";
+import render_navbar_dm_avatar from "../templates/navbar_dm_avatar.hbs";
 
+import * as buddy_data from "./buddy_data.ts";
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
-import * as inbox_util from "./inbox_util.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
+import * as people from "./people.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as search from "./search.ts";
@@ -49,7 +51,8 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
         };
     }
 
-    if (inbox_util.is_visible() && !inbox_util.is_channel_view()) {
+    // Inbox view (no filter, not recent view)
+    if (filter === undefined && !recent_view_util.is_visible()) {
         return {
             title: $t({defaultMessage: "Inbox"}),
             description: $t({
@@ -116,7 +119,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
             };
         }
 
-        if (inbox_util.is_visible() && inbox_util.is_channel_view()) {
+        if (filter.is_channel_view()) {
             const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({
                 stream: current_stream,
                 show_colored_icon: true,
@@ -143,6 +146,53 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
             stream: current_stream,
             stream_settings_link: hash_util.channels_settings_edit_url(current_stream, "general"),
         };
+    }
+
+    // Handle DM conversations with avatars
+    if (filter.has_operator("dm")) {
+        const emails = filter.terms_with_operator("dm")[0]!.operand;
+        const user_ids = people.emails_strings_to_user_ids_string(emails);
+
+        if (user_ids !== undefined) {
+            const user_ids_array = people.user_ids_string_to_ids_array(user_ids);
+            const other_user_ids = people.sorted_other_user_ids(user_ids_array);
+
+            if (other_user_ids.length > 0) {
+                const max_avatars = 3;
+                const avatars_to_show = other_user_ids.slice(0, max_avatars);
+                const avatar_html_parts: string[] = [];
+
+                for (const user_id of avatars_to_show) {
+                    const user = people.get_by_user_id(user_id);
+                    const is_deactivated = !people.is_active_user_for_popover(user_id);
+                    const user_circle_class = buddy_data.get_user_circle_class(
+                        user_id,
+                        is_deactivated,
+                    );
+                    const avatar_url = people.small_avatar_url_for_person(user);
+                    const is_bot = user.is_bot;
+
+                    avatar_html_parts.push(
+                        render_navbar_dm_avatar({
+                            user_id,
+                            avatar_url,
+                            user_circle_class,
+                            is_bot,
+                            is_deactivated,
+                            is_guest: user.is_guest,
+                        }),
+                    );
+                }
+
+                return {
+                    ...context,
+                    title: undefined,
+                    title_html: avatar_html_parts.join(""),
+                    zulip_icon: "user",
+                    icon: undefined,
+                };
+            }
+        }
     }
 
     return context;
