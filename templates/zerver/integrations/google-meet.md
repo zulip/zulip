@@ -98,3 +98,4 @@ Meet REST API.
 - [Zoom integration](/integrations/zoom)
 - [Constructor Groups integration](/integrations/constructor-groups)
 - [Nextcloud Talk integration](/integrations/nextcloud-talk)
+- [LiveKit integration](/integrations/livekit)
