@@ -33,14 +33,19 @@ export function get_stream_filters_max_height(): number {
 
     const $left_sidebar_search = $("#left-sidebar-search");
     const is_search_visible = $left_sidebar_search.css("display") !== "none";
+    const auto_collapse_views = user_settings.web_left_sidebar_auto_collapse_views;
 
     let stream_filters_max_height =
         viewport_height -
         Number.parseInt($("#left-sidebar").css("paddingTop"), 10) -
-        (is_search_visible ? ($left_sidebar_search.outerHeight(true) ?? 0) : 0) -
-        ($("#left-sidebar-navigation-area").not(".hidden-by-filters").outerHeight(true) ?? 0) -
-        GAP;
+        (is_search_visible ? ($left_sidebar_search.outerHeight(true) ?? 0) : 0);
 
+    if (!auto_collapse_views) {
+        stream_filters_max_height =
+            stream_filters_max_height -
+            ($("#left-sidebar-navigation-area").not(".hidden-by-filters").outerHeight(true) ?? 0) -
+            GAP;
+    }
     // Don't let us crush the stream sidebar completely out of view
     stream_filters_max_height = Math.max(80, stream_filters_max_height);
     return stream_filters_max_height;
