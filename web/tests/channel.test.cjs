@@ -2,14 +2,14 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_jquery, mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const { mock_jquery, mock_esm, set_global, zrequire } = require("./lib/namespace.cjs");
+const { run_test } = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
-const {page_params} = require("./lib/zpage_params.cjs");
+const { page_params } = require("./lib/zpage_params.cjs");
 
 const xhr_401 = {
     status: 401,
-    responseJSON: {msg: "Use cannot access XYZ"},
+    responseJSON: { msg: "Use cannot access XYZ" },
 };
 
 let login_to_access_shown = false;
@@ -21,7 +21,7 @@ mock_esm("../src/spectators", {
 
 set_global("window", {
     location: {
-        replace() {},
+        replace() { },
         href: "http://example.com",
     },
 });
@@ -29,12 +29,12 @@ set_global("window", {
 const reload_state = zrequire("reload_state");
 const channel = zrequire("channel");
 
-const default_stub_xhr = {"default-stub-xhr": 0};
+const default_stub_xhr = { "default-stub-xhr": 0 };
 
 const $ = mock_jquery({});
 
 function test_with_mock_ajax(test_params) {
-    const {xhr = default_stub_xhr, run_code, check_ajax_options} = test_params;
+    const { xhr = default_stub_xhr, run_code, check_ajax_options } = test_params;
 
     let ajax_called;
     let ajax_options;
@@ -60,16 +60,16 @@ function test_with_mock_ajax(test_params) {
 }
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, ({ override }) => {
         reload_state.clear_for_testing();
-        f({override});
+        f({ override });
     });
 }
 
 test("post", () => {
     test_with_mock_ajax({
         run_code() {
-            channel.post({url: "/json/endpoint"});
+            channel.post({ url: "/json/endpoint" });
         },
 
         check_ajax_options(options) {
@@ -86,7 +86,7 @@ test("post", () => {
 test("patch", () => {
     test_with_mock_ajax({
         run_code() {
-            channel.patch({url: "/json/endpoint"});
+            channel.patch({ url: "/json/endpoint" });
         },
 
         check_ajax_options(options) {
@@ -103,7 +103,7 @@ test("patch", () => {
 test("put", () => {
     test_with_mock_ajax({
         run_code() {
-            channel.put({url: "/json/endpoint"});
+            channel.put({ url: "/json/endpoint" });
         },
 
         check_ajax_options(options) {
@@ -120,7 +120,7 @@ test("put", () => {
 test("delete", () => {
     test_with_mock_ajax({
         run_code() {
-            channel.del({url: "/json/endpoint"});
+            channel.del({ url: "/json/endpoint" });
         },
 
         check_ajax_options(options) {
@@ -137,7 +137,7 @@ test("delete", () => {
 test("get", () => {
     test_with_mock_ajax({
         run_code() {
-            channel.get({url: "/json/endpoint"});
+            channel.get({ url: "/json/endpoint" });
         },
 
         check_ajax_options(options) {
@@ -160,7 +160,7 @@ test("normal_post", () => {
 
     let orig_success_called;
     let orig_error_called;
-    const stub_xhr = {"stub-xhr-normal-post": 0};
+    const stub_xhr = { "stub-xhr-normal-post": 0 };
 
     test_with_mock_ajax({
         xhr: stub_xhr,
@@ -200,7 +200,7 @@ test("authentication_error_401_is_spectator", () => {
     test_with_mock_ajax({
         xhr: xhr_401,
         run_code() {
-            channel.post({url: "/json/endpoint"});
+            channel.post({ url: "/json/endpoint" });
         },
 
         // is_spectator = true
@@ -220,7 +220,7 @@ test("authentication_error_401_password_change_in_progress", () => {
     test_with_mock_ajax({
         xhr: xhr_401,
         run_code() {
-            channel.post({url: "/json/endpoint"});
+            channel.post({ url: "/json/endpoint" });
         },
 
         // is_spectator = true
@@ -244,7 +244,7 @@ test("authentication_error_401_not_spectator", () => {
     test_with_mock_ajax({
         xhr: xhr_401,
         run_code() {
-            channel.post({url: "/json/endpoint"});
+            channel.post({ url: "/json/endpoint" });
         },
 
         // is_spectator = false
@@ -264,11 +264,11 @@ test("reload_on_403_error", () => {
     test_with_mock_ajax({
         xhr: {
             status: 403,
-            responseJSON: {msg: "CSRF Fehler: etwas", code: "CSRF_FAILED"},
+            responseJSON: { msg: "CSRF Fehler: etwas", code: "CSRF_FAILED" },
         },
 
         run_code() {
-            channel.post({url: "/json/endpoint"});
+            channel.post({ url: "/json/endpoint" });
         },
 
         check_ajax_options(options) {
@@ -292,7 +292,7 @@ test("unexpected_403_response", () => {
         },
 
         run_code() {
-            channel.post({url: "/json/endpoint"});
+            channel.post({ url: "/json/endpoint" });
         },
 
         check_ajax_options(options) {
@@ -313,7 +313,7 @@ test("xhr_error_message", () => {
 
     xhr = {
         status: "404",
-        responseJSON: {msg: "file not found"},
+        responseJSON: { msg: "file not found" },
     };
     msg = "some message";
     assert.equal(channel.xhr_error_message(msg, xhr), "some message: file not found");
@@ -325,7 +325,7 @@ test("xhr_error_message", () => {
 test("while_reloading", () => {
     reload_state.set_state_to_in_progress();
 
-    assert.equal(channel.get({ignore_reload: false}), undefined);
+    assert.equal(channel.get({ ignore_reload: false }), undefined);
 
     test_with_mock_ajax({
         run_code() {
@@ -394,6 +394,33 @@ test("error in callback", () => {
             assert.ok(!success_called);
             assert.ok(raised_error);
             assert.ok(error_called);
+        },
+    });
+});
+
+test("rate_limit_error", () => {
+    test_with_mock_ajax({
+        xhr: {
+            status: 429,
+            responseJSON: { msg: "API usage exceeded rate limit", code: "RATE_LIMIT_HIT" },
+        },
+
+        run_code() {
+            channel.post({ url: "/json/endpoint" });
+        },
+
+        check_ajax_options(options) {
+            let handler_called = false;
+            channel.set_rate_limit_handler((xhr) => {
+                handler_called = true;
+                assert.equal(xhr.status, 429);
+            });
+
+            options.simulate_error();
+            assert.ok(handler_called);
+
+            // Clean up
+            channel.set_rate_limit_handler(undefined);
         },
     });
 });
