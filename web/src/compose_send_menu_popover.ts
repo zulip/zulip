@@ -39,6 +39,7 @@ export function open_schedule_message_menu(
         return;
     }
     let interval: ReturnType<typeof setTimeout>;
+    let flatpickr_active = false;
 
     popover_menus.toggle_popover_menu(target, {
         theme: "popover-menu",
@@ -53,6 +54,9 @@ export function open_schedule_message_menu(
                     },
                 },
             ],
+        },
+        onHide() {
+            return flatpickr_active ? false : undefined;
         },
         onShow(instance) {
             // Only show send later options that are possible today.
@@ -97,9 +101,11 @@ export function open_schedule_message_menu(
             $popper.on("click", ".send_later_custom", (e) => {
                 const $send_later_options_content = $popper.find(".popover-menu-list");
                 const current_time = new Date();
+                flatpickr_active = true;
                 flatpickr.show_flatpickr(
                     util.the($(".send_later_custom")),
                     (send_at_time) => {
+                        flatpickr_active = false;
                         message_schedule_callback(send_at_time);
                         popover_menus.hide_current_popover_if_visible(instance);
                     },
@@ -109,7 +115,11 @@ export function open_schedule_message_menu(
                             current_time.getTime() +
                                 scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS * 1000,
                         ),
+                        onOpen() {
+                            flatpickr_active = true;
+                        },
                         onClose(selectedDates, _dateStr, instance) {
+                            flatpickr_active = false;
                             // Return to normal state.
                             $send_later_options_content.css("pointer-events", "all");
                             const selected_date = selectedDates[0];
@@ -148,6 +158,7 @@ export function open_schedule_message_menu(
                 // Hide the vdots
                 $(instance.reference).closest(".message_row").removeClass("has_actions_popover");
             }
+            flatpickr_active = false;
             clearInterval(interval);
             instance.destroy();
             popover_menus.popover_instances.send_later_options = null;
