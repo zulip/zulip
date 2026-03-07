@@ -3,11 +3,13 @@ import hashlib
 import json
 import logging
 import random
+import secrets
 from abc import ABC, abstractmethod
 from base64 import b64encode
 from typing import Any, Literal
 from urllib.parse import quote, urlencode, urljoin, urlsplit
 
+import jwt
 import requests
 from defusedxml import ElementTree
 from django.conf import settings
@@ -15,6 +17,7 @@ from django.core.signing import Signer
 from django.http import HttpRequest, HttpResponse
 from django.middleware import csrf
 from django.shortcuts import redirect, render
+from django.utils import translation
 from django.utils.crypto import constant_time_compare, salted_hmac
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -35,6 +38,7 @@ from zerver.lib.cache import (
     zoom_server_access_token_cache_key,
 )
 from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.i18n import get_and_set_request_language, get_language_translation_data
 from zerver.lib.message import truncate_content
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.partial import partial
@@ -763,3 +767,109 @@ def create_nextcloud_talk_url(
 
     call_url = urljoin(settings.NEXTCLOUD_SERVER, f"/index.php/call/{token}")
     return json_success(request, data={"url": call_url})
+
+
+@typed_endpoint
+def create_livekit_call(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    is_video_call: Json[bool] = True,
+) -> HttpResponse:
+    if (
+        settings.LIVEKIT_URL is None
+        or settings.LIVEKIT_API_KEY is None
+        or settings.LIVEKIT_API_SECRET is None
+    ):
+        raise VideoCallProviderNotConfiguredError("LiveKit")
+
+    room_name = "zulip-" + secrets.token_urlsafe(18)
+    signed = Signer().sign_object(
+        {
+            "room": room_name,
+            "is_video_call": is_video_call,
+            "realm_id": user_profile.realm_id,
+        }
+    )
+    url = append_url_query_string("/calls/livekit/join", "livekit=" + signed)
+    return json_success(request, data={"url": url})
+
+
+def generate_livekit_token(
+    api_key: str,
+    api_secret: str,
+    room_name: str,
+    identity: str,
+    name: str,
+    *,
+    ttl_seconds: int = 600,
+) -> str:
+    now = datetime.datetime.now(tz=datetime.timezone.utc)
+    claims = {
+        # https://docs.livekit.io/frontends/reference/tokens-grants/#token-structure
+        "sub": identity,
+        "iss": api_key,
+        "nbf": int(now.timestamp()),
+        "exp": int((now + datetime.timedelta(seconds=ttl_seconds)).timestamp()),
+        "name": name,
+        "video": {
+            "roomJoin": True,
+            "room": room_name,
+            "roomCreate": True,
+            "canPublish": True,
+            "canSubscribe": True,
+        },
+    }
+    return jwt.encode(claims, api_secret, algorithm="HS256")
+
+
+@zulip_login_required
+@never_cache
+@typed_endpoint
+def join_livekit_call(request: HttpRequest, *, livekit: str) -> HttpResponse:
+    if (
+        settings.LIVEKIT_URL is None
+        or settings.LIVEKIT_API_KEY is None
+        or settings.LIVEKIT_API_SECRET is None
+    ):
+        raise VideoCallProviderNotConfiguredError("LiveKit")
+
+    try:
+        data = Signer().unsign_object(livekit)
+    except Exception:
+        raise JsonableError(_("Invalid call link."))
+
+    assert isinstance(request.user, UserProfile)
+    if data.get("realm_id") != request.user.realm_id:
+        raise JsonableError(_("Invalid or expired call link."))
+
+    identity = f"{request.user.realm_id}:{request.user.id}"
+    token = generate_livekit_token(
+        settings.LIVEKIT_API_KEY,
+        settings.LIVEKIT_API_SECRET,
+        data["room"],
+        identity,
+        request.user.full_name,
+    )
+
+    request_language = get_and_set_request_language(
+        request,
+        request.user.default_language,
+        translation.get_language_from_path(request.path_info),
+    )
+
+    # Sync this with livekit_call_params_schema in base_page_params.ts.
+    page_params = dict(
+        page_type="livekit_call",
+        livekit_url=settings.LIVEKIT_URL,
+        token=token,
+        room_name=data["room"],
+        is_video_call=data["is_video_call"],
+        translation_data=get_language_translation_data(request_language),
+    )
+
+    return render(
+        request,
+        "zerver/livekit_call.html",
+        context={"page_params": page_params},
+    )

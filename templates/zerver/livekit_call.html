@@ -1,0 +1,27 @@
+{% extends "zerver/base.html" %}
+{% set entrypoint = "livekit-call" %}
+
+{% block title %}
+<title>{{ _("Video call") }} | Zulip</title>
+{% endblock %}
+
+{% block content %}
+<div id="livekit-call-container">
+    <div id="livekit-status" aria-live="polite">{{ _("Connecting…") }}</div>
+    <div id="livekit-participants"></div>
+    <div id="livekit-controls">
+        <button id="livekit-toggle-mic" type="button" aria-label="{{ _('Toggle microphone') }}" aria-pressed="true">
+            <i class="zulip-icon zulip-icon-mic" aria-hidden="true"></i>
+        </button>
+        <button id="livekit-toggle-camera" type="button" aria-label="{{ _('Toggle camera') }}" aria-pressed="true">
+            <i class="zulip-icon zulip-icon-camera" aria-hidden="true"></i>
+        </button>
+        <button id="livekit-toggle-screenshare" type="button" aria-label="{{ _('Toggle screen sharing') }}" aria-pressed="false">
+            <i class="zulip-icon zulip-icon-monitor" aria-hidden="true"></i>
+        </button>
+        <button id="livekit-leave" type="button" aria-label="{{ _('Leave call') }}">
+            <i class="zulip-icon zulip-icon-phone-off" aria-hidden="true"></i>
+        </button>
+    </div>
+</div>
+{% endblock %}
