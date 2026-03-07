@@ -139,6 +139,126 @@
     }
 }
 
+/* DM avatars in the navbar */
+.navbar-dm-avatars {
+    display: flex;
+    /* Adjusted margin/padding so that overflow: hidden
+       does not clip the presence dot (which extends ~1px
+       beyond the avatar box). */
+    margin-top: 4px;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 6px;
+    /* Allow this flex child to shrink below its content
+       width so that overflow: hidden clips at the visible
+       boundary instead of the full content edge. */
+    overflow: hidden;
+    min-width: 0;
+    /* Containing block for the ::after fade overlay. */
+    position: relative;
+
+    &.dm-avatars-overflowing::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 30px;
+        background: linear-gradient(
+            to right,
+            transparent,
+            var(--color-background-navbar)
+        );
+        /* Let hover and click events pass through to the
+           avatars underneath. */
+        pointer-events: none;
+    }
+}
+
+.navbar-dm-avatar {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    border-radius: 4px;
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+    }
+
+    .navbar-dm-avatar-image {
+        width: 28px;
+        height: 28px;
+        border-radius: 4px;
+        overflow: hidden;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+    }
+
+    /* Availability dot — sized to match the right sidebar
+       with-avatar presence indicator (right_sidebar.css,
+       .user_sidebar_entry.with_avatar .user-circle).
+       line-height: 1 is required here because the navbar
+       sets line-height: var(--header-height) on the header,
+       which the span would otherwise inherit, stretching
+       the circle into an oval. */
+    .user-circle {
+        position: absolute;
+        /* 10px at 16px/1em */
+        font-size: 0.625em;
+        line-height: 1;
+        bottom: -0.5px;
+        right: -0.5px;
+        background-color: var(--color-background-navbar);
+        border: 1.5px solid var(--color-background-navbar);
+        border-radius: 50%;
+        pointer-events: none;
+
+        &.user-circle-offline {
+            display: none;
+        }
+    }
+
+    /* Adjust avatar corner when status dot is visible */
+    &:not(:has(.user-circle-offline)) .navbar-dm-avatar-image {
+        border-bottom-right-radius: 0.3875em;
+    }
+
+    &:hover .navbar-dm-avatar-image {
+        opacity: 0.85;
+    }
+}
+
+.dm-avatars-overflow-tooltip {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.dm-avatars-overflow-tooltip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.dm-avatars-overflow-tooltip-name {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 1px 6px;
+    background-color: hsl(0deg 0% 100% / 16%);
+    line-height: 1.3;
+}
+
 /* Media Queries */
 @media only screen and (width <= 620px) {
     .view-description-extended {
