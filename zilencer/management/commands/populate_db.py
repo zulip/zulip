@@ -1,3 +1,4 @@
+import io
 import itertools
 import os
 import random
@@ -11,6 +12,7 @@ import orjson
 from django.conf import settings
 from django.contrib.sessions.models import Session
 from django.core.files.base import File
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.management import call_command
 from django.core.management.base import CommandParser
 from django.core.validators import validate_email
@@ -42,7 +44,7 @@ from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.digest import DIGEST_CUTOFF
-from zerver.lib.generate_test_data import create_test_data, generate_topics
+from zerver.lib.generate_test_data import add_link_to_topic, create_test_data, generate_topics
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 from zerver.lib.onboarding_steps import ALL_ONBOARDING_STEPS
@@ -53,6 +55,7 @@ from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.stream_subscription import bulk_create_stream_subscriptions
 from zerver.lib.types import AnalyticsDataUploadLevel, ProfileFieldData
+from zerver.lib.upload import upload_message_attachment_from_request
 from zerver.lib.users import add_service
 from zerver.lib.utils import generate_api_key
 from zerver.models import (
@@ -196,6 +199,21 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, An
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
 
+def create_attachment(user: UserProfile) -> str:
+    content = b"temporary test attachment file. Hello, World!"
+    file_obj = io.BytesIO(content)
+    upload = InMemoryUploadedFile(
+        file=file_obj,
+        field_name=None,
+        name="attachment.txt",
+        content_type="text/plain",
+        size=len(content),
+        charset=None,
+    )
+    locator, _ = upload_message_attachment_from_request(upload, user)
+    return locator
+
+
 def create_alert_words(realm_id: int) -> None:
     user_ids = UserProfile.objects.filter(
         realm_id=realm_id,
@@ -301,6 +319,20 @@ class Command(ZulipBaseCommand):
         )
 
         parser.add_argument(
+            "--percent-topic-links",
+            type=float,
+            default=5,
+            help="The percent of topics with links in them.",
+        )
+
+        parser.add_argument(
+            "--percent-attachments",
+            type=float,
+            default=3,
+            help="The percent of messages to have attachments.",
+        )
+
+        parser.add_argument(
             "--stickiness",
             type=float,
             default=20,
@@ -332,6 +364,10 @@ class Command(ZulipBaseCommand):
         # Get consistent data for backend tests.
         if options["test_suite"]:
             random.seed(0)
+            # Keep the backend test fixture data stable; attachment and topic-link
+            # coverage are only needed in the development dataset.
+            options["percent_attachments"] = 0
+            options["percent_topic_links"] = 0
 
             with connection.cursor() as cursor:
                 # Sometimes bugs relating to confusing recipient.id for recipient.type_id
@@ -1318,6 +1354,7 @@ def generate_and_send_messages(
     recipients: dict[int, tuple[int, int, dict[str, Any]]] = {}
     messages: list[Message] = []
     while num_messages < tot_messages:
+        has_attachment = random.random() < options["percent_attachments"] / 100.0
         saved_data: dict[str, Any] = {}
         message = Message(realm=realm)
         message.sending_client = get_client("ZulipDataImport")
@@ -1372,7 +1409,13 @@ def generate_and_send_messages(
                 list(Subscription.objects.filter(recipient=message.recipient))
             ).user_profile
             message.subject = random.choice(possible_topic_names[message.recipient.id])
+            if random.random() < options["percent_topic_links"] / 100.0:
+                message.subject = add_link_to_topic(message.subject)
             saved_data["subject"] = message.subject
+
+        if has_attachment:
+            locator = create_attachment(message.sender)
+            message.content += f"\n[attachment.txt]({locator})"
 
         message.is_channel_message = recipient_type == Recipient.STREAM
         message.date_sent = choose_date_sent(
