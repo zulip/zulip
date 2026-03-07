@@ -7,6 +7,7 @@ from pydantic import Json
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
@@ -293,7 +294,10 @@ def get_commented_design_event_body(payload: WildValue, include_title: bool) -> 
 
     comment_url, design_url, design_name = parse_design_comment(comment, repository_url)
     action = f"[commented]({comment_url})"
-    content_message = CONTENT_MESSAGE_TEMPLATE.format(message=comment["note"].tame(check_string))
+    message = comment["note"].tame(check_string)
+    content_message = CONTENT_MESSAGE_TEMPLATE.format(
+        message=message, fence=get_unused_fence(message)
+    )
     message_template = (
         DESIGN_COMMENT_MESSAGE_TEMPLATE
         if include_title
@@ -422,7 +426,9 @@ def get_release_event_body(payload: WildValue, include_title: bool) -> str:
 
         if "description" in payload:
             description = payload["description"].tame(check_string)
-            body += CONTENT_MESSAGE_TEMPLATE.format(message=description)
+            body += CONTENT_MESSAGE_TEMPLATE.format(
+                message=description, fence=get_unused_fence(description)
+            )
 
     return body
 
