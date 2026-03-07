@@ -42,7 +42,7 @@ from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.digest import DIGEST_CUTOFF
-from zerver.lib.generate_test_data import create_test_data, generate_topics
+from zerver.lib.generate_test_data import add_link_to_topic, create_test_data, generate_topics
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 from zerver.lib.onboarding_steps import ALL_ONBOARDING_STEPS
@@ -301,6 +301,13 @@ class Command(ZulipBaseCommand):
         )
 
         parser.add_argument(
+            "--percent-topic-links",
+            type=float,
+            default=5,
+            help="The percent of topics with links in them.",
+        )
+
+        parser.add_argument(
             "--stickiness",
             type=float,
             default=20,
@@ -332,6 +339,9 @@ class Command(ZulipBaseCommand):
         # Get consistent data for backend tests.
         if options["test_suite"]:
             random.seed(0)
+            # Keep the backend test fixture data stable; topic-link
+            # coverage is only needed in the development dataset.
+            options["percent_topic_links"] = 0
 
             with connection.cursor() as cursor:
                 # Sometimes bugs relating to confusing recipient.id for recipient.type_id
@@ -1372,6 +1382,8 @@ def generate_and_send_messages(
                 list(Subscription.objects.filter(recipient=message.recipient))
             ).user_profile
             message.subject = random.choice(possible_topic_names[message.recipient.id])
+            if random.random() < options["percent_topic_links"] / 100.0:
+                message.subject = add_link_to_topic(message.subject)
             saved_data["subject"] = message.subject
 
         message.is_channel_message = recipient_type == Recipient.STREAM

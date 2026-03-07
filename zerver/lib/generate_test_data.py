@@ -1,11 +1,13 @@
 import itertools
 import os
 import random
+from functools import cache
 from typing import Any
 
 import orjson
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+from zerver.lib.message import truncate_topic
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
 
 
@@ -14,6 +16,11 @@ def load_config() -> dict[str, Any]:
         config = orjson.loads(infile.read())
 
     return config
+
+
+@cache
+def get_topic_links() -> tuple[str, ...]:
+    return tuple(load_config()["gen_fodder"]["topicLinks"])
 
 
 def generate_topics(num_topics: int) -> list[str]:
@@ -181,6 +188,11 @@ def add_link(text: str, link: str) -> str:
     vals[start] = vals[start] + " " + link + " "
 
     return " ".join(vals)
+
+
+def add_link_to_topic(topic: str) -> str:
+    url = random.choice(get_topic_links())
+    return truncate_topic(f"{topic} {url}")
 
 
 def remove_line_breaks(fh: Any) -> list[str]:

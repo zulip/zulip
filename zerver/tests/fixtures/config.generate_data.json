@@ -25,6 +25,13 @@
          "https://zulip.readthedocs.io/en/latest/subsystems/client.html",
          "https://zulip.readthedocs.io/en/latest/subsystems/logging.html",
          "https://zulip.readthedocs.io/en/latest/subsystems/release-checklist.html"],
+      "topicLinks": [
+        "https://example.com",
+        "https://zulip.com",
+        "https://chat.zulip.org",
+        "https://github.com/zulip",
+        "https://wikipedia.org"
+      ],
       "inline-code": [
         "`(reduce (fn [m [k v]] (assoc m v k)) {} {:b 2 :a 1 :c 3})`" ,
         "`select id, first-name, last-name from users where active = 1;`",
