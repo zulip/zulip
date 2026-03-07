@@ -9,7 +9,7 @@ async function wait_for_drafts_to_disappear(page: Page): Promise<void> {
 }
 
 async function wait_for_drafts_to_appear(page: Page): Promise<void> {
-    await page.waitForSelector("#draft_overlay.show");
+    await page.waitForSelector("#draft_overlay.show", {visible: true});
 }
 
 async function get_drafts_count(page: Page): Promise<number> {
