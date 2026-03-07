@@ -359,6 +359,68 @@ test("videos", ({override}) => {
         assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
     })();
+
+    (function test_livekit_video_and_audio_links_compose_clicked() {
+        let syntax_to_insert;
+        let called = false;
+
+        const $textarea = $.create("livekit-target-stub");
+        $textarea.set_parents_result(".message_edit_form", []);
+
+        const ev = {
+            preventDefault() {},
+            stopPropagation() {},
+        };
+
+        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
+            syntax_to_insert = syntax;
+            called = true;
+        });
+
+        override(
+            realm,
+            "realm_video_chat_provider",
+            realm_available_video_chat_providers.livekit.id,
+        );
+
+        channel.post = (payload) => {
+            assert.equal(payload.url, "/json/calls/livekit/create");
+            assert.equal(payload.data.is_video_call, true);
+            payload.success({
+                result: "success",
+                msg: "",
+                url: "/calls/livekit/join?livekit=signed-token",
+            });
+            return {abort() {}};
+        };
+
+        $("textarea#compose-textarea").val("");
+        const video_handler = $("body").get_on_handler("click", ".video_link");
+        video_handler.call($textarea, ev);
+        const video_link_regex =
+            /\[translated: Join video call\.]\(\/calls\/livekit\/join\?livekit=signed-token\)/;
+        assert.ok(called);
+        assert.match(syntax_to_insert, video_link_regex);
+
+        channel.post = (payload) => {
+            assert.equal(payload.url, "/json/calls/livekit/create");
+            assert.equal(payload.data.is_video_call, false);
+            payload.success({
+                result: "success",
+                msg: "",
+                url: "/calls/livekit/join?livekit=signed-token",
+            });
+            return {abort() {}};
+        };
+
+        $("textarea#compose-textarea").val("");
+        const audio_handler = $("body").get_on_handler("click", ".audio_link");
+        audio_handler.call($textarea, ev);
+        const audio_link_regex =
+            /\[translated: Join voice call\.]\(\/calls\/livekit\/join\?livekit=signed-token\)/;
+        assert.ok(called);
+        assert.match(syntax_to_insert, audio_link_regex);
+    })();
 });
 
 test("test_video_chat_button_toggle disabled", ({override}) => {

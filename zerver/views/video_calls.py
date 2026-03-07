@@ -2,6 +2,7 @@ import hashlib
 import json
 import logging
 import random
+import secrets
 from abc import ABC, abstractmethod
 from base64 import b64encode
 from typing import Any
@@ -621,3 +622,29 @@ def create_nextcloud_talk_url(
 
     call_url = urljoin(settings.NEXTCLOUD_SERVER, f"/index.php/call/{token}")
     return json_success(request, data={"url": call_url})
+
+
+@typed_endpoint
+def create_livekit_call(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    is_video_call: Json[bool] = True,
+) -> HttpResponse:
+    if (
+        settings.LIVEKIT_URL is None
+        or settings.LIVEKIT_API_KEY is None
+        or settings.LIVEKIT_API_SECRET is None
+    ):
+        raise JsonableError(_("LiveKit is not configured"))
+
+    room_name = "zulip-" + secrets.token_urlsafe(18)
+    signed = Signer().sign_object(
+        {
+            "room": room_name,
+            "is_video_call": is_video_call,
+            "realm_id": user_profile.realm_id,
+        }
+    )
+    url = append_url_query_string("/calls/livekit/join", "livekit=" + signed)
+    return json_success(request, data={"url": url})

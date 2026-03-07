@@ -209,6 +209,35 @@ export function generate_and_insert_audio_or_video_call_link(
 
                 break;
             }
+            case available_providers.livekit?.id: {
+                xhr = channel.post({
+                    url: "/json/calls/livekit/create",
+                    data: {is_video_call: !is_audio_call},
+                    success(response) {
+                        if (xhr && compose_call.ignored_call_xhrs.has(xhr)) {
+                            return;
+                        }
+                        const data = call_response_schema.parse(response);
+                        if (is_audio_call) {
+                            insert_audio_call_url(data.url, $target_textarea);
+                        } else {
+                            insert_video_call_url(data.url, $target_textarea);
+                        }
+                    },
+                    error(_xhr, status) {
+                        if (xhr && compose_call.ignored_call_xhrs.has(xhr)) {
+                            return;
+                        }
+                        if (status !== "abort") {
+                            ui_report.generic_embed_error(
+                                $t_html({defaultMessage: "Failed to create video call."}),
+                                2000,
+                            );
+                        }
+                    },
+                });
+                break;
+            }
             case available_providers.jitsi_meet?.id: {
                 const video_call_id = util.random_int(100000000000000, 999999999999999);
                 const video_call_url = compose_call.get_jitsi_server_url(video_call_id.toString());

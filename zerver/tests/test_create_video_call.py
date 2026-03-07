@@ -852,3 +852,38 @@ class NextcloudVideoCallTest(ZulipTestCase):
 
         json = self.assert_json_success(response)
         self.assertEqual(json["url"], "https://nextcloud.example.com/index.php/call/abc123token")
+
+
+class LiveKitVideoCallTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user = self.example_user("hamlet")
+        self.login_user(self.user)
+
+    def test_create_livekit_video_call(self) -> None:
+        response = self.client_post("/json/calls/livekit/create", {"is_video_call": "true"})
+        json = self.assert_json_success(response)
+        url = json["url"]
+        self.assertTrue(url.startswith("/calls/livekit/join?livekit="))
+
+        # Verify the signed token can be decoded.
+        token = url.split("livekit=")[1]
+        data = Signer().unsign_object(token)
+        self.assertTrue(data["room"].startswith("zulip-"))
+        self.assertTrue(data["is_video_call"])
+        self.assertEqual(data["realm_id"], self.user.realm_id)
+
+    def test_create_livekit_audio_call(self) -> None:
+        response = self.client_post("/json/calls/livekit/create", {"is_video_call": "false"})
+        json = self.assert_json_success(response)
+        url = json["url"]
+        token = url.split("livekit=")[1]
+        data = Signer().unsign_object(token)
+        self.assertFalse(data["is_video_call"])
+
+    def test_create_livekit_not_configured(self) -> None:
+        for setting_name in ["LIVEKIT_URL", "LIVEKIT_API_KEY", "LIVEKIT_API_SECRET"]:
+            with self.settings(**{setting_name: None}):
+                response = self.client_post("/json/calls/livekit/create", {"is_video_call": "true"})
+                self.assert_json_error(response, "LiveKit is not configured")
