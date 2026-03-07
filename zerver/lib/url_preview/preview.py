@@ -32,7 +32,6 @@ ZULIP_URL_PREVIEW_USER_AGENT = (
     f"Mozilla/5.0 (compatible; ZulipURLPreview/{ZULIP_VERSION}; +{settings.ROOT_DOMAIN_URI})"
 )
 
-# FIXME: This header and timeout are not used by pyoembed, when trying to autodiscover!
 HEADERS = {"User-Agent": ZULIP_URL_PREVIEW_USER_AGENT}
 TIMEOUT = 15
 
@@ -91,10 +90,6 @@ def get_link_embed_data(url: str, maxwidth: int = 640, maxheight: int = 480) -> 
     if not valid_content_type(url):
         return None
 
-    # The oembed data from pyoembed may be complete enough to return
-    # as-is; if so, we use it.  Otherwise, we use it as a _base_ for
-    # the other, less sophisticated techniques which we apply as
-    # successive fallbacks.
     data = get_oembed_data(url, maxwidth=maxwidth, maxheight=maxheight)
     if data is not None and isinstance(data, UrlOEmbedData):
         return data
