@@ -2232,15 +2232,17 @@ export function initialize({
         }, 300),
     );
 
-    $("body").on("click", ".recent-view-load-more-container .fetch-messages-button", () => {
-        $(".recent-view-load-more-container .button-label").toggleClass("invisible", true);
-        $(".recent-view-load-more-container .fetch-messages-button").prop("disabled", true);
-        loading.make_indicator(
-            $(".recent-view-load-more-container .fetch-messages-button .loading-indicator"),
-            {width: 20},
-        );
-        maybe_load_older_messages(unread.first_unread_unmuted_message_id);
-    });
+    $("body").on(
+        "click",
+        ".recent-view-load-more-container .fetch-messages-button",
+        function (this: HTMLElement) {
+            const $button = $(this);
+            $button.find(".button-label").toggleClass("invisible", true);
+            $button.prop("disabled", true);
+            loading.make_indicator($button.find(".loading-indicator"), {width: 20});
+            maybe_load_older_messages(unread.first_unread_unmuted_message_id);
+        },
+    );
 
     compose_actions.register_compose_cancel_hook(() => {
         if (recent_view_util.is_visible()) {
