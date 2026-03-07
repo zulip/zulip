@@ -3,6 +3,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import render_editable_pill from "../templates/editable_pill.hbs";
 import render_input_pill from "../templates/input_pill.hbs";
 
 import * as keydown_util from "./keydown_util.ts";
@@ -63,6 +64,7 @@ type InputPillStore<ItemType> = {
     split_text_on_comma: boolean;
     convert_to_pill_on_enter: boolean;
     show_outline_on_invalid_input: boolean;
+    setupTypeahead?: ($input: JQuery) => void;
 };
 
 // These are the functions that are exposed to other modules.
@@ -84,6 +86,7 @@ export type InputPillContainer<ItemType> = {
     onPillExpand: (callback: (pill: JQuery) => void) => void;
     onTextInputHook: (callback: () => void) => void;
     createPillonPaste: (callback: () => void) => void;
+    addSetupTypeahead: (callback: ($input: JQuery) => void) => void;
     clear: (quiet?: boolean) => void;
     clear_text: () => void;
     getCurrentText: () => string | null;
@@ -341,7 +344,136 @@ export function create<ItemType extends {type: string}>(
             }
             return true;
         },
+
+        // Begins in-place editing of a pill by replacing it with a contenteditable
+        // span initialised to the pill's text value.  Only one pill can be edited
+        // at a time.
+        startEditingPill(pill: InputPill<ItemType>): void {
+            if (pill.disabled) {
+                return;
+            }
+            if (editing_pill !== undefined) {
+                return;
+            }
+            editing_pill = pill;
+
+            const text = store.get_text_from_item(pill.item);
+            const $edit = $(render_editable_pill());
+            $edit.text(text);
+
+            // Replace the pill in-place: insert the edit span where the pill was,
+            // then detach the pill element so it can be restored on cancel.
+            pill.$element.before($edit);
+            pill.$element.detach();
+
+            $edit.trigger("focus");
+            ui_util.place_caret_at_end($edit[0]!);
+
+            if (store.setupTypeahead !== undefined) {
+                store.setupTypeahead($edit);
+            }
+
+            $edit.on("keydown", (e) => {
+                if (keydown_util.is_enter_event(e)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    funcs.commitEditingPill($edit, false);
+                } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    funcs.cancelEditingPill($edit);
+                }
+            });
+
+            // Blur commits the edit so that clicking away or Tab-navigating out
+            // behaves consistently with pressing Enter.  The guard is needed
+            // because keydown (Enter/Escape) may have already cleared editing_pill
+            // before the blur event fires.  We pass triggered_by_blur=true so
+            // that commit does not steal focus back, which would cause loops.
+            $edit.on("blur", () => {
+                if (editing_pill === pill) {
+                    funcs.commitEditingPill($edit, true);
+                }
+            });
+        },
+
+        // Validates the edited text and replaces the pill in-place using the
+        // normal appendPill() pipeline.  On validation failure the original pill
+        // is restored so the UI stays consistent.
+        //
+        // triggered_by_blur must be true when this is called from a blur
+        // handler so that we never steal focus during the event, which would
+        // cause infinite loops.
+        commitEditingPill($edit: JQuery, triggered_by_blur: boolean): void {
+            if (editing_pill === undefined) {
+                return;
+            }
+            const pill = editing_pill;
+            editing_pill = undefined;
+
+            const text = $edit.text().trim();
+
+            if (text.length === 0) {
+                // Empty input — remove the pill entirely via the normal pipeline.
+                // pill.$element is detached but still referenced in store.pills,
+                // so removePill() can find it by element identity.
+                $edit.remove();
+                funcs.removePill(pill.$element[0]!, "close");
+                if (!triggered_by_blur) {
+                    store.$input.trigger("focus");
+                }
+                return;
+            }
+
+            // Remove the original pill via the normal pipeline first so that:
+            // - appendPill()'s duplicate check excludes it (allowing an
+            //   unchanged value to pass validation), and
+            // - onPillRemove and change events fire correctly.
+            // Calling .remove() on a detached element is a safe no-op.
+            funcs.removePill(pill.$element[0]!, "close");
+
+            // appendPill() validates and appends the new pill before store.$input.
+            const success = funcs.appendPill(text);
+
+            if (success) {
+                // Move the newly created pill from the end to the edit span's
+                // position so the pill stays in-place visually.
+                const $new_pill = store.pills.at(-1)!.$element;
+                $edit.before($new_pill);
+                $edit.remove();
+                if (!triggered_by_blur) {
+                    store.$input.trigger("focus");
+                }
+            } else {
+                // Validation failed: restore the original pill in place so the
+                // UI stays consistent, then close edit mode.
+                // quiet=false so onPillCreate fires to keep external state consistent.
+            funcs.appendValidatedData(pill.item, pill.disabled, false);
+                const $restored = store.pills.at(-1)!.$element;
+                $edit.before($restored);
+                $edit.remove();
+                if (!triggered_by_blur) {
+                    $restored.trigger("focus");
+                }
+            }
+        },
+
+        // Discards the edit and restores the original pill unchanged.
+        cancelEditingPill($edit: JQuery): void {
+            if (editing_pill === undefined) {
+                return;
+            }
+            const pill = editing_pill;
+            editing_pill = undefined;
+            $edit.before(pill.$element);
+            $edit.remove();
+            pill.$element.trigger("focus");
+        },
     };
+
+    // Tracks the pill currently being edited in-place, if any.  Declared here
+    // (after funcs) so the methods above can reference it via closure.
+    let editing_pill: InputPill<ItemType> | undefined;
 
     {
         store.$parent.on("keydown", ".input", function (this: HTMLElement, e) {
@@ -455,6 +587,26 @@ export function create<ItemType extends {type: string}>(
                     e.preventDefault();
                     break;
                 }
+                case "Enter": {
+                    e.preventDefault();
+                    const pill = funcs.getByElement(util.the($pill));
+                    if (pill !== undefined) {
+                        funcs.startEditingPill(pill);
+                    }
+                    break;
+                }
+            }
+        });
+
+        // Double-clicking a pill starts in-place editing of that pill.
+        store.$parent.on("dblclick", ".pill", function (this: HTMLElement, e) {
+            if ($(e.target).closest(".exit, .expand").length > 0) {
+                return;
+            }
+            e.preventDefault();
+            const pill = funcs.getByElement(this);
+            if (pill !== undefined) {
+                funcs.startEditingPill(pill);
             }
         });
 
@@ -557,6 +709,10 @@ export function create<ItemType extends {type: string}>(
 
         createPillonPaste(callback) {
             store.createPillonPaste = callback;
+        },
+
+        addSetupTypeahead(callback) {
+            store.setupTypeahead = callback;
         },
 
         clear(quiet?: boolean) {
