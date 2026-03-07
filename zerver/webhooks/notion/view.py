@@ -11,6 +11,15 @@ from zerver.lib.validator import WildValue, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
 from zerver.models import UserProfile
 
+from .webhook import (
+    COMMENT_EVENTS,
+    DATABASE_EVENTS,
+    PAGE_EVENTS,
+    handle_comment_event,
+    handle_database_event,
+    handle_page_event,
+)
+
 NOTION_VERIFICATION_TOKEN_MESSAGE = """
 {setup_message}
 Your verification token is: `{token}`
@@ -21,9 +30,7 @@ Please copy this token and paste it into your Notion webhook configuration to co
 def handle_verification_request(payload: WildValue) -> tuple[str, str]:
     verification_token = payload["verification_token"].tame(check_string)
     setup_message = get_setup_webhook_message("Notion")
-    body = NOTION_VERIFICATION_TOKEN_MESSAGE.format(
-        setup_message=setup_message, token=verification_token
-    )
+    body = NOTION_VERIFICATION_TOKEN_MESSAGE.format(setup_message=setup_message, token=verification_token)
     return ("Verification", body)
 
 
@@ -31,10 +38,15 @@ EVENT_TO_FUNCTION_MAPPER: dict[str, Callable[[WildValue], tuple[str, str]]] = {
     "verification": handle_verification_request,
 }
 
+EVENT_TO_FUNCTION_MAPPER.update(dict.fromkeys(PAGE_EVENTS, handle_page_event))
+
+EVENT_TO_FUNCTION_MAPPER.update(dict.fromkeys(DATABASE_EVENTS, handle_database_event))
+
+EVENT_TO_FUNCTION_MAPPER.update(dict.fromkeys(COMMENT_EVENTS, handle_comment_event))
+
 
 def is_verification(payload: WildValue) -> bool:
     return payload.get("verification_token").tame(check_none_or(check_string)) is not None
-
 
 ALL_EVENT_TYPES = list(EVENT_TO_FUNCTION_MAPPER.keys())
 
