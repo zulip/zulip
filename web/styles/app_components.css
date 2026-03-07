@@ -867,12 +867,24 @@ input.settings_text_input {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
 
+    /* min-height: 0 stops the pane overflowing the 1fr row (grid items
+       default to min-height: auto); height: 100% passes the bounded
+       height down to the SimpleBar container. */
+    .drafts-tab-pane,
+    .outbox-tab-pane {
+        min-height: 0;
+
+        .overlay-messages-list {
+            height: 100%;
+        }
+    }
+
     .overlay-messages-list {
         /* We unset the `overflow` value so SimpleBar
            can manage scrolling. */
         overflow: unset;
-        /* We don't need to set a height value; the
-           1fr grid row will occupy the available height. */
+        /* Actual height is constrained by the 1fr grid row via the
+           tab-pane rule above. */
         height: auto;
         /* And therefore we don't need to worry about padding,
            so that the scrollbar appears to reach all the way
@@ -957,6 +969,18 @@ input.settings_text_input {
             .delete-overlay-message {
                 cursor: pointer;
                 color: hsl(357deg 52% 57%);
+                opacity: 0.7;
+                padding: 0;
+                font-size: 1.2em;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+
+            .outbox-resend-message,
+            .outbox-cancel-message {
+                cursor: pointer;
                 opacity: 0.7;
                 padding: 0;
                 font-size: 1.2em;

@@ -128,7 +128,8 @@
         }
     }
 
-    .drafts-container .header-body .delete-drafts-group > *:focus {
+    .drafts-container .header-body .delete-drafts-group > *:focus,
+    .outbox-actions-group .select-outbox-button:focus {
         background-color: hsl(228deg 11% 17%);
     }
 
