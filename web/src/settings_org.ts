@@ -711,6 +711,7 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
             break;
         case "realm_can_add_custom_emoji_group":
         case "realm_can_add_subscribers_group":
+        case "realm_can_change_name_group":
         case "realm_can_create_bots_group":
         case "realm_can_create_groups":
         case "realm_can_create_public_channel_group":
