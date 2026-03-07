@@ -273,6 +273,7 @@ export function unsubscribe_from_private_stream(sub: StreamSubscription): void {
     const invite_only = sub.invite_only;
     const sub_count = peer_data.get_subscriber_count(sub.stream_id);
     const stream_name_with_privacy_symbol_html = render_decorated_channel_name({
+        inline_with_text: true,
         stream: sub,
     });
 

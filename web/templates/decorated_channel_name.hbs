@@ -1,4 +1,5 @@
 {{! This controls whether the swatch next to streams in the left sidebar has a lock icon. }}
+{{~#if inline_with_text}}&nbsp;{{/if~}}
 {{~#if stream.is_archived ~}}
 <i class="zulip-icon zulip-icon-archive channel-privacy-type-icon" {{#if show_colored_icon}}style="color: {{stream.color}}"{{/if}} aria-hidden="true"></i><span class="decorated-channel-name">{{~ stream.name ~}}</span>
 {{~ else if stream.invite_only ~}}
