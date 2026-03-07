@@ -297,14 +297,38 @@
     font-size: calc(12em / 14);
     padding: 0 10px;
     text-align: right;
-    display: flex;
-    align-items: center;
     font-style: normal;
     font-weight: 600;
     line-height: 17px; /* identical to box height, or 131% */
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    padding-top: 1px;
+    /* Keep this date control the same size as the icon buttons in
+       .recipient_bar_controls so its focus outline looks the same.
+       Icon buttons use 0.375em at 14px base font-size, so compute from
+       --base-font-size-px (not local em, since this text is 12px). */
+    padding-top: calc(0.375 * var(--base-font-size-px));
+    padding-bottom: calc(0.375 * var(--base-font-size-px));
+    /* Without this margin, the outline on the right on keyboard focus
+       looks cutoff. */
+    margin-right: 2px;
+    border-radius: 4px;
+
+    /* Same as .icon-button to make the outline same as recipient bar controls */
+    &:focus-visible {
+        outline: var(--outline-width-button-focus) solid
+            var(--color-outline-button-focus) !important;
+        outline-offset: var(--outline-offset-button-focus);
+        clip-path: inset(
+            calc(
+                    -1 *
+                        (
+                            var(--outline-width-button-focus) +
+                                var(--outline-offset-button-focus)
+                        )
+                )
+                round 4px
+        );
+    }
 
     /* Display the date when unchanged only for sticky headers. */
     &.recipient_row_date_unchanged {
