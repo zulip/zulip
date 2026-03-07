@@ -81,11 +81,13 @@ def update_fts_columns(conn: psycopg2.extensions.connection) -> int:
         if message_ids:
             if USING_PGROONGA:
                 update_sql = SQL(
-                    "search_pgroonga = escape_html(subject) || ' ' || rendered_content"
+                    "search_pgroonga = escape_html(subject) || ' '"
+                    " || regexp_replace(rendered_content, '</?span[^>]*>', '', 'g')"
                 )
             else:
                 update_sql = SQL(
-                    "search_tsvector = to_tsvector('zulip.english_us_search', subject || rendered_content)"
+                   "search_tsvector = to_tsvector('zulip.english_us_search',"
+                    " subject || regexp_replace(rendered_content, '</?span[^>]*>', '', 'g'))"
                 )
             cursor.execute(
                 SQL(
