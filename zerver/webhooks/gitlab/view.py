@@ -699,7 +699,7 @@ def api_gitlab_webhook(
         )
 
         # Add a link to the project if a custom topic is set
-        if user_specified_topic:
+        if user_specified_topic is not None:
             project_url = f"[{get_repo_name(payload)}]({get_project_homepage(payload)})"
             body = f"[{project_url}] {body}"
 

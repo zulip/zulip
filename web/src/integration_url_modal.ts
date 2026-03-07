@@ -284,16 +284,16 @@ export function show_generate_integration_url_modal(api_key: string): void {
                         selected_slack_topic_option ===
                         topics_named_after_slack_channels_option.unique_id
                     ) {
+                        params.delete("topic");
                         params.set("channels_map_to_topics", "1");
                     } else if (
-                        selected_slack_topic_option === send_all_to_single_topic_option.unique_id &&
-                        topic_name !== ""
+                        selected_slack_topic_option === send_all_to_single_topic_option.unique_id
                     ) {
                         params.delete("channels_map_to_topics");
                         params.set("topic", topic_name);
                     }
                 } else {
-                    if ($override_topic.prop("checked") && topic_name !== "") {
+                    if ($override_topic.prop("checked")) {
                         params.set("topic", topic_name);
                     }
                 }
@@ -309,6 +309,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
                         if (stream_input === map_channels_option?.unique_id) {
                             params.delete("stream");
                             params.set(PresetUrlOption.CHANNEL_MAPPING, "channels");
+                            params.set("topic", topic_name);
                         }
                     } else if (option.key === PresetUrlOption.BRANCHES) {
                         if ($("#integration-url-all-branches").prop("checked")) {
@@ -346,10 +347,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             $integration_url.text(`${base_url}${selected_integration}?${params.toString()}`);
             $dialog_submit_button.prop("disabled", false);
 
-            if (
-                ($override_topic.prop("checked") && topic_name === "") ||
-                ($show_integration_events.prop("checked") && !selected_events)
-            ) {
+            if ($show_integration_events.prop("checked") && !selected_events) {
                 $dialog_submit_button.prop("disabled", true);
             }
         }
@@ -432,6 +430,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         ): void {
             slack_topics_dropdown_widget.render();
             topic_ui_callback(widget.value() === send_all_to_single_topic_option.unique_id);
+            update_url();
             dropdown.hide();
             event.preventDefault();
             event.stopPropagation();
