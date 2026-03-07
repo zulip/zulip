@@ -1001,6 +1001,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
 
     unread_ui.update_unread_counts();
     stream_list.update_streams_sidebar();
+
     pm_list.update_private_messages();
 }
 
