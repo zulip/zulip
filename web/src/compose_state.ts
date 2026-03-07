@@ -21,6 +21,12 @@ let is_processing_forward_message = false;
 let recipient_viewed_topic_resolved_banner = false;
 let recipient_viewed_topic_moved_banner = false;
 let recipient_guest_ids_for_dm_warning: number[] = [];
+let pending_resolution: {
+    message_id: number;
+    stream_id: number;
+    topic: string;
+    report_errors_in_global_banner: boolean;
+} | null = null;
 
 export function set_recipient_edited_manually(flag: boolean): void {
     recipient_edited_manually = flag;
@@ -301,4 +307,48 @@ export function allow_draft_restoring(): void {
 
 export function can_restore_drafts(): boolean {
     return _can_restore_drafts;
+}
+
+export function has_pending_resolution(): boolean {
+    return pending_resolution !== null;
+}
+
+export function get_pending_resolution(): typeof pending_resolution {
+    return pending_resolution;
+}
+
+export function set_pending_resolution(state: typeof pending_resolution): void {
+    pending_resolution = state;
+}
+
+export function clear_pending_resolution_state(): void {
+    pending_resolution = null;
+}
+
+export const MIN_RESOLUTION_MESSAGE_LENGTH = 5;
+
+/**
+ * Strip common markdown decorators to get a more accurate estimate of
+ * the "actual" user-typed text content. Used for enforcing minimum
+ * length requirements on topic resolution messages.
+ */
+export function strip_markdown_decorators(content: string): string {
+    let result = content;
+
+    // Remove code/math fence markers (```, ~~~, $$) on their own lines
+    result = result.replaceAll(/^(`{3,}|~{3,}|\$\$).*$/gm, "");
+
+    // Remove quote prefixes (including nested quotes like >> or > >)
+    result = result.replaceAll(/^(?:>\s*)+/gm, "");
+
+    // Collapse multiple whitespace and trim
+    result = result.replaceAll(/\s+/g, " ").trim();
+
+    return result;
+}
+
+export function meets_minimum_resolution_length(): boolean {
+    const content = message_content();
+    const stripped_content = strip_markdown_decorators(content);
+    return [...stripped_content].length >= MIN_RESOLUTION_MESSAGE_LENGTH;
 }

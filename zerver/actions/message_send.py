@@ -1,4 +1,5 @@
 import logging
+import re
 from collections import defaultdict
 from collections.abc import Callable, Collection, Sequence
 from collections.abc import Set as AbstractSet
@@ -139,6 +140,12 @@ def get_user_profile_delivery_email_cache_key(
     realm: Realm, email: str, email_to_fullname: Callable[[str], str]
 ) -> str:
     return user_profile_delivery_email_cache_key(email, realm.id)
+
+
+# Pre-compile regexes for stripping markdown during topic resolution
+MARKDOWN_FENCE_RE = re.compile(r"^(`{3,}|~{3,}|\$\$).*$", flags=re.MULTILINE)
+MARKDOWN_QUOTE_RE = re.compile(r"^(?:>\s*)+", flags=re.MULTILINE)
+WHITESPACE_RE = re.compile(r"\s+")
 
 
 @cache_with_key(
@@ -630,6 +637,7 @@ def build_message_send_dict(
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None,
     acting_user: UserProfile | None = None,
     no_previews: bool = False,
+    then_resolve_topic: bool = False,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -762,6 +770,7 @@ def build_message_send_dict(
         disable_external_notifications=disable_external_notifications,
         topic_participant_user_ids=topic_participant_user_ids,
         recipients_for_user_creation_events=recipients_for_user_creation_events,
+        then_resolve_topic=then_resolve_topic,
     )
 
     return message_send_dict
@@ -1300,6 +1309,45 @@ def do_send_messages(
                     },
                 )
 
+        if send_request.then_resolve_topic:
+            from zerver.actions.message_edit import do_update_message
+            from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
+            from zerver.lib.types import StreamMessageEditRequest
+
+            message = send_request.message
+            old_topic_name = message.topic_name()
+            new_topic_name = RESOLVED_TOPIC_PREFIX + old_topic_name
+
+            # Construct the request to resolve the topic.
+            # We use propagate_mode="change_all" to resolve all messages in the topic.
+            assert send_request.stream is not None
+            message_edit_request = StreamMessageEditRequest(
+                is_content_edited=False,
+                content="",
+                is_topic_edited=True,
+                target_topic_name=new_topic_name,
+                is_stream_edited=False,
+                is_nontrivial_move=False,
+                topic_resolved=True,
+                topic_unresolved=False,
+                orig_content=message.content,
+                orig_topic_name=old_topic_name,
+                orig_stream=send_request.stream,
+                propagate_mode="change_all",
+                target_stream=send_request.stream,
+                is_message_moved=True,
+            )
+
+            do_update_message(
+                user_profile=message.sender,
+                target_message=message,
+                message_edit_request=message_edit_request,
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=True,
+                rendering_result=None,
+                prior_mention_user_ids=set(),
+            )
+
     sent_message_results = [
         SentMessageResult(
             message_id=send_request.message.id,
@@ -1450,6 +1498,7 @@ def check_send_message(
     *,
     skip_stream_access_check: bool = False,
     read_by_sender: bool = False,
+    then_resolve_topic: bool = False,
 ) -> SentMessageResult:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
     message_request = check_message(
@@ -1465,6 +1514,7 @@ def check_send_message(
         sender_queue_id,
         widget_content,
         skip_stream_access_check=skip_stream_access_check,
+        then_resolve_topic=then_resolve_topic,
     )
     return do_send_messages(
         [message_request],
@@ -1743,6 +1793,7 @@ def check_message(
     archived_channel_notice: bool = False,
     no_previews: bool = False,
     acting_user: UserProfile | None = None,
+    then_resolve_topic: bool = False,
 ) -> SendMessageRequest:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -1759,6 +1810,12 @@ def check_message(
     if addressee.is_stream():
         topic_name = addressee.topic_name()
         topic_name = truncate_topic(topic_name)
+
+        if then_resolve_topic:
+            from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
+
+            if topic_name.startswith(RESOLVED_TOPIC_PREFIX):
+                raise JsonableError(_("Topic is already resolved"))
 
         stream_name = addressee.stream_name()
         stream_id = addressee.stream_id()
@@ -1804,6 +1861,36 @@ def check_message(
             # else can sneak past the access check.
             assert sender.bot_type == sender.OUTGOING_WEBHOOK_BOT
 
+        if then_resolve_topic:
+            from zerver.lib.streams import can_resolve_topics
+            from zerver.models.realms import TopicResolutionMessageRequirementEnum
+
+            if not can_resolve_topics(sender, stream, stream):
+                raise JsonableError(
+                    _("You don't have permission to resolve topics in this channel.")
+                )
+
+            if (
+                realm.topic_resolution_message_requirement
+                != TopicResolutionMessageRequirementEnum.not_requested.value
+            ):
+                # Strip markdown decorators to get actual text content.
+                # Keep in sync with compose_state.ts:strip_markdown_decorators
+                stripped_content = message_content
+                # Remove code/math fence markers
+                stripped_content = MARKDOWN_FENCE_RE.sub("", stripped_content)
+                # Remove quote prefixes
+                stripped_content = MARKDOWN_QUOTE_RE.sub("", stripped_content)
+                # Collapse whitespace and trim
+                stripped_content = WHITESPACE_RE.sub(" ", stripped_content).strip()
+
+                if len(stripped_content) < 5:
+                    raise JsonableError(
+                        _(
+                            "Topic resolution messages must be at least {min_length} characters."
+                        ).format(min_length=5)
+                    )
+
         check_for_can_create_topic_group_violation(
             user_profile=sender,
             stream=stream,
@@ -1821,6 +1908,9 @@ def check_message(
             raise TopicsNotAllowedError(empty_topic_display_name)
 
     elif addressee.is_private():
+        if then_resolve_topic:
+            raise JsonableError(_("then_resolve_topic is only supported for channel messages"))
+
         user_profiles = addressee.user_profiles()
         mirror_message = client.name in [
             "irc_mirror",
@@ -1903,6 +1993,7 @@ def check_message(
         recipients_for_user_creation_events=recipients_for_user_creation_events,
         acting_user=acting_user,
         no_previews=no_previews,
+        then_resolve_topic=then_resolve_topic,
     )
 
     if (

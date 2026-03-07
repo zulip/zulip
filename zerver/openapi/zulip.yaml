@@ -8636,6 +8636,18 @@ paths:
                     [`message` event](/api/get-events#message) that the client with the
                     above `queue_id` will receive.
                   example: "100.01"
+                then_resolve_topic:
+                  type: boolean
+                  default: false
+                  description: |
+                    Whether to atomically resolve the topic after sending the message.
+                    Only supported for channel messages.
+
+                    If `true`, the topic name will be prefixed with `✔ ` and all
+                    messages in the topic will be moved to the new resolved topic.
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-1f0446).
+                  example: true
                 read_by_sender:
                   type: boolean
                   description: |
@@ -10062,6 +10074,7 @@ paths:
                   example: true
                 content:
                   $ref: "#/components/schemas/OptionalContent"
+
                 prev_content_sha256:
                   description: |
                     An optional SHA-256 hash of the previous raw content of the message
@@ -10336,9 +10349,9 @@ paths:
       summary: Report a message
       tags: ["messages"]
       description: |
-        Sends a notification to the organization's [moderation request
-        channel](/help/enable-moderation-requests), if it is configured, that
-        reports the targeted message for [review and moderation](/help/report-a-message).
+        Sends a notification to the organization's moderation request channel,
+        if it is configured, that reports the targeted message for review and
+        moderation.
 
         Clients should check the `moderation_request_channel` realm setting to
         decide whether to show the option to report messages in the UI.
@@ -10363,14 +10376,13 @@ paths:
                   description: |
                     The reason that best describes why the current user is reporting the
                     target message for moderation.
-
-                    Must be one of the `key` values in the `server_report_message_types`
-                    field in the [`POST /register`](/api/register-queue) response.
-
-                    **Changes**: Prior to Zulip 12.0 (feature level 435), the allowed
-                    values for this parameter were limited to: `"harassment"`,
-                    `"inappropriate"`, `"norms"`, `"other"`, `"spam"`.
                   type: string
+                  enum:
+                    - spam
+                    - harassment
+                    - inappropriate
+                    - norms
+                    - other
                   example: harassment
                 description:
                   description: |
@@ -19466,6 +19478,22 @@ paths:
 
                           Whether this organization has been configured to enable
                           [previews of linked websites](/help/image-video-and-website-previews).
+                      realm_topic_resolution_message_requirement:
+                        type: string
+                        enum:
+                          - not_requested
+                          - optional
+                          - required
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The policy for whether a message is required when resolving a topic.
+
+                          - `not_requested`: No message requested
+                          - `optional`: A message is optional
+                          - `required`: A message is required
+
+                          **Changes**: New in Zulip 12.0 (feature level ZF-1f0446).
                       realm_topics_policy:
                         type: string
                         enum:

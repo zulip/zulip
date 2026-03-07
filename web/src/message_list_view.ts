@@ -38,6 +38,7 @@ import * as rendered_markdown from "./rendered_markdown.ts";
 import * as resolved_topic from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
+import {realm} from "./state_data.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
@@ -415,7 +416,25 @@ export function populate_group_from_message(
 
         const is_subscribed = stream_data.is_subscribed(stream_id);
         const topic_is_resolved = resolved_topic.is_resolved(topic);
-        const user_can_resolve_topic = stream_data.can_resolve_topics(sub);
+        const can_resolve_by_permission = stream_data.can_resolve_topics(sub);
+        // When resolution message is required and user cannot post messages,
+        // hide the resolve button. Unresolve is always allowed since it doesn't
+        // require a message.
+        let user_can_resolve_topic: boolean;
+        if (topic_is_resolved) {
+            // Unresolving doesn't require a message, so just use normal permissions
+            user_can_resolve_topic = can_resolve_by_permission;
+        } else if (
+            realm.realm_topic_resolution_message_requirement === "required" &&
+            sub !== undefined &&
+            !stream_data.can_post_messages_in_stream(sub)
+        ) {
+            // Required message mode + can't post = hide resolve button
+            user_can_resolve_topic = false;
+        } else {
+            // Either optional/not_requested mode, or user can post
+            user_can_resolve_topic = can_resolve_by_permission;
+        }
         const visibility_policy = user_topics.get_topic_visibility_policy(stream_id, topic);
         // The following field is not specific to this group, but this is the
         // easiest way we've figured out for passing the data to the template rendering.

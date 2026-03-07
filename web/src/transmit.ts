@@ -24,6 +24,7 @@ type SendMessageData = {
     | {
           type: "stream";
           topic: string;
+          then_resolve_topic?: boolean;
       }
     | {
           type: "private";
@@ -42,8 +43,10 @@ export function send_message(
         });
     }
     sent_messages.wrap_send(request.local_id, () => {
+        const url = "/json/messages";
+
         channel.post({
-            url: "/json/messages",
+            url,
             data: request,
             success: function success(data) {
                 // Call back to our callers to do things like closing the compose

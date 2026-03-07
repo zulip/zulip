@@ -57,6 +57,7 @@ from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import (
     MessageEditHistoryVisibilityPolicyEnum,
     RealmTopicsPolicyEnum,
+    TopicResolutionMessageRequirementEnum,
     get_default_max_invites_for_realm_plan_type,
     get_realm,
 )
@@ -141,6 +142,14 @@ def do_set_realm_property(
                 "description": realm.description,
                 "rendered_description": realm.rendered_description,
             },
+        )
+
+    if name == "topic_resolution_message_requirement":
+        event = dict(
+            type="realm",
+            op="update",
+            property=name,
+            value=TopicResolutionMessageRequirementEnum(value).name,
         )
 
     send_event_on_commit(realm, event, active_user_ids(realm.id))
