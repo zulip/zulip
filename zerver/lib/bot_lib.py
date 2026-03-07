@@ -1,7 +1,7 @@
 import importlib
 import json
 from collections.abc import Callable
-from typing import Any
+from typing import Any, cast
 
 from django.conf import settings
 from django.utils.translation import gettext as _
@@ -22,6 +22,7 @@ from zerver.lib.bot_storage import (
 )
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.topic import get_topic_from_message_info
+from zerver.lib.types import TopicMessageInfo
 from zerver.models import UserProfile
 from zerver.models.users import get_active_user
 
@@ -133,7 +134,7 @@ class EmbeddedBotHandler:
                 dict(
                     type="stream",
                     to=message["display_recipient"],
-                    topic=get_topic_from_message_info(message),
+                    topic=get_topic_from_message_info(cast(TopicMessageInfo, message)),
                     content=response,
                     sender_email=message["sender_email"],
                 )
