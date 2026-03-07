@@ -84,7 +84,7 @@ const initial_group_filter = FILTERS.ACTIVE_GROUPS;
 let group_list_widget: ListWidget.ListWidget<UserGroup, UserGroup>;
 let group_list_toggler: Toggle;
 
-const GROUP_INFO_BANNER: Banner = {
+export const GROUP_INFO_BANNER: Banner = {
     intent: "info",
     label: $t({
         defaultMessage:
@@ -1393,6 +1393,18 @@ export function set_up_click_handlers(): void {
         e.stopPropagation();
         e.preventDefault();
     });
+
+    $("#groups_overlay").on("click", ".no-groups-to-show .view-all-groups-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        group_list_toggler.goto("all-groups");
+    });
+
+    $("#groups_overlay").on("click", ".no-groups-to-show .create-user-group-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        open_create_user_group();
+    });
 }
 
 function create_user_group_clicked(): void {
@@ -1492,6 +1504,7 @@ export function add_group_to_table(group: UserGroup): void {
         show_group_settings(group);
         user_group_create.reset_name();
     }
+    update_filter_widget_visibility();
 }
 
 export function sync_group_permission_setting(property: string, group: UserGroup): void {
@@ -1772,11 +1785,15 @@ export function update_empty_left_panel_message(): void {
         active_tab_key,
     );
 
+    const has_any_groups = user_groups.get_realm_user_groups().some((g) => !g.is_system_group);
+
     const args = {
         empty_user_group_list_message,
         can_create_user_groups:
             settings_data.user_can_create_user_groups() && realm.zulip_plan_is_not_limited,
         all_groups_tab: active_tab_key === "all-groups",
+        your_groups_tab: active_tab_key === "your-groups",
+        has_any_groups,
     };
 
     $(".no-groups-to-show").html(render_user_group_settings_empty_notice(args)).show();
@@ -1794,12 +1811,25 @@ function get_empty_user_group_list_message(
         return $t({defaultMessage: "There are no groups matching your filters."});
     }
 
+    // Check if organization has any non-system groups
+    const all_groups = user_groups.get_realm_user_groups();
+    const non_system_groups = all_groups.filter((group) => !group.is_system_group);
+    const organization_has_zero_non_system_groups = non_system_groups.length === 0;
+
+    if (active_tab_key === "your-groups" && organization_has_zero_non_system_groups) {
+        return $t({
+            defaultMessage: "There are no user groups you can view in this organization.",
+        });
+    }
+
     if (active_tab_key === "your-groups") {
         return $t({defaultMessage: "You are not a member of any user groups."});
     }
+
     if (active_tab_key === "roles") {
         return $t({defaultMessage: "There are no roles you can view in this organization."});
     }
+
     return $t({
         defaultMessage: "There are no user groups you can view in this organization.",
     });
@@ -1886,10 +1916,32 @@ function setup_dropdown_filters_widget(): void {
 }
 
 function update_filter_widget_visibility(): void {
-    if (user_groups.realm_has_deactivated_user_groups()) {
-        $("#user-group-edit-filter-options").show();
+    const active_tab_key = group_list_toggler.value();
+
+    if (active_tab_key === "roles") {
+        return;
+    }
+
+    const total_groups = user_groups.get_realm_user_groups().length;
+    const $filterDropdown = $("#user-group-edit-filter-options");
+    const $searchBox = $("#group_filter");
+
+    if (total_groups === 0) {
+        $searchBox.hide();
     } else {
-        $("#user-group-edit-filter-options").hide();
+        $searchBox.show();
+    }
+
+    if (total_groups === 0) {
+        $filterDropdown.hide();
+        update_displayed_groups(FILTERS.ACTIVE_GROUPS);
+        if (filters_dropdown_widget) {
+            filters_dropdown_widget.render(FILTERS.ACTIVE_GROUPS);
+        }
+    } else if (user_groups.realm_has_deactivated_user_groups()) {
+        $filterDropdown.show();
+    } else {
+        $filterDropdown.hide();
         update_displayed_groups(FILTERS.ACTIVE_GROUPS);
         if (filters_dropdown_widget) {
             filters_dropdown_widget.render(FILTERS.ACTIVE_GROUPS);
@@ -1934,11 +1986,6 @@ export function setup_page(callback: () => void): void {
         );
         $groups_overlay_container.html(groups_overlay_html);
         update_displayed_groups(initial_group_filter);
-        settings_banner.set_up_banner(
-            $(".group-info-banner"),
-            GROUP_INFO_BANNER,
-            "/help/user-groups",
-        );
 
         settings_banner.set_up_upgrade_banners();
         // Initially as the overlay is build with empty right panel,
