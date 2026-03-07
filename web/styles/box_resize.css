@@ -1,0 +1,93 @@
+.resizable-box-handle {
+    &.top-handle,
+    &.left-handle,
+    &.bottom-handle,
+    &.right-handle,
+    &.top-right-handle,
+    &.bottom-right-handle,
+    &.top-left-handle,
+    &.bottom-left-handle {
+        position: absolute;
+        user-select: none;
+        touch-action: none;
+        background: transparent;
+    }
+
+    /* Corner handles must sit above edge handles to win pointer events
+    and show the correct cursor icon. Also the box creates a
+    stacking context in case of overlays so the handles wouldn't be below
+    the box they are attached to. */
+    &.top-handle,
+    &.left-handle,
+    &.bottom-handle,
+    &.right-handle {
+        z-index: 5;
+    }
+
+    &.top-right-handle,
+    &.bottom-right-handle,
+    &.top-left-handle,
+    &.bottom-left-handle {
+        z-index: 10;
+    }
+
+    &.top-left-handle,
+    &.bottom-right-handle {
+        cursor: nwse-resize;
+    }
+
+    &.top-right-handle,
+    &.bottom-left-handle {
+        cursor: nesw-resize;
+    }
+
+    &.top-handle,
+    &.bottom-handle {
+        width: 100%;
+        cursor: row-resize;
+        left: 0;
+    }
+
+    &.left-handle,
+    &.right-handle {
+        height: 100%;
+        cursor: col-resize;
+        top: 0;
+    }
+
+    &.top-right-handle {
+        top: 0;
+        right: 0;
+    }
+
+    &.top-left-handle {
+        top: 0;
+        left: 0;
+    }
+
+    &.bottom-left-handle {
+        bottom: 0;
+        left: 0;
+    }
+
+    &.bottom-right-handle {
+        bottom: 0;
+        right: 0;
+    }
+
+    &.top-handle {
+        top: 0;
+    }
+
+    &.bottom-handle {
+        bottom: 0;
+    }
+
+    &.right-handle {
+        right: 0;
+    }
+
+    &.left-handle {
+        left: 0;
+    }
+}
