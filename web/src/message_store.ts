@@ -128,6 +128,7 @@ type Booleans = {
     stream_wildcard_mentioned: boolean;
     topic_wildcard_mentioned: boolean;
     collapsed: boolean;
+    hide_link_previews: boolean;
     condensed?: boolean;
     alerted: boolean;
 };
@@ -305,6 +306,7 @@ export function convert_raw_message_to_message_with_booleans(opts: NewMessage):
         stream_wildcard_mentioned: convert_flag("stream_wildcard_mentioned"),
         topic_wildcard_mentioned: convert_flag("topic_wildcard_mentioned"),
         collapsed: convert_flag("collapsed"),
+        hide_link_previews: convert_flag("hide_link_previews"),
         alerted: convert_flag("has_alert_word"),
     };
 

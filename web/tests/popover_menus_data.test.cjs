@@ -14,6 +14,10 @@ const {Filter} = zrequire("filter");
 const {MessageList} = zrequire("message_list");
 const message_lists = zrequire("message_lists");
 
+mock_esm("../src/message_parser", {
+    message_has_link_preview: () => false,
+});
+
 const popover_menus_data = zrequire("popover_menus_data");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
@@ -196,6 +200,7 @@ test("my_message_all_actions", ({override}) => {
             stream_id: 1,
             unread: false,
             collapsed: false,
+            hide_link_previews: false,
             not_spectator: true,
             submessages: [],
             edit_history: [
@@ -218,6 +223,8 @@ test("my_message_all_actions", ({override}) => {
     assert.equal(response.view_source_menu_item, undefined);
     assert.equal(response.should_display_collapse, true);
     assert.equal(response.should_display_uncollapse, false);
+    assert.equal(response.should_display_hide_link_previews, false);
+    assert.equal(response.should_display_show_link_previews, false);
     assert.equal(response.should_display_add_reaction_option, true);
     assert.equal(response.conversation_time_url, "conversation_and_time_url");
     assert.equal(response.should_display_delete_option, true);

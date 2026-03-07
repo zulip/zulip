@@ -24,6 +24,10 @@ export function message_has_attachment(message_content: string): boolean {
     return is_element_in_message_content(message_content, "a[href^='/user_uploads']");
 }
 
+export function message_has_link_preview(message_content: string): boolean {
+    return is_element_in_message_content(message_content, ".message_embed, .message_inline_image");
+}
+
 export function message_has_reaction(message: Message): boolean {
     return message.clean_reactions.size > 0;
 }

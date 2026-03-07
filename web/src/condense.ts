@@ -269,6 +269,13 @@ export function condense_and_collapse(elems: JQuery): void {
             $content.removeClass("could-be-condensed");
         }
 
+        // Applied before the condensed checks to survive their `continue`.
+        if (message.hide_link_previews) {
+            $content.addClass("hide-link-previews");
+        } else {
+            $content.removeClass("hide-link-previews");
+        }
+
         // If message.condensed is defined, then the user has manually
         // specified whether this message should be expanded or condensed.
         if (message.condensed === true) {
