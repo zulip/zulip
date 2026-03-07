@@ -1,6 +1,6 @@
 from collections.abc import Iterable, Sequence
 from email.headerregistry import Address
-from typing import Annotated, Literal, cast
+from typing import Annotated, Literal, TypedDict, cast
 
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -29,6 +29,13 @@ from zerver.lib.typed_endpoint import (
 from zerver.lib.zcommand import process_zcommands
 from zerver.models import Client, Message, RealmDomain, UserProfile
 from zerver.models.users import get_user_including_cross_realm
+
+
+class SendMessageBackendResponse(TypedDict, total=False):
+    id: int
+    message_url: str
+    message_link: str
+    automatic_new_visibility_policy: int
 
 
 class InvalidMirrorInputError(Exception):
@@ -218,7 +225,7 @@ def send_message_backend(
         # automatically marked as read for yourself.
         read_by_sender = client.default_read_by_sender()
 
-    data: dict[str, int] = {}
+    data: SendMessageBackendResponse = {}
     sent_message_result = check_send_message(
         sender,
         client,
@@ -236,6 +243,8 @@ def send_message_backend(
         read_by_sender=read_by_sender,
     )
     data["id"] = sent_message_result.message_id
+    data["message_url"] = sent_message_result.message_url
+    data["message_link"] = sent_message_result.message_link
     if sent_message_result.automatic_new_visibility_policy:
         data["automatic_new_visibility_policy"] = (
             sent_message_result.automatic_new_visibility_policy
