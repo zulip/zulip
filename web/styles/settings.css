@@ -1012,10 +1012,9 @@ input[type="checkbox"] {
     }
 }
 
-.add-new-linkifier-box,
 .add-new-playground-box {
     & button {
-        margin-left: calc(10em + 20px) !important;
+        margin-left: calc(10em + 20px);
     }
     margin-bottom: 15px;
 
@@ -2192,6 +2191,28 @@ label.preferences-radio-choice-label {
         .profile_field_hint {
             min-width: 8em;
         }
+    }
+
+    .add-new-playground-box {
+        #submit_playground_button {
+            margin-left: 0;
+            width: calc(
+                100% - var(--input-horizontal-padding) -
+                    var(--input-border-width)
+            );
+        }
+    }
+
+    .settings_panel_list_header {
+        & .search-container {
+            margin-bottom: 0.5em;
+        }
+    }
+
+    .tab-switcher.org-user-settings-switcher {
+        gap: 0.5em;
+        display: flex;
+        flex-wrap: wrap;
     }
 }
 
