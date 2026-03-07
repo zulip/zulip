@@ -104,6 +104,16 @@ const markdown_help_rows = [
 1. ${$t({defaultMessage: "Coffee"})}`,
     },
     {
+        markdown: "",
+        usage_html: `<kbd>Ctrl</kbd> + <kbd>]</kbd>`,
+        output_html: $t({defaultMessage: "Increase list indentation"}),
+    },
+    {
+        markdown: "",
+        usage_html: `<kbd>Ctrl</kbd> + <kbd>[</kbd>`,
+        output_html: $t({defaultMessage: "Reduce list indentation"}),
+    },
+    {
         markdown: `> ${$t({defaultMessage: "Quoted"})}`,
     },
     {
