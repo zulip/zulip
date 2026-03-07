@@ -77,3 +77,4 @@ call provider instead.
 - [BigBlueButton integration](/integrations/big-blue-button)
 - [Constructor Groups integration](/integrations/constructor-groups)
 - [Nextcloud Talk integration](/integrations/nextcloud-talk)
+- [LiveKit integration](/integrations/livekit)
