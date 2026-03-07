@@ -1,0 +1,15 @@
+# LiveKit server — managed by Puppet.
+
+[Unit]
+Description=LiveKit SFU Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=<%= @bin %> --config /etc/livekit.yaml
+Restart=always
+RestartSec=5
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
