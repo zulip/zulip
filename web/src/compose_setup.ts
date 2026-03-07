@@ -35,6 +35,7 @@ import * as resize from "./resize.ts";
 import {unresolve_name} from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
+import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
 import * as sub_store from "./sub_store.ts";
@@ -686,11 +687,28 @@ export function initialize(): void {
         $compose_recipient.addClass("recently-focused");
     });
 
+    function handle_topic_length_limit(): void {
+        let topic = compose_state.topic();
+        if (topic.length > realm.max_topic_length) {
+            topic = topic.slice(0, realm.max_topic_length);
+            compose_state.topic(topic);
+            $("input#stream_message_recipient_topic").addClass("shake");
+        }
+    }
+
+    $("input#stream_message_recipient_topic").on("animationend", function () {
+        $(this).removeClass("shake");
+    });
+
     $("input#stream_message_recipient_topic").on("input", () => {
+        handle_topic_length_limit();
         compose_recipient.update_placeholder_visibility();
         compose_recipient.update_compose_area_placeholder_text();
     });
 
+    $("input#stream_message_recipient_topic").on("paste", () => {
+        setTimeout(handle_topic_length_limit, 0);
+    });
     $("#private_message_recipient").on("focus", () => {
         // We don't want the `.recently-focused` class removed via
         // setTimeout from the "blur" event, if we're suddenly
