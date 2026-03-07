@@ -651,6 +651,32 @@ export function display_slow_send_loading_spinner(message: Message): void {
     }
 }
 
+type ResendCallbacks = {
+    on_send_message_success: typeof compose.send_message_success;
+    send_message: typeof transmit.send_message;
+};
+
+let resend_callbacks: ResendCallbacks | undefined;
+
+// Uses the same retry pipeline as the in-feed resend button, without restoring to compose.
+export function resend_message_by_draft_id(draft_id: string): void {
+    assert(resend_callbacks !== undefined);
+    const message = echo_state.get_message_waiting_for_ack_by_draft_id(draft_id);
+    if (message === undefined) {
+        return;
+    }
+    const $row = message_lists.all_rendered_row_for_message_id(message.id);
+    resend_message(message, $row, resend_callbacks);
+}
+
+export function abort_message_by_draft_id(draft_id: string): void {
+    const message = echo_state.get_message_waiting_for_ack_by_draft_id(draft_id);
+    if (message === undefined) {
+        return;
+    }
+    abort_message(message);
+}
+
 export function initialize({
     on_send_message_success,
     send_message,
@@ -658,6 +684,8 @@ export function initialize({
     on_send_message_success: typeof compose.send_message_success;
     send_message: typeof transmit.send_message;
 }): void {
+    resend_callbacks = {on_send_message_success, send_message};
+
     function on_failed_action(
         selector: string,
         callback: (

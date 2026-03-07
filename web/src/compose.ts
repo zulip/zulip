@@ -307,12 +307,7 @@ export let send_message = (): void => {
         // We might not have updated the draft count because we assumed the
         // message would send. Ensure that the displayed count is correct.
         drafts.sync_count();
-
-        assert(draft_id !== undefined);
-        const draft = drafts.draft_model.getDraft(draft_id);
-        assert(draft !== false);
-        draft.is_sending_saving = false;
-        drafts.draft_model.editDraft(draft_id, draft);
+        // Leave is_sending_saving true so the failed message stays in the Outbox.
     }
 
     transmit.send_message(

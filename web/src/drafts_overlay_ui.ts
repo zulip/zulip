@@ -6,12 +6,15 @@ import assert from "minimalistic-assert";
 import render_banner from "../templates/components/banner.hbs";
 import render_draft_table_body from "../templates/draft_table_body.hbs";
 import render_drafts_list from "../templates/drafts_list.hbs";
+import render_outbox_list from "../templates/outbox_list.hbs";
 
 import * as browser_history from "./browser_history.ts";
+import * as components from "./components.ts";
 import * as compose_actions from "./compose_actions.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import type {FormattedDraft, LocalStorageDraft} from "./drafts.ts";
 import * as drafts from "./drafts.ts";
+import * as echo from "./echo.ts";
 import {$t} from "./i18n.ts";
 import * as message_view from "./message_view.ts";
 import * as messages_overlay_ui from "./messages_overlay_ui.ts";
@@ -22,6 +25,9 @@ import * as rendered_markdown from "./rendered_markdown.ts";
 import * as stream_data from "./stream_data.ts";
 import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
+
+type DraftTab = "drafts" | "outbox";
+let current_tab: DraftTab = "drafts";
 
 let draft_undo_delete_list: LocalStorageDraft[] = [];
 
@@ -136,13 +142,46 @@ function remove_drafts($draft_rows: JQuery): void {
         show_delete_banner();
     }
 
-    if ($("#drafts_table .overlay-message-row").length === 0) {
-        $("#drafts_table .no-drafts").show();
+    if ($(".drafts-tab-pane .overlay-message-row").length === 0) {
+        $(".no-drafts").show();
     }
     update_rendered_drafts(
-        $("#drafts-from-conversation .overlay-message-row").length > 0,
-        $("#other-drafts .overlay-message-row").length > 0,
+        $(".drafts-tab-pane #drafts-from-conversation .overlay-message-row").length > 0,
+        $(".drafts-tab-pane #other-drafts .overlay-message-row").length > 0,
     );
+}
+
+function cancel_outbox_messages($outbox_rows: JQuery): void {
+    // No undo list — cancellation is an intentional discard, unlike remove_drafts.
+    const draft_ids: string[] = [];
+
+    $outbox_rows.each(function () {
+        const draft_id = $(this).attr("data-draft-id")!;
+        echo.abort_message_by_draft_id(draft_id);
+
+        draft_ids.push(draft_id);
+        $(this).remove();
+    });
+
+    if (draft_ids.length > 0) {
+        drafts.draft_model.deleteDrafts(draft_ids);
+    }
+
+    const has_outbox = $(".outbox-tab-pane .overlay-message-row").length > 0;
+    $(".no-outbox-messages").toggle(!has_outbox);
+
+    if (!has_outbox) {
+        current_tab = "drafts";
+        update_tab_visibility();
+        render_tab_switcher($(".drafts-tab-pane .overlay-message-row").length, 0);
+    }
+
+    update_bulk_outbox_ui();
+}
+
+function resend_outbox_draft(draft_id: string): void {
+    // Unlike restore_draft, the local echo stays in the feed during retry.
+    echo.resend_message_by_draft_id(draft_id);
 }
 
 function update_rendered_drafts(
@@ -164,37 +203,50 @@ function update_rendered_drafts(
 
 const keyboard_handling_context: messages_overlay_ui.Context = {
     get_items_ids() {
-        const draft_arrow = drafts.draft_model.get();
-        return Object.getOwnPropertyNames(draft_arrow);
+        const all_drafts = drafts.draft_model.get();
+        if (current_tab === "outbox") {
+            return Object.keys(all_drafts).filter(
+                (id) => all_drafts[id]?.is_sending_saving === true,
+            );
+        }
+        return Object.keys(all_drafts).filter((id) => all_drafts[id]?.is_sending_saving === false);
     },
     on_enter() {
-        // This handles when pressing Enter while looking at drafts.
-        // It restores draft that is focused.
         const draft_id_arrow = this.get_items_ids();
 
         if (draft_id_arrow.length === 0) {
-            // Do nothing if there are no drafts.
             return;
         }
 
         const focused_draft_id = messages_overlay_ui.get_focused_element_id(this);
         if (focused_draft_id !== undefined) {
-            restore_draft(focused_draft_id);
+            if (current_tab === "outbox") {
+                resend_outbox_draft(focused_draft_id);
+            } else {
+                restore_draft(focused_draft_id);
+            }
         } else {
             const first_draft = draft_id_arrow.at(-1);
             assert(first_draft !== undefined);
-            restore_draft(first_draft);
+            if (current_tab === "outbox") {
+                resend_outbox_draft(first_draft);
+            } else {
+                restore_draft(first_draft);
+            }
         }
     },
     on_delete() {
-        // Allows user to delete drafts with Backspace
         const focused_element_id = messages_overlay_ui.get_focused_element_id(this);
         if (focused_element_id === undefined) {
             return;
         }
         const $focused_row = messages_overlay_ui.row_with_focus(this);
         messages_overlay_ui.focus_on_sibling_element(this);
-        remove_drafts($focused_row);
+        if (current_tab === "outbox") {
+            cancel_outbox_messages($focused_row);
+        } else {
+            remove_drafts($focused_row);
+        }
     },
     items_container_selector: "drafts-container",
     items_list_selector: "drafts-list",
@@ -242,23 +294,83 @@ function get_formatted_drafts_data(): {
     narrow_drafts: FormattedDraft[];
     other_drafts: FormattedDraft[];
     narrow_drafts_header: string;
+    outbox_drafts: FormattedDraft[];
 } {
     const all_drafts = drafts.draft_model.get();
-    const narrow_drafts_raw = drafts.filter_drafts_by_compose_box_and_recipient(all_drafts);
+    const outbox_raw: Record<string, LocalStorageDraft> = {};
+    const regular_raw: Record<string, LocalStorageDraft> = {};
+    for (const [id, draft] of Object.entries(all_drafts)) {
+        if (draft.is_sending_saving) {
+            outbox_raw[id] = draft;
+        } else {
+            regular_raw[id] = draft;
+        }
+    }
+
+    const narrow_drafts_raw = drafts.filter_drafts_by_compose_box_and_recipient(regular_raw);
     const other_drafts_raw = _.pick(
-        all_drafts,
-        _.difference(Object.keys(all_drafts), Object.keys(narrow_drafts_raw)),
+        regular_raw,
+        _.difference(Object.keys(regular_raw), Object.keys(narrow_drafts_raw)),
     );
     const narrow_drafts = format_drafts(narrow_drafts_raw);
     const other_drafts = format_drafts(other_drafts_raw);
+    const outbox_drafts = format_drafts(outbox_raw);
     const narrow_drafts_header = get_header_for_narrow_drafts();
-    return {narrow_drafts, other_drafts, narrow_drafts_header};
+    return {narrow_drafts, other_drafts, narrow_drafts_header, outbox_drafts};
+}
+
+function render_tab_switcher(draft_count: number, outbox_count: number): void {
+    const $container = $("#draft-overlay-tab-switcher");
+    $container.empty();
+
+    if (outbox_count === 0) {
+        return;
+    }
+
+    const toggler = components.toggle({
+        html_class: "draft-overlay-tab-switcher",
+        values: [
+            {
+                label: $t({defaultMessage: "Drafts ({draft_count})"}, {draft_count}),
+                key: "drafts",
+            },
+            {
+                label: $t({defaultMessage: "Outbox ({outbox_count})"}, {outbox_count}),
+                key: "outbox",
+            },
+        ],
+        callback(_label, key) {
+            if (key === "drafts" || key === "outbox") {
+                current_tab = key;
+            }
+            update_tab_visibility();
+        },
+        selected: current_tab === "outbox" ? 1 : 0,
+    });
+
+    const $toggler_component = toggler.get();
+    $container.append($toggler_component);
+}
+
+function update_tab_visibility(): void {
+    if (current_tab === "drafts") {
+        $(".drafts-tab-pane").show();
+        $(".outbox-tab-pane").hide();
+        $(".delete-drafts-group").show();
+        $(".outbox-actions-group").hide();
+    } else {
+        $(".drafts-tab-pane").hide();
+        $(".outbox-tab-pane").show();
+        $(".delete-drafts-group").hide();
+        $(".outbox-actions-group").show();
+    }
 }
 
 function render_widgets(
     narrow_drafts: FormattedDraft[],
     other_drafts: FormattedDraft[],
     narrow_drafts_header: string,
+    outbox_drafts: FormattedDraft[],
 ): void {
     const $drafts_table = $("#drafts_table");
     if ($(".drafts-list").length === 0) {
@@ -267,6 +379,7 @@ function render_widgets(
                 narrow_drafts_header,
                 narrow_drafts,
                 other_drafts,
+                outbox_drafts,
             },
         });
         $drafts_table.append($(rendered));
@@ -277,9 +390,14 @@ function render_widgets(
             other_drafts,
         });
         $(".drafts-list").replaceWith($(rendered));
+        const rendered_outbox = render_outbox_list({outbox_drafts});
+        $(".outbox-list").replaceWith($(rendered_outbox));
     }
-    if ($("#drafts_table .overlay-message-row").length > 0) {
-        $("#drafts_table .no-drafts").hide();
+    const draft_count = narrow_drafts.length + other_drafts.length;
+    render_tab_switcher(draft_count, outbox_drafts.length);
+    update_tab_visibility();
+    if ($(".drafts-tab-pane .overlay-message-row").length > 0) {
+        $(".no-drafts").hide();
         // Update possible dynamic elements.
         const $rendered_drafts = $drafts_table.find(
             ".message_content.rendered_markdown.restore-overlay-message",
@@ -287,6 +405,11 @@ function render_widgets(
         $rendered_drafts.each(function () {
             rendered_markdown.update_elements($(this));
         });
+    }
+    if ($(".outbox-tab-pane .overlay-message-row").length > 0) {
+        $(".no-outbox-messages").hide();
+    } else {
+        $(".no-outbox-messages").show();
     }
     update_rendered_drafts(narrow_drafts.length > 0, other_drafts.length > 0);
     update_bulk_delete_ui();
@@ -354,6 +477,25 @@ function setup_event_handlers(): void {
             show_check_icon: true,
         });
     });
+
+    $("#drafts_table .outbox-resend-message").on("click", function (e) {
+        e.stopPropagation();
+        const $row = $(this).closest(".overlay-message-row");
+        const draft_id = $row.attr("data-draft-id")!;
+        resend_outbox_draft(draft_id);
+    });
+
+    $("#drafts_table .outbox-cancel-message").on("click", function () {
+        const $row = $(this).closest(".overlay-message-row");
+        cancel_outbox_messages($row);
+        update_bulk_outbox_ui();
+    });
+
+    $("#drafts_table .outbox-selection-checkbox").on("click", (e) => {
+        const is_checked = is_checkbox_icon_checked($(e.target));
+        toggle_checkbox_icon_state($(e.target), !is_checked);
+        update_bulk_outbox_ui();
+    });
 }
 
 function setup_bulk_actions_handlers(): void {
@@ -376,19 +518,89 @@ function setup_bulk_actions_handlers(): void {
         remove_drafts($selected_rows);
         update_bulk_delete_ui();
     });
+
+    $(".select-outbox-button").on("click", (e) => {
+        e.preventDefault();
+        const $unchecked = $(".outbox-selection-checkbox").filter(function () {
+            return !is_checkbox_icon_checked($(this));
+        });
+        const check_all = $unchecked.length > 0;
+        $(".outbox-selection-checkbox").each(function () {
+            toggle_checkbox_icon_state($(this), check_all);
+        });
+        update_bulk_outbox_ui();
+    });
+
+    $(".resend-selected-outbox-button").on("click", () => {
+        // Collect ids first so DOM removals don't affect iteration.
+        const draft_ids: string[] = [];
+        $(".outbox-list")
+            .find(".outbox-selection-checkbox.fa-check-square")
+            .closest(".overlay-message-row")
+            .each(function () {
+                draft_ids.push($(this).attr("data-draft-id")!);
+            });
+        for (const draft_id of draft_ids) {
+            resend_outbox_draft(draft_id);
+        }
+    });
+
+    $(".cancel-selected-outbox-button").on("click", () => {
+        const $selected_rows = $(".outbox-list")
+            .find(".outbox-selection-checkbox.fa-check-square")
+            .closest(".overlay-message-row");
+        cancel_outbox_messages($selected_rows);
+        update_bulk_outbox_ui();
+    });
 }
 
 function rerender_drafts(): void {
-    const {narrow_drafts, other_drafts, narrow_drafts_header} = get_formatted_drafts_data();
-    render_widgets(narrow_drafts, other_drafts, narrow_drafts_header);
+    const {narrow_drafts, other_drafts, narrow_drafts_header, outbox_drafts} =
+        get_formatted_drafts_data();
+    render_widgets(narrow_drafts, other_drafts, narrow_drafts_header, outbox_drafts);
     setup_event_handlers();
 }
 
+export function update_bulk_outbox_ui(): void {
+    const $unchecked = $(".outbox-selection-checkbox").filter(function () {
+        return !is_checkbox_icon_checked($(this));
+    });
+    const $checked = $(".outbox-selection-checkbox").filter(function () {
+        return is_checkbox_icon_checked($(this));
+    });
+    const $select_button = $(".select-outbox-button");
+    const $select_indicator = $(".select-outbox-button .select-state-indicator");
+    const $resend_button = $(".resend-selected-outbox-button");
+    const $cancel_button = $(".cancel-selected-outbox-button");
+
+    if ($checked.length > 0) {
+        $resend_button.prop("disabled", false);
+        $cancel_button.prop("disabled", false);
+        if ($unchecked.length === 0) {
+            toggle_checkbox_icon_state($select_indicator, true);
+        } else {
+            toggle_checkbox_icon_state($select_indicator, false);
+        }
+    } else {
+        if ($unchecked.length > 0) {
+            toggle_checkbox_icon_state($select_indicator, false);
+            $resend_button.prop("disabled", true);
+            $cancel_button.prop("disabled", true);
+        } else {
+            $select_button.hide();
+            $resend_button.hide();
+            $cancel_button.hide();
+        }
+    }
+}
+
 export function launch(): void {
-    const {narrow_drafts, other_drafts, narrow_drafts_header} = get_formatted_drafts_data();
+    current_tab = "drafts";
+    const {narrow_drafts, other_drafts, narrow_drafts_header, outbox_drafts} =
+        get_formatted_drafts_data();
 
     $("#drafts_table").empty();
-    render_widgets(narrow_drafts, other_drafts, narrow_drafts_header);
+    render_widgets(narrow_drafts, other_drafts, narrow_drafts_header, outbox_drafts);
 
     // We need to force a style calculation on the newly created
     // element in order for the CSS transition to take effect.
@@ -399,6 +611,7 @@ export function launch(): void {
     messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
     setup_event_handlers();
     setup_bulk_actions_handlers();
+    drafts.set_on_draft_update(rerender_drafts);
 }
 
 export function update_bulk_delete_ui(): void {
@@ -439,6 +652,8 @@ export function open_overlay(): void {
             browser_history.exit_overlay();
             drafts.sync_count();
             draft_undo_delete_list = [];
+            // Stop re-rendering the overlay when drafts change after it closes.
+            drafts.set_on_draft_update(undefined);
         },
     });
 }

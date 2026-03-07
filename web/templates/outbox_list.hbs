@@ -1,0 +1,8 @@
+<div class="outbox-list overlay-messages-list" data-simplebar data-simplebar-tab-index="-1">
+    <div class="no-outbox-messages no-overlay-messages">
+        {{t 'No outbox messages.'}}
+    </div>
+    {{#each outbox_drafts}}
+        {{> draft .}}
+    {{/each}}
+</div>
