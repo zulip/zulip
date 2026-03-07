@@ -147,7 +147,21 @@
 
     .fetch-messages-button {
         display: grid;
-        justify-items: center;
+        place-items: center;
+
+        /* Stack the loading indicator and button label in the
+           same grid cell so the label stays vertically centered
+           when the indicator is empty/hidden. */
+        > * {
+            grid-row: 1;
+            grid-column: 1;
+        }
+
+        /* Override the inline height: 0 set by loading.make_indicator
+           so the spinner participates in grid alignment. */
+        .loading-indicator {
+            height: auto !important;
+        }
 
         .loading_indicator_spinner {
             height: 20px;
