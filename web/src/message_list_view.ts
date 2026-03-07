@@ -67,6 +67,7 @@ export type MessageContainer = {
     modified: boolean;
     edited: boolean;
     moved: boolean;
+    widget_edited: boolean;
     msg: Message;
     sender_is_bot: boolean;
     sender_is_guest: boolean;
@@ -555,6 +556,7 @@ export class MessageListView {
         edited: boolean;
         moved: boolean;
         modified: boolean;
+        widget_edited: boolean;
     } {
         let last_edit_timestamp;
         if (message.local_edit_timestamp !== undefined) {
@@ -563,13 +565,18 @@ export class MessageListView {
             last_edit_timestamp = message.last_edit_timestamp;
         }
         const last_moved_timestamp = message.last_moved_timestamp;
+        const widget_edited = submessage.is_widget_edited(message);
 
         return {
             last_edit_timestamp,
             last_moved_timestamp,
-            edited: last_edit_timestamp !== undefined,
+            edited: last_edit_timestamp !== undefined || widget_edited,
             moved: last_moved_timestamp !== undefined,
-            modified: last_edit_timestamp !== undefined || last_moved_timestamp !== undefined,
+            modified:
+                last_edit_timestamp !== undefined ||
+                last_moved_timestamp !== undefined ||
+                widget_edited,
+            widget_edited,
         };
     }
 
@@ -598,6 +605,7 @@ export class MessageListView {
         edited: boolean;
         moved: boolean;
         modified: boolean;
+        widget_edited: boolean;
     } {
         const is_typing = typing_data.is_message_editing(message.id);
         if (is_typing) {
