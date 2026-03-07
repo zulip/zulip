@@ -367,6 +367,43 @@ export const update_elements = ($content: JQuery): void => {
         $codehilite.addClass("zulip-code-block");
     });
 
+    // Inject hide-preview buttons on link previews (embeds, images,
+    // videos).  Skips user uploads.  Permission and visibility are
+    // handled in click_handlers.ts and message_list_hover.ts.
+    $content
+        .find(".message_embed, .message-media-preview-image, .message-media-preview-video")
+        .each(function (): void {
+            const $preview = $(this);
+            const message = get_message_for_message_content($content);
+            if (message === undefined) {
+                return;
+            }
+
+            // Skip user uploads, identified by data-original-dimensions
+            // on the <img> (set by the server only for uploads).
+            if ($preview.find("img").attr("data-original-dimensions") !== undefined) {
+                return;
+            }
+
+            // Extract the preview URL from the first anchor.
+            const preview_url = $preview.find("a").attr("href");
+            if (preview_url === undefined) {
+                return;
+            }
+
+            const title = $t({defaultMessage: "Remove preview"});
+            const escaped_url = preview_url.replaceAll("&", "&amp;").replaceAll('"', "&quot;");
+            const $button_container = $(
+                '<div class="hide-preview-container">' +
+                    `<button type="button" class="hide-preview-button tippy-zulip-delayed-tooltip"` +
+                    ` data-preview-url="${escaped_url}"` +
+                    ` data-tippy-content="${title}" aria-label="${title}">` +
+                    '<i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>' +
+                    "</button></div>",
+            );
+            $preview.append($button_container);
+        });
+
     $content.find("audio").each(function (): void {
         // We grab the audio source and title for
         // inserting into the template
