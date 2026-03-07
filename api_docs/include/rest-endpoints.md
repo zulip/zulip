@@ -132,6 +132,10 @@
 #### Server & organizations
 
 * [Get server settings](/api/get-server-settings)
+* [Get organization domains](/api/list-realm-domains)
+* [Add organization domain](/api/create-realm-domain)
+* [Update organization domain](/api/patch-realm-domain)
+* [Remove organization domain](/api/delete-realm-domain)
 * [Get linkifiers](/api/get-linkifiers)
 * [Add a linkifier](/api/add-linkifier)
 * [Update a linkifier](/api/update-linkifier)

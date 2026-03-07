@@ -13826,6 +13826,163 @@ paths:
                         "result": "success",
                         "subscribed_channel_ids": [3, 5, 10],
                       }
+  /realm/domains:
+    get:
+      summary: Get organization domains
+      description: |
+        Fetch the list of domains that are allowed for this organization.
+
+        Organization administrators can configure domains so that users with
+        email addresses matching those domains can automatically join the
+        organization.
+      operationId: list-realm-domains
+      tags:
+        - server_and_organizations
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - type: object
+                    properties:
+                      domains:
+                        type: array
+                        description: |
+                          A list of configured organization domains.
+                        items:
+                          type: object
+                          properties:
+                            domain:
+                              type: string
+                              description: The domain name.
+                            allow_subdomains:
+                              type: boolean
+                              description: Whether subdomains are allowed.
+              example:
+                {
+                  "result": "success",
+                  "msg": "",
+                  "domains": [
+                    {
+                      "domain": "zulip.com",
+                      "allow_subdomains": true
+                    }
+                  ]
+                }
+
+    post:
+      summary: Add organization domain
+      description: |
+        Add a domain to the organization.
+
+        This allows users with email addresses belonging to the specified
+        domain to join the organization.
+      operationId: create-realm-domain
+      tags:
+        - server_and_organizations
+      x-curl-examples-user: hamlet
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                domain:
+                  type: string
+                  description: The domain to add to the organization.
+                  example: "zulip.com"
+                allow_subdomains:
+                  type: boolean
+                  description: Whether subdomains of this domain are allowed.
+                  example: true
+              required:
+                - domain
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonSuccessBase"
+              example:
+                {
+                  "result": "success",
+                  "msg": ""
+                }
+
+  /realm/domains/{domain}:
+    patch:
+      summary: Update organization domain
+      description: |
+        Update an existing organization domain configuration.
+      operationId: patch-realm-domain
+      tags:
+        - server_and_organizations
+      x-curl-examples-user: hamlet
+      parameters:
+        - name: domain
+          in: path
+          description: The domain name to update.
+          required: true
+          schema:
+            type: string
+            example: "zulip.com"
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                allow_subdomains:
+                  type: boolean
+                  description: Whether subdomains of this domain are allowed.
+                  example: false
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonSuccessBase"
+              example:
+                {
+                  "result": "success",
+                  "msg": ""
+                }
+
+    delete:
+      summary: Remove organization domain
+      description: |
+        Remove a domain from the organization.
+      operationId: delete-realm-domain
+      tags:
+        - server_and_organizations
+      x-curl-examples-user: hamlet
+      parameters:
+        - name: domain
+          in: path
+          description: The domain name to remove.
+          required: true
+          schema:
+            type: string
+            example: "zulip.com"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonSuccessBase"
+              example:
+                {
+                  "result": "success",
+                  "msg": ""
+                }                    
   /realm/emoji/{emoji_name}:
     post:
       operationId: upload-custom-emoji
