@@ -1,5 +1,7 @@
+import re
 from unittest import mock
 
+import jwt
 import orjson
 import requests
 import responses
@@ -887,3 +889,71 @@ class LiveKitVideoCallTest(ZulipTestCase):
             with self.settings(**{setting_name: None}):
                 response = self.client_post("/json/calls/livekit/create", {"is_video_call": "true"})
                 self.assert_json_error(response, "LiveKit is not configured")
+
+    def test_join_livekit_call(self) -> None:
+        # Create a call to get a valid signed token.
+        response = self.client_post("/json/calls/livekit/create", {"is_video_call": "true"})
+        json = self.assert_json_success(response)
+        join_url = json["url"]
+
+        response = self.client_get(join_url)
+        self.assertEqual(response.status_code, 200)
+
+        # Verify the page contains page params with LiveKit config.
+        content = response.content.decode()
+        self.assertIn("page-params", content)
+
+    def test_join_livekit_call_generates_valid_jwt(self) -> None:
+        response = self.client_post("/json/calls/livekit/create", {"is_video_call": "true"})
+        json = self.assert_json_success(response)
+        join_url = json["url"]
+
+        response = self.client_get(join_url)
+        content = response.content.decode()
+
+        # Extract token from the data-params attribute.
+        match = re.search(r"data-params=\'(.*?)\'", content)
+        assert match is not None
+        params = orjson.loads(match.group(1))
+        token = params["token"]
+
+        # Verify the JWT is valid and contains expected claims.
+        decoded = jwt.decode(token, "secret", algorithms=["HS256"])
+        self.assertEqual(decoded["iss"], "devkey")
+        self.assertEqual(decoded["sub"], f"{self.user.realm_id}:{self.user.id}")
+        self.assertEqual(decoded["name"], self.user.full_name)
+        self.assertTrue(decoded["video"]["roomJoin"])
+        self.assertTrue(decoded["video"]["roomCreate"])
+        self.assertTrue(decoded["video"]["canPublish"])
+        self.assertTrue(decoded["video"]["canSubscribe"])
+
+    def test_join_livekit_invalid_signature(self) -> None:
+        response = self.client_get("/calls/livekit/join?livekit=invalid-token")
+        self.assertEqual(response.status_code, 400)
+
+    def test_join_livekit_cross_realm(self) -> None:
+        # Create a call as hamlet in the zulip realm.
+        response = self.client_post("/json/calls/livekit/create", {"is_video_call": "true"})
+        json = self.assert_json_success(response)
+        join_url = json["url"]
+
+        # Tamper with the token to use a different realm_id.
+        # This simulates a user from another realm trying to use the link.
+        token_str = join_url.split("livekit=")[1]
+        data = Signer().unsign_object(token_str)
+        data["realm_id"] = 9999
+        tampered_token = Signer().sign_object(data)
+        tampered_url = "/calls/livekit/join?livekit=" + tampered_token
+
+        response = self.client_get(tampered_url)
+        self.assertEqual(response.status_code, 400)
+
+    def test_join_livekit_not_configured(self) -> None:
+        response = self.client_post("/json/calls/livekit/create", {"is_video_call": "true"})
+        json = self.assert_json_success(response)
+        join_url = json["url"]
+
+        for setting_name in ["LIVEKIT_URL", "LIVEKIT_API_KEY", "LIVEKIT_API_SECRET"]:
+            with self.settings(**{setting_name: None}):
+                response = self.client_get(join_url)
+                self.assertEqual(response.status_code, 400)

@@ -275,6 +275,7 @@ from zerver.views.video_calls import (
     deauthorize_zoom_user,
     get_bigbluebutton_url,
     join_bigbluebutton,
+    join_livekit_call,
     make_constructor_groups_video_call,
     make_zoom_video_call,
     register_zoom_user,
@@ -742,6 +743,8 @@ i18n_urls = [
     path("calls/zoom/deauthorize", deauthorize_zoom_user),
     # Used to join a BigBlueButton video call
     path("calls/bigbluebutton/join", join_bigbluebutton),
+    # Used to join a LiveKit video call
+    path("calls/livekit/join", join_livekit_call),
     # Integrations documentation
     path(
         "integrations/",

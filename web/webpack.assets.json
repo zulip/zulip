@@ -137,5 +137,10 @@
         "./src/stats/stats.ts"
     ],
     "app": ["./src/bundles/app.ts"],
+    "livekit-call": [
+        "./src/bundles/common.ts",
+        "./src/livekit_call.ts",
+        "./styles/livekit_call.css"
+    ],
     "digest": ["./src/bundles/legacy_portico_bundle.ts"]
 }
