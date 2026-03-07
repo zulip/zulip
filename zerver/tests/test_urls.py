@@ -2,6 +2,7 @@ import os
 from unittest import mock
 
 from django.test import Client
+from django.urls import Resolver404, resolve
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.url_redirects import (
@@ -175,6 +176,39 @@ class ErrorPageTest(ZulipTestCase):
             "/json/users", secure=True, HTTP_REFERER="https://somewhere", HTTP_HOST="$nonsense"
         )
         self.assertEqual(result.status_code, 400)
+
+
+class HostURLConfTest(ZulipTestCase):
+    def test_social_auth_urls_on_auth_subdomain(self) -> None:
+        urls_expected_on_auth_subdomain = [
+            "/",
+            "/login/",
+            "/accounts/login/",
+            "/compatibility",
+            "/complete/google/",
+            "/api/v1/server_settings",
+            "/health",
+        ]
+        for path in urls_expected_on_auth_subdomain:
+            resolve(path, urlconf="zproject.auth_subdomain_urls")
+
+    def test_social_auth_urls_not_on_root_host(self) -> None:
+        with self.assertRaises(Resolver404):
+            resolve("/complete/google/", urlconf="zproject.root_urls")
+
+    def test_self_hosting_urls_on_selfhosting_subdomain(self) -> None:
+        urls_expected_on_selfhosting_subdomain = [
+            "/",
+            "/login/",
+            "/self-hosted-billing/",
+            "/health",
+        ]
+        for path in urls_expected_on_selfhosting_subdomain:
+            resolve(path, urlconf="zproject.self_hosting_management_subdomain_urls")
+
+    def test_self_hosting_urls_not_on_root_host(self) -> None:
+        with self.assertRaises(Resolver404):
+            resolve("/self-hosted-billing/", urlconf="zproject.root_urls")
 
 
 class RedirectURLTest(ZulipTestCase):

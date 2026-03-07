@@ -236,6 +236,7 @@ ALLOWED_HOSTS += [EXTERNAL_HOST_WITHOUT_PORT, "." + EXTERNAL_HOST_WITHOUT_PORT]
 ALLOWED_HOSTS += REALM_HOSTS.values()
 
 MIDDLEWARE = [
+    "django_hosts.middleware.HostsRequestMiddleware",
     "zerver.middleware.TagRequests",
     "zerver.middleware.SetRemoteAddrFromRealIpHeader",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -256,6 +257,7 @@ MIDDLEWARE = [
     # Make sure 2FA middlewares come after authentication middleware.
     "django_otp.middleware.OTPMiddleware",  # Required by two factor auth.
     "two_factor.middleware.threadlocals.ThreadLocals",  # Required by Twilio
+    "django_hosts.middleware.HostsResponseMiddleware",
 ]
 
 AUTH_USER_MODEL = "zerver.UserProfile"
@@ -263,6 +265,9 @@ AUTH_USER_MODEL = "zerver.UserProfile"
 TEST_RUNNER = "zerver.lib.test_runner.Runner"
 
 ROOT_URLCONF = "zproject.urls"
+ROOT_HOSTCONF = "zproject.hosts"
+DEFAULT_HOST = "default"
+PARENT_HOST = EXTERNAL_HOST_WITHOUT_PORT
 
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = "zproject.wsgi.application"
@@ -275,6 +280,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.staticfiles",
     "confirmation",
+    "django_hosts",
     "zerver",
     "social_django",
     "django_scim",
