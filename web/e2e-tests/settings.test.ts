@@ -358,7 +358,7 @@ async function get_alert_words_status_text(page: Page): Promise<string> {
 async function close_alert_words_status(page: Page): Promise<void> {
     const status_close_button = ".alert-word-status-banner .banner-close-button";
     await page.click(status_close_button);
-    assert.ok((await page.$(alert_word_status_banner_selector)) === null);
+    await page.waitForSelector(alert_word_status_banner_selector, {hidden: true});
 }
 
 async function test_duplicate_alert_words_cannot_be_added(
