@@ -9,6 +9,7 @@ import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
 import render_narrow_tooltip_list_of_topics from "../templates/narrow_tooltip_list_of_topics.hbs";
 
 import * as compose_validate from "./compose_validate.ts";
+import {build_emoji_tooltip_content} from "./emoji_tooltip.ts";
 import * as flatpickr from "./flatpickr.ts";
 import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
@@ -164,6 +165,27 @@ export function initialize(): void {
             instance.setContent(
                 parse_html(render_narrow_tooltip({content: instance.props.content})),
             );
+        },
+    });
+
+    // Enlarged emoji tooltip for message content (excludes reactions).
+    message_list_tooltip(".message_content .emoji", {
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            // Remove native title to avoid browser tooltip alongside Tippy.
+            const emoji_name =
+                instance.reference.getAttribute("title") ??
+                instance.reference.getAttribute("aria-label") ??
+                "";
+            instance.reference.removeAttribute("title");
+            if (!emoji_name) {
+                return false;
+            }
+            instance.setContent(build_emoji_tooltip_content(instance.reference, emoji_name));
+            return undefined;
+        },
+        onHidden(instance) {
+            instance.destroy();
         },
     });
 
