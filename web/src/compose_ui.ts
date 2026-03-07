@@ -584,6 +584,67 @@ export function handle_scrolling_formatting_buttons(event: JQuery.ScrollEvent): 
     }
 }
 
+export function handle_list_indent(
+    $textarea: JQuery<HTMLTextAreaElement>,
+    increase: boolean,
+): boolean {
+    const elem = $textarea[0]!;
+    const val = elem.value;
+    const start = elem.selectionStart;
+    const end = elem.selectionEnd;
+
+    const line_start = val.lastIndexOf("\n", start - 1) + 1;
+    const line_end_idx = val.indexOf("\n", end);
+    const line_end = line_end_idx === -1 ? val.length : line_end_idx;
+    const selected_block = val.slice(line_start, line_end);
+    const original_lines = selected_block.split("\n");
+    const lines = [...original_lines];
+    let changed = false;
+    let changed_count = 0;
+    let is_list_context = false;
+
+    for (let i = 0; i < lines.length; i += 1) {
+        const line = lines[i]!;
+        if (!bulleted_numbered_list_util.is_list_item(line)) {
+            continue;
+        }
+        is_list_context = true;
+        if (increase) {
+            lines[i] = "  " + line;
+            changed = true;
+            changed_count += 1;
+        } else if (line.startsWith(" ")) {
+            lines[i] = line.startsWith("  ") ? line.slice(2) : line.slice(1);
+            changed = true;
+            changed_count += line.startsWith("  ") ? 2 : 1;
+        }
+    }
+
+    if (!changed) {
+        return is_list_context;
+    }
+
+    const new_block = lines.join("\n");
+    const new_val = val.slice(0, line_start) + new_block + val.slice(line_end);
+    setFieldText(elem, new_val);
+
+    let start_offset = 0;
+    if (lines[0] !== original_lines[0]) {
+        if (increase) {
+            start_offset = 2;
+        } else {
+            start_offset = original_lines[0]!.startsWith("  ") ? -2 : -1;
+        }
+    }
+    const end_offset = increase ? changed_count * 2 : -changed_count;
+
+    elem.setSelectionRange(
+        Math.max(line_start, start + start_offset),
+        Math.max(line_start, end + end_offset),
+    );
+    return true;
+}
+
 export function handle_keydown(
     event: JQuery.KeyboardEventBase,
     $textarea: JQuery<HTMLTextAreaElement>,
@@ -614,6 +675,15 @@ export function handle_keydown(
         format_text($textarea, type);
         autosize_textarea($textarea);
         event.preventDefault();
+    }
+
+    if (isCmdOrCtrl && (key === "]" || key === "[")) {
+        if (handle_list_indent($textarea, key === "]")) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        return;
     }
 }
 
