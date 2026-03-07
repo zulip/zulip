@@ -93,6 +93,17 @@ const team_params_schema = z.object({
     ),
 });
 
+// Sync this with zerver.views.video_calls.join_livekit_call.
+const livekit_call_params_schema = z.object({
+    ...default_params_schema.shape,
+    page_type: z.literal("livekit_call"),
+    livekit_url: z.string(),
+    token: z.string(),
+    room_name: z.string(),
+    is_video_call: z.boolean(),
+    translation_data: z.record(z.string(), z.string()),
+});
+
 // Sync this with corporate.lib.stripe.UpgradePageParams.
 const upgrade_params_schema = z.object({
     ...default_params_schema.shape,
@@ -118,6 +129,7 @@ const page_params_schema = z.discriminatedUnion("page_type", [
     stats_params_schema,
     team_params_schema,
     upgrade_params_schema,
+    livekit_call_params_schema,
 ]);
 
 function take_params(): string {

@@ -1,1 +1,136 @@
-/* LiveKit call page styles — added in a subsequent commit. */
+#livekit-call-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: hsl(0deg 0% 7%);
+    color: hsl(0deg 0% 100%);
+    font-family: "Open Sans", sans-serif;
+}
+
+#livekit-status {
+    text-align: center;
+    padding: 8px;
+    font-size: 14px;
+    color: hsl(0deg 0% 80%);
+    min-height: 30px;
+}
+
+#livekit-status:empty {
+    display: none;
+}
+
+#livekit-participants {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 8px;
+    padding: 8px;
+    overflow: auto;
+}
+
+.livekit-participant-tile {
+    position: relative;
+    background: hsl(0deg 0% 15%);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+}
+
+.livekit-participant-tile.livekit-local {
+    border: 2px solid hsl(200deg 100% 50%);
+}
+
+.livekit-participant-name {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    background: hsl(0deg 0% 0% / 60%);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    z-index: 1;
+}
+
+.livekit-media {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.livekit-screenshare {
+    object-fit: contain;
+    background: hsl(0deg 0% 0%);
+}
+
+#livekit-controls {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px;
+    background: hsl(0deg 0% 12%);
+}
+
+#livekit-controls button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 50%;
+    background: hsl(0deg 0% 25%);
+    color: hsl(0deg 0% 100%);
+    cursor: pointer;
+    font-size: 20px;
+    transition: background 0.15s;
+}
+
+#livekit-controls button:hover {
+    background: hsl(0deg 0% 35%);
+}
+
+#livekit-controls button:focus-visible {
+    outline: 2px solid hsl(200deg 100% 50%);
+    outline-offset: 2px;
+}
+
+#livekit-controls button.active {
+    background: hsl(200deg 60% 40%);
+}
+
+#livekit-controls button.active:hover {
+    background: hsl(200deg 60% 50%);
+}
+
+#livekit-controls button[aria-pressed="false"] {
+    opacity: 0.6;
+}
+
+#livekit-leave {
+    background: hsl(0deg 70% 45%) !important;
+}
+
+#livekit-leave:hover {
+    background: hsl(0deg 70% 55%) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #livekit-controls button {
+        transition: none;
+    }
+}
+
+@media (width <= 600px) {
+    #livekit-participants {
+        grid-template-columns: 1fr;
+    }
+
+    #livekit-controls button {
+        width: 42px;
+        height: 42px;
+        font-size: 18px;
+    }
+}

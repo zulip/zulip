@@ -1,0 +1,13 @@
+diff --git a/dist/src/room/track/LocalAudioTrack.d.ts b/dist/src/room/track/LocalAudioTrack.d.ts
+index 0de29301172ae3e68f115e95395ab0674d155f7f..07aa1b0e41ea1447fdaeefdfa808fd489f4afca9 100644
+--- a/dist/src/room/track/LocalAudioTrack.d.ts
++++ b/dist/src/room/track/LocalAudioTrack.d.ts
+@@ -9,7 +9,7 @@ export default class LocalAudioTrack extends LocalTrack<Track.Kind.Audio> {
+     stopOnMute: boolean;
+     private prevStats?;
+     private isKrispNoiseFilterEnabled;
+-    protected processor?: TrackProcessor<Track.Kind.Audio, AudioProcessorOptions> | undefined;
++    protected processor?: TrackProcessor<Track.Kind.Audio, AudioProcessorOptions>;
+     /**
+      * boolean indicating whether enhanced noise cancellation is currently being used on this track
+      */

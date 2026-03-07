@@ -59,6 +59,7 @@
     "js-cookie": "^3.0.1",
     "katex": "^0.16.2",
     "koa": "^3.0.0",
+    "livekit-client": "^2.17.2",
     "lodash": "^4.17.19",
     "micromodal": "^0.6.1",
     "mini-css-extract-plugin": "^2.2.2",
@@ -188,7 +189,8 @@
       "textarea-caret@3.1.0": "patches/textarea-caret@3.1.0.patch",
       "tippy.js@6.3.7": "patches/tippy.js@6.3.7.patch",
       "autosize": "patches/autosize.patch",
-      "jdenticon": "patches/jdenticon.patch"
+      "jdenticon": "patches/jdenticon.patch",
+      "livekit-client@2.17.2": "patches/livekit-client@2.17.2.patch"
     }
   },
   "nyc": {
