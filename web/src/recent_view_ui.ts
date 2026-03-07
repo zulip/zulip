@@ -5,6 +5,7 @@ import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
 import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
+import render_recent_view_empty_list_widget_for_table from "../templates/recent_view_empty_list_widget_for_table.hbs";
 import render_recent_view_filters from "../templates/recent_view_filters.hbs";
 import render_recent_view_row from "../templates/recent_view_row.hbs";
 import render_recent_view_body from "../templates/recent_view_table.hbs";
@@ -221,6 +222,29 @@ function set_oldest_message_date(msg_list_data: MessageListData): void {
     }
 }
 
+function get_time_string(): string {
+    const time_obj = new Date(oldest_message_timestamp * 1000);
+    return timerender.get_localized_date_or_time_for_format(
+        time_obj,
+        "full_weekday_dayofyear_year_time",
+    );
+}
+
+function get_loaded_messages_text(): string {
+    const time_string = get_time_string();
+    return $t({defaultMessage: "Showing messages since {time_string}."}, {time_string});
+}
+
+function render_recent_view_empty_list_widget_for_table_with_load_more(context: {
+    empty_list_message: string;
+    column_count: number;
+}): string {
+    return render_recent_view_empty_list_widget_for_table({
+        ...context,
+        load_more_button_text: $t({defaultMessage: "Load more"}),
+    });
+}
+
 function update_load_more_banner(): void {
     if (loading_state === NO_MESSAGES_LOADED) {
         return;
@@ -228,6 +252,7 @@ function update_load_more_banner(): void {
 
     if (loading_state === ALL_MESSAGES_LOADED) {
         $(".recent-view-load-more-container").toggleClass("notvisible", true);
+        $(".recent-view-empty-load-more").toggleClass("notvisible", true);
         return;
     }
 
@@ -236,40 +261,37 @@ function update_load_more_banner(): void {
         return;
     }
 
-    // There are some messages loaded, but not all messages yet. The banner was
-    // hidden on page load, and we make sure to show it now that there are messages
-    // we can display.
-    $(".recent-view-load-more-container").toggleClass("notvisible", false);
-
-    // Until we've found the newest message, we only show the banner with a messages
-    // explaining we're still fetching messages. We don't allow the user to fetch
-    // more messages.
+    // Until we've found the newest message, we only show the banner
+    // explaining we're still fetching messages. We don't allow the
+    // user to fetch more messages.
     if (loading_state === SOME_MESSAGES_LOADED) {
+        $(".recent-view-load-more-container").toggleClass("notvisible", false);
         return;
     }
 
-    const $banner_text = $(".recent-view-load-more-container .last-fetched-message");
-    const time_obj = new Date(oldest_message_timestamp * 1000);
-    const time_string = timerender.get_localized_date_or_time_for_format(
-        time_obj,
-        "full_weekday_dayofyear_year_time",
-    );
-    $banner_text.text($t({defaultMessage: "Showing messages since {time_string}."}, {time_string}));
+    // When the table is empty, show the load-more text inline below
+    // "No conversations match your filters." and hide the banner.
+    // Otherwise, show the banner and hide the inline load-more.
+    assert(topics_widget !== undefined);
+    const is_table_empty = topics_widget.get_current_list().length === 0;
+    $(".recent-view-load-more-container").toggleClass("notvisible", is_table_empty);
+    $(".recent-view-empty-load-more").toggleClass("notvisible", !is_table_empty);
+
+    const $container = is_table_empty
+        ? $(".recent-view-empty-load-more")
+        : $(".recent-view-load-more-container");
+    $container.find(".last-fetched-message").text(get_loaded_messages_text());
 
     if (is_backfill_in_progress) {
         // Keep the button disabled and the loading indicator running
         // until we've finished our recursive backfill.
         return;
     }
-    const $button = $(".recent-view-load-more-container .fetch-messages-button");
-    const $button_label = $(".recent-view-load-more-container .button-label");
+    const $button = $container.find(".fetch-messages-button");
     $button.toggleClass("notvisible", false);
-
-    $button_label.toggleClass("invisible", false);
+    $button.find(".button-label").toggleClass("invisible", false);
     $button.prop("disabled", false);
-    loading.destroy_indicator(
-        $(".recent-view-load-more-container .fetch-messages-button .loading-indicator"),
-    );
+    loading.destroy_indicator($button.find(".loading-indicator"));
 }
 
 function get_min_load_count(already_rendered_count: number, load_count: number): number {
@@ -1537,6 +1559,8 @@ export function complete_rerender(coming_from_other_views = false): void {
         html_selector: get_topic_row,
         $simplebar_container: $(":root"),
         callback_after_render,
+        render_empty_list_widget_for_table:
+            render_recent_view_empty_list_widget_for_table_with_load_more,
         is_scroll_position_for_render: views_util.is_scroll_position_for_render,
         post_scroll__pre_render_callback() {
             // Update the focused element for keyboard navigation if needed.
@@ -2228,15 +2252,17 @@ export function initialize({
         }, 300),
     );
 
-    $("body").on("click", ".recent-view-load-more-container .fetch-messages-button", () => {
-        $(".recent-view-load-more-container .button-label").toggleClass("invisible", true);
-        $(".recent-view-load-more-container .fetch-messages-button").prop("disabled", true);
-        loading.make_indicator(
-            $(".recent-view-load-more-container .fetch-messages-button .loading-indicator"),
-            {width: 20},
-        );
-        maybe_load_older_messages(unread.first_unread_unmuted_message_id);
-    });
+    $("body").on(
+        "click",
+        ".recent-view-load-more-container .fetch-messages-button, .recent-view-empty-load-more .fetch-messages-button",
+        function (this: HTMLElement) {
+            const $button = $(this);
+            $button.find(".button-label").toggleClass("invisible", true);
+            $button.prop("disabled", true);
+            loading.make_indicator($button.find(".loading-indicator"), {width: 20});
+            maybe_load_older_messages(unread.first_unread_unmuted_message_id);
+        },
+    );
 
     compose_actions.register_compose_cancel_hook(() => {
         if (recent_view_util.is_visible()) {

@@ -119,6 +119,18 @@
         padding: 3em 1em;
     }
 
+    .recent-view-empty-load-more {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        /* Reset the 1.5em font-size inherited from
+           .empty-table-message so the load-more text
+           and button match normal UI text size. */
+        font-size: var(--base-font-size-px);
+    }
+
     .fa-check-square-o,
     .fa-square-o {
         width: 0.7142em; /* Legacy 10px size at 14px/1em. */
@@ -147,7 +159,21 @@
 
     .fetch-messages-button {
         display: grid;
-        justify-items: center;
+        place-items: center;
+
+        /* Stack the loading indicator and button label in the
+           same grid cell so the label stays vertically centered
+           when the indicator is empty/hidden. */
+        > * {
+            grid-row: 1;
+            grid-column: 1;
+        }
+
+        /* Override the inline height: 0 set by loading.make_indicator
+           so the spinner participates in grid alignment. */
+        .loading-indicator {
+            height: auto !important;
+        }
 
         .loading_indicator_spinner {
             height: 20px;
