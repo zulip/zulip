@@ -1,19 +1,5 @@
-#message_view_header {
-    color: var(--color-text-message-view-header);
-    z-index: 2;
-    float: left;
-    height: var(--header-height);
-    width: 100%;
-    line-height: var(--header-height);
-    display: flex;
-    align-items: baseline;
-    white-space: nowrap;
-    cursor: default;
-
-    .hidden {
-        display: none;
-    }
-
+#message_view_header,
+#extended-narrow-description-overlay {
     /* TODO: Remove the `.navbar_title` span from the `message_view_header.hbs`
        template. That span predates the use of flexbox, and makes it so that
        elements like the `.narrow_description` have different line-height and
@@ -69,11 +55,43 @@
             width: auto;
         }
     }
+}
+
+#message_view_header {
+    color: var(--color-text-message-view-header);
+    z-index: 2;
+    float: left;
+    height: var(--header-height);
+    width: 100%;
+    line-height: var(--header-height);
+    display: flex;
+    align-items: baseline;
+    white-space: nowrap;
+    cursor: default;
+
+    .hidden {
+        display: none;
+    }
 
     .message-header-archived {
         color: var(--color-text-message-header-archived);
         cursor: default;
         padding-left: 5px;
+    }
+
+    #extend-narrow-description {
+        margin: 0 6px 0 5px;
+        padding: 0;
+        align-self: center;
+        color: var(--color-navbar-icon);
+        background: none;
+        border: none;
+        line-height: 0;
+        outline: none;
+
+        .info-icon {
+            font-size: 1em;
+        }
     }
 
     .narrow_description {
@@ -135,6 +153,70 @@
 
         &.leaving-extended-view-description {
             animation: contract-extended-description 100ms ease-in both !important;
+        }
+    }
+}
+
+#header-container #extended-narrow-description-overlay {
+    display: none;
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--color-background-search);
+    color: var(--color-text-search);
+    margin-top: 0;
+    position: absolute;
+    top: 0;
+    z-index: 1;
+    min-height: 100%;
+    max-height: 60vh;
+    overflow-y: scroll;
+    scrollbar-width: none;
+
+    &.expanded {
+        display: block;
+        box-shadow: inset 0 -1px 0 var(--color-navbar-bottom-border);
+    }
+
+    .overlay-header {
+        height: var(--header-height);
+        width: 100%;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        white-space: nowrap;
+
+        #extended-narrow-description-overlay-exit {
+            width: 2.75em;
+            height: 100%;
+            background: none;
+            border: none;
+            opacity: 0.5;
+            line-height: 0;
+            border-radius: 4px;
+            color: var(--color-search-icons);
+            padding: 0;
+            outline: none;
+        }
+    }
+
+    .content-container {
+        display: block;
+        padding: 0 0.75em 0.75em;
+        hyphens: auto;
+        overflow-wrap: break-word;
+    }
+}
+
+@container header-container (width > $cq_sm_min) {
+    #extend-narrow-description {
+        display: none;
+    }
+}
+
+@media (width > $sm_min) {
+    .without-container-query-support {
+        #extend-narrow-description {
+            display: none;
         }
     }
 }
