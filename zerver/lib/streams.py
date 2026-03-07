@@ -27,7 +27,7 @@ from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_str
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import get_topic_display_name, messages_for_topic
-from zerver.lib.types import APIStreamDict, UserGroupMembersData
+from zerver.lib.types import APIStreamDict, StreamCreateEvent, UserGroupMembersData
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
     access_user_group_for_setting,
@@ -219,12 +219,12 @@ def send_stream_creation_event(
     anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
     for_unarchiving: bool = False,
 ) -> None:
-    event = dict(
-        type="stream",
-        op="create",
-        streams=[stream_to_dict(stream, recent_traffic, anonymous_group_membership)],
-        for_unarchiving=for_unarchiving,
-    )
+    event: StreamCreateEvent = {
+        "type": "stream",
+        "op": "create",
+        "streams": [stream_to_dict(stream, recent_traffic, anonymous_group_membership)],
+        "for_unarchiving": for_unarchiving,
+    }
     send_event_on_commit(realm, event, user_ids)
 
 
