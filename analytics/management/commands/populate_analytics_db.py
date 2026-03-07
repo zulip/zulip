@@ -1,4 +1,5 @@
 from collections.abc import Mapping
+from dataclasses import asdict, dataclass
 from datetime import timedelta
 from typing import Any, TypeAlias
 
@@ -29,6 +30,13 @@ from zerver.lib.upload import upload_message_attachment_from_request
 from zerver.models import Client, Realm, RealmAuditLog, Recipient, Stream, UserProfile
 from zerver.models.groups import NamedUserGroup, SystemGroups, UserGroupMembership
 from zerver.models.realm_audit_logs import AuditLogEventType
+
+
+@dataclass(frozen=True, slots=True)
+class IdArgs:
+    realm: Realm | None = None
+    user: UserProfile | None = None
+    stream: Stream | None = None
 
 
 class Command(ZulipBaseCommand):
@@ -156,14 +164,15 @@ class Command(ZulipBaseCommand):
             end_times = time_range(
                 last_end_time, last_end_time, stat.frequency, len(next(iter(fixture_data.values())))
             )
-            if table == InstallationCount:
-                id_args: dict[str, Any] = {}
+            id_args = IdArgs()
             if table == RealmCount:
-                id_args = {"realm": realm}
-            if table == UserCount:
-                id_args = {"realm": realm, "user": shylock}
-            if table == StreamCount:
-                id_args = {"stream": stream, "realm": realm}
+                id_args = IdArgs(realm=realm)
+            elif table == UserCount:
+                id_args = IdArgs(realm=realm, user=shylock)
+            elif table == StreamCount:
+                id_args = IdArgs(realm=realm, stream=stream)
+
+            params = {k: v for k, v in asdict(id_args).items() if v is not None}
 
             for subgroup, values in fixture_data.items():
                 table._default_manager.bulk_create(
@@ -172,7 +181,7 @@ class Command(ZulipBaseCommand):
                         subgroup=subgroup,
                         end_time=end_time,
                         value=value,
-                        **id_args,
+                        **params,
                     )
                     for end_time, value in zip(end_times, values, strict=False)
                     if value != 0
