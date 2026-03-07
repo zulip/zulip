@@ -484,6 +484,7 @@ export const realm_schema = z.object({
         nextcloud_talk: z.optional(z.object({name: z.string(), id: z.number()})),
         webex: z.optional(z.object({name: z.string(), id: z.number()})),
         google_meet: z.optional(z.object({name: z.string(), id: z.number()})),
+        livekit: z.optional(z.object({name: z.string(), id: z.number()})),
     }),
     realm_avatar_changes_disabled: z.boolean(),
     realm_bot_domain: z.string(),
