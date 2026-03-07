@@ -156,7 +156,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         super().setUp()
         self.bot_user = get_user("outgoing-webhook@zulip.com", get_realm("zulip"))
         self.stream_message_event = {
-            "command": "@**test**",
+            "command": "@**test**\nline1\nline2",
             "user_profile_id": 12,
             "service_name": "test-service",
             "trigger": "mention",
@@ -217,9 +217,11 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         self.assertEqual(request_data[6][1], 123456)  # timestamp
         self.assertEqual(request_data[7][1], "U21")  # user_id
         self.assertEqual(request_data[8][1], "Sample User")  # user_name
-        self.assertEqual(request_data[9][1], "@**test**")  # text
+        self.assertEqual(request_data[9][1], "line1\nline2")  # text
         self.assertEqual(request_data[10][1], "mention")  # trigger_word
         self.assertEqual(request_data[11][1], 12)  # user_profile_id
+        self.assertEqual(request_data[12][0], "command")  # The key
+        self.assertEqual(request_data[12][1], "/test")  # The value
 
     @mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
     def test_make_request_private_message(self, mock_fail_with_message: mock.Mock) -> None:

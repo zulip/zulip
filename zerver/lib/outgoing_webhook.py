@@ -1,6 +1,7 @@
 import abc
 import json
 import logging
+import re
 from contextlib import suppress
 from time import perf_counter
 from typing import Any, AnyStr
@@ -127,6 +128,22 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         # text=googlebot: What is the air-speed velocity of an unladen swallow?
         # trigger_word=googlebot:
 
+        raw_text = event["command"]
+        slack_command = None
+        slack_text = raw_text
+        # This regex looks for:
+        # ^ (start of string)
+        # @\*\* (the literal @** characters)
+        # (.*?) (captures the bot name)
+        # \*\* (the closing ** characters)
+        # \s* (any spaces after the mention)
+        # (.*) (captures the rest of the message)
+        match = re.match(r"^@\*\*(.*?)\*\*\s*(.*)", raw_text, flags=re.DOTALL)
+        if match:
+            bot_name = match.group(1)
+            slack_command = f"/{bot_name}"
+            slack_text = match.group(2)
+
         request_data = [
             ("token", self.token),
             ("team_id", f"T{realm.id}"),
@@ -137,10 +154,12 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
             ("timestamp", event["message"]["timestamp"]),
             ("user_id", f"U{event['message']['sender_id']}"),
             ("user_name", event["message"]["sender_full_name"]),
-            ("text", event["command"]),
+            ("text", slack_text),
             ("trigger_word", event["trigger"]),
             ("service_id", event["user_profile_id"]),
         ]
+        if slack_command:
+            request_data.append(("command", slack_command))
         return self.session.post(base_url, data=request_data)
 
     @override
