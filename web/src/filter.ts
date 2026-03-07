@@ -1169,6 +1169,13 @@ export class Filter {
         if (this.single_term_type_returns_all_messages_of_conversation()) {
             return true;
         }
+        // /near/ conversation views can also mark messages as read;
+        // the reading_prevented flag on MessageList is used to
+        // dynamically control whether to actually do so based on
+        // whether the user has scrolled to see older unreads.
+        if (this.is_conversation_view_with_near()) {
+            return true;
+        }
         return false;
     }
 
@@ -1601,7 +1608,9 @@ export class Filter {
 
     allow_use_first_unread_when_narrowing(): boolean {
         return (
-            this.can_mark_messages_read() ||
+            // For /near/ views, we don't want to use first_unread as the
+            // anchor because they target a specific message.
+            (this.can_mark_messages_read() && !this.is_conversation_view_with_near()) ||
             (this.has_operator("is") && !this.has_operand("is", "starred"))
         );
     }
@@ -1811,8 +1820,10 @@ export class Filter {
     is_conversation_view(): boolean {
         const term_types = this.sorted_term_types();
         if (
+            _.isEqual(term_types, ["channel", "topic", "near"]) ||
             _.isEqual(term_types, ["channel", "topic", "with"]) ||
             _.isEqual(term_types, ["channel", "topic"]) ||
+            _.isEqual(term_types, ["dm", "near"]) ||
             _.isEqual(term_types, ["dm", "with"]) ||
             _.isEqual(term_types, ["dm"])
         ) {
