@@ -606,6 +606,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # imports and deleted users.
     is_mirror_dummy = models.BooleanField(default=False)
 
+    is_deleted = models.BooleanField(default=False)
+
     # Flag used for imported users who have not activated their account.
     is_imported_stub = models.BooleanField(default=False)
 
