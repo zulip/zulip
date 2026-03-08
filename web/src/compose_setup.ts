@@ -703,6 +703,10 @@ export function initialize(): void {
         // to the recipient row
         compose_recipient.set_high_attention_recipient_row();
         $compose_recipient.addClass("recently-focused");
+        // Validate recipient to show error banners for deactivated
+        // users or insufficient DM permissions, and disable the
+        // compose textarea if the recipient is invalid.
+        compose_validate.validate_private_message(false);
     });
 
     $("input#stream_message_recipient_topic, #private_message_recipient").on("blur", () => {
