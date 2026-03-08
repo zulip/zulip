@@ -249,9 +249,6 @@ export function show_stream_not_subscribed_error(
     sub: StreamSubscription,
     banner_text: string,
 ): void {
-    // Remove any existing banners with this warning.
-    $(`#compose_banners .${CSS.escape(CLASSNAMES.user_not_subscribed)}`).remove();
-
     const new_row_html = render_compose_banner({
         banner_type: ERROR,
         banner_text,
