@@ -514,6 +514,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             } else {
                 $override_topic.trigger("change");
             }
+            update_url();
             event.preventDefault();
             event.stopPropagation();
         }
