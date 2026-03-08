@@ -218,8 +218,6 @@ export function cannot_send_direct_message_error(error_message: string): void {
     });
     append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
     hide_compose_spinner();
-
-    $("#private_message_recipient").trigger("focus").trigger("select");
 }
 
 export function topic_missing_error(empty_string_topic_display_name: string): void {

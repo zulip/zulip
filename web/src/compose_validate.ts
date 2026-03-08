@@ -983,7 +983,6 @@ export function validate_private_message(show_banner = true): boolean {
                 error_message,
                 compose_banner.CLASSNAMES.deactivated_user,
                 $banner_container,
-                $("#private_message_recipient"),
             );
 
             if (is_validating_compose_box) {
