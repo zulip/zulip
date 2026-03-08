@@ -19,6 +19,7 @@ import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
+import * as message_util from "./message_util.ts";
 import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -709,7 +710,9 @@ export function get_person_suggestion_for_topic_typeahead(query: string): UserPi
             [...current_narrow_participant_ids]
                 .filter(
                     (user_id) =>
-                        user_id !== current_user.user_id && people.is_person_active(user_id),
+                        user_id !== current_user.user_id &&
+                        people.is_person_active(user_id) &&
+                        message_util.user_can_send_direct_message(String(user_id)),
                 )
                 .map((user_id) => people.maybe_get_user_by_id(user_id))
                 .filter(Boolean),
@@ -725,7 +728,8 @@ export function get_person_suggestion_for_topic_typeahead(query: string): UserPi
                 .filter(
                     (user_id) =>
                         !current_narrow_participant_ids?.has(user_id) &&
-                        people.is_person_active(user_id),
+                        people.is_person_active(user_id) &&
+                        message_util.user_can_send_direct_message(String(user_id)),
                 )
                 .map((user_id) => people.maybe_get_user_by_id(user_id))
                 .filter(Boolean),
