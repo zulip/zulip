@@ -583,6 +583,7 @@ export const realm_schema = z.object({
     realm_signup_announcements_stream_id: z.number(),
     realm_topics_policy: z.enum(["allow_empty_topic", "disable_empty_topic"]),
     realm_upload_quota_mib: z.nullable(z.number()),
+    realm_upload_quota_used_bytes: z.number(),
     realm_url: z.string(),
     realm_video_chat_provider: z.number(),
     realm_waiting_period_threshold: z.number(),

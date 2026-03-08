@@ -4197,7 +4197,7 @@ class NormalActionsTest(BaseAction):
             base = "/user_uploads/"
             self.assertEqual(base, url[: len(base)])
 
-        with self.verify_action(num_events=1, state_change_expected=False) as events:
+        with self.verify_action(num_events=1, state_change_expected=True) as events:
             do_upload()
 
         check_attachment_add("events[0]", events[0])
@@ -4224,7 +4224,7 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(events[0]["upload_space_used"], 6)
 
         # Now remove the attachment
-        with self.verify_action(num_events=1, state_change_expected=False) as events:
+        with self.verify_action(num_events=1, state_change_expected=True) as events:
             self.client_delete(f"/json/attachments/{entry.id}")
 
         check_attachment_remove("events[0]", events[0])

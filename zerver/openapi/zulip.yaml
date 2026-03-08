@@ -20113,6 +20113,18 @@ paths:
 
                           New in Zulip 5.0 (feature level 72). Previously,
                           this was called `realm_upload_quota`.
+                      realm_upload_quota_used_bytes:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The total number of bytes currently used for uploaded files in
+                          an organization.
+
+                          Clients can use this in combination with `realm_upload_quota_mib`
+                          to display usage information to users.
+
+                          **Changes**: New in Zulip 12.0 (feature level ZF-80f780).
                       realm_org_type:
                         type: integer
                         description: |

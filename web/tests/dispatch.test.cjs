@@ -774,6 +774,7 @@ run_test("realm settings", ({override}) => {
     override(realm, "realm_topics_policy", "allow_empty_topic");
     override(realm, "realm_plan_type", 2);
     override(realm, "realm_upload_quota_mib", 5000);
+    override(realm, "realm_upload_quota_used_bytes", 0);
     override(realm, "max_file_upload_size_mib", 10);
     override(realm, "server_supported_permission_settings", {
         realm: {
@@ -813,6 +814,7 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_topics_policy, "disable_empty_topic");
     assert_same(realm.realm_plan_type, 3);
     assert_same(realm.realm_upload_quota_mib, 50000);
+    assert_same(realm.realm_upload_quota_used_bytes, 1024);
     assert_same(realm.max_file_upload_size_mib, 1024);
     assert_same(add_subscribers_element_updated, true);
 
