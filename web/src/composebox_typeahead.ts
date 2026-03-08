@@ -707,7 +707,10 @@ export function get_person_suggestion_for_topic_typeahead(query: string): UserPi
     if (current_narrow_participant_ids) {
         participants_people = util.try_parse_as_truthy(
             [...current_narrow_participant_ids]
-                .filter((user_id) => user_id !== current_user.user_id)
+                .filter(
+                    (user_id) =>
+                        user_id !== current_user.user_id && people.is_person_active(user_id),
+                )
                 .map((user_id) => people.maybe_get_user_by_id(user_id))
                 .filter(Boolean),
         );
@@ -719,7 +722,11 @@ export function get_person_suggestion_for_topic_typeahead(query: string): UserPi
         dm_people = util.try_parse_as_truthy(
             pm_conversations
                 .get_partners()
-                .filter((user_id) => !current_narrow_participant_ids?.has(user_id))
+                .filter(
+                    (user_id) =>
+                        !current_narrow_participant_ids?.has(user_id) &&
+                        people.is_person_active(user_id),
+                )
                 .map((user_id) => people.maybe_get_user_by_id(user_id))
                 .filter(Boolean),
         );
