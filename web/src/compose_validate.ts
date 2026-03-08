@@ -992,6 +992,11 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
 
 function set_compose_textarea_disabled(disabled: boolean): void {
     $("textarea#compose-textarea").prop("disabled", disabled);
+    // Also toggle keyboard navigation on compose control buttons.
+    $("#compose .disable-on-invalid-recipient .compose_control_button").prop(
+        "tabindex",
+        disabled ? -1 : 0,
+    );
 }
 
 export function validate_private_message(show_banner = true): boolean {
