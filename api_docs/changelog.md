@@ -84,6 +84,8 @@ format used by the Zulip server that they are interacting with.
 
 * [`GET /events`](/api/get-events): `realm_bot` update events are
   now sent when a bot's Zulip display email address is changed.
+* User group endpoints now allow bot users to access membership
+  and subgroup information.
 
 **Feature level 460**
 

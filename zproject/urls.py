@@ -506,7 +506,8 @@ v1_api_and_json_patterns = [
         GET=get_subgroups_of_user_group,
     ),
     rest_path(
-        "user_groups/<int:user_group_id>/members/<int:user_id>", GET=get_is_user_group_member
+        "user_groups/<int:user_group_id>/members/<int:user_id>",
+        GET=get_is_user_group_member,
     ),
     rest_path("user_groups/<int:user_group_id>/deactivate", POST=deactivate_user_group),
     # users/me -> zerver.views.user_settings
