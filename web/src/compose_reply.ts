@@ -458,7 +458,7 @@ function quote_single_message(opts: QuoteMessageOpts): void {
         success(raw_data) {
             const data = single_message_content_schema.parse(raw_data);
             assert(data.message.content_type === "text/x-markdown");
-            message_store.maybe_update_raw_content(message, data.message.content);
+            message_store.maybe_update_raw_content(message.id, data.message.content);
             const content = generate_replace_content({
                 message,
                 raw_content: data.message.content,

@@ -394,7 +394,7 @@ export function edit_locally(message: Message, request: LocalEditRequest): Messa
     }
 
     if (message_content_edited) {
-        message_store.maybe_update_raw_content(message, raw_content);
+        message_store.maybe_update_raw_content(message.id, raw_content);
         if (request.content !== undefined) {
             // This happens in the code path where message editing
             // failed and we're trying to undo the local echo.  We use
