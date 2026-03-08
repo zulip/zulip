@@ -301,6 +301,13 @@ class Command(ZulipBaseCommand):
         )
 
         parser.add_argument(
+            "--percent-topic-links",
+            type=float,
+            default=5,
+            help="The percent of topics with links in them.",
+        )
+
+        parser.add_argument(
             "--stickiness",
             type=float,
             default=20,
@@ -1310,7 +1317,9 @@ def generate_and_send_messages(
         else:
             num_topics = options["max_topics"]
 
-        possible_topic_names[stream_id] = generate_topics(num_topics)
+        possible_topic_names[stream_id] = generate_topics(
+            num_topics, options["percent_topic_links"]
+        )
 
     message_batch_size = options["batch_size"]
     num_messages = 0
