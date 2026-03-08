@@ -1940,6 +1940,25 @@ def possible_linked_topics(content: str) -> set[ChannelTopicInfo]:
     }
 
 
+class ZulipNormalizeWhitespace(markdown.preprocessors.Preprocessor):
+    """Override upstream NormalizeWhitespace to preserve tab characters and trailing whitespace.
+
+    The upstream NormalizeWhitespace preprocessor calls expandtabs(), which
+    converts tab characters to spaces. This breaks round-tripping of tab
+    characters inside code blocks (see #17419).
+
+    We also remove the trailing whitespace stripping (see #22080), since
+    Zulip handles trailing whitespace its own way.
+    """
+
+    @override
+    def run(self, lines: list[str]) -> list[str]:
+        source = "\n".join(lines)
+        source = source.replace(markdown.util.STX, "").replace(markdown.util.ETX, "")
+        source = source.replace("\r\n", "\n").replace("\r", "\n") + "\n\n"
+        return source.split("\n")
+
+
 class AlertWordNotificationProcessor(markdown.preprocessors.Preprocessor):
     allowed_before_punctuation = {" ", "\n", "(", '"', ".", ",", "'", ";", "[", "*", "`", ">"}
     allowed_after_punctuation = {
@@ -2261,9 +2280,7 @@ class ZulipMarkdown(markdown.Markdown):
         # reference - references don't make sense in a chat context.
         preprocessors = markdown.util.Registry[markdown.preprocessors.Preprocessor]()
         preprocessors.register(MarkdownListPreprocessor(self), "hanging_lists", 35)
-        preprocessors.register(
-            markdown.preprocessors.NormalizeWhitespace(self), "normalize_whitespace", 30
-        )
+        preprocessors.register(ZulipNormalizeWhitespace(self), "normalize_whitespace", 30)
         preprocessors.register(fenced_code.FencedBlockPreprocessor(self), "fenced_code_block", 25)
         preprocessors.register(
             AlertWordNotificationProcessor(self), "custom_text_notifications", 20
