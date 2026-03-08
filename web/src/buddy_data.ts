@@ -405,6 +405,12 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
             return false;
         }
 
+        if (person.is_deleted) {
+            // Deleted users are not real users and should not appear in
+            // the right sidebar.
+            return false;
+        }
+
         if (person.is_bot) {
             // Bots should never appear in the right sidebar.  This
             // case should never happen, since bots cannot have
