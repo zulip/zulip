@@ -233,9 +233,6 @@ export function topic_missing_error(empty_string_topic_display_name: string): vo
 }
 
 export function show_stream_does_not_exist_error(stream_name: string): void {
-    // Remove any existing banners with this warning.
-    $(`#compose_banners .${CSS.escape(CLASSNAMES.stream_does_not_exist)}`).remove();
-
     const new_row_html = render_stream_does_not_exist_error({
         banner_type: ERROR,
         channel_name: stream_name,
