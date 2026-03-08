@@ -410,6 +410,7 @@ class RawUserDict(TypedDict):
     long_term_idle: bool
     email_address_visibility: int
     is_imported_stub: bool
+    is_deleted: bool
 
 
 class RemoteRealmDictValue(TypedDict):

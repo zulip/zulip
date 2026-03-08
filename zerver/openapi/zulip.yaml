@@ -29091,6 +29091,7 @@ components:
               nullable: true
             avatar_version: {}
             is_imported_stub: {}
+            is_deleted: {}
             profile_data:
               $ref: "#/components/schemas/ProfileData"
     UserBase:
@@ -29252,6 +29253,16 @@ components:
 
             **Changes**: New in Zulip 12.0 (feature level 433).
           example: false
+        is_deleted:
+          type: boolean
+          description: |
+            A boolean specifying whether the user has been permanently
+            deleted. Deleted users are a subset of deactivated users
+            (`is_active=false`) who have had their account data removed.
+
+            This field is only present when `true`.
+
+            **Changes**: New in Zulip 12.0 (feature level 490).
     ProfileData:
       type: object
       description: |

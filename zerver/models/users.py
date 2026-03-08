@@ -549,6 +549,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # See also `long_term_idle`.
     is_active = models.BooleanField(default=True, db_index=True)
 
+    # Deleted users are a subset of deactivated users whose metadata
+    # has been removed as well. They cannot be reactivated, to ensure
+    # is_deleted=True, is_active=True is impossible.
+    is_deleted = models.BooleanField(db_default=False, default=False)
+
     is_bot = models.BooleanField(default=False, db_index=True)
     bot_type = models.PositiveSmallIntegerField(null=True, db_index=True)
     bot_owner = models.ForeignKey("self", null=True, on_delete=models.SET_NULL)

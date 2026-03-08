@@ -3988,6 +3988,7 @@ class DeleteUserTest(ZulipTestCase):
 
         self.assertEqual(hamlet.delivery_email, f"deleteduser{hamlet_user_id}@zulip.testserver")
         self.assertEqual(hamlet.is_mirror_dummy, True)
+        self.assertEqual(hamlet.is_deleted, True)
         self.assertEqual(hamlet.is_active, False)
         self.assertEqual(hamlet.date_joined, hamlet_date_joined)
 
@@ -4026,6 +4027,11 @@ class DeleteUserTest(ZulipTestCase):
         self.assertEqual(name_change_log.scrubbed, True)
 
         self.assertEqual(ScheduledEmail.objects.count(), 0)
+
+        # Verify is_deleted is exposed in the API.
+        self.login("iago")
+        result = orjson.loads(self.client_get(f"/json/users/{hamlet_user_id}").content)
+        self.assertEqual(result["user"]["is_deleted"], True)
 
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_do_delete_user_preserving_messages(self) -> None:

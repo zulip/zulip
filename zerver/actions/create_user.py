@@ -712,6 +712,10 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
         raise JsonableError(
             _("Cannot activate a placeholder account; ask the user to sign up, instead.")
         )
+
+    if user_profile.is_deleted:  # nocoverage
+        raise JsonableError(_("Cannot reactivate a deleted user"))
+
     change_user_is_active(user_profile, True)
 
     event_time = timezone_now()

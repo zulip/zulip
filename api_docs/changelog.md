@@ -20,6 +20,18 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 490**
+
+* [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email),
+  [`GET /users/me`](/api/get-own-user): Added `is_deleted` field to
+  returned user objects.
+* [`POST /register`](/api/register-queue): Added `is_deleted` field
+  in the user objects returned in the `realm_users` and
+  `realm_non_active_users` fields.
+* [`GET /events`](/api/get-events): Added `is_deleted` field to
+  user objects sent in `realm_user` events.
+
 **Feature level 489**
 
 * [`GET /messages`](/api/get-messages),
