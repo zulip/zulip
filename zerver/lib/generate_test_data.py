@@ -6,6 +6,7 @@ from typing import Any
 import orjson
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+from zerver.lib.message import truncate_topic
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
 
 
@@ -16,7 +17,7 @@ def load_config() -> dict[str, Any]:
     return config
 
 
-def generate_topics(num_topics: int) -> list[str]:
+def generate_topics(num_topics: int, percent_topic_links: float = 0) -> list[str]:
     config = load_config()["gen_fodder"]
 
     # Make single word topics account for 30% of total topics.
@@ -44,14 +45,14 @@ def generate_topics(num_topics: int) -> list[str]:
     else:
         resolved_topic_probability = 0.05
 
-    return [
-        (
-            RESOLVED_TOPIC_PREFIX + topic_name
-            if random.random() < resolved_topic_probability
-            else topic_name
-        )
-        for topic_name in topic_names
-    ]
+    results = []
+    for topic_name in topic_names:
+        if percent_topic_links > 0 and random.random() < percent_topic_links / 100.0:
+            topic_name = add_link_to_topic(topic_name)
+        if random.random() < resolved_topic_probability:
+            topic_name = truncate_topic(RESOLVED_TOPIC_PREFIX + topic_name)
+        results.append(topic_name)
+    return results
 
 
 def load_generators(config: dict[str, Any]) -> dict[str, Any]:
@@ -181,6 +182,11 @@ def add_link(text: str, link: str) -> str:
     vals[start] = vals[start] + " " + link + " "
 
     return " ".join(vals)
+
+
+def add_link_to_topic(topic: str) -> str:
+    url = random.choice(config["gen_fodder"]["topic-links"])
+    return truncate_topic(f"{url} {topic}")
 
 
 def remove_line_breaks(fh: Any) -> list[str]:
