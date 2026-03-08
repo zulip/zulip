@@ -619,7 +619,7 @@ export let maybe_hydrate_messages_with_raw_content = (
                     cached_message !== undefined &&
                         fetched_message.content_type === "text/x-markdown",
                 );
-                message_store.maybe_update_raw_content(cached_message, fetched_message.content);
+                message_store.maybe_update_raw_content(cached_message.id, fetched_message.content);
             }
             on_success();
         },
@@ -811,7 +811,7 @@ function quote_single_message(opts: QuoteMessageOpts): void {
         success(raw_data) {
             const data = single_message_content_schema.parse(raw_data);
             assert(data.message.content_type === "text/x-markdown");
-            message_store.maybe_update_raw_content(message, data.message.content);
+            message_store.maybe_update_raw_content(message.id, data.message.content);
             const content = generate_replace_content({
                 message,
                 raw_content: data.message.content,
