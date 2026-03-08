@@ -223,9 +223,6 @@ export function cannot_send_direct_message_error(error_message: string): void {
 }
 
 export function topic_missing_error(empty_string_topic_display_name: string): void {
-    // Remove any existing banners with this warning.
-    $(`#compose_banners .${CSS.escape(CLASSNAMES.topic_missing)}`).remove();
-
     const new_row_html = render_topics_required_error_banner({
         banner_type: ERROR,
         empty_string_topic_display_name,
