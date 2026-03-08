@@ -7,14 +7,16 @@ import render_add_rsvp_meeting_modal from "../templates/add_rsvp_meeting_modal.h
 import * as add_meeting from "./add_meeting.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
-import {$t, $t_html} from "./i18n.ts";
+import { $t, $t_html } from "./i18n.ts";
 import * as narrow_state from "./narrow_state.ts"
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as pill_typeahead from "./pill_typeahead.ts";
-import * as rows from "./rows.ts";
+import * as composebox_typeahead from "./composebox_typeahead.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as user_pill from "./user_pill.ts";
+import * as flatpickr from "./flatpickr.ts";
+import * as util from "./util.ts";
 
 let add_meeting_widget: dropdown_widget.DropdownWidget | undefined;
 let add_meeting_dropdown: tippy.Instance | undefined;
@@ -35,7 +37,7 @@ function submit_rsvp_meeting_form(): void {
 
     const invitee_ids = user_pill.get_user_ids(invite_users_widget);
 
-    console.log({topic, datetime, invitee_ids,});
+    console.log({ topic, datetime, invitee_ids, });
 }
 
 function update_rsvp_submit_button_state(): void {
@@ -72,7 +74,7 @@ function populate_user_dropdown(): void {
             continue;
         }
 
-        const item = {
+        const item: user_pill.UserPillData = {
             type: "user",
             user,
         };
@@ -106,16 +108,96 @@ function rsvp_meeting_modal_post_render(): void {
     });
 
     $("#rsvp-user-dropdown-button").on("click", () => {
-    const $dropdown = $("#rsvp-user-dropdown");
+        const $dropdown = $("#rsvp-user-dropdown");
 
-    if ($dropdown.is(":visible")) {
-        $dropdown.hide();
-        return;
-    }
+        if ($dropdown.is(":visible")) {
+            $dropdown.hide();
+            return;
+        }
 
-    populate_user_dropdown();
-    $dropdown.show();
-});
+        populate_user_dropdown();
+        $dropdown.show();
+    });
+
+    // open flatpickr calendar when clicking the datetime input and populate it
+    $("#add-rsvp-meeting-modal").on("click", "#rsvp-meeting-datetime", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const $input = $(e.currentTarget);
+
+        const defaultDate = ((): Date => {
+            const cur = $input.val() as string | undefined;
+            if (cur) {
+                // Try to parse existing value; fallback to now
+                const parsed = new Date(cur);
+                if (!Number.isNaN(parsed.getTime())) {
+                    return parsed;
+                }
+            }
+            return new Date();
+        })();
+
+        flatpickr.show_flatpickr(
+            util.the($input),
+            (selectedDate) => {
+                const dt = new Date(selectedDate);
+                const tzOffsetMs = dt.getTimezoneOffset() * 60 * 1000;
+                const localDt = new Date(dt.getTime() - tzOffsetMs);
+                const value = localDt.toISOString().slice(0, 16);
+                $input.val(value).trigger("input");
+
+                update_rsvp_submit_button_state();
+            },
+            defaultDate,
+            {
+                enableTime: true,
+                minDate: new Date(),
+                appendTo: document.body,
+                onOpen: (_selectedDates, _dateStr, instance) => {
+                    const inputEl = util.the($input); // same $input you passed to show_flatpickr
+                    const rect = inputEl.getBoundingClientRect();
+                    const cal = instance.calendarContainer;
+                    cal.classList.remove("arrowTop", "arrowBottom", "arrowLeft", "arrowRight");
+                    cal.style.position = "fixed";
+                    cal.style.transform = "none";
+                    cal.style.zIndex = "6000";
+
+                    // Defer measurement until after the calendar has fully rendered
+                    // so offsetWidth/offsetHeight return correct values
+                    setTimeout(() => {
+                        const spacing = 8;
+                        const calWidth = cal.offsetWidth;
+                        const calHeight = cal.offsetHeight;
+                        const viewportWidth = window.innerWidth;
+                        const viewportHeight = window.innerHeight;
+
+                        // Try placing to the right of the input first
+                        let left = rect.right + spacing;
+                        let top = rect.top;
+
+                        // If it overflows the right edge, place to the left instead
+                        if (left + calWidth > viewportWidth - spacing) {
+                            left = rect.left - calWidth - spacing;
+                        }
+
+                        // If it overflows the bottom, shift up so it fits
+                        if (top + calHeight > viewportHeight - spacing) {
+                            top = viewportHeight - calHeight - spacing;
+                        }
+
+                        // Never go above the top of the viewport
+                        if (top < spacing) {
+                            top = spacing;
+                        }
+
+                        cal.style.left = `${left}px`;
+                        cal.style.top = `${top}px`;
+                    }, 0);
+                }
+            }
+        );
+    });
 }
 
 function on_add_all_users_click(): void {
@@ -147,9 +229,9 @@ function item_click_callback(
 
     if (current_value === add_meeting.OPTION_RSVP_MEETING) {
         dialog_widget.launch({
-            modal_title_html: $t_html({defaultMessage: "Meeting RSVP"}),
+            modal_title_html: $t_html({ defaultMessage: "Meeting RSVP" }),
             modal_content_html: render_add_rsvp_meeting_modal({}),
-            modal_submit_button_text: $t({defaultMessage: "Submit"}),
+            modal_submit_button_text: $t({ defaultMessage: "Submit" }),
             id: "add-rsvp-meeting-modal",
             form_id: "rsvp-meeting-form",
             update_submit_disabled_state_on_change: true,
