@@ -19,6 +19,7 @@ set_global("navigator", {});
 const autosize = noop;
 autosize.update = noop;
 mock_esm("autosize", {default: autosize});
+const message_fetch_raw_content = mock_esm("../src/message_fetch_raw_content");
 
 mock_esm("../src/message_lists", {
     current: {},
@@ -29,7 +30,6 @@ const linkifiers = zrequire("linkifiers");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 const user_status = zrequire("user_status");
-const channel = mock_esm("../src/channel");
 const compose_reply = zrequire("compose_reply");
 const compose_actions = zrequire("compose_actions");
 const message_lists = zrequire("message_lists");
@@ -389,17 +389,16 @@ run_test("quote_message", ({override, override_rewire}) => {
     override(message_lists.current, "get", (id) => (id === 100 ? selected_message : undefined));
 
     let success_function;
-    override(channel, "get", (opts) => {
-        success_function = opts.success;
-    });
+    override(
+        message_fetch_raw_content,
+        "get_raw_content_for_single_message",
+        (_id, success_callback) => {
+            success_function = success_callback;
+        },
+    );
 
     function run_success_callback() {
-        success_function({
-            message: {
-                content: quote_text,
-                content_type: "text/x-markdown",
-            },
-        });
+        success_function(quote_text);
     }
 
     $("textarea#compose-textarea").attr("id", "compose-textarea");

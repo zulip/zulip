@@ -55,8 +55,8 @@ mock_esm("../src/compose_tooltips", {
     initialize_compose_tooltips: noop,
     dismiss_intro_go_to_conversation_tooltip: noop,
 });
+const message_fetch_raw_content = mock_esm("../src/message_fetch_raw_content");
 
-const channel = mock_esm("../src/channel");
 const compose_fade = mock_esm("../src/compose_fade", {
     clear_compose: noop,
     set_focused_recipient: noop,
@@ -539,17 +539,16 @@ test("quote_messages", ({disallow, override, override_rewire}) => {
         id: 10,
     };
     let success_function;
-    override(channel, "get", (opts) => {
-        success_function = opts.success;
-    });
+    override(
+        message_fetch_raw_content,
+        "get_raw_content_for_single_message",
+        (_id, on_success, _on_error) => {
+            success_function = on_success;
+        },
+    );
 
     function run_success_callback() {
-        success_function({
-            message: {
-                content: "Testing.",
-                content_type: "text/x-markdown",
-            },
-        });
+        success_function("Testing.");
     }
 
     override(compose_ui, "insert_syntax_and_focus", (syntax, _$textarea, mode) => {
@@ -626,7 +625,7 @@ test("quote_messages", ({disallow, override, override_rewire}) => {
         content: "Testing.",
     });
 
-    disallow(channel, "get");
+    disallow(message_fetch_raw_content, "get_raw_content_for_single_message");
     quote_messages(opts);
     assert.ok(replaced);
 

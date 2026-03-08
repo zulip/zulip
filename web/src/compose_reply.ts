@@ -2,7 +2,6 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_paste from "./compose_paste.ts";
 import * as compose_recipient from "./compose_recipient.ts";
@@ -15,10 +14,10 @@ import {$t} from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as inbox_util from "./inbox_util.ts";
 import * as internal_url from "./internal_url.ts";
-import * as message_fetch from "./message_fetch.ts";
+import * as message_fetch_raw_content from "./message_fetch_raw_content.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
-import {type Message, single_message_content_schema} from "./message_store.ts";
+import {type Message} from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
@@ -584,87 +583,40 @@ type QuoteAsset = {
     quote_content: string;
 };
 
-export let maybe_hydrate_messages_with_raw_content = (
-    message_ids: number[],
-    on_success: () => void,
-    on_error: () => void,
-    timeout?: number,
-): void => {
-    const message_ids_with_missing_raw_content = message_ids.filter((id) => {
-        const message = message_store.get(id);
-        if (message?.raw_content) {
-            return false;
-        }
-        return true;
-    });
-
-    if (message_ids_with_missing_raw_content.length === 0) {
-        on_success();
-        return;
-    }
-    channel.get({
-        url: "/json/messages",
-        data: {
-            allow_empty_topic_name: true,
-            apply_markdown: false,
-            message_ids: JSON.stringify(message_ids_with_missing_raw_content),
-        },
-        success(raw_data) {
-            const data = message_fetch.message_ids_response_schema.parse(raw_data);
-            for (const raw_message of data.messages) {
-                const cached_message = message_store.get(raw_message.id);
-                const fetched_message =
-                    single_message_content_schema.shape.message.parse(raw_message);
-                assert(
-                    cached_message !== undefined &&
-                        fetched_message.content_type === "text/x-markdown",
-                );
-                message_store.maybe_update_raw_content(cached_message.id, fetched_message.content);
-            }
-            on_success();
-        },
-        timeout,
-        error() {
-            on_error();
-        },
-    });
-};
-
-export function rewire_maybe_hydrate_messages_with_raw_content(
-    value: typeof maybe_hydrate_messages_with_raw_content,
-): void {
-    maybe_hydrate_messages_with_raw_content = value;
-}
-
 export function process_quote_assets_for_messages(
     message_ids: number[],
     callback: (quote_assets: QuoteAsset[]) => void,
 ): void {
-    const build_and_process_quote_assets = (): void => {
-        const quote_assets: QuoteAsset[] = [];
-        for (const id of message_ids) {
-            const cached_message = message_store.get(id);
-            assert(cached_message !== undefined);
-            if (cached_message.raw_content) {
+    const messages: Message[] = [];
+    for (const id of message_ids) {
+        const message = message_store.get(id);
+        assert(message !== undefined);
+        messages.push(message);
+    }
+
+    const quote_assets: QuoteAsset[] = [];
+    message_fetch_raw_content.get_raw_content_for_messages(
+        message_ids,
+        (raw_content_arr) => {
+            for (const [i, message] of messages.entries()) {
+                const raw_content = raw_content_arr[i]!;
+                assert(raw_content !== undefined);
+                quote_assets.push({message, quote_content: raw_content});
+            }
+            callback(quote_assets);
+        },
+        () => {
+            for (const message of messages) {
+                const fallback_markdown_content = compose_paste.paste_handler_converter(
+                    message.content,
+                );
                 quote_assets.push({
-                    message: cached_message,
-                    quote_content: cached_message.raw_content,
-                });
-            } else {
-                // Fallback to using markdown obtained by the local turndown setup.
-                quote_assets.push({
-                    message: cached_message,
-                    quote_content: compose_paste.paste_handler_converter(cached_message.content),
+                    message,
+                    quote_content: message.raw_content ?? fallback_markdown_content,
                 });
             }
-        }
-        callback(quote_assets);
-    };
-
-    maybe_hydrate_messages_with_raw_content(
-        message_ids,
-        build_and_process_quote_assets,
-        build_and_process_quote_assets,
+            callback(quote_assets);
+        },
         1000,
     );
 }
@@ -805,25 +757,17 @@ function quote_single_message(opts: QuoteMessageOpts): void {
         return;
     }
 
-    void channel.get({
-        url: "/json/messages/" + message_id,
-        data: {allow_empty_topic_name: true, apply_markdown: false},
-        success(raw_data) {
-            const data = single_message_content_schema.parse(raw_data);
-            assert(data.message.content_type === "text/x-markdown");
-            message_store.maybe_update_raw_content(message.id, data.message.content);
+    message_fetch_raw_content.get_raw_content_for_single_message(
+        message_id,
+        (raw_content) => {
             const content = generate_replace_content({
                 message,
-                raw_content: data.message.content,
+                raw_content,
                 forward_message: opts.forward_message,
             });
             replace_quoting_placeholder_with({content, forward_message: opts.forward_message});
         },
-        // We set a timeout here to trigger usage of the fallback markdown via the
-        // error callback below, which is much better UX than waiting for 10 seconds and
-        // feeling that the quoting mechanism is broken.
-        timeout: 1000,
-        error() {
+        (): void => {
             // We fall back to using the available message content and pass it
             // through the `paste_handler_converter` to generate the replacement
             // markdown, in case the request timed out or failed for another reason,
@@ -839,7 +783,11 @@ function quote_single_message(opts: QuoteMessageOpts): void {
             });
             replace_quoting_placeholder_with({content, forward_message: opts.forward_message});
         },
-    });
+        // We set a timeout here to trigger usage of the fallback markdown via the
+        // error callback below, which is much better UX than waiting for 10 seconds and
+        // feeling that the quoting mechanism is broken.
+        1000,
+    );
 }
 
 function extract_range_html(range: Range, preserve_ancestors = false): string {
