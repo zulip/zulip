@@ -21,7 +21,10 @@ export function message_has_image(message_content: string): boolean {
 }
 
 export function message_has_attachment(message_content: string): boolean {
-    return is_element_in_message_content(message_content, "a[href^='/user_uploads']");
+    return is_element_in_message_content(
+        message_content,
+        "a[href^='/user_uploads'], img[src^='/user_uploads'], audio[src^='/user_uploads']",
+    );
 }
 
 export function message_has_reaction(message: Message): boolean {
