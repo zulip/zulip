@@ -5,6 +5,7 @@ import type {Page} from "puppeteer";
 import * as common from "./lib/common.ts";
 
 async function test_add_linkifier(page: Page): Promise<void> {
+    await page.waitForSelector("#add-linkifier-button", {visible: true});
     await page.click("#add-linkifier-button");
     await common.wait_for_micromodal_to_open(page);
     await page.waitForSelector("form.linkifier-add-form", {visible: true});
@@ -70,6 +71,7 @@ async function test_add_invalid_linkifier_pattern(page: Page): Promise<void> {
 }
 
 async function test_edit_linkifier(page: Page): Promise<void> {
+    await page.waitForSelector(".linkifier_row:nth-last-child(1) .edit", {visible: true});
     await page.click(".linkifier_row:nth-last-child(1) .edit");
     await common.wait_for_micromodal_to_open(page);
     await common.fill_form(page, "form.linkifier-edit-form", {
@@ -97,6 +99,7 @@ async function test_edit_linkifier(page: Page): Promise<void> {
 }
 
 async function test_edit_invalid_linkifier(page: Page): Promise<void> {
+    await page.waitForSelector(".linkifier_row:nth-last-child(1) .edit", {visible: true});
     await page.click(".linkifier_row:nth-last-child(1) .edit");
     await common.wait_for_micromodal_to_open(page);
     await common.fill_form(page, "form.linkifier-edit-form", {

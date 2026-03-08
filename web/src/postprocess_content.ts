@@ -123,23 +123,44 @@ export function postprocess_content(html: string): string {
         const media_wrapper = inertDocument.createElement("span");
         media_wrapper.classList.add("message-media-inline-image");
 
-        // If one or more inline images sit in a paragraph containing no
-        // other text content, we will include it in a gallery via the
-        // logic further down in this file.
+        // If one or more inline images sit in a paragraph in isolation,
+        // or are separated only by line breaks, we will include those
+        // images in a gallery via the logic further down in this file.
         const inline_img_parent_elt = inline_img_elt.parentElement;
         // We want to determine the length after trimming out the spaces
         // from line breaks; this value will be precisely zero if the
         // containing paragraph has no text content, including things
         // that might be tucked in a link or a bold tag, etc.
-        const inline_img_parent_elt_text_length = inline_img_parent_elt?.textContent?.trim().length;
         const inline_img_parent_elt_name = inline_img_parent_elt?.tagName.toLowerCase();
 
-        if (inline_img_parent_elt_name === "p" && inline_img_parent_elt_text_length === 0) {
+        if (inline_img_parent_elt_name === "p" && !is_media_run_inline_with_text(inline_img_elt)) {
             media_wrapper.classList.add("message-media-gallery-image");
-            // Multiple images will be separated by break tags, which will
-            // be unnecessary (and make trouble for correctly placing
+            // Multiple images may be separated by break tags, which will
+            // be unnecessary and make trouble for correctly placing
             // adjacent images into a single gallery, when we process them.
-            inline_img_parent_elt?.querySelector("br")?.remove();
+            // However, in a message with deliberate line breaks elsewhere,
+            // like between lines of text, we need to be careful to preserve
+            // those and instead just remove those that precede the
+            // inline_img_elt we're working with.
+            const image_elt_prev_element_sibling = inline_img_elt.previousElementSibling;
+
+            // We remove any previous element-sibling break tags, but leave
+            // the any trailing break tags to properly detect other images
+            // that may need to be included in a gallery. Any trailing break
+            // tags are removed at the point that the gallery gets inserted
+            // into the DOM (at which point they will be trailing the gallery
+            // itself).
+            if (image_elt_prev_element_sibling?.tagName?.toLowerCase() === "br") {
+                image_elt_prev_element_sibling.remove();
+            }
+        } else if (is_media_run_inline_with_text(inline_img_elt)) {
+            // When an inline image opens a message, we use CSS to adjust
+            // the space added to the start of the image, keeping it flush
+            // with the message box.
+            const image_elt_prev_sibling_node = inline_img_elt.previousSibling;
+            if (image_elt_prev_sibling_node === null) {
+                inline_img_elt.classList.add("image-opens-message");
+            }
         }
 
         const media_link = inertDocument.createElement("a");
@@ -337,17 +358,75 @@ export function postprocess_content(html: string): string {
             // content (or is the first in the message) and need to create a
             // gallery for it, and perhaps other adjacent sibling media elements,
             // if they exist.
-            gallery_element = inertDocument.createElement("div");
+            if (elt.classList.contains("message-media-gallery-image")) {
+                // Because inline images may be presented in galleries in the middle
+                // of a paragraph, we create those as `<span>` elements. That prevents
+                // the client-side markdown from doing a slipshod job of inserting
+                // empty `<p>` elements or leaving orphaned text nodes around a `<div>`,
+                // which isn't allowed to appear inside of a `<p>`.
+                gallery_element = inertDocument.createElement("span");
+            } else {
+                // However, for legacy galleries that always appear after a paragraph,
+                // we create a `<div>` element.
+                gallery_element = inertDocument.createElement("div");
+            }
+
+            // Regardless of what element the gallery is, we add the
+            // .message-thumbnail-gallery class, whose CSS selectors
+            // will style this as a flexbox regardless.
             gallery_element.classList.add("message-thumbnail-gallery");
-            // We insert the gallery just before the media element we've found
+
+            // We insert a new gallery just before the media element we've found
             elt.before(gallery_element);
         }
 
-        // Finally, the media element gets moved into the current gallery
+        // Move the media element into the current gallery
         gallery_element?.append(elt);
+
+        // Delete any trailing <br> tag after new gallery element; this can
+        // happen when there's an image trailed by a break and more text.
+        if (gallery_element?.nextElementSibling?.tagName.toLowerCase() === "br") {
+            gallery_element.nextElementSibling.remove();
+        }
     }
 
     return template.innerHTML;
+}
+
+// If an image is run inline with text--that is, there are non-whitespace
+// text nodes adjacent the image--we will not put it into a gallery.
+function is_media_run_inline_with_text(media_elt: Element): boolean {
+    const media_elt_previous_sibling_node = media_elt.previousSibling;
+    const media_elt_next_sibling_node = media_elt.nextSibling;
+
+    // A standalone image in its own paragraph will have no sibling nodes
+    if (media_elt_previous_sibling_node === null && media_elt_next_sibling_node === null) {
+        return false;
+    }
+
+    // For images that have text nodes, we need to consider the nodeValue;
+    // these will be `null` for element nodes. We do not want to trim these
+    // values, because that would wipe out newlines, "\n", which we are
+    // interested in detecting.
+    const previous_sibling_node_value = media_elt_previous_sibling_node?.nodeValue;
+    const next_sibling_node_value = media_elt_next_sibling_node?.nodeValue;
+
+    // For images that have adjacent element nodes, we examine the nodeName.
+    const previous_sibling_node_name = media_elt_previous_sibling_node?.nodeName?.toLowerCase();
+    const next_sibling_node_name = media_elt_next_sibling_node?.nodeName?.toLowerCase();
+
+    // Any adjacent newlines or break tags mean that this image not run
+    // inline with text.
+    if (
+        previous_sibling_node_value === "\n" ||
+        next_sibling_node_value === "\n" ||
+        previous_sibling_node_name === "br" ||
+        next_sibling_node_name === "br"
+    ) {
+        return false;
+    }
+
+    return true;
 }
 
 // Process single-paragraph messages that contain only emoji.

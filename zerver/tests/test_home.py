@@ -49,12 +49,14 @@ class HomeTest(ZulipTestCase):
         "embedded_bots_enabled",
         "furthest_read_time",
         "insecure_desktop_app",
+        "is_cloud_realm_with_discounted_plan",
         "is_spectator",
         "language_list",
         "login_page",
         "narrow",
         "narrow_stream",
         "no_event_queue",
+        "non_workplace_pricing_eligible",
         "page_type",
         "presence_history_limit_days_for_web_app",
         "promote_sponsoring_zulip",
@@ -233,6 +235,7 @@ class HomeTest(ZulipTestCase):
         "realm_want_advertise_in_communities_directory",
         "realm_welcome_message_custom_text",
         "realm_wildcard_mention_policy",
+        "realm_workplace_users_group",
         "realm_zulip_update_announcements_stream_id",
         "realm_moderation_request_channel_id",
         "recent_private_conversations",
@@ -380,11 +383,13 @@ class HomeTest(ZulipTestCase):
             "embedded_bots_enabled",
             "furthest_read_time",
             "insecure_desktop_app",
+            "is_cloud_realm_with_discounted_plan",
             "is_spectator",
             "language_cookie_name",
             "language_list",
             "login_page",
             "no_event_queue",
+            "non_workplace_pricing_eligible",
             "page_type",
             "presence_history_limit_days_for_web_app",
             "promote_sponsoring_zulip",
@@ -482,6 +487,15 @@ class HomeTest(ZulipTestCase):
 
         # Changing the plan_type to Standard grants access to AzureAD, but not SAML:
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
+        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_id")
+        CustomerPlan.objects.create(
+            customer=customer,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            next_invoice_date=timezone_now(),
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
+            status=CustomerPlan.ACTIVE,
+        )
 
         with self.settings(
             AUTHENTICATION_BACKENDS=(

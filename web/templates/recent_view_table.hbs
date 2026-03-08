@@ -11,18 +11,22 @@
         <table class="table table-responsive">
             <thead id="recent-view-table-headers">
                 <tr>
-                    <th class="recent-view-topic-header" data-sort="conversation_sort">
+                    <th class="recent-view-topic-header">
                         <div class="recent-view-header-wrapper">
-                            <span>{{t 'Channel' }}</span>
+                            <span class="recent-view-channel-sort-header" data-sort="channel_sort">
+                                {{t 'Channel' }}
+                                <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                            </span>
                             <i class="zulip-icon zulip-icon-chevron-right"></i>
-                            <span>{{t 'Conversation' }}</span>
-                            <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
-                        </div>
-                    </th>
-                    <th data-sort="unread_sort" data-tippy-content="{{t 'Sort by unread message count' }}" class="recent-view-unread-header unread_sort tippy-zulip-delayed-tooltip hidden-for-spectators">
-                        <div class="recent-view-header-wrapper">
-                            <i class="zulip-icon zulip-icon-unread"></i>
-                            <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                            <span class="recent-view-conversation-sort-header" data-sort="conversation_sort">
+                                {{t 'Conversation' }}
+                                <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                            </span>
+                            <span class="recent-view-unread-sort-header hidden-for-spectators tippy-zulip-delayed-tooltip" data-sort="unread_sort" data-tippy-content="{{t 'Sort by unread message count' }}">
+                                {{!-- Arrow is intentionally kept before unread icon to better align with unread count --}}
+                                <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                                <i class="zulip-icon zulip-icon-unread"></i>
+                            </span>
                         </div>
                     </th>
                     <th class='recent-view-participants-header participants_header'>

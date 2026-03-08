@@ -19,6 +19,7 @@ import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
+import * as focus_outline_util from "./focus_outline_util.ts";
 import * as folder_dropdown_widget from "./folder_dropdown_widget.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -283,13 +284,23 @@ function is_table_focused(): boolean {
     return $current_focus_elem === "table";
 }
 
+function row_has_mute_column(row: number, $topic_rows: JQuery): boolean {
+    const type = get_row_type(row);
+    if (type === "private") {
+        return false;
+    }
+
+    const $topic_row = $topic_rows.eq(row);
+    return !$topic_row.hasClass("recent-view-archived-channel-row");
+}
+
 function get_row_type(row: number): string {
     // Return "private" or "stream"
     // We use CSS method for finding row type until topics_widget gets initialized.
     if (!topics_widget) {
         const $topic_rows = $("#recent-view-content-tbody tr");
         const $topic_row = $topic_rows.eq(row);
-        const is_private = $topic_row.attr("data-private");
+        const is_private = $topic_row.hasClass("private_conversation_row");
         if (is_private) {
             return "private";
         }
@@ -332,13 +343,14 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
         col = COLUMNS.topic;
         col_focus = COLUMNS.topic;
     }
+
+    const $topic_row = $topic_rows.eq(row);
     const type = get_row_type(row);
-    if (col === COLUMNS.mute && type === "private") {
+    if (col === COLUMNS.mute && !row_has_mute_column(row, $topic_rows)) {
         col = unread ? COLUMNS.read : COLUMNS.topic;
         col_focus = col;
     }
 
-    const $topic_row = $topic_rows.eq(row);
     // We need to allow table to render first before setting focus.
     setTimeout(
         () => $topic_row.find(".recent_view_focusable").addBack().eq(col).trigger("focus"),
@@ -1021,17 +1033,37 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
     // When doing bulk rerender, we assume that order of rows are not going
     // to change by default. Row insertion can still change the order but
     // we ensure the list remains sorted after insertion.
+    //
+    // Save whether all rows were rendered before updating the data,
+    // so we know if it's safe to use render() for new items below.
+    const was_all_rendered = topics_widget.all_rendered();
     topics_widget.replace_list_data(get_list_data_for_widget(), false);
     topics_widget.filter_and_sort();
-    // Iterate in the order of which the rows should be present so that
+    // Iterate in the order in which the rows should be present so that
     // we are not inserting rows without any rows being present around them.
+    let processed_count = 0;
     for (const topic_data of topics_widget.get_rendered_list()) {
+        if (processed_count >= row_keys.length) {
+            break;
+        }
         const msg = message_store.get(topic_data.last_msg_id);
         assert(msg !== undefined);
         const topic_key = recent_view_util.get_key_from_message(msg);
         if (row_keys.includes(topic_key)) {
             inplace_rerender(topic_key, true);
+            processed_count += 1;
         }
+    }
+    // New conversations from backfilled old messages sort at the end
+    // of the list, beyond the current render offset. Use render() to
+    // efficiently batch-append them in a single DOM operation, rather
+    // than inserting one at a time via insert_rendered_row.
+    //
+    // We can only use render() when the DOM already had all rows up
+    // to the render offset (was_all_rendered), ensuring new items
+    // start right at the offset boundary with no gap.
+    if (processed_count < row_keys.length && was_all_rendered) {
+        topics_widget.render(row_keys.length - processed_count);
     }
     setTimeout(revive_current_focus, 0);
 }
@@ -1262,6 +1294,42 @@ function sort_comparator(a: string, b: string): number {
     return -1;
 }
 
+function channel_sort(a: Row, b: Row): number {
+    if (a.type === b.type) {
+        const a_msg = message_store.get(a.last_msg_id);
+        assert(a_msg !== undefined);
+        const b_msg = message_store.get(b.last_msg_id);
+        assert(b_msg !== undefined);
+
+        if (a_msg.type === "stream") {
+            assert(b_msg.type === "stream");
+            const channel_cmp = sort_comparator(
+                stream_data.get_stream_name_from_id(a_msg.stream_id),
+                stream_data.get_stream_name_from_id(b_msg.stream_id),
+            );
+            if (channel_cmp !== 0) {
+                return channel_cmp;
+            }
+        } else {
+            assert(a_msg.type === "private");
+            assert(b_msg.type === "private");
+            const dm_cmp = sort_comparator(a_msg.display_reply_to, b_msg.display_reply_to);
+            if (dm_cmp !== 0) {
+                return dm_cmp;
+            }
+        }
+        // Secondary sort: always most recent first, regardless of channel
+        // sort direction. list_widget negates the entire return value when
+        // in reverse mode, so we compensate here so that recency always
+        // sorts most-recent-first within a channel.
+        const is_descend = $(".recent-view-channel-sort-header").hasClass("descend");
+        const recency = b.last_msg_id - a.last_msg_id;
+        return is_descend ? -recency : recency;
+    }
+    // if type is not same sort between "private" and "stream"
+    return sort_comparator(a.type, b.type);
+}
+
 function conversation_sort(a: Row, b: Row): number {
     if (a.type === b.type) {
         const a_msg = message_store.get(a.last_msg_id);
@@ -1415,14 +1483,27 @@ function get_list_data_for_widget(): ConversationData[] {
     return [...recent_view_data.get_conversations().values()];
 }
 
+export function update_participants_column_class(): void {
+    if (!page_params.is_node_test) {
+        max_avatars = Number.parseInt($(":root").css("--recent-view-max-avatars"), 10);
+    }
+    $("#recent_view")
+        .removeClass("recent-view-participants-hidden recent-view-participants-3")
+        .addClass(
+            max_avatars === 0
+                ? "recent-view-participants-hidden"
+                : max_avatars === 2
+                  ? "recent-view-participants-3"
+                  : "",
+        );
+}
+
 export function complete_rerender(coming_from_other_views = false): void {
     if (!recent_view_util.is_visible()) {
         return;
     }
 
-    if (!page_params.is_node_test) {
-        max_avatars = Number.parseInt($(":root").css("--recent-view-max-avatars"), 10);
-    }
+    update_participants_column_class();
 
     // Show topics list
     const mapped_topic_values = get_list_data_for_widget();
@@ -1468,6 +1549,7 @@ export function complete_rerender(coming_from_other_views = false): void {
             },
         },
         sort_fields: {
+            channel_sort,
             conversation_sort,
             unread_sort,
             ...list_widget.generic_sort_functions("numeric", ["last_msg_id"]),
@@ -1535,6 +1617,7 @@ export function show(): void {
         is_visible: recent_view_util.is_visible,
         set_visible: recent_view_util.set_visible,
         complete_rerender,
+        update_participants_column_class,
     });
     last_scroll_offset = undefined;
 
@@ -1732,6 +1815,19 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
     // returning true will cause the caller to do
     // preventDefault/stopPropagation; false will let the browser
     // handle the key.
+
+    const is_first_navigation = focus_outline_util.maybe_show_focus_outlines(
+        $("#recent_view"),
+        input_key,
+    );
+
+    if (is_first_navigation && is_table_focused()) {
+        // First navigation keypress after page load / view switch:
+        // just reveal the focus ring on the current row without
+        // moving to a different row.
+        set_table_focus(row_focus, col_focus, true);
+        return true;
+    }
 
     if (input_key === "tab" || input_key === "shift_tab") {
         // Tabbing should be handled by browser but to keep the focus element same

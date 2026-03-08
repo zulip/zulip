@@ -1,6 +1,40 @@
 <div id="organization-settings" data-name="organization-settings" class="settings-section">
     <form class="admin-realm-form org-settings-form">
 
+        <div id="org-billing" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Billing" }}</h3>
+                {{> settings_save_discard_widget section_name="onboarding" show_save_discard_buttons=true }}
+            </div>
+            <div class="organization-settings-parent">
+                {{#if show_two_tier_billing_settings}}
+                {{> settings_checkbox
+                  setting_name="realm_enable_two_tier_billing"
+                  prefix="id_"
+                  is_checked=realm_enable_two_tier_billing
+                  label=admin_settings_label.realm_enable_two_tier_billing
+                  skip_prop_element=true}}
+
+                {{> group_setting_value_pill_input
+                  setting_name="realm_workplace_users_group"
+                  label=group_setting_labels.workplace_users_group}}
+                {{/if}}
+
+                {{#if is_plan_self_hosted}}
+                    {{> group_setting_value_pill_input
+                      setting_name="realm_can_manage_billing_group"
+                      label=group_setting_labels.can_manage_billing_group
+                      help_link="https://zulip.com//help/self-hosted-billing"
+                      }}
+                {{else}}
+                    {{> group_setting_value_pill_input
+                      setting_name="realm_can_manage_billing_group"
+                      label=group_setting_labels.can_manage_billing_group
+                      help_link="/help/zulip-cloud-billing"
+                      }}
+                {{/if}}
+            </div>
+        </div>
         <div id="org-notifications" class="settings-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Automated messages and emails" }}</h3>

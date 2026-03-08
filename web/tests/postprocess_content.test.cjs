@@ -154,9 +154,12 @@ run_test("inline_image_galleries", ({override}) => {
                 "</p>" +
                 "<p>" +
                 '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/900x600.webp">' +
-                "<br>" +
+                "<br>\n" +
                 '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/image-tall.png" src="/user_uploads/thumbnail/path/to/image.png/600x900.webp">' +
-                "</p>",
+                "</p>" +
+                '<p>And here is a gallery in the inline style, with text before the images...<br>\n<img alt="image-01.png" class="inline-image" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/17/k0c4iGRefC2aCr4Jxf6NQdfH/image-01.png" src="/user_uploads/thumbnail/2/17/k0c4iGRefC2aCr4Jxf6NQdfH/image-01.png/840x560.webp"><br>\n<img alt="image-02.png" class="inline-image" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/3f/B0vUyCSpixMgDLG29fKeUkk6/image-02.png" src="/user_uploads/thumbnail/2/3f/B0vUyCSpixMgDLG29fKeUkk6/image-02.png/840x560.webp"><br>\n...and text after (again, line breaks only, no new paragraphs).</p>' +
+                '<p><img alt="square.png" class="inline-image" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/48/mo114lAto6fft973UYWtik2T/square.png" src="/user_uploads/thumbnail/2/48/mo114lAto6fft973UYWtik2T/square.png/840x560.webp"></p>' +
+                '<p><img alt="image-03.png" class="inline-image" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/1e/qsBe-4wztqriUHkB2ukYdauM/image-03.png" src="/user_uploads/thumbnail/2/1e/qsBe-4wztqriUHkB2ukYdauM/image-03.png/840x560.webp"> inline image with trailing text</p>',
         ),
         "<p>Message text</p>" +
             '<div class="message-thumbnail-gallery">' +
@@ -182,7 +185,7 @@ run_test("inline_image_galleries", ({override}) => {
             "<p>" +
             '<span class="message-media-inline-image">' +
             '<a href="/user_uploads/path/to/image-wide.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
-            '<img alt="image" class="inline-image media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" loading="lazy" width="900" height="600" style="width: 15em;">' +
+            '<img alt="image" class="inline-image image-opens-message media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" loading="lazy" width="900" height="600" style="width: 15em;">' +
             "</a>" +
             "</span>" +
             " or " +
@@ -193,7 +196,7 @@ run_test("inline_image_galleries", ({override}) => {
             "</span>" +
             "</p>" +
             "<p>" +
-            '<div class="message-thumbnail-gallery">' +
+            '<span class="message-thumbnail-gallery">' +
             '<span class="message-media-inline-image message-media-gallery-image">' +
             '<a href="/user_uploads/path/to/image-wide.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
             '<img alt="image" class="inline-image media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" loading="lazy" width="900" height="600" style="width: 15em;">' +
@@ -204,8 +207,14 @@ run_test("inline_image_galleries", ({override}) => {
             '<img alt="image" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/image-tall.png" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" loading="lazy" width="600" height="900" style="width: 6.666666666666667em;">' +
             "</a>" +
             "</span>" +
-            "</div>" +
-            "</p>",
+            "</span>\n" +
+            "</p>" +
+            "<p>And here is a gallery in the inline style, with text before the images...\n" +
+            '<span class="message-thumbnail-gallery"><span class="message-media-inline-image message-media-gallery-image"><a href="/user_uploads/2/17/k0c4iGRefC2aCr4Jxf6NQdfH/image-01.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image-01.png"><img alt="image-01.png" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/17/k0c4iGRefC2aCr4Jxf6NQdfH/image-01.png" src="/user_uploads/thumbnail/2/17/k0c4iGRefC2aCr4Jxf6NQdfH/image-01.png/840x560.webp" loading="lazy" width="800" height="800" style="width: 10em;"></a></span><span class="message-media-inline-image message-media-gallery-image"><a href="/user_uploads/2/3f/B0vUyCSpixMgDLG29fKeUkk6/image-02.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image-02.png"><img alt="image-02.png" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/3f/B0vUyCSpixMgDLG29fKeUkk6/image-02.png" src="/user_uploads/thumbnail/2/3f/B0vUyCSpixMgDLG29fKeUkk6/image-02.png/840x560.webp" loading="lazy" width="800" height="800" style="width: 10em;"></a></span></span>\n' +
+            "\n" +
+            "...and text after (again, line breaks only, no new paragraphs).</p>" +
+            '<p><span class="message-thumbnail-gallery"><span class="message-media-inline-image message-media-gallery-image"><a href="/user_uploads/2/48/mo114lAto6fft973UYWtik2T/square.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="square.png"><img alt="square.png" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/48/mo114lAto6fft973UYWtik2T/square.png" src="/user_uploads/thumbnail/2/48/mo114lAto6fft973UYWtik2T/square.png/840x560.webp" loading="lazy" width="800" height="800" style="width: 10em;"></a></span></span></p>' +
+            '<p><span class="message-media-inline-image"><a href="/user_uploads/2/1e/qsBe-4wztqriUHkB2ukYdauM/image-03.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image-03.png"><img alt="image-03.png" class="inline-image image-opens-message media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/1e/qsBe-4wztqriUHkB2ukYdauM/image-03.png" src="/user_uploads/thumbnail/2/1e/qsBe-4wztqriUHkB2ukYdauM/image-03.png/840x560.webp" loading="lazy" width="800" height="800" style="width: 10em;"></a></span> inline image with trailing text</p>',
     );
 });
 
@@ -330,7 +339,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
             "<p>" +
             '<span class="message-media-inline-image">' +
             '<a href="/user_uploads/path/to/image-wide.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
-            '<img alt="image" class="inline-image media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/300x200-anim.webp" data-animated="true" loading="lazy" width="900" height="600" style="width: 15em;">' +
+            '<img alt="image" class="inline-image image-opens-message media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/300x200-anim.webp" data-animated="true" loading="lazy" width="900" height="600" style="width: 15em;">' +
             "</a>" +
             "</span>" +
             " or " +
@@ -367,7 +376,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
             "<p>" +
             '<span class="message-media-inline-image message_inline_animated_image_still">' +
             '<a href="/user_uploads/path/to/image-wide.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
-            '<img alt="image" class="inline-image media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" loading="lazy" width="900" height="600" style="width: 15em;">' +
+            '<img alt="image" class="inline-image image-opens-message media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" loading="lazy" width="900" height="600" style="width: 15em;">' +
             "</a>" +
             "</span>" +
             " or " +
@@ -403,7 +412,7 @@ run_test("message_inline_animated_image_still", ({override}) => {
             "<p>" +
             '<span class="message-media-inline-image message_inline_animated_image_still">' +
             '<a href="/user_uploads/path/to/image-wide.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
-            '<img alt="image" class="inline-image media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" loading="lazy" width="900" height="600" style="width: 15em;">' +
+            '<img alt="image" class="inline-image image-opens-message media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" loading="lazy" width="900" height="600" style="width: 15em;">' +
             "</a>" +
             "</span>" +
             " or " +

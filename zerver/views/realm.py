@@ -53,9 +53,15 @@ from zerver.lib.user_groups import (
     get_group_setting_value_for_api,
     get_system_user_group_by_name,
     parse_group_setting_value,
+    validate_can_manage_all_groups,
     validate_group_setting_value_change,
 )
 from zerver.lib.validator import check_capped_url, check_string
+from zerver.lib.workplace_users import (
+    realm_eligible_for_non_workplace_pricing,
+    realm_on_discounted_cloud_plan,
+    validate_workplace_users_group,
+)
 from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, UserProfile
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import (
@@ -219,6 +225,7 @@ def update_realm(
             max_length=Realm.MAX_REALM_WELCOME_MESSAGE_CUSTOM_TEXT_LENGTH,
         ),
     ] = None,
+    workplace_users_group: Json[GroupSettingChangeRequest] | None = None,
 ) -> HttpResponse:
     # Realm object is being refetched here to make sure that we
     # do not use stale object from cache which can happen when a
@@ -385,6 +392,22 @@ def update_realm(
 
             data["jitsi_server_url"] = jitsi_server_url
 
+    if workplace_users_group is not None:
+        # Remove this when the feature is ready for production.
+        assert settings.DEVELOPMENT
+
+        if not realm_eligible_for_non_workplace_pricing(realm):
+            raise JsonableError(
+                _("Organization is not eligible for discounted pricing for non workplace users.")
+            )
+
+        if realm_on_discounted_cloud_plan(realm):
+            raise JsonableError(
+                _(
+                    "Discounted pricing for workplace users cannot be enabled with current discounted plan."
+                )
+            )
+
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.
     #
@@ -439,6 +462,13 @@ def update_realm(
                     permission_configuration=permission_configuration,
                     current_setting_value=current_value,
                 )
+
+                if setting_name == "workplace_users_group":
+                    validate_workplace_users_group(new_setting_value, realm)
+
+                if setting_name == "can_manage_all_groups":
+                    validate_can_manage_all_groups(new_setting_value, realm)
+
                 do_change_realm_permission_group_setting(
                     realm,
                     setting_name,

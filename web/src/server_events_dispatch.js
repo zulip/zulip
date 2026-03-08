@@ -351,6 +351,7 @@ export function dispatch_normal_event(event) {
                 enable_read_receipts: settings_account.update_send_read_receipts_tooltip,
                 enable_guest_user_dm_warning: compose_validate.warn_if_guest_in_dm_recipient,
                 enable_guest_user_indicator: noop,
+                workplace_users_group: noop,
             };
             switch (event.op) {
                 case "update":
