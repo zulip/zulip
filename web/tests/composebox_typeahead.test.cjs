@@ -1851,6 +1851,30 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     assert.ok(compose_textarea_typeahead_called);
 });
 
+test("get_person_suggestion_for_topic_typeahead excludes deactivated users", ({override}) => {
+    override(pm_conversations, "get_partners", () => []);
+
+    // Deactivated user from participants should be excluded.
+    message_lists.current = {
+        data: {
+            participants: {
+                visible: () => new Set([deactivated_user.user_id]),
+            },
+        },
+    };
+    assert.deepEqual(ct.get_person_suggestion_for_topic_typeahead("deactivated"), []);
+
+    // Deactivated user from DM partners should be excluded.
+    message_lists.current = undefined;
+    override(pm_conversations, "get_partners", () => [deactivated_user.user_id]);
+    assert.deepEqual(ct.get_person_suggestion_for_topic_typeahead("deactivated"), []);
+
+    // Active user from DM partners should be included.
+    override(pm_conversations, "get_partners", () => [lear.user_id]);
+    const results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.ok(results[0].user.user_id === lear.user_id);
+});
+
 test("begins_typeahead", ({override, override_rewire}) => {
     override(stream_topic_history_util, "get_server_history", noop);
 
