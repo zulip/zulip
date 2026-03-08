@@ -990,8 +990,10 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
     return true;
 }
 
-// The function checks whether the recipients are users of the realm or cross realm users (bots
-// for now)
+function set_compose_textarea_disabled(disabled: boolean): void {
+    $("textarea#compose-textarea").prop("disabled", disabled);
+}
+
 export function validate_private_message(show_banner = true): boolean {
     const user_ids = compose_pm_pill.get_user_ids();
     const user_ids_string = util.sorted_ids(user_ids).join(",");
@@ -1015,6 +1017,7 @@ export function validate_private_message(show_banner = true): boolean {
     const direct_message_error_string = check_dm_permissions_and_get_error_string(user_ids_string);
     if (direct_message_error_string) {
         compose_banner.cannot_send_direct_message_error(direct_message_error_string);
+        set_compose_textarea_disabled(true);
         if (is_validating_compose_box) {
             disabled_send_tooltip_message_html = direct_message_error_string;
         }
@@ -1031,6 +1034,7 @@ export function validate_private_message(show_banner = true): boolean {
                 compose_banner.CLASSNAMES.deactivated_user,
                 $banner_container,
             );
+            set_compose_textarea_disabled(true);
 
             if (is_validating_compose_box) {
                 disabled_send_tooltip_message_html = error_message;
@@ -1039,6 +1043,9 @@ export function validate_private_message(show_banner = true): boolean {
         }
     }
 
+    // Re-enable the compose textarea in case it was disabled by a
+    // previous call for an invalid recipient that has since been fixed.
+    set_compose_textarea_disabled(false);
     return true;
 }
 
@@ -1178,6 +1185,9 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
     // Clear previous banners from the previous compose state; the
     // validation checks below will re-add any that are still relevant.
     compose_banner.clear_errors();
+    // Reset compose textarea state; validate_private_message may
+    // disable it if the recipient is invalid.
+    set_compose_textarea_disabled(false);
     const message_content = compose_state.message_content();
     // The validation checks in this function are in a specific priority order. Don't
     // change their order unless you want to change which priority they're shown in.
