@@ -38,6 +38,9 @@ const compose_validate = mock_esm("../src/compose_validate", {
     initialize: noop,
 });
 const input_pill = mock_esm("../src/input_pill");
+const message_util = mock_esm("../src/message_util", {
+    user_can_send_direct_message: () => true,
+});
 const message_user_ids = mock_esm("../src/message_user_ids", {
     user_ids: () => [],
 });
@@ -569,6 +572,26 @@ const full_members = user_group_item(
     }),
 );
 
+const nobody = user_group_item(
+    make_user_group({
+        name: "role:nobody",
+        id: 8,
+        creator_id: null,
+        date_created: 1596710000,
+        description: "Nobody",
+        members: new Set(),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+        can_add_members_group: 2,
+        can_join_group: 2,
+        can_leave_group: 2,
+        can_manage_group: 2,
+        can_mention_group: 2,
+        can_remove_members_group: 2,
+        deactivated: false,
+    }),
+);
+
 const sweden_stream = stream_item(
     make_stream({
         name: "Sweden",
@@ -681,6 +704,7 @@ function test(label, f) {
             server_supported_permission_settings,
         );
         helpers.override(realm, "realm_can_access_all_users_group", members.id);
+        helpers.override(realm, "realm_direct_message_permission_group", members.id);
 
         people.add_active_user(ali);
         people.add_active_user(alice);
@@ -706,6 +730,7 @@ function test(label, f) {
         user_groups.add(admins);
         user_groups.add(members);
         user_groups.add(full_members);
+        user_groups.add(nobody);
 
         muted_users.set_muted_users([]);
 
@@ -1873,6 +1898,26 @@ test("get_person_suggestion_for_topic_typeahead excludes deactivated users", ({o
     override(pm_conversations, "get_partners", () => [lear.user_id]);
     const results = ct.get_person_suggestion_for_topic_typeahead("lear");
     assert.ok(results[0].user.user_id === lear.user_id);
+});
+
+test("get_person_suggestion_for_topic_typeahead respects DM permissions", ({override}) => {
+    override(pm_conversations, "get_partners", () => [lear.user_id]);
+    message_lists.current = {
+        data: {
+            participants: {
+                visible: () => new Set([lear.user_id]),
+            },
+        },
+    };
+
+    // No suggestions when DMs are disabled in the organization.
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+    assert.deepEqual(ct.get_person_suggestion_for_topic_typeahead("lear"), []);
+
+    // User excluded when they cannot receive DMs.
+    override(realm, "realm_direct_message_permission_group", members.id);
+    override(message_util, "user_can_send_direct_message", () => false);
+    assert.deepEqual(ct.get_person_suggestion_for_topic_typeahead("lear"), []);
 });
 
 test("begins_typeahead", ({override, override_rewire}) => {
