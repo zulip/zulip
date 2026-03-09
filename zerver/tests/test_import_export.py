@@ -2251,6 +2251,15 @@ class RealmImportExportTest(ExportFile):
             user_group = NamedUserGroup.objects.get(realm_for_sharding=r, name="hamletcharacters")
             return user_group.can_mention_group.named_user_group.name
 
+        @getter
+        def get_named_user_group_creators(r: Realm) -> dict[str, str | None]:
+            return {
+                group.name: group.creator.delivery_email if group.creator else None
+                for group in NamedUserGroup.objects.filter(
+                    realm_for_sharding=r, is_system_group=False
+                )
+            }
+
         # test botstoragedata and botconfigdata
         @getter
         def get_botstoragedata(r: Realm) -> dict[str, object]:
