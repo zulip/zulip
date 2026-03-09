@@ -79,6 +79,7 @@ export type MessageContainer = {
     timestr: string;
     topic_url?: string;
     want_date_divider: boolean;
+    want_moved_message_divider: boolean;
     want_subscription_status_divider: boolean;
 };
 
@@ -189,6 +190,7 @@ function clear_message_divider(message_container: MessageContainer): void {
     // see update_message_divider for how
     // these get set
     message_container.want_date_divider = false;
+    message_container.want_moved_message_divider = false;
     message_container.want_subscription_status_divider = false;
     message_container.date_divider_html = undefined;
 }
@@ -836,6 +838,7 @@ export class MessageListView {
             let want_date_divider;
             let date_divider_html;
             let want_subscription_status_divider = false;
+            const want_moved_message_divider = message_was_moved_between_streams(message);
             const year_changed = !same_year(message, prev_message_container?.msg);
 
             if (
@@ -890,6 +893,7 @@ export class MessageListView {
                 ...(topic_url && {topic_url}),
                 ...(pm_with_url && {pm_with_url}),
                 want_date_divider,
+                want_moved_message_divider,
                 want_subscription_status_divider,
                 date_divider_html,
                 year_changed,
