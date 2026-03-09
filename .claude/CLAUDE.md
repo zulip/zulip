@@ -203,12 +203,17 @@ Since `git rebase -i` requires an interactive editor, use
    Note: `--autosquash` alone without `-i` does **not** reorder or
    squash anything.
 
-3. **Rewording commit messages:** In the todo script, use `exec` lines:
+3. **Rewording commit messages:** Use `git format-patch` to export
+   commits as patch files, edit the message headers in the patch
+   files, then reapply:
+
+   ```bash
+   git format-patch <base> -o /tmp/patches/
+   # Edit the commit message in each /tmp/patches/000N-*.patch file
+   # (the message is between the Subject: line and the --- line)
+   git reset --hard <base>
+   git am /tmp/patches/*.patch
    ```
-   pick <hash> Original message
-   exec GIT_EDITOR=/path/to/new-msg-script.sh git commit --amend
-   ```
-   where the message script writes the new commit message to `$1`.
 
 ## Testing Requirements
 
