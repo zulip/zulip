@@ -123,6 +123,12 @@ class TestRealmAuditLog(ZulipTestCase):
             # str(key) since json keys are always strings, and ujson.dumps will have converted
             # the UserProfile.role values into strings
             self.assertTrue(isinstance(role_counts[RealmAuditLog.ROLE_COUNT_HUMANS][str(key)], int))
+        self.assertTrue(
+            isinstance(role_counts[RealmAuditLog.ROLE_COUNT_HUMANS]["workplace_users"], int)
+        )
+        self.assertTrue(
+            isinstance(role_counts[RealmAuditLog.ROLE_COUNT_HUMANS]["non_workplace_users"], int)
+        )
         self.assertTrue(isinstance(role_counts[RealmAuditLog.ROLE_COUNT_BOTS], int))
 
     def test_user_activation(self) -> None:

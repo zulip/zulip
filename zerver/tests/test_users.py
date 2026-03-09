@@ -1168,7 +1168,7 @@ class QueryCountTest(ZulipTestCase):
 
         with (
             self.assert_database_query_count(104),
-            self.assert_memcached_count(23),
+            self.assert_memcached_count(24),
             self.capture_send_event_calls(expected_num_events=11) as events,
         ):
             fred = do_create_user(

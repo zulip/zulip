@@ -1071,7 +1071,7 @@ class LoginTest(ZulipTestCase):
         # the alert words for a realm, etc.
         with (
             self.assert_database_query_count(105),
-            self.assert_memcached_count(18),
+            self.assert_memcached_count(19),
             self.captureOnCommitCallbacks(execute=True),
         ):
             self.register(self.nonreg_email("test"), "test")
