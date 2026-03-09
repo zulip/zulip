@@ -1376,6 +1376,15 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     update_model_ids(UserProfile, data, "user_profile")
     if "zerver_usergroup" in data:
         update_model_ids(UserGroup, data, "usergroup")
+        if "zerver_namedusergroup" in data:
+            # The "id" field in zerver_namedusergroup is a duplicate of
+            # usergroup_ptr, and a duplicate of the id key in the corresponding
+            # group in data["zerver_usergroup"].
+            # usergroup_ptr will get properly remapped as a FK later.
+            # Keeping the duplicate id key in the zerver_namedusergroup data
+            # is just a footgun, so we remove it here.
+            for group in data["zerver_namedusergroup"]:
+                del group["id"]
     if "zerver_presencesequence" in data:
         update_model_ids(PresenceSequence, data, "presencesequence")
     if "zerver_channelfolder" in data:
@@ -1442,7 +1451,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
                 )
                 for group in data["zerver_namedusergroup"]:
                     creator_id = group.pop("creator_id", None)
-                    named_user_group_id_to_creator_id[group["id"]] = creator_id
+                    named_user_group_id_to_creator_id[group["usergroup_ptr_id"]] = creator_id
                 for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
                     re_map_foreign_keys(
                         data,
@@ -1556,7 +1565,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         # UserProfiles have been loaded, so now we're ready to set .creator_id
         # for groups based on the mapping we saved earlier.
         named_user_groups = NamedUserGroup.objects.filter(
-            id__in=named_user_group_id_to_creator_id.keys()
+            id__in=named_user_group_id_to_creator_id.keys(), realm_for_sharding=realm
         )
         for group in named_user_groups:
             group.creator_id = named_user_group_id_to_creator_id[group.id]
