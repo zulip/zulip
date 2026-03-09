@@ -83,7 +83,7 @@ PR_CLOSE_ACTION_EMOJI = {
     "closed without merge": ":cross_mark:",
 }
 
-DEPLOYMENT_STATUS_EMOJI = {
+DEPLOYMENT_AND_COMMIT_STATUS_EMOJI = {
     "success": ":check:",
     "failure": ":warning:",
     "error": ":rotating_light:",
@@ -292,7 +292,7 @@ def get_deployment_body(helper: Helper) -> str:
 def get_change_deployment_status_body(helper: Helper) -> str:
     payload = helper.payload
     state = payload["deployment_status"]["state"].tame(check_string)
-    emoji = DEPLOYMENT_STATUS_EMOJI.get(state, "")
+    emoji = DEPLOYMENT_AND_COMMIT_STATUS_EMOJI.get(state, "")
     return f"{emoji} Deployment changed status to {state}."
 
 
@@ -622,17 +622,19 @@ def get_page_build_body(helper: Helper) -> str:
 
 def get_status_body(helper: Helper) -> str:
     payload = helper.payload
+    state = payload["state"].tame(check_string)
     if payload["target_url"]:
-        status = "[{}]({})".format(
-            payload["state"].tame(check_string),
-            payload["target_url"].tame(check_string),
+        status = "[{state}]({target_url})".format(
+            state=state,
+            target_url=payload["target_url"].tame(check_string),
         )
     else:
-        status = payload["state"].tame(check_string)
-    return "[{}]({}) changed its status to {}.".format(
-        get_short_sha(payload["sha"].tame(check_string)),
-        payload["commit"]["html_url"].tame(check_string),
-        status,
+        status = state
+    return "{emoji} [{commit}]({url}) changed its status to {status}.".format(
+        emoji=DEPLOYMENT_AND_COMMIT_STATUS_EMOJI.get(state, ""),
+        commit=get_short_sha(payload["sha"].tame(check_string)),
+        url=payload["commit"]["html_url"].tame(check_string),
+        status=status,
     )
 
 
