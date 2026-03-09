@@ -382,7 +382,8 @@ class CatchUpEndpointTest(ZulipTestCase):
 
     def test_catch_up_endpoint_unauthenticated(self) -> None:
         result = self.client_get("/json/catch-up")
-        self.assert_json_error(result, "Not logged in: API authentication or target user required", 401)
+        #self.assert_json_error(result, "Not logged in: API authentication or target user required", 401)
+        self.assert_json_error(result, "Not logged in: API authentication or user session required", 401)
 
     def test_catch_up_endpoint_no_messages(self) -> None:
         hamlet = self.example_user("hamlet")
