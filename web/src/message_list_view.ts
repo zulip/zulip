@@ -1498,12 +1498,6 @@ export class MessageListView {
 
         restore_scroll_position();
 
-        const last_message_group = this._message_groups.at(-1);
-        if (last_message_group !== undefined) {
-            list.last_message_historical =
-                last_message_group.message_containers.at(-1)!.msg.historical;
-        }
-
         list.update_trailing_bookend();
 
         if (list === message_lists.current) {
@@ -1682,7 +1676,6 @@ export class MessageListView {
         if (clear_table) {
             this.clear_table();
         }
-        this.list.last_message_historical = false;
 
         this._render_win_start = 0;
         this._render_win_end = 0;
