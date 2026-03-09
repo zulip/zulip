@@ -88,6 +88,13 @@ DEPLOYMENT_STATUS_EMOJI = {
     "pending": ":time_ticking:",
 }
 
+STATUS_EMOJI = {
+    "success": ":check:",
+    "failure": ":warning:",
+    "error": ":rotating_light:",
+    "pending": ":time_ticking:",
+}
+
 
 class Helper:
     def __init__(
@@ -620,6 +627,7 @@ def get_page_build_body(helper: Helper) -> str:
 
 def get_status_body(helper: Helper) -> str:
     payload = helper.payload
+    emoji = STATUS_EMOJI.get(payload["state"].tame(check_string), "")
     if payload["target_url"]:
         status = "[{}]({})".format(
             payload["state"].tame(check_string),
@@ -627,7 +635,8 @@ def get_status_body(helper: Helper) -> str:
         )
     else:
         status = payload["state"].tame(check_string)
-    return "[{}]({}) changed its status to {}.".format(
+    return "{} [{}]({}) changed its status to {}.".format(
+        emoji,
         get_short_sha(payload["sha"].tame(check_string)),
         payload["commit"]["html_url"].tame(check_string),
         status,
