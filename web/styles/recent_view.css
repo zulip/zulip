@@ -624,12 +624,6 @@
         .recent-view-participants-header {
             display: none;
         }
-
-        /* Increase space for time column. */
-        .recent_topic_timestamp,
-        .recent-view-last-msg-time-header {
-            width: 25%;
-        }
     }
 
     .recent-view-participants-header .recent-view-header-wrapper {
@@ -641,7 +635,13 @@
 
     .recent_topic_timestamp,
     .recent-view-last-msg-time-header {
-        width: 20%;
+        /* Time text width is measured from JS and set as
+           --recent-view-time-text-width. Add the visibility
+           icon width (1em), cell padding (2 × 0.5em), and space
+           for the icon's focus outline (0.5em). Falls back to
+           25% before JS has set the variable. */
+        width: 25%;
+        width: calc(var(--recent-view-time-text-width) + 2.5em);
     }
 
     .recent_topic_name {
@@ -829,13 +829,8 @@
 }
 
 #recent_view .recent_topic_timestamp .flex_container {
+    /* Push the visibility icon to the right edge of the cell. */
     justify-content: space-between;
-
-    /* To avoid time text from wrapping, keep extra margin
-       as small as possible. */
-    .recent_topic_actions {
-        margin-right: 0.125em; /* 2px at 16px/1em */
-    }
 }
 
 .recent-view-unread-mention-and-count-wrapper {

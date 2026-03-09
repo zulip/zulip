@@ -1505,6 +1505,29 @@ function get_list_data_for_widget(): ConversationData[] {
     return [...recent_view_data.get_conversations().values()];
 }
 
+function set_time_column_width_css_variable(): void {
+    if (page_params.is_node_test) {
+        return;
+    }
+    // Measure representative localized time strings to find the
+    // longest one. These cover all formats used by
+    // timerender.relative_time_string_from_date().
+    const candidate_strings = [
+        $t({defaultMessage: "Just now"}),
+        $t({defaultMessage: "{minutes} min ago"}, {minutes: 59}),
+        $t({defaultMessage: "An hour ago"}),
+        $t({defaultMessage: "{hours} hours ago"}, {hours: 23}),
+        $t({defaultMessage: "Yesterday"}),
+        $t({defaultMessage: "{days_old} days ago"}, {days_old: 89}),
+        // Localized short date with year, using a 2-digit day for
+        // maximum width (e.g., "Sep 28, 2000").
+        timerender.get_localized_date_or_time_for_format(new Date(2000, 8, 28), "dayofyear_year"),
+    ];
+    const max_width = util.max_text_content_width(candidate_strings);
+    // The icon and padding space is added via calc() in CSS.
+    $(":root").css("--recent-view-time-text-width", `${Math.ceil(max_width)}px`);
+}
+
 export function update_participants_column_class(): void {
     if (!page_params.is_node_test) {
         max_avatars = Number.parseInt($(":root").css("--recent-view-max-avatars"), 10);
@@ -1526,6 +1549,7 @@ export function complete_rerender(coming_from_other_views = false): void {
     }
 
     update_participants_column_class();
+    set_time_column_width_css_variable();
 
     // Show topics list
     const mapped_topic_values = get_list_data_for_widget();
