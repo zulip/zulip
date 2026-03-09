@@ -143,6 +143,8 @@ coherent idea."** This is non-negotiable.
 - Mix multiple separable changes in a single commit.
 - Create a commit that "fixes" a mistake from an earlier commit in the same PR;
   always edit Git to fix the original commit.
+- Add content in one commit only to remove or move it in the next;
+  plan upfront what belongs where and do it right the first time.
 - Include debugging code, commented-out code, or temporary TODOs.
 
 ### Commit Message Format
