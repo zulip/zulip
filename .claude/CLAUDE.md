@@ -500,9 +500,13 @@ See `docs/documentation/helpcenter.md` for the full writing guide. Key points:
 - Do not use "we" to refer to Zulip; use "you" for the reader.
 - Fewer words is better; many users have English as a second language.
 - Use `<kbd>Enter</kbd>` for keyboard keys (non-Mac; auto-translated for Mac).
+- Use `FlattenedList` to merge adjacent bullet lists (inline markdown
+  and/or include components) into a single visual list. Use
+  `FlattenedSteps` for the same purpose with ordered (numbered) lists.
 - Common components and their imports:
   ```
   import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+  import FlattenedList from "../../components/FlattenedList.astro";
   import FlattenedSteps from "../../components/FlattenedSteps.astro";
   import NavigationSteps from "../../components/NavigationSteps.astro";
   import ZulipTip from "../../components/ZulipTip.astro";
