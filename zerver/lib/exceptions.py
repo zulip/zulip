@@ -162,7 +162,7 @@ class UnauthorizedError(JsonableError):
 
     def __init__(self, msg: str | None = None, www_authenticate: str | None = None) -> None:
         if msg is None:
-            msg = _("Not logged in: API authentication or user session required")
+            msg = _("Not logged in: API authentication or target user required")
         super().__init__(msg)
         if www_authenticate is None:
             self.www_authenticate = 'Basic realm="zulip"'
