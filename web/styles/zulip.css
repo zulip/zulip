@@ -2254,6 +2254,8 @@ body:not(.spectator-view) {
 
     .dropdown-list .dropdown-list-item-common-styles {
         display: grid;
+        min-height: 34px;
+        align-content: center;
         grid-template:
             "privacy-icon     item-label       " min-content
             "item-description item-description" minmax(0, min-content) / minmax(
@@ -2262,7 +2264,7 @@ body:not(.spectator-view) {
             )
             minmax(0, 1fr);
         color: var(--color-dropdown-item);
-        padding: 3px 10px 3px 8px;
+        padding: 3px 10px 3px 12px;
         font-weight: 400;
         white-space: normal;
         /* Keep the line-height stable, instead of using the
