@@ -37,6 +37,7 @@ function MessageListView() {
         prepend: noop,
         clear_rendering_state: noop,
         is_current_message_list: () => true,
+        get_boundary_message_info_with_meaningful_historical: () => undefined,
     };
 }
 mock_esm("../src/message_list_view", {
@@ -389,7 +390,14 @@ run_test("bookend", ({override}) => {
         assert.equal(bookend.just_unsubscribed, false);
     }
 
-    list.last_message_historical = false;
+    list.view.get_boundary_message_info_with_meaningful_historical = () => ({
+        message_container: {
+            msg: {
+                historical: false,
+            },
+        },
+    });
+
     is_subscribed = false;
 
     {
@@ -411,7 +419,14 @@ run_test("bookend", ({override}) => {
         assert.equal(bookend.just_unsubscribed, false);
     }
 
-    list.last_message_historical = false;
+    list.view.get_boundary_message_info_with_meaningful_historical = () => ({
+        message_container: {
+            msg: {
+                historical: false,
+            },
+        },
+    });
+
     is_subscribed = false;
     list.empty = () => false;
 
@@ -456,7 +471,37 @@ run_test("bookend", ({override}) => {
         assert.equal(bookend.just_unsubscribed, true);
     }
 
-    list.last_message_historical = true;
+    list.view.get_boundary_message_info_with_meaningful_historical = () => ({
+        message_container: {
+            msg: {
+                historical: true,
+            },
+        },
+    });
+
+    {
+        const stub = make_stub();
+        list.view.render_trailing_bookend = stub.f;
+        list.update_trailing_bookend();
+        assert.equal(stub.num_calls, 1);
+        const bookend = stub.get_args(
+            "stream_id",
+            "stream_name",
+            "subscribed",
+            "deactivated",
+            "just_unsubscribed",
+        );
+        assert.equal(bookend.stream_id, 5);
+        assert.equal(bookend.stream_name, "IceCream");
+        assert.equal(bookend.subscribed, false);
+        assert.equal(bookend.deactivated, false);
+        assert.equal(bookend.just_unsubscribed, false);
+    }
+
+    // When no rendered message has a meaningful `historical` flag
+    // (e.g., they were all moved from another channel), we don't know
+    // whether the user just unsubscribed, so we don't claim they did.
+    list.view.get_boundary_message_info_with_meaningful_historical = () => undefined;
 
     {
         const stub = make_stub();
