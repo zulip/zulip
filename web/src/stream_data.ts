@@ -1348,33 +1348,10 @@ export function get_streams_for_move_messages_widget(): (dropdown_widget.Option 
         }));
 }
 
-function longest_subscribed_channel_name_width(): number {
-    let longest_channel_name_width = 0;
-    const $measure_div = $("<div>").css({
-        position: "absolute",
-        visibility: "hidden",
-        whiteSpace: "nowrap",
-        left: "-9999px",
-        top: "0",
-    });
-    $("body").append($measure_div);
-
-    for (const channel_name of subscribed_streams()) {
-        $measure_div.text(channel_name);
-        const width = $measure_div.get(0)!.getBoundingClientRect().width;
-        if (width > longest_channel_name_width) {
-            longest_channel_name_width = width;
-        }
-    }
-
-    $measure_div.remove();
-    return longest_channel_name_width;
-}
-
 export let set_max_channel_width_css_variable = async (): Promise<void> => {
     // Return a promise to avoid blocking main thread.
     const promise = new Promise<void>((resolve) => {
-        const length = longest_subscribed_channel_name_width();
+        const length = util.max_text_content_width([...subscribed_streams()]);
         $(":root").css("--longest-subscribed-channel-name-width", `${length}px`);
         resolve();
     });

@@ -23,6 +23,7 @@ const stream_data = zrequire("stream_data");
 const hash_util = zrequire("hash_util");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_settings_data = zrequire("stream_settings_data");
+const util = zrequire("util");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
@@ -2561,7 +2562,7 @@ run_test("can_use_empty_topic", ({override}) => {
     assert.equal(stream_data.can_use_empty_topic(scotland.stream_id), false);
 });
 
-test("set_max_channel_width_css_variable", async () => {
+test("set_max_channel_width_css_variable", async ({override_rewire}) => {
     const stream = {
         subscribed: true,
         color: "blue",
@@ -2576,11 +2577,16 @@ test("set_max_channel_width_css_variable", async () => {
     };
     stream_data.add_sub_for_tests(stream);
 
-    const $measure_div = $("<div>");
     const $root = $(":root");
 
-    $measure_div[0].getBoundingClientRect = () => ({width: $measure_div.text().length});
-    $measure_div[0].remove = () => {};
+    override_rewire(util, "max_text_content_width", (candidates) => {
+        // Return the length of the longest candidate string.
+        let max_len = 0;
+        for (const s of candidates) {
+            max_len = Math.max(max_len, s.length);
+        }
+        return max_len;
+    });
 
     await stream_data.set_max_channel_width_css_variable();
 
