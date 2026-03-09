@@ -402,20 +402,19 @@ async function test_alert_words_section(page: Page): Promise<void> {
     await test_alert_word_deletion(page, word);
 }
 
-async function change_language(page: Page, language_data_code: string): Promise<void> {
+async function change_language_and_reload(page: Page, language_data_code: string): Promise<void> {
     await page.waitForSelector("#default_language_widget", {
         visible: true,
     });
     await page.click("#default_language_widget");
     await page.waitForSelector(".dropdown-list", {visible: true});
     const language_selector = `li[data-unique-id="${CSS.escape(language_data_code)}"]`;
-    await page.click(language_selector);
-}
-
-async function check_language_setting_status(page: Page): Promise<void> {
-    await page.waitForSelector("#user-preferences .general-settings-status .reload_link", {
-        visible: true,
-    });
+    // Register the navigation listener before clicking to avoid a race
+    // condition where the page reloads before waitForNavigation is called.
+    await Promise.all([
+        page.waitForNavigation({waitUntil: "networkidle0"}),
+        page.click(language_selector),
+    ]);
 }
 
 async function assert_language_changed_to_chinese(page: Page): Promise<void> {
@@ -449,29 +448,16 @@ async function test_default_language_setting(page: Page): Promise<void> {
     await page.click(preferences_section);
 
     const chinese_language_data_code = "zh-hans";
-    await change_language(page, chinese_language_data_code);
-    // Check that the saved indicator appears
-    await check_language_setting_status(page);
-    await page.click(".reload_link");
-    await page.waitForSelector("#default_language_widget", {
-        visible: true,
-    });
+    await change_language_and_reload(page, chinese_language_data_code);
     await assert_language_changed_to_chinese(page);
     await test_i18n_language_precedence(page);
     await page.waitForSelector(preferences_section, {visible: true});
     await page.click(preferences_section);
 
     // Change the language back to English so that subsequent tests pass.
-    await change_language(page, "en");
-
-    // Check that the saved indicator appears
-    await check_language_setting_status(page);
-    await page.goto("http://zulip.zulipdev.com:9981/#settings"); // get back to normal language.
+    await change_language_and_reload(page, "en");
     await page.waitForSelector(preferences_section, {visible: true});
     await page.click(preferences_section);
-    await page.waitForSelector("#user-preferences .general-settings-status", {
-        visible: true,
-    });
     await page.waitForSelector("#default_language_widget", {
         visible: true,
     });
