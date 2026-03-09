@@ -66,7 +66,7 @@ def get_last_active_time(user_profile: UserProfile) -> datetime:
     """
     # TODO: Remove this override after testing.
     # Force 24h lookback for development testing.
-    return timezone_now() - timedelta(hours=24)
+    #return timezone_now() - timedelta(hours=24)
 
     # Try presence data first.
     try:
@@ -85,6 +85,10 @@ def get_last_active_time(user_profile: UserProfile) -> datetime:
 
     # Default: assume the user was last active DEFAULT_INACTIVITY_THRESHOLD_HOURS ago.
     return timezone_now() - timedelta(hours=DEFAULT_INACTIVITY_THRESHOLD_HOURS)
+
+    # Suggestion: new user protection; Use date_joined if they are newer than the given threshold.
+    # We don't give summaries of old messages for new summaries. If approved, we need to add 2 tests to ensure that new users only see new messages: 1 has eligible messages before user joined. 
+    #return max(user_profile.date_joined, timezone_now() - timedelta(hours=DEFAULT_INACTIVITY_THRESHOLD_HOURS))
 
 
 def clamp_since_time(since: datetime) -> datetime:
@@ -135,6 +139,11 @@ class CatchUpTopic:
 
         # Sender diversity: more people talking = more important.
         s += self.sender_count * WEIGHT_SENDER_DIVERSITY
+
+
+        # the current sender diversity logic assigns equal weighting for any number of senders
+        # we could assign a stronger weight for more than 2 people talking
+        # s += (self.sender_count * WEIGHT_SENDER_DIVERSITY) * 1.5 if sender_count > 3 else 1 
 
         # Message volume.
         s += self.message_count * WEIGHT_MESSAGE_COUNT
@@ -260,8 +269,10 @@ def get_catch_up_messages(
         Message.objects.filter(
             realm_id=user_profile.realm_id,
             recipient_id__in=recipient_ids,
-            date_sent__gt=since,
-            is_channel_message=True,
+            #date_sent__gt=since,
+            date_sent__gt=clamp_since_time(since),
+            # added: use our clamping function, can make a test for this
+            is_channel_message=True
         )
         .order_by("id")
         .select_related("sender")[:MAX_CATCH_UP_MESSAGES]
