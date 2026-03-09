@@ -43,7 +43,7 @@ MAX_MESSAGES_PER_FETCH = 5000
 # These are stripped before highlight_string applies match positions,
 # because match positions come from ts_locs_array which operates on
 # span-stripped content, matching the search_tsvector formula.
-_PYGMENTS_SPAN_RE = re.compile(r"</?span[^>]*>")
+_PYGMENTS_SPAN_RE = re.compile(r'<span class="[a-z]{1,3}">([^<]*)</span>')
 
 
 def highlight_string(text: str, locs: Iterable[tuple[int, int]]) -> str:
@@ -302,7 +302,7 @@ def get_messages_backend(
             for row in rows:
                 message_id = row[0]
                 (escaped_topic_name, rendered_content, content_matches, topic_matches) = row[-4:]
-                stripped_content = _PYGMENTS_SPAN_RE.sub("", rendered_content)
+                stripped_content = _PYGMENTS_SPAN_RE.sub(r"\1", rendered_content)
                 search_fields[message_id] = get_search_fields(
                     stripped_content, escaped_topic_name, content_matches, topic_matches
                 )

@@ -763,8 +763,8 @@ class NarrowBuilder:
         # see process_fts_updates
         stripped_content = func.regexp_replace(
             column("rendered_content", Text),
-            literal("</?span[^>]*>"),
-            literal(""),
+            literal('<span class="[a-z]{1,3}">([^<]*)</span>'),
+            literal(r"\1"),
             literal("g"),
             type_=Text,
         )
@@ -786,8 +786,8 @@ class NarrowBuilder:
         # so, ts_headline must operate on the same text
         stripped_content = func.regexp_replace(
             column("rendered_content", Text),
-            literal("</?span[^>]*>"),
-            literal(""),
+            literal('<span class="[a-z]{1,3}">([^<]*)</span>'),
+            literal(r"\1"),
             literal("g"),
             type_=Text,
         )

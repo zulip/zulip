@@ -15,10 +15,12 @@ class Command(ZulipBaseCommand):
                 UPDATE zerver_message
                 SET search_tsvector =
                 to_tsvector('zulip.english_us_search',
-                    subject || regexp_replace(rendered_content, '</?span[^>]*>', '', 'g'))
+                    subject || regexp_replace(rendered_content,
+                        '<span class="[a-z]{1,3}">([^<]*)</span>', '\1', 'g'))
                 WHERE to_tsvector('zulip.english_us_search',
-                    subject || regexp_replace(rendered_content, '</?span[^>]*>', '', 'g')) != search_tsvector
-            """
+                    subject || regexp_replace(rendered_content,
+                        '<span class="[a-z]{1,3}">([^<]*)</span>', '\1', 'g')) != search_tsvector
+                """
             )
 
             fixed_message_count = cursor.rowcount
