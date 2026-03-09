@@ -153,3 +153,60 @@ test("should_show_server_upgrade_banner", ({override}) => {
     override(Date, "now", () => addDays(start_time, 8).getTime()); // Thursday 1/9/2024 10:00:00 AM (UTC+0)
     assert.equal(navbar_alerts.should_show_server_upgrade_banner(ls), true);
 });
+
+test("should_show_upload_quota_limit_banner", ({override}) => {
+    const ls = localstorage();
+
+    // Show upload quota limit banner when following conditions are suitable:
+    // - The user is not a spectator.
+    // - The upload quota limit is defined for the realm.
+    // - For admins, the used upload quota percentage is >= 90%.
+    // - For non-admins, the used upload quota percentage is >= 95%.
+    // - The user has not dismissed the banner in the last 7 days.
+    override(page_params, "is_spectator", false);
+    override(realm, "realm_upload_quota_mib", 5120); // 5 GiB
+    override(current_user, "is_admin", true);
+    override(realm, "realm_upload_quota_used_bytes", 1024 * 1024 * 4608); // 4.5 GiB (90% of 5 GiB)
+    assert.equal(navbar_alerts.should_show_upload_quota_limit_banner(ls), true);
+
+    // Don't show banner if user is a spectator.
+    override(page_params, "is_spectator", true);
+    assert.equal(navbar_alerts.should_show_upload_quota_limit_banner(ls), false);
+    override(page_params, "is_spectator", false);
+
+    // Don't show banner if upload quota limit is not defined for the realm.
+    override(realm, "realm_upload_quota_mib", null);
+    assert.equal(navbar_alerts.should_show_upload_quota_limit_banner(ls), false);
+    override(realm, "realm_upload_quota_mib", 5120); // 5 GiB
+
+    // For admins, show the banner if the used upload quota percentage is >= 90%.
+    override(current_user, "is_admin", true);
+    override(realm, "realm_upload_quota_used_bytes", 1024 * 1024 * 4352); // 4.25 GiB (85% of 5 GiB)
+    assert.equal(navbar_alerts.should_show_upload_quota_limit_banner(ls), false);
+    override(realm, "realm_upload_quota_used_bytes", 1024 * 1024 * 4608); // 4.5 GiB (90% of 5 GiB)
+    assert.equal(navbar_alerts.should_show_upload_quota_limit_banner(ls), true);
+
+    // For non-admins, show the banner if the used upload quota percentage is >= 95%.
+    override(current_user, "is_admin", false);
+    override(realm, "realm_upload_quota_used_bytes", 1024 * 1024 * 4608); // 4.5 GiB (90% of 5 GiB)
+    assert.equal(navbar_alerts.should_show_upload_quota_limit_banner(ls), false);
+    override(realm, "realm_upload_quota_used_bytes", 1024 * 1024 * 4864); // 4.75 GiB (95% of 5 GiB)
+    assert.equal(navbar_alerts.should_show_upload_quota_limit_banner(ls), true);
+
+    // Set the initial date, which will be stored in localstorage as upload_quota_limit_banner_dismissal_time.
+    const start_time = new Date("2024-01-01T10:00:00.000Z"); // Wednesday 1/1/2024 10:00:00 AM (UTC+0)
+    override(Date, "now", () => start_time.getTime());
+    ls.set("upload_quota_limit_banner_dismissal_time", undefined);
+    assert.equal(navbar_alerts.should_show_upload_quota_limit_banner(ls), true);
+    navbar_alerts.set_upload_quota_limit_banner_dismissal_time(ls);
+
+    // Don't show the banner if the date is within 7 days (one week) of the dismissal time,
+    // even if the used upload quota percentage is above the threshold.
+    override(Date, "now", () => addDays(start_time, 7).getTime()); // Wednesday 1/8/2024 10:00:00 AM (UTC+0)
+    assert.equal(navbar_alerts.should_show_upload_quota_limit_banner(ls), false);
+
+    // Show the banner if the date is more than 7 days (one week) from the dismissal time
+    // and the used upload quota percentage is above the threshold.
+    override(Date, "now", () => addDays(start_time, 8).getTime()); // Thursday 1/9/2024 10:00:00 AM (UTC+0)
+    assert.equal(navbar_alerts.should_show_upload_quota_limit_banner(ls), true);
+});

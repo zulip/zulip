@@ -67,6 +67,22 @@ export function percentage_used_space(uploads_size: number): string | null {
     return ((100 * uploads_size) / mib_to_bytes(realm.realm_upload_quota_mib)).toFixed(1);
 }
 
+export function get_realm_used_upload_quota_percentage(): number | null {
+    if (realm.realm_upload_quota_mib === null) {
+        return null;
+    }
+
+    return (100 * realm.realm_upload_quota_used_bytes) / mib_to_bytes(realm.realm_upload_quota_mib);
+}
+
+export function get_realm_upload_quota_size(): string | null {
+    if (realm.realm_upload_quota_mib === null) {
+        return null;
+    }
+
+    return bytes_to_size(mib_to_bytes(realm.realm_upload_quota_mib), true);
+}
+
 function set_upload_space_stats(): void {
     if (realm.realm_upload_quota_mib === null) {
         return;
