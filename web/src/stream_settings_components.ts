@@ -37,7 +37,7 @@ export let archived_status_filter_dropdown_widget: DropdownWidget;
 export let channel_creation_privacy_widget: DropdownWidget;
 let folder_filter_dropdown_widget: DropdownWidget;
 
-function set_visibility_for_archive_and_unarchive_buttons(sub: StreamSubscription): void {
+function set_visibility_for_stream_title_buttons(sub: StreamSubscription): void {
     // This is for the Archive/Unarchive button in the right panel.
     const $archive_button = $(
         `.stream-title-buttons[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .deactivate`,
@@ -78,7 +78,7 @@ export function set_right_panel_title(sub: StreamSubscription): void {
             }),
         )
         .toggleClass("new-channel-members-title", false);
-    set_visibility_for_archive_and_unarchive_buttons(sub);
+    set_visibility_for_stream_title_buttons(sub);
 }
 
 export const show_subs_pane = {

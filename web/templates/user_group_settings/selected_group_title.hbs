@@ -6,7 +6,10 @@
         <span class="selected-group-name" data-tippy-content="{{group_name}}">{{group_name}}</span>
     </span>
     {{#unless is_system_group}}
-        <div class="button-group selected-group-buttons" data-group-id="{{group_id}}">
+    <div class="button-group selected-group-buttons" data-group-id="{{group_id}}">
+        <div class="left-end button-group">
+        </div>
+        <div class="right-end button-group">
             <div class="join_leave_button_wrapper inline-block">
                 {{#if is_direct_member}}
                 {{> ../components/action_button label=(t "Leave group") custom_classes="join_leave_button" type="button"
@@ -21,5 +24,6 @@
             {{> ../components/icon_button icon="user-group-plus" intent="success" custom_classes="reactivate-group-button reactivate tippy-zulip-delayed-tooltip"
               data-tippy-content=(t 'Reactivate group') }}
         </div>
+    </div>
     {{/unless}}
 </div>

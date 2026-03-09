@@ -487,17 +487,30 @@ h4.user_group_setting_subsection_title {
                 width: unset;
             }
 
+            /* The right pane header/title for user group and channel setting menu has
+               two major components, The group/channel name section and the button groups. */
             .selected-group-title,
             .selected-stream-title {
                 display: flex;
                 width: 100%;
-                justify-content: space-between;
 
                 .selected-stream,
                 .selected-group {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
+                }
+
+                /* These contain two button groups, the left group should stick to the
+                   right side of the group/channel title name, and the right group that
+                   should stick to the rightmost side of the right pane header. */
+                .selected-group-buttons,
+                .stream-title-buttons {
+                    display: flex;
+                    justify-content: space-between;
+                    /* Make the button groups stretch and take the rest of the right pane
+                       header */
+                    flex-grow: 1;
                 }
 
                 .button-group {
