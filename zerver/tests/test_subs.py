@@ -1518,6 +1518,10 @@ class StreamAdminTest(ZulipTestCase):
                 {"is_private": orjson.dumps(False).decode()},
                 f"@_**Desdemona|{desdemona.id}** changed the [access permissions]",
             ),
+            (
+                {"topics_policy": StreamTopicsPolicyEnum.allow_empty_topic.name},
+                f'@_**Desdemona|{desdemona.id}** changed the "Allow posting to the *general chat* topic?" setting',
+            ),
         ]
 
         for param, notice in param_to_notice_list:
