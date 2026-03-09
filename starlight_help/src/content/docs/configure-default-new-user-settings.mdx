@@ -2,9 +2,11 @@
 title: Configure default settings for new users
 ---
 
+import FlattenedList from "../../components/FlattenedList.astro";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import AdminOnly from "../include/_AdminOnly.mdx";
+import DefaultUserSettingsList from "../include/_DefaultUserSettingsList.mdx";
 import SaveChanges from "../include/_SaveChanges.mdx";
 
 <AdminOnly />
@@ -19,30 +21,16 @@ users will be able to customize their own settings once they
 join. Administrators can customize defaults for all personal
 preference settings, including the following:
 
-* Privacy settings:
-  * Displaying [availability](/help/status-and-availability) to other users
-  * Allowing others to see when the user has [read
-    messages](/help/read-receipts)
-  * Allowing others to see when the user is [typing a
-    message](/help/typing-notifications)
-* Preferences:
-  * [Language](/help/change-your-language)
-  * [Time format](/help/change-the-time-format)
-  * [Light theme vs. dark theme](/help/dark-theme)
-  * [Font size](/help/font-size)
-  * [Line spacing](/help/line-spacing)
-  * [Emoji theme](/help/emoji-and-emoticons#change-your-emoji-set)
-  * [Home view](/help/configure-home-view)
-    ([**Inbox**](/help/inbox) vs.
-    [**Recent conversations**](/help/recent-conversations) vs.
-    [**Combined feed**](/help/reading-strategies#combined-feed))
-* Notification settings:
-  * What types of messages [trigger notifications][default-notifications]
-  * Which topics users will [automatically follow](/help/follow-a-topic). This
-    minimizes the need to [mention](/help/mention-a-user-or-group) other users
-    to get their attention.
+<FlattenedList>
+  * Privacy settings:
+    * Displaying [availability](/help/status-and-availability) to other users
+    * Allowing others to see when the user has [read
+      messages](/help/read-receipts)
+    * Allowing others to see when the user is [typing a
+      message](/help/typing-notifications)
 
-[default-notifications]: /help/channel-notifications#configure-default-notifications-for-all-channels
+  <DefaultUserSettingsList />
+</FlattenedList>
 
 ## Configure default settings for new users
 
