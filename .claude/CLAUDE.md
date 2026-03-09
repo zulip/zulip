@@ -494,8 +494,9 @@ a sidebar entry in `starlight_help/astro.config.mjs`.
 See `docs/documentation/helpcenter.md` for the full writing guide. Key points:
 
 - **Bold** UI element names (e.g., **Settings** page, **Save changes** button).
-- Do not specify default values or list out options in instructions — the user
-  can see them in the UI.
+- Do not specify default values or list out options — the user can see
+  them in the UI. For dropdowns, refer to the setting by its label name
+  rather than enumerating the choices.
 - Do not use "we" to refer to Zulip; use "you" for the reader.
 - Fewer words is better; many users have English as a second language.
 - Use `<kbd>Enter</kbd>` for keyboard keys (non-Mac; auto-translated for Mac).
