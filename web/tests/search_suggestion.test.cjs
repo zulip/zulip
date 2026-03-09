@@ -819,6 +819,21 @@ test("topic_suggestions", ({override, override_rewire}) => {
         "channel:6 topic:tower",
     ];
     assert.deepEqual(suggestions, expected);
+
+    // This is the case where the last term's
+    // operand is not a stringified channel id.
+    // We avoid suggesting topics in this case.
+    suggestions = get_suggestions("channel:foobar");
+    expected = [];
+    assert.deepEqual(suggestions, expected);
+
+    // We shouldn't see topic suggestions for the case
+    // where the last term is a channel with an operand
+    // that couldn't be converted to a string id by the
+    // Filter.parse step.
+    suggestions = get_suggestions("hello channel:foobar");
+    expected = [];
+    assert.deepEqual(suggestions, expected);
 });
 
 test("topic_suggestions (limits)", () => {

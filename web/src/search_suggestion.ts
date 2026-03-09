@@ -519,7 +519,11 @@ function get_topic_suggestions(
 
     const operand = last.operand;
     const negated = last.operator === "topic" && last.negated;
-    let channel_id_str: string | undefined;
+    // For the case where the channel operator is the last
+    // term, the operand may just be a string and is not
+    // guaranteed to always be a channel id in a string format.
+    // We use a name that represents this .
+    let channel_id_or_operand_str: string | undefined;
     let guess: string | undefined;
     const filter = new Filter(terms);
 
@@ -528,6 +532,7 @@ function get_topic_suggestions(
     // channel:Rome f -> show all Rome topics with a word starting in f
     // channel:Rome topic:f -> show all Rome topics with a word starting in f
     // channel:Rome topic:f -> show all Rome topics with a word starting in f
+    // channel:NonExistentChannel -> no topic suggestions.
 
     // When narrowed to a channel:
     //   topic: -> show topics from all subscribed channels with the current channel's
@@ -544,22 +549,23 @@ function get_topic_suggestions(
     switch (last.operator) {
         case "channel":
             guess = "";
-            channel_id_str = operand;
+            channel_id_or_operand_str = operand;
             break;
         case "topic":
         case "search":
             guess = operand;
             if (filter.has_operator("channel")) {
-                channel_id_str = filter.terms_with_operator("channel")[0]!.operand;
+                channel_id_or_operand_str = filter.terms_with_operator("channel")[0]!.operand;
                 // We want to show topics that belong only to the
                 // channel mentioned in the `channel` operator, if it exists.
                 show_topics_from_other_channels = false;
             } else {
-                channel_id_str = narrow_state.stream_id()?.toString();
+                channel_id_or_operand_str = narrow_state.stream_id()?.toString();
             }
             break;
     }
-    if (!channel_id_str && !show_topics_from_other_channels) {
+
+    if (!channel_id_or_operand_str && !show_topics_from_other_channels) {
         return [];
     }
 
@@ -571,10 +577,16 @@ function get_topic_suggestions(
     );
 
     const current_channel_topic_entries: ChannelTopicEntry[] = [];
-    if (channel_id_str && !excluded_channel_ids.has(channel_id_str)) {
+    if (channel_id_or_operand_str && !excluded_channel_ids.has(channel_id_or_operand_str)) {
         // We do this outside the stream_data.subscribed_stream_ids loop,
         // since we could be viewing a channel we can't read.
-        const sub = stream_data.get_sub_by_id_string(channel_id_str)!;
+        const sub = stream_data.get_sub_by_id_string(channel_id_or_operand_str);
+        if (sub === undefined && last.operator === "channel") {
+            // Since the channel_id_or_operand_str is not a
+            // valid channel id we avoid sending any topic
+            // suggestions for a channel as the last term.
+            return [];
+        }
         if (sub && stream_data.can_access_topic_history(sub)) {
             const current_channel_id = sub.stream_id;
             stream_topic_history_util.get_server_history(current_channel_id, () => {
@@ -585,7 +597,7 @@ function get_topic_suggestions(
             });
 
             for (const topic of stream_topic_history.get_recent_topic_names(current_channel_id)) {
-                current_channel_topic_entries.push({channel_id: channel_id_str, topic});
+                current_channel_topic_entries.push({channel_id: channel_id_or_operand_str, topic});
             }
         }
     }
@@ -593,7 +605,7 @@ function get_topic_suggestions(
     const other_channel_topic_entries: ChannelTopicEntry[] = [];
     for (const subscribed_channel_id of stream_data.subscribed_stream_ids()) {
         if (
-            subscribed_channel_id.toString() === channel_id_str ||
+            subscribed_channel_id.toString() === channel_id_or_operand_str ||
             excluded_channel_ids.has(subscribed_channel_id.toString())
         ) {
             continue;
