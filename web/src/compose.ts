@@ -123,6 +123,7 @@ export function clear_compose_box(): void {
     if (compose_ui.is_expanded()) {
         compose_ui.make_compose_box_original_size();
     }
+    clear_preview_area();
     $("textarea#compose-textarea").val("").trigger("focus");
     compose_ui.compose_textarea_typeahead?.hide();
     compose_validate.check_overflow_text($("#send_message_form"));
@@ -400,7 +401,6 @@ export function rewire_finish(value: typeof finish): void {
 }
 
 export function do_post_send_tasks(): void {
-    clear_preview_area();
     // TODO: Do we want to perform below tasks even if the send failed due
     // to a server-side error?
     message_viewport.bottom_of_feed.reset();
