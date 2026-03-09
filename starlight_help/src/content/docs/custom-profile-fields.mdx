@@ -113,6 +113,23 @@ it out.
   checkboxes in the **Required** column of the **Custom profile fields** table.
 </ZulipTip>
 
+## Use a custom profile field in @-mention suggestions
+
+You can configure **External account** and **Short text** custom profile fields
+to be used when matching users in
+[@-mention](/help/mention-a-user-or-group) suggestions. When enabled, typing `@`
+followed by a user's field value will show them in the autocomplete, with the
+matched value displayed as secondary text.
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/profile-field-settings" />
+
+  1. In the **Actions** column, click the **edit** (<EditIcon />)
+     icon for the profile field you want to edit.
+  1. Toggle **Use in @-mention suggestions**.
+  1. Click **Save changes**.
+</FlattenedSteps>
+
 ## Configure whether users can edit custom profile fields
 
 <AdminOnly />
@@ -137,9 +154,11 @@ Choose the profile field type that's most appropriate for the requested informat
 * **Date**: For dates (e.g., birthdays or work anniversaries).
 * **Link**: For links to websites, including company-internal pages.
 * **External account**: For linking to an external account (e.g., GitHub,
-  GitLab, LinkedIn, etc.). Some integrations ([GitHub](/integrations/github))
-  use [silent mentions](/help/mention-a-user-or-group#silently-mention-a-user)
-  to refer to users if a matching external account is configured.
+  GitLab, LinkedIn, etc.). Can be [used in @-mention
+  suggestions](#use-a-custom-profile-field-in-mention-suggestions). Some
+  integrations ([GitHub](/integrations/github)) use [silent
+  mentions](/help/mention-a-user-or-group#silently-mention-a-user) to refer to
+  users if a matching external account is configured.
 * **Dropdown**: A dropdown with a list of predefined options (e.g.,
   office location).
 * **Pronouns**: What pronouns should people use to refer to the user? Pronouns
@@ -147,7 +166,8 @@ Choose the profile field type that's most appropriate for the requested informat
   suggestions.
 * **Paragraph**: For multiline responses (e.g., a user's intro message).
 * **Short text**: For one-line responses up to 50 characters (e.g., team
-  name or role in your organization).
+  name or role in your organization). Can be [used in @-mention
+  suggestions](#use-a-custom-profile-field-in-mention-suggestions).
 * **Users**: For selecting one or more users (e.g., manager or direct reports).
 
 ## Related articles
