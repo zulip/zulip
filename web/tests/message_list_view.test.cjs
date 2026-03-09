@@ -401,7 +401,11 @@ test("merge_message_groups", ({mock_template}) => {
     }
 
     function is_moved_message(container) {
-        return container.msg.edit_history?.some((e) => e.prev_stream !== undefined) ?? false;
+        const stream_moves = container.msg.edit_history?.filter((e) => e.prev_stream !== undefined);
+        if (!stream_moves || stream_moves.length === 0) {
+            return false;
+        }
+        return stream_moves.at(-1).prev_stream !== container.msg.stream_id;
     }
 
     function build_list(message_groups) {

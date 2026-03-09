@@ -184,7 +184,13 @@
             border-radius: var(--last-message-row-border-radius);
             border-bottom: 1px solid var(--color-message-list-border);
 
-            .unread-marker-fill {
+            /* Change the border for only moved message divider marker
+               if it exists */
+            &:not(:has(.moved_message_divider_unread_marker))
+                .unread-marker-fill,
+            &:has(.moved_message_divider_unread_marker)
+                .moved_message_divider_unread_marker
+                .unread-marker-fill {
                 border-radius: 0 0 0 7px;
                 height: calc(100% - 2px);
             }

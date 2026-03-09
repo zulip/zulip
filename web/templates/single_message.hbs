@@ -35,4 +35,14 @@
             {{!-- message_edit_form.hbs is inserted here when editing a message. --}}
         </div>
     </div>
+    {{#if want_moved_message_divider}}
+    <div class="unread_marker moved_message_divider_unread_marker"><div class="unread-marker-fill"></div></div>
+    <div class="moved_message_feed_divider no-select">
+        <span class="stream-status">
+            {{#tr}}
+                The message above was moved from a channel you aren't subscribed to.
+            {{/tr}}
+        </span>
+    </div>
+    {{/if}}
 </div>
