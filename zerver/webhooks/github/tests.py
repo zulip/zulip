@@ -403,7 +403,19 @@ class GitHubWebhookTest(WebhookTestCase):
 
     def test_status_msg(self) -> None:
         expected_message = "[9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to success."
-        self.check_webhook("status", TOPIC_REPO, expected_message)
+        self.check_webhook("status__success", TOPIC_REPO, expected_message)
+
+    def test_status_failure_msg(self) -> None:
+        expected_message = "[0d3d538167b](https://github.com/Pritesh-30/test-repo/commit/0d3d538167b1d22823353f5612141d18371dd42c) changed its status to failure."
+        self.check_webhook("status__failure", "test-repo", expected_message)
+
+    def test_status_pending_msg(self) -> None:
+        expected_message = "[0d3d538167b](https://github.com/Pritesh-30/test-repo/commit/0d3d538167b1d22823353f5612141d18371dd42c) changed its status to pending."
+        self.check_webhook("status__pending", "test-repo", expected_message)
+
+    def test_status_error_msg(self) -> None:
+        expected_message = "[0d3d538167b](https://github.com/Pritesh-30/test-repo/commit/0d3d538167b1d22823353f5612141d18371dd42c) changed its status to error."
+        self.check_webhook("status__error", "test-repo", expected_message)
 
     def test_status_with_target_url_msg(self) -> None:
         expected_message = "[9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to [success](https://example.com/build/status)."
