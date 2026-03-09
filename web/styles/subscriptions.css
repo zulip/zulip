@@ -487,17 +487,33 @@ h4.user_group_setting_subsection_title {
                 width: unset;
             }
 
+            /* The right pane header/title for user group and channel setting menu has
+               two major components, The group/channel name section and the button groups. */
             .selected-group-title,
             .selected-stream-title {
                 display: flex;
                 width: 100%;
-                justify-content: space-between;
 
-                .selected-stream,
+                .stream-name-title,
                 .selected-group-name {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
+                }
+
+                /* These contain two button groups, the left group should stick to the
+                   right side of the group/channel title name, and the right group that
+                   should stick to the rightmost side of the right pane header. */
+                .selected-group-buttons,
+                .stream-title-buttons {
+                    display: flex;
+                    justify-content: space-between;
+                    /* Make sure long group/channel name don't push the button groups out
+                       of view. */
+                    flex-shrink: 0;
+                    /* Make the button groups stretch and take the rest of the right pane
+                       header */
+                    flex-grow: 1;
                 }
 
                 .button-group {
@@ -518,12 +534,14 @@ h4.user_group_setting_subsection_title {
                     }
                 }
 
-                /* The gap between the large icon and stream title exists because the stream title
-                    uses an <a> tag (an inline element) to wrap them. Since the user group title
-                    doesn't use an <a> tag, this container must also be inline to match the
-                    spacing across both subheaders. */
+                .selected-stream,
                 .selected-group {
-                    display: inline;
+                    display: flex;
+                    align-items: center;
+                    /* The right pane header button groups have flex shrink factor of 0, this
+                       wraps the group/channel name is wrapped if it gets too long. */
+                    min-width: 0;
+                    flex-shrink: 1;
                 }
 
                 .deactivated-user-group-icon {
@@ -534,6 +552,7 @@ h4.user_group_setting_subsection_title {
             .large-icon {
                 display: inline-block;
                 margin-left: 5px;
+                margin-right: 5px;
                 /* Square off the icon box for better alignment
                    with adjacent text. */
                 line-height: 1;
