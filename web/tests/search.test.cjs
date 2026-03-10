@@ -87,6 +87,10 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
 
         search_typeahead = {
             shown: false,
+            active_item: false,
+            has_active_item() {
+                return this.active_item;
+            },
             lookup() {
                 typeahead_forced_open = true;
             },
@@ -97,8 +101,11 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         return search_typeahead;
     });
 
+    let narrowed_terms = null;
     search.initialize({
-        on_narrow_search() {},
+        on_narrow_search(search_terms) {
+            narrowed_terms = search_terms;
+        },
     });
 
     // Removing a search pill triggers a "change" event on the search
@@ -338,6 +345,45 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     assert.ok($search_query_box.is(":focus"));
     $searchbox_form.trigger(ev);
     assert.ok($search_query_box.is(":focus"));
+
+    // With focus on the search box and the typeahead visible, Enter
+    // narrows to the current search terms, unless a typeahead item is
+    // highlighted - in that case Enter selects the item and the
+    // typeahead's own handler does the narrowing, so the keyup handler
+    // doesn't need to invoke narrow again.
+    terms = [
+        {
+            negated: false,
+            operator: "search",
+            operand: "ver",
+        },
+    ];
+    expected_pill_display_value = "ver";
+    _setup(terms);
+    $search_query_box.trigger("focus");
+    search_typeahead.shown = true;
+
+    function search_enter() {
+        ev.type = "keydown";
+        keydown(ev);
+
+        ev.type = "keyup";
+        $searchbox_form.trigger(ev);
+    }
+
+    ev = {type: "keydown", key: "Enter", preventDefault: noop};
+
+    // An item is highlighted, so the keyup handler does not narrow.
+    search_typeahead.active_item = true;
+    narrowed_terms = null;
+    search_enter();
+    assert.equal(narrowed_terms, null);
+
+    // Nothing highlighted: Enter narrows even though the typeahead is open.
+    search_typeahead.active_item = false;
+    narrowed_terms = null;
+    search_enter();
+    assert.deepEqual(narrowed_terms, terms);
 });
 
 run_test("initiate_search", ({override_rewire}) => {
