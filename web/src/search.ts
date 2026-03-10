@@ -144,7 +144,6 @@ function narrow_to_search_contents_with_search_bar_open(): void {
     if ($(".navbar-search.expanded").length === 0) {
         open_search_bar_and_close_narrow_description();
         focus_search_input_at_end();
-        search_typeahead.lookup(false);
         search_input_has_changed = true;
     }
 }
