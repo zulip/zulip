@@ -427,6 +427,31 @@ class RealmFilterTest(ZulipTestCase):
             "Group 'org' in linkifier pattern is not present in alternative URL template.",
         )
 
+        # Alternative matching the main URL template should be rejected.
+        data["pattern"] = r"#(?P<id>[0-9]+)"
+        data["url_template"] = "https://github.com/zulip/zulip/issues/{id}"
+        data["alternative_url_templates"] = orjson.dumps(
+            ["https://github.com/zulip/zulip/issues/{id}"]
+        ).decode()
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(
+            result,
+            "An alternative URL template cannot be the same as the URL template.",
+        )
+
+        # Duplicate alternative URL templates should be rejected.
+        data["alternative_url_templates"] = orjson.dumps(
+            [
+                "https://github.com/zulip/zulip/pull/{id}",
+                "https://github.com/zulip/zulip/pull/{id}",
+            ]
+        ).decode()
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(
+            result,
+            "Alternative URL templates must be unique.",
+        )
+
     def test_valid_urls(self) -> None:
         valid_urls = [
             "http://example.com/",

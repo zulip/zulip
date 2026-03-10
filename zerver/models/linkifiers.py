@@ -167,6 +167,14 @@ class RealmFilter(models.Model):
                 params={"name": name},
             )
 
+        if self.url_template in self.alternative_url_templates:
+            raise ValidationError(
+                _("An alternative URL template cannot be the same as the URL template.")
+            )
+
+        if len(self.alternative_url_templates) != len(set(self.alternative_url_templates)):
+            raise ValidationError(_("Alternative URL templates must be unique."))
+
         for alternative_template in self.alternative_url_templates:
             url_template_validator(alternative_template)
 
