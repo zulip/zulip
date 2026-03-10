@@ -118,6 +118,7 @@ class AuditLogEventType(IntEnum):
     USER_GROUP_GROUP_BASED_SETTING_CHANGED = 722
     USER_GROUP_DEACTIVATED = 723
     USER_GROUP_REACTIVATED = 724
+    WORKPLACE_USERS_COUNT_CHANGED = 725
 
     SAVED_SNIPPET_CREATED = 800
 
@@ -191,6 +192,7 @@ class AbstractRealmAuditLog(models.Model):
         AuditLogEventType.REALM_DEACTIVATED,
         AuditLogEventType.REALM_REACTIVATED,
         AuditLogEventType.REALM_IMPORTED,
+        AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED,
     ]
 
     HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS = {

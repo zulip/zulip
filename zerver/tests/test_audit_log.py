@@ -1886,3 +1886,34 @@ class TestRealmAuditLog(ZulipTestCase):
                 RealmAuditLog.NEW_VALUE: now.isoformat(),
             },
         )
+
+    def test_updating_workplace_users_group(self) -> None:
+        iago = self.example_user("iago")
+        realm = iago.realm
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm
+        )
+        now = timezone_now()
+
+        do_change_realm_permission_group_setting(
+            realm, "workplace_users_group", members_group, acting_user=iago
+        )
+
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=iago,
+            realm=realm,
+            event_time__gte=now,
+            event_type__in=[
+                AuditLogEventType.REALM_PROPERTY_CHANGED,
+                AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED,
+            ],
+        )
+        self.assert_length(audit_log_entries, 2)
+        self.assertEqual(audit_log_entries[0].event_type, AuditLogEventType.REALM_PROPERTY_CHANGED)
+
+        self.assertEqual(
+            audit_log_entries[1].event_type, AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED
+        )
+        self.check_role_count_schema(audit_log_entries[1].extra_data[RealmAuditLog.ROLE_COUNT])
+        self.assertNotIn(RealmAuditLog.OLD_VALUE, audit_log_entries[1].extra_data)
+        self.assertEqual(audit_log_entries[1].extra_data["trigger"], "setting_changed")
