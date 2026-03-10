@@ -2177,6 +2177,10 @@ class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
                 metadata.original_content_type,
             )
 
+        # Update message.has_image attribute.
+        if self.zmd.zulip_message:
+            self.zmd.zulip_message.has_image = True
+
         return img
 
     @override
