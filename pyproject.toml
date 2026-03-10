@@ -170,6 +170,9 @@ prod = [
   # For querying recursive group membership
   "django-cte",
 
+  # Host-based URL routing
+  "django-hosts",
+
   # SCIM integration
   "django-scim2",
 
@@ -425,6 +428,7 @@ module = [
     "django_auth_ldap.*",
     "django_bmemcached.*",
     "django_cte.*",
+    "django_hosts.*",
     "django_otp.*",
     "django_scim.*",
     "fakeldap.*",

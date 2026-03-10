@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 477
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (371, 0)  # bumped 2026-02-24 to upgrade JavaScript dependencies
+PROVISION_VERSION = (371, 1)  # bumped 2026-02-25 to add django-hosts dependency
