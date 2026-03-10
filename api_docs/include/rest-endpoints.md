@@ -196,3 +196,4 @@
 * [Create Nextcloud Talk video call](/api/create-nextcloud-talk-video-call)
 * [Create Webex video call](/api/create-webex-video-call)
 * [Outgoing webhook payloads](/api/outgoing-webhook-payload)
+* [Get open communities](/api/open_communities)

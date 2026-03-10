@@ -27316,6 +27316,83 @@ paths:
                         "url": "https://example.constructor.app/groups/room/room-123",
                       }
 
+  /open_communities:
+    get:
+      tags: ["server_and_organizations"]
+      operationId: open_communities
+      summary: Get open communities
+      description: |
+        Get the Zulip communities are open to the public, and have opted in to be listed.
+
+        **Changes**: New in Zulip 12.0 (feature level ZF-c2848d).
+      parameters: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      realms:
+                        description: |
+                          The list of open communities that have opted for advertising.
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            name:
+                              type: string
+                              description: |
+                                The name of the organization.
+                            description:
+                              type: string
+                              description: |
+                                The description of the organization.
+                            icon_url:
+                              type: string
+                              description: |
+                                The URL of the organization's icon.
+                            realm_url:
+                              type: string
+                              description: |
+                                The URL of the organization.
+                            org_type_key:
+                              type: string
+                              description: |
+                                The organization type "key".
+                          example:
+                            [
+                              {
+                                "name": "Test Community",
+                                "description": "A great test community",
+                                "icon_url": "https://secure.gravatar.com/avatar/f4c91f821a38541d080a7f7314f5ce06?d=identicon",
+                                "realm_url": "https://example.zulipchat.com",
+                                "org_type_key": "opensource",
+                              },
+                            ]
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "realms":
+                          [
+                            {
+                              "name": "Test Community",
+                              "description": "A great community",
+                              "icon_url": "https://secure.gravatar.com/avatar/b6c2e3c8b0f4e5d6a7b8c9d0e1f2a3b4?d=identicon",
+                              "realm_url": "https://example.zulipchat.com",
+                              "org_type_key": "opensource",
+                            },
+                          ],
+                      }
+
 components:
   #######################
   # Security definitions
