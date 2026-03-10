@@ -1,6 +1,8 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
+import * as lightbox from "./lightbox.ts";
+import * as overlays from "./overlays.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as util from "./util.ts";
 
@@ -227,4 +229,26 @@ function scroll_to_element($element: JQuery, context: Context): void {
 
 function get_element_by_id(id: string, context: Context): JQuery {
     return $(`.overlay-message-row[${CSS.escape(context.id_attribute_name)}='${CSS.escape(id)}']`);
+}
+
+export function handle_overlay_media_click(e: JQuery.ClickEvent, overlay_name: string): boolean {
+    const $img = $(e.target).closest("img");
+    if ($img.length > 0) {
+        e.stopPropagation();
+        e.preventDefault();
+        overlays.close_overlay(overlay_name);
+        lightbox.handle_inline_media_element_click($img, true);
+        return true;
+    }
+
+    const $video = $(e.target).closest("video");
+    if ($video.length > 0) {
+        e.stopPropagation();
+        e.preventDefault();
+        overlays.close_overlay(overlay_name);
+        lightbox.handle_inline_media_element_click($video, true);
+        return true;
+    }
+
+    return false;
 }
