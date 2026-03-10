@@ -1,5 +1,7 @@
 export const get_last_line = (text: string): string => text.slice(text.lastIndexOf("\n") + 1);
 
+export const get_indent = (line: string): string => /^(\s*)/.exec(line)![1];
+
 export const is_bulleted = (line: string): boolean =>
     line.startsWith("- ") || line.startsWith("* ") || line.startsWith("+ ");
 
