@@ -44,8 +44,10 @@ from zerver.data_import.sequencer import NEXT_ID, IdMapper
 from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.export import do_common_export_processes
+from zerver.lib.import_realm import validate_and_resolve_relative_path
 from zerver.lib.markdown import IMAGE_EXTENSIONS
 from zerver.lib.message import truncate_content
+from zerver.lib.upload import sanitize_name
 from zerver.lib.utils import process_list_in_batches
 from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
 from zerver.models.streams import Stream
@@ -453,7 +455,13 @@ def process_message_attachments(
 
     for attachment in attachments:
         attachment_path = attachment["path"]
-        attachment_full_path = os.path.join(mattermost_data_dir, "data", attachment_path)
+        data_base_dir = os.path.join(mattermost_data_dir, "data")
+        _, attachment_safe_full_path = validate_and_resolve_relative_path(
+            attachment_path,
+            base_dir=data_base_dir,
+            safe_base_dir=os.path.realpath(data_base_dir),
+            field_name_for_error="path",
+        )
 
         file_name = attachment_path.split("/")[-1]
         file_ext = f".{file_name.split('.')[-1]}"
@@ -469,8 +477,8 @@ def process_message_attachments(
 
         fileinfo = {
             "name": file_name,
-            "size": os.path.getsize(attachment_full_path),
-            "created": os.path.getmtime(attachment_full_path),
+            "size": os.path.getsize(attachment_safe_full_path),
+            "created": os.path.getmtime(attachment_safe_full_path),
         }
 
         uploads_list.append(
@@ -497,7 +505,7 @@ def process_message_attachments(
         # Copy the attachment file to output_dir
         attachment_out_path = os.path.join(output_dir, "uploads", attachment_data.path_id)
         os.makedirs(os.path.dirname(attachment_out_path), exist_ok=True)
-        shutil.copyfile(attachment_full_path, attachment_out_path)
+        shutil.copyfile(attachment_safe_full_path, attachment_out_path)
 
     content = "\n".join(markdown_links)
 
@@ -893,9 +901,14 @@ def write_emoticon_data(
 
     def process(data: ZerverFieldsT) -> ZerverFieldsT:
         source_sub_path = data["path"]
-        source_path = os.path.join(data_dir, source_sub_path)
+        _, safe_source_path = validate_and_resolve_relative_path(
+            source_sub_path,
+            base_dir=data_dir,
+            safe_base_dir=os.path.realpath(data_dir),
+            field_name_for_error="path",
+        )
 
-        target_fn = data["name"]
+        target_fn = sanitize_name(data["name"])
         target_sub_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=realm_id,
             emoji_file_name=target_fn,
@@ -904,10 +917,9 @@ def write_emoticon_data(
 
         os.makedirs(os.path.dirname(target_path), exist_ok=True)
 
-        source_path = os.path.abspath(source_path)
         target_path = os.path.abspath(target_path)
 
-        shutil.copyfile(source_path, target_path)
+        shutil.copyfile(safe_source_path, target_path)
 
         return dict(
             path=target_sub_path,
