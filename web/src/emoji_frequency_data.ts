@@ -16,7 +16,14 @@ const POPULAR_EMOJIS_BONUS_WEIGHT = 2.4 * CURRENT_USER_REACTION_WEIGHT;
 
 // The maximum score contribution by others' usage of an emoji.
 const OTHERS_SCORE_CAP = 40 * CURRENT_USER_REACTION_WEIGHT;
-const MINIMUM_SCORE_TO_BE_FEATURED = 1.5 * CURRENT_USER_REACTION_WEIGHT;
+
+// The emoji at the beginning of a new row must have this score
+// for that new row to be displayed.
+const MINIMUM_SCORE_TO_DISPLAY_ROW = 1.5 * CURRENT_USER_REACTION_WEIGHT;
+
+// Emojis that are not creating a new row must have this score
+// to be part of the existing last row.
+const MINIMUM_SCORE_TO_BE_PART_OF_ROW = 0.5;
 
 type ReactionUsage = {
     emoji_code: string;
@@ -110,13 +117,19 @@ export function preferred_emoji_list(): typeahead.EmojiItem[] {
     const sorted_scored_emojis = scored_emojis.toSorted((a, b) => b.score - a.score);
 
     const top_frequently_used_emojis = [];
-    for (const scored_emoji of sorted_scored_emojis) {
-        if (
-            top_frequently_used_emojis.length === MAX_FREQUENTLY_USED_EMOJIS ||
-            scored_emoji.score < MINIMUM_SCORE_TO_BE_FEATURED
-        ) {
+    for (const [index, scored_emoji] of sorted_scored_emojis.entries()) {
+        if (top_frequently_used_emojis.length === MAX_FREQUENTLY_USED_EMOJIS) {
             break;
         }
+
+        const threshold =
+            index % EMOJI_PICKER_ROW_LENGTH === 0
+                ? MINIMUM_SCORE_TO_DISPLAY_ROW
+                : MINIMUM_SCORE_TO_BE_PART_OF_ROW;
+        if (scored_emoji.score < threshold) {
+            break;
+        }
+
         assert(scored_emoji !== undefined);
         top_frequently_used_emojis.push({
             emoji_type: scored_emoji.emoji_type,
@@ -124,11 +137,7 @@ export function preferred_emoji_list(): typeahead.EmojiItem[] {
         });
     }
 
-    const num_frequently_used_emojis =
-        Math.floor(top_frequently_used_emojis.length / EMOJI_PICKER_ROW_LENGTH) *
-        EMOJI_PICKER_ROW_LENGTH;
-
-    return top_frequently_used_emojis.slice(0, num_frequently_used_emojis);
+    return top_frequently_used_emojis;
 }
 
 export function handle_reaction_addition_on_message(info: {
