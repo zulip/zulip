@@ -584,6 +584,10 @@ export class Typeahead<ItemType extends string | object> {
         return this;
     }
 
+    has_active_item(): boolean {
+        return this.$menu.find(".active").length > 0;
+    }
+
     defaultMatcher(item: ItemType, query: string): boolean {
         assert(typeof item === "string");
         return item.toLowerCase().includes(query.toLowerCase());
