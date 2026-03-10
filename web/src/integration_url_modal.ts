@@ -60,6 +60,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
     const modal_content_html = render_generate_integration_url_modal({
         default_url_message,
         max_topic_length: realm.max_topic_length,
+        empty_string_topic_display_name: util.get_final_topic_display_name(""),
     });
 
     const topics_named_after_slack_channels_option: Option = {
@@ -88,6 +89,11 @@ export function show_generate_integration_url_modal(api_key: string): void {
         const $show_integration_events = $("#show-integration-events");
         const $config_container = $("#integration-url-config-options-container");
         const $slack_topics_dropdown = $(`#${slack_topics_dropdown_widget_id}_widget`);
+        const $topic_placeholder = $("#integration-url-topic-placeholder");
+
+        $topic_input.on("input focus", () => {
+            $topic_placeholder.toggleClass("visible", $topic_input.val() === "");
+        });
 
         $dialog_submit_button.prop("disabled", true);
         $("#integration-url-stream_widget").prop("disabled", true);
