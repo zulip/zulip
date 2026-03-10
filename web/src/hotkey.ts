@@ -1505,7 +1505,8 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         case "view_edit_history": {
             if (
                 realm.realm_message_edit_history_visibility_policy !==
-                message_edit_history_visibility_policy_values.never.code
+                    message_edit_history_visibility_policy_values.never.code &&
+                (msg.last_edit_timestamp !== undefined || msg.last_moved_timestamp !== undefined)
             ) {
                 message_edit_history.fetch_and_render_message_history(msg);
                 $("#message-history-overlay .exit-sign").trigger("focus");

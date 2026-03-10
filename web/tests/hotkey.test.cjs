@@ -493,7 +493,23 @@ test_while_not_editing_text("misc", ({override}) => {
         "realm_message_edit_history_visibility_policy",
         settings_config.message_edit_history_visibility_policy_values.always.code,
     );
+    override(message_lists.current, "selected_message", () => ({
+        id: 1,
+        type: "stream",
+        last_edit_timestamp: 123,
+    }));
     assert_mapping("H", message_edit_history, "fetch_and_render_message_history", true, true);
+    override(message_lists.current, "selected_message", () => ({
+        id: 2,
+        type: "stream",
+        last_moved_timestamp: 123,
+    }));
+    assert_mapping("H", message_edit_history, "fetch_and_render_message_history", true, true);
+    override(message_lists.current, "selected_message", () => ({
+        id: 3,
+        type: "stream",
+    }));
+    assert_unmapped("H");
 
     override(narrow_state, "narrowed_by_topic_reply", () => true);
     assert_mapping("s", message_view, "narrow_by_recipient");
