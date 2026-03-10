@@ -5,22 +5,9 @@ const assert = require("node:assert/strict");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
-const {mock_jquery, zrequire} = require("./lib/namespace.cjs");
+const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
-
-mock_jquery((selector) => {
-    switch (selector) {
-        case "input#stream_message_recipient_topic":
-            return {
-                val() {
-                    return "lunch";
-                },
-            };
-        /* istanbul ignore next */
-        default:
-            throw new Error(`Unknown selector ${selector}`);
-    }
-});
+const $ = require("./lib/zjquery.cjs");
 
 const stream_data = zrequire("stream_data");
 const peer_data = zrequire("peer_data");
@@ -68,6 +55,7 @@ run_test("set_focused_recipient", () => {
     stream_data.add_sub_for_tests(sub);
     compose_state.set_stream_id(sub.stream_id);
     peer_data.set_subscribers(sub.stream_id, [me.user_id, alice.user_id]);
+    $("input#stream_message_recipient_topic").val("lunch");
     compose_fade.set_focused_recipient("stream");
 
     const good_msg = {
