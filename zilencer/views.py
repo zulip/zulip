@@ -6,7 +6,7 @@ from collections import Counter
 from datetime import datetime, timedelta, timezone
 from email.headerregistry import Address
 from email.utils import formatdate as email_formatdate
-from typing import Annotated, Any, TypedDict, TypeVar
+from typing import Annotated, Any, Literal, TypedDict, TypeVar
 from urllib.parse import urljoin, urlsplit
 from uuid import UUID
 
@@ -30,7 +30,7 @@ from dns.exception import DNSException
 from nacl.encoding import Base64Encoder
 from nacl.exceptions import CryptoError
 from nacl.public import PrivateKey, SealedBox
-from pydantic import BaseModel, ConfigDict, Json, StringConstraints, model_validator
+from pydantic import BaseModel, ConfigDict, Field, Json, StringConstraints, model_validator
 from pydantic import ValidationError as PydanticValidationError
 from pydantic.functional_validators import AfterValidator
 from typing_extensions import override
@@ -901,13 +901,27 @@ class PushNotificationsDisallowedError(JsonableError):
         super().__init__(msg)
 
 
+class GcmOptions(BaseModel):
+    priority: Literal["normal", "high"] | None = None
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class GcmPayload(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+
+class ApnsPayload(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+
 class RemoteServerNotificationPayload(BaseModel):
     user_id: int | None = None
     user_uuid: str | None = None
     realm_uuid: str | None = None
-    gcm_payload: dict[str, Any] = {}
-    apns_payload: dict[str, Any] = {}
-    gcm_options: dict[str, Any] = {}
+    gcm_payload: GcmPayload = Field(default_factory=GcmPayload)
+    apns_payload: ApnsPayload = Field(default_factory=ApnsPayload)
+    gcm_options: GcmOptions = Field(default_factory=GcmOptions)
 
     android_devices: list[str] = []
     apple_devices: list[str] = []
@@ -926,9 +940,9 @@ def remote_server_notify_push(
     user_uuid = payload.user_uuid
     user_identity = UserPushIdentityCompat(user_id, user_uuid)
 
-    gcm_payload = payload.gcm_payload
-    apns_payload = payload.apns_payload
-    gcm_options = payload.gcm_options
+    gcm_payload = payload.gcm_payload.model_dump()
+    apns_payload = payload.apns_payload.model_dump()
+    gcm_options = payload.gcm_options.model_dump(exclude_unset=True)
 
     realm_uuid = payload.realm_uuid
     remote_realm = None

@@ -432,7 +432,9 @@ def parse_fcm_options(options: dict[str, Any], data: dict[str, Any]) -> str:
 
     Returns `priority`.
     """
-    priority = options.pop("priority", None)
+    priority = (
+        options.pop("priority", None) if isinstance(options, dict) else options.get("priority")
+    )
     if priority is None:
         # An older server.  Identify if this seems to be an actual notification.
         if data.get("event") == "message":
@@ -446,7 +448,7 @@ def parse_fcm_options(options: dict[str, Any], data: dict[str, Any]) -> str:
             ).format(priority=priority)
         )
 
-    if options:
+    if options and isinstance(options, dict) and len(options) > 0:
         # We're strict about the API; there is no use case for a newer Zulip
         # server talking to an older bouncer, so we only need to provide
         # one-way compatibility.
