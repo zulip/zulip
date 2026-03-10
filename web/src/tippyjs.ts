@@ -744,7 +744,7 @@ export function initialize(): void {
         appendTo: () => document.body,
         onShow(instance) {
             let template = "show-userlist-tooltip-template";
-            if ($("#right-sidebar-container").css("display") !== "none") {
+            if ($("#right-sidebar-container").is(":visible")) {
                 template = "hide-userlist-tooltip-template";
             }
             $(instance.reference).attr("data-tooltip-template-id", template);
@@ -1003,7 +1003,7 @@ export function initialize(): void {
                 instance.setContent(ui_util.parse_html(error_message));
                 // `display: flex` doesn't show the tooltip content inline when <i>general chat</i>
                 // is in the error message.
-                $(instance.popper).find(".tippy-content").css("display", "block");
+                $(instance.popper).find(".tippy-content").show();
                 return undefined;
             }
             return false;

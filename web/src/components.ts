@@ -81,7 +81,7 @@ export function toggle(opts: {
         if ($elem.hasClass("disabled")) {
             return false;
         }
-        if ($elem.css("display") === "none") {
+        if (!$elem.is(":visible")) {
             return false;
         }
 

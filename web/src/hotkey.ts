@@ -1448,7 +1448,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             let emoji_picker_reference;
             if (
                 $emoji_icon?.length !== 0 &&
-                $emoji_icon.closest(".message_control_button").css("display") !== "none"
+                $emoji_icon.closest(".message_control_button").is(":visible")
             ) {
                 emoji_picker_reference = util.the($emoji_icon);
             } else {

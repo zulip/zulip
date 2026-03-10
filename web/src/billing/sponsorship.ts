@@ -15,7 +15,7 @@ function show_submit_loading_indicator(): void {
 }
 
 function hide_submit_loading_indicator(): void {
-    $("#sponsorship-button .sponsorship-button-loader").css("display", "none");
+    $("#sponsorship-button .sponsorship-button-loader").hide();
     $("#sponsorship-button").prop("disabled", false);
     $("#sponsorship-button .sponsorship-button-text").show();
 }

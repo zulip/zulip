@@ -271,7 +271,7 @@ export function update_channel_folder_name(folder_id: number): void {
         return;
     }
 
-    if ($("#subscription_overlay .nothing-selected").css("display") !== "none") {
+    if ($("#subscription_overlay .nothing-selected").is(":visible")) {
         return;
     }
 
@@ -310,7 +310,7 @@ export function reset_dropdown_set_to_archived_folder(folder_id: number): void {
         return;
     }
 
-    if ($("#subscription_overlay .nothing-selected").css("display") !== "none") {
+    if ($("#subscription_overlay .nothing-selected").is(":visible")) {
         return;
     }
 

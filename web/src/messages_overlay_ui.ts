@@ -96,7 +96,7 @@ function row_before_focus(context: Context): JQuery {
     if (
         $prev_row.length === 0 &&
         $focused_row.parent().attr("id") === "other-drafts" &&
-        $("#drafts-from-conversation").css("display") !== "none"
+        $("#drafts-from-conversation").is(":visible")
     ) {
         return $($("#drafts-from-conversation").children(".overlay-message-row").last());
     }
@@ -113,7 +113,7 @@ function row_after_focus(context: Context): JQuery {
     if (
         $next_row.length === 0 &&
         $focused_row.parent().attr("id") === "drafts-from-conversation" &&
-        $("#other-drafts").css("display") !== "none"
+        $("#other-drafts").is(":visible")
     ) {
         return $("#other-drafts").children(".overlay-message-row").first();
     }

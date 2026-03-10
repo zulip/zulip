@@ -122,9 +122,9 @@ $(() => {
         }
 
         // reset error message displays
-        $("#id_team_subdomain_error_client").css("display", "none");
+        $("#id_team_subdomain_error_client").hide();
         if ($(".team_subdomain_error_server").text() === "") {
-            $(".team_subdomain_error_server").css("display", "none");
+            $(".team_subdomain_error_server").hide();
         }
 
         $("#timezone").val(new Intl.DateTimeFormat().resolvedOptions().timeZone);
@@ -259,8 +259,8 @@ $(() => {
 
     let timer: number;
     $("#id_team_subdomain").on("input", () => {
-        $(".team_subdomain_error_server").text("").css("display", "none");
-        $("#id_team_subdomain_error_client").css("display", "none");
+        $(".team_subdomain_error_server").text("").hide();
+        $("#id_team_subdomain_error_client").hide();
         clearTimeout(timer);
         timer = setTimeout(check_subdomain_available, 250, $("#id_team_subdomain").val());
     });

@@ -1754,7 +1754,7 @@ export function update_empty_left_panel_message(): void {
         FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS;
 
     // When the dropdown menu is hidden.
-    if ($("#user-group-edit-filter-options").css("display") === "none") {
+    if ($("#user-group-edit-filter-options")!$element.is(":visible")) {
         current_group_filter = FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS;
     }
 

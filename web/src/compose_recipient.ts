@@ -507,7 +507,7 @@ export function update_placeholder_visibility(): void {
 export let update_compose_area_placeholder_text = (): void => {
     const $textarea: JQuery<HTMLTextAreaElement> = $("textarea#compose-textarea");
     // Change compose placeholder text only if compose box is open.
-    if ($(".message_comp").css("display") === "none") {
+    if (!$(".message_comp").is(":visible")) {
         return;
     }
     const message_type = compose_state.get_message_type();

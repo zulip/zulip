@@ -8,19 +8,19 @@ $(() => {
     // This code will be executed when the user visits /emails in
     // development mode and email_log.html is rendered.
     $("#toggle").on("change", () => {
-        if ($(".email-text").css("display") === "none") {
+        if (!$(".email-text").is(":visible")) {
             $(".email-text").each(function () {
-                $(this).css("display", "block");
+                $(this).show();
             });
             $(".email-html").each(function () {
-                $(this).css("display", "none");
+                $(this).hide();
             });
         } else {
             $(".email-text").each(function () {
-                $(this).css("display", "none");
+                $(this).hide();
             });
             $(".email-html").each(function () {
-                $(this).css("display", "block");
+                $(this).show();
             });
         }
     });

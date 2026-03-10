@@ -74,7 +74,7 @@ export function hide_userlist_sidebar(): void {
 export function show_userlist_sidebar(): void {
     const $streamlist_sidebar = $(".app-main .column-left");
     const $userlist_sidebar = $(".app-main .column-right");
-    if ($userlist_sidebar.css("display") !== "none") {
+    if ($userlist_sidebar.is(":visible")) {
         // Return early if the right sidebar is already visible.
         return;
     }
@@ -113,7 +113,7 @@ export function show_streamlist_sidebar(): void {
 export function show_left_sidebar(): void {
     if (
         // Check if left column is a overlay and is not visible.
-        $("#streamlist-toggle").css("display") !== "none" &&
+        $("#streamlist-toggle").is(":visible") &&
         !left_sidebar_expanded_as_overlay
     ) {
         popovers.hide_all();
