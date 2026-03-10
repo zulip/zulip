@@ -305,6 +305,10 @@ function setup_event_handlers(): void {
             return;
         }
 
+        if (messages_overlay_ui.handle_overlay_media_click(e, "drafts")) {
+            return;
+        }
+
         e.stopPropagation();
 
         const $draft_row = $(this).closest(".overlay-message-row");
