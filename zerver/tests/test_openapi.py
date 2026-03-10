@@ -271,6 +271,8 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/remotes/server/analytics",
         "/remotes/server/analytics/status",
         "/remotes/server/billing",
+        # Communities directories endpoints; live in corporate/urls.py
+        "/communities",
     }
 
     # Endpoints in the API documentation that don't use rest_dispatch
