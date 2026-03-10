@@ -15,6 +15,7 @@ import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_live_update from "./message_live_update.ts";
+import * as message_store from "./message_store.ts";
 import * as message_view from "./message_view.ts";
 import * as message_view_header from "./message_view_header.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -24,6 +25,8 @@ import * as people from "./people.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as settings_notifications from "./settings_notifications.ts";
 import * as settings_streams from "./settings_streams.ts";
+import * as starred_messages from "./starred_messages.ts";
+import * as starred_messages_ui from "./starred_messages_ui.ts";
 import {realm} from "./state_data.ts";
 import * as stream_color_events from "./stream_color_events.ts";
 import * as stream_create from "./stream_create.ts";
@@ -375,9 +378,18 @@ export function mark_unsubscribed(sub: StreamSubscription): void {
         activity_ui.build_user_sidebar();
     }
 
-    // Unread messages in the now-unsubscribe stream need to be
+    // Unread messages in the now-unsubscribed stream need to be
     // removed from global count totals.
     unread_ui.update_unread_counts();
+    // Remove starred messages from unsubscribed stream from the count.
+    const stream_message_ids = new Set(message_store.get_message_ids_in_stream(sub.stream_id));
+    const ids_to_remove = starred_messages
+        .get_starred_msg_ids()
+        .filter((id) => stream_message_ids.has(id));
+    if (ids_to_remove.length > 0) {
+        starred_messages.remove(ids_to_remove);
+        starred_messages_ui.rerender_ui();
+    }
 
     stream_list.remove_sidebar_row(sub.stream_id);
     stream_list.update_subscribe_to_more_streams_link();

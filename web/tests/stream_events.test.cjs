@@ -29,6 +29,11 @@ const stream_settings_ui = mock_esm("../src/stream_settings_ui", {
     update_settings_for_subscribed: noop,
     update_empty_left_panel_message: noop,
 });
+const message_store = mock_esm("../src/message_store", {
+    get_message_ids_in_stream: () => [],
+});
+const starred_messages = zrequire("starred_messages");
+const starred_messages_ui = mock_esm("../src/starred_messages_ui");
 const unread_ui = mock_esm("../src/unread_ui");
 const message_lists = mock_esm("../src/message_lists", {
     current: undefined,
@@ -645,6 +650,28 @@ test("mark_unsubscribed (render_title_area)", ({override, override_rewire}) => {
     assert.equal(message_view_header_stub.num_calls, 1);
 
     message_lists.current = undefined;
+});
+test("mark_unsubscribed (starred messages)", ({override, override_rewire}) => {
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
+    const sub = {...frontend, subscribed: true};
+    stream_data.add_sub_for_tests(sub);
+    override(message_view_header, "maybe_rerender_title_area_for_stream", noop);
+    const msg_id = 1001;
+    starred_messages.starred_ids.clear();
+    starred_messages.add([msg_id]);
+    override(stream_settings_ui, "update_settings_for_unsubscribed", noop);
+    override(stream_list, "remove_sidebar_row", noop);
+    override(message_store, "get_message_ids_in_stream", () => [msg_id]);
+    override(stream_list, "update_subscribe_to_more_streams_link", noop);
+    override(unread_ui, "update_unread_counts", noop);
+    override(user_profile, "update_user_profile_streams_list_for_users", noop);
+    override(starred_messages_ui, "rerender_ui", noop);
+
+    $.set_results("#channels_overlay_container .stream-row:not(.notdisplayed)", []);
+
+    assert.equal(starred_messages.get_count(), 1);
+    stream_events.mark_unsubscribed(sub);
+    assert.equal(starred_messages.get_count(), 0);
 });
 
 test("process_subscriber_update", ({override}) => {
