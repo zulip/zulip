@@ -67,7 +67,7 @@
                     <div class="eligible_realms">
                         {% for eligible_realm in eligible_realms %}
                             <a class="eligible_realm" data-org-type="{{ eligible_realm.org_type_key }}" href="{{ eligible_realm.realm_url }}">
-                                <img class="eligible_realm_logo" src="{{ eligible_realm.logo_url }}" alt="{{ eligible_realm.name }} logo"/>
+                                <img class="eligible_realm_icon" src="{{ eligible_realm.icon_url }}" alt="{{ eligible_realm.name }} logo"/>
                                 <div class="eligible_realm_details">
                                     <h3 class="eligible_realm_name">{{ eligible_realm.name }}</h3>
                                     <h4 class="eligible_realm_description">
