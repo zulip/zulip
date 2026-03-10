@@ -298,7 +298,7 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         is_using_input_method = true;
     });
 
-    let typeahead_was_open_on_enter = false;
+    let typeahead_item_highlighted_on_enter = false;
     $searchbox_form
         .on("keydown", (e: JQuery.KeyDownEvent): void => {
             if (keydown_util.is_enter_event(e) && $search_query_box.is(":focus")) {
@@ -308,9 +308,11 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
                 e.preventDefault();
             }
 
-            // Record this on keydown before the typeahead code closes the
-            // typeahead, so we can use this information on keyup.
-            typeahead_was_open_on_enter = keydown_util.is_enter_event(e) && search_typeahead.shown;
+            // Record this on keydown, before the typeahead's keyup handler
+            // selects the item and updates the menu, so we can use this
+            // information on keyup.
+            typeahead_item_highlighted_on_enter =
+                keydown_util.is_enter_event(e) && search_typeahead.has_active_item();
         })
         .on("keyup", (e: JQuery.KeyUpEvent): void => {
             if (is_using_input_method) {
@@ -323,12 +325,12 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
             } else if (
                 keydown_util.is_enter_event(e) &&
                 $search_query_box.is(":focus") &&
-                !typeahead_was_open_on_enter
+                // We only narrow here when Enter is meant to search for the
+                // current terms. When an item is highlighted, this Enter selected
+                // it and the typeahead's updater narrows, so we must not narrow
+                // again here.
+                !typeahead_item_highlighted_on_enter
             ) {
-                // If the typeahead was just open, the Enter event was selecting an item
-                // from the typeahead. When that's the case, we don't want to call
-                // narrow_or_search_for_term which exits the search bar, since the user
-                // might have more terms to add still.
                 if (convert_search_text_to_terms() === undefined) {
                     return;
                 }
