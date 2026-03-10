@@ -16,7 +16,7 @@ const POPULAR_EMOJIS_BONUS_WEIGHT = 2.4 * CURRENT_USER_REACTION_WEIGHT;
 
 // The maximum score contribution by others' usage of an emoji.
 const OTHERS_SCORE_CAP = 40 * CURRENT_USER_REACTION_WEIGHT;
-const MINIMUM_SCORE_TO_BE_FEATURED = 2 * CURRENT_USER_REACTION_WEIGHT;
+const MINIMUM_SCORE_TO_BE_FEATURED = 1.5 * CURRENT_USER_REACTION_WEIGHT;
 
 type ReactionUsage = {
     emoji_code: string;
