@@ -834,6 +834,13 @@ test("topic_suggestions", ({override, override_rewire}) => {
     suggestions = get_suggestions("hello channel:foobar");
     expected = [];
     assert.deepEqual(suggestions, expected);
+
+    // We shouldn't see topic suggestions for an
+    // empty operand with channel as the operator for
+    // the last term.
+    suggestions = get_suggestions("hello channel:");
+    expected = ["hello channel:5", "hello channel:6"];
+    assert.deepEqual(suggestions, expected);
 });
 
 test("topic_suggestions (limits)", () => {

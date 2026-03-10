@@ -569,6 +569,12 @@ function get_topic_suggestions(
         return [];
     }
 
+    // Avoid sending topic suggestions when the user is
+    // just trying to search through channels.
+    if (channel_id_or_operand_str?.length === 0 && last.operator === "channel") {
+        return [];
+    }
+
     // We don't want to show topic suggestions from negated channels
     const excluded_channel_ids = new Set(
         terms
