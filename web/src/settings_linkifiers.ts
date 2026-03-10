@@ -46,8 +46,12 @@ export function maybe_disable_widgets(): void {
     }
 }
 
-function add_alternative_url_template_row($container: JQuery, value = ""): void {
-    const row_html = render_linkifier_alternative_url_template({value});
+function add_alternative_url_template_row(
+    $container: JQuery,
+    value = "",
+    show_placeholder = false,
+): void {
+    const row_html = render_linkifier_alternative_url_template({value, show_placeholder});
     $container.append($(row_html));
 }
 
@@ -284,7 +288,8 @@ function open_linkifier_add_form(): void {
             ui_util.place_caret_at_end(util.the($pattern_input));
             // Add one empty row for alternative URL templates.
             const $container = $modal.find("#linkifier-alternative-url-templates");
-            add_alternative_url_template_row($container);
+            // Placeholder is shown only in case of add linkifier modal first row.
+            add_alternative_url_template_row($container, "", true);
         },
     });
 }
@@ -473,7 +478,7 @@ export function build_page(): void {
                 return;
             }
             const $container = $row.parent();
-            add_alternative_url_template_row($container);
+            add_alternative_url_template_row($container, "");
         },
     );
 
