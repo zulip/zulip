@@ -65,6 +65,19 @@ class EventsEndpointTest(ZulipTestCase):
 
         self.assertEqual(m.call_args.kwargs["narrow"], [["stream", "devel"], ["is", "mentioned"]])
 
+    def test_invalid_narrow(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        narrow = [["stream", "devel", True]]
+        payload = dict(narrow=orjson.dumps(narrow).decode())
+        result = self.api_post(hamlet, "/api/v1/register", payload)
+        self.assert_json_error(result, "narrow[0] is too long (limit: 2 items)")
+
+        narrow = [["stream"]]
+        payload = dict(narrow=orjson.dumps(narrow).decode())
+        result = self.api_post(hamlet, "/api/v1/register", payload)
+        self.assert_json_error(result, "narrow[0] is too short (minimum 2 items)")
+
     def test_events_register_endpoint(self) -> None:
         # This test is intended to get minimal coverage on the
         # events_register code paths
