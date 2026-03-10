@@ -5769,6 +5769,13 @@ class MessageHasKeywordsTest(ZulipTestCase):
         self.assertFalse(msg.has_attachment)
         self.assertEqual(msg.attachment_set.count(), 0)
 
+        # Test inline media syntax with uploaded image.
+        uploaded_image_url = self.setup_uploaded_image_file(hamlet)
+        body = f"![image.png]({uploaded_image_url})"
+        msg_id = self.send_stream_message(hamlet, "Denmark", body, "test inline media image")
+        msg = Message.objects.get(id=msg_id)
+        self.assertTrue(msg.has_attachment)
+
     def test_potential_attachment_path_ids(self) -> None:
         hamlet = self.example_user("hamlet")
         self.subscribe(hamlet, "Denmark")
