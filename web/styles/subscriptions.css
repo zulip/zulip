@@ -1234,7 +1234,6 @@ h4.user_group_setting_subsection_title {
             }
         }
 
-        .group_change_property_info,
         .stream_change_property_info {
             vertical-align: top;
             margin: 0 5px 0 0;
@@ -1545,7 +1544,6 @@ h4.user_group_setting_subsection_title {
             }
         }
 
-        .group_change_property_info,
         .stream_change_property_info {
             /* For small widths where there is not enough space
             to show alert beside stream name we set its display
