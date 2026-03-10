@@ -1,6 +1,8 @@
+import encodings.aliases
 import logging
 import re
 import secrets
+import sys
 from email.headerregistry import Address, AddressHeader
 from email.message import EmailMessage
 from re import Match
@@ -44,6 +46,15 @@ from zerver.models.clients import get_client
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream_by_id_in_realm
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 from zproject.backends import is_user_active
+
+if sys.version_info < (3, 14):
+    # https://github.com/python/cpython/issues/62824
+    encodings.aliases.aliases.update(
+        {
+            "iso_8859_8_i": "iso8859_8",
+            "iso_8859_8_e": "iso8859_8",
+        }
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -231,25 +242,24 @@ def send_mm_reply_to_stream(
 
 
 def get_message_part_by_type(message: EmailMessage, content_type: str) -> str | None:
-    charsets = message.get_charsets()
-
-    for idx, part in enumerate(message.walk()):
+    for part in message.walk():
         if part.get_content_type() == content_type:
             content = part.get_payload(decode=True)
             assert isinstance(content, bytes)
-            charset = charsets[idx]
-            if charset is not None:
-                try:
-                    return content.decode(charset, errors="ignore")
-                except LookupError:
-                    # The RFCs do not define how to handle unknown
-                    # charsets, but treating as US-ASCII seems
-                    # reasonable; fall through to below.
-                    pass
 
-            # If no charset has been specified in the header, assume us-ascii,
-            # by RFC6657: https://tools.ietf.org/html/rfc6657
-            return content.decode("us-ascii", errors="ignore")
+            charset = part.get_content_charset()
+            if charset is None:
+                # If no charset has been specified in the header, assume us-ascii,
+                # by RFC6657: https://tools.ietf.org/html/rfc6657
+                charset = "us-ascii"
+
+            try:
+                # Because of the encodings.aliases.update() at the top of the file,
+                # decode() will automatically handle "iso-8859-8-i"
+                return content.decode(charset, errors="ignore")
+            except LookupError:
+                # If we still can't find it: fall back to us-ascii is reasonable
+                return content.decode("us-ascii", errors="ignore")
 
     return None
 

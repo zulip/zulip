@@ -28,6 +28,7 @@ from zerver.lib.email_mirror import (
     create_missed_message_address,
     filter_footer,
     generate_missed_message_token,
+    get_message_part_by_type,
     get_missed_message_token_from_address,
     is_forwarded,
     is_missed_message_address,
@@ -1872,6 +1873,21 @@ class TestContentTypeInvalidCharset(ZulipTestCase):
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, "Email fixture 1.txt body")
+
+    def test_israel_encoding_alias(self) -> None:
+        # in hebrew: shalom (שלום)
+        hebrew_text_bytes = b"\xf9\xec\xe5\xed"
+
+        message = EmailMessage()
+        message.set_payload(hebrew_text_bytes)
+
+        # testing exact string
+        message["Content-Type"] = 'text/plain; charset="iso-8859-8-i"'
+
+        # return the decoded string
+        decoded_body = get_message_part_by_type(message, "text/plain")
+
+        self.assertEqual(decoded_body, "שלום")
 
 
 class TestEmailMirrorProcessMessageNoValidRecipient(ZulipTestCase):
