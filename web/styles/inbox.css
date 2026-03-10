@@ -455,12 +455,11 @@
 
     .channel-folders-inbox-menu-icon {
         display: grid;
-        /* width excluding left & right margin */
         width: calc(var(--left-sidebar-vdots-width) - 3px);
         cursor: pointer;
         place-items: center center;
         border-radius: 3px;
-        margin: 2px 2px 2px 1px;
+        margin: 2px;
         color: var(--color-vdots-visible);
 
         i.zulip-icon {
