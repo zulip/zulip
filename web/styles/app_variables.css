@@ -700,6 +700,8 @@
     --margin-bottom-field-description: 3px;
     /* Gap between tabs in the tab picker */
     --grid-gap-tab-picker: 2px;
+    /* 10px at 16px */
+    --view-only-field-horizontal-padding: 0.625em;
 
     /*
     The tippy arrow which matches the color of the popover's border,
