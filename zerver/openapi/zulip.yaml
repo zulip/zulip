@@ -25964,6 +25964,158 @@ paths:
                         "url": "https://example.constructor.app/groups/room/room-123",
                       }
 
+  /communities:
+    get:
+      tags: ["server_and_organizations"]
+      operationId: get-communities
+      summary: Get communities
+      description: |
+        Get the organizations that want advertising.
+
+        **Changes**: New in Zulip 12.0 (feature level XXX).
+      parameters: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      realms:
+                        description: |
+                          The list of Organizations that want advertising.
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            id:
+                              type: integer
+                              description: |
+                                The unique ID of the organization.
+                            name:
+                              type: string
+                              description: |
+                                The name of the organization.
+                            description:
+                              type: string
+                              description: |
+                                The description of the organization.
+                            icon_url:
+                              type: string
+                              description: |
+                                The URL of the organization's icon.
+                            realm_url:
+                              type: string
+                              description: |
+                                The URL of the organization.
+                            date_created:
+                              type: integer
+                              description: |
+                                The Unix timestamp of when the organization was created.
+                            org_type_key:
+                              type: string
+                              description: |
+                                The organization type key, e.g. "community", "opensource".
+                          example:
+                            [
+                              {
+                                "id": 1,
+                                "name": "Test Community",
+                                "description": "A great test community",
+                                "icon_url": "https://secure.gravatar.com/avatar/f4c91f821a38541d080a7f7314f5ce06?d=identicon",
+                                "realm_url": "http://testcommunity.zulipdev.com:9991",
+                                "date_created": 0,
+                                "org_type_key": "opensource",
+                              },
+                            ]
+                      org_types:
+                        description: |
+                          This is a dictionary of the organization types.
+                        type: object
+                        additionalProperties:
+                          type: object
+                          description: |
+                            `{org_type_key}`: Object containing the details
+                            of an organization type.
+                          additionalProperties: false
+                          properties:
+                            name:
+                              type: string
+                              description: |
+                                The human-readable name of the organization type.
+                            id:
+                              type: integer
+                              description: |
+                                The integer ID of the organization type.
+                            hidden:
+                              type: boolean
+                              description: |
+                                Whether this organization type is hidden from display.
+                            display_order:
+                              type: integer
+                              description: |
+                                The order in which to display this type.
+                            onboarding_zulip_guide_url:
+                              type: string
+                              nullable: true
+                              description: |
+                                URL of the Zulip guide for this organization type,
+                                or null if none exists.
+                        example:
+                          {
+                            "opensource":
+                              {
+                                "name": "Open-source project",
+                                "id": 20,
+                                "hidden": false,
+                                "display_order": 2,
+                                "onboarding_zulip_guide_url": "https://zulip.com/for/open-source/",
+                              },
+                            "education":
+                              {
+                                "name": "Education (for-profit)",
+                                "id": 35,
+                                "hidden": false,
+                                "display_order": 4,
+                                "onboarding_zulip_guide_url": "https://zulip.com/for/education/",
+                              },
+                          }
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "realms":
+                          [
+                            {
+                              "id": 1,
+                              "name": "Test Community",
+                              "description": "A great community",
+                              "icon_url": "https://secure.gravatar.com/avatar/b6c2e3c8b0f4e5d6a7b8c9d0e1f2a3b4?d=identicon",
+                              "realm_url": "https://example.zulipchat.com",
+                              "date_created": 0,
+                              "org_type_key": "community",
+                            },
+                          ],
+                        "org_types":
+                          {
+                            "opensource":
+                              {
+                                "name": "Open-source project",
+                                "id": 90,
+                                "hidden": false,
+                                "display_order": 2,
+                                "onboarding_zulip_guide_url": "https://zulip.com/for/open-source/",
+                              },
+                          },
+                      }
+
 components:
   #######################
   # Security definitions
