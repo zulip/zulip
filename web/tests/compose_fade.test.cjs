@@ -10,6 +10,7 @@ const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
 const stream_data = zrequire("stream_data");
+stream_data.set_channel_has_locally_available_topic(() => false);
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const compose_fade = zrequire("compose_fade");
@@ -72,7 +73,7 @@ run_test("set_focused_recipient", () => {
     assert.ok(compose_fade_helper.should_fade_message(bad_msg));
 });
 
-run_test("want_normal_display", ({override}) => {
+run_test("want_normal_display", ({override, override_rewire}) => {
     const stream_id = 110;
     const sub = make_stream({
         stream_id,
@@ -101,8 +102,22 @@ run_test("want_normal_display", ({override}) => {
     assert.ok(compose_fade_helper.want_normal_display());
 
     // Focused recipient is a valid stream with no topic set
-    // when topics are not mandatory. Focused to input box.
+    // when topics are not mandatory.
     override(realm, "realm_topics_policy", "allow_empty_topic");
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => true);
+    assert.ok(!compose_fade_helper.want_normal_display());
+
+    // When empty topics are allowed but user is still focused on
+    // the topic input, show normal display since user is still
+    // configuring topic.
+    $("input#stream_message_recipient_topic").trigger("focus");
+    assert.ok(compose_fade_helper.want_normal_display());
+    $("input#stream_message_recipient_topic").trigger("blur");
+
+    // When empty topics are allowed by policy but the user cannot
+    // create new topics and no empty topic exists, show normal
+    // display since the compose target is incomplete.
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => false);
     assert.ok(compose_fade_helper.want_normal_display());
 
     // If we're focused to a topic, then we do want to fade.
