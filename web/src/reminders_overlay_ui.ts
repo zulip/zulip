@@ -153,4 +153,8 @@ export function initialize(): void {
         assert(reminder_id !== undefined);
         launch(Number.parseInt(reminder_id, 10));
     });
+
+    $("body").on("click", ".reminder-row .restore-overlay-message", (e) => {
+        messages_overlay_ui.handle_overlay_media_click(e, "reminders");
+    });
 }
