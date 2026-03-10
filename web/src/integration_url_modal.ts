@@ -80,6 +80,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         let slack_topics_dropdown_widget: DropdownWidget;
         let previous_selected_integration: string | undefined;
         let branch_pill_widget: branch_pill.BranchPillWidget | undefined;
+        let channel_allows_empty_topic = true;
 
         const slack_topics_dropdown_widget_id = "slack-topics-dropdown";
         const $override_topic = $<HTMLInputElement>("input#integration-url-override-topic");
@@ -92,7 +93,10 @@ export function show_generate_integration_url_modal(api_key: string): void {
         const $topic_placeholder = $("#integration-url-topic-placeholder");
 
         $topic_input.on("input focus", () => {
-            $topic_placeholder.toggleClass("visible", $topic_input.val() === "");
+            $topic_placeholder.toggleClass(
+                "visible",
+                $topic_input.val() === "" && channel_allows_empty_topic,
+            );
         });
 
         $dialog_submit_button.prop("disabled", true);
@@ -303,6 +307,10 @@ export function show_generate_integration_url_modal(api_key: string): void {
                         params.set("topic", topic_name);
                     }
                 }
+
+                if (!channel_allows_empty_topic && topic_name === "") {
+                    params.delete("topic");
+                }
             }
 
             const selected_events = set_events_param(params);
@@ -353,7 +361,10 @@ export function show_generate_integration_url_modal(api_key: string): void {
             $integration_url.text(`${base_url}${selected_integration}?${params.toString()}`);
             $dialog_submit_button.prop("disabled", false);
 
-            if ($show_integration_events.prop("checked") && !selected_events) {
+            if (
+                ($show_integration_events.prop("checked") && !selected_events) ||
+                (!channel_allows_empty_topic && topic_name === "")
+            ) {
                 $dialog_submit_button.prop("disabled", true);
             }
         }
@@ -492,6 +503,9 @@ export function show_generate_integration_url_modal(api_key: string): void {
             $(".integration-url-stream-wrapper").trigger("input");
             dropdown.hide();
             const user_selected_option = stream_input_dropdown_widget.value();
+            channel_allows_empty_topic = stream_data.can_use_empty_topic(
+                Number(user_selected_option),
+            );
             if (user_selected_option === direct_messages_option.unique_id) {
                 update_topic_ui({
                     disable_topic_config_inputs: true,
