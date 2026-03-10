@@ -1005,6 +1005,17 @@ def send_subscription_remove_events(
             if inaccessible_streams:
                 send_stream_deletion_event(realm, [user_profile.id], inaccessible_streams)
 
+                queue_event_on_commit(
+                    "deferred_work",
+                    {
+                        "type": "unstar_inaccessible_stream_messages",
+                        "user_profile_id": user_profile.id,
+                        "stream_recipient_ids": [
+                            stream.recipient_id for stream in inaccessible_streams
+                        ],
+                    },
+                )
+
 
 def send_user_remove_events_on_removing_subscriptions(
     realm: Realm, altered_user_dict: dict[UserProfile, set[int]]
