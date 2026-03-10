@@ -28,9 +28,9 @@ const preview_regexes = [
 
     /\S*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp|\.mp4|\.webm|\.aac|\.flac|\.mp3|\.mpeg|\.wav)\)?(\s+|$)/m,
 
-    // Twitter and youtube links are given previews
+    // YouTube links are given previews
 
-    /\S*(?:twitter|youtube)\.com\/\S*/,
+    /\S*youtube\.com\/\S*/,
 ];
 
 function contains_preview_link(content: string): boolean {
