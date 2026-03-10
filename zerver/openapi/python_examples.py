@@ -99,6 +99,23 @@ def validate_message(client: Client, message_id: int, content: Any) -> None:
     assert result["raw_content"] == content
 
 
+@openapi_test_function("/realm:patch")
+def update_realm(client: Client) -> None:
+    # {code_example|start}
+    request = {
+        "name": "Zulip HQ",
+        "description": "The official organization for Zulip development.",
+        "emails_restricted_to_domains": False,
+    }
+    result = client.call_endpoint(
+        url="/realm",
+        method="PATCH",
+        request=request,
+    )
+    # {code_example|end}
+    print(result)
+
+
 def set_moderation_request_channel(client: Client, channel: str | None = "core team") -> None:
     if channel is None:
         # Disable moderation request feature
@@ -2160,6 +2177,7 @@ def test_server_organizations(client: Client) -> None:
     export_realm(client)
     get_realm_exports(client)
     get_realm_export_consents(client)
+    update_realm(client)
 
 
 def test_errors(client: Client) -> None:
