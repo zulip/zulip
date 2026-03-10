@@ -13,14 +13,6 @@ from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-DEPRECATED_EXCEPTION_MESSAGE_TEMPLATE = """
-{severity_emoji} New [issue]({url}) (level: {level}):
-
-``` quote
-{message}
-```
-"""
-
 LOG_ENTRY_MESSAGE_TEMPLATE = """
 {severity_emoji} **New message event:** [{title}]({web_link})
 ```quote
@@ -254,19 +246,7 @@ def handle_issue_payload(
     return (topic_name, body)
 
 
-def handle_deprecated_payload(payload: dict[str, Any]) -> tuple[str, str]:
-    topic_name = "{}".format(payload.get("project_name"))
-    severity_emoji = severity_emoji_map.get(payload["level"], "")
-    body = DEPRECATED_EXCEPTION_MESSAGE_TEMPLATE.format(
-        severity_emoji=severity_emoji,
-        level=payload["level"].upper(),
-        url=payload.get("url"),
-        message=payload.get("message"),
-    ).strip()
-    return (topic_name, body)
-
-
-def transform_webhook_payload(payload: dict[str, Any]) -> dict[str, Any] | None:
+def transform_webhook_payload(payload: dict[str, Any]) -> dict[str, Any]:
     """Attempt to use webhook payload for the notification.
 
     When the integration is configured as a webhook, instead of being added as
@@ -275,11 +255,7 @@ def transform_webhook_payload(payload: dict[str, Any]) -> dict[str, Any] | None:
     look like the payload from a "properly configured" integration.
     """
     event = payload.get("event", {})
-    # deprecated payloads don't have event_id
-    event_id = event.get("event_id")
-    if not event_id:
-        return None
-
+    event_id = event["event_id"]
     event_path = f"events/{event_id}/"
     event["web_url"] = urljoin(payload["url"], event_path)
     timestamp = event.get("timestamp", event["received"])
@@ -303,11 +279,7 @@ def api_sentry_webhook(
     # This webhook integration uses the payload structure instead of the
     # Sentry-Hook-Resource header to determine the type of event.
     # TODO: Investigate switching to use headers for event types.
-    data = payload.get("data", None)
-
-    if data is None:
-        data = transform_webhook_payload(payload)
-
+    data = payload.get("data", None) or transform_webhook_payload(payload)
     event_type = None
     match data:
         case {"issue": issue_data}:
@@ -319,8 +291,6 @@ def api_sentry_webhook(
         case {"error": event_data}:
             event_type = "error"
             topic_name, body = handle_exception_or_log_entry_payloads(event_data)
-        case {} | None:
-            topic_name, body = handle_deprecated_payload(payload)
         case _:  # nocoverage
             raise UnsupportedWebhookEventTypeError(str(list(data.keys())))
 
