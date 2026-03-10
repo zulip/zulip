@@ -1989,8 +1989,8 @@ label.preferences-radio-choice-label {
    rendered realm and channel descriptions. */
 .settings-view-only-textarea {
     margin: 0;
-    /* 5px at 16px and 10px at 16px */
-    padding: 0.3125em 0.625em;
+    /* 5px at 16px */
+    padding: 0.3125em var(--view-only-field-horizontal-padding);
     background-color: var(--background-color-view-only-textarea);
     border: var(--input-border-width) solid var(--border-color-textarea);
     border-radius: 4px;
