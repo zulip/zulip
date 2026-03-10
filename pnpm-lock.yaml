@@ -218,6 +218,9 @@ importers:
       minimalistic-assert:
         specifier: ^1.0.1
         version: 1.0.1
+      oembed-providers:
+        specifier: ^1.0.20260222
+        version: 1.0.20260222
       panzoom:
         specifier: ^9.4.2
         version: 9.4.3
@@ -7275,6 +7278,9 @@ packages:
 
   obug@2.1.1:
     resolution: {integrity: sha512-uTqF9MuPraAQ+IsnPf366RG4cP9RtUi7MLO1N3KEc+wb0a6yKpeL0lmk2IB1jY5KHPAlTc6T/JRdC/YqxHNwkQ==}
+
+  oembed-providers@1.0.20260222:
+    resolution: {integrity: sha512-HXCvPxSgeI8aymDquSq6Uhz+64nZq9knJmeFKgZfAWL+0iv68N1yvmandA3wQfdbnwhDRSw0uZpcFYVOZtgLtA==}
 
   ofetch@1.5.1:
     resolution: {integrity: sha512-2W4oUZlVaqAPAil6FUg/difl6YhqhUR7x2eZY4bQCko22UXg3hptq9KLQdqFClV+Wu85UX7hNtdGTngi/1BxcA==}
@@ -18194,6 +18200,8 @@ snapshots:
   obuf@1.1.2: {}
 
   obug@2.1.1: {}
+
+  oembed-providers@1.0.20260222: {}
 
   ofetch@1.5.1:
     dependencies:

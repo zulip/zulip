@@ -1,13 +1,12 @@
 import re
 from collections import OrderedDict
-from typing import Any
+from typing import Any, cast
 from unittest import mock
-from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+from urllib.parse import urlencode
 
 import responses
 from django.test import override_settings
 from django.utils.html import escape
-from pyoembed.providers import get_provider
 from requests.exceptions import ConnectionError
 from typing_extensions import override
 
@@ -17,7 +16,13 @@ from zerver.lib.camo import get_camo_url
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
-from zerver.lib.url_preview.oembed import get_oembed_data, strip_cdata
+from zerver.lib.url_preview.oembed import (
+    compile_oembed_providers,
+    get_oembed_data,
+    get_oembed_endpoint,
+    scheme_to_regex,
+    strip_cdata,
+)
 from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
 from zerver.lib.url_preview.preview import get_link_embed_data
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
@@ -25,143 +30,129 @@ from zerver.models import Message, Realm, UserMessage, UserProfile
 from zerver.worker.embed_links import FetchLinksEmbedData
 
 
-def reconstruct_url(url: str, maxwidth: int = 640, maxheight: int = 480) -> str:
-    # The following code is taken from
-    # https://github.com/rafaelmartins/pyoembed/blob/master/pyoembed/__init__.py.
-    # This is a helper function which will be indirectly use to mock the HTTP responses.
-    provider = get_provider(str(url))
-    oembed_url = provider.oembed_url(url)
-    scheme, netloc, path, query_string, fragment = urlsplit(oembed_url)
-
-    query_params = OrderedDict(parse_qsl(query_string))
+def get_oembed_api_url(endpoint: str, url: str, maxwidth: int = 640, maxheight: int = 480) -> str:
+    # Build the oEmbed API URL for a given endpoint and content URL.
+    query_params = OrderedDict()
+    query_params["url"] = url
     query_params["maxwidth"] = str(maxwidth)
     query_params["maxheight"] = str(maxheight)
-    final_url = urlunsplit((scheme, netloc, path, urlencode(query_params, True), fragment))
-    return final_url
+
+    return endpoint + "?" + urlencode(query_params, True)
 
 
 @override_settings(INLINE_URL_EMBED_PREVIEW=True)
 class OembedTestCase(ZulipTestCase):
     @responses.activate
-    def test_present_provider(self) -> None:
+    def test_unsupported_resource_type(self) -> None:
         response_data = {
             "type": "rich",
-            "thumbnail_url": "https://scontent.cdninstagram.com/t51.2885-15/n.jpg",
-            "thumbnail_width": 640,
-            "thumbnail_height": 426,
             "title": "NASA",
             "html": "<p>test</p>",
             "version": "1.0",
             "width": 658,
             "height": 400,
         }
-        url = "http://instagram.com/p/BLtI2WdAymy"
-        reconstructed_url = reconstruct_url(url)
-        responses.add(
-            responses.GET,
-            reconstructed_url,
-            json=response_data,
-            status=200,
-        )
+        url = "https://www.youtube.com/watch?v=BLtI2WdAymy"
+        api_url = get_oembed_api_url("https://www.youtube.com/oembed", url)
+        responses.add(responses.GET, api_url, json=response_data, status=200)
 
         data = get_oembed_data(url)
         assert data is not None
         self.assertIsInstance(data, UrlEmbedData)
-        self.assertEqual(data.title, response_data["title"])
+        self.assertEqual(data.title, "NASA")
 
     @responses.activate
-    def test_photo_provider(self) -> None:
-        response_data = {
-            "type": "photo",
-            "thumbnail_url": "https://scontent.cdninstagram.com/t51.2885-15/n.jpg",
-            "url": "https://scontent.cdninstagram.com/t51.2885-15/n.jpg",
-            "thumbnail_width": 640,
-            "thumbnail_height": 426,
-            "title": "NASA",
-            "html": "<p>test</p>",
-            "version": "1.0",
-            "width": 658,
-            "height": 400,
-        }
-        # pyoembed.providers.imgur only works with http:// URLs, not https:// (!)
-        url = "http://imgur.com/photo/158727223"
-        reconstructed_url = reconstruct_url(url)
-        responses.add(
-            responses.GET,
-            reconstructed_url,
-            json=response_data,
-            status=200,
-        )
+    def test_supported_photo_and_video_resource_types(self) -> None:
+        test_cases: list[dict[str, Any]] = [
+            {
+                "name": "photo",
+                "url": "https://www.flickr.com/photos/bees/2341623661/",
+                "response_data": {
+                    "type": "photo",
+                    "url": "https://live.staticflickr.com/3123/2341623661_7c99f48bbf_b.jpg",
+                    "thumbnail_width": 640,
+                    "thumbnail_height": 426,
+                    "title": "Flickr Test Image",
+                    "version": "1.0",
+                    "width": 658,
+                    "height": 400,
+                },
+                "expected_title": "Flickr Test Image",
+                "expected_type": "photo",
+                "expected_image": "https://live.staticflickr.com/3123/2341623661_7c99f48bbf_b.jpg",
+                "expected_html": None,
+            },
+            {
+                "name": "video",
+                "url": "https://vimeo.com/158727223",
+                "response_data": {
+                    "type": "video",
+                    "thumbnail_url": "https://i.vimeocdn.com/video/590587169-640x360.jpg",
+                    "thumbnail_width": 480,
+                    "thumbnail_height": 360,
+                    "title": "Vimeo Test Video",
+                    "html": '<![CDATA[<iframe src="https://player.vimeo.com/video/158727223" width="480" height="270" frameborder="0"></iframe>]]>',
+                    "version": "1.0",
+                    "width": 480,
+                    "height": 270,
+                },
+                "expected_title": "Vimeo Test Video",
+                "expected_type": "video",
+                "expected_image": "https://i.vimeocdn.com/video/590587169-640x360.jpg",
+                "expected_html": '<iframe src="https://player.vimeo.com/video/158727223" width="480" height="270" frameborder="0"></iframe>',
+            },
+        ]
 
-        data = get_oembed_data(url)
-        assert data is not None
-        self.assertIsInstance(data, UrlOEmbedData)
-        self.assertEqual(data.title, response_data["title"])
+        for case in test_cases:
+            with self.subTest(case_name=case["name"]):
+                responses.reset()
+                url = cast(str, case["url"])
+                response_data = cast(dict[str, Any], case["response_data"])
+                expected_type = cast(str, case["expected_type"])
+                expected_title = cast(str, case["expected_title"])
+                expected_image = cast(str, case["expected_image"])
+                expected_html = cast(str | None, case["expected_html"])
 
-    @responses.activate
-    def test_video_provider(self) -> None:
-        response_data = {
-            "type": "video",
-            "thumbnail_url": "https://scontent.cdninstagram.com/t51.2885-15/n.jpg",
-            "thumbnail_width": 640,
-            "thumbnail_height": 426,
-            "title": "NASA",
-            "html": "<p>test</p>",
-            "version": "1.0",
-            "width": 658,
-            "height": 400,
-        }
-        url = "http://blip.tv/video/158727223"
-        reconstructed_url = reconstruct_url(url)
-        responses.add(
-            responses.GET,
-            reconstructed_url,
-            json=response_data,
-            status=200,
-        )
+                endpoint = get_oembed_endpoint(url)
+                assert endpoint is not None
+                api_url = get_oembed_api_url(endpoint, url)
+                responses.add(responses.GET, api_url, json=response_data, status=200)
 
-        data = get_oembed_data(url)
-        assert data is not None
-        self.assertIsInstance(data, UrlOEmbedData)
-        self.assertEqual(data.title, response_data["title"])
-
-    @responses.activate
-    def test_connect_error_request(self) -> None:
-        url = "http://instagram.com/p/BLtI2WdAymy"
-        reconstructed_url = reconstruct_url(url)
-        responses.add(responses.GET, reconstructed_url, body=ConnectionError())
-        data = get_oembed_data(url)
-        self.assertIsNone(data)
-
-    @responses.activate
-    def test_400_error_request(self) -> None:
-        url = "http://instagram.com/p/BLtI2WdAymy"
-        reconstructed_url = reconstruct_url(url)
-        responses.add(responses.GET, reconstructed_url, status=400)
-        data = get_oembed_data(url)
-        self.assertIsNone(data)
+                data = get_oembed_data(url)
+                assert data is not None
+                self.assertIsInstance(data, UrlOEmbedData)
+                self.assertEqual(data.type, expected_type)
+                self.assertEqual(data.title, expected_title)
+                self.assertEqual(data.image, expected_image)
+                self.assertEqual(data.html, expected_html)
 
     @responses.activate
-    def test_500_error_request(self) -> None:
-        url = "http://instagram.com/p/BLtI2WdAymy"
-        reconstructed_url = reconstruct_url(url)
-        responses.add(responses.GET, reconstructed_url, status=500)
-        data = get_oembed_data(url)
-        self.assertIsNone(data)
+    def test_request_error_responses(self) -> None:
+        url = "https://www.youtube.com/watch?v=BLtI2WdAymy"
+        api_url = get_oembed_api_url("https://www.youtube.com/oembed", url)
+
+        error_cases: list[tuple[str, dict[str, Any]]] = [
+            ("connection_error", {"body": ConnectionError()}),
+            ("status_400", {"status": 400}),
+            ("status_500", {"status": 500}),
+            (
+                "invalid_json",
+                {
+                    "body": "{invalid json}",
+                    "content_type": "application/json",
+                    "status": 200,
+                },
+            ),
+        ]
+
+        for case_name, response_kwargs in error_cases:
+            with self.subTest(case_name=case_name):
+                responses.reset()
+                responses.add(responses.GET, api_url, **response_kwargs)
+                data = get_oembed_data(url)
+                self.assertIsNone(data)
 
     @responses.activate
-    def test_invalid_json_in_response(self) -> None:
-        url = "http://instagram.com/p/BLtI2WdAymy"
-        reconstructed_url = reconstruct_url(url)
-        responses.add(
-            responses.GET,
-            reconstructed_url,
-            json="{invalid json}",
-            status=200,
-        )
-        data = get_oembed_data(url)
-        self.assertIsNone(data)
-
     def test_oembed_html(self) -> None:
         html = '<iframe src="//www.instagram.com/embed.js"></iframe>'
         stripped_html = strip_cdata(html)
@@ -172,6 +163,244 @@ class OembedTestCase(ZulipTestCase):
         html = f"<![CDATA[{iframe_content}]]>"
         stripped_html = strip_cdata(html)
         self.assertEqual(iframe_content, stripped_html)
+
+    def test_scheme_to_regex(self) -> None:
+        test_cases: list[dict[str, Any]] = [
+            {
+                "name": "wildcard_subdomain",
+                "scheme": "https://*.youtube.com/watch*",
+                "match_urls": [
+                    "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                    "https://m.youtube.com/watch?v=dQw4w9WgXcQ",
+                    "https://youtube.com/watch?v=dQw4w9WgXcQ",
+                    "http://youtube.com/watch?v=dQw4w9WgXcQ",
+                ],
+                "non_match_urls": ["https://youtube.com/v/dQw4w9WgXcQ"],
+            },
+            {
+                "name": "literal_plus_in_query",
+                "scheme": "https://example.com/watch?v=*&list=+",
+                "match_urls": ["https://example.com/watch?v=abc&list=+"],
+                "non_match_urls": ["https://example.com/watch?v=abc&list=something"],
+            },
+            {
+                "name": "anchors_non_wildcard_path",
+                "scheme": "https://example.com/watch",
+                "match_urls": ["https://example.com/watch", "http://example.com/watch"],
+                "non_match_urls": ["https://example.com/watch/extra"],
+            },
+        ]
+
+        for case in test_cases:
+            with self.subTest(case_name=case["name"]):
+                regex = scheme_to_regex(cast(str, case["scheme"]))
+                for url in cast(list[str], case["match_urls"]):
+                    self.assertIsNotNone(re.match(regex, url))
+                for url in cast(list[str], case["non_match_urls"]):
+                    self.assertIsNone(re.match(regex, url))
+
+        wildcard_regex = scheme_to_regex("https://*.youtube.com/watch*")
+        self.assertIsNotNone(
+            re.match(wildcard_regex, "HTTPS://M.YOUTUBE.COM/WATCH?v=dQw4w9WgXcQ", re.IGNORECASE)
+        )
+
+    def test_oembed_endpoint_with_existing_query_param(self) -> None:
+        # hearthis.at's endpoint already contains ?format=json.
+        # Verify that session.get(endpoint, params=params) appends additional
+        # parameters with & instead of ?, producing a valid URL.
+        endpoint = get_oembed_endpoint("https://hearthis.at/some-artist/some-track/")
+        assert endpoint is not None
+        self.assertIn("?", endpoint)
+
+        url = "https://hearthis.at/some-artist/some-track/"
+        with responses.RequestsMock() as rsps:
+            rsps.add(
+                responses.GET,
+                "https://hearthis.at/oembed/",
+                json={"type": "rich", "title": "Test Track", "version": "1.0"},
+                status=200,
+            )
+            get_oembed_data(url)
+            self.assert_length(rsps.calls, 1)
+            called_url = rsps.calls[0].request.url
+            assert called_url is not None
+            self.assertEqual(called_url.count("?"), 1)
+            self.assertIn("url=", called_url)
+            self.assertIn("maxwidth=", called_url)
+
+    def test_unknown_provider_returns_none(self) -> None:
+        url = "https://unknown-site.example.com/page"
+        data = get_oembed_data(url)
+        self.assertIsNone(data)
+
+    def test_compile_oembed_providers_missing_endpoint(self) -> None:
+        mock_providers: list[dict[str, Any]] = [
+            {
+                "provider_name": "TestProvider",
+                "endpoints": [
+                    {
+                        "schemes": [
+                            "https://*.example.com/watch*",
+                            "https://example.com/watch?v=*&list=+",
+                        ],
+                        "url": "https://example.com/oembed",
+                    }
+                ],
+            },
+            {"provider_name": "MissingEndpoints"},
+            {
+                "provider_name": "MissingSchemes",
+                "endpoints": [{"url": "https://invalid.example.com/oembed"}],
+            },
+            {
+                "provider_name": "MissingEndpointUrl",
+                "endpoints": [{"schemes": ["https://missing-url.example.com/*"]}],
+            },
+        ]
+
+        endpoint_map = compile_oembed_providers(mock_providers)
+        self.assert_length(endpoint_map, 1)
+        [(compiled_regex, endpoint_url)] = endpoint_map.items()
+        self.assertEqual(endpoint_url, "https://example.com/oembed")
+
+        regex_match_cases = [
+            ("https://www.example.com/watch?v=123", True),
+            ("https://example.com/watch?v=123&list=+", True),
+            ("https://example.com/v/123", False),
+        ]
+        for url, should_match in regex_match_cases:
+            with self.subTest(url=url):
+                self.assertEqual(compiled_regex.match(url) is not None, should_match)
+
+    def test_compile_oembed_providers_format_and_http_normalization(self) -> None:
+        mock_providers: list[dict[str, Any]] = [
+            {
+                "provider_name": "FormatAndSchemeVariants",
+                "endpoints": [
+                    {
+                        "schemes": ["https://example.com/watch/*"],
+                        "url": "https://example.com/oembed.{format}",
+                    }
+                ],
+            }
+        ]
+
+        mock_map = compile_oembed_providers(mock_providers)
+
+        with mock.patch("zerver.lib.url_preview.oembed.OEMBED_ENDPOINT_MAP", mock_map):
+            test_cases = [
+                ("https://example.com/watch/123", "https://example.com/oembed.json"),
+                ("http://example.com/watch/123", "https://example.com/oembed.json"),
+            ]
+            for url, expected_endpoint in test_cases:
+                with self.subTest(url=url):
+                    self.assertEqual(get_oembed_endpoint(url), expected_endpoint)
+
+    def test_compile_oembed_providers_wildcard_matches_bare_domain(self) -> None:
+        mock_providers: list[dict[str, Any]] = [
+            {
+                "provider_name": "WildcardSubdomain",
+                "endpoints": [
+                    {
+                        "schemes": ["https://*.example.com/watch/*"],
+                        "url": "https://example.com/oembed",
+                    }
+                ],
+            }
+        ]
+
+        mock_map = compile_oembed_providers(mock_providers)
+
+        with mock.patch("zerver.lib.url_preview.oembed.OEMBED_ENDPOINT_MAP", mock_map):
+            self.assertEqual(
+                get_oembed_endpoint("https://media.example.com/watch/123"),
+                "https://example.com/oembed",
+            )
+            self.assertEqual(
+                get_oembed_endpoint("https://example.com/watch/123"),
+                "https://example.com/oembed",
+            )
+
+    def test_get_oembed_endpoint_provider_matches(self) -> None:
+        test_cases = [
+            ("https://www.youtube.com/watch?v=dQw4w9WgXcQ", "https://www.youtube.com/oembed"),
+            ("http://www.youtube.com/watch?v=dQw4w9WgXcQ", "https://www.youtube.com/oembed"),
+            ("https://youtube.com/watch?v=dQw4w9WgXcQ", "https://www.youtube.com/oembed"),
+            ("https://youtu.be/dQw4w9WgXcQ", "https://www.youtube.com/oembed"),
+            ("https://www.youtube.com/v/dQw4w9WgXcQ", "https://www.youtube.com/oembed"),
+            ("https://www.youtube.com/embed/dQw4w9WgXcQ", "https://www.youtube.com/oembed"),
+            ("https://www.youtube.com/shorts/dQw4w9WgXcQ", "https://www.youtube.com/oembed"),
+            ("https://vimeo.com/123456789", "https://vimeo.com/api/oembed.json"),
+            ("http://vimeo.com/123456789", "https://vimeo.com/api/oembed.json"),
+            ("https://open.spotify.com/track/abc123", "https://open.spotify.com/oembed"),
+            ("http://open.spotify.com/track/abc123", "https://open.spotify.com/oembed"),
+            ("https://soundcloud.com/artist/track", "https://soundcloud.com/oembed"),
+            ("http://soundcloud.com/artist/track", "https://soundcloud.com/oembed"),
+        ]
+        for url, expected_endpoint in test_cases:
+            with self.subTest(url=url):
+                self.assertEqual(get_oembed_endpoint(url), expected_endpoint)
+
+    def test_get_oembed_endpoint_matches_first_provider(self) -> None:
+        # When two providers match the same URL, the first one registered is preferred.
+        mock_providers: list[dict[str, Any]] = [
+            {
+                "provider_name": "GenericProvider",
+                "endpoints": [
+                    {
+                        "schemes": ["https://example.com/*"],
+                        "url": "https://generic.example.com/oembed",
+                    }
+                ],
+            },
+            {
+                "provider_name": "SpecificProvider",
+                "endpoints": [
+                    {
+                        "schemes": ["https://example.com/video/*"],
+                        "url": "https://specific.example.com/oembed",
+                    }
+                ],
+            },
+        ]
+
+        mock_map = compile_oembed_providers(mock_providers)
+
+        with mock.patch("zerver.lib.url_preview.oembed.OEMBED_ENDPOINT_MAP", mock_map):
+            self.assertEqual(
+                get_oembed_endpoint("https://example.com/video/123"),
+                "https://generic.example.com/oembed",
+            )
+
+    def test_get_oembed_endpoint_skips_malformed_provider(self) -> None:
+        mock_providers: list[dict[str, Any]] = [
+            {"provider_name": "MissingEndpoints"},
+            {
+                "provider_name": "MissingSchemes",
+                "endpoints": [{"url": "https://invalid.example.com/oembed"}],
+            },
+            {
+                "provider_name": "EmptySchemes",
+                "endpoints": [{"schemes": [], "url": "https://invalid.example.com/oembed"}],
+            },
+            {
+                "provider_name": "Valid",
+                "endpoints": [
+                    {
+                        "schemes": ["https://example.com/video/*"],
+                        "url": "https://specific.example.com/oembed",
+                    }
+                ],
+            },
+        ]
+
+        mock_map = compile_oembed_providers(mock_providers)
+
+        with mock.patch("zerver.lib.url_preview.oembed.OEMBED_ENDPOINT_MAP", mock_map):
+            self.assertEqual(
+                get_oembed_endpoint("https://example.com/video/123"),
+                "https://specific.example.com/oembed",
+            )
 
 
 class OpenGraphParserTestCase(ZulipTestCase):
