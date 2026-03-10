@@ -140,7 +140,7 @@ def api_thinkst_webhook(
     response = body(message)
 
     topic_name = None
-    if user_specified_topic:
+    if user_specified_topic is not None:
         topic_name = user_specified_topic
     else:
         name = canary_name(message)
