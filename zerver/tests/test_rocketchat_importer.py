@@ -544,6 +544,32 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(records_json[2]["realm_id"], 3)
         self.assertTrue(os.path.isfile(os.path.join(output_dir, "emoji", records_json[2]["path"])))
 
+    def test_write_emoticon_data_emoji_name_gets_sanitized(self) -> None:
+        output_dir = self.make_import_output_dir("rocketchat")
+
+        custom_emoji_data: dict[str, list[dict[str, Any]]] = {
+            "emoji": [
+                {
+                    "name": "../../../etc/malicious",
+                    "extension": "png",
+                    "aliases": [],
+                },
+            ],
+            "file": [],
+            "chunk": [],
+        }
+
+        with self.assertLogs(level="INFO"):
+            zerver_realmemoji = build_custom_emoji(
+                realm_id=3,
+                custom_emoji_data=custom_emoji_data,
+                output_dir=output_dir,
+            )
+
+        self.assert_length(zerver_realmemoji, 1)
+        # Verify the filename was sanitized to remove path separators.
+        self.assertEqual(zerver_realmemoji[0]["file_name"], "......etcmalicious.png")
+
     def test_map_receiver_id_to_recipient_id(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
