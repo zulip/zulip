@@ -2461,6 +2461,25 @@ label.preferences-radio-choice-label {
         width: 75%;
     }
 
+    .integration-url-topic {
+        position: relative;
+    }
+
+    #integration-url-topic-placeholder {
+        position: absolute;
+        left: 8px;
+        top: 50%;
+        pointer-events: none;
+        visibility: hidden;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &.visible {
+            visibility: visible;
+        }
+    }
+
     #stream-not-specified-notice {
         margin-top: -10px;
     }
