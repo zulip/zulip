@@ -1917,3 +1917,181 @@ class TestRealmAuditLog(ZulipTestCase):
         self.check_role_count_schema(audit_log_entries[1].extra_data[RealmAuditLog.ROLE_COUNT])
         self.assertNotIn(RealmAuditLog.OLD_VALUE, audit_log_entries[1].extra_data)
         self.assertEqual(audit_log_entries[1].extra_data["trigger"], "setting_changed")
+
+    def test_workplace_users_group_changed_entries_on_updating_group_memberships(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        realm = hamlet.realm
+        test_group = check_add_user_group(realm, "test_group", [hamlet], acting_user=hamlet)
+        test_group_2 = check_add_user_group(realm, "test_group_2", [hamlet], acting_user=hamlet)
+
+        do_change_realm_permission_group_setting(
+            realm, "workplace_users_group", test_group, acting_user=None
+        )
+
+        now = timezone_now()
+        bulk_add_members_to_user_groups(
+            [test_group, test_group_2], [othello.id], acting_user=hamlet
+        )
+
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=hamlet,
+            realm=realm,
+            event_time__gte=now,
+            event_type__in=[
+                AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED,
+            ],
+        )
+        self.assert_length(audit_log_entries, 3)
+
+        self.assertEqual(
+            audit_log_entries[0].event_type,
+            AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+        )
+        self.assertEqual(
+            audit_log_entries[1].event_type,
+            AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+        )
+
+        self.assertEqual(
+            audit_log_entries[2].event_type, AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED
+        )
+        self.check_role_count_schema(audit_log_entries[2].extra_data[RealmAuditLog.ROLE_COUNT])
+        self.assertNotIn(RealmAuditLog.OLD_VALUE, audit_log_entries[2].extra_data)
+        self.assertEqual(audit_log_entries[2].extra_data["trigger"], "user_membership_changed")
+
+        add_subgroups_to_user_group(test_group, [test_group_2], acting_user=hamlet)
+
+        now = timezone_now()
+        bulk_add_members_to_user_groups([test_group_2], [cordelia.id], acting_user=hamlet)
+
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=hamlet,
+            realm=realm,
+            event_time__gte=now,
+            event_type__in=[
+                AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED,
+            ],
+        )
+        self.assert_length(audit_log_entries, 2)
+
+        self.assertEqual(
+            audit_log_entries[0].event_type,
+            AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+        )
+
+        self.assertEqual(
+            audit_log_entries[1].event_type, AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED
+        )
+        self.check_role_count_schema(audit_log_entries[1].extra_data[RealmAuditLog.ROLE_COUNT])
+        self.assertNotIn(RealmAuditLog.OLD_VALUE, audit_log_entries[1].extra_data)
+        self.assertEqual(audit_log_entries[1].extra_data["trigger"], "user_membership_changed")
+
+        # Set workplace_users_group to an anonymous group containing the group
+        # whose membership is being updated.
+        anonymous_group = self.create_or_update_anonymous_group_for_setting(
+            [self.example_user("iago")], [test_group]
+        )
+        do_change_realm_permission_group_setting(
+            realm, "workplace_users_group", anonymous_group, acting_user=None
+        )
+
+        now = timezone_now()
+        bulk_remove_members_from_user_groups([test_group], [othello.id], acting_user=hamlet)
+
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=hamlet,
+            realm=realm,
+            event_time__gte=now,
+            event_type__in=[
+                AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_REMOVED,
+                AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED,
+            ],
+        )
+        self.assert_length(audit_log_entries, 2)
+
+        self.assertEqual(
+            audit_log_entries[0].event_type,
+            AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_REMOVED,
+        )
+
+        self.assertEqual(
+            audit_log_entries[1].event_type, AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED
+        )
+        self.check_role_count_schema(audit_log_entries[1].extra_data[RealmAuditLog.ROLE_COUNT])
+        self.assertNotIn(RealmAuditLog.OLD_VALUE, audit_log_entries[1].extra_data)
+        self.assertEqual(audit_log_entries[1].extra_data["trigger"], "user_membership_changed")
+
+        now = timezone_now()
+        bulk_remove_members_from_user_groups([test_group_2], [cordelia.id], acting_user=hamlet)
+
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=hamlet,
+            realm=realm,
+            event_time__gte=now,
+            event_type__in=[
+                AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_REMOVED,
+                AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED,
+            ],
+        )
+        self.assert_length(audit_log_entries, 2)
+
+        self.assertEqual(
+            audit_log_entries[0].event_type,
+            AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_REMOVED,
+        )
+
+        self.assertEqual(
+            audit_log_entries[1].event_type, AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED
+        )
+        self.check_role_count_schema(audit_log_entries[1].extra_data[RealmAuditLog.ROLE_COUNT])
+        self.assertNotIn(RealmAuditLog.OLD_VALUE, audit_log_entries[1].extra_data)
+        self.assertEqual(audit_log_entries[1].extra_data["trigger"], "user_membership_changed")
+
+        # Update membership for a group not being used for workplace_users_group.
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
+
+        now = timezone_now()
+        bulk_add_members_to_user_groups([hamletcharacters_group], [othello.id], acting_user=hamlet)
+
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=hamlet,
+            realm=realm,
+            event_time__gte=now,
+            event_type__in=[
+                AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED,
+            ],
+        )
+        self.assert_length(audit_log_entries, 1)
+
+        self.assertEqual(
+            audit_log_entries[0].event_type,
+            AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+        )
+
+        now = timezone_now()
+        bulk_remove_members_from_user_groups(
+            [hamletcharacters_group], [othello.id], acting_user=hamlet
+        )
+
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=hamlet,
+            realm=realm,
+            event_time__gte=now,
+            event_type__in=[
+                AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_REMOVED,
+                AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED,
+            ],
+        )
+        self.assert_length(audit_log_entries, 1)
+
+        self.assertEqual(
+            audit_log_entries[0].event_type,
+            AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_REMOVED,
+        )
