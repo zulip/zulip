@@ -11,7 +11,7 @@ from django.utils.translation import override as override_language
 from typing_extensions import override
 
 from zerver.actions.data_import import import_slack_data
-from zerver.actions.message_flags import do_mark_stream_messages_as_read
+from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_unstar_stream_messages
 from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_export import notify_realm_export
 from zerver.actions.realm_settings import scrub_deactivated_realm
@@ -59,6 +59,22 @@ class DeferredWorker(QueueProcessingWorker):
                 count = do_mark_stream_messages_as_read(user_profile, recipient_id)
                 logger.info(
                     "Marked %s messages as read for user %s, stream_recipient_id %s",
+                    count,
+                    user_profile.id,
+                    recipient_id,
+                )
+        elif event["type"] == "unstar_inaccessible_stream_messages":
+            user_profile = get_user_profile_by_id(event["user_profile_id"])
+            logger.info(
+                "Unstarring messages in inaccessible streams for user %s, stream_recipient_ids %s",
+                user_profile.id,
+                event["stream_recipient_ids"],
+            )
+
+            for recipient_id in event["stream_recipient_ids"]:
+                count = do_unstar_stream_messages(user_profile, recipient_id)
+                logger.info(
+                    "Unstarred %s messages for user %s, stream_recipient_id %s",
                     count,
                     user_profile.id,
                     recipient_id,

@@ -154,6 +154,41 @@ def do_mark_stream_messages_as_read(
     return count
 
 
+@transaction.atomic(durable=True)
+def do_unstar_stream_messages(user_profile: UserProfile, stream_recipient_id: int) -> int:
+    query = (
+        UserMessage.select_for_update_query()
+        .filter(
+            user_profile=user_profile,
+            message__recipient_id=stream_recipient_id,
+        )
+        .extra(  # noqa: S610
+            where=[UserMessage.where_starred()],
+        )
+    )
+
+    message_ids = list(query.values_list("message_id", flat=True))
+
+    if len(message_ids) == 0:
+        return 0
+
+    count = query.update(
+        flags=F("flags").bitand(~UserMessage.flags.starred),
+    )
+
+    event = {
+        "type": "update_message_flags",
+        "op": "remove",
+        "operation": "remove",
+        "flag": "starred",
+        "messages": message_ids,
+        "all": False,
+    }
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])
+
+    return count
+
+
 @transaction.atomic(savepoint=False)
 def do_mark_muted_user_messages_as_read(
     user_profile: UserProfile,
