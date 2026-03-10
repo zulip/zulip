@@ -2699,7 +2699,15 @@ def do_convert(
         # extremely inefficient in corner cases) as well as user
         # errors (e.g. a linkifier that makes some syntax
         # infinite-loop).
-        rendering_result.rendered_content = unsafe_timeout(5, lambda: md_engine.convert(content))
+        if settings.TEST_SUITE:
+            # Don't use the thread-based timeout in tests, because
+            # coverage.py is not thread-safe and flakes with
+            # "Set changed size during iteration" errors.
+            rendering_result.rendered_content = md_engine.convert(content)
+        else:
+            rendering_result.rendered_content = unsafe_timeout(
+                5, lambda: md_engine.convert(content)
+            )
 
         # Post-process the result with the rendered image previews:
         if user_upload_previews is not None:
