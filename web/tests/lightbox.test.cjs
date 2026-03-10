@@ -83,6 +83,21 @@ run_test("parse_media_data server-rendered image uses parent href", () => {
     assert.equal(result.user, "Test User");
 });
 
+run_test("parse_media_data bare image without parent link", () => {
+    // Client-rendered images (e.g., in drafts) are bare <img> tags
+    // not wrapped in an <a href>, so url falls back to img src.
+    const {media} = make_image({
+        img_src: "https://example.com/image.png",
+        // No parent_href — simulates a bare <img>.
+    });
+    const result = lightbox.parse_media_data(media);
+
+    assert.equal(result.type, "image");
+    assert.equal(result.url, "https://example.com/image.png");
+    assert.equal(result.source, "https://example.com/image.png");
+    assert.equal(result.preview, "https://example.com/image.png");
+});
+
 run_test("parse_media_data with data-src-fullsize", () => {
     // Remote images proxied through camo have a separate full-size URL.
     const camo_thumbnail = "https://example.com/camo/thumb?size=300x200";

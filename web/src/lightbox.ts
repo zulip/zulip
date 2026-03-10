@@ -528,7 +528,9 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
     const $parent = $media.parent();
     let type: MediaType;
     let source;
-    const url = $parent.attr("href");
+    // Client-rendered images (e.g., in drafts) are bare <img> tags
+    // not wrapped in an <a>, so fall back to the image's src.
+    const url = $parent.attr("href") ?? $media.attr("src");
     assert(url !== undefined);
 
     let preview_src = $media.attr("src");
