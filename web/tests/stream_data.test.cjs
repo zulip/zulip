@@ -2533,7 +2533,7 @@ run_test("is_empty_topic_only_channel", ({override}) => {
     assert.equal(stream_data.is_empty_topic_only_channel(scotland.stream_id), false);
 });
 
-run_test("can_use_empty_topic", ({override}) => {
+run_test("can_use_empty_topic", ({override, override_rewire}) => {
     const social = {
         subscribed: true,
         color: "red",
@@ -2542,6 +2542,30 @@ run_test("can_use_empty_topic", ({override}) => {
         topics_policy: "empty_topic_only",
     };
     stream_data.add_sub_for_tests(social);
+
+    assert.equal(stream_data.can_use_empty_topic(undefined), false);
+    assert.equal(stream_data.can_use_empty_topic(99), false);
+
+    let has_empty_topic = false;
+    stream_data.set_channel_has_locally_available_topic(
+        (_channel_id, _topic_name) => has_empty_topic,
+    );
+
+    // With empty_topic_only policy, if the channel already has an empty topic,
+    // the user can use it even without topic creation permission.
+    has_empty_topic = true;
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => false);
+    assert.equal(stream_data.can_use_empty_topic(social.stream_id), true);
+
+    // Without an existing empty topic and without topic creation
+    // permission, the user cannot use empty topic.
+    has_empty_topic = false;
+    assert.equal(stream_data.can_use_empty_topic(social.stream_id), false);
+
+    // With topic creation permission
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => true);
+    assert.equal(stream_data.can_use_empty_topic(social.stream_id), true);
+
     const scotland = {
         subscribed: true,
         color: "red",
@@ -2549,15 +2573,25 @@ run_test("can_use_empty_topic", ({override}) => {
         stream_id: 3,
         topics_policy: "inherit",
     };
-    override(realm, "realm_topics_policy", "allow_empty_topic");
-    assert.equal(stream_data.can_use_empty_topic(undefined), false);
-    assert.equal(stream_data.can_use_empty_topic(99), false);
-
-    assert.equal(stream_data.can_use_empty_topic(social.stream_id), true);
-
     stream_data.add_sub_for_tests(scotland);
 
+    // With allow_empty_topic policy, if the channel already has an empty topic,
+    // the user can use it even without topic creation permission.
+    realm.realm_topics_policy = "allow_empty_topic";
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => false);
+    has_empty_topic = true;
     assert.equal(stream_data.can_use_empty_topic(scotland.stream_id), true);
+
+    // Without an existing empty topic and without topic creation
+    // permission, the user cannot use empty topic.
+    has_empty_topic = false;
+    assert.equal(stream_data.can_use_empty_topic(scotland.stream_id), false);
+
+    // With topic creation permission
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => true);
+    assert.equal(stream_data.can_use_empty_topic(scotland.stream_id), true);
+
+    // disable_empty_topic always returns false regardless of other factors.
     override(realm, "realm_topics_policy", "disable_empty_topic");
     assert.equal(stream_data.can_use_empty_topic(scotland.stream_id), false);
 });

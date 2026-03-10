@@ -27,6 +27,7 @@ mock_esm("../src/message_lists", {
 const compose_ui = zrequire("compose_ui");
 const linkifiers = zrequire("linkifiers");
 const stream_data = zrequire("stream_data");
+stream_data.set_channel_has_locally_available_topic(() => false);
 const people = zrequire("people");
 const user_status = zrequire("user_status");
 const channel = mock_esm("../src/channel");
@@ -192,7 +193,7 @@ run_test("replace_syntax", ({override}) => {
     assert.equal(prev_caret + "$$\\pi$$".length - "Bca".length, $textbox.caret());
 });
 
-run_test("compute_placeholder_text", ({override}) => {
+run_test("compute_placeholder_text", ({override, override_rewire}) => {
     let opts = {
         message_type: "stream",
         stream_id: undefined,
@@ -210,6 +211,7 @@ run_test("compute_placeholder_text", ({override}) => {
         subscribed: true,
         name: "all",
         stream_id: 2,
+        topics_policy: "disable_empty_topic",
     });
     stream_data.add_sub_for_tests(stream_all);
     opts.stream_id = stream_all.stream_id;
@@ -220,6 +222,31 @@ run_test("compute_placeholder_text", ({override}) => {
         compose_ui.compute_placeholder_text(opts),
         $t({defaultMessage: "Message #all > Test"}),
     );
+
+    // When empty topic is allowed and user can create new topics,
+    // the placeholder should include the "general chat" display name.
+    const stream_open = make_stream({
+        subscribed: true,
+        name: "open",
+        stream_id: 3,
+        topics_policy: "inherit",
+    });
+    stream_data.add_sub_for_tests(stream_open);
+    opts.stream_id = stream_open.stream_id;
+    opts.topic = "";
+    realm.realm_topics_policy = "allow_empty_topic";
+    realm.realm_empty_topic_display_name = "general chat";
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => true);
+    assert.equal(
+        compose_ui.compute_placeholder_text(opts),
+        $t({defaultMessage: "Message #open > translated: general chat"}),
+    );
+
+    // When empty topic is allowed but user cannot create new topics
+    // and no empty topic exists, the placeholder should not include
+    // the empty topic display name.
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => false);
+    assert.equal(compose_ui.compute_placeholder_text(opts), $t({defaultMessage: "Message #open"}));
 
     // direct message narrows
     opts = {
@@ -1293,7 +1320,7 @@ run_test("right-to-left", () => {
 });
 
 const get_focus_area = compose_ui._get_focus_area;
-run_test("get_focus_area", ({override}) => {
+run_test("get_focus_area", ({override, override_rewire}) => {
     assert.equal(
         get_focus_area({message_type: "private", private_message_recipient_ids: []}),
         "#private_message_recipient",
@@ -1324,6 +1351,7 @@ run_test("get_focus_area", ({override}) => {
         "input#stream_message_recipient_topic",
     );
     override(realm, "realm_topics_policy", "allow_empty_topic");
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => true);
     assert.equal(
         get_focus_area({message_type: "stream", stream_name: "fun", stream_id: 4}),
         "textarea#compose-textarea",
@@ -1339,6 +1367,15 @@ run_test("get_focus_area", ({override}) => {
             topic: "more",
             trigger: "clear topic button",
         }),
+        "input#stream_message_recipient_topic",
+    );
+
+    // When empty topics are allowed by policy but the user cannot
+    // create new topics and no empty topic exists, focus should go
+    // to the topic input, not the textarea.
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => false);
+    assert.equal(
+        get_focus_area({message_type: "stream", stream_name: "fun", stream_id: 4}),
         "input#stream_message_recipient_topic",
     );
 });
