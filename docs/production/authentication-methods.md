@@ -1178,11 +1178,6 @@ provider. You can configure it by enabling
 `AUTHENTICATION_BACKENDS` and following the steps outlined in the
 comment documentation in `/etc/zulip/settings.py`.
 
-If your server was originally installed from a release in the
-`4.x` series or earlier, you will need to update your `settings.py`
-file. You can find instructions on how to do that in a
-[separate doc][update-inline-comments].
-
 The Return URL to authorize with the provider is
 `https://yourzulipdomain.example.com/complete/oidc/`.
 
