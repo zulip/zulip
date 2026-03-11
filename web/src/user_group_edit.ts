@@ -1393,6 +1393,18 @@ export function set_up_click_handlers(): void {
         e.stopPropagation();
         e.preventDefault();
     });
+
+    $("#groups_overlay").on("click", ".no-groups-to-show .view-all-groups-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        group_list_toggler.goto("all-groups");
+    });
+
+    $("#groups_overlay").on("click", ".no-groups-to-show .create-user-group-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        open_create_user_group();
+    });
 }
 
 function create_user_group_clicked(): void {
@@ -1773,11 +1785,15 @@ export function update_empty_left_panel_message(): void {
         active_tab_key,
     );
 
+    const has_any_groups = user_groups.get_realm_user_groups().length > 0;
+
     const args = {
         empty_user_group_list_message,
         can_create_user_groups:
             settings_data.user_can_create_user_groups() && realm.zulip_plan_is_not_limited,
         all_groups_tab: active_tab_key === "all-groups",
+        your_groups_tab: active_tab_key === "your-groups",
+        has_any_groups,
     };
 
     $(".no-groups-to-show").html(render_user_group_settings_empty_notice(args)).show();
@@ -1793,6 +1809,17 @@ function get_empty_user_group_list_message(
             return $t({defaultMessage: "There are no roles matching your filters."});
         }
         return $t({defaultMessage: "There are no groups matching your filters."});
+    }
+
+    // Check if organization has any non-system groups
+    const all_groups = user_groups.get_realm_user_groups();
+    const non_system_groups = all_groups.filter((group) => !group.is_system_group);
+    const organization_has_zero_non_system_groups = non_system_groups.length === 0;
+
+    if (active_tab_key === "your-groups" && organization_has_zero_non_system_groups) {
+        return $t({
+            defaultMessage: "There are no user groups you can view in this organization.",
+        });
     }
 
     if (active_tab_key === "your-groups") {
