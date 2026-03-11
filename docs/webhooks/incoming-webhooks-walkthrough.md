@@ -276,6 +276,8 @@ purposes:
 - To construct `WebhookUrlOption` objects with special UI in the web app
   for [generating incoming webhook URLs](https://zulip.com/help/generate-integration-url).
 
+For other purposes, you can use the `WebhookUrlOption` class directly.
+
 Using a preset URL option with the `build_preset_config` method:
 
 ```python
