@@ -431,8 +431,8 @@ export function show_generate_integration_url_modal(api_key: string): void {
             widget: DropdownWidget,
         ): void {
             slack_topics_dropdown_widget.render();
-            topic_ui_callback(widget.value() === send_all_to_single_topic_option.unique_id);
             dropdown.hide();
+            topic_ui_callback(widget.value() === send_all_to_single_topic_option.unique_id);
             event.preventDefault();
             event.stopPropagation();
         }
