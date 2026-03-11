@@ -534,12 +534,12 @@ service, even in error cases.
   - A timestamp.
   - The message's content.
 
-  Zulip 11.0+ has an organization-level setting available to disable
-  message content being sent via the push notification bouncer (i.e.,
-  message content will be replaced with `New message`), for clients
-  that don't support the new end-to-end encrypted notifications
-  protocol. (Prior to Zulip 11.0, this functionality was available via the
-  `PUSH_NOTIFICATION_REDACT_CONTENT` server-level setting).
+  Organization administrators can [require end-to-end encryption for
+  push notifications][require-e2ee]. When this setting is enabled,
+  legacy push notifications are not sent; only clients that support
+  E2EE push notifications will receive push notifications.
+
+  [require-e2ee]: https://zulip.com/help/mobile-notifications#require-end-to-end-encryption-for-mobile-push-notifications
 
 - All of the network requests (both from Zulip servers to the Push
   Notification Service and from the Push Notification Service to the
