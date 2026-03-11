@@ -5,22 +5,13 @@ import time
 from collections.abc import Iterator
 from contextlib import ExitStack, contextmanager
 
-# Verify the Zulip venv is available.
-from tools.lib import sanity_check
-
-sanity_check.check_venv(__file__)
-
 import django
 import requests
 
-MAX_SERVER_WAIT = 180
-
-TOOLS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if TOOLS_DIR not in sys.path:
-    sys.path.insert(0, os.path.dirname(TOOLS_DIR))
-
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
 from zerver.lib.test_fixtures import update_test_databases_if_required
+
+MAX_SERVER_WAIT = 180
 
 
 def set_up_django(external_host: str) -> None:

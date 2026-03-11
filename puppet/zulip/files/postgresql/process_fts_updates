@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --only-group=database --project=/home/zulip/deployments/current --script  # -*-python-*-
 # Processes updates to PostgreSQL full-text search for new/edited messages.
 #
 # Zulip manages its PostgreSQL full-text search as follows.  When the

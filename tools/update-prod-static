@@ -1,27 +1,15 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --preview-features=target-workspace-discovery --script  # -*-python-*-
 
 # Updates static files for production.
 import os
-import sys
 
-# We need settings so we can figure out where the prod-static directory is.
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from scripts.lib.setup_path import setup_path
-
-setup_path()
-
-# check for the venv
-from tools.lib import sanity_check
-
-sanity_check.check_venv(__file__)
-
-os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
-os.environ["ZULIP_COLLECTING_STATIC"] = "1"
 from django.conf import settings
 
 from scripts.lib.node_cache import setup_node_modules
 from scripts.lib.zulip_tools import assert_not_running_as_root, run
 
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
+os.environ["ZULIP_COLLECTING_STATIC"] = "1"
 assert_not_running_as_root()
 
 

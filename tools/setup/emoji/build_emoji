@@ -1,19 +1,15 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --preview-features=target-workspace-discovery --script  # -*-python-*-
 #
 # See docs/subsystems/emoji.md for a high-level explanation of how this system
 # works.
 import os
 import shutil
 import subprocess
-import sys
 import tempfile
 from collections.abc import Iterator, Sequence
 from typing import Any
 
 import orjson
-
-ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../")
-sys.path.append(ZULIP_PATH)
 
 from scripts.lib.zulip_tools import generate_sha1sum_emoji, run_as_root
 from tools.setup.emoji.emoji_names import EMOJI_NAME_MAPS
@@ -29,6 +25,7 @@ from tools.setup.emoji.emoji_setup_utils import (
     get_emoji_code,
 )
 
+ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../")
 EMOJI_CACHE_BASE_PATH = "/srv/zulip-emoji-cache"
 EMOJI_SCRIPT_DIR_PATH = os.path.join(ZULIP_PATH, "tools", "setup", "emoji")
 NODE_MODULES_PATH = os.path.join(ZULIP_PATH, "node_modules")

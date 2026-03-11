@@ -1,17 +1,13 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --frozen --no-config --preview-features=target-workspace-discovery --script  # -*-python-*-
 """Generates versions of landing page images to be served in different conditions."""
 
 import glob
 import os
-import sys
 from pathlib import Path
-
-ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if ZULIP_PATH not in sys.path:
-    sys.path.append(ZULIP_PATH)
 
 import pyvips
 
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 LANDING_IMAGES_DIR = os.path.join(ZULIP_PATH, "static", "images", "landing-page", "hello")
 ORIGINAL_IMAGES_DIR = os.path.join(LANDING_IMAGES_DIR, "original")
 GENERATED_IMAGES_DIR = os.path.join(LANDING_IMAGES_DIR, "generated")

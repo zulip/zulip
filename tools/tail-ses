@@ -1,19 +1,12 @@
-#!/usr/bin/env python3
-import os
-import sys
-from email.headerregistry import Address
-from email.utils import parseaddr
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from scripts.lib.setup_path import setup_path
-
-setup_path()
-
-os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
+#!/usr/bin/env -S uv run --frozen --no-config --preview-features=target-workspace-discovery --script  # -*-python-*-
 import argparse
+import os
 import secrets
+import sys
 from collections.abc import Iterator
 from contextlib import contextmanager
+from email.headerregistry import Address
+from email.utils import parseaddr
 from typing import TypedDict
 
 import boto3.session
@@ -23,6 +16,8 @@ from mypy_boto3_ses import SESClient
 from mypy_boto3_sns import SNSClient
 from mypy_boto3_sqs import SQSClient
 from mypy_boto3_sqs.type_defs import DeleteMessageBatchRequestEntryTypeDef
+
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 
 
 class IdentityArgsDict(TypedDict, total=False):
