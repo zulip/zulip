@@ -19,6 +19,7 @@ def delete_unused_anonymous_groups(
                 VALUES
                     (can_add_subscribers_group_id),
                     (can_administer_channel_group_id),
+                    (can_create_topic_group_id),
                     (can_delete_any_message_group_id),
                     (can_delete_own_message_group_id),
                     (can_move_messages_out_of_channel_group_id),
