@@ -86,9 +86,9 @@ from zerver.lib.users import (
     check_can_access_user,
     check_can_create_bot,
     check_full_name,
+    check_payload_for_bot_type,
     check_valid_bot_config,
     check_valid_bot_type,
-    check_valid_embedded_bot_service_name,
     check_valid_interface_type,
     get_users_for_api,
     max_message_id_for_user,
@@ -676,18 +676,15 @@ def add_bot_backend(
                 "Please contact your server administrator."
             )
         )
-    if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
+    if bot_type in UserProfile.SERVICE_BOT_TYPES:
         service_name = service_name or short_name
     full_name = check_full_name(
         full_name_raw=full_name_raw, user_profile=None, realm=user_profile.realm
     )
     form = CreateUserForm({"full_name": full_name, "email": email})
 
-    if bot_type == UserProfile.EMBEDDED_BOT:
-        if not settings.EMBEDDED_BOTS_ENABLED:
-            raise JsonableError(_("Embedded bots are not enabled."))
-        assert service_name is not None
-        check_valid_embedded_bot_service_name(service_name)
+    if bot_type == UserProfile.EMBEDDED_BOT and not settings.EMBEDDED_BOTS_ENABLED:
+        raise JsonableError(_("Embedded bots are not enabled."))
 
     if not form.is_valid():  # nocoverage
         # coverage note: The similar block above covers the most
@@ -709,6 +706,7 @@ def add_bot_backend(
     check_can_create_bot(user_profile, bot_type)
     check_valid_bot_type(user_profile, bot_type)
     check_valid_interface_type(interface_type)
+    check_payload_for_bot_type(bot_type, service_name, payload_url, config_data)
 
     avatar_source = None
     if len(request.FILES) == 1:
@@ -727,9 +725,6 @@ def add_bot_backend(
         (default_events_register_stream, _sub) = access_stream_by_name(
             user_profile, default_events_register_stream_name
         )
-
-    if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT) and service_name:
-        check_valid_bot_config(bot_type, service_name, config_data)
 
     bot_profile = do_create_user(
         email=email,

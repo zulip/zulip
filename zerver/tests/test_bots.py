@@ -816,6 +816,49 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         profile = get_user(bot_email, bot_realm)
         self.assertEqual(profile.bot_type, UserProfile.INCOMING_WEBHOOK_BOT)
 
+    def test_add_bot_with_bot_type_incoming_webhook_and_payload_url(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
+            "payload_url": orjson.dumps("http://foo.bar.com").decode(),
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, "This bot type doesn't use payload_url.")
+
+    def test_add_outgoing_webhook_bot_without_payload_url(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+            "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, "Missing payload_url.")
+
+    def test_add_default_bot_with_service_name(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+            "bot_type": UserProfile.DEFAULT_BOT,
+            "service_name": "giphy",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, "This bot type doesn't use service_name.")
+
+    def test_add_default_bot_with_config_data(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+            "bot_type": UserProfile.DEFAULT_BOT,
+            "config_data": orjson.dumps({"some_key": "some_value"}).decode(),
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, "This bot type doesn't use config_data.")
+
     def test_add_bot_with_bot_type_invalid(self) -> None:
         bot_info = {
             "full_name": "The Bot of Hamlet",
