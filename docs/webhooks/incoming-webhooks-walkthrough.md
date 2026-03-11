@@ -48,7 +48,7 @@ it requires only one fixture,
 }
 ```
 
-### HTTP Headers
+### Custom HTTP headers
 
 Some third-party outgoing webhook APIs, such as GitHub's, don't encode
 all of the information about an event in the HTTP request body. Instead,
@@ -185,7 +185,8 @@ success message via `json_success(request)`.
 ## Step 3: Create an API endpoint for the webhook
 
 In order for an incoming webhook integration to be externally available,
-it must be mapped to a URL. This is done in `zerver/lib/integrations.py`.
+it must be mapped to a URL. This "registration" is done in
+`zerver/lib/integrations.py`.
 
 Look for the lines beginning with:
 
@@ -215,7 +216,7 @@ display name for the integration in the documentation. [Step 6: Create
 documentation](#step-6-document-the-integration) has more details about
 creating end-user documentation.
 
-### Webhooks requiring custom configuration
+### Registering webhooks requiring custom configuration
 
 In cases where an incoming webhook integration supports optional URL
 parameters, one can use the `url_options` feature. It's a field in the
@@ -609,7 +610,7 @@ construct the webhook URL yourself. (In most cases, it is.)
 If you had used `check_webhook`, it would have called
 `send_webhook_payload`, which checks the result with `assert_json_success`.
 
-### Custom query parameters
+### Writing tests for custom URL query parameters
 
 Custom arguments passed in URL query parameters work as expected in the
 webhook code, but require special handling in tests.
