@@ -216,7 +216,13 @@ class Integration:
         self.doc = doc
 
     def is_enabled_in_catalog(self) -> bool:
-        return self.name not in ("intercom", "notion")
+        return self.name not in (
+            # Integrations being incrementally added
+            "intercom",
+            "notion",
+            # Broken integrations awaiting fixes
+            "hubot",
+        )
 
     def get_logo_path(self, fallback_logo_path: str | None = None) -> str:
         paths_to_check = [
