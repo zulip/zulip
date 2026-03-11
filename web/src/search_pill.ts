@@ -5,6 +5,7 @@ import render_input_pill from "../templates/input_pill.hbs";
 import render_search_list_item from "../templates/search_list_item.hbs";
 import render_search_user_pill from "../templates/search_user_pill.hbs";
 
+import * as date_util from "./date_util.ts";
 import {Filter} from "./filter.ts";
 import {$t} from "./i18n.ts";
 import * as input_pill from "./input_pill.ts";
@@ -83,6 +84,9 @@ export function get_search_string_from_item(item: SearchPill): string {
                 operand = "";
             }
             operand = stream_data.get_valid_sub_by_id_string(item.operand).name;
+            break;
+        case "date":
+            operand = date_util.get_search_pill_value(item.operand);
             break;
         default:
             operand = item.operand;

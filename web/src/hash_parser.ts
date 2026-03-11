@@ -134,6 +134,7 @@ export function is_an_allowed_web_public_narrow(
 export const allowed_web_public_narrow_operators = [
     "channels",
     "channel",
+    "date",
     "streams",
     "stream",
     "topic",

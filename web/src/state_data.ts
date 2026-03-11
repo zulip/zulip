@@ -38,6 +38,7 @@ export const narrow_canonical_operator_schema = z.enum([
     "", // Used for search suggestions.
     "channel",
     "channels",
+    "date",
     "dm",
     "dm-including",
     "has",
@@ -136,6 +137,11 @@ export const narrow_canonical_term_schema = z.discriminatedUnion("operator", [
     z.object({
         operator: z.literal("dm"),
         operand: z.array(z.number()),
+        negated: z.optional(z.boolean()),
+    }),
+    z.object({
+        operator: z.literal("date"),
+        operand: z.string(),
         negated: z.optional(z.boolean()),
     }),
 ]);
