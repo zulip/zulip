@@ -26,12 +26,17 @@ Build status: {} {}
 Details: [changes]({}), [build log]({})"""
 
 
+class Repository(BaseModel):
+    name: str
+
+
 class TravisPayload(BaseModel):
     author_name: str
     status_message: str
     compare_url: str
     build_url: str
     type: str
+    repository: Repository
 
 
 @webhook_view("Travis", all_event_types=ALL_EVENT_TYPES)
@@ -62,7 +67,7 @@ def api_travis_webhook(
         message.compare_url,
         message.build_url,
     )
-    topic_name = "builds"
+    topic_name = message.repository.name
 
     check_send_webhook_message(request, user_profile, topic_name, body, event)
     return json_success(request)

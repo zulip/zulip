@@ -6,7 +6,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class TravisHookTests(WebhookTestCase):
-    TOPIC_NAME = "builds"
+    TOPIC_NAME = "fhir-svn"
     EXPECTED_PUSH_MESSAGE = """
 Type: Push
 Author: josh_mandel
