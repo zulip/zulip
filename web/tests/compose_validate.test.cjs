@@ -274,6 +274,7 @@ test_ui("validate", ({mock_template, override}) => {
     const denmark = {
         stream_id: 100,
         name: "Denmark",
+        topics_policy: "inherit",
     };
     stream_data.add_sub_for_tests(denmark);
     compose_state.set_stream_id(denmark.stream_id);

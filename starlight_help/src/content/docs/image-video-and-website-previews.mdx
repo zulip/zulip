@@ -10,11 +10,19 @@ import ZulipNote from "../../components/ZulipNote.astro";
 import AdminOnly from "../include/_AdminOnly.mdx";
 import SaveChanges from "../include/_SaveChanges.mdx";
 
-Zulip displays previews of images, videos and websites in your message feed. You
-can configure how animated images are previewed, and organization administrators
-can configure the [size of image and video
-previews](#configure-image-and-video-thumbnail-size) or disable previews
-altogether.
+Zulip displays previews of images, videos, audio files and websites in your
+message feed. You can [configure](#configure-how-animated-images-are-played) how
+animated images are previewed.
+
+Organization administrators can:
+
+* Configure the [size of image and video
+  previews](#configure-image-and-video-thumbnail-size).
+* Configure whether [website
+  previews](#configure-whether-website-previews-are-shown) are shown.
+* Configure whether [previews of linked images and
+  videos](#configure-whether-previews-of-linked-images-and-videos-are-shown) are
+  shown.
 
 ## Configure how animated images are played
 
@@ -62,19 +70,6 @@ viewer](/help/view-images-and-videos).
   <SaveChanges />
 </FlattenedSteps>
 
-## Configure whether image and video previews are shown
-
-<AdminOnly />
-
-<FlattenedSteps>
-  <NavigationSteps target="settings/organization-settings" />
-
-  1. Under **Message feed settings**, toggle **Show previews of uploaded and
-     linked images and videos**.
-
-  <SaveChanges />
-</FlattenedSteps>
-
 ## Configure whether website previews are shown
 
 <AdminOnly />
@@ -83,6 +78,19 @@ viewer](/help/view-images-and-videos).
   <NavigationSteps target="settings/organization-settings" />
 
   1. Under **Message feed settings**, toggle **Show previews of linked websites**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+## Configure whether previews of linked images and videos are shown
+
+<AdminOnly />
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-settings" />
+
+  1. Under **Message feed settings**, toggle **Show previews of linked images
+     and videos**.
 
   <SaveChanges />
 </FlattenedSteps>

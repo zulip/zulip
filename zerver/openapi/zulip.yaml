@@ -250,17 +250,15 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to a user's clients when that user's settings
-                                have changed.
+                                Event sent to a user's clients when that user's settings have changed.
 
-                                **Changes**: The `update_display_settings` and `update_global_notifications`
-                                legacy event types that had been deprecated in Zulip 5.0 (feature level 89)
-                                were removed entirely in Zulip 12.0 (feature level 439). All clients should
-                                be using the `user_settings` event type to access user settings.
+                                **Changes**: In Zulip 12.0 (feature level 439), the deprecated, legacy
+                                `update_display_settings` and `update_global_notifications` event types
+                                were removed entirely. All clients should be using this event type for
+                                updates to a user's settings.
 
-                                New in Zulip 5.0 (feature level 89), replacing the
-                                previous `update_display_settings` and `update_global_notifications`
-                                event types, which are still present for backwards compatibility reasons.
+                                New in Zulip 5.0 (feature level 89), replaced and deprecated the
+                                `update_display_settings` and `update_global_notifications` event types.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -4044,6 +4042,19 @@ paths:
                                           `{{ "{{/}}" }}` can be used for literal `{/}` characters.
 
                                           **Changes**: New in Zulip 12.0 (feature level 471).
+                                      alternative_url_templates:
+                                        type: array
+                                        items:
+                                          type: string
+                                        description: |
+                                          An array of additional [RFC 6570][rfc6570] compliant URL
+                                          template strings that are used for reverse linkification
+                                          (converting pasted URLs to linkifier pattern text). These
+                                          templates have no effect on forward linkification.
+
+                                          [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
+
+                                          **Changes**: New in Zulip 12.0 (feature level e2b257).
                               example:
                                 {
                                   "type": "realm_linkifiers",
@@ -4055,6 +4066,10 @@ paths:
                                         "id": 1,
                                         "example_input": "#1234",
                                         "reverse_template": "#{id}",
+                                        "alternative_url_templates":
+                                          [
+                                            "https://realm.com/my_realm_filter/issue/{id}",
+                                          ],
                                       },
                                     ],
                                   "id": 0,
@@ -5714,6 +5729,14 @@ paths:
                                         Maximum length is 8000 Unicode code points.
 
                                         **Changes**: New in Zulip 11.0 (feature level 416).
+                                    workplace_users_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            users who will be considered as workplace users for billing.
+
+                                            **Changes**: New in Zulip 12.0 (feature level 477).
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     zulip_update_announcements_stream_id:
                                       type: integer
                                       description: |
@@ -15649,6 +15672,19 @@ paths:
                                 `{{ "{{/}}" }}` can be used for literal `{/}` characters.
 
                                 **Changes**: New in Zulip 12.0 (feature level 471).
+                            alternative_url_templates:
+                              type: array
+                              items:
+                                type: string
+                              description: |
+                                An array of additional [RFC 6570][rfc6570] compliant URL
+                                template strings that are used for reverse linkification
+                                (converting pasted URLs to linkifier pattern text). These
+                                templates have no effect on forward linkification.
+
+                                [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
+
+                                **Changes**: New in Zulip 12.0 (feature level e2b257).
                     example:
                       {
                         "msg": "",
@@ -15660,6 +15696,8 @@ paths:
                               "id": 1,
                               "example_input": "#1234",
                               "reverse_template": "#{id}",
+                              "alternative_url_templates":
+                                ["https://github.com/zulip/zulip/pull/{id}"],
                             },
                           ],
                         "result": "success",
@@ -15744,9 +15782,26 @@ paths:
                     back to us.
 
                     **Changes**: New in Zulip 12.0 (feature level 471).
+                alternative_url_templates:
+                  type: array
+                  items:
+                    type: string
+                  example: ["https://github.com/zulip/zulip/pull/{id}"]
+                  description: |
+                    An array of additional [RFC 6570][rfc6570] compliant URL
+                    template strings that are used for reverse linkification
+                    (converting pasted URLs to linkifier pattern text). These
+                    templates have no effect on forward linkification.
+
+                    [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
+
+                    **Changes**: New in Zulip 12.0 (feature level e2b257).
               required:
                 - pattern
                 - url_template
+            encoding:
+              alternative_url_templates:
+                contentType: application/json
       responses:
         "200":
           description: Success.
@@ -15843,9 +15898,26 @@ paths:
                     `{{ "{{/}}" }}` can be used for literal `{/}` characters.
 
                     **Changes**: New in Zulip 12.0 (feature level 471).
+                alternative_url_templates:
+                  type: array
+                  items:
+                    type: string
+                  example: ["https://github.com/zulip/zulip/pull/{id}"]
+                  description: |
+                    An array of additional [RFC 6570][rfc6570] compliant URL
+                    template strings that are used for reverse linkification
+                    (converting pasted URLs to linkifier pattern text). These
+                    templates have no effect on forward linkification.
+
+                    [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
+
+                    **Changes**: New in Zulip 12.0 (feature level e2b257).
               required:
                 - pattern
                 - url_template
+            encoding:
+              alternative_url_templates:
+                contentType: application/json
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
@@ -17009,20 +17081,22 @@ paths:
                       for backwards-compatibility; it will be required in a
                       future server release.
 
-                    - `user_settings_object`: Has no effect with modern servers. Previously, this
-                      was a boolean for whether the client supported the modern `user_settings` event type.
+                    - `user_settings_object`: Has no effect with modern servers. Previously,
+                      this was a boolean for whether the client supported the modern
+                      [`user_settings` event type](/api/get-events#user_settings-update) and
+                      the top-level `user_settings` object in this endpoint's response.
                       <br />
-                      **Changes**: Prior to Zulip 12.0 (feature level 439), if false, the server
-                      would additionally send the legacy `update_global_notifications` and
-                      `update_display_settings` event types if requested.
-
-                      New in Zulip 5.0 (feature level 89). Because the feature level 89 API changes
-                      were merged together, clients can safely make a request with this client
-                      capability and also request all three event types (`user_settings`,
-                      `update_display_settings`, `update_global_notifications`), and get exactly one
-                      copy of settings data on any server version. Clients can then use the
-                      `zulip_feature_level` in the `/register` response or the presence/absence of a
-                      `user_settings` key to determine where to look for the data.
+                      **Changes**: Prior to Zulip 12.0 (feature level 439), if false, the
+                      server would additionally send the legacy `update_global_notifications`
+                      and `update_display_settings` event types, if requested.
+                      <br />
+                      New in Zulip 5.0 (feature level 89). Because the feature level 89 API
+                      changes were merged together, clients could safely make a request with
+                      this client capability, and also request all three event types
+                      (`user_settings`, `update_display_settings`, and
+                      `update_global_notifications`), and then use the `zulip_feature_level`
+                      in this endpoint's response or the presence/absence of a `user_settings`
+                      key to determine where to look for the data.
 
                     - `linkifier_url_template`: Boolean for whether the client accepts
                       [linkifiers][help-linkifiers] that use [RFC 6570][rfc6570] compliant
@@ -18235,22 +18309,22 @@ paths:
 
                           A dictionary containing the user's personal settings.
 
-                          **Changes**: Removed duplicate copies of many of these settings from the
-                          top-level object in Zulip 12.0 (feature level 439). Previously,
-                          clients that did not include `user_settings_object` in their
-                          [`client_capabilities`][capabilities] and included
-                          `update_display_settings` or `update_global_notifications` in
-                          `fetch_event_types` would receive the settings that predated feature level
-                          89 in the top-level response.
+                          **Changes**: In Zulip 12.0 (feature level 439), removed deprecated,
+                          duplicate copies of many of these user settings from the top-level object.
+                          Previously, clients that did not include the `user_settings_object`
+                          [client capability][client-capabilities] and included `update_display_settings`
+                          or `update_global_notifications` in `fetch_event_types` would receive those
+                          user settings that predated feature level 89 in the top-level response.
 
-                          Removed `dense_mode` setting in Zulip 10.0 (feature level 364) as we now
-                          have `web_font_size_px` and `web_line_height_percent` settings for more
-                          control.
+                          In Zulip 10.0 (feature level 364), removed the `dense_mode` setting as we
+                          now have `web_font_size_px` and `web_line_height_percent` settings for
+                          more control.
 
-                          New in Zulip 5.0 (feature level 89). Previously, these
-                          settings appeared in the top-level object, where they are
-                          available for clients without the `user_settings_object` client
-                          capability for backwards-compatibility.
+                          New in Zulip 5.0 (feature level 89). Previously, user settings appeared
+                          in the top-level object; see the `user_settings_object`
+                          [client capability][client-capabilities] for backwards-compatibility.
+
+                          [client-capabilities]: /api/register-queue#parameter-client_capabilities
                         additionalProperties: false
                         properties:
                           twenty_four_hour_time:
@@ -19892,6 +19966,16 @@ paths:
 
                           - "G" means generated by Gravatar (the default).
                           - "U" means uploaded by an organization administrator.
+                      realm_workplace_users_group:
+                        allOf:
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                          - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              users who will be considered as workplace users for billing.
+
+                              **Changes**: New in Zulip 12.0 (feature level 477).
                       max_icon_file_size_mib:
                         type: integer
                         description: |

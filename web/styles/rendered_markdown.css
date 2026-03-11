@@ -215,7 +215,18 @@
         padding-right: 10px;
         margin: 0 5px var(--markdown-interelement-space-px);
         max-width: fit-content;
+        /* The `display: block` property is critical, given the
+           current markup, to allowing oversize tables to scroll.
+           It's possible that in the future we'll want to wrap
+           a `<div>` element around tables and allow it to handle
+           overscroll, allowing the table to take its normal
+           `display: table` property. */
+        display: block;
         overflow-x: auto;
+        /* Firefox's devtools will report that this property has
+           no effect because of `display: block`, but that is
+           incorrect. Without this, cells separate in ways we
+           do not want. */
         border-collapse: collapse;
     }
 
@@ -508,6 +519,14 @@
         margin-bottom: var(--markdown-interelement-space-px);
     }
 
+    /* When a gallery appears inside a paragraph, we equalize
+       the space above and below the gallery. Thanks to margin
+       collapsing, this value will have no effect when a gallery
+       is the last element in a paragraph. */
+    p .message-thumbnail-gallery {
+        margin: var(--markdown-interelement-halved-space-px) 0;
+    }
+
     /* We used to use this for certain dropbox previews, we are keeping
        this around as to not break any previous instances of these
        previews. */
@@ -516,6 +535,15 @@
     }
 
     .message-media-inline-image:not(.message-media-gallery-image) {
+        margin: 0 0.125em; /* 2px at 16px/1em */
+
+        &:has(.image-opens-message) {
+            /* When a message opens with an inline image, don't
+               present any margin before the image starts (e.g.,
+               to the left in LTR languages). */
+            margin-inline-start: 0;
+        }
+
         .media-anchor-element {
             /* We want the image to behave as inline, which the
                .message-media-inline-image will ensure, but in

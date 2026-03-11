@@ -45,9 +45,15 @@
         box-sizing: border-box;
         vertical-align: middle;
         padding: 0.1875em 0.5em; /* 3px 8px at 16px/1em */
+    }
 
-        @media (width < $md_min) {
-            padding: 0.375em 0.5em; /* 6px 8px at 16px/1em */
+    /* Suppress focus rings when focus was set programmatically
+       (e.g., on page load or sidebar click). The class is removed
+       on the first keyboard navigation, restoring :focus outlines.
+       See focus_outline_util.ts. */
+    &.no-visible-focus-outlines .recent_view_focusable {
+        &:focus {
+            outline: 0;
         }
     }
 
@@ -113,6 +119,18 @@
         padding: 3em 1em;
     }
 
+    .recent-view-empty-load-more {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        /* Reset the 1.5em font-size inherited from
+           .empty-table-message so the load-more text
+           and button match normal UI text size. */
+        font-size: var(--base-font-size-px);
+    }
+
     .fa-check-square-o,
     .fa-square-o {
         width: 0.7142em; /* Legacy 10px size at 14px/1em. */
@@ -141,7 +159,21 @@
 
     .fetch-messages-button {
         display: grid;
-        justify-items: center;
+        place-items: center;
+
+        /* Stack the loading indicator and button label in the
+           same grid cell so the label stays vertically centered
+           when the indicator is empty/hidden. */
+        > * {
+            grid-row: 1;
+            grid-column: 1;
+        }
+
+        /* Override the inline height: 0 set by loading.make_indicator
+           so the spinner participates in grid alignment. */
+        .loading-indicator {
+            height: auto !important;
+        }
 
         .loading_indicator_spinner {
             height: 20px;
@@ -273,7 +305,7 @@
     }
 
     .unread_hidden {
-        visibility: hidden;
+        display: none;
     }
 
     .flex_container {
@@ -292,10 +324,6 @@
         margin-left: 0.3125em; /* 5px at 16px/1em */
         display: flex;
         flex-flow: row nowrap;
-        /* Preserve space for the actions even on archived
-           channels, especially those with unreads. The
-           width is 16px at 16px/1em. */
-        min-width: 1em;
     }
 
     .mention_in_unread {
@@ -321,7 +349,7 @@
         /* 24px at 16px/1em */
         height: 1.5em;
         /* 4px at 16px/1em */
-        padding: 0.25em 4px;
+        padding: 0.25em 0;
         border-radius: 6px;
         overflow: hidden;
 
@@ -344,11 +372,20 @@
         /* 24px at 16px/1em */
         height: 1.5em;
         margin: 0;
-        padding: 0 1.5px;
+        padding: 0 var(--recent-view-participant-item-padding-x);
         position: relative;
-        /* 24px at 16px/1em */
-        min-width: 1.5em;
+        width: var(--recent-view-participant-item-width);
         cursor: pointer;
+
+        /* Can't use last-child due to tippy element being appended */
+        &:last-of-type {
+            /* Remove right padding of last item to align with header text. */
+            padding-left: 0;
+        }
+
+        &:first-of-type {
+            padding-right: 0;
+        }
 
         .fa-user {
             opacity: 0.7;
@@ -378,6 +415,9 @@
     .recent_view_participant_overflow {
         /* 24px at 16px/1em */
         line-height: 1.5;
+        background-color: transparent;
+        color: var(--color-text-recent-view-last-msg-time);
+        text-align: left;
     }
 
     & tr {
@@ -399,6 +439,11 @@
 
     .unread_topic {
         background-color: var(--color-background-recent-view-unread-row);
+
+        & a {
+            color: var(--color-recent-view-link-unread);
+            font-weight: 500;
+        }
 
         /* Avoid annoying, confusing hover-state when scrolling on
            touch devices like iPad that treat a tap-and-hold/swipe
@@ -431,7 +476,6 @@
         background-color: var(--color-background-recent-view-table-thead-th);
         overflow: hidden;
         color: var(--color-text-recent-view-table-thead-th);
-        font-size: 0.9375em; /* 15px at 16px/1em */
         text-transform: uppercase;
         font-weight: 600;
         line-height: 1.25em; /* 20px at 16px/1em */
@@ -444,7 +488,7 @@
 
         .table-sortable-arrow {
             align-self: center;
-            font-size: 1.0667em; /* 16px at 15px/1em */
+            font-size: 1em; /* 16px at 16px/1em */
             transform: rotate(180deg);
             opacity: 0;
             transition: opacity 100ms ease-out;
@@ -477,30 +521,130 @@
         }
 
         .zulip-icon-chevron-right {
-            font-size: 1em; /* 15px at 15px/1em */
+            font-size: 0.9375em; /* 15px at 16px/1em */
             align-self: center;
             color: hsl(0deg 0% 60%);
-            padding: 0 0.33em; /* 5px at 15px/1em */
+            padding: 0 0.125em; /* 2px at 16px/1em */
         }
     }
 
-    .recent-view-unread-header {
-        width: 7%;
+    .recent-view-topic-header {
+        /* Match horizontal padding with non header rows. */
+        padding: 0.25em 0.5em; /* 4px 8px at 16px/1em */
+        /* th no longer has data-sort; the individual sort spans handle
+           cursor and hover. */
+        cursor: default;
+
+        .recent-view-header-wrapper {
+            /* Match the row grid so "Channel" and "Conversation" sort
+               spans align with channel and topic text in rows. Sort
+               arrows are inside the spans, so 3 columns suffice.
+               1em = 16px at 16px/1em, matching the 1em (16px
+               at 16px/1em) privacy icon width in data rows. */
+            display: grid;
+            grid-template-columns:
+                min(
+                    calc(
+                        var(--longest-subscribed-channel-name-width) + 1em + 8px
+                    ),
+                    33.3%
+                )
+                auto 1fr auto;
+            align-items: center;
+        }
+
+        .recent-view-channel-sort-header,
+        .recent-view-conversation-sort-header,
+        .recent-view-unread-sort-header {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            /* Negative margin compensates the padding so the pill hover
+               highlight doesn't push adjacent elements out of alignment. */
+            padding: 0.125em 0.25em; /* 2px 4px at 16px/1em */
+            margin: -0.125em -0.25em;
+            border-radius: 3px;
+            transition: background-color 100ms ease-in-out;
+
+            &:hover {
+                background-color: var(
+                    --color-background-recent-view-table-thead-sort-header
+                );
+
+                .table-sortable-arrow {
+                    opacity: 0.7;
+                }
+            }
+
+            &.active .table-sortable-arrow {
+                opacity: 1;
+            }
+
+            &.descend .table-sortable-arrow {
+                transform: rotate(0deg);
+            }
+        }
+
+        .recent-view-conversation-sort-header {
+            /* Prevent hover pill highlight from extending into
+               the adjacent unread sort column. */
+            margin-right: 0.3125em; /* 5px at 16px/1em */
+        }
+
+        .recent-view-unread-sort-header {
+            margin-right: -0.1563em; /* 2.5px at 16px/1em */
+            justify-self: end;
+        }
     }
 
     .recent_topic_users,
     .recent-view-participants-header {
-        width: 20%;
+        padding-right: 0;
+        padding-left: var(--recent-view-participants-padding-x-start);
+        width: calc(
+            var(--recent-view-participants-padding-x-start) +
+                (var(--recent-view-max-avatars) + 1) *
+                (
+                    var(--recent-view-participant-item-width) + 2 *
+                        var(--recent-view-participant-item-padding-x)
+                ) -
+                /* First item start padding is --recent-view-participants-padding-x-start.
+                   Last item doesn't have end padding. */
+                2 * var(--recent-view-participant-item-padding-x)
+        );
+    }
+
+    &.recent-view-participants-hidden {
+        td {
+            padding: 0.375em 0.5em; /* 6px 8px at 16px/1em */
+        }
+
+        .recent_topic_users,
+        .recent-view-participants-header {
+            display: none;
+        }
+    }
+
+    .recent-view-participants-header .recent-view-header-wrapper {
+        display: block;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
     }
 
     .recent_topic_timestamp,
     .recent-view-last-msg-time-header {
-        width: 20%;
+        /* Time text width is measured from JS and set as
+           --recent-view-time-text-width. Add the visibility
+           icon width (1em), cell padding (2 × 0.5em), and space
+           for the icon's focus outline (0.5em). Falls back to
+           25% before JS has set the variable. */
+        width: 25%;
+        width: calc(var(--recent-view-time-text-width) + 2.5em);
     }
 
     .recent_topic_name {
-        padding-left: 0.625em; /* 10px at 16px/1em */
-
         .recent-view-conversation-with-unread-wrapper {
             display: grid;
             grid-template-areas:
@@ -569,23 +713,17 @@
     }
 
     @media (width < $md_min) {
-        /* Hide participants and last message time
-            on smaller screens. This ensures user always
-            has a nice UI experience. */
-        .recent_topic_users,
-        .recent_topic_timestamp,
-        thead .participants_header,
-        thead .last_msg_time_header {
-            display: none;
+        /* Hide last message time on smaller screens. */
+        &.recent-view-participants-hidden {
+            .recent_topic_timestamp,
+            thead .last_msg_time_header {
+                display: none;
+            }
         }
 
         .recent_topic_actions {
             margin-right: 5px;
             font-size: 1.0714em; /* 15px at 14px / em */
-        }
-
-        .recent-view-unread-header {
-            width: 15%;
         }
     }
 
@@ -691,13 +829,8 @@
 }
 
 #recent_view .recent_topic_timestamp .flex_container {
+    /* Push the visibility icon to the right edge of the cell. */
     justify-content: space-between;
-
-    /* To avoid time text from wrapping, keep extra margin
-       as small as possible. */
-    .recent_topic_actions {
-        margin-right: 0.125em; /* 2px at 16px/1em */
-    }
 }
 
 .recent-view-unread-mention-and-count-wrapper {
@@ -705,10 +838,6 @@
     align-items: center;
     margin-left: auto;
     flex-direction: row;
-}
-
-.unread_sort .recent-view-header-wrapper {
-    justify-content: flex-end;
 }
 
 .recent-view-body-row {

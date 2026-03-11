@@ -43,7 +43,7 @@ const admin_settings_label = {
         defaultMessage: "Size of images and videos in messages",
     }),
     realm_inline_image_preview: $t({
-        defaultMessage: "Show previews of uploaded and linked images and videos",
+        defaultMessage: "Show previews of linked images and videos",
     }),
     realm_inline_url_embed_preview: $t({defaultMessage: "Show previews of linked websites"}),
     realm_send_welcome_emails: $t({defaultMessage: "Send emails introducing Zulip to new users"}),
@@ -91,6 +91,9 @@ const admin_settings_label = {
     }),
     realm_enable_guest_user_dm_warning: $t({
         defaultMessage: "Warn when composing a DM to a guest",
+    }),
+    realm_enable_two_tier_billing: $t({
+        defaultMessage: "Discounted billing for non-workplace users",
     }),
 };
 
@@ -311,6 +314,9 @@ export function build_page(): void {
                 realm_user_settings_defaults.web_line_height_percent,
             ),
         default_avatar_source_values: settings_config.default_avatar_source_values,
+        realm_enable_two_tier_billing: settings_data.two_tier_billing_enabled(),
+        show_two_tier_billing_settings:
+            page_params.development_environment && page_params.non_workplace_pricing_eligible,
     };
 
     const rendered_admin_tab = render_admin_tab(options);

@@ -523,6 +523,7 @@ class RealmLinkifier(BaseModel):
     id: int
     example_input: str | None = None
     reverse_template: str | None = None
+    alternative_url_templates: list[str] = []
 
 
 class EventRealmLinkifiers(BaseEvent):
@@ -627,6 +628,7 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     can_summarize_topics_group: int | UserGroupMembersDict | None = None
     direct_message_initiator_group: int | UserGroupMembersDict | None = None
     direct_message_permission_group: int | UserGroupMembersDict | None = None
+    workplace_users_group: int | UserGroupMembersDict | None = None
 
 
 class PlanTypeData(BaseModel):

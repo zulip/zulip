@@ -1088,11 +1088,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             found_url.result[0] for found_url in found_urls if not found_url.family.in_blockquote
         }
 
-        # Set has_link and similar flags whenever a message is processed by Markdown
-        if self.zmd.zulip_message:
-            self.zmd.zulip_message.has_link = len(found_urls) > 0
-            self.zmd.zulip_message.has_image = False  # This is updated in self.add_a
+        # Update message.has_link attribute.
+        if len(found_urls) > 0 and self.zmd.zulip_message:
+            self.zmd.zulip_message.has_link = True
 
+        if self.zmd.zulip_message:
             for url in unique_urls:
                 maybe_add_attachment_path_id(url, self.zmd)
 
@@ -2177,6 +2177,10 @@ class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
                 metadata.original_content_type,
             )
 
+        # Update message.has_image attribute.
+        if self.zmd.zulip_message:
+            self.zmd.zulip_message.has_image = True
+
         return img
 
     @override
@@ -2624,6 +2628,14 @@ def do_convert(
         potential_attachment_path_ids=[],
         thumbnail_spinners=set(),
     )
+
+    # Set has_image and has_link attributes on message to False before
+    # converting to Markdown each time a message's content is processed.
+    # This way if a message's content is edited these attributes are
+    # checked and set to True when the updated content is processed.
+    if message is not None:
+        message.has_image = False
+        message.has_link = False
 
     md_engine.zulip_message = message
     md_engine.zulip_rendering_result = rendering_result

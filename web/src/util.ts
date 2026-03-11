@@ -622,3 +622,39 @@ export function parse_youtube_start_time(url: string): number | undefined {
 
     return undefined;
 }
+
+// Measure the maximum rendered width of a set of candidate text
+// strings. This is used to set CSS variables for column widths
+// that need to fit their content tightly. All candidates are
+// inserted as block-level children of a single hidden container
+// sized to max-content, so only one reflow is needed.
+/* istanbul ignore next */
+export let max_text_content_width = (candidates: string[], css_class?: string): number => {
+    const container = document.createElement("div");
+    Object.assign(container.style, {
+        position: "absolute",
+        visibility: "hidden",
+        whiteSpace: "nowrap",
+        width: "max-content",
+        left: "-9999px",
+        top: "0",
+    });
+
+    for (const text of candidates) {
+        const child = document.createElement("div");
+        if (css_class !== undefined) {
+            child.className = css_class;
+        }
+        child.textContent = text;
+        container.append(child);
+    }
+
+    document.body.append(container);
+    const width = container.getBoundingClientRect().width;
+    container.remove();
+    return width;
+};
+
+export function rewire_max_text_content_width(value: typeof max_text_content_width): void {
+    max_text_content_width = value;
+}

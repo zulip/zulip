@@ -1774,6 +1774,7 @@ def do_set_stream_property(stream: Stream, name: str, value: Any, acting_user: U
                 sender,
                 stream,
                 NOTIFICATION_MESSAGES[name],
+                archived_channel_notice=stream.deactivated,
             )
 
 

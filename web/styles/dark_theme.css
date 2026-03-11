@@ -107,12 +107,6 @@
         opacity: 0.2;
     }
 
-    .zoom-in {
-        #topics_header {
-            background-color: var(--color-background);
-        }
-    }
-
     #recent_view_table {
         .zulip-icon-user {
             opacity: 0.7;
@@ -123,6 +117,15 @@
         .change_visibility_policy
         .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
         filter: invert(1);
+    }
+
+    #recent-view-content-table {
+        border-width: 0.1875em; /* 3px at 16px/1em */
+        border-bottom-width: 1px;
+
+        .unread_topic a {
+            font-weight: 400;
+        }
     }
 
     .drafts-container .header-body .delete-drafts-group > *:focus {

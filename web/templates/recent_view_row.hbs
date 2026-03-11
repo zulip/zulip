@@ -1,4 +1,4 @@
-<tr id="recent_conversation:{{conversation_key}}" class="{{#unless (eq unread_count 0)}}unread_topic{{/unless}} {{#if is_private}}private_conversation_row{{/if}} recent-view-body-row recent_view_focusable"  data-col-index="{{ column_indexes.topic }}" tabindex="0">
+<tr id="recent_conversation:{{conversation_key}}" class="{{#unless (eq unread_count 0)}}unread_topic{{/unless}} {{#if is_private}}private_conversation_row{{/if}} recent-view-body-row recent_view_focusable {{#if is_archived}}recent-view-archived-channel-row{{/if}}"  data-col-index="{{ column_indexes.topic }}" tabindex="0">
     {{!-- TODO: Rename recent_topic_name to recent-view-conversation-column--}}
     <td class="recent_topic_name">
         <div class="recent-view-conversation-with-unread-wrapper">
@@ -74,9 +74,8 @@
             <div class="last_msg_time tippy-zulip-tooltip" data-tippy-content="{{this.full_last_msg_date_time}}">
                 <a class="last-msg-link" href="{{last_msg_url}}" tabindex="-1">{{ last_msg_time }}</a>
             </div>
-            {{#unless is_private}}
+            {{#unless (or is_archived is_private)}}
                 <div class="recent_topic_actions hidden-for-spectators recent_view_focusable recent-view-topic-visibility" data-col-index="{{ column_indexes.mute }}" tabindex="0">
-                    {{#unless is_archived}}
                     <span class="change_visibility_policy" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}">
                         {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}
                             <i class="zulip-icon zulip-icon-follow recipient_bar_icon visibility-status-icon" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" data-tippy-content="{{t 'You follow this topic.'}}" role="button"></i>
@@ -88,7 +87,6 @@
                             <i class="zulip-icon zulip-icon-more-vertical recent-view-row-topic-menu visibility-status-icon" aria-label="{{t 'Topic actions menu' }}" aria-haspopup="true" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-topic-url="{{topic_url}}" role="button"></i>
                         {{/if}}
                     </span>
-                    {{/unless}}
                 </div>
             {{/unless}}
         </div>

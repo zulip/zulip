@@ -10,6 +10,7 @@ type LinkifierMap = Map<
         url_template: Template;
         group_number_to_name: Record<number, string>;
         reverse_template: string | null;
+        alternative_url_templates: Template[];
     }
 >;
 const linkifier_map: LinkifierMap = new Map();
@@ -23,7 +24,8 @@ export function get_linkifier_map(): LinkifierMap {
 export function python_to_js_linkifier(
     pattern: string,
     url: string,
-): [RegExp | null, Template, Record<number, string>] {
+    alternative_urls: string[] = [],
+): [RegExp | null, Template, Record<number, string>, Template[]] {
     // Converts a python named-group regex to a javascript-compatible numbered
     // group regex... with a regex!
     const named_group_re = /\(?P<([^>]+?)>/g;
@@ -86,17 +88,22 @@ export function python_to_js_linkifier(
         }
     }
     const url_template = new Template(url);
-    return [final_regex, url_template, group_number_to_name];
+    const alternative_url_templates = alternative_urls.map(
+        (template_string) => new Template(template_string),
+    );
+    return [final_regex, url_template, group_number_to_name, alternative_url_templates];
 }
 
 export function update_linkifier_rules(linkifiers: Linkifier[]): void {
     linkifier_map.clear();
 
     for (const linkifier of linkifiers) {
-        const [regex, url_template, group_number_to_name] = python_to_js_linkifier(
-            linkifier.pattern,
-            linkifier.url_template,
-        );
+        const [regex, url_template, group_number_to_name, alternative_url_templates] =
+            python_to_js_linkifier(
+                linkifier.pattern,
+                linkifier.url_template,
+                linkifier.alternative_url_templates ?? [],
+            );
         if (!regex) {
             // Skip any linkifiers that could not be converted
             continue;
@@ -106,6 +113,7 @@ export function update_linkifier_rules(linkifiers: Linkifier[]): void {
             url_template,
             group_number_to_name,
             reverse_template: linkifier.reverse_template ?? null,
+            alternative_url_templates,
         });
     }
 }

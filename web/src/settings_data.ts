@@ -420,3 +420,14 @@ export function guests_can_access_all_other_users(): boolean {
 export function can_user_manage_folder(): boolean {
     return current_user.is_admin;
 }
+
+export function two_tier_billing_enabled(): boolean {
+    if (typeof realm.realm_workplace_users_group !== "number") {
+        return true;
+    }
+
+    const workplace_users_group = user_groups.get_user_group_from_id(
+        realm.realm_workplace_users_group,
+    );
+    return workplace_users_group.name !== "role:everyone";
+}

@@ -10,9 +10,16 @@ import * as message_viewport from "./message_viewport.ts";
 import {user_settings} from "./user_settings.ts";
 
 let recent_view_participants_rerender: (() => void) | null = null;
+let recent_view_participants_column_class_update: (() => void) | null = null;
 
 export function set_recent_view_participants_rerender(rerender_func: (() => void) | null): void {
     recent_view_participants_rerender = rerender_func;
+}
+
+export function set_recent_view_participants_column_class_update(
+    update_func: (() => void) | null,
+): void {
+    recent_view_participants_column_class_update = update_func;
 }
 
 function get_bottom_whitespace_height(): number {
@@ -212,12 +219,22 @@ export function update_recent_view(rerender_view_if_needed = false): void {
     }
     const prev_num_avatars_max = Number($(":root").css("--recent-view-max-avatars"));
     let num_avatars_max = 4;
-    if (middle_column_width < (media_breakpoints_num.md * user_settings.web_font_size_px) / 16) {
+    const max_width_before_topic_ellipsis_overflows = 600;
+    if (
+        middle_column_width <
+        (max_width_before_topic_ellipsis_overflows * user_settings.web_font_size_px) / 16
+    ) {
+        num_avatars_max = 0;
+    } else if (
+        middle_column_width <
+        (media_breakpoints_num.md * user_settings.web_font_size_px) / 16
+    ) {
         num_avatars_max = 2;
     }
 
     if (prev_num_avatars_max !== num_avatars_max) {
         $(":root").css("--recent-view-max-avatars", `${num_avatars_max}`);
+        recent_view_participants_column_class_update?.();
 
         if (rerender_view_if_needed) {
             recent_view_participants_rerender?.();
