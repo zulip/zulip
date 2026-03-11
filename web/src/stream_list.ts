@@ -1418,7 +1418,12 @@ export function on_sidebar_channel_click(
     e: JQuery.ClickEvent | null,
     show_channel_feed: (stream_id: number, trigger: string) => void,
 ): void {
-    clear_search();
+    const had_search_term = ui_util.get_left_sidebar_search_term() !== "";
+    left_sidebar_filter.clear_query_without_updating();
+    if (had_search_term) {
+        $("#left-sidebar-filter-input").trigger("input");
+    }
+    $("#left-sidebar-filter-query").trigger("blur");
     if (e !== null) {
         e.preventDefault();
         e.stopPropagation();
@@ -1469,12 +1474,19 @@ export function on_sidebar_channel_click(
     let topics = stream_topic_history.get_recent_topic_names(stream_id);
 
     const navigate_to_stream = (): void => {
+        const topics_state = left_sidebar_filter.get_effective_topics_state_for_search();
         // Muted topics are not included in the unzoomed topic list
         // information.
         const topic_list_info = topic_list_data.get_list_info(
             stream_id,
             false,
-            (topic_names: string[]) => topic_names,
+            (topic_names: string[]) =>
+                topic_list_data.filter_topics_by_search_term(
+                    stream_id,
+                    topic_names,
+                    "",
+                    topics_state,
+                ),
         );
         // This initial value handles both the top_topic_in_channel
         // mode as well as the top_unread_topic_in_channel fallback

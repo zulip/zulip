@@ -23,6 +23,27 @@ set_current_user(current_user);
 // We use this with override.
 let unread_unmuted_count;
 let stream_has_any_unread_mentions;
+let current_narrow_stream_id;
+let current_narrow_topic;
+let browser_history_navigated_to;
+
+mock_esm("../src/browser_history", {
+    go_to_location(url) {
+        browser_history_navigated_to = url;
+    },
+    update_current_history_state_data: noop,
+});
+mock_esm("../src/narrow_state", {
+    stream_id() {
+        return current_narrow_stream_id;
+    },
+    topic() {
+        return current_narrow_topic;
+    },
+    filter() {
+        return undefined;
+    },
+});
 
 const topic_list = mock_esm("../src/topic_list");
 mock_esm("../src/unread", {
@@ -166,6 +187,9 @@ function test_ui(label, f) {
         stream_topic_history.reset();
         user_topics.set_user_topics([]);
         $("#left-sidebar-filter-query").text("");
+        current_narrow_stream_id = undefined;
+        current_narrow_topic = undefined;
+        browser_history_navigated_to = undefined;
         f(helpers);
     });
 }
@@ -365,7 +389,6 @@ test_ui(
         assert.ok(!$("#streams_list").hasClass("is_searching"));
     },
 );
-
 test_ui("on_sidebar_channel_click_keeps_topic_state_filter", ({override_rewire}) => {
     stream_data.add_sub_for_tests(develSub);
 
