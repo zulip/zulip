@@ -6,6 +6,16 @@ import * as overlays from "./overlays.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as util from "./util.ts";
 
+// Stores the focused element ID when an overlay opens lightbox,
+// so focus can be restored when the overlay is reopened.
+let pending_restore_element_id: string | undefined;
+
+export function get_and_clear_pending_restore_element_id(): string | undefined {
+    const id = pending_restore_element_id;
+    pending_restore_element_id = undefined;
+    return id;
+}
+
 export type Context = {
     items_container_selector: string;
     items_list_selector: string;
@@ -103,6 +113,17 @@ export function set_initial_element(element_id: string | undefined, context: Con
             $(`.${CSS.escape(context.items_list_selector)}`),
         );
     }
+}
+
+// Like set_initial_element, but returns false instead of throwing
+// when the element no longer exists (e.g., deleted while lightbox
+// was open).
+export function try_set_initial_element(element_id: string, context: Context): boolean {
+    if (get_element_by_id(element_id, context).length === 0) {
+        return false;
+    }
+    set_initial_element(element_id, context);
+    return true;
 }
 
 function row_before_focus(context: Context): JQuery {
@@ -231,13 +252,17 @@ function get_element_by_id(id: string, context: Context): JQuery {
     return $(`.overlay-message-row[${CSS.escape(context.id_attribute_name)}='${CSS.escape(id)}']`);
 }
 
-export function handle_overlay_media_click(e: JQuery.ClickEvent, overlay_name: string): boolean {
+export function handle_overlay_media_click(
+    e: JQuery.ClickEvent,
+    overlay_name: string,
+    context?: Context,
+    reopen_overlay?: () => void,
+): boolean {
     const $img = $(e.target).closest("img");
     if ($img.length > 0) {
         e.stopPropagation();
         e.preventDefault();
-        overlays.close_overlay(overlay_name);
-        lightbox.handle_inline_media_element_click($img, true);
+        open_lightbox_from_overlay($img, overlay_name, context, reopen_overlay);
         return true;
     }
 
@@ -245,10 +270,26 @@ export function handle_overlay_media_click(e: JQuery.ClickEvent, overlay_name: s
     if ($video.length > 0) {
         e.stopPropagation();
         e.preventDefault();
-        overlays.close_overlay(overlay_name);
-        lightbox.handle_inline_media_element_click($video, true);
+        open_lightbox_from_overlay($video, overlay_name, context, reopen_overlay);
         return true;
     }
 
     return false;
+}
+
+function open_lightbox_from_overlay(
+    $media: JQuery<HTMLMediaElement> | JQuery<HTMLImageElement>,
+    overlay_name: string,
+    context: Context | undefined,
+    reopen_overlay: (() => void) | undefined,
+): void {
+    if (context) {
+        pending_restore_element_id = get_focused_element_id(context);
+    }
+    overlays.close_overlay(overlay_name);
+    if (reopen_overlay) {
+        lightbox.handle_overlay_media_element_click($media, reopen_overlay);
+    } else {
+        lightbox.handle_inline_media_element_click($media, true);
+    }
 }

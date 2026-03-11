@@ -147,8 +147,14 @@ export function launch(): void {
     const $messages_list = $("#scheduled_messages_overlay .overlay-messages-list");
     $messages_list.append($(rendered_list));
 
-    const first_element_id = keyboard_handling_context.get_items_ids()[0];
-    messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
+    const restore_id = messages_overlay_ui.get_and_clear_pending_restore_element_id();
+    if (
+        restore_id === undefined ||
+        !messages_overlay_ui.try_set_initial_element(restore_id, keyboard_handling_context)
+    ) {
+        const first_element_id = keyboard_handling_context.get_items_ids()[0];
+        messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
+    }
 }
 
 export function rerender(): void {
@@ -176,7 +182,16 @@ export function initialize(): void {
         if (mouse_drag.is_drag(e)) {
             return;
         }
-        if (messages_overlay_ui.handle_overlay_media_click(e, "scheduled")) {
+        if (
+            messages_overlay_ui.handle_overlay_media_click(
+                e,
+                "scheduled",
+                keyboard_handling_context,
+                () => {
+                    browser_history.go_to_location("#scheduled");
+                },
+            )
+        ) {
             return;
         }
 
