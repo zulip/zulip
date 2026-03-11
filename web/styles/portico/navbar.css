@@ -28,7 +28,7 @@ details summary::-webkit-details-marker {
     backdrop-filter: blur(10px);
     color: hsl(0deg 0% 100%);
     z-index: 10;
-    overflow: hidden;
+    overflow: visible;
     transition: background-color 0.3s ease-out;
 
     &:hover {
