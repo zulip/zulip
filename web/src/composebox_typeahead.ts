@@ -277,36 +277,39 @@ function handle_bulleting_or_numbering(
     const before_text = split_at_cursor(val, $textarea)[0];
     const previous_line = bulleted_numbered_list_util.get_last_line(before_text);
     let to_append = "";
-    // if previous line was bulleted, automatically add a bullet to the new line
+    // if previous line was bulleted (including indented sub-lists), automatically add
+    // the same bullet prefix (including indent) to the new line
     if (bulleted_numbered_list_util.is_bulleted(previous_line)) {
-        // if previous line had only bullet, remove it and stay on the same line
+        const bullet_prefix = bulleted_numbered_list_util.get_bullet_prefix(previous_line) ?? "- ";
+        // if previous line had only bullet prefix and no content, remove it and stay on the same line
         if (bulleted_numbered_list_util.strip_bullet(previous_line) === "") {
-            // below we select and replace the last 2 characters in the textarea before
-            // the cursor - the bullet syntax - with an empty string
-            util.the($textarea).setSelectionRange($textarea.caret() - 2, $textarea.caret());
-            compose_ui.insert_and_scroll_into_view("", $textarea);
-            e.preventDefault();
-            return;
-        }
-        // use same bullet syntax as the previous line
-        to_append = previous_line.slice(0, 2);
-    } else if (bulleted_numbered_list_util.is_numbered(previous_line)) {
-        // if previous line was numbered, continue numbering with the new line
-        const previous_number_string = previous_line.slice(0, previous_line.indexOf("."));
-        // if previous line had only numbering, remove it and stay on the same line
-        if (bulleted_numbered_list_util.strip_numbering(previous_line) === "") {
-            // below we select then replaces the last few characters in the textarea before
-            // the cursor - the numbering syntax - with an empty string
+            // remove the full bullet prefix (including any indent)
             util.the($textarea).setSelectionRange(
-                $textarea.caret() - previous_number_string.length - 2,
+                $textarea.caret() - bullet_prefix.length,
                 $textarea.caret(),
             );
             compose_ui.insert_and_scroll_into_view("", $textarea);
             e.preventDefault();
             return;
         }
-        const previous_number = Number.parseInt(previous_number_string, 10);
-        to_append = previous_number + 1 + ". ";
+        // use same bullet prefix (including indent) as the previous line
+        to_append = bullet_prefix;
+    } else if (bulleted_numbered_list_util.is_numbered(previous_line)) {
+        // if previous line was numbered (including indented), continue numbering
+        const info = bulleted_numbered_list_util.get_number_prefix_and_value(previous_line);
+        const previous_number = info?.value ?? 0;
+        const number_prefix = info?.prefix ?? "1. ";
+        // if previous line had only numbering, remove it and stay on the same line
+        if (bulleted_numbered_list_util.strip_numbering(previous_line) === "") {
+            // remove the full numbering prefix (including any indent)
+            util.the($textarea).setSelectionRange($textarea.caret() - number_prefix.length, $textarea.caret());
+            compose_ui.insert_and_scroll_into_view("", $textarea);
+            e.preventDefault();
+            return;
+        }
+        // Preserve the same indent as previous line; construct incremented numbering
+        const indent = number_prefix.replace(/\S.*$/, "");
+        to_append = `${indent}${previous_number + 1}. `;
     }
     // if previous line was neither numbered nor bulleted, only add
     // a new line to emulate default behaviour (to_append is blank)
