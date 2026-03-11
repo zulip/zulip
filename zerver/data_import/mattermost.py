@@ -1017,7 +1017,31 @@ def reset_mirror_dummy_users(username_to_user: dict[str, dict[str, Any]]) -> Non
         user["is_mirror_dummy"] = False
 
 
-def mattermost_data_file_to_dict(mattermost_data_file: str) -> dict[str, Any]:
+DEFAULT_SINGLE_TEAM_OBJECT = {
+    "name": "zulip-1",
+    "display_name": "Converted Mattermost teams",
+    "type": "O",
+    "description": "This organization contains multiple Mattermost teams.",
+    "allow_open_invite": False,
+}
+
+COMPILED_CHANNEL_ID_FORMAT = "{id}-{team}"
+
+
+def mattermost_data_file_to_dict(
+    mattermost_data_file: str, combine_into_one_realm: bool = False
+) -> dict[str, Any]:
+    # If combine_into_one_realm=True, we want to make sure these things
+    # happen here:
+    #   1. The only mattermost team object is DEFAULT_SINGLE_TEAM_OBJECT
+    #
+    #   2. Update all objects to have DEFAULT_SINGLE_TEAM_OBJECT as the team
+    #      it is associated to.
+    #
+    #   3. Since Mattermost objects uses the "name" field as their unique ID,
+    #      mark all objects' "name" field with their original "team" ID to
+    #      make sure they stay unique when combined.
+
     mattermost_data: dict[str, Any] = {}
     mattermost_data["version"] = []
     mattermost_data["team"] = []
@@ -1028,12 +1052,21 @@ def mattermost_data_file_to_dict(mattermost_data_file: str) -> dict[str, Any]:
     mattermost_data["direct_channel"] = []
     mattermost_data["role"] = []
 
+    if combine_into_one_realm:
+        mattermost_data["team"] = [DEFAULT_SINGLE_TEAM_OBJECT]
+
     with open(mattermost_data_file, "rb") as fp:
         for line in fp:
             row = orjson.loads(line)
             data_type = row["type"]
             if data_type == "post":
-                mattermost_data["post"]["channel_post"].append(row["post"])
+                post = row["post"]
+                if combine_into_one_realm:
+                    post["channel"] = COMPILED_CHANNEL_ID_FORMAT.format(
+                        id=post["channel"], team=post["team"]
+                    )
+                    post["team"] = DEFAULT_SINGLE_TEAM_OBJECT["name"]
+                mattermost_data["post"]["channel_post"].append(post)
             elif data_type == "direct_post":
                 mattermost_data["post"]["direct_post"].append(row["direct_post"])
             elif data_type == "bot":
@@ -1051,16 +1084,74 @@ def mattermost_data_file_to_dict(mattermost_data_file: str) -> dict[str, Any]:
                         bot_id=slugify(bot_username),
                         bot_name_getter=lambda d: d["username"],
                     )
-                # Exported bot data doesn't include which teams or channels they are a
+                # Exported bot data doesn't originally include which teams or channels they are a
                 # part of. This data will be backfilled later.
-                bot_data["teams"] = []
+                # In the special case of combine_into_one_realm=True, we fill this in right now,
+                # setting DEFAULT_SINGLE_TEAM_OBJECT as the team for each bot.
+                bot_data["teams"] = (
+                    []
+                    if not combine_into_one_realm
+                    else [
+                        {
+                            "name": DEFAULT_SINGLE_TEAM_OBJECT["name"],
+                            "roles": "team_user",
+                            "channels": [],
+                        }
+                    ]
+                )
                 mattermost_data["user"].append(bot_data)
+            elif data_type == "user" and combine_into_one_realm:
+                all_user_channels: list[dict[str, Any]] = []
+                all_user_team_roles: set[str] = set()
+                # Admin users in individual teams will have administrator role
+                # in the combined realm.
+                for team in row[data_type]["teams"]:
+                    for channel in team["channels"]:
+                        channel["name"] = COMPILED_CHANNEL_ID_FORMAT.format(
+                            id=channel["name"], team=team["name"]
+                        )
+                    all_user_channels += team["channels"]
+                    all_user_team_roles.update(team["roles"].split(" "))
+                # If a user is a guest in a team but a normal user in at least one
+                # other team, they will be converted into a normal user in the combined
+                # realm.
+                if {"team_guest", "team_user"}.issubset(all_user_team_roles):
+                    all_user_team_roles.remove("team_guest")
+                row[data_type]["teams"] = [
+                    {
+                        "name": DEFAULT_SINGLE_TEAM_OBJECT["name"],
+                        "roles": " ".join(all_user_team_roles),
+                        "channels": all_user_channels,
+                    }
+                ]
+                mattermost_data[data_type].append(row[data_type])
+            elif data_type == "team" and combine_into_one_realm:
+                continue
+            elif data_type == "channel" and combine_into_one_realm:
+                row[data_type]["name"] = COMPILED_CHANNEL_ID_FORMAT.format(
+                    id=row[data_type]["name"], team=row[data_type]["team"]
+                )
+                row[data_type]["team"] = DEFAULT_SINGLE_TEAM_OBJECT["name"]
+                mattermost_data[data_type].append(row[data_type])
             else:
+                if (
+                    combine_into_one_realm
+                    and isinstance(row[data_type], dict)
+                    and "team" in row[data_type]
+                ):
+                    raise AssertionError(
+                        f"Found unexpected '{data_type}' object while compiling into combined realm. {row}"
+                    )
                 mattermost_data[data_type].append(row[data_type])
     return mattermost_data
 
 
-def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: bool) -> None:
+def do_convert_data(
+    mattermost_data_dir: str,
+    output_dir: str,
+    masking_content: bool,
+    combine_into_one_realm: bool = False,
+) -> None:
     username_to_user: dict[str, dict[str, Any]] = {}
 
     os.makedirs(output_dir, exist_ok=True)
@@ -1073,9 +1164,9 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
     export_json_file = os.path.join(mattermost_data_dir, "export.json")
 
     if os.path.exists(import_jsonl_file):
-        mattermost_data = mattermost_data_file_to_dict(import_jsonl_file)
+        mattermost_data = mattermost_data_file_to_dict(import_jsonl_file, combine_into_one_realm)
     elif os.path.exists(export_json_file):
-        mattermost_data = mattermost_data_file_to_dict(export_json_file)
+        mattermost_data = mattermost_data_file_to_dict(export_json_file, combine_into_one_realm)
     else:
         raise AssertionError(
             f"Missing import.jsonl or export.json file in {mattermost_data_dir}. Files: {os.listdir(mattermost_data_dir)!s}",
