@@ -873,9 +873,10 @@ class MessagePOSTTest(ZulipTestCase):
         message_id = orjson.loads(result.content)["id"]
 
         recent_conversations = get_recent_private_conversations(user_profile)
-        [(recipient_id, recent_conversation)] = recent_conversations.items()
-        self.assertEqual(set(recent_conversation["user_ids"]), {othello.id})
-        self.assertEqual(recent_conversation["max_message_id"], message_id)
+        self.assert_length(recent_conversations, 1)
+        user_id_set = next(iter(recent_conversations))
+        self.assertEqual(user_id_set, {othello.id})
+        self.assertEqual(recent_conversations[user_id_set], message_id)
 
         # Now send a message to yourself and see how that interacts with the data structure
         result = self.client_post(
@@ -891,15 +892,10 @@ class MessagePOSTTest(ZulipTestCase):
 
         recent_conversations = get_recent_private_conversations(user_profile)
         self.assert_length(recent_conversations, 2)
-        recent_conversation = recent_conversations[recipient_id]
-        self.assertEqual(set(recent_conversation["user_ids"]), {othello.id})
-        self.assertEqual(recent_conversation["max_message_id"], message_id)
+        self.assertEqual(recent_conversations[frozenset([othello.id])], message_id)
 
         # Now verify we have the appropriate self-pm data structure
-        del recent_conversations[recipient_id]
-        [(recipient_id, recent_conversation)] = recent_conversations.items()
-        self.assertEqual(set(recent_conversation["user_ids"]), set())
-        self.assertEqual(recent_conversation["max_message_id"], self_message_id)
+        self.assertEqual(recent_conversations[frozenset()], self_message_id)
 
     def test_personal_message_by_id(self) -> None:
         """
@@ -2664,11 +2660,8 @@ class StreamMessagesTest(ZulipTestCase):
         self.assert_length(msg_data["huddle_dict"].keys(), 2)
 
         recent_conversations = get_recent_private_conversations(users[1])
-        [recent_conversation] = recent_conversations.values()
-        self.assertEqual(
-            set(recent_conversation["user_ids"]), {user.id for user in users if user != users[1]}
-        )
-        self.assertEqual(recent_conversation["max_message_id"], message2_id)
+        user_set = frozenset(user.id for user in users if user != users[1])
+        self.assertEqual(recent_conversations[user_set], message2_id)
 
     def test_get_raw_unread_data_for_1_to_1_dms_using_group_direct_message(self) -> None:
         sender = self.example_user("hamlet")
@@ -2688,9 +2681,7 @@ class StreamMessagesTest(ZulipTestCase):
         self.assertIn(message2_id, msg_data["pm_dict"].keys())
 
         recent_conversations = get_recent_private_conversations(receiver)
-        [recent_conversation] = recent_conversations.values()
-        self.assertEqual(set(recent_conversation["user_ids"]), {sender.id})
-        self.assertEqual(recent_conversation["max_message_id"], message2_id)
+        self.assertEqual(recent_conversations[frozenset([sender.id])], message2_id)
 
     def test_stream_becomes_active_on_message_send(self) -> None:
         # Mark a stream as inactive
