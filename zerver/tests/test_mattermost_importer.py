@@ -16,6 +16,7 @@ from django_stubs_ext import QuerySetAny
 
 from zerver.data_import.import_util import SubscriberHandler, UploadRecordData, ZerverFieldsT
 from zerver.data_import.mattermost import (
+    DEFAULT_SINGLE_TEAM_OBJECT,
     backfill_user_data_from_posts,
     build_reactions,
     check_user_in_team,
@@ -150,6 +151,7 @@ class MattermostImportTestBase(ZulipTestCase):
         fixture_dir: str,
         team_name: str,
         subdomain: str,
+        combine_into_one_realm: bool = False,
     ) -> tuple[dict[str, Any], Any]:
         fixture_file = self.fixture_file_name(export_file_name, fixture_dir)
         mattermost_data = mattermost_data_file_to_dict(fixture_file)
@@ -162,6 +164,7 @@ class MattermostImportTestBase(ZulipTestCase):
                 mattermost_data_dir=mattermost_data_dir,
                 output_dir=output_dir,
                 masking_content=True,
+                combine_into_one_realm=combine_into_one_realm,
             )
 
         team_output_dir = self.team_output_dir(output_dir, team_name)
@@ -1646,3 +1649,83 @@ class MattermostV1110ImportTest(MattermostImportTestBase):
 
         with self.subTest("test attachments"):
             self.assert_attachments(imported_realm, expected_count=3)
+
+
+class MattermostCombinedTeamsImportTest(MattermostImportTestBase):
+    FIXTURE_DIR = "mattermost_fixtures/"
+    SUBDOMAIN = "test-realm"
+    TEAM = DEFAULT_SINGLE_TEAM_OBJECT["name"]
+
+    OWNER_EMAILS = {"sysadmin@sample.mattermost.com"}
+    GUEST_EMAILS = {}
+    BOT_EMAILS = {}
+
+    def test_mattermost_data_file_to_dict(self) -> None:
+        fixture_file = self.fixture_file_name("export.json", self.FIXTURE_DIR)
+        mattermost_data = mattermost_data_file_to_dict(fixture_file, combine_into_one_realm=True)
+
+        self.assert_length(mattermost_data, 8)
+        self.assert_length(mattermost_data["team"], 1)
+        self.assertDictEqual(mattermost_data["team"][0], DEFAULT_SINGLE_TEAM_OBJECT)
+        self.assert_length(mattermost_data["channel"], 9)
+        self.assert_length(mattermost_data["user"], 5)
+        self.assert_length(mattermost_data["emoji"], 2)
+        self.assert_length(mattermost_data["post"]["channel_post"], 21)
+        self.assert_length(mattermost_data["post"]["direct_post"], 0)
+        self.assert_length(mattermost_data["direct_channel"], 0)
+        self.assert_length(mattermost_data["role"], 0)
+        exported_bot_users = [user for user in mattermost_data["user"] if user.get("is_bot")]
+        self.assert_length(exported_bot_users, 0)
+
+    def test_e2e_export_data_v11_1_0(self) -> None:
+        with self.settings(EXTERNAL_HOST="zulip.example.com"):
+            mattermost_data, imported_realm = self.run_convert_and_import(
+                export_file_name="export.json",
+                fixture_dir=self.FIXTURE_DIR,
+                team_name=self.TEAM,
+                subdomain="test-realm",
+                combine_into_one_realm=True,
+            )
+        user_map_data = self.build_user_maps(self.TEAM, mattermost_data)
+
+        with self.subTest("test user conversion"):
+            self.assert_user_conversion(
+                mattermost_data=mattermost_data,
+                imported_realm=imported_realm,
+                expected_owner_emails=self.OWNER_EMAILS,
+                expected_guest_emails=self.GUEST_EMAILS,
+                expected_bot_user_emails=self.BOT_EMAILS,
+                expected_number_of_imported_users=mattermost_data["user"],
+            )
+
+        with self.subTest("test channel conversion"):
+            self.assert_channel_conversion(
+                mattermost_data=mattermost_data,
+                imported_realm=imported_realm,
+                exported_channel_subscriber_dict=user_map_data.exported_channel_subscriber_dict,
+            )
+
+        with self.subTest("test channel message conversion"):
+            # These channels are from two different teams, with the combine_into_one_realm
+            # flag, these two should be part of the same Zulip realm.
+            mattermost_channels = [
+                ("gryffindor-common-room-griffindor", "Gryffindor common room"),
+                ("slytherin-quidditch-team", "Slytherin quidditch team"),
+            ]
+            for mattermost_channel_id, channel_name in mattermost_channels:
+                self.assert_channel_messages(
+                    mattermost_data,
+                    imported_realm,
+                    mattermost_channel_id=mattermost_channel_id,
+                    channel_name=channel_name,
+                    username_to_email_map=user_map_data.username_to_email_map,
+                    expected_number_of_bot_messages=0,
+                )
+
+        with self.subTest("test direct messages"):
+            self.assert_direct_messages(
+                mattermost_data=mattermost_data,
+                imported_realm=imported_realm,
+                username_to_email_map=user_map_data.username_to_email_map,
+                expected_number_of_bot_messages=0,
+            )
