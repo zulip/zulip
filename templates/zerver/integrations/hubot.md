@@ -54,7 +54,6 @@ result like this:
 * Zulip Integrations using Hubot: [Assembla](/integrations/assembla) |
   [Bonusly](/integrations/bonusly) |
   [Chartbeat](/integrations/chartbeat) |
-  [Dark Sky](/integrations/darksky) |
   [Instagram](/integrations/instagram) |
   [Google Translate](/integrations/google-translate) |
   [MailChimp](/integrations/mailchimp) |
