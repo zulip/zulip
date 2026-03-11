@@ -611,9 +611,17 @@ exports.FakeJQuery = class extends RejectMissing {
             },
         );
     }
-    outerHeight(...args) {
-        assert.equal(args.length, 0, "zjquery does not support this outerHeight() call");
-        return 0 in this ? this[0].offsetHeight : undefined;
+    outerHeight() {
+        if (!(0 in this)) {
+            return undefined;
+        }
+        const state = fake_element_state.get(this[0]);
+        const height = state.computed_style.getPropertyValue("height");
+        if (height === "") {
+            return undefined;
+        }
+        assert.ok(height.endsWith("px"));
+        return Number(height.slice(0, -2));
     }
     parent(selector = "*") {
         return new exports.FakeJQuery(
