@@ -11297,7 +11297,7 @@ paths:
                           **Changes**: New in Zulip 12.0 (feature level 433).
                         example: false
                       profile_data:
-                        $ref: "#/components/schemas/profile_data"
+                        $ref: "#/components/schemas/ProfileData"
                     example:
                       {
                         "avatar_url": "https://secure.gravatar.com/avatar/af4f06322c177ef4e1e9b2c424986b54?d=identicon&version=1",
@@ -21447,7 +21447,6 @@ paths:
                                 avatar_url:
                                   nullable: true
                                 avatar_version: {}
-                                profile_data: {}
                                 is_imported_stub: {}
                       server_report_message_types:
                         description: |
@@ -28530,7 +28529,8 @@ components:
               nullable: true
             avatar_version: {}
             is_imported_stub: {}
-            profile_data: {}
+            profile_data:
+              $ref: "#/components/schemas/ProfileData"
     UserBase:
       type: object
       description: |
@@ -28690,9 +28690,7 @@ components:
 
             **Changes**: New in Zulip 12.0 (feature level 433).
           example: false
-        profile_data:
-          $ref: "#/components/schemas/profile_data"
-    profile_data:
+    ProfileData:
       type: object
       description: |
         Only present if `is_bot` is false; bots can't have custom profile fields.
