@@ -23,6 +23,7 @@ class ReactionEventUserDict(TypedDict):
     user_id: int
     email: str
     full_name: str
+    is_mirror_dummy: bool
 
 
 class ReactionEvent(TypedDict):
@@ -46,6 +47,7 @@ def notify_reaction_update(
         "user_id": user_profile.id,
         "email": user_profile.email,
         "full_name": user_profile.full_name,
+        "is_mirror_dummy": user_profile.is_mirror_dummy,
     }
 
     event: ReactionEvent = {
