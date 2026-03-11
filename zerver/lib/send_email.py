@@ -325,6 +325,7 @@ def send_immediate_email(
         # it will only call .close() if it was not open to begin with
         if connection.send_messages([mail]) == 0:
             logger.error("Unknown error sending %s email to %s", template, mail.to)
+            connection.close()
             raise EmailNotDeliveredError
     except smtplib.SMTPResponseException as e:
         logger.exception(
@@ -335,9 +336,11 @@ def send_immediate_email(
             e.smtp_error,
             stack_info=True,
         )
+        connection.close()
         raise EmailNotDeliveredError
     except smtplib.SMTPException as e:
         logger.exception("Error sending %s email to %s: %s", template, mail.to, e, stack_info=True)
+        connection.close()
         raise EmailNotDeliveredError
 
 
