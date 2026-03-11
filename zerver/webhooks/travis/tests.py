@@ -7,7 +7,14 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class TravisHookTests(WebhookTestCase):
     TOPIC_NAME = "builds"
-    EXPECTED_MESSAGE = """
+    EXPECTED_PUSH_MESSAGE = """
+Type: Push
+Author: josh_mandel
+Build status: Passed :thumbs_up:
+Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6c457d366a31), [build log](https://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)
+""".strip()
+    EXPECTED_PULL_REQUEST_MESSAGE = """
+Type: Pull request
 Author: josh_mandel
 Build status: Passed :thumbs_up:
 Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6c457d366a31), [build log](https://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)
@@ -24,7 +31,7 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         self.check_webhook(
             "build",
             self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            self.EXPECTED_PUSH_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -34,7 +41,7 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         self.check_webhook(
             "pull_request",
             self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            self.EXPECTED_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -56,7 +63,7 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         self.check_webhook(
             "build",
             self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            self.EXPECTED_PUSH_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -66,7 +73,7 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         self.check_webhook(
             "build",
             self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            self.EXPECTED_PUSH_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -88,7 +95,7 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         self.check_webhook(
             "pull_request",
             self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            self.EXPECTED_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -98,14 +105,14 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         self.check_webhook(
             "pull_request",
             self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            self.EXPECTED_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
         self.check_webhook(
             "build",
             self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            self.EXPECTED_PUSH_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 

@@ -20,6 +20,7 @@ ALL_EVENT_TYPES = [
 ]
 
 MESSAGE_TEMPLATE = """\
+Type: {}
 Author: {}
 Build status: {} {}
 Details: [changes]({}), [build log]({})"""
@@ -54,6 +55,7 @@ def api_travis_webhook(
         emoji = f"(No emoji specified for status '{message_status}'.)"
 
     body = MESSAGE_TEMPLATE.format(
+        event.replace("_", " ").capitalize(),
         message.author_name,
         message_status,
         emoji,
