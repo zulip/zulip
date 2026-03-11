@@ -52,7 +52,6 @@ from zerver.lib.exceptions import (
     OrganizationAdministratorRequiredError,
     OrganizationOwnerRequiredError,
 )
-from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.rate_limiter import (
     rate_limit_spectator_attachment_access_by_file,
     should_rate_limit,
@@ -89,6 +88,7 @@ from zerver.lib.users import (
     check_full_name,
     check_valid_bot_config,
     check_valid_bot_type,
+    check_valid_embedded_bot_service_name,
     check_valid_interface_type,
     get_users_for_api,
     max_message_id_for_user,
@@ -686,8 +686,8 @@ def add_bot_backend(
     if bot_type == UserProfile.EMBEDDED_BOT:
         if not settings.EMBEDDED_BOTS_ENABLED:
             raise JsonableError(_("Embedded bots are not enabled."))
-        if service_name not in [bot.name for bot in EMBEDDED_BOTS]:
-            raise JsonableError(_("Invalid embedded bot name."))
+        assert service_name is not None
+        check_valid_embedded_bot_service_name(service_name)
 
     if not form.is_valid():  # nocoverage
         # coverage note: The similar block above covers the most
