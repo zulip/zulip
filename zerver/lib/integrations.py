@@ -434,7 +434,10 @@ class HubotIntegration(Integration):
         display_name: str | None = None,
         logo: str | None = None,
         git_url: str | None = None,
-        legacy: bool = False,
+        # Hide all integrations available via Hubot from the catalog until
+        # the Hubot integration (https://github.com/zulip/hubot-zulip)
+        # becomes functional again.
+        legacy: bool = True,
     ) -> None:
         if git_url is None:
             git_url = self.GIT_URL_TEMPLATE.format(name)
