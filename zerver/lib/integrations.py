@@ -1091,7 +1091,6 @@ HUBOT_INTEGRATIONS: list[HubotIntegration] = [
     HubotIntegration("assembla", ["version-control", "project-management"]),
     HubotIntegration("bonusly", ["hr"]),
     HubotIntegration("chartbeat", ["marketing"]),
-    HubotIntegration("darksky", ["misc"], display_name="Dark Sky"),
     HubotIntegration("google-translate", ["misc"], display_name="Google Translate"),
     HubotIntegration(
         "instagram",
