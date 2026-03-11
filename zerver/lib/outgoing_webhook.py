@@ -2,6 +2,7 @@ import abc
 import json
 import logging
 from contextlib import suppress
+from dataclasses import dataclass
 from time import perf_counter
 from typing import Any, AnyStr
 
@@ -26,6 +27,12 @@ from zerver.models.clients import get_client
 from zerver.models.users import get_user_profile_by_id
 
 
+@dataclass
+class OutgoingWebhookResult:
+    content: str
+    widget_content: str | None = None
+
+
 class OutgoingWebhookServiceInterface(abc.ABC):
     def __init__(self, token: str, user_profile: UserProfile, service_name: str) -> None:
         self.token: str = token
@@ -42,7 +49,7 @@ class OutgoingWebhookServiceInterface(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def process_success(self, response_json: dict[str, Any]) -> dict[str, Any] | None:
+    def process_success(self, response_json: dict[str, Any]) -> OutgoingWebhookResult | None:
         raise NotImplementedError
 
 
@@ -84,22 +91,19 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
         return self.session.post(base_url, json=request_data)
 
     @override
-    def process_success(self, response_json: dict[str, Any]) -> dict[str, Any] | None:
+    def process_success(self, response_json: dict[str, Any]) -> OutgoingWebhookResult | None:
         if response_json.get("response_not_required", False):
             return None
 
         if "response_string" in response_json:
             # We are deprecating response_string.
             content = str(response_json["response_string"])
-            success_data = dict(content=content)
-            return success_data
+            return OutgoingWebhookResult(content=content)
 
         if "content" in response_json:
             content = str(response_json["content"])
-            success_data = dict(content=content)
-            if "widget_content" in response_json:
-                success_data["widget_content"] = response_json["widget_content"]
-            return success_data
+            widget_content = response_json.get("widget_content")
+            return OutgoingWebhookResult(content=content, widget_content=widget_content)
 
         return None
 
@@ -144,11 +148,10 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         return self.session.post(base_url, data=request_data)
 
     @override
-    def process_success(self, response_json: dict[str, Any]) -> dict[str, Any] | None:
+    def process_success(self, response_json: dict[str, Any]) -> OutgoingWebhookResult | None:
         if "text" in response_json:
             content = response_json["text"]
-            success_data = dict(content=content)
-            return success_data
+            return OutgoingWebhookResult(content=content)
 
         return None
 
@@ -333,12 +336,12 @@ def process_success_response(
     if success_data is None:
         return
 
-    content = success_data.get("content")
+    content = success_data.content
 
     if content is None or content.strip() == "":
         return
 
-    widget_content = success_data.get("widget_content")
+    widget_content = success_data.widget_content
     bot_id = event["user_profile_id"]
     message_info = event["message"]
     response_data = dict(content=content, widget_content=widget_content)
