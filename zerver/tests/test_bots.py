@@ -774,6 +774,17 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         profile = get_user(bot_email, bot_realm)
         self.assertEqual(profile.bot_type, UserProfile.INCOMING_WEBHOOK_BOT)
 
+    def test_add_bot_with_bot_type_incoming_webhook_and_payload_url(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
+            "payload_url": orjson.dumps("http://foo.bar.com").decode(),
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, "This bot type doesn't use payload_url.")
+
     def test_add_bot_with_bot_type_invalid(self) -> None:
         bot_info = {
             "full_name": "The Bot of Hamlet",
