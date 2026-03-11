@@ -1,24 +1,29 @@
 <div id="add-rsvp-meeting-modal">
     <form class="modal-form" id="rsvp-meeting-form">
-        <label for="rsvp-meeting-topic" class="modal-field-label">{{t "Meeting Topic" }}</label>
-        <input
-            id="rsvp-meeting-topic"
-            type="text"
-            name="topic"
-            class="modal_text_input"
-            placeholder="{{t 'Topic for meeting' }}"
-            autocomplete="off"
-            autofocus="autofocus"
-        />
+        <div class="input-group">
+            <label for="rsvp-meeting-topic" class="modal-field-label">{{t "Meeting Topic" }}</label>
+            <input
+                id="rsvp-meeting-topic"
+                type="text"
+                name="topic"
+                class="modal_text_input"
+                placeholder="{{t 'Topic for meeting' }}"
+                autocomplete="off"
+                autofocus="autofocus"
+            />
+        </div>
 
-        <label for="rsvp-meeting-datetime" class="modal-field-label">{{t "Meeting Time and Date" }}</label>
-        <input
-            id="rsvp-meeting-datetime"
-            type="datetime-local"
-            name="datetime"
-            class="modal_text_input"
-            placeholder="{{t 'Select day and time' }}"
-        />
+        <div class="input-group">
+         <div class="input-group">
+            <label for="rsvp-meeting-datetime" class="modal-field-label">{{t "Meeting Time and Date" }}</label>
+            <input
+                id="rsvp-meeting-datetime"
+                type="text"
+                class="modal_text_input"
+                placeholder="{{t 'Select day and time' }}"
+            />
+            <input type="hidden" id="rsvp-meeting-datetime-value" name="datetime" />
+        </div>
 
          <div class="input-group">
             <div class="rsvp-invite-label modal-field-label">

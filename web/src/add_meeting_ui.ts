@@ -12,7 +12,7 @@ import * as narrow_state from "./narrow_state.ts"
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as pill_typeahead from "./pill_typeahead.ts";
-import * as composebox_typeahead from "./composebox_typeahead.ts";
+import * as timerender from "./timerender.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as user_pill from "./user_pill.ts";
 import * as flatpickr from "./flatpickr.ts";
@@ -23,12 +23,8 @@ let add_meeting_dropdown: tippy.Instance | undefined;
 let composebox_add_meeting_dropdown_widget = false;
 
 function submit_rsvp_meeting_form(): void {
-    const topic = $<HTMLInputElement>("#add-rsvp-meeting-modal .rsvp-meeting-topic")
-        .val()
-        ?.trim();
-    const datetime = $<HTMLInputElement>("#add-rsvp-meeting-modal .rsvp-meeting-datetime")
-        .val()
-        ?.trim();
+    const topic = $<HTMLInputElement>("#rsvp-meeting-topic").val()?.trim();
+    const datetime = $<HTMLInputElement>("#rsvp-meeting-datetime-value").val()?.trim();
 
     assert(topic && datetime);
 
@@ -41,12 +37,9 @@ function submit_rsvp_meeting_form(): void {
 }
 
 function update_rsvp_submit_button_state(): void {
-    const topic = $<HTMLInputElement>("#add-rsvp-meeting-modal .rsvp-meeting-topic")
-        .val()
-        ?.trim();
-    const datetime = $<HTMLInputElement>("#add-rsvp-meeting-modal .rsvp-meeting-datetime")
-        .val()
-        ?.trim();
+    const topic = $<HTMLInputElement>("#rsvp-meeting-topic").val()?.trim();
+    const datetime = $<HTMLInputElement>("#rsvp-meeting-datetime-value").val()?.trim();
+
     const $submit_button = $("#add-rsvp-meeting-modal .dialog_submit_button");
 
     $submit_button.prop("disabled", true);
@@ -127,9 +120,8 @@ function rsvp_meeting_modal_post_render(): void {
         const $input = $(e.currentTarget);
 
         const defaultDate = ((): Date => {
-            const cur = $input.val() as string | undefined;
+            const cur = $<HTMLInputElement>("#rsvp-meeting-datetime-value").val() as string | undefined;
             if (cur) {
-                // Try to parse existing value; fallback to now
                 const parsed = new Date(cur);
                 if (!Number.isNaN(parsed.getTime())) {
                     return parsed;
@@ -144,8 +136,14 @@ function rsvp_meeting_modal_post_render(): void {
                 const dt = new Date(selectedDate);
                 const tzOffsetMs = dt.getTimezoneOffset() * 60 * 1000;
                 const localDt = new Date(dt.getTime() - tzOffsetMs);
-                const value = localDt.toISOString().slice(0, 16);
-                $input.val(value).trigger("input");
+                const isoValue = localDt.toISOString().slice(0, 16);
+
+                // Show human-readable string in the visible text input
+                const formatted = timerender.get_full_datetime(dt, "time");
+                $input.val(formatted);
+
+                // Store ISO value in hidden input — this is what submit/validation reads
+                $("#rsvp-meeting-datetime-value").val(isoValue).trigger("input");
 
                 update_rsvp_submit_button_state();
             },
