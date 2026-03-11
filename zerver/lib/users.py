@@ -233,6 +233,33 @@ def check_valid_embedded_bot_service_name(service_name: str) -> None:
         raise JsonableError(_("Invalid embedded bot name."))
 
 
+def check_payload_for_bot_type(
+    bot_type: int,
+    service_name: str | None,
+    service_payload_url: str | None,
+    config_data: Mapping[str, str],
+) -> None:
+    if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+        if not service_payload_url:
+            raise JsonableError(_("Missing payload_url."))
+    elif bot_type == UserProfile.EMBEDDED_BOT:
+        assert service_name is not None
+        check_valid_embedded_bot_service_name(service_name)
+        if service_payload_url:
+            raise JsonableError(_("Embedded bots don't use payload_url."))
+    elif bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
+        if service_payload_url:
+            raise JsonableError(_("This bot type doesn't use payload_url."))
+    else:
+        if service_name is not None:
+            raise JsonableError(_("This bot type doesn't use service_name."))
+        if service_payload_url:
+            raise JsonableError(_("This bot type doesn't use payload_url."))
+
+    if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT) and service_name:
+        check_valid_bot_config(bot_type, service_name, config_data)
+
+
 def is_administrator_role(role: int) -> bool:
     return role in {UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER}
 
