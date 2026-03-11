@@ -108,6 +108,7 @@ export function show(opts: {
 
     // Hide selected elements in the left sidebar.
     opts.highlight_view_in_left_sidebar();
+    sidebar_ui.refresh_left_sidebar_search_for_narrow_change();
 
     unread_ui.hide_unread_banner();
     opts.update_compose();
