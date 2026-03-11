@@ -4,6 +4,7 @@ from unittest import mock
 
 import requests
 import responses
+from django.test import override_settings
 from requests.adapters import HTTPAdapter
 from typing_extensions import override
 from urllib3.util import Retry
@@ -44,6 +45,9 @@ class RequestMockWithTimeoutAsHeader(responses.RequestsMock):
         return super()._on_request(adapter, request, **kwargs)
 
 
+# The general forcing of requests through Smokescreen only happens
+# when DEVELOPMENT=False
+@override_settings(DEVELOPMENT=False)
 class TestOutgoingHttp(ZulipTestCase):
     def test_headers(self) -> None:
         with RequestMockWithProxySupport() as mock_requests:
