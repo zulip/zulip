@@ -11,7 +11,11 @@
                                 </span>
                             {{else}}
                                 <span>
-                                    <i class="fa fa-ban deactivated-user-icon tippy-zulip-tooltip" data-tippy-content="Deactivated user"></i>
+                                    {{#if is_deleted}}
+                                        <i class="fa fa-ban deactivated-user-icon tippy-zulip-tooltip" data-tippy-content="{{t 'Deleted user'}}"></i>
+                                    {{else}}
+                                        <i class="fa fa-ban deactivated-user-icon tippy-zulip-tooltip" data-tippy-content="{{t 'Deactivated user'}}"></i>
+                                    {{/if}}
                                 </span>
                             {{/if}}
                         {{/unless}}

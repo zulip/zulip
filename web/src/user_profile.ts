@@ -735,6 +735,7 @@ export function show_user_profile(user_id: number, default_tab_key = "profile-ta
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         is_imported_stub: user.is_imported_stub,
+        is_deleted: user.is_deleted,
     };
 
     if (user.is_bot) {
