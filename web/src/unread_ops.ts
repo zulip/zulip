@@ -829,7 +829,7 @@ export function mark_all_as_read(modal_id?: string): void {
 
 export function mark_narrow_as_read(filter: Filter): void {
     bulk_update_read_flags_for_narrow(
-        [{operator: "is", operand: "unread", negated: false}, ...filter.terms()],
+        [{operator: "is", operand: "unread", negated: false}, ...filter.terms_for_server_query()],
         "add",
     );
 }

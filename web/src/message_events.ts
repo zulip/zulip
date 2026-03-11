@@ -201,7 +201,7 @@ export let update_views_filtered_on_message_property = (
                 url: "/json/messages",
                 data: {
                     message_ids: JSON.stringify(message_ids),
-                    narrow: JSON.stringify(filter.terms()),
+                    narrow: filter.get_stringified_narrow_for_server_query(),
                     allow_empty_topic_name: true,
                 },
                 success(data) {
