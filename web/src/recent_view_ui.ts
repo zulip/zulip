@@ -2185,6 +2185,10 @@ export function initialize({
         pre_search_topic_viewport_offset = undefined;
     });
 
+    $("body").on("click", "#recent-view-search-wrapper .input-close-filter-button", () => {
+        set_default_focus();
+    });
+
     $("body").on("click", "#recent-view-content-table .on_hover_topic_read", (e) => {
         e.stopPropagation();
         assert(e.currentTarget instanceof HTMLElement);
