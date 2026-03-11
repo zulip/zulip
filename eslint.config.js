@@ -7,7 +7,7 @@ import {defineConfig} from "eslint/config";
 import prettier from "eslint-config-prettier";
 import {configs as astroConfigs} from "eslint-plugin-astro";
 import formatjs from "eslint-plugin-formatjs";
-import importPlugin from "eslint-plugin-import";
+import * as importX from "eslint-plugin-import-x";
 import * as mdx from "eslint-plugin-mdx";
 import noJquery from "eslint-plugin-no-jquery";
 import promise from "eslint-plugin-promise";
@@ -32,7 +32,7 @@ export default defineConfig(
         ],
     },
     js.configs.recommended,
-    importPlugin.flatConfigs.recommended,
+    importX.flatConfigs.recommended,
     compat.config(noJquery.configs.recommended),
     compat.config(noJquery.configs.deprecated),
     unicorn.configs.recommended,
@@ -43,7 +43,7 @@ export default defineConfig(
     mdx.flat,
     {
         files: ["**/*.cts", "**/*.mts", "**/*.ts"],
-        extends: [importPlugin.flatConfigs.typescript],
+        extends: [importX.flatConfigs.typescript],
     },
     {
         plugins: {
@@ -67,11 +67,6 @@ export default defineConfig(
         settings: {
             formatjs: {
                 additionalFunctionNames: ["$t", "$t_html"],
-            },
-            "import/resolver": {
-                node: {
-                    extensions: [".ts", ".d.ts", ".js"],
-                },
             },
             "no-jquery": {
                 collectionReturningPlugins: {expectOne: "always"},
@@ -118,16 +113,19 @@ export default defineConfig(
             ],
             "formatjs/no-id": "error",
             "guard-for-in": "error",
-            "import/extensions": ["error", "ignorePackages"],
-            "import/first": "error",
-            "import/newline-after-import": "error",
-            "import/no-cycle": ["error", {ignoreExternal: true}],
-            "import/no-duplicates": "error",
-            "import/no-self-import": "error",
-            "import/no-unresolved": "off",
-            "import/no-useless-path-segments": "error",
-            "import/order": ["error", {alphabetize: {order: "asc"}, "newlines-between": "always"}],
-            "import/unambiguous": "error",
+            "import-x/extensions": ["error", "ignorePackages"],
+            "import-x/first": "error",
+            "import-x/newline-after-import": "error",
+            "import-x/no-cycle": ["error", {ignoreExternal: true}],
+            "import-x/no-duplicates": "error",
+            "import-x/no-self-import": "error",
+            "import-x/no-unresolved": "off",
+            "import-x/no-useless-path-segments": "error",
+            "import-x/order": [
+                "error",
+                {alphabetize: {order: "asc"}, "newlines-between": "always"},
+            ],
+            "import-x/unambiguous": "error",
             "lines-around-directive": "error",
             "new-cap": "error",
             "no-alert": "error",
@@ -213,15 +211,15 @@ export default defineConfig(
         rules: {
             "@typescript-eslint/no-unused-vars": "off",
             "comma-spacing": "error",
-            "import/extensions": "off",
-            "import/unambiguous": "off",
+            "import-x/extensions": "off",
+            "import-x/unambiguous": "off",
             quotes: "error",
         },
     },
     {
         files: ["**/*.md"],
         rules: {
-            "import/unambiguous": "off",
+            "import-x/unambiguous": "off",
         },
     },
     {
@@ -244,7 +242,7 @@ export default defineConfig(
     {
         files: ["**/*.d.ts"],
         rules: {
-            "import/unambiguous": "off",
+            "import-x/unambiguous": "off",
         },
     },
     {
@@ -279,7 +277,7 @@ export default defineConfig(
     {
         files: ["web/src/**"],
         settings: {
-            "import/resolver": {
+            "import-x/resolver": {
                 webpack: {
                     config: {},
                 },
@@ -316,7 +314,7 @@ export default defineConfig(
     {
         files: ["starlight_help/src/components/ZulipNote.astro"],
         rules: {
-            "import/unambiguous": "off",
+            "import-x/unambiguous": "off",
         },
     },
     {
@@ -325,7 +323,7 @@ export default defineConfig(
             // We need to turn off this rule since we want import statements
             // to be easily copy-paste-able between content/include and
             // content/docs.
-            "import/no-useless-path-segments": "off",
+            "import-x/no-useless-path-segments": "off",
         },
     },
 );
