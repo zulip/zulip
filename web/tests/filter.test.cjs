@@ -6,7 +6,7 @@ const {parseOneAddress} = require("email-addresses");
 
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
-const {make_user, Role} = require("./lib/example_user.cjs");
+const {make_user, Role} = require("./lib/example_user.cts");
 const {mock_esm, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");

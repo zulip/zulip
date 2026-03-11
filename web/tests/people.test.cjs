@@ -7,7 +7,7 @@ const _ = require("lodash");
 
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
-const {make_bot, make_cross_realm_bot, make_user, Role} = require("./lib/example_user.cjs");
+const {make_bot, make_cross_realm_bot, make_user, Role} = require("./lib/example_user.cts");
 const {$t} = require("./lib/i18n.cjs");
 const {clock, mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
