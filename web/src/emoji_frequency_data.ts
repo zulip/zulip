@@ -56,6 +56,20 @@ function get_other_users_total_emoji_usage(): number {
     return count;
 }
 
+export function show_reaction_data(): (ScoredEmoji & {
+    my_count: number;
+    others_count: number;
+})[] {
+    const others_count_for_all_emoji = get_other_users_total_emoji_usage();
+    const data_for_emojis = [...reaction_data.values()].map((emoji_usage) => ({
+        ...get_scored_emoji_for_usage(emoji_usage, others_count_for_all_emoji),
+        my_count: emoji_usage.current_user_reacted_message_ids.size,
+        others_count:
+            emoji_usage.message_ids.size - emoji_usage.current_user_reacted_message_ids.size,
+    }));
+    return data_for_emojis.toSorted((a, b) => b.score - a.score);
+}
+
 function compute_score(info: {
     is_popular: boolean;
     others_count_for_current_emoji: number;
