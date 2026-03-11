@@ -1,7 +1,7 @@
 import {$} from "jquery";
 import assert from "minimalistic-assert";
 import PlotlyBar from "plotly.js/lib/bar";
-import Plotly from "plotly.js/lib/core";
+import Plotly from "plotly.js/lib/core"; // eslint-disable-line import-x/default
 import PlotlyPie from "plotly.js/lib/pie";
 import * as tippy from "tippy.js";
 import * as z from "zod/mini";
