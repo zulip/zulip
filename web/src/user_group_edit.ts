@@ -1416,6 +1416,18 @@ export function set_up_click_handlers(): void {
         e.stopPropagation();
         e.preventDefault();
     });
+
+    $("#groups_overlay").on("click", ".no-groups-to-show .view-all-groups-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        group_list_toggler.goto("all-groups");
+    });
+
+    $("#groups_overlay").on("click", ".no-groups-to-show .create-user-group-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        open_create_user_group();
+    });
 }
 
 function create_user_group_clicked(): void {
@@ -1812,11 +1824,32 @@ export function update_empty_left_panel_message(): void {
         active_tab_key,
     );
 
+    const has_any_groups = user_groups.get_realm_user_groups(true).length > 0;
+
+    // We don't show any action buttons when the user is searching
+    // or has a filter applied, since the empty state is due to
+    // filters, not the actual absence of groups.
+    const is_filtered =
+        current_group_filter !== FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS ||
+        $("#search_group_name").val() !== "";
+
+    const can_create_user_groups =
+        settings_data.user_can_create_user_groups() && realm.zulip_plan_is_not_limited;
+
+    let show_view_all_groups_button = false;
+    let show_create_user_group_button = false;
+    if (!is_filtered && active_tab_key !== "roles") {
+        if (has_any_groups) {
+            show_view_all_groups_button = active_tab_key === "your-groups";
+        } else {
+            show_create_user_group_button = can_create_user_groups;
+        }
+    }
+
     const args = {
         empty_user_group_list_message,
-        can_create_user_groups:
-            settings_data.user_can_create_user_groups() && realm.zulip_plan_is_not_limited,
-        all_groups_tab: active_tab_key === "all-groups",
+        show_view_all_groups_button,
+        show_create_user_group_button,
     };
 
     $(".no-groups-to-show").html(render_user_group_settings_empty_notice(args)).show();
@@ -1834,7 +1867,15 @@ function get_empty_user_group_list_message(
         return $t({defaultMessage: "There are no groups matching your filters."});
     }
 
+    const organization_has_zero_non_system_groups =
+        user_groups.get_realm_user_groups(true).length === 0;
+
     if (active_tab_key === "your-groups") {
+        if (organization_has_zero_non_system_groups) {
+            return $t({
+                defaultMessage: "There are no user groups you can view in this organization.",
+            });
+        }
         return $t({defaultMessage: "You are not a member of any user groups."});
     }
     if (active_tab_key === "roles") {
