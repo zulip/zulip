@@ -119,6 +119,18 @@
         padding: 3em 1em;
     }
 
+    .recent-view-empty-load-more {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        /* Reset the 1.5em font-size inherited from
+           .empty-table-message so the load-more text
+           and button match normal UI text size. */
+        font-size: var(--base-font-size-px);
+    }
+
     .fa-check-square-o,
     .fa-square-o {
         width: 0.7142em; /* Legacy 10px size at 14px/1em. */
@@ -147,7 +159,21 @@
 
     .fetch-messages-button {
         display: grid;
-        justify-items: center;
+        place-items: center;
+
+        /* Stack the loading indicator and button label in the
+           same grid cell so the label stays vertically centered
+           when the indicator is empty/hidden. */
+        > * {
+            grid-row: 1;
+            grid-column: 1;
+        }
+
+        /* Override the inline height: 0 set by loading.make_indicator
+           so the spinner participates in grid alignment. */
+        .loading-indicator {
+            height: auto !important;
+        }
 
         .loading_indicator_spinner {
             height: 20px;
@@ -598,12 +624,6 @@
         .recent-view-participants-header {
             display: none;
         }
-
-        /* Increase space for time column. */
-        .recent_topic_timestamp,
-        .recent-view-last-msg-time-header {
-            width: 25%;
-        }
     }
 
     .recent-view-participants-header .recent-view-header-wrapper {
@@ -615,7 +635,13 @@
 
     .recent_topic_timestamp,
     .recent-view-last-msg-time-header {
-        width: 20%;
+        /* Time text width is measured from JS and set as
+           --recent-view-time-text-width. Add the visibility
+           icon width (1em), cell padding (2 × 0.5em), and space
+           for the icon's focus outline (0.5em). Falls back to
+           25% before JS has set the variable. */
+        width: 25%;
+        width: calc(var(--recent-view-time-text-width) + 2.5em);
     }
 
     .recent_topic_name {
@@ -803,13 +829,8 @@
 }
 
 #recent_view .recent_topic_timestamp .flex_container {
+    /* Push the visibility icon to the right edge of the cell. */
     justify-content: space-between;
-
-    /* To avoid time text from wrapping, keep extra margin
-       as small as possible. */
-    .recent_topic_actions {
-        margin-right: 0.125em; /* 2px at 16px/1em */
-    }
 }
 
 .recent-view-unread-mention-and-count-wrapper {

@@ -20,6 +20,19 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 478**
+
+* [`POST /realm/filters`](/api/add-linkifier),
+  [`PATCH /realm/filters/{filter_id}`](/api/update-linkifier): Added
+  `alternative_url_templates` parameter for specifying additional URL
+  templates used only for reverse linkification (converting pasted URLs
+  to linkifier pattern text). These templates have no effect on forward
+  linkification.
+* [`GET /realm/linkifiers`](/api/get-linkifiers),
+  [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Linkifier objects now include the
+  `alternative_url_templates` field.
+
 **Feature level 477**
 
 * `PATCH /realm`, [`POST /register`](/api/register-queue),
@@ -330,7 +343,8 @@ element to plain escaped text.
 * [`GET /events`](/api/get-events): The deprecated `update_display_settings`
   and `update_global_notifications` event types are no longer sent to any
   clients. These legacy event types were deprecated in Zulip 5.0 (feature
-  level 89) and replaced by the `user_settings` event type.
+  level 89) and replaced by the [`user_settings` event
+  type](/api/get-events#user_settings-update).
 
 **Feature level 438**
 

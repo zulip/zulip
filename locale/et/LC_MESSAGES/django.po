@@ -7,14 +7,17 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-02-12 04:05+0000\n"
-"PO-Revision-Date: 2026-02-12 04:05+0000\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: Estonian <https://hosted.weblate.org/projects/zulip/django/et/>\n"
+"PO-Revision-Date: 2026-02-13 06:38+0000\n"
+"Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Estonian <https://hosted.weblate.org/projects/zulip/django/"
+"et/>\n"
 "Language: et\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.16-dev\n"
+
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
 msgstr ""
@@ -1832,7 +1835,7 @@ msgstr ""
 #: templates/zerver/create_user/register.html:156
 #: templates/zerver/login.html:110 templates/zerver/reset_confirm.html:27
 msgid "Password"
-msgstr ""
+msgstr "Salasõna"
 
 #: templates/zerver/create_user/register.html:146
 msgid "Enter your LDAP/Active Directory password."
@@ -2179,7 +2182,7 @@ msgstr ""
 
 #: templates/zerver/emails/confirm_demo_organization_email.html:11
 msgid "Confirm and set password"
-msgstr ""
+msgstr "Kinnita ja lisa salasõna"
 
 #: templates/zerver/emails/confirm_demo_organization_email.html:13
 #: templates/zerver/emails/confirm_new_email.html:13
@@ -3065,11 +3068,11 @@ msgstr ""
 
 #: templates/zerver/emails/password_reset.html:13
 msgid "Click the button below to reset your password."
-msgstr ""
+msgstr "Oma salasõna lähtestamiseks klõpsa järgnevat nuppu."
 
 #: templates/zerver/emails/password_reset.html:14
 msgid "Reset password"
-msgstr ""
+msgstr "Lähtesta salasõna"
 
 #: templates/zerver/emails/password_reset.html:19
 #, python-format
@@ -3744,7 +3747,7 @@ msgstr ""
 
 #: templates/zerver/login.html:116
 msgid "Forgot your password?"
-msgstr ""
+msgstr "Kas oled oma salasõna unustanud?"
 
 #: templates/zerver/login.html:149
 #, python-format
@@ -3979,7 +3982,7 @@ msgstr ""
 
 #: templates/zerver/reset.html:4 templates/zerver/reset.html:12
 msgid "Reset your password"
-msgstr ""
+msgstr "Lähtesta oma salasõna"
 
 #: templates/zerver/reset.html:17
 msgid ""
@@ -3997,7 +4000,7 @@ msgstr ""
 
 #: templates/zerver/reset_confirm.html:45
 msgid "Confirm password"
-msgstr ""
+msgstr "Korda salasõna"
 
 #: templates/zerver/reset_confirm.html:76
 msgid "Sorry, the link you provided is invalid or has already been used."
@@ -4743,7 +4746,7 @@ msgstr ""
 
 #: zerver/forms.py:74
 msgid "The password is too weak."
-msgstr ""
+msgstr "Salasõna on liiga kehv."
 
 #: zerver/forms.py:88
 msgid "Subdomain needs to have length 3 or greater."
@@ -4822,11 +4825,11 @@ msgstr ""
 
 #: zerver/forms.py:476
 msgid "New password"
-msgstr ""
+msgstr "Uus salasõna"
 
 #: zerver/forms.py:483
 msgid "New password confirmation"
-msgstr ""
+msgstr "Uue salasõna kinnitus"
 
 #: zerver/forms.py:636
 #, python-brace-format
@@ -5148,7 +5151,7 @@ msgstr ""
 
 #: zerver/lib/exceptions.py:349
 msgid "Your username or password is incorrect"
-msgstr ""
+msgstr "Sinu kasutajanimi või salasõna on vigased"
 
 #: zerver/lib/exceptions.py:367
 msgid "This organization has been deactivated"
@@ -6830,7 +6833,7 @@ msgstr ""
 
 #: zerver/views/auth.py:1239
 msgid "Password is incorrect."
-msgstr ""
+msgstr "Salasõna pole õige."
 
 #: zerver/views/channel_folders.py:94
 msgid "You need to remove all the channels from this folder to archive it."
@@ -7509,11 +7512,11 @@ msgstr ""
 
 #: zerver/views/user_settings.py:474
 msgid "Your Zulip password is managed in LDAP"
-msgstr ""
+msgstr "Sonu Zulipi salasõna hallatakse LDAP-teenuses"
 
 #: zerver/views/user_settings.py:484
 msgid "Wrong password!"
-msgstr ""
+msgstr "Vale salasõna!"
 
 #: zerver/views/user_settings.py:490
 #, python-brace-format
@@ -7522,7 +7525,7 @@ msgstr ""
 
 #: zerver/views/user_settings.py:496
 msgid "New password is too weak!"
-msgstr ""
+msgstr "Uus salasõna on liiga kehv!"
 
 #: zerver/views/user_settings.py:551
 msgid "You must upload exactly one avatar."

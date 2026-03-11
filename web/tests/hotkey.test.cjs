@@ -203,6 +203,7 @@ run_test("mappings", () => {
     assert.equal(map_down("[", false, true).name, "escape");
     assert.equal(map_down("c", false, true).name, "copy_with_c");
     assert.equal(map_down("k", false, true).name, "search_with_k");
+    assert.equal(map_down("@", true, true).name, "open_mentions_view");
     assert.equal(map_down("s", false, true).name, "star_message");
     assert.equal(map_down(".", false, true).name, "narrow_to_compose_target");
 
@@ -242,6 +243,8 @@ run_test("mappings", () => {
     assert.equal(map_down("c", false, true, false), undefined);
     assert.equal(map_down("k", false, false, true).name, "search_with_k");
     assert.equal(map_down("k", false, true, false), undefined);
+    assert.equal(map_down("@", true, false, true).name, "open_mentions_view");
+    assert.equal(map_down("@", true, true, false), undefined);
     assert.equal(map_down("s", false, false, true).name, "star_message");
     assert.equal(map_down("s", false, true, false), undefined);
     assert.equal(map_down(".", false, false, true).name, "narrow_to_compose_target");
@@ -284,6 +287,7 @@ run_test("mappings non-latin keyboard", () => {
     assert.equal(map_down("х", "BracketLeft", false, true).name, "escape");
     assert.equal(map_down("с", "KeyC", false, true).name, "copy_with_c");
     assert.equal(map_down("л", "KeyK", false, true).name, "search_with_k");
+    assert.equal(map_down("@", "Digit2", true, true).name, "open_mentions_view");
     assert.equal(map_down("ы", "KeyS", false, true).name, "star_message");
     assert.equal(map_down("з", "KeyP", false, false, false, true).name, "toggle_compose_preview");
 
@@ -317,6 +321,8 @@ run_test("mappings non-latin keyboard", () => {
     assert.equal(map_down("с", "KeyC", false, true, false), undefined);
     assert.equal(map_down("л", "KeyK", false, false, true).name, "search_with_k");
     assert.equal(map_down("л", "KeyK", false, true, false), undefined);
+    assert.equal(map_down("@", "Digit2", true, false, true).name, "open_mentions_view");
+    assert.equal(map_down("@", "Digit2", true, true, false), undefined);
     assert.equal(map_down("ы", "KeyS", false, false, true).name, "star_message");
     assert.equal(map_down("ы", "KeyS", false, true, false), undefined);
     // Reset platform
@@ -493,7 +499,23 @@ test_while_not_editing_text("misc", ({override}) => {
         "realm_message_edit_history_visibility_policy",
         settings_config.message_edit_history_visibility_policy_values.always.code,
     );
+    override(message_lists.current, "selected_message", () => ({
+        id: 1,
+        type: "stream",
+        last_edit_timestamp: 123,
+    }));
     assert_mapping("H", message_edit_history, "fetch_and_render_message_history", true, true);
+    override(message_lists.current, "selected_message", () => ({
+        id: 2,
+        type: "stream",
+        last_moved_timestamp: 123,
+    }));
+    assert_mapping("H", message_edit_history, "fetch_and_render_message_history", true, true);
+    override(message_lists.current, "selected_message", () => ({
+        id: 3,
+        type: "stream",
+    }));
+    assert_unmapped("H");
 
     override(narrow_state, "narrowed_by_topic_reply", () => true);
     assert_mapping("s", message_view, "narrow_by_recipient");

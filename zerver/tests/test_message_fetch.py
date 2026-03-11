@@ -50,7 +50,12 @@ from zerver.lib.narrow_predicate import build_narrow_predicate
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import HostRequestMock, get_user_messages, queries_captured
+from zerver.lib.test_helpers import (
+    HostRequestMock,
+    get_test_image_file,
+    get_user_messages,
+    queries_captured,
+)
 from zerver.lib.topic import MATCH_TOPIC, RESOLVED_TOPIC_PREFIX, TOPIC_NAME, messages_for_topic
 from zerver.lib.types import UserDisplayRecipient
 from zerver.lib.upload import create_attachment
@@ -5599,6 +5604,14 @@ class MessageHasKeywordsTest(ZulipTestCase):
         # return path ids
         return [x[1] for x in dummy_files]
 
+    def setup_uploaded_image_file(self, user_profile: UserProfile) -> str:
+        self.login_user(user_profile)
+        image_file = get_test_image_file("img.png")
+        response = self.assert_json_success(
+            self.client_post("/json/user_uploads", {"file": image_file})
+        )
+        return response["url"]
+
     def test_claim_attachment(self) -> None:
         user_profile = self.example_user("hamlet")
         dummy_path_ids = self.setup_dummy_attachments(user_profile)
@@ -5699,18 +5712,21 @@ class MessageHasKeywordsTest(ZulipTestCase):
         self.assertFalse(msg.has_link)
 
     def test_has_image(self) -> None:
+        hamlet = self.example_user("hamlet")
+        uploaded_image_url = self.setup_uploaded_image_file(hamlet)
         msg_contents = [
             "Link: foo.org",
             "Image: https://www.google.com/images/srpr/logo4w.png",
             "Image: https://www.google.com/images/srpr/logo4w.pdf",
             "[Google link](https://www.google.com/images/srpr/logo4w.png)",
+            f"![image.png]({uploaded_image_url})",
         ]
         msg_ids = [
-            self.send_stream_message(self.example_user("hamlet"), "Denmark", content=msg_content)
+            self.send_stream_message(hamlet, "Denmark", content=msg_content)
             for msg_content in msg_contents
         ]
         msgs = [Message.objects.get(id=id) for id in msg_ids]
-        self.assertEqual([False, True, False, True], [msg.has_image for msg in msgs])
+        self.assertEqual([False, True, False, True, True], [msg.has_image for msg in msgs])
 
         self.update_message(msgs[0], "https://www.google.com/images/srpr/logo4w.png")
         self.assertTrue(msgs[0].has_image)
@@ -5752,6 +5768,13 @@ class MessageHasKeywordsTest(ZulipTestCase):
         self.update_message(msg, f"Both in code: `{dummy_urls[1]} {dummy_urls[0]}`.")
         self.assertFalse(msg.has_attachment)
         self.assertEqual(msg.attachment_set.count(), 0)
+
+        # Test inline media syntax with uploaded image.
+        uploaded_image_url = self.setup_uploaded_image_file(hamlet)
+        body = f"![image.png]({uploaded_image_url})"
+        msg_id = self.send_stream_message(hamlet, "Denmark", body, "test inline media image")
+        msg = Message.objects.get(id=msg_id)
+        self.assertTrue(msg.has_attachment)
 
     def test_potential_attachment_path_ids(self) -> None:
         hamlet = self.example_user("hamlet")
