@@ -7,7 +7,7 @@ const {parseOneAddress} = require("email-addresses");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user, Role} = require("./lib/example_user.cjs");
-const {mock_esm, with_overrides, zrequire} = require("./lib/namespace.cjs");
+const {mock_esm, with_overrides, zrequire, clock} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -1050,6 +1050,7 @@ test("public_terms", ({override}) => {
         {operator: "channel", operand: some_channel_id.toString()},
         {operator: "in", operand: "all"},
         {operator: "topic", operand: "bar"},
+        {operator: "date", operand: "2025-04-01"},
     ];
     let filter = new Filter(terms);
     const expected_terms = [
@@ -1135,6 +1136,10 @@ test("canonicalization", () => {
     term = Filter.canonicalize_term({operator: "search", operand: "abc “xyz”"});
     assert.equal(term.operator, "search");
     assert.equal(term.operand, 'abc "xyz"');
+
+    term = Filter.canonicalize_term({operator: "date", operand: "2022-06-10"});
+    assert.equal(term.operator, "date");
+    assert.equal(term.operand, "2022-06-10");
 
     term = Filter.canonicalize_term({operator: "has", operand: "attachments"});
     assert.equal(term.operator, "has");
@@ -1829,6 +1834,20 @@ test("parse", () => {
     string = "https://www.google.com";
     terms = [{operator: "search", operand: "https://www.google.com"}];
     _test();
+
+    string = "date:a week ago";
+    terms = [
+        {operator: "date", operand: "a"},
+        {operator: "search", operand: "week ago"},
+    ];
+    _test();
+
+    string = "date:2025-03-12 hello";
+    terms = [
+        {operator: "date", operand: "2025-03-12"},
+        {operator: "search", operand: "hello"},
+    ];
+    _test();
 });
 
 test("unparse", () => {
@@ -1929,6 +1948,14 @@ test("describe", ({mock_template, override}) => {
     string = "exclude all web-public channels";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
     page_params.is_spectator = false;
+
+    narrow = [{operator: "date", operand: ""}];
+    string = "messages sent around a specific date";
+    assert.equal(Filter.search_description_as_html(narrow, true), string);
+
+    narrow = [{operator: "date", operand: "2026-03-15"}];
+    string = "messages sent around March 15, 2026";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     const devel_decorated = `<span class="decorated-channel-name-wrapper inline-decorated-channel-name"><span class="channel-privacy-type-icon"><i class="zulip-icon zulip-icon-hashtag" aria-hidden="true"></i></span><span class="decorated-channel-name">devel</span></span>`;
     const river_decorated = `<span class="decorated-channel-name-wrapper inline-decorated-channel-name"><span class="channel-privacy-type-icon"><i class="zulip-icon zulip-icon-hashtag" aria-hidden="true"></i></span><span class="decorated-channel-name">river</span></span>`;
@@ -2381,7 +2408,18 @@ test("convert_suggestion_to_term", () => {
             true,
             {operator: "dm", operand: [sam_two.user_id]},
         ],
+        [`-date:2022-01-01`, false],
+        [`date:2022-01-01`, true],
+        // Not a valid date string.
+        [`date:2022-01-01abcd`, false],
+        // In the past
+        [`date:1500-01-06`, false],
+        // Not in the `yyyy-MM-dd` format
+        [`date:2020-`, false],
     ];
+
+    const today = new Date(2024, 0, 15, 2, 0, 0);
+    clock.setSystemTime(today.getTime());
     for (const [search_term_string, expected_is_valid, expected_term] of test_data) {
         const term = Filter.convert_suggestion_to_term(Filter.parse(search_term_string)[0]);
         assert.equal(term !== undefined, expected_is_valid);
@@ -2389,6 +2427,7 @@ test("convert_suggestion_to_term", () => {
             assert.deepEqual(term, {negated: false, ...expected_term});
         }
     }
+    clock.reset();
 
     // Invalid operator.
     assert.equal(
@@ -3436,6 +3475,18 @@ run_test("get_stringified_narrow_for_server_query", () => {
     const narrow = filter.get_stringified_narrow_for_server_query();
     assert.equal(
         narrow,
+        '[{"operator":"channel","operand":1,"negated":false},{"operator":"topic","operand":"bar","negated":false}]',
+    );
+
+    // Excludes date term if it is present in the filter.
+    const filter2 = new Filter([
+        {operator: "channel", operand: "1"},
+        {operator: "date", operand: "2025-03-01"},
+        {operator: "topic", operand: "bar"},
+    ]);
+    const narrow2 = filter2.get_stringified_narrow_for_server_query();
+    assert.equal(
+        narrow2,
         '[{"operator":"channel","operand":1,"negated":false},{"operator":"topic","operand":"bar","negated":false}]',
     );
 });
