@@ -2289,9 +2289,18 @@ export function initialize({
         "input",
         "#recent_view_search",
         _.debounce(() => {
-            // Reset focus to first row on new search.
-            row_focus = 0;
-            update_filters_view();
+            const search_term = $<HTMLInputElement>("#recent_view_search").val() ?? "";
+
+            if (search_term === "") {
+                row_focus = 0;
+                update_filters_view();
+            } else {
+                // Reset focus to first row on new search.
+                row_focus = 0;
+                update_filters_view();
+                // Always scroll to top when there is a search term present.
+                window.scrollTo(0, 0);
+            }
             // Wait for user to go idle before initiating search.
         }, 300),
     );
