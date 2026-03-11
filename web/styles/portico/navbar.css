@@ -278,6 +278,19 @@ details summary::-webkit-details-marker {
         width: 100vw;
         padding-left: 10px;
     }
+
+    & > .top-menu-submenu-column:last-child {
+        /* Bottom padding provides space for the scroll fade
+           indicator so no content is obscured at end of scroll. */
+        padding-bottom: 50px;
+    }
+
+    /* Fade bottom edge to hint at scrollable content. */
+    mask-image: linear-gradient(
+        to bottom,
+        hsl(0deg 0% 0%) calc(100% - 50px),
+        transparent 100%
+    );
 }
 
 .top-menu-tab .top-menu-tab-user-label {
