@@ -237,12 +237,8 @@ h3,
     }
 }
 
-#playground-settings {
-    #playground_pygments_language,
-    #playground_name,
-    #playground_url_template {
-        width: calc(100% - 10em - 6em);
-    }
+#playground-settings .new-playground-form input {
+    width: calc(100% - 10em - 6em);
 }
 
 #language_selection_modal {
@@ -2164,7 +2160,10 @@ label.preferences-radio-choice-label {
     }
 
     #playground-settings .new-playground-form input {
-        width: calc(100% - 20px) !important;
+        width: calc(
+            100% - 2 * var(--input-horizontal-padding) - 2 *
+                var(--input-border-width)
+        );
     }
 
     #playground-settings .new-playground-form label {
@@ -2199,6 +2198,14 @@ label.preferences-radio-choice-label {
         .profile_field_name,
         .profile_field_hint {
             min-width: 8em;
+        }
+    }
+
+    .add-new-playground-box {
+        .action-button {
+            margin-left: 0;
+            width: 100%;
+            box-sizing: border-box;
         }
     }
 }
