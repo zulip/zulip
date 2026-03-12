@@ -13,6 +13,10 @@ log][commit-log] for an up-to-date list of all changes.
 
 _Unreleased_
 
+### Zulip Server 12.0-beta1
+
+_Released 2026-03-12_
+
 #### Highlights
 
 - Server support for end-to-end encrypted mobile push notifications is
