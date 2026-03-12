@@ -165,6 +165,7 @@
 * [Fetch an API key (production)](/api/fetch-api-key)
 * [Fetch an API key (development only)](/api/dev-fetch-api-key)
 * [Fetch an API key (JWT)](/api/jwt-fetch-api-key)
+* [List users (development only)](/api/dev-list-users)
 * [Register a logged-in device](/api/register-client-device)
 * [Remove a registered device](/api/remove-client-device)
 * [Send an E2EE test notification to mobile device(s)](/api/e2ee-test-notify)

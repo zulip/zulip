@@ -222,9 +222,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/default_stream_groups/create",
         "/default_stream_groups/{group_id}",
         "/default_stream_groups/{group_id}/streams",
-        #### Mobile-app only endpoints; important for mobile developers.
-        # Mobile interface for development environment login
-        "/dev_list_users",
         #### These personal settings endpoints have modest value to document:
         "/users/me/avatar",
         # Much more valuable would be an org admin bulk-upload feature.

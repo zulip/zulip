@@ -279,6 +279,7 @@ def generate_curl_example(
         "/dev_fetch_api_key:post",
         "/fetch_api_key:post",
         "/jwt/fetch_api_key:post",
+        "/dev_list_users:get",
     ]
     lines = []
     if operation in insecure_operations:
