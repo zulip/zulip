@@ -197,6 +197,10 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         )
 
     def test_make_request_stream_message(self) -> None:
+        """
+        When the message does not start with a bot mention, command is the
+        trigger word and text is the full message content.
+        """
         test_url = "https://example.com/example"
         with mock.patch.object(self.handler, "session") as session:
             self.handler.make_request(
@@ -217,9 +221,35 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         self.assertEqual(request_data[6][1], 123456)  # timestamp
         self.assertEqual(request_data[7][1], "U21")  # user_id
         self.assertEqual(request_data[8][1], "Sample User")  # user_name
-        self.assertEqual(request_data[9][1], "@**test**")  # text
-        self.assertEqual(request_data[10][1], "mention")  # trigger_word
-        self.assertEqual(request_data[11][1], 12)  # user_profile_id
+        self.assertEqual(request_data[9][1], "mention")  # command (trigger word, no bot mention)
+        self.assertEqual(request_data[10][1], "@**test**")  # text (full message)
+        self.assertEqual(request_data[11][1], "mention")  # trigger_word
+        self.assertEqual(request_data[12][1], 12)  # user_profile_id
+
+    def test_make_request_stream_message_with_bot_mention(self) -> None:
+        """
+        When the message starts with a bot mention, command is set to a slash
+        command form (e.g. /test-service) and text is the remainder of the
+        message after stripping the mention prefix.
+        """
+        bot_name = self.bot_user.full_name
+        mention_event = {
+            **self.stream_message_event,
+            "command": f"**@{bot_name}** do something",
+        }
+        test_url = "https://example.com/example"
+        with mock.patch.object(self.handler, "session") as session:
+            self.handler.make_request(
+                test_url,
+                mention_event,
+                self.bot_user.realm,
+            )
+            session.post.assert_called_once()
+            request_data = session.post.call_args[1]["data"]
+
+        self.assertEqual(request_data[9][1], "/test-service")  # command (slash command)
+        self.assertEqual(request_data[10][1], "do something")  # text (remainder after mention)
+        self.assertEqual(request_data[11][1], "mention")  # trigger_word unchanged
 
     @mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
     def test_make_request_private_message(self, mock_fail_with_message: mock.Mock) -> None:
