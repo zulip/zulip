@@ -52,7 +52,7 @@ _Released 2026-03-12_
   for moderators to handle reports.
 - Demo organizations allow testing Zulip without sharing an email address.
 - Improved search typeahead with topic suggestions from all subscribed
-  channels and nicer styling for channel/topic pair suggestions.-
+  channels and nicer styling for channel/topic pair suggestions.
 - Added many new default external account types for custom profile
   fields, and made URL pattern optional for external
   accounts. External accounts can now be used for matching users in
