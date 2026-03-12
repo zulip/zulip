@@ -830,7 +830,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="mentions", operand=self.user_profile.id)
         self._do_add_term_test(
             term,
-            "WHERE user_profile_id = %(user_profile_id_1)s AND (flags & %(param_1)s) != %(param_2)s",
+            "WHERE EXISTS (SELECT 1 \nFROM zerver_usermessage \nWHERE message_id = zerver_message.id AND user_profile_id = %(param_1)s AND (flags & %(param_2)s) != %(param_3)s)",
         )
 
     def test_add_term_using_mentions_operator_with_different_user_email(self) -> None:
@@ -839,7 +839,7 @@ class NarrowBuilderTest(ZulipTestCase):
 
         self._do_add_term_test(
             term,
-            "WHERE user_profile_id = %(user_profile_id_1)s AND (flags & %(param_1)s) != %(param_2)s",
+            "WHERE EXISTS (SELECT 1 \nFROM zerver_usermessage \nWHERE message_id = zerver_message.id AND user_profile_id = %(param_1)s AND (flags & %(param_2)s) != %(param_3)s)",
         )
 
         self.send_stream_message(
@@ -850,7 +850,7 @@ class NarrowBuilderTest(ZulipTestCase):
 
         self._do_add_term_test(
             term,
-            "WHERE user_profile_id = %(user_profile_id_1)s AND (flags & %(param_1)s) != %(param_2)s",
+            "WHERE EXISTS (SELECT 1 \nFROM zerver_usermessage \nWHERE message_id = zerver_message.id AND user_profile_id = %(param_1)s AND (flags & %(param_2)s) != %(param_3)s)",
         )
 
 
@@ -4934,11 +4934,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assert_json_success(payload)
         result = orjson.loads(payload.content)
 
-        # BUG: The by_mention query adds user_profile_id = target_user.id
-        # directly, which conflicts with the base query's
-        # user_profile_id = current_user.id when they differ.
-        # This should return [mention_message_id] once fixed.
-        self.assertEqual([m["id"] for m in result["messages"]], [])
+        self.assertEqual([m["id"] for m in result["messages"]], [mention_message_id])
 
     def test_exclude_muting_conditions(self) -> None:
         realm = get_realm("zulip")
