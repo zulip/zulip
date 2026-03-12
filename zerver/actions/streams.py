@@ -267,7 +267,9 @@ def do_unarchive_stream(stream: Stream, new_name: str, *, acting_user: UserProfi
         realm_id=realm.id,
         recipient_id=stream.recipient_id,
     ).only("id")
-    cache_delete_many(to_dict_cache_key_id(message.id) for message in messages)
+    transaction.on_commit(
+        lambda: cache_delete_many(to_dict_cache_key_id(message.id) for message in messages)
+    )
 
     # Unset the is_web_public and is_realm_public cache on attachments,
     # since the stream is now private.
@@ -1522,7 +1524,9 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
     # Delete cache entries for everything else, which is cheaper and
     # clearer than trying to set them. display_recipient is the out of
     # date field in all cases.
-    cache_delete_many(to_dict_cache_key_id(message.id) for message in messages)
+    transaction.on_commit(
+        lambda: cache_delete_many(to_dict_cache_key_id(message.id) for message in messages)
+    )
 
     # We want to key these updates by id, not name, since id is
     # the immutable primary key, and obviously name is not.
