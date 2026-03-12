@@ -18,7 +18,15 @@ from zerver.lib.streams import (
     send_stream_deletion_event,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import UserGroupMembersData, UserGroupMembersDict
+from zerver.lib.types import (
+    UserGroupAddEvent,
+    UserGroupMembersData,
+    UserGroupMembersDict,
+    UserGroupMembersEvent,
+    UserGroupRemoveEvent,
+    UserGroupSubgroupsEvent,
+    UserGroupUpdateEvent,
+)
 from zerver.lib.user_groups import (
     convert_to_user_group_members_dict,
     get_group_setting_value_for_api,
@@ -189,29 +197,47 @@ def do_send_create_user_group_event(
     assert user_group.date_created is not None
     date_created = datetime_to_timestamp(user_group.date_created)
 
-    setting_values = {}
-    for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
-        setting_values[setting_name] = convert_to_user_group_members_dict(
-            get_group_setting_value_for_api(getattr(user_group, setting_name))
-        )
-
-    event = dict(
-        type="user_group",
-        op="add",
-        group=dict(
-            name=user_group.name,
-            creator_id=creator_id,
-            date_created=date_created,
-            members=member_ids,
-            description=user_group.description,
-            id=user_group.id,
-            is_system_group=user_group.is_system_group,
-            direct_subgroup_ids=direct_subgroup_ids,
-            **setting_values,
-            deactivated=False,
-        ),
-        for_reactivation=for_reactivation,
+    can_mention_group = convert_to_user_group_members_dict(
+        get_group_setting_value_for_api(user_group.can_mention_group)
     )
+    can_manage_group = convert_to_user_group_members_dict(
+        get_group_setting_value_for_api(user_group.can_manage_group)
+    )
+    can_add_members_group = convert_to_user_group_members_dict(
+        get_group_setting_value_for_api(user_group.can_add_members_group)
+    )
+    can_join_group = convert_to_user_group_members_dict(
+        get_group_setting_value_for_api(user_group.can_join_group)
+    )
+    can_leave_group = convert_to_user_group_members_dict(
+        get_group_setting_value_for_api(user_group.can_leave_group)
+    )
+    can_remove_members_group = convert_to_user_group_members_dict(
+        get_group_setting_value_for_api(user_group.can_remove_members_group)
+    )
+
+    event: UserGroupAddEvent = {
+        "type": "user_group",
+        "op": "add",
+        "group": {
+            "name": user_group.name,
+            "creator_id": creator_id,
+            "date_created": date_created,
+            "members": member_ids,
+            "description": user_group.description,
+            "id": user_group.id,
+            "is_system_group": user_group.is_system_group,
+            "direct_subgroup_ids": list(direct_subgroup_ids),
+            "can_mention_group": can_mention_group,
+            "can_manage_group": can_manage_group,
+            "can_add_members_group": can_add_members_group,
+            "can_join_group": can_join_group,
+            "can_leave_group": can_leave_group,
+            "can_remove_members_group": can_remove_members_group,
+            "deactivated": False,
+        },
+        "for_reactivation": for_reactivation,
+    }
     send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
@@ -256,7 +282,12 @@ def check_add_user_group(
 def do_send_user_group_update_event(
     user_group: NamedUserGroup, data: dict[str, str | int | UserGroupMembersDict]
 ) -> None:
-    event = dict(type="user_group", op="update", group_id=user_group.id, data=data)
+    event: UserGroupUpdateEvent = {
+        "type": "user_group",
+        "op": "update",
+        "group_id": user_group.id,
+        "data": data,
+    }
     if "name" in data:
         # This field will be popped eventually before sending the event
         # to client, but is needed to make sure we do not send the
@@ -314,7 +345,12 @@ def do_update_user_group_description(
 def do_send_user_group_members_update_event(
     event_name: str, user_group: NamedUserGroup, user_ids: list[int]
 ) -> None:
-    event = dict(type="user_group", op=event_name, group_id=user_group.id, user_ids=user_ids)
+    event: UserGroupMembersEvent = {
+        "type": "user_group",
+        "op": event_name,
+        "group_id": user_group.id,
+        "user_ids": user_ids,
+    }
     send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
@@ -452,9 +488,12 @@ def bulk_remove_members_from_user_groups(
 def do_send_subgroups_update_event(
     event_name: str, user_group: NamedUserGroup, subgroup_ids: list[int]
 ) -> None:
-    event = dict(
-        type="user_group", op=event_name, group_id=user_group.id, direct_subgroup_ids=subgroup_ids
-    )
+    event: UserGroupSubgroupsEvent = {
+        "type": "user_group",
+        "op": event_name,
+        "group_id": user_group.id,
+        "direct_subgroup_ids": subgroup_ids,
+    }
     send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
@@ -612,7 +651,7 @@ def do_deactivate_user_group(
 
     do_send_user_group_update_event(user_group, dict(deactivated=True))
 
-    event = dict(type="user_group", op="remove", group_id=user_group.id)
+    event: UserGroupRemoveEvent = {"type": "user_group", "op": "remove", "group_id": user_group.id}
     send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
