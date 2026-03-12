@@ -139,13 +139,15 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
 
         response = dict(
             content="test_content",
-            widget_content="test_widget_content",
+            widget_content={"widget_type": "zform", "extra_data": {}},
             red_herring="whatever",
         )
         success_response = self.handler.process_success(response)
         self.assertEqual(
             success_response,
-            OutgoingWebhookResult(content="test_content", widget_content="test_widget_content"),
+            OutgoingWebhookResult(
+                content="test_content", widget_content='{"widget_type": "zform", "extra_data": {}}'
+            ),
         )
 
         response = {}
