@@ -1023,6 +1023,11 @@ test("canonicalization", () => {
     assert.equal(term.operator, "sender");
     assert.equal(term.operand, me.user_id);
 
+    // mentions:me redirects to is:mentioned
+    term = Filter.convert_suggestion_to_term({operator: "mentions", operand: "me"});
+    assert.equal(term.operator, "is");
+    assert.equal(term.operand, "mentioned");
+
     // "pm-with" was renamed to "dm"
     term = Filter.convert_suggestion_to_term({operator: "pm-with", operand: "me"});
     assert.equal(term.operator, "dm");
@@ -1636,6 +1641,14 @@ test("parse", () => {
     terms = [{operator: "sender", operand: `${me.user_id}`, negated: true}];
     _test(true);
 
+    string = "mentions:me";
+    terms = [{operator: "is", operand: "mentioned"}];
+    _test(true);
+
+    string = "-mentions:me";
+    terms = [{operator: "is", operand: "mentioned", negated: true}];
+    _test(true);
+
     string = "https://www.google.com";
     terms = [{operator: "search", operand: "https://www.google.com"}];
     _test();
@@ -2208,6 +2221,7 @@ test("convert_suggestion_to_term", () => {
         [`dm:${[alice.user_id, -1]}`, false],
         [`dm:${[alice.user_id, joe.user_id]}`, true],
         [`mentions:${alice.user_id}`, true],
+        ["mentions:me", true],
         ["mentions:-1", false],
         ["mentions:invalid", false],
     ];
