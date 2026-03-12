@@ -575,6 +575,10 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         "codeship",
         ["continuous-integration", "deployment"],
         [WebhookScreenshotConfig("error_build.json")],
+        # TODO: Delete integration in 2027. Reached EOL Jan 2026.
+        # Compare payload format similarity with its replacement
+        # CloudBees Unify to consider conversion instead of deletion.
+        legacy=True,
     ),
     IncomingWebhookIntegration(
         "crashlytics", ["monitoring"], [WebhookScreenshotConfig("issue_message.json")]
