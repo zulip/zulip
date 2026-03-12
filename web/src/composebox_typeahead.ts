@@ -1564,7 +1564,9 @@ export function initialize_topic_edit_typeahead(
         getCustomItemClassname() {
             return "topic-edit-typeahead";
         },
-        showOnClick: false,
+        showOnClick: !stream_data.can_create_new_topics_in_stream(
+            stream_data.get_stream_id(stream_name) ?? 0,
+        ),
     });
 }
 
@@ -1715,6 +1717,7 @@ export function initialize({
             return [...people_candidates, ...topics];
         },
         items: max_num_items,
+        showOnClick: false,
         item_html(item: string | UserPillData): string {
             if (typeof item === "string") {
                 const is_empty_string_topic = item === "";
