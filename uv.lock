@@ -5880,6 +5880,26 @@ wheels = [
 ]
 
 [[package]]
+name = "ua-parser"
+version = "1.0.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "ua-parser-builtins" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/70/0e/ed98be735bc89d5040e0c60f5620d0b8c04e9e7da99ed1459e8050e90a77/ua_parser-1.0.1.tar.gz", hash = "sha256:f9d92bf19d4329019cef91707aecc23c6d65143ad7e29a233f0580fb0d15547d", size = 728106, upload-time = "2025-02-01T14:13:32.508Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/94/37/be6dfbfa45719aa82c008fb4772cfe5c46db765a2ca4b6f524a1fdfee4d7/ua_parser-1.0.1-py3-none-any.whl", hash = "sha256:b059f2cb0935addea7e551251cbbf42e9a8872f86134163bc1a4f79e0945ffea", size = 31410, upload-time = "2025-02-01T14:13:28.458Z" },
+]
+
+[[package]]
+name = "ua-parser-builtins"
+version = "202603"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3e/6f/73a4d37deefb159556d39d654b5bad67b6874d1ad0b20b96fb5a04de3949/ua_parser_builtins-202603-py3-none-any.whl", hash = "sha256:67478397a68fac1a98fd0a31c416ea7c65a719141fc151d0211316f2cd337cc9", size = 89573, upload-time = "2026-03-01T20:50:02.491Z" },
+]
+
+[[package]]
 name = "uhashring"
 version = "2.4"
 source = { registry = "https://pypi.org/simple" }
@@ -5904,6 +5924,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/c7/24/5f1b3bdffd70275f6661c76461e25f024d5a38a46f04aaca912426a2b1d3/urllib3-2.6.3.tar.gz", hash = "sha256:1b62b6884944a57dbe321509ab94fd4d3b307075e0c2eae991ac71ee15ad38ed", size = 435556, upload-time = "2026-01-07T16:24:43.925Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/39/08/aaaad47bc4e9dc8c725e68f9d04865dbcb2052843ff09c97b08904852d84/urllib3-2.6.3-py3-none-any.whl", hash = "sha256:bf272323e553dfb2e87d9bfd225ca7b0f467b919d7bbd355436d3fd37cb0acd4", size = 131584, upload-time = "2026-01-07T16:24:42.685Z" },
+]
+
+[[package]]
+name = "user-agents"
+version = "2.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "ua-parser" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e3/e1/63c5bfb485a945010c8cbc7a52f85573561737648d36b30394248730a7bc/user-agents-2.2.0.tar.gz", hash = "sha256:d36d25178db65308d1458c5fa4ab39c9b2619377010130329f3955e7626ead26", size = 9525, upload-time = "2020-08-23T06:01:56.382Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8f/1c/20bb3d7b2bad56d881e3704131ddedbb16eb787101306887dff349064662/user_agents-2.2.0-py3-none-any.whl", hash = "sha256:a98c4dc72ecbc64812c4534108806fb0a0b3a11ec3fd1eafe807cee5b0a942e7", size = 9614, upload-time = "2020-08-23T06:01:54.047Z" },
 ]
 
 [[package]]
@@ -6493,6 +6525,7 @@ dev = [
     { name = "types-zxcvbn" },
     { name = "typing-extensions" },
     { name = "uri-template" },
+    { name = "user-agents" },
     { name = "uwsgi" },
     { name = "virtualenv-clone" },
     { name = "zstd" },
@@ -6586,6 +6619,7 @@ prod = [
     { name = "tornado" },
     { name = "typing-extensions" },
     { name = "uri-template" },
+    { name = "user-agents" },
     { name = "uwsgi" },
     { name = "virtualenv-clone" },
     { name = "zstd" },
@@ -6735,6 +6769,7 @@ dev = [
     { name = "types-zxcvbn" },
     { name = "typing-extensions" },
     { name = "uri-template" },
+    { name = "user-agents" },
     { name = "uwsgi" },
     { name = "virtualenv-clone" },
     { name = "zstd" },
@@ -6828,6 +6863,7 @@ prod = [
     { name = "tornado" },
     { name = "typing-extensions" },
     { name = "uri-template" },
+    { name = "user-agents" },
     { name = "uwsgi" },
     { name = "virtualenv-clone" },
     { name = "zstd" },
