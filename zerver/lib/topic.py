@@ -9,7 +9,7 @@ from django.db.models.functions import Cast
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 
-from zerver.lib.types import EditHistoryEvent, StreamMessageEditRequest
+from zerver.lib.types import EditHistoryEvent, StreamMessageEditRequest, TopicMessageInfo
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Message, Reaction, UserMessage, UserProfile
 
@@ -32,7 +32,7 @@ where we'll want to support "subject" for a while.
 """
 
 
-def get_topic_from_message_info(message_info: dict[str, Any]) -> str:
+def get_topic_from_message_info(message_info: TopicMessageInfo) -> str:
     """
     Use this where you are getting dicts that are based off of messages
     that may come from the outside world, especially from third party
