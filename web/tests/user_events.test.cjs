@@ -25,6 +25,7 @@ const settings_bots = mock_esm("../src/settings_bots", {
     toggle_bot_config_download_container() {},
 });
 mock_esm("../src/settings_panel_menu", {
+    hide_default_streams_list_for_guest() {},
     update_imported_users_tab() {},
 });
 mock_esm("../src/settings_users", {
@@ -82,6 +83,7 @@ mock_esm("../src/settings_streams", {
 const bot_data = zrequire("bot_data");
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
+const settings_panel_menu = zrequire("settings_panel_menu");
 const {set_current_user, set_realm} = zrequire("state_data");
 const user_events = zrequire("user_events");
 
@@ -116,6 +118,7 @@ run_test("updates", ({override}) => {
     people.add_active_user(isaac);
 
     override(navbar_alerts, "maybe_toggle_empty_required_profile_fields_banner", noop);
+    override(settings_panel_menu, "hide_default_streams_list_for_guest", noop);
     user_events.update_person({
         user_id: isaac.user_id,
         role: settings_config.user_role_values.guest.code,
@@ -184,8 +187,15 @@ run_test("updates", ({override}) => {
 
     user_events.update_person({
         user_id: me.user_id,
+        role: settings_config.user_role_values.guest.code,
+    });
+    assert.ok(current_user.is_guest);
+
+    user_events.update_person({
+        user_id: me.user_id,
         role: settings_config.user_role_values.member.code,
     });
+    assert.ok(!current_user.is_guest);
     assert.ok(!current_user.is_admin);
 
     user_events.update_person({user_id: me.user_id, full_name: "Me V2"});
