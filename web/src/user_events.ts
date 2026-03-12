@@ -127,6 +127,13 @@ export const update_person = function update(event: UserUpdate): void {
         user_profile.update_profile_modal_ui(user, event);
         settings_account.set_user_own_role_dropdown_value();
 
+        if (people.is_my_user_id(event.user_id) && current_user.is_guest !== user.is_guest) {
+            current_user.is_guest = user.is_guest;
+            if (current_user.is_guest) {
+                settings_panel_menu.hide_default_streams_list_for_guest();
+            }
+        }
+
         if (people.is_my_user_id(event.user_id)) {
             settings_account.update_role_text();
         }
