@@ -245,6 +245,21 @@ const USER_OPERATORS = new Set([
     "group-pm-with",
 ]);
 
+function convert_single_user_id_suggestion_to_term(
+    suggestion: NarrowTermSuggestion,
+    canonical_operator: "sender" | "mentions",
+): NarrowCanonicalTerm | undefined {
+    const operand = Number(suggestion.operand);
+    if (Number.isNaN(operand)) {
+        return undefined;
+    }
+    return {
+        operator: canonical_operator,
+        operand,
+        negated: suggestion.negated,
+    };
+}
+
 export class Filter {
     _terms: NarrowCanonicalTerm[];
     _sorted_term_types?: string[] = undefined;
@@ -526,36 +541,33 @@ export class Filter {
                     break;
                 }
                 case "sender": {
-                    let operand: number;
                     if (suggestion.operand.toLowerCase() === "me") {
-                        operand = people.my_current_user_id();
-                    } else {
-                        operand = Number(suggestion.operand);
+                        potential_narrow_term = {
+                            operator: canonical_operator,
+                            operand: people.my_current_user_id(),
+                            negated: suggestion.negated,
+                        };
+                        break;
                     }
-
-                    if (Number.isNaN(operand)) {
+                    const result = convert_single_user_id_suggestion_to_term(
+                        suggestion,
+                        canonical_operator,
+                    );
+                    if (result === undefined) {
                         return undefined;
                     }
-
-                    potential_narrow_term = {
-                        operator: canonical_operator,
-                        operand,
-                        negated: suggestion.negated,
-                    };
+                    potential_narrow_term = result;
                     break;
                 }
                 case "mentions": {
-                    const operand = Number(suggestion.operand);
-
-                    if (Number.isNaN(operand)) {
+                    const result = convert_single_user_id_suggestion_to_term(
+                        suggestion,
+                        canonical_operator,
+                    );
+                    if (result === undefined) {
                         return undefined;
                     }
-
-                    potential_narrow_term = {
-                        operator: canonical_operator,
-                        operand,
-                        negated: suggestion.negated,
-                    };
+                    potential_narrow_term = result;
                     break;
                 }
                 default:
