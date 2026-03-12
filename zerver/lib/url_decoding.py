@@ -88,7 +88,7 @@ def decode_hash_component(string: str) -> str:
 def decode_narrow_operand(operator: str, operand: str) -> str | int | list[int]:
     # These have the similar slug formatting for their operands which
     # contain object ID(s).
-    if operator in ["dm-including", "dm", "sender", "channel"]:
+    if operator in ["dm-including", "dm", "mentions", "sender", "channel"]:
         result = parse_recipient_slug(operand)
         return result[0] if isinstance(result, tuple) else ""
 

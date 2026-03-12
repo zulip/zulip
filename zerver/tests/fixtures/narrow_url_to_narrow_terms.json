@@ -135,6 +135,17 @@
         ]
     },
     {
+        "name": "mentions_link",
+        "near_link": "http://testserver/#narrow/mentions/35-Iago",
+        "expected_output": [
+            {
+                "operator": "mentions",
+                "operand": 35,
+                "negated": false
+            }
+        ]
+    },
+    {
         "name": "legacy_channel_synonym",
         "near_link": "http://testserver/#narrow/stream/13-Denmark",
         "expected_output": [
