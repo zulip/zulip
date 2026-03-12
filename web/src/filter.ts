@@ -13,6 +13,7 @@ import type {Message} from "./message_store.ts";
 import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import {process_user_mention} from "./postprocess_content.ts";
 import * as resolved_topic from "./resolved_topic.ts";
 import {current_user, narrow_canonical_term_schema, narrow_operator_schema} from "./state_data.ts";
 import type {NarrowCanonicalTerm, NarrowTerm, NarrowTermSuggestion} from "./state_data.ts";
@@ -213,6 +214,9 @@ function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) =>
             };
         }
 
+        case "mentions":
+            return (message) => process_user_mention(message.content, term.operand);
+
         // Operators that don't filter messages on the client.
         case "near":
         case "with":
@@ -234,6 +238,7 @@ function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) =>
 const USER_OPERATORS = new Set([
     "dm-including",
     "dm",
+    "mentions",
     "sender",
     "from",
     "pm-with",
@@ -291,6 +296,7 @@ export class Filter {
             case "topic":
                 break;
             case "sender":
+            case "mentions":
             case "dm":
             case "dm-including":
                 break;
@@ -538,6 +544,20 @@ export class Filter {
                     };
                     break;
                 }
+                case "mentions": {
+                    const operand = Number(suggestion.operand);
+
+                    if (Number.isNaN(operand)) {
+                        return undefined;
+                    }
+
+                    potential_narrow_term = {
+                        operator: canonical_operator,
+                        operand,
+                        negated: suggestion.negated,
+                    };
+                    break;
+                }
                 default:
                     potential_narrow_term = {
                         operator: canonical_operator,
@@ -587,6 +607,7 @@ export class Filter {
             case "topic":
                 return true;
             case "sender":
+            case "mentions":
                 return people.is_valid_user_id(term.operand);
             case "dm":
             case "dm-including":
@@ -663,6 +684,7 @@ export class Filter {
             "dm-including",
             "with",
             "sender",
+            "mentions",
             "near",
             "id",
             "is-alerted",
@@ -734,6 +756,9 @@ export class Filter {
 
             case "dm-including":
                 return verb + "direct messages including";
+
+            case "mentions":
+                return verb + "messages mentioning";
 
             case "in":
                 return verb + "messages in";

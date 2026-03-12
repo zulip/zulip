@@ -132,6 +132,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
                 `sender:${zoe.user_id}`,
                 `dm:${zoe.user_id}`,
                 `dm-including:${zoe.user_id}`,
+                `mentions:${zoe.user_id}`,
             ];
 
             /* Test highlighter */
@@ -148,6 +149,9 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
 
             expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">dm-including:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
             assert.equal(opts.item_html(search_suggestions[3], "zo"), expected_value);
+
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">mentions:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
+            assert.equal(opts.item_html(search_suggestions[4], "zo"), expected_value);
 
             /* Test sorter */
             assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);

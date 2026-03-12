@@ -183,6 +183,7 @@ test("dm_suggestions", ({override}) => {
         `is:dm dm:${alice.user_id}`,
         `is:dm sender:${alice.user_id}`,
         `is:dm dm-including:${alice.user_id}`,
+        `is:dm mentions:${alice.user_id}`,
     ];
     assert.deepEqual(suggestions, expected);
 
@@ -273,6 +274,7 @@ test("dm_suggestions", ({override}) => {
         `is:starred has:link is:dm dm:${alice.user_id}`,
         `is:starred has:link is:dm sender:${alice.user_id}`,
         `is:starred has:link is:dm dm-including:${alice.user_id}`,
+        `is:starred has:link is:dm mentions:${alice.user_id}`,
     ];
     assert.deepEqual(suggestions, expected);
 
@@ -307,6 +309,7 @@ test("group_suggestions", () => {
         `dm:${bob.user_id},${alice.user_id}`,
         `dm:${bob.user_id} sender:${alice.user_id}`,
         `dm:${bob.user_id} dm-including:${alice.user_id}`,
+        `dm:${bob.user_id} mentions:${alice.user_id}`,
     ];
     assert.deepEqual(suggestions, expected);
 
@@ -318,6 +321,7 @@ test("group_suggestions", () => {
         `dm:${ted.user_id} my`,
         `dm:${ted.user_id} sender:${me.user_id}`,
         `dm:${ted.user_id} dm-including:${me.user_id}`,
+        `dm:${ted.user_id} mentions:${me.user_id}`,
     ];
     assert.deepEqual(suggestions, expected);
 
@@ -339,6 +343,7 @@ test("group_suggestions", () => {
         `dm:${bob.user_id},${alice.user_id}`,
         `dm:${bob.user_id} sender:${alice.user_id}`,
         `dm:${bob.user_id} dm-including:${alice.user_id}`,
+        `dm:${bob.user_id} mentions:${alice.user_id}`,
     ];
     assert.deepEqual(suggestions, expected);
 
@@ -351,6 +356,7 @@ test("group_suggestions", () => {
         `is:starred has:link dm:${bob.user_id},${ted.user_id}`,
         `is:starred has:link dm:${bob.user_id} sender:${ted.user_id}`,
         `is:starred has:link dm:${bob.user_id} dm-including:${ted.user_id}`,
+        `is:starred has:link dm:${bob.user_id} mentions:${ted.user_id}`,
     ];
     assert.deepEqual(suggestions, expected);
 
@@ -504,6 +510,7 @@ test("check_is_suggestions", ({override}) => {
         `dm:${alice.user_id}`,
         `sender:${alice.user_id}`,
         `dm-including:${alice.user_id}`,
+        `mentions:${alice.user_id}`,
         "has:image",
     ];
     assert.deepEqual(suggestions, expected);
@@ -668,7 +675,13 @@ test("topic_suggestions", ({override, override_rewire}) => {
     );
 
     suggestions = get_suggestions("te");
-    expected = ["te", `dm:${ted.user_id}`, `sender:${ted.user_id}`, `dm-including:${ted.user_id}`];
+    expected = [
+        "te",
+        `dm:${ted.user_id}`,
+        `sender:${ted.user_id}`,
+        `dm-including:${ted.user_id}`,
+        `mentions:${ted.user_id}`,
+    ];
     assert.deepEqual(suggestions, expected);
 
     stream_topic_history.add_message({
@@ -689,6 +702,7 @@ test("topic_suggestions", ({override, override_rewire}) => {
         `dm:${ted.user_id}`,
         `sender:${ted.user_id}`,
         `dm-including:${ted.user_id}`,
+        `mentions:${ted.user_id}`,
         `channel:${office_id} topic:team`,
         `channel:${office_id} topic:✔+team+work`,
         `channel:${office_id} topic:test`,
@@ -995,6 +1009,8 @@ test("people_suggestions", ({override}) => {
         `sender:${ted.user_id}`,
         `dm-including:${bob.user_id}`,
         `dm-including:${ted.user_id}`,
+        `mentions:${bob.user_id}`,
+        `mentions:${ted.user_id}`,
     ];
 
     assert.deepEqual(suggestions, expected);
@@ -1018,12 +1034,21 @@ test("people_suggestions", ({override}) => {
         `dm-including:${bob.user_id}`,
         `dm-including:${ted.user_id}`,
         `dm-including:${inaccessible_user.user_id}`,
+        `mentions:${bob.user_id}`,
+        `mentions:${ted.user_id}`,
+        `mentions:${inaccessible_user.user_id}`,
     ];
     assert.deepEqual(suggestions, expected);
 
     suggestions = get_suggestions("Ted "); // note space
 
-    expected = ["Ted", `dm:${ted.user_id}`, `sender:${ted.user_id}`, `dm-including:${ted.user_id}`];
+    expected = [
+        "Ted",
+        `dm:${ted.user_id}`,
+        `sender:${ted.user_id}`,
+        `dm-including:${ted.user_id}`,
+        `mentions:${ted.user_id}`,
+    ];
 
     assert.deepEqual(suggestions, expected);
 
