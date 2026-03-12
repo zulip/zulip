@@ -1504,6 +1504,7 @@ function warn_user_about_unread_msgs(last_sent_msg_id: number, num_unread: numbe
         modal_content_html: render_confirm_edit_messages({
             num_unread,
         }),
+        is_compact: true,
         on_click() {
             // Select the message we want to edit to mark messages between it and the
             // current selected id as read.
