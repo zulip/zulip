@@ -37,7 +37,17 @@ from zerver.models.streams import Stream
 from zerver.models.users import get_user
 
 
-class MatterMostImporter(ZulipTestCase):
+class MattermostImportTestBase(ZulipTestCase):
+    def team_output_dir(self, output_dir: str, team_name: str) -> str:
+        return os.path.join(output_dir, team_name)
+
+    def read_file(self, team_output_dir: str, output_file: str) -> Any:
+        full_path = os.path.join(team_output_dir, output_file)
+        with open(full_path, "rb") as f:
+            return orjson.loads(f.read())
+
+
+class MatterMostImporter(MattermostImportTestBase):
     def test_mattermost_data_file_to_dict(self) -> None:
         fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
         mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
@@ -807,14 +817,6 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(self.get_set(total_reactions, "user_profile"), {harry_id, ron_id})
         self.assert_length(self.get_set(total_reactions, "id"), 4)
         self.assert_length(self.get_set(total_reactions, "message"), 1)
-
-    def team_output_dir(self, output_dir: str, team_name: str) -> str:
-        return os.path.join(output_dir, team_name)
-
-    def read_file(self, team_output_dir: str, output_file: str) -> Any:
-        full_path = os.path.join(team_output_dir, output_file)
-        with open(full_path, "rb") as f:
-            return orjson.loads(f.read())
 
     def test_do_convert_data(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
