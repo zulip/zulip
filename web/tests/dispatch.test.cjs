@@ -328,6 +328,7 @@ run_test("user groups", ({override}) => {
         const group = user_groups.get_user_group_from_id(event.group.id);
         const args = user_group_settings_ui_stub.get_args("group");
         assert_same(args.group, group);
+        assert_same(group.rendered_description, "mobile folks");
     }
 
     event = event_fixtures.user_group__add_members;
@@ -396,6 +397,7 @@ run_test("user groups", ({override}) => {
 
         assert_same(group.name, event.data.name);
         assert_same(group.description, event.data.description);
+        assert_same(group.rendered_description, "All <strong>Frontend</strong> people");
     }
 });
 

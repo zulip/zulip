@@ -64,7 +64,10 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload import ensure_avatar_image, sanitize_name, upload_backend, upload_emoji_image
 from zerver.lib.upload.s3 import get_bucket
 from zerver.lib.user_counts import realm_user_count_by_role
-from zerver.lib.user_groups import create_system_user_groups_for_realm
+from zerver.lib.user_groups import (
+    create_system_user_groups_for_realm,
+    render_user_group_description,
+)
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.utils import generate_api_key, process_list_in_batches
 from zerver.lib.zulip_update_announcements import send_zulip_update_announcements_to_realm
@@ -1525,6 +1528,15 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         if channel.id in stream_id_to_creator_id:
             channel.creator_id = stream_id_to_creator_id[channel.id]
     Stream.objects.bulk_update(channels, ["rendered_description", "creator_id"])
+
+    user_groups = NamedUserGroup.objects.filter(realm=realm)
+    for user_group in user_groups:
+        # render_user_group_description also depends on realm emoji data,
+        # so we compute it only after importing RealmEmoji objects.
+        user_group.rendered_description = render_user_group_description(
+            user_group.description, realm
+        )
+    NamedUserGroup.objects.bulk_update(user_groups, ["rendered_description"])
 
     if "zerver_huddle" in data:
         update_model_ids(DirectMessageGroup, data, "huddle")
