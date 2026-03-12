@@ -17,7 +17,7 @@ export type TodoWidgetExtraData = z.infer<typeof todo_widget_extra_data_schema>;
 
 const todo_widget_inbound_data = z.intersection(
     z.object({
-        type: z.enum(["new_task", "new_task_list_title", "strike"]),
+        type: z.enum(["new_task", "new_task_list_title", "strike", "edit_task"]),
     }),
     z.record(z.string(), z.unknown()),
 );
@@ -34,11 +34,25 @@ const new_task_inbound_data_schema = z.object({
     completed: z.boolean(),
 });
 
+const edit_task_inbound_data_schema = z.object({
+    type: z.literal("edit_task"),
+    key: z.string(),
+    task: z.string(),
+    desc: z.string(),
+});
+
 type NewTaskOutboundData = z.output<typeof new_task_inbound_data_schema>;
 
 type NewTaskTitleOutboundData = {
     type: "new_task_list_title";
     title: string;
+};
+
+type EditTaskItemOutboundData = {
+    type: "edit_task";
+    task: string;
+    desc: string;
+    key: string;
 };
 
 type TaskStrikeOutboundData = {
@@ -59,10 +73,15 @@ type Task = {
     completed: boolean;
 };
 
+type TodoTaskEditState = TodoTask & {
+    submitting: boolean;
+};
+
 export type TodoWidgetOutboundData =
     | NewTaskTitleOutboundData
     | NewTaskOutboundData
-    | TaskStrikeOutboundData;
+    | TaskStrikeOutboundData
+    | EditTaskItemOutboundData;
 
 export class TaskData {
     message_sender_id: number;
@@ -71,6 +90,7 @@ export class TaskData {
     report_error_function: (msg: string, more_info?: Record<string, unknown>) => void;
     task_list_title: string;
     task_map = new Map<string, Task>();
+    editing_items = new Map<string, TodoTaskEditState>();
     my_idx = 1;
 
     handle = {
@@ -169,6 +189,70 @@ export class TaskData {
             },
         },
 
+        edit_task: {
+            outbound: (
+                task: string,
+                desc: string,
+                key: string,
+            ): EditTaskItemOutboundData | undefined => {
+                if (!this.is_my_task_list()) {
+                    return undefined;
+                }
+                const event = {
+                    type: "edit_task" as const,
+                    key,
+                    task,
+                    desc,
+                };
+                const item = this.task_map.get(key);
+                if (item === undefined) {
+                    blueslip.warn("Do we have legacy data? unknown key for tasks: " + key);
+                    return undefined;
+                }
+
+                if (task === item.task && desc === item.desc) {
+                    return undefined;
+                }
+                if (task !== item.task && this.name_in_use(task)) {
+                    return undefined;
+                }
+                return event;
+            },
+
+            inbound: (sender_id: number, raw_data: unknown): void => {
+                const parsed = edit_task_inbound_data_schema.safeParse(raw_data);
+                if (!parsed.success) {
+                    blueslip.warn("todo widget: bad type for inbound task data", {
+                        error: parsed.error,
+                    });
+                    return;
+                }
+                if (sender_id !== this.message_sender_id) {
+                    this.report_error_function(`user ${sender_id} is not allowed to edit tasks`);
+                    return;
+                }
+                const data = parsed.data;
+                const task = data.task;
+                const desc = data.desc;
+
+                const key = data.key;
+                const item = this.task_map.get(key);
+                if (item === undefined) {
+                    blueslip.warn("Do we have legacy data? unknown key for tasks: " + key);
+                    return;
+                }
+
+                if (task === item.task && desc === item.desc) {
+                    return;
+                }
+                if (task !== item.task && this.name_in_use(task)) {
+                    return;
+                }
+                item.task = task;
+                item.desc = desc;
+            },
+        },
+
         strike: {
             outbound(key: string): TaskStrikeOutboundData {
                 const event = {
@@ -243,6 +327,26 @@ export class TaskData {
         return people.is_my_user_id(this.message_sender_id);
     }
 
+    get_editing_items(): Map<string, TodoTaskEditState> {
+        return this.editing_items;
+    }
+
+    set_editing_item(key: string, state: {task: string; desc: string}): void {
+        const edit_state = this.editing_items.get(key);
+        this.editing_items.set(key, {...state, submitting: edit_state?.submitting ?? false});
+    }
+
+    remove_editing_item(key: string): void {
+        this.editing_items.delete(key);
+    }
+
+    set_submitting_state(key: string, is_loading: boolean): void {
+        const item = this.editing_items.get(key);
+        if (item !== undefined) {
+            item.submitting = is_loading;
+        }
+    }
+
     set_task_list_title(new_title: string): void {
         this.input_mode = false;
         this.task_list_title = new_title;
@@ -258,6 +362,10 @@ export class TaskData {
 
     clear_input_mode(): void {
         this.input_mode = false;
+    }
+
+    get_task_item(key: string): Task | undefined {
+        return this.task_map.get(key);
     }
 
     get_input_mode(): boolean {
