@@ -444,6 +444,7 @@ export function build_page(): void {
         confirm_dialog.launch({
             modal_title_html: $t_html({defaultMessage: "Delete linkifier?"}),
             modal_content_html: $t_html({defaultMessage: "This action cannot be undone."}),
+            is_compact: true,
             id: "confirm_delete_linkifiers_modal",
             on_click() {
                 dialog_widget.submit_api_request(channel.del, url, {});
