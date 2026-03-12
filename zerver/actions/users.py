@@ -508,11 +508,19 @@ def do_deactivate_user(
                 # The full name of spam user is changed to Deleted user.
                 if user_profile.full_name != "Deleted user" and not user_profile.is_bot:
                     do_change_full_name(
-                        user_profile, "Deleted user", acting_user=acting_user, notify=False
+                        user_profile,
+                        "Deleted user",
+                        acting_user=acting_user,
+                        notify=False,
+                        skip_permission_check=True,
                     )
                 elif user_profile.full_name != "Deactivated bot" and user_profile.is_bot:
                     do_change_full_name(
-                        user_profile, "Deactivated bot", acting_user=acting_user, notify=False
+                        user_profile,
+                        "Deactivated bot",
+                        acting_user=acting_user,
+                        notify=False,
+                        skip_permission_check=True,
                     )
 
                 # TODO: Change avatar image to that of an inaccessible user.
