@@ -57,6 +57,12 @@ _Unreleased_
 - Migrated the help center to Starlight, the Astro-based static site
   generator, adding full-text search and a modernized design.
 
+- The Zulip Docker container has been reworked, and the new version
+  published as https://ghcr.io/zulip/zulip-server This resolves nearly
+  all outstanding issues in the issue tracker, and adds a tests and
+  substantially more documentation, for both Docker Compose and Helm
+  deployments.
+
 #### Full feature changelog
 
 - Added a "frequently used" section to the web app emoji picker.
