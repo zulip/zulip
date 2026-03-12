@@ -727,6 +727,11 @@ class PersonBotOwnerId(BaseModel):
     bot_owner_id: int
 
 
+class PersonBotType(BaseModel):
+    user_id: int
+    bot_type: int
+
+
 class CustomProfileFieldCore(BaseModel):
     id: int
     value: str | None
@@ -789,6 +794,7 @@ class EventRealmUserUpdate(BaseEvent):
     person: (
         PersonAvatarFields
         | PersonBotOwnerId
+        | PersonBotType
         | PersonCustomProfileField
         | PersonDateJoined
         | PersonDeliveryEmail
