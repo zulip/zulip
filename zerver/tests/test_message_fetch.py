@@ -4897,6 +4897,49 @@ class GetOldMessagesTest(ZulipTestCase):
 
         self.assertEqual([m["id"] for m in result["messages"]], [mention_message_id])
 
+    def test_get_visible_messages_with_mentions_narrow_cross_user(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        iago = self.example_user("iago")
+        stream = self.make_stream("design")
+        self.subscribe(hamlet, stream.name)
+        self.subscribe(iago, stream.name)
+
+        # Send a message mentioning Iago; Hamlet will search for it.
+        content = f"Hello @**{iago.full_name}**!"
+        mention_message_id = self.send_stream_message(
+            hamlet,
+            stream.name,
+            content=content,
+        )
+
+        # Use a silent mention of Iago to test that it is excluded.
+        silent_mention_content = f"Hello @_**{iago.full_name}**!"
+        self.send_stream_message(
+            hamlet,
+            stream.name,
+            content=silent_mention_content,
+        )
+
+        narrow = [dict(operator="mentions", operand=iago.id)]
+
+        post_params = dict(
+            narrow=orjson.dumps(narrow).decode(),
+            num_before=10,
+            num_after=0,
+            anchor=LARGER_THAN_MAX_MESSAGE_ID,
+        )
+        payload = self.client_get("/json/messages", dict(post_params))
+        self.assert_json_success(payload)
+        result = orjson.loads(payload.content)
+
+        # BUG: The by_mention query adds user_profile_id = target_user.id
+        # directly, which conflicts with the base query's
+        # user_profile_id = current_user.id when they differ.
+        # This should return [mention_message_id] once fixed.
+        self.assertEqual([m["id"] for m in result["messages"]], [])
+
     def test_exclude_muting_conditions(self) -> None:
         realm = get_realm("zulip")
         self.make_stream("web stuff")
