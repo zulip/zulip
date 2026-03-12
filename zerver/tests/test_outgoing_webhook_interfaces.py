@@ -135,15 +135,18 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
 
         response = dict(
             content="test_content",
-            widget_content="test_widget_content",
+            widget_content={"widget_type": "zform", "extra_data": {}},
             red_herring="whatever",
         )
         success_response = self.handler.process_success(response)
-        expected_response = dict(
-            content="test_content",
-            widget_content="test_widget_content",
+        assert success_response is not None
+        self.assertEqual(success_response["content"], "test_content")
+        # widget_content should be serialized to a JSON string, since
+        # check_message() expects a JSON-encoded string.
+        self.assertEqual(
+            success_response["widget_content"],
+            '{"widget_type": "zform", "extra_data": {}}',
         )
-        self.assertEqual(success_response, expected_response)
 
         response = {}
         success_response = self.handler.process_success(response)
