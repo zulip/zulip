@@ -705,6 +705,29 @@ function create_text_file(text: string, filename: string): File {
     return new File([blob], filename, {type: "text/plain"});
 }
 
+export function normalize_tab_indented_list_syntax(paste_text: string): string {
+    const lines = paste_text.split("\n");
+    const has_tab_indented_list = lines.some((line) => /^\t+([*+-]|\d+\.) /.test(line));
+
+    if (!has_tab_indented_list) {
+        return paste_text;
+    }
+
+    return lines
+        .map((line) => {
+            const match = /^([ \t]*)([*+-]|\d+\.)( .*)$/.exec(line);
+            if (!match) {
+                return line.replaceAll("\t", "  ");
+            }
+
+            const [, indentation, marker, content] = match;
+            const normalized_indentation = indentation.replaceAll("\t", "  ");
+            const normalized_marker = /^\d+\.$/.test(marker) ? marker : "*";
+            return normalized_indentation + normalized_marker + content;
+        })
+        .join("\n");
+}
+
 function do_paste_text(
     paste_html: string,
     paste_text: string,
@@ -724,7 +747,7 @@ function do_paste_text(
         }
         text_to_insert = text;
     } else {
-        text_to_insert = paste_text;
+        text_to_insert = normalize_tab_indented_list_syntax(paste_text);
     }
 
     const reverse_linkified_text = compose_ui.reverse_linkify_text(text_to_insert);

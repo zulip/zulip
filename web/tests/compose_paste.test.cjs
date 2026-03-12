@@ -611,3 +611,11 @@ run_test("paste_handler_converter", () => {
         );
     }
 });
+
+run_test("normalize_tab_indented_list_syntax", () => {
+    const pasted_list = "- test\n\t- test\n\t- test\n\t\t- test";
+    const normalized_list = compose_paste.normalize_tab_indented_list_syntax(pasted_list);
+
+    assert.equal(normalized_list, "* test\n  * test\n  * test\n    * test");
+    assert.ok(parse(normalized_list).includes("<li>test<ul>"));
+});
