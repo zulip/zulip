@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("zerver", "0788_realmfilter_alternative_url_templates"),
+        ("zerver", "0789_add_external_auth_fields_to_preregistrationuser"),
     ]
 
     operations = [

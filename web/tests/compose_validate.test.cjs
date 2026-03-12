@@ -233,6 +233,21 @@ test_ui("validate", ({mock_template, override}) => {
     assert.ok(!compose_validate.validate());
     assert.ok(deactivated_user_error_rendered);
 
+    bob.is_deleted = true;
+    let deleted_user_error_rendered = false;
+    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+        assert.equal(data.classname, compose_banner.CLASSNAMES.deactivated_user);
+        assert.equal(
+            data.banner_text,
+            $t({defaultMessage: "You cannot send messages to deleted users."}),
+        );
+        deleted_user_error_rendered = true;
+        return "<banner-stub>";
+    });
+    assert.ok(!compose_validate.validate());
+    assert.ok(deleted_user_error_rendered);
+    bob.is_deleted = false;
+
     initialize_pm_pill(mock_template);
     add_content_to_compose_box();
     compose_state.private_message_recipient_emails("welcome-bot@example.com");
