@@ -2430,7 +2430,6 @@ body:not(.spectator-view) {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    flex-grow: 1;
     color: var(--color-failed-message-send-icon);
 
     .zulip-icon {
