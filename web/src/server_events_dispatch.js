@@ -754,7 +754,6 @@ export function dispatch_normal_event(event) {
                             compose_state.set_selected_recipient_id("");
                             compose_recipient.on_compose_select_recipient_update();
                         }
-                        settings_streams.update_default_streams_table();
                         stream_data.remove_default_stream(stream_id);
                         if (realm.realm_moderation_request_channel_id === stream_id) {
                             settings_org.sync_realm_settings("moderation_request_channel_id");
@@ -778,6 +777,7 @@ export function dispatch_normal_event(event) {
                             stream_id,
                         );
                     }
+                    settings_streams.update_default_streams_table();
                     inbox_ui.complete_rerender();
                     recent_view_ui.complete_rerender();
                     stream_list.update_subscribe_to_more_streams_link();
