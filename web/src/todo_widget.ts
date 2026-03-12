@@ -146,6 +146,43 @@ export function render({
         }
     }
 
+    function abort_edit_item(key: string): void {
+        task_data.remove_editing_item(key);
+        toggle_task_edit_controls(key);
+    }
+
+    function submit_task_list_item(key: string): void {
+        const $task_list_item = $elem.find(`input.task[data-key="${key}"]`).closest("li");
+        const new_task =
+            $task_list_item.find<HTMLInputElement>("input.add-task").val()?.trim() ?? "";
+        const new_desc =
+            $task_list_item.find<HTMLInputElement>("input.add-desc").val()?.trim() ?? "";
+
+        if (new_task === "") {
+            return;
+        }
+        const task_exists = task_data.name_in_use(new_task);
+        const old_task_list_item = task_data.get_task_item(key);
+
+        assert(old_task_list_item);
+
+        toggle_task_edit_controls(key);
+
+        if (new_task !== old_task_list_item.task && task_exists) {
+            $elem.find(".widget-error").text($t({defaultMessage: "Task already exists"}));
+            return;
+        }
+        if (new_task === old_task_list_item.task && new_desc === old_task_list_item.desc) {
+            return;
+        }
+
+        task_data.remove_editing_item(key);
+        const data = task_data.handle.edit_task.outbound(new_task, new_desc, key);
+        if (data) {
+            callback(data);
+        }
+    }
+
     function build_widget(): void {
         const html = render_widgets_todo_widget();
         $elem.html(html);
@@ -205,6 +242,59 @@ export function render({
                     add_task();
                 }
             });
+
+        $elem.find("ul.todo-widget").on("keydown", ".todo-task-list-item-bar input", (e) => {
+            e.stopPropagation();
+            if (e.key === "Enter") {
+                e.preventDefault();
+                const key = $(e.target)
+                    .closest("li")
+                    .find("label.checkbox input.task")
+                    .attr("data-key");
+                assert(key !== undefined);
+                submit_task_list_item(key);
+                return;
+            }
+            if (e.key === "Escape") {
+                const key = $(e.target)
+                    .closest("li")
+                    .find("label.checkbox input.task")
+                    .attr("data-key");
+                assert(key !== undefined);
+                abort_edit_item(key);
+            }
+        });
+
+        $elem.find("ul.todo-widget").on("click", ".todo-edit-task-list-item", (e) => {
+            e.stopPropagation();
+            const key = $(e.target).closest("li").find(".checkbox input.task").attr("data-key");
+            assert(key !== undefined);
+            start_editing_item(key);
+        });
+
+        $elem
+            .find("ul.todo-widget")
+            .on("click", ".todo-task-list-item-bar .todo-task-list-item-check", (e) => {
+                e.stopPropagation();
+                const key = $(e.target)
+                    .closest("li")
+                    .find("label.checkbox input.task")
+                    .attr("data-key");
+                assert(key !== undefined);
+                submit_task_list_item(key);
+            });
+
+        $elem
+            .find("ul.todo-widget")
+            .on("click", ".todo-task-list-item-bar .todo-task-list-item-remove", (e) => {
+                e.stopPropagation();
+                const key = $(e.target)
+                    .closest("li")
+                    .find("label.checkbox input.task")
+                    .attr("data-key");
+                assert(key !== undefined);
+                abort_edit_item(key);
+            });
     }
 
     function update_add_task_button(): void {
@@ -232,11 +322,33 @@ export function render({
         }
     }
 
+    function toggle_task_edit_controls(key: string): void {
+        const input_mode = task_data.get_editing_items().has(key);
+        const $task_list_item = $elem.find(`input.task[data-key="${key}"]`).closest("li");
+        const can_edit = is_my_task_list && !input_mode;
+        $task_list_item.find(".checkbox").toggle(!input_mode);
+        $task_list_item.find(".todo-task-list-item-bar").toggle(input_mode);
+        $task_list_item.find(".todo-edit-task-list-item").toggle(can_edit);
+    }
+
+    function start_editing_item(key: string): void {
+        const task_item = task_data.get_task_item(key);
+        const $task_list_item = $elem.find(`input.task[data-key="${key}"]`).closest("li");
+        if (task_item) {
+            $task_list_item.find(".todo-task-list-item-bar input.add-task").val(task_item.task);
+            $task_list_item.find(".todo-task-list-item-bar input.add-desc").val(task_item.desc);
+        }
+        task_data.set_editing_item(key, $task_list_item.find(".todo-task-list-item-bar"));
+        toggle_task_edit_controls(key);
+    }
+
     function render_results(): void {
         const widget_data = task_data.get_widget_data();
         const html = render_widgets_todo_widget_tasks(widget_data);
         $elem.find("ul.todo-widget").html(html);
         $elem.find(".widget-error").text("");
+        $elem.find(".todo-task-list-item-bar").hide();
+        $elem.find(".todo-edit-task-list-item").toggle(is_my_task_list);
 
         $elem.find("input.task").on("click", (e) => {
             e.stopPropagation();
@@ -259,6 +371,25 @@ export function render({
         });
 
         update_add_task_button();
+
+        function restore_todo_item_edit_state(): void {
+            const editing_items = task_data.get_editing_items();
+
+            for (const [key, $edit_elem] of editing_items.entries()) {
+                const $task_list_item = $elem.find(`input.task[data-key="${key}"]`).closest("li");
+                const edit_task = $edit_elem.find("input.add-task").val();
+                const edit_desc = $edit_elem.find("input.add-desc").val();
+                if (edit_task === undefined || edit_desc === undefined) {
+                    continue;
+                }
+                $task_list_item.find(".todo-task-list-item-bar input.add-task").val(edit_task);
+                $task_list_item.find(".todo-task-list-item-bar input.add-desc").val(edit_desc);
+                task_data.set_editing_item(key, $task_list_item.find(".todo-task-list-item-bar"));
+                toggle_task_edit_controls(key);
+            }
+        }
+
+        restore_todo_item_edit_state();
     }
 
     if (message_container?.is_hidden) {
