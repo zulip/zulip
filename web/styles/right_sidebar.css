@@ -207,6 +207,20 @@
             &.user-circle-offline {
                 display: none;
             }
+
+            /* Move the idle gradient onto ::before so that the
+               background-color halo from this element is preserved,
+               matching the approach used in typeahead.css. */
+            &.user-circle-idle {
+                background: var(--color-background);
+
+                &::before {
+                    background: var(--gradient-user-circle-idle-avatar);
+                    background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    border-radius: 50%;
+                }
+            }
         }
     }
 
