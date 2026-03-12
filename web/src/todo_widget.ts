@@ -16,6 +16,17 @@ import {TaskData} from "./todo_data.ts";
 import type {Event} from "./widget_data.ts";
 import type {AnyWidgetData, WidgetData} from "./widget_schema.ts";
 
+// Captures which edit-bar input is focused and its caret/selection, so
+// the state can be restored after a rerender rebuilds the list and
+// destroys the original input elements.
+type EditInputFocusState = {
+    key: string;
+    field: "add-task" | "add-desc";
+    selection_start: number | null;
+    selection_end: number | null;
+    selection_direction: "forward" | "backward" | "none" | null;
+};
+
 export function activate({any_data, message}: {any_data: AnyWidgetData; message: Message}): {
     inbound_events_handler: (events: Event[]) => void;
     widget_data: WidgetData;
@@ -50,7 +61,11 @@ export function render({
     rerender,
 }: {
     $elem: JQuery;
-    callback: (data: TodoWidgetOutboundData) => void;
+    callback: (
+        data: TodoWidgetOutboundData,
+        on_success?: () => void,
+        on_error?: () => void,
+    ) => void;
     message: Message;
     widget_data: WidgetData;
     rerender: boolean;
@@ -148,6 +163,77 @@ export function render({
         }
     }
 
+    function abort_edit_item(key: string): void {
+        task_data.remove_editing_item(key);
+        update_task_edit_controls(key);
+        // Remove any stale error message.
+        get_task_list_item(key).find(".widget-error").text("");
+    }
+
+    function submit_task_list_item(key: string): void {
+        if (!is_my_task_list) {
+            abort_edit_item(key);
+            return;
+        }
+        const $task_list_item = get_task_list_item(key);
+        const new_task =
+            $task_list_item.find<HTMLInputElement>("input.add-task").val()?.trim() ?? "";
+        const new_desc =
+            $task_list_item.find<HTMLInputElement>("input.add-desc").val()?.trim() ?? "";
+
+        if (new_task === "") {
+            return;
+        }
+        const old_task_list_item = task_data.get_task_item(key);
+
+        if (!old_task_list_item) {
+            blueslip.warn("Do we have legacy data? unknown key for tasks: " + key);
+            abort_edit_item(key);
+            return;
+        }
+        if (new_task === old_task_list_item.task && new_desc === old_task_list_item.desc) {
+            abort_edit_item(key);
+            return;
+        }
+
+        // Reject duplicate names before entering the loading state so that the
+        // spinner never flashes on and immediately off for a no-op validation
+        // failure.
+        const data = task_data.handle.edit_task.outbound(new_task, new_desc, key);
+        if (!data) {
+            $task_list_item.find(".widget-error").text($t({defaultMessage: "Task already exists"}));
+            return;
+        }
+
+        // Show the loading spinner and disable the edit controls while the
+        // server request is in flight.  The inputs, cancel, and submit
+        // controls are all disabled, so the edit session cannot be closed
+        // or re-submitted until the server responds; the callbacks below
+        // can therefore act unconditionally.
+        enter_loading_state(key);
+
+        function success_handler(): void {
+            exit_loading_state(key);
+            abort_edit_item(key);
+        }
+
+        function error_handler(): void {
+            exit_loading_state(key);
+        }
+
+        callback(data, success_handler, error_handler);
+    }
+
+    function get_task_list_item(key: string): JQuery {
+        return $elem.find(`input.task[data-key="${key}"]`).closest("li");
+    }
+
+    function get_task_key_from_event(e: JQuery.TriggeredEvent): string {
+        const key = $(e.target).closest("li").find("label.checkbox input.task").attr("data-key");
+        assert(key !== undefined);
+        return key;
+    }
+
     function build_widget(): void {
         const html = render_widgets_todo_widget();
         $elem.html(html);
@@ -207,6 +293,63 @@ export function render({
                     add_task();
                 }
             });
+
+        $elem.find("ul.todo-widget").on("keydown", ".todo-task-edit-bar input", (e) => {
+            e.stopPropagation();
+            if (e.key === "Enter") {
+                e.preventDefault();
+                submit_task_list_item(get_task_key_from_event(e));
+                return;
+            }
+            if (e.key === "Escape") {
+                abort_edit_item(get_task_key_from_event(e));
+            }
+        });
+
+        $elem.find("ul.todo-widget").on("click", ".todo-edit-task-icon", (e) => {
+            e.stopPropagation();
+            const key = get_task_key_from_event(e);
+            start_editing_item(key);
+            $(e.target).closest("li").find(".todo-task-edit-bar input.add-task").trigger("focus");
+        });
+
+        $elem
+            .find("ul.todo-widget")
+            .on("click", ".todo-task-edit-bar .todo-task-edit-check", (e) => {
+                e.stopPropagation();
+                submit_task_list_item(get_task_key_from_event(e));
+            });
+
+        $elem
+            .find("ul.todo-widget")
+            .on("click", ".todo-task-edit-bar .todo-task-edit-cancel", (e) => {
+                e.stopPropagation();
+                abort_edit_item(get_task_key_from_event(e));
+            });
+
+        // Persist the in-progress edit so it survives a rerender that
+        // rebuilds the list.  We store the raw value and only trim when
+        // submitting, so leading/trailing spaces a user is typing are
+        // not stripped mid-edit.
+        $elem
+            .find("ul.todo-widget")
+            .on(
+                "input",
+                ".todo-task-edit-bar input.add-task, .todo-task-edit-bar input.add-desc",
+                (e) => {
+                    const key = get_task_key_from_event(e);
+                    const $task_list_item = get_task_list_item(key);
+                    const task =
+                        $task_list_item
+                            .find<HTMLInputElement>(".todo-task-edit-bar input.add-task")
+                            .val() ?? "";
+                    const desc =
+                        $task_list_item
+                            .find<HTMLInputElement>(".todo-task-edit-bar input.add-desc")
+                            .val() ?? "";
+                    task_data.set_editing_item(key, {task, desc});
+                },
+            );
     }
 
     function update_add_task_button(): void {
@@ -234,11 +377,59 @@ export function render({
         }
     }
 
+    function update_task_edit_submit_loading(key: string, is_loading: boolean): void {
+        const $edit_item_bar = get_task_list_item(key).find(".todo-task-edit-bar");
+        $edit_item_bar.find("input").prop("disabled", is_loading);
+        $edit_item_bar.find(".todo-task-edit-cancel").prop("disabled", is_loading);
+        $edit_item_bar.find("i.todo-task-check").toggle(!is_loading);
+        $edit_item_bar.find("i.todo-task-spinner").toggle(is_loading);
+        $edit_item_bar.find(".todo-task-edit-check").prop("disabled", is_loading);
+    }
+
+    function enter_loading_state(key: string): void {
+        task_data.set_submitting_state(key, true);
+        update_task_edit_submit_loading(key, true);
+    }
+
+    function exit_loading_state(key: string): void {
+        task_data.set_submitting_state(key, false);
+        update_task_edit_submit_loading(key, false);
+    }
+
+    function update_task_edit_controls(key: string): void {
+        const input_mode = task_data.get_editing_items().has(key);
+        const $task_list_item = get_task_list_item(key);
+        const can_edit = is_my_task_list && !input_mode;
+        $task_list_item.find(".checkbox").toggle(!input_mode);
+        $task_list_item.find(".todo-task-edit-bar").toggle(input_mode);
+        $task_list_item.find(".todo-edit-task-icon").toggle(can_edit);
+    }
+
+    function start_editing_item(key: string): void {
+        const task_item = task_data.get_task_item(key);
+        if (task_item === undefined) {
+            return;
+        }
+        const $task_list_item = get_task_list_item(key);
+        $task_list_item.find(".todo-task-edit-bar input.add-task").val(task_item.task);
+        $task_list_item.find(".todo-task-edit-bar input.add-desc").val(task_item.desc);
+
+        task_data.set_editing_item(key, {task: task_item.task, desc: task_item.desc});
+        update_task_edit_controls(key);
+    }
+
     function render_results(): void {
         const widget_data = task_data.get_widget_data();
         const html = render_widgets_todo_widget_tasks(widget_data);
+
+        // Rebuilding the list below destroys the edit-bar inputs, so
+        // capture the focused input and its caret to restore afterward.
+        const edit_input_focus_state = get_edit_input_focus_state();
+
         $elem.find("ul.todo-widget").html(html);
         $elem.find(".add-task-bar .widget-error").text("");
+        $elem.find(".todo-task-edit-bar").hide();
+        $elem.find(".todo-edit-task-icon").toggle(is_my_task_list);
 
         $elem.find("input.task").on("click", (e) => {
             e.stopPropagation();
@@ -261,6 +452,78 @@ export function render({
         });
 
         update_add_task_button();
+
+        function restore_todo_item_edit_state(): void {
+            for (const [key, {task, desc, submitting}] of task_data.get_editing_items().entries()) {
+                const $task_list_item = get_task_list_item(key);
+                $task_list_item.find(".todo-task-edit-bar input.add-task").val(task);
+                $task_list_item.find(".todo-task-edit-bar input.add-desc").val(desc);
+                update_task_edit_controls(key);
+                if (submitting) {
+                    update_task_edit_submit_loading(key, true);
+                }
+            }
+        }
+
+        function get_edit_input_focus_state(): EditInputFocusState | undefined {
+            const $focused_input = $elem.find<HTMLInputElement>(
+                ".todo-task-edit-bar input.add-task:focus, .todo-task-edit-bar input.add-desc:focus",
+            );
+            const input_element = $focused_input[0];
+            if (input_element === undefined) {
+                return undefined;
+            }
+            const key = $focused_input
+                .closest("li")
+                .find("label.checkbox input.task")
+                .attr("data-key");
+            if (key === undefined) {
+                return undefined;
+            }
+            return {
+                key,
+                field: $focused_input.hasClass("add-task") ? "add-task" : "add-desc",
+                selection_start: input_element.selectionStart,
+                selection_end: input_element.selectionEnd,
+                selection_direction: input_element.selectionDirection,
+            };
+        }
+
+        function restore_edit_input_focus(focus_state: EditInputFocusState | undefined): void {
+            if (focus_state === undefined) {
+                return;
+            }
+            const $task_list_item = get_task_list_item(focus_state.key);
+            const input_element = $task_list_item.find<HTMLInputElement>(
+                `.todo-task-edit-bar input.${focus_state.field}`,
+            )[0];
+            if (input_element === undefined) {
+                return;
+            }
+
+            // The input's :focus rule animates its border-color and
+            // box-shadow. Re-focusing the freshly rebuilt input would
+            // replay that animation on every rerender, flashing the
+            // border even though, to the user, focus never left.
+            // Suppress the transition for this programmatic focus, then
+            // restore it for genuine focus changes.
+            input_element.style.transition = "none";
+            input_element.focus();
+            if (focus_state.selection_start !== null && focus_state.selection_end !== null) {
+                input_element.setSelectionRange(
+                    focus_state.selection_start,
+                    focus_state.selection_end,
+                    focus_state.selection_direction ?? undefined,
+                );
+            }
+            // Force the browser to reflow the page so that the transition is applied.
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+            input_element.offsetHeight;
+            input_element.style.transition = "";
+        }
+
+        restore_todo_item_edit_state();
+        restore_edit_input_focus(edit_input_focus_state);
     }
 
     if (message_container?.is_hidden) {
