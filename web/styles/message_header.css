@@ -13,9 +13,13 @@
     .message-header-contents {
         font-size: 1.0714em; /* 15px at 14px em */
         line-height: 1.2;
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        /* Ensures extra children (e.g., .error-icon-message-recipient
+           in the scheduled message failed state) flow into implicit
+           columns rather than wrapping to a new row. */
+        grid-auto-flow: column;
         align-items: center;
-        justify-content: space-between;
         height: 1.8666em; /* 28px at 15px em */
         border: 1px solid var(--color-message-header-contents-border);
         border-bottom-color: var(--color-message-header-contents-border-bottom);
@@ -29,6 +33,12 @@
         box-shadow:
             -1px -5px 0 5px var(--color-background),
             1px -5px 0 0 var(--color-background);
+
+        .message-header-contents {
+            /* stream_label | separator | topic | controls | date */
+            grid-template-columns: auto auto auto 1fr auto;
+            align-items: stretch;
+        }
 
         & .message_label_clickable {
             user-select: text;
@@ -47,22 +57,21 @@
 
         .stream_topic_separator {
             line-height: 0;
+            display: flex;
+            align-items: center;
+            transform: translateY(0.5px);
             color: var(--color-message-header-icon-non-interactive);
-            position: relative;
-            top: 0.5px;
         }
 
         .stream_topic {
-            display: inline-block;
+            display: flex;
+            align-items: center;
             padding: 5px 6px 5px 2px;
-            height: 1.2142em; /* 17px at 14px em */
-            line-height: 1.2142em; /* 17px at 14px em */
             overflow: hidden;
             text-overflow: ellipsis;
 
             .message_label_clickable.narrows_by_topic {
-                position: relative;
-                top: 0.5px;
+                transform: translateY(0.5px);
                 overflow: hidden;
                 text-overflow: ellipsis;
 
@@ -222,7 +231,7 @@
                 var(--color-background);
 
             .recipient_row_date {
-                display: block;
+                display: flex;
             }
         }
     }
@@ -233,10 +242,7 @@
     align-items: center;
     gap: 5px;
     padding: 5px 2px 5px 10px;
-    height: 1.2142em; /* 17px at 14px em */
-    line-height: 1.2142em; /* 17px at 14px em */
-    position: relative;
-    top: 0.5px;
+    transform: translateY(0.5px);
     text-decoration: none;
     font-weight: 600;
     overflow: hidden;
@@ -279,7 +285,6 @@
 
 .recipient_bar_controls {
     display: flex;
-    flex-grow: 1;
     align-items: center;
 
     &.topic-edit-mode .recipient-bar-control {
@@ -315,7 +320,7 @@
         display: none;
 
         .sticky_header & {
-            display: block;
+            display: flex;
         }
     }
 
