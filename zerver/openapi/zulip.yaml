@@ -251,6 +251,89 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiKeyResponse"
+  /dev_list_users:
+    get:
+      operationId: dev-list-users
+      summary: List users (development only)
+      tags:
+        - authentication
+      description: |
+        Get a list of all, non-bot users in a [Zulip development
+        server](https://zulip.readthedocs.io/en/latest/development/overview.html).
+        This endpoint is used by mobile developers to fetch users for the
+        development login flow.
+
+        !!! warn ""
+
+            **Note:** This endpoint is only available on Zulip development
+            servers; for obvious security reasons it will always return an error
+            in a Zulip production server.
+      security: []
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - type: object
+                    additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      direct_admins:
+                        type: array
+                        description: |
+                          A list of administrators in the development server.
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            email:
+                              type: string
+                              description: |
+                                The email of the dev admin user.
+                            realm_url:
+                              type: string
+                              description: |
+                                The URL of the dev admin user's organization.
+                      direct_users:
+                        type: array
+                        description: |
+                          A list of non-admin users in the development server.
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            email:
+                              type: string
+                              description: |
+                                The email of the dev user.
+                            realm_url:
+                              type: string
+                              description: |
+                                The URL of the dev user's organization.
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "direct_admins":
+                          [
+                            {
+                              "email": "iago@zulip.com",
+                              "realm_url": http://localhost:9991,
+                            },
+                          ],
+                        "direct_users":
+                          [
+                            {
+                              "email": "hamlet@zulip.com",
+                              "realm_url": http://localhost:9991,
+                            },
+                          ],
+                      }
   /events:
     get:
       operationId: get-events
