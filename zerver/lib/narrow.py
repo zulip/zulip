@@ -714,8 +714,22 @@ class NarrowBuilder:
         # topic_wildcard_mentioned) or silent mentions, since this
         # operator is defined to only match explicit @-mentions
         # directed at notifying this user individually.
-        cond = (column("user_profile_id", Integer) == target_user.id) & (
-            column("flags", Integer).op("&")(literal(UserMessage.flags.mentioned.mask)) != 0
+        #
+        # Use a subquery on the target user's UserMessage rows,
+        # since the base query's UserMessage join is constrained to
+        # the current user, who may differ from the mentioned user.
+        # We correlate via zerver_message.id (present in both base
+        # query variants) to avoid ambiguity with the outer query's
+        # zerver_usermessage table.
+        cond = (
+            select(1)
+            .select_from(table("zerver_usermessage"))
+            .where(
+                column("message_id", Integer) == literal_column("zerver_message.id", Integer),
+                column("user_profile_id", Integer) == literal(target_user.id),
+                column("flags", Integer).op("&")(literal(UserMessage.flags.mentioned.mask)) != 0,
+            )
+            .exists()
         )
 
         return query.where(maybe_negate(cond))
