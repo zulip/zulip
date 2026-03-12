@@ -916,6 +916,32 @@ def bulk_add_subscriptions(
         subscriber_peer_info=subscriber_peer_info,
     )
 
+    if not from_user_creation:
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+        for sub_info in subs_to_add + subs_to_activate:
+            stream = sub_info.stream
+            if not stream.invite_only or stream.deactivated:
+                continue
+            user = sub_info.user
+            with override_language(realm.default_language):
+                if acting_user is not None and acting_user.id != user.id:
+                    content = _(
+                        "{acting_user_mention} subscribed {user_mention} to this channel."
+                    ).format(
+                        acting_user_mention=silent_mention_syntax_for_user(acting_user),
+                        user_mention=silent_mention_syntax_for_user(user),
+                    )
+                else:
+                    content = _("{user_mention} subscribed to this channel.").format(
+                        user_mention=silent_mention_syntax_for_user(user)
+                    )
+            maybe_send_channel_events_notice(
+                notification_bot,
+                stream,
+                content,
+                acting_user=acting_user,
+            )
+
     return (
         subs_to_add + subs_to_activate,
         already_subscribed,
@@ -1167,6 +1193,31 @@ def bulk_remove_subscriptions(
         for user, stream in removed_sub_tuples:
             altered_user_dict[user].add(stream.id)
         send_user_remove_events_on_removing_subscriptions(realm, altered_user_dict)
+
+    notification_bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+    for sub_info in subs_to_deactivate:
+        stream = sub_info.stream
+        if not stream.invite_only or stream.deactivated:
+            continue
+        user = sub_info.user
+        with override_language(realm.default_language):
+            if acting_user is not None and acting_user.id != user.id:
+                content = _(
+                    "{acting_user_mention} unsubscribed {user_mention} from this channel."
+                ).format(
+                    acting_user_mention=silent_mention_syntax_for_user(acting_user),
+                    user_mention=silent_mention_syntax_for_user(user),
+                )
+            else:
+                content = _("{user_mention} unsubscribed from this channel.").format(
+                    user_mention=silent_mention_syntax_for_user(user)
+                )
+        maybe_send_channel_events_notice(
+            notification_bot,
+            stream,
+            content,
+            acting_user=acting_user,
+        )
 
     return (
         removed_sub_tuples,

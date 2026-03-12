@@ -5627,6 +5627,146 @@ class InviteOnlyStreamTest(ZulipTestCase):
         self.assertTrue(prospero.id in json["subscribers"])
 
 
+class PrivateChannelJoinLeaveNotificationTest(ZulipTestCase):
+    def test_subscribe_to_private_channel_sends_notification(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        stream = self.make_stream("private_channel", invite_only=True)
+        self.subscribe(iago, "private_channel")
+
+        bulk_add_subscriptions(iago.realm, [stream], [hamlet], acting_user=iago)
+
+        messages = get_topic_messages(iago, stream, "channel events")
+        self.assert_length(messages, 1)
+        self.assertEqual(
+            messages[0].content,
+            f"@_**{iago.full_name}|{iago.id}** subscribed @_**{hamlet.full_name}|{hamlet.id}** to this channel.",
+        )
+
+    def test_self_subscribe_to_private_channel_sends_notification(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        stream = self.make_stream("private_channel_self", invite_only=True)
+        self.subscribe(hamlet, "private_channel_self")
+
+        messages = get_topic_messages(hamlet, stream, "channel events")
+        self.assert_length(messages, 1)
+        self.assertEqual(
+            messages[0].content,
+            f"@_**{hamlet.full_name}|{hamlet.id}** subscribed to this channel.",
+        )
+
+    def test_subscribe_to_public_channel_does_not_send_notification(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        stream = self.make_stream("public_channel", invite_only=False)
+        self.subscribe(iago, "public_channel")
+
+        bulk_add_subscriptions(iago.realm, [stream], [hamlet], acting_user=iago)
+
+        messages = get_topic_messages(iago, stream, "channel events")
+        self.assert_length(messages, 0)
+
+    def test_unsubscribe_from_private_channel_sends_notification(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        stream = self.make_stream("private_unsub", invite_only=True)
+        self.subscribe(iago, "private_unsub")
+        self.subscribe(hamlet, "private_unsub")
+
+        bulk_remove_subscriptions(iago.realm, [hamlet], [stream], acting_user=iago)
+
+        messages = get_topic_messages(iago, stream, "channel events")
+        self.assert_length(messages, 1)
+        self.assertEqual(
+            messages[0].content,
+            f"@_**{iago.full_name}|{iago.id}** unsubscribed @_**{hamlet.full_name}|{hamlet.id}** from this channel.",
+        )
+
+    def test_self_unsubscribe_from_private_channel_sends_notification(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        stream = self.make_stream("private_self_unsub", invite_only=True)
+        self.subscribe(iago, "private_self_unsub")
+        self.subscribe(hamlet, "private_self_unsub")
+
+        bulk_remove_subscriptions(hamlet.realm, [hamlet], [stream], acting_user=hamlet)
+
+        messages = get_topic_messages(iago, stream, "channel events")
+        self.assert_length(messages, 1)
+        self.assertEqual(
+            messages[0].content,
+            f"@_**{hamlet.full_name}|{hamlet.id}** unsubscribed from this channel.",
+        )
+
+    def test_unsubscribe_from_public_channel_does_not_send_notification(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        stream = self.make_stream("public_unsub", invite_only=False)
+        self.subscribe(iago, "public_unsub")
+        self.subscribe(hamlet, "public_unsub")
+
+        bulk_remove_subscriptions(iago.realm, [hamlet], [stream], acting_user=iago)
+
+        messages = get_topic_messages(iago, stream, "channel events")
+        self.assert_length(messages, 0)
+
+    def test_no_notification_when_send_channel_events_messages_disabled(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        stream = self.make_stream("private_no_notif", invite_only=True)
+        self.subscribe(iago, "private_no_notif")
+        self.subscribe(hamlet, "private_no_notif")
+
+        do_set_realm_property(hamlet.realm, "send_channel_events_messages", False, acting_user=None)
+
+        bulk_remove_subscriptions(hamlet.realm, [hamlet], [stream], acting_user=hamlet)
+
+        messages = get_topic_messages(iago, stream, "channel events")
+        self.assert_length(messages, 0)
+
+    def test_no_notification_on_subscribe_during_user_creation(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        stream = self.make_stream("private_creation", invite_only=True)
+        self.subscribe(hamlet, "private_creation")
+
+        cordelia = self.example_user("cordelia")
+        bulk_add_subscriptions(
+            cordelia.realm, [stream], [cordelia], from_user_creation=True, acting_user=None
+        )
+
+        messages = get_topic_messages(hamlet, stream, "channel events")
+        self.assert_length(messages, 0)
+
+    def test_no_notification_for_deactivated_channel(self) -> None:
+        """Subscribing to or unsubscribing from a deactivated (archived) private
+        channel must not trigger a channel-events notice, because the
+        notification bot cannot send to deactivated streams."""
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        stream = self.make_stream("private_deactivated", invite_only=True)
+        self.subscribe(iago, "private_deactivated")
+        self.subscribe(hamlet, "private_deactivated")
+        do_deactivate_stream(stream, acting_user=None)
+
+        # Subscribing to a deactivated private channel must not raise an error
+        # or send a notification.
+        cordelia = self.example_user("cordelia")
+        bulk_add_subscriptions(iago.realm, [stream], [cordelia], acting_user=iago)
+
+        # Unsubscribing from a deactivated private channel must not raise an
+        # error or send a notification.
+        bulk_remove_subscriptions(iago.realm, [hamlet], [stream], acting_user=iago)
+
+
 class StreamTrafficTest(ZulipTestCase):
     def test_average_weekly_stream_traffic_calculation(self) -> None:
         # No traffic data for the stream
