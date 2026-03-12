@@ -13,9 +13,10 @@
     .message-header-contents {
         font-size: 1.0714em; /* 15px at 14px em */
         line-height: 1.2;
-        display: flex;
+        display: grid;
+        grid-template-areas: "stream-label separator topic controls error date";
+        grid-template-columns: minmax(0, 1fr) 0 0 0 auto auto;
         align-items: center;
-        justify-content: space-between;
         height: 1.8666em; /* 28px at 15px em */
         border: 1px solid var(--color-message-header-contents-border);
         border-bottom-color: var(--color-message-header-contents-border-bottom);
@@ -29,6 +30,14 @@
         box-shadow:
             -1px -5px 0 5px var(--color-background),
             1px -5px 0 0 var(--color-background);
+
+        .message-header-contents {
+            /* The separator column holds only the fixed-size chevron
+               icon, so it gets an explicit width; the other columns
+               hold variable-width content and stay auto/1fr. */
+            grid-template-columns: auto 1em auto minmax(0, 1fr) auto auto;
+            align-items: stretch;
+        }
 
         & .message_label_clickable {
             user-select: text;
@@ -46,23 +55,26 @@
         }
 
         .stream_topic_separator {
+            grid-area: separator;
             line-height: 0;
+            display: flex;
+            align-items: center;
             color: var(--color-message-header-icon-non-interactive);
             position: relative;
             top: 0.5px;
         }
 
         .stream_topic {
-            display: inline-block;
+            grid-area: topic;
+            display: flex;
+            align-items: center;
             padding: 5px 6px 5px 2px;
-            height: 1.2142em; /* 17px at 14px em */
-            line-height: 1.2142em; /* 17px at 14px em */
             overflow: hidden;
             text-overflow: ellipsis;
+            position: relative;
+            top: 0.5px;
 
             .message_label_clickable.narrows_by_topic {
-                position: relative;
-                top: 0.5px;
                 overflow: hidden;
                 text-overflow: ellipsis;
 
@@ -222,19 +234,18 @@
                 var(--color-background);
 
             .recipient_row_date {
-                display: block;
+                display: flex;
             }
         }
     }
 }
 
 .stream_label {
+    grid-area: stream-label;
     display: flex;
     align-items: center;
     gap: 5px;
     padding: 5px 2px 5px 10px;
-    height: 1.2142em; /* 17px at 14px em */
-    line-height: 1.2142em; /* 17px at 14px em */
     position: relative;
     top: 0.5px;
     text-decoration: none;
@@ -278,8 +289,8 @@
 }
 
 .recipient_bar_controls {
+    grid-area: controls;
     display: flex;
-    flex-grow: 1;
     align-items: center;
 
     &.topic-edit-mode .recipient-bar-control {
@@ -296,7 +307,12 @@
     }
 }
 
+.error-icon-message-recipient {
+    grid-area: error;
+}
+
 .recipient_row_date {
+    grid-area: date;
     color: var(--color-date);
     font-size: calc(12em / 14);
     padding: 0 10px;
@@ -315,7 +331,7 @@
         display: none;
 
         .sticky_header & {
-            display: block;
+            display: flex;
         }
     }
 
