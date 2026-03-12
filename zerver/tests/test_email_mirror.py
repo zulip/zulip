@@ -414,6 +414,35 @@ class TestStreamEmailMessages(ZulipTestCase):
             message.content, "**Subject:** Test subject\n\nTestStreamEmailMessages body"
         )
 
+    def test_receive_stream_email_messages_long_subject(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
+        stream_to_address = encode_email_address(stream.name, email_token)
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("TestStreamEmailMessages body")
+
+        long_subject = "A" * 61
+        incoming_valid_message["Subject"] = long_subject
+        incoming_valid_message["From"] = self.example_email("hamlet")
+        incoming_valid_message["To"] = stream_to_address
+
+        process_message(incoming_valid_message)
+
+        message = most_recent_message(user_profile)
+
+        # Topic should be truncated to MAX_TOPIC_NAME_LENGTH with "..." suffix.
+        self.assertEqual(message.topic_name(), "A" * 57 + "...")
+        # Full subject should appear in the message body via subject_in_body mechanism.
+        self.assertEqual(
+            message.content,
+            f"**Subject:** {long_subject}\n\nTestStreamEmailMessages body",
+        )
+
     def test_receive_private_stream_email_messages_success(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
