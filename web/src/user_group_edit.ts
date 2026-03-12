@@ -2291,6 +2291,7 @@ export function initialize(): void {
                     modal_content_html: render_confirm_join_group_direct_member({
                         associated_subgroup_names,
                     }),
+                    is_compact: true,
                     id: "confirm_join_group_direct_member",
                     on_click() {
                         const $group_row = row_for_group_id(user_group_id);

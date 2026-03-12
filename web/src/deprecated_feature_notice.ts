@@ -54,6 +54,7 @@ export function maybe_show_deprecation_notice(key: string): void {
             modal_title_html: $t_html({defaultMessage: "Deprecation notice"}),
             modal_content_html: message,
             modal_submit_button_text: $t({defaultMessage: "Got it"}),
+            is_compact: true,
             on_click() {
                 return;
             },
