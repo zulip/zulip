@@ -54,11 +54,14 @@ from zerver.lib.user_groups import (
     get_system_user_group_for_user,
 )
 from zerver.lib.users import (
+    add_service,
+    check_valid_interface_type,
     get_active_bots_owned_by_user,
     get_user_ids_who_can_access_user,
     get_users_involved_in_dms_with_target_users,
     user_access_restricted_in_realm,
 )
+from zerver.lib.utils import generate_api_key
 from zerver.models import (
     Draft,
     GroupGroupMembership,
@@ -852,6 +855,34 @@ def do_update_bot_config_data(
             ),
             bot_owner_user_ids(bot_profile),
         )
+
+
+def do_create_bot_service(
+    bot: UserProfile,
+    bot_type: int,
+    service_name: str | None,
+    service_payload_url: str | None,
+    service_interface: int,
+    config_data: Mapping[str, str],
+) -> None:
+
+    if bot_type in UserProfile.SERVICE_BOT_TYPES:
+        assert service_name is not None
+        check_valid_interface_type(service_interface)
+        add_service(
+            name=service_name,
+            user_profile=bot,
+            base_url=service_payload_url or "",
+            interface=service_interface,
+            token=generate_api_key(),
+        )
+
+    if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and service_name:
+        set_bot_config(bot, "integration_id", service_name)
+
+    if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
+        for key, value in config_data.items():
+            set_bot_config(bot, key, value)
 
 
 def get_service_dicts_for_bot(user_profile_id: int) -> list[dict[str, Any]]:

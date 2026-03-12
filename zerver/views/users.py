@@ -33,6 +33,7 @@ from zerver.actions.user_settings import (
 )
 from zerver.actions.users import (
     do_change_user_role,
+    do_create_bot_service,
     do_deactivate_user,
     do_update_bot_config_data,
     do_update_outgoing_webhook_service,
@@ -41,7 +42,6 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_human_non_guest_user, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.avatar import avatar_url, get_avatar_for_inaccessible_user, get_gravatar_url
-from zerver.lib.bot_config import set_bot_config
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import (
     CannotDeactivateLastUserError,
@@ -80,7 +80,6 @@ from zerver.lib.users import (
     access_bot_by_id,
     access_user_by_email,
     access_user_by_id,
-    add_service,
     check_bot_name_available,
     check_can_access_user,
     check_can_create_bot,
@@ -94,7 +93,6 @@ from zerver.lib.users import (
     validate_short_name_and_construct_bot_email,
     validate_user_custom_profile_data,
 )
-from zerver.lib.utils import generate_api_key
 from zerver.models import Service, Stream, UserProfile
 from zerver.models.bots import BotConfigData, get_bot_services
 from zerver.models.realms import (
@@ -749,22 +747,9 @@ def add_bot_backend(
             user_file, bot_profile, content_type=user_file.content_type, future=False
         )
 
-    if bot_type in (UserProfile.OUTGOING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
-        assert isinstance(service_name, str)
-        add_service(
-            name=service_name,
-            user_profile=bot_profile,
-            base_url=payload_url,
-            interface=interface_type,
-            token=generate_api_key(),
-        )
-
-    if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and service_name:
-        set_bot_config(bot_profile, "integration_id", service_name)
-
-    if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
-        for key, value in config_data.items():
-            set_bot_config(bot_profile, key, value)
+    do_create_bot_service(
+        bot_profile, bot_type, service_name, payload_url, interface_type, config_data
+    )
 
     notify_created_bot(bot_profile)
 
