@@ -35,7 +35,9 @@ from zerver.actions.users import (
     do_change_user_role,
     do_create_bot_service,
     do_deactivate_user,
-    do_update_bot_config_data,
+    do_update_bot_type,
+    do_update_embedded_bot_service,
+    do_update_incoming_bot_service,
     do_update_outgoing_webhook_service,
 )
 from zerver.context_processors import get_valid_realm_from_request
@@ -87,6 +89,7 @@ from zerver.lib.users import (
     check_payload_for_bot_type,
     check_valid_bot_config,
     check_valid_bot_type,
+    check_valid_embedded_bot_service_name,
     check_valid_interface_type,
     get_users_for_api,
     max_message_id_for_user,
@@ -94,7 +97,7 @@ from zerver.lib.users import (
     validate_user_custom_profile_data,
 )
 from zerver.models import Service, Stream, UserProfile
-from zerver.models.bots import BotConfigData, get_bot_services
+from zerver.models.bots import BotConfigData
 from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
@@ -473,19 +476,21 @@ def patch_bot_backend(
     *,
     bot_id: PathOnly[int],
     bot_owner_id: Json[int] | None = None,
-    config_data: Json[dict[str, str]] | None = None,
+    bot_type: Json[int] | None = None,
+    config_data: Json[Mapping[str, str]] | None = None,
     default_all_public_streams: Json[bool] | None = None,
     default_events_register_stream: str | None = None,
     default_sending_stream: str | None = None,
     full_name: str | None = None,
     role: Json[RoleParamType] | None = None,
     service_interface: Json[int] = 1,
+    service_name: Json[str] | None = None,
     service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
     short_name: str | None = None,
 ) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
-
-    # Handle short_name change
+    # Handle short_name change first, so that bot.email is up to date
+    # when deriving the outgoing webhook service_name below.
     if short_name is not None:
         try:
             _validated_short_name, new_email = validate_short_name_and_construct_bot_email(
@@ -509,6 +514,89 @@ def patch_bot_backend(
             except ValidationError:
                 raise JsonableError(_("Email address already in use"))
             do_change_user_delivery_email(bot, new_email, acting_user=user_profile)
+
+    # Handle bot_type change.
+    if bot_type is not None and bot_type != bot.bot_type:
+        if bot_type == UserProfile.EMBEDDED_BOT and not settings.EMBEDDED_BOTS_ENABLED:
+            raise JsonableError(_("Embedded bots are not enabled."))
+        check_valid_bot_type(user_profile, bot_type)
+        if config_data is None:
+            config_data = {}
+        short_name = bot.email.split("-bot@")[0]
+        if bot_type in UserProfile.SERVICE_BOT_TYPES:
+            service_name = service_name or short_name
+        check_payload_for_bot_type(bot_type, service_name, service_payload_url, config_data)
+        do_update_bot_type(
+            bot,
+            bot_type,
+            service_name,
+            service_payload_url,
+            service_interface,
+            config_data,
+            user_profile,
+        )
+    # Handle service update for an outgoing bot without changing bot_type.
+    elif service_payload_url is not None:
+        if bot.bot_type != UserProfile.OUTGOING_WEBHOOK_BOT:
+            raise JsonableError(_("This bot type doesn't use service_payload_url."))
+        else:
+            if service_name is not None:
+                raise JsonableError(
+                    _("Cannot update service_name for this bot type without changing bot type.")
+                )
+            if config_data is not None:
+                raise JsonableError(_("This bot type doesn't use config data."))
+        check_valid_interface_type(service_interface)
+        do_update_outgoing_webhook_service(
+            bot,
+            interface=service_interface,
+            base_url=service_payload_url,
+            acting_user=user_profile,
+        )
+    # Handle service update without changing bot_type.
+    elif service_name is not None or config_data is not None:
+        if bot.bot_type == UserProfile.EMBEDDED_BOT:
+            if service_name is not None:
+                check_valid_embedded_bot_service_name(service_name)
+            do_update_embedded_bot_service(
+                bot,
+                service_name=service_name,
+                acting_user=user_profile,
+                config_data=config_data,
+            )
+        elif bot.bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
+            # We assume config_data does not contain "integration_id"; that key
+            # is managed exclusively via the service_name parameter above.  The
+            # same assumption holds in do_create_bot_service.
+            try:
+                existing_integration_id: str | None = BotConfigData.objects.get(
+                    bot_profile=bot, key="integration_id"
+                ).value
+            except BotConfigData.DoesNotExist:
+                existing_integration_id = None
+
+            service_name_changed = (
+                service_name is not None and service_name != existing_integration_id
+            )
+            if not service_name_changed and config_data is None:
+                # Nothing to update: the same service_name was supplied
+                # without any config_data, so all existing config is already
+                # correct and there is no need to validate or touch the DB.
+                pass
+            else:
+                # Preserve the existing integration_id when service_name wasn't changed.
+                effective_integration_id = (
+                    service_name if service_name is not None else existing_integration_id
+                )
+                if effective_integration_id:
+                    check_valid_bot_config(
+                        bot.bot_type, effective_integration_id, config_data or {}
+                    )
+                do_update_incoming_bot_service(bot, effective_integration_id, config_data or {})
+        elif service_name is not None:
+            raise JsonableError(_("This bot type doesn't use service_name."))
+        elif config_data is not None:
+            raise JsonableError(_("This bot type doesn't use config data."))
 
     if full_name is not None:
         check_change_bot_full_name(bot, full_name, user_profile)
@@ -552,37 +640,6 @@ def patch_bot_backend(
         do_change_default_all_public_streams(
             bot, default_all_public_streams, acting_user=user_profile
         )
-
-    if service_payload_url is not None:
-        check_valid_interface_type(service_interface)
-        assert service_interface is not None
-        do_update_outgoing_webhook_service(
-            bot,
-            interface=service_interface,
-            base_url=service_payload_url,
-            acting_user=user_profile,
-        )
-    if config_data:
-        if bot.bot_type == UserProfile.EMBEDDED_BOT:
-            services = get_bot_services(bot.id)
-            service_name = services[0].name
-            check_valid_bot_config(bot.bot_type, service_name, config_data)
-            do_update_bot_config_data(bot, service_name, config_data)
-        elif bot.bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
-            # We assume config_data does not contain "integration_id"; that key
-            # is managed exclusively via the service_name parameter above.  The
-            # same assumption holds in do_create_bot_service.
-            try:
-                service_name = BotConfigData.objects.get(
-                    bot_profile=bot, key="integration_id"
-                ).value
-            except BotConfigData.DoesNotExist:
-                service_name = None
-            if service_name:
-                check_valid_bot_config(bot.bot_type, service_name, config_data)
-            do_update_bot_config_data(bot, service_name, config_data)
-        else:
-            raise JsonableError(_("This bot type doesn't use config data."))
 
     if len(request.FILES) == 0:
         pass
