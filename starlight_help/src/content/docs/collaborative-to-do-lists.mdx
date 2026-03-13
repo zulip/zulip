@@ -7,6 +7,7 @@ import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import ZulipNote from "../../components/ZulipNote.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
+import EndComposing from "../include/_EndComposing.mdx";
 import StartComposing from "../include/_StartComposing.mdx";
 import ToDoListsExamples from "../include/_ToDoListsExamples.mdx";
 import ToDoListsIntro from "../include/_ToDoListsIntro.mdx";
@@ -15,7 +16,6 @@ import CheckIcon from "~icons/fa/check";
 import PencilIcon from "~icons/fa/pencil";
 import RemoveIcon from "~icons/fa/remove";
 import GripVerticalIcon from "~icons/zulip-icon/grip-vertical";
-import SendIcon from "~icons/zulip-icon/send";
 import TodoListIcon from "~icons/zulip-icon/todo-list";
 import TrashIcon from "~icons/zulip-icon/trash";
 
@@ -32,9 +32,8 @@ import TrashIcon from "~icons/zulip-icon/trash";
       1. Click the **Add to-do list** (<TodoListIcon />) icon at the bottom of the compose box.
       1. Fill out todo-list information as desired, and click **Create to-do
          list** to insert todo-list formatting.
-      1. Click the **Send** (<SendIcon />)
-         button, or use a [keyboard shortcut](/help/configure-send-message-keys)
-         to send your message.
+
+      <EndComposing />
     </FlattenedSteps>
 
     <ZulipTip>
@@ -53,9 +52,8 @@ import TrashIcon from "~icons/zulip-icon/trash";
       1. Type `/todo` followed by a space, and the title of the to-do list.
       1. *(optional)* Type each task on a new line, with its description, if
          any, after a <kbd>:</kbd> and blank space.
-      1. Click the **Send** (<SendIcon />)
-         button, or use a [keyboard shortcut](/help/configure-send-message-keys)
-         to send your message.
+
+      <EndComposing />
     </FlattenedSteps>
 
     <ZulipTip>
