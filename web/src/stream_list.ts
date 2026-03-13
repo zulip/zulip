@@ -925,9 +925,9 @@ function set_stream_unread_count(
     if (zoomed_in) {
         const $stream_li = get_stream_li(stream_id);
         if (!$stream_li) {
-            // This can happen for legitimate reasons, but we warn
-            // just in case.
-            blueslip.warn("stream id no longer in sidebar: " + stream_id);
+            // When zoomed in, only the zoomed-in stream has a
+            // row in the zoomed view, so this is expected for
+            // all other streams.
             return;
         }
         update_count_in_dom(
