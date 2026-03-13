@@ -58,6 +58,7 @@ class ErrorCode(Enum):
     SYSTEM_GROUP_REQUIRED = auto()
     CANNOT_DEACTIVATE_GROUP_IN_USE = auto()
     CANNOT_ADMINISTER_CHANNEL = auto()
+    PERMISSION_DENIED = auto()
     REMOTE_SERVER_VERIFICATION_SECRET_NOT_PREPARED = auto()
     HOSTNAME_ALREADY_IN_USE_BOUNCER_ERROR = auto()
     INVALID_BOUNCER_PUBLIC_KEY = auto()
@@ -806,6 +807,20 @@ class CannotAdministerChannelError(JsonableError):
     @override
     def msg_format() -> str:
         return _("You do not have permission to administer this channel.")
+
+
+class PermissionDeniedError(JsonableError):
+    code = ErrorCode.PERMISSION_DENIED
+    http_status_code = 403
+    data_fields: list[str] = []
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Permission denied.")
 
 
 class CannotManageDefaultChannelError(JsonableError):

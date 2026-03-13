@@ -1,0 +1,1 @@
+* [`POST /users/me/subscriptions`](/api/subscribe): Added the `PERMISSION_DENIED` error code for when a user attempts to create a channel with the name of an existing private or archived channel they do not have permission to access.
