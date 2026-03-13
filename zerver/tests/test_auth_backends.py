@@ -6210,7 +6210,7 @@ class FetchAuthBackends(ZulipTestCase):
                     ("is_incompatible", check_bool),
                     ("require_email_format_usernames", check_bool),
                     ("realm_url", check_string),
-                    ("realm_uri", check_string),
+                    ("realm_url", check_string),
                     ("zulip_version", check_string),
                     ("zulip_merge_base", check_string),
                     ("zulip_feature_level", check_int),

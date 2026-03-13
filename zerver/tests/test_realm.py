@@ -366,7 +366,7 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch("/json/realm", data, subdomain=realm.subdomain)
         self.assert_json_success(result)
         json = orjson.loads(result.content)
-        self.assertEqual(json["realm_uri"], "http://coolrealm.testserver")
+        self.assertEqual(json["realm_url"], "http://coolrealm.testserver")
         self.assertEqual(json["realm_url"], "http://coolrealm.testserver")
         realm = get_realm("coolrealm")
         self.assertIsNone(realm.demo_organization_scheduled_deletion_date)

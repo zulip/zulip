@@ -736,7 +736,6 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                     "custom": {
                         "zulip": {
                             "realm_name": self.sender.realm.name,
-                            "realm_uri": "http://zulip.testserver",
                             "realm_url": "http://zulip.testserver",
                             "user_id": self.user_profile.id,
                             "event": "remove",
@@ -748,7 +747,6 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                     "server": "testserver",
                     "realm_id": self.sender.realm.id,
                     "realm_name": self.sender.realm.name,
-                    "realm_uri": "http://zulip.testserver",
                     "realm_url": "http://zulip.testserver",
                     "user_id": self.user_profile.id,
                     "event": "remove",
@@ -816,7 +814,6 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                     "server": "testserver",
                     "realm_id": self.sender.realm.id,
                     "realm_name": self.sender.realm.name,
-                    "realm_uri": "http://zulip.testserver",
                     "realm_url": "http://zulip.testserver",
                     "user_id": self.user_profile.id,
                     "event": "remove",
@@ -832,7 +829,6 @@ class HandlePushNotificationTest(PushNotificationTestCase):
                     "custom": {
                         "zulip": {
                             "realm_name": self.sender.realm.name,
-                            "realm_uri": "http://zulip.testserver",
                             "realm_url": "http://zulip.testserver",
                             "user_id": self.user_profile.id,
                             "event": "remove",
