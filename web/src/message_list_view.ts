@@ -24,6 +24,7 @@ import type {MessageList} from "./message_list.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_reminder from "./message_reminder.ts";
+import * as message_scroll_state from "./message_scroll_state.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
@@ -1586,6 +1587,13 @@ export class MessageListView {
     set_message_offset(offset: number): void {
         const $msg = this.selected_row();
         assert($msg !== undefined);
+        // Suppress keep_pointer_in_view for this programmatic scroll,
+        // matching what set_message_position does. Without this,
+        // Firefox's asynchronous scrolling can cause stale layout
+        // values that make keep_pointer_in_view incorrectly move the
+        // selection during scroll position restoration after
+        // backfilling, creating a feedback loop.
+        message_scroll_state.set_update_selection_on_next_scroll(false);
         message_viewport.scrollTop($msg.offset()!.top - offset);
     }
 
