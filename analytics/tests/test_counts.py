@@ -126,12 +126,7 @@ class AnalyticsTestCase(ZulipTestCase):
         }
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
-        kwargs["delivery_email"] = kwargs["email"]
         with time_machine.travel(kwargs["date_joined"], tick=False):
-            pass_kwargs: dict[str, Any] = {}
-            if kwargs["is_bot"]:
-                pass_kwargs["bot_type"] = UserProfile.DEFAULT_BOT
-                pass_kwargs["bot_owner"] = None
             user = create_user(
                 kwargs["email"],
                 "password",
@@ -139,7 +134,7 @@ class AnalyticsTestCase(ZulipTestCase):
                 active=kwargs["is_active"],
                 full_name=kwargs["full_name"],
                 role=UserProfile.ROLE_REALM_ADMINISTRATOR,
-                **pass_kwargs,
+                bot_type=UserProfile.DEFAULT_BOT if kwargs["is_bot"] else None,
             )
             if not skip_auditlog:
                 RealmAuditLog.objects.create(
