@@ -7,6 +7,7 @@ import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import ZulipNote from "../../components/ZulipNote.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
+import EndComposing from "../include/_EndComposing.mdx";
 import PollsExamples from "../include/_PollsExamples.mdx";
 import PollsIntro from "../include/_PollsIntro.mdx";
 import StartComposing from "../include/_StartComposing.mdx";
@@ -16,7 +17,6 @@ import PencilIcon from "~icons/fa/pencil";
 import RemoveIcon from "~icons/fa/remove";
 import GripVerticalIcon from "~icons/zulip-icon/grip-vertical";
 import PollIcon from "~icons/zulip-icon/poll";
-import SendIcon from "~icons/zulip-icon/send";
 import TrashIcon from "~icons/zulip-icon/trash";
 
 <PollsIntro />
@@ -33,9 +33,8 @@ import TrashIcon from "~icons/zulip-icon/trash";
          the bottom of the compose box.
       1. Fill out poll information as desired, and click **Add poll** to insert poll
          formatting.
-      1. Click the **Send** (<SendIcon />) button, or
-         use a [keyboard shortcut](/help/configure-send-message-keys) to send your
-         message.
+
+      <EndComposing />
     </FlattenedSteps>
 
     <ZulipTip>
@@ -53,9 +52,8 @@ import TrashIcon from "~icons/zulip-icon/trash";
       1. Make sure the compose box is empty.
       1. Type `/poll` followed by a space, and the question you want to ask.
       1. *(optional)* Type each option on a new line.
-      1. Click the **Send** (<SendIcon />) button, or
-         use a [keyboard shortcut](/help/configure-send-message-keys) to send your
-         message.
+
+      <EndComposing />
     </FlattenedSteps>
 
     <ZulipTip>

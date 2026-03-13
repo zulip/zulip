@@ -7,10 +7,8 @@ import {TabItem, Tabs} from "@astrojs/starlight/components";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
+import ComposeBoxMenu from "../include/_ComposeBoxMenu.mdx";
 import StartComposing from "../include/_StartComposing.mdx";
-
-import MoreVerticalIcon from "~icons/zulip-icon/more-vertical";
-import SendIcon from "~icons/zulip-icon/send";
 
 By default, the <kbd>Enter</kbd> key adds a new line to your message,
 and <kbd>Ctrl</kbd> + <kbd>Enter</kbd> sends your message.
@@ -31,9 +29,8 @@ Zulip so that the <kbd>Enter</kbd> key sends your message.
     <FlattenedSteps>
       <StartComposing />
 
-      1. Click on the **ellipsis** (<MoreVerticalIcon />)
-         in the bottom right corner of the compose box, next to the **Send**
-         (<SendIcon />) button.
+      <ComposeBoxMenu />
+
       1. Toggle your preferred option for **Press ... to send**.
     </FlattenedSteps>
   </TabItem>
