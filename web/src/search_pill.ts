@@ -5,6 +5,7 @@ import render_input_pill from "../templates/input_pill.hbs";
 import render_search_list_item from "../templates/search_list_item.hbs";
 import render_search_user_pill from "../templates/search_user_pill.hbs";
 
+import * as emoji from "./emoji.ts";
 import {Filter} from "./filter.ts";
 import {$t} from "./i18n.ts";
 import * as input_pill from "./input_pill.ts";
@@ -14,6 +15,7 @@ import type {User} from "./people.ts";
 import {type Suggestion, search_term_description_html} from "./search_suggestion.ts";
 import type {NarrowCanonicalTerm, NarrowTermSuggestion} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import {user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as util from "./util.ts";
@@ -376,6 +378,21 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
                     return render_input_pill({
                         display_value: get_search_string_from_item(item),
                     });
+                case "reaction": {
+                    const emoji_details = emoji.get_emoji_details_by_name(item.operand);
+                    const sign = item.negated ? "-" : "";
+                    const emoji_alt_code = user_settings.emojiset === "text";
+                    const is_realm_emoji =
+                        emoji_details.reaction_type === "realm_emoji" ||
+                        emoji_details.reaction_type === "zulip_extra_emoji";
+                    return render_input_pill({
+                        has_reaction_emoji: true,
+                        reaction_sign: sign,
+                        ...emoji_details,
+                        emoji_alt_code,
+                        is_realm_emoji,
+                    });
+                }
                 default:
                     return render_input_pill({
                         display_value: get_search_string_from_item(item),
