@@ -48,7 +48,7 @@ const admin_settings_label = {
     realm_inline_url_embed_preview: $t({defaultMessage: "Show previews of linked websites"}),
     realm_send_welcome_emails: $t({defaultMessage: "Send emails introducing Zulip to new users"}),
     realm_require_e2ee_push_notifications: $t({
-        defaultMessage: "Require end-to-end encryption for push notification content",
+        defaultMessage: "Require end-to-end encryption for push notifications",
     }),
     realm_message_content_allowed_in_email_notifications: $t({
         defaultMessage: "Allow message content in message notification emails",
