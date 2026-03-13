@@ -447,6 +447,23 @@ class PermissionTest(ZulipTestCase):
             f"**Old full name:** {old_name}\n- **New full name:** {new_name}", message.content
         )
 
+    def test_admin_can_change_own_full_name_even_when_disallowed_by_group(self) -> None:
+        self.login("iago")
+        iago = self.example_user("iago")
+
+        owners_group = NamedUserGroup.objects.get(
+            realm_for_sharding=iago.realm, is_system_group=True, name=SystemGroups.OWNERS
+        )
+        do_change_realm_permission_group_setting(
+            iago.realm, "can_change_own_name_group", owners_group, acting_user=None
+        )
+        self.assertFalse(iago.has_permission("can_change_own_name_group"))
+
+        result = self.client_patch(f"/json/users/{iago.id}", dict(full_name="Updated Name"))
+        self.assert_json_success(result)
+        iago.refresh_from_db()
+        self.assertEqual(iago.full_name, "Updated Name")
+
     def test_non_admin_cannot_change_full_name(self) -> None:
         self.login("hamlet")
         req = dict(full_name="new name")
