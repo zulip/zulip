@@ -28,6 +28,61 @@ Contents:
 - [Specifying a proxy](#specifying-a-proxy)
 - [Customizing CPU and RAM allocation](#customizing-cpu-and-ram-allocation)
 
+## Quick Start with GitHub Codespaces (Easiest Alternative)
+
+If you'd prefer not to set up a local development environment, **GitHub Codespaces** provides a fully configured cloud-based development environment in just a few clicks!
+
+### Why use Codespaces?
+
+- ✅ **No local setup required** - No need to install Docker, Vagrant, or WSL 2
+- ✅ **Pre-configured environment** - All dependencies and tools are pre-installed
+- ✅ **Works on any device** - Develop from any browser, even on a Chromebook or iPad
+- ✅ **Free tier** - Includes 120 core-hours per month for free
+- ✅ **Faster onboarding** - Get started contributing within 2-3 minutes
+
+### Setting up Codespaces
+
+1. **Go to the Zulip repository:** https://github.com/zulip/zulip
+
+2. **Click the green "Code" button** and select the "Codespaces" tab
+
+3. **Click "Create codespace on main"** (or your branch)
+
+4. **Wait 2-3 minutes** for the environment to fully load
+
+5. **In the terminal, run the following commands:**
+   ```bash
+   # Start the development server
+   ./tools/run-dev
+   ```
+
+6. **Access Zulip:**
+   - Look for the "Ports" tab in VS Code
+   - Find port 9991 (Zulip server)
+   - Click "Open in Browser"
+   - Log in with `admin@example.com` / `admin`
+
+### Codespaces Tips
+
+- **Storage:** You have 32 GB of free storage
+- **Computing:** Suitable for testing and small to medium contributions
+- **Persistent changes:** Your workspace persists even after closing the browser
+- **Upgrade:** If you need more computing hours, you can upgrade to a paid plan
+
+### When to use Codespaces vs. Local Setup
+
+| Aspect | Codespaces | Local Setup |
+|--------|-----------|------------|
+| **Setup time** | 2-3 minutes | 15-30 minutes |
+| **Device requirements** | Browser only | More system resources |
+| **Performance** | Good for learning | Better for heavy development |
+| **Persistence** | Temporary by default | Permanent |
+| **Cost** | Free (120 hrs/mo) | No cost |
+
+**Recommendation:** Start with Codespaces to learn the workflow, then set up locally for larger contributions.
+
+---
+
 ### Requirements
 
 Installing the Zulip development environment requires downloading several
@@ -712,6 +767,113 @@ $ source .venv/bin/activate
 :::
 
 ::::
+
+## Advanced Setup Options
+
+### Docker Rootless Setup (Recommended for Security)
+
+For security reasons, many developers prefer or are required to use Docker in rootless mode. This section covers how to set up Zulip development with rootless Docker.
+
+#### Why Rootless Docker?
+
+- ✅ **Enhanced security** - Docker daemon runs as a non-root user
+- ✅ **Reduced privilege escalation risk** - Even if Docker is compromised, it has limited access
+- ✅ **Required on some systems** - Some organizations mandate rootless Docker
+- ✅ **Works on modern Linux** - Supported on most distributions since 2020
+
+#### Prerequisites
+
+- Docker 20.10 or newer
+- Linux distribution with cgroup v2 support (Ubuntu 20.04+, Debian 11+, Fedora 31+)
+- Your user account on the system
+
+#### Installation Steps
+
+##### 1. Install rootless Docker
+
+```bash
+# Install the rootless setup tool
+dockerd-rootless-setuptool.sh install
+```
+
+If the command is not found, install Docker first using the official Docker documentation.
+
+##### 2. Verify the installation
+
+```bash
+docker run hello-world
+```
+
+If this fails, ensure your user is in the docker group and the daemon is running.
+
+##### 3. Enable auto-start for rootless Docker (optional but recommended)
+
+```bash
+# Enable the Docker service to start automatically
+systemctl --user enable docker
+systemctl --user start docker
+
+# Check status
+systemctl --user status docker
+```
+
+##### 4. Run Vagrant with rootless Docker
+
+```bash
+cd zulip
+vagrant up --provider=docker
+```
+
+#### Troubleshooting Rootless Docker
+
+**Problem: "Permission denied" when running Docker commands**
+
+```bash
+# Solution: Add your user to the docker group and start the daemon
+sudo usermod -aG docker $USER
+newgrp docker
+systemctl --user start docker
+```
+
+**Problem: "Cannot connect to Docker daemon"**
+
+```bash
+# Check if the daemon is running
+systemctl --user status docker
+
+# If not running, start it
+systemctl --user start docker
+
+# Verify with
+docker ps
+```
+
+**Problem: Vagrant up fails with "permission issues"**
+
+```bash
+# Ensure your user owns the Zulip directory
+sudo chown -R $USER:$USER ~/zulip
+
+# Rebuild Vagrant
+vagrant destroy
+vagrant up --provider=docker
+```
+
+**Problem: "cgroup: memory controller not available"**
+
+Your Linux kernel needs to support cgroup v2. Solutions:
+- Update to a newer Linux kernel
+- Or use rootful Docker if your security policy allows
+
+#### Common Issues and Solutions
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| Permission denied | User not in docker group | `sudo usermod -aG docker $USER && newgrp docker` |
+| Daemon not running | Service not started | `systemctl --user start docker` |
+| Cannot provision Vagrant | cgroup v2 not available | Use newer Linux kernel or rootful Docker |
+
+---
 
 ### Next steps
 
