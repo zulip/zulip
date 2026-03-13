@@ -1,0 +1,61 @@
+{
+    "schemaId": "azureMonitorCommonAlertSchema",
+    "data": {
+        "essentials": {
+            "alertId": "/subscriptions/12345a-1234b-123c-123d-12345678e/providers/Microsoft.AlertsManagement/alerts/12345a-1234b-123c-123d-12345678e",
+            "alertRule": "AcmeRule",
+            "severity": "Sev4",
+            "signalType": "Log",
+            "monitorCondition": "Fired",
+            "monitoringService": "Log Alerts V2",
+            "alertTargetIDs": [
+                "/subscriptions/12345a-1234b-123c-123d-12345678e/resourcegroups/ai-engineering/providers/microsoft.compute/virtualmachines/testvm"
+            ],
+            "configurationItems": [
+                "testvm"
+            ],
+            "originAlertId": "123c123d-1a23-1bf3-ba1d-dd1234ff5a67",
+            "firedDateTime": "2020-07-09T14:04:49.99645Z",
+            "description": "log alert rule V2",
+            "essentialsVersion": "1.0",
+            "alertContextVersion": "1.0"
+        },
+        "alertContext": {
+            "properties": {
+                "name1": "value1",
+                "name2": "value2"
+            },
+            "conditionType": "LogQueryCriteria",
+            "condition": {
+                "windowSize": "PT10M",
+                "allOf": [
+                    {
+                        "searchQuery": "Heartbeat",
+                        "metricMeasureColumn": "CounterValue",
+                        "targetResourceTypes": "['Microsoft.Compute/virtualMachines']",
+                        "operator": "LowerThan",
+                        "threshold": "1",
+                        "timeAggregation": "Count",
+                        "dimensions": [
+                            {
+                                "name": "ResourceId",
+                                "value": "/subscriptions/12345a-1234b-123c-123d-12345678e/resourceGroups/TEST/providers/Microsoft.Compute/virtualMachines/testvm"
+                            }
+                        ],
+                        "metricValue": 0.0,
+                        "failingPeriods": {
+                            "numberOfEvaluationPeriods": 1,
+                            "minFailingPeriodsToAlert": 1
+                        },
+                        "linkToSearchResultsUI": "https://portal.azure.com#@12f345bf-12f3-12af-12ab-1d2cd345db67/blade/Microsoft_Azure_Monitoring_Logs/LogsBlade/source/Alerts.EmailLinks/...",
+                        "linkToFilteredSearchResultsUI": "https://portal.azure.com#@12f345bf-12f3-12af-12ab-1d2cd345db67/blade/Microsoft_Azure_Monitoring_Logs/LogsBlade/source/Alerts.EmailLinks/...",
+                        "linkToSearchResultsAPI": "https://api.loganalytics.io/v1/subscriptions/12345a-1234b-123c-123d-12345678e/resourceGroups/TEST/providers/Microsoft.Compute/virtualMachines/testvm/query?query=Heartbeat&timespan=2020-07-07T13%3a54%3a34.0000000Z%2f2020-07-09T13%3a54%3a34.0000000Z",
+                        "linkToFilteredSearchResultsAPI": "https://api.loganalytics.io/v1/subscriptions/12345a-1234b-123c-123d-12345678e/resourceGroups/TEST/providers/Microsoft.Compute/virtualMachines/testvm/query?query=Heartbeat&timespan=2020-07-07T13%3a54%3a34.0000000Z%2f2020-07-09T13%3a54%3a34.0000000Z"
+                    }
+                ],
+                "windowStartTime": "2020-07-07T13:54:34Z",
+                "windowEndTime": "2020-07-09T13:54:34Z"
+            }
+        }
+    }
+}
