@@ -523,6 +523,38 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 ),
             };
         }
+
+        case "mentions": {
+            const mentioned_user = people.maybe_get_user_by_id(first_term.operand, true);
+
+            if (!mentioned_user) {
+                return {
+                    title: $t({defaultMessage: "This user does not exist!"}),
+                };
+            }
+
+            // mentions:me is redirected to is:mentioned in Filter.parse(),
+            // so mentioned_user will never be the current user here.
+            return {
+                title: $t(
+                    {
+                        defaultMessage: "No messages in your message history mention {person} yet.",
+                    },
+                    {person: mentioned_user.full_name},
+                ),
+                title_html: $t_html(
+                    {
+                        defaultMessage:
+                            "No messages in <z-link>your message history</z-link> mention {person} yet.",
+                    },
+                    {
+                        "z-link": (content_html) =>
+                            `<a href="/help/search-for-messages#search-shared-history" target="_blank" rel="noopener noreferrer">${content_html.join("")}</a>`,
+                        person: mentioned_user.full_name,
+                    },
+                ),
+            };
+        }
     }
     return default_banner;
 }
