@@ -1,6 +1,6 @@
 import os
 
-ZULIP_VERSION = "12.0-beta1"
+ZULIP_VERSION = "12.0-beta1+git"
 
 # Add information on number of commits and commit hash to version, if available
 ZULIP_VERSION_WITHOUT_COMMIT = ZULIP_VERSION
