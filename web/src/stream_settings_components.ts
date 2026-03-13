@@ -36,7 +36,7 @@ export let archived_status_filter_dropdown_widget: DropdownWidget;
 export let channel_creation_privacy_widget: DropdownWidget;
 let folder_filter_dropdown_widget: DropdownWidget;
 
-function set_visibility_for_archive_and_unarchive_buttons(sub: StreamSubscription): void {
+function set_visibility_for_stream_title_buttons(sub: StreamSubscription): void {
     // This is for the Archive/Unarchive button in the right panel.
     const $archive_button = $(
         `.stream-title-buttons[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .deactivate`,
@@ -45,9 +45,14 @@ function set_visibility_for_archive_and_unarchive_buttons(sub: StreamSubscriptio
         `.stream-title-buttons[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .reactivate`,
     );
 
+    const $edit_stream_button = $(
+        `.stream-title-buttons[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] #channel_title_open_channel_info_modal`,
+    );
+
     if (!stream_data.can_administer_channel(sub)) {
         $archive_button.hide();
         $unarchive_button.hide();
+        $edit_stream_button.hide();
         return;
     }
 
@@ -77,7 +82,7 @@ export function set_right_panel_title(sub: StreamSubscription): void {
             }),
         )
         .toggleClass("new-channel-members-title", false);
-    set_visibility_for_archive_and_unarchive_buttons(sub);
+    set_visibility_for_stream_title_buttons(sub);
 }
 
 export const show_subs_pane = {
@@ -116,6 +121,7 @@ export const show_subs_pane = {
                             name: "",
                             invite_only: false,
                             is_web_public: false,
+                            can_change_name_description: false,
                         },
                     }),
                 )

@@ -468,7 +468,6 @@ h4.user_group_setting_subsection_title {
             text-align: center;
             text-overflow: ellipsis;
             white-space: nowrap;
-            margin-left: 5px;
         }
 
         .stream-info-title,
@@ -488,17 +487,33 @@ h4.user_group_setting_subsection_title {
                 width: unset;
             }
 
+            /* The right pane header/title for user group and channel setting menu has
+               two major components, The group/channel name section and the button groups. */
             .selected-group-title,
             .selected-stream-title {
                 display: flex;
                 width: 100%;
-                justify-content: space-between;
 
-                .selected-stream,
+                .stream-name-title,
                 .selected-group-name {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
+                }
+
+                /* These contain two button groups, the left group should stick to the
+                   right side of the group/channel title name, and the right group that
+                   should stick to the rightmost side of the right pane header. */
+                .selected-group-buttons,
+                .stream-title-buttons {
+                    display: flex;
+                    justify-content: space-between;
+                    /* Make sure long group/channel name don't push the button groups out
+                       of view. */
+                    flex-shrink: 0;
+                    /* Make the button groups stretch and take the rest of the right pane
+                       header */
+                    flex-grow: 1;
                 }
 
                 .button-group {
@@ -519,16 +534,17 @@ h4.user_group_setting_subsection_title {
                     }
                 }
 
+                .selected-stream,
                 .selected-group {
                     display: flex;
                     align-items: center;
-                    overflow: hidden;
+                    /* The right pane header button groups have flex shrink factor of 0, this
+                       wraps the group/channel name is wrapped if it gets too long. */
+                    min-width: 0;
+                    flex-shrink: 1;
                 }
 
-                .deactivated-user-group-icon-right {
-                    margin-right: 5px;
-                    margin-left: 3px;
-                    opacity: 0.6;
+                .deactivated-user-group-icon {
                     font-size: var(--base-font-size-px);
                 }
             }
@@ -536,6 +552,7 @@ h4.user_group_setting_subsection_title {
             .large-icon {
                 display: inline-block;
                 margin-left: 5px;
+                margin-right: 5px;
                 /* Square off the icon box for better alignment
                    with adjacent text. */
                 line-height: 1;
@@ -1187,82 +1204,34 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .group-header,
-    .stream-header {
-        white-space: nowrap;
-        padding-top: 5px;
+    .stream_change_property_info {
+        vertical-align: top;
+        margin: 0 5px 0 0;
+    }
+
+    .group-description-field,
+    .channel-description-field {
         display: flex;
-        align-items: center;
+        /* 10px at 16px */
+        margin: 0 0 0.625em;
 
-        .group-name-wrapper,
-        .stream-name {
-            position: relative;
-            font-size: 1.5em;
-            font-weight: 600;
-            white-space: nowrap;
-            max-width: 90%;
-            flex: auto;
-            min-width: 0;
-            overflow-x: clip;
-            text-overflow: ellipsis;
-
-            .group-name,
-            .sub-stream-name {
-                display: block;
-                width: 100%;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-        }
-
-        #open_group_info_modal {
-            display: flex;
-            align-items: center;
-        }
-
-        .button-group {
-            margin-left: auto;
-
-            /* This icon is narrower in width, we have to explicitly
-               set it's width to 1em so that it vertically aligns with
-               other buttons near it. */
-            .fa-pencil {
-                width: 1em;
-            }
-
-            .deactivate,
-            .reactivate {
-                margin-right: 3px;
-                text-decoration: none;
-            }
-        }
-
-        .large-icon {
-            display: flex;
-            margin-right: 5px;
-
-            &.hash::after {
-                top: -1px;
-                font-size: 1.09em;
-                font-weight: 700;
-            }
-
-            .zulip-icon {
-                font-size: 1.2857em; /* 18px at 14px/em */
-            }
-        }
-
-        .group_change_property_info,
-        .stream_change_property_info {
-            vertical-align: top;
-            margin: 0 5px 0 0;
+        /* The .right pane in .two-pane-settings-container uses box-sizing: border-box,
+           subtract the total horizontal padding from .settings-view-only-textarea so
+           that the width for this field matches all other fields using
+           --modal-input-width in the same menu. */
+        .settings-view-only-textarea {
+            width: calc(
+                var(--modal-input-width) - 2 *
+                    var(--view-only-field-horizontal-padding)
+            );
         }
     }
 
-    .group-description-wrapper,
+    .user-group-description,
     .stream-description {
         hyphens: auto;
-        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
 
         .no-description {
             font-style: italic;
@@ -1556,14 +1525,6 @@ h4.user_group_setting_subsection_title {
             margin-top: 10px;
         }
 
-        .group-header,
-        .stream-header {
-            .button-group {
-                margin-top: -5px;
-            }
-        }
-
-        .group_change_property_info,
         .stream_change_property_info {
             /* For small widths where there is not enough space
             to show alert beside stream name we set its display
