@@ -496,7 +496,7 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
             "/calls/bigbluebutton/join",
             {"bigbluebutton": self.signed_bbb_a_object},
         )
-        self.assert_json_error(response, "Error authenticating to the BigBlueButton server.")
+        self.assert_json_error(response, "Error authenticating to the BigBlueButton server")
 
     @responses.activate
     def test_join_bigbluebutton_redirect_server_error(self) -> None:
@@ -552,7 +552,7 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
                 "/calls/bigbluebutton/join",
                 {"bigbluebutton": self.signed_bbb_a_object},
             )
-            self.assert_json_error(response, "BigBlueButton is not configured.")
+            self.assert_json_error(response, "BigBlueButton credentials have not been configured")
 
 
 class ConstructorGroupsVideoCallTest(ZulipTestCase):
@@ -762,7 +762,9 @@ class NextcloudVideoCallTest(ZulipTestCase):
                     "/json/calls/nextcloud_talk/create",
                     {"room_name": "#Test > team check-in"},
                 )
-                self.assert_json_error(response, "Nextcloud Talk is not configured")
+                self.assert_json_error(
+                    response, "Nextcloud Talk credentials have not been configured"
+                )
 
     @responses.activate
     def test_create_nextcloud_talk_server_error(self) -> None:
