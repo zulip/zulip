@@ -501,7 +501,18 @@ export function revive_current_focus(): boolean {
                 const last_visited_topic_index = current_list.findIndex(
                     (topic) => topic.last_msg_id === topic_last_msg_id,
                 );
-                if (last_visited_topic_index !== -1) {
+                // Only restore focus to the topic if it hasn't moved
+                // too far from where the user left off. A topic can
+                // shift significantly due to new messages arriving
+                // (sorted by time), topic renames (sorted by topic),
+                // or marking as read (sorted by unread count), which
+                // would disorient the user by jumping them far from
+                // their previous scroll position.
+                const max_focus_shift = 10;
+                if (
+                    last_visited_topic_index !== -1 &&
+                    Math.abs(last_visited_topic_index - row_focus) <= max_focus_shift
+                ) {
                     row_focus = last_visited_topic_index;
                 }
             }
