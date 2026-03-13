@@ -20,9 +20,14 @@ ALL_EVENT_TYPES = [
 ]
 
 MESSAGE_TEMPLATE = """\
+Type: {}
 Author: {}
 Build status: {} {}
 Details: [changes]({}), [build log]({})"""
+
+
+class Repository(BaseModel):
+    name: str
 
 
 class TravisPayload(BaseModel):
@@ -31,6 +36,7 @@ class TravisPayload(BaseModel):
     compare_url: str
     build_url: str
     type: str
+    repository: Repository
 
 
 @webhook_view("Travis", all_event_types=ALL_EVENT_TYPES)
@@ -54,13 +60,14 @@ def api_travis_webhook(
         emoji = f"(No emoji specified for status '{message_status}'.)"
 
     body = MESSAGE_TEMPLATE.format(
+        event.replace("_", " ").capitalize(),
         message.author_name,
         message_status,
         emoji,
         message.compare_url,
         message.build_url,
     )
-    topic_name = "builds"
+    topic_name = message.repository.name
 
     check_send_webhook_message(request, user_profile, topic_name, body, event)
     return json_success(request)
