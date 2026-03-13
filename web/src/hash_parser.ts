@@ -128,6 +128,11 @@ export function is_an_allowed_web_public_narrow(
     if (operator === "is" && operand === "resolved") {
         return true;
     }
+
+    if ((operator === "channels" || operator === "streams") && operand === "archived") {
+        return false;
+    }
+
     return allowed_web_public_narrow_operators.includes(operator);
 }
 
