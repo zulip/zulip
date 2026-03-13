@@ -393,8 +393,11 @@ def print_error(msg: str) -> None:
 
 def clean_file(orig_fn: str) -> str:
     fn = orig_fn
-    if not fn.endswith(".test.cjs"):
-        fn += ".test.cjs"
+    if not fn.endswith((".test.cjs", ".test.cts")):
+        if os.path.exists(os.path.join(ROOT_DIR, "web", "tests", fn + ".test.cts")):
+            fn += ".test.cts"
+        else:
+            fn += ".test.cjs"
     if "web/tests/" not in fn:
         fn = os.path.join(ROOT_DIR, "web", "tests", fn)
     fn = os.path.abspath(fn)
@@ -417,14 +420,17 @@ def run_tests_via_node_js() -> int:
     # reports.  Running under nyc is slower and creates funny
     # tracebacks, so you generally want to get coverage reports only
     # after making sure tests will pass.
-    node_tests_cmd = ["node", "--stack-trace-limit=100", INDEX_JS]
+    node_tests_cmd = ["node", "--stack-trace-limit=100", "--experimental-strip-types", INDEX_JS]
     if individual_files:
         # If we passed a specific set of tests, run in serial mode.
         global parallel
         parallel = 1
         files = individual_files
     else:
-        files = sorted(glob.glob(os.path.join(ROOT_DIR, "web/tests/*.test.cjs")))
+        files = sorted(
+            glob.glob(os.path.join(ROOT_DIR, "web/tests/*.test.cjs"))
+            + glob.glob(os.path.join(ROOT_DIR, "web/tests/*.test.cts"))
+        )
 
     test_files = clean_files(files)
 
