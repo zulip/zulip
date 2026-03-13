@@ -54,6 +54,12 @@
             /* Align all icons to center. */
             align-self: center;
         }
+
+        /* When containing DM avatars, center the navbar_title within
+           #message_view_header instead of using baseline alignment. */
+        &:has(.navbar-dm-avatar-container) {
+            align-self: center;
+        }
     }
 
     .message-header-navbar-title {
@@ -67,6 +73,17 @@
 
         .channel-privacy-type-icon {
             width: auto;
+        }
+
+        /* When containing DM avatars, become a flex container so
+           child align-self works, and center within the navbar. */
+        &:has(.navbar-dm-avatar-container) {
+            display: flex;
+            align-items: center;
+            align-self: center;
+            /* Reset line-height inherited from #message_view_header
+               which would otherwise create extra vertical space. */
+            line-height: normal;
         }
     }
 
@@ -168,5 +185,58 @@
     to {
         max-height: var(--header-height);
         padding-bottom: 0;
+    }
+}
+
+/* Navbar DM avatar styles */
+.navbar-dm-avatar-container {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    margin: 0 6px 0 5px;
+    align-self: center;
+
+    .navbar-dm-avatar-wrapper {
+        position: relative;
+        width: 32px;
+        height: 32px;
+        flex-shrink: 0;
+    }
+
+    .navbar-dm-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+        object-fit: cover;
+        display: block;
+
+        &.guest-avatar {
+            border: 1px solid var(--color-border-subtle);
+        }
+
+        &.deactivated {
+            opacity: 0.5;
+        }
+    }
+
+    .navbar-dm-avatar-presence {
+        position: absolute;
+        right: -1px;
+        bottom: -1px;
+        font-size: 12px;
+        line-height: 1;
+        background-color: var(--color-background-navbar);
+        border: solid 1px var(--color-background-navbar);
+        border-radius: 50%;
+
+        &.deactivated-user-icon {
+            font-size: 10px;
+            background-color: var(--color-background-navbar);
+            padding: 1px;
+        }
+    }
+
+    &:hover {
+        opacity: 0.9;
     }
 }
