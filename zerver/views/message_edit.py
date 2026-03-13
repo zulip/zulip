@@ -152,6 +152,7 @@ def update_message_backend(
     user_profile: UserProfile,
     *,
     content: str | None = None,
+    hide_preview_url: str | None = None,
     message_id: PathOnly[NonNegativeInt],
     prev_content_sha256: str | None = None,
     propagate_mode: Literal["change_later", "change_one", "change_all"] = "change_one",
@@ -170,6 +171,7 @@ def update_message_backend(
         send_notification_to_new_thread,
         content,
         prev_content_sha256,
+        hide_preview_url,
     )
 
     # Include the number of messages changed in the logs
