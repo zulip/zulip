@@ -1506,6 +1506,10 @@ def build_message_edit_request(
         topic_unresolved = (
             old_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
             and not target_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
+            # lstrip is intentional here. unresolve_name() in
+            # web/src/resolved_topic.ts strips all leading "✔"
+            # and space characters to guarantee the result never
+            # still looks resolved. This check mirrors that behavior.
             and old_topic_name.lstrip(RESOLVED_TOPIC_PREFIX) == target_topic_name
         )
 
