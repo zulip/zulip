@@ -5,11 +5,17 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
 jobs:
   update-digitalocean-oneclick-app:
+    name: "Update digitalocean onclick app"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - name: Update DigitalOcean one click app
         env:
           DIGITALOCEAN_API_KEY: ${{ secrets.ONE_CLICK_ACTION_DIGITALOCEAN_API_KEY }}
