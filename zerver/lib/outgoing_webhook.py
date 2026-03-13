@@ -1,6 +1,7 @@
 import abc
 import json
 import logging
+import re
 from contextlib import suppress
 from time import perf_counter
 from typing import Any, AnyStr
@@ -112,7 +113,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
             fail_with_message(event, failure_message)
             return None
 
-        # https://api.slack.com/legacy/custom-integrations/outgoing-webhooks#legacy-info__post-data
+        # https://docs.slack.dev/interactivity/implementing-slash-commands/
         # documents the Slack outgoing webhook format:
         #
         # token=XXXXXXXXXXXXXXXXXX
@@ -127,6 +128,16 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         # text=googlebot: What is the air-speed velocity of an unladen swallow?
         # trigger_word=googlebot:
 
+        raw_text = event["command"]
+
+        match = re.match(r"^@\*\*(.*?)\*\*\s*(.*)", raw_text, flags=re.DOTALL)
+        if match:
+            command = f"/{match.group(1)}"
+            text = match.group(2)
+        else:
+            command = None
+            text = raw_text
+
         request_data = [
             ("token", self.token),
             ("team_id", f"T{realm.id}"),
@@ -137,10 +148,12 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
             ("timestamp", event["message"]["timestamp"]),
             ("user_id", f"U{event['message']['sender_id']}"),
             ("user_name", event["message"]["sender_full_name"]),
-            ("text", event["command"]),
+            ("text", text),
             ("trigger_word", event["trigger"]),
             ("service_id", event["user_profile_id"]),
+            *([("command", command)] if command else []),
         ]
+
         return self.session.post(base_url, data=request_data)
 
     @override
