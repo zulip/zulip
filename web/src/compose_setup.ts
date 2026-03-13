@@ -226,8 +226,7 @@ export function initialize(): void {
                     const stream_id_string = stream_id.toString();
                     if (
                         current_filter &&
-                        (current_filter.is_conversation_view() ||
-                            current_filter.is_conversation_view_with_near()) &&
+                        current_filter.is_conversation_view() &&
                         current_filter.has_topic(stream_id_string, topic_name)
                     ) {
                         message_view.show(
