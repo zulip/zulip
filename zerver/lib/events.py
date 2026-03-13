@@ -495,6 +495,7 @@ def fetch_initial_state_data(
         state["max_icon_file_size_mib"] = settings.MAX_ICON_FILE_SIZE_MIB
         upload_quota_bytes = realm.upload_quota_bytes()
         state["realm_upload_quota_mib"] = optional_bytes_to_mib(upload_quota_bytes)
+        state["realm_upload_quota_used_bytes"] = realm.currently_used_upload_space_bytes()
 
         state["realm_icon_url"] = realm_icon_url(realm)
         state["realm_icon_source"] = realm.icon_source
@@ -1811,9 +1812,10 @@ def apply_event(
         # Typing message edit notification events are transient and thus ignored
         pass
     elif event["type"] == "attachment":
-        # Attachment events are just for updating the "uploads" UI;
-        # they are not sent directly.
-        pass
+        # Attachment events are primarily for updating the "uploads" UI;
+        # they are not sent directly, but we track upload quota usage.
+        if "realm_upload_quota_used_bytes" in state:
+            state["realm_upload_quota_used_bytes"] = event["upload_space_used"]
     elif event["type"] == "update_message_flags":
         # We don't return messages in `/register`, so most flags we
         # can ignore, but we do need to update the unread_msgs data if
