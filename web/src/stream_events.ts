@@ -226,8 +226,7 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             }
             stream_settings_ui.update_settings_for_archived_and_unarchived(sub);
             message_view_header.maybe_rerender_title_area_for_stream(stream_id);
-            if (is_narrowed_to_stream) {
-                assert(message_lists.current !== undefined);
+            if (is_narrowed_to_stream && message_lists.current !== undefined) {
                 message_lists.current.update_trailing_bookend(true);
             }
             message_live_update.rerender_messages_view();
@@ -324,8 +323,7 @@ export function mark_subscribed(
     stream_list.update_subscribe_to_more_streams_link();
     user_profile.update_user_profile_streams_list_for_users([people.my_current_user_id()]);
 
-    if (narrow_state.narrowed_to_stream_id(sub.stream_id)) {
-        assert(message_lists.current !== undefined);
+    if (narrow_state.narrowed_to_stream_id(sub.stream_id) && message_lists.current !== undefined) {
         message_lists.current.update_trailing_bookend(true);
         const then_select_id =
             typeof message_lists.current.selected_id === "function"
@@ -362,10 +360,9 @@ export function mark_unsubscribed(sub: StreamSubscription): void {
         return;
     }
 
-    if (narrow_state.narrowed_to_stream_id(sub.stream_id)) {
+    if (narrow_state.narrowed_to_stream_id(sub.stream_id) && message_lists.current !== undefined) {
         // Update UI components if we just unsubscribed from the
         // currently viewed stream.
-        assert(message_lists.current !== undefined);
         message_lists.current.update_trailing_bookend(true);
 
         // This update would likely be better implemented by having it
