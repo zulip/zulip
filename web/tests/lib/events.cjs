@@ -861,6 +861,7 @@ exports.fixtures = {
         msg_type: "stream",
         message_id: 56,
         content: "test",
+        timestamp: 1770303292,
     },
 
     subscription__add: {

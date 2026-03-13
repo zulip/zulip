@@ -71,6 +71,7 @@ export const submessage_schema = z.object({
     message_id: z.number(),
     content: z.string(),
     msg_type: z.string(),
+    timestamp: z.optional(z.number()),
 });
 
 export const raw_message_schema = z.intersection(
