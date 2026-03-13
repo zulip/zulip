@@ -169,11 +169,17 @@
        Chrome 105) that do not support dynamic viewport
        units. 100% is the legacy full-height value. */
     --full-height-dynamic-viewport: 100%;
-    --gif-scroll-container-height: 80vh;
+
+    /* GIF grid picker */
+    --min-gif-picker-grid-height-desktop: 70vh;
+    --min-gif-picker-grid-width-desktop: 40vw;
+    --min-gif-picker-grid-height-mobile: 90vh;
+    --min-gif-picker-grid-width-mobile: 80vw;
 
     @supports (height: 100dvh) {
         --full-height-dynamic-viewport: 100dvh;
-        --gif-scroll-container-height: 80dvh;
+        --min-gif-picker-grid-height-desktop: 70dvh;
+        --min-gif-picker-grid-height-mobile: 90dvh;
     }
 
     /*
