@@ -449,7 +449,10 @@ test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
     override(realm, "realm_topics_policy", "allow_empty_topic");
 
     compose.handle_enter_key_with_preview_open();
-    fake_compose_box.assert_preview_mode_is_off();
+    // Preview mode should remain on after finish() returns, because
+    // clear_preview_area() is now called inside clear_compose_box(),
+    // which only runs when the server confirms the send.
+    fake_compose_box.assert_preview_mode_is_on();
 
     assert.ok(send_message_called);
     assert.ok(show_button_spinner_called);
@@ -519,7 +522,10 @@ test_ui("finish", ({override, override_rewire}) => {
 
         assert.ok(compose.finish());
 
-        fake_compose_box.assert_preview_mode_is_off();
+        // Preview mode should remain on after finish() returns, because
+        // clear_preview_area() is now called inside clear_compose_box(),
+        // which only runs when the server confirms the send.
+        fake_compose_box.assert_preview_mode_is_on();
         assert.ok(send_message_called);
     })();
 });
