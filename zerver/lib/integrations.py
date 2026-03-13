@@ -520,6 +520,12 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         display_name="AppVeyor",
     ),
     IncomingWebhookIntegration(
+        "azurealert",
+        ["monitoring"],
+        [WebhookScreenshotConfig("metric_alert_fired.json")],
+        display_name="Azure Alerts",
+    ),
+    IncomingWebhookIntegration(
         "azuredevops",
         ["continuous-integration"],
         [WebhookScreenshotConfig("code_push.json")],
