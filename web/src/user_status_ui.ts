@@ -165,7 +165,22 @@ function user_status_post_render(): void {
         update_button();
     });
 
+    $("#set-user-status-modal .user-status-value").on("keydown", (event) => {
+        if (event.key !== "ArrowUp" && event.key !== "ArrowDown") {
+            return;
+        }
+
+        event.preventDefault();
+        focus_adjacent_default_status_option($(event.currentTarget), event.key);
+    });
+
     input_field().on("keydown", (event) => {
+        if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+            event.preventDefault();
+            focus_default_status_option(event.key);
+            return;
+        }
+
         if (keydown_util.is_enter_event(event)) {
             event.preventDefault();
 
@@ -183,6 +198,36 @@ function user_status_post_render(): void {
         set_selected_emoji_info({});
         update_button();
     });
+}
+
+function focus_adjacent_default_status_option(
+    $current_status_option: JQuery,
+    key: "ArrowUp" | "ArrowDown",
+): void {
+    const $status_options = $("#set-user-status-modal .user-status-value");
+    const current_index = $status_options.index($current_status_option);
+
+    if (current_index === -1) {
+        return;
+    }
+
+    const next_index =
+        key === "ArrowDown"
+            ? (current_index + 1) % $status_options.length
+            : (current_index - 1 + $status_options.length) % $status_options.length;
+
+    $status_options.eq(next_index).trigger("focus");
+}
+
+function focus_default_status_option(key: "ArrowUp" | "ArrowDown"): void {
+    const $status_options = $("#set-user-status-modal .user-status-value");
+
+    if ($status_options.length === 0) {
+        return;
+    }
+
+    const next_index = key === "ArrowDown" ? 0 : $status_options.length - 1;
+    $status_options.eq(next_index).trigger("focus");
 }
 
 export function initialize(): void {
