@@ -148,7 +148,9 @@ run_test("empty_narrow_html", ({mock_template}) => {
     const search_data_with_stop_word = {
         has_stop_word: true,
         query_words: [
-            {query_word: "a", is_stop_word: true},
+            {query_word: "this", is_stop_word: true, prefix: '"', suffix: '"'},
+            {query_word: "is", is_stop_word: true, prefix: "'", suffix: "'"},
+            {query_word: "a", is_stop_word: true, prefix: "", suffix: ""},
             {query_word: "search", is_stop_word: false},
         ],
     };
@@ -159,6 +161,8 @@ run_test("empty_narrow_html", ({mock_template}) => {
     <h4 class="empty-feed-notice-title"> This is a title </h4>
         <div class="empty-feed-notice-description">
             translated: Common words were excluded from your search: <br/>
+                &quot;<del>this</del>&quot;
+                &#x27;<del>is</del>&#x27;
                 <del>a</del>
                 <span class="search-query-word">search</span>
         </div>
@@ -169,9 +173,9 @@ run_test("empty_narrow_html", ({mock_template}) => {
     const search_data_with_stop_words = {
         has_stop_word: true,
         query_words: [
-            {query_word: "a", is_stop_word: true},
+            {query_word: "a", is_stop_word: true, prefix: "", suffix: ""},
             {query_word: "search", is_stop_word: false},
-            {query_word: "and", is_stop_word: true},
+            {query_word: "and", is_stop_word: true, prefix: "", suffix: ""},
             {query_word: "return", is_stop_word: false},
         ],
     };
@@ -691,8 +695,8 @@ run_test("show_search_stopwords", ({mock_template, override}) => {
     const expected_search_data = {
         has_stop_word: true,
         query_words: [
-            {query_word: "what", is_stop_word: true},
-            {query_word: "about", is_stop_word: true},
+            {query_word: "what", is_stop_word: true, prefix: "", suffix: ""},
+            {query_word: "about", is_stop_word: true, prefix: "", suffix: ""},
             {query_word: "grail", is_stop_word: false},
         ],
     };
@@ -701,6 +705,20 @@ run_test("show_search_stopwords", ({mock_template, override}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: No search results.", undefined, expected_search_data),
+    );
+
+    current_filter = set_filter([["search", "\"what\" 'about' grail"]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: No search results.", undefined, {
+            has_stop_word: true,
+            query_words: [
+                {query_word: "what", is_stop_word: true, prefix: '"', suffix: '"'},
+                {query_word: "about", is_stop_word: true, prefix: "'", suffix: "'"},
+                {query_word: "grail", is_stop_word: false},
+            ],
+        }),
     );
 
     const streamA_id = 88;
