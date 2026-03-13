@@ -25747,6 +25747,59 @@ paths:
                       }
                     description: |
                       An example JSON response when the channel folder ID is invalid:
+  /bots:
+    get:
+      operationId: get-bots
+      summary: Get bots
+      tags: ["users"]
+      description: |
+        Get all bots owned by the current user.
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - type: object
+                    additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      bots:
+                        type: array
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            username:
+                              type: string
+                            full_name:
+                              type: string
+                            api_key:
+                              type: string
+                            avatar_url:
+                              type: string
+                            default_sending_stream:
+                              type: string
+                              nullable: true
+                            default_events_register_stream:
+                              type: string
+                              nullable: true
+                            default_all_public_streams:
+                              type: boolean
+          example:
+            result: "success"
+            msg: ""
+            bots:
+              - username: "my-bot@example.com"
+                full_name: "My Bot"
+                api_key: "abc123"
+                avatar_url: "https://example.com/avatar.png"
+                default_sending_stream: "general"
+                default_events_register_stream: null
+                default_all_public_streams: true
   /bots/{bot_id}/api_key:
     get:
       operationId: get-bot-api-key
