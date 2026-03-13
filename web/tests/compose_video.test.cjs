@@ -155,6 +155,39 @@ test("videos", ({override}) => {
         assert.match(syntax_to_insert, video_link_regex);
     })();
 
+    (function test_jitsi_with_subpath_base_url() {
+        let syntax_to_insert;
+
+        const $textarea = $.create("jitsi-subpath-stub");
+        $textarea.set_parents_result(".message_edit_form", []);
+
+        const ev = {
+            preventDefault() {},
+            stopPropagation() {},
+        };
+
+        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
+            syntax_to_insert = syntax;
+        });
+
+        const handler = $("body").get_on_handler("click", ".video_link");
+
+        override(
+            realm,
+            "realm_video_chat_provider",
+            realm_available_video_chat_providers.jitsi_meet.id,
+        );
+
+        // Scenario where the URL has a path segment (like an auth token)
+        override(realm, "realm_jitsi_server_url", "https://jitsi.example.com/custom-token");
+        handler.call($textarea, ev);
+
+        const video_link_regex =
+            /\[translated: Join video call\.\]\(https:\/\/jitsi\.example\.com\/custom-token\/\d{15}#config\.startWithVideoMuted=false\)/;
+
+        assert.match(syntax_to_insert, video_link_regex);
+    })();
+
     (function test_zoom_video_and_audio_links_compose_clicked() {
         let syntax_to_insert;
         let called = false;
