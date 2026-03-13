@@ -55,8 +55,8 @@ mock_esm("../src/compose_tooltips", {
     initialize_compose_tooltips: noop,
     dismiss_intro_go_to_conversation_tooltip: noop,
 });
+const message_fetch_raw_content = mock_esm("../src/message_fetch_raw_content");
 
-const channel = mock_esm("../src/channel");
 const compose_fade = mock_esm("../src/compose_fade", {
     clear_compose: noop,
     set_focused_recipient: noop,
@@ -130,7 +130,7 @@ const start = compose_actions.start;
 const cancel = compose_actions.cancel;
 const respond_to_message = compose_reply.respond_to_message;
 const reply_with_mention = compose_reply.reply_with_mention;
-const quote_message = compose_reply.quote_message;
+const quote_messages = compose_reply.quote_messages;
 
 function assert_visible(sel) {
     assert.ok($(sel).visible());
@@ -461,10 +461,10 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     assert.equal(syntax_to_insert, "@**Bob Roberts|40**");
 });
 
-test("quote_message", ({disallow, override, override_rewire}) => {
+test("quote_messages", ({disallow, override, override_rewire}) => {
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_recipient, "update_recipient_row_attention_level", noop);
-    override_rewire(compose_reply, "selection_within_message_id", () => undefined);
+    override_rewire(compose_reply, "get_highlighted_message_ids", () => undefined);
     const $elem = $("#send_message_form");
     const $textarea = $("textarea#compose-textarea");
     const $indicator = $("#compose-limit-indicator");
@@ -539,17 +539,16 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         id: 10,
     };
     let success_function;
-    override(channel, "get", (opts) => {
-        success_function = opts.success;
-    });
+    override(
+        message_fetch_raw_content,
+        "get_raw_content_for_single_message",
+        (_id, on_success, _on_error) => {
+            success_function = on_success;
+        },
+    );
 
     function run_success_callback() {
-        success_function({
-            message: {
-                content: "Testing.",
-                content_type: "text/x-markdown",
-            },
-        });
+        success_function("Testing.");
     }
 
     override(compose_ui, "insert_syntax_and_focus", (syntax, _$textarea, mode) => {
@@ -577,7 +576,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         fence: "```",
         content: "Testing.",
     });
-    quote_message(opts);
+    quote_messages(opts);
 
     run_success_callback();
     assert.ok(replaced);
@@ -598,7 +597,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         content: "Testing.",
     });
 
-    quote_message(opts);
+    quote_messages(opts);
 
     run_success_callback();
     assert.ok(replaced);
@@ -626,8 +625,8 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         content: "Testing.",
     });
 
-    disallow(channel, "get");
-    quote_message(opts);
+    disallow(message_fetch_raw_content, "get_raw_content_for_single_message");
+    quote_messages(opts);
     assert.ok(replaced);
 
     opts = {
@@ -642,7 +641,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         fence: "```",
         content: "Testing.",
     });
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     opts = {
@@ -668,7 +667,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         content: selected_message.raw_content,
     });
 
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     opts = {
@@ -682,7 +681,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         fence: "````",
         content: selected_message.raw_content,
     });
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     // Group direct message to 3 other users
@@ -716,7 +715,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     override(message_lists.current, "get", (id) =>
         id === selected_message.id ? selected_message : undefined,
     );
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     // Group direct message to only 2 other users
@@ -750,7 +749,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     override(message_lists.current, "get", (id) =>
         id === selected_message.id ? selected_message : undefined,
     );
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     // Other's group direct message
@@ -784,7 +783,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     override(message_lists.current, "get", (id) =>
         id === selected_message.id ? selected_message : undefined,
     );
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     // Direct message to other user
@@ -818,7 +817,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     override(message_lists.current, "get", (id) =>
         id === selected_message.id ? selected_message : undefined,
     );
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     // Other user's direct message
@@ -852,7 +851,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     override(message_lists.current, "get", (id) =>
         id === selected_message.id ? selected_message : undefined,
     );
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     // One's own direct message
@@ -886,7 +885,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     override(message_lists.current, "get", (id) =>
         id === selected_message.id ? selected_message : undefined,
     );
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     const topic_with_invalid_characters = "[zulip/zulip>topic]";
@@ -923,7 +922,7 @@ ${fence}`;
     override(message_lists.current, "get", (id) =>
         id === selected_message.id ? selected_message : undefined,
     );
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     // Quoting a highlighted(selected) part of a message using the ">" hotkey trigger
@@ -933,9 +932,8 @@ ${fence}`;
     opts = {
         trigger: "hotkey",
     };
-    const selected_string = "Hello world";
-    override_rewire(compose_reply, "selection_within_message_id", () => 50);
-    override_rewire(compose_reply, "get_message_selection", () => selected_string);
+    override_rewire(compose_reply, "get_highlighted_message_ids", () => [50]);
+    override_rewire(compose_reply, "get_message_selection", () => "Hello world");
 
     const stub = make_stub();
     override_rewire(compose_reply, "respond_to_message", stub.f);
@@ -956,7 +954,7 @@ ${fence}`;
         content: "Hello world",
     });
     override(message_lists.current, "get", (id) => (id === 50 ? highlighted_message : undefined));
-    quote_message(opts);
+    quote_messages(opts);
     const {opts: opts_when_message_has_selection} = stub.get_args("opts");
     assert.equal(opts_when_message_has_selection.trigger, "hotkey");
     assert.equal(opts_when_message_has_selection.message_id, 50);
@@ -966,7 +964,7 @@ ${fence}`;
     // to quote, then message_id passed to `respond_to_message` will be same as as the
     // id of the message having the pointer.
     const message_with_pointer = highlighted_message;
-    override_rewire(compose_reply, "selection_within_message_id", () => undefined);
+    override_rewire(compose_reply, "get_highlighted_message_ids", () => undefined);
     override(message_lists.current, "selected_id", () => 100);
     override(message_lists.current, "get", (id) => (id === 100 ? message_with_pointer : undefined));
 
@@ -976,7 +974,7 @@ ${fence}`;
         fence: "```",
         content: message_with_pointer.raw_content,
     });
-    quote_message(opts);
+    quote_messages(opts);
     const {opts: opts_when_message_has_no_selection} = stub.get_args("opts");
     assert.equal(opts_when_message_has_no_selection.trigger, "hotkey");
     assert.equal(opts_when_message_has_no_selection.message_id, 100);

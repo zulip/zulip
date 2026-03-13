@@ -79,7 +79,7 @@ export const raw_message_schema = z.intersection(
             avatar_url: z.nullable(z.string()),
             client: z.string(),
             content: z.string(),
-            content_type: z.literal("text/html"),
+            content_type: z.enum(["text/html", "text/x-markdown"]),
             display_recipient: display_recipient_schema,
             edit_history: z.optional(z.array(message_edit_history_entry_schema)),
             id: z.number(),
@@ -453,7 +453,13 @@ export function get_message_ids_in_stream(stream_id: number): number[] {
         .map((message_data) => message_data.message.id);
 }
 
-export function maybe_update_raw_content(message: Message, raw_content: string | undefined): void {
+export function maybe_update_raw_content(id: number, raw_content: string | undefined): void {
+    const message = get(id);
+    // In case the message was deleted from the cache after receiving a delete
+    // event.
+    if (message === undefined) {
+        return;
+    }
     // We shouldn't cache raw_content for messages we won't be receiving update events
     // for, which in this case are messages from channels the current user isn't
     // subscribed to.

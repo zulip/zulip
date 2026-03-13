@@ -102,7 +102,12 @@ export function initialize({
             const $row = $(instance.reference).closest(".message_row");
             const message_id = rows.id($row);
             let quote_content: string | undefined;
-            if (compose_reply.selection_within_message_id() === message_id) {
+            const highlighted_message_ids = compose_reply.get_highlighted_message_ids();
+            if (
+                highlighted_message_ids &&
+                highlighted_message_ids?.length === 1 &&
+                highlighted_message_ids[0] === message_id
+            ) {
                 // If the user has selected text within this message, quote only that.
                 // We track the selection right now, before the popover option for Quote
                 // and reply is clicked, since by then the selection is lost, due to the
@@ -119,7 +124,7 @@ export function initialize({
             // instance.hide gets called.
             const $popper = $(instance.popper);
             $popper.one("click", ".respond_button", (e) => {
-                compose_reply.quote_message({
+                compose_reply.quote_messages({
                     trigger: "popover respond",
                     message_id,
                     quote_content,
@@ -130,7 +135,7 @@ export function initialize({
             });
 
             $popper.one("click", ".forward_button", (e) => {
-                compose_reply.quote_message({
+                compose_reply.quote_messages({
                     trigger: "popover respond",
                     message_id,
                     quote_content,

@@ -41,6 +41,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import * as markdown from "./markdown.ts";
+import * as message_fetch_raw_content from "./message_fetch_raw_content.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_live_update from "./message_live_update.ts";
 import * as message_store from "./message_store.ts";
@@ -815,20 +816,17 @@ export function start($row: JQuery, edit_box_open_callback?: () => void): void {
     }
 
     const msg_list = message_lists.current;
-    void channel.get({
-        url: "/json/messages/" + message.id,
-        data: {allow_empty_topic_name: true, apply_markdown: false},
-        success(raw_data) {
-            const data = message_store.single_message_content_schema.parse(raw_data);
-            assert(data.message.content_type === "text/x-markdown");
-
-            const message_markdown_content = data.message.content;
+    message_fetch_raw_content.get_raw_content_for_single_message(
+        message.id,
+        (raw_content) => {
             if (message_lists.current === msg_list) {
-                message_store.maybe_update_raw_content(message, message_markdown_content);
-                start_edit_with_content($row, message_markdown_content, edit_box_open_callback);
+                start_edit_with_content($row, raw_content, edit_box_open_callback);
             }
         },
-    });
+        () => {
+            // no-op
+        },
+    );
 }
 
 function show_toggle_resolve_topic_spinner($row: JQuery, topic_is_resolved: boolean): void {

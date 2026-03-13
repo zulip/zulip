@@ -31,8 +31,7 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as util from "./util.ts";
 
-export const response_schema = z.object({
-    anchor: z.number(),
+const base_response_schema = z.object({
     found_newest: z.boolean(),
     found_oldest: z.boolean(),
     found_anchor: z.boolean(),
@@ -41,6 +40,13 @@ export const response_schema = z.object({
     result: z.string(),
     msg: z.string(),
 });
+
+export const response_schema = z.object({
+    ...base_response_schema.shape,
+    anchor: z.number(),
+});
+
+export const message_ids_response_schema = base_response_schema;
 
 type MessageFetchResponse = z.infer<typeof response_schema>;
 
