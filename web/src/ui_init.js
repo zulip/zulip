@@ -207,6 +207,7 @@ function initialize_navbar() {
         embedded: page_params.narrow_stream !== undefined,
         user_avatar: current_user.avatar_url_medium,
         realm_icon_url: realm.realm_icon_url,
+        realm_name: realm.realm_name,
     });
 
     $("#header-container").html(rendered_navbar);
