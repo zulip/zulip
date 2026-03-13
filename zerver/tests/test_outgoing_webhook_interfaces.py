@@ -8,7 +8,11 @@ from typing_extensions import override
 from zerver.lib.avatar import avatar_url
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message_cache import MessageDict
-from zerver.lib.outgoing_webhook import get_service_interface_class, process_success_response
+from zerver.lib.outgoing_webhook import (
+    OutgoingWebhookResult,
+    get_service_interface_class,
+    process_success_response,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
@@ -131,7 +135,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
 
         response = dict(response_string="test_content")
         success_response = self.handler.process_success(response)
-        self.assertEqual(success_response, dict(content="test_content"))
+        self.assertEqual(success_response, OutgoingWebhookResult(content="test_content"))
 
         response = dict(
             content="test_content",
@@ -139,11 +143,10 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
             red_herring="whatever",
         )
         success_response = self.handler.process_success(response)
-        expected_response = dict(
-            content="test_content",
-            widget_content="test_widget_content",
+        self.assertEqual(
+            success_response,
+            OutgoingWebhookResult(content="test_content", widget_content="test_widget_content"),
         )
-        self.assertEqual(success_response, expected_response)
 
         response = {}
         success_response = self.handler.process_success(response)
@@ -241,4 +244,4 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
 
         response = dict(text="test_content")
         success_response = self.handler.process_success(response)
-        self.assertEqual(success_response, dict(content="test_content"))
+        self.assertEqual(success_response, OutgoingWebhookResult(content="test_content"))
