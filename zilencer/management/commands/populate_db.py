@@ -1472,14 +1472,14 @@ def choose_date_sent(
     # (2) there are some >24hr gaps between adjacent messages, and
     # (3) a decent bulk of messages in the last day so you see adjacent messages with the same date.
     # So we distribute 80% of messages starting from oldest_message_days days ago, over a period
-    # of the first min(oldest_message_days-2, 1) of those days. Then, distributes remaining messages
+    # of the first max(oldest_message_days-2, 1) of those days. Then, distributes remaining messages
     # over the past 24 hours.
     amount_in_first_chunk = int(tot_messages * 0.8)
     amount_in_second_chunk = tot_messages - amount_in_first_chunk
 
     if num_messages < amount_in_first_chunk:
         spoofed_date = timezone_now() - timedelta(days=oldest_message_days)
-        num_days_for_first_chunk = min(oldest_message_days - 2, 1)
+        num_days_for_first_chunk = max(oldest_message_days - 2, 1)
         interval_size = num_days_for_first_chunk * 24 * 60 * 60 / amount_in_first_chunk
         lower_bound = interval_size * num_messages
         upper_bound = interval_size * (num_messages + 1)
