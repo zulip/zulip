@@ -954,7 +954,71 @@ window.toggleTask = function(taskId, completed) {
 
 // Delete task
 window.deleteTask = function(taskId) {
-    if (confirm("Are you sure you want to delete this task?")) {
+    // Create custom confirmation dialog
+    const confirmHtml = `
+        <div id="delete-confirm-overlay" style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        ">
+            <div style="
+                background: white;
+                padding: 30px;
+                border-radius: 8px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                max-width: 400px;
+                width: 90%;
+                text-align: center;
+            ">
+                <h3 style="margin: 0 0 15px 0; color: #333;">Delete Task</h3>
+                <p style="margin: 0 0 25px 0; color: #666;">Are you sure you want to delete this task?</p>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button id="cancel-delete" style="
+                        background: #6c757d;
+                        color: white;
+                        border: none;
+                        padding: 8px 16px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 14px;
+                    ">Cancel</button>
+                    <button id="confirm-delete" style="
+                        background: #dc3545;
+                        color: white;
+                        border: none;
+                        padding: 8px 16px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 14px;
+                    ">Delete</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove any existing confirmation dialog
+    $("#delete-confirm-overlay").remove();
+    
+    // Add the confirmation dialog to the page
+    $("body").append(confirmHtml);
+    
+    // Handle cancel button
+    $("#cancel-delete").on("click", () => {
+        $("#delete-confirm-overlay").remove();
+    });
+    
+    // Handle confirm button
+    $("#confirm-delete").on("click", () => {
+        $("#delete-confirm-overlay").remove();
+        
+        // Perform the delete
         $.ajax({
             url: `/json/tasks/${taskId}/delete`,
             method: "POST",
@@ -963,10 +1027,23 @@ window.deleteTask = function(taskId) {
             },
             error: (xhr) => {
                 console.error("Failed to delete task:", xhr);
-                alert("Failed to delete task. Please try again.");
+                // Show error message in the tasks overlay
+                $("#tasks-content").html(`
+                    <div style="color: #d32f2f; text-align: center; padding: 20px;">
+                        <p>❌ Failed to delete task</p>
+                        <p style="font-size: 14px; margin-top: 10px;">Please try again.</p>
+                    </div>
+                `);
             }
         });
-    }
+    });
+    
+    // Close on background click
+    $("#delete-confirm-overlay").on("click", (e) => {
+        if (e.target.id === "delete-confirm-overlay") {
+            $("#delete-confirm-overlay").remove();
+        }
+    });
 };
 
 // Test tasks button
