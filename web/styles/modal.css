@@ -1269,3 +1269,72 @@ ul.modal-options-list {
 /* ==============================================================
  * END MODAL MARGIN OVERRIDES
  * ============================================================== */
+
+ /* RSVP meeting invite user input */
+
+#rsvp-invite-users-container {
+    width: 60%;
+    max-width: 300px;
+    min-height: 32px;
+}
+
+#rsvp-invite-users {
+    min-height: 24px;
+    line-height: 24px;
+}
+
+.rsvp-user-dropdown {
+    position: absolute;
+    background: var(--color-background-modal);
+    border: 1px solid var(--color-border-dropdown);
+    border-radius: 4px;
+    max-height: 320px;
+    overflow-y: auto;
+    width: 360px;
+    z-index: 1000;
+}
+
+.rsvp-user-option {
+    padding: 6px 10px;
+    cursor: pointer;
+    color: var(--color-text-default);
+    align-items: center;
+}
+
+.rsvp-user-option .person {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rsvp-user-option .person_row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    display: inline-flex !important;
+}
+
+.rsvp-user-option .person_name {
+    font-weight: 500;
+}
+
+.rsvp-user-option .email {
+    opacity: 0.7;
+    font-size: 0.9em;
+}
+
+.rsvp-user-option .person_row .person_name {
+    margin-right: 6px;
+}
+
+.rsvp-user-option .person_row .email {
+    opacity: 0.7;
+}
+
+.rsvp-user-option .avatar {
+    flex-shrink: 0;
+}
+
+.rsvp-user-option:hover {
+    background-color: var(--color-background-hover);
+}
