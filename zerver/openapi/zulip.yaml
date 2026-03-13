@@ -21805,6 +21805,10 @@ paths:
                             description: |
                               Whether the user can authenticate using their Google account.
                             type: boolean
+                          discord:
+                            description: |
+                              Whether the user can authenticate using their Discord account.
+                            type: boolean
                           saml:
                             description: |
                               Whether the user can authenticate using SAML.
