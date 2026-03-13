@@ -37,7 +37,7 @@ from zerver.lib.push_notifications import (
     validate_token,
 )
 from zerver.lib.push_registration import RegisterPushDeviceToBouncerQueueItem, check_push_key
-from zerver.lib.queue import queue_event_on_commit
+from zerver.lib.queue import mobile_notifications_queue_name, queue_event_on_commit
 from zerver.lib.remote_server import (
     SELF_HOSTING_REGISTRATION_TAKEOVER_CHALLENGE_TOKEN_REDIS_KEY,
     UserDataForRemoteBilling,
@@ -415,7 +415,7 @@ def register_push_device(
             "token_id_base64": token_id_base64,
         }
         queue_event_on_commit(
-            "missedmessage_mobile_notifications",
+            mobile_notifications_queue_name(user_profile.id),
             {
                 "type": "register_push_device_to_bouncer",
                 "payload": queue_item,
