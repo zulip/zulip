@@ -1653,6 +1653,7 @@ export function update_recent_view_rendered_time(): void {
 export function show(): void {
     assert(hide_other_views_callback !== undefined);
     hide_other_views_callback();
+    compose_closed_ui.update_closed_compose_box_class_by_narrow(false);
     // We remove event handler before hiding, so they need to
     // be attached again, checking for topics_widget to be defined
     // is a reliable solution to check if recent view was displayed earlier.
