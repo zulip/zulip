@@ -944,7 +944,11 @@ test("content_typeahead_selected", ({override}) => {
     ct.get_or_set_completing_for_tests("stream");
     let warned_for_stream_link = false;
     override(compose_validate, "warn_if_private_stream_is_linked", (linked_stream) => {
-        assert.ok(linked_stream === sweden_stream || linked_stream === broken_link_stream);
+        assert.ok(
+            linked_stream === sweden_stream ||
+                linked_stream === broken_link_stream ||
+                linked_stream.stream_id === sweden_stream.stream_id,
+        );
         warned_for_stream_link = true;
     });
 
@@ -976,6 +980,25 @@ test("content_typeahead_selected", ({override}) => {
     ct.get_or_set_token_for_testing("#");
     actual_value = ct.content_typeahead_selected(broken_link_stream, query, input_element);
     expected_value = "[#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm)>";
+    assert.equal(actual_value, expected_value);
+
+    ct.get_or_set_completing_for_tests("stream_topic");
+    query = "#more";
+    ct.get_or_set_token_for_testing("more");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "more ice",
+            topic_display_name: "more ice",
+            type: "stream_topic",
+            stream_data: {
+                ...sweden_stream,
+                rendered_description: "",
+            },
+        },
+        query,
+        input_element,
+    );
+    expected_value = "#**Sweden>more ice** ";
     assert.equal(actual_value, expected_value);
 
     // topic_list
@@ -1552,7 +1575,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                     return 7;
                 };
                 let actual_value = options.source("test #s", input_element);
-                assert.deepEqual(sorted_names_from(actual_value), ["Sweden", "The Netherlands"]);
+                const stream_matches = actual_value.filter((item) => item.type === "stream");
+                assert.deepEqual(sorted_names_from(stream_matches), ["Sweden", "The Netherlands"]);
                 assert.ok(caret_called);
 
                 othello.delivery_email = "othello@zulip.com";

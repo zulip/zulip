@@ -32,6 +32,9 @@
         <strong class="typeahead-strong-section{{#if is_empty_string_topic}} empty-topic-display{{/if}}{{#if is_default_language}} default-language-display{{/if}}">
             {{~#if stream~}}
                 {{~> inline_decorated_channel_name stream=stream ~}}
+                {{~#if topic~}}
+                    <span class="stream-to-topic-separator"> &gt; </span><strong class="typeahead-strong-section">{{~ topic ~}}</strong>
+                {{~/if~}}
                 {{~else~}}
                 {{~ primary ~}}
             {{~/if~}}
