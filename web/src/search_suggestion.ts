@@ -65,6 +65,8 @@ type SearchFilter =
     | NarrowCanonicalOperator
     | "channels:public"
     | "channels:web-public"
+    | "channels:all"
+    | "channels:subscribed"
     | "is:resolved"
     | "-is:resolved"
     | "is:dm"
@@ -84,6 +86,8 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
     channels: channel_incompatible_patterns,
     "channels:public": channel_incompatible_patterns,
     "channels:web-public": channel_incompatible_patterns,
+    "channels:all": channel_incompatible_patterns,
+    "channels:subscribed": channel_incompatible_patterns,
     topic: [
         {operator: "dm"},
         {operator: "is", operand: "dm"},
@@ -726,10 +730,23 @@ function get_channels_filter_suggestions(
     }
     const public_channels_search_string = "channels:public";
     const web_public_channels_search_string = "channels:web-public";
+    const all_accessible_channels_search_string = "channels:all";
+    const subscribed_channels_search_string = "channels:subscribed";
     const suggestions: Suggestion[] = [];
 
+    if (!page_params.is_spectator || stream_data.realm_has_web_public_streams()) {
+        suggestions.push(
+            ...filter_suggestions_by_criteria(terms, [all_accessible_channels_search_string]),
+        );
+    }
+
     if (!page_params.is_spectator) {
-        suggestions.push(...filter_suggestions_by_criteria(terms, [public_channels_search_string]));
+        suggestions.push(
+            ...filter_suggestions_by_criteria(terms, [
+                public_channels_search_string,
+                subscribed_channels_search_string,
+            ]),
+        );
     }
 
     if (stream_data.realm_has_web_public_streams()) {
