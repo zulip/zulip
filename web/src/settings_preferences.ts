@@ -16,6 +16,7 @@ import * as loading from "./loading.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults.ts";
+import * as reload from "./reload.ts";
 import * as settings_components from "./settings_components.ts";
 import type {RequestOpts} from "./settings_ui.ts";
 import * as settings_ui from "./settings_ui.ts";
@@ -49,6 +50,25 @@ const meta = {
 
 export let user_settings_panel: SettingsPanel;
 let default_language_dropdown_widget: dropdown_widget.DropdownWidget;
+let default_language_feedback_timeout: ReturnType<typeof setTimeout> | undefined;
+let default_language_reload_timeout: ReturnType<typeof setTimeout> | undefined;
+let latest_default_language_request_id = 0;
+
+const saving_status_minimum_visible_time_ms = 500;
+const saved_status_remove_after_ms = 1000;
+const saved_status_fade_out_duration_ms = 400;
+
+function clear_default_language_timeouts(): void {
+    if (default_language_feedback_timeout !== undefined) {
+        clearTimeout(default_language_feedback_timeout);
+        default_language_feedback_timeout = undefined;
+    }
+
+    if (default_language_reload_timeout !== undefined) {
+        clearTimeout(default_language_reload_timeout);
+        default_language_reload_timeout = undefined;
+    }
+}
 
 function change_display_setting(
     data: Record<string, string | boolean | number>,
@@ -386,23 +406,73 @@ function language_select_callback(
 
     const current_value = widget.current_value;
     assert(current_value !== undefined);
+    if (current_value === user_settings.default_language) {
+        return;
+    }
     const data = {default_language: current_value};
-    change_display_setting(
+    const $status_el = $("#user-preferences").find(".general-settings-status");
+
+    latest_default_language_request_id += 1;
+    const request_id = latest_default_language_request_id;
+    const request_start_time = Date.now();
+
+    clear_default_language_timeouts();
+    $status_el.fadeTo(0, 1);
+    loading.make_indicator($status_el, {text: settings_ui.strings.saving});
+
+    void channel.patch({
+        url: "/json/settings",
         data,
-        $("#user-preferences").find(".general-settings-status"),
-        undefined,
-        undefined,
-        $t_html(
-            {
-                defaultMessage:
-                    "Saved. Please <z-link>reload</z-link> for the change to take effect.",
-            },
-            {
-                "z-link": (content_html) => `<a class='reload_link'>${content_html.join("")}</a>`,
-            },
-        ),
-        true,
-    );
+        success() {
+            if (request_id !== latest_default_language_request_id) {
+                return;
+            }
+
+            const remaining_delay = util.get_remaining_time(
+                request_start_time,
+                saving_status_minimum_visible_time_ms,
+            );
+
+            default_language_feedback_timeout = setTimeout(() => {
+                if (request_id !== latest_default_language_request_id) {
+                    return;
+                }
+
+                default_language_feedback_timeout = undefined;
+                ui_report.success(
+                    settings_ui.strings.success_html,
+                    $status_el,
+                    saved_status_remove_after_ms,
+                );
+                settings_ui.display_checkmark($status_el);
+
+                // Match the normal settings UX: allow "Saved" to auto-hide
+                // completely before reloading.
+                default_language_reload_timeout = setTimeout(() => {
+                    if (request_id !== latest_default_language_request_id) {
+                        return;
+                    }
+
+                    default_language_reload_timeout = undefined;
+                    reload.initiate({
+                        immediate: true,
+                        save_compose: true,
+                        // Keep the language-change flow focused on the settings
+                        // status area and avoid a flashing reload banner.
+                        show_reload_banner: false,
+                    });
+                }, saved_status_remove_after_ms + saved_status_fade_out_duration_ms);
+            }, remaining_delay);
+        },
+        error(xhr) {
+            if (request_id !== latest_default_language_request_id) {
+                return;
+            }
+
+            clear_default_language_timeouts();
+            ui_report.error(settings_ui.strings.failure_html, xhr, $status_el);
+        },
+    });
 }
 
 export function set_default_language(default_language: string): void {
