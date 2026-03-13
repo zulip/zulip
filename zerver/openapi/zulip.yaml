@@ -1122,6 +1122,31 @@ paths:
                                 }
                             - type: object
                               description: |
+                                Event sent to a user's clients when the user completes the OAuth flow for
+                                the [Webex integration](/help/configure-call-provider). Clients need to
+                                know whether initiating Webex OAuth flow is required before creating a
+                                Webex call.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - has_webex_token
+                                value:
+                                  type: boolean
+                                  description: |
+                                    A boolean specifying whether the user has a Webex access token.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "has_webex_token",
+                                  "value": true,
+                                  "id": 0,
+                                }
+                            - type: object
+                              description: |
                                 A simple event sent when the set of invitations changes.
                                 This event is sent to organization administrators and the creator of
                                 the changed invitation; this tells clients they need to refetch
@@ -5796,11 +5821,15 @@ paths:
                                         - 5 = Zoom (Server to Server OAuth integration)
                                         - 6 = Constructor Groups
                                         - 7 = Nextcloud Talk
+                                        - 8 = Webex (User OAuth integration)
 
                                         Note that only one of the [Zoom integrations][zoom-video-calls] can
                                         be configured on a Zulip server.
 
-                                        **Changes**: In Zulip 12.0 (feature level 465), added the
+                                        **Changes**: In Zulip 12.0 (feature level ZF-b08da1),
+                                        added the Webex OAuth option.
+
+                                        In Zulip 12.0 (feature level 465), added the
                                         Constructor Groups option.
 
                                         In Zulip 12.0 (feature level 460), added the
@@ -19046,6 +19075,17 @@ paths:
                           completed OAuth flow for the [Zoom integration](/help/configure-call-provider).
                           Clients need to know whether initiating Zoom OAuth is required before
                           creating a Zoom call.
+                      has_webex_token:
+                        type: boolean
+                        description: |
+                          Present if `video_calls` is present in `fetch_event_types`.
+
+                          A boolean that denotes whether the user has completed the OAuth flow for
+                          the [Webex integration](/help/configure-call-provider). Clients need to
+                          know whether initiating Webex OAuth flow is required before creating a
+                          Webex call.
+
+                          **Changes**: New in Zulip 12.0 (feature level ZF-b08da1).
                       giphy_api_key:
                         type: string
                         description: |
@@ -19868,11 +19908,15 @@ paths:
                           - 5 = Zoom (Server to Server OAuth integration)
                           - 6 = Constructor Groups
                           - 7 = Nextcloud Talk
+                          - 8 = Webex (User OAuth integration)
 
                           Note that only one of the [Zoom integrations][zoom-video-calls] can
                           be configured on a Zulip server.
 
-                          **Changes**: In Zulip 12.0 (feature level 465), added the
+                          **Changes**: In Zulip 12.0 (feature level ZF-b08da1), added the
+                          Webex OAuth option.
+
+                          In Zulip 12.0 (feature level 465), added the
                           Nextcloud Talk option.
 
                           In Zulip 12.0 (feature level 460), added the
@@ -26142,6 +26186,48 @@ paths:
                         "url": "https://nextcloud.example.com/index.php/call/abc123xyz",
                       }
 
+  /calls/webex/create:
+    post:
+      tags: ["channels"]
+      operationId: create-webex-video-call
+      summary: Create Webex video call
+      description: |
+        Create a video call URL for a Webex video call.
+
+        Requires [Webex integration](/integrations/webex) to be configured
+        on the Zulip server.
+
+        Clients should confirm that the user has completed the OAuth process
+        with Webex and has a Webex token before attempting to create a video
+        call URL. See the `has_webex_token` field in the [`POST /register`
+        response](/api/register-queue), as well as the [`has_webex_token`
+        event type](/api/get-events#has_webex_token).
+
+        **Changes**: New in Zulip 12.0 (feature level ZF-b08da1).
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      url:
+                        description: |
+                          The URL for the Webex meeting.
+                        type: string
+                        example: "https://xxkk-7xpz.webex.com/xxkk-7xpz/j.php?MTID=mebb3ba1f366f683bcaec9d32773ce034"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "url": "https://xxkk-7xpz.webex.com/xxkk-7xpz/j.php?MTID=mebb3ba1f366f683bcaec9d32773ce034",
+                      }
   /calls/constructorgroups/create:
     post:
       tags: ["channels"]

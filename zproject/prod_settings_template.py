@@ -741,6 +741,12 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # VIDEO_ZOOM_OAUTH_URL = "https://zoom.example.com"
 # VIDEO_ZOOM_API_URL = "https://api.zoom.example.com"
 
+## Controls the Webex video call integration.  See:
+## https://zulip.readthedocs.io/en/latest/production/video-calls.html
+## You must also set video_webex_client_secret in
+## /etc/zulip/zulip-secrets.conf to enable Webex as a call provider.
+# VIDEO_WEBEX_CLIENT_ID = "<your Webex client ID>"
+
 ## Controls the Jitsi Meet video call integration.  By default, the
 ## integration uses the SaaS https://meet.jit.si server.  You can specify
 ## your own Jitsi Meet server, or if you'd like to disable the
