@@ -5,18 +5,20 @@
 # definitions and validate that Zulip's implementation matches what is
 # described in our documentation.
 
+from __future__ import annotations
+
 import json
 import os
 import re
 from collections.abc import Mapping
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import orjson
-from openapi_core import OpenAPI
-from openapi_core.protocols import Request, Response
-from openapi_core.testing import MockRequest, MockResponse
-from openapi_core.validation.exceptions import ValidationError as OpenAPIValidationError
 from pydantic import BaseModel
+
+if TYPE_CHECKING:
+    from openapi_core import OpenAPI
+    from openapi_core.protocols import Request, Response
 
 OPENAPI_SPEC_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../openapi/zulip.yaml")
@@ -94,6 +96,7 @@ class OpenAPISpec:
 
         import yaml
         from jsonref import JsonRef
+        from openapi_core import OpenAPI
 
         with open(self.openapi_path) as f:
             mtime = os.fstat(f.fileno()).st_mtime
@@ -429,6 +432,11 @@ def find_openapi_endpoint(path: str) -> str | None:
 def validate_against_openapi_schema(
     content: dict[str, Any], path: str, method: str, status_code: str
 ) -> bool:
+    # openapi_core imports are lazily loaded here and in the other
+    # validation functions below, following the same pattern as the
+    # yaml/jsonref imports in check_reload above.
+    from openapi_core.testing import MockRequest, MockResponse
+
     mock_request = MockRequest("http://localhost:9991/", method, "/api/v1" + path)
     mock_response = MockResponse(
         orjson.dumps(content),
@@ -476,6 +484,8 @@ def validate_test_response(request: Request, response: Response) -> bool:
         # been added as all 400 have the same schema.  When all 400
         # response have been defined this should be removed.
         return True
+
+    from openapi_core.validation.exceptions import ValidationError as OpenAPIValidationError
 
     try:
         openapi_spec.spec().validate_response(request, response)
@@ -552,6 +562,8 @@ def validate_request(
     status_code: str,
     intentionally_undocumented: bool = False,
 ) -> None:
+    from openapi_core.testing import MockRequest
+
     assert isinstance(data, dict)
     mock_request = MockRequest(
         "http://localhost:9991/",
@@ -596,6 +608,8 @@ def validate_test_request(
 
     # Now using the openapi_core APIs, validate the request schema
     # against the OpenAPI documentation.
+    from openapi_core.validation.exceptions import ValidationError as OpenAPIValidationError
+
     try:
         openapi_spec.spec().validate_request(request)
     except OpenAPIValidationError as error:
