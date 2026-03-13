@@ -40,7 +40,13 @@ export function set_display_time_zone(time_zone: string): void {
     formatter_map.clear();
 }
 
-type DateFormat = "weekday" | "dayofyear" | "weekday_dayofyear_year" | "dayofyear_year";
+type DateFormat =
+    | "weekday"
+    | "dayofyear"
+    | "long_dayofyear"
+    | "weekday_dayofyear_year"
+    | "dayofyear_year"
+    | "long_dayofyear_year";
 type DateWithTimeFormat =
     | "dayofyear_time"
     | "dayofyear_year_time"
@@ -81,8 +87,16 @@ export function get_format_options_for_type(
     };
 
     const dayofyear_format_options: Intl.DateTimeFormatOptions = {day: "numeric", month: "short"};
+    const long_dayofyear_format_options: Intl.DateTimeFormatOptions = {
+        day: "numeric",
+        month: "long",
+    };
     const dayofyear_year_format_options: Intl.DateTimeFormatOptions = {
         ...dayofyear_format_options,
+        year: "numeric",
+    };
+    const long_dayofyear_year_format_options: Intl.DateTimeFormatOptions = {
+        ...long_dayofyear_format_options,
         year: "numeric",
     };
     const long_format_options: Intl.DateTimeFormatOptions = {
@@ -99,10 +113,14 @@ export function get_format_options_for_type(
             return weekday_format_options;
         case "dayofyear": // Jul 27
             return dayofyear_format_options;
+        case "long_dayofyear": // July 27
+            return long_dayofyear_format_options;
         case "dayofyear_time": // Jul 27, 01:30 PM
             return {...dayofyear_format_options, ...time_format_options};
         case "dayofyear_year": // Jul 27, 2016
             return dayofyear_year_format_options;
+        case "long_dayofyear_year": // July 27, 2016
+            return long_dayofyear_year_format_options;
         case "dayofyear_year_time": // Jul 27, 2016, 01:30 PM
             return {...dayofyear_year_format_options, ...time_format_options};
         case "weekday_dayofyear_year": // Wednesday, July 27, 2016
