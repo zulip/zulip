@@ -376,6 +376,30 @@ export function show_org_settings(): void {
     org_settings.show();
 }
 
+export function hide_default_streams_list_for_guest(): void {
+    $(".org-settings-list li[data-section='default-channels-list']").hide();
+
+    if (get_current_tab("organization") !== "default-channels-list") {
+        return;
+    }
+
+    const org_settings_visible = org_settings?.$main_elem.get(0)?.getClientRects().length;
+    if (org_settings_visible) {
+        browser_history.go_to_location("#organization/organization-profile");
+        return;
+    }
+
+    org_settings?.set_current_tab("organization-profile");
+}
+
+export function get_current_tab(base: "settings" | "organization"): string | undefined {
+    if (base === "organization") {
+        return org_settings?.current_tab;
+    }
+
+    return normal_settings?.current_tab;
+}
+
 export function set_key_handlers(toggler: Toggle): void {
     normal_settings.set_key_handlers(toggler);
     org_settings.set_key_handlers(toggler);
