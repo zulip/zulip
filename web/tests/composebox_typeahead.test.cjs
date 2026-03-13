@@ -1799,6 +1799,50 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     });
     $("form#send_message_form").trigger(event);
 
+    // Test automatic bulleting with indentation (sub-list).
+    $("textarea#compose-textarea").val("- Message 1\n  - Message 2");
+    $("textarea#compose-textarea")[0].selectionStart = 25;
+    $("textarea#compose-textarea")[0].selectionEnd = 25;
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        assert.equal(content, "\n  - ");
+    });
+    $("form#send_message_form").trigger(event);
+
+    // Test removal of indented bullet.
+    $("textarea#compose-textarea").val("- Message 1\n  - Message 2\n  - ");
+    $("textarea#compose-textarea")[0].selectionStart = 30;
+    $("textarea#compose-textarea")[0].selectionEnd = 30;
+    $("textarea#compose-textarea")[0].setSelectionRange = (start, end) => {
+        assert.equal(start, 26);
+        assert.equal(end, 30);
+    };
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        assert.equal(content, "");
+    });
+    $("form#send_message_form").trigger(event);
+
+    // Test automatic numbering with indentation (sub-list).
+    $("textarea#compose-textarea").val("- Message 1\n  1. Message 2");
+    $("textarea#compose-textarea")[0].selectionStart = 26;
+    $("textarea#compose-textarea")[0].selectionEnd = 26;
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        assert.equal(content, "\n  2. ");
+    });
+    $("form#send_message_form").trigger(event);
+
+    // Test removal of indented numbering.
+    $("textarea#compose-textarea").val("- Message 1\n  1. Message 2\n  1. ");
+    $("textarea#compose-textarea")[0].selectionStart = 32;
+    $("textarea#compose-textarea")[0].selectionEnd = 32;
+    $("textarea#compose-textarea")[0].setSelectionRange = (start, end) => {
+        assert.equal(start, 27);
+        assert.equal(end, 32);
+    };
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        assert.equal(content, "");
+    });
+    $("form#send_message_form").trigger(event);
+
     $("textarea#compose-textarea").val("A");
     $("textarea#compose-textarea")[0].selectionStart = 4;
     $("textarea#compose-textarea")[0].selectionEnd = 4;
