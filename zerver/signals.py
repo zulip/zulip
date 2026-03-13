@@ -8,6 +8,7 @@ from django.dispatch import receiver
 from django.utils.timezone import get_current_timezone_name as timezone_get_current_timezone_name
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from user_agents import parse
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
@@ -42,23 +43,19 @@ def get_device_browser(user_agent: str) -> str | None:
 
 
 def get_device_os(user_agent: str) -> str | None:
-    user_agent = user_agent.lower()
-    if "windows" in user_agent:
-        return "Windows"
-    elif "macintosh" in user_agent:
-        return "macOS"
-    elif "linux" in user_agent and "android" not in user_agent:
-        return "Linux"
-    elif "android" in user_agent:
-        return "Android"
-    elif "ios" in user_agent:
-        return "iOS"
-    elif "like mac os x" in user_agent:
-        return "iOS"
-    elif " cros " in user_agent:
-        return "ChromeOS"
-    else:
+    if not user_agent:
         return None
+
+    parsed_ua = parse(user_agent)
+    os_family = parsed_ua.os.family
+
+    if os_family == "Other":
+        return None
+
+    if os_family == "Mac OS X":
+        return "macOS"
+
+    return os_family
 
 
 @receiver(user_logged_in, dispatch_uid="only_on_login")
@@ -87,7 +84,8 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
         if (timezone_now() - user.date_joined).total_seconds() <= JUST_CREATED_THRESHOLD:
             return
 
-        user_agent = request.headers.get("User-Agent", "").lower()
+        # THIS IS THE FIX: Removed .lower() so user-agents gets the real string!
+        user_agent = request.headers.get("User-Agent", "")
 
         context = common_context(user)
         context["user_email"] = user.delivery_email
