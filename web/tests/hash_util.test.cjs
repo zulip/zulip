@@ -205,6 +205,78 @@ run_test("test_parse_narrow", () => {
     );
 });
 
+run_test("test_parse_narrow_multi_channel", () => {
+    // Multi-channel search uses /channels/{id,id,id} format in URL.
+    // It should be parsed as a channels operator with comma-separated IDs.
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "channels", "1,2,3"]), [
+        {negated: false, operator: "channels", operand: "1,2,3"},
+    ]);
+
+    // Multi-channel with negation
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "-channels", "99,42"]), [
+        {negated: true, operator: "channels", operand: "99,42"},
+    ]);
+
+    // channels:public should remain as channels operator (not converted)
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "channels", "public"]), [
+        {negated: false, operator: "channels", operand: "public"},
+    ]);
+
+    // channels:web-public should remain as channels operator (not converted)
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "channels", "web-public"]), [
+        {negated: false, operator: "channels", operand: "web-public"},
+    ]);
+
+    // Single-channel channels URL should be downgraded to channel canonical form.
+    assert.deepEqual(
+        hash_util.parse_narrow(["narrow", "channels", frontend.stream_id.toString()]),
+        [{negated: false, operator: "channel", operand: frontend.stream_id.toString()}],
+    );
+
+    // Non-numeric single operand should remain `channels` (invalid but not downgraded).
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "channels", "bogus"]), [
+        {negated: false, operator: "channels", operand: "bogus"},
+    ]);
+
+    // Legacy comma-separated channel operator format is no longer supported.
+    assert.equal(hash_util.parse_narrow(["narrow", "channel", "1,2,3"]), undefined);
+});
+
+run_test("test_search_terms_to_hash_multi_channel", () => {
+    // Multi-channel should use /channels/ URL format
+    const multi_channel_terms = [{operator: "channels", operand: "1,2,3", negated: false}];
+    assert.equal(hash_util.search_terms_to_hash(multi_channel_terms), "#narrow/channels/1,2,3");
+
+    // Single channel should continue to use /channel/ URL format
+    const single_channel_terms = [{operator: "channel", operand: "99", negated: false}];
+    assert.equal(
+        hash_util.search_terms_to_hash(single_channel_terms),
+        "#narrow/channel/99-frontend",
+    );
+
+    // Single-channel channels-format should canonicalize to /channel/.
+    const noncanonical_single_channel_terms = [
+        {operator: "channels", operand: "99", negated: false},
+    ];
+    assert.equal(
+        hash_util.search_terms_to_hash(noncanonical_single_channel_terms),
+        "#narrow/channel/99-frontend",
+    );
+
+    // Invalid non-numeric channels operand should not be downgraded into malformed channel hash.
+    const invalid_single_channels_operand = [
+        {operator: "channels", operand: "bogus", negated: false},
+    ];
+    assert.equal(
+        hash_util.search_terms_to_hash(invalid_single_channels_operand),
+        "#narrow/channels/bogus",
+    );
+
+    // Invalid channel operand should not produce NaN slug.
+    const invalid_channel_operand = [{operator: "channel", operand: "bogus", negated: false}];
+    assert.equal(hash_util.search_terms_to_hash(invalid_channel_operand), "#narrow/channel/bogus");
+});
+
 run_test("test_channels_settings_edit_url", () => {
     const sub = {
         name: "research & development",

@@ -85,10 +85,10 @@ function init({override}) {
 }
 
 function get_suggestions(query, pill_query = "") {
-    return search.get_suggestions(
-        Filter.parse(pill_query).map((suggestion) => Filter.convert_suggestion_to_term(suggestion)),
-        Filter.parse(query),
-    );
+    const pill_terms = Filter.parse(pill_query)
+        .map((suggestion) => Filter.convert_suggestion_to_term(suggestion))
+        .filter((term) => term !== undefined);
+    return search.get_suggestions(pill_terms, Filter.parse(query));
 }
 
 function test(label, f) {
@@ -373,6 +373,59 @@ test("group_suggestions", () => {
     suggestions = get_suggestions(query);
     expected = [];
     assert.deepEqual(suggestions, expected);
+});
+
+test("group_channel_suggestions", ({override}) => {
+    override(stream_topic_history_util, "get_server_history", noop);
+    override(narrow_state, "stream_id", noop);
+
+    const devel_id = 1001;
+    const office_id = 1002;
+    const support_id = 1003;
+    stream_data.add_sub_for_tests(
+        make_stream({
+            stream_id: devel_id,
+            name: "devel",
+            subscribed: true,
+        }),
+    );
+    stream_data.add_sub_for_tests(
+        make_stream({
+            stream_id: office_id,
+            name: "office",
+            subscribed: true,
+        }),
+    );
+    stream_data.add_sub_for_tests(
+        make_stream({
+            stream_id: support_id,
+            name: "support",
+            subscribed: true,
+        }),
+    );
+
+    // Adding a second channel should transition channel -> channels.
+    let suggestions = get_suggestions("off", `channel:${devel_id}`);
+    assert.ok(suggestions.includes(`channels:${devel_id},${office_id}`));
+    assert.ok(!suggestions.includes(`channel:${devel_id} channels:${devel_id},${office_id}`));
+
+    // Adding a third channel should keep channels operator and replace the last pill.
+    suggestions = get_suggestions("sup", `channels:${devel_id},${office_id}`);
+    assert.ok(suggestions.includes(`channels:${devel_id},${office_id},${support_id}`));
+
+    // channels:public is a separate category; it should not get grouped channel suggestions.
+    suggestions = get_suggestions("off", "channels:public");
+    assert.ok(
+        !suggestions.some((suggestion) => suggestion.includes(`channels:public,${office_id}`)),
+    );
+
+    // Invalid grouped channel operand should not produce malformed grouped suggestions.
+    suggestions = get_suggestions("off", `channels:${devel_id},foo`);
+    assert.ok(
+        !suggestions.some(
+            (suggestion) => suggestion.startsWith("channels:") && suggestion.includes(",foo"),
+        ),
+    );
 });
 
 test("empty_query_suggestions", () => {
