@@ -1095,6 +1095,10 @@
     cursor: pointer;
 }
 
+.edit-notifications.has-edit-history {
+    cursor: pointer;
+}
+
 .fade-in-message {
     animation-name: fadeInMessage;
     animation-duration: 1s;

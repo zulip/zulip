@@ -352,27 +352,35 @@ export function handle_keyboard_events(event_key: string): void {
 }
 
 export function initialize(): void {
-    $("body").on("mouseenter", ".message_edit_notice, .edit-notifications", (e) => {
-        if (
-            realm.realm_message_edit_history_visibility_policy !==
-            message_edit_history_visibility_policy_values.never.code
-        ) {
-            $(e.currentTarget).addClass("message_edit_notice_hover");
-        }
-    });
+    $("body").on(
+        "mouseenter",
+        ".message_edit_notice, .edit-notifications.has-edit-history",
+        (e) => {
+            if (
+                realm.realm_message_edit_history_visibility_policy !==
+                message_edit_history_visibility_policy_values.never.code
+            ) {
+                $(e.currentTarget).addClass("message_edit_notice_hover");
+            }
+        },
+    );
 
-    $("body").on("mouseleave", ".message_edit_notice, .edit-notifications", (e) => {
-        if (
-            realm.realm_message_edit_history_visibility_policy !==
-            message_edit_history_visibility_policy_values.never.code
-        ) {
-            $(e.currentTarget).removeClass("message_edit_notice_hover");
-        }
-    });
+    $("body").on(
+        "mouseleave",
+        ".message_edit_notice, .edit-notifications.has-edit-history",
+        (e) => {
+            if (
+                realm.realm_message_edit_history_visibility_policy !==
+                message_edit_history_visibility_policy_values.never.code
+            ) {
+                $(e.currentTarget).removeClass("message_edit_notice_hover");
+            }
+        },
+    );
 
     $("body").on(
         "click",
-        ".message_edit_notice, .edit-notifications",
+        ".message_edit_notice, .edit-notifications.has-edit-history",
         function (this: HTMLElement, e) {
             e.stopPropagation();
             e.preventDefault();
