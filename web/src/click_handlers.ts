@@ -55,7 +55,7 @@ export function initialize(): void {
             current_target: undefined,
         };
 
-        $("#main_div").on("touchstart", ".messagebox", function () {
+        $("#main_div").on("touchstart", ".messagebox, .message_reaction", function () {
             meta.touchdown = true;
             meta.invalid = false;
             const id = rows.id($(this).closest(".message_row"));
@@ -79,16 +79,24 @@ export function initialize(): void {
             }, MS_DELAY);
         });
 
-        $("#main_div").on("touchend", ".messagebox", () => {
+        $("#main_div").on("touchend", ".messagebox, .message_reaction", () => {
             meta.touchdown = false;
         });
 
-        $("#main_div").on("touchmove", ".messagebox", () => {
+        $("#main_div").on("touchmove", ".messagebox, .message_reaction", () => {
             meta.invalid = true;
         });
 
-        $("#main_div").on("contextmenu", ".messagebox", (e) => {
+        $("#main_div").on("contextmenu", ".messagebox, .message_reaction", (e) => {
             e.preventDefault();
+        });
+
+        $("#main_div").on("longtap", ".message_reaction", function (e) {
+            e.preventDefault();
+            $(this).data("longtap-triggered", true);
+            const local_id = $(this).attr("data-reaction-id")!;
+            const message_id = rows.get_message_id(this);
+            reactions.show_reaction_popover(this, message_id, local_id);
         });
     }
 
@@ -259,6 +267,11 @@ export function initialize(): void {
 
     $("#main_div").on("click", ".message_reaction", function (this: HTMLElement, e) {
         e.stopPropagation();
+
+        if ($(this).data("longtap-triggered")) {
+            $(this).removeData("longtap-triggered");
+            return;
+        }
 
         if (page_params.is_spectator) {
             spectators.login_to_access();
