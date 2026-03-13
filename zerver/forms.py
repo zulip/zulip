@@ -607,6 +607,8 @@ class CreateUserForm(forms.Form):
 
 
 class OurAuthenticationForm(AuthenticationForm):
+    # Set max_length to 254 to match UserProfile model.
+    username = forms.CharField(max_length=254)
     logger = logging.getLogger("zulip.auth.OurAuthenticationForm")
 
     @override
