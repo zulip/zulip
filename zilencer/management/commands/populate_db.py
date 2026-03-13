@@ -1,3 +1,4 @@
+import io
 import itertools
 import os
 import random
@@ -11,6 +12,7 @@ import orjson
 from django.conf import settings
 from django.contrib.sessions.models import Session
 from django.core.files.base import File
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.management import call_command
 from django.core.management.base import CommandParser
 from django.core.validators import validate_email
@@ -53,6 +55,7 @@ from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.stream_subscription import bulk_create_stream_subscriptions
 from zerver.lib.types import AnalyticsDataUploadLevel, ProfileFieldData
+from zerver.lib.upload import upload_message_attachment_from_request
 from zerver.lib.users import add_service
 from zerver.lib.utils import generate_api_key
 from zerver.models import (
@@ -196,6 +199,31 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, An
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
 
+def create_attachment(user: UserProfile) -> tuple[str, str]:
+    if random.random() < 0.5:
+        filename = "attachment.txt"
+        content_type = "text/plain"
+        content = b"temporary test attachment file. Hello, World!"
+    else:
+        filename = "README.md"
+        content_type = "text/markdown"
+        content = (
+            b"# Project README\n\nThis is a **sample** markdown file.\n\n"
+            b"## Getting started\n\n- Step 1\n- Step 2\n- Step 3\n"
+        )
+    file_obj = io.BytesIO(content)
+    upload = InMemoryUploadedFile(
+        file=file_obj,
+        field_name=None,
+        name=filename,
+        content_type=content_type,
+        size=len(content),
+        charset=None,
+    )
+    locator, _ = upload_message_attachment_from_request(upload, user)
+    return locator, filename
+
+
 def create_alert_words(realm_id: int) -> None:
     user_ids = UserProfile.objects.filter(
         realm_id=realm_id,
@@ -298,6 +326,20 @@ class Command(ZulipBaseCommand):
             type=float,
             default=15,
             help="The percent of messages to be personals.",
+        )
+
+        parser.add_argument(
+            "--percent-topic-links",
+            type=float,
+            default=5,
+            help="The percent of topics with links in them.",
+        )
+
+        parser.add_argument(
+            "--percent-attachments",
+            type=float,
+            default=3,
+            help="The percent of messages to have attachments.",
         )
 
         parser.add_argument(
@@ -1310,7 +1352,9 @@ def generate_and_send_messages(
         else:
             num_topics = options["max_topics"]
 
-        possible_topic_names[stream_id] = generate_topics(num_topics)
+        possible_topic_names[stream_id] = generate_topics(
+            num_topics, options["percent_topic_links"]
+        )
 
     message_batch_size = options["batch_size"]
     num_messages = 0
@@ -1318,6 +1362,10 @@ def generate_and_send_messages(
     recipients: dict[int, tuple[int, int, dict[str, Any]]] = {}
     messages: list[Message] = []
     while num_messages < tot_messages:
+        has_attachment = (
+            options["percent_attachments"] > 0
+            and random.random() < options["percent_attachments"] / 100.0
+        )
         saved_data: dict[str, Any] = {}
         message = Message(realm=realm)
         message.sending_client = get_client("ZulipDataImport")
@@ -1373,6 +1421,10 @@ def generate_and_send_messages(
             ).user_profile
             message.subject = random.choice(possible_topic_names[message.recipient.id])
             saved_data["subject"] = message.subject
+
+        if has_attachment:
+            locator, filename = create_attachment(message.sender)
+            message.content += f"\n[{filename}]({locator})"
 
         message.is_channel_message = recipient_type == Recipient.STREAM
         message.date_sent = choose_date_sent(
