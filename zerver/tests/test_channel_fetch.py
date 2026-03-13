@@ -635,7 +635,7 @@ class GetSubscribersTest(ZulipTestCase):
         # verify that the user was sent a message informing them about the subscription
         realm = user.realm
         msg = most_recent_message(user)
-        self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
+        self.assertEqual(msg.recipient.type, msg.recipient.DIRECT_MESSAGE_GROUP)
         self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
 
         def non_ws(s: str) -> str:
@@ -836,6 +836,7 @@ class GetSubscribersTest(ZulipTestCase):
                 self.assert_length(sub["partial_subscribers"], 3)
                 self.assertIsNone(sub.get("subscribers"))
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_gather_subscriptions(self) -> None:
         """
         gather_subscriptions returns correct results with only 3 queries
@@ -859,7 +860,7 @@ class GetSubscribersTest(ZulipTestCase):
             polonius.id,
         ]
 
-        with self.assert_database_query_count(49):
+        with self.assert_database_query_count(76):
             self.subscribe_via_post(
                 self.user_profile,
                 stream_names,
