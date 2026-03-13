@@ -2110,3 +2110,13 @@ textarea.new_message_textarea {
         overflow: hidden !important;
     }
 }
+
+#compose:has(textarea#compose-textarea:disabled) {
+    .disable-on-invalid-recipient {
+        opacity: 0.3;
+
+        .compose_control_button {
+            pointer-events: none;
+        }
+    }
+}
