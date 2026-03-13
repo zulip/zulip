@@ -254,6 +254,73 @@ p.digest_paragraph,
     font-weight: normal;
 }
 
+.rendered_markdown p {
+    margin: 0 0 8px;
+}
+
+.rendered_markdown ul,
+.rendered_markdown ol {
+    margin: 0 0 8px 20px;
+    padding-left: 0;
+}
+
+.rendered_markdown li {
+    margin: 2px 0;
+}
+
+.rendered_markdown blockquote {
+    margin: 0 0 8px;
+    padding-left: 10px;
+    border-left: 4px solid #c7c7c7;
+    color: #555;
+}
+
+.rendered_markdown h1,
+.rendered_markdown h2,
+.rendered_markdown h3,
+.rendered_markdown h4,
+.rendered_markdown h5,
+.rendered_markdown h6 {
+    margin: 12px 0 8px;
+    font-weight: bold;
+    line-height: 1.4;
+}
+
+.rendered_markdown h1 {
+    font-size: 1.4em;
+}
+
+.rendered_markdown h2 {
+    font-size: 1.3em;
+}
+
+.rendered_markdown h3 {
+    font-size: 1.2em;
+}
+
+.rendered_markdown code {
+    font-family: monospace;
+    font-size: 0.9em;
+    background-color: #f3f3f3;
+    border-radius: 3px;
+    padding: 1px 3px;
+}
+
+.rendered_markdown pre {
+    margin: 0 0 8px;
+    padding: 6px 8px;
+    background-color: #f3f3f3;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    white-space: pre-wrap;
+    overflow-x: auto;
+}
+
+.rendered_markdown pre code {
+    background-color: transparent;
+    padding: 0;
+}
+
 /* Text and link colors for missed-message emails. */
 .email-preferences {
     color: #666;
