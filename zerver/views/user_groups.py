@@ -18,7 +18,11 @@ from zerver.actions.user_groups import (
     do_update_user_group_name,
     remove_subgroups_from_user_group,
 )
-from zerver.decorator import require_human_non_guest_user, require_user_group_create_permission
+from zerver.decorator import (
+    require_human_non_guest_user,
+    require_non_guest_user,
+    require_user_group_create_permission,
+)
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.response import json_success
@@ -115,7 +119,7 @@ def add_user_group(
     return json_success(request, data={"group_id": user_group.id})
 
 
-@require_human_non_guest_user
+@require_non_guest_user
 @typed_endpoint
 def get_user_groups(
     request: HttpRequest,
@@ -130,7 +134,7 @@ def get_user_groups(
 
 
 @transaction.atomic(durable=True)
-@require_human_non_guest_user
+@require_non_guest_user
 @typed_endpoint
 def edit_user_group(
     request: HttpRequest,
@@ -239,7 +243,7 @@ def deactivate_user_group(
     return json_success(request)
 
 
-@require_human_non_guest_user
+@require_non_guest_user
 @typed_endpoint
 @transaction.atomic(durable=True)
 def update_user_group_backend(
@@ -536,7 +540,7 @@ def remove_subgroups_from_group_backend(
     return json_success(request)
 
 
-@require_human_non_guest_user
+@require_non_guest_user
 @typed_endpoint
 @transaction.atomic(durable=True)
 def update_subgroups_of_user_group(
@@ -569,7 +573,7 @@ def update_subgroups_of_user_group(
     return json_success(request, data)
 
 
-@require_human_non_guest_user
+@require_non_guest_user
 @typed_endpoint
 def get_is_user_group_member(
     request: HttpRequest,
@@ -592,7 +596,7 @@ def get_is_user_group_member(
     )
 
 
-@require_human_non_guest_user
+@require_non_guest_user
 @typed_endpoint
 def get_user_group_members(
     request: HttpRequest,
@@ -611,7 +615,7 @@ def get_user_group_members(
     )
 
 
-@require_human_non_guest_user
+@require_non_guest_user
 @typed_endpoint
 def get_subgroups_of_user_group(
     request: HttpRequest,

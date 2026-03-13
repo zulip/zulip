@@ -291,6 +291,43 @@ class UserGroupTestCase(ZulipTestCase):
             {"support", SystemGroups.MEMBERS, SystemGroups.FULL_MEMBERS},
         )
 
+    def test_get_is_user_group_member_status_openapi_coverage(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+
+        self.login_user(iago)
+
+        user_group = self.create_user_group_for_test("test_group", acting_user=iago)
+
+        result = self.api_get(
+            iago,
+            f"/api/v1/user_groups/{user_group.id}/members/{hamlet.id}",
+        )
+
+        self.assert_json_success(result)
+        result_dict = orjson.loads(result.content)
+
+        self.assertIn("is_user_group_member", result_dict)
+        self.assertIsInstance(result_dict["is_user_group_member"], bool)
+
+    def test_get_is_user_group_member_status_as_bot_openapi_coverage(self) -> None:
+        iago = self.example_user("iago")
+        bot = self.example_user("default_bot")
+        hamlet = self.example_user("hamlet")
+
+        user_group = self.create_user_group_for_test("test_group", acting_user=iago)
+        UserGroupMembership.objects.create(user_profile=hamlet, user_group=user_group)
+
+        result = self.api_get(
+            bot,
+            f"/api/v1/user_groups/{user_group.id}/members/{hamlet.id}",
+        )
+        self.assert_json_success(result)
+
+        result_dict = orjson.loads(result.content)
+        self.assertIn("is_user_group_member", result_dict)
+        self.assertEqual(result_dict["is_user_group_member"], True)
+
     def test_recursive_queries_for_user_groups(self) -> None:
         realm = get_realm("zulip")
         iago = self.example_user("iago")
@@ -4106,8 +4143,24 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         self.assertCountEqual(result_dict["members"], [desdemona.id, iago.id])
 
+        bot = self.example_user("default_bot")
+
+        result = self.api_get(
+            bot,
+            f"/api/v1/user_groups/{moderators_group.id}/members",
+        )
+
+        self.assert_json_success(result)
+
     def test_get_subgroups_of_user_group(self) -> None:
         realm = get_realm("zulip")
+
+        # Define users used later in the test
+        iago = self.example_user("iago")
+        desdemona = self.example_user("desdemona")
+        othello = self.example_user("othello")
+        bot = self.example_user("default_bot")
+
         owners_group = NamedUserGroup.objects.get(
             name=SystemGroups.OWNERS, realm_for_sharding=realm, is_system_group=True
         )
@@ -4117,6 +4170,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         moderators_group = NamedUserGroup.objects.get(
             name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
         )
+
         self.login("iago")
 
         # Test invalid user group id
@@ -4158,6 +4212,62 @@ class UserGroupAPITestCase(UserGroupTestCase):
             ).content
         )
         self.assertCountEqual(result_dict["subgroups"], [admins_group.id])
+
+        # Bot should be able to access membership check endpoint
+        result = self.api_get(bot, f"/api/v1/user_groups/{admins_group.id}/members/{iago.id}")
+        self.assert_json_success(result)
+
+        # Checking membership of not a direct member but member of a subgroup.
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{admins_group.id}/members/{desdemona.id}").content
+        )
+        self.assertTrue(result_dict["is_user_group_member"])
+
+        # Checking membership of not a direct member but member of a subgroup
+        # when passing recursive parameter as False.
+        params = {"direct_member_only": orjson.dumps(True).decode()}
+        result_dict = orjson.loads(
+            self.client_get(
+                f"/json/user_groups/{admins_group.id}/members/{desdemona.id}",
+                info=params,
+            ).content
+        )
+        self.assertFalse(result_dict["is_user_group_member"])
+
+        # Bot should be able to access membership check endpoint with direct_member_only
+        result = self.api_get(
+            bot,
+            f"/api/v1/user_groups/{admins_group.id}/members/{desdemona.id}",
+            {"direct_member_only": orjson.dumps(True).decode()},
+        )
+        self.assert_json_success(result)
+
+        # Logging in with a user not part of the group.
+        self.login("hamlet")
+
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{admins_group.id}/members/{iago.id}").content
+        )
+        self.assertTrue(result_dict["is_user_group_member"])
+
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{admins_group.id}/members/{othello.id}").content
+        )
+        self.assertFalse(result_dict["is_user_group_member"])
+
+        # Check membership of deactivated user.
+        do_deactivate_user(iago, acting_user=None)
+        result = self.client_get(f"/json/user_groups/{admins_group.id}/members/{iago.id}")
+        self.assert_json_error(result, "User is deactivated")
+
+        bot = self.example_user("default_bot")
+
+        result = self.api_get(
+            bot,
+            f"/api/v1/user_groups/{moderators_group.id}/subgroups",
+        )
+
+        self.assert_json_success(result)
 
     def test_add_subgroup_from_wrong_realm(self) -> None:
         iago = self.example_user("iago")
