@@ -1114,6 +1114,12 @@ input[type="checkbox"] {
     max-height: calc(95vh - 280px);
 }
 
+#admin-default-channels-list .pill {
+    &:hover {
+        background-color: var(--color-background-input-pill-hover);
+    }
+}
+
 .edit_bot_form {
     font-size: 100%;
     padding: 0;
