@@ -2423,6 +2423,168 @@ class ZulipMarkdown(markdown.Markdown):
         return postprocessors
 
 
+class ZulipInlineMarkdown(ZulipMarkdown):
+    """A restricted Markdown engine for inline-only rendering.
+
+    Used for widget content (poll options/questions) where block-level
+    elements (headers, lists, code blocks, blockquotes, etc.) are not
+    appropriate. Only inline patterns like emoji, links, timestamps,
+    bold/italic/strikethrough, and inline code are enabled.
+    """
+
+    @override
+    def build_preprocessors(self) -> markdown.util.Registry[markdown.preprocessors.Preprocessor]:
+        # No block-level preprocessors needed for inline-only rendering.
+        preprocessors = markdown.util.Registry[markdown.preprocessors.Preprocessor]()
+        preprocessors.register(
+            markdown.preprocessors.NormalizeWhitespace(self), "normalize_whitespace", 30
+        )
+        return preprocessors
+
+    @override
+    def build_block_parser(self) -> BlockParser:
+        # Only the paragraph processor — no lists, code blocks, headers,
+        # blockquotes, horizontal rules, or tables.
+        parser = BlockParser(self)
+        parser.blockprocessors.register(
+            markdown.blockprocessors.ParagraphProcessor(parser), "paragraph", 50
+        )
+        return parser
+
+    @override
+    def build_inlinepatterns(self) -> markdown.util.Registry[markdown.inlinepatterns.Pattern]:
+        DEL_RE = r"(?<!~)(\~\~)([^~\n]+?)(\~\~)(?!~)"
+        EMPHASIS_RE = r"(\*)(?!\s+)([^\*^\n]+)(?<!\s)\*"
+        STRONG_RE = r"(\*\*)([^\n]+?)\2"
+        STRONG_EM_RE = r"(\*\*\*)(?!\s+)([^\*^\n]+)(?<!\s)\*\*\*"
+        TIMESTAMP_RE = r"<time:(?P<time>[^>]*?)>"
+
+        reg = markdown.util.Registry[markdown.inlinepatterns.Pattern]()
+        reg.register(BacktickInlineProcessor(markdown.inlinepatterns.BACKTICK_RE), "backtick", 105)
+        reg.register(
+            markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, "strong,em"), "strong_em", 100
+        )
+        reg.register(Timestamp(TIMESTAMP_RE), "timestamp", 75)
+        reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), "link", 60)
+        reg.register(AutoLink(get_web_link_regex(), self), "autolink", 55)
+        # Reserve priority 45-54 for linkifiers
+        reg = self.register_linkifiers(reg)
+        reg.register(
+            markdown.inlinepatterns.HtmlInlineProcessor(markdown.inlinepatterns.ENTITY_RE, self),
+            "entity",
+            40,
+        )
+        reg.register(markdown.inlinepatterns.SimpleTagPattern(STRONG_RE, "strong"), "strong", 35)
+        reg.register(markdown.inlinepatterns.SimpleTagPattern(EMPHASIS_RE, "em"), "emphasis", 30)
+        reg.register(markdown.inlinepatterns.SimpleTagPattern(DEL_RE, "del"), "del", 25)
+        reg.register(
+            markdown.inlinepatterns.SimpleTextInlineProcessor(
+                markdown.inlinepatterns.NOT_STRONG_RE
+            ),
+            "not_strong",
+            20,
+        )
+        reg.register(Emoji(EMOJI_REGEX, self), "emoji", 15)
+        reg.register(EmoticonTranslation(EMOTICON_RE, self), "translate_emoticons", 10)
+        reg.register(UnicodeEmoji(cast(Pattern[str], POSSIBLE_EMOJI_RE), self), "unicodeemoji", 0)
+        return reg
+
+    @override
+    def build_treeprocessors(self) -> markdown.util.Registry[markdown.treeprocessors.Treeprocessor]:
+        treeprocessors = markdown.util.Registry[markdown.treeprocessors.Treeprocessor]()
+        treeprocessors.register(markdown.treeprocessors.InlineProcessor(self), "inline", 25)
+        treeprocessors.register(markdown.treeprocessors.PrettifyTreeprocessor(self), "prettify", 20)
+        treeprocessors.register(markdown.treeprocessors.UnescapeTreeprocessor(self), "unescape", 18)
+        return treeprocessors
+
+
+def make_inline_md_engine(linkifiers_key: int) -> ZulipInlineMarkdown:
+    return ZulipInlineMarkdown(
+        linkifiers=linkifiers_for_realm(linkifiers_key),
+        linkifiers_key=linkifiers_key,
+        email_gateway=False,
+    )
+
+
+def markdown_convert_inline(
+    content: str,
+    message_realm: Realm | None = None,
+) -> str:
+    """Render inline Markdown for widget content (e.g., poll options).
+
+    Returns the rendered HTML string. Only inline features (emoji,
+    links, timestamps, bold/italic/strikethrough, inline code) are
+    supported — block-level syntax is not processed.
+    """
+    if message_realm is None:
+        linkifiers_key = DEFAULT_MARKDOWN_KEY
+    else:
+        linkifiers_key = message_realm.id
+
+    md_engine = make_inline_md_engine(linkifiers_key)
+
+    rendering_result = MessageRenderingResult(
+        rendered_content="",
+        mentions_topic_wildcard=False,
+        mentions_stream_wildcard=False,
+        mentions_user_ids=set(),
+        mentions_user_group_ids=set(),
+        alert_words=set(),
+        links_for_preview=set(),
+        user_ids_with_alert_words=set(),
+        potential_attachment_path_ids=[],
+        thumbnail_spinners=set(),
+    )
+
+    md_engine.zulip_message = None
+    md_engine.zulip_rendering_result = rendering_result
+    md_engine.zulip_realm = message_realm
+    md_engine.zulip_db_data = None
+    md_engine.image_preview_enabled = False
+    md_engine.url_embed_preview_enabled = False
+    md_engine.url_embed_data = None
+
+    if message_realm is not None:
+        if content_has_emoji_syntax(content):
+            active_realm_emoji = get_name_keyed_dict_for_active_realm_emoji(message_realm.id)
+        else:
+            active_realm_emoji = {}
+
+        md_engine.zulip_db_data = DbData(
+            realm_alert_words_automaton=None,
+            mention_data=MentionData(MentionBackend(message_realm.id), "", message_sender=None),
+            active_realm_emoji=active_realm_emoji,
+            realm_url=message_realm.url,
+            sent_by_bot=False,
+            stream_names={},
+            topic_info={},
+            translate_emoticons=False,
+            user_upload_previews=AttachmentData(audio_path_ids=set(), image_metadata={}),
+        )
+
+    try:
+        rendered = unsafe_timeout(5, lambda: md_engine.convert(content))
+    except Exception:
+        cleaned = privacy_clean_markdown(content)
+        markdown_logger.exception(
+            "Exception in inline Markdown parser; input (sanitized) was: %s",
+            cleaned,
+        )
+        raise MarkdownRenderingError
+
+    # The ParagraphProcessor always wraps its output in <p>...</p>. Poll
+    # options and questions are single-line, so strip that outer wrapper to
+    # produce an inline HTML fragment suitable for <span>/<h4> containers.
+    inline_html = rendered.strip()
+    if (
+        inline_html.startswith("<p>")
+        and inline_html.endswith("</p>")
+        and "<p>" not in inline_html[3:-4]
+    ):
+        inline_html = inline_html[3:-4]
+    return inline_html
+
+
 def make_md_engine(linkifiers_key: int, email_gateway: bool) -> ZulipMarkdown:
     return ZulipMarkdown(
         linkifiers=linkifiers_for_realm(linkifiers_key),
