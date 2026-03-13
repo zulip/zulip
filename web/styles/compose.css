@@ -1455,8 +1455,8 @@ textarea.new_message_textarea {
     color: var(--color-text-popover-menu);
 
     .enter_sends_choice {
-        padding: 4px 10px;
-        gap: 0 8px;
+        padding: 0.2em 0.6666em;
+        gap: 0 5px;
         display: grid;
         /* 1em and 1.5em were chosen from playing around with different values
            and picking some that looked reasonable. */
