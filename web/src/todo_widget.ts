@@ -152,7 +152,7 @@ export function render({
 
         // This throttling ensures that the function runs only after the user stops typing.
         const throttled_update_add_task_button = _.throttle(update_add_task_button, 300);
-        $elem.find("input.add-task").on("keyup", (e) => {
+        $elem.find(".add-task-bar input.add-task").on("keyup", (e) => {
             e.stopPropagation();
             throttled_update_add_task_button();
         });
@@ -196,17 +196,20 @@ export function render({
             add_task();
         });
 
-        $elem.find("input.add-task, input.add-desc").on("keydown", (e) => {
-            if (e.key === "Enter") {
-                e.stopPropagation();
-                e.preventDefault();
-                add_task();
-            }
-        });
+        $elem
+            .find(".add-task-bar input.add-task, .add-task-bar input.add-desc")
+            .on("keydown", (e) => {
+                if (e.key === "Enter") {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    add_task();
+                }
+            });
     }
 
     function update_add_task_button(): void {
-        const task = $elem.find<HTMLInputElement>("input.add-task").val()?.trim() ?? "";
+        const task =
+            $elem.find<HTMLInputElement>(".add-task-bar input.add-task").val()?.trim() ?? "";
         const task_exists = task_data.name_in_use(task);
         const $add_task_wrapper = $elem.find(".add-task-wrapper");
         const $add_task_button = $elem.find("button.add-task");
