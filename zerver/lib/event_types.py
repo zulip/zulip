@@ -1154,6 +1154,7 @@ class Group(BaseModel):
     members: list[int]
     direct_subgroup_ids: list[int]
     description: str
+    rendered_description: str
     is_system_group: bool
     can_add_members_group: int | UserGroupMembersDict
     can_join_group: int | UserGroupMembersDict
@@ -1212,6 +1213,7 @@ class UserGroupData(UserGroupDataCore):
     # TODO: fix types to avoid optional fields
     name: str | None = None
     description: str | None = None
+    rendered_description: str | None = None
     can_add_members_group: int | UserGroupMembersDict | None = None
     can_join_group: int | UserGroupMembersDict | None = None
     can_leave_group: int | UserGroupMembersDict | None = None

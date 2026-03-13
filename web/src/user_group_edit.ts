@@ -40,6 +40,7 @@ import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
+import {postprocess_content} from "./postprocess_content.ts";
 import * as resize from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
 import type {UserGroupUpdateEvent} from "./server_event_types.ts";
@@ -560,7 +561,9 @@ export function handle_member_edit_event(group_id: number, user_ids: number[]): 
 export function update_group_details(group: UserGroup): void {
     const $edit_container = get_edit_container(group.id);
     $edit_container.find(".group-name").text(user_groups.get_display_group_name(group.name));
-    $edit_container.find(".group-description").text(group.description);
+    $edit_container
+        .find(".group-description")
+        .html(postprocess_content(group.rendered_description));
 }
 
 function update_toggler_for_group_setting(group: UserGroup): void {
@@ -1541,7 +1544,7 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
     }
 
     if (event.data.description !== undefined) {
-        $group_row.find(".description").text(group.description);
+        $group_row.find(".description").html(postprocess_content(group.rendered_description));
     }
 
     if (event.data.deactivated !== undefined) {
