@@ -1210,6 +1210,28 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
         $("textarea#compose-textarea").toggleClass("invalid", false);
     }
 
+    if (compose_state.has_pending_resolution()) {
+        const meets_minimum = compose_state.meets_minimum_resolution_length();
+        if (!meets_minimum) {
+            if (is_validating_compose_box) {
+                disabled_send_tooltip_message_html = $t(
+                    {
+                        defaultMessage:
+                            "Topic resolution messages must be at least {min_length} characters.",
+                    },
+                    {min_length: compose_state.MIN_RESOLUTION_MESSAGE_LENGTH},
+                );
+            }
+            blueslip.debug("Invalid compose state: Topic resolution message too short");
+            is_validating_compose_box = false;
+            if (show_banner) {
+                $("textarea#compose-textarea").toggleClass("invalid", true);
+                $("textarea#compose-textarea").trigger("focus");
+            }
+            return false;
+        }
+    }
+
     // TODO: This doesn't actually show a banner, it triggers a flash
     const trigger_flash = show_banner;
     if (!validate_message_length($("#send_message_form"), trigger_flash)) {

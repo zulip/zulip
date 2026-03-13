@@ -56,6 +56,7 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
+import * as topic_resolution_compose from "./topic_resolution_compose.ts";
 import * as typing from "./typing.ts";
 import * as ui_report from "./ui_report.ts";
 import * as upload from "./upload.ts";
@@ -957,39 +958,71 @@ export function toggle_resolve_topic(
     old_topic_name: string,
     report_errors_in_global_banner: boolean,
     $row?: JQuery,
+    stream_id?: number,
 ): void {
-    let new_topic_name;
     const topic_is_resolved = resolved_topic.is_resolved(old_topic_name);
-    if (topic_is_resolved) {
-        new_topic_name = resolved_topic.unresolve_name(old_topic_name);
-    } else {
-        new_topic_name = resolved_topic.resolve_name(old_topic_name);
+
+    function execute_with_onboarding(action: () => void): void {
+        if (
+            !topic_is_resolved &&
+            onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_resolve_topic")
+        ) {
+            show_intro_resolve_topic_modal(old_topic_name, action);
+
+            onboarding_steps.post_onboarding_step_as_read("intro_resolve_topic");
+        } else {
+            action();
+        }
     }
 
-    if (
-        !topic_is_resolved &&
-        onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_resolve_topic")
-    ) {
-        show_intro_resolve_topic_modal(old_topic_name, () => {
-            do_toggle_resolve_topic(
-                message_id,
-                new_topic_name,
-                topic_is_resolved,
-                report_errors_in_global_banner,
-                $row,
-            );
-        });
-        onboarding_steps.post_onboarding_step_as_read("intro_resolve_topic");
-        return;
+    // Resolving a topic (not unresolving) with message requirement
+    if (!topic_is_resolved && topic_resolution_compose.is_message_requirement_enabled()) {
+        const resolved_stream_id = stream_id ?? get_stream_id_for_message(message_id);
+        const sub =
+            resolved_stream_id !== undefined ? sub_store.get(resolved_stream_id) : undefined;
+        const can_post = sub !== undefined && stream_data.can_post_messages_in_stream(sub);
+
+        if (
+            resolved_stream_id !== undefined &&
+            (can_post || !topic_resolution_compose.is_message_optional())
+        ) {
+            // User can post OR message is required (which forces compose)
+            execute_with_onboarding(() => {
+                topic_resolution_compose.start_resolution_compose(
+                    message_id,
+                    resolved_stream_id,
+                    old_topic_name,
+                    report_errors_in_global_banner,
+                );
+            });
+
+            return;
+        }
+
+        // Fallthrough if no post permission AND message is optional -> Resolve immediately
     }
 
-    do_toggle_resolve_topic(
-        message_id,
-        new_topic_name,
-        topic_is_resolved,
-        report_errors_in_global_banner,
-        $row,
-    );
+    const new_topic_name = topic_is_resolved
+        ? resolved_topic.unresolve_name(old_topic_name)
+        : resolved_topic.resolve_name(old_topic_name);
+
+    execute_with_onboarding(() => {
+        do_toggle_resolve_topic(
+            message_id,
+            new_topic_name,
+            topic_is_resolved,
+            report_errors_in_global_banner,
+            $row,
+        );
+    });
+}
+
+function get_stream_id_for_message(message_id: number): number | undefined {
+    const message = message_store.get(message_id);
+    if (message && message.type === "stream") {
+        return message.stream_id;
+    }
+    return undefined;
 }
 
 function do_toggle_resolve_topic(
