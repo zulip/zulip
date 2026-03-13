@@ -23,6 +23,27 @@ set_current_user(current_user);
 // We use this with override.
 let unread_unmuted_count;
 let stream_has_any_unread_mentions;
+let current_narrow_stream_id;
+let current_narrow_topic;
+let browser_history_navigated_to;
+
+mock_esm("../src/browser_history", {
+    go_to_location(url) {
+        browser_history_navigated_to = url;
+    },
+    update_current_history_state_data: noop,
+});
+mock_esm("../src/narrow_state", {
+    stream_id() {
+        return current_narrow_stream_id;
+    },
+    topic() {
+        return current_narrow_topic;
+    },
+    filter() {
+        return undefined;
+    },
+});
 
 const topic_list = mock_esm("../src/topic_list");
 mock_esm("../src/unread", {
@@ -38,15 +59,21 @@ mock_esm("../src/unread", {
     }),
     stream_has_any_unread_mentions: () => stream_has_any_unread_mentions,
     stream_has_any_unmuted_mentions: () => noop,
+    get_missing_topics: () => [],
+    get_topics_with_unread_mentions: () => new Set(),
+    num_unread_for_topic: () => 0,
 });
 
 const {Filter} = zrequire("../src/filter");
 const left_sidebar_navigation_area = zrequire("left_sidebar_navigation_area");
+const left_sidebar_filter = zrequire("left_sidebar_filter");
 const stream_data = zrequire("stream_data");
 const stream_list = zrequire("stream_list");
 stream_list.set_update_inbox_channel_view_callback(noop);
 const stream_list_sort = zrequire("stream_list_sort");
+const stream_topic_history = zrequire("stream_topic_history");
 const user_groups = zrequire("user_groups");
+const user_topics = zrequire("user_topics");
 const {initialize_user_settings} = zrequire("user_settings");
 const settings_config = zrequire("settings_config");
 mock_esm("../src/settings_data", {
@@ -157,6 +184,12 @@ function test_ui(label, f) {
     run_test(label, (helpers) => {
         stream_data.clear_subscriptions();
         stream_list.stream_sidebar.rows.clear();
+        stream_topic_history.reset();
+        user_topics.set_user_topics([]);
+        $("#left-sidebar-filter-query").text("");
+        current_narrow_stream_id = undefined;
+        current_narrow_topic = undefined;
+        browser_history_navigated_to = undefined;
         f(helpers);
     });
 }
@@ -173,6 +206,7 @@ test_ui("create_sidebar_row", ({override, override_rewire, mock_template}) => {
     override_rewire(stream_list, "update_dom_with_unread_counts", noop);
     override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
     override_rewire(left_sidebar_navigation_area, "update_dom_with_unread_counts", noop);
+    override_rewire(stream_list, "set_sections_states", noop);
 
     const pinned_streams = [];
     $("#stream-list-pinned-streams")[0].append = (...streams) => {
@@ -286,6 +320,217 @@ test_ui("pinned_streams_never_inactive", ({mock_template, override_rewire}) => {
     assert.ok(!$devel_sidebar.hasClass("inactive_stream"));
 });
 
+test_ui("clear_search", ({override_rewire}) => {
+    const scenarios = [
+        {
+            search_term: "",
+            topics_state: "",
+            expected_filter_events: ["blur"],
+            expected_close_button_events: [],
+        },
+        {
+            search_term: "",
+            topics_state: "is:followed",
+            expected_filter_events: [],
+            expected_close_button_events: ["click"],
+        },
+    ];
+
+    for (const scenario of scenarios) {
+        $.reset_selector("#left-sidebar-filter-query");
+        $.reset_selector("#left-sidebar-search .input-close-filter-button");
+        const $filter = $("#left-sidebar-filter-query");
+        $filter.text(scenario.search_term);
+        override_rewire(
+            left_sidebar_filter,
+            "left_sidebar_filter_pill_widget",
+            scenario.topics_state === ""
+                ? null
+                : {
+                      items: () => [{syntax: scenario.topics_state}],
+                  },
+        );
+        const filter_events = [];
+        $filter.on("blur", () => {
+            filter_events.push("blur");
+        });
+
+        const close_button_events = [];
+        const $close_button = $("#left-sidebar-search .input-close-filter-button");
+        $close_button.on("click", () => {
+            close_button_events.push("click");
+        });
+
+        stream_list.clear_search();
+
+        assert.deepEqual(filter_events, scenario.expected_filter_events);
+        assert.deepEqual(close_button_events, scenario.expected_close_button_events);
+    }
+});
+
+test_ui(
+    "build_stream_list_does_not_enter_search_mode_for_topic_state_only_filter",
+    ({override_rewire}) => {
+        override_rewire(stream_list, "update_dom_with_unread_counts", noop);
+        override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
+        override_rewire(left_sidebar_navigation_area, "update_dom_with_unread_counts", noop);
+        override_rewire(stream_list, "set_sections_states", noop);
+
+        initialize_stream_data();
+
+        current_narrow_stream_id = develSub.stream_id;
+        override_rewire(left_sidebar_filter, "left_sidebar_filter_pill_widget", {
+            items: () => [{syntax: "is:followed"}],
+        });
+
+        $("#streams_list").addClass("is_searching");
+        stream_list.build_stream_list(true);
+
+        assert.ok(!$("#streams_list").hasClass("is_searching"));
+    },
+);
+test_ui("on_sidebar_channel_click_keeps_topic_state_filter", ({override_rewire}) => {
+    stream_data.add_sub_for_tests(develSub);
+
+    override_rewire(left_sidebar_filter, "left_sidebar_filter_pill_widget", {
+        items: () => [{syntax: "is:followed"}],
+    });
+
+    const $filter = $("#left-sidebar-filter-query");
+    $filter.text("de");
+    $filter.html("de");
+
+    let show_channel_feed_called = false;
+    stream_list.on_sidebar_channel_click(develSub.stream_id, null, () => {
+        show_channel_feed_called = true;
+    });
+
+    assert.equal($filter.html(), "");
+    assert.equal(left_sidebar_filter.get_topics_state(), "is:followed");
+    assert.ok(show_channel_feed_called);
+});
+
+test_ui(
+    "on_sidebar_channel_click_top_topic_uses_matching_topic_state_filter",
+    ({override, override_rewire}) => {
+        stream_data.add_sub_for_tests(develSub);
+        current_narrow_stream_id = develSub.stream_id;
+
+        override(
+            user_settings,
+            "web_channel_default_view",
+            settings_config.web_channel_default_view_values.top_topic_in_channel.code,
+        );
+
+        override_rewire(left_sidebar_filter, "left_sidebar_filter_pill_widget", {
+            items: () => [{syntax: "is:followed"}],
+        });
+
+        stream_topic_history.add_message({
+            stream_id: develSub.stream_id,
+            topic_name: "topic 1",
+            message_id: 1,
+        });
+        stream_topic_history.add_message({
+            stream_id: develSub.stream_id,
+            topic_name: "topic 2",
+            message_id: 2,
+        });
+        user_topics.update_user_topics(
+            develSub.stream_id,
+            develSub.name,
+            "topic 2",
+            user_topics.all_visibility_policies.FOLLOWED,
+            1,
+        );
+
+        stream_list.on_sidebar_channel_click(develSub.stream_id, null, noop);
+
+        assert.equal(
+            browser_history_navigated_to,
+            stream_topic_history.channel_topic_permalink_hash(develSub.stream_id, "topic 2"),
+        );
+    },
+);
+
+test_ui(
+    "on_sidebar_channel_click_top_topic_falls_back_to_channel_feed_without_match",
+    ({override, override_rewire}) => {
+        stream_data.add_sub_for_tests(develSub);
+        current_narrow_stream_id = develSub.stream_id;
+
+        override(
+            user_settings,
+            "web_channel_default_view",
+            settings_config.web_channel_default_view_values.top_topic_in_channel.code,
+        );
+
+        override_rewire(left_sidebar_filter, "left_sidebar_filter_pill_widget", {
+            items: () => [{syntax: "is:followed"}],
+        });
+
+        stream_topic_history.add_message({
+            stream_id: develSub.stream_id,
+            topic_name: "topic 1",
+            message_id: 1,
+        });
+        stream_topic_history.add_message({
+            stream_id: develSub.stream_id,
+            topic_name: "topic 2",
+            message_id: 2,
+        });
+
+        let show_channel_feed_called = false;
+        stream_list.on_sidebar_channel_click(develSub.stream_id, null, () => {
+            show_channel_feed_called = true;
+        });
+
+        assert.equal(browser_history_navigated_to, undefined);
+        assert.equal(show_channel_feed_called, true);
+    },
+);
+
+test_ui(
+    "on_sidebar_channel_click_top_topic_ignores_inactive_topic_state_filter",
+    ({override, override_rewire}) => {
+        stream_data.add_sub_for_tests(develSub);
+
+        override(
+            user_settings,
+            "web_channel_default_view",
+            settings_config.web_channel_default_view_values.top_topic_in_channel.code,
+        );
+
+        override_rewire(left_sidebar_filter, "left_sidebar_filter_pill_widget", {
+            items: () => [{syntax: "is:followed"}],
+        });
+
+        stream_topic_history.add_message({
+            stream_id: develSub.stream_id,
+            topic_name: "topic 1",
+            message_id: 1,
+        });
+        stream_topic_history.add_message({
+            stream_id: develSub.stream_id,
+            topic_name: "topic 2",
+            message_id: 2,
+        });
+        user_topics.update_user_topics(
+            develSub.stream_id,
+            develSub.name,
+            "topic 1",
+            user_topics.all_visibility_policies.FOLLOWED,
+            1,
+        );
+
+        stream_list.on_sidebar_channel_click(develSub.stream_id, null, noop);
+
+        assert.equal(
+            browser_history_navigated_to,
+            stream_topic_history.channel_topic_permalink_hash(develSub.stream_id, "topic 2"),
+        );
+    },
+);
 function add_row(sub) {
     stream_data.add_sub_for_tests(sub);
     const row = {
@@ -390,11 +635,8 @@ test_ui("narrowing", ({override_rewire}) => {
     topic_list.active_stream_id = noop;
     topic_list.get_stream_li = noop;
     override_rewire(stream_list, "scroll_stream_into_view", noop);
-    override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
-    override_rewire(stream_list, "update_dom_with_unread_counts", noop);
     override_rewire(stream_list, "get_section_id_for_stream_li", () => "normal");
     override_rewire(stream_list, "maybe_hide_topic_bracket", noop);
-    override_rewire(left_sidebar_navigation_area, "update_dom_with_unread_counts", noop);
     override_rewire(stream_list, "set_sections_states", noop);
 
     initialize_stream_data();

@@ -10,6 +10,7 @@ import render_topic_list_new_topic from "../templates/topic_list_new_topic.hbs";
 import * as blueslip from "./blueslip.ts";
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
+import * as left_sidebar_filter from "./left_sidebar_filter.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {recent_view_messages_data} from "./recent_view_messages_data.ts";
@@ -23,7 +24,6 @@ import * as topic_filter_pill from "./topic_filter_pill.ts";
 import type {TopicFilterPill, TopicFilterPillWidget} from "./topic_filter_pill.ts";
 import * as topic_list_data from "./topic_list_data.ts";
 import type {TopicInfo} from "./topic_list_data.ts";
-import * as typeahead_helper from "./typeahead_helper.ts";
 import * as ui_util from "./ui_util.ts";
 import * as vdom from "./vdom.ts";
 
@@ -484,9 +484,8 @@ export function rebuild_left_sidebar($stream_li: JQuery, stream_id: number): voi
 
     clear();
     const widget = new LeftSidebarTopicListWidget($stream_li, stream_id, false);
-    widget.build();
-
     active_widgets.set(stream_id, widget);
+    widget.build();
 }
 
 export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
@@ -585,23 +584,14 @@ export function get_left_sidebar_topic_search_term(): string {
 }
 
 export function get_typeahead_search_pills_syntax(): string {
-    const pills = topic_filter_pill_widget?.items() ?? [];
-
-    if (pills.length === 0) {
-        return "";
+    if (!zoomed) {
+        return left_sidebar_filter.get_effective_topics_state_for_search();
     }
 
-    // For now, there is only one pill in the left sidebar topic search input.
-    // This is because we only allow one topic filter pill at a time.
-    // If we allow multiple pills in the future, we may need to
-    // change this logic to return the syntax of all pills.
-    if (pills.length > 1) {
-        blueslip.warn("Multiple pills found in left sidebar topic search input.");
-    }
-
-    // We can remove this assumption once we allow multiple pills and hence update the
-    // callers of this function to handle multiple pills and implement the search accordingly.
-    return pills[0]!.syntax;
+    return topic_filter_pill.get_single_pill_syntax(
+        topic_filter_pill_widget?.items() ?? [],
+        "Multiple pills found in left sidebar topic search input.",
+    );
 }
 
 function set_search_bar_text(text: string): void {
@@ -626,55 +616,27 @@ export function setup_topic_search_typeahead(): void {
     };
 
     const options = {
+        ...topic_filter_pill.get_typeahead_base_options(),
         source() {
             const stream_id = active_stream_id();
             assert(stream_id !== undefined);
 
             const pills = topic_filter_pill_widget!.items();
-            const current_syntaxes = new Set(pills.map((pill) => pill.syntax));
             const query = $("#topic_filter_query").text().trim();
             const has_locally_available_resolved_topics =
                 stream_topic_history.stream_has_locally_available_resolved_topics(stream_id);
-            return topic_filter_pill.filter_options.filter((option) => {
-                if (!has_locally_available_resolved_topics && option.syntax.endsWith("resolved")) {
-                    // Technically, it could still be useful to show
-                    // the is:resolved option, as local data is not
-                    // complete. But because zooming the topic list
-                    // does the topic history fetch, it's reasonable to
-                    // ignore that possibility and just only show the
-                    // resolved topic options if we can confirm
-                    // they're relevant.
-                    return false;
-                }
-                if (current_syntaxes.has(option.syntax)) {
-                    return false;
-                }
-                if (
-                    option.match_prefix_required &&
-                    !query.startsWith(option.match_prefix_required)
-                ) {
-                    return false;
-                }
-                return true;
+            return topic_filter_pill.get_matching_filter_options({
+                current_items: pills,
+                query,
+                // Technically, it could still be useful to show
+                // the is:resolved option, as local data is not
+                // complete. But because zooming the topic list
+                // does the topic history fetch, it's reasonable to
+                // ignore that possibility and just only show the
+                // resolved topic options if we can confirm
+                // they're relevant.
+                allow_resolved_topic_filters: has_locally_available_resolved_topics,
             });
-        },
-        item_html(item: TopicFilterPill) {
-            return typeahead_helper.render_topic_state(item.label);
-        },
-        matcher(item: TopicFilterPill, query: string) {
-            // This basically only matches if `is:` is in the query.
-            return (
-                query.includes(":") &&
-                (item.syntax.toLowerCase().startsWith(query.toLowerCase()) ||
-                    (item.syntax.startsWith("-") &&
-                        item.syntax.slice(1).toLowerCase().startsWith(query.toLowerCase())))
-            );
-        },
-        sorter(items: TopicFilterPill[]) {
-            // This sort order places "Unresolved topics" first
-            // always, which is good because that's almost always what
-            // users will want.
-            return items;
         },
         updater(item: TopicFilterPill) {
             assert(topic_filter_pill_widget !== null);
@@ -684,11 +646,6 @@ export function setup_topic_search_typeahead(): void {
             $input.trigger("focus");
             return get_left_sidebar_topic_search_term();
         },
-        // Prevents key events from propagating to other handlers or
-        // triggering default browser actions.
-        stopAdvance: true,
-        // Use dropup, to match compose typeahead.
-        dropup: true,
     };
 
     topic_state_typeahead = new Typeahead(typeahead_input, options);
