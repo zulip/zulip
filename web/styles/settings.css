@@ -2251,6 +2251,12 @@ label.preferences-radio-choice-label {
     #change_email_modal {
         width: 300px;
     }
+
+    .settings_panel_list_header {
+        & .search-container {
+            margin-bottom: 0.5em;
+        }
+    }
 }
 
 #edit-linkifier-form {
