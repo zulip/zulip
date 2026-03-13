@@ -17,6 +17,7 @@ import * as reactions from "./reactions.ts";
 import * as rows from "./rows.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import {realm} from "./state_data.ts";
+import * as submessage from "./submessage.ts";
 import * as timerender from "./timerender.ts";
 import {
     INTERACTIVE_HOVER_DELAY,
@@ -439,10 +440,9 @@ export function initialize(): void {
             }
             let edited_time_string = "";
             let moved_time_string = "";
-            if (message_container.edited) {
-                // We know the message has been edited, so we either have a timestamp
-                // from the server or from a local edit.
-                assert(message_container.last_edit_timestamp !== undefined);
+            if (message_container.edited && message_container.last_edit_timestamp !== undefined) {
+                // Poll widget edits are not server-processed text edits, so
+                // there may be no timestamp when only widget edits are present.
                 edited_time_string = get_time_string(message_container.last_edit_timestamp);
             }
             if (message_container.moved) {
@@ -452,8 +452,10 @@ export function initialize(): void {
                 moved_time_string = get_time_string(message_container.last_moved_timestamp);
             }
             const edit_history_access =
+                (!submessage.is_poll_message(message_container.msg) ||
+                    message_container.last_edit_timestamp !== undefined) &&
                 realm.realm_message_edit_history_visibility_policy ===
-                message_edit_history_visibility_policy_values.always.code;
+                    message_edit_history_visibility_policy_values.always.code;
             const message_moved_and_move_history_access =
                 realm.realm_message_edit_history_visibility_policy ===
                     message_edit_history_visibility_policy_values.moves_only.code &&
@@ -463,6 +465,7 @@ export function initialize(): void {
                     render_message_edit_notice_tooltip({
                         moved: message_container.moved,
                         edited: message_container.edited,
+                        widget_edited: message_container.widget_edited,
                         edited_time_string,
                         moved_time_string,
                         edit_history_access,
