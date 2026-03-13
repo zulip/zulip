@@ -1,3 +1,9 @@
+/* Edit history headers only have 2 children (label + date),
+   so override the 5-column stream grid template. */
+.message-edit-message-row .message_header_stream .message-header-contents {
+    grid-template-columns: 1fr auto;
+}
+
 .message-edit-history-container {
     .header-body {
         display: flex;
