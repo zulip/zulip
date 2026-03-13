@@ -165,13 +165,16 @@ test("get_is_suggestions_for_spectator", () => {
 test("dm_suggestions", ({override}) => {
     let query = "is:dm";
     let suggestions = get_suggestions(query);
+    // Empty query: compare_users_for_pms sorts alphabetically
+    // by full_name (no recipient count, no partners, no name-length
+    // tiebreaker without a query).
     let expected = [
         "is:dm",
-        `dm:${alice.user_id}`,
-        `dm:${bob.user_id}`,
-        `dm:${jeff.user_id}`,
-        `dm:${me.user_id}`,
-        `dm:${ted.user_id}`,
+        `dm:${alice.user_id}`, // Alice Ignore
+        `dm:${bob.user_id}`, // Bob Roberts
+        `dm:${jeff.user_id}`, // Jeff Zoolipson
+        `dm:${me.user_id}`, // Me Myself
+        `dm:${ted.user_id}`, // Ted Smith
     ];
     assert.deepEqual(suggestions, expected);
 
@@ -196,14 +199,14 @@ test("dm_suggestions", ({override}) => {
 
     query = "is:private";
     suggestions = get_suggestions(query);
-    // Same search suggestions as for "is:dm"
+    // Same search suggestions and order as for "is:dm".
     expected = [
         "is:dm",
-        `dm:${alice.user_id}`,
-        `dm:${bob.user_id}`,
-        `dm:${jeff.user_id}`,
-        `dm:${me.user_id}`,
-        `dm:${ted.user_id}`,
+        `dm:${alice.user_id}`, // Alice Ignore
+        `dm:${bob.user_id}`, // Bob Roberts
+        `dm:${jeff.user_id}`, // Jeff Zoolipson
+        `dm:${me.user_id}`, // Me Myself
+        `dm:${ted.user_id}`, // Ted Smith
     ];
     assert.deepEqual(suggestions, expected);
 
@@ -987,10 +990,12 @@ test("people_suggestions", ({override}) => {
 
     let suggestions = get_suggestions(query);
 
+    // Both match "te"; compare_users_for_pms called without query
+    // so no name-length tiebreaker — alphabetical by full_name.
     let expected = [
         "te",
-        `dm:${bob.user_id}`, // bob térry
-        `dm:${ted.user_id}`,
+        `dm:${bob.user_id}`, // Bob Térry
+        `dm:${ted.user_id}`, // Ted Smith
         `sender:${bob.user_id}`,
         `sender:${ted.user_id}`,
         `dm-including:${bob.user_id}`,
@@ -1007,11 +1012,12 @@ test("people_suggestions", ({override}) => {
     people.add_active_user(accessible_user, "server_events");
     suggestions = get_suggestions(query);
 
+    // Same order with Test unknown user added (alphabetical).
     expected = [
         "te",
-        `dm:${bob.user_id}`,
-        `dm:${ted.user_id}`,
-        `dm:${inaccessible_user.user_id}`,
+        `dm:${bob.user_id}`, // Bob Térry
+        `dm:${ted.user_id}`, // Ted Smith
+        `dm:${inaccessible_user.user_id}`, // Test unknown user
         `sender:${bob.user_id}`,
         `sender:${ted.user_id}`,
         `sender:${inaccessible_user.user_id}`,
