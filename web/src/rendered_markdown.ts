@@ -5,6 +5,7 @@ import assert from "minimalistic-assert";
 
 import render_channel_message_link from "../templates/channel_message_link.hbs";
 import code_buttons_container from "../templates/code_buttons_container.hbs";
+import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_markdown_audio from "../templates/markdown_audio.hbs";
 import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import render_mention_content_wrapper from "../templates/mention_content_wrapper.hbs";
@@ -232,7 +233,8 @@ export const update_elements = ($content: JQuery): void => {
                 // If the stream has been deleted,
                 // sub_store.maybe_get_stream_name might return
                 // undefined.  Otherwise, display the current stream name.
-                $(this).text("#" + stream_name);
+                const sub = sub_store.get(stream_id);
+                $(this).html(render_inline_decorated_channel_name({stream: sub}));
             }
         }
     });
@@ -258,8 +260,10 @@ export const update_elements = ($content: JQuery): void => {
                 href: narrow_url,
             };
             if ($(this).hasClass("stream-topic")) {
+                const sub = sub_store.get(channel_topic.stream_id);
                 const topic_link_html = render_topic_link({
                     channel_id: channel_topic.stream_id,
+                    stream: sub,
                     ...context,
                 });
                 $(this).replaceWith($(topic_link_html));
