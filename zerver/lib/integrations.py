@@ -773,7 +773,17 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         [WebhookScreenshotConfig("incident_activated_new_default_payload.json")],
         display_name="New Relic",
     ),
-    IncomingWebhookIntegration("notion", ["productivity", "project-management"]),
+    IncomingWebhookIntegration(
+        "notion",
+        ["productivity", "project-management"],
+        url_options=[
+            WebhookUrlOption(
+                name="notion_token",
+                label="Notion API integration token",
+                validator=check_string,
+            ),
+        ],
+    ),
     IncomingWebhookIntegration(
         "opencollective",
         ["financial"],

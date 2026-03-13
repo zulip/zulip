@@ -2,12 +2,14 @@ import fnmatch
 import hashlib
 import hmac
 import importlib
+import json
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 from typing import Annotated, Any, TypeAlias
 from urllib.parse import unquote
 
+import requests
 from django.conf import settings
 from django.http import HttpRequest
 from django.utils.crypto import constant_time_compare
@@ -28,6 +30,7 @@ from zerver.lib.exceptions import (
     JsonableError,
     StreamDoesNotExistError,
 )
+from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
@@ -377,4 +380,29 @@ def guess_zulip_user_from_external_account(
         )
         return matching_user.user_profile
     except (CustomProfileFieldValue.DoesNotExist, CustomProfileFieldValue.MultipleObjectsReturned):
+        return None
+
+
+class WebhookApiSession(OutgoingSession):
+    def __init__(self, integration_name: str, timeout: float = 10.0) -> None:
+        super().__init__(role=integration_name, timeout=timeout)
+
+
+def fetch_api_data(
+    url: str,
+    *,
+    integration_name: str,
+    headers: dict[str, str] | None = None,
+    params: dict[str, Any] | None = None,
+    timeout: float = 10.0,
+) -> dict[str, Any] | None:
+    try:
+        session = WebhookApiSession(integration_name, timeout=timeout)
+        response = session.get(url, headers=headers, params=params)
+
+        if response.status_code != 200:
+            return None
+
+        return response.json()
+    except (requests.RequestException, json.JSONDecodeError, KeyError):
         return None
