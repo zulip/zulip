@@ -193,14 +193,7 @@ export function update_unread_mention_info_in_dom(
     stream_has_any_unread_mention_messages: boolean,
 ): void {
     const $unread_mention_info_span = $unread_mention_info_elem.find(".unread_mention_info");
-    if (!stream_has_any_unread_mention_messages) {
-        $unread_mention_info_span.toggleClass("no-display", true);
-        $unread_mention_info_span.text("");
-        return;
-    }
-
-    $unread_mention_info_span.toggleClass("no-display", false);
-    $unread_mention_info_span.text("@");
+    $unread_mention_info_span.toggleClass("no-display", !stream_has_any_unread_mention_messages);
 }
 
 export function do_new_unread_animation($target: JQuery): void {

@@ -480,6 +480,13 @@ input.settings_text_input {
     display: none;
 }
 
+.zulip-icon-at-sign {
+    /* The icon font glyph fills the full em-square, so
+       scale it down to match the visual size of text. */
+    font-size: 0.85em;
+    vertical-align: middle;
+}
+
 /* Implement the web app's default-hidden convention for alert
    elements.  Portico pages lack this CSS and thus show them by
    default. */
