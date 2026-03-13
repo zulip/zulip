@@ -79,6 +79,17 @@ export let update_recipient_row_attention_level = (): void => {
     // We also want to watch out for cases where the DM isn't valid,
     // as when trying to message deactivated users.
     const is_valid_dm = compose_validate.validate_private_message(false);
+    // It is possible that focus can remain in the recipient row while
+    // narrowing, e.g., with the `Ctrl + .` shortcut. We should account
+    // for that in the logic below, so that we don't erroneously add
+    // the `low-attention-recipient-row` class. And because focus is
+    // maintained under certain renarrows, we can't trust that a new
+    // focus event will fire after narrowing.
+    const recipient_row_focus_ids = ["private_message_recipient", "stream_message_recipient_topic"];
+    let has_recipient_row_focus = false;
+    if (document.activeElement && recipient_row_focus_ids.includes(document.activeElement?.id)) {
+        has_recipient_row_focus = true;
+    }
 
     // We're piggy-backing here, in a roundabout way, on
     // compose_ui.set_focus(). Any time the topic or DM recipient
@@ -92,7 +103,8 @@ export let update_recipient_row_attention_level = (): void => {
             (composing_to_current_private_message_narrow() &&
                 !has_unpilled_input &&
                 is_valid_dm)) &&
-        compose_state.has_full_recipient()
+        compose_state.has_full_recipient() &&
+        !has_recipient_row_focus
     ) {
         $("#compose-recipient").toggleClass("low-attention-recipient-row", true);
     } else {
