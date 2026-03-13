@@ -262,12 +262,17 @@
 }
 
 .low-attention-recipient-row #compose-direct-recipient .pill-container {
-    &:has(.pill) {
+    &:has(.pill):not(:focus-within) {
         /* In the low-attention state, prevent this from being
            part of the flex layout on .pill-container when there
            are already user pills (when the "Add user" text is
            never displayed, as specified on the
-           .input:first-child:empty::before selector above). */
+           .input:first-child:empty::before selector above).
+           We avoid doing this when there is focus inside the
+           pill container, so that typing in the recipient row
+           after narrowing to a DM conversation with `Ctrl + .`
+           doesn't create a palimpsest of text over the existing
+           user pill. */
         #private_message_recipient {
             position: absolute;
             top: 0;
