@@ -17,7 +17,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.streams import do_change_stream_permission
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.users import do_change_can_create_users, do_change_user_role, do_deactivate_user
-from zerver.lib.bot_config import ConfigError, get_bot_config
+from zerver.lib.bot_config import ConfigError, get_bot_config, set_bot_config
 from zerver.lib.bot_lib import get_bot_handler
 from zerver.lib.integrations import EMBEDDED_BOTS, IncomingWebhookIntegration
 from zerver.lib.request import RequestNotes
@@ -785,6 +785,17 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         profile = get_user(bot_email, bot_realm)
         self.assertEqual(profile.bot_type, UserProfile.INCOMING_WEBHOOK_BOT)
+
+    def test_add_bot_with_bot_type_incoming_webhook_and_payload_url(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
+            "payload_url": orjson.dumps("http://foo.bar.com").decode(),
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, "This bot type doesn't use payload_url.")
 
     def test_add_bot_with_bot_type_invalid(self) -> None:
         bot_info = {
@@ -1663,6 +1674,167 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_patch(f"/json/bots/{user_profile.id}", req)
         self.assert_json_error(result, "Must be an organization administrator")
 
+    def test_patch_bot_type(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+            "bot_type": UserProfile.DEFAULT_BOT,
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        email = "hambot-bot@zulip.testserver"
+        bot_profile = self.get_bot_user(email)
+
+        # DEFAULT_BOT -> INCOMING_WEBHOOK_BOT
+        req = dict(bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req)
+        self.assert_json_success(result)
+        bot_profile = self.get_bot_user(email)
+        self.assertEqual(bot_profile.bot_type, UserProfile.INCOMING_WEBHOOK_BOT)
+
+        # INCOMING_WEBHOOK_BOT -> OUTGOING_WEBHOOK_BOT
+        req = dict(bot_type=UserProfile.OUTGOING_WEBHOOK_BOT)
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req)
+        self.assert_json_error(result, "Missing payload_url.")
+
+        req_outgoing = dict(
+            bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+            service_payload_url=orjson.dumps("http://foo.bar.com").decode(),
+            service_interface=Service.GENERIC,
+        )
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req_outgoing)
+        self.assert_json_success(result)
+        bot_profile = self.get_bot_user(email)
+        self.assertEqual(bot_profile.bot_type, UserProfile.OUTGOING_WEBHOOK_BOT)
+        self.assert_length(get_bot_services(bot_profile.id), 1)
+
+        [service] = get_bot_services(bot_profile.id)
+        self.assertEqual(service.base_url, "http://foo.bar.com")
+        self.assertEqual(service.interface, Service.GENERIC)
+
+        # OUTGOING_WEBHOOK_BOT -> EMBEDDED_BOT
+        req = dict(bot_type=UserProfile.EMBEDDED_BOT)
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req)
+        # If no service_name it uses its short_name for service_name
+        self.assert_json_error(result, "Invalid embedded bot name.")
+
+        req_embed_with_url = dict(
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name=orjson.dumps("converter").decode(),
+            service_payload_url=orjson.dumps("http://foo.bar.com").decode(),
+        )
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req_embed_with_url)
+        self.assert_json_error(result, "Embedded bots don't use payload_url.")
+
+        req_embed = dict(
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name=orjson.dumps("not_existing_service").decode(),
+        )
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req_embed)
+        self.assert_json_error(result, "Invalid embedded bot name.")
+
+        req_embed = dict(
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name=orjson.dumps("converter").decode(),
+        )
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req_embed)
+        self.assert_json_success(result)
+        bot_profile = self.get_bot_user(email)
+        self.assertEqual(bot_profile.bot_type, UserProfile.EMBEDDED_BOT)
+        services = get_bot_services(bot_profile.id)
+        self.assert_length(services, 1)
+        self.assertEqual(services[0].name, "converter")
+
+        # EMBEDDED_BOT -> DEFAULT_BOT
+        set_bot_config(bot_profile, "key", "value")
+        req_default_with_name = dict(
+            bot_type=UserProfile.DEFAULT_BOT,
+            service_name=orjson.dumps("converter").decode(),
+        )
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req_default_with_name)
+        self.assert_json_error(result, "This bot type doesn't use service_name.")
+
+        req_default_with_url = dict(
+            bot_type=UserProfile.DEFAULT_BOT,
+            service_payload_url=orjson.dumps("http://foo.bar.com").decode(),
+        )
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req_default_with_url)
+        self.assert_json_error(result, "This bot type doesn't use payload_url.")
+
+        req = dict(bot_type=UserProfile.DEFAULT_BOT)
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req)
+        self.assert_json_success(result)
+        bot_profile = self.get_bot_user(email)
+        self.assertEqual(bot_profile.bot_type, UserProfile.DEFAULT_BOT)
+        self.assert_length(get_bot_services(bot_profile.id), 0)
+        with self.assertRaises(ConfigError):
+            get_bot_config(bot_profile)
+
+        # DEFAULT_BOT -> EMBEDDED_BOT with config_data
+        req_embed = dict(
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name=orjson.dumps("followup").decode(),
+            config_data=orjson.dumps({"stream": "value"}).decode(),
+        )
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req_embed)
+        self.assert_json_success(result)
+        bot_profile = self.get_bot_user(email)
+        self.assertEqual(bot_profile.bot_type, UserProfile.EMBEDDED_BOT)
+        services = get_bot_services(bot_profile.id)
+        self.assert_length(services, 1)
+        self.assertEqual(services[0].name, "followup")
+        self.assertEqual(get_bot_config(bot_profile), {"stream": "value"})
+
+    @override_settings(EMBEDDED_BOTS_ENABLED=False)
+    def test_patch_bot_type_embedded_bots_not_enabled(self) -> None:
+        self.login("desdemona")
+        email = "default-bot@zulip.com"
+
+        req = dict(bot_type=UserProfile.EMBEDDED_BOT)
+        result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", req)
+        self.assert_json_error(result, "Invalid bot type")
+
+    def test_patch_embedded_bot_service_name(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "Embedded bot of hamlet",
+            "short_name": "embot",
+            "bot_type": UserProfile.EMBEDDED_BOT,
+            "service_name": "converter",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        email = "embot-bot@zulip.testserver"
+        bot_profile = self.get_bot_user(email)
+
+        req = dict(
+            service_name=orjson.dumps("not_existing_service").decode(),
+        )
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req)
+        self.assert_json_error(result, "Invalid embedded bot name.")
+
+        req = dict(
+            service_payload_url=orjson.dumps("http://foo.bar.com").decode(),
+        )
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req)
+        self.assert_json_error(result, "This bot type doesn't use service_payload_url.")
+
+        req = dict(
+            service_name=orjson.dumps("followup").decode(),
+            config_data=orjson.dumps({"stream": "value"}).decode(),
+        )
+        result = self.client_patch(f"/json/bots/{bot_profile.id}", req)
+        self.assert_json_success(result)
+        bot_profile = self.get_bot_user(email)
+        self.assertEqual(bot_profile.bot_type, UserProfile.EMBEDDED_BOT)
+        services = get_bot_services(bot_profile.id)
+        self.assert_length(services, 1)
+        self.assertEqual(services[0].name, "followup")
+        self.assertEqual(get_bot_config(bot_profile), {"stream": "value"})
+
     def test_patch_bot_to_stream_private_allowed(self) -> None:
         self.login("hamlet")
         user_profile = self.example_user("hamlet")
@@ -1978,11 +2150,19 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
+        email = "hambot-bot@zulip.testserver"
+
+        # service_name is not applicable for outgoing webhook bots.
+        bot_info = {
+            "service_name": orjson.dumps("my-service").decode(),
+        }
+        result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
+        self.assert_json_error(result, "This bot type doesn't use service_name.")
+
         bot_info = {
             "service_payload_url": orjson.dumps("http://foo.bar2.com").decode(),
             "service_interface": Service.SLACK,
         }
-        email = "hambot-bot@zulip.testserver"
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
         self.assert_json_success(result)
 
@@ -1992,8 +2172,44 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         service_payload_url = orjson.loads(result.content)["service_payload_url"]
         self.assertEqual(service_payload_url, "http://foo.bar2.com")
 
+    def test_patch_incoming_bot_service_name(self) -> None:
+        self.login("hamlet")
+        bot_metadata = {
+            "full_name": "My Stripe Bot",
+            "short_name": "my-stripe",
+            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
+            "service_name": "stripe",
+        }
+        self.create_bot(**bot_metadata)
+        bot = UserProfile.objects.get(full_name="My Stripe Bot")
+
+        # Invalid integration name should be rejected.
+        bot_info = {"service_name": orjson.dumps("not_existing_integration").decode()}
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_error(result, "Invalid integration 'not_existing_integration'.")
+
+        # Valid service_name update
+        bot_info = {"service_name": orjson.dumps("taiga").decode()}
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_success(result)
+        config_data = get_bot_config(bot)
+        self.assertEqual(config_data["integration_id"], "taiga")
+
+    def test_patch_default_bot_service_name(self) -> None:
+        self.login("hamlet")
+        bot_metadata = {
+            "full_name": "My Generic Bot",
+            "short_name": "my-generic",
+            "bot_type": UserProfile.DEFAULT_BOT,
+        }
+        self.create_bot(**bot_metadata)
+        bot = UserProfile.objects.get(full_name="My Generic Bot")
+        bot_info = {"service_name": orjson.dumps("some_service").decode()}
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_error(result, "This bot type doesn't use service_name.")
+
     @patch("zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config")
-    def test_patch_bot_config_data(self, mock_validate_config: MagicMock) -> None:
+    def test_patch_embedded_bot_config_data(self, mock_validate_config: MagicMock) -> None:
         self.create_test_bot(
             "test",
             self.example_user("hamlet"),
@@ -2008,6 +2224,50 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_success(result)
         config_data = orjson.loads(result.content)["config_data"]
         self.assertEqual(config_data, orjson.loads(bot_info["config_data"]))
+
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    def test_patch_incoming_webhook_bot_config_data(self) -> None:
+        self.login("hamlet")
+        bot_metadata = {
+            "full_name": "My Stripe Bot",
+            "short_name": "my-stripe",
+            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
+            "service_name": "stripe",
+            "config_data": orjson.dumps({"stripe_api_key": "initial-key"}).decode(),
+        }
+        self.create_bot(**bot_metadata)
+        bot = UserProfile.objects.get(full_name="My Stripe Bot")
+        bot_info = {"config_data": orjson.dumps({"stripe_api_key": "updated-key"}).decode()}
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_success(result)
+        config_data = get_bot_config(bot)
+        self.assertEqual(config_data, {"integration_id": "stripe", "stripe_api_key": "updated-key"})
+
+    def test_patch_incoming_webhook_bot_config_data_no_integration(self) -> None:
+        self.login("hamlet")
+        bot_metadata = {
+            "full_name": "My Incoming Webhook Bot",
+            "short_name": "my-webhook",
+            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
+        }
+        self.create_bot(**bot_metadata)
+        bot = UserProfile.objects.get(full_name="My Incoming Webhook Bot")
+        bot_info = {"config_data": orjson.dumps({"some_key": "some_value"}).decode()}
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_error(result, "This bot doesn't have an integration configured.")
+
+    def test_patch_default_bot_config_data(self) -> None:
+        self.login("hamlet")
+        bot_metadata = {
+            "full_name": "My Generic Bot",
+            "short_name": "my-webhook",
+            "bot_type": UserProfile.DEFAULT_BOT,
+        }
+        self.create_bot(**bot_metadata)
+        bot = UserProfile.objects.get(full_name="My Generic Bot")
+        bot_info = {"config_data": orjson.dumps({"some_key": "some_value"}).decode()}
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_error(result, "This bot type doesn't use config data.")
 
     def test_outgoing_webhook_invalid_interface(self) -> None:
         self.login("hamlet")
@@ -2093,7 +2353,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                 bot_type=UserProfile.EMBEDDED_BOT,
                 service_name="followup",
                 config_data=orjson.dumps({"key": "value"}).decode(),
-                assert_json_error_msg="Embedded bots are not enabled.",
+                assert_json_error_msg="Invalid bot type",
                 **extras,
             )
 
