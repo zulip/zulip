@@ -7,6 +7,12 @@ Get Zulip notifications for your Jira projects!
 1. {!create-an-incoming-webhook.md!}
 
 1. {!generate-webhook-url-basic.md!}
+  By default, users mentioned in Jira comments will appear as
+   `[~accountid:ACCOUNT_ID]` in Zulip. To show display names instead,
+   fill in the **Your Jira email** and **Your Jira API token** fields
+   when generating the webhook URL. For instructions on generating a
+   Jira API token, refer to the
+   [Jira documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
 
 1. Go to your Jira **Site administration** page. Click on the menu icon
    ( <i class="fa fa-ellipsis-h"></i> ) under **Actions** for your
