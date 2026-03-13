@@ -293,6 +293,12 @@
             }
         }
 
+        &.focused {
+            .search-input-and-pills {
+                padding-block: 0.3571em; /* 5px at 14px em */
+            }
+        }
+
         &.focused .user-pill-container {
             flex-flow: row wrap;
         }
