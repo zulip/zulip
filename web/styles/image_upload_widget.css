@@ -186,6 +186,16 @@
     }
 }
 
+/* CSS related to settings page bot avatar upload widget only */
+#bot-avatar-upload-widget {
+    width: fit-content;
+
+    .image-block {
+        width: 200px;
+        height: 200px;
+    }
+}
+
 /* CSS related to settings page realm day/night logo upload widget only */
 #realm-day-logo-upload-widget,
 #realm-night-logo-upload-widget {
