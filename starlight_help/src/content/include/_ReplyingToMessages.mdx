@@ -1,20 +1,20 @@
-import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+import {TabItem, Tabs} from "@astrojs/starlight/components";
 
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
-
-import SendIcon from "~icons/zulip-icon/send";
+import EndComposing from "../include/_EndComposing.mdx";
+import MobileTapSend from "../include/_MobileTapSend.mdx";
 
 <Tabs>
   <TabItem label="Desktop/Web">
-    <Steps>
+    <FlattenedSteps>
       1. Click the **Message...** button at the bottom of the app.
       1. Compose your message. You
          can [preview your message](/help/preview-your-message-before-sending) before
          sending.
-      1. Click the **Send** (<SendIcon />) button, or
-         use a [keyboard shortcut](/help/configure-send-message-keys) to send your
-         message.
-    </Steps>
+
+      <EndComposing />
+    </FlattenedSteps>
 
     <ZulipTip>
       You can also reply by clicking on a message, or using the <kbd>R</kbd> or
@@ -23,12 +23,11 @@ import SendIcon from "~icons/zulip-icon/send";
   </TabItem>
 
   <TabItem label="Mobile">
-    <Steps>
+    <FlattenedSteps>
       1. Tap the **Message ...** text in the compose box at the bottom of the app.
-      1. Compose your message, and tap the **Send**
-         (<SendIcon />) button in the
-         bottom right corner of the app.
-    </Steps>
+
+      <MobileTapSend />
+    </FlattenedSteps>
 
     <ZulipTip>
       If you're reading messages in a [channel feed](/help/channel-feed),
