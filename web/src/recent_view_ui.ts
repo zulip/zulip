@@ -359,6 +359,20 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
         return true;
     }
 
+    // If the target row is beyond what's currently rendered but
+    // exists in the full list, render more rows to include it.
+    // `get_min_load_count` ensures enough rows are rendered based
+    // on `row_focus`.
+    if (
+        row >= 0 &&
+        row >= topics_widget.get_rendered_list().length &&
+        row < topics_widget.get_current_list().length &&
+        !topics_widget.all_rendered()
+    ) {
+        row_focus = row;
+        topics_widget.render();
+    }
+
     const $topic_rows = $("#recent-view-content-tbody tr");
     if ($topic_rows.length === 0 || row < 0 || row >= $topic_rows.length) {
         row_focus = 0;
