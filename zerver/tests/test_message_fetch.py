@@ -609,7 +609,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="search", operand='"french fries"')
         self._do_add_term_test(
             term,
-            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
+            "WHERE (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND (search_tsvector @@ plainto_tsquery(%(param_7)s, %(param_8)s))",
         )
 
     @override_settings(USING_PGROONGA=False)
@@ -617,7 +617,7 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
         self._do_add_term_test(
             term,
-            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND NOT (search_tsvector @@ plainto_tsquery(%(param_4)s, %(param_5)s))",
+            "WHERE NOT (content ILIKE %(content_1)s OR subject ILIKE %(subject_1)s AND is_channel_message) AND NOT (search_tsvector @@ plainto_tsquery(%(param_7)s, %(param_8)s))",
         )
 
     @override_settings(USING_PGROONGA=True)
@@ -2912,9 +2912,10 @@ class GetOldMessagesTest(ZulipTestCase):
         with connection.cursor() as cursor:
             cursor.execute(
                 """
-            UPDATE zerver_message SET
-            search_tsvector = to_tsvector('zulip.english_us_search',
-            subject || rendered_content)
+                UPDATE zerver_message SET
+                search_tsvector = to_tsvector('zulip.english_us_search',
+                    subject || regexp_replace(rendered_content,
+                        '<span class="[a-z]{1,3}">([^<]*)</span>', '\\1', 'g'))
             """
             )
 
@@ -3359,6 +3360,126 @@ class GetOldMessagesTest(ZulipTestCase):
             special_search_result["messages"][0]["match_content"],
             '<p>James\' <span class="highlight">burger</span></p>',
         )
+
+    @override_settings(USING_PGROONGA=False)
+    def test_get_messages_with_search_in_code_block(self) -> None:
+        self.login("cordelia")
+        cordelia = self.example_user("cordelia")
+        next_message_id = self.get_last_message().id + 1
+
+        self.send_stream_message(
+            cordelia,
+            "Verona",
+            content="```javascript\nm.mount(document.body, App)\n```",
+            topic_name="code review",
+        )
+
+        self.send_stream_message(
+            cordelia,
+            "Verona",
+            content="```javascript\nborder-radius: 4px\n```",
+            topic_name="code review",
+        )
+
+        self.send_stream_message(
+            cordelia,
+            "Verona",
+            content="```\nm.mount(document.body, App)\n```",
+            topic_name="plain code",
+        )
+        self._update_tsvector_index()
+
+        narrow = [dict(operator="search", operand="m.mount")]
+        result: dict[str, Any] = self.get_and_check_messages(
+            dict(
+                narrow=orjson.dumps(narrow).decode(),
+                anchor=next_message_id,
+                num_before=0,
+                num_after=10,
+            )
+        )
+        self.assert_length(result["messages"], 2)
+
+        narrow = [dict(operator="search", operand="border-radius")]
+        result = self.get_and_check_messages(
+            dict(
+                narrow=orjson.dumps(narrow).decode(),
+                anchor=next_message_id,
+                num_before=0,
+                num_after=10,
+            )
+        )
+        self.assert_length(result["messages"], 1)
+
+    @override_settings(USING_PGROONGA=False)
+    def test_get_messages_with_search_in_inline_code(self) -> None:
+        self.login("cordelia")
+        cordelia = self.example_user("cordelia")
+        next_message_id = self.get_last_message().id + 1
+
+        self.send_stream_message(
+            cordelia,
+            "Verona",
+            content="Use `m.mount` to render your app.",
+            topic_name="inline code",
+        )
+        self._update_tsvector_index()
+
+        narrow = [dict(operator="search", operand="m.mount")]
+        result: dict[str, Any] = self.get_and_check_messages(
+            dict(
+                narrow=orjson.dumps(narrow).decode(),
+                anchor=next_message_id,
+                num_before=0,
+                num_after=10,
+            )
+        )
+        self.assert_length(result["messages"], 1)
+
+    @override_settings(USING_PGROONGA=True)
+    def test_get_messages_with_search_in_code_block_pgroonga(self) -> None:
+        self.login("cordelia")
+        cordelia = self.example_user("cordelia")
+        next_message_id = self.get_last_message().id + 1
+
+        self.send_stream_message(
+            cordelia,
+            "Verona",
+            content="```javascript\nm.mount(document.body, App)\n```",
+            topic_name="code review",
+        )
+        self.send_stream_message(
+            cordelia,
+            "Verona",
+            content="```\nm.mount(document.body, App)\n```",
+            topic_name="plain code",
+        )
+
+        # NOTE: There is no _update_pgroonga_index() helper in this test class.
+        # This raw SQL duplicates the formula in process_fts_updates and must
+        # be kept in sync manually if that formula changes.
+        # TODO: Extract a shared _update_pgroonga_index() helper when PGroonga
+        # testing infrastructure is improved.
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE zerver_message SET
+                search_pgroonga = escape_html(subject) || ' '
+                || regexp_replace(rendered_content,
+                    '<span class="[a-z]{1,3}">([^<]*)</span>', '\\1', 'g')
+                """
+            )
+
+        narrow = [dict(operator="search", operand="m.mount")]
+        result: dict[str, Any] = self.get_and_check_messages(
+            dict(
+                narrow=orjson.dumps(narrow).decode(),
+                anchor=next_message_id,
+                num_before=0,
+                num_after=10,
+            )
+        )
+        self.assert_length(result["messages"], 2)
 
     @override_settings(USING_PGROONGA=False)
     def test_get_visible_messages_with_search(self) -> None:
@@ -5358,7 +5479,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
         sql_template = """\
 SELECT anon_1.message_id, anon_1.flags, anon_1.escaped_topic_name, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \n\
 FROM (SELECT message_id, flags, escape_html(subject) AS escaped_topic_name, rendered_content, array((SELECT ARRAY[sum(length(anon_3) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_3, '</ts-match>') - 1] AS anon_2 \n\
-FROM unnest(string_to_array(ts_headline('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_3\n\
+FROM unnest(string_to_array(ts_headline('zulip.english_us_search', regexp_replace(rendered_content, '<span class=\"[a-z]{{1,3}}\">([^<]*)</span>', '\\1', 'g'), plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_3\n\
  LIMIT ALL OFFSET 1)) AS content_matches, array((SELECT ARRAY[sum(length(anon_5) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_5, '</ts-match>') - 1] AS anon_4 \n\
 FROM unnest(string_to_array(ts_headline('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_5\n\
  LIMIT ALL OFFSET 1)) AS topic_matches \n\
@@ -5378,7 +5499,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
         sql_template = """\
 SELECT anon_1.message_id, anon_1.escaped_topic_name, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \n\
 FROM (SELECT id AS message_id, escape_html(subject) AS escaped_topic_name, rendered_content, array((SELECT ARRAY[sum(length(anon_3) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_3, '</ts-match>') - 1] AS anon_2 \n\
-FROM unnest(string_to_array(ts_headline('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_3\n\
+FROM unnest(string_to_array(ts_headline('zulip.english_us_search', regexp_replace(rendered_content, '<span class=\"[a-z]{{1,3}}\">([^<]*)</span>', '\\1', 'g'), plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_3\n\
  LIMIT ALL OFFSET 1)) AS content_matches, array((SELECT ARRAY[sum(length(anon_5) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_5, '</ts-match>') - 1] AS anon_4 \n\
 FROM unnest(string_to_array(ts_headline('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_5\n\
  LIMIT ALL OFFSET 1)) AS topic_matches \n\
@@ -5400,7 +5521,7 @@ WHERE realm_id = 2 AND recipient_id = {scotland_recipient} AND (search_tsvector 
         sql_template = """\
 SELECT anon_1.message_id, anon_1.flags, anon_1.escaped_topic_name, anon_1.rendered_content, anon_1.content_matches, anon_1.topic_matches \n\
 FROM (SELECT message_id, flags, escape_html(subject) AS escaped_topic_name, rendered_content, array((SELECT ARRAY[sum(length(anon_3) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_3, '</ts-match>') - 1] AS anon_2 \n\
-FROM unnest(string_to_array(ts_headline('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', '"jumping" quickly'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_3\n\
+FROM unnest(string_to_array(ts_headline('zulip.english_us_search', regexp_replace(rendered_content, '<span class=\"[a-z]{{1,3}}\">([^<]*)</span>', '\\1', 'g'), plainto_tsquery('zulip.english_us_search', '"jumping" quickly'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_3\n\
  LIMIT ALL OFFSET 1)) AS content_matches, array((SELECT ARRAY[sum(length(anon_5) - 11) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING) + 11, strpos(anon_5, '</ts-match>') - 1] AS anon_4 \n\
 FROM unnest(string_to_array(ts_headline('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', '"jumping" quickly'), 'HighlightAll = TRUE, StartSel = <ts-match>, StopSel = </ts-match>'), '<ts-match>')) AS anon_5\n\
  LIMIT ALL OFFSET 1)) AS topic_matches \n\
