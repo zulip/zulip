@@ -24,6 +24,7 @@ import * as util from "./util.ts";
 export function set_count(count: number): void {
     const $drafts_li = $(".top_left_drafts");
     ui_util.update_unread_count_in_dom($drafts_li, count);
+    $(".drafts-sidebar-menu-icon").toggleClass("hide", count === 0);
 }
 
 function getTimestamp(): number {
