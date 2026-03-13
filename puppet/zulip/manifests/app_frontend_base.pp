@@ -199,6 +199,8 @@ class zulip::app_frontend_base {
   $katex_server = zulipconf('application_server', 'katex_server', true)
   $katex_server_port = zulipconf('application_server', 'katex_server_port', '9700')
 
+  $supervisor_output = zulipconf('application_server', 'supervisor_output', 'file')
+
   $tusd_server_listen = zulipconf('application_server', 'tusd_server_listen', '127.0.0.1')
 
   if $proxy_host != '' and $proxy_port != '' {

@@ -102,6 +102,10 @@ isn't running. If you don't see relevant logs in
 `/etc/supervisor/conf.d/zulip.conf` for details. Logs only make it to
 `/var/log/zulip/errors.log` once a service has started fully.
 
+If you have configured `supervisor_output = syslog` in
+`/etc/zulip/zulip.conf`, check your syslog for supervisor-managed
+process output instead of the log files in `/var/log/zulip/`.
+
 ### Restarting services with `supervisorctl restart`
 
 After you change configuration in `/etc/zulip/settings.py` or fix a

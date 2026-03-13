@@ -37,6 +37,7 @@ class zulip::camo (String $listen_address = '0.0.0.0') {
 
   $zulip_version = $facts['zulip_version']
   $external_uri = pick(get_django_setting_slow('ROOT_DOMAIN_URI'), 'https://zulip.com')
+  $supervisor_output = zulipconf('application_server', 'supervisor_output', 'file')
   file { "${zulip::common::supervisor_conf_dir}/go-camo.conf":
     ensure  => file,
     require => [
