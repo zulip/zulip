@@ -25,6 +25,7 @@ from zerver.lib.email_mirror_helpers import (
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.markdown import get_markdown_link_for_url
+from zerver.lib.mention import BEFORE_MENTION_ALLOWED_REGEX, stream_wildcards, topic_wildcards
 from zerver.lib.message import normalize_body, truncate_content, truncate_topic
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
@@ -197,12 +198,32 @@ def construct_zulip_body(
 ## Sending the Zulip ##
 
 
+EMAIL_WILDCARD_ALTERNATION = "|".join(
+    sorted(stream_wildcards | topic_wildcards, key=len, reverse=True)
+)
+EMAIL_WILDCARD_RE = re.compile(
+    rf"{BEFORE_MENTION_ALLOWED_REGEX}@(?P<silent>_?)(\*\*(?P<wildcard>{EMAIL_WILDCARD_ALTERNATION})\*\*)",
+)
+
+
+def silence_email_gateway_wildcards(content: str) -> str:
+    def convert(match: Match[str]) -> str:
+        if match.group("silent"):
+            return match.group(0)
+
+        wildcard_name = match.group("wildcard")
+        return f"@_**{wildcard_name}**"
+
+    return EMAIL_WILDCARD_RE.sub(convert, content)
+
+
 def send_zulip(sender: UserProfile, stream: Stream, topic_name: str, content: str) -> None:
+    silenced_content = silence_email_gateway_wildcards(content)
     internal_send_stream_message(
         sender,
         stream,
         truncate_topic(topic_name),
-        normalize_body(content),
+        normalize_body(silenced_content),
         email_gateway=True,
     )
 
