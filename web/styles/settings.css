@@ -1572,6 +1572,7 @@ label.preferences-radio-choice-label {
                 font-size: 1em;
                 text-align: center;
                 color: hsl(0deg 0% 62%);
+                padding-right: 0.6em;
             }
         }
 
