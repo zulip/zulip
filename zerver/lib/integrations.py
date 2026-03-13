@@ -935,6 +935,18 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         display_name="UptimeRobot",
     ),
     IncomingWebhookIntegration(
+        "vikunja",
+        ["productivity", "project-management"],
+        [
+            WebhookScreenshotConfig(
+                "task_updated.json", extra_params={"host_url": "https://vikunja.example.com"}
+            )
+        ],
+        url_options=[
+            WebhookUrlOption(name="host_url", label="Vikunja Host URL", validator=check_string)
+        ],
+    ),
+    IncomingWebhookIntegration(
         "wekan",
         ["productivity", "project-management"],
         [WebhookScreenshotConfig("add_comment.json")],
