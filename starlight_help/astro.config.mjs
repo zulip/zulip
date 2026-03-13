@@ -298,7 +298,7 @@ export default defineConfig({
                         "format-your-message-using-markdown",
                         {
                             label: "Search filters",
-                            link: "/search-for-messages/#search-filters",
+                            link: "/search-for-messages#search-filters",
                         },
                         "using-zulip-via-email",
                     ],
