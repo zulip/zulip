@@ -673,7 +673,7 @@ class PreviewTestCase(ZulipTestCase):
 
     @override_settings(CAMO_URI="")
     def test_inline_url_embed_preview(self) -> None:
-        with_preview = '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(&quot;http://ia.media-imdb.com/images/rock.jpg&quot;)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
+        with_preview = '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/"><img alt="" src="http://ia.media-imdb.com/images/rock.jpg"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
         without_preview = '<p><a href="http://test.org/">http://test.org/</a></p>'
         msg = self._send_message_with_test_org_url(sender=self.example_user("hamlet"))
         self.assertEqual(msg.rendered_content, with_preview)
@@ -690,9 +690,9 @@ class PreviewTestCase(ZulipTestCase):
     def test_inline_url_embed_preview_with_camo(self) -> None:
         camo_url = get_camo_url("http://ia.media-imdb.com/images/rock.jpg")
         with_preview = (
-            '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(&quot;'
+            '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/"><img alt="" src="'
             + camo_url
-            + '&quot;)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
+            + '"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
         )
         msg = self._send_message_with_test_org_url(sender=self.example_user("hamlet"))
         self.assertEqual(msg.rendered_content, with_preview)
@@ -725,9 +725,8 @@ class PreviewTestCase(ZulipTestCase):
         msg = Message.objects.select_related("sender").get(id=msg_id)
         with_preview = (
             '<p><a href="http://test.org/">http://test.org/</a></p>\n'
-            '<div class="message_embed"><a class="message_embed_image" href="http://test.org/"'
-            ' style="background-image:'
-            ' url(&quot;http://ia.media-imdb.com/images/rock.jpg\\\\&quot;)"></a><div'
+            '<div class="message_embed"><a class="message_embed_image" href="http://test.org/">'
+            '<img alt="" src="http://ia.media-imdb.com/images/rock.jpg\\"></a><div'
             ' class="data-container"><div class="message_embed_title"><a href="http://test.org/"'
             ' title="The Rock">The Rock</a></div><div class="message_embed_description">Description'
             " text</div></div></div>"
@@ -751,7 +750,7 @@ class PreviewTestCase(ZulipTestCase):
 
     @override_settings(CAMO_URI="")
     def test_inline_url_embed_preview_with_relative_image_url(self) -> None:
-        with_preview_relative = '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(&quot;http://test.org/images/rock.jpg&quot;)"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
+        with_preview_relative = '<p><a href="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/"><img alt="" src="http://test.org/images/rock.jpg"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
         # Try case where the Open Graph image is a relative URL.
         msg = self._send_message_with_test_org_url(
             sender=self.example_user("prospero"), relative_url=True
