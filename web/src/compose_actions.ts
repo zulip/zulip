@@ -635,6 +635,10 @@ export function on_narrow(opts: NarrowActivateOpts): void {
 
     if (opts.trigger === "narrow_to_compose_target") {
         compose_fade.update_message_list();
+        // When narrowing to a compose target, focus the compose
+        // area, under the assumption that someone so narrowing
+        // is ready to compose their message.
+        $("#compose-textarea").trigger("focus");
         return;
     }
 
