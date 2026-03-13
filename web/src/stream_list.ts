@@ -6,6 +6,7 @@ import * as z from "zod/mini";
 import render_filter_topics from "../templates/filter_topics.hbs";
 import render_go_to_channel_feed_tooltip from "../templates/go_to_channel_feed_tooltip.hbs";
 import render_go_to_channel_list_of_topics_tooltip from "../templates/go_to_channel_list_of_topics_tooltip.hbs";
+import render_left_sidebar_views_section from "../templates/left_sidebar_views_section.hbs";
 import render_show_inactive_or_muted_channels from "../templates/show_inactive_or_muted_channels.hbs";
 import render_stream_list_section_container from "../templates/stream_list_section_container.hbs";
 import render_stream_privacy from "../templates/stream_privacy.hbs";
@@ -28,6 +29,7 @@ import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
+import {get_stream_filters_max_height} from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -46,6 +48,12 @@ import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 import type {FullUnreadCountsData, StreamCountInfo} from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
+
+// Hardcoded here rather than being imported from
+// Sidebar_ui.ts because es-lint won't let it
+// due to import/no-cycle (stream_list -- sidebar_ui).
+// Needs work.
+const LEFT_SIDEBAR_NAVIGATION_AREA_TITLE = $t({defaultMessage: "VIEWS"});
 
 let pending_stream_list_rerender = false;
 let zoomed_in = false;
@@ -168,6 +176,45 @@ function zoom_in(): void {
     $("#left-sidebar").addClass("zoom-in");
     $("#left-sidebar").addClass("zoom-in-topics");
     $("#left-sidebar-modal").addClass("zoom-in-topics");
+}
+
+function update_dom_with_left_sidebar_views(auto_collapse_views: boolean): void {
+    const $outer_scroll_view_area = $("#left-sidebar-navigation-area");
+
+    const primary_condensed_views =
+        left_sidebar_navigation_area.get_built_in_primary_condensed_views();
+    const expanded_views = left_sidebar_navigation_area.get_built_in_views();
+    if (auto_collapse_views) {
+        $outer_scroll_view_area.empty();
+
+        const $parsed_left_sidebar_views_section = $(
+            render_left_sidebar_views_section({
+                is_spectator: page_params.is_spectator,
+                primary_condensed_views,
+                auto_collapse_views,
+                expanded_views,
+                LEFT_SIDEBAR_NAVIGATION_AREA_TITLE,
+            }),
+        );
+        $("#left_sidebar_scroll_container .simplebar-content").prepend(
+            $parsed_left_sidebar_views_section,
+        );
+    } else {
+        $("#views-label-container").remove();
+        $("#left-sidebar-navigation-list").remove();
+        $outer_scroll_view_area.html(
+            render_left_sidebar_views_section({
+                is_spectator: page_params.is_spectator,
+                primary_condensed_views,
+                auto_collapse_views,
+                expanded_views,
+                LEFT_SIDEBAR_NAVIGATION_AREA_TITLE,
+            }),
+        );
+    }
+
+    left_sidebar_navigation_area.update_reminders_row();
+    left_sidebar_navigation_area.update_scheduled_messages_row();
 }
 
 export function set_pending_stream_list_rerender(value: boolean): void {
@@ -371,6 +418,13 @@ export function update_unread_counts_visibility(): void {
     );
     // Note: Channel folder count visibilities are handled in
     // `update_section_unread_count`, since they depend on unread counts.
+}
+
+export function update_auto_collapse_views(): void {
+    const auto_collapse_views = user_settings.web_left_sidebar_auto_collapse_views;
+
+    update_dom_with_left_sidebar_views(auto_collapse_views);
+    get_stream_filters_max_height();
 }
 
 function maybe_change_channel_folders_option_visibility(): void {
@@ -1579,13 +1633,23 @@ export function set_event_handlers({
             return;
         }
 
+        const auto_collapse_views = user_settings.web_left_sidebar_auto_collapse_views;
         const scroll_position = $(
             "#left_sidebar_scroll_container .simplebar-content-wrapper",
         ).scrollTop();
         const pm_list_height = $("#direct-messages-list").height();
         assert(scroll_position !== undefined);
         assert(pm_list_height !== undefined);
-        if (scroll_position > pm_list_height) {
+
+        let scroll_height = pm_list_height;
+
+        if (auto_collapse_views) {
+            const navigation_height = $("#left-sidebar-navigation-list").height();
+            assert(navigation_height !== undefined);
+
+            scroll_height += navigation_height;
+        }
+        if (scroll_position > scroll_height) {
             $("#toggle-direct-messages-section-icon").addClass("rotate-icon-right");
             $("#toggle-direct-messages-section-icon").removeClass("rotate-icon-down");
             pm_list.set_temporarily_collapsed(true);

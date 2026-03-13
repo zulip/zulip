@@ -1,6 +1,7 @@
 import $ from "jquery";
 import SimpleBar from "simplebar";
 
+import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 // This type is helpful for testing, where we may have a dummy object instead of an actual jquery object.
@@ -97,6 +98,15 @@ export function scroll_element_into_container(
     const delta = scroll_delta(opts);
 
     if (delta === 0) {
+        return;
+    }
+
+    // This is to solve a bug where when auto collapse is true
+    // and this functions automatically shifts left sidebar
+    // in order to bring a certain unknown element in view.
+    // maybe some work needs to be done here.
+    const auto_collapse_views = user_settings.web_left_sidebar_auto_collapse_views;
+    if (auto_collapse_views) {
         return;
     }
 

@@ -14847,6 +14847,12 @@ paths:
                     **Changes**: New in Zulip 11.0 (feature level 398).
                   type: boolean
                   example: true
+                web_left_sidebar_auto_collapse_views:
+                  description: |
+                    Determines whether the web/desktop application's left sidebar should
+                    auto collapse views section or not.
+                  type: boolean
+                  example: true
                 enable_stream_desktop_notifications:
                   description: |
                     Enable visual desktop notifications for channel messages.
@@ -15178,6 +15184,8 @@ paths:
               web_left_sidebar_show_channel_folders:
                 contentType: application/json
               web_left_sidebar_unreads_count_summary:
+                contentType: application/json
+              web_left_sidebar_auto_collapse_views:
                 contentType: application/json
               enable_stream_desktop_notifications:
                 contentType: application/json
@@ -18718,6 +18726,11 @@ paths:
                               the unread message count summary.
 
                               **Changes**: New in Zulip 11.0 (feature level 398).
+                          web_left_sidebar_auto_collapse_views:
+                            type: boolean
+                            description: |
+                              Determines whether the web/desktop application's left sidebar should
+                              auto collapse views section or not.
                           timezone:
                             type: string
                             description: |
@@ -21106,6 +21119,11 @@ paths:
                               the unread message count summary.
 
                               **Changes**: New in Zulip 11.0 (feature level 398).
+                          web_left_sidebar_auto_collapse_views:
+                            type: boolean
+                            description: |
+                              Determines whether the web/desktop application's left sidebar should
+                              auto collapse views section or not.
                           enable_stream_desktop_notifications:
                             type: boolean
                             description: |
@@ -22471,6 +22489,12 @@ paths:
                     **Changes**: New in Zulip 11.0 (feature level 398).
                   type: boolean
                   example: true
+                web_left_sidebar_auto_collapse_views:
+                  description: |
+                    Determines whether the web/desktop application's left sidebar should
+                    auto collapse views section or not.
+                  type: boolean
+                  example: true
                 timezone:
                   description: |
                     The IANA identifier of the user's [profile time zone](/help/change-your-timezone),
@@ -22891,6 +22915,8 @@ paths:
               web_left_sidebar_show_channel_folders:
                 contentType: application/json
               web_left_sidebar_unreads_count_summary:
+                contentType: application/json
+              web_left_sidebar_auto_collapse_views:
                 contentType: application/json
               enable_stream_desktop_notifications:
                 contentType: application/json
