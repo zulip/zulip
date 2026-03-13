@@ -570,13 +570,6 @@ ul.popover-group-menu-member-list {
         max-width: 100%;
     }
 
-    .modal__title {
-        .channel-privacy-type-icon {
-            padding-left: 3px;
-            padding-right: 5px;
-        }
-    }
-
     #report_type_options_widget_wrapper,
     #move_topic_to_stream_widget_wrapper {
         display: flex;
@@ -599,11 +592,6 @@ ul.popover-group-menu-member-list {
             .channel-privacy-type-icon {
                 /* 13px at 16px/1em */
                 font-size: 0.8125em;
-                /* 13px at 13px/1em */
-                width: 1em;
-                height: 1em;
-                position: relative;
-                top: 2px;
             }
         }
 

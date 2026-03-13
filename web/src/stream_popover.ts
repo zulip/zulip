@@ -3,7 +3,7 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
-import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
+import render_decorated_channel_name from "../templates/decorated_channel_name.hbs";
 import render_inline_stream_or_topic_reference from "../templates/inline_stream_or_topic_reference.hbs";
 import render_topic_already_exists_warning_banner from "../templates/modal_banner/topic_already_exists_warning_banner.hbs";
 import render_unsubscribed_participants_warning_banner from "../templates/modal_banner/unsubscribed_participants_warning_banner.hbs";
@@ -881,7 +881,11 @@ export async function build_move_topic_to_stream_popover(
             );
         } else {
             $("#move_topic_to_stream_widget .dropdown_widget_value").html(
-                render_inline_decorated_channel_name({stream, show_colored_icon: true}),
+                render_decorated_channel_name({
+                    inline_with_text: true,
+                    stream,
+                    show_colored_icon: true,
+                }),
             );
         }
     }

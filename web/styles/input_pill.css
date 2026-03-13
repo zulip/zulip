@@ -74,7 +74,7 @@
         }
 
         .channel-privacy-type-icon {
-            padding-right: 2px;
+            padding-right: var(--decorated-channel-name-privacy-icon-gap);
         }
 
         .pill-label {

@@ -6,7 +6,7 @@ import * as z from "zod/mini";
 
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
 import render_settings_reactivation_stream_modal from "../templates/confirm_dialog/confirm_reactivate_stream.hbs";
-import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
+import render_decorated_channel_name from "../templates/decorated_channel_name.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
 import render_channel_name_conflict_error from "../templates/stream_settings/channel_name_conflict_error.hbs";
 import render_copy_email_address_modal from "../templates/stream_settings/copy_email_address_modal.hbs";
@@ -876,7 +876,10 @@ export function initialize(): void {
         const stream_id = get_stream_id(this);
         const stream = sub_store.get(stream_id);
 
-        const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({stream});
+        const stream_name_with_privacy_symbol_html = render_decorated_channel_name({
+            inline_with_text: true,
+            stream,
+        });
 
         const is_moderation_request_channel =
             stream_id === realm.realm_moderation_request_channel_id;
@@ -893,7 +896,6 @@ export function initialize(): void {
             is_moderation_request_channel;
 
         const modal_content_html = render_settings_deactivation_stream_modal({
-            stream_name_with_privacy_symbol_html,
             is_moderation_request_channel,
             is_new_stream_announcements_stream,
             is_signup_announcements_stream,
@@ -939,7 +941,10 @@ export function initialize(): void {
         }
 
         const stream = sub_store.get(stream_id);
-        const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({stream});
+        const stream_name_with_privacy_symbol_html = render_decorated_channel_name({
+            inline_with_text: true,
+            stream,
+        });
         const modal_content_html = render_settings_reactivation_stream_modal();
 
         confirm_dialog.launch({
