@@ -400,6 +400,10 @@ test("merge_message_groups", ({mock_template}) => {
         };
     }
 
+    function is_moved_message(container) {
+        return container.msg.edit_history?.some((e) => e.prev_stream !== undefined) ?? false;
+    }
+
     function build_list(message_groups) {
         const filter = new Filter([{operator: "stream", operand: "foo"}]);
 
@@ -415,6 +419,18 @@ test("merge_message_groups", ({mock_template}) => {
         view._message_groups = message_groups;
         view.list.unsubscribed_bookend_content = noop;
         view.list.subscribed_bookend_content = noop;
+
+        // Populate message_containers and track boundary non-moved containers.
+        for (const message_group of message_groups) {
+            for (const message_container of message_group.message_containers) {
+                view.message_containers.set(message_container.msg.id, message_container);
+                if (!is_moved_message(message_container)) {
+                    view._first_non_moved_message_container ??= message_container;
+                    view._last_non_moved_message_container = message_container;
+                }
+            }
+        }
+
         return view;
     }
 
@@ -442,9 +458,10 @@ test("merge_message_groups", ({mock_template}) => {
 
     (function test_empty_list_bottom() {
         const list = build_list([]);
-        const message_group = build_message_group([build_message_context()]);
+        const mc = build_message_context();
+        const message_group = build_message_group([mc]);
 
-        const result = list.merge_message_groups([message_group], "bottom");
+        const result = list.merge_message_groups([message_group], "bottom", mc, mc);
 
         assert_message_groups_list_equal(list._message_groups, [message_group]);
         assert_message_groups_list_equal(result.append_groups, [message_group]);
@@ -461,7 +478,7 @@ test("merge_message_groups", ({mock_template}) => {
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], "bottom");
+        const result = list.merge_message_groups([message_group2], "bottom", message2, message2);
 
         assert_message_groups_list_equal(list._message_groups, [
             build_message_group([message1, message2]),
@@ -480,7 +497,7 @@ test("merge_message_groups", ({mock_template}) => {
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], "bottom");
+        const result = list.merge_message_groups([message_group2], "bottom", message2, message2);
 
         assert.ok(!message_group2.date_unchanged, true);
         assert_message_groups_list_equal(list._message_groups, [message_group1, message_group2]);
@@ -498,7 +515,7 @@ test("merge_message_groups", ({mock_template}) => {
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], "bottom");
+        const result = list.merge_message_groups([message_group2], "bottom", message2, message2);
 
         assert_message_groups_list_equal(list._message_groups, [message_group1, message_group2]);
         assert_message_groups_list_equal(result.append_groups, [message_group2]);
@@ -516,7 +533,7 @@ test("merge_message_groups", ({mock_template}) => {
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], "bottom");
+        const result = list.merge_message_groups([message_group2], "bottom", message2, message2);
 
         assert_message_groups_list_equal(list._message_groups, [message_group1]);
         assert.deepEqual(result.append_groups, []);
@@ -528,36 +545,42 @@ test("merge_message_groups", ({mock_template}) => {
 
     (function test_append_message_historical() {
         const message1 = build_message_context({historical: false});
-        const message_group1 = build_message_group([message1]);
+        // Moved message carries historical from its original stream.
+        const moved_message1 = build_message_context({
+            historical: true,
+            edit_history: [{prev_stream: 1}],
+        });
+        const message_group1 = build_message_group([message1, moved_message1]);
 
         const message2 = build_message_context({historical: true});
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], "bottom");
+        const result = list.merge_message_groups([message_group2], "bottom", message2, message2);
 
         // Flipping historical flag should not split the message group
         // if the message recipient is same
         assert.equal(message_group2.bookend_top, undefined);
         assert.equal(message2.want_subscription_status_divider, true);
         assert_message_groups_list_equal(list._message_groups, [
-            build_message_group([message1, message2]),
+            build_message_group([message1, moved_message1, message2]),
         ]);
         assert.deepEqual(result.append_groups, []);
         assert.deepEqual(result.prepend_groups, []);
         assert.deepEqual(result.rerender_groups, []);
         assert.deepEqual(result.append_messages, [message2]);
         assert.ok(!list._message_groups[0].message_containers[0].want_subscription_status_divider);
-        assert.ok(list._message_groups[0].message_containers[1].want_subscription_status_divider);
+        assert.ok(!list._message_groups[0].message_containers[1].want_subscription_status_divider);
+        assert.ok(list._message_groups[0].message_containers[2].want_subscription_status_divider);
 
         const message3 = build_message_context({historical: false, topic: "test"});
         const message_group3 = build_message_group([message3]);
 
-        const result2 = list.merge_message_groups([message_group3]);
+        const result2 = list.merge_message_groups([message_group3], "bottom", message3, message3);
 
         assert.ok(message_group3.bookend_top);
         assert_message_groups_list_equal(list._message_groups, [
-            build_message_group([message1, message2]),
+            build_message_group([message1, moved_message1, message2]),
             message_group3,
         ]);
         assert_message_groups_list_equal(result2.append_groups, [message_group3]);
@@ -565,6 +588,27 @@ test("merge_message_groups", ({mock_template}) => {
         assert.deepEqual(result2.rerender_groups, []);
         assert.deepEqual(result2.append_messages, []);
         assert.ok(!list._message_groups[1].message_containers[0].want_subscription_status_divider);
+
+        // Moved message carries historical from its original stream.
+        const moved_message2 = build_message_context({
+            historical: true,
+            topic: "test",
+            edit_history: [{prev_stream: 1}],
+        });
+
+        const message4 = build_message_context({historical: true, topic: "test"});
+        const message_group4 = build_message_group([moved_message2, message4]);
+
+        list.merge_message_groups([message_group4], "bottom", message4, message4);
+
+        // The subscription divider must not appear on the moved message.
+        assert.ok(!moved_message1.want_subscription_status_divider);
+        // Subscription divider is calculated on the first non-moved message.
+        assert.ok(message4.want_subscription_status_divider);
+        assert_message_groups_list_equal(list._message_groups, [
+            build_message_group([message1, moved_message1, message2]),
+            build_message_group([message3, moved_message2, message4]),
+        ]);
     })();
 
     (function test_append_message_same_topic_me_message() {
@@ -575,7 +619,7 @@ test("merge_message_groups", ({mock_template}) => {
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], "bottom");
+        const result = list.merge_message_groups([message_group2], "bottom", message2, message2);
 
         assert.ok(message2.include_sender);
         assert_message_groups_list_equal(list._message_groups, [
@@ -595,7 +639,7 @@ test("merge_message_groups", ({mock_template}) => {
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], "top");
+        const result = list.merge_message_groups([message_group2], "top", message2, message2);
 
         assert_message_groups_list_equal(list._message_groups, [
             build_message_group([message2, message1]),
@@ -616,7 +660,7 @@ test("merge_message_groups", ({mock_template}) => {
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], "top");
+        const result = list.merge_message_groups([message_group2], "top", message2, message2);
 
         assert_message_groups_list_equal(list._message_groups, [message_group2, message_group1]);
         assert.deepEqual(result.append_groups, []);
@@ -633,7 +677,7 @@ test("merge_message_groups", ({mock_template}) => {
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], "top");
+        const result = list.merge_message_groups([message_group2], "top", message2, message2);
 
         assert.equal(message_group1.date_unchanged, false);
         assert_message_groups_list_equal(list._message_groups, [message_group2, message_group1]);
@@ -651,7 +695,7 @@ test("merge_message_groups", ({mock_template}) => {
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);
-        const result = list.merge_message_groups([message_group2], "top");
+        const result = list.merge_message_groups([message_group2], "top", message2, message2);
 
         assert.equal(message_group2.message_containers[1].date_divider_html, "900000000");
         assert_message_groups_list_equal(list._message_groups, [message_group2]);
@@ -670,7 +714,7 @@ test("merge_message_groups", ({mock_template}) => {
 
         const list = build_list([message_group1]);
         list.$list[0].prepend = noop;
-        const result = list.merge_message_groups([message_group2], "top");
+        const result = list.merge_message_groups([message_group2], "top", message2, message2);
 
         assert.equal(message_group1.bookend_top, undefined);
         assert_message_groups_list_equal(list._message_groups, [
@@ -688,7 +732,7 @@ test("merge_message_groups", ({mock_template}) => {
         const message3 = build_message_context({historical: false, topic: "test"});
         const message_group3 = build_message_group([message3]);
 
-        const result2 = list.merge_message_groups([message_group3], "top");
+        const result2 = list.merge_message_groups([message_group3], "top", message3, message3);
 
         assert.ok(message_group2.bookend_top);
         assert_message_groups_list_equal(list._message_groups, [
