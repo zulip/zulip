@@ -1,7 +1,10 @@
 import base64
 import hashlib
 import uuid
+from collections.abc import Callable
 from datetime import timedelta
+from typing import Any
+from unittest import mock
 
 import orjson
 import responses
@@ -16,15 +19,21 @@ from zerver.lib.devices import b64decode_token_id_base64
 from zerver.lib.exceptions import (
     InvalidBouncerPublicKeyError,
     InvalidEncryptedPushRegistrationError,
+    JsonableError,
     RequestExpiredError,
 )
 from zerver.lib.push_registration import check_push_key
 from zerver.lib.queue import queue_event_on_commit
+from zerver.lib.remote_server import (
+    PushNotificationBouncerError,
+    PushNotificationBouncerRetryLaterError,
+    send_to_push_bouncer,
+)
 from zerver.lib.test_classes import BouncerTestCase
 from zerver.lib.test_helpers import activate_push_notification_service, mock_queue_publish
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.models import Device, UserProfile
-from zilencer.models import RemotePushDevice, RemoteRealm
+from zerver.models import Device, PushDeviceToken, UserProfile
+from zilencer.models import RemotePushDevice, RemotePushDeviceToken, RemoteRealm
 
 
 class RegisterPushDeviceToBouncer(BouncerTestCase):
@@ -962,3 +971,137 @@ class RegisterPushDeviceToServer(BouncerTestCase):
                 pending_push_token_id=None,
             ),
         )
+
+    @activate_push_notification_service()
+    @override_settings(ZILENCER_ENABLED=False)
+    @responses.activate
+    def test_legacy_token_cleanup_on_e2ee_registration(self) -> None:
+        self.add_mock_response()
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        token = "c0ffee"
+
+        # Create a legacy token with a different value
+        # to verify it is NOT removed.
+        PushDeviceToken.objects.create(
+            user=hamlet,
+            token="different_token",
+            kind=PushDeviceToken.APNS,
+            ios_app_id="example.app",
+        )
+
+        # Create legacy PushDeviceToken and RemotePushDeviceToken
+        # with the same token used for E2EE registration.
+        PushDeviceToken.objects.create(
+            user=hamlet,
+            token=token,
+            kind=PushDeviceToken.APNS,
+            ios_app_id="example.app",
+        )
+        RemotePushDeviceToken.objects.create(
+            server=self.server,
+            user_uuid=str(hamlet.uuid),
+            token=token,
+            kind=RemotePushDeviceToken.APNS,
+            ios_app_id="example.app",
+        )
+
+        self.assertEqual(PushDeviceToken.objects.count(), 2)
+        self.assertEqual(RemotePushDeviceToken.objects.count(), 1)
+
+        payload = self.get_register_push_device_payload(token=token)
+        with self.capture_send_event_calls(expected_num_events=2):
+            result = self.client_post("/json/mobile_push/register", payload)
+        self.assert_json_success(result)
+
+        # The matching legacy tokens should be removed
+        # on both server and bouncer.
+        remaining_tokens = PushDeviceToken.objects.filter(user=hamlet)
+        self.assert_length(remaining_tokens, 1)
+        self.assertEqual(remaining_tokens[0].token, "different_token")
+
+        self.assertEqual(RemotePushDeviceToken.objects.count(), 0)
+
+    @activate_push_notification_service()
+    @override_settings(ZILENCER_ENABLED=False)
+    @responses.activate
+    def test_legacy_token_cleanup_error_handling(self) -> None:
+        self.add_mock_response()
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        token = "c0ffee"
+
+        def make_unregister_fail(error: Exception) -> Callable[..., Any]:
+            """Return a side_effect that raises error for `push/unregister`
+            but executes `send_to_push_bouncer` for all other endpoints."""
+
+            def side_effect(
+                method: str,
+                endpoint: str,
+                post_data: Any,
+                extra_headers: Any = None,
+            ) -> dict[str, object]:
+                if extra_headers is None:
+                    extra_headers = {}
+                if endpoint == "push/unregister":
+                    raise error
+                return send_to_push_bouncer(method, endpoint, post_data, extra_headers)
+
+            return side_effect
+
+        def do_e2ee_registration_with_legacy_token(
+            error: Exception,
+        ) -> None:
+            # Reset
+            PushDeviceToken.objects.all().delete()
+
+            PushDeviceToken.objects.create(
+                user=hamlet,
+                token=token,
+                kind=PushDeviceToken.APNS,
+                ios_app_id="example.app",
+            )
+            payload = self.get_register_push_device_payload(token=token)
+            with (
+                mock.patch(
+                    "zerver.lib.push_registration.send_to_push_bouncer",
+                    side_effect=make_unregister_fail(error),
+                ),
+                self.capture_send_event_calls(expected_num_events=2),
+            ):
+                result = self.client_post("/json/mobile_push/register", payload)
+            self.assert_json_success(result)
+
+        # "Token does not exist" on bouncer, delete it on server too.
+        do_e2ee_registration_with_legacy_token(
+            error=JsonableError("Token does not exist"),
+        )
+        self.assertEqual(PushDeviceToken.objects.count(), 0)
+
+        # PushNotificationBouncerRetryLaterError: retries then logs warning.
+        # Token not deleted on server as it failed to delete on bouncer.
+        with self.assertLogs("zerver.lib.push_registration", level="WARNING") as logs:
+            do_e2ee_registration_with_legacy_token(
+                error=PushNotificationBouncerRetryLaterError("5xx or Network error"),
+            )
+        self.assertEqual(
+            "WARNING:zerver.lib.push_registration:"
+            f"Failed to remove legacy push token from bouncer for user {hamlet.id} after retries",
+            logs.output[0],
+        )
+        self.assertEqual(PushDeviceToken.objects.count(), 1)
+
+        # PushNotificationBouncerError: logged to notify server admin.
+        # Token not deleted on server as it failed to delete on bouncer.
+        with self.assertLogs("zerver.lib.push_registration", level="ERROR") as logs:
+            do_e2ee_registration_with_legacy_token(
+                error=PushNotificationBouncerError("unexpected status code"),
+            )
+        self.assertEqual(
+            "ERROR:zerver.lib.push_registration:"
+            f"Bouncer error cleaning up legacy push token for user {hamlet.id}",
+            logs.output[0],
+        )
+        self.assertEqual(PushDeviceToken.objects.count(), 1)

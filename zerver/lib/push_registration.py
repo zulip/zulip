@@ -1,5 +1,6 @@
 import base64
 import binascii
+import hashlib
 import logging
 from typing import TypedDict
 
@@ -14,6 +15,7 @@ from zerver.lib.exceptions import (
     MissingRemoteRealmError,
     RequestExpiredError,
 )
+from zerver.lib.push_notifications import uses_notification_bouncer
 from zerver.lib.remote_server import (
     PushNotificationBouncerError,
     PushNotificationBouncerRetryLaterError,
@@ -21,6 +23,7 @@ from zerver.lib.remote_server import (
     send_to_push_bouncer,
 )
 from zerver.models.devices import Device
+from zerver.models.push_notifications import PushDeviceToken
 from zerver.models.users import UserProfile, get_user_profile_by_id
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -65,6 +68,62 @@ def handle_registration_to_bouncer_failure(
     # most likely in either the server or its local network configuration.
     if error_code == Device.PushRegistrationErrorCode.REQUEST_EXPIRED:
         logging.error("Push registration request for device_id=%s expired.", device_id)
+
+
+def cleanup_legacy_push_device_token(user_profile: UserProfile, token_id_int: int) -> None:
+    MAX_REQUEST_RETRIES = 3
+    legacy_tokens = PushDeviceToken.objects.filter(user=user_profile)
+
+    for legacy_token in legacy_tokens:
+        hash_bytes = hashlib.sha256(legacy_token.token.encode()).digest()
+        computed_token_id = int.from_bytes(hash_bytes[0:8], byteorder="big", signed=True)
+
+        if computed_token_id != token_id_int:
+            continue
+
+        if uses_notification_bouncer():
+            for attempt in range(MAX_REQUEST_RETRIES):
+                try:
+                    post_data = {
+                        "server_uuid": settings.ZULIP_ORG_ID,
+                        "realm_uuid": str(user_profile.realm.uuid),
+                        "user_uuid": str(user_profile.uuid),
+                        "user_id": user_profile.id,
+                        "token": legacy_token.token,
+                        "token_kind": legacy_token.kind,
+                    }
+                    send_to_push_bouncer("POST", "push/unregister", post_data)
+                    break
+                except (
+                    PushNotificationBouncerRetryLaterError,
+                    PushNotificationBouncerServerError,
+                ):
+                    # Network error or 5xx error response from bouncer server.
+                    # TODO: Retry with backoff. Implement it while working on #35853.
+                    if attempt == MAX_REQUEST_RETRIES - 1:
+                        logger.warning(
+                            "Failed to remove legacy push token from bouncer "
+                            "for user %s after retries",
+                            user_profile.id,
+                        )
+                        return
+                except PushNotificationBouncerError:
+                    # Invalid credentials or unexpected status code
+                    logger.error(
+                        "Bouncer error cleaning up legacy push token for user %s",
+                        user_profile.id,
+                    )
+                    return
+                except JsonableError:
+                    # Token doesn't exist i.e. already cleaned up.
+                    break
+
+        # Even if we fail to delete the token locally after clearing
+        # it on bouncer due to some reason e.g. transient error while
+        # receiving success response, it'll be cleared the next time
+        # server attempts to send a legacy notification to that token.
+        legacy_token.delete()
+        return
 
 
 def handle_register_push_device_to_bouncer(
@@ -124,8 +183,9 @@ def handle_register_push_device_to_bouncer(
         return
 
     # Registration successful.
+    token_id_int = b64decode_token_id_base64(token_id_base64)
     Device.objects.filter(id=device_id).update(
-        push_token_id=b64decode_token_id_base64(token_id_base64), pending_push_token_id=None
+        push_token_id=token_id_int, pending_push_token_id=None
     )
     event = dict(
         type="device",
@@ -135,6 +195,10 @@ def handle_register_push_device_to_bouncer(
         pending_push_token_id=None,
     )
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
+
+    # When a client successfully registers a token for E2EE notifications,
+    # clear out any existing legacy registration on that account for the same token.
+    cleanup_legacy_push_device_token(user_profile, token_id_int)
 
 
 def check_push_key(push_key_str: str) -> bytes:
