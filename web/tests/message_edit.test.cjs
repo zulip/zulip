@@ -2,10 +2,13 @@
 
 const assert = require("node:assert/strict");
 
+const MockDate = require("mockdate");
+
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
+const server_time = zrequire("server_time");
 const message_edit = zrequire("message_edit");
 const {set_current_user, set_realm} = zrequire("state_data");
 
@@ -186,6 +189,92 @@ run_test("is_stream_editable", ({override}) => {
 
     override(current_user, "is_moderator", true);
     assert.equal(message_edit.is_stream_editable(message), true);
+});
+
+run_test("is_content_editable with client clock ahead of server", ({override}) => {
+    // Client clock 1 hour ahead of server.
+    const server_now = 1000000000;
+    const client_now = server_now + 3600;
+    MockDate.set(client_now * 1000);
+    server_time.set_clock_offset_seconds(-3600);
+
+    override(realm, "realm_allow_message_editing", true);
+    override(realm, "realm_message_content_edit_limit_seconds", 300);
+
+    const message = {
+        sent_by_me: true,
+        submessages: [],
+        timestamp: server_now - 30,
+    };
+
+    // 30s old, 300s limit — still editable.
+    assert.equal(message_edit.is_content_editable(message), true);
+
+    // 400s old, 300s limit — expired.
+    message.timestamp = server_now - 400;
+    assert.equal(message_edit.is_content_editable(message), false);
+
+    MockDate.reset();
+    server_time.set_clock_offset_seconds(0);
+});
+
+run_test("is_topic_editable with client clock ahead of server", ({override}) => {
+    const server_now = 1000000000;
+    const client_now = server_now + 3600;
+    MockDate.set(client_now * 1000);
+    server_time.set_clock_offset_seconds(-3600);
+
+    override(realm, "realm_allow_message_editing", true);
+    override(realm, "realm_move_messages_within_stream_limit_seconds", 300);
+    override(stream_data, "is_stream_archived_by_id", () => false);
+    override(stream_data, "user_can_move_messages_within_channel", () => true);
+    override(stream_data, "get_sub_by_id", () => ({}));
+    override(stream_data, "is_empty_topic_only_channel", () => false);
+    override(current_user, "is_moderator", false);
+
+    const message = {
+        sent_by_me: true,
+        type: "stream",
+        submessages: [],
+        timestamp: server_now - 30,
+    };
+
+    assert.equal(message_edit.is_topic_editable(message), true);
+
+    message.timestamp = server_now - 400;
+    assert.equal(message_edit.is_topic_editable(message), false);
+
+    MockDate.reset();
+    server_time.set_clock_offset_seconds(0);
+});
+
+run_test("is_stream_editable with client clock ahead of server", ({override}) => {
+    const server_now = 1000000000;
+    const client_now = server_now + 3600;
+    MockDate.set(client_now * 1000);
+    server_time.set_clock_offset_seconds(-3600);
+
+    override(realm, "realm_allow_message_editing", true);
+    override(realm, "realm_move_messages_between_streams_limit_seconds", 300);
+    override(stream_data, "user_can_move_messages_out_of_channel", () => true);
+    override(stream_data, "get_sub_by_id", () => ({}));
+    override(current_user, "is_moderator", false);
+    override(stream_data, "is_stream_archived_by_id", () => false);
+
+    const message = {
+        sent_by_me: true,
+        type: "stream",
+        submessages: [],
+        timestamp: server_now - 30,
+    };
+
+    assert.equal(message_edit.is_stream_editable(message), true);
+
+    message.timestamp = server_now - 400;
+    assert.equal(message_edit.is_stream_editable(message), false);
+
+    MockDate.reset();
+    server_time.set_clock_offset_seconds(0);
 });
 
 run_test("stream_and_topic_exist_in_edit_history", () => {
