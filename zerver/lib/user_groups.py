@@ -9,6 +9,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_cte import CTE, with_cte
 from psycopg2.sql import SQL, Literal
+from pydantic import BaseModel, ConfigDict
 
 from zerver.lib.exceptions import (
     CannotDeactivateGroupInUseError,
@@ -59,6 +60,48 @@ class UserGroupDict(TypedDict):
     can_mention_group: int | UserGroupMembersDict
     can_remove_members_group: int | UserGroupMembersDict
     deactivated: bool
+
+
+# Renamed the classes with 'Base' to avoid name clashes in code
+class UserGroupMembersBase(BaseModel):
+    """We use extra="ignore" because zulip's internal logic often attaches
+    extra database attributes that shouldn't break our pydantic validation"""
+
+    model_config = ConfigDict(extra="ignore")
+
+    direct_members: list[int] = []
+    direct_subgroups: list[int] = []
+
+
+class UserGroupBase(BaseModel):
+    """Using ConfigDict(extra="ignore") ensures backward compatibility
+    with django ORM objects during this migration phase"""
+
+    model_config = ConfigDict(extra="ignore")
+
+    id: int | None = None
+    name: str | None = None
+    description: str | None = None
+    members: list[int] = []
+    direct_subgroup_ids: list[int] = []
+
+    """We use 'Any' for realm to handle the complex django realm objects
+    without requiring a full Pydantic schema for the entire Realm model yet"""
+    realm: Any = None
+
+    creator_id: int | None = None
+    date_created: int | None = None
+    is_system_group: bool = False
+
+    """The union types here allow the code to handle both raw ID (integers)
+    and nested pydantic models, providing flexibility during the migration"""
+    can_add_members_group: int | UserGroupMembersBase | None = None
+    can_join_group: int | UserGroupMembersBase | None = None
+    can_leave_group: int | UserGroupMembersBase | None = None
+    can_manage_group: int | UserGroupMembersBase | None = None
+    can_mention_group: int | UserGroupMembersBase | None = None
+    can_remove_members_group: int | UserGroupMembersBase | None = None
+    deactivated: bool = False
 
 
 @dataclass
