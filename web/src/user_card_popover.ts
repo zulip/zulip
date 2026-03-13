@@ -6,6 +6,7 @@ import * as tippy from "tippy.js";
 
 import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
 import render_user_card_popover from "../templates/popovers/user_card/user_card_popover.hbs";
+import render_user_card_popover_for_deleted_user from "../templates/popovers/user_card/user_card_popover_for_deleted_user.hbs";
 import render_user_card_popover_for_unknown_user from "../templates/popovers/user_card/user_card_popover_for_unknown_user.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -423,6 +424,13 @@ function show_user_card_popover(
             user_avatar,
         };
         popover_html = render_user_card_popover_for_unknown_user(args);
+    } else if (user.is_deleted) {
+        args = {
+            user_avatar: people.small_avatar_url_for_person(user),
+            user_full_name: user.full_name,
+            is_bot: user.is_bot,
+        };
+        popover_html = render_user_card_popover_for_deleted_user(args);
     } else {
         args = get_user_card_popover_data(
             user,

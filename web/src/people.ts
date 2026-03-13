@@ -1100,7 +1100,7 @@ export function is_current_user_only_owner(): boolean {
 export function filter_all_persons(pred: (person: User) => boolean): User[] {
     const ret = [];
     for (const person of people_by_user_id_dict.values()) {
-        if (person.is_inaccessible_user) {
+        if (person.is_inaccessible_user || person.is_deleted) {
             continue;
         }
 
@@ -1322,7 +1322,9 @@ export function get_active_message_people(): User[] {
 export function get_people_for_search_bar(query: string): User[] {
     const pred = build_person_matcher(query);
 
-    const message_people = get_message_people().filter((user) => !user.is_inaccessible_user);
+    const message_people = get_message_people().filter(
+        (user) => !user.is_inaccessible_user && !user.is_deleted,
+    );
 
     const small_results = message_people.filter((item) => pred(item));
 
@@ -2110,7 +2112,9 @@ async function start_fetch_for_requested_users(): Promise<void> {
         if (user.is_active) {
             add_active_user(user);
         } else {
-            non_active_user_dict.set(user.user_id, user);
+            if (!user.is_deleted) {
+                non_active_user_dict.set(user.user_id, user);
+            }
             _add_user(user);
         }
     }
@@ -2301,7 +2305,9 @@ export async function initialize(
     }
 
     for (const person of people_params.realm_non_active_users) {
-        non_active_user_dict.set(person.user_id, person);
+        if (!person.is_deleted) {
+            non_active_user_dict.set(person.user_id, person);
+        }
         _add_user(person);
         user_ids_to_fetch.delete(person.user_id);
     }
