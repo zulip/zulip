@@ -889,11 +889,39 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             field_name, [invalid_user_id], f"Invalid user IDs: {invalid_user_id}"
         )
 
+    def test_update_phone_number_formatting(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        field = try_add_realm_custom_profile_field(realm, "Mobile", CustomProfileField.PHONE_NUMBER)
+        data = [
+            {
+                "id": field.id,
+                "value": "+1 234-567-8901",
+            }
+        ]
+        result = self.client_patch(
+            "/json/users/me/profile_data", {"data": orjson.dumps(data).decode()}
+        )
+        self.assert_json_success(result)
+        iago = self.example_user("iago")
+        for field_dict in iago.profile_data():
+            if field_dict["id"] == field.id:
+                self.assertEqual(field_dict["value"], "+12345678901")
+
+    def test_update_invalid_phone_number(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        field = try_add_realm_custom_profile_field(realm, "Mobile", CustomProfileField.PHONE_NUMBER)
+        self.assert_error_update_invalid_value(field.name, "abcdef", "Invalid phone number format.")
+        self.assert_error_update_invalid_value(
+            field.name, "+1 555-555-5555", "Invalid phone number."
+        )
+
     def test_update_profile_data_successfully(self) -> None:
         self.login("iago")
         realm = get_realm("zulip")
         fields: list[tuple[str, str | list[int]]] = [
-            ("Phone number", "*short* text data"),
+            ("Phone number", "+12345678900"),
             ("Biography", "~~short~~ **long** text data"),
             ("Favorite food", "long short text data"),
             ("Favorite editor", "0"),

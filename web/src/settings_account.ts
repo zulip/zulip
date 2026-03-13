@@ -232,6 +232,7 @@ export function add_custom_profile_fields_to_settings(): void {
         true,
     );
     custom_profile_fields_ui.initialize_custom_pronouns_type_fields(element_id);
+    custom_profile_fields_ui.initialize_custom_phone_number_type_fields(element_id);
 }
 
 export function hide_confirm_email_banner(): void {
