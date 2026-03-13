@@ -1431,6 +1431,18 @@ test("predicate_basics", ({override}) => {
         }),
     );
 
+    // NOTE: The client-side predicate matches based on HTML mention
+    // markup alone, regardless of whether the mentioned user actually
+    // has a UserMessage for this message. This can over-match compared
+    // to the server, which checks the target user's UserMessage flags
+    // (e.g., a mention in a channel the target user isn't subscribed
+    // to would match here but not on the server).
+    assert.ok(
+        predicate({
+            content: `<span class="user-mention" data-user-id="${joe.user_id}">@joe</span>`,
+        }),
+    );
+
     const inline_img_msg = {
         content:
             '<p><img alt="Screenshot" class="inline-image" data-original-content-type="image/png" data-original-dimensions="1488x1130" data-original-src="/user_uploads/randompath/test.png" src="/user_uploads/thumbnail/randompath/test.png/840x560.webp"></p>',

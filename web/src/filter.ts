@@ -215,6 +215,13 @@ function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) =>
         }
 
         case "mentions":
+            // NOTE: The client-side filter checks the message HTML
+            // for mention markup, while the server checks the target
+            // user's UserMessage flags. These can diverge when the
+            // target user was @-mentioned in a context where they
+            // don't have a UserMessage (e.g., a channel they're not
+            // subscribed to). The server correctly excludes such
+            // messages; the client may over-match.
             return (message) => process_user_mention(message.content, term.operand);
 
         // Operators that don't filter messages on the client.
