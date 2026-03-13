@@ -436,6 +436,31 @@ export function get_user_time(user_id: number): string | undefined {
     return undefined;
 }
 
+export function get_effective_role_code(user_id: number): number {
+    const user_profile = get_by_user_id(user_id);
+    const account_age = Date.now() - new Date(user_profile.date_joined).getTime();
+    const waiting_period_time = realm.realm_waiting_period_threshold * 24 * 60 * 60 * 1000;
+
+    return account_age < waiting_period_time
+        ? settings_config.user_role_values_with_provisional_member.provisional_member.code
+        : settings_config.user_role_values_with_provisional_member.full_member.code;
+}
+
+export function get_user_type_with_waiting_period(user_id: number): string | undefined {
+    const user_profile = get_by_user_id(user_id);
+
+    if (
+        realm.realm_waiting_period_threshold === 0 ||
+        user_profile.role !== settings_config.user_role_values.member.code
+    ) {
+        return settings_config.user_role_map.get(user_profile.role);
+    }
+
+    const role_code = get_effective_role_code(user_id);
+
+    return settings_config.user_role_map_with_provisional_member.get(role_code);
+}
+
 export function get_user_type(user_id: number): string | undefined {
     const user_profile = get_by_user_id(user_id);
     return settings_config.user_role_map.get(user_profile.role);
@@ -1819,7 +1844,16 @@ export function matches_user_settings_search(person: User, value: string): boole
 }
 
 function matches_user_settings_role(person: User, role_code: number): boolean {
-    if (role_code === 0 || role_code === person.role) {
+    let user_role_code = person.role;
+
+    if (
+        person.role === settings_config.user_role_values.member.code &&
+        realm.realm_waiting_period_threshold > 0
+    ) {
+        user_role_code = get_effective_role_code(person.user_id);
+    }
+
+    if (role_code === 0 || role_code === user_role_code) {
         return true;
     }
     return false;
