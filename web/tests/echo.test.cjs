@@ -9,6 +9,11 @@ const {run_test, noop} = require("./lib/test.cjs");
 
 const browser_history = mock_esm("../src/browser_history");
 const compose_notifications = mock_esm("../src/compose_notifications");
+const drafts = mock_esm("../src/drafts", {
+    draft_model: {
+        deleteDrafts: noop,
+    },
+});
 const hash_util = mock_esm("../src/hash_util");
 const markdown = mock_esm("../src/markdown");
 const message_lists = mock_esm("../src/message_lists");
@@ -58,6 +63,7 @@ message_lists.current = {
     },
     change_message_id: noop,
     add_messages: noop,
+    remove_and_rerender: noop,
 };
 const home_msg_list = {
     view: {
@@ -74,6 +80,7 @@ const home_msg_list = {
     preserver_rendered_state: true,
     change_message_id: noop,
     add_messages: noop,
+    remove_and_rerender: noop,
 };
 message_lists.all_rendered_message_lists = () => [home_msg_list, message_lists.current];
 message_lists.non_rendered_data = () => [];
@@ -446,4 +453,43 @@ run_test("test reify_message_id", ({override}) => {
     const history = stream_topic_history.find_or_create(general_sub.stream_id);
     assert.equal(history.max_message_id, 110);
     assert.equal(history.topics.get("test").message_id, 110);
+});
+
+run_test("get_message_waiting_for_ack_by_draft_id", () => {
+    const message = {draft_id: "draft123"};
+    const waiting_for_ack = new Map([["123.04", message]]);
+    echo_state._patch_waiting_for_ack(waiting_for_ack);
+    assert.equal(echo_state.get_message_waiting_for_ack_by_draft_id("draft123"), message);
+    assert.equal(echo_state.get_message_waiting_for_ack_by_draft_id("nonexistent"), undefined);
+});
+
+run_test("abort_message_by_draft_id deletes the draft", ({override}) => {
+    const mock_message = {draft_id: "abort-draft-456", local_id: "55.01", id: 55};
+    echo_state._patch_waiting_for_ack(new Map([["55.01", mock_message]]));
+
+    let deleted_ids;
+    override(drafts.draft_model, "deleteDrafts", (ids) => {
+        deleted_ids = ids;
+    });
+
+    echo.abort_message_by_draft_id("abort-draft-456");
+
+    assert.deepEqual(deleted_ids, ["abort-draft-456"]);
+    // Message removed from waiting_for_ack after cancellation.
+    assert.equal(echo_state.get_message_waiting_for_ack("55.01"), undefined);
+
+    // A missing draft_id should be handled gracefully without errors.
+    echo_state._patch_waiting_for_ack(new Map());
+    echo.abort_message_by_draft_id("nonexistent");
+});
+
+run_test("has_local_echo_for_draft", () => {
+    const message = {draft_id: "echo-draft-789"};
+    echo_state._patch_waiting_for_ack(new Map([["77.01", message]]));
+    assert.ok(echo.has_local_echo_for_draft("echo-draft-789"));
+    assert.ok(!echo.has_local_echo_for_draft("nonexistent"));
+
+    // No entries — always false.
+    echo_state._patch_waiting_for_ack(new Map());
+    assert.ok(!echo.has_local_echo_for_draft("echo-draft-789"));
 });
