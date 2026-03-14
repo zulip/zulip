@@ -1744,7 +1744,8 @@ label.preferences-radio-choice-label {
     }
 
     .name_change_container,
-    .email_change_container {
+    .email_change_container,
+    .user_id_container {
         margin-right: 200px;
     }
 

@@ -10540,6 +10540,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/ClientGravatar"
         - $ref: "#/components/parameters/IncludeCustomProfileFields"
+        - $ref: "#/components/parameters/IncludeAvatarSource"
         - name: user_ids
           in: query
           content:
@@ -28307,6 +28308,7 @@ components:
             avatar_url:
               nullable: true
             avatar_version: {}
+            avatar_source: {}
             is_imported_stub: {}
             profile_data: {}
     UserBase:
@@ -28444,6 +28446,22 @@ components:
             Version for the user's avatar. Used for cache-busting requests
             for the user's avatar. Clients generally shouldn't need to use this;
             most avatar URLs sent by Zulip will already end with `?v={avatar_version}`.
+        avatar_source:
+          type: string
+          enum:
+            - G
+            - J
+            - U
+          description: |
+            The source of the user's avatar. Only present when the
+            `include_avatar_source` parameter was set to `true` in a request
+            by an organization administrator.
+
+            Possible values are:
+
+            - "G" = Hosted by Gravatar
+            - "J" = Generated using Jdenticon
+            - "U" = Uploaded by user
         is_imported_stub:
           type: boolean
           description: |
@@ -29736,6 +29754,17 @@ components:
 
         **Changes**: New in Zulip 2.1.0. Previous versions do not offer these
         data via the API.
+      schema:
+        type: boolean
+        default: false
+      example: true
+    IncludeAvatarSource:
+      name: include_avatar_source
+      in: query
+      description: |
+        Whether the client wants `avatar_source` data to be included in the
+        response. Only honored for organization administrators; non-admins
+        will have this parameter ignored.
       schema:
         type: boolean
         default: false

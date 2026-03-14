@@ -163,6 +163,7 @@ export const update_person = function update(event: UserUpdate): void {
         const url = event.avatar_url;
         user.avatar_url = url;
         user.avatar_version = event.avatar_version;
+        user.avatar_source = event.avatar_source;
 
         if (people.is_my_user_id(event.user_id)) {
             current_user.avatar_source = event.avatar_source;

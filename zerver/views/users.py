@@ -805,6 +805,7 @@ def get_user_data(
     realm: Realm | None = None,
     target_user: UserProfile | None = None,
     user_ids: list[int] | None = None,
+    include_avatar_source: bool = False,
 ) -> dict[str, Any]:
     """
     The client_gravatar field here is set to True by default assuming that clients
@@ -823,6 +824,7 @@ def get_user_data(
         client_gravatar=client_gravatar,
         user_avatar_url_field_optional=False,
         include_custom_profile_fields=include_custom_profile_fields,
+        include_avatar_source=include_avatar_source,
         user_ids=user_ids,
     )
 
@@ -863,6 +865,7 @@ def get_members_backend(
     *,
     client_gravatar: Json[bool] = True,
     include_custom_profile_fields: Json[bool] = False,
+    include_avatar_source: Json[bool] = False,
     user_ids: Json[list[int]] | None = None,
 ) -> HttpResponse:
     if isinstance(maybe_user_profile, UserProfile):
@@ -875,12 +878,16 @@ def get_members_backend(
 
         user_profile = None
 
+    if include_avatar_source and (user_profile is None or not user_profile.is_realm_admin):
+        raise OrganizationAdministratorRequiredError
+
     data = get_user_data(
         user_profile,
         include_custom_profile_fields,
         client_gravatar,
         user_ids=user_ids,
         realm=realm,
+        include_avatar_source=include_avatar_source,
     )
     return json_success(request, data)
 

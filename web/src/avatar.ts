@@ -171,18 +171,7 @@ export function build_admin_avatar_widget(user_id: number, upload_function: Uplo
         });
     });
 
-    const user_avatar_url = people.get_by_user_id(user_id).avatar_url;
-    const is_gravatar =
-        user_avatar_url !== null &&
-        user_avatar_url !== undefined &&
-        (() => {
-            try {
-                return new URL(user_avatar_url).hostname === "secure.gravatar.com";
-            } catch {
-                return false;
-            }
-        })();
-    if (!user_avatar_url || is_gravatar) {
+    if (people.get_by_user_id(user_id).avatar_source !== "U") {
         $("#user-avatar-admin-upload-widget .image-delete-button").hide();
     }
 
