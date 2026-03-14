@@ -11,6 +11,7 @@ import render_wildcard_mention_not_allowed_error from "../templates/compose_bann
 import * as channel from "./channel.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_notifications from "./compose_notifications.ts";
+import * as compose_split_messages from "./compose_split_messages.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -127,6 +128,7 @@ export function clear_compose_box(): void {
     }
     $("textarea#compose-textarea").val("").trigger("focus");
     compose_ui.compose_textarea_typeahead?.hide();
+    compose_banner.clear_split_messages_info_banner();
     compose_validate.check_overflow_text($("#send_message_form"));
     compose_validate.clear_topic_resolved_warning();
     drafts.set_compose_draft_id(undefined);
@@ -181,8 +183,25 @@ export function send_message_success(
     }
 }
 
-export let send_message = (): void => {
-    // Changes here must also be kept in sync with echo.try_deliver_locally
+export function toggle_split_messages(): void {
+    const state = compose_split_messages.is_split_messages_enabled();
+    compose_split_messages.set_split_messages_enabled(!state);
+    // preview area and compose banner should be updated with the new setting
+    if ($("#compose .preview_message_area").css("display") !== "none") {
+        // re-render the preview area if it is currently visible
+        clear_preview_area();
+        show_preview_area();
+    }
+    compose_banner.update_split_messages_info_banner();
+    compose_validate.check_overflow_text($("#send_message_form"));
+    compose_validate.validate_and_update_send_button_status();
+}
+
+export let send_message = (message_content: string = compose_state.message_content()): void => {
+    const [content_to_send, rest_of_the_content] =
+        compose_split_messages.split_message(message_content);
+    const will_split_message = Boolean(rest_of_the_content);
+    // const request = create_message_object(content_to_send);
     compose_state.set_recipient_edited_manually(false);
     compose_state.set_is_content_unedited_restored_draft(false);
 
@@ -207,7 +226,7 @@ export let send_message = (): void => {
         const recipient_ids = compose_state.private_message_recipient_ids();
         message_data = {
             type: message_type,
-            content: compose_state.message_content(),
+            content: content_to_send,
             sender_id: current_user.user_id,
             queue_id: server_events_state.queue_id,
             topic: "",
@@ -224,7 +243,7 @@ export let send_message = (): void => {
         const topic = compose_state.topic();
         message_data = {
             type: message_type,
-            content: compose_state.message_content(),
+            content: content_to_send,
             sender_id: current_user.user_id,
             queue_id: server_events_state.queue_id,
             topic: util.is_topic_name_considered_empty(topic) ? "" : topic,
@@ -236,7 +255,9 @@ export let send_message = (): void => {
 
     let local_id: string;
 
-    const message = echo.try_deliver_locally(message_data, message_events.insert_new_messages);
+    const message = !will_split_message
+        ? echo.try_deliver_locally(message_data, message_events.insert_new_messages)
+        : undefined;
     const locally_echoed = Boolean(message);
     if (message) {
         // We are rendering this message locally with an id
@@ -268,6 +289,11 @@ export let send_message = (): void => {
             },
             parsed_data,
         );
+        if (will_split_message && rest_of_the_content !== undefined) {
+            send_message(rest_of_the_content);
+        } else {
+            compose_banner.clear_split_messages_info_banner();
+        }
     }
 
     function error(response: string, server_error_code: string): void {
@@ -300,21 +326,29 @@ export let send_message = (): void => {
             // (Restoring this state is handled by clear_compose_box
             // for locally echoed messages.)
             compose_ui.hide_compose_spinner();
-            return;
+        } else {
+            assert(message !== undefined);
+            echo.message_send_error(message.id, response);
+
+            // We might not have updated the draft count because we assumed the
+            // message would send. Ensure that the displayed count is correct.
+            drafts.sync_count();
+
+            assert(draft_id !== undefined);
+            const draft = drafts.draft_model.getDraft(draft_id);
+            assert(draft !== false);
+            draft.is_sending_saving = false;
+            drafts.draft_model.editDraft(draft_id, draft);
         }
-
-        assert(message !== undefined);
-        echo.message_send_error(message.id, response);
-
-        // We might not have updated the draft count because we assumed the
-        // message would send. Ensure that the displayed count is correct.
-        drafts.sync_count();
-
-        assert(draft_id !== undefined);
-        const draft = drafts.draft_model.getDraft(draft_id);
-        assert(draft !== false);
-        draft.is_sending_saving = false;
-        drafts.draft_model.editDraft(draft_id, draft);
+        if (will_split_message && rest_of_the_content !== undefined) {
+            compose_state.message_content(
+                content_to_send +
+                    compose_split_messages.SPLIT_DELIMITER +
+                    compose_split_messages.trim_except_whitespace_before_text(rest_of_the_content),
+            );
+            $("textarea#compose-textarea").trigger("input");
+            compose_ui.autosize_textarea($("textarea#compose-textarea"));
+        }
     }
 
     transmit.send_message(
