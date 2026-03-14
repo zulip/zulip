@@ -553,6 +553,8 @@ function update_settings_for_group_overlay(group_id: number, user_ids: number[])
 export function handle_member_edit_event(group_id: number, user_ids: number[]): void {
     if (overlays.groups_open()) {
         update_settings_for_group_overlay(group_id, user_ids);
+        update_filter_widget_visibility();
+        update_empty_left_panel_message();
     }
     user_profile.update_user_profile_groups_list_for_users(user_ids);
 }
@@ -1504,6 +1506,7 @@ export function add_group_to_table(group: UserGroup): void {
         show_group_settings(group);
         user_group_create.reset_name();
     }
+    update_filter_widget_visibility();
 }
 
 export function sync_group_permission_setting(property: string, group: UserGroup): void {
@@ -1785,7 +1788,19 @@ export function update_empty_left_panel_message(): void {
         active_tab_key,
     );
 
-    const has_any_groups = user_groups.get_realm_user_groups().length > 0;
+    const has_any_groups =
+        current_group_filter === FILTERS.DEACTIVATED_GROUPS
+            ? user_groups.get_realm_user_groups(true).some((g) => g.deactivated)
+            : current_group_filter === FILTERS.ACTIVE_GROUPS
+              ? user_groups.get_realm_user_groups().length > 0
+              : user_groups.get_realm_user_groups(true).length > 0;
+
+    // We don't show any action buttons when the user is searching
+    // or has a filter applied, since the empty state is due to
+    // filters, not the actual absence of groups.
+    const is_filtered =
+        current_group_filter !== FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS ||
+        $("#search_group_name").val() !== "";
 
     const args = {
         empty_user_group_list_message,
@@ -1794,6 +1809,7 @@ export function update_empty_left_panel_message(): void {
         all_groups_tab: active_tab_key === "all-groups",
         your_groups_tab: active_tab_key === "your-groups",
         has_any_groups,
+        is_filtered,
     };
 
     $(".no-groups-to-show").html(render_user_group_settings_empty_notice(args)).show();
@@ -1920,15 +1936,31 @@ function update_filter_widget_visibility(tab_name?: string): void {
         // dropdown is not applicable on the roles tab. We hide the dropdown
         // and ignore the filter value completely for this tab.
         $("#user-group-edit-filter-options").hide();
+        $("#group_filter").show();
         update_displayed_groups(FILTERS.ACTIVE_GROUPS);
-    } else if (!user_groups.realm_has_deactivated_user_groups()) {
-        $("#user-group-edit-filter-options").hide();
-        update_displayed_groups(FILTERS.ACTIVE_GROUPS);
-        if (filters_dropdown_widget) {
-            filters_dropdown_widget.render(FILTERS.ACTIVE_GROUPS);
+    } else if (active_tab === "your-groups") {
+        const joined_groups = user_groups.get_user_groups_of_user(
+            people.my_current_user_id(),
+            true,
+        );
+        if (joined_groups.length === 0) {
+            $("#user-group-edit-filter-options").hide();
+            $("#group_filter").hide();
+        } else {
+            $("#user-group-edit-filter-options").show();
+            $("#group_filter").show();
         }
     } else {
-        $("#user-group-edit-filter-options").show();
+        const has_any_groups = user_groups
+            .get_realm_user_groups(true)
+            .some((g) => !g.is_system_group);
+        if (!has_any_groups) {
+            $("#user-group-edit-filter-options").hide();
+            $("#group_filter").hide();
+        } else {
+            $("#user-group-edit-filter-options").show();
+            $("#group_filter").show();
+        }
     }
 }
 

@@ -1,17 +1,21 @@
 <div class="no-groups-to-show-message">
     <span class="settings-empty-option-text">
         {{empty_user_group_list_message}}
-        {{#if your_groups_tab}}
-            {{#if has_any_groups}}
-                {{> ../components/action_button label=(t "View all groups") custom_classes="view-all-groups-button" type="button" variant="subtle" intent="neutral" }}
-            {{else if can_create_user_groups}}
-                {{> ../components/action_button label=(t "Create user group") custom_classes="create-user-group-button" type="button" variant="subtle" intent="brand" }}
+        {{#unless is_filtered}}
+            {{#if your_groups_tab}}
+                {{#if has_any_groups}}
+                    {{> ../components/action_button label=(t "View all groups") custom_classes="view-all-groups-button" type="button" variant="subtle" intent="neutral" }}
+                {{else if can_create_user_groups}}
+                    {{> ../components/action_button label=(t "Create user group") custom_classes="create-user-group-button" type="button" variant="subtle" intent="brand" }}
+                {{/if}}
             {{/if}}
-        {{/if}}
-        {{#if all_groups_tab}}
-            {{#if can_create_user_groups}}
-                {{> ../components/action_button label=(t "Create user group") custom_classes="create-user-group-button" type="button" variant="subtle" intent="brand" }}
+            {{#if all_groups_tab}}
+                {{#unless has_any_groups}}
+                    {{#if can_create_user_groups}}
+                        {{> ../components/action_button label=(t "Create user group") custom_classes="create-user-group-button" type="button" variant="subtle" intent="brand" }}
+                    {{/if}}
+                {{/unless}}
             {{/if}}
-        {{/if}}
+        {{/unless}}
     </span>
 </div>
