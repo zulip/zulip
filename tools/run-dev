@@ -6,6 +6,7 @@ import logging
 import os
 import pwd
 import signal
+import socket
 import subprocess
 import sys
 import time
@@ -52,6 +53,9 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument("--test", action="store_true", help="Use the testing database and ports")
+parser.add_argument(
+    "--base-port", type=int, help="Base port for all dev server processes (default 9991)"
+)
 parser.add_argument("--minify", action="store_true", help="Minifies assets for testing in dev")
 parser.add_argument("--interface", help="Set the IP or hostname for the proxy to listen on")
 parser.add_argument(
@@ -79,7 +83,7 @@ parser.add_argument(
 parser.add_argument(
     "--only-help-center",
     action="store_true",
-    help="Run help center dev server on port 9991 without running the Zulip web app and related services",
+    help="Run help center dev server on the proxy port without running the Zulip web app and related services",
 )
 add_provision_check_override_param(parser)
 options = parser.parse_args()
@@ -106,7 +110,23 @@ elif options.interface == "":
     options.interface = None
 
 runserver_args: list[str] = []
-base_port = 9991
+
+# Each run-dev instance uses 6 consecutive ports (proxy, Django,
+# Tornado, webpack, help center, tusd).  When the default range is
+# already in use by another instance, we fall back to the next
+# available range.  Port 9981 is reserved for --test mode.
+FALLBACK_PORTS = [9991, 9971, 9961, 9951]
+
+
+def is_port_available(port: int, interface: str | None) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        try:
+            s.bind((interface or "", port))
+            return True
+        except OSError:
+            return False
+
+
 if options.test:
     base_port = 9981
     settings_module = "zproject.test_settings"
@@ -126,6 +146,29 @@ else:
         "--automated",
     ]
 
+    if options.base_port is not None:
+        base_port = options.base_port
+    else:
+        for port in FALLBACK_PORTS:
+            if is_port_available(port, options.interface):
+                base_port = port
+                break
+            print(f"Port {port} is in use.")
+        else:
+            print(
+                "ERROR: All fallback ports are in use: " + ", ".join(str(p) for p in FALLBACK_PORTS)
+            )
+            sys.exit(1)
+        if base_port != FALLBACK_PORTS[0]:
+            print(f"Using port {base_port} instead.\n")
+
+if base_port != 9991:
+    # If EXTERNAL_HOST is already set (e.g. on dev droplets), update
+    # its port to match the custom base port.
+    external_host = os.getenv("EXTERNAL_HOST")
+    if external_host is not None and ":" in external_host:
+        os.environ["EXTERNAL_HOST"] = external_host.rsplit(":", 1)[0] + f":{base_port}"
+
 manage_args = [f"--settings={settings_module}"]
 os.environ["DJANGO_SETTINGS_MODULE"] = settings_module
 
@@ -143,6 +186,10 @@ tornado_port = base_port + 2
 webpack_port = base_port + 3
 help_center_port = base_port + 4
 tusd_port = base_port + 5
+
+# Tell Django settings which ports to use, so hardcoded defaults
+# (EXTERNAL_HOST, TORNADO_PORTS, STATIC_URL) stay in sync.
+os.environ["BASE_PORT"] = str(base_port)
 
 for mime_type, extension in EXTRA_MIME_TYPES:
     aiohttp.web_fileresponse.CONTENT_TYPES.add_type(mime_type, extension)
