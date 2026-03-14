@@ -57,6 +57,14 @@
             background-color: var(--color-background-input-pill-hover);
         }
 
+        .invited-user-name {
+            flex: 1;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         .pill-image {
             height: var(--height-input-pill);
             width: var(--height-input-pill);
