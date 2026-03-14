@@ -514,7 +514,7 @@ def get_recipient_info(
     service_bot_tuples = [
         (row["id"], row["bot_type"])
         for row in rows
-        if row["is_bot"] and row["bot_type"] in UserProfile.SERVICE_BOT_TYPES
+        if row["is_bot"] and row["bot_type"] in UserProfile.MESSAGE_HANDLING_BOT_TYPES
     ]
 
     # We also need the user IDs of all bots, to avoid trying to send push/email
