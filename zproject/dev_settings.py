@@ -21,21 +21,25 @@ LOCAL_UPLOADS_DIR = os.path.join(DEPLOY_ROOT, "var/uploads")
 IS_DEV_DROPLET = pwd.getpwuid(os.getuid()).pw_name == "zulipdev"
 
 FORWARD_ADDRESS_CONFIG_FILE = "var/forward_address.ini"
+# run-dev sets BASE_PORT to the proxy port; default to 9991 when
+# importing settings outside of run-dev (e.g. management commands).
+_base_port = int(os.getenv("BASE_PORT", "9991"))
+
 # Check if test_settings.py set EXTERNAL_HOST.
 external_host_env = os.getenv("EXTERNAL_HOST")
 if external_host_env is None:
     if IS_DEV_DROPLET:
         # For our droplets, we use the hostname (eg github_username.zulipdev.org) by default.
         # Note that this code is duplicated in run-dev.
-        EXTERNAL_HOST = os.uname()[1].lower() + ":9991"
+        EXTERNAL_HOST = os.uname()[1].lower() + f":{_base_port}"
     else:
         # For local development environments, we use localhost by
         # default, via the "zulipdev.com" hostname.
-        EXTERNAL_HOST = "zulipdev.com:9991"
+        EXTERNAL_HOST = f"zulipdev.com:{_base_port}"
         # Serve the main dev realm at the literal name "localhost",
         # so it works out of the box even when not on the Internet.
         REALM_HOSTS = {
-            "zulip": "localhost:9991",
+            "zulip": f"localhost:{_base_port}",
         }
 else:
     EXTERNAL_HOST = external_host_env
@@ -81,7 +85,7 @@ EXTRA_INSTALLED_APPS = ["zilencer", "analytics", "corporate"]
 CAMO_URI = ""
 KATEX_SERVER = False
 
-TORNADO_PORTS = [9993]
+TORNADO_PORTS = [_base_port + 2]
 
 OPEN_REALM_CREATION = True
 WEB_PUBLIC_STREAMS_ENABLED = True
@@ -191,7 +195,7 @@ LANDING_PAGE_NAVBAR_MESSAGE: str | None = None
 USE_X_FORWARDED_PORT = True
 
 # Override the default SAML entity ID
-SOCIAL_AUTH_SAML_SP_ENTITY_ID = "http://localhost:9991"
+SOCIAL_AUTH_SAML_SP_ENTITY_ID = f"http://localhost:{_base_port}"
 if IS_DEV_DROPLET:
     SOCIAL_AUTH_SAML_SP_ENTITY_ID = EXTERNAL_URI_SCHEME + "zulip." + EXTERNAL_HOST
 
