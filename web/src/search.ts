@@ -50,7 +50,6 @@ type OnNarrowSearch = (terms: NarrowTerm[], options: NarrowSearchOptions) => voi
 function full_search_query_in_terms(): NarrowCanonicalTerm[] | undefined {
     assert(search_pill_widget !== null);
     const search_terms = convert_search_text_to_terms();
-
     if (search_terms === undefined) {
         return undefined;
     }
