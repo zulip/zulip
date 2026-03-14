@@ -25,11 +25,10 @@ async function test_rerender_preserves_selection_class(page: Page): Promise<void
         zulip_test.current_msg_list!.view.rerender_preserving_scrolltop();
     });
 
-    // BUG: .selected_message class is lost after rerender.
     const has_class_after = await page.evaluate(
         () => document.querySelector(".selected_message") !== null,
     );
-    assert.ok(!has_class_after, ".selected_message class should be missing after rerender (bug)");
+    assert.ok(has_class_after, ".selected_message class should be preserved after rerender");
 }
 
 async function scroll_backfill_tests(page: Page): Promise<void> {

@@ -24,6 +24,7 @@ import type {MessageList} from "./message_list.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_reminder from "./message_reminder.ts";
+import * as message_scroll_state from "./message_scroll_state.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
@@ -1586,6 +1587,7 @@ export class MessageListView {
     set_message_offset(offset: number): void {
         const $msg = this.selected_row();
         assert($msg !== undefined);
+        message_scroll_state.set_update_selection_on_next_scroll(false);
         message_viewport.scrollTop($msg.offset()!.top - offset);
     }
 
@@ -1608,6 +1610,7 @@ export class MessageListView {
             }
 
             this.set_message_offset(target_offset);
+            this.list.reselect_selected_id();
         }
     }
 
