@@ -3,7 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
-const {make_bot, make_user} = require("./lib/example_user.cjs");
+const {make_bot, make_user} = require("./lib/example_user.cts");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
