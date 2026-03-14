@@ -233,7 +233,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         #### These "organization settings" endpoint have modest value to document:
         "/realm",
         "/realm/domains",
-        "/realm/domains/{domain}",
         "/bots",
         "/bots/{bot_id}",
         #### These "organization settings" endpoints have low value to document:
