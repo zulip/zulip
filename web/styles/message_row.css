@@ -1095,6 +1095,10 @@
     cursor: pointer;
 }
 
+.can_open_history {
+    cursor: pointer;
+}
+
 .fade-in-message {
     animation-name: fadeInMessage;
     animation-duration: 1s;

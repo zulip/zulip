@@ -64,6 +64,7 @@ export type MessageContainer = {
     message_edit_notices_in_left_col: boolean;
     message_edit_notices_alongside_sender: boolean;
     message_edit_notices_for_status_message: boolean;
+    can_open_history: boolean;
     modified: boolean;
     edited: boolean;
     moved: boolean;
@@ -555,6 +556,7 @@ export class MessageListView {
         edited: boolean;
         moved: boolean;
         modified: boolean;
+        can_open_history: boolean;
     } {
         let last_edit_timestamp;
         if (message.local_edit_timestamp !== undefined) {
@@ -564,12 +566,16 @@ export class MessageListView {
         }
         const last_moved_timestamp = message.last_moved_timestamp;
 
+        const can_open_history =
+            last_edit_timestamp !== undefined || last_moved_timestamp !== undefined;
+
         return {
             last_edit_timestamp,
             last_moved_timestamp,
             edited: last_edit_timestamp !== undefined,
             moved: last_moved_timestamp !== undefined,
             modified: last_edit_timestamp !== undefined || last_moved_timestamp !== undefined,
+            can_open_history,
         };
     }
 
@@ -598,6 +604,7 @@ export class MessageListView {
         edited: boolean;
         moved: boolean;
         modified: boolean;
+        can_open_history: boolean;
     } {
         const is_typing = typing_data.is_message_editing(message.id);
         if (is_typing) {

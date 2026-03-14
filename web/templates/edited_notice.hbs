@@ -1,4 +1,4 @@
-<div class="edit-notifications"></div>
+<div class="edit-notifications{{#if can_open_history}} can_open_history{{/if}}"></div>
 {{#if modified}}
     {{#unless (eq msg/local_edit_timestamp undefined)}}
         <div class="message_edit_notice">
