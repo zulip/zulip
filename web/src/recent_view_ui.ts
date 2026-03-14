@@ -1055,7 +1055,7 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
 }
 
 export function bulk_inplace_rerender(row_keys: string[]): void {
-    if (!topics_widget) {
+    if (!topics_widget || !recent_view_util.is_visible()) {
         return;
     }
 
