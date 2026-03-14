@@ -14,7 +14,8 @@ async function navigate_to_user_list(page: Page): Promise<void> {
     await page.click(organization_settings);
 
     await page.waitForSelector("#settings_overlay_container.show", {visible: true});
-    await page.click("li[data-section='users']");
+    await page.waitForSelector(".org-settings-list li[data-section='users']", {visible: true});
+    await page.click(".org-settings-list li[data-section='users']");
     await page.waitForSelector("#admin-user-list.show", {visible: true});
 }
 
@@ -44,7 +45,10 @@ async function test_reactivation_confirmation_modal(page: Page, fullname: string
 async function test_deactivate_user(page: Page): Promise<void> {
     const cordelia_user_row = await user_row(page, common.fullname.cordelia);
     await page.waitForSelector(cordelia_user_row, {visible: true});
-    await page.waitForSelector(cordelia_user_row + " .zulip-icon-user-x");
+    // Wait for the presence-data fetch in `settings_users.populate_users`
+    // to complete and the table to re-render.
+    await page.waitForSelector(cordelia_user_row + " .loading-placeholder", {hidden: true});
+    await page.waitForSelector(cordelia_user_row + " .zulip-icon-user-x", {visible: true});
     await page.click(cordelia_user_row + " .deactivate");
     await common.wait_for_micromodal_to_open(page);
 
@@ -65,14 +69,14 @@ async function test_deactivate_user(page: Page): Promise<void> {
 async function test_reactivate_user(page: Page): Promise<void> {
     let cordelia_user_row = await user_row(page, common.fullname.cordelia);
     await page.waitForSelector(cordelia_user_row + ".deactivated_user");
-    await page.waitForSelector(cordelia_user_row + " .zulip-icon-user-plus");
+    await page.waitForSelector(cordelia_user_row + " .zulip-icon-user-plus", {visible: true});
     await page.click(cordelia_user_row + " .reactivate");
 
     await test_reactivation_confirmation_modal(page, common.fullname.cordelia);
 
     await page.waitForSelector(cordelia_user_row + ":not(.deactivated_user)", {visible: true});
     cordelia_user_row = await user_row(page, common.fullname.cordelia);
-    await page.waitForSelector(cordelia_user_row + " .zulip-icon-user-x");
+    await page.waitForSelector(cordelia_user_row + " .zulip-icon-user-x", {visible: true});
 }
 
 async function test_deactivated_users_section(page: Page): Promise<void> {
@@ -105,10 +109,13 @@ async function test_deactivated_users_section(page: Page): Promise<void> {
 }
 
 async function test_bot_deactivation_and_reactivation(page: Page): Promise<void> {
-    await page.click("li[data-section='bots']");
+    await page.waitForSelector(".org-settings-list li[data-section='bots']", {visible: true});
+    await page.click(".org-settings-list li[data-section='bots']");
+    await page.waitForSelector("#admin-bot-list.show", {visible: true});
 
     const default_bot_user_row = await user_row(page, "Zulip Default Bot");
 
+    await page.waitForSelector(default_bot_user_row + " .deactivate", {visible: true});
     await page.click(default_bot_user_row + " .deactivate");
     await common.wait_for_micromodal_to_open(page);
 
@@ -126,12 +133,12 @@ async function test_bot_deactivation_and_reactivation(page: Page): Promise<void>
     await common.wait_for_micromodal_to_close(page);
 
     await page.waitForSelector(default_bot_user_row + ".deactivated_user", {visible: true});
-    await page.waitForSelector(default_bot_user_row + " .zulip-icon-user-plus");
+    await page.waitForSelector(default_bot_user_row + " .zulip-icon-user-plus", {visible: true});
 
     await page.click(default_bot_user_row + " .reactivate");
     await test_reactivation_confirmation_modal(page, "Zulip Default Bot");
     await page.waitForSelector(default_bot_user_row + ":not(.deactivated_user)", {visible: true});
-    await page.waitForSelector(default_bot_user_row + " .zulip-icon-user-x");
+    await page.waitForSelector(default_bot_user_row + " .zulip-icon-user-x", {visible: true});
 }
 
 async function user_deactivation_test(page: Page): Promise<void> {
