@@ -62,6 +62,14 @@ export function reset(): void {
 }
 
 function sort_author_full_name(a: ServerEmoji, b: ServerEmoji): number {
+    const current_user_id = people.my_current_user_id();
+    const current_user_is_author_a = a.author_id === current_user_id;
+    const current_user_is_author_b = b.author_id === current_user_id;
+
+    if (current_user_is_author_a !== current_user_is_author_b) {
+        return current_user_is_author_a ? -1 : 1;
+    }
+
     const author_a = a.author?.full_name;
     const author_b = b.author?.full_name;
 
