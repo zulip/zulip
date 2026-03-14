@@ -418,6 +418,12 @@ class PermissionTest(ZulipTestCase):
         )
         self.assertEqual(hamlet["delivery_email"], self.example_email("hamlet"))
 
+    def test_include_avatar_source_requires_admin(self) -> None:
+        # Non-admin users should not be able to request include_avatar_source=True.
+        self.login("hamlet")
+        result = self.client_get("/json/users", {"include_avatar_source": "true"})
+        self.assert_json_error(result, "Must be an organization administrator")
+
     def test_user_cannot_promote_to_admin(self) -> None:
         self.login("hamlet")
         req = dict(role=orjson.dumps(UserProfile.ROLE_REALM_ADMINISTRATOR).decode())

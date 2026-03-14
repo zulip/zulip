@@ -131,6 +131,7 @@ type FetchUserDataParams = {
     user_ids: string;
     client_gravatar?: boolean;
     include_custom_profile_fields?: boolean;
+    include_avatar_source?: boolean;
     success?: (users: UsersFetchResponse["members"]) => void;
     error?: (xhr?: JQuery.jqXHR) => void;
 };
@@ -2211,6 +2212,7 @@ export function fetch_users_from_server(opts: FetchUserDataParams): void {
         user_ids: opts.user_ids,
         client_gravatar: opts.client_gravatar,
         include_custom_profile_fields: opts.include_custom_profile_fields,
+        include_avatar_source: opts.include_avatar_source,
     };
 
     channel.get({
@@ -2260,6 +2262,7 @@ export async function fetch_users(user_ids: Set<number>): Promise<UsersFetchResp
             // POST /register obtains custom profile field data if and only if
             // the current user is not a spectator. Mimic this behavior.
             include_custom_profile_fields: !page_params.is_spectator,
+            include_avatar_source: current_user.is_admin,
             user_ids: JSON.stringify([...user_ids_to_fetch]),
             success(users) {
                 resolve(users);

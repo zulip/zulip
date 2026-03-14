@@ -710,6 +710,7 @@ def fetch_initial_state_data(
             # Don't send custom profile field values to spectators.
             include_custom_profile_fields=user_profile is not None,
             user_list_incomplete=user_list_incomplete,
+            include_avatar_source=user_profile is not None and user_profile.is_realm_admin,
         )
         state["cross_realm_bots"] = list(get_cross_realm_dicts())
 
@@ -1187,6 +1188,10 @@ def apply_event(
             person["is_active"] = True
             if not person["is_bot"]:
                 person["profile_data"] = {}
+            if state["raw_users"] and "avatar_source" in next(iter(state["raw_users"].values())):
+                person["avatar_source"] = UserProfile.objects.filter(id=person_user_id).values_list(
+                    "avatar_source", flat=True
+                )[0]
             state["raw_users"][person_user_id] = person
         elif event["op"] == "update":
             is_me = person_user_id == user_profile.id
@@ -1244,6 +1249,22 @@ def apply_event(
                         state["realm_bots"] = []
                     if not was_admin and now_admin:
                         state["realm_bots"] = get_owned_bot_dicts(user_profile)
+
+                if "role" in person and "raw_users" in state:
+                    prev_state = state["raw_users"][user_profile.id]
+                    was_admin = prev_state["is_admin"]
+                    now_admin = is_administrator_role(person["role"])
+
+                    if was_admin and not now_admin:
+                        for user_dict in state["raw_users"].values():
+                            user_dict.pop("avatar_source", None)
+                    if not was_admin and now_admin:
+                        avatar_source_pairs = UserProfile.objects.filter(
+                            realm_id=user_profile.realm_id
+                        ).values_list("id", "avatar_source")
+                        for uid, src in avatar_source_pairs:
+                            if uid in state["raw_users"]:
+                                state["raw_users"][uid]["avatar_source"] = src
 
             if person_user_id in state["raw_users"]:
                 p = state["raw_users"][person_user_id]
