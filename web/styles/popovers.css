@@ -258,6 +258,11 @@
 
 #stream-actions-menu-popover,
 #stream-card-popover {
+    .popover-stream-header {
+        padding-bottom: 2px;
+        min-height: auto;
+    }
+
     .popover-stream-name {
         font-weight: 600;
         color: var(--color-text-popover-menu);
@@ -278,6 +283,8 @@
 
     .popover-stream-info-menu-description {
         color: var(--color-text-popover-menu);
+        padding-top: 2px;
+        min-height: auto;
     }
 }
 
@@ -303,7 +310,7 @@
 .popover-group-menu-info {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 0;
     padding: 3px var(--user-group-popover-horizontal-padding);
 }
 
@@ -311,20 +318,20 @@
     display: flex;
     align-items: flex-start;
     gap: 5px;
-    /* 18px at 15px/1em */
-    font-size: 1.2em;
     font-weight: 600;
-    /* 20px at 18px/1em */
-    line-height: 1.1111em;
-    color: var(--color-text-full-name);
+    line-height: 1.1;
+    color: var(--color-text-popover-menu);
     overflow-wrap: anywhere;
+
+    .popover-menu-icon {
+        font-size: 0.8em;
+        margin-top: 2px;
+    }
 }
 
 .popover-group-menu-description {
-    /* 15px at 15px/1em */
     font-size: 1em;
-    /* 16px at 15px/1em */
-    line-height: 1.0667em;
+    line-height: 1.2;
 }
 
 ul.popover-group-menu-member-list {
