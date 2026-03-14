@@ -76,10 +76,6 @@ export function scroll_finished(): void {
         return;
     }
 
-    // It's possible that we are in transit and message_lists.current is not defined.
-    // We still want the rest of the code to run but it's fine to skip this.
-    message_lists.current.view.update_sticky_recipient_headers();
-
     if (compose_banner.scroll_to_message_banner_message_id !== null) {
         const $message_row = message_lists.current.get_row(
             compose_banner.scroll_to_message_banner_message_id,
@@ -90,6 +86,7 @@ export function scroll_finished(): void {
     }
 
     if (message_scroll_state.update_selection_on_next_scroll) {
+        message_lists.current.view.update_sticky_recipient_headers();
         message_viewport.keep_pointer_in_view();
         // If we don't want to update message selection on this scroll,
         // we also don't want to mark any visible messages as read and
@@ -101,8 +98,6 @@ export function scroll_finished(): void {
         // unread_ops.process_visible will update necessary
         // data structures and DOM elements.
         unread_ops.process_visible();
-    } else {
-        message_scroll_state.set_update_selection_on_next_scroll(true);
     }
 
     if (message_lists.current.view.should_fetch_older_messages()) {
@@ -122,6 +117,15 @@ export function scroll_finished(): void {
         message_fetch.maybe_load_newer_messages({
             msg_list: message_lists.current,
         });
+    }
+
+    // Reset the flag at the very end, after all DOM-modifying work
+    // (sticky header updates, loading indicators from fetch triggers).
+    // Any of these can cause scroll anchoring adjustments that fire
+    // additional scroll events; resetting the flag earlier would let
+    // keep_pointer_in_view run on those events with stale layout data.
+    if (!message_scroll_state.update_selection_on_next_scroll) {
+        message_scroll_state.set_update_selection_on_next_scroll(true);
     }
 }
 
