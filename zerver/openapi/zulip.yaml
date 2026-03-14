@@ -14292,6 +14292,49 @@ paths:
                         "result": "success",
                         "server_timestamp": 1656958539.6287155,
                       }
+  /realm/domains/{domain}:
+    patch:
+      summary: Update a realm domain
+      description: Update whether subdomains are allowed for a domain.
+      operationId: update_realm_domain
+      tags:
+        - server_and_organizations
+      parameters:
+        - name: domain
+          in: path
+          description: The domain to perform the action on.
+          required: true
+          schema:
+            type: string
+          example: "example.com"
+        - name: allow_subdomains
+          in: query
+          description: Whether subdomains are allowed.
+          required: true
+          schema:
+            type: boolean
+          example: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+
+    delete:
+      summary: Remove a realm domain
+      description: Remove an allowed domain from the organization.
+      operationId: remove_realm_domain
+      tags:
+        - server_and_organizations
+      parameters:
+        - name: domain
+          in: path
+          description: The domain to perform the action on.
+          required: true
+          schema:
+            type: string
+          example: "example.com"
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /realm/profile_fields:
     get:
       operationId: get-custom-profile-fields

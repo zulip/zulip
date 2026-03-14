@@ -83,7 +83,7 @@ class RealmDomainTest(ZulipTestCase):
             "allow_subdomains": orjson.dumps(True).decode(),
         }
         url = "/json/realm/domains/acme.com"
-        result = self.client_patch(url, data)
+        result = self.client_patch(url, data, intentionally_undocumented=True)
         self.assert_json_success(result)
         self.assertTrue(
             RealmDomain.objects.filter(
@@ -92,7 +92,7 @@ class RealmDomainTest(ZulipTestCase):
         )
 
         url = "/json/realm/domains/non-existent.com"
-        result = self.client_patch(url, data)
+        result = self.client_patch(url, data, intentionally_undocumented=True)
         self.assertEqual(result.status_code, 400)
         self.assert_json_error(result, "No entry found for domain non-existent.com.")
 
@@ -104,7 +104,7 @@ class RealmDomainTest(ZulipTestCase):
         self.assertEqual(result.status_code, 400)
         self.assert_json_error(result, "No entry found for domain non-existent.com.")
 
-        result = self.client_delete("/json/realm/domains/acme.com")
+        result = self.client_delete("/json/realm/domains/acme.com", intentionally_undocumented=True)
         self.assert_json_success(result)
         self.assertFalse(RealmDomain.objects.filter(domain="acme.com").exists())
         self.assertTrue(realm.emails_restricted_to_domains)

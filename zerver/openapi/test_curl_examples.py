@@ -39,6 +39,9 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     "create-constructor-groups-video-call",
     # Would need Nextcloud Talk server configured to test this endpoint.
     "create-nextcloud-talk-video-call",
+    # Requires Organization Owner permissions, but the test runner acts as an admin.
+    "update_realm_domain",
+    "remove_realm_domain",
 }
 
 
