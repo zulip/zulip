@@ -1580,7 +1580,6 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
     }
 
     if (event.data.deactivated !== undefined) {
-        update_filter_widget_visibility();
         if (event.data.deactivated) {
             handle_deleted_group(group.id);
         } else {
@@ -1712,6 +1711,7 @@ function redraw_left_panel(tab_name: string): void {
         return;
     }
     group_list_widget.replace_list_data(groups_list_data);
+    update_filter_widget_visibility(tab_name);
     update_empty_left_panel_message();
 }
 
@@ -1728,7 +1728,6 @@ export function switch_group_tab(tab_name: string): void {
         use `group_list_toggler.goto`.
     */
 
-    update_filter_widget_visibility(tab_name);
     redraw_left_panel(tab_name);
     setup_group_list_tab_hash(tab_name);
 }
@@ -1795,6 +1794,10 @@ export function add_or_remove_from_group(
     }
 }
 
+function is_group_search_active(): boolean {
+    return $("#group_filter").css("display") !== "none" && $("#search_group_name").val() !== "";
+}
+
 export function update_empty_left_panel_message(): void {
     // Check if we have any groups in panel to decide whether to
     // display a notice.
@@ -1830,8 +1833,7 @@ export function update_empty_left_panel_message(): void {
     // or has a filter applied, since the empty state is due to
     // filters, not the actual absence of groups.
     const is_filtered =
-        current_group_filter !== FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS ||
-        $("#search_group_name").val() !== "";
+        current_group_filter !== FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS || is_group_search_active();
 
     const can_create_user_groups =
         settings_data.user_can_create_user_groups() && realm.zulip_plan_is_not_limited;
@@ -1859,8 +1861,10 @@ function get_empty_user_group_list_message(
     current_group_filter: string,
     active_tab_key: string,
 ): string {
-    const is_searching = $("#search_group_name").val() !== "";
-    if (is_searching || current_group_filter !== FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS) {
+    if (
+        is_group_search_active() ||
+        current_group_filter !== FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS
+    ) {
         if (active_tab_key === "roles") {
             return $t({defaultMessage: "There are no roles matching your filters."});
         }
@@ -1968,21 +1972,40 @@ function setup_dropdown_filters_widget(): void {
 
 function update_filter_widget_visibility(tab_name?: string): void {
     const active_tab = tab_name ?? get_active_data().$tabs.first().attr("data-tab-key");
+
+    // Roles tab is special: roles cannot be deactivated, so the
+    // active/deactivated dropdown is not applicable. The search box is
+    // always shown, and the filter value is ignored for this tab.
     if (active_tab === "roles") {
-        // Roles cannot be deactivated, so the active/deactivated filter
-        // dropdown is not applicable on the roles tab. We hide the dropdown
-        // and ignore the filter value completely for this tab.
+        $("#group_filter").show();
         $("#user-group-edit-filter-options").hide();
         update_displayed_groups(FILTERS.ACTIVE_GROUPS);
-    } else if (!user_groups.realm_has_deactivated_user_groups()) {
-        $("#user-group-edit-filter-options").hide();
-        update_displayed_groups(FILTERS.ACTIVE_GROUPS);
-        if (filters_dropdown_widget) {
-            filters_dropdown_widget.render(FILTERS.ACTIVE_GROUPS);
-        }
-    } else {
-        $("#user-group-edit-filter-options").show();
+        return;
     }
+
+    const groups =
+        active_tab === "your-groups"
+            ? user_groups.get_user_groups_of_user(people.my_current_user_id(), true)
+            : user_groups.get_realm_user_groups(true);
+    const has_active_groups = groups.some((group) => !group.deactivated);
+    const has_deactivated_groups = groups.some((group) => group.deactivated);
+
+    // Search box: shown when at least one group exists in this tab.
+    // Dropdown filter: shown only when both active and deactivated groups
+    // coexist, since otherwise there is nothing to switch between.
+    $("#group_filter").toggle(has_active_groups || has_deactivated_groups);
+    $("#user-group-edit-filter-options").toggle(has_active_groups && has_deactivated_groups);
+
+    // If both kinds coexist, honor the dropdown's current value; otherwise
+    // show everything (the dropdown is hidden in that case anyway).
+    let current_filter: string;
+    if (has_active_groups && has_deactivated_groups) {
+        current_filter =
+            z.optional(z.string()).parse(filters_dropdown_widget?.value()) ?? FILTERS.ACTIVE_GROUPS;
+    } else {
+        current_filter = FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS;
+    }
+    update_displayed_groups(current_filter);
 }
 
 export function setup_page(callback: () => void): void {
