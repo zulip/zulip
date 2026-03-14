@@ -21,7 +21,9 @@
         overflow-wrap: anywhere;
 
         & > a {
-            display: flex;
+            display: grid;
+            grid-template-areas: "icon content";
+            grid-template-columns: max-content minmax(0, 1fr) max-content;
             align-items: center;
             padding: 0.2142em 0.7142em; /* 3px 10px at 14px em */
             gap: 0.3571em; /* 5px at 14px em */
@@ -68,20 +70,23 @@
             }
 
             .typeahead-content {
+                grid-area: content;
                 display: flex;
                 align-items: center;
                 overflow: hidden;
                 gap: 0.3571em;
+                min-width: 0;
             }
 
             .typeahead-text-container {
+                grid-area: content;
                 display: flex;
-                align-self: center;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 gap: 3px;
-                align-items: baseline;
+                align-items: center;
+                min-width: 0;
             }
 
             .compose-stream-name {
@@ -115,7 +120,7 @@
 
     .pronouns,
     .autocomplete_secondary {
-        align-self: baseline;
+        align-self: center;
         opacity: 0.8;
         font-size: 85%;
         overflow: hidden;
@@ -131,6 +136,7 @@
 
     .autocomplete_secondary {
         flex: 1 1 0;
+        min-width: 0;
     }
 
     .active .pronouns,
@@ -170,8 +176,14 @@
         align-items: baseline;
         font-weight: 500;
 
-        .channel-privacy-type-icon {
-            margin-right: 3px;
+        .decorated-channel-name-wrapper {
+            display: inline-flex;
+            max-width: 100%;
+
+            .decorated-channel-name {
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
         }
     }
 }
@@ -197,7 +209,10 @@
 
 /* For FontAwesome icons and zulip icons used in place of images for some users. */
 .typeahead-image {
-    flex: 0 0 auto;
+    grid-area: icon;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     position: relative;
     height: 1.3125em; /* 21px at 16px/1em */
     width: 1.3125em; /* 21px at 16px/1em */
@@ -205,8 +220,6 @@
 
     .typeahead-image-avatar {
         border-radius: 4px;
-        /* Override bootstrap img */
-        vertical-align: baseline;
     }
 
     .user-circle {
