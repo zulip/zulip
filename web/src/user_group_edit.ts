@@ -1504,6 +1504,7 @@ export function add_group_to_table(group: UserGroup): void {
         show_group_settings(group);
         user_group_create.reset_name();
     }
+    update_filter_widget_visibility();
 }
 
 export function sync_group_permission_setting(property: string, group: UserGroup): void {
@@ -1557,7 +1558,6 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
     }
 
     if (event.data.deactivated !== undefined) {
-        update_filter_widget_visibility();
         if (event.data.deactivated) {
             handle_deleted_group(group.id);
         } else {
@@ -1689,6 +1689,7 @@ function redraw_left_panel(tab_name: string): void {
         return;
     }
     group_list_widget.replace_list_data(groups_list_data);
+    update_filter_widget_visibility(tab_name);
     update_empty_left_panel_message();
 }
 
@@ -1925,16 +1926,53 @@ function update_filter_widget_visibility(tab_name?: string): void {
         // dropdown is not applicable on the roles tab. We hide the dropdown
         // and ignore the filter value completely for this tab.
         $("#user-group-edit-filter-options").hide();
+        $("#group_filter").show();
         update_displayed_groups(FILTERS.ACTIVE_GROUPS);
-    } else if (!user_groups.realm_has_deactivated_user_groups()) {
-        $("#user-group-edit-filter-options").hide();
-        update_displayed_groups(FILTERS.ACTIVE_GROUPS);
-        if (filters_dropdown_widget) {
-            filters_dropdown_widget.render(FILTERS.ACTIVE_GROUPS);
-        }
-    } else {
-        $("#user-group-edit-filter-options").show();
+        return;
     }
+
+    let has_active_groups = false;
+    let has_deactivated_groups = false;
+    if (active_tab === "your-groups") {
+        const joined_groups = user_groups.get_user_groups_of_user(
+            people.my_current_user_id(),
+            true,
+        );
+        has_active_groups = joined_groups.some((group) => !group.deactivated);
+        has_deactivated_groups = joined_groups.some((group) => group.deactivated);
+    } else {
+        has_active_groups = user_groups.get_realm_user_groups().length > 0;
+        has_deactivated_groups = user_groups.realm_has_deactivated_user_groups();
+    }
+
+    if (!has_active_groups && !has_deactivated_groups) {
+        $("#user-group-edit-filter-options").hide();
+        $("#group_filter").hide();
+        update_displayed_groups(FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS);
+        return;
+    }
+
+    // Since there is at least one group we show the search box input.
+    $("#group_filter").show();
+
+    // Hide the dropdown filter if all groups are active or all groups are deactivated.
+    if (!(has_active_groups && has_deactivated_groups)) {
+        $("#user-group-edit-filter-options").hide();
+        update_displayed_groups(FILTERS.ACTIVE_AND_DEACTIVATED_GROUPS);
+        return;
+    }
+
+    // There are both active and deactivated groups, so show the
+    // dropdown filter with appropriate value.
+    $("#user-group-edit-filter-options").show();
+    let current_filter: string;
+    if (filters_dropdown_widget) {
+        current_filter =
+            z.optional(z.string()).parse(filters_dropdown_widget.value()) ?? FILTERS.ACTIVE_GROUPS;
+    } else {
+        current_filter = FILTERS.ACTIVE_GROUPS;
+    }
+    update_displayed_groups(current_filter);
 }
 
 export function setup_page(callback: () => void): void {
