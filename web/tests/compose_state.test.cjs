@@ -29,8 +29,7 @@ run_test("private_message_recipient_emails", ({override}) => {
 });
 
 run_test("has_full_recipient", ({override}) => {
-    $(`#compose_banners .topic_resolved`).remove = noop;
-    $(".narrow_to_compose_recipients").toggleClass = noop;
+    $(`#compose_banners .topic_resolved`)[0].remove = noop;
 
     let user_ids;
     override(compose_pm_pill, "set_from_user_ids", (value) => {
@@ -52,9 +51,9 @@ run_test("has_full_recipient", ({override}) => {
     assert.equal(compose_state.has_full_recipient(), true);
 
     compose_state.set_message_type("private");
-    compose_state.private_message_recipient_ids([]);
+    compose_state.set_private_message_recipient_ids([]);
     assert.equal(compose_state.has_full_recipient(), false);
 
-    compose_state.private_message_recipient_ids([123]);
+    compose_state.set_private_message_recipient_ids([123]);
     assert.equal(compose_state.has_full_recipient(), true);
 });

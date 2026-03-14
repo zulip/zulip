@@ -66,10 +66,7 @@ run_test("settings", ({override, override_rewire}) => {
 
     const $topic_fake_this = $.create("fake.settings_user_topic_visibility_policy");
     const $topic_tr_html = $('tr[data-topic="js"]');
-    $topic_fake_this.closest = (opts) => {
-        assert.equal(opts, "tr");
-        return $topic_tr_html;
-    };
+    $topic_fake_this.set_closest_results("tr", $topic_tr_html);
     const $topics_panel_header = $.create("fake.topic_panel_header").attr(
         "id",
         "user-topic-settings",
@@ -78,24 +75,10 @@ run_test("settings", ({override, override_rewire}) => {
         "alert-notification",
     );
     $topics_panel_header.set_find_results(".alert-notification", $status_element);
-    $topic_tr_html.closest = (opts) => {
-        assert.equal(opts, "#user-topic-settings");
-        return $topics_panel_header;
-    };
+    $topic_tr_html.set_closest_results("#user-topic-settings", $topics_panel_header);
 
-    let topic_data_called = 0;
-    $topic_tr_html.attr = (opts) => {
-        topic_data_called += 1;
-        switch (opts) {
-            case "data-stream-id":
-                return frontend.stream_id;
-            case "data-topic":
-                return "js";
-            /* istanbul ignore next */
-            default:
-                throw new Error(`Unknown attribute ${opts}`);
-        }
-    };
+    $topic_tr_html.attr("data-stream-id", `${frontend.stream_id}`);
+    $topic_tr_html.attr("data-topic", "js");
 
     let user_topic_visibility_policy_changed = false;
     override_rewire(
@@ -114,5 +97,4 @@ run_test("settings", ({override, override_rewire}) => {
     };
     topic_change_handler.call(topic_fake_this, event);
     assert.ok(user_topic_visibility_policy_changed);
-    assert.equal(topic_data_called, 2);
 });

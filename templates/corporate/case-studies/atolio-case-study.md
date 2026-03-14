@@ -4,11 +4,11 @@ information at work. They have deep expertise in what it takes to [empower teams
 to collaborate effectively](/why-zulip/), and have thought hard about how to
 enable effective collaboration for their own team.
 
-> “The first-class threads in Zulip are absolutely critical to how we work.  As
+> The first-class threads in Zulip are absolutely critical to how we work.  As
 > a fully distributed company, we needed a modern way to support the different
 > ways people work, while ensuring that everyone can find the current and
 > historical topics that are important to them.  So many people on Hacker News
-> talk about using Zulip - I'm so glad we joined them!”
+> talk about using Zulip - I'm so glad we joined them!
 >
 > — David Lanstein, co-founder and CEO of [Atolio](https://www.atolio.com/)
 
@@ -31,8 +31,8 @@ Thus the search was on to find a team chat tool that would truly serve Atolio’
 needs. “We didn’t want Slack,” Gareth says. “We wanted a tool designed for
 asynchronous distributed communication, and Zulip seemed to fit the bill.”
 
-> "Slack is an extremely noisy environment. It’s very difficult to keep up with
-> what your colleagues are doing.”
+> Slack is an extremely noisy environment. It’s very difficult to keep up with
+> what your colleagues are doing.
 >
 > — Gareth Watts, co-founder and CTO of [Atolio](https://www.atolio.com/)
 
@@ -53,8 +53,8 @@ Zulip would fit into the company’s communication patterns and workflows after 
 initial adjustment period. “After that, we could discuss if it wasn’t working
 out,” says Gareth. “But as it turned out, we never looked back.”
 
-> “We decided to turn off all other chat tools and try Zulip for a full month…
-> We never looked back.”
+> We decided to turn off all other chat tools and try Zulip for a full month…
+> We never looked back.
 >
 > — Gareth Watts, co-founder and CTO of [Atolio](https://www.atolio.com/)
 
@@ -72,8 +72,8 @@ behind closed doors,” Gareth explains. “In Slack, two thirds of communicatio
 not in public just to avoid noise. In Zulip, you can talk about what you want —
 you just give everything its own topic.”
 
-> “In Zulip, it’s super easy to find things 24 hours later if you weren’t online
-> when a discussion happened.”
+> In Zulip, it’s super easy to find things 24 hours later if you weren’t online
+> when a discussion happened.
 >
 > — Gareth Watts, co-founder and CTO of [Atolio](https://www.atolio.com/)
 
@@ -92,7 +92,7 @@ center](/help/) for more information. Gareth hasn’t seen much difference betwe
 onboarding to Zulip compared to other team chat tools: “If someone hasn’t used
 Slack before, they need onboarding too.”
 
-> “Zulip lets us have conversations in public, not behind closed doors.”
+> Zulip lets us have conversations in public, not behind closed doors.
 >
 > — Gareth Watts, co-founder and CTO of [Atolio](https://www.atolio.com/)
 

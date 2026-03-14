@@ -20,6 +20,7 @@ export function setup_toggler(): void {
             {label: $t({defaultMessage: "General"}), key: "general"},
             {label: $t({defaultMessage: "Personal"}), key: "personal"},
             {label: $t({defaultMessage: "Subscribers"}), key: "subscribers"},
+            {label: $t({defaultMessage: "Permissions"}), key: "permissions"},
         ],
         callback(_name, key) {
             $(".stream_section").hide();

@@ -82,6 +82,10 @@ class CustomProfileField(models.Model):
     display_in_profile_summary = models.BooleanField(default=False)
     required = models.BooleanField(default=False)
 
+    # Whether this field should be used in @-mention typeahead suggestions.
+    # Only applicable for EXTERNAL_ACCOUNT and SHORT_TEXT field types.
+    use_for_user_matching = models.BooleanField(default=False, db_default=False)
+
     # Whether regular users can edit this field on their own account.
     editable_by_user = models.BooleanField(default=True, db_default=True)
 
@@ -98,7 +102,7 @@ class CustomProfileField(models.Model):
     # and value argument. i.e. SELECT require field_data, USER require
     # realm as argument.
     SELECT_FIELD_TYPE_DATA: list[ExtendedFieldElement] = [
-        (SELECT, gettext_lazy("List of options"), validate_select_field, str, "SELECT"),
+        (SELECT, gettext_lazy("Dropdown"), validate_select_field, str, "SELECT"),
     ]
     USER_FIELD_TYPE_DATA: list[UserFieldElement] = [
         (USER, gettext_lazy("Users"), check_valid_user_ids, orjson.loads, "USER"),
@@ -113,8 +117,8 @@ class CustomProfileField(models.Model):
 
     FIELD_TYPE_DATA: list[FieldElement] = [
         # Type, display name, validator, converter, keyword
-        (SHORT_TEXT, gettext_lazy("Text (short)"), check_short_string, str, "SHORT_TEXT"),
-        (LONG_TEXT, gettext_lazy("Text (long)"), check_long_string, str, "LONG_TEXT"),
+        (SHORT_TEXT, gettext_lazy("Short text"), check_short_string, str, "SHORT_TEXT"),
+        (LONG_TEXT, gettext_lazy("Paragraph"), check_long_string, str, "LONG_TEXT"),
         (DATE, gettext_lazy("Date"), check_date, str, "DATE"),
         (URL, gettext_lazy("Link"), check_url, str, "URL"),
         (
@@ -177,6 +181,8 @@ class CustomProfileField(models.Model):
         }
         if self.display_in_profile_summary:
             data_as_dict["display_in_profile_summary"] = True
+        if self.use_for_user_matching:
+            data_as_dict["use_for_user_matching"] = True
 
         return data_as_dict
 

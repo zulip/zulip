@@ -1,12 +1,15 @@
 import Uppy from "@uppy/core";
 import type {Body, Meta} from "@uppy/core";
 import ImageEditor from "@uppy/image-editor";
+import Compressor from "compressorjs";
 import assert from "minimalistic-assert";
 
 import render_image_editor_modal from "../templates/image_editor_modal.hbs";
 
+import * as blueslip from "./blueslip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
+import {SUPPORTED_IMAGE_TYPES, is_supported_image_type} from "./upload.ts";
 import * as util from "./util.ts";
 
 export type UploadWidget = {
@@ -19,36 +22,6 @@ export type UploadFunction = (file: File, night: boolean | null, icon: boolean) 
 const default_max_file_size = 5;
 
 let uppy_widget: Uppy<Meta, Body> | undefined;
-
-// These formats do not need to be universally understood by clients; they are all
-// converted, server-side, currently to PNGs.  This list should be kept in sync with
-// the THUMBNAIL_ACCEPT_IMAGE_TYPES in zerver/lib/thumbnail.py
-const supported_types = [
-    "image/avif",
-    "image/gif",
-    "image/heic",
-    "image/jpeg",
-    "image/png",
-    "image/tiff",
-    "image/webp",
-];
-
-const cropper_opts = {
-    viewMode: 1,
-    autoCropArea: 1,
-    croppedCanvasOptions: {},
-    dragMode: "move",
-    minCropBoxHeight: 50,
-    background: true,
-};
-
-function is_image_format(file: File): boolean {
-    const type = file.type;
-    if (!type) {
-        return false;
-    }
-    return supported_types.includes(type);
-}
 
 export function build_widget(
     // function returns a jQuery file input object
@@ -104,7 +77,7 @@ export function build_widget(
         return false;
     });
 
-    get_file_input().attr("accept", supported_types.toString());
+    get_file_input().attr("accept", [...SUPPORTED_IMAGE_TYPES].toString());
     get_file_input().on("change", (e) => {
         if (e.target.files?.[0] === undefined) {
             $input_error.hide();
@@ -119,7 +92,7 @@ export function build_widget(
                 );
                 $input_error.show();
                 clear();
-            } else if (!is_image_format(file)) {
+            } else if (!is_supported_image_type(file.type)) {
                 $input_error.text($t({defaultMessage: "File type is not supported."}));
                 $input_error.show();
                 clear();
@@ -154,10 +127,22 @@ export function build_widget(
     };
 }
 
-function set_up_uppy_widget(): void {
+function ensure_file(resized_img: File | Blob, original_file: File): File {
+    // The resized image may be returned as either a Blob or a File.
+    // It usually returns a Blob, but can return a File in some cases
+    // (for example, when resizing is skipped or cannot be performed),
+    // so we convert it to a File since upload_function expects one.
+    if (resized_img instanceof File) {
+        return resized_img;
+    }
+
+    return new File([resized_img], original_file.name, {type: resized_img.type});
+}
+
+function set_up_uppy_widget(property_name: "realm_icon" | "realm_logo" | "user_avatar"): void {
     uppy_widget = new Uppy<Meta, Body>({
         restrictions: {
-            allowedFileTypes: supported_types,
+            allowedFileTypes: [...SUPPORTED_IMAGE_TYPES],
             maxNumberOfFiles: 1,
         },
     }).use(ImageEditor, {
@@ -175,6 +160,17 @@ function set_up_uppy_widget(): void {
             granularRotate: false,
             flip: false,
         },
+        cropperOptions: {
+            viewMode: 1,
+            autoCropArea: 1,
+            croppedCanvasOptions: {},
+            dragMode: "move",
+            minCropBoxHeight: 50,
+            background: true,
+            initialAspectRatio: property_name === "realm_logo" ? 8 : 1,
+            // For realm logo, crop box is not restricted to any aspect ratio.
+            aspectRatio: property_name === "realm_logo" ? Number.NaN : 1,
+        },
     });
 }
 
@@ -187,8 +183,8 @@ function open_uppy_editor(
 ): void {
     const rendered_image_editor_modal = render_image_editor_modal();
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Editing {file_name}"}, {file_name: file.name}),
-        html_body: rendered_image_editor_modal,
+        modal_title_html: $t_html({defaultMessage: "Editing {file_name}"}, {file_name: file.name}),
+        modal_content_html: rendered_image_editor_modal,
         id: "uppy-editor",
         loading_spinner: true,
         on_click() {
@@ -196,18 +192,8 @@ function open_uppy_editor(
             uppy_widget.getPlugin<ImageEditor<Meta, Body>>("ImageEditor")!.save();
         },
         post_render() {
-            set_up_uppy_widget();
+            set_up_uppy_widget(property_name);
             assert(uppy_widget !== undefined);
-
-            if (property_name === "realm_logo") {
-                uppy_widget.getPlugin("ImageEditor")!.setOptions({
-                    cropperOptions: {...cropper_opts, aspectRatio: 8},
-                });
-            } else {
-                uppy_widget.getPlugin("ImageEditor")!.setOptions({
-                    cropperOptions: {...cropper_opts, aspectRatio: 1},
-                });
-            }
 
             const uppy_file_id = uppy_widget.addFile({
                 name: file.name,
@@ -219,16 +205,54 @@ function open_uppy_editor(
             const uppy_file = uppy_widget.getFile(uppy_file_id);
             uppy_widget.getPlugin<ImageEditor<Meta, Body>>("ImageEditor")!.selectFile(uppy_file);
 
-            uppy_widget.once("file-editor:complete", (file) => {
+            let resizing_dimension_opts = {};
+            // The resizing dimensions should be kept in sync with the client-side
+            // resizing code in zerver/lib/thumbnail.py.
+            if (property_name === "user_avatar") {
+                resizing_dimension_opts = {
+                    maxHeight: 500,
+                    maxWidth: 500,
+                };
+            } else if (property_name === "realm_icon") {
+                resizing_dimension_opts = {
+                    maxHeight: 100,
+                    maxWidth: 100,
+                };
+            } else {
+                resizing_dimension_opts = {
+                    maxHeight: 100,
+                    maxWidth: 800,
+                };
+            }
+
+            uppy_widget.on("file-editor:complete", (file) => {
                 assert(file.data instanceof File);
+                let is_night = null;
+                let for_realm_icon = true;
                 if (property_name === "realm_logo") {
                     const $realm_logo_section = $upload_button.closest(".image_upload_widget");
-                    const is_night =
-                        $realm_logo_section.attr("id") === "realm-night-logo-upload-widget";
-                    upload_function(file.data, is_night, false);
-                } else {
-                    upload_function(file.data, null, true);
+                    is_night = $realm_logo_section.attr("id") === "realm-night-logo-upload-widget";
+                    for_realm_icon = false;
                 }
+                new Compressor(file.data, {
+                    // We do not set mimeType here because the source file is
+                    // already a PNG. Uppy converts images to PNG, and the
+                    // default value of "auto" for mimeType preserves the
+                    // original image’s mime type.
+                    ...resizing_dimension_opts,
+                    success(result) {
+                        assert(file.data instanceof File);
+                        const resized_img = ensure_file(result, file.data);
+                        upload_function(resized_img, is_night, for_realm_icon);
+                    },
+                    error(error) {
+                        blueslip.warn(String(error));
+                        // If there is some error during resizing, we just
+                        // try to upload the image without resizing.
+                        assert(file.data instanceof File);
+                        upload_function(file.data, is_night, for_realm_icon);
+                    },
+                });
             });
         },
         on_hidden() {
@@ -276,7 +300,7 @@ export function build_direct_upload_widget(
         return false;
     });
 
-    get_file_input().attr("accept", supported_types.toString());
+    get_file_input().attr("accept", [...SUPPORTED_IMAGE_TYPES].toString());
     get_file_input().on("change", (e) => {
         if (e.target.files?.[0] === undefined) {
             $input_error.hide();
@@ -291,7 +315,7 @@ export function build_direct_upload_widget(
                 );
                 $input_error.show();
                 clear();
-            } else if (!is_image_format(file)) {
+            } else if (!is_supported_image_type(file.type)) {
                 $input_error.text($t({defaultMessage: "File type is not supported."}));
                 $input_error.show();
                 clear();

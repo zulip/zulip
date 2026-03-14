@@ -1,5 +1,6 @@
 import os
 from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from typing import IO, Any, Protocol
@@ -37,6 +38,7 @@ class ZulipUploadBackend:
         content_type: str,
         file_data: bytes,
         user_profile: UserProfile | None,
+        target_realm: Realm | None,
     ) -> None:
         raise NotImplementedError
 
@@ -46,12 +48,29 @@ class ZulipUploadBackend:
     def attachment_source(self, path_id: str) -> StreamingSourceWithSize:
         raise NotImplementedError
 
-    def delete_message_attachment(self, path_id: str) -> bool:
+    def delete_message_attachment(self, path_id: str, *, raw_path: bool = False) -> None:
+        """This must delete the attachment, any adjacent .info files, and any thumbnails.
+
+        If raw_path is passed, just delete the one path provided.
+        This is used in rare cases where we're iterating _files_, not
+        path_ids.
+
+        """
         raise NotImplementedError
 
-    def delete_message_attachments(self, path_ids: list[str]) -> None:
-        for path_id in path_ids:
-            self.delete_message_attachment(path_id)
+    @contextmanager
+    def delete_message_attachments(
+        self,
+        *,
+        raw_paths: bool = False,
+        flush: None | Callable[[list[str]], None] = None,
+    ) -> Iterator[Callable[[str], None]]:
+        def delete_one(path_id: str) -> None:
+            self.delete_message_attachment(path_id, raw_path=raw_paths)
+            if flush:
+                flush([path_id])
+
+        yield delete_one
 
     def all_message_attachments(
         self,
@@ -64,7 +83,7 @@ class ZulipUploadBackend:
     def get_avatar_url(self, hash_key: str, medium: bool = False) -> str:
         raise NotImplementedError
 
-    def get_avatar_contents(self, file_path: str) -> tuple[bytes, str]:
+    def get_avatar_contents(self, file_path: str, avatar_source: str) -> tuple[bytes, str]:
         raise NotImplementedError
 
     def get_avatar_path(self, hash_key: str, medium: bool = False) -> str:
@@ -132,5 +151,5 @@ class ZulipUploadBackend:
     ) -> str:
         raise NotImplementedError
 
-    def delete_export_tarball(self, export_path: str) -> str | None:
+    def delete_export_tarball(self, export_path: str) -> None:
         raise NotImplementedError

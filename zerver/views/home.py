@@ -6,13 +6,18 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.cache import patch_cache_control
+from django.utils.timezone import now as timezone_now
 
-from zerver.actions.user_settings import do_change_tos_version, do_change_user_setting
+from zerver.actions.user_settings import (
+    do_change_tos_version,
+    do_change_user_date_joined,
+    do_change_user_setting,
+)
 from zerver.actions.users import do_change_is_imported_stub
 from zerver.context_processors import get_realm_from_request, get_valid_realm_from_request
 from zerver.decorator import web_public_view, zulip_login_required
 from zerver.forms import ToSForm
-from zerver.lib.compatibility import is_outdated_desktop_app, is_unsupported_browser
+from zerver.lib.compatibility import is_banned_browser, is_outdated_desktop_app
 from zerver.lib.home import build_page_params_for_home_page_load, get_user_permission_info
 from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm
 from zerver.lib.request import RequestNotes
@@ -41,6 +46,9 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         form = ToSForm(request.POST)
         if form.is_valid():
+            first_time_login = (
+                request.user.tos_version == UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
+            )
             assert (
                 settings.TERMS_OF_SERVICE_VERSION is not None
                 or request.user.tos_version == UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
@@ -73,6 +81,9 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
 
             if request.user.is_imported_stub:
                 do_change_is_imported_stub(request.user)
+
+            if first_time_login:
+                do_change_user_date_joined(request.user, timezone_now())
 
             return redirect(home)
     else:
@@ -199,7 +210,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                 "auto_update_broken": auto_update_broken,
             },
         )
-    (unsupported_browser, browser_name) = is_unsupported_browser(client_user_agent)
+    (unsupported_browser, browser_name) = is_banned_browser(client_user_agent)
     if unsupported_browser:
         return render(
             request,

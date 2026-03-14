@@ -240,4 +240,4 @@ async function compose_tests(page: Page): Promise<void> {
     await test_markdown_preview(page);
 }
 
-common.run_test(compose_tests);
+await common.run_test(compose_tests);

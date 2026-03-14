@@ -138,7 +138,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ".stream-list-section-container .add-stream-tooltip",
+        target: ".stream-list-section-container .add-stream-tooltip, .left-sidebar-controls .channel-new-topic-button",
         appendTo: () => document.body,
     });
 
@@ -150,7 +150,7 @@ export function initialize(): void {
                 settings_data.user_can_create_public_streams() ||
                 settings_data.user_can_create_web_public_streams();
             const tooltip_text = can_create_streams
-                ? $t({defaultMessage: "Add channels"})
+                ? $t({defaultMessage: "Browse or create channels"})
                 : $t({defaultMessage: "Browse channels"});
             instance.setContent(tooltip_text);
         },
@@ -177,7 +177,9 @@ export function initialize(): void {
     tippy.delegate("body", {
         target: ".dm-tooltip-target",
         onShow(instance) {
-            if ($(".direct-messages-container").hasClass("zoom-in")) {
+            // Collapsing doesn't happen when the modal is shown.
+            const modal_hidden = $("#direct-messages-modal").hasClass("no-display");
+            if (!modal_hidden) {
                 return false;
             }
 

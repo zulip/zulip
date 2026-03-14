@@ -77,7 +77,7 @@ export const user_settings_schema = z.object({
     web_channel_default_view: z.number(),
     web_escape_navigates_to_home_view: z.boolean(),
     web_font_size_px: z.number(),
-    web_home_view: z.enum(["inbox", "recent_topics", "all_messages"]),
+    web_home_view: z.enum(["inbox", "recent", "all_messages"]),
     web_inbox_show_channel_folders: z.boolean(),
     web_left_sidebar_show_channel_folders: z.boolean(),
     web_left_sidebar_unreads_count_summary: z.boolean(),

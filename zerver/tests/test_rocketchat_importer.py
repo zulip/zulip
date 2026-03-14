@@ -3,8 +3,14 @@ from datetime import datetime, timezone
 from typing import Any
 
 import orjson
+from django.test import override_settings
 
-from zerver.data_import.import_util import SubscriberHandler, ZerverFieldsT, build_recipients
+from zerver.data_import.import_util import (
+    SubscriberHandler,
+    UploadRecordData,
+    ZerverFieldsT,
+    build_recipients,
+)
 from zerver.data_import.rocketchat import (
     build_custom_emoji,
     build_reactions,
@@ -114,7 +120,7 @@ class RocketChatImporter(ZulipTestCase):
         user = user_handler.get_user(user_id)
 
         self.assertEqual(user["full_name"], rocketchat_data["user"][0]["name"])
-        self.assertEqual(user["avatar_source"], "G")
+        self.assertEqual(user["avatar_source"], "J")
         self.assertEqual(user["delivery_email"], "rocket.cat-bot@zulip.com")
         self.assertEqual(user["email"], "rocket.cat-bot@zulip.com")
         self.assertEqual(user["full_name"], "Rocket.Cat")
@@ -134,7 +140,7 @@ class RocketChatImporter(ZulipTestCase):
         user = user_handler.get_user(user_id)
 
         self.assertEqual(user["full_name"], rocketchat_data["user"][2]["name"])
-        self.assertEqual(user["avatar_source"], "G")
+        self.assertEqual(user["avatar_source"], "J")
         self.assertEqual(user["delivery_email"], "harrypotter@email.com")
         self.assertEqual(user["email"], "harrypotter@email.com")
         self.assertEqual(user["full_name"], "Harry Potter")
@@ -343,7 +349,7 @@ class RocketChatImporter(ZulipTestCase):
         domain_name = "zulip.com"
 
         user_handler = UserHandler()
-        subscriber_handler = SubscriberHandler()
+        subscriber_handler = SubscriberHandler[str]()
         user_id_mapper = IdMapper[str]()
         stream_id_mapper = IdMapper[str]()
 
@@ -442,7 +448,7 @@ class RocketChatImporter(ZulipTestCase):
         )
 
         self.assert_length(subscriber_handler.get_users(stream_id=zerver_stream[6]["id"]), 0)
-        self.assertTrue(zerver_stream[6]["deactivated"])
+        self.assertFalse(zerver_stream[6]["deactivated"])
 
     def test_convert_direct_message_group_data(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
@@ -452,7 +458,7 @@ class RocketChatImporter(ZulipTestCase):
         domain_name = "zulip.com"
 
         user_handler = UserHandler()
-        subscriber_handler = SubscriberHandler()
+        subscriber_handler = SubscriberHandler[str]()
         user_id_mapper = IdMapper[str]()
         direct_message_group_id_mapper = IdMapper[str]()
 
@@ -492,6 +498,67 @@ class RocketChatImporter(ZulipTestCase):
         )
 
         self.assert_length(zerver_direct_message_group, 1)
+
+        rc_direct_message_group_id = rocketchat_data["room"][12]["_id"]
+        self.assertTrue(direct_message_group_id_mapper.has(rc_direct_message_group_id))
+
+        direct_message_group_id = direct_message_group_id_mapper.get(rc_direct_message_group_id)
+        self.assertEqual(
+            subscriber_handler.get_users(direct_message_group_id=direct_message_group_id), {3, 4, 5}
+        )
+
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
+    def test_convert_direct_message_group_data_without_personal_recipient(self) -> None:
+        fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
+        rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
+
+        realm_id = 3
+        domain_name = "zulip.com"
+
+        user_handler = UserHandler()
+        subscriber_handler = SubscriberHandler[str]()
+        user_id_mapper = IdMapper[str]()
+        direct_message_group_id_mapper = IdMapper[str]()
+
+        user_id_to_user_map = map_user_id_to_user(rocketchat_data["user"])
+
+        process_users(
+            user_id_to_user_map=user_id_to_user_map,
+            realm_id=realm_id,
+            domain_name=domain_name,
+            user_handler=user_handler,
+            user_id_mapper=user_id_mapper,
+        )
+
+        direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]] = {}
+
+        with self.assertLogs(level="INFO"):
+            categorize_channels_and_map_with_id(
+                channel_data=rocketchat_data["room"],
+                room_id_to_room_map={},
+                team_id_to_team_map={},
+                dsc_id_to_dsc_map={},
+                direct_id_to_direct_map={},
+                direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
+                livechat_id_to_livechat_map={},
+            )
+
+        zerver_direct_message_group = convert_direct_message_group_data(
+            direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
+            direct_message_group_id_mapper=direct_message_group_id_mapper,
+            user_id_mapper=user_id_mapper,
+            subscriber_handler=subscriber_handler,
+        )
+
+        self.assert_length(zerver_direct_message_group, 2)
+
+        rc_direct_message_group_id = rocketchat_data["room"][4]["_id"]
+        self.assertTrue(direct_message_group_id_mapper.has(rc_direct_message_group_id))
+
+        direct_message_group_id = direct_message_group_id_mapper.get(rc_direct_message_group_id)
+        self.assertEqual(
+            subscriber_handler.get_users(direct_message_group_id=direct_message_group_id), {3, 4}
+        )
 
         rc_direct_message_group_id = rocketchat_data["room"][12]["_id"]
         self.assertTrue(direct_message_group_id_mapper.has(rc_direct_message_group_id))
@@ -555,7 +622,7 @@ class RocketChatImporter(ZulipTestCase):
         domain_name = "zulip.com"
 
         user_handler = UserHandler()
-        subscriber_handler = SubscriberHandler()
+        subscriber_handler = SubscriberHandler[str]()
         user_id_mapper = IdMapper[str]()
         stream_id_mapper = IdMapper[str]()
         direct_message_group_id_mapper = IdMapper[str]()
@@ -867,7 +934,7 @@ class RocketChatImporter(ZulipTestCase):
         )
 
         zerver_attachments: list[ZerverFieldsT] = []
-        uploads_list: list[ZerverFieldsT] = []
+        uploads_list: list[UploadRecordData] = []
 
         upload_id_to_upload_data_map = map_upload_id_to_upload_data(rocketchat_data["upload"])
 
@@ -894,7 +961,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertTrue(zerver_attachments[0]["is_realm_public"])
 
         self.assert_length(uploads_list, 1)
-        self.assertEqual(uploads_list[0]["user_profile_id"], 3)
+        self.assertEqual(uploads_list[0].user_profile_id, 3)
 
         attachment_out_path = os.path.join(output_dir, "uploads", zerver_attachments[0]["path_id"])
         self.assertTrue(os.path.exists(attachment_out_path))

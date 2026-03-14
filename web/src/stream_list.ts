@@ -19,14 +19,19 @@ import * as compose_actions from "./compose_actions.ts";
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import {localstorage} from "./localstorage.ts";
+import type {Message} from "./message_store.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as narrow_state from "./narrow_state.ts";
+import {page_params} from "./page_params.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
+import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
 import type {StreamListSection} from "./stream_list_sort.ts";
@@ -41,7 +46,6 @@ import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 import type {FullUnreadCountsData, StreamCountInfo} from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
-import * as user_topics from "./user_topics.ts";
 
 let pending_stream_list_rerender = false;
 let zoomed_in = false;
@@ -51,9 +55,18 @@ export function set_update_inbox_channel_view_callback(value: (channel_id: numbe
     update_inbox_channel_view_callback = value;
 }
 
-let has_scrolled = false;
+let is_actively_scrolling = false;
+
+const left_sidebar_scroll_state: {
+    scroll_container_scroll_top: number | undefined;
+    selection_offset_to_top: number | undefined;
+} = {
+    scroll_container_scroll_top: undefined,
+    selection_offset_to_top: undefined,
+};
 
 const collapsed_sections = new Set<string>();
+const sections_with_only_inactive_or_muted = new Set<string>();
 const sections_showing_inactive_or_muted = new Set<string>();
 
 // Persistence for collapsed sections state
@@ -65,17 +78,96 @@ export function is_zoomed_in(): boolean {
     return zoomed_in;
 }
 
-function zoom_in(): void {
-    const stream_id = topic_list.active_stream_id();
+function get_selection_offset_from_top($target: JQuery, $scroll_element: JQuery): number {
+    const container_top = $scroll_element.offset()?.top ?? 0;
+    const target_top = $target.offset()?.top ?? 0;
+    return target_top - container_top;
+}
 
+function capture_left_sidebar_selection_anchor(): void {
+    const $scroll_element = scroll_util.get_left_sidebar_scroll_container();
+    left_sidebar_scroll_state.scroll_container_scroll_top = $scroll_element.scrollTop();
+    // .active-sub-filter: Selected topic or DM.
+    // .active-filter: Selected channel.
+    // We don't need to handle others since restoring `scroll_container_scroll_top` would
+    // work for them.
+    const $active_filter = $scroll_element.find(".active-sub-filter, .active-filter");
+    if ($active_filter.length === 1) {
+        left_sidebar_scroll_state.selection_offset_to_top = get_selection_offset_from_top(
+            $active_filter,
+            $scroll_element,
+        );
+    } else {
+        left_sidebar_scroll_state.selection_offset_to_top = undefined;
+    }
+}
+
+function restore_left_sidebar_scroll_state(): void {
+    const $scroll_element = scroll_util.get_left_sidebar_scroll_container();
+    if (left_sidebar_scroll_state.selection_offset_to_top !== undefined) {
+        const $active_topic_or_channel = $scroll_element.find(".active-sub-filter, .active-filter");
+        if ($active_topic_or_channel.length === 1) {
+            const current_offset_to_top = get_selection_offset_from_top(
+                $active_topic_or_channel,
+                $scroll_element,
+            );
+            const offset_difference =
+                current_offset_to_top - left_sidebar_scroll_state.selection_offset_to_top;
+            $scroll_element.scrollTop(($scroll_element.scrollTop() ?? 0) + offset_difference);
+            return;
+        }
+    }
+    // Fallback: restore the raw scroll position captured before the update.
+    if (left_sidebar_scroll_state.scroll_container_scroll_top !== undefined) {
+        $scroll_element.scrollTop(left_sidebar_scroll_state.scroll_container_scroll_top);
+    }
+}
+
+function update_streams_sidebar_and_restore_scroll_state(): void {
+    requestAnimationFrame(() => {
+        capture_left_sidebar_selection_anchor();
+        update_streams_sidebar();
+        restore_left_sidebar_scroll_state();
+    });
+}
+
+export function update_streams_sidebar_for_messages(messages: Message[]): void {
+    const channel_id = topic_list.active_stream_id();
+    if (channel_id === undefined) {
+        // If no channel's topic list is expanded, skip the full sidebar
+        // re-render. Unread count badges update independently via
+        // unread_ui hooks.
+        return;
+    }
+
+    const should_update = messages.some(
+        (message) => message.type === "stream" && message.stream_id === channel_id,
+    );
+
+    if (!should_update) {
+        return;
+    }
+
+    if (is_actively_scrolling) {
+        update_streams_sidebar();
+    } else {
+        update_streams_sidebar_and_restore_scroll_state();
+    }
+}
+
+function zoom_in(): void {
+    zoomed_in = true;
+    const stream_id = topic_list.active_stream_id();
+    assert(stream_id !== undefined);
+
+    $("#direct-messages-modal").toggleClass("no-display", true);
     popovers.hide_all();
     pm_list.close();
-    topic_list.zoom_in();
-    zoom_in_topics({
-        stream_id,
-    });
-
-    zoomed_in = true;
+    zoom_in_topics(stream_id);
+    topic_list.zoom_in(get_stream_li(stream_id)!);
+    $("#left-sidebar").addClass("zoom-in");
+    $("#left-sidebar").addClass("zoom-in-topics");
+    $("#left-sidebar-modal").addClass("zoom-in-topics");
 }
 
 export function set_pending_stream_list_rerender(value: boolean): void {
@@ -83,36 +175,24 @@ export function set_pending_stream_list_rerender(value: boolean): void {
 }
 
 export function zoom_out(): void {
+    zoomed_in = false;
     if (pending_stream_list_rerender) {
         update_streams_sidebar(true);
     }
-    const $stream_li = topic_list.get_stream_li();
-
     popovers.hide_all();
     topic_list.zoom_out();
     zoom_out_topics();
-
-    if ($stream_li) {
-        scroll_stream_into_view($stream_li);
-    }
-
-    zoomed_in = false;
+    scroll_stream_into_view();
 }
 
 export function clear_topics(): void {
-    const $stream_li = topic_list.get_stream_li();
-
     topic_list.close();
 
     if (zoomed_in) {
+        zoomed_in = false;
         zoom_out_topics();
-
-        if ($stream_li) {
-            scroll_stream_into_view($stream_li);
-        }
+        scroll_stream_into_view();
     }
-
-    zoomed_in = false;
 }
 
 export let update_count_in_dom = (
@@ -264,6 +344,7 @@ export let stream_list_section_container_html = function (
         id: section.id,
         section_title: section.section_title,
         plus_icon_url: can_create_streams ? get_section_channel_plus_icon_url(section) : undefined,
+        show_folder_action_icon: !page_params.is_spectator && section.folder_id !== null,
     });
 };
 
@@ -301,6 +382,43 @@ function maybe_change_channel_folders_option_visibility(): void {
     } else {
         $channel_folders_sidebar_option.hide();
     }
+}
+
+// The user might already have most of the sections collapsed or uncollapsed
+// when toggling the "show channel folders" setting, and we use that information
+// to decide which sections should be collapsed when this setting is changed.
+// Note that we don't touch the pinned section, since that stays the same when
+// this setting changes.
+// This must be called before `build_stream_list`, so that it has the correct
+// saved collapsed section state.
+export function update_collapsed_state_on_show_channel_folders_change(): void {
+    if (user_settings.web_left_sidebar_show_channel_folders) {
+        // No folders -> folders: If the normal streams (Channels / Other) section was
+        // collapsed, collapse all folders. Otherwise, expand all folders.
+        for (const folder_id of channel_folders.get_active_folder_ids()) {
+            if (collapsed_sections.has("normal-streams")) {
+                collapsed_sections.add(folder_id.toString());
+            } else {
+                collapsed_sections.delete(folder_id.toString());
+            }
+        }
+    } else {
+        // Folders -> no folders: If the normal streams was expanded, keep it expanded.
+        // If normal streams was collapsed but any folder was expanded, expand the normal
+        // streams section. If all folders were also collapsed, keep the normal streams
+        // section collapsed.
+        if (!collapsed_sections.has("normal-streams")) {
+            return;
+        }
+
+        const any_folders_expanded = [...channel_folders.get_active_folder_ids()].some(
+            (folder_id) => !collapsed_sections.has(folder_id.toString()),
+        );
+        if (any_folders_expanded) {
+            collapsed_sections.delete("normal-streams");
+        }
+    }
+    save_collapsed_sections_state();
 }
 
 export function build_stream_list(force_rerender: boolean): void {
@@ -344,12 +462,12 @@ export function build_stream_list(force_rerender: boolean): void {
             $(stream_list_section_container_html(section, can_create_streams)),
         );
         const is_empty =
-            section.streams.length === 0 &&
+            section.default_visible_streams.length === 0 &&
             section.muted_streams.length === 0 &&
             section.inactive_streams.length === 0;
         $(`#stream-list-${section.id}-container`).toggleClass("no-display", is_empty);
 
-        for (const stream_id of section.streams) {
+        for (const stream_id of section.default_visible_streams) {
             add_sidebar_li(stream_id, $(`#stream-list-${section.id}`));
         }
         const muted_and_inactive_streams = [...section.muted_streams, ...section.inactive_streams];
@@ -386,8 +504,16 @@ export function build_stream_list(force_rerender: boolean): void {
                 section.id !== "pinned-streams",
             );
         }
-        if (!is_empty && section.streams.length === 0) {
-            collapsed_sections.add(section.id);
+        // If a section appears empty, due to only having inactive or muted channels,
+        // we collapse it, since there's nothing to easily see. But don't do this during
+        // search, since sections can enter that state temporarily.
+        if (!searching()) {
+            if (!is_empty && section.default_visible_streams.length === 0) {
+                collapsed_sections.add(section.id);
+                sections_with_only_inactive_or_muted.add(section.id);
+            } else {
+                sections_with_only_inactive_or_muted.delete(section.id);
+            }
         }
     }
 
@@ -498,12 +624,27 @@ function toggle_section_collapse($container: JQuery): void {
     }
     maybe_hide_topic_bracket(section_id);
     save_collapsed_sections_state();
+
+    if (
+        sections_with_only_inactive_or_muted.has(section_id) &&
+        !sections_showing_inactive_or_muted.has(section_id)
+    ) {
+        toggle_inactive_or_muted_channels($container);
+    }
+}
+
+function get_valid_section_ids(): Set<string> {
+    const section_ids = new Set<string>(["pinned-streams", "normal-streams"]);
+    for (const folder_id of channel_folders.get_active_folder_ids()) {
+        section_ids.add(folder_id.toString());
+    }
+    return section_ids;
 }
 
 function save_collapsed_sections_state(): void {
     // Prune any section IDs that no longer exist (e.g., a folder was deleted
     // in another browser) before saving to localStorage.
-    const valid_section_ids = new Set(stream_list_sort.section_ids());
+    const valid_section_ids = get_valid_section_ids();
     for (const section_id of collapsed_sections) {
         if (!valid_section_ids.has(section_id)) {
             collapsed_sections.delete(section_id);
@@ -529,6 +670,11 @@ export let set_sections_states = function (): void {
         // Restore the collapsed state of sections.
         for (const section_id of collapsed_sections) {
             const $container = $(`#stream-list-${section_id}-container`);
+            // This can happen if the section isn't currently visible
+            // (e.g. the setting to show folders is off).
+            if ($container.length === 0) {
+                continue;
+            }
             $container.toggleClass("collapsed", true);
             $container
                 .find(".stream-list-section-toggle")
@@ -545,7 +691,16 @@ export function rewire_set_sections_states(value: typeof set_sections_states): v
     set_sections_states = value;
 }
 
-export function get_stream_li(stream_id: number): JQuery | undefined {
+export function get_stream_li(stream_id: number, override_zoomed_in?: boolean): JQuery | undefined {
+    const for_zoomed = override_zoomed_in ?? zoomed_in;
+    if (for_zoomed) {
+        assert(zoomed_in_row !== undefined);
+        if (zoomed_in_row.sub.stream_id !== stream_id) {
+            return undefined;
+        }
+        return zoomed_in_row.$list_item;
+    }
+
     const row = stream_sidebar.get_row(stream_id);
     if (!row) {
         // Not all streams are in the sidebar, so we don't report
@@ -555,7 +710,7 @@ export function get_stream_li(stream_id: number): JQuery | undefined {
     }
 
     const $li = row.get_li();
-    if (!$li) {
+    if ($li.length === 0) {
         blueslip.error("Cannot find li", {stream_id});
         return undefined;
     }
@@ -596,77 +751,13 @@ function stream_id_for_elt($elt: JQuery): number {
     return Number.parseInt(stream_id_string, 10);
 }
 
-export function zoom_in_topics(options: {stream_id: number | undefined}): void {
-    // This only does stream-related tasks related to zooming
-    // in to more topics, which is basically hiding all the
-    // other streams.
-
-    $("#streams_list").expectOne().removeClass("zoom-out").addClass("zoom-in");
-
-    $("#stream_filters li.narrow-filter").each(function () {
-        const $elt = $(this);
-        const stream_id = options.stream_id;
-
-        if (stream_id_for_elt($elt) === stream_id) {
-            $elt.toggleClass("hide", false);
-            // Add search box for topics list.
-            $elt.children("div.bottom_left_row").append($(render_filter_topics()));
-            topic_list.setup_topic_search_typeahead();
-        } else {
-            $elt.toggleClass("hide", true);
-        }
-    });
-}
-
-export function zoom_out_topics(): void {
-    $("#streams_list").expectOne().removeClass("zoom-in").addClass("zoom-out");
-    $("#stream_filters li.narrow-filter").toggleClass("hide", false);
-    // Remove search box for topics list from DOM.
-    $(".filter-topics").remove();
-}
-
-export function set_in_home_view(stream_id: number, in_home: boolean): void {
-    const $li = get_stream_li(stream_id);
-    if (!$li) {
-        blueslip.error("passed in bad stream id", {stream_id});
-        return;
-    }
-
-    if (in_home) {
-        $li.removeClass("out_of_home_view");
-    } else {
-        $li.addClass("out_of_home_view");
-    }
-}
-
-function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
-    const name = sub.name;
-    const is_muted = stream_data.is_muted(sub.stream_id);
-    const can_post_messages = stream_data.can_post_messages_in_stream(sub);
-    const url = hash_util.channel_url_by_user_setting(sub.stream_id);
-    const args = {
-        name,
-        id: sub.stream_id,
-        url,
-        is_muted,
-        invite_only: sub.invite_only,
-        is_web_public: sub.is_web_public,
-        color: sub.color,
-        pin_to_top: sub.pin_to_top,
-        can_post_messages,
-        is_empty_topic_only_channel: stream_data.is_empty_topic_only_channel(sub.stream_id),
-    };
-    const $list_item = $(render_stream_sidebar_row(args));
-    return $list_item;
-}
-
 class StreamSidebarRow {
     sub: StreamSubscription;
     $list_item: JQuery;
 
-    constructor(sub: StreamSubscription) {
+    constructor(sub: StreamSubscription, for_modal = false) {
         this.sub = sub;
-        this.$list_item = build_stream_sidebar_li(sub);
+        this.$list_item = build_stream_sidebar_li(sub, for_modal);
         this.update_unread_count();
     }
 
@@ -711,6 +802,68 @@ class StreamSidebarRow {
     }
 }
 
+let zoomed_in_row: StreamSidebarRow | undefined;
+export function zoom_in_topics(stream_id: number): void {
+    // This only does channel-related tasks related to zooming
+    // in to more topics, which is creating the sidebar row
+    // and setting up the channel's more topics modal.
+    const sub = sub_store.get(stream_id);
+    assert(sub !== undefined);
+
+    zoomed_in_row = new StreamSidebarRow(sub, true);
+    $("#more-topics-modal").replaceWith(zoomed_in_row.$list_item);
+    $("#more-topics-modal").find("div.bottom_left_row").append($(render_filter_topics()));
+    topic_list.setup_topic_search_typeahead();
+}
+
+export function zoom_out_topics(): void {
+    $("#left-sidebar").removeClass("zoom-in");
+    $("#left-sidebar").removeClass("zoom-in-topics");
+    $("#left-sidebar-modal").removeClass("zoom-in-topics");
+    $("#stream_filters li.narrow-filter").toggleClass("hide", false);
+    $("#more-topics-modal").empty();
+    zoomed_in_row = undefined;
+}
+
+export function set_in_home_view(stream_id: number, in_home: boolean): void {
+    const $li = get_stream_li(stream_id);
+    if (!$li) {
+        blueslip.error("passed in bad stream id", {stream_id});
+        return;
+    }
+
+    if (in_home) {
+        $li.removeClass("out_of_home_view");
+    } else {
+        $li.addClass("out_of_home_view");
+    }
+}
+
+function build_stream_sidebar_li(sub: StreamSubscription, for_modal = false): JQuery {
+    const name = sub.name;
+    const is_muted = stream_data.is_muted(sub.stream_id);
+    const can_post_messages = stream_data.can_post_messages_in_stream(sub);
+    const url = hash_util.channel_url_by_user_setting(sub.stream_id);
+    const args = {
+        name,
+        id: sub.stream_id,
+        url,
+        is_muted,
+        invite_only: sub.invite_only,
+        is_web_public: sub.is_web_public,
+        color: sub.color,
+        pin_to_top: sub.pin_to_top,
+        can_post_messages,
+        cannot_create_topics_in_channel: !stream_data.can_create_new_topics_in_stream(
+            sub.stream_id,
+        ),
+        is_empty_topic_only_channel: stream_data.is_empty_topic_only_channel(sub.stream_id),
+        for_modal,
+    };
+    const $list_item = $(render_stream_sidebar_row(args));
+    return $list_item;
+}
+
 function build_stream_sidebar_row(sub: StreamSubscription): void {
     stream_sidebar.set_row(sub.stream_id, new StreamSidebarRow(sub));
 }
@@ -751,7 +904,10 @@ function set_stream_unread_count(
     stream_has_any_unmuted_unread_mention: boolean,
     stream_has_only_muted_unread_mentions: boolean,
 ): void {
-    const $stream_li = get_stream_li(stream_id);
+    // Update the unread count for the regular stream list, even if we're
+    // currently zoomed in, so that it has the correct number when we zoom
+    // out.
+    const $stream_li = get_stream_li(stream_id, false);
     if (!$stream_li) {
         // This can happen for legitimate reasons, but we warn
         // just in case.
@@ -765,6 +921,23 @@ function set_stream_unread_count(
         stream_has_any_unmuted_unread_mention,
         stream_has_only_muted_unread_mentions,
     );
+
+    if (zoomed_in) {
+        const $stream_li = get_stream_li(stream_id);
+        if (!$stream_li) {
+            // When zoomed in, only the zoomed-in stream has a
+            // row in the zoomed view, so this is expected for
+            // all other streams.
+            return;
+        }
+        update_count_in_dom(
+            $stream_li,
+            count,
+            stream_has_any_unread_mention_messages,
+            stream_has_any_unmuted_unread_mention,
+            stream_has_only_muted_unread_mentions,
+        );
+    }
 }
 
 export let update_streams_sidebar = (force_rerender = false): void => {
@@ -992,16 +1165,15 @@ export function refresh_pinned_or_unpinned_stream(sub: StreamSubscription): void
         maybe_hide_topic_bracket(section_id);
     }
 
-    // Only scroll pinned topics into view.  If we're unpinning
+    // Only scroll pinned topics into view. If we're unpinning
     // a topic, we may be literally trying to get it out of
     // our sight.
     if (sub.pin_to_top) {
-        const $stream_li = get_stream_li(sub.stream_id);
-        if (!$stream_li) {
+        if (!stream_sidebar.get_row(sub.stream_id)) {
             blueslip.error("passed in bad stream id", {stream_id: sub.stream_id});
             return;
         }
-        scroll_stream_into_view($stream_li);
+        scroll_stream_into_view();
     }
 }
 
@@ -1026,12 +1198,12 @@ export function get_sidebar_stream_topic_info(filter: Filter): {
         topic_selected: false,
     };
 
-    const op_stream = filter.operands("channel");
-    if (op_stream[0] === undefined) {
+    const channel_terms = filter.terms_with_operator("channel");
+    if (channel_terms.length === 0) {
         return result;
     }
 
-    const stream_id = Number.parseInt(op_stream[0], 10);
+    const stream_id = Number.parseInt(channel_terms[0]!.operand, 10);
 
     if (!stream_id) {
         return result;
@@ -1043,8 +1215,8 @@ export function get_sidebar_stream_topic_info(filter: Filter): {
 
     result.stream_id = stream_id;
 
-    const op_topic = filter.operands("topic");
-    result.topic_selected = op_topic.length === 1;
+    const topic_terms = filter.terms_with_operator("topic");
+    result.topic_selected = topic_terms.length === 1;
 
     return result;
 }
@@ -1078,7 +1250,7 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
         return undefined;
     }
 
-    if (!info.topic_selected) {
+    if (!info.topic_selected && !zoomed_in) {
         $stream_li.addClass("active-filter");
     }
 
@@ -1096,7 +1268,23 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     update_inbox_channel_view_callback(stream_id);
     topic_list.rebuild_left_sidebar($stream_li, stream_id);
     topic_list.topic_state_typeahead?.lookup(true);
+
+    // If we're updating a view for a highlighted stream, it's possible
+    // that we now need to hide the topic bracket (e.g. navigating to the
+    // channel view when the channel view is set to be 'list of topics').
+    maybe_hide_topic_bracket(get_section_id_for_stream_li($stream_li));
+
     return $stream_li;
+}
+
+export let get_section_id_for_stream_li = function ($stream_li: JQuery): string {
+    return $stream_li.parents(".stream-list-section-container").attr("data-section-id")!;
+};
+
+export function rewire_get_section_id_for_stream_li(
+    value: typeof get_section_id_for_stream_li,
+): void {
+    get_section_id_for_stream_li = value;
 }
 
 export function handle_narrow_activated(
@@ -1104,21 +1292,18 @@ export function handle_narrow_activated(
     change_hash: boolean,
     show_more_topics: boolean,
 ): void {
-    const $stream_li = update_stream_sidebar_for_narrow(filter);
-    if ($stream_li) {
-        scroll_stream_into_view($stream_li);
-        if (!change_hash) {
-            if (!is_zoomed_in() && show_more_topics) {
-                zoom_in();
-            } else if (is_zoomed_in() && !show_more_topics) {
-                zoom_out();
-            }
-        }
+    // Zoom out, if needed, so that get_stream_li returns the correct
+    // value when calling update_stream_sidebar_for_narrow.
+    if (!change_hash && is_zoomed_in() && !show_more_topics) {
+        zoom_out();
     }
 
-    if (is_zoomed_in()) {
-        topic_list.left_sidebar_scroll_zoomed_in_topic_into_view();
+    const $stream_li = update_stream_sidebar_for_narrow(filter);
+    if ($stream_li && !change_hash && !is_zoomed_in() && show_more_topics) {
+        zoom_in();
     }
+
+    scroll_stream_into_view();
 }
 
 export function handle_message_view_deactivated(): void {
@@ -1160,7 +1345,19 @@ export function initialize({
         e.stopPropagation();
     });
 
-    $(".show-all-streams").on("click", (e) => {
+    $("body").on("click", ".zoom-in-topics .left-sidebar-modal-close-area", (e) => {
+        zoom_out();
+        browser_history.update_current_history_state_data({show_more_topics: false});
+
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    $("body").on("keydown", ".zoom-in-topics .left-sidebar-modal-close-area", (e) => {
+        if (!keydown_util.is_enter_event(e)) {
+            return;
+        }
+
         zoom_out();
         browser_history.update_current_history_state_data({show_more_topics: false});
 
@@ -1170,41 +1367,47 @@ export function initialize({
 }
 
 export function initialize_tippy_tooltips(): void {
-    tippy.delegate("body", {
-        target: "#stream_filters li .subscription_block .stream-name",
-        delay: LONG_HOVER_DELAY,
-        onShow(instance) {
-            // check for "Go to channel feed" tooltip conditions first.
-            const stream_id = stream_id_for_elt($(instance.reference).parents("li.narrow-filter"));
-            const current_narrow_stream_id = narrow_state.stream_id();
-            const current_topic = narrow_state.topic();
-            if (current_narrow_stream_id === stream_id && current_topic !== undefined) {
-                if (
-                    user_settings.web_channel_default_view ===
-                    web_channel_default_view_values.list_of_topics.code
-                ) {
-                    instance.setContent(
-                        ui_util.parse_html(render_go_to_channel_list_of_topics_tooltip()),
-                    );
-                } else {
-                    instance.setContent(ui_util.parse_html(render_go_to_channel_feed_tooltip()));
+    for (const parent_class of ["#stream_filters li", "#left-sidebar-modal"]) {
+        tippy.delegate("body", {
+            target: `${parent_class} .subscription_block .stream-name`,
+            delay: LONG_HOVER_DELAY,
+            onShow(instance) {
+                // check for "Go to channel feed" tooltip conditions first.
+                const stream_id = stream_id_for_elt(
+                    $(instance.reference).parents("li.narrow-filter"),
+                );
+                const current_narrow_stream_id = narrow_state.stream_id();
+                const current_topic = narrow_state.topic();
+                if (current_narrow_stream_id === stream_id && current_topic !== undefined) {
+                    if (
+                        user_settings.web_channel_default_view ===
+                        web_channel_default_view_values.list_of_topics.code
+                    ) {
+                        instance.setContent(
+                            ui_util.parse_html(render_go_to_channel_list_of_topics_tooltip()),
+                        );
+                    } else {
+                        instance.setContent(
+                            ui_util.parse_html(render_go_to_channel_feed_tooltip()),
+                        );
+                    }
+                    return undefined;
                 }
-                return undefined;
-            }
-            // Then check for truncation
-            const stream_name_element = instance.reference;
-            assert(stream_name_element instanceof HTMLElement);
+                // Then check for truncation
+                const stream_name_element = instance.reference;
+                assert(stream_name_element instanceof HTMLElement);
 
-            if (stream_name_element.offsetWidth < stream_name_element.scrollWidth) {
-                const stream_name = stream_name_element.textContent ?? "";
-                instance.setContent(stream_name);
-                return undefined;
-            }
+                if (stream_name_element.offsetWidth < stream_name_element.scrollWidth) {
+                    const stream_name = stream_name_element.textContent ?? "";
+                    instance.setContent(stream_name);
+                    return undefined;
+                }
 
-            return false;
-        },
-        appendTo: () => document.body,
-    });
+                return false;
+            },
+            appendTo: () => document.body,
+        });
+    }
 }
 
 export function on_sidebar_channel_click(
@@ -1236,7 +1439,7 @@ export function on_sidebar_channel_click(
     if (stream_data.is_empty_topic_only_channel(stream_id)) {
         // If the channel doesn't support topics, take you
         // directly to general chat regardless of settings.
-        const empty_topic_url = hash_util.by_channel_topic_permalink(stream_id, "");
+        const empty_topic_url = stream_topic_history.channel_topic_permalink_hash(stream_id, "");
         browser_history.go_to_location(empty_topic_url);
         return;
     }
@@ -1265,15 +1468,16 @@ export function on_sidebar_channel_click(
     let topics = stream_topic_history.get_recent_topic_names(stream_id);
 
     const navigate_to_stream = (): void => {
+        // Muted topics are not included in the unzoomed topic list
+        // information.
         const topic_list_info = topic_list_data.get_list_info(
             stream_id,
             false,
             (topic_names: string[]) => topic_names,
         );
-        // This initial value handles both the
-        // top_topic_in_channel mode as well as the
-        // top_unread_topic_in_channel fallback when there are no
-        // (unmuted) unreads in the channel.
+        // This initial value handles both the top_topic_in_channel
+        // mode as well as the top_unread_topic_in_channel fallback
+        // when there are no (unmuted) unreads in the channel.
         let topic_item = topic_list_info.items[0];
 
         if (
@@ -1281,10 +1485,7 @@ export function on_sidebar_channel_click(
             web_channel_default_view_values.top_unread_topic_in_channel.code
         ) {
             for (const topic_list_item of topic_list_info.items) {
-                if (
-                    unread.topic_has_any_unread(stream_id, topic_list_item.topic_name) &&
-                    !user_topics.is_topic_muted(stream_id, topic_list_item.topic_name)
-                ) {
+                if (topic_list_item.unread > 0) {
                     topic_item = topic_list_item;
                     break;
                 }
@@ -1292,11 +1493,7 @@ export function on_sidebar_channel_click(
         }
 
         if (topic_item !== undefined) {
-            const destination_url = hash_util.by_channel_topic_permalink(
-                stream_id,
-                topic_item.topic_name,
-            );
-            browser_history.go_to_location(destination_url);
+            browser_history.go_to_location(topic_item.url);
         } else {
             show_channel_feed(stream_id, "sidebar");
             return;
@@ -1334,28 +1531,48 @@ export function set_event_handlers({
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
-        if (document.getSelection()?.type === "Range") {
+
+        if (mouse_drag.is_drag(e)) {
             // To avoid the click behavior if a channel name is selected.
             e.preventDefault();
             return;
         }
-
         const stream_id = stream_id_for_elt($(e.target).parents("li.narrow-filter"));
         on_sidebar_channel_click(stream_id, e, show_channel_feed);
     });
 
-    $("#stream_filters").on("click", ".channel-new-topic-button", function (this: HTMLElement, e) {
+    function on_click_new_topic(element: HTMLElement, e: JQuery.ClickEvent): void {
         e.stopPropagation();
         e.preventDefault();
-        const stream_id = Number.parseInt(this.dataset.streamId!, 10);
+        const stream_id = Number.parseInt(element.getAttribute("data-stream-id")!, 10);
+        let trigger = "clear topic button";
+        let topic = "";
+
+        if ($(e.target).closest(".zoomed-new-topic").length > 0) {
+            trigger = "zoomed new topic";
+            topic = $("#topic_filter_query").text().trim().slice(0, realm.max_topic_length);
+        }
+
         compose_actions.start({
             message_type: "stream",
             stream_id,
-            topic: "",
-            trigger: "clear topic button",
+            topic,
+            trigger,
             keep_composebox_empty: true,
         });
+    }
+
+    $("#stream_filters").on("click", ".channel-new-topic-button", function (this: HTMLElement, e) {
+        on_click_new_topic(this, e);
     });
+
+    $("#left-sidebar-modal").on(
+        "click",
+        "#more-topics-modal .channel-new-topic-button, #more-topics-modal .zoomed-new-topic",
+        function (this: HTMLElement, e) {
+            on_click_new_topic(this, e);
+        },
+    );
 
     function toggle_pm_header_icon(): void {
         if (pm_list.is_private_messages_collapsed()) {
@@ -1371,15 +1588,23 @@ export function set_event_handlers({
         if (scroll_position > pm_list_height) {
             $("#toggle-direct-messages-section-icon").addClass("rotate-icon-right");
             $("#toggle-direct-messages-section-icon").removeClass("rotate-icon-down");
+            pm_list.set_temporarily_collapsed(true);
         } else {
             $("#toggle-direct-messages-section-icon").addClass("rotate-icon-down");
             $("#toggle-direct-messages-section-icon").removeClass("rotate-icon-right");
+            pm_list.set_temporarily_collapsed(false);
         }
     }
 
+    let mark_scroll_inactive_timeout: ReturnType<typeof setTimeout> | undefined;
     // check for user scrolls on streams list for first time
     scroll_util.get_scroll_element($("#left_sidebar_scroll_container")).on("scroll", () => {
-        has_scrolled = true;
+        is_actively_scrolling = true;
+        clearTimeout(mark_scroll_inactive_timeout);
+        mark_scroll_inactive_timeout = setTimeout(() => {
+            is_actively_scrolling = false;
+        }, 200);
+
         toggle_pm_header_icon();
     });
 
@@ -1438,23 +1663,35 @@ export function clear_search(): void {
     $filter.trigger("blur");
 }
 
-export let scroll_stream_into_view = function ($stream_li: JQuery): void {
+export let scroll_stream_into_view = function ($stream_li?: JQuery): void {
+    if ($stream_li === undefined) {
+        if (narrow_state.filter()?.terms_with_operator("topic").length === 1) {
+            topic_list.left_sidebar_scroll_zoomed_in_topic_into_view();
+            return;
+        }
+
+        $stream_li = get_current_stream_li();
+        if ($stream_li === undefined) {
+            return;
+        }
+    }
+
     const $container = $("#left_sidebar_scroll_container");
 
     if ($stream_li.length !== 1) {
         blueslip.error("Invalid stream_li was passed in");
         return;
     }
-    const stream_filter_height = $("#left-sidebar-search").outerHeight()!;
-    const header_height = $stream_li
-        .closest(".stream-list-section-container")
-        .children(".stream-list-subsection-header")
-        .outerHeight()!;
-    scroll_util.scroll_element_into_container(
-        $stream_li,
-        $container,
-        stream_filter_height + header_height,
-    );
+
+    // Get the element with the channel name which we want to
+    // be visible.
+    const $stream_header = $stream_li.find(".subscription_block");
+    const header_height =
+        $stream_li
+            .closest(".stream-list-section-container")
+            .children(".stream-list-subsection-header")
+            .outerHeight()! + 2; // + 2px for top border
+    scroll_util.scroll_element_into_container($stream_header, $container, header_height);
     // Note: If the stream is in a collapsed folder, we don't uncollapse
     // the folder. We do uncollapse when the user clicks on the channel,
     // but that's handled elsewhere.
@@ -1462,18 +1699,6 @@ export let scroll_stream_into_view = function ($stream_li: JQuery): void {
 
 export function rewire_scroll_stream_into_view(value: typeof scroll_stream_into_view): void {
     scroll_stream_into_view = value;
-}
-
-export function maybe_scroll_narrow_into_view(first_messages_fetch_done: boolean): void {
-    // we don't want to interfere with user scrolling once the page loads
-    if (has_scrolled && first_messages_fetch_done) {
-        return;
-    }
-
-    const $stream_li = get_current_stream_li();
-    if ($stream_li) {
-        scroll_stream_into_view($stream_li);
-    }
 }
 
 export function get_current_stream_li(): JQuery | undefined {
@@ -1513,4 +1738,36 @@ export function collapse_all_stream_sections(): void {
             }
         }
     }
+}
+
+export function get_sorted_channel_ids_for_next_unread_navigation(): {
+    channel_id: number;
+    is_collapsed: boolean;
+}[] {
+    // Get sorted section ids.
+    const sections = stream_list_sort.get_current_sections().map((section) => ({
+        id: section.id,
+        channels: [
+            ...section.default_visible_streams,
+            ...section.muted_streams,
+            ...section.inactive_streams,
+        ],
+        is_collapsed: collapsed_sections.has(section.id),
+    }));
+
+    function score(section: {id: string; is_collapsed: boolean}): number {
+        // Prioritize uncollapsed sections over collapsed sections.
+        if (!section.is_collapsed) {
+            return 1;
+        }
+        return 0;
+    }
+
+    sections.sort((a, b) => score(b) - score(a));
+    return sections.flatMap((section) =>
+        section.channels.map((channel_id) => ({
+            channel_id,
+            is_collapsed: section.is_collapsed,
+        })),
+    );
 }

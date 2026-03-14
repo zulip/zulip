@@ -5,10 +5,6 @@ from zerver.lib.webhooks.git import COMMITS_LIMIT
 
 
 class RhodecodeHookTests(WebhookTestCase):
-    CHANNEL_NAME = "rhodecode"
-    URL_TEMPLATE = "/api/v1/external/rhodecode?&api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "rhodecode"
-
     def test_push_event_message(self) -> None:
         expected_topic_name = "u/yuroitaki/zulip-testing / master"
         expected_message = "yuroitaki pushed 1 commit to branch master. Commits by Yuro Itaki <yuroitaki@email.com> (1).\n\n* Modify README ([2b8c0ebf507](https://code.rhodecode.com/u/yuroitaki/zulip-testing/changeset/2b8c0ebf50710bc2e1cdb6a33071dd2435ad667c))"

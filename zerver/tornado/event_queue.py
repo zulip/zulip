@@ -27,7 +27,11 @@ from zerver.lib.message_cache import MessageDict
 from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
 from zerver.lib.narrow_predicate import build_narrow_predicate
 from zerver.lib.notification_data import UserMessageNotificationsData
-from zerver.lib.queue import queue_json_publish_rollback_unsafe, retry_event
+from zerver.lib.queue import (
+    mobile_notifications_queue_name,
+    queue_json_publish_rollback_unsafe,
+    retry_event,
+)
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
 from zerver.middleware import async_request_timer_restart
 from zerver.models import CustomProfileField, Message
@@ -77,7 +81,6 @@ class ClientDescriptor:
         narrow: Collection[Sequence[str]],
         bulk_message_deletion: bool,
         stream_typing_notifications: bool,
-        user_settings_object: bool,
         pronouns_field_type_supported: bool,
         linkifier_url_template: bool,
         user_list_incomplete: bool,
@@ -112,7 +115,6 @@ class ClientDescriptor:
         self.narrow_predicate = build_narrow_predicate(modern_narrow)
         self.bulk_message_deletion = bulk_message_deletion
         self.stream_typing_notifications = stream_typing_notifications
-        self.user_settings_object = user_settings_object
         self.pronouns_field_type_supported = pronouns_field_type_supported
         self.linkifier_url_template = linkifier_url_template
         self.user_list_incomplete = user_list_incomplete
@@ -146,7 +148,6 @@ class ClientDescriptor:
             client_type_name=self.client_type_name,
             bulk_message_deletion=self.bulk_message_deletion,
             stream_typing_notifications=self.stream_typing_notifications,
-            user_settings_object=self.user_settings_object,
             pronouns_field_type_supported=self.pronouns_field_type_supported,
             linkifier_url_template=self.linkifier_url_template,
             user_list_incomplete=self.user_list_incomplete,
@@ -187,7 +188,6 @@ class ClientDescriptor:
             narrow=d.get("narrow", []),
             bulk_message_deletion=d.get("bulk_message_deletion", False),
             stream_typing_notifications=d.get("stream_typing_notifications", False),
-            user_settings_object=d.get("user_settings_object", False),
             pronouns_field_type_supported=d.get("pronouns_field_type_supported", True),
             linkifier_url_template=d.get("linkifier_url_template", False),
             user_list_incomplete=d.get("user_list_incomplete", False),
@@ -244,14 +244,6 @@ class ClientDescriptor:
             # delivered if the stream_typing_notifications
             # client_capability is enabled, for backwards compatibility.
             return self.stream_typing_notifications
-        if self.user_settings_object and event["type"] in [
-            "update_display_settings",
-            "update_global_notifications",
-        ]:
-            # 'update_display_settings' and 'update_global_notifications'
-            # events are sent only if user_settings_object is False,
-            # otherwise only 'user_settings' event is sent.
-            return False
         if event["type"] == "user_group":
             if event["op"] == "remove":
                 # 'user_group/remove' events are only sent if the client
@@ -983,15 +975,9 @@ def maybe_enqueue_notifications(
         notice["type"] = "add"
         notice["mentioned_user_group_id"] = mentioned_user_group_id
         if not already_notified.get("push_notified"):
-            if settings.MOBILE_NOTIFICATIONS_SHARDS > 1:
-                shard_id = (
-                    user_notifications_data.user_id % settings.MOBILE_NOTIFICATIONS_SHARDS + 1
-                )
-                queue_json_publish_rollback_unsafe(
-                    f"missedmessage_mobile_notifications_shard{shard_id}", notice
-                )
-            else:
-                queue_json_publish_rollback_unsafe("missedmessage_mobile_notifications", notice)
+            queue_json_publish_rollback_unsafe(
+                mobile_notifications_queue_name(user_notifications_data.user_id), notice
+            )
             notified["push_notified"] = True
 
     # Send missed_message emails if a direct message or a
@@ -1239,7 +1225,7 @@ def process_message_event(
         client = client_data["client"]
         flags = client_data["flags"]
         is_sender: bool = client_data.get("is_sender", False)
-        extra_data: Mapping[str, bool] | None = extra_user_data.get(client.user_profile_id, None)
+        extra_data: Mapping[str, bool] | None = extra_user_data.get(client.user_profile_id)
 
         if not client.accepts_messages():
             # The actual check is the accepts_event() check below;
@@ -1287,13 +1273,14 @@ def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> No
         # since presence events are pretty ephemeral in nature.
         logging.warning("Dropping some obsolete presence events after upgrade.")
 
+    # See https://zulip.com/api/get-events#presence for more context
+    # on these various event formats.
     slim_event = dict(
         type="presence",
         user_id=event["user_id"],
         server_timestamp=event["server_timestamp"],
         presence=event["legacy_presence"],
     )
-
     legacy_event = dict(
         type="presence",
         user_id=event["user_id"],
@@ -1301,7 +1288,6 @@ def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> No
         server_timestamp=event["server_timestamp"],
         presence=event["legacy_presence"],
     )
-
     modern_event = dict(
         type="presence",
         presences={str(event["user_id"]): event["modern_presence"]},

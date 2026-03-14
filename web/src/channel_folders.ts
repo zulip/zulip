@@ -5,6 +5,7 @@ import {FoldDict} from "./fold_dict.ts";
 import type {ChannelFolderUpdateEvent} from "./server_event_types.ts";
 import type {StateData, channel_folder_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
 import * as util from "./util.ts";
 
 export type ChannelFolder = z.infer<typeof channel_folder_schema>;
@@ -12,6 +13,10 @@ export type ChannelFolder = z.infer<typeof channel_folder_schema>;
 let channel_folder_name_dict: FoldDict<ChannelFolder>;
 let channel_folder_by_id_dict: Map<number, ChannelFolder>;
 let active_channel_folder_ids: Set<number>;
+
+function compare_by_name(a: StreamSubscription, b: StreamSubscription): number {
+    return util.strcmp(a.name, b.name);
+}
 
 export function clean_up_description(channel_folder: ChannelFolder): void {
     if (channel_folder.rendered_description !== undefined) {
@@ -131,8 +136,19 @@ export function update(event: ChannelFolderUpdateEvent): void {
     }
 }
 
-export function get_stream_ids_in_folder(folder_id: number): number[] {
+export function get_streams_in_folder(folder_id: number): StreamSubscription[] {
     const streams = stream_data.get_unsorted_subs().filter((sub) => sub.folder_id === folder_id);
+    return streams;
+}
+
+export function get_sorted_streams_in_folder(folder_id: number): StreamSubscription[] {
+    const streams = get_streams_in_folder(folder_id);
+    streams.sort(compare_by_name);
+    return streams;
+}
+
+export function get_stream_ids_in_folder(folder_id: number): number[] {
+    const streams = get_streams_in_folder(folder_id);
     return streams.map((sub) => sub.stream_id);
 }
 
@@ -163,4 +179,17 @@ export function reorder(order: number[]): void {
         const channel_folder = get_channel_folder_by_id(folder_id);
         channel_folder.order = index;
     }
+}
+
+export function get_folders_with_accessible_channels(): ChannelFolder[] {
+    const all_subs = stream_data.get_unsorted_subs();
+
+    const channel_folder_ids = new Set<number>();
+    for (const sub of all_subs) {
+        if (sub.folder_id !== null) {
+            channel_folder_ids.add(sub.folder_id);
+        }
+    }
+
+    return get_channel_folders().filter((folder) => channel_folder_ids.has(folder.id));
 }

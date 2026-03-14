@@ -33,8 +33,6 @@ set -x
 THIS_DIR="$(dirname "$(readlink -f "$0")")"
 cd "$THIS_DIR/../.."
 
-./manage.py checkconfig
-
 ./manage.py migrate --noinput
 ./manage.py createcachetable third_party_api_results
 

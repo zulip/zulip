@@ -11,6 +11,7 @@ import * as compose_banner from "./compose_banner.ts";
 import * as compose_fade from "./compose_fade.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
+import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_ui from "./compose_ui.ts";
 import type {ComposeTriggeredOptions} from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -19,9 +20,14 @@ import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget, Option} from "./dropdown_widget.ts";
 import {$t} from "./i18n.ts";
 import * as narrow_state from "./narrow_state.ts";
+import * as onboarding_steps from "./onboarding_steps.ts";
+import * as pm_conversations from "./pm_conversations.ts";
 import {realm} from "./state_data.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as typeahead_helper from "./typeahead_helper.ts";
 import * as ui_util from "./ui_util.ts";
 import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
@@ -106,6 +112,8 @@ export function set_high_attention_recipient_row(): void {
 
 export let update_narrow_to_recipient_visibility = (): void => {
     const message_type = compose_state.get_message_type();
+    const display_intro_go_to_conversation_tooltip =
+        onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_go_to_conversation_tooltip");
     if (message_type === "stream") {
         const stream_exists = Boolean(compose_state.stream_id());
 
@@ -115,6 +123,14 @@ export let update_narrow_to_recipient_visibility = (): void => {
             compose_state.has_full_recipient()
         ) {
             $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
+            const stream_id = compose_state.stream_id()!;
+            const topic_name = compose_state.topic();
+            if (
+                display_intro_go_to_conversation_tooltip &&
+                stream_topic_history.get_recent_topic_names(stream_id).includes(topic_name)
+            ) {
+                compose_tooltips.maybe_show_intro_go_to_conversation_tooltip();
+            }
             return;
         }
     } else if (message_type === "private") {
@@ -125,9 +141,16 @@ export let update_narrow_to_recipient_visibility = (): void => {
             compose_state.has_full_recipient()
         ) {
             $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
+            if (
+                display_intro_go_to_conversation_tooltip &&
+                pm_conversations.recent.has_conversation(recipients.join(","))
+            ) {
+                compose_tooltips.maybe_show_intro_go_to_conversation_tooltip();
+            }
             return;
         }
     }
+    compose_tooltips.dismiss_intro_go_to_conversation_tooltip();
     $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", false);
 };
 
@@ -198,15 +221,17 @@ function update_recipient_label(stream_id?: number): void {
 
 export function update_compose_for_message_type(opts: ComposeTriggeredOptions): void {
     if (opts.message_type === "stream") {
+        compose_select_recipient_dropdown_widget.current_value = opts.stream_id;
         $("#compose-direct-recipient").hide();
-        $("#compose_recipient_box").show();
+        $("#compose-channel-recipient").show();
         $("#stream_toggle").addClass("active");
         $("#private_message_toggle").removeClass("active");
         $("#compose-recipient").removeClass("compose-recipient-direct-selected");
         update_recipient_label(opts.stream_id);
     } else {
+        compose_select_recipient_dropdown_widget.current_value = compose_state.DIRECT_MESSAGE_ID;
         $("#compose-direct-recipient").show();
-        $("#compose_recipient_box").hide();
+        $("#compose-channel-recipient").hide();
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
         $("#compose-recipient").addClass("compose-recipient-direct-selected");
@@ -277,13 +302,12 @@ function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance)
     event.stopPropagation();
 }
 
-function get_options_for_recipient_widget(): Option[] {
-    const options: Option[] = stream_data.get_options_for_dropdown_widget();
-
+function add_direct_messages_option(options: Option[]): Option[] {
     const direct_messages_option = {
         is_direct_message: true,
         unique_id: compose_state.DIRECT_MESSAGE_ID,
         name: $t({defaultMessage: "Direct message"}),
+        aliases: [$t({defaultMessage: "DM"})],
     };
 
     if (!user_groups.is_setting_group_empty(realm.realm_direct_message_permission_group)) {
@@ -291,7 +315,12 @@ function get_options_for_recipient_widget(): Option[] {
     } else {
         options.push(direct_messages_option);
     }
+
     return options;
+}
+
+function get_options_for_recipient_widget(): Option[] {
+    return add_direct_messages_option(stream_data.get_options_for_dropdown_widget());
 }
 
 export function toggle_compose_recipient_dropdown(): void {
@@ -360,6 +389,36 @@ export function initialize(): void {
             }
             return "#private_message_recipient";
         },
+        sort_list_by_filter_value(items: Option[], filter_value: string): Option[] {
+            const non_stream_items = [];
+            const stream_items_by_stream_id = new Map<
+                number,
+                Option & {stream: StreamSubscription}
+            >();
+            for (const item of items) {
+                if (item.stream === undefined) {
+                    non_stream_items.push(item);
+                } else {
+                    stream_items_by_stream_id.set(item.stream.stream_id, {
+                        ...item,
+                        // Needed for typescript to recognize stream is defined
+                        stream: item.stream,
+                    });
+                }
+            }
+            const stream_items = [...stream_items_by_stream_id.values()].map((item) => item.stream);
+            const sorted_streams = typeahead_helper.sort_streams(stream_items, filter_value);
+            const sorted_stream_items = sorted_streams.map(
+                (stream) => stream_items_by_stream_id.get(stream.stream_id)!,
+            );
+
+            if (non_stream_items.length > 0) {
+                assert(non_stream_items.length === 1);
+                assert(util.the(non_stream_items).is_direct_message === true);
+                return add_direct_messages_option(sorted_stream_items);
+            }
+            return sorted_stream_items;
+        },
     });
     compose_select_recipient_dropdown_widget.setup();
 
@@ -401,7 +460,7 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
     $input.removeClass("empty-topic-display empty-topic-only");
     $topic_not_mandatory_placeholder.removeClass("visible");
     $topic_not_mandatory_placeholder.hide();
-    $("#compose_recipient_box").removeClass("disabled");
+    $("#compose-channel-recipient").removeClass("disabled");
 
     if (!stream_data.can_use_empty_topic(compose_state.stream_id())) {
         $input.attr("placeholder", $t({defaultMessage: "Topic"}));
@@ -417,7 +476,7 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
         compose_state.topic("");
         $input.prop("disabled", true);
         $input.addClass("empty-topic-only");
-        $("#compose_recipient_box").addClass("disabled");
+        $("#compose-channel-recipient").addClass("disabled");
         $("textarea#compose-textarea").trigger("focus");
         has_topic_focus = false;
     }

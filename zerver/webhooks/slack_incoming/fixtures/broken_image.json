@@ -1,0 +1,16 @@
+{
+    "blocks": [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "Some image here"
+            },
+            "accessory": {
+                "type": "image",
+                "alt_text": "yay",
+                "image_url": "null"
+            }
+        }
+    ]
+}

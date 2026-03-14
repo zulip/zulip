@@ -9,6 +9,7 @@ const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
+const compose_call = zrequire("compose_call");
 const channel = mock_esm("../src/channel");
 const compose_closed_ui = mock_esm("../src/compose_closed_ui");
 const compose_ui = mock_esm("../src/compose_ui");
@@ -35,18 +36,6 @@ set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
 
-function stub_out_video_calls() {
-    const $elem = $(".compose-control-buttons-container .video_link");
-    $elem.toggle = (show) => {
-        /* istanbul ignore if */
-        if (show) {
-            $elem.show();
-        } else {
-            $elem.hide();
-        }
-    };
-}
-
 const realm_available_video_chat_providers = {
     disabled: {
         id: 0,
@@ -64,6 +53,14 @@ const realm_available_video_chat_providers = {
         id: 4,
         name: "BigBlueButton",
     },
+    constructor_groups: {
+        id: 6,
+        name: "Constructor Groups",
+    },
+    nextcloud_talk: {
+        id: 7,
+        name: "Nextcloud Talk",
+    },
 };
 
 function test(label, f) {
@@ -80,8 +77,6 @@ function test(label, f) {
 test("videos", ({override}) => {
     override(realm, "realm_video_chat_provider", realm_available_video_chat_providers.disabled.id);
     override(window, "to_$", () => $("window-stub"));
-
-    stub_out_video_calls();
 
     compose_setup.initialize();
 
@@ -269,6 +264,97 @@ test("videos", ({override}) => {
         assert.ok(called);
         assert.match(syntax_to_insert, audio_link_regex);
     })();
+
+    (function test_constructor_groups_video_link_compose_clicked() {
+        let syntax_to_insert;
+        let called = false;
+
+        const $textarea = $.create("constructor-groups-target-stub");
+        $textarea.set_parents_result(".message_edit_form", []);
+
+        const ev = {
+            preventDefault() {},
+            stopPropagation() {},
+        };
+
+        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
+            syntax_to_insert = syntax;
+            called = true;
+        });
+
+        override(
+            realm,
+            "realm_video_chat_provider",
+            realm_available_video_chat_providers.constructor_groups.id,
+        );
+
+        channel.post = (payload) => {
+            assert.equal(payload.url, "/json/calls/constructorgroups/create");
+            assert.deepEqual(payload.data, {}); // Empty data object
+            payload.success({
+                result: "success",
+                msg: "",
+                url: "https://example.constructor.app/groups/room/room-123",
+            });
+            return {abort() {}};
+        };
+
+        $("textarea#compose-textarea").val("");
+        const video_handler = $("body").get_on_handler("click", ".video_link");
+        video_handler.call($textarea, ev);
+        const video_link_regex =
+            /\[translated: Join video call\.]\(https:\/\/example\.constructor\.app\/groups\/room\/room-123\)/;
+        assert.ok(called);
+        assert.match(syntax_to_insert, video_link_regex);
+    })();
+
+    (function test_nextcloud_talk_audio_and_video_links_compose_clicked() {
+        let syntax_to_insert;
+        let called = false;
+
+        const $textarea = $.create("nextcloud-target-stub");
+        $textarea.set_parents_result(".message_edit_form", []);
+
+        const ev = {
+            preventDefault() {},
+            stopPropagation() {},
+        };
+
+        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
+            syntax_to_insert = syntax;
+            called = true;
+        });
+
+        $("textarea#compose-textarea").val("");
+
+        override(
+            realm,
+            "realm_video_chat_provider",
+            realm_available_video_chat_providers.nextcloud_talk.id,
+        );
+
+        override(compose_closed_ui, "get_recipient_label", () => ({label_text: "general"}));
+
+        channel.post = (options) => {
+            assert.equal(options.url, "/json/calls/nextcloud_talk/create");
+            assert.equal(options.data.room_name, "general conversation");
+            options.success({
+                result: "success",
+                msg: "",
+                url: "https://nextcloud.example.com/index.php/call/abc123token",
+            });
+            return {abort() {}};
+        };
+
+        $("textarea#compose-textarea").val("");
+
+        const video_handler = $("body").get_on_handler("click", ".video_link");
+        video_handler.call($textarea, ev);
+        const video_link_regex =
+            /\[translated: Join video call\.]\(https:\/\/nextcloud\.example\.com\/index\.php\/call\/abc123token\)/;
+        assert.ok(called);
+        assert.match(syntax_to_insert, video_link_regex);
+    })();
 });
 
 test("test_video_chat_button_toggle disabled", ({override}) => {
@@ -300,4 +386,51 @@ test("test_video_chat_button_toggle enabled", ({override}) => {
     override(window, "to_$", () => $("window-stub"));
     compose_setup.initialize();
     assert.equal($(".compose-control-buttons-container .video_link").visible(), true);
+});
+
+test("test_constructor_groups_video_chat_button_toggle enabled", ({override}) => {
+    override(
+        realm,
+        "realm_video_chat_provider",
+        realm_available_video_chat_providers.constructor_groups.id,
+    );
+    override(window, "to_$", () => $("window-stub"));
+    compose_setup.initialize();
+    assert.equal($(".compose-control-buttons-container .video_link").visible(), true);
+});
+
+test("abandon_all_callbacks_for_key", ({override}) => {
+    override(realm, "realm_video_chat_provider", realm_available_video_chat_providers.zoom.id);
+    compose_call.track_xhr_for_key("1", {});
+    compose_call.track_xhr_for_key("1", {});
+    compose_call.track_xhr_for_key("1", {});
+
+    const token_callback = () => {};
+    compose_call.update_oauth_provider_callback_for_key("zoom", "1", token_callback);
+
+    assert.equal(compose_call.ignored_call_xhrs.size, 0);
+    assert.equal(
+        compose_call.oauth_call_provider_token_callbacks.get("zoom").get("1"),
+        token_callback,
+    );
+    compose_call.abandon_all_callbacks_for_key("1");
+    assert.equal(compose_call.ignored_call_xhrs.size, 3);
+    assert.equal(compose_call.oauth_call_provider_token_callbacks.get("zoom").get("1"), undefined);
+
+    // Callback abandon mechanism should not interfere with XHRs/token
+    // callbacks of other textareas.
+    compose_call.ignored_call_xhrs.clear();
+    // For coverage
+    compose_call.abandon_all_callbacks_for_key("1");
+    assert.equal(compose_call.ignored_call_xhrs.size, 0);
+    compose_call.track_xhr_for_key("1", {});
+    compose_call.track_xhr_for_key("1", {});
+    compose_call.track_xhr_for_key("1", {});
+    compose_call.update_oauth_provider_callback_for_key("zoom", "1", token_callback);
+    compose_call.abandon_all_callbacks_for_key("2");
+    assert.equal(compose_call.ignored_call_xhrs.size, 0);
+    assert.equal(
+        compose_call.oauth_call_provider_token_callbacks.get("zoom").get("1"),
+        token_callback,
+    );
 });

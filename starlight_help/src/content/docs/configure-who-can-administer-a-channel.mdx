@@ -6,8 +6,9 @@ import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipNote from "../../components/ZulipNote.astro";
 import ChannelAdminPermissions from "../include/_ChannelAdminPermissions.mdx";
+import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
 import SaveChanges from "../include/_SaveChanges.mdx";
-import SelectChannelViewGeneralAdvanced from "../include/_SelectChannelViewGeneralAdvanced.mdx";
+import SelectChannelViewPermissions from "../include/_SelectChannelViewPermissions.mdx";
 
 <ZulipNote>
   Organization administrators can automatically administer all channels.
@@ -22,13 +23,15 @@ import SelectChannelViewGeneralAdvanced from "../include/_SelectChannelViewGener
 
   1. Select a channel.
 
-  <SelectChannelViewGeneralAdvanced />
+  <SelectChannelViewPermissions />
 
   1. Under **Administrative permissions**, configure **Who can administer
      this channel**.
 
   <SaveChanges />
 </FlattenedSteps>
+
+<ChannelSettingsNavbarTip />
 
 ## Related articles
 

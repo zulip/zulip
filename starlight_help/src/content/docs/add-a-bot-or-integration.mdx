@@ -8,8 +8,6 @@ import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipNote from "../../components/ZulipNote.astro";
 
-import DownloadIcon from "~icons/fa/download";
-
 By default, anyone other than guests can add a bot to a Zulip organization.
 A bot that sends content to or from another product is often called an
 [integration](/help/integrations-overview).
@@ -21,7 +19,7 @@ is visible and available for anyone to use.
 ## Add a bot or integration
 
 <Tabs>
-  <TabItem label="Via personal settings">
+  <TabItem label="Your bots">
     <FlattenedSteps>
       <NavigationSteps target="settings/your-bots" />
 
@@ -30,7 +28,7 @@ is visible and available for anyone to use.
     </FlattenedSteps>
   </TabItem>
 
-  <TabItem label="Via organization settings">
+  <TabItem label="All bots">
     <FlattenedSteps>
       <NavigationSteps target="settings/bots" />
 
@@ -48,8 +46,7 @@ is visible and available for anyone to use.
 </ZulipNote>
 
 Depending on the type of bot you're creating, you may need to download its
-`zuliprc` configuration file. For that, click the **download**
-(<DownloadIcon />) icon under the bot's name.
+[`zuliprc` configuration file](/help/manage-a-bot#download-zuliprc-configuration-file).
 
 ## Related articles
 

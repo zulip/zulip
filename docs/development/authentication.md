@@ -111,8 +111,10 @@ details worth understanding:
 - Set up SAML authentication by following
   [Okta's documentation](https://developer.okta.com/docs/guides/saml-application-setup/overview/).
   Specify:
-  - `http://localhost:9991/complete/saml/` for the "Single sign on URL"`.
-  - `http://localhost:9991` for the "Audience URI (SP Entity ID)".
+  - `http://localhost:9991/complete/saml/` for the "Single sign on URL"`. If you are using a dev droplet, this will
+be `http://auth.{your_droplet_name}.zulipdev.org:9991/complete/saml/`
+  - `http://localhost:9991` for the "Audience URI (SP Entity ID)". If you are using a dev droplet, this will be
+    `http://zulip.{your_droplet_name}.zulipdev.org:9991/`
   - Skip "Default RelayState".
   - Skip "Name ID format".
   - Set 'Email` for "Application username format".

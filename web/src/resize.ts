@@ -7,9 +7,43 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import {media_breakpoints_num} from "./css_variables.ts";
 import * as message_viewport from "./message_viewport.ts";
+import {user_settings} from "./user_settings.ts";
+
+let recent_view_participants_rerender: (() => void) | null = null;
+let recent_view_participants_column_class_update: (() => void) | null = null;
+
+export function set_recent_view_participants_rerender(rerender_func: (() => void) | null): void {
+    recent_view_participants_rerender = rerender_func;
+}
+
+export function set_recent_view_participants_column_class_update(
+    update_func: (() => void) | null,
+): void {
+    recent_view_participants_column_class_update = update_func;
+}
 
 function get_bottom_whitespace_height(): number {
     return message_viewport.height() * 0.4;
+}
+
+export function get_stream_filters_max_height(): number {
+    const viewport_height = message_viewport.height();
+    // Add some gap for bottom element to be properly visible.
+    const GAP = 15;
+
+    const $left_sidebar_search = $("#left-sidebar-search");
+    const is_search_visible = $left_sidebar_search.css("display") !== "none";
+
+    let stream_filters_max_height =
+        viewport_height -
+        Number.parseInt($("#left-sidebar").css("paddingTop"), 10) -
+        (is_search_visible ? ($left_sidebar_search.outerHeight(true) ?? 0) : 0) -
+        ($("#left-sidebar-navigation-area").not(".hidden-by-filters").outerHeight(true) ?? 0) -
+        GAP;
+
+    // Don't let us crush the stream sidebar completely out of view
+    stream_filters_max_height = Math.max(80, stream_filters_max_height);
+    return stream_filters_max_height;
 }
 
 function get_new_heights(): {
@@ -17,21 +51,6 @@ function get_new_heights(): {
     buddy_list_wrapper_max_height: number;
 } {
     const viewport_height = message_viewport.height();
-    // Add some gap for bottom element to be properly visible.
-    const GAP = 15;
-
-    let stream_filters_max_height =
-        viewport_height -
-        Number.parseInt($("#left-sidebar").css("paddingTop"), 10) -
-        ($("#left-sidebar-navigation-area").not(".hidden-by-filters").outerHeight(true) ?? 0) -
-        ($("#direct-messages-section-header").not(".hidden-by-filters").outerHeight(true) ?? 0) -
-        GAP;
-
-    // Don't let us crush the stream sidebar completely out of view
-    stream_filters_max_height = Math.max(80, stream_filters_max_height);
-
-    // RIGHT SIDEBAR
-
     const usable_height =
         viewport_height -
         Number.parseInt($("#right-sidebar").css("paddingTop"), 10) -
@@ -40,7 +59,7 @@ function get_new_heights(): {
     const buddy_list_wrapper_max_height = Math.max(80, usable_height);
 
     return {
-        stream_filters_max_height,
+        stream_filters_max_height: get_stream_filters_max_height(),
         buddy_list_wrapper_max_height,
     };
 }
@@ -56,7 +75,10 @@ export function watch_manual_resize(element: string): (() => void)[] | undefined
     return watch_manual_resize_for_element(box);
 }
 
-export function watch_manual_resize_for_element(box: Element): (() => void)[] {
+export function watch_manual_resize_for_element(
+    box: Element,
+    resize_callback?: (height: number) => void,
+): (() => void)[] {
     let height: number;
     let mousedown = false;
 
@@ -75,6 +97,9 @@ export function watch_manual_resize_for_element(box: Element): (() => void)[] {
             if (height !== box.clientHeight) {
                 height = box.clientHeight;
                 autosize.destroy($(box)).height(height + "px");
+                if (resize_callback) {
+                    resize_callback(height);
+                }
             }
         }
     };
@@ -173,9 +198,8 @@ export function resize_stream_subscribers_list(): void {
 }
 
 export function resize_stream_filters_container(): void {
-    const h = get_new_heights();
     resize_bottom_whitespace();
-    $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
+    $("#left_sidebar_scroll_container").css("max-height", get_stream_filters_max_height());
 }
 
 export function resize_sidebars(): void {
@@ -184,21 +208,37 @@ export function resize_sidebars(): void {
     $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
 }
 
-export function update_recent_view(): void {
-    const $recent_view_filter_container = $("#recent_view_filter_buttons");
+export function update_recent_view(rerender_view_if_needed = false): void {
+    const $middle_column = $(".app .column-middle");
 
     // Update max avatars to prevent participant avatars from overflowing.
     // These numbers are just based on speculation.
-    const recent_view_filters_width = $recent_view_filter_container.outerWidth(true) ?? 0;
-    if (!recent_view_filters_width) {
+    const middle_column_width = $middle_column.outerWidth() ?? 0;
+    if (!middle_column_width) {
         return;
     }
-    const num_avatars_narrow_window = 2;
-    const num_avatars_max = 4;
-    if (recent_view_filters_width < media_breakpoints_num.md) {
-        $(":root").css("--recent-view-max-avatars", num_avatars_narrow_window);
-    } else {
-        $(":root").css("--recent-view-max-avatars", num_avatars_max);
+    const prev_num_avatars_max = Number($(":root").css("--recent-view-max-avatars"));
+    let num_avatars_max = 4;
+    const max_width_before_topic_ellipsis_overflows = 600;
+    if (
+        middle_column_width <
+        (max_width_before_topic_ellipsis_overflows * user_settings.web_font_size_px) / 16
+    ) {
+        num_avatars_max = 0;
+    } else if (
+        middle_column_width <
+        (media_breakpoints_num.md * user_settings.web_font_size_px) / 16
+    ) {
+        num_avatars_max = 2;
+    }
+
+    if (prev_num_avatars_max !== num_avatars_max) {
+        $(":root").css("--recent-view-max-avatars", `${num_avatars_max}`);
+        recent_view_participants_column_class_update?.();
+
+        if (rerender_view_if_needed) {
+            recent_view_participants_rerender?.();
+        }
     }
 }
 

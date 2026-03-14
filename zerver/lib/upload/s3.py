@@ -1,7 +1,7 @@
-import logging
 import os
 import secrets
 from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from datetime import datetime
 from typing import IO, TYPE_CHECKING, Any, Literal
 from urllib.parse import urljoin, urlsplit, urlunsplit
@@ -14,7 +14,7 @@ from django.conf import settings
 from django.utils.http import content_disposition_header
 from typing_extensions import override
 
-from zerver.lib.mime_types import INLINE_MIME_TYPES
+from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type
 from zerver.lib.partial import partial
 from zerver.lib.thumbnail import resize_logo, resize_realm_icon
 from zerver.lib.upload.base import StreamingSourceWithSize, ZulipUploadBackend
@@ -28,6 +28,9 @@ if TYPE_CHECKING:
 # accessing uploaded files are available for clients to fetch before
 # they expire.
 SIGNED_UPLOAD_URL_DURATION = 60
+
+
+DELETE_BATCH_SIZE = 1000
 
 # Performance note:
 #
@@ -91,6 +94,7 @@ def upload_content_to_s3(
     cache_control: str | None = None,
     extra_metadata: dict[str, str] | None = None,
     filename: str | None = None,
+    target_realm: Realm | None = None,
 ) -> None:
     # Note that these steps are also replicated in
     # handle_upload_pre_finish_hook in zerver.views.tus, to update
@@ -101,13 +105,15 @@ def upload_content_to_s3(
     if user_profile:
         metadata["user_profile_id"] = str(user_profile.id)
         metadata["realm_id"] = str(user_profile.realm_id)
+    if target_realm:
+        metadata["realm_id"] = str(target_realm.id)
     if extra_metadata is not None:
         metadata.update(extra_metadata)
 
     extras = {}
     if content_type is None:  # nocoverage
         content_type = ""
-    is_attachment = content_type not in INLINE_MIME_TYPES
+    is_attachment = bare_content_type(content_type) not in INLINE_MIME_TYPES
     if filename is not None:
         extras["ContentDisposition"] = content_disposition_header(is_attachment, filename)
     elif is_attachment:
@@ -173,11 +179,8 @@ class S3UploadBackend(ZulipUploadBackend):
         try:
             key.load()
         except botocore.exceptions.ClientError:
-            file_name = path_id.split("/")[-1]
-            logging.warning(
-                "%s does not exist. Its entry in the database will be removed.", file_name
-            )
             return False
+
         key.delete()
         return True
 
@@ -256,6 +259,7 @@ class S3UploadBackend(ZulipUploadBackend):
         content_type: str,
         file_data: bytes,
         user_profile: UserProfile | None,
+        target_realm: Realm | None,
     ) -> None:
         upload_content_to_s3(
             self.uploads_bucket,
@@ -265,6 +269,7 @@ class S3UploadBackend(ZulipUploadBackend):
             file_data,
             storage_class=settings.S3_UPLOADS_STORAGE_CLASS,
             filename=filename,
+            target_realm=target_realm,
         )
 
     @override
@@ -288,14 +293,46 @@ class S3UploadBackend(ZulipUploadBackend):
         )
 
     @override
-    def delete_message_attachment(self, path_id: str) -> bool:
-        return self.delete_file_from_s3(path_id, self.uploads_bucket)
+    def delete_message_attachment(self, path_id: str, *, raw_path: bool = False) -> None:
+        with self.delete_message_attachments(raw_paths=raw_path) as delete_one:
+            delete_one(path_id)
 
+    @contextmanager
     @override
-    def delete_message_attachments(self, path_ids: list[str]) -> None:
-        self.uploads_bucket.delete_objects(
-            Delete={"Objects": [{"Key": path_id} for path_id in path_ids]}
-        )
+    def delete_message_attachments(
+        self, *, raw_paths: bool = False, flush: None | Callable[[list[str]], None] = None
+    ) -> Iterator[Callable[[str], None]]:
+        paths: list[tuple[str, bool]] = []
+
+        def flush_queue() -> None:
+            nonlocal paths
+            self.uploads_bucket.delete_objects(
+                Delete={
+                    "Objects": [{"Key": path_id} for path_id, _ in paths[:DELETE_BATCH_SIZE]],
+                    "Quiet": True,
+                },
+            )
+            if flush:
+                flush([path for path, is_db_path_id in paths[:DELETE_BATCH_SIZE] if is_db_path_id])
+            paths = paths[DELETE_BATCH_SIZE:]
+
+        def queue_delete(path_id: str) -> None:
+            nonlocal paths
+            paths.append((path_id, True))
+            if not raw_paths:
+                paths.append((f"{path_id}.info", False))
+                paths += [
+                    (thumb_path, False)
+                    for thumb_path, _ in self.all_message_attachments(
+                        include_thumbnails=True, prefix=f"thumbnail/{path_id}/"
+                    )
+                ]
+            if len(paths) > DELETE_BATCH_SIZE:
+                flush_queue()
+
+        yield queue_delete
+        if paths:
+            flush_queue()
 
     @override
     def all_message_attachments(
@@ -322,7 +359,10 @@ class S3UploadBackend(ZulipUploadBackend):
         return self.get_public_upload_url(self.get_avatar_path(hash_key, medium))
 
     @override
-    def get_avatar_contents(self, file_path: str) -> tuple[bytes, str]:
+    def get_avatar_contents(self, file_path: str, avatar_source: str) -> tuple[bytes, str]:
+        # Currently, only used in codepaths where avatar_source = "U".
+        # We can extend it for avatar_source = "J", if required.
+        assert avatar_source is UserProfile.AVATAR_FROM_USER
         key = self.avatar_bucket.Object(file_path + ".original")
         image_data = key.get()["Body"].read()
         content_type = key.content_type
@@ -511,10 +551,8 @@ class S3UploadBackend(ZulipUploadBackend):
         return self.get_export_tarball_url(realm, key.key)
 
     @override
-    def delete_export_tarball(self, export_path: str) -> str | None:
+    def delete_export_tarball(self, export_path: str) -> None:
         assert export_path.startswith("/")
         path_id = export_path.removeprefix("/")
         bucket = self.export_bucket or self.avatar_bucket
-        if self.delete_file_from_s3(path_id, bucket):
-            return export_path
-        return None
+        self.delete_file_from_s3(path_id, bucket)

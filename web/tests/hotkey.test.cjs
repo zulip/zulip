@@ -44,7 +44,7 @@ const condense = mock_esm("../src/condense");
 const drafts_overlay_ui = mock_esm("../src/drafts_overlay_ui");
 const emoji_picker = mock_esm("../src/emoji_picker", {
     is_open: () => false,
-    toggle_emoji_popover() {},
+    start_picker_for_message_reaction() {},
 });
 const gear_menu = mock_esm("../src/gear_menu");
 const lightbox = mock_esm("../src/lightbox");
@@ -90,6 +90,7 @@ const settings_data = mock_esm("../src/settings_data");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 const stream_popover = mock_esm("../src/stream_popover");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
+const user_status_ui = mock_esm("../src/user_status_ui");
 
 mock_esm("../src/recent_view_ui", {
     is_in_focus: () => false,
@@ -105,11 +106,19 @@ message_lists.current = {
         return 42;
     },
     selected_row() {
+        const $emoji_message_control_button_container = $.create(
+            "emoji-message-control-button-container-stub",
+        );
+        $emoji_message_control_button_container.set_closest_results(
+            ".message_control_button",
+            $.create("emoji-message-control-button-stub"),
+        );
         const $row = $.create("selected-row-stub");
-        $row.set_find_results(".message-actions-menu-button", ["<menu-button-stub>"]);
-        $row.set_find_results(".message_controls .emoji-message-control-button-container", {
-            closest: () => ({css: () => "none"}),
-        });
+        $row.set_find_results(".message-actions-menu-button", $.create("menu-button-stub"));
+        $row.set_find_results(
+            ".message_controls .emoji-message-control-button-container",
+            $emoji_message_control_button_container,
+        );
         return $row;
     },
     selected_message() {
@@ -186,6 +195,7 @@ run_test("mappings", () => {
         map_down("V", true).map((item) => item.name),
         ["view_selected_stream", "toggle_read_receipts"],
     );
+    assert.equal(map_down("Y", true).name, "set_status");
 
     assert.equal(map_down("/").name, "search");
     assert.equal(map_down("j").name, "vim_down");
@@ -193,6 +203,7 @@ run_test("mappings", () => {
     assert.equal(map_down("[", false, true).name, "escape");
     assert.equal(map_down("c", false, true).name, "copy_with_c");
     assert.equal(map_down("k", false, true).name, "search_with_k");
+    assert.equal(map_down("@", true, true).name, "open_mentions_view");
     assert.equal(map_down("s", false, true).name, "star_message");
     assert.equal(map_down(".", false, true).name, "narrow_to_compose_target");
 
@@ -232,6 +243,8 @@ run_test("mappings", () => {
     assert.equal(map_down("c", false, true, false), undefined);
     assert.equal(map_down("k", false, false, true).name, "search_with_k");
     assert.equal(map_down("k", false, true, false), undefined);
+    assert.equal(map_down("@", true, false, true).name, "open_mentions_view");
+    assert.equal(map_down("@", true, true, false), undefined);
     assert.equal(map_down("s", false, false, true).name, "star_message");
     assert.equal(map_down("s", false, true, false), undefined);
     assert.equal(map_down(".", false, false, true).name, "narrow_to_compose_target");
@@ -269,10 +282,12 @@ run_test("mappings non-latin keyboard", () => {
         map_down("М", "KeyV", true).map((item) => item.name),
         ["view_selected_stream", "toggle_read_receipts"],
     );
+    assert.equal(map_down("Н", "KeyY", true).name, "set_status");
     assert.equal(map_down("о", "KeyJ").name, "vim_down");
     assert.equal(map_down("х", "BracketLeft", false, true).name, "escape");
     assert.equal(map_down("с", "KeyC", false, true).name, "copy_with_c");
     assert.equal(map_down("л", "KeyK", false, true).name, "search_with_k");
+    assert.equal(map_down("@", "Digit2", true, true).name, "open_mentions_view");
     assert.equal(map_down("ы", "KeyS", false, true).name, "star_message");
     assert.equal(map_down("з", "KeyP", false, false, false, true).name, "toggle_compose_preview");
 
@@ -306,6 +321,8 @@ run_test("mappings non-latin keyboard", () => {
     assert.equal(map_down("с", "KeyC", false, true, false), undefined);
     assert.equal(map_down("л", "KeyK", false, false, true).name, "search_with_k");
     assert.equal(map_down("л", "KeyK", false, true, false), undefined);
+    assert.equal(map_down("@", "Digit2", true, false, true).name, "open_mentions_view");
+    assert.equal(map_down("@", "Digit2", true, true, false), undefined);
     assert.equal(map_down("ы", "KeyS", false, false, true).name, "star_message");
     assert.equal(map_down("ы", "KeyS", false, true, false), undefined);
     // Reset platform
@@ -362,7 +379,7 @@ run_test("unmapped keys return false easily", () => {
     // calling any functions outside of hotkey.ts.
     // (unless we are editing text)
     assert_unmapped("bfo");
-    assert_unmapped("BEFLOQTWXYZ");
+    assert_unmapped("BEFLOQTWXZ");
 });
 
 run_test("allow normal typing when editing text", ({override, override_rewire}) => {
@@ -376,7 +393,7 @@ run_test("allow normal typing when editing text", ({override, override_rewire}) 
     override(overlays, "settings_open", () => settings_open);
     override(overlays, "info_overlay_open", () => info_overlay_open);
 
-    $.create(".navbar-item:focus", {children: []});
+    $.set_results(".navbar-item:focus", []);
 
     for (settings_open of [true, false]) {
         for (any_active of [true, false]) {
@@ -415,6 +432,7 @@ test_while_not_editing_text("basic mappings", () => {
     assert_mapping("x", compose_actions, "start");
     assert_mapping("P", message_view, "show", true);
     assert_mapping("g", gear_menu, "toggle");
+    assert_mapping("Y", user_status_ui, "open_user_status_modal", true);
 });
 
 test_while_not_editing_text("drafts open", ({override}) => {
@@ -471,7 +489,7 @@ test_while_not_editing_text("misc", ({override}) => {
     assert_mapping("K", navigate, "page_up", true);
     assert_mapping("u", popovers, "toggle_sender_info");
     assert_mapping("i", message_actions_popover, "toggle_message_actions_menu");
-    assert_mapping(":", emoji_picker, "toggle_emoji_popover", true);
+    assert_mapping(":", emoji_picker, "start_picker_for_message_reaction", true);
     assert_mapping(">", compose_reply, "quote_message");
     assert_mapping("<", compose_reply, "quote_message");
     assert_mapping("e", message_edit, "start");
@@ -481,7 +499,23 @@ test_while_not_editing_text("misc", ({override}) => {
         "realm_message_edit_history_visibility_policy",
         settings_config.message_edit_history_visibility_policy_values.always.code,
     );
+    override(message_lists.current, "selected_message", () => ({
+        id: 1,
+        type: "stream",
+        last_edit_timestamp: 123,
+    }));
     assert_mapping("H", message_edit_history, "fetch_and_render_message_history", true, true);
+    override(message_lists.current, "selected_message", () => ({
+        id: 2,
+        type: "stream",
+        last_moved_timestamp: 123,
+    }));
+    assert_mapping("H", message_edit_history, "fetch_and_render_message_history", true, true);
+    override(message_lists.current, "selected_message", () => ({
+        id: 3,
+        type: "stream",
+    }));
+    assert_unmapped("H");
 
     override(narrow_state, "narrowed_by_topic_reply", () => true);
     assert_mapping("s", message_view, "narrow_by_recipient");
@@ -548,7 +582,7 @@ test_while_not_editing_text("narrow next unread followed topic", () => {
 });
 
 test_while_not_editing_text("motion_keys", () => {
-    $.create(".navbar-item:focus", {children: []});
+    $.set_results(".navbar-item:focus", []);
 
     const keys = {
         down_arrow: "ArrowDown",

@@ -277,6 +277,8 @@ def main(options: argparse.Namespace) -> int:
     generate_zulip_bots_static_files()
     generate_pythonapi_integrations_static_files()
 
+    run(["node", "tools/setup/build_supported_browser_regex.ts"])
+
     if options.is_force or need_to_run_build_pygments_data():
         run(["tools/setup/build_pygments_data"])
         write_new_digest(

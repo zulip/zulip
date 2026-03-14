@@ -63,6 +63,10 @@ Files: tools/check-thirdparty
 Copyright: 2020 Kandra Labs, Inc.
 License: GPL-2.0+
 
+Files: web/icons/arrow-left.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/arrow-left)
+License: ISC License
+
 Files: web/icons/arrow-left-circle.svg
 Copyright: 2013-2017 Cole Bemis (https://feathericons.com)
 License: Expat
@@ -233,6 +237,14 @@ Files: web/icons/external-link.svg
 Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/external-link)
 License: ISC License
 
+Files: web/icons/internal-link.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/external-link)
+License: ISC License
+
+Files: web/icons/inbound-link.svg
+Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/external-link)
+License: ISC License
+
 Files: web/icons/eye.svg
 Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/eye)
 License: ISC License
@@ -256,6 +268,19 @@ License: ISC License
 
 Files: web/icons/folder.svg
 Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/folder)
+License: ISC License
+
+Files: web/icons/folder-chevron.svg
+Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/folder-cog)
+License: ISC License
+Comment: Icon has been modified by Karl Stolley
+
+Files: web/icons/folder-cog.svg
+Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/folder-cog)
+License: ISC License
+
+Files: web/icons/folder-search.svg
+Copyright: 2013-2023 Cole Bemis (https://lucide.dev/icons/folder-search)
 License: ISC License
 
 Files: web/icons/follow.svg
@@ -551,6 +576,10 @@ Files: web/icons/sun.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
 
+Files: web/icons/tiktok.svg
+Copyright: 2024 Fonticons, Inc. (Font Awesome Free 6.5.1 - https://fontawesome.com)
+License: CC-BY-4.0
+
 Files: web/icons/time.svg
 Copyright: 2013-2023 Cole Bemis, Lucide Contributors 2025 (https://lucide.dev/icons/clock)
 License: ISC License
@@ -648,6 +677,16 @@ Copyright: 2013-2022 Cole Bemis
 License: ISC License
 Comment: Icon has been modified by Vlad Koborov
 
+Files: web/icons/loader-circle.svg
+Source: https://lucide.dev/icons/loader-circle
+Copyright: 2013-2026 Cole Bemis
+License: ISC License
+
+Files: web/icons/id-card.svg
+Source: https://lucide.dev/icons/id-card
+Copyright: 2013-2026 Cole Bemis
+License: ISC License
+
 Files: web/icons/video-call.svg
 Copyright: 2013-2023 Cole Bemis (https://feathericons.com)
 License: Expat
@@ -692,11 +731,6 @@ Copyright: 2012 Twitter, Inc.
 License: Apache-2.0
 Comment: Bootstrap typeahead.  The software has been modified.
 
-Files: web/third/jquery-idle/jquery.idle.js
-Copyright: 2011-2013 Henrique Boaventura
-License: Expat
-Comment: The software has been modified.
-
 Files: web/third/marked/*
 Copyright: 2011-2013 Christopher Jeffrey
 License: Expat
@@ -704,6 +738,11 @@ License: Expat
 Files: zerver/decorator.py zerver/management/commands/runtornado.py scripts/setup/generate_secrets.py
 Copyright: Django Software Foundation and individual contributors
 License: BSD-3-Clause
+
+Files: zerver/lib/demo_organization_words.json tools/build-demo-organization-wordlist
+Copyright: Jitsi js-utils
+License: Apache-2.0
+Comment: Code has been modified
 
 Files: zerver/lib/markdown/fenced_code.py
 Copyright: 2006-2008 Waylan Limberg

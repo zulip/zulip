@@ -5,10 +5,6 @@ from zerver.lib.webhooks.git import COMMITS_LIMIT
 
 
 class GogsHookTests(WebhookTestCase):
-    CHANNEL_NAME = "commits"
-    URL_TEMPLATE = "/api/v1/external/gogs?&api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "gogs"
-
     def test_push(self) -> None:
         expected_topic_name = "try-git / master"
         expected_message = """john [pushed](http://localhost:3000/john/try-git/compare/479e6b772b7fba19412457483f50b201286d0103...d8fce16c72a2ff56a5afc8a08645a6ce45491794) 1 commit to branch master. Commits by John (1).
@@ -104,37 +100,37 @@ class GogsHookTests(WebhookTestCase):
 
     def test_issues_opened(self) -> None:
         expected_topic_name = "test / issue #3 New test issue"
-        expected_message = """kostekIV opened [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nTest\n~~~"""
+        expected_message = """kostekIV opened [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n``` quote\nTest\n```"""
         self.check_webhook("issues__opened", expected_topic_name, expected_message)
 
     def test_issues_reopened(self) -> None:
         expected_topic_name = "test / issue #3 New test issue"
-        expected_message = """kostekIV reopened [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nTest\n~~~"""
+        expected_message = """kostekIV reopened [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n``` quote\nTest\n```"""
         self.check_webhook("issues__reopened", expected_topic_name, expected_message)
 
     def test_issues_edited(self) -> None:
         expected_topic_name = "test / issue #3 New test issue"
-        expected_message = """kostekIV edited [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nTest edit\n~~~"""
+        expected_message = """kostekIV edited [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n``` quote\nTest edit\n```"""
         self.check_webhook("issues__edited", expected_topic_name, expected_message)
 
     def test_issues_assignee(self) -> None:
         expected_topic_name = "test / issue #3 New test issue"
-        expected_message = """kostekIV assigned kostekIV to [issue #3](https://try.gogs.io/kostekIV/test/issues/3) (assigned to kostekIV):\n\n~~~ quote\nTest\n~~~"""
+        expected_message = """kostekIV assigned kostekIV to [issue #3](https://try.gogs.io/kostekIV/test/issues/3) (assigned to kostekIV):\n\n``` quote\nTest\n```"""
         self.check_webhook("issues__assigned", expected_topic_name, expected_message)
 
     def test_issues_closed(self) -> None:
         expected_topic_name = "test / issue #3 New test issue"
-        expected_message = """kostekIV closed [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nClosed #3\n~~~"""
+        expected_message = """kostekIV closed [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n``` quote\nClosed #3\n```"""
         self.check_webhook("issues__closed", expected_topic_name, expected_message)
 
     def test_issue_comment_new(self) -> None:
         expected_topic_name = "test / issue #3 New test issue"
-        expected_message = """kostekIV [commented](https://try.gogs.io/kostekIV/test/issues/3#issuecomment-3635) on [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nTest comment\n~~~"""
+        expected_message = """kostekIV [commented](https://try.gogs.io/kostekIV/test/issues/3#issuecomment-3635) on [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n``` quote\nTest comment\n```"""
         self.check_webhook("issue_comment__new", expected_topic_name, expected_message)
 
     def test_issue_comment_edited(self) -> None:
         expected_topic_name = "test / issue #3 New test issue"
-        expected_message = """kostekIV edited a [comment](https://try.gogs.io/kostekIV/test/issues/3#issuecomment-3634) on [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nedit comment\n~~~"""
+        expected_message = """kostekIV edited a [comment](https://try.gogs.io/kostekIV/test/issues/3#issuecomment-3634) on [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n``` quote\nedit comment\n```"""
         self.check_webhook("issue_comment__edited", expected_topic_name, expected_message)
 
     def test_release_published(self) -> None:

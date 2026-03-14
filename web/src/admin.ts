@@ -1,4 +1,5 @@
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
 import render_admin_tab from "../templates/settings/admin_tab.hbs";
@@ -10,6 +11,7 @@ import {$t, language_list} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import {postprocess_content} from "./postprocess_content.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
 import * as settings from "./settings.ts";
 import * as settings_bots from "./settings_bots.ts";
@@ -37,8 +39,11 @@ const admin_settings_label = {
     realm_signup_announcements_stream: $t({defaultMessage: "New user announcements"}),
     realm_zulip_update_announcements_stream: $t({defaultMessage: "Zulip update announcements"}),
     realm_moderation_request_channel: $t({defaultMessage: "Moderation requests"}),
+    realm_media_preview_size: $t({
+        defaultMessage: "Size of images and videos in messages",
+    }),
     realm_inline_image_preview: $t({
-        defaultMessage: "Show previews of uploaded and linked images and videos",
+        defaultMessage: "Show previews of linked images and videos",
     }),
     realm_inline_url_embed_preview: $t({defaultMessage: "Show previews of linked websites"}),
     realm_send_welcome_emails: $t({defaultMessage: "Send emails introducing Zulip to new users"}),
@@ -51,6 +56,9 @@ const admin_settings_label = {
     realm_enable_spectator_access: $t({
         defaultMessage: "Allow creating web-public channels (visible to anyone on the Internet)",
     }),
+    realm_send_channel_events_messages: $t({
+        defaultMessage: "Send automated messages for channel events",
+    }),
     realm_digest_emails_enabled: $t({
         defaultMessage: "Send weekly digest emails to inactive users",
     }),
@@ -58,6 +66,7 @@ const admin_settings_label = {
     realm_enable_welcome_message_custom_text: $t({
         defaultMessage: "Send a custom Welcome Bot message to new users",
     }),
+    realm_default_avatar_source: $t({defaultMessage: "Default profile pictures for new users"}),
 
     // Organization permissions
     realm_require_unique_names: $t({defaultMessage: "Require unique names"}),
@@ -83,6 +92,9 @@ const admin_settings_label = {
     realm_enable_guest_user_dm_warning: $t({
         defaultMessage: "Warn when composing a DM to a guest",
     }),
+    realm_enable_two_tier_billing: $t({
+        defaultMessage: "Discounted billing for non-workplace users",
+    }),
 };
 
 function insert_tip_box(): void {
@@ -101,6 +113,7 @@ function insert_tip_box(): void {
         .not("#admin-user-list")
         .not("#admin-active-users-list")
         .not("#admin-deactivated-users-list")
+        .not("#admin-imported-users-list")
         .prepend($(tip_box_html));
 }
 
@@ -133,10 +146,10 @@ export function build_page(): void {
         realm_night_logo_url = realm.realm_logo_url;
     }
 
-    let giphy_help_link = "/help/animated-gifs-from-giphy";
-    if (realm.giphy_api_key === "") {
-        giphy_help_link =
-            "https://zulip.readthedocs.io/en/latest/production/giphy-gif-integration.html";
+    let gif_help_link = "/help/animated-gifs";
+    if (realm.giphy_api_key === "" && realm.tenor_api_key === "") {
+        gif_help_link =
+            "https://zulip.readthedocs.io/en/latest/production/gif-picker-integrations.html";
     }
 
     const options = {
@@ -147,18 +160,21 @@ export function build_page(): void {
         realm_org_type: realm.realm_org_type,
         realm_available_video_chat_providers: realm.realm_available_video_chat_providers,
         server_jitsi_server_url: realm.server_jitsi_server_url,
-        giphy_rating_options: realm.giphy_rating_options,
-        giphy_api_key_empty: realm.giphy_api_key === "",
-        realm_description: realm.realm_description,
+        gif_rating_policy_options: realm.gif_rating_policy_options,
+        gif_api_key_empty: realm.giphy_api_key === "" && realm.tenor_api_key === "",
+        realm_description_text: realm.realm_description,
+        realm_description_html: postprocess_content(page_params.realm_rendered_description),
         realm_inline_image_preview: realm.realm_inline_image_preview,
         server_inline_image_preview: realm.server_inline_image_preview,
         realm_inline_url_embed_preview: realm.realm_inline_url_embed_preview,
         server_inline_url_embed_preview: realm.server_inline_url_embed_preview,
         realm_authentication_methods: realm.realm_authentication_methods,
         realm_name_changes_disabled: realm.realm_name_changes_disabled,
+        server_name_changes_disabled: realm.server_name_changes_disabled,
         realm_require_unique_names: realm.realm_require_unique_names,
         realm_email_changes_disabled: realm.realm_email_changes_disabled,
         realm_avatar_changes_disabled: realm.realm_avatar_changes_disabled,
+        server_avatar_changes_disabled: realm.server_avatar_changes_disabled,
         can_add_emojis: settings_data.user_can_add_custom_emoji(),
         can_create_new_bots: settings_bots.can_create_incoming_webhooks(),
         realm_message_content_edit_limit_minutes:
@@ -199,6 +215,8 @@ export function build_page(): void {
         realm_logo_url: realm.realm_logo_url,
         realm_night_logo_source: realm.realm_night_logo_source,
         realm_night_logo_url,
+        realm_media_preview_size: realm.realm_media_preview_size,
+        realm_media_preview_size_values: settings_config.realm_media_preview_size_values,
         realm_topics_policy: realm.realm_topics_policy,
         realm_topics_policy_values: settings_config.get_realm_topics_policy_values(),
         empty_string_topic_display_name: util.get_final_topic_display_name(""),
@@ -211,6 +229,7 @@ export function build_page(): void {
             realm.realm_message_content_allowed_in_email_notifications,
         realm_enable_spectator_access: realm.realm_enable_spectator_access,
         settings_send_digest_emails: realm.settings_send_digest_emails,
+        realm_send_channel_events_messages: realm.realm_send_channel_events_messages,
         realm_digest_emails_enabled: realm.realm_digest_emails_enabled,
         realm_digest_weekday: realm.realm_digest_weekday,
         development: page_params.development_environment,
@@ -279,10 +298,12 @@ export function build_page(): void {
         active_user_list_dropdown_widget_name: settings_users.active_user_list_dropdown_widget_name,
         deactivated_user_list_dropdown_widget_name:
             settings_users.deactivated_user_list_dropdown_widget_name,
-        giphy_help_link,
+        imported_user_list_dropdown_widget_name:
+            settings_users.imported_user_list_dropdown_widget_name,
+        gif_help_link,
         ...get_realm_level_notification_settings(),
-        all_bots_list_dropdown_widget_name: settings_bots.all_bots_list_dropdown_widget_name,
-        your_bots_list_dropdown_widget_name: settings_bots.your_bots_list_dropdown_widget_name,
+        all_bots_list_dropdown_widget_name: settings_bots.org_all_bots_list_dropdown_widget_name,
+        your_bots_list_dropdown_widget_name: settings_bots.org_your_bots_list_dropdown_widget_name,
         group_setting_labels: settings_config.all_group_setting_labels.realm,
         server_can_summarize_topics: realm.server_can_summarize_topics,
         is_plan_self_hosted:
@@ -292,6 +313,10 @@ export function build_page(): void {
             information_density.get_string_display_value_for_line_height(
                 realm_user_settings_defaults.web_line_height_percent,
             ),
+        default_avatar_source_values: settings_config.default_avatar_source_values,
+        realm_enable_two_tier_billing: settings_data.two_tier_billing_enabled(),
+        show_two_tier_billing_settings:
+            page_params.development_environment && page_params.non_workplace_pricing_eligible,
     };
 
     const rendered_admin_tab = render_admin_tab(options);
@@ -341,7 +366,8 @@ export function launch(section: string, settings_tab: string | undefined): void 
         settings_panel_menu.org_settings.set_user_settings_tab(settings_tab);
     }
     if (section === "bots") {
-        settings_panel_menu.org_settings.set_bot_settings_tab(settings_tab);
+        assert(settings_tab !== undefined);
+        settings_panel_menu.org_settings.set_bot_settings_tab(settings_tab, "org");
     }
     settings_toggle.goto("organization");
 }

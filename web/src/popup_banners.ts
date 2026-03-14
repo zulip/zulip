@@ -39,7 +39,7 @@ const connection_error_popup_banner = (retry_seconds: number): Banner => ({
     label: get_connection_error_label(retry_seconds),
     buttons: [
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({defaultMessage: "Try now"}),
             custom_classes: "retry-connection",
         },
@@ -81,7 +81,7 @@ const FOUND_MISSING_UNREADS_IN_CURRENT_NARROW: Banner = {
     }),
     buttons: [
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({defaultMessage: "Jump"}),
             custom_classes: "found-missing-unreads-jump-to-first-unread",
         },
@@ -105,6 +105,108 @@ const reloading_application_banner = (reason: ReloadingReason): Banner => {
         custom_classes: "reloading-application popup-banner",
     };
 };
+
+const update_read_flags_for_narrow_banner = (
+    operation: "unread" | "read",
+    messages_updated: number,
+    is_loaded: boolean,
+): Banner => {
+    let label = "";
+    if (is_loaded) {
+        if (operation === "read") {
+            label = $t(
+                {
+                    defaultMessage:
+                        "Done! {N, plural, one {# message} other {# messages}} marked as read.",
+                },
+                {N: messages_updated},
+            );
+        } else {
+            label = $t(
+                {
+                    defaultMessage:
+                        "Done! {N, plural, one {# message} other {# messages}} marked as unread.",
+                },
+                {N: messages_updated},
+            );
+        }
+    } else {
+        if (operation === "read") {
+            label = $t(
+                {
+                    defaultMessage:
+                        "Working… {N, plural, one {# message} other {# messages}} marked as read so far.",
+                },
+                {N: messages_updated},
+            );
+        } else {
+            label = $t(
+                {
+                    defaultMessage:
+                        "Working… {N, plural, one {# message} other {# messages}} marked as unread so far.",
+                },
+                {N: messages_updated},
+            );
+        }
+    }
+
+    return {
+        intent: "info",
+        label,
+        buttons: [],
+        close_button: true,
+        custom_classes: "update-read-flags-for-narrow-banner popup-banner",
+    };
+};
+
+export function open_update_read_flags_for_narrow_banner(
+    operation: "read" | "unread",
+    messages_updated: number,
+    is_loaded = false,
+): void {
+    let $banner = $("#popup_banners_wrapper").find(".update-read-flags-for-narrow-banner");
+    if ($banner.length > 0) {
+        // If the banner is already open, update the label instead of duplicating the banner.
+        const banner = update_read_flags_for_narrow_banner(operation, messages_updated, is_loaded);
+        $banner.find(".banner-label").text(banner.label.toString());
+
+        if (is_loaded) {
+            // When all messages have been processed, change the banner
+            // intent to success to match the success message and close it
+            // after a short delay.
+            $banner.removeClass("banner-info").addClass("banner-success");
+            const $banner_close_button = $banner.find(".banner-close-button");
+            buttons.modify_button_icon($banner_close_button, "check");
+            $banner_close_button.removeClass("icon-button-info").addClass("icon-button-success");
+
+            setTimeout(() => {
+                fade_out_popup_banner($banner);
+            }, 2500);
+        }
+
+        return;
+    }
+
+    banners.append(
+        update_read_flags_for_narrow_banner(operation, messages_updated, is_loaded),
+        $("#popup_banners_wrapper"),
+    );
+    $banner = $("#popup_banners_wrapper").find(".update-read-flags-for-narrow-banner");
+    // We repurpose the banner close button to act as the loading
+    // indicator for this banner.
+    const $banner_close_button = $banner.find(".banner-close-button");
+    buttons.modify_button_icon($banner_close_button, "loader-circle");
+}
+
+export function close_update_read_flags_for_narrow_banner(): boolean {
+    const $banner = $("#popup_banners_wrapper").find(".update-read-flags-for-narrow-banner");
+    if ($banner.length === 0) {
+        return false;
+    }
+
+    fade_out_popup_banner($banner);
+    return true;
+}
 
 export function open_found_missing_unreads_banner(on_jump_to_first_unread: () => void): void {
     banners.append(FOUND_MISSING_UNREADS_IN_CURRENT_NARROW, $("#popup_banners_wrapper"));

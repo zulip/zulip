@@ -2,7 +2,6 @@ import "./common.ts";
 
 // Import third party jQuery plugins
 import "jquery-caret-plugin/dist/jquery.caret";
-import "../../third/jquery-idle/jquery.idle.js";
 import "jquery-validation";
 
 // Import app JS
@@ -60,6 +59,7 @@ import "../../styles/widgets.css";
 import "../../styles/print.css";
 import "../../styles/inbox.css";
 import "../../styles/color_picker.css";
+import "../../styles/animate.css";
 import "@uppy/core/css/style.min.css";
 import "@uppy/image-editor/css/style.min.css";
 

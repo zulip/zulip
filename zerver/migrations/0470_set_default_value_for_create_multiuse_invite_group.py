@@ -13,7 +13,7 @@ def set_default_value_for_create_multiuse_invite_group(
 
     UserGroup.ADMINISTRATORS_GROUP_NAME = "role:administrators"
 
-    for realm in Realm.objects.all():
+    for realm in Realm.objects.all().iterator():
         if realm.create_multiuse_invite_group is not None:
             continue
 

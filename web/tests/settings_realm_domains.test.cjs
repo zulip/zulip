@@ -31,7 +31,7 @@ function test_realms_domain_modal(override, add_realm_domain) {
         "input.new-realm-domain-allow-subdomains",
         $("<new-realm-domain-allow-subdomains-stub>"),
     );
-    $("<new-realm-domain-allow-subdomains-stub>")[0] = {};
+    $("<new-realm-domain-allow-subdomains-stub>")[0].checked = false;
 
     let posted;
     let success_callback;
@@ -48,10 +48,10 @@ function test_realms_domain_modal(override, add_realm_domain) {
     assert.ok(posted);
 
     success_callback();
-    assert.equal($info.val(), "translated HTML: Added successfully!");
+    assert.equal($info.val(), "translated: Added successfully!");
 
     error_callback({});
-    assert.equal($info.val(), "translated HTML: Failed");
+    assert.equal($info.val(), "translated: Failed");
 }
 
 function test_change_allow_subdomains(change_allow_subdomains) {
@@ -60,7 +60,6 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     };
 
     const $info = $(".realm_domains_info");
-    $info.fadeOut = noop;
     const domain = "example.com";
     let allow = true;
 
@@ -87,13 +86,10 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     change_allow_subdomains.call(elem_obj, ev);
 
     success_callback();
-    assert.equal(
-        $info.val(),
-        "translated HTML: Update successful: Subdomains allowed for example.com",
-    );
+    assert.equal($info.val(), "translated: Update successful: Subdomains allowed for example.com");
 
     error_callback({});
-    assert.equal($info.val(), "translated HTML: Failed");
+    assert.equal($info.val(), "translated: Failed");
 
     allow = false;
     elem_obj.checked = allow;
@@ -101,7 +97,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     success_callback();
     assert.equal(
         $info.val(),
-        "translated HTML: Update successful: Subdomains no longer allowed for example.com",
+        "translated: Update successful: Subdomains no longer allowed for example.com",
     );
 }
 

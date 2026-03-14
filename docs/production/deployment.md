@@ -39,7 +39,7 @@ our next major release has a reliable install experience.
 ## Zulip in Docker
 
 In addition to the [standard installer](./install.md), Zulip has an
-[official Docker image](https://github.com/zulip/docker-zulip).
+{doc}`official Docker image <docker:index>`.
 
 We recommend using the Docker image only if your organization has a
 preference for deploying services using Docker. Deploying with Docker
@@ -74,8 +74,8 @@ as well as those mentioned in the
 [install](install.md#installer-options) documentation:
 
 - `--postgresql-version`: Sets the version of PostgreSQL that will be
-  installed. We currently support PostgreSQL 14, 15, 16, and 17, with 17
-  being the default.
+  installed. We currently support PostgreSQL 14, 15, 16, 17, and 18,
+  with 18 being the default.
 
 - `--postgresql-database-name=exampledbname`: With this option, you
   can customize the default database name. If you do not set this. The
@@ -86,12 +86,6 @@ as well as those mentioned in the
   can customize the default database user. If you do not set this. The
   default database user will be `zulip`. This setting can only be set
   on the first install.
-
-- `--postgresql-missing-dictionaries`: Set `postgresql.missing_dictionaries`
-  ([docs][missing-dicts]) in the Zulip settings, which omits some configuration
-  needed for full-text indexing. This should be used with [cloud managed
-  databases like RDS][postgresql]. This option conflicts with
-  `--no-overwrite-settings`.
 
 - `--no-init-db`: This option instructs the installer to not do any
   database initialization. This should be used when you already have a
@@ -265,7 +259,7 @@ addresses](https://en.wikipedia.org/wiki/Private_network), including
 [adjust those rules][smokescreen-acls]. For instance, if you have an
 outgoing webhook at `http://10.17.17.17:80/`, you would need to:
 
-1. Add the following block to `/etc/zulip/zulip.com`, substituting
+1. Add the following block to `/etc/zulip/zulip.conf`, substituting
    your internal host's IP address:
 
    ```ini

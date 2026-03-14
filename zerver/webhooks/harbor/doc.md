@@ -10,9 +10,10 @@ Harbor's webhooks feature is available in version 1.9 and later.
 
 1. {!generate-webhook-url-basic.md!}
 
-1. Go to your Harbor **Projects** page and open a project.
+1. Go to your Harbor **Projects** page, open a project, and click on the
+   **Webhooks** tab.
 
-1. Click on the **Webhooks** tab and then click on the **New Webhook** button.
+1. Click on the **New Webhook** button.
 
 1. Enter a name for your webhook (e.g., "Zulip Notifications").
 

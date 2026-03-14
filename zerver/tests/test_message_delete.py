@@ -46,7 +46,20 @@ class DeleteMessageTest(ZulipTestCase):
         self.assertIn("type", event)
         self.assertEqual(event["type"], "delete_message")
         self.assertIn(msg_id, event["message_ids"])
-        self.assertIn(acting_user.id, events[0]["users"])
+        self.assertCountEqual([hamlet.id, cordelia.id], events[0]["users"])
+
+        msg_id = self.send_group_direct_message(cordelia, [hamlet, acting_user], "Hello!")
+        message = Message.objects.get(id=msg_id)
+
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            do_delete_messages(realm, [message], acting_user=acting_user)
+
+        self.assert_length(events, 1)
+        event = events[0]["event"]
+        self.assertIn("type", event)
+        self.assertEqual(event["type"], "delete_message")
+        self.assertIn(msg_id, event["message_ids"])
+        self.assertCountEqual([acting_user.id, hamlet.id, cordelia.id], events[0]["users"])
 
     def test_do_delete_stream_messages_without_acting_user(self) -> None:
         realm = get_realm("zulip")
@@ -66,6 +79,166 @@ class DeleteMessageTest(ZulipTestCase):
         self.assertIn("type", events[0]["event"])
         self.assertEqual(events[1]["event"]["type"], "delete_message")
         self.assertIn(msg_id, events[1]["event"]["message_ids"])
+
+    def test_do_delete_stream_messages_with_acting_user(self) -> None:
+        realm = get_realm("zulip")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+
+        # For public stream, acting_user will receive the event even if
+        # they are not subscribed and do not have UserMessage row.
+        stream_name = "public_stream"
+        stream = self.make_stream(stream_name)
+        self.subscribe(cordelia, stream_name)
+        msg_id = self.send_stream_message(cordelia, stream_name, "Hello!")
+        message = Message.objects.get(id=msg_id)
+
+        with self.capture_send_event_calls(expected_num_events=2) as events:
+            do_delete_messages(realm, [message], acting_user=hamlet)
+
+        self.assertEqual(events[1]["event"]["type"], "delete_message")
+        self.assertIn(msg_id, events[1]["event"]["message_ids"])
+        self.assertCountEqual([cordelia.id, hamlet.id], events[1]["users"])
+
+        # For a private stream with public history, acting_user will receive
+        # the event if they have content access to the stream even when they
+        # were not subscribed to the stream when message was sent and do not
+        # have a UserMessage row for the message.
+        stream_name = "private_stream"
+        stream = self.make_stream(stream_name, invite_only=True, history_public_to_subscribers=True)
+        self.subscribe(cordelia, stream_name)
+        msg_id = self.send_stream_message(cordelia, stream_name, "Hello!")
+        message = Message.objects.get(id=msg_id)
+
+        # Acting user does not receive the event since they do not have
+        # content access to the stream.
+        with self.capture_send_event_calls(expected_num_events=2) as events:
+            do_delete_messages(realm, [message], acting_user=iago)
+
+        self.assertEqual(events[1]["event"]["type"], "delete_message")
+        self.assertIn(msg_id, events[1]["event"]["message_ids"])
+        self.assertCountEqual([cordelia.id], events[1]["users"])
+
+        admins_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_subscribe_group", admins_group, acting_user=iago
+        )
+
+        msg_id = self.send_stream_message(cordelia, stream_name, "Hello!")
+        message = Message.objects.get(id=msg_id)
+
+        # Acting user receives the event since they have content access
+        # to the stream.
+        with self.capture_send_event_calls(expected_num_events=2) as events:
+            do_delete_messages(realm, [message], acting_user=iago)
+
+        self.assertEqual(events[1]["event"]["type"], "delete_message")
+        self.assertIn(msg_id, events[1]["event"]["message_ids"])
+        self.assertCountEqual([cordelia.id, iago.id], events[1]["users"])
+
+        # For a private stream with protected history, acting_user will receive
+        # the event only if they have UserMessage rows for at least one of the
+        # messages being deleted and have content access to the stream.
+        stream_name = "protected_history_stream"
+        stream = self.make_stream(stream_name, invite_only=True)
+        self.subscribe(cordelia, stream_name)
+
+        msg_id = self.send_stream_message(cordelia, stream_name, "Hello!")
+        message = Message.objects.get(id=msg_id)
+
+        # Acting user does not receive the event as they do not have UserMessage
+        # row for any of the messages being deleted and they do not have content
+        # access to the stream.
+        with self.capture_send_event_calls(expected_num_events=2) as events:
+            do_delete_messages(realm, [message], acting_user=iago)
+
+        self.assertEqual(events[1]["event"]["type"], "delete_message")
+        self.assertIn(msg_id, events[1]["event"]["message_ids"])
+        self.assertCountEqual([cordelia.id], events[1]["users"])
+
+        first_msg_id = self.send_stream_message(cordelia, stream_name, "Hello!")
+        self.subscribe(iago, stream_name)
+        second_msg_id = self.send_stream_message(cordelia, stream_name, "Hello again!")
+        self.unsubscribe(iago, stream_name)
+        messages = Message.objects.filter(id__in=[first_msg_id, second_msg_id])
+
+        # Acting user does not receive the event as they do not have conte access
+        # to the stream even if they have UserMessage row for at least one of the
+        # messages being deleted.
+        with self.capture_send_event_calls(expected_num_events=2) as events:
+            do_delete_messages(realm, messages, acting_user=iago)
+        self.assertEqual(events[1]["event"]["type"], "delete_message")
+        self.assertCountEqual([first_msg_id, second_msg_id], events[1]["event"]["message_ids"])
+        self.assertCountEqual([cordelia.id], events[1]["users"])
+
+        do_change_stream_group_based_setting(
+            stream, "can_subscribe_group", admins_group, acting_user=iago
+        )
+
+        first_msg_id = self.send_stream_message(cordelia, stream_name, "Hello!")
+        second_msg_id = self.send_stream_message(cordelia, stream_name, "Hello again!")
+        messages = Message.objects.filter(id__in=[first_msg_id, second_msg_id])
+
+        # Acting user does not receive the event as they do not have
+        # UserMessage row for any of the messages being deleted even
+        # when they have content access to the stream.
+        with self.capture_send_event_calls(expected_num_events=2) as events:
+            do_delete_messages(realm, messages, acting_user=iago)
+        self.assertEqual(events[1]["event"]["type"], "delete_message")
+        self.assertCountEqual([first_msg_id, second_msg_id], events[1]["event"]["message_ids"])
+        self.assertCountEqual([cordelia.id], events[1]["users"])
+
+        first_msg_id = self.send_stream_message(cordelia, stream_name, "Hello!")
+        self.subscribe(iago, stream_name)
+        second_msg_id = self.send_stream_message(cordelia, stream_name, "Hello again!")
+        self.unsubscribe(iago, stream_name)
+        messages = Message.objects.filter(id__in=[first_msg_id, second_msg_id])
+
+        # Acting user receives the event as they are subscribed to the stream
+        # and also have UserMessage row for at least one of the messages being
+        # deleted and the event includes messages with only UserMessage rows.
+        with self.capture_send_event_calls(expected_num_events=3) as events:
+            do_delete_messages(realm, messages, acting_user=iago)
+
+        self.assertEqual(events[1]["event"]["type"], "delete_message")
+        self.assertCountEqual([first_msg_id, second_msg_id], events[1]["event"]["message_ids"])
+        self.assertCountEqual([cordelia.id], events[1]["users"])
+        self.assertEqual(events[2]["event"]["type"], "delete_message")
+        self.assertCountEqual([second_msg_id], events[2]["event"]["message_ids"])
+        self.assertCountEqual([iago.id], events[2]["users"])
+
+        first_msg_id = self.send_stream_message(cordelia, stream_name, "Hello!")
+        self.subscribe(iago, stream_name)
+        second_msg_id = self.send_stream_message(cordelia, stream_name, "Hello again!")
+        messages = Message.objects.filter(id__in=[first_msg_id, second_msg_id])
+
+        with self.capture_send_event_calls(expected_num_events=3) as events:
+            do_delete_messages(realm, messages, acting_user=iago)
+
+        self.assertEqual(events[1]["event"]["type"], "delete_message")
+        self.assertCountEqual([first_msg_id, second_msg_id], events[1]["event"]["message_ids"])
+        self.assertCountEqual([cordelia.id], events[1]["users"])
+        self.assertEqual(events[2]["event"]["type"], "delete_message")
+        self.assertCountEqual([second_msg_id], events[2]["event"]["message_ids"])
+        self.assertCountEqual([iago.id], events[2]["users"])
+
+        # If the acting_user has UserMessage row for all the messages being
+        # deleted in a protected history stream, then we send the same event
+        # to all the users with access.
+        self.subscribe(iago, stream_name)
+        first_msg_id = self.send_stream_message(cordelia, stream_name, "Hello!")
+        second_msg_id = self.send_stream_message(cordelia, stream_name, "Hello again!")
+        self.unsubscribe(iago, stream_name)
+        messages = Message.objects.filter(id__in=[first_msg_id, second_msg_id])
+        with self.capture_send_event_calls(expected_num_events=2) as events:
+            do_delete_messages(realm, messages, acting_user=iago)
+
+        self.assertEqual(events[1]["event"]["type"], "delete_message")
+        self.assertCountEqual([first_msg_id, second_msg_id], events[1]["event"]["message_ids"])
+        self.assertCountEqual([cordelia.id, iago.id], events[1]["users"])
 
     def test_do_delete_messages_grouping_logic(self) -> None:
         realm = get_realm("zulip")

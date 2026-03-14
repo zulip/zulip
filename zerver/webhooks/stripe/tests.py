@@ -5,10 +5,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class StripeHookTests(WebhookTestCase):
-    CHANNEL_NAME = "test"
-    URL_TEMPLATE = "/api/v1/external/stripe?&api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "stripe"
-
     def test_charge_dispute_closed(self) -> None:
         expected_topic_name = "disputes"
         expected_message = "[Dispute](https://dashboard.stripe.com/disputes/dp_00000000000000) closed. Current status: won."
@@ -141,13 +137,13 @@ Billing method: send invoice"""
         expected_topic_name = "cus_00000000000000"
         expected_message = """\
 [Subscription](https://dashboard.stripe.com/subscriptions/sub_E6STM5w5EX3K28) updated
-* Billing cycle anchor is now Nov 01, 2019, 12:00:00 UTC
-* Current period end is now Nov 01, 2019, 12:00:00 UTC
-* Current period start is now Dec 06, 2018, 05:53:55 UTC
-* Start is now Dec 06, 2018, 05:53:55 UTC
+* Billing cycle anchor is now <time:2019-11-01T12:00:00+00:00>
+* Current period end is now <time:2019-11-01T12:00:00+00:00>
+* Current period start is now <time:2018-12-06T05:53:55+00:00>
+* Start is now <time:2018-12-06T05:53:55+00:00>
 * Status is now trialing
-* Trial end is now Nov 01, 2019, 12:00:00 UTC
-* Trial start is now Dec 06, 2018, 05:53:55 UTC"""
+* Trial end is now <time:2019-11-01T12:00:00+00:00>
+* Trial start is now <time:2018-12-06T05:53:55+00:00>"""
         self.check_webhook(
             "customer_subscription_updated",
             expected_topic_name,

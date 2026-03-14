@@ -20,6 +20,7 @@ from zerver.lib.test_helpers import (
     use_s3_backend,
 )
 from zerver.models import Realm, RealmExport, UserProfile
+from zerver.models.realms import RealmExportSlug
 from zerver.views.realm_export import export_realm
 
 
@@ -295,12 +296,19 @@ class RealmExportTest(ZulipTestCase):
     def test_upload_and_message_limit(self) -> None:
         admin = self.example_user("iago")
         self.login_user(admin)
-        realm_count = RealmCount.objects.create(
+        public_realm_count = RealmCount.objects.create(
             realm_id=admin.realm.id,
             end_time=timezone_now(),
             value=0,
             property="messages_sent:message_type:day",
             subgroup="public_stream",
+        )
+        private_realm_count = RealmCount.objects.create(
+            realm_id=admin.realm.id,
+            end_time=timezone_now(),
+            value=0,
+            property="messages_sent:message_type:day",
+            subgroup="private_stream",
         )
 
         # Space limit is set as 20 GiB
@@ -311,17 +319,36 @@ class RealmExportTest(ZulipTestCase):
             result = self.client_post("/json/export/realm")
         self.assert_json_error(
             result,
-            f"Please request a manual export from {settings.ZULIP_ADMINISTRATOR}.",
+            f"The export you requested is too large for automatic processing. Please request a manual export by contacting {settings.ZULIP_ADMINISTRATOR}.",
         )
 
         # Message limit is set as 250000
-        realm_count.value = 250001
-        realm_count.save(update_fields=["value"])
+        public_realm_count.value = 250001
+        public_realm_count.save(update_fields=["value"])
         result = self.client_post("/json/export/realm")
         self.assert_json_error(
             result,
-            f"Please request a manual export from {settings.ZULIP_ADMINISTRATOR}.",
+            f"The export you requested is too large for automatic processing. Please request a manual export by contacting {settings.ZULIP_ADMINISTRATOR}.",
         )
+
+        # Test when public message count is within the limit but total
+        # count for public and private messages exceed the limit.
+        public_realm_count.value = 150000
+        public_realm_count.save(update_fields=["value"])
+        private_realm_count.value = 100001
+        private_realm_count.save(update_fields=["value"])
+        result = self.client_post(
+            "/json/export/realm",
+            {
+                "export_type": self.FULL_WITH_CONSENT_EXPORT_TYPE,
+            },
+        )
+        self.assert_json_error(
+            result,
+            f"The export you requested is too large for automatic processing. Please request a manual export by contacting {settings.ZULIP_ADMINISTRATOR}.",
+        )
+
+        self.check_success_realm_export(admin, self.PUBLIC_EXPORT_TYPE)
 
     def test_get_users_export_consents(self) -> None:
         admin = self.example_user("iago")
@@ -363,32 +390,39 @@ class RealmExportTest(ZulipTestCase):
                 continue
             self.assertFalse(export_consent["consented"])
 
+    PUBLIC_EXPORT_TYPE: RealmExportSlug = "public"
+    FULL_WITH_CONSENT_EXPORT_TYPE: RealmExportSlug = "full_with_consent"
+    FULL_WITHOUT_CONSENT_EXPORT_TYPE: RealmExportSlug = "full_without_consent"
+
+    def check_success_realm_export(
+        self, acting_user: UserProfile, export_type: RealmExportSlug
+    ) -> None:
+        expected_realm_export_type = RealmExport.EXPORT_TYPES[export_type]
+        with patch("zerver.views.realm_export.queue_event_on_commit") as mock_event_on_commit:
+            result = self.client_post(
+                "/json/export/realm",
+                {
+                    "export_type": export_type,
+                },
+            )
+        self.assert_json_success(result)
+        response = orjson.loads(result.content)
+        realm_export_id = response["id"]
+        expected_event = {
+            "type": "realm_export",
+            "user_profile_id": acting_user.id,
+            "realm_export_id": realm_export_id,
+        }
+        mock_event_on_commit.assert_called_once_with("deferred_work", expected_event)
+        realm_export = RealmExport.objects.get(id=realm_export_id)
+        self.assertEqual(realm_export.type, expected_realm_export_type)
+
     def test_allow_export_with_no_usable_user_accounts(self) -> None:
         """
         Generating export with no usable accounts should be allowed.
         """
         admin = self.example_user("iago")
         self.login_user(admin)
-
-        def check_success_realm_export(acting_user: UserProfile, export_type: int) -> None:
-            with patch("zerver.views.realm_export.queue_event_on_commit") as mock_event_on_commit:
-                result = self.client_post(
-                    "/json/export/realm",
-                    {
-                        "export_type": export_type,
-                    },
-                )
-            self.assert_json_success(result)
-            response = orjson.loads(result.content)
-            realm_export_id = response["id"]
-            expected_event = {
-                "type": "realm_export",
-                "user_profile_id": acting_user.id,
-                "realm_export_id": realm_export_id,
-            }
-            mock_event_on_commit.assert_called_once_with("deferred_work", expected_event)
-            realm_export = RealmExport.objects.get(id=realm_export_id)
-            self.assertEqual(realm_export.type, export_type)
 
         # For standard export, this means no one consented to their
         # private data being shared.
@@ -398,7 +432,7 @@ class RealmExportTest(ZulipTestCase):
         ).update(
             allow_private_data_export=False,
         )
-        check_success_realm_export(admin, RealmExport.EXPORT_FULL_WITH_CONSENT)
+        self.check_success_realm_export(admin, self.FULL_WITH_CONSENT_EXPORT_TYPE)
 
         # For public export, this means everyone has set their email
         # address visibility policy to nobody.
@@ -409,4 +443,35 @@ class RealmExportTest(ZulipTestCase):
             email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
         )
 
-        check_success_realm_export(admin, RealmExport.EXPORT_PUBLIC)
+        self.check_success_realm_export(admin, self.PUBLIC_EXPORT_TYPE)
+
+    def test_full_without_consent_export_requires_org_permission(self) -> None:
+        admin = self.example_user("iago")
+        owner = self.example_user("desdemona")
+        self.login_user(admin)
+
+        admin.realm.owner_full_content_access = False
+        admin.realm.save(update_fields=["owner_full_content_access"])
+        result = self.client_post(
+            "/json/export/realm",
+            {
+                "export_type": self.FULL_WITHOUT_CONSENT_EXPORT_TYPE,
+            },
+        )
+        self.assert_json_error(
+            result,
+            "Exports of all public and private data are not enabled for this organization.",
+        )
+
+        admin.realm.owner_full_content_access = True
+        admin.realm.save(update_fields=["owner_full_content_access"])
+        result = self.client_post(
+            "/json/export/realm",
+            {
+                "export_type": self.FULL_WITHOUT_CONSENT_EXPORT_TYPE,
+            },
+        )
+        self.assert_json_error(result, "Must be an organization owner")
+
+        self.login_user(owner)
+        self.check_success_realm_export(owner, self.FULL_WITHOUT_CONSENT_EXPORT_TYPE)

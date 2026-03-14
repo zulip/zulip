@@ -63,7 +63,7 @@ def handle_same_anonymous_group_used_for_multiple_streams(
 
         return results_dict
 
-    for realm in Realm.objects.all():
+    for realm in Realm.objects.all().iterator():
         anonymous_group_ids = UserGroup.objects.filter(
             realm=realm, named_user_group=None
         ).values_list("id", flat=True)
@@ -115,8 +115,8 @@ def handle_same_anonymous_group_used_for_multiple_streams(
             if stream_updated:
                 streams_to_update.append(stream)
 
-        with transaction.atomic():
-            if streams_to_update:
+        if streams_to_update:
+            with transaction.atomic():
                 UserGroup.objects.bulk_create(user_groups_to_create)
                 Stream.objects.bulk_update(streams_to_update, fields=updated_fields)
                 UserGroupMembership.objects.bulk_create(user_group_memberships_to_create)

@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const {make_bot} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
+const $ = require("./lib/zjquery.cjs");
 
 /*
 
@@ -64,6 +65,7 @@ const settings_users = mock_esm("../src/settings_users");
 const user_profile = mock_esm("../src/user_profile");
 
 // Use real versions of these modules.
+const bot_data = zrequire("bot_data");
 const people = zrequire("people");
 const server_events_dispatch = zrequire("server_events_dispatch");
 const {set_current_user} = zrequire("state_data");
@@ -119,12 +121,24 @@ run_test("add users with event", ({override}) => {
 run_test("update user with event", ({override}) => {
     people.init();
     people.add_active_user(bob);
+    bot_data.add({
+        default_all_public_streams: true,
+        default_events_register_stream: "register stream test",
+        default_sending_stream: "sending stream test",
+        user_id: bob.user_id,
+        services: [],
+    });
 
-    const new_bob = make_bot({
-        email: "bob@example.com",
+    set_current_user({user_id: bob.user_id});
+
+    const $select = $.create("#user-self-role-select");
+    const $option = $.create('option[value="100"]');
+    $select.set_find_results('option[value="100"]', $option);
+
+    const new_bob = {
         user_id: bob.user_id,
         full_name: "The Artist Formerly Known as Bob",
-    });
+    };
 
     const event = {
         type: "realm_user",

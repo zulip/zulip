@@ -42,7 +42,7 @@ def update_existing_video_chat_provider_values(
 ) -> None:
     Realm = apps.get_model("zerver", "Realm")
 
-    for realm in Realm.objects.all():
+    for realm in Realm.objects.all().iterator():
         realm.video_chat_provider = get_video_chat_provider_detail(
             VIDEO_CHAT_PROVIDERS, p_name=realm.video_chat_provider_old
         )["id"]
@@ -52,7 +52,7 @@ def update_existing_video_chat_provider_values(
 def reverse_code(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     Realm = apps.get_model("zerver", "Realm")
 
-    for realm in Realm.objects.all():
+    for realm in Realm.objects.all().iterator():
         realm.video_chat_provider_old = get_video_chat_provider_detail(
             VIDEO_CHAT_PROVIDERS, p_id=realm.video_chat_provider
         )["name"]

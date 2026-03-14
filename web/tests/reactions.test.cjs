@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -90,26 +91,26 @@ const emoji_params = {
 
 emoji.initialize(emoji_params);
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: alice_user_id,
     full_name: "Alice",
-};
-const bob = {
+});
+const bob = make_user({
     email: "bob@example.com",
     user_id: 6,
     full_name: "Bob van Roberts",
-};
-const cali = {
+});
+const cali = make_user({
     email: "cali@example.com",
     user_id: 7,
     full_name: "Cali",
-};
-const alexus = {
+});
+const alexus = make_user({
     email: "alexus@example.com",
     user_id: 8,
     full_name: "Alexus",
-};
+});
 people.add_active_user(alice);
 people.add_active_user(bob);
 people.add_active_user(cali);
@@ -560,7 +561,7 @@ test("find_reaction", () => {
     const local_id = "unicode_emoji,1f44b";
     const $reaction = stub_reaction(message_id, local_id);
 
-    assert.equal(reactions.find_reaction(message_id, local_id), $reaction);
+    assert.equal(reactions.find_reaction(message_id, local_id)[0], $reaction[0]);
 });
 
 test("get_reaction_sections", () => {
@@ -568,7 +569,7 @@ test("get_reaction_sections", () => {
 
     const $section = reactions.get_reaction_sections(555);
 
-    assert.equal($section, $message_reactions);
+    assert.equal($section[0], $message_reactions[0]);
 });
 
 test("emoji_reaction_title", ({override}) => {
@@ -891,8 +892,8 @@ test("insert_new_reaction (first reaction)", ({mock_template, override_rewire}) 
     $rows.set_find_results(".messagebox-content", $messagebox_content);
 
     let append_called = false;
-    $messagebox_content.append = ($element) => {
-        assert.equal($element.selector, "<msg-reactions-section-stub>");
+    $messagebox_content[0].append = (element) => {
+        assert.equal(element.innerHTML, "<msg-reactions-section-stub>");
         append_called = true;
     };
 
@@ -931,12 +932,18 @@ test("insert_new_reaction (me w/unicode emoji)", ({mock_template}) => {
 
     const $message_reactions = stub_reactions(message_id);
     const $reaction_button = $.create("reaction-button-stub");
-    $message_reactions.find = () => $reaction_button;
+    $message_reactions.set_find_results(".reaction_button", $reaction_button);
     const $message_reactions_count = $.create("message-reaction-count-stub");
-    $reaction_button.find = (selector) => {
-        assert.equal(selector, ".message_reaction_count");
-        return $message_reactions_count;
-    };
+    const $reaction = $.create("reaction-stub");
+    $reaction.set_find_results(".message_reaction_count", $message_reactions_count);
+    $message_reactions.set_find_results(
+        `[data-reaction-id='${CSS.escape("unicode_emoji,1f44d")}']`,
+        $reaction,
+    );
+    $message_reactions.set_find_results(
+        `[data-reaction-id='${CSS.escape("unicode_emoji,1f3b1")}']`,
+        $reaction,
+    );
 
     mock_template("message_reaction.hbs", false, (data) => {
         assert.deepEqual(data, {
@@ -956,8 +963,8 @@ test("insert_new_reaction (me w/unicode emoji)", ({mock_template}) => {
     });
 
     let insert_called;
-    $("<new-reaction-stub>").insertBefore = (element) => {
-        assert.equal(element, $reaction_button);
+    $reaction_button[0].before = (element) => {
+        assert.equal(element.innerHTML, "<new-reaction-stub>");
         insert_called = true;
     };
 
@@ -1001,12 +1008,18 @@ test("insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
 
     const $message_reactions = stub_reactions(message_id);
     const $reaction_button = $.create("reaction-button-stub");
-    $message_reactions.find = () => $reaction_button;
+    $message_reactions.set_find_results(".reaction_button", $reaction_button);
     const $message_reactions_count = $.create("message-reaction-count-stub");
-    $reaction_button.find = (selector) => {
-        assert.equal(selector, ".message_reaction_count");
-        return $message_reactions_count;
-    };
+    const $reaction = $.create("reaction-stub");
+    $reaction.set_find_results(".message_reaction_count", $message_reactions_count);
+    $message_reactions.set_find_results(
+        `[data-reaction-id='${CSS.escape("unicode_emoji,1f44d")}']`,
+        $reaction,
+    );
+    $message_reactions.set_find_results(
+        `[data-reaction-id='${CSS.escape("unicode_emoji,1f3b1")}']`,
+        $reaction,
+    );
 
     mock_template("message_reaction.hbs", false, (data) => {
         assert.deepEqual(data, {
@@ -1028,8 +1041,8 @@ test("insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
     });
 
     let insert_called;
-    $("<new-reaction-stub>").insertBefore = (element) => {
-        assert.equal(element, $reaction_button);
+    $reaction_button[0].before = (element) => {
+        assert.equal(element.innerHTML, "<new-reaction-stub>");
         insert_called = true;
     };
 
@@ -1174,8 +1187,8 @@ test("remove_reaction_from_view (me)", () => {
 
     const $message_reactions = stub_reaction(message_id, "unicode_emoji,1f3b1");
     $message_reactions.addClass("reacted");
-    const $reaction_button = $.create("reaction-button-stub");
-    $message_reactions.find = () => $reaction_button;
+    const $message_reactions_count = $.create("message-reaction-count-stub");
+    $message_reactions.set_find_results(".message_reaction_count", $message_reactions_count);
 
     const message = {
         id: message_id,
@@ -1221,8 +1234,8 @@ test("remove_reaction_from_view (them)", () => {
 
     const $message_reactions = stub_reaction(message_id, "unicode_emoji,1f3b1");
     $message_reactions.addClass("reacted");
-    const $reaction_button = $.create("reaction-button-stub");
-    $message_reactions.find = () => $reaction_button;
+    const $message_reactions_count = $.create("message-reaction-count-stub");
+    $message_reactions.set_find_results(".message_reaction_count", $message_reactions_count);
 
     const message = {
         id: message_id,
@@ -1261,12 +1274,13 @@ test("remove_reaction_from_view (last person to react)", ({override_rewire}) => 
     const message_id = 507;
 
     const $reaction_container = $.create("stub-reaction-container");
+    $reaction_container.set_matches(".message_reaction_container", true);
 
     const $our_reaction = stub_reaction(message_id, "unicode_emoji,1f3b1");
-    $our_reaction.parent = () => $reaction_container;
+    $our_reaction.set_parent($reaction_container);
 
     let removed;
-    $our_reaction.parent().remove = () => {
+    $our_reaction.parent()[0].remove = () => {
         removed = true;
     };
 
@@ -1312,10 +1326,13 @@ test("remove_reaction_from_view (last reaction)", () => {
 
     // Create a stub for the specific reaction
     const $specific_reaction = $.create("specific-reaction-stub");
-    $message_reactions.find = () => $specific_reaction;
+    $message_reactions.set_find_results(
+        `[data-reaction-id='${CSS.escape("unicode_emoji,1f3b1")}']`,
+        $specific_reaction,
+    );
 
     let removed = false;
-    $message_reactions.remove = () => {
+    $message_reactions[0].remove = () => {
         removed = true;
     };
 

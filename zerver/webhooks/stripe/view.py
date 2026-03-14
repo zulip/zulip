@@ -7,7 +7,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
-from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.timestamp import datetime_to_global_time, timestamp_to_datetime
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_bool, check_int, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -27,8 +27,6 @@ ALL_EVENT_TYPES = [
     "charge.dispute.created",
     "charge.failed",
     "charge.succeeded",
-    "charge.succeeded",
-    "customer.created",
     "customer.created",
     "customer.deleted",
     "customer.discount.created",
@@ -41,7 +39,6 @@ ALL_EVENT_TYPES = [
     "invoice.updated",
     "invoice.payment_failed",
     "invoiceitem.created",
-    "charge.refund.updated",
     "charge.refund.updated",
 ]
 
@@ -353,7 +350,7 @@ def linkified_id(object_id: str, lower: bool = False) -> str:
         "pyr": ("Refund", "refunds"),  # Pseudo refunds. Not fully tested.
         # Connect, Fraud, Orders, etc not implemented
     }
-    name, url_prefix = names_and_urls[object_id.split("_")[0]]
+    name, url_prefix = names_and_urls[object_id.split("_", 1)[0]]
     if lower:  # nocoverage
         name = name.lower()
     if url_prefix is None:  # nocoverage
@@ -363,5 +360,5 @@ def linkified_id(object_id: str, lower: bool = False) -> str:
 
 def stringify(value: object) -> str:
     if isinstance(value, int) and value > 1500000000 and value < 2000000000:
-        return timestamp_to_datetime(value).strftime("%b %d, %Y, %H:%M:%S %Z")
+        return datetime_to_global_time(timestamp_to_datetime(value))
     return str(value)

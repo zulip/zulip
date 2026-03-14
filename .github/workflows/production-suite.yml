@@ -65,7 +65,7 @@ jobs:
           # cache action to work. It is owned by root currently.
           sudo chmod -R 0777 /__w/_temp/
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Create cache directories
         run: |
@@ -97,7 +97,7 @@ jobs:
         run: ./tools/ci/production-build
 
       - name: Upload production build artifacts for install jobs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: production-tarball
           path: /tmp/production-build
@@ -168,7 +168,7 @@ jobs:
 
     steps:
       - name: Download built production tarball
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: production-tarball
           path: /tmp
@@ -180,7 +180,7 @@ jobs:
           # cache action to work. It is owned by root currently.
           sudo chmod -R 0777 /__w/_temp/
 
-          # Since actions/download-artifact@v4 loses all the permissions
+          # Since actions/download-artifact@v6 loses all the permissions
           # of the tarball uploaded by the upload artifact fix those.
           chmod +x /tmp/production-upgrade-pg
           chmod +x /tmp/production-pgroonga
@@ -274,7 +274,7 @@ jobs:
 
     steps:
       - name: Download built production tarball
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: production-tarball
           path: /tmp
@@ -286,7 +286,7 @@ jobs:
           # cache action to work. It is owned by root currently.
           sudo chmod -R 0777 /__w/_temp/
 
-          # Since actions/download-artifact@v4 loses all the permissions
+          # Since actions/download-artifact@v6 loses all the permissions
           # of the tarball uploaded by the upload artifact fix those.
           chmod +x /tmp/production-upgrade
           chmod +x /tmp/production-verify
@@ -323,3 +323,17 @@ jobs:
           topic: ${{ steps.failure_report_string.outputs.topic }}
           type: "stream"
           content: ${{ steps.failure_report_string.outputs.content }}
+
+  required-jobs:
+    name: "Required jobs"
+    if: always()
+    needs:
+      - production_build
+      - production_install
+      - production_upgrade
+    runs-on: ubuntu-slim
+    steps:
+      - name: "Check required jobs"
+        run: jq 'with_entries(.value |= .result | select(.value | IN("success", "skipped") | not)) | if . != {} then halt_error end' <<<"$NEEDS"
+        env:
+          NEEDS: ${{ toJSON(needs) }}

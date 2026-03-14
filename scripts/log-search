@@ -194,6 +194,7 @@ class FilterType(Enum):
     HOSTNAME = auto()
     CLIENT_IP = auto()
     USER_ID = auto()
+    AUTHED = auto()
     METHOD = auto()
     PATH = auto()
     STATUS = auto()
@@ -386,6 +387,17 @@ def parse_filters(
             else:
                 filter_func = lambda m, t=filter_term: f"{m['date']} {m['time']}".startswith(t)
             filter_type = FilterType.DATETIME
+        elif filter_term in ["authed", "unauthed"]:
+            if args.nginx:
+                raise parser().error("Cannot parse user-ids with nginx logs; try without --nginx")
+            filter_type = FilterType.USER_ID
+            if filter_term == "authed":
+                filter_func = lambda m, t=None: m["user_id"] is not None and m["user_id"] != ""
+                filter_term = None
+                filter_types.add(FilterType.AUTHED)
+            else:
+                filter_func = lambda m, t=None: m["user_id"] is None
+                filter_term = "(unauth@"
         elif re.match(r"[a-z0-9]([a-z0-9-]*[a-z0-9])?$", filter_term.lower()):
             filter_term = filter_term.lower()
             if args.nginx:
@@ -413,7 +425,8 @@ def parse_filters(
             parser().error("Supplied the same time of value more than once, which cannot match!")
         filter_types.add(filter_type)
         filter_funcs.append(filter_func)
-        filter_terms.append(filter_term)
+        if filter_term is not None:
+            filter_terms.append(filter_term)
 
     if args.client:
         filter_funcs.append(lambda m, t=args.client: t in m["user_agent"])
@@ -557,10 +570,18 @@ def print_line(
             print(logline_start.time().isoformat(timespec="milliseconds") + " (start)")
         last_match_end = logline_end
 
+    if args.nginx:
+        show_user = False
+    elif FilterType.AUTHED in filter_types:
+        show_user = True
+    elif FilterType.USER_ID in filter_types:
+        show_user = False
+    else:
+        show_user = True
     parts = [
         ts,
         f"{duration_ms:>5}ms",
-        f"{user_id:7}" if not args.nginx and FilterType.USER_ID not in filter_types else None,
+        f"{user_id:7}" if show_user else None,
         f"{match['ip']:39}" if FilterType.CLIENT_IP not in filter_types else None,
         indicator + match["code"],
         f"{match['method']:6}",

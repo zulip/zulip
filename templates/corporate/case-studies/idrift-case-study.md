@@ -28,7 +28,7 @@ channels at iDrift AS were not effective for asynchronous discussions. “It was
 almost impossible to catch up on a conversation, or get an overview of what you
 missed while on vacation,” Gaute Lund says.
 
-> “Slack is just souped-up IRC — there is no conceptual difference.”
+> Slack is just souped-up IRC — there is no conceptual difference.
 >
 > — Gaute Lund, co-founder and owner of iDrift AS
 
@@ -62,7 +62,7 @@ the same functionality as a [Zulip Cloud Standard](/plans/)
 subscription. “Zulip is very stable, and easy to run and to upgrade,”
 says Senior IT Consultant Tor Hveem.
 
-> “Once people start using Zulip, it quickly becomes obvious why it’s better.”
+> Once people start using Zulip, it quickly becomes obvious why it’s better.
 >
 > — Gaute Lund, co-founder and owner of iDrift AS
 
@@ -76,8 +76,8 @@ for whom I have a very good grip on their work, whereas previously it was no
 more than a handful”.
 
 
-> “Using Zulip significantly increases the size of the team for which a manager
-> can meaningfully know what’s going on.”
+> Using Zulip significantly increases the size of the team for which a manager
+> can meaningfully know what’s going on.
 >
 > — Gaute Lund, co-founder and owner of iDrift AS
 
@@ -106,7 +106,7 @@ The Zulip chat also serves as a knowledge base for the history of the
 organization. “We have a very stable customer base, and Zulip search makes it
 easy to review past interactions,” Gaute Lund says.
 
-> “Zulip lets people focus on conversations where they can contribute.”
+> Zulip lets people focus on conversations where they can contribute.
 >
 > — Gaute Lund, co-founder and owner of iDrift AS
 

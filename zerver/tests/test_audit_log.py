@@ -78,6 +78,7 @@ from zerver.actions.user_settings import (
     do_change_avatar_fields,
     do_change_password,
     do_change_tos_version,
+    do_change_user_date_joined,
     do_change_user_delivery_email,
     do_change_user_setting,
     do_regenerate_api_key,
@@ -191,15 +192,32 @@ class TestRealmAuditLog(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         acting_user = self.example_user("iago")
         do_change_user_role(
-            user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=acting_user
+            user_profile,
+            UserProfile.ROLE_REALM_ADMINISTRATOR,
+            acting_user=acting_user,
+            notify=False,
         )
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user)
-        do_change_user_role(user_profile, UserProfile.ROLE_GUEST, acting_user=acting_user)
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user)
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=acting_user)
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user)
-        do_change_user_role(user_profile, UserProfile.ROLE_MODERATOR, acting_user=acting_user)
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user)
+        do_change_user_role(
+            user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user, notify=False
+        )
+        do_change_user_role(
+            user_profile, UserProfile.ROLE_GUEST, acting_user=acting_user, notify=False
+        )
+        do_change_user_role(
+            user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user, notify=False
+        )
+        do_change_user_role(
+            user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=acting_user, notify=False
+        )
+        do_change_user_role(
+            user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user, notify=False
+        )
+        do_change_user_role(
+            user_profile, UserProfile.ROLE_MODERATOR, acting_user=acting_user, notify=False
+        )
+        do_change_user_role(
+            user_profile, UserProfile.ROLE_MEMBER, acting_user=acting_user, notify=False
+        )
         old_values_seen = set()
         new_values_seen = set()
         for event in RealmAuditLog.objects.filter(
@@ -349,29 +367,37 @@ class TestRealmAuditLog(ZulipTestCase):
     def test_change_tos_version(self) -> None:
         now = timezone_now()
         user = self.example_user("hamlet")
+        old_tos_version = user.tos_version
         tos_version = "android"
         do_change_tos_version(user, tos_version)
-        self.assertEqual(
-            RealmAuditLog.objects.filter(
-                event_type=AuditLogEventType.USER_TERMS_OF_SERVICE_VERSION_CHANGED,
-                event_time__gte=now,
-            ).count(),
-            1,
+        audit_log_entries = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.USER_TERMS_OF_SERVICE_VERSION_CHANGED, event_time__gte=now
         )
+        self.assertEqual(audit_log_entries.count(), 1)
+        expected_extra_data = {
+            RealmAuditLog.OLD_VALUE: old_tos_version,
+            RealmAuditLog.NEW_VALUE: tos_version,
+        }
+        self.assertEqual(audit_log_entries[0].extra_data, expected_extra_data)
         self.assertEqual(tos_version, user.tos_version)
 
     def test_change_bot_owner(self) -> None:
         now = timezone_now()
         admin = self.example_user("iago")
         bot = self.notification_bot(admin.realm)
+        # Check that original owner of the notification bot is the bot itself.
+        self.assertEqual(bot.bot_owner, bot)
         bot_owner = self.example_user("hamlet")
         do_change_bot_owner(bot, bot_owner, admin)
-        self.assertEqual(
-            RealmAuditLog.objects.filter(
-                event_type=AuditLogEventType.USER_BOT_OWNER_CHANGED, event_time__gte=now
-            ).count(),
-            1,
+        audit_log_entries = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.USER_BOT_OWNER_CHANGED, event_time__gte=now
         )
+        self.assertEqual(audit_log_entries.count(), 1)
+        expected_extra_data = {
+            RealmAuditLog.OLD_VALUE: bot.id,
+            RealmAuditLog.NEW_VALUE: bot_owner.id,
+        }
+        self.assertEqual(audit_log_entries[0].extra_data, expected_extra_data)
         self.assertEqual(bot_owner, bot.bot_owner)
 
     def test_regenerate_api_key(self) -> None:
@@ -388,11 +414,10 @@ class TestRealmAuditLog(ZulipTestCase):
 
     def test_get_streams_traffic(self) -> None:
         realm = get_realm("zulip")
-        stream_name = "whatever"
-        stream = self.make_stream(stream_name, realm)
-        stream_ids = {stream.id}
+        stream = self.make_stream("whatever", realm)
+        stream_2 = self.make_stream("whatever_2", realm)
 
-        result = get_streams_traffic(stream_ids, realm)
+        result = get_streams_traffic(realm)
         self.assertEqual(result, {})
 
         StreamCount.objects.create(
@@ -402,9 +427,19 @@ class TestRealmAuditLog(ZulipTestCase):
             end_time=timezone_now(),
             value=999,
         )
+        StreamCount.objects.create(
+            realm=realm,
+            stream=stream_2,
+            property="messages_in_stream:is_bot:day",
+            end_time=timezone_now(),
+            value=23,
+        )
 
-        result = get_streams_traffic(stream_ids, realm)
+        result = get_streams_traffic(realm, {stream.id})
         self.assertEqual(result, {stream.id: 999})
+
+        all_streams_traffic = get_streams_traffic(realm)
+        self.assertEqual(all_streams_traffic, {stream.id: 999, stream_2.id: 23})
 
     def test_subscriptions(self) -> None:
         now = timezone_now()
@@ -1066,6 +1101,9 @@ class TestRealmAuditLog(ZulipTestCase):
             user.realm,
             pattern="#(?P<id>[123])",
             url_template="https://realm.com/my_realm_filter/{id}",
+            example_input="#1",
+            reverse_template="#{id}",
+            alternative_url_templates=["https://realm.com/my_realm_filter/pull/{id}"],
             acting_user=user,
         )
 
@@ -1073,6 +1111,9 @@ class TestRealmAuditLog(ZulipTestCase):
             pattern="#(?P<id>[123])",
             url_template="https://realm.com/my_realm_filter/{id}",
             id=linkifier_id,
+            example_input="#1",
+            reverse_template="#{id}",
+            alternative_url_templates=["https://realm.com/my_realm_filter/pull/{id}"],
         )
         expected_extra_data = {
             "realm_linkifiers": [*initial_linkifiers, added_linkfier],
@@ -1095,12 +1136,24 @@ class TestRealmAuditLog(ZulipTestCase):
             id=linkifier_id,
             pattern="#(?P<id>[0-9]+)",
             url_template="https://realm.com/my_realm_filter/issues/{id}",
+            example_input="#15",
+            reverse_template="#{id}",
+            alternative_url_templates=[
+                "https://realm.com/my_realm_filter/pull/{id}",
+                "https://realm.com/my_realm_filter/discussions/{id}",
+            ],
             acting_user=user,
         )
         changed_linkifier = LinkifierDict(
             pattern="#(?P<id>[0-9]+)",
             url_template="https://realm.com/my_realm_filter/issues/{id}",
             id=linkifier_id,
+            example_input="#15",
+            reverse_template="#{id}",
+            alternative_url_templates=[
+                "https://realm.com/my_realm_filter/pull/{id}",
+                "https://realm.com/my_realm_filter/discussions/{id}",
+            ],
         )
         expected_extra_data = {
             "realm_linkifiers": [*initial_linkifiers, changed_linkifier],
@@ -1126,6 +1179,12 @@ class TestRealmAuditLog(ZulipTestCase):
         removed_linkifier = {
             "pattern": "#(?P<id>[0-9]+)",
             "url_template": "https://realm.com/my_realm_filter/issues/{id}",
+            "example_input": "#15",
+            "reverse_template": "#{id}",
+            "alternative_url_templates": [
+                "https://realm.com/my_realm_filter/pull/{id}",
+                "https://realm.com/my_realm_filter/discussions/{id}",
+            ],
         }
         expected_extra_data = {
             "realm_linkifiers": initial_linkifiers,
@@ -1802,3 +1861,26 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assert_length(audit_log_entries, 1)
         self.assertEqual(audit_log_entries[0].modified_user, hamlet)
         self.assertEqual(audit_log_entries[0].extra_data, {})
+
+    def test_updating_date_joined(self) -> None:
+        hamlet = self.example_user("hamlet")
+        old_value = hamlet.date_joined
+
+        now = timezone_now()
+
+        do_change_user_date_joined(hamlet, now)
+        audit_log_entries = RealmAuditLog.objects.filter(
+            acting_user=hamlet,
+            realm=hamlet.realm,
+            event_time__gte=now,
+            event_type=AuditLogEventType.USER_DATE_JOINED_CHANGED,
+        )
+        self.assert_length(audit_log_entries, 1)
+        self.assertEqual(audit_log_entries[0].modified_user, hamlet)
+        self.assertEqual(
+            audit_log_entries[0].extra_data,
+            {
+                RealmAuditLog.OLD_VALUE: old_value.isoformat(),
+                RealmAuditLog.NEW_VALUE: now.isoformat(),
+            },
+        )

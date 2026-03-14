@@ -481,6 +481,8 @@ export class MessageList {
             just_unsubscribed = true;
         }
 
+        const can_subscribe = sub && stream_data.can_toggle_subscription(sub);
+
         this.view.render_trailing_bookend(
             stream_id,
             sub?.name,
@@ -490,6 +492,7 @@ export class MessageList {
             page_params.is_spectator,
             invite_only ?? false,
             is_web_public ?? false,
+            can_subscribe,
         );
     }
 
@@ -521,16 +524,18 @@ export class MessageList {
         }
     }
 
-    show_edit_message($row: JQuery, $form: JQuery): void {
+    show_edit_message($row: JQuery, $form: JQuery, do_autosize: boolean): void {
         if ($row.find(".message_edit_form form").length > 0) {
             return;
         }
         $row.find(".messagebox-content").append($form);
         $row.find(".message_content, .status-message, .message_controls").hide();
         $row.find(".messagebox-content").addClass("content_edit_mode");
-        // autosize will not change the height of the textarea if the `$row` is not
-        // rendered in DOM yet. So, we call `autosize.update` post render.
-        autosize($row.find(".message_edit_content"));
+        if (do_autosize) {
+            // autosize will not change the height of the textarea if the `$row` is not
+            // rendered in DOM yet. So, we call `autosize.update` post render.
+            autosize($row.find(".message_edit_content"));
+        }
         compose_ui.maybe_show_scrolling_formatting_buttons(".message-edit-feature-group");
     }
 
@@ -549,14 +554,14 @@ export class MessageList {
         $recipient_row.find(".topic_edit").append($form);
         $recipient_row.find(".stream_topic").hide();
         $recipient_row.find(".topic_edit").show();
-        $recipient_row.find(".recipient-bar-control").hide();
+        $recipient_row.find(".recipient_bar_controls").addClass("topic-edit-mode");
     }
 
     hide_edit_topic_on_recipient_row($recipient_row: JQuery): void {
         $recipient_row.find(".stream_topic").show();
         $recipient_row.find(".topic_edit").empty();
         $recipient_row.find(".topic_edit").hide();
-        $recipient_row.find(".recipient-bar-control").show();
+        $recipient_row.find(".recipient_bar_controls").removeClass("topic-edit-mode");
     }
 
     reselect_selected_id(): void {
@@ -622,7 +627,7 @@ export class MessageList {
     }
 
     all_messages(): Message[] {
-        return this.data.all_messages();
+        return this.data.all_messages_after_mute_filtering();
     }
 
     first_unread_message_id(): number | undefined {

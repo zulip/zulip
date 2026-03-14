@@ -30,6 +30,7 @@ class UserActivitySummary:
     messages_sent: int
     last_heard_from: datetime | None
     last_message_sent: datetime | None
+    bot_owner_id: int | None
 
 
 def get_user_activity_records_for_realm(realm: str) -> QuerySet[UserActivity]:
@@ -60,12 +61,15 @@ def get_user_activity_summary(records: Collection[UserActivity]) -> UserActivity
         first_record = next(iter(records))
         name = first_record.user_profile.full_name
         user_profile_id = first_record.user_profile.id
+        bot_owner_id = None
         if not first_record.user_profile.is_bot:
             user_type = "Human"
         else:
             assert first_record.user_profile.bot_type is not None
             bot_type = first_record.user_profile.bot_type
             user_type = UserProfile.BOT_TYPES[bot_type]
+            if first_record.user_profile.bot_owner is not None:
+                bot_owner_id = first_record.user_profile.bot_owner.id
 
     messages = 0
     heard_from: datetime | None = None
@@ -94,6 +98,7 @@ def get_user_activity_summary(records: Collection[UserActivity]) -> UserActivity
         messages_sent=messages,
         last_heard_from=heard_from,
         last_message_sent=last_sent,
+        bot_owner_id=bot_owner_id,
     )
 
 
@@ -124,12 +129,22 @@ def realm_user_summary_table(
     rows = []
     for email, user_summary in user_records.items():
         email_link = user_activity_link(email, user_summary.user_id)
-        cells = [
-            user_summary.user_name,
-            email_link,
-            user_summary.user_type,
-            user_summary.messages_sent,
-        ]
+        if user_summary.bot_owner_id is not None:
+            bot_owner_link = user_activity_link("", user_summary.bot_owner_id)
+            user_name = user_summary.user_name + " " + bot_owner_link
+            cells = [
+                user_name,
+                email_link,
+                user_summary.user_type,
+                user_summary.messages_sent,
+            ]
+        else:
+            cells = [
+                user_summary.user_name,
+                email_link,
+                user_summary.user_type,
+                user_summary.messages_sent,
+            ]
         cells.append(format_optional_datetime(user_summary.last_heard_from))
         cells.append(format_optional_datetime(user_summary.last_message_sent))
 

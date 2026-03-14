@@ -3,18 +3,21 @@ import re
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
+import orjson
 import time_machine
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
+import zerver.lib.upload
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.scheduled_messages import check_schedule_message, delete_scheduled_message
 from zerver.actions.uploads import do_delete_old_unclaimed_attachments
 from zerver.lib.retention import clean_archived_data
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
-from zerver.lib.test_helpers import get_test_image_file
+from zerver.lib.test_helpers import create_s3_buckets, get_test_image_file, use_s3_backend
 from zerver.lib.thumbnail import ThumbnailFormat
-from zerver.models import ArchivedAttachment, Attachment, Message, UserProfile
+from zerver.lib.upload.s3 import S3UploadBackend
+from zerver.models import ArchivedAttachment, Attachment, ImageAttachment, Message, UserProfile
 from zerver.models.clients import get_client
 
 
@@ -43,6 +46,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         has_file: bool,
         has_attachment: bool,
         has_archived_attachment: bool,
+        has_imageattachment: bool = False,
     ) -> None:
         assert settings.LOCAL_FILES_DIR
         self.assertEqual(  # File existence on disk
@@ -54,6 +58,10 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(  # ArchivedAttachment row
             ArchivedAttachment.objects.filter(id=attachment.id).exists(), has_archived_attachment
         )
+        self.assertEqual(  # ImageAttachment row
+            ImageAttachment.objects.filter(path_id=attachment.path_id).exists(),
+            has_imageattachment,
+        )
 
     def test_delete_unused_thumbnails(self) -> None:
         assert settings.LOCAL_FILES_DIR
@@ -61,7 +69,11 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
             unused_attachment = self.make_attachment("img.png")
 
         self.assert_exists(
-            unused_attachment, has_file=True, has_attachment=True, has_archived_attachment=False
+            unused_attachment,
+            has_file=True,
+            has_attachment=True,
+            has_archived_attachment=False,
+            has_imageattachment=True,
         )
 
         # It also has thumbnails
@@ -82,7 +94,11 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         # If we have 3 weeks of grace, nothing happens
         do_delete_old_unclaimed_attachments(3)
         self.assert_exists(
-            unused_attachment, has_file=True, has_attachment=True, has_archived_attachment=False
+            unused_attachment,
+            has_file=True,
+            has_attachment=True,
+            has_archived_attachment=False,
+            has_imageattachment=True,
         )
         self.assertTrue(
             os.path.isdir(
@@ -101,13 +117,31 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         # If we have 1 weeks of grace, the Attachment is deleted, and so is the file on disk
         do_delete_old_unclaimed_attachments(1)
         self.assert_exists(
-            unused_attachment, has_file=False, has_attachment=False, has_archived_attachment=False
+            unused_attachment,
+            has_file=False,
+            has_attachment=False,
+            has_archived_attachment=False,
+            has_imageattachment=False,
         )
         self.assertFalse(
             os.path.exists(
                 os.path.join(settings.LOCAL_FILES_DIR, "thumbnail", unused_attachment.path_id)
             )
         )
+
+    def test_delete_info_file(self) -> None:
+        attachment = self.make_attachment("text.txt")
+        assert settings.LOCAL_FILES_DIR
+        info_file = os.path.join(settings.LOCAL_FILES_DIR, attachment.path_id + ".info")
+        with open(info_file, "wb") as f:
+            f.write(orjson.dumps({"id": attachment.path_id}))
+        self.assertTrue(os.path.isfile(info_file))
+
+        do_delete_old_unclaimed_attachments(3)
+        self.assertTrue(os.path.isfile(info_file))
+
+        do_delete_old_unclaimed_attachments(1)
+        self.assertFalse(os.path.isfile(info_file))
 
     def test_delete_unused_upload(self) -> None:
         unused_attachment = self.make_attachment("text.txt")
@@ -401,34 +435,41 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
             attachment, has_file=False, has_attachment=False, has_archived_attachment=False
         )
 
+    @use_s3_backend
     def test_delete_batch_size(self) -> None:
+        create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
+
         # 3 attachments, each of which has 2 files because of the thumbnail
         thumbnail_format = ThumbnailFormat("webp", 100, 75, animated=False)
         with self.thumbnail_formats(thumbnail_format), self.captureOnCommitCallbacks(execute=True):
-            attachments = [self.make_attachment("img.png") for _ in range(3)]
+            for _ in range(3):
+                self.make_attachment("img.png")
 
+        backend = zerver.lib.upload.upload_backend
+        assert isinstance(backend, S3UploadBackend)
+        uploads_bucket = backend.uploads_bucket
         with (
-            patch("zerver.actions.uploads.DELETE_BATCH_SIZE", 5),
-            patch("zerver.actions.uploads.delete_message_attachments") as delete_mock,
+            patch("zerver.lib.upload.s3.DELETE_BATCH_SIZE", 5),
+            patch.object(
+                uploads_bucket, "delete_objects", wraps=uploads_bucket.delete_objects
+            ) as delete_mock,
         ):
             do_delete_old_unclaimed_attachments(1)
 
-        # We expect all of the 5 attachments to be deleted, across two
-        # different calls of 5- and 1-element lists.  Since each image
-        # attachment is two files, this means that the thumbnail and
-        # its original is split across batches.
+        # We delete all 6 uploaded files -- and also the ".info" files
+        # which we don't bother checking if they existed.  This makes
+        # 2 batches, of 5 and 4 files, respectively; one of the files'
+        # thumbnails is split into a separate batch from its original.
         self.assertEqual(delete_mock.call_count, 2)
-        self.assert_length(delete_mock.call_args_list[0][0][0], 5)
-        self.assert_length(delete_mock.call_args_list[1][0][0], 1)
+        self.assert_length(delete_mock.call_args_list[0][1]["Delete"]["Objects"], 5)
+        self.assert_length(delete_mock.call_args_list[1][1]["Delete"]["Objects"], 4)
 
-        deleted = set(delete_mock.call_args_list[0][0][0] + delete_mock.call_args_list[1][0][0])
-        existing = set()
-        for attachment in attachments:
-            existing.add(attachment.path_id)
-            existing.add(f"thumbnail/{attachment.path_id}/{thumbnail_format!s}")
-        self.assertEqual(deleted, existing)
+        self.assert_length(list(uploads_bucket.objects.all()), 0)
 
+    @use_s3_backend
     def test_delete_batch_size_archived(self) -> None:
+        create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)
+
         hamlet = self.example_user("hamlet")
         attachments = [self.make_attachment("text.txt") for _ in range(20)]
 
@@ -440,29 +481,32 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
         )
         message_id = self.send_stream_message(hamlet, "Denmark", body, "test")
 
-        # Delete and purge the message, leaving both the ArchivedAttachments dangling
+        # Delete and purge the message, leaving the ArchivedAttachments dangling
         do_delete_messages(hamlet.realm, [Message.objects.get(id=message_id)], acting_user=None)
         with self.settings(ARCHIVED_DATA_VACUUMING_DELAY_DAYS=0):
             clean_archived_data()
 
         # Removing unclaimed attachments now cleans them all out
+        backend = zerver.lib.upload.upload_backend
+        assert isinstance(backend, S3UploadBackend)
+        uploads_bucket = backend.uploads_bucket
         with (
-            patch("zerver.actions.uploads.DELETE_BATCH_SIZE", 6),
-            patch("zerver.actions.uploads.delete_message_attachments") as delete_mock,
+            patch("zerver.lib.upload.s3.DELETE_BATCH_SIZE", 15),
+            patch.object(
+                uploads_bucket, "delete_objects", wraps=uploads_bucket.delete_objects
+            ) as delete_mock,
         ):
             do_delete_old_unclaimed_attachments(1)
 
-        # We expect all of the 20 attachments (10 of which are
-        # ArchivedAttachments) to be deleted, across four different
-        # calls: 6, 6, 6, 2
+        # There are 20 attachments, but we're also delete (or
+        # attempting to delete, without spending the time to check if
+        # they exist) the .info files, so 40 files total.  With a
+        # batch size of 15, this happens in 4 calls, because the
+        # Attachment and ArchivedAttachment sets are done separately.
         self.assertEqual(delete_mock.call_count, 4)
-        self.assert_length(delete_mock.call_args_list[0][0][0], 6)
-        self.assert_length(delete_mock.call_args_list[1][0][0], 6)
-        self.assert_length(delete_mock.call_args_list[2][0][0], 6)
-        self.assert_length(delete_mock.call_args_list[3][0][0], 2)
+        self.assert_length(delete_mock.call_args_list[0][1]["Delete"]["Objects"], 15)
+        self.assert_length(delete_mock.call_args_list[1][1]["Delete"]["Objects"], 5)
+        self.assert_length(delete_mock.call_args_list[2][1]["Delete"]["Objects"], 15)
+        self.assert_length(delete_mock.call_args_list[3][1]["Delete"]["Objects"], 5)
 
-        deleted_path_ids = {elem for call in delete_mock.call_args_list for elem in call[0][0]}
-        self.assertEqual(
-            deleted_path_ids,
-            {attachment.path_id for attachment in attachments},
-        )
+        self.assert_length(list(uploads_bucket.objects.all()), 0)

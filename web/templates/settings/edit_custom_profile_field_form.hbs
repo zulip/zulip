@@ -1,5 +1,5 @@
 {{#with profile_field_info}}
-<form class="name-setting profile-field-form" id="edit-custom-profile-field-form-{{id}}" data-profile-field-id="{{id}}">
+<form class="name-setting profile-field-form modal-form" id="edit-custom-profile-field-form-{{id}}" data-profile-field-id="{{id}}">
     <div class="input-group">
         <label for="id-custom-profile-field-name" class="modal-field-label">{{t "Label" }}</label>
         <input type="text" name="name" id="id-custom-profile-field-name" class="modal_text_input prop-element" value="{{ name }}" maxlength="40" data-setting-widget-type="string" />
@@ -22,7 +22,7 @@
           label=(t "Alphabetize choices")
           custom_classes="alphabetize-choices-button"
           intent="neutral"
-          attention="quiet"
+          variant="subtle"
           }}
     </div>
     {{else if is_external_account_field}}
@@ -30,8 +30,8 @@
         <div class="input-group profile_field_external_accounts_edit" >
             <label for="external_acc_field_type" class="modal-field-label">{{t "External account type" }}</label>
             <select name="external_acc_field_type" class="modal_select" disabled>
-                {{#each ../realm_default_external_accounts}}
-                    <option value='{{@key}}'>{{this.text}}</option>
+                {{#each (object_entries ../realm_default_external_accounts) as |entry|}}
+                    <option value='{{entry.[0]}}'>{{entry.[1].text}}</option>
                 {{/each}}
                 <option value="custom">{{t 'Custom' }}</option>
             </select>
@@ -64,5 +64,13 @@
       is_checked= editable_by_user
       label=(t "Users can edit this field for their own account")
       }}
+    {{#if valid_to_use_for_user_matching}}
+    {{> settings_checkbox
+      prefix="id-custom-profile-field-"
+      setting_name="use_for_user_matching"
+      is_checked= use_for_user_matching
+      label=(t "Use in @-mention suggestions")
+      }}
+    {{/if}}
 </form>
 {{/with}}

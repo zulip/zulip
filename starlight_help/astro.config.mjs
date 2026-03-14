@@ -156,6 +156,7 @@ export default defineConfig({
             components: {
                 Footer: "./src/components/Footer.astro",
                 Head: "./src/components/Head.astro",
+                Sidebar: "./src/components/Sidebar.astro",
             },
             pagination: false,
             routeMiddleware: "./src/route_data.ts",
@@ -222,6 +223,8 @@ export default defineConfig({
                 {
                     label: "Getting started",
                     items: [
+                        "create-an-organization",
+                        "demo-organizations",
                         "join-a-zulip-organization",
                         "set-up-your-account",
                         "introduction-to-topics",
@@ -317,7 +320,7 @@ export default defineConfig({
                         "share-and-upload-files",
                         {
                             label: "Animated GIFs",
-                            link: "/animated-gifs-from-giphy",
+                            link: "/animated-gifs",
                         },
                         "text-emphasis",
                         "paragraph-and-section-formatting",
@@ -515,6 +518,7 @@ export default defineConfig({
                     label: "Import an organization",
                     items: [
                         "import-from-mattermost",
+                        "import-from-microsoft-teams",
                         "import-from-slack",
                         "import-from-rocketchat",
                         "export-your-organization",
@@ -535,6 +539,7 @@ export default defineConfig({
                             label: "Configure default new user settings",
                             link: "/configure-default-new-user-settings",
                         },
+                        "configure-default-profile-pictures",
                         "custom-profile-fields",
                         "invite-new-users",
                         "restrict-account-creation",
@@ -551,6 +556,7 @@ export default defineConfig({
                         "change-a-users-name",
                         "manage-user-channel-subscriptions",
                         "manage-user-group-membership",
+                        "reset-settings-for-users",
                     ],
                 },
                 {
@@ -570,6 +576,7 @@ export default defineConfig({
                         "manage-channel-folders",
                         "channel-permissions",
                         "channel-posting-policy",
+                        "configure-who-can-start-new-topics",
                         "configure-who-can-administer-a-channel",
                         "configure-who-can-create-channels",
                         {
@@ -664,6 +671,13 @@ export default defineConfig({
                         },
                         "view-your-bots",
                         "view-all-bots-in-your-organization",
+                        "non-webhook-integrations",
+                        "writing-bots",
+                        "interactive-bots-api",
+                        "writing-tests-for-interactive-bots",
+                        "running-bots",
+                        "deploying-bots",
+                        "outgoing-webhooks",
                     ],
                 },
                 {
@@ -778,5 +792,6 @@ export default defineConfig({
         "edit-a-bot": "/help/manage-a-bot",
         "reading-dms": "/help/direct-messages",
         "set-up-integrations": "/help/integrations-overview",
+        "animated-gifs-from-giphy": "/help/animated-gifs",
     },
 });

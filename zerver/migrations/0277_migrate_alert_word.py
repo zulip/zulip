@@ -8,7 +8,7 @@ def move_to_separate_table(apps: StateApps, schema_editor: BaseDatabaseSchemaEdi
     UserProfile = apps.get_model("zerver", "UserProfile")
     AlertWord = apps.get_model("zerver", "AlertWord")
 
-    for user_profile in UserProfile.objects.all():
+    for user_profile in UserProfile.objects.all().iterator():
         list_of_words = orjson.loads(user_profile.alert_words)
 
         # Remove duplicates with our case-insensitive model.

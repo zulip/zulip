@@ -1,0 +1,11 @@
+<p class="slack-import-file-upload-instruction">
+    {% if corporate_enabled %}
+    {% trans %}
+    Maximum size: {{max_file_size}} MiB. For larger exports, follow the <a href="/help/import-from-slack#import-your-data-into-zulip" rel="noopener noreferrer" target="_blank">process</a> for imports via support.
+    {% endtrans %}
+    {% else %}
+    {% trans %}
+    Maximum size: {{max_file_size}} MiB. For larger exports, follow the <a href="/help/import-from-slack#import-your-data-into-zulip" rel="noopener noreferrer" target="_blank">process</a> for self-hosted imports.
+    {% endtrans %}
+    {% endif %}
+</p>

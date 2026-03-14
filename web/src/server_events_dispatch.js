@@ -19,10 +19,12 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import {electron_bridge} from "./electron_bridge.ts";
 import * as emoji from "./emoji.ts";
+import * as emoji_frequency from "./emoji_frequency.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as gear_menu from "./gear_menu.ts";
-import * as giphy from "./giphy.ts";
+import * as gif_state from "./gif_state.ts";
 import * as inbox_ui from "./inbox_ui.ts";
+import * as inbox_util from "./inbox_util.ts";
 import * as information_density from "./information_density.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as linkifiers from "./linkifiers.ts";
@@ -48,6 +50,7 @@ import * as realm_logo from "./realm_logo.ts";
 import * as realm_playground from "./realm_playground.ts";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import * as recent_view_util from "./recent_view_util.ts";
 import * as reload from "./reload.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as saved_snippets from "./saved_snippets.ts";
@@ -122,6 +125,7 @@ export function dispatch_normal_event(event) {
                 case "add": {
                     channel_folders.add(event.channel_folder);
                     inbox_ui.complete_rerender();
+                    recent_view_ui.complete_rerender();
                     settings_folders.populate_channel_folders();
                     stream_ui_updates.update_folder_dropdown_visibility();
                     break;
@@ -130,6 +134,7 @@ export function dispatch_normal_event(event) {
                     channel_folders.update(event);
                     if (event.data.name !== undefined) {
                         inbox_ui.complete_rerender();
+                        recent_view_ui.complete_rerender();
                         stream_list.update_streams_sidebar();
                         stream_settings_ui.update_channel_folder_name(event.channel_folder_id);
                     }
@@ -147,6 +152,7 @@ export function dispatch_normal_event(event) {
                     stream_list.update_streams_sidebar();
                     settings_folders.populate_channel_folders();
                     inbox_ui.complete_rerender();
+                    recent_view_ui.complete_rerender();
                     break;
                 default:
                     blueslip.error("Unexpected event type channel_folder/" + event.op);
@@ -173,6 +179,7 @@ export function dispatch_normal_event(event) {
             // which returns all the unread messages out of a given list.
             // So double marking something as read would not occur
             unread_ops.process_read_messages_event(msg_ids);
+            emoji_frequency.update_emoji_frequency_on_messages_deletion(msg_ids);
             // This methods updates message_list too and since stream_topic_history relies on it
             // this method should be called first.
             message_events.remove_messages(msg_ids);
@@ -193,10 +200,12 @@ export function dispatch_normal_event(event) {
         case "has_zoom_token":
             current_user.has_zoom_token = event.value;
             if (event.value) {
-                for (const callback of compose_call.zoom_token_callbacks.values()) {
+                for (const callback of compose_call.oauth_call_provider_token_callbacks
+                    .get("zoom")
+                    .values()) {
                     callback();
                 }
-                compose_call.zoom_token_callbacks.clear();
+                compose_call.oauth_call_provider_token_callbacks.get("zoom").clear();
             }
             break;
 
@@ -253,9 +262,11 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     reactions.add_reaction(event);
+                    emoji_frequency.update_emoji_frequency_on_add_reaction_event(event);
                     break;
                 case "remove":
                     reactions.remove_reaction(event);
+                    emoji_frequency.update_emoji_frequency_on_remove_reaction_event(event);
                     break;
                 default:
                     blueslip.error("Unexpected event type reaction/" + event.op);
@@ -294,6 +305,7 @@ export function dispatch_normal_event(event) {
                 can_set_topics_policy_group: noop,
                 can_summarize_topics_group: noop,
                 create_multiuse_invite_group: noop,
+                default_avatar_source: noop,
                 default_code_block_language: noop,
                 default_language: noop,
                 description: noop,
@@ -303,6 +315,7 @@ export function dispatch_normal_event(event) {
                 direct_message_permission_group: noop,
                 email_changes_disabled: settings_account.update_email_change_display,
                 disallow_disposable_email_addresses: noop,
+                media_preview_size: message_live_update.update_thumbnails,
                 inline_image_preview: noop,
                 inline_url_embed_preview: noop,
                 invite_required: noop,
@@ -324,18 +337,20 @@ export function dispatch_normal_event(event) {
                 require_e2ee_push_notifications: noop,
                 message_content_allowed_in_email_notifications: noop,
                 enable_spectator_access: noop,
+                send_channel_events_messages: noop,
                 signup_announcements_stream_id: noop,
                 zulip_update_announcements_stream_id: noop,
                 emails_restricted_to_domains: noop,
                 video_chat_provider: compose_call_ui.update_audio_and_video_chat_button_display,
                 jitsi_server_url: compose_call_ui.update_audio_and_video_chat_button_display,
-                giphy_rating: giphy.update_giphy_rating,
+                gif_rating_policy: gif_state.update_gif_icon_visibility,
                 waiting_period_threshold: noop,
                 want_advertise_in_communities_directory: noop,
                 welcome_message_custom_text: noop,
                 enable_read_receipts: settings_account.update_send_read_receipts_tooltip,
                 enable_guest_user_dm_warning: compose_validate.warn_if_guest_in_dm_recipient,
                 enable_guest_user_indicator: noop,
+                workplace_users_group: noop,
             };
             switch (event.op) {
                 case "update":
@@ -346,12 +361,6 @@ export function dispatch_normal_event(event) {
 
                         if (event.property === "name") {
                             electron_bridge?.send_event("realm_name", event.value);
-                        }
-
-                        if (event.property === "enable_spectator_access") {
-                            stream_ui_updates.update_stream_privacy_choices(
-                                "can_create_web_public_channel_group",
-                            );
                         }
                     }
                     break;
@@ -393,14 +402,6 @@ export function dispatch_normal_event(event) {
                                     settings_invites.update_invite_user_panel();
                                     sidebar_ui.update_invite_user_option();
                                     gear_menu.rerender();
-                                }
-
-                                if (
-                                    key === "can_create_public_channel_group" ||
-                                    key === "can_create_private_channel_group" ||
-                                    key === "can_create_web_public_channel_group"
-                                ) {
-                                    stream_ui_updates.update_stream_privacy_choices(key);
                                 }
 
                                 if (
@@ -491,27 +492,24 @@ export function dispatch_normal_event(event) {
 
         case "realm_bot":
             switch (event.op) {
-                case "add":
+                case "add": {
                     bot_data.add(event.bot);
-                    if (event.bot.owner_id === current_user.user_id) {
+                    const user = people.get_by_user_id(event.bot.user_id);
+                    if (user.bot_owner_id === current_user.user_id) {
                         settings_bots.redraw_your_bots_list();
                         settings_bots.toggle_bot_config_download_container();
+                        settings_bots.update_lock_icon_in_sidebar();
                     }
                     break;
+                }
                 case "delete":
                     bot_data.del(event.bot.user_id);
                     settings_bots.redraw_your_bots_list();
                     settings_bots.toggle_bot_config_download_container();
+                    settings_bots.update_lock_icon_in_sidebar();
                     break;
                 case "update":
                     bot_data.update(event.bot.user_id, event.bot);
-                    if ("owner_id" in event.bot) {
-                        settings_bots.redraw_your_bots_list();
-                        settings_bots.toggle_bot_config_download_container();
-                    }
-                    if ("is_active" in event.bot) {
-                        settings_bots.toggle_bot_config_download_container();
-                    }
                     break;
                 default:
                     blueslip.error("Unexpected event type realm_bot/" + event.op);
@@ -594,7 +592,7 @@ export function dispatch_normal_event(event) {
 
             if (event.property === "notification_sound") {
                 audible_notifications.update_notification_sound_source(
-                    $("audio#realm-default-notification-sound-audio"),
+                    "realm-default-notification-sound-audio",
                     realm_user_settings_defaults,
                 );
             }
@@ -724,6 +722,16 @@ export function dispatch_normal_event(event) {
                         history_public_to_subscribers: event.history_public_to_subscribers,
                         is_web_public: event.is_web_public,
                     });
+                    if (inbox_util.should_complete_rerender_for_channel_property(event.property)) {
+                        inbox_ui.complete_rerender();
+                    }
+                    if (
+                        recent_view_util.should_complete_rerender_for_channel_property(
+                            event.property,
+                        )
+                    ) {
+                        recent_view_ui.complete_rerender();
+                    }
                     settings_streams.update_default_streams_table();
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
@@ -740,15 +748,11 @@ export function dispatch_normal_event(event) {
                     break;
                 case "delete":
                     for (const stream_id of event.stream_ids) {
-                        const was_subscribed = sub_store.get(stream_id).subscribed;
                         stream_data.delete_sub(stream_id);
                         stream_settings_ui.remove_stream(stream_id);
-                        if (was_subscribed) {
-                            stream_list.remove_sidebar_row(stream_id);
-                            if (stream_id === compose_state.selected_recipient_id) {
-                                compose_state.set_selected_recipient_id("");
-                                compose_recipient.on_compose_select_recipient_update();
-                            }
+                        if (stream_id === compose_state.selected_recipient_id) {
+                            compose_state.set_selected_recipient_id("");
+                            compose_recipient.on_compose_select_recipient_update();
                         }
                         settings_streams.update_default_streams_table();
                         stream_data.remove_default_stream(stream_id);
@@ -774,6 +778,8 @@ export function dispatch_normal_event(event) {
                             stream_id,
                         );
                     }
+                    inbox_ui.complete_rerender();
+                    recent_view_ui.complete_rerender();
                     stream_list.update_subscribe_to_more_streams_link();
                     break;
                 default:
@@ -896,7 +902,7 @@ export function dispatch_normal_event(event) {
                 if (notification_name === "notification_sound") {
                     // Change the sound source with the new page `notification_sound`.
                     audible_notifications.update_notification_sound_source(
-                        $("audio#user-notification-sound-audio"),
+                        "user-notification-sound-audio",
                         user_settings,
                     );
                 }
@@ -981,9 +987,7 @@ export function dispatch_normal_event(event) {
                 // under settings, so we set the hash to the previous
                 // value of the home view.
                 if (!browser_history.state.hash_before_overlay && overlays.settings_open()) {
-                    browser_history.state.hash_before_overlay =
-                        "#" +
-                        (original_home_view === "recent_topics" ? "recent" : original_home_view);
+                    browser_history.state.hash_before_overlay = "#" + original_home_view;
                 }
             }
             if (event.property === "twenty_four_hour_time") {
@@ -1044,6 +1048,7 @@ export function dispatch_normal_event(event) {
                 stream_list.update_unread_counts_visibility();
             }
             if (event.property === "web_left_sidebar_show_channel_folders") {
+                stream_list.update_collapsed_state_on_show_channel_folders_change();
                 stream_list.build_stream_list(true);
             }
             if (event.property === "web_inbox_show_channel_folders") {

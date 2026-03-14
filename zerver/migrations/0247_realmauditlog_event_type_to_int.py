@@ -71,14 +71,14 @@ def update_existing_event_type_values(
     apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
     RealmAuditLog = apps.get_model("zerver", "RealmAuditLog")
-    for log_entry in RealmAuditLog.objects.all():
+    for log_entry in RealmAuditLog.objects.all().iterator():
         log_entry.event_type_int = INT_VALUE[log_entry.event_type]
         log_entry.save(update_fields=["event_type_int"])
 
 
 def reverse_code(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     RealmAuditLog = apps.get_model("zerver", "RealmAuditLog")
-    for log_entry in RealmAuditLog.objects.all():
+    for log_entry in RealmAuditLog.objects.all().iterator():
         log_entry.event_type = STR_VALUE[log_entry.event_type_int]
         log_entry.save(update_fields=["event_type"])
 

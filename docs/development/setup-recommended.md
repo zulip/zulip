@@ -44,7 +44,6 @@ the internet.)
 
 :::{tab-item} Windows
 :sync: os-windows
-:name: windows-10-or-11
 
 - Windows 64-bit (Windows 10 recommended)
 - hardware virtualization enabled (VT-x or AMD-V)
@@ -111,11 +110,14 @@ installation method described here. We require version 0.67.6+ of WSL 2.
 
 1. [Install WSL
    2](https://docs.microsoft.com/en-us/windows/wsl/setup/environment),
-   which includes installing an Ubuntu WSL distribution. Using an
-   existing distribution will probably work, but [a fresh
-   distribution](#rebuilding-the-development-environment) is
-   recommended if you previously installed other software in your WSL
-   environment that might conflict with the Zulip environment.
+   which includes installing an Ubuntu WSL distribution.
+
+1. **Create a new WSL instance for Zulip development**.
+   You can refer [this article](https://cloudbytes.dev/snippets/how-to-install-multiple-instances-of-ubuntu-in-wsl2)
+   for instructions on how to do so. Using an existing instance will
+   probably work, but a fresh distribution is recommended if you
+   previously installed other software like `node` in your WSL environment that
+   might conflict with the Zulip environment.
 
 1. It is required to enable `systemd` for WSL 2 to manage the database, cache and other services.
    To configure it, please follow [these instructions](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#systemd-support).

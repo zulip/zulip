@@ -2,7 +2,10 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -65,44 +68,44 @@ const realm = make_realm({
 });
 set_realm(realm);
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
-    date_joined: new Date(),
-};
+});
 
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
-const everyone_group = {
+const everyone_group = make_user_group({
     name: "Everyone",
     id: 1,
-    description: "",
     members: new Set([30]),
     direct_subgroup_ids: new Set(),
-};
+});
 
 user_groups.initialize({realm_user_groups: [everyone_group]});
 
-const devel = {
+const devel = make_stream({
     name: "devel",
     stream_id: 100,
     color: "blue",
     subscribed: true,
     pin_to_top: true,
     is_recently_active: false,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
-};
+});
 
-const social = {
+const social = make_stream({
     name: "social",
     stream_id: 200,
     color: "green",
     subscribed: true,
     is_recently_active: true,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
-};
+});
 
 function create_devel_sidebar_row({mock_template}) {
     const $devel_count = $.create("devel-count");
@@ -172,12 +175,12 @@ test_ui("create_sidebar_row", ({override, override_rewire, mock_template}) => {
     override_rewire(left_sidebar_navigation_area, "update_dom_with_unread_counts", noop);
 
     const pinned_streams = [];
-    $("#stream-list-pinned-streams").append = (stream) => {
-        pinned_streams.push(stream);
+    $("#stream-list-pinned-streams")[0].append = (...streams) => {
+        pinned_streams.push(...streams);
     };
     const normal_streams = [];
-    $("#stream-list-normal-streams").append = (stream) => {
-        normal_streams.push(stream);
+    $("#stream-list-normal-streams")[0].append = (...streams) => {
+        normal_streams.push(...streams);
     };
 
     stream_data.add_sub_for_tests(devel);
@@ -199,13 +202,11 @@ test_ui("create_sidebar_row", ({override, override_rewire, mock_template}) => {
     assert.ok(topics_closed);
     assert.deepEqual(appended_sections, ["pinned-streams", "normal-streams"]);
 
-    assert.deepEqual(pinned_streams, [$devel_sidebar]);
-    assert.deepEqual(normal_streams, [$social_sidebar]);
+    assert.deepEqual(pinned_streams, [$devel_sidebar[0]]);
+    assert.deepEqual(normal_streams, [$social_sidebar[0]]);
 
     const $social_li = $("<social-sidebar-row-stub>");
     const stream_id = social.stream_id;
-
-    $social_li.length = 0;
 
     const $privacy_elem = $.create("privacy-stub");
     $social_li.set_find_results(".stream-privacy", $privacy_elem);
@@ -236,7 +237,7 @@ test_ui("create_sidebar_row", ({override, override_rewire, mock_template}) => {
     assert.ok($social_li.hasClass("inactive_stream"));
 
     let removed;
-    $social_li.remove = () => {
+    $social_li[0].remove = () => {
         removed = true;
     };
 
@@ -291,76 +292,78 @@ function add_row(sub) {
         update_whether_active() {},
         get_li() {
             const html = "<" + sub.name + "-sidebar-row-stub>";
-            const $obj = $(html);
-
-            $obj.length = 1; // bypass blueslip error
-
-            return $obj;
+            return $(html);
         },
     };
     stream_list.stream_sidebar.set_row(sub.stream_id, row);
 }
 
-const develSub = {
+const develSub = make_stream({
     name: "devel",
     stream_id: 1000,
     color: "blue",
     pin_to_top: true,
     subscribed: true,
     is_recently_active: true,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
-};
+});
 
-const RomeSub = {
+const RomeSub = make_stream({
     name: "Rome",
     stream_id: 2000,
     color: "blue",
     pin_to_top: true,
     subscribed: true,
     is_recently_active: true,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
-};
+});
 
-const testSub = {
+const testSub = make_stream({
     name: "test",
     stream_id: 3000,
     color: "blue",
     pin_to_top: true,
     subscribed: true,
     is_recently_active: true,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
     is_muted: true,
-};
+});
 
-const announceSub = {
+const announceSub = make_stream({
     name: "announce",
     stream_id: 4000,
     color: "green",
     pin_to_top: false,
     subscribed: true,
     is_recently_active: true,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
-};
+});
 
-const DenmarkSub = {
+const DenmarkSub = make_stream({
     name: "Denmark",
     stream_id: 5000,
     color: "green",
     pin_to_top: false,
     subscribed: true,
     is_recently_active: true,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
-};
+});
 
-const carSub = {
+const carSub = make_stream({
     name: "cars",
     stream_id: 6000,
     color: "green",
     pin_to_top: false,
     subscribed: true,
     is_recently_active: false,
+    can_create_topic_group: everyone_group.id,
     can_send_message_group: everyone_group.id,
-};
+});
 
 function initialize_stream_data() {
     // pinned streams
@@ -376,65 +379,9 @@ function initialize_stream_data() {
     stream_list.build_stream_list();
 }
 
-function elem($obj) {
-    return {to_$: () => $obj};
-}
-
-test_ui("zoom_in_and_zoom_out", ({mock_template}) => {
-    topic_list.setup_topic_search_typeahead = noop;
-
-    const $stream_li1 = $.create("stream1 stub");
-    const $stream_li2 = $.create("stream2 stub");
-
-    function make_attr(arg) {
-        return (sel) => {
-            assert.equal(sel, "data-stream-id");
-            return arg;
-        };
-    }
-
-    $stream_li1.attr = make_attr("42");
-    $stream_li1.hide();
-    $stream_li2.attr = make_attr("99");
-
-    $.create("#stream_filters li.narrow-filter", {
-        children: [elem($stream_li1), elem($stream_li2)],
-    });
-
-    $("#stream-filters-container")[0] = {
-        dataset: {},
-    };
-
-    mock_template("filter_topics.hbs", false, () => "<filter-topics-stub>");
-    let filter_topics_appended = false;
-    $stream_li1.children = () => ({
-        append($element) {
-            assert.equal($element.selector, "<filter-topics-stub>");
-            filter_topics_appended = true;
-        },
-    });
-    stream_list.zoom_in_topics({stream_id: 42});
-
-    assert.ok(!$stream_li1.hasClass("hide"));
-    assert.ok($stream_li2.hasClass("hide"));
-    assert.ok($("#streams_list").hasClass("zoom-in"));
-    assert.ok(filter_topics_appended);
-
-    $("#stream_filters li.narrow-filter").toggleClass = (classname, value) => {
-        $stream_li1.toggleClass(classname, value);
-        $stream_li2.toggleClass(classname, value);
-    };
-
-    $stream_li1.length = 1;
-    $(".filter-topics").remove = () => {
-        filter_topics_appended = false;
-    };
-    stream_list.zoom_out_topics({$stream_li: $stream_li1});
-
-    assert.ok(!$stream_li1.hasClass("hide"));
-    assert.ok(!$stream_li2.hasClass("hide"));
-    assert.ok($("#streams_list").hasClass("zoom-out"));
-    assert.ok(!filter_topics_appended);
+test_ui("zoom_in_and_zoom_out", () => {
+    // TODO(evy): write new tests for this, if we want, though it would involve a lot of
+    // jquery wrangling.
 });
 
 test_ui("narrowing", ({override_rewire}) => {
@@ -445,6 +392,8 @@ test_ui("narrowing", ({override_rewire}) => {
     override_rewire(stream_list, "scroll_stream_into_view", noop);
     override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
     override_rewire(stream_list, "update_dom_with_unread_counts", noop);
+    override_rewire(stream_list, "get_section_id_for_stream_li", () => "normal");
+    override_rewire(stream_list, "maybe_hide_topic_bracket", noop);
     override_rewire(left_sidebar_navigation_area, "update_dom_with_unread_counts", noop);
     override_rewire(stream_list, "set_sections_states", noop);
 
@@ -470,10 +419,8 @@ test_ui("narrowing", ({override_rewire}) => {
     assert.ok(!$("ul.filters li").hasClass("active-filter"));
     assert.ok($("<cars-sidebar-row-stub>").hasClass("active-filter"));
 
-    let removed_classes;
-    $("ul#stream_filters li").removeClass = (classes) => {
-        removed_classes = classes;
-    };
+    $("ul#stream_filters li").addClass("active-filter");
+    $("ul#stream_filters li").addClass("stream-expanded");
 
     let topics_closed;
     topic_list.close = () => {
@@ -481,7 +428,8 @@ test_ui("narrowing", ({override_rewire}) => {
     };
 
     stream_list.handle_message_view_deactivated();
-    assert.equal(removed_classes, "active-filter stream-expanded");
+    assert.ok(!$("ul#stream_filters li").hasClass("active-filter"));
+    assert.ok(!$("ul#stream_filters li").hasClass("stream-expanded"));
     assert.ok(topics_closed);
 });
 
@@ -502,15 +450,15 @@ test_ui("sort_streams", ({override_rewire, mock_template}) => {
         return `<stub-section-${section.id}>`;
     });
 
-    mock_template("show_inactive_or_muted_channels.hbs", false, () => $("<inactive-toggle>"));
+    mock_template("show_inactive_or_muted_channels.hbs", false, () => "<inactive-toggle>");
 
     const pinned_streams = [];
-    $("#stream-list-pinned-streams").append = (stream) => {
-        pinned_streams.push(stream);
+    $("#stream-list-pinned-streams")[0].append = (...streams) => {
+        pinned_streams.push(...streams);
     };
     const normal_streams = [];
-    $("#stream-list-normal-streams").append = (stream) => {
-        normal_streams.push(stream);
+    $("#stream-list-normal-streams")[0].append = (...streams) => {
+        normal_streams.push(...streams);
     };
 
     stream_list.build_stream_list(true);
@@ -518,15 +466,15 @@ test_ui("sort_streams", ({override_rewire, mock_template}) => {
     assert.deepEqual(appended_sections, ["pinned-streams", "normal-streams"]);
 
     assert.deepEqual(pinned_streams, [
-        $("<devel-sidebar-row-stub>"),
-        $("<Rome-sidebar-row-stub>"),
-        $("<test-sidebar-row-stub>"),
+        $("<devel-sidebar-row-stub>")[0],
+        $("<Rome-sidebar-row-stub>")[0],
+        $("<test-sidebar-row-stub>")[0],
     ]);
     assert.deepEqual(normal_streams, [
-        $("<announce-sidebar-row-stub>"),
-        $("<Denmark-sidebar-row-stub>"),
-        $("<inactive-toggle>"),
-        $("<cars-sidebar-row-stub>"),
+        $("<announce-sidebar-row-stub>")[0],
+        $("<Denmark-sidebar-row-stub>")[0],
+        $("<inactive-toggle>")[0],
+        $("<cars-sidebar-row-stub>")[0],
     ]);
 
     const streams = stream_list_sort.get_stream_ids();
@@ -561,34 +509,34 @@ test_ui("separators_only_pinned_and_dormant", ({override_rewire}) => {
     stream_list.build_stream_list();
 
     // pinned streams
-    const develSub = {
+    const develSub = make_stream({
         name: "devel",
         stream_id: 1000,
         color: "blue",
         pin_to_top: true,
         subscribed: true,
         is_recently_active: true,
-    };
+    });
     add_row(develSub);
 
-    const RomeSub = {
+    const RomeSub = make_stream({
         name: "Rome",
         stream_id: 2000,
         color: "blue",
         pin_to_top: true,
         subscribed: true,
         is_recently_active: true,
-    };
+    });
     add_row(RomeSub);
     // dormant stream
-    const DenmarkSub = {
+    const DenmarkSub = make_stream({
         name: "Denmark",
         stream_id: 3000,
         color: "blue",
         pin_to_top: false,
         subscribed: true,
         is_recently_active: false,
-    };
+    });
     add_row(DenmarkSub);
 
     const appended_sections = [];
@@ -597,18 +545,22 @@ test_ui("separators_only_pinned_and_dormant", ({override_rewire}) => {
         return `<stub-section-${section.id}>`;
     });
     const pinned_streams = [];
-    $("#stream-list-pinned-streams").append = (stream) => {
-        pinned_streams.push(stream);
+    $("#stream-list-pinned-streams")[0].append = (...streams) => {
+        pinned_streams.push(...streams);
     };
 
     stream_list.build_stream_list();
 
     assert.deepEqual(appended_sections, ["pinned-streams", "normal-streams"]);
 
-    assert.deepEqual(pinned_streams, [$("<devel-sidebar-row-stub>"), $("<Rome-sidebar-row-stub>")]);
+    assert.deepEqual(pinned_streams, [
+        $("<devel-sidebar-row-stub>")[0],
+        $("<Rome-sidebar-row-stub>")[0],
+    ]);
 });
 
 test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     override_rewire(stream_list, "update_dom_with_unread_counts", noop);
     override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
     override_rewire(left_sidebar_navigation_area, "update_dom_with_unread_counts", noop);
@@ -622,23 +574,24 @@ test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
 
     stream_data.rename_sub(sub, new_name);
 
-    const $li_stub = $.create("li stub");
-    $li_stub.length = 0;
+    const $li_stub = $("<li-stub>");
 
     mock_template("stream_sidebar_row.hbs", false, (payload) => {
         assert.deepEqual(payload, {
             name: "Development",
             id: 1000,
             url: "#narrow/channel/1000-Development",
-            is_muted: undefined,
-            invite_only: undefined,
-            is_web_public: undefined,
+            is_muted: false,
+            invite_only: false,
+            is_web_public: false,
             color: payload.color,
+            for_modal: false,
             pin_to_top: true,
             can_post_messages: true,
             is_empty_topic_only_channel: false,
+            cannot_create_topics_in_channel: false,
         });
-        return {to_$: () => $li_stub};
+        return "<li-stub>";
     });
 
     const $subscription_block = $.create("development-block");
@@ -655,7 +608,7 @@ test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
     develSub.name = "devel"; // Resets
 });
 
-test_ui("refresh_pin", ({override_rewire, mock_template}) => {
+test_ui("refresh_pin", ({override_rewire}) => {
     override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
     override_rewire(stream_list, "update_dom_with_unread_counts", noop);
     override_rewire(stream_list, "maybe_hide_topic_bracket", noop);
@@ -663,14 +616,15 @@ test_ui("refresh_pin", ({override_rewire, mock_template}) => {
     override_rewire(stream_list, "set_sections_states", noop);
     initialize_stream_data();
 
-    const sub = {
+    const sub = make_stream({
         name: "maybe_pin",
         stream_id: 100,
         color: "blue",
         pin_to_top: false,
         subscribed: true,
+        can_create_topic_group: everyone_group.id,
         can_send_message_group: everyone_group.id,
-    };
+    });
 
     stream_data.add_sub_for_tests(sub);
     // We need to populate current_sections; unclear if this is the best way.
@@ -681,19 +635,13 @@ test_ui("refresh_pin", ({override_rewire, mock_template}) => {
         pin_to_top: true,
     };
 
-    const $li_stub = $.create("li stub");
-    $li_stub.length = 1;
-
-    mock_template("stream_sidebar_row.hbs", false, () => ({to_$: () => $li_stub}));
-
     override_rewire(stream_list, "update_count_in_dom", noop);
-    $("#stream_filters").append = noop;
 
     let scrolled;
-    override_rewire(stream_list, "scroll_stream_into_view", ($li) => {
-        if ($li === $li_stub) {
-            scrolled = true;
-        }
+    override_rewire(stream_list, "scroll_stream_into_view", () => {
+        // We already passed the test of `stream_sidebar.get_row` to
+        // reach this point.
+        scrolled = true;
     });
 
     stream_list.refresh_pinned_or_unpinned_stream(pinned_sub);

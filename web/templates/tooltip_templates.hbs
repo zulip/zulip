@@ -28,12 +28,16 @@
     {{t 'New topic' }}
     {{tooltip_hotkey_hints "C"}}
 </template>
+<template id="new_message_button_tooltip_template">
+    {{t 'New message'}}
+    {{tooltip_hotkey_hints "C"}}
+</template>
 <template id="new_stream_message_button_tooltip_template">
     {{t 'New channel message' }}
     {{tooltip_hotkey_hints "C"}}
 </template>
 <template id="new_direct_message_button_tooltip_template">
-    {{t 'New direct message' }}
+    {{t 'Start a new DM' }}
     {{tooltip_hotkey_hints "X"}}
 </template>
 <template id="compose_close_tooltip_template">
@@ -93,6 +97,10 @@
 <template id="italic-tooltip">
     {{t 'Italic' }}
     {{tooltip_hotkey_hints "Ctrl" "I"}}
+</template>
+<template id="code-tooltip">
+    {{t 'Code' }}
+    {{tooltip_hotkey_hints "Ctrl" "Shift" "C"}}
 </template>
 <template id="delete-draft-tooltip-template">
     {{t 'Delete draft' }}
@@ -180,6 +188,7 @@
         <div>{{t 'Mentions' }}</div>
         <div class="tootlip-inner-content views-message-count italic"></div>
     </div>
+    {{tooltip_hotkey_hints "Ctrl" "@"}}
 </template>
 <template id="message-expander-tooltip-template">
     {{t 'Show more' }}
@@ -274,10 +283,6 @@
 <template id="show-unsubscribe-tooltip-template">
     {{t 'Unsubscribe from this channel' }}
     {{tooltip_hotkey_hints "Shift" "S"}}
-</template>
-<template id="view-stream-tooltip-template">
-    {{t 'View channel' }}
-    {{tooltip_hotkey_hints "Shift" "V"}}
 </template>
 <template id="mobile-push-notification-tooltip-template">
     {{t 'Mobile push notifications are not enabled on this server.' }}

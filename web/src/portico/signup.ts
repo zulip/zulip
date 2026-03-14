@@ -3,7 +3,9 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import {page_params as base_page_params} from "../base_page_params.ts";
 import * as common from "../common.ts";
+import * as emojisets from "../emojisets.ts";
 import {$t} from "../i18n.ts";
 import {password_quality, password_warning} from "../password_quality.ts";
 import * as settings_config from "../settings_config.ts";
@@ -14,6 +16,10 @@ import * as portico_modals from "./portico_modals.ts";
 import "altcha";
 
 $(() => {
+    // Initialize emoji rendering for login/signup pages
+    if (base_page_params.page_type === "login" && "realm_default_emojiset" in base_page_params) {
+        emojisets.initialize(base_page_params.realm_default_emojiset);
+    }
     // NB: this file is included on multiple pages.  In each context,
     // some of the jQuery selectors below will return empty lists.
 
@@ -61,7 +67,7 @@ $(() => {
         "#id_new_password2 ~ .password_visibility_toggle",
     );
 
-    $("#registration, #password_reset, #create_realm").validate({
+    $("#registration, #password_reset, #create_realm, #create_demo_realm").validate({
         rules: {
             password: {
                 password_strength: {
@@ -122,6 +128,10 @@ $(() => {
         }
 
         $("#timezone").val(new Intl.DateTimeFormat().resolvedOptions().timeZone);
+    }
+
+    if ($("#demo-realm-creation").length > 0) {
+        $("#demo-creator-timezone").val(new Intl.DateTimeFormat().resolvedOptions().timeZone);
     }
 
     $("#registration").on("submit", () => {
@@ -207,10 +217,10 @@ $(() => {
             $("#login_form .alert.alert-error").remove();
         },
         showErrors(error_map) {
-            if (error_map.password) {
+            if (error_map["password"]) {
                 $("#login_form .alert.alert-error").remove();
             }
-            this.defaultShowErrors!();
+            this.defaultShowErrors();
         },
     });
 
@@ -219,7 +229,7 @@ $(() => {
         void $.get(url, (response) => {
             const {msg} = z.object({msg: z.string()}).parse(response);
             if (msg !== "available") {
-                $("#id_team_subdomain_error_client").html(msg);
+                $("#id_team_subdomain_error_client").text(msg);
                 $("#id_team_subdomain_error_client").show();
             }
         });
@@ -278,7 +288,7 @@ $(() => {
         let selected_option_text;
 
         // These strings should be consistent with those defined for the same element in
-        // 'templates/zerver/register.html'.
+        // 'templates/zerver/create_user/new_user_email_address_visibility.html'.
         switch (selected_val) {
             case settings_config.email_address_visibility_values.admins_only.code: {
                 selected_option_text = $t({

@@ -164,6 +164,7 @@ import {insertTextIntoField} from "text-field-edit";
 import getCaretCoordinates from "textarea-caret";
 import * as tippy from "tippy.js";
 
+import * as mouse_drag from "./mouse_drag.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {get_string_diff, the} from "./util.ts";
 
@@ -237,7 +238,7 @@ export class Typeahead<ItemType extends string | object> {
     trigger_selection: (event: JQuery.KeyDownEvent) => boolean;
     on_escape: (() => void) | undefined;
     // returns a string to show in typeahead footer or false.
-    footer_html: () => string | false;
+    footer_html: (matching_items: ItemType[]) => string | false;
     // returns a string to show in typeahead items or false.
     option_label: (matching_items: ItemType[], item: ItemType) => string | false;
     suppressKeyPressRepeat = false;
@@ -321,6 +322,9 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     select(e?: JQuery.ClickEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent): this {
+        if (e?.type === "click" && mouse_drag.is_drag(e)) {
+            return this;
+        }
         const active_option = this.$menu.find(".active")[0];
         const val = active_option ? this.values.get(active_option) : undefined;
         // It's possible that we got here from pressing enter with nothing highlighted.
@@ -468,6 +472,41 @@ export class Typeahead<ItemType extends string | object> {
                         // the placement of typeahead.
                         void instance.popperInstance?.update();
                     });
+
+                    // While the above requestAnimationFrame call works well in
+                    // fast environments, it fails to preventOverflow if the
+                    // typeahead has still not completely rendered after 1 frame.
+                    // So, this is a safe guard to ensure that typeahead never
+                    // overflows.
+                    function check_and_update_position(): boolean {
+                        if (!instance.state.isVisible) {
+                            return true;
+                        }
+
+                        const popper_rect = instance.popper.getBoundingClientRect();
+                        if (popper_rect.x + popper_rect.width <= window.innerWidth) {
+                            return true;
+                        }
+                        void instance.popperInstance?.update();
+                        return false;
+                    }
+
+                    function scheduleCheck(attempts: number): void {
+                        if (check_and_update_position() || attempts <= 0) {
+                            return;
+                        }
+                        setTimeout(() => {
+                            scheduleCheck(attempts - 1);
+                        }, 10);
+                    }
+
+                    const MAX_ATTEMPTS = 5;
+                    // In chrome browser for @amanagr, just one call at 1ms is
+                    // sufficient to preventOverflow of typeahead.
+                    setTimeout(() => {
+                        void instance.popperInstance?.update();
+                        scheduleCheck(MAX_ATTEMPTS);
+                    }, 1);
                 },
                 onHidden: (instance) => {
                     this.clear_typeahead_tooltip?.();
@@ -574,7 +613,7 @@ export class Typeahead<ItemType extends string | object> {
         // in user's string since once typeahead is shown after `@`,
         // footer might change depending on whether next character is
         // `_` (silent mention) or not.
-        const footer_text_html = this.footer_html();
+        const footer_text_html = this.footer_html(matching_items);
         // We want to clear tooltip instance on each re render since
         // emoji may have shifted its position.
         this.clear_typeahead_tooltip?.();
@@ -646,7 +685,13 @@ export class Typeahead<ItemType extends string | object> {
         this.$menu
             .on("click", "li", this.click.bind(this))
             .on("mouseenter", "li", this.mouseenter.bind(this))
-            .on("mousemove", "li", this.mousemove.bind(this));
+            .on("mousemove", "li", this.mousemove.bind(this))
+            .on("blur", "li", (e) => {
+                // Selecting typeahead item content followed by blur
+                // should hide the typeahead if the relatedTarget is
+                // outside the typeahead.
+                this.blur(e);
+            });
 
         $(window).on("resize", this.resizeHandler.bind(this));
     }
@@ -915,7 +960,7 @@ type TypeaheadOptions<ItemType> = {
     automated?: () => boolean;
     closeInputFieldOnHide?: () => void;
     dropup?: boolean;
-    footer_html?: () => string | false;
+    footer_html?: (matching_items: ItemType[]) => string | false;
     helpOnEmptyStrings?: boolean;
     hideOnEmptyAfterBackspace?: boolean;
     matcher?: (item: ItemType, query: string) => boolean;

@@ -8,37 +8,30 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
+from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-DEPRECATED_EXCEPTION_MESSAGE_TEMPLATE = """
-New [issue]({url}) (level: {level}):
-
-``` quote
-{message}
+LOG_ENTRY_MESSAGE_TEMPLATE = """
+{severity_emoji} **New message event:** [{title}]({web_link})
+```quote
+**level:** {level}
+**timestamp:** {global_time}
 ```
 """
 
-MESSAGE_EVENT_TEMPLATE = """
-**New message event:** [{title}]({web_link})
+EXCEPTION_MESSAGE_TEMPLATE = """
+{severity_emoji} **New exception:** [{title}]({web_link})
 ```quote
 **level:** {level}
-**timestamp:** {datetime}
-```
-"""
-
-EXCEPTION_EVENT_TEMPLATE = """
-**New exception:** [{title}]({web_link})
-```quote
-**level:** {level}
-**timestamp:** {datetime}
+**timestamp:** {global_time}
 **filename:** {filename}
 ```
 """
 
-EXCEPTION_EVENT_TEMPLATE_WITH_TRACEBACK = (
-    EXCEPTION_EVENT_TEMPLATE
+EXCEPTION_MESSAGE_TEMPLATE_WITH_TRACEBACK = (
+    EXCEPTION_MESSAGE_TEMPLATE
     + """
 Traceback:
 ```{syntax_highlight_as}
@@ -50,10 +43,10 @@ Traceback:
 # this will actually look better in the traceback.
 
 ISSUE_CREATED_MESSAGE_TEMPLATE = """
-**New issue created:** {title}
+{severity_emoji} **New issue created:** {title}
 ```quote
 **level:** {level}
-**timestamp:** {datetime}
+**timestamp:** {global_time}
 **assignee:** {assignee}
 ```
 """
@@ -80,6 +73,20 @@ syntax_highlight_as_map = {
     "ruby": "ruby",
 }
 
+severity_emoji_map = {
+    "fatal": ":red_circle:",
+    "error": ":orange_circle:",
+    "warning": ":yellow_circle:",
+    "log": ":white_circle:",
+    "info": ":blue_circle:",
+    "debug": ":purple_circle:",
+}
+
+
+def get_global_time(dt_str: str) -> str:
+    dt = datetime.fromisoformat(dt_str)
+    return datetime_to_global_time(dt)
+
 
 def is_sample_event(event: dict[str, Any]) -> bool:
     # This is just a heuristic to detect the sample event, this should
@@ -101,8 +108,11 @@ def convert_lines_to_traceback_string(lines: list[str] | None) -> str:
     return traceback
 
 
-def handle_event_payload(event: dict[str, Any]) -> tuple[str, str]:
-    """Handle either an exception type event or a message type event payload."""
+def handle_exception_or_log_entry_payloads(event: dict[str, Any]) -> tuple[str, str]:
+    """
+    Handles `event_alert` and `error` event types. They can both be
+    triggered by either an exception or a log entry.
+    """
 
     topic_name = event["title"]
     platform_name = event["platform"]
@@ -110,6 +120,7 @@ def handle_event_payload(event: dict[str, Any]) -> tuple[str, str]:
     if syntax_highlight_as == "":  # nocoverage
         logging.info("Unknown Sentry platform: %s", platform_name)
 
+    severity_emoji = severity_emoji_map.get(event["level"], "")
     # We shouldn't support the officially deprecated Raven series of
     # Python SDKs.
     if platform_name == "python" and int(event["version"]) < 7 and not is_sample_event(event):
@@ -118,9 +129,10 @@ def handle_event_payload(event: dict[str, Any]) -> tuple[str, str]:
         raise UnsupportedWebhookEventTypeError("Raven SDK")
     context = {
         "title": topic_name,
+        "severity_emoji": severity_emoji,
         "level": event["level"],
         "web_link": event["web_url"],
-        "datetime": event["datetime"].split(".")[0].replace("T", " "),
+        "global_time": get_global_time(event["datetime"]),
     }
 
     if "exception" in event:
@@ -163,17 +175,17 @@ def handle_event_payload(event: dict[str, Any]) -> tuple[str, str]:
                     post_context=post_context,
                 )
 
-                body = EXCEPTION_EVENT_TEMPLATE_WITH_TRACEBACK.format(**context)
+                body = EXCEPTION_MESSAGE_TEMPLATE_WITH_TRACEBACK.format(**context).strip()
                 return (topic_name, body)
 
         context.update(filename=filename)  # nocoverage
-        body = EXCEPTION_EVENT_TEMPLATE.format(**context)  # nocoverage
+        body = EXCEPTION_MESSAGE_TEMPLATE.format(**context).strip()  # nocoverage
         return (topic_name, body)  # nocoverage
 
     elif "logentry" in event:
         # The event was triggered by a sentry.capture_message() call
         # (in the Python Sentry SDK) or something similar.
-        body = MESSAGE_EVENT_TEMPLATE.format(**context)
+        body = LOG_ENTRY_MESSAGE_TEMPLATE.format(**context).strip()
 
     else:
         raise UnsupportedWebhookEventTypeError("unknown-event type")
@@ -184,9 +196,9 @@ def handle_event_payload(event: dict[str, Any]) -> tuple[str, str]:
 def handle_issue_payload(
     action: str, issue: dict[str, Any], actor: dict[str, Any]
 ) -> tuple[str, str]:
-    """Handle either an issue type event."""
     topic_name = issue["title"]
-    datetime = issue["lastSeen"].split(".")[0].replace("T", " ")
+    global_time = get_global_time(issue["lastSeen"])
+    severity_emoji = severity_emoji_map.get(issue["level"], "")
 
     if issue["assignedTo"]:
         if issue["assignedTo"]["type"] == "team":
@@ -199,11 +211,12 @@ def handle_issue_payload(
     if action == "created":
         context = {
             "title": topic_name,
+            "severity_emoji": severity_emoji,
             "level": issue["level"],
-            "datetime": datetime,
+            "global_time": global_time,
             "assignee": assignee,
         }
-        body = ISSUE_CREATED_MESSAGE_TEMPLATE.format(**context)
+        body = ISSUE_CREATED_MESSAGE_TEMPLATE.format(**context).strip()
 
     elif action == "resolved":
         context = {
@@ -233,17 +246,7 @@ def handle_issue_payload(
     return (topic_name, body)
 
 
-def handle_deprecated_payload(payload: dict[str, Any]) -> tuple[str, str]:
-    topic_name = "{}".format(payload.get("project_name"))
-    body = DEPRECATED_EXCEPTION_MESSAGE_TEMPLATE.format(
-        level=payload["level"].upper(),
-        url=payload.get("url"),
-        message=payload.get("message"),
-    )
-    return (topic_name, body)
-
-
-def transform_webhook_payload(payload: dict[str, Any]) -> dict[str, Any] | None:
+def transform_webhook_payload(payload: dict[str, Any]) -> dict[str, Any]:
     """Attempt to use webhook payload for the notification.
 
     When the integration is configured as a webhook, instead of being added as
@@ -252,11 +255,7 @@ def transform_webhook_payload(payload: dict[str, Any]) -> dict[str, Any] | None:
     look like the payload from a "properly configured" integration.
     """
     event = payload.get("event", {})
-    # deprecated payloads don't have event_id
-    event_id = event.get("event_id")
-    if not event_id:
-        return None
-
+    event_id = event["event_id"]
     event_path = f"events/{event_id}/"
     event["web_url"] = urljoin(payload["url"], event_path)
     timestamp = event.get("timestamp", event["received"])
@@ -266,7 +265,10 @@ def transform_webhook_payload(payload: dict[str, Any]) -> dict[str, Any] | None:
     return payload
 
 
-@webhook_view("Sentry")
+ALL_EVENT_TYPES = ["event_alert", "issue", "error"]
+
+
+@webhook_view("Sentry", all_event_types=ALL_EVENT_TYPES)
 @typed_endpoint
 def api_sentry_webhook(
     request: HttpRequest,
@@ -274,23 +276,23 @@ def api_sentry_webhook(
     *,
     payload: JsonBodyPayload[dict[str, Any]],
 ) -> HttpResponse:
-    data = payload.get("data", None)
-
-    if data is None:
-        data = transform_webhook_payload(payload)
-
-    # We currently support two types of payloads: events and issues.
-    if data:
-        if "event" in data:
-            topic_name, body = handle_event_payload(data["event"])
-        elif "issue" in data:
-            topic_name, body = handle_issue_payload(
-                payload["action"], data["issue"], payload["actor"]
-            )
-        else:
+    # This webhook integration uses the payload structure instead of the
+    # Sentry-Hook-Resource header to determine the type of event.
+    # TODO: Investigate switching to use headers for event types.
+    data = payload.get("data", None) or transform_webhook_payload(payload)
+    event_type = None
+    match data:
+        case {"issue": issue_data}:
+            event_type = "issue"
+            topic_name, body = handle_issue_payload(payload["action"], issue_data, payload["actor"])
+        case {"event": event_data}:
+            event_type = "event_alert"
+            topic_name, body = handle_exception_or_log_entry_payloads(event_data)
+        case {"error": event_data}:
+            event_type = "error"
+            topic_name, body = handle_exception_or_log_entry_payloads(event_data)
+        case _:  # nocoverage
             raise UnsupportedWebhookEventTypeError(str(list(data.keys())))
-    else:
-        topic_name, body = handle_deprecated_payload(payload)
 
-    check_send_webhook_message(request, user_profile, topic_name, body)
+    check_send_webhook_message(request, user_profile, topic_name, body, event_type)
     return json_success(request)

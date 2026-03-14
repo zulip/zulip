@@ -1,0 +1,156 @@
+{
+    "type": "notification_event",
+    "app_id": "abc123def",
+    "data": {
+        "type": "notification_event_data",
+        "item": {
+            "type": "conversation",
+            "id": "215472621202693",
+            "created_at": 1768031789,
+            "updated_at": 1768033204,
+            "waiting_since": 1768032894,
+            "snoozed_until": null,
+            "source": {
+                "type": "conversation",
+                "id": "3381828792",
+                "delivered_as": "customer_initiated",
+                "subject": "",
+                "body": "<p>helklo</p>",
+                "author": {
+                    "type": "lead",
+                    "id": "696205460674dbb9050aa7fd",
+                    "name": null,
+                    "email": ""
+                },
+                "attachments": [],
+                "url": "http://localhost:5500/test.html",
+                "redacted": false
+            },
+            "contacts": {
+                "type": "contact.list",
+                "contacts": [
+                    {
+                        "type": "contact",
+                        "id": "696205460674dbb9050aa7fd",
+                        "external_id": "5e68ece4-0ec8-4792-baac-02deba39e7fe"
+                    }
+                ]
+            },
+            "first_contact_reply": {
+                "created_at": 1768031789,
+                "type": "conversation",
+                "url": "http://localhost:5500/test.html"
+            },
+            "admin_assignee_id": 9608799,
+            "team_assignee_id": null,
+            "open": true,
+            "state": "open",
+            "read": true,
+            "tags": {
+                "type": "tag.list",
+                "tags": []
+            },
+            "priority": "not_priority",
+            "sla_applied": null,
+            "statistics": {
+                "type": "conversation_statistics",
+                "time_to_assignment": 211,
+                "time_to_admin_reply": 211,
+                "time_to_first_close": 1026,
+                "time_to_last_close": 1026,
+                "median_time_to_reply": 117,
+                "first_contact_reply_at": "2026-01-10T07:56:29.000Z",
+                "first_assignment_at": "2026-01-10T08:00:00.000Z",
+                "first_admin_reply_at": "2026-01-10T08:00:00.000Z",
+                "first_close_at": "2026-01-10T08:13:35.000Z",
+                "last_assignment_at": "2026-01-10T08:00:00.000Z",
+                "last_assignment_admin_reply_at": "2026-01-10T08:00:00.000Z",
+                "last_contact_reply_at": "2026-01-10T08:14:54.000Z",
+                "last_admin_reply_at": "2026-01-10T08:13:32.000Z",
+                "last_close_at": "2026-01-10T08:13:35.000Z",
+                "last_closed_by_id": 9608799,
+                "count_reopens": 1,
+                "count_assignments": 1,
+                "count_conversation_parts": 19,
+                "assigned_team_first_response_time": [],
+                "assigned_team_first_response_time_in_office_hours": [],
+                "handling_time": 865
+            },
+            "conversation_rating": null,
+            "teammates": {
+                "type": "admin.list",
+                "admins": [
+                    {
+                        "type": "admin",
+                        "id": "9608799"
+                    }
+                ]
+            },
+            "title": "",
+            "custom_attributes": {
+                "Has attachments": false,
+                "Imported via standalone": false,
+                "Auto-translated": false,
+                "Fin AI Agent: Preview": false,
+                "Fin AI Agent: Image used in reply": false,
+                "Copilot used": false
+            },
+            "topics": {
+                "type": "topic.list",
+                "topics": [],
+                "total_count": 0
+            },
+            "ticket": null,
+            "linked_objects": {
+                "type": "list",
+                "data": [],
+                "total_count": 0,
+                "has_more": false
+            },
+            "ai_agent": null,
+            "ai_agent_participated": false,
+            "conversation_parts": {
+                "type": "conversation_part.list",
+                "conversation_parts": [
+                    {
+                        "type": "conversation_part",
+                        "id": "37358539897",
+                        "part_type": "comment",
+                        "body": "<p><i>This message was deleted</i></p>",
+                        "created_at": 1768032812,
+                        "updated_at": 1768033204,
+                        "notified_at": 1768032812,
+                        "assigned_to": null,
+                        "author": {
+                            "id": "9608799",
+                            "type": "admin",
+                            "name": "John Doe",
+                            "email": "admin@example.com",
+                            "from_ai_agent": false,
+                            "is_ai_answer": false
+                        },
+                        "attachments": [],
+                        "external_id": null,
+                        "redacted": true,
+                        "metadata": {},
+                        "email_message_metadata": null,
+                        "state": "open",
+                        "tags": [],
+                        "event_details": {},
+                        "app_package_code": null
+                    }
+                ],
+                "total_count": 1
+            }
+        }
+    },
+    "links": {},
+    "id": "notif_574e80f7-1e3a-425d-a485-2fe8ddf0b6d9",
+    "topic": "conversation_part.redacted",
+    "delivery_status": "pending",
+    "delivery_attempts": 1,
+    "delivered_at": 0,
+    "first_sent_at": 1768033205,
+    "created_at": 1768033204,
+    "self": null
+}

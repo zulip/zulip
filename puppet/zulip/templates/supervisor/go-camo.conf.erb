@@ -1,5 +1,5 @@
 [program:go-camo]
-command=/usr/local/bin/secret-env-wrapper GOCAMO_HMAC=camo_key <%= @bin %> --listen=<%= @listen_address %>:9292 -H "Strict-Transport-Security: max-age=15768000" -H "X-Frame-Options: DENY" --metrics --verbose --allow-content-video --user-agent "Zulip-Server/<%= @zulip_version %> (<%= @external_uri %>/) go-camo/<%= @version %>" --server-name "go-camo/<%= @version %>"
+command=/usr/local/bin/secret-env-wrapper GOCAMO_HMAC=camo_key <%= @bin %> --listen=<%= @listen_address %>:9292 -H "Strict-Transport-Security: max-age=31536000; includeSubdomains; preload" -H "X-Frame-Options: DENY" --metrics --verbose --allow-content-video --user-agent "Zulip-Server/<%= @zulip_version %> (<%= @external_uri %>/) go-camo/<%= @version %>" --server-name "go-camo/<%= @version %>"
 environment=HTTP_PROXY="<%= @proxy %>",HTTPS_PROXY="<%= @proxy %>"
 priority=15
 autostart=true

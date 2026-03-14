@@ -4,8 +4,8 @@ import type * as z from "zod/mini";
 
 import render_navigation_tour_video_modal from "../templates/navigation_tour_video_modal.hbs";
 
+import * as browser_history from "./browser_history.ts";
 import * as channel from "./channel.ts";
-import * as compose_recipient from "./compose_recipient.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import type * as message_view from "./message_view.ts";
@@ -80,35 +80,48 @@ function narrow_to_dm_with_welcome_bot_new_user(
             (onboarding_step) => onboarding_step.name === "narrow_to_dm_with_welcome_bot_new_user",
         )
     ) {
+        post_onboarding_step_as_read("narrow_to_dm_with_welcome_bot_new_user");
+
+        if (!browser_history.is_current_hash_home_view()) {
+            // If this account was created with a `next` parameter to
+            // take the user to a specific Zulip view, that takes
+            // precedence over sending the user to the welcome bot DM
+            // view. The user will hopefully still make their way
+            // there, as it is still an unread DM conversation.
+            return;
+        }
+
         show_message_view(
             [
                 {
                     operator: "dm",
-                    operand: people.WELCOME_BOT.email,
+                    operand: [people.WELCOME_BOT.user_id],
                 },
             ],
             {trigger: "sidebar"},
         );
-        post_onboarding_step_as_read("narrow_to_dm_with_welcome_bot_new_user");
     }
 }
 
-function show_navigation_tour_video(navigation_tour_video_url: string | null): void {
+function show_navigation_tour_video(
+    navigation_tour_video_url: string | null,
+    update_recipient_row_attention_level: () => void,
+): void {
     if (ONE_TIME_NOTICES_TO_DISPLAY.has("navigation_tour_video")) {
         assert(navigation_tour_video_url !== null);
-        const html_body = render_navigation_tour_video_modal({
+        const modal_content_html = render_navigation_tour_video_modal({
             video_src: navigation_tour_video_url,
             poster_src: "/static/images/navigation-tour-video-thumbnail.png",
         });
         let watch_later_clicked = false;
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Welcome to Zulip!"}),
-            html_body,
+            modal_title_html: $t_html({defaultMessage: "Welcome to Zulip!"}),
+            modal_content_html,
             on_click() {
                 // Do nothing
             },
-            html_submit_button: $t_html({defaultMessage: "Skip video — I'm familiar with Zulip"}),
-            html_exit_button: $t_html({defaultMessage: "Watch later"}),
+            modal_submit_button_text: $t({defaultMessage: "Skip video — I'm familiar with Zulip"}),
+            modal_exit_button_text: $t({defaultMessage: "Watch later"}),
             close_on_submit: true,
             id: "navigation-tour-video-modal",
             footer_minor_text: $t({defaultMessage: "Tip: You can watch this video without sound."}),
@@ -175,14 +188,14 @@ function show_navigation_tour_video(navigation_tour_video_url: string | null): v
             },
             on_hide() {
                 // `narrow_to_dm_with_welcome_bot_new_user` triggers a focus change from
-                // #compose_recipient_box to #compose-textarea (see `compose_actions.show_compose_box`
+                // #compose-channel-recipient to #compose-textarea (see `compose_actions.show_compose_box`
                 // with `opts.defer_focus = true`). We start initializing this modal while the
                 // focus transition is in progress, resulting in a flaky behaviour of the
                 // element that will be in focus when modal is closed.
                 //
                 // We explicitly set the focus to #compose-textarea to avoid flaky nature.
                 $("textarea#compose-textarea").trigger("focus");
-                compose_recipient.update_recipient_row_attention_level();
+                update_recipient_row_attention_level();
 
                 if (!watch_later_clicked) {
                     // $watch_later_button click handler already calls this function.
@@ -195,9 +208,19 @@ function show_navigation_tour_video(navigation_tour_video_url: string | null): v
 
 export function initialize(
     params: StateData["onboarding_steps"],
-    {show_message_view}: {show_message_view: typeof message_view.show},
+    {
+        show_message_view,
+        update_recipient_row_attention_level,
+    }: {
+        show_message_view: typeof message_view.show;
+        update_recipient_row_attention_level: () => void;
+    },
 ): void {
     update_onboarding_steps_to_display(params.onboarding_steps);
+
     narrow_to_dm_with_welcome_bot_new_user(params.onboarding_steps, show_message_view);
-    show_navigation_tour_video(params.navigation_tour_video_url);
+    show_navigation_tour_video(
+        params.navigation_tour_video_url,
+        update_recipient_row_attention_level,
+    );
 }

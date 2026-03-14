@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -74,29 +75,23 @@ const realm = make_realm();
 set_realm(realm);
 
 // Define test users
-const mike = {
+const mike = make_user({
     user_id: 1000,
     full_name: "Test Mike",
     email: "mike@example.com",
-    is_admin: false,
-    is_guest: false,
-};
+});
 
-const bob = {
+const bob = make_user({
     user_id: 2000,
     full_name: "Test Bob",
     email: "bob@example.com",
-    is_admin: false,
-    is_guest: false,
-};
+});
 
-const me = {
+const me = make_user({
     user_id: 999,
     full_name: "Test Myself",
     email: "me@example.com",
-    is_admin: false,
-    is_guest: false,
-};
+});
 
 const everyone = make_user_group({
     name: "role:everyone",
@@ -165,8 +160,7 @@ function set_page_params_no_edit_restrictions({override}) {
 function test(label, f) {
     run_test(label, (helpers) => {
         // Stubs for calculate_timestamp_widths()
-        $("<div>").width = noop;
-        $("<div>").remove = noop;
+        $("<div>")[0].remove = noop;
 
         // Clear stuff for testing environment
         add_initialize_users();
@@ -225,7 +219,6 @@ test("my_message_all_actions", ({override}) => {
     assert.equal(response.should_display_collapse, true);
     assert.equal(response.should_display_uncollapse, false);
     assert.equal(response.should_display_add_reaction_option, true);
-    assert.equal(response.should_display_hide_option, false);
     assert.equal(response.conversation_time_url, "conversation_and_time_url");
     assert.equal(response.should_display_delete_option, true);
     assert.equal(response.should_display_read_receipts_option, true);

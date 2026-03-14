@@ -9,7 +9,7 @@ async function wait_for_drafts_to_disappear(page: Page): Promise<void> {
 }
 
 async function wait_for_drafts_to_appear(page: Page): Promise<void> {
-    await page.waitForSelector("#draft_overlay.show");
+    await page.waitForSelector("#draft_overlay.show", {visible: true});
 }
 
 async function get_drafts_count(page: Page): Promise<number> {
@@ -51,8 +51,8 @@ async function test_restore_stream_message_draft_by_opening_compose_box(page: Pa
     // Wait for narrow to complete.
     const wait_for_change = true;
     await common.get_current_msg_list_id(page, wait_for_change);
-    await page.keyboard.press("Enter");
 
+    await page.waitForSelector("#left_bar_compose_reply_button_big", {visible: true});
     await page.click("#left_bar_compose_reply_button_big");
     await page.waitForSelector("#send_message_form", {visible: true});
 
@@ -75,6 +75,7 @@ async function create_private_message_draft(page: Page): Promise<void> {
 }
 
 async function test_restore_private_message_draft_by_opening_composebox(page: Page): Promise<void> {
+    await page.waitForSelector("#left_bar_compose_reply_button_big", {visible: true});
     await page.click("#left_bar_compose_reply_button_big");
     await page.waitForSelector("#private_message_recipient", {visible: true});
 
@@ -325,4 +326,4 @@ async function drafts_test(page: Page): Promise<void> {
     await test_delete_draft_on_clearing_text(page);
 }
 
-common.run_test(drafts_test);
+await common.run_test(drafts_test);

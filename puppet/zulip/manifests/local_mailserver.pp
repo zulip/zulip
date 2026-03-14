@@ -1,5 +1,6 @@
 class zulip::local_mailserver {
   include zulip::snakeoil
+  include zulip::certbot
 
   if zulipconf('postfix', 'uninstall', true) {
     package { 'postfix':
@@ -21,5 +22,12 @@ class zulip::local_mailserver {
     mode    => '0644',
     content => template('zulip/supervisor/email-mirror.conf.template.erb'),
     notify  => Service[$zulip::common::supervisor_service],
+  }
+  file { '/etc/letsencrypt/renewal-hooks/deploy/055-email-server.sh':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+    source => 'puppet:///modules/zulip/letsencrypt/055-email-server.sh',
   }
 }

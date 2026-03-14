@@ -1,0 +1,23 @@
+{
+  "accountId": 1,
+  "webhookId": "wsu_12345abcde",
+  "eventId": "wev_2L6Z3l8uPedXKPq9D2nWbPIip7Z",
+  "timestamp": "2023-01-31T19:28:15.742843678Z",
+  "eventType": "job.run.started",
+  "webhookName": "test",
+  "data": {
+    "jobId": "123",
+    "jobName": "Daily Job (dbt build)",
+    "runId": "12345",
+    "environmentId": "1234",
+    "environmentName": "Production",
+    "dbtVersion": "1.0.0",
+    "projectName": "Example Project",
+    "projectId": "167194",
+    "runStatus": "Running",
+    "runStatusCode": 3,
+    "runStatusMessage": "None",
+    "runReason": "Kicked off from the UI by bwilliams@example.com",
+    "runStartedAt": "2023-01-31T19:28:07Z"
+  }
+}

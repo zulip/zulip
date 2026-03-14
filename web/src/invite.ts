@@ -288,7 +288,7 @@ const copy_invite_link_banner = (invite_link: string): Banner => ({
     ),
     buttons: [
         {
-            attention: "primary",
+            variant: "solid",
             icon: "copy",
             label: $t({defaultMessage: "Copy link"}),
             id: "copy_generated_invite_link",
@@ -338,6 +338,8 @@ function generate_multiuse_invite(): void {
 }
 
 function valid_to(): string {
+    const $custom_expiration_time_elm = $<HTMLInputElement>("input#custom-expiration-time-input");
+    $custom_expiration_time_elm.removeClass("invalid-input");
     const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
     const time_input_value = $expires_in.val()!;
 
@@ -348,7 +350,8 @@ function valid_to(): string {
     let time_in_minutes: number;
     if (time_input_value === "custom") {
         if (!util.validate_custom_time_input(custom_expiration_time_input, false)) {
-            return $t({defaultMessage: "Invalid custom time"});
+            $custom_expiration_time_elm.addClass("invalid-input");
+            return "";
         }
         time_in_minutes = util.get_custom_time_in_minutes(
             custom_expiration_time_unit,
@@ -429,7 +432,11 @@ async function update_guest_visible_users_count_and_stream_ids(): Promise<void> 
     loading.destroy_indicator($(".guest_visible_users_loading"));
 }
 
-function generate_invite_tips_data(): Record<string, boolean> {
+function generate_invite_tips_data(): {
+    realm_has_description: boolean;
+    realm_has_user_set_icon: boolean;
+    realm_has_custom_profile_fields: boolean;
+} {
     const {realm_description, realm_icon_source, custom_profile_fields} = realm;
 
     return {
@@ -486,7 +493,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     const show_group_pill_container =
         user_group_picker_pill.get_user_groups_allowed_to_add_members().length > 0;
 
-    const html_body = render_invite_user_modal({
+    const modal_content_html = render_invite_user_modal({
         is_admin: current_user.is_admin,
         is_owner: current_user.is_owner,
         show_group_pill_container,
@@ -681,7 +688,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                 reset_invite_modal_banners();
             },
         });
-        const $container = $("#invite_users_option_tabs_container");
+        const $tab_switcher_container = $("#invite-user-modal .modal__tab-switcher-container");
         if (!settings_data.user_can_invite_users_by_email()) {
             toggler.disable_tab("invite-email-tab");
             toggler.goto("invite-link-tab");
@@ -690,7 +697,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             toggler.disable_tab("invite-link-tab");
         }
         const $elem = toggler.get();
-        $container.append($elem);
+        $tab_switcher_container.append($elem);
         setTimeout(() => {
             $(".invite_users_option_tabs .ind-tab.selected").trigger("focus");
         }, 0);
@@ -708,9 +715,10 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Invite users to organization"}),
-        html_body,
-        html_submit_button: $t_html({defaultMessage: "Invite"}),
+        modal_title_html: $t_html({defaultMessage: "Invite users to organization"}),
+        modal_content_html,
+        modal_submit_button_text: $t({defaultMessage: "Invite"}),
+        has_tab_switcher: true,
         id: "invite-user-modal",
         loading_spinner: true,
         on_click: invite_users,

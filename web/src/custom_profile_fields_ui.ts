@@ -1,8 +1,10 @@
 import flatpickr from "flatpickr";
 import $ from "jquery";
+import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import render_settings_custom_user_profile_field from "../templates/settings/custom_user_profile_field.hbs";
+import render_user_display_only_pill from "../templates/user_display_only_pill.hbs";
 
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bootstrap_typeahead from "./bootstrap_typeahead.ts";
@@ -17,6 +19,7 @@ import * as typeahead_helper from "./typeahead_helper.ts";
 import * as ui_report from "./ui_report.ts";
 import type {UserPillWidget} from "./user_pill.ts";
 import * as user_pill from "./user_pill.ts";
+import {the} from "./util.ts";
 
 const user_value_schema = z.array(z.number());
 
@@ -201,6 +204,39 @@ export function initialize_custom_user_type_fields(
     return user_pills;
 }
 
+export function initialize_profile_user_type_pills(user_id: number): void {
+    const field_types = realm.custom_profile_field_types;
+
+    for (const field of realm.custom_profile_fields) {
+        if (field.type !== field_types.USER.id) {
+            continue;
+        }
+        const raw_field_value = people.get_custom_profile_data(user_id, field.id)?.value;
+        if (!raw_field_value) {
+            continue;
+        }
+        const field_value = user_value_schema.parse(JSON.parse(raw_field_value));
+
+        const selector = `.custom_user_field[data-field-id="${field.id}"] .user-type-custom-field-pill-container`;
+        const $pill_container = $("#user-profile-modal #content").find(selector).expectOne();
+        $pill_container.empty();
+
+        for (const user_id of field_value) {
+            const user = people.get_user_by_id_assert_valid(user_id);
+            const pill_html = render_user_display_only_pill({
+                display_value: user.full_name,
+                user_id: user.user_id,
+                img_src: people.small_avatar_url_for_person(user),
+                is_active: people.is_person_active(user.user_id),
+                is_current_user: people.is_my_user_id(user.user_id),
+                is_bot: user.is_bot,
+            });
+
+            $pill_container.append($(pill_html));
+        }
+    }
+}
+
 export function format_date(date: Date | undefined, format: string): string {
     if (date === undefined || date.toString() === "Invalid Date") {
         return "Invalid Date";
@@ -324,12 +360,9 @@ export function initialize_custom_date_type_fields(
     // outside while the calendar popover is closed.
     $(element_id)
         .find<HTMLInputElement>("input.date-field-alt-input")
-        .on("change", function (this: HTMLInputElement) {
-            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-            const $datepicker = $(this).parent().find(".datepicker")[0] as HTMLInputElement & {
-                _flatpickr: flatpickr.Instance;
-            };
-            const instance = $datepicker._flatpickr;
+        .on("change", function () {
+            const instance = the($(this).parent().find(".datepicker"))._flatpickr;
+            assert(instance !== undefined);
             const date = new Date($(this).val()!);
             const date_str = format_date(date, "Y-m-d");
             update_date(instance, date_str);

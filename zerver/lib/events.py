@@ -4,6 +4,7 @@ import copy
 import logging
 import time
 from collections.abc import Callable, Collection, Iterable, Sequence
+from dataclasses import asdict
 from typing import Any, Literal
 
 from django.conf import settings
@@ -12,8 +13,12 @@ from typing_extensions import NotRequired, TypedDict
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.default_streams import default_stream_groups_to_dicts_sorted
-from zerver.actions.realm_settings import get_realm_authentication_methods_for_page_params_api
+from zerver.actions.realm_settings import (
+    do_set_realm_property,
+    get_realm_authentication_methods_for_page_params_api,
+)
 from zerver.actions.saved_snippets import do_get_saved_snippets
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import get_owned_bot_dicts
 from zerver.lib import emoji
 from zerver.lib.alert_words import user_alert_words
@@ -25,11 +30,13 @@ from zerver.lib.channel_folders import (
 )
 from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
+from zerver.lib.devices import get_devices
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import get_default_external_accounts
+from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.integrations import (
     EMBEDDED_BOTS,
-    WEBHOOK_INTEGRATIONS,
+    INCOMING_WEBHOOK_INTEGRATIONS,
     get_all_event_types_for_integration,
 )
 from zerver.lib.message import (
@@ -49,7 +56,6 @@ from zerver.lib.narrow_predicate import check_narrow_for_events
 from zerver.lib.navigation_views import get_navigation_views_for_user
 from zerver.lib.onboarding_steps import get_next_onboarding_steps
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
-from zerver.lib.push_notifications import get_push_devices
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
 from zerver.lib.scheduled_messages import (
@@ -166,7 +172,6 @@ def fetch_initial_state_data(
     queue_id: str | None = "",
     client_gravatar: bool = False,
     user_avatar_url_field_optional: bool = False,
-    user_settings_object: bool = False,
     slim_presence: bool = False,
     presence_last_update_id_fetched_by_client: int | None = None,
     presence_history_limit_days: int | None = None,
@@ -229,7 +234,7 @@ def fetch_initial_state_data(
             id=0,
             default_language=spectator_requested_language,
             # Set home view to recent conversations for spectators regardless of default.
-            web_home_view="recent_topics",
+            web_home_view="recent",
         )
 
     # We fetch early some collections of group that we need to
@@ -292,7 +297,9 @@ def fetch_initial_state_data(
         # account, we'd maybe need to store their state using cookies
         # or local storage, rather than in the database.
         state["onboarding_steps"] = (
-            [] if user_profile is None else get_next_onboarding_steps(user_profile)
+            []
+            if user_profile is None
+            else [asdict(step) for step in get_next_onboarding_steps(user_profile)]
         )
         state["navigation_tour_video_url"] = settings.NAVIGATION_TOUR_VIDEO_URL
 
@@ -396,7 +403,26 @@ def fetch_initial_state_data(
         #
         # Other settings, which are just server-level settings or data
         # about the version of Zulip, can be named without prefixes,
-        # e.g. giphy_rating_options or development_environment.
+        # e.g. gif_rating_policy_options or development_environment.
+
+        # If we no longer have a translation for the organization's language,
+        # correct the organization to have one; this block is a workaround for
+        # there not being a good time to run a migration to audit this after a
+        # new server version is deployed.
+        available_language_codes = get_available_language_codes()
+        if realm.default_language not in available_language_codes:
+            do_set_realm_property(realm, "default_language", "en", acting_user=None)
+
+        # Similar to the organization case above, if we no longer have translation
+        # for the user's language, update it to the organization's language.
+        if (
+            user_profile is not None
+            and user_profile.default_language not in available_language_codes
+        ):
+            do_change_user_setting(
+                user_profile, "default_language", realm.default_language, acting_user=None
+            )
+
         for property_name in Realm.property_types:
             state["realm_" + property_name] = getattr(realm, property_name)
 
@@ -405,6 +431,8 @@ def fetch_initial_state_data(
             state["realm_" + setting_name] = get_group_setting_value_for_register_api(
                 setting_group_id, anonymous_group_membership_data_dict
             )
+
+        state["realm_owner_full_content_access"] = realm.owner_full_content_access
 
         state["realm_create_public_stream_policy"] = (
             get_corresponding_policy_value_for_group_setting(
@@ -521,7 +549,7 @@ def fetch_initial_state_data(
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
         state["server_web_public_streams_enabled"] = settings.WEB_PUBLIC_STREAMS_ENABLED
-        state["giphy_rating_options"] = realm.get_giphy_rating_options()
+        state["gif_rating_policy_options"] = realm.get_gif_rating_policy_options()
 
         state["server_emoji_data_url"] = emoji.data_url()
 
@@ -570,6 +598,11 @@ def fetch_initial_state_data(
             )
         state["realm_date_created"] = datetime_to_timestamp(realm.date_created)
 
+        state["server_report_message_types"] = [
+            {"key": type_id, "name": str(type_name)}
+            for type_id, type_name in Realm.REPORT_MESSAGE_REASONS.items()
+        ]
+
         # Presence system parameters for client behavior.
         state["server_presence_ping_interval_seconds"] = settings.PRESENCE_PING_INTERVAL_SECS
         state["server_presence_offline_threshold_seconds"] = settings.OFFLINE_THRESHOLD_SECS
@@ -611,6 +644,8 @@ def fetch_initial_state_data(
         state["realm_mandatory_topics"] = (
             realm.topics_policy == RealmTopicsPolicyEnum.disable_empty_topic.value
         )
+
+        state["realm_uuid"] = str(realm.uuid)
 
     if want("realm_user_settings_defaults"):
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
@@ -766,7 +801,7 @@ def fetch_initial_state_data(
                 if integration.url_options
                 else [],
             }
-            for integration in WEBHOOK_INTEGRATIONS
+            for integration in INCOMING_WEBHOOK_INTEGRATIONS
             if integration.legacy is False
         ]
 
@@ -806,9 +841,13 @@ def fetch_initial_state_data(
 
     if want("channel_folders"):
         if user_profile is None:
-            state["channel_folders"] = get_channel_folders_for_spectators(realm)
+            state["channel_folders"] = [
+                asdict(folder) for folder in get_channel_folders_for_spectators(realm)
+            ]
         else:
-            state["channel_folders"] = get_channel_folders_in_realm(user_profile.realm, True)
+            state["channel_folders"] = [
+                asdict(folder) for folder in get_channel_folders_in_realm(user_profile.realm, True)
+            ]
 
     if want("update_message_flags") and want("message"):
         # Keeping unread_msgs updated requires both message flag updates and
@@ -869,17 +908,6 @@ def fetch_initial_state_data(
     if want("stop_words"):
         state["stop_words"] = read_stop_words()
 
-    if want("update_display_settings") and not user_settings_object:
-        for prop in UserProfile.display_settings_legacy:
-            state[prop] = getattr(settings_user, prop)
-        state["emojiset_choices"] = UserProfile.emojiset_choices()
-        state["timezone"] = canonicalize_timezone(settings_user.timezone)
-
-    if want("update_global_notifications") and not user_settings_object:
-        for notification in UserProfile.notification_settings_legacy:
-            state[notification] = getattr(settings_user, notification)
-        state["available_notification_sounds"] = get_available_notification_sounds()
-
     if want("user_settings"):
         state["user_settings"] = {}
 
@@ -909,7 +937,7 @@ def fetch_initial_state_data(
         state["user_topics"] = [] if user_profile is None else get_user_topics(user_profile)
 
     if want("video_calls"):
-        state["has_zoom_token"] = settings_user.zoom_token is not None
+        state["has_zoom_token"] = settings_user.third_party_api_state.get("zoom") is not None
 
     if want("giphy"):
         # Normally, it would be a nasty security bug to send a
@@ -921,16 +949,14 @@ def fetch_initial_state_data(
         # in letting one search for GIFs; GIPHY only requires API keys
         # to exist at all so that they can deactivate them in cases of
         # abuse.
-        state["giphy_api_key"] = settings.GIPHY_API_KEY if settings.GIPHY_API_KEY else ""
+        state["giphy_api_key"] = settings.GIPHY_API_KEY or ""
 
-    if want("push_device"):
-        state["push_devices"] = {} if user_profile is None else get_push_devices(user_profile)
+    if want("tenor"):
+        # See Giphy comment above; Tenor API keys work similarly.
+        state["tenor_api_key"] = settings.TENOR_API_KEY or ""
 
-    if user_profile is None:
-        # To ensure we have the correct user state set.
-        assert state["is_admin"] is False
-        assert state["is_owner"] is False
-        assert state["is_guest"] is True
+    if want("device"):
+        state["devices"] = {} if user_profile is None else get_devices(user_profile)
 
     return state
 
@@ -1341,11 +1367,7 @@ def apply_event(
         elif event["op"] == "update":
             for bot in state["realm_bots"]:
                 if bot["user_id"] == event["bot"]["user_id"]:
-                    if "owner_id" in event["bot"]:
-                        bot_owner_id = event["bot"]["owner_id"]
-                        bot["owner_id"] = bot_owner_id
-                    else:
-                        bot.update(event["bot"])
+                    bot.update(event["bot"])
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "stream":
@@ -1509,6 +1531,13 @@ def apply_event(
                     state["max_file_upload_size_mib"] = value
                     continue
 
+                if key == "rendered_description":
+                    # realm_rendered_description field is not included in
+                    # the state data returned by fetch_initial_state_data,
+                    # and is added separately to the page_params data
+                    # returned to clients in build_page_params_for_home_load.
+                    continue
+
                 state["realm_" + key] = value
                 # It's a bit messy, but this is where we need to
                 # update the state for whether password authentication
@@ -1658,7 +1687,8 @@ def apply_event(
                     subscriber_key = (
                         "subscribers" if "subscribers" in sub else "partial_subscribers"
                     )
-                    sub[subscriber_key].remove(user_profile.id)
+                    if user_profile.id in sub[subscriber_key]:
+                        sub[subscriber_key].remove(user_profile.id)
 
             state["unsubscribed"] += removed_subs
 
@@ -1847,23 +1877,12 @@ def apply_event(
             state["realm_linkifiers"] = event["realm_linkifiers"]
     elif event["type"] == "realm_playgrounds":
         state["realm_playgrounds"] = event["realm_playgrounds"]
-    elif event["type"] == "update_display_settings":
-        if event["setting_name"] != "timezone":
-            assert event["setting_name"] in UserProfile.display_settings_legacy
-        state[event["setting_name"]] = event["setting"]
-    elif event["type"] == "update_global_notifications":
-        assert event["notification_name"] in UserProfile.notification_settings_legacy
-        state[event["notification_name"]] = event["setting"]
+
     elif event["type"] == "user_settings":
         # time zone setting is not included in property_types dict because
         # this setting is not a part of UserBaseSettings class.
         if event["property"] != "timezone":
             assert event["property"] in UserProfile.property_types
-        if event["property"] in {
-            **UserProfile.display_settings_legacy,
-            **UserProfile.notification_settings_legacy,
-        }:
-            state[event["property"]] = event["value"]
         state["user_settings"][event["property"]] = event["value"]
     elif event["type"] == "invites_changed":
         pass
@@ -1991,9 +2010,36 @@ def apply_event(
     elif event["type"] == "restart":
         # The Tornado process restarted.  This has no effect; we ignore it.
         pass
-    elif event["type"] == "push_device":
-        state["push_devices"][event["push_account_id"]]["status"] = event["status"]
-        state["push_devices"][event["push_account_id"]]["error_code"] = event.get("error_code")
+    elif event["type"] == "device":
+        if event["op"] == "add":
+            state["devices"][str(event["device_id"])] = {
+                "push_key_id": None,
+                "push_token_id": None,
+                "pending_push_token_id": None,
+                "push_token_last_updated_timestamp": None,
+                "push_registration_error_code": None,
+            }
+        elif event["op"] == "remove":
+            del state["devices"][str(event["device_id"])]
+        elif event["op"] == "update":
+            if "push_key_id" in event:
+                state["devices"][str(event["device_id"])]["push_key_id"] = event["push_key_id"]
+            if "push_token_id" in event:
+                state["devices"][str(event["device_id"])]["push_token_id"] = event["push_token_id"]
+            if "pending_push_token_id" in event:
+                state["devices"][str(event["device_id"])]["pending_push_token_id"] = event[
+                    "pending_push_token_id"
+                ]
+            if "push_token_last_updated_timestamp" in event:
+                state["devices"][str(event["device_id"])]["push_token_last_updated_timestamp"] = (
+                    event["push_token_last_updated_timestamp"]
+                )
+            if "push_registration_error_code" in event:
+                state["devices"][str(event["device_id"])]["push_registration_error_code"] = event[
+                    "push_registration_error_code"
+                ]
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     else:
         raise AssertionError("Unexpected event type {}".format(event["type"]))
 
@@ -2007,13 +2053,14 @@ class ClientCapabilities(TypedDict):
     bulk_message_deletion: NotRequired[bool]
     user_avatar_url_field_optional: NotRequired[bool]
     stream_typing_notifications: NotRequired[bool]
-    user_settings_object: NotRequired[bool]
     linkifier_url_template: NotRequired[bool]
     user_list_incomplete: NotRequired[bool]
     include_deactivated_groups: NotRequired[bool]
     archived_channels: NotRequired[bool]
     empty_topic_name: NotRequired[bool]
     simplified_presence_events: NotRequired[bool]
+    # Deprecated and no longer has any effect
+    user_settings_object: NotRequired[bool]
 
 
 DEFAULT_CLIENT_CAPABILITIES = ClientCapabilities(notification_settings_null=False)
@@ -2050,7 +2097,6 @@ def do_events_register(
         "user_avatar_url_field_optional", False
     )
     stream_typing_notifications = client_capabilities.get("stream_typing_notifications", False)
-    user_settings_object = client_capabilities.get("user_settings_object", False)
     linkifier_url_template = client_capabilities.get("linkifier_url_template", False)
     user_list_incomplete = client_capabilities.get("user_list_incomplete", False)
     include_deactivated_groups = client_capabilities.get("include_deactivated_groups", False)
@@ -2079,7 +2125,6 @@ def do_events_register(
             client_gravatar=client_gravatar,
             linkifier_url_template=linkifier_url_template,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
-            user_settings_object=user_settings_object,
             user_list_incomplete=user_list_incomplete,
             archived_channels=archived_channels,
             # These presence params are a noop, because presence is not included.
@@ -2122,7 +2167,6 @@ def do_events_register(
         narrow=legacy_narrow,
         bulk_message_deletion=bulk_message_deletion,
         stream_typing_notifications=stream_typing_notifications,
-        user_settings_object=user_settings_object,
         pronouns_field_type_supported=pronouns_field_type_supported,
         linkifier_url_template=linkifier_url_template,
         user_list_incomplete=user_list_incomplete,
@@ -2142,7 +2186,6 @@ def do_events_register(
         queue_id=queue_id,
         client_gravatar=client_gravatar,
         user_avatar_url_field_optional=user_avatar_url_field_optional,
-        user_settings_object=user_settings_object,
         slim_presence=slim_presence,
         presence_last_update_id_fetched_by_client=presence_last_update_id_fetched_by_client,
         presence_history_limit_days=presence_history_limit_days,

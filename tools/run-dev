@@ -8,6 +8,7 @@ import pwd
 import signal
 import subprocess
 import sys
+import time
 from collections.abc import Awaitable, Callable
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -263,29 +264,38 @@ SKIP_AUTO_HEADERS = {
 
 
 async def forward(upstream_port: int, request: web.Request) -> web.StreamResponse:
-    try:
-        upstream_response = await session.request(
-            request.method,
-            request.url.with_host("127.0.0.1").with_port(upstream_port),
-            headers=[
-                (key, value)
-                for key, value in request.headers.items()
-                if key not in HOP_BY_HOP_HEADERS
-            ],
-            data=request.content.iter_any() if request.body_exists else None,
-            allow_redirects=False,
-            auto_decompress=False,
-            skip_auto_headers=SKIP_AUTO_HEADERS,
-        )
-    except aiohttp.ClientError as error:
-        logging.error(
-            "Failed to forward %s %s to port %d: %s",
-            request.method,
-            request.url.path,
-            upstream_port,
-            error,
-        )
-        raise web.HTTPBadGateway from error
+    upstream_response: None | aiohttp.ClientResponse = None
+    request_started = time.time()
+    while upstream_response is None:
+        try:
+            upstream_response = await session.request(
+                request.method,
+                request.url.with_host("127.0.0.1").with_port(upstream_port),
+                headers=[
+                    (key, value)
+                    for key, value in request.headers.items()
+                    if key not in HOP_BY_HOP_HEADERS
+                ],
+                data=request.content.iter_any() if request.body_exists else None,
+                allow_redirects=False,
+                auto_decompress=False,
+                skip_auto_headers=SKIP_AUTO_HEADERS,
+            )
+        except aiohttp.ClientConnectorError as error:
+            if time.time() - request_started > 30:
+                logging.error("Backend on :%d did no respond to requests", upstream_port)
+                raise web.HTTPBadGateway from error
+            logging.info("Backend :%d is not up yet, sleeping and retrying", upstream_port)
+            await asyncio.sleep(0.5)
+        except aiohttp.ClientError as error:
+            logging.error(
+                "Failed to forward %s %s to port %d: %s",
+                request.method,
+                request.url.path,
+                upstream_port,
+                error,
+            )
+            raise web.HTTPBadGateway from error
 
     response = web.StreamResponse(status=upstream_response.status, reason=upstream_response.reason)
     response.headers.extend(
@@ -304,7 +314,7 @@ async def forward(upstream_port: int, request: web.Request) -> web.StreamRespons
 
 
 def run_help_center_dev_server(
-    external_host: str, port: int = help_center_port
+    allowed_hosts: str, port: int = help_center_port
 ) -> "subprocess.Popen[bytes]":
     env = os.environ.copy()
     env["ZULIP_WEB_APP_PROXY_PORT"] = str(proxy_port)
@@ -316,11 +326,29 @@ def run_help_center_dev_server(
             "dev",
             f"--port={port}",
             "--host",
-            f"--allowed-hosts={urlsplit(external_host).hostname}",
+            f"--allowed-hosts={allowed_hosts}",
         ],
         cwd="starlight_help",
         env=env,
     )
+
+
+def get_help_center_allowed_hosts() -> str:
+    import django
+
+    django.setup()
+    from django.conf import settings
+
+    hostnames = set()
+    # * is not a valid value for --allowed-hosts in vite.
+    # Ports are not allowed for --allowed-hosts in vite.
+    for host in settings.ALLOWED_HOSTS:
+        if host != "*":
+            hostname = urlsplit(f"//{host}").hostname
+            if hostname:
+                hostnames.add(hostname)
+
+    return ",".join(hostnames)
 
 
 @web.middleware
@@ -454,7 +482,8 @@ async def serve() -> None:
     external_host_url = f"{http_protocol}://{external_host}"
 
     if options.only_help_center:
-        children.append(run_help_center_dev_server(external_host_url, proxy_port))
+        help_center_allowed_hosts = get_help_center_allowed_hosts()
+        children.append(run_help_center_dev_server(help_center_allowed_hosts, proxy_port))
         print_listeners(external_host_url)
         return
 
@@ -464,7 +493,8 @@ async def serve() -> None:
         children.append(start_webpack_watcher())
 
     if help_center_dev_server_enabled:
-        children.append(run_help_center_dev_server(external_host_url))
+        help_center_allowed_hosts = get_help_center_allowed_hosts()
+        children.append(run_help_center_dev_server(help_center_allowed_hosts))
 
     setup_routes(options.help_center_static_build, options.help_center_dev_server)
 

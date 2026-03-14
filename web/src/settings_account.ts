@@ -1,3 +1,4 @@
+import ClipboardJS from "clipboard";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
@@ -13,6 +14,7 @@ import * as avatar from "./avatar.ts";
 import * as bot_helper from "./bot_helper.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
+import {show_copied_confirmation} from "./copied_tooltip.ts";
 import {csrf_token} from "./csrf.ts";
 import * as custom_profile_fields_ui from "./custom_profile_fields_ui.ts";
 import type {CustomProfileFieldData, PillUpdateField} from "./custom_profile_fields_ui.ts";
@@ -130,6 +132,7 @@ function upload_avatar(file: File): void {
                 $("#user-avatar-source").show();
             }
             ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+            dialog_widget.hide_dialog_spinner();
         },
     });
 }
@@ -236,6 +239,52 @@ export function hide_confirm_email_banner(): void {
         return;
     }
     $("#account-settings-status").hide();
+}
+
+export function set_user_own_role_dropdown_value(): void {
+    if (!overlays.settings_open()) {
+        return;
+    }
+    const current_user_role = people.get_by_user_id(current_user.user_id).role;
+    $("select#user-self-role-select").val(current_user_role);
+}
+
+export function update_user_own_role_dropdown_state(): void {
+    if (!overlays.settings_open()) {
+        return;
+    }
+    const $select_elem = $("select#user-self-role-select");
+    if (people.user_can_change_their_own_role()) {
+        ui_util.enable_element_and_remove_tooltip($select_elem);
+        return;
+    }
+    if (current_user.is_owner) {
+        ui_util.disable_element_and_add_tooltip(
+            $select_elem,
+            "Because you are the only organization owner, you cannot change your role.",
+        );
+    } else {
+        $select_elem.attr("disabled", "true");
+    }
+}
+
+export function add_or_remove_owner_from_role_dropdown(): void {
+    if (!overlays.settings_open()) {
+        return;
+    }
+    if (!current_user.is_owner) {
+        $("#user-self-role-select")
+            .find(
+                `option[value="${CSS.escape(settings_config.user_role_values.owner.code.toString())}"]`,
+            )
+            .hide();
+    } else {
+        $("#user-self-role-select")
+            .find(
+                `option[value="${CSS.escape(settings_config.user_role_values.owner.code.toString())}"]`,
+            )
+            .show();
+    }
 }
 
 // TODO/typescript: Move these to server_events_dispatch when it's converted to typescript.
@@ -410,6 +459,16 @@ export function set_up(): void {
                 "#get_api_key_password + .password_visibility_toggle",
             );
         });
+        new ClipboardJS("#show_api_key .copy-button", {
+            text() {
+                return $("#api_key_value").text();
+            },
+        }).on("success", (e) => {
+            assert(e.trigger instanceof HTMLElement);
+            show_copied_confirmation(e.trigger, {
+                show_check_icon: true,
+            });
+        });
     };
 
     $("#api_key_button").on("click", (e) => {
@@ -502,13 +561,13 @@ export function set_up(): void {
         }
 
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Change password"}),
-            html_body: render_dialog_change_password({
+            modal_title_html: $t_html({defaultMessage: "Change password"}),
+            modal_content_html: render_dialog_change_password({
                 password_min_length: realm.password_min_length,
                 password_max_length: realm.password_max_length,
                 password_min_guesses: realm.password_min_guesses,
             }),
-            html_submit_button: $t_html({defaultMessage: "Change"}),
+            modal_submit_button_text: $t({defaultMessage: "Change"}),
             loading_spinner: true,
             id: "change_password_modal",
             form_id: "change_password_container",
@@ -640,9 +699,11 @@ export function set_up(): void {
         e.stopPropagation();
         if (settings_data.user_can_change_email()) {
             dialog_widget.launch({
-                html_heading: $t_html({defaultMessage: "Change email"}),
-                html_body: render_change_email_modal({delivery_email: current_user.delivery_email}),
-                html_submit_button: $t_html({defaultMessage: "Change"}),
+                modal_title_html: $t_html({defaultMessage: "Change email"}),
+                modal_content_html: render_change_email_modal({
+                    delivery_email: current_user.delivery_email,
+                }),
+                modal_submit_button_text: $t({defaultMessage: "Change"}),
                 loading_spinner: true,
                 id: "change_email_modal",
                 form_id: "change_email_form",
@@ -730,14 +791,14 @@ export function set_up(): void {
             current_user.delivery_email === ""
         ) {
             dialog_widget.launch({
-                html_heading: $t_html({defaultMessage: "Add email"}),
-                html_body: render_demo_organization_add_email_modal({
+                modal_title_html: $t_html({defaultMessage: "Add email"}),
+                modal_content_html: render_demo_organization_add_email_modal({
                     delivery_email: current_user.delivery_email,
                     full_name: current_user.full_name,
                     email_address_visibility_values:
                         settings_config.email_address_visibility_values,
                 }),
-                html_submit_button: $t_html({defaultMessage: "Add"}),
+                modal_submit_button_text: $t({defaultMessage: "Add"}),
                 loading_spinner: true,
                 id: "demo_organization_add_email_modal",
                 form_id: "demo_organization_add_email_form",
@@ -913,6 +974,24 @@ export function set_up(): void {
             "/json/settings",
             data,
             $("#account-settings .privacy-setting-status").expectOne(),
+        );
+    });
+
+    add_or_remove_owner_from_role_dropdown();
+    set_user_own_role_dropdown_value();
+    update_user_own_role_dropdown_state();
+
+    $<HTMLSelectElement>("select#user-self-role-select").on("change", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const data = {role: this.value};
+
+        settings_ui.do_settings_change(
+            channel.patch,
+            "/json/users/" + encodeURIComponent(current_user.user_id),
+            data,
+            $("#account-settings #account-settings-status").expectOne(),
         );
     });
 }

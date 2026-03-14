@@ -37,8 +37,8 @@ async function test_user_status(page: Page): Promise<void> {
     const tada_emoji_selector = ".emoji-1f389";
     await page.click(".status-emoji-wrapper .smiley-icon");
     // Wait until emoji popover is opened.
-    await page.waitForSelector(`.emoji-popover  ${tada_emoji_selector}`, {visible: true});
-    await page.click(`.emoji-popover  ${tada_emoji_selector}`);
+    await page.waitForSelector(`.emoji-popover ${tada_emoji_selector}`, {visible: true});
+    await page.click(`.emoji-popover ${tada_emoji_selector}`);
     await page.waitForSelector(".emoji-picker-popover", {hidden: true});
     await page.waitForSelector(`.selected-emoji${tada_emoji_selector}`);
 
@@ -55,4 +55,4 @@ async function user_status_test(page: Page): Promise<void> {
     await test_user_status(page);
 }
 
-common.run_test(user_status_test);
+await common.run_test(user_status_test);

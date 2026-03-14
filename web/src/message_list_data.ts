@@ -31,11 +31,11 @@ export class MessageListData {
     // message ID. It's used to efficiently query if a given
     // message is present.
     _hash: Map<number, Message>;
-    // Some views exclude muted topics.
+    // Some views exclude muted topics / users.
     //
-    // TODO: Refactor this to be a property of Filter, rather than
-    // a parameter that needs to be passed into the constructor.
+    // Also, `recent_view_messages_data` never excludes anything by definition.
     excludes_muted_topics: boolean;
+    excludes_muted_users: boolean;
     // Tracks any locally echoed messages, which we know aren't present on the server.
     _local_only: Set<number>;
     // The currently selected message ID. The special value -1
@@ -60,7 +60,15 @@ export class MessageListData {
     // See also MessageList and MessageListView, which are important
     // to actually display a message list.
 
-    constructor({excludes_muted_topics, filter}: {excludes_muted_topics: boolean; filter: Filter}) {
+    constructor({
+        excludes_muted_topics,
+        excludes_muted_users = true,
+        filter,
+    }: {
+        excludes_muted_topics: boolean;
+        excludes_muted_users?: boolean;
+        filter: Filter;
+    }) {
         this.filter = filter;
         this.fetch_status = new FetchStatus();
         this.participants = new ConversationParticipants([]);
@@ -68,6 +76,7 @@ export class MessageListData {
         this._items = [];
         this._hash = new Map();
         this.excludes_muted_topics = excludes_muted_topics;
+        this.excludes_muted_users = excludes_muted_users;
         this._local_only = new Set();
         this._selected_id = -1;
     }
@@ -82,7 +91,7 @@ export class MessageListData {
         this.add_messages_callback = callback;
     }
 
-    all_messages(): Message[] {
+    all_messages_after_mute_filtering(): Message[] {
         return this._items;
     }
 
@@ -237,10 +246,7 @@ export class MessageListData {
     }
 
     messages_filtered_for_user_mutes(messages: Message[]): Message[] {
-        // Don't exclude messages sent by muted users if we're
-        // searching for a specific group or user, since the user
-        // presumably wants to see those messages.
-        if (this.filter.is_search_for_specific_group_or_user()) {
+        if (!this.excludes_muted_users) {
             return [...messages];
         }
 
@@ -643,5 +649,35 @@ export class MessageListData {
         }
         const msg = this._items[msg_index];
         return msg;
+    }
+
+    find_date_anchor_message_id(anchor_date: string): Message | undefined {
+        const anchor_timestamp = Math.floor(Date.parse(anchor_date) / 1000);
+        if (this.visibly_empty()) {
+            return undefined;
+        }
+
+        const first_message = this.first()!;
+        if (anchor_timestamp < first_message.timestamp && this.fetch_status.has_found_oldest()) {
+            return first_message;
+        }
+        const last_message = this.last()!;
+        if (anchor_timestamp > last_message.timestamp && this.fetch_status.has_found_newest()) {
+            return last_message;
+        }
+        // We need to fetch the message from the server if we have not found the oldest
+        // message in the list and if the there is no message older than the timestamp on
+        // the list.
+        if (!this.fetch_status.has_found_oldest() && anchor_timestamp <= first_message.timestamp) {
+            return undefined;
+        }
+
+        return this.all_messages_after_mute_filtering().find(
+            (message) => message.timestamp >= anchor_timestamp,
+        );
+    }
+
+    date_anchor_exists(anchor_date: string): boolean {
+        return Boolean(this.find_date_anchor_message_id(anchor_date));
     }
 }

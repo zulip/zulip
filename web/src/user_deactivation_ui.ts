@@ -1,7 +1,6 @@
 import $ from "jquery";
 import * as z from "zod/mini";
 
-import render_settings_deactivation_bot_modal from "../templates/confirm_dialog/confirm_deactivate_bot.hbs";
 import render_confirm_deactivate_own_user from "../templates/confirm_dialog/confirm_deactivate_own_user.hbs";
 import render_settings_deactivation_user_modal from "../templates/confirm_dialog/confirm_deactivate_user.hbs";
 import render_settings_reactivation_bot_modal from "../templates/confirm_dialog/confirm_reactivate_bot.hbs";
@@ -11,8 +10,10 @@ import * as bot_data from "./bot_data.ts";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as people from "./people.ts";
+import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
 import {invite_schema} from "./settings_invites.ts";
 import {current_user, realm} from "./state_data.ts";
 
@@ -22,10 +23,10 @@ export function confirm_deactivation(
     loading_spinner: boolean,
 ): void {
     if (user_id === current_user.user_id) {
-        const html_body = render_confirm_deactivate_own_user();
+        const modal_content_html = render_confirm_deactivate_own_user();
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Deactivate your account"}),
-            html_body,
+            modal_title_html: $t_html({defaultMessage: "Deactivate your account"}),
+            modal_content_html,
             on_click: handle_confirm,
             help_link: "/help/deactivate-your-account",
             loading_spinner,
@@ -53,6 +54,15 @@ export function confirm_deactivation(
             const user = people.get_by_user_id(user_id);
             const realm_url = realm.realm_url;
             const realm_name = realm.realm_name;
+            const user_can_delete_any_message = settings_data.user_can_delete_any_message();
+            const user_deactivation_actions =
+                settings_config.user_deactivation_action_values.filter(
+                    (option) =>
+                        // Show message deletion options only if user has permission to
+                        // delete any message.
+                        option.key === "delete_profile" || user_can_delete_any_message,
+                );
+
             const opts = {
                 username: user.full_name,
                 email: user.delivery_email,
@@ -61,8 +71,9 @@ export function confirm_deactivation(
                 admin_email: people.my_current_email(),
                 realm_url,
                 realm_name,
+                user_deactivation_actions,
             };
-            const html_body = render_settings_deactivation_user_modal(opts);
+            const modal_content_html = render_settings_deactivation_user_modal(opts);
 
             function set_email_field_visibility(dialog_widget_id: string): void {
                 const $modal = $(`#${CSS.escape(dialog_widget_id)}`);
@@ -80,13 +91,13 @@ export function confirm_deactivation(
             }
 
             dialog_widget.launch({
-                html_heading: $t_html(
+                modal_title_html: $t_html(
                     {defaultMessage: "Deactivate {name}?"},
                     {name: user.full_name},
                 ),
                 help_link: "/help/deactivate-or-reactivate-a-user#deactivating-a-user",
-                html_body,
-                html_submit_button: $t_html({defaultMessage: "Deactivate"}),
+                modal_content_html,
+                modal_submit_button_text: $t({defaultMessage: "Deactivate"}),
                 id: "deactivate-user-modal",
                 on_click: handle_confirm,
                 post_render: set_email_field_visibility,
@@ -103,13 +114,16 @@ export function confirm_bot_deactivation(
     loading_spinner: boolean,
 ): void {
     const bot = people.get_by_user_id(bot_id);
-    const html_body = render_settings_deactivation_bot_modal();
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Deactivate {name}?"}, {name: bot.full_name}),
+        modal_title_html: $t_html({defaultMessage: "Deactivate {name}?"}, {name: bot.full_name}),
         help_link: "/help/deactivate-or-reactivate-a-bot",
-        html_body,
-        html_submit_button: $t_html({defaultMessage: "Deactivate"}),
+        modal_content_html: $t_html({
+            defaultMessage:
+                "A deactivated bot cannot send messages, access data, or take any other action.",
+        }),
+        is_compact: true,
+        modal_submit_button_text: $t({defaultMessage: "Deactivate"}),
         on_click: handle_confirm,
         loading_spinner,
     });
@@ -129,7 +143,7 @@ export function confirm_reactivation(
         username: user.full_name,
     };
 
-    let html_body;
+    let modal_content_html;
     // check if bot or human
     if (user.is_bot) {
         if (user.bot_owner_id !== null && !people.is_person_active(user.bot_owner_id)) {
@@ -138,15 +152,15 @@ export function confirm_reactivation(
         } else {
             opts.original_owner_deactivated = false;
         }
-        html_body = render_settings_reactivation_bot_modal(opts);
+        modal_content_html = render_settings_reactivation_bot_modal(opts);
     } else {
-        html_body = render_settings_reactivation_user_modal(opts);
+        modal_content_html = render_settings_reactivation_user_modal(opts);
     }
 
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Reactivate {name}"}, {name: user.full_name}),
+        modal_title_html: $t_html({defaultMessage: "Reactivate {name}"}, {name: user.full_name}),
         help_link: "/help/deactivate-or-reactivate-a-user#reactivating-a-user",
-        html_body,
+        modal_content_html,
         on_click: handle_confirm,
         loading_spinner,
     });

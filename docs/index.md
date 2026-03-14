@@ -30,6 +30,7 @@ The documentation here is organized into the following sections:
 
 - {ref}`Overview <overview>`
 - {ref}`Zulip in production <zulip-in-production>`
+- {ref}`Incoming webhook integrations <webhook-integrations>`
 - {ref}`Contributing to Zulip <contributing-to-zulip>`
 - {ref}`Development environment <development-environment>`
 - {ref}`Developer tutorials <developer-tutorials>`
@@ -61,6 +62,16 @@ maxdepth: 3
 ---
 
 production/index
+```
+
+(webhook-integrations)=
+
+```{toctree}
+---
+maxdepth: 3
+---
+
+webhooks/index
 ```
 
 (contributing-to-zulip)=

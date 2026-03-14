@@ -16,8 +16,7 @@ from zerver.actions.custom_profile_fields import try_update_realm_custom_profile
 from zerver.actions.message_send import check_send_message
 from zerver.actions.presence import do_update_user_presence
 from zerver.actions.streams import do_change_stream_folder
-from zerver.actions.user_settings import do_change_user_setting
-from zerver.actions.users import do_change_user_role
+from zerver.actions.user_settings import do_change_avatar_fields, do_change_user_setting
 from zerver.lib.event_schema import check_web_reload_client_event
 from zerver.lib.events import fetch_initial_state_data, post_process_state
 from zerver.lib.exceptions import AccessDeniedError
@@ -65,6 +64,19 @@ class EventsEndpointTest(ZulipTestCase):
         self.assert_json_error(result, "Could not allocate event queue")
 
         self.assertEqual(m.call_args.kwargs["narrow"], [["stream", "devel"], ["is", "mentioned"]])
+
+    def test_invalid_narrow(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        narrow = [["stream", "devel", True]]
+        payload = dict(narrow=orjson.dumps(narrow).decode())
+        result = self.api_post(hamlet, "/api/v1/register", payload)
+        self.assert_json_error(result, "narrow[0] is too long (limit: 2 items)")
+
+        narrow = [["stream"]]
+        payload = dict(narrow=orjson.dumps(narrow).decode())
+        result = self.api_post(hamlet, "/api/v1/register", payload)
+        self.assert_json_error(result, "narrow[0] is too short (minimum 2 items)")
 
     def test_events_register_endpoint(self) -> None:
         # This test is intended to get minimal coverage on the
@@ -467,6 +479,9 @@ class GetEventsTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
 
+        do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+
         def get_message(apply_markdown: bool, client_gravatar: bool) -> dict[str, Any]:
             result = self.tornado_call(
                 get_events,
@@ -661,7 +676,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
     # Admin users have access to all bots in the realm_bots field
     def test_realm_bots_admin(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertTrue(user_profile.is_realm_admin)
         result = fetch_initial_state_data(user_profile, realm=user_profile.realm)
         self.assertGreater(len(result["realm_bots"]), 2)
@@ -730,12 +745,16 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
     def test_user_avatar_url_field_optional(self) -> None:
         hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
         users = [
             self.example_user("iago"),
             self.example_user("cordelia"),
             self.example_user("ZOE"),
             self.example_user("othello"),
         ]
+
+        do_change_avatar_fields(hamlet, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        do_change_avatar_fields(aaron, UserProfile.AVATAR_FROM_JDENTICON, acting_user=None)
 
         for user in users:
             user.long_term_idle = True
@@ -779,35 +798,11 @@ class FetchInitialStateDataTest(ZulipTestCase):
         for user_dict in raw_users.values():
             if user_dict["user_id"] in gravatar_users_id:
                 self.assertIsNone(user_dict["avatar_url"])
-            else:
+            elif user_dict["user_id"] in long_term_idle_users_ids:
                 self.assertFalse("avatar_url" in user_dict)
-
-    def test_user_settings_based_on_client_capabilities(self) -> None:
-        hamlet = self.example_user("hamlet")
-        result = fetch_initial_state_data(
-            user_profile=hamlet,
-            realm=hamlet.realm,
-            user_settings_object=True,
-        )
-        self.assertIn("user_settings", result)
-        for prop in UserProfile.property_types:
-            self.assertNotIn(prop, result)
-            self.assertIn(prop, result["user_settings"])
-
-        result = fetch_initial_state_data(
-            user_profile=hamlet,
-            realm=hamlet.realm,
-            user_settings_object=False,
-        )
-        self.assertIn("user_settings", result)
-        for prop in UserProfile.property_types:
-            if prop in {
-                **UserProfile.display_settings_legacy,
-                **UserProfile.notification_settings_legacy,
-            }:
-                # Only legacy settings are included in the top level.
-                self.assertIn(prop, result)
-            self.assertIn(prop, result["user_settings"])
+            else:
+                # avatar source is Jdenticon
+                self.assertIsNotNone(user_dict["avatar_url"])
 
     def test_realm_linkifiers_based_on_client_capabilities(self) -> None:
         user = self.example_user("iago")
@@ -1252,15 +1247,16 @@ class FetchQueriesTest(ZulipTestCase):
             custom_profile_fields=1,
             default_streams=1,
             default_stream_groups=1,
+            device=1,
             drafts=1,
             giphy=0,
+            tenor=0,
             message=1,
             muted_topics=1,
             muted_users=1,
             navigation_views=1,
             onboarding_steps=1,
             presence=1,
-            push_device=1,
             # 2 of the 3 queries here are a single query that is used
             # for all the 'realm', 'stream', 'subscription'
             # and 'realm_user_groups' event types.
@@ -1290,8 +1286,6 @@ class FetchQueriesTest(ZulipTestCase):
             # 3 of the 9 queries here are shared with other event types
             # as mentioned above.
             subscription=9,
-            update_display_settings=0,
-            update_global_notifications=0,
             update_message_flags=7,
             user_settings=0,
             user_status=1,

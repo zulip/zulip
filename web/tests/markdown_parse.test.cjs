@@ -2,7 +2,7 @@
 
 const assert = require("node:assert/strict");
 
-const url_template_lib = require("url-template");
+const Template = require("uri-template-lite");
 
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -118,7 +118,7 @@ const linkifier_map = new Map([
     [
         regex,
         {
-            url_template: url_template_lib.parseTemplate("http://foo.com/{id}"),
+            url_template: new Template("http://foo.com/{id}"),
             group_number_to_name: {1: "id"},
         },
     ],

@@ -143,6 +143,10 @@ export function is_valid_user_id(user_id: number): boolean {
     return valid_user_ids.has(user_id);
 }
 
+export function is_valid_user_ids(user_ids: number[]): boolean {
+    return user_ids.every((user_id) => is_valid_user_id(user_id));
+}
+
 export function split_to_ints(lst: string): number[] {
     return lst.split(",").map((s) => Number.parseInt(s, 10));
 }
@@ -154,6 +158,9 @@ export function get_users_from_ids(user_ids: number[]): User[] {
 // Use this function only when you are sure that user_id is valid.
 export function get_by_user_id(user_id: number): User {
     const person = people_by_user_id_dict.get(user_id);
+    if (person === undefined && is_valid_user_id(user_id)) {
+        blueslip.error(`User ID: ${user_id} is valid but not found in people_by_user_id_dict`);
+    }
     assert(person, `Unknown user_id in get_by_user_id: ${user_id}`);
     return person;
 }
@@ -218,19 +225,6 @@ export function can_admin_user(user: User): boolean {
         (user.is_bot && user.bot_owner_id !== null && user.bot_owner_id === current_user.user_id) ||
         is_my_user_id(user.user_id)
     );
-}
-
-export function id_matches_email_operand(user_id: number, email: string): boolean {
-    const person = get_by_email(email);
-
-    if (!person) {
-        // The user may type bad data into the search bar, so
-        // we don't complain too loud here.
-        blueslip.debug("User email operand unknown: " + email);
-        return false;
-    }
-
-    return person.user_id === user_id;
 }
 
 export function update_email(user_id: number, new_email: string): void {
@@ -360,7 +354,11 @@ export function user_ids_to_emails_string(user_ids: number[]): string | undefine
 
 export function user_ids_string_to_ids_array(user_ids_string: string): number[] {
     const user_ids = user_ids_string.length === 0 ? [] : user_ids_string.split(",");
-    const ids = user_ids.map(Number);
+    const ids = user_ids.map((user_id_string) => {
+        const user_id = Number(user_id_string);
+        assert(!Number.isNaN(user_id));
+        return user_id;
+    });
     return ids;
 }
 
@@ -683,7 +681,10 @@ export function pm_perma_link(message: Message): string | undefined {
 }
 
 export function get_slug_from_full_name(full_name: string): string {
-    return internal_url.encodeHashComponent(full_name.replaceAll(/[ "%/<>`\p{C}]+/gu, "-"));
+    // We don't use \p{C} or \p{Cs} due to https://bugs.webkit.org/show_bug.cgi?id=267011
+    return internal_url.encodeHashComponent(
+        full_name.replaceAll(/[ "%/<>`\p{Cc}\p{Cf}\p{Co}\p{Cn}]+/gu, "-"),
+    );
 }
 
 export function pm_with_url(message: Message | MessageWithBooleans): string | undefined {
@@ -744,29 +745,6 @@ export function update_email_in_reply_to(
     return emails.join(",");
 }
 
-export function pm_with_operand_ids(operand: string): number[] | undefined {
-    let emails = operand.split(",");
-    emails = emails.map((email) => email.trim());
-    let persons = util.try_parse_as_truthy(emails.map((email) => people_dict.get(email)));
-
-    if (persons === undefined) {
-        return undefined;
-    }
-
-    // If your email is included in a group direct message with other people,
-    // then ignore it.
-    if (persons.length > 1) {
-        const my_user = people_by_user_id_dict.get(my_user_id);
-        persons = persons.filter((person) => person !== my_user);
-    }
-
-    let user_ids = persons.map((person) => person.user_id);
-
-    user_ids = util.sorted_ids(user_ids);
-
-    return user_ids;
-}
-
 export function filter_other_guest_ids(user_ids: number[]): number[] {
     return util.sorted_ids(
         user_ids.filter((id) => id !== current_user.user_id && get_by_user_id(id)?.is_guest),
@@ -779,32 +757,13 @@ export function user_ids_to_full_names_array(user_ids: number[]): string[] {
     return names;
 }
 
-export function emails_to_slug(emails_string: string): string | undefined {
-    let slug = reply_to_to_user_ids_string(emails_string);
-
-    if (!slug) {
+export function user_ids_to_slug(user_ids: number[]): string | undefined {
+    if (user_ids.length === 0 || !is_valid_user_ids(user_ids)) {
         return undefined;
     }
 
+    let slug = String(user_ids);
     slug += "-";
-
-    const emails = emails_string.split(",");
-
-    if (emails.length === 1 && emails[0] !== undefined) {
-        const person = get_by_email(emails[0]);
-        assert(person !== undefined, "Unknown person in emails_to_slug");
-        slug += get_slug_from_full_name(person.full_name);
-    } else {
-        slug += "group";
-    }
-
-    return slug;
-}
-
-export function user_ids_string_to_slug(user_ids_string: string): string | undefined {
-    let slug = user_ids_string;
-    slug += "-";
-    const user_ids = user_ids_string_to_ids_array(user_ids_string);
     if (user_ids.length === 1 && user_ids[0] !== undefined) {
         const person = get_by_user_id(user_ids[0]);
         assert(person !== undefined, "Unknown person in user_ids_string_to_slug");
@@ -815,7 +774,12 @@ export function user_ids_string_to_slug(user_ids_string: string): string | undef
     return slug;
 }
 
-export function slug_to_emails(slug: string): string | undefined {
+export function user_ids_string_to_slug(user_ids_string: string): string | undefined {
+    const user_ids = user_ids_string_to_ids_array(user_ids_string);
+    return user_ids_to_slug(user_ids);
+}
+
+export function slug_to_user_ids(slug: string): number[] | undefined {
     /*
         It's not super important to be flexible about
         direct message related slugs, since you would
@@ -830,29 +794,27 @@ export function slug_to_emails(slug: string): string | undefined {
     */
     const m = /^([\d,]+)(-.*)?/.exec(slug);
     if (m) {
-        let user_ids_string = m[1]!;
-        user_ids_string = exclude_me_from_string(user_ids_string);
-        return user_ids_string_to_emails_string(user_ids_string);
+        const user_ids_string = m[1]!;
+        return exclude_me_from_user_ids(split_to_ints(user_ids_string));
     }
     /* istanbul ignore next */
     return undefined;
 }
 
-export function exclude_me_from_string(user_ids_string: string): string {
+export function exclude_me_from_user_ids(user_ids: number[]): number[] {
     // Exclude me from a user_ids_string UNLESS I'm the
     // only one in it.
-    let user_ids = split_to_ints(user_ids_string);
 
     if (user_ids.length <= 1) {
         // We either have a message to ourself, an empty
         // slug, or a message to somebody else where we weren't
         // part of the slug.
-        return user_ids.join(",");
+        return user_ids;
     }
 
     user_ids = user_ids.filter((user_id) => !is_my_user_id(user_id));
 
-    return user_ids.join(",");
+    return user_ids;
 }
 
 export function sender_is_bot(message: Message): boolean {
@@ -874,7 +836,7 @@ export function sender_is_guest(message: Message): boolean {
 export function sender_is_deactivated(message: Message): boolean {
     const sender_id = message.sender_id;
     if (sender_id) {
-        return !is_active_user_for_popover(message.sender_id);
+        return !is_active_user_or_system_bot(message.sender_id);
     }
     return false;
 }
@@ -1037,12 +999,16 @@ export function small_avatar_url(message: Message): string {
     return gravatar_url_for_email(email);
 }
 
-export function is_valid_user_id_for_compose(user_id: number): boolean {
+export function get_muted_user_avatar_url(): string {
+    return "/static/images/muted-user/muted-sender.png";
+}
+
+export function is_valid_user_id_for_compose(user_id: number, ignore_missing = false): boolean {
     if (cross_realm_dict.has(user_id)) {
         return true;
     }
 
-    const person = maybe_get_user_by_id(user_id);
+    const person = maybe_get_user_by_id(user_id, ignore_missing);
     if (!person || person.is_inaccessible_user) {
         return false;
     }
@@ -1077,7 +1043,20 @@ export function is_valid_bulk_emails_for_compose(emails: string[]): boolean {
     });
 }
 
-export function is_active_user_for_popover(user_id: number): boolean {
+export function is_valid_bulk_user_ids_for_compose(
+    user_ids: number[],
+    ignore_missing = true,
+): boolean {
+    // Returns false if at least one of the user_ids is invalid.
+    return user_ids.every((user_id) => {
+        if (!is_valid_user_id_for_compose(user_id, ignore_missing)) {
+            return false;
+        }
+        return true;
+    });
+}
+
+export function is_active_user_or_system_bot(user_id: number): boolean {
     // For popover menus, we include cross-realm bots as active
     // users.
 
@@ -1178,6 +1157,27 @@ export function get_realm_active_human_user_ids(): number[] {
     }
 
     return human_ids;
+}
+
+export function get_realm_active_human_user_ids_for_users_panel(): number[] {
+    const human_ids = [];
+    for (const user of active_user_dict.values()) {
+        if (!user.is_bot && !user.is_imported_stub) {
+            human_ids.push(user.user_id);
+        }
+    }
+
+    return human_ids;
+}
+
+export function get_realm_active_imported_stub_user_ids(): number[] {
+    const imported_stub_user_ids = [];
+    for (const user of active_user_dict.values()) {
+        if (!user.is_bot && user.is_imported_stub) {
+            imported_stub_user_ids.push(user.user_id);
+        }
+    }
+    return imported_stub_user_ids;
 }
 
 export function get_non_active_human_ids(): number[] {
@@ -1379,9 +1379,12 @@ export function build_person_matcher(query: string): (user: User) => boolean {
     const termlet_matchers = termlets.map((termlet) => build_termlet_matcher(termlet));
 
     return function (user: User): boolean {
-        const email = user.email.toLowerCase();
+        if (String(user.user_id).startsWith(query)) {
+            return true;
+        }
 
-        if (email.startsWith(query)) {
+        const visible_email = get_visible_email(user).toLowerCase();
+        if (visible_email.startsWith(query)) {
             return true;
         }
 
@@ -1568,6 +1571,18 @@ export function get_mention_syntax(full_name: string, user_id?: number, silent =
     return mention;
 }
 
+export function get_user_mentions_for_display(users: User[], is_silent: boolean): string {
+    const mentions: string[] = [];
+    for (const user of users) {
+        mentions.push(get_mention_syntax(user.full_name, user.user_id, is_silent));
+    }
+    if (mentions.length === 1) {
+        return mentions[0]!;
+    }
+    mentions.sort(util.make_strcmp());
+    return util.format_array_as_list(mentions, "long", "conjunction");
+}
+
 function full_name_matches_wildcard_mention(full_name: string): boolean {
     return ["all", "everyone", "stream", "channel", "topic"].includes(full_name);
 }
@@ -1617,10 +1632,7 @@ export function add_active_user(person: User, source = "initial_fetch"): void {
     non_active_user_dict.delete(person.user_id);
 }
 
-export const is_person_active = (
-    user_id: number,
-    allow_missing_user: boolean | undefined = undefined,
-): boolean => {
+export const is_person_active = (user_id: number, allow_missing_user?: boolean): boolean => {
     if (!people_by_user_id_dict.has(user_id)) {
         // settings_data.user_can_access_all_other_users can be
         // cheap, so we avoid computing it unless it's actually
@@ -1651,6 +1663,13 @@ export function add_cross_realm_user(person: User): void {
     } else if (person.full_name === "Email Gateway") {
         EMAIL_GATEWAY_BOT = person;
     }
+}
+
+export function user_can_change_their_own_role(): boolean {
+    if (is_current_user_only_owner()) {
+        return false;
+    }
+    return current_user.is_admin;
 }
 
 export function deactivate(person: User): void {
@@ -1709,6 +1728,7 @@ export function make_user(user_id: number, email: string, full_name: string): Us
         is_guest: false,
         is_bot: false,
         is_moderator: false,
+        is_imported_stub: false,
         // We explicitly don't set `avatar_url` for fake person objects so that fallback code
         // will ask the server or compute a gravatar URL only once we need the avatar URL,
         // it's important for performance that we not hash every user's email to get gravatar URLs.
@@ -1973,7 +1993,11 @@ export function is_displayable_conversation_participant(user_id: number): boolea
     return !is_valid_bot_user(user_id) && is_person_active(user_id);
 }
 
-export function populate_valid_user_ids(params: StateData["user_groups"]): void {
+export function populate_valid_user_ids(
+    params: StateData["user_groups"],
+    cross_realm_bots: StateData["people"]["cross_realm_bots"],
+    realm_non_active_users: StateData["people"]["realm_non_active_users"],
+): void {
     // Every valid user ID is guaranteed to exist in at least one
     // system group, so we can us that to compute the set of valid
     // user IDs in the realm.
@@ -1981,6 +2005,14 @@ export function populate_valid_user_ids(params: StateData["user_groups"]): void 
         if (user_group.is_system_group) {
             valid_user_ids = valid_user_ids.union(new Set(user_group.members));
         }
+    }
+
+    for (const bot of cross_realm_bots) {
+        valid_user_ids.add(bot.user_id);
+    }
+
+    for (const user of realm_non_active_users) {
+        valid_user_ids.add(user.user_id);
     }
 }
 
@@ -2034,7 +2066,7 @@ function get_combined_promise_for_user_ids(user_ids: Set<number>): {
     };
 }
 
-function start_fetch_for_requested_users(): void {
+async function start_fetch_for_requested_users(): Promise<void> {
     const user_ids_to_fetch = fetch_users_storage.pending_user_ids;
     fetch_users_storage.pending_user_ids = new Set();
     fetch_users_storage.in_transit_user_ids =
@@ -2052,54 +2084,52 @@ function start_fetch_for_requested_users(): void {
     fetch_users_storage.promise_for_pending = undefined;
     fetch_users_storage.promise_resolver_for_pending = undefined;
 
-    const fetch_request_with_retry = (num_attempts = 1): void => {
-        void fetch_users(user_ids_pending_fetch).then(
-            async (fetched_users) => {
-                for (const user of fetched_users) {
-                    if (user.is_active) {
-                        add_active_user(user);
-                    } else {
-                        non_active_user_dict.set(user.user_id, user);
-                        _add_user(user);
-                    }
-                }
+    let fetched_users;
+    for (let num_attempts = 1; ; num_attempts += 1) {
+        try {
+            fetched_users = await fetch_users(user_ids_pending_fetch);
+            break;
+        } catch (error) {
+            // Retry on error.
+            const retry_delay_secs = util.get_retry_backoff_seconds(undefined, num_attempts);
 
-                // Resolve promises waiting on this fetch after updating the data locally.
-                fetch_users_storage.promise_for_in_transit.get(user_ids_pending_fetch)!.resolver();
-                // Clean up in transit promise for this fetch.
-                fetch_users_storage.promise_for_in_transit.delete(user_ids_pending_fetch);
-                // Remove fetched users from in transit user ids.
-                fetch_users_storage.in_transit_user_ids =
-                    fetch_users_storage.in_transit_user_ids.difference(user_ids_pending_fetch);
+            // Since users are in `valid_user_ids`, we expect
+            // the fetch to eventually succeed, so we log a warning
+            // and retry after a delay.
+            blueslip.warn(
+                `Fetch for users failed, retrying after ${Math.round(retry_delay_secs)} seconds. ` +
+                    String(error),
+            );
+            await new Promise((resolve) => {
+                setTimeout(resolve, retry_delay_secs * 1000);
+            });
+        }
+    }
 
-                await promise_for_all_requested_users;
-                // Resolve promises waiting on the complete fetch.
-                fetch_users_storage.promise_for_requested.get(user_ids_to_fetch)!.resolver();
-                fetch_users_storage.promise_for_requested.delete(user_ids_pending_fetch);
-            },
-            (error: unknown) => {
-                // Retry on error.
-                num_attempts += 1;
-                const retry_delay_secs = util.get_retry_backoff_seconds(undefined, num_attempts);
+    for (const user of fetched_users) {
+        if (user.is_active) {
+            add_active_user(user);
+        } else {
+            non_active_user_dict.set(user.user_id, user);
+            _add_user(user);
+        }
+    }
 
-                // Since users are in `valid_user_ids`, we expect
-                // the fetch to eventually succeed, so we log a warning
-                // and retry after a delay.
-                blueslip.warn(
-                    `Fetch for users failed, retrying after ${Math.round(retry_delay_secs)} seconds. ` +
-                        String(error),
-                );
-                setTimeout(() => {
-                    fetch_request_with_retry(num_attempts);
-                }, retry_delay_secs * 1000);
-            },
-        );
-    };
+    // Resolve promises waiting on this fetch after updating the data locally.
+    fetch_users_storage.promise_for_in_transit.get(user_ids_pending_fetch)!.resolver();
+    // Clean up in transit promise for this fetch.
+    fetch_users_storage.promise_for_in_transit.delete(user_ids_pending_fetch);
+    // Remove fetched users from in transit user ids.
+    fetch_users_storage.in_transit_user_ids =
+        fetch_users_storage.in_transit_user_ids.difference(user_ids_pending_fetch);
 
-    fetch_request_with_retry();
+    await promise_for_all_requested_users;
+    // Resolve promises waiting on the complete fetch.
+    fetch_users_storage.promise_for_requested.get(user_ids_to_fetch)!.resolver();
+    fetch_users_storage.promise_for_requested.delete(user_ids_pending_fetch);
 }
 
-export async function fetch_users_from_ids_internal(user_ids: number[]): Promise<unknown> {
+export let fetch_users_from_ids_internal = async (user_ids: number[]): Promise<unknown> => {
     // NOTE: NEVER USE THIS FUNCTION DIRECTLY.
     // Call get_or_fetch_users_from_ids instead.
     const unknown_user_ids = new Set(
@@ -2142,15 +2172,38 @@ export async function fetch_users_from_ids_internal(user_ids: number[]): Promise
     // we queue the fetch after current call stack.
     setTimeout(() => {
         if (fetch_users_storage.pending_user_ids.size > 0) {
-            start_fetch_for_requested_users();
+            void start_fetch_for_requested_users();
         }
     }, 0);
     return promise;
+};
+
+export function rewire_fetch_users_from_ids_internal(
+    value: typeof fetch_users_from_ids_internal,
+): void {
+    fetch_users_from_ids_internal = value;
 }
 
 export async function get_or_fetch_users_from_ids(user_ids: number[]): Promise<User[]> {
     await fetch_users_from_ids_internal(user_ids);
-    return get_users_from_ids(user_ids);
+    // In case `valid_user_ids` got updated while we were fetching,
+    // re-filter the user_ids to only return valid ones.
+    const user_ids_valid = valid_user_ids.intersection(new Set(user_ids));
+    // Server doesn't return data for inaccessible users, so we need to
+    // make fake user objects for them if needed.
+    const ignore_missing = !settings_data.user_can_access_all_other_users();
+    const users: User[] = [];
+    for (const user_id of user_ids_valid) {
+        const person = maybe_get_user_by_id(user_id, ignore_missing);
+        if (person) {
+            users.push(person);
+        } else {
+            // maybe_get_user_by_id will throw an error if ignore_missing is false.
+            // User is inaccessible, create a fake user object.
+            users.push(add_inaccessible_user(user_id));
+        }
+    }
+    return users;
 }
 
 export function fetch_users_from_server(opts: FetchUserDataParams): void {
@@ -2233,7 +2286,11 @@ export async function initialize(
     user_group_params: StateData["user_groups"],
 ): Promise<void> {
     initialize_current_user(my_user_id);
-    populate_valid_user_ids(user_group_params);
+    populate_valid_user_ids(
+        user_group_params,
+        people_params.cross_realm_bots,
+        people_params.realm_non_active_users,
+    );
 
     // Compute the set of user IDs that we know are valid in the
     // organization, but do not have a copy of.
@@ -2254,14 +2311,8 @@ export async function initialize(
         user_ids_to_fetch.delete(person.user_id);
     }
 
-    // This check is a hack to avoid us from showing inaccessible users
-    // as `Unknown users` to the guest user.
-    // TODO: Find a way to identify inaccessible users and remove them
-    // from this fetch.
-    if (settings_data.user_can_access_all_other_users()) {
-        // Fetch all the missing users. This code path is temporary: We
-        // plan to move to a model where the web app expects to have an
-        // incomplete users dataset in large organizations.
-        await get_or_fetch_users_from_ids([...user_ids_to_fetch]);
-    }
+    // Fetch all the missing users. This code path is temporary: We
+    // plan to move to a model where the web app expects to have an
+    // incomplete users dataset in large organizations.
+    await get_or_fetch_users_from_ids([...user_ids_to_fetch]);
 }

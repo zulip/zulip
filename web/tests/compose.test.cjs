@@ -2,13 +2,13 @@
 
 const assert = require("node:assert/strict");
 
-const MockDate = require("mockdate");
-
 const {mock_banners} = require("./lib/compose_banner.cjs");
 const {FakeComposeBox} = require("./lib/compose_helpers.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
-const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_bot, make_user} = require("./lib/example_user.cjs");
+const {clock, mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
@@ -49,13 +49,15 @@ const sent_messages = mock_esm("../src/sent_messages");
 const server_events_state = mock_esm("../src/server_events_state");
 const transmit = mock_esm("../src/transmit");
 const upload = mock_esm("../src/upload");
-const onboarding_steps = mock_esm("../src/onboarding_steps");
+const onboarding_steps = mock_esm("../src/onboarding_steps", {
+    ONE_TIME_NOTICES_TO_DISPLAY: new Set(),
+});
 mock_esm("../src/settings_data", {
     user_has_permission_for_group_setting: () => true,
 });
 
 const compose_ui = zrequire("compose_ui");
-const compose_banner = zrequire("compose_banner");
+zrequire("compose_banner");
 const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_recipient = zrequire("compose_recipient");
 const compose_state = zrequire("compose_state");
@@ -81,39 +83,37 @@ function reset_jquery() {
     $.clear_all_elements();
 }
 
-const new_user = {
+const new_user = make_user({
     email: "new_user@example.com",
     user_id: 101,
     full_name: "New User",
     date_joined: new Date(),
-};
+});
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
     date_joined: new Date(),
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: 31,
     full_name: "Alice",
-    is_bot: false,
-};
+});
 
-const bob = {
+const bob = make_user({
     email: "bob@example.com",
     user_id: 32,
     full_name: "Bob",
-};
+});
 
-const bot = {
+const bot = make_bot({
     email: "bot@example.com",
     user_id: 33,
     full_name: "Bot",
-    is_bot: true,
-};
+});
 
 people.add_active_user(new_user);
 people.add_active_user(me);
@@ -123,13 +123,13 @@ people.add_active_user(alice);
 people.add_active_user(bob);
 people.add_active_user(bot);
 
-const social = {
+const social = make_stream({
     stream_id: 101,
     name: "social",
     subscribed: true,
     can_send_message_group: 2,
     topics_policy: "inherit",
-};
+});
 stream_data.add_sub_for_tests(social);
 
 const nobody = make_user_group({
@@ -162,26 +162,14 @@ function initialize_handlers({override}) {
     compose_setup.initialize();
 }
 
-function disable_document_triggers(override) {
-    override(document, "to_$", () => $("document-stub"));
-}
-
 function disable_window_triggers(override) {
     override(window, "to_$", () => $("window-stub"));
-}
-
-function on_compose_finished_trigger_do(f) {
-    $(document).on("compose_finished.zulip", f);
 }
 
 function simulate_draft_ui_interactions() {
     // Simulate DOM relationships so that code can execute,
     // but we won't actually examine these values.
     $(".top_left_drafts").set_find_results(".unread_count", $.create("draft-unread-count-stub"));
-}
-
-function assert_compose_send_button_attr_is_undefined() {
-    assert.equal($("#compose-send-button").attr(), undefined);
 }
 
 test_ui("send_message_success", ({override, override_rewire}) => {
@@ -270,8 +258,7 @@ test_ui("send_message_success", ({override, override_rewire}) => {
 
 test_ui("send_message", ({override, override_rewire, mock_template}) => {
     mock_banners();
-    MockDate.set(new Date(fake_now * 1000));
-    override_rewire(drafts, "sync_count", noop);
+    clock.setSystemTime(new Date(fake_now * 1000));
 
     const fake_compose_box = new FakeComposeBox();
 
@@ -434,9 +421,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 
 test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
     mock_banners();
-    override_rewire(compose_banner, "clear_message_sent_banners", noop);
-
-    disable_document_triggers(override);
+    window.addEventListener = noop;
 
     let show_button_spinner_called = false;
 
@@ -484,11 +469,8 @@ test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
 
 test_ui("finish", ({override, override_rewire}) => {
     mock_banners();
-    disable_document_triggers(override);
 
     const fake_compose_box = new FakeComposeBox();
-
-    override_rewire(compose_banner, "clear_message_sent_banners", noop);
 
     let show_button_spinner_called = false;
     override(loading, "show_button_spinner", ($spinner) => {
@@ -505,17 +487,14 @@ test_ui("finish", ({override, override_rewire}) => {
         fake_compose_box.set_textarea_val("burrito");
         compose_state.set_message_type("stream");
 
-        fake_compose_box.set_textarea_toggle_class_function((classname, value) => {
-            assert.equal(classname, "invalid");
-            assert.equal(value, true);
-        });
-
+        assert.ok(!fake_compose_box.$content_textarea.hasClass("invalid"));
         fake_compose_box.set_textarea_val("");
 
         override_rewire(compose_ui, "compose_spinner_visible", false);
         const res = compose.finish();
         assert.equal(res, false);
 
+        assert.ok(fake_compose_box.$content_textarea.hasClass("invalid"));
         assert.ok(!fake_compose_box.is_recipient_not_subscribed_banner_visible());
         assert.ok(!fake_compose_box.is_submit_button_spinner_visible());
 
@@ -533,12 +512,6 @@ test_ui("finish", ({override, override_rewire}) => {
         override(realm, "realm_direct_message_permission_group", everyone.id);
         override(realm, "realm_direct_message_initiator_group", everyone.id);
 
-        let compose_finished_event_checked = false;
-
-        on_compose_finished_trigger_do(() => {
-            compose_finished_event_checked = true;
-        });
-
         let send_message_called = false;
         override_rewire(compose, "send_message", () => {
             send_message_called = true;
@@ -548,7 +521,6 @@ test_ui("finish", ({override, override_rewire}) => {
 
         fake_compose_box.assert_preview_mode_is_off();
         assert.ok(send_message_called);
-        assert.ok(compose_finished_event_checked);
     })();
 });
 
@@ -623,8 +595,6 @@ test_ui("initialize", ({override}) => {
 
         compose_setup.abort_xhr();
 
-        // I'm not sure this proves anything interesting.
-        assert_compose_send_button_attr_is_undefined();
         assert.ok(uppy_cancel_all_called);
     })();
 });
@@ -715,6 +685,11 @@ test_ui("on_events", ({override, override_rewire}) => {
     })();
 
     (function test_markdown_preview_compose_clicked() {
+        $("#compose .preview_content").set_find_results(
+            ".image-loading-placeholder",
+            $.create("no-images", {elements: []}),
+        );
+
         function setup_mock_markdown_contains_backend_only_syntax(msg_content, return_val) {
             override(markdown, "contains_backend_only_syntax", (msg) => {
                 assert.equal(msg, msg_content);
@@ -744,7 +719,7 @@ test_ui("on_events", ({override, override_rewire}) => {
             error_callback();
             assert.equal(
                 fake_compose_box.preview_content_html(),
-                "translated HTML: Failed to generate preview",
+                "translated: Failed to generate preview",
             );
         }
 
@@ -781,10 +756,7 @@ test_ui("on_events", ({override, override_rewire}) => {
             stopPropagation: noop,
         });
 
-        assert.equal(
-            fake_compose_box.preview_content_html(),
-            "translated HTML: Nothing to preview",
-        );
+        assert.equal(fake_compose_box.preview_content_html(), "translated: Nothing to preview");
         fake_compose_box.assert_preview_mode_is_on();
 
         let make_indicator_called = false;
@@ -820,6 +792,7 @@ test_ui("on_events", ({override, override_rewire}) => {
         override(markdown, "render", (raw_content) => {
             assert.equal(raw_content, "default message");
             render_called = true;
+            return {content: "Local: default message"};
         });
 
         fake_compose_box.click_on_markdown_preview_icon({
@@ -873,8 +846,4 @@ test_ui("DM policy disabled", ({override}) => {
     // For human user and bot user, the "Message X" button is disabled
     reply_disabled = compose_closed_ui.should_disable_compose_reply_button_for_direct_message();
     assert.ok(reply_disabled);
-});
-
-run_test("reset MockDate", () => {
-    MockDate.reset();
 });

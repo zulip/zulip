@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from typing import Any
 from unittest import mock
 
 import responses
@@ -12,6 +13,7 @@ from typing_extensions import override
 from analytics.models import RealmCount
 from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.avatar import absolute_avatar_url
+from zerver.lib.devices import b64encode_token_id_int
 from zerver.lib.exceptions import MissingRemoteRealmError
 from zerver.lib.push_notifications import (
     PushNotificationsDisallowedByBouncerError,
@@ -26,9 +28,10 @@ from zerver.lib.remote_server import (
 from zerver.lib.test_classes import E2EEPushNotificationTestCase
 from zerver.lib.test_helpers import activate_push_notification_service
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.models import PushDevice, UserMessage
+from zerver.models import Device, UserMessage
 from zerver.models.realms import get_realm
 from zerver.models.scheduled_jobs import NotificationTriggers
+from zerver.models.streams import get_stream
 from zilencer.lib.push_notifications import SentPushNotificationResult
 from zilencer.models import RemoteRealm, RemoteRealmCount
 
@@ -38,10 +41,74 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
     def test_success_cloud(self) -> None:
         hamlet = self.example_user("hamlet")
         aaron = self.example_user("aaron")
+        iago = self.example_user("iago")
 
         registered_device_apple, registered_device_android = (
             self.register_push_devices_for_notification()
         )
+
+        def test_end_to_end(missed_message: dict[str, Any], *, db_query_count: int) -> None:
+            self.assertEqual(RealmCount.objects.count(), 0)
+
+            with (
+                self.mock_fcm() as mock_fcm_messaging,
+                self.mock_apns() as send_notification,
+                self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
+                self.assertLogs("zilencer.lib.push_notifications", level="INFO") as zilencer_logger,
+                mock.patch("time.perf_counter", side_effect=[10.0, 15.0]),
+            ):
+                mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response()
+                send_notification.return_value.is_successful = True
+
+                with self.assert_database_query_count(db_query_count):
+                    handle_push_notification(hamlet.id, missed_message)
+
+                mock_fcm_messaging.send_each.assert_called_once()
+                send_notification.assert_called_once()
+
+                self.assertEqual(
+                    "INFO:zerver.lib.push_notifications:"
+                    f"Sending push notifications to mobile clients for user {hamlet.id}",
+                    zerver_logger.output[0],
+                )
+                self.assertEqual(
+                    "INFO:zerver.lib.push_notifications:"
+                    f"Skipping legacy push notifications for user {hamlet.id} because there are no registered devices",
+                    zerver_logger.output[1],
+                )
+                self.assertEqual(
+                    "INFO:zerver.lib.push_notifications:"
+                    f"APNs: Success sending to (realm={hamlet.realm.uuid}, device={registered_device_apple.token})",
+                    zerver_logger.output[2],
+                )
+                self.assertEqual(
+                    "INFO:zilencer.lib.push_notifications:"
+                    f"FCM: Sent message with ID: 0 to (realm={hamlet.realm.uuid}, device={registered_device_android.token})",
+                    zilencer_logger.output[0],
+                )
+                self.assertEqual(
+                    "INFO:zerver.lib.push_notifications:"
+                    f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs in 5.000s",
+                    zerver_logger.output[3],
+                )
+
+                realm_count_dict = (
+                    RealmCount.objects.filter(property="mobile_pushes_sent::day")
+                    .values("subgroup", "value")
+                    .last()
+                )
+                self.assertEqual(realm_count_dict, dict(subgroup=None, value=2))
+                # Reset
+                RealmCount.objects.all().delete()
+
+        # 1:1 DM
+        # query count : source
+        # * 1 : `get_user_profile_by_id`
+        # * 2 : `access_message_and_usermessage` (Fetch Message + UserMessage)
+        # * 1 : update fetched user_message flag
+        # * 2 : fetch PushDeviceToken + Device
+        # * 1 : `get_display_recipient` in `get_message_payload`
+        # * 2 : fetch RemotePushDevice + update RealmCount
         message_id = self.send_personal_message(
             from_user=aaron, to_user=hamlet, skip_capture_on_commit_callbacks=True
         )
@@ -49,56 +116,47 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             "message_id": message_id,
             "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
+        test_end_to_end(missed_message, db_query_count=9)
 
-        self.assertEqual(RealmCount.objects.count(), 0)
+        # Group DM
+        message_id = self.send_group_direct_message(
+            iago, [hamlet, aaron, iago], skip_capture_on_commit_callbacks=True
+        )
+        missed_message = {
+            "message_id": message_id,
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
+        }
+        test_end_to_end(missed_message, db_query_count=9)
 
-        with (
-            self.mock_fcm() as mock_fcm_messaging,
-            self.mock_apns() as send_notification,
-            self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
-            self.assertLogs("zilencer.lib.push_notifications", level="INFO") as zilencer_logger,
-            mock.patch("time.perf_counter", side_effect=[10.0, 15.0]),
-        ):
-            mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response()
-            send_notification.return_value.is_successful = True
+        # Channel message
+        # 2 extra queries than 1:1 DM
+        # 1 : fetch Stream in `access_message_and_usermessage` codepath
+        # 1 : query NamedUserGroup in `check_can_access_user` codepath
+        # 1 : fetch Stream in `get_message_payload` (TODO: we can avoid this)
+        # -1 : `get_display_recipient` not needed
+        message_id = self.send_stream_message(
+            aaron, "Verona", skip_capture_on_commit_callbacks=True
+        )
+        missed_message = {"message_id": message_id, "trigger": NotificationTriggers.STREAM_PUSH}
+        test_end_to_end(missed_message, db_query_count=11)
 
-            handle_push_notification(hamlet.id, missed_message)
-
-            mock_fcm_messaging.send_each.assert_called_once()
-            send_notification.assert_called_once()
-
-            self.assertEqual(
-                "INFO:zerver.lib.push_notifications:"
-                f"Sending push notifications to mobile clients for user {hamlet.id}",
-                zerver_logger.output[0],
-            )
-            self.assertEqual(
-                "INFO:zerver.lib.push_notifications:"
-                f"Skipping legacy push notifications for user {hamlet.id} because there are no registered devices",
-                zerver_logger.output[1],
-            )
-            self.assertEqual(
-                "INFO:zerver.lib.push_notifications:"
-                f"APNs: Success sending to (push_account_id={registered_device_apple.push_account_id}, device={registered_device_apple.token})",
-                zerver_logger.output[2],
-            )
-            self.assertEqual(
-                "INFO:zilencer.lib.push_notifications:"
-                f"FCM: Sent message with ID: 0 to (push_account_id={registered_device_android.push_account_id}, device={registered_device_android.token})",
-                zilencer_logger.output[0],
-            )
-            self.assertEqual(
-                "INFO:zerver.lib.push_notifications:"
-                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs in 5.000s",
-                zerver_logger.output[3],
-            )
-
-            realm_count_dict = (
-                RealmCount.objects.filter(property="mobile_pushes_sent::day")
-                .values("subgroup", "value")
-                .last()
-            )
-            self.assertEqual(realm_count_dict, dict(subgroup=None, value=2))
+        # Channel message: private channel + user-group mention
+        # 3 extra queries than prev:
+        # 1 : query Subscription in `access_message_and_usermessage` codepath (needed for private channel)
+        # 2 : `get_mentioned_user_group` b/c content includes user-group mention.
+        channel = get_stream("core team", iago.realm)
+        user_group = check_add_user_group(
+            iago.realm, "test_group", [iago, aaron, hamlet], acting_user=iago
+        )
+        message_id = self.send_stream_message(
+            iago, channel.name, f"@*{user_group.name}*", skip_capture_on_commit_callbacks=True
+        )
+        missed_message = {
+            "message_id": message_id,
+            "trigger": NotificationTriggers.MENTION,
+            "mentioned_user_group_id": user_group.id,
+        }
+        test_end_to_end(missed_message, db_query_count=14)
 
     def test_no_registered_device(self) -> None:
         aaron = self.example_user("aaron")
@@ -140,7 +198,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
         )
         self.assertIsNone(registered_device_apple.expired_time)
         self.assertIsNone(registered_device_android.expired_time)
-        self.assertEqual(PushDevice.objects.count(), 2)
+        self.assertEqual(Device.objects.filter(push_token_id__isnull=False).count(), 2)
 
         message_id = self.send_personal_message(
             from_user=aaron, to_user=hamlet, skip_capture_on_commit_callbacks=True
@@ -185,7 +243,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             )
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
-                f"Deleting PushDevice rows with the following device IDs based on response from bouncer: [{registered_device_apple.device_id}, {registered_device_android.device_id}]",
+                f"Clearing `push_token_id` for Device rows with the following token IDs based on response from bouncer: ['{b64encode_token_id_int(registered_device_apple.token_id)}', '{b64encode_token_id_int(registered_device_android.token_id)}']",
                 zerver_logger.output[3],
             )
             self.assertEqual(
@@ -200,7 +258,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             registered_device_android.refresh_from_db()
             self.assertIsNotNone(registered_device_apple.expired_time)
             self.assertIsNotNone(registered_device_android.expired_time)
-            self.assertEqual(PushDevice.objects.count(), 0)
+            self.assertEqual(Device.objects.filter(push_token_id__isnull=False).count(), 0)
 
     def test_fcm_apns_error(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -245,7 +303,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             )
             self.assertIn(
                 "WARNING:zilencer.lib.push_notifications:"
-                f"FCM: Delivery failed for (push_account_id={registered_device_android.push_account_id}, device={registered_device_android.token})",
+                f"FCM: Delivery failed to (realm={hamlet.realm.uuid}, device={registered_device_android.token})",
                 zilencer_logger.output[1],
             )
             self.assertEqual(
@@ -269,7 +327,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
                 "zilencer.lib.push_notifications.send_e2ee_push_notification_apple",
                 return_value=SentPushNotificationResult(
                     successfully_sent_count=1,
-                    delete_device_ids=[],
+                    delete_token_ids_base64=[],
                 ),
             ),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
@@ -309,7 +367,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
                 "zilencer.lib.push_notifications.send_e2ee_push_notification_apple",
                 return_value=SentPushNotificationResult(
                     successfully_sent_count=1,
-                    delete_device_ids=[],
+                    delete_token_ids_base64=[],
                 ),
             ),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
@@ -346,7 +404,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
         registered_device_apple.save(update_fields=["expired_time"])
         registered_device_android.save(update_fields=["expired_time"])
 
-        self.assertEqual(PushDevice.objects.count(), 2)
+        self.assertEqual(Device.objects.filter(push_token_id__isnull=False).count(), 2)
 
         message_id = self.send_personal_message(
             from_user=aaron, to_user=hamlet, skip_capture_on_commit_callbacks=True
@@ -358,7 +416,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
 
         # Since 'expired_time' is set for concerned 'RemotePushDevice' rows,
         # the bouncer will not attempt to send notification and instead returns
-        # a list of device IDs which server should erase on their own end.
+        # a list of token IDs which server should erase on their own end.
         with (
             mock.patch(
                 "zilencer.lib.push_notifications.send_e2ee_push_notification_apple"
@@ -371,7 +429,7 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
 
             send_apple.assert_not_called()
             send_android.assert_not_called()
-            self.assertEqual(PushDevice.objects.count(), 0)
+            self.assertEqual(Device.objects.filter(push_token_id__isnull=False).count(), 0)
 
     @responses.activate
     @override_settings(ZILENCER_ENABLED=False)
@@ -434,12 +492,12 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             )
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
-                f"APNs: Success sending to (push_account_id={registered_device_apple.push_account_id}, device={registered_device_apple.token})",
+                f"APNs: Success sending to (remote_realm={hamlet.realm.uuid}, device={registered_device_apple.token})",
                 zerver_logger.output[2],
             )
             self.assertEqual(
                 "INFO:zilencer.lib.push_notifications:"
-                f"FCM: Sent message with ID: 0 to (push_account_id={registered_device_android.push_account_id}, device={registered_device_android.token})",
+                f"FCM: Sent message with ID: 0 to (remote_realm={hamlet.realm.uuid}, device={registered_device_android.token})",
                 zilencer_logger.output[0],
             )
             self.assertEqual(
@@ -646,12 +704,12 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             # Logs in E2EE codepath
             self.assertEqual(
                 "INFO:zerver.lib.push_notifications:"
-                f"APNs: Success sending to (push_account_id={registered_device_apple.push_account_id}, device={registered_device_apple.token})",
+                f"APNs: Success sending to (realm={hamlet.realm.uuid}, device={registered_device_apple.token})",
                 zerver_logger.output[6],
             )
             self.assertEqual(
                 "INFO:zilencer.lib.push_notifications:"
-                f"FCM: Sent message with ID: 0 to (push_account_id={registered_device_android.push_account_id}, device={registered_device_android.token})",
+                f"FCM: Sent message with ID: 0 to (realm={hamlet.realm.uuid}, device={registered_device_android.token})",
                 zilencer_logger.output[0],
             )
             self.assertEqual(
@@ -1047,10 +1105,11 @@ class SendTestPushNotificationTest(E2EEPushNotificationTestCase):
             )
 
             # Send test notification to a selected mobile device.
+            push_device = Device.objects.get(push_token_id=registered_device_android.token_id)
             result = self.api_post(
                 hamlet,
                 "/api/v1/mobile_push/e2ee/test_notification",
-                {"push_account_id": registered_device_android.push_account_id},
+                {"device_id": push_device.id},
                 subdomain="zulip",
             )
             self.assert_json_success(result)

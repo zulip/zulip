@@ -4,6 +4,7 @@ import * as tippy from "tippy.js";
 
 import render_dropdown_current_value_not_in_options from "../templates/dropdown_current_value_not_in_options.hbs";
 import render_dropdown_disabled_state from "../templates/dropdown_disabled_state.hbs";
+import render_dropdown_italic_state from "../templates/dropdown_italic_state.hbs";
 import render_dropdown_list from "../templates/dropdown_list.hbs";
 import render_dropdown_list_container from "../templates/dropdown_list_container.hbs";
 import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
@@ -19,6 +20,8 @@ import * as util from "./util.ts";
 
 /* Sync with max-height set in zulip.css */
 export const DEFAULT_DROPDOWN_HEIGHT = 210;
+/* Default minimum items required to show the search box. */
+export const MIN_ITEMS_TO_SHOW_SEARCH_BOX = 3;
 const noop = (): void => {
     // Empty function for default values.
 };
@@ -28,15 +31,20 @@ export type DataType = "number" | "string";
 export type Option = {
     unique_id: number | string;
     name: string;
+    aliases?: string[];
     description?: string;
     is_direct_message?: boolean;
     is_setting_disabled?: boolean;
+    make_italic?: boolean;
     stream?: StreamSubscription;
     bold_current_selection?: boolean;
     has_delete_icon?: boolean;
     has_edit_icon?: boolean;
+    has_manage_folder_icon?: boolean;
     delete_icon_label?: string;
     edit_icon_label?: string;
+    manage_folder_icon_label?: string;
+    manage_folder_icon?: string;
 };
 
 export type DropdownWidgetOptions = {
@@ -74,6 +82,7 @@ export type DropdownWidgetOptions = {
     // Text to show if the current value is not in `get_options()`.
     text_if_current_value_not_in_options?: string;
     hide_search_box?: boolean;
+    min_items_to_show_search_box?: number;
     // Disable the widget for spectators.
     disable_for_spectators?: boolean;
     dropdown_input_visible_selector?: string;
@@ -84,6 +93,7 @@ export type DropdownWidgetOptions = {
     // When this is set, pressing tab will move focus to the target element.
     tab_moves_focus_to_target?: string | (() => string);
     search_placeholder_text?: string;
+    sort_list_by_filter_value?: (items: Option[], filter_value: string) => Option[];
 };
 
 export class DropdownWidget {
@@ -114,7 +124,12 @@ export class DropdownWidget {
     unique_id_type: DataType | undefined;
     $events_container: JQuery;
     text_if_current_value_not_in_options: string;
+    // Effective value used while dropdown is open.
     hide_search_box: boolean;
+    // Remember caller’s explicit request to hide search.
+    initial_hide_search_box: boolean;
+    // Only show the search box if options.length > threshold.
+    min_items_to_show_search_box: number;
     disable_for_spectators: boolean;
     dropdown_input_visible_selector: string;
     prefer_top_start_placement: boolean;
@@ -127,6 +142,7 @@ export class DropdownWidget {
     // here, so should be generalized or reworked.
     item_clicked = false;
     search_placeholder_text: string;
+    sort_list_by_filter_value: ((items: Option[], filter_value: string) => Option[]) | undefined;
 
     constructor(options: DropdownWidgetOptions) {
         this.widget_name = options.widget_name;
@@ -154,6 +170,11 @@ export class DropdownWidget {
         this.text_if_current_value_not_in_options =
             options.text_if_current_value_not_in_options ?? "";
         this.hide_search_box = options.hide_search_box ?? false;
+        // Preserve caller's original request to hide the search box.
+        this.initial_hide_search_box = options.hide_search_box ?? false;
+        // Use constant default if the caller didn't provide a value.
+        this.min_items_to_show_search_box =
+            options.min_items_to_show_search_box ?? MIN_ITEMS_TO_SHOW_SEARCH_BOX;
         this.disable_for_spectators = options.disable_for_spectators ?? false;
         this.dropdown_input_visible_selector =
             options.dropdown_input_visible_selector ?? this.widget_selector;
@@ -163,6 +184,7 @@ export class DropdownWidget {
         this.tab_moves_focus_to_target = options.tab_moves_focus_to_target;
         this.current_hover_index = 0;
         this.search_placeholder_text = options.search_placeholder_text ?? "";
+        this.sort_list_by_filter_value = options.sort_list_by_filter_value;
     }
 
     init(): void {
@@ -324,6 +346,12 @@ export class DropdownWidget {
                     // mobile.
                     $(instance.popper).find(".tippy-box").addClass("show-when-reference-hidden");
                 }
+                // Automatically hide the search box for short lists,
+                // unless the caller explicitly requested to hide it.
+                if (!this.initial_hide_search_box) {
+                    const options = this.get_options(this.current_value);
+                    this.hide_search_box = options.length <= this.min_items_to_show_search_box;
+                }
                 instance.setContent(
                     parse_html(
                         render_dropdown_list_container({
@@ -363,10 +391,19 @@ export class DropdownWidget {
                         filter: {
                             $element: $search_input,
                             predicate(item, value) {
-                                return item.name.toLowerCase().includes(value);
+                                if (item.name.toLowerCase().includes(value)) {
+                                    return true;
+                                }
+                                if (item.aliases) {
+                                    return item.aliases.some((alias) =>
+                                        alias.toLowerCase().includes(value),
+                                    );
+                                }
+                                return false;
                             },
                         },
                         $simplebar_container: $popper.find(".dropdown-list-wrapper"),
+                        sort_by_filter_value: this.sort_list_by_filter_value,
                     },
                 );
 
@@ -734,6 +771,8 @@ export class DropdownWidget {
 
         if (option.is_setting_disabled) {
             $(this.widget_value_selector).html(render_dropdown_disabled_state({name: option.name}));
+        } else if (option.make_italic) {
+            $(this.widget_value_selector).html(render_dropdown_italic_state({name: option.name}));
         } else if (option.stream) {
             $(this.widget_value_selector).html(
                 render_inline_decorated_channel_name({

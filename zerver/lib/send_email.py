@@ -12,6 +12,7 @@ from email.message import EmailMessage
 from email.parser import Parser
 from email.policy import default
 from email.utils import formataddr, parseaddr
+from email.utils import formatdate as email_formatdate
 from typing import Any
 
 import backoff
@@ -20,7 +21,6 @@ import orjson
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives, get_connection
 from django.core.mail.backends.base import BaseEmailBackend
-from django.core.mail.backends.smtp import EmailBackend
 from django.core.mail.message import sanitize_address
 from django.core.management import CommandError
 from django.db import transaction
@@ -39,12 +39,10 @@ from zerver.models import Realm, RealmAuditLog, ScheduledEmail, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.scheduled_jobs import EMAIL_TYPES
 from zerver.models.users import get_user_profile_by_id
-from zproject.email_backends import EmailLogBackEnd, get_forward_address
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteZulipServer
 
-EMAIL_DATE_FORMAT = "%a, %d %b %Y %H:%M:%S %z"
 MAX_CONNECTION_TRIES = 3
 
 ## Logging setup ##
@@ -99,6 +97,8 @@ def build_email(
     date: str | None = None,
     context: Mapping[str, Any] = {},
     realm: Realm | None = None,
+    in_reply_to: str | None = None,
+    references: str | None = None,
 ) -> EmailMultiAlternatives:
     # Callers should pass exactly one of to_user_id and to_email.
     assert (to_user_ids is None) ^ (to_emails is None)
@@ -132,7 +132,7 @@ def build_email(
         # Date header of when they were enqueued; Django would also
         # add a default-now header if we left this off, but doing so
         # ourselves here explicitly makes it slightly more consistent.
-        date = timezone_now().strftime(EMAIL_DATE_FORMAT)
+        date = email_formatdate()
     extra_headers["Date"] = date
 
     if realm is not None:
@@ -140,6 +140,12 @@ def build_email(
         # but we can use its utility for formatting the List-Id header, as it follows the same format,
         # except having just a domain instead of an email address.
         extra_headers["List-Id"] = formataddr((realm.name, realm.host))
+
+    if in_reply_to is not None:
+        extra_headers["In-Reply-To"] = in_reply_to
+
+    if references is not None:
+        extra_headers["References"] = references
 
     assert settings.STATIC_URL is not None
     context = {
@@ -272,6 +278,9 @@ def send_immediate_email(
     connection: BaseEmailBackend | None = None,
     dry_run: bool = False,
     request: HttpRequest | None = None,
+    in_reply_to: str | None = None,
+    references: str | None = None,
+    remove_suppressed_destination: bool = False,
 ) -> None:
     mail = build_email(
         template_prefix,
@@ -284,8 +293,10 @@ def send_immediate_email(
         date=date,
         context=context,
         realm=realm,
+        in_reply_to=in_reply_to,
+        references=references,
     )
-    template = template_prefix.split("/")[-1]
+    template = template_prefix.rsplit("/", 1)[-1]
 
     log_email_config_errors()
 
@@ -300,10 +311,13 @@ def send_immediate_email(
     if request is not None:
         cause = f" (triggered from {request.META['REMOTE_ADDR']})"
 
-    logging_recipient: str | list[str] = mail.to
     if realm is not None:
         logging_recipient = f"{mail.to} in {realm.string_id}"
+    else:
+        logging_recipient = f"{mail.to}"
 
+    if remove_suppressed_destination:
+        maybe_remove_from_suppression_list(mail.to)
     logger.info("Sending %s email to %s%s", template, logging_recipient, cause)
 
     try:
@@ -311,6 +325,7 @@ def send_immediate_email(
         # it will only call .close() if it was not open to begin with
         if connection.send_messages([mail]) == 0:
             logger.error("Unknown error sending %s email to %s", template, mail.to)
+            connection.close()
             raise EmailNotDeliveredError
     except smtplib.SMTPResponseException as e:
         logger.exception(
@@ -321,9 +336,11 @@ def send_immediate_email(
             e.smtp_error,
             stack_info=True,
         )
+        connection.close()
         raise EmailNotDeliveredError
     except smtplib.SMTPException as e:
         logger.exception("Error sending %s email to %s: %s", template, mail.to, e, stack_info=True)
+        connection.close()
         raise EmailNotDeliveredError
 
 
@@ -340,6 +357,7 @@ def send_email(
     realm: Realm | None = None,
     connection: BaseEmailBackend | None = None,
     dry_run: bool = False,
+    remove_suppressed_destination: bool = False,
     request: HttpRequest | None = None,
 ) -> None:
     if settings.EMAIL_ALWAYS_ENQUEUED and not dry_run:
@@ -356,6 +374,7 @@ def send_email(
                 date=date,
                 context=context,
                 realm_id=realm.id if realm is not None else None,
+                remove_suppressed_destination=remove_suppressed_destination,
             ),
         )
     else:
@@ -378,6 +397,7 @@ def send_email(
             connection,
             dry_run,
             request,
+            remove_suppressed_destination=remove_suppressed_destination,
         )
 
 
@@ -387,32 +407,7 @@ def initialize_connection(connection: BaseEmailBackend | None = None) -> BaseEma
         connection = get_connection()
         assert connection is not None
 
-    if connection.open():
-        # If it's a new connection, no need to no-op to check connectivity
-        return connection
-
-    if isinstance(connection, EmailLogBackEnd) and not get_forward_address():
-        # With the development environment backend and without a
-        # configured forwarding address, we don't actually send emails.
-        #
-        # As a result, the connection cannot be closed by the server
-        # (as there is none), and `connection.noop` is not
-        # implemented, so we need to return the connection early.
-        return connection
-
-    # No-op to ensure that we don't return a connection that has been
-    # closed by the mail server.
-    if isinstance(connection, EmailBackend):
-        try:
-            assert connection.connection is not None
-            status = connection.connection.noop()[0]
-        except Exception:
-            status = -1
-        if status != 250:
-            # Close and connect again.
-            connection.close()
-            connection.open()
-
+    connection.open()
     return connection
 
 
@@ -427,7 +422,7 @@ def send_future_email(
     context: Mapping[str, Any] = {},
     delay: timedelta = timedelta(0),
 ) -> None:
-    template_name = template_prefix.split("/")[-1]
+    template_name = template_prefix.rsplit("/", 1)[-1]
     email_fields = {
         "template_prefix": template_prefix,
         "from_name": from_name,
@@ -535,7 +530,10 @@ def clear_scheduled_emails(user_ids: list[int], email_type: int | None = None) -
     # We need to obtain a FOR UPDATE lock on the selected rows to keep a concurrent
     # execution of this function (or something else) from deleting them before we access
     # the .users attribute.
-    items = ScheduledEmail.objects.filter(users__in=user_ids).select_for_update()
+    items = ScheduledEmail.objects.filter(users__in=user_ids).select_for_update(
+        # We might end up deleting rows.
+        no_key=False
+    )
     if email_type is not None:
         items = items.filter(type=email_type)
     item_ids = list(items.values_list("id", flat=True))
@@ -818,7 +816,7 @@ def log_email_config_errors() -> None:
         )
 
 
-def maybe_remove_from_suppression_list(email: str) -> None:
+def maybe_remove_from_suppression_list(email_addresses: list[str]) -> None:
     if settings.EMAIL_HOST is None:
         return
 
@@ -832,7 +830,7 @@ def maybe_remove_from_suppression_list(email: str) -> None:
     if boto3.session.Session().get_credentials() is None:
         return
 
-    with contextlib.suppress(botocore.exceptions.ClientError):
-        boto3.client("sesv2", region_name=maybe_aws[1]).delete_suppressed_destination(
-            EmailAddress=email
-        )
+    client = boto3.client("sesv2", region_name=maybe_aws[1])
+    for email_address in email_addresses:
+        with contextlib.suppress(botocore.exceptions.ClientError):
+            client.delete_suppressed_destination(EmailAddress=email_address)

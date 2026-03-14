@@ -3,9 +3,10 @@ import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import type {RawLocalMessage} from "./echo.ts";
-import type {NewMessage, ProcessedMessage} from "./message_helper.ts";
+import type {LocalMessage, NewMessage, ProcessedMessage} from "./message_helper.ts";
 import type {TimeFormattedReminder} from "./message_reminder.ts";
 import * as people from "./people.ts";
+import * as stream_data from "./stream_data.ts";
 import {topic_link_schema} from "./types.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as util from "./util.ts";
@@ -56,6 +57,13 @@ const message_reaction_schema = z.object({
 });
 
 export type MessageReaction = z.infer<typeof message_reaction_schema>;
+
+export const single_message_content_schema = z.object({
+    message: z.object({
+        content: z.string(),
+        content_type: z.enum(["text/html", "text/x-markdown"]),
+    }),
+});
 
 export const submessage_schema = z.object({
     id: z.number(),
@@ -245,6 +253,13 @@ export function get(message_id: number): Message | undefined {
     return stored_messages.get(message_id)?.message;
 }
 
+export function set_messages_for_tests(messages: ProcessedMessage[]): void {
+    stored_messages.clear();
+    for (const message of messages) {
+        stored_messages.set(message.message.id, message);
+    }
+}
+
 export function get_pm_emails(
     message: Message | MessageWithBooleans | LocalMessageWithBooleans,
 ): string {
@@ -402,9 +417,25 @@ export function update_status_emoji_info(
 export function reify_message_id({old_id, new_id}: {old_id: number; new_id: number}): void {
     const message_data = stored_messages.get(old_id);
     if (message_data !== undefined) {
-        message_data.message.id = new_id;
-        message_data.message.locally_echoed = false;
-        stored_messages.set(new_id, {type: "server_message", message: message_data.message});
+        const server_message: Message & Partial<LocalMessage> = message_data.message;
+        if (message_data.type === "local_message") {
+            // Important: Messages are managed as singletons, so
+            // MessageListData objects may already have pointers to
+            // the LocalMessage object for this message. So we must
+            // convert the LocalMessage into a Message by dropping the
+            // extra local echo/drafts fields, not by constructing a
+            // new object with the new type.
+
+            delete server_message.queue_id;
+            delete server_message.draft_id;
+            delete server_message.to;
+            if (server_message.type === "private") {
+                delete server_message.topic;
+            }
+        }
+        server_message.id = new_id;
+        server_message.locally_echoed = false;
+        stored_messages.set(new_id, {type: "server_message", message: server_message});
         stored_messages.delete(old_id);
     }
 }
@@ -427,4 +458,18 @@ export function get_message_ids_in_stream(stream_id: number): number[] {
                 message_data.message.stream_id === stream_id,
         )
         .map((message_data) => message_data.message.id);
+}
+
+export function maybe_update_raw_content(message: Message, raw_content: string | undefined): void {
+    // We shouldn't cache raw_content for messages we won't be receiving update events
+    // for, which in this case are messages from channels the current user isn't
+    // subscribed to.
+    if (message.type === "stream" && !stream_data.is_subscribed(message.stream_id)) {
+        // Clear any existing cached raw_content for this type of message.
+        // Not doing so poses the risk of us using a stale version of the
+        // raw_content after we manually fetch it.
+        message.raw_content = undefined;
+        return;
+    }
+    message.raw_content = raw_content;
 }

@@ -4,12 +4,12 @@ const assert = require("node:assert/strict");
 
 const {parseISO} = require("date-fns");
 const _ = require("lodash");
-const MockDate = require("mockdate");
 
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_bot, make_cross_realm_bot, make_user, Role} = require("./lib/example_user.cjs");
 const {$t} = require("./lib/i18n.cjs");
-const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
+const {clock, mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
@@ -42,41 +42,34 @@ set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
 
-const welcome_bot = {
+const welcome_bot = make_cross_realm_bot({
     email: "welcome-bot@example.com",
     user_id: 4,
     full_name: "Welcome Bot",
-    is_bot: true,
     // cross realm bots have no owner
-};
+});
 
-const email_gateway_bot = {
+const email_gateway_bot = make_cross_realm_bot({
     email: "emailgateway@example.com",
     user_id: 5,
     full_name: "Email Gateway",
-    is_bot: true,
     // cross realm bots have no owner
-};
+});
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
     timezone: "America/Los_Angeles",
-    is_admin: false,
-    is_guest: false,
-    is_moderator: false,
-    is_bot: false,
-    role: 400,
     // no avatar, so client should construct a /avatar/{user_id} URL.
-};
+});
 
-const isaac = {
+const isaac = make_user({
     email: "isaac@example.com",
     delivery_email: "isaac-delivery@example.com",
     user_id: 32,
     full_name: "Isaac Newton",
-};
+});
 
 const unknown_user = people.make_user(1500, "unknown@example.com", "Unknown user");
 
@@ -121,192 +114,169 @@ user_groups.initialize({realm_user_groups: [nobody, everyone]});
     to be rigorous about sort order.
 */
 
-const realm_admin = {
+const realm_admin = make_user({
     email: "realm_admin@example.com",
     full_name: "Realm Admin",
     user_id: 32,
-    is_owner: false,
-    is_admin: true,
-    is_guest: false,
-    is_moderator: true,
-    is_bot: false,
-    role: 200,
-};
+    role: Role.ADMINISTRATOR,
+});
 
-const guest = {
+const guest = make_user({
     email: "guest@example.com",
     full_name: "Guest User",
     user_id: 33,
-    is_owner: false,
-    is_admin: false,
-    is_guest: true,
-    is_moderator: false,
-    is_bot: false,
-    role: 600,
-};
+    role: Role.GUEST,
+});
 
-const realm_owner = {
+const realm_owner = make_user({
     email: "realm_owner@example.com",
     full_name: "Realm Owner",
     user_id: 34,
-    is_owner: true,
-    is_admin: true,
-    is_guest: false,
-    is_moderator: true,
-    is_bot: false,
-    role: 100,
-};
+    role: Role.OWNER,
+});
 
-const bot_botson = {
+const bot_botson = make_bot({
     email: "botson-bot@example.com",
     user_id: 35,
     full_name: "Bot Botson",
-    is_bot: true,
     bot_owner_id: isaac.user_id,
-    role: 300,
-};
+    role: Role.MODERATOR,
+});
 
-const moderator = {
+const moderator = make_user({
     email: "moderator@example.com",
     full_name: "Moderator",
     user_id: 36,
-    is_owner: false,
-    is_admin: false,
-    is_guest: false,
-    is_moderator: true,
-    is_bot: false,
-    role: 300,
-};
+    role: Role.MODERATOR,
+});
 
-const bot_with_inaccessible_owner = {
+const bot_with_inaccessible_owner = make_bot({
     email: "inaccessible-owner-bot@example.com",
     user_id: 37,
     full_name: "Inaccessible owner bot",
-    is_bot: true,
     bot_owner_id: 38,
-    role: 300,
-};
+    role: Role.MODERATOR,
+});
 
-const steven = {
+const steven = make_user({
     email: "steven@example.com",
     delivery_email: "steven-delivery@example.com",
     user_id: 77,
     full_name: "Steven",
-};
+});
 
-const alice1 = {
+const alice1 = make_user({
     email: "alice1@example.com",
     delivery_email: "alice1-delivery@example.com",
     user_id: 202,
     full_name: "Alice",
-};
+});
 
-const bob = {
+const bob = make_user({
     email: "bob@example.com",
     delivery_email: "bob-delivery@example.com",
     user_id: 203,
     full_name: "Bob van Roberts",
-};
+});
 
-const charles = {
+const charles = make_user({
     email: "charles@example.com",
     user_id: 301,
     full_name: "Charles Dickens",
     avatar_url: "http://charles.com/foo.png",
-    is_guest: false,
-};
+});
 
-const maria = {
+const maria = make_user({
     email: "Athens@example.com",
     user_id: 302,
     full_name: "Maria Athens",
     // With client_gravatar enabled, requests that client compute gravatar
     avatar_url: null,
-};
+});
 
-const cedar = {
+const cedar = make_user({
     email: "Cedar@example.com",
     user_id: 305,
     full_name: "Cedar Athens",
     // With client_gravatar enabled, requests that client compute gravatar
     avatar_url: null,
-};
+});
 
-const leo = {
+const leo = make_user({
     email: "Leo@example.com",
     user_id: 306,
     full_name: "Leo Athens",
     // With client_gravatar enabled, requests that client compute gravatar
     avatar_url: null,
-};
+});
 
-const ashton = {
+const ashton = make_user({
     email: "ashton@example.com",
     user_id: 303,
     full_name: "Ashton Smith",
-};
+});
 
-const linus = {
+const linus = make_user({
     email: "ltorvalds@example.com",
     user_id: 304,
     full_name: "Linus Torvalds",
-};
+});
 
-const emp401 = {
+const emp401 = make_user({
     email: "emp401@example.com",
     user_id: 401,
     full_name: "whatever 401",
-};
+});
 
-const emp402 = {
+const emp402 = make_user({
     email: "EMP402@example.com",
     user_id: 402,
     full_name: "whatever 402",
-};
+});
 
-const debbie = {
+const debbie = make_user({
     email: "deBBie71@example.com",
     user_id: 501,
     full_name: "Debra Henton",
-};
+});
 
-const stephen1 = {
+const stephen1 = make_user({
     email: "stephen-the-author@example.com",
     user_id: 601,
     full_name: "Stephen King",
-};
+});
 
-const stephen2 = {
+const stephen2 = make_user({
     email: "stephen-the-explorer@example.com",
     user_id: 602,
     full_name: "Stephen King",
-};
+});
 
-const noah = {
+const noah = make_user({
     email: "emnoa@example.com",
     user_id: 1200,
     full_name: "Nöôáàh Ëmerson",
-};
+});
 
-const plain_noah = {
+const plain_noah = make_user({
     email: "otheremnoa@example.com",
     user_id: 1201,
     full_name: "Nooaah Emerson",
-};
+});
 
-const all1 = {
+const all1 = make_user({
     email: "all1@example.com",
     user_id: 1202,
     full_name: "all",
-};
+});
 
-const all2 = {
+const all2 = make_user({
     email: "all2@example.com",
     user_id: 1203,
     full_name: "all",
-};
+});
 
-const stewie = {
+const stewie = make_user({
     email: "stewie@example.com",
     user_id: 1204,
     full_name: "Stewart Gilligan",
@@ -315,6 +285,13 @@ const stewie = {
         2: "(555) 555-5555",
         3: "he/him",
     },
+});
+
+const imported_user = {
+    email: "imported-user@example.com",
+    user_id: 1205,
+    full_name: "Imported user",
+    is_imported_stub: true,
 };
 
 function get_all_persons() {
@@ -362,7 +339,7 @@ run_test("basics", ({override}) => {
 
     const active_user_ids = people.get_active_user_ids().toSorted();
     assert.deepEqual(active_user_ids, [me.user_id, isaac.user_id]);
-    assert.equal(people.is_active_user_for_popover(isaac.user_id), true);
+    assert.equal(people.is_active_user_or_system_bot(isaac.user_id), true);
     assert.ok(people.is_valid_email_for_compose(isaac.email));
     assert.ok(people.is_valid_user_id_for_compose(isaac.user_id));
 
@@ -374,12 +351,12 @@ run_test("basics", ({override}) => {
     assert.equal(people.get_non_active_human_ids().length, 1);
     assert.equal(people.get_non_active_user_ids_count([isaac.user_id]), 1);
     assert.equal(people.get_active_human_count(), 1);
-    assert.equal(people.is_active_user_for_popover(isaac.user_id), false);
+    assert.equal(people.is_active_user_or_system_bot(isaac.user_id), false);
     assert.equal(people.is_valid_email_for_compose(isaac.email), true);
     assert.equal(people.is_valid_user_id_for_compose(isaac.user_id), true);
 
     people.add_active_user(bot_botson);
-    assert.equal(people.is_active_user_for_popover(bot_botson.user_id), true);
+    assert.equal(people.is_active_user_or_system_bot(bot_botson.user_id), true);
     bot_user_ids = people.get_bot_ids();
     assert.deepEqual(bot_user_ids, [bot_botson.user_id]);
 
@@ -427,10 +404,10 @@ run_test("basics", ({override}) => {
 
     // Invalid user ID returns true and warns.
     blueslip.expect("warn", "Unexpectedly invalid user_id in user popover query");
-    assert.equal(people.is_active_user_for_popover(123412), true);
+    assert.equal(people.is_active_user_or_system_bot(123412), true);
 
     unknown_user.is_inaccessible_user = true;
-    assert.equal(people.is_active_user_for_popover(unknown_user.user_id), true);
+    assert.equal(people.is_active_user_or_system_bot(unknown_user.user_id), true);
     unknown_user.is_inaccessible_user = false;
 
     // We can still get their info for non-realm needs.
@@ -456,6 +433,20 @@ run_test("basics", ({override}) => {
 
     // get_users_from_ids
     assert.deepEqual(people.get_users_from_ids([me.user_id, isaac.user_id]), [me, isaac]);
+
+    // Test with imported user.
+    people.add_active_user(imported_user);
+    assert.equal(people.get_realm_active_human_user_ids().length, 3);
+    assert.equal(people.get_realm_active_human_user_ids_for_users_panel().length, 2);
+    assert.equal(people.get_realm_active_imported_stub_user_ids().length, 1);
+
+    // Check get_realm_active_imported_stub_user_ids does not include deactivated users.
+    assert.equal(people.get_non_active_human_ids().length, 0);
+    people.deactivate(imported_user);
+    assert.equal(people.get_realm_active_human_user_ids().length, 2);
+    assert.equal(people.get_realm_active_human_user_ids_for_users_panel().length, 2);
+    assert.equal(people.get_realm_active_imported_stub_user_ids().length, 0);
+    assert.equal(people.get_non_active_human_ids().length, 1);
 });
 
 run_test("sort_but_pin_current_user_on_top with me", () => {
@@ -664,6 +655,10 @@ run_test("get_custom_fields_by_type", ({override}) => {
     ]);
     assert.deepEqual(people.get_custom_fields_by_type(person.user_id, 8), ["he/him"]);
     assert.deepEqual(people.get_custom_fields_by_type(person.user_id, 100), []);
+
+    // Bots have no profile_data, so the function returns undefined.
+    people.add_active_user(bot_botson);
+    assert.equal(people.get_custom_fields_by_type(bot_botson.user_id, SHORT_TEXT_ID), undefined);
 });
 
 run_test("bot_custom_profile_data", () => {
@@ -677,7 +672,7 @@ run_test("bot_custom_profile_data", () => {
 
 run_test("user_timezone", ({override}) => {
     initialize();
-    MockDate.set(parseISO("20130208T080910").getTime());
+    clock.setSystemTime(parseISO("20130208T080910").getTime());
 
     override(user_settings, "twenty_four_hour_time", true);
     assert.equal(people.get_user_time(me.user_id), "00:09");
@@ -688,7 +683,7 @@ run_test("user_timezone", ({override}) => {
 
 run_test("utcToZonedTime", ({override}) => {
     initialize();
-    MockDate.set(parseISO("20130208T080910").getTime());
+    clock.setSystemTime(parseISO("20130208T080910").getTime());
     override(user_settings, "twenty_four_hour_time", true);
 
     assert.deepEqual(people.get_user_time(unknown_user.user_id), undefined);
@@ -731,11 +726,11 @@ run_test("updates", () => {
 
 run_test("get_by_user_id", () => {
     initialize();
-    let person = {
+    let person = make_user({
         email: "mary@example.com",
         user_id: 42,
         full_name: "Mary",
-    };
+    });
     people.add_active_user(person);
     person = people.get_by_email("mary@example.com");
     assert.equal(person.full_name, "Mary");
@@ -784,6 +779,36 @@ run_test("is_current_user_only_owner", ({override}) => {
 
     people.add_active_user(realm_owner);
     assert.ok(!people.is_current_user_only_owner());
+});
+
+run_test("user_can_change_their_own_role", ({override}) => {
+    initialize();
+    const bob = make_user({
+        email: "bob@example.com",
+        user_id: 1,
+        full_name: "Bob",
+    });
+    people.add_active_user(bob);
+
+    const person = people.get_by_email(bob.email);
+    assert.ok(person);
+
+    person.is_owner = false;
+    override(current_user, "is_owner", true);
+    assert.ok(!people.user_can_change_their_own_role());
+
+    override(current_user, "is_owner", false);
+    override(current_user, "is_admin", true);
+    assert.ok(people.user_can_change_their_own_role());
+
+    override(current_user, "is_owner", false);
+    override(current_user, "is_admin", false);
+    assert.ok(!people.user_can_change_their_own_role());
+
+    person.is_owner = true;
+    override(current_user, "is_owner", true);
+    override(current_user, "is_admin", true);
+    assert.ok(people.user_can_change_their_own_role());
 });
 
 run_test("recipient_counts", () => {
@@ -867,6 +892,10 @@ run_test("dm_matches_search_string", () => {
     result = people.dm_matches_search_string([linus], "ltorv");
     assert.ok(result);
 
+    // Match with user id.
+    result = people.dm_matches_search_string([linus], "304");
+    assert.ok(result);
+
     // Test filtering of names with diacritics. This should match
     // Nöôáàh by ignoring diacritics, and also match Nooaah.
     result = people.dm_matches_search_string([noah], "noOa");
@@ -924,8 +953,10 @@ run_test("user_ids_to_full_names_array", () => {
 
 run_test("multi_user_methods", () => {
     initialize();
-    people.add_active_user(emp401);
-    people.add_active_user(emp402);
+    // Add users to valid_user_ids.
+    const source = "server_events";
+    people.add_active_user(emp401, source);
+    people.add_active_user(emp402, source);
 
     // The order of user_ids is relevant here.
     assert.equal(emp401.user_id, 401);
@@ -934,11 +965,11 @@ run_test("multi_user_methods", () => {
     let emails_string = people.user_ids_string_to_emails_string("402,401");
     assert.equal(emails_string, "emp401@example.com,emp402@example.com");
 
-    emails_string = people.slug_to_emails("402,401");
-    assert.equal(emails_string, "emp401@example.com,emp402@example.com");
+    let user_ids = people.slug_to_user_ids("402,401");
+    assert.deepEqual(user_ids, [402, 401]);
 
-    emails_string = people.slug_to_emails("402,401-group");
-    assert.equal(emails_string, "emp401@example.com,emp402@example.com");
+    user_ids = people.slug_to_user_ids("402,401-group");
+    assert.deepEqual(user_ids, [402, 401]);
 
     emails_string = "emp402@example.com,EMP401@EXAMPLE.COM";
     let user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
@@ -947,13 +978,13 @@ run_test("multi_user_methods", () => {
     user_ids_string = people.reply_to_to_user_ids_string(emails_string);
     assert.equal(user_ids_string, "401,402");
 
-    const slug = people.emails_to_slug(emails_string);
-    assert.equal(slug, "401,402-group");
-
     assert.equal(people.reply_to_to_user_ids_string("invalid@example.com"), undefined);
 
     assert.equal(people.user_ids_string_to_slug("401,402"), "401,402-group");
     assert.equal(people.user_ids_string_to_slug("402"), "402-whatever-402");
+    assert.equal(people.user_ids_to_slug([401, 402]), "401,402-group");
+    assert.equal(people.user_ids_to_slug([402]), "402-whatever-402");
+    assert.equal(people.user_ids_to_slug([]), undefined);
 });
 
 run_test("user_ids_to_full_names_string", () => {
@@ -1001,9 +1032,8 @@ run_test("message_methods", () => {
     people.add_active_user(leo);
     people.add_active_user(ashton);
 
-    // We don't rely on Maria to have all flags set explicitly--
-    // undefined values are just treated as falsy.
-    assert.equal(maria.is_guest, undefined);
+    assert.equal(people.get_muted_user_avatar_url(), "/static/images/muted-user/muted-sender.png");
+    assert.equal(maria.is_guest, false);
 
     assert.equal(
         people.small_avatar_url_for_person(maria),
@@ -1033,17 +1063,9 @@ run_test("message_methods", () => {
     muted_users.add_muted_user(30);
     assert.deepEqual(people.sender_info_for_recent_view_row([30]), [
         {
+            ...me,
             avatar_url_small: "/avatar/30",
             is_muted: true,
-            email: "me@example.com",
-            full_name: me.full_name,
-            is_admin: false,
-            is_bot: false,
-            is_guest: false,
-            is_moderator: false,
-            role: 400,
-            timezone: "America/Los_Angeles",
-            user_id: 30,
         },
     ]);
 
@@ -1126,7 +1148,7 @@ run_test("message_methods", () => {
     assert.equal(people.sender_is_bot(message), true);
 
     message = {sender_id: maria.user_id};
-    assert.equal(people.sender_is_bot(message), undefined);
+    assert.equal(people.sender_is_bot(message), false);
 
     message = {sender_id: undefined};
     assert.equal(people.sender_is_bot(message), false);
@@ -1138,7 +1160,7 @@ run_test("message_methods", () => {
     assert.equal(people.sender_is_guest(message), true);
 
     message = {sender_id: maria.user_id};
-    assert.equal(people.sender_is_guest(message), undefined);
+    assert.equal(people.sender_is_guest(message), false);
 
     message = {sender_id: charles.user_id};
     assert.equal(people.sender_is_guest(message), false);
@@ -1208,20 +1230,6 @@ run_test("maybe_incr_recipient_count", () => {
     assert.equal(people.get_recipient_count(maria), 1);
 });
 
-run_test("slugs", () => {
-    initialize();
-    people.add_active_user(debbie);
-
-    const slug = people.emails_to_slug(debbie.email);
-    assert.equal(slug, "501-Debra-Henton");
-
-    const email = people.slug_to_emails(slug);
-    assert.equal(email, "debbie71@example.com");
-
-    // Test undefined slug
-    assert.equal(people.emails_to_slug("does@not.exist"), undefined);
-});
-
 run_test("get_people_for_search_bar", ({override}) => {
     initialize();
     let user_ids;
@@ -1229,11 +1237,11 @@ run_test("get_people_for_search_bar", ({override}) => {
     override(message_user_ids, "user_ids", () => user_ids);
 
     for (const i of _.range(20)) {
-        const person = {
+        const person = make_user({
             email: "whatever@email.com",
             full_name: "James Jones",
             user_id: 1000 + i,
-        };
+        });
         people.add_active_user(person);
     }
 
@@ -1257,11 +1265,11 @@ run_test("updates", () => {
     const new_email = "bar@example.com";
     const user_id = 502;
 
-    let person = {
+    let person = make_user({
         email: old_email,
         user_id,
         full_name: "Foo Barson",
-    };
+    });
     people.add_active_user(person);
 
     // Do sanity checks on our data.
@@ -1378,29 +1386,29 @@ run_test("initialize", () => {
 
     const params = {};
 
-    const retiree = {
+    const retiree = make_user({
         email: "retiree@example.com",
         user_id: 15,
         full_name: "Retiree",
-    };
+    });
     params.realm_non_active_users = [retiree];
 
-    const current_user = {
+    const current_user = make_user({
         email: "my_email@example.com",
         user_id: 42,
         full_name: "Me Myself",
-    };
-    const alice = {
+    });
+    const alice = make_user({
         email: "alice@example.com",
         user_id: 16,
         full_name: "Alice",
-    };
+    });
     params.realm_users = [alice, current_user];
-    const test_bot = {
+    const test_bot = make_user({
         email: "bot@example.com",
         user_id: 17,
         full_name: "Test Bot",
-    };
+    });
     params.cross_realm_bots = [test_bot];
     const user_group_params = {
         realm_user_groups: [
@@ -1413,7 +1421,7 @@ run_test("initialize", () => {
 
     people.initialize(current_user.user_id, params, user_group_params);
 
-    assert.equal(people.is_active_user_for_popover(17), true);
+    assert.equal(people.is_active_user_or_system_bot(17), true);
     assert.ok(people.is_cross_realm_email("bot@example.com"));
     assert.ok(people.is_valid_email_for_compose("bot@example.com"));
     assert.ok(people.is_valid_user_id_for_compose(test_bot.user_id));
@@ -1426,6 +1434,11 @@ run_test("initialize", () => {
     assert.ok(!people.is_valid_user_id_for_compose(9999));
     assert.ok(people.is_valid_bulk_emails_for_compose(["bot@example.com", "alice@example.com"]));
     assert.ok(!people.is_valid_bulk_emails_for_compose(["not@valid.com", "alice@example.com"]));
+    assert.ok(people.is_valid_bulk_user_ids_for_compose([17, 16, 15]));
+    blueslip.reset();
+    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
+    assert.ok(!people.is_valid_bulk_user_ids_for_compose([17, 9999, 15], false));
+    blueslip.reset();
     assert.ok(people.is_my_user_id(42));
 
     const fetched_retiree = people.get_by_user_id(15);
@@ -1445,7 +1458,7 @@ run_test("predicate_for_user_settings_filters", ({override}) => {
     */
     override(current_user, "is_admin", false);
 
-    const fred_smith = {full_name: "Fred Smith", role: 100};
+    const fred_smith = {full_name: "Fred Smith", role: Role.OWNER};
 
     // Test only when text_search filter is true
     assert.equal(
@@ -1726,7 +1739,7 @@ run_test("get_users_that_match_role_ids", () => {
 
 // reset to native Date()
 run_test("reset MockDate", () => {
-    MockDate.reset();
+    clock.reset();
 });
 
 run_test("fetch_users retry", async ({override, override_rewire}) => {
@@ -1760,6 +1773,7 @@ run_test("fetch_users retry", async ({override, override_rewire}) => {
                     avatar_url: "",
                     avatar_version: 1,
                     is_bot: false,
+                    is_imported_stub: false,
                 },
             ],
             result: "success",
@@ -1798,6 +1812,7 @@ run_test("fetch_users", async ({override}) => {
             avatar_url: "",
             avatar_version: 1,
             is_bot: false,
+            is_imported_stub: false,
         },
         {
             email: "alice@example.com",
@@ -1813,6 +1828,7 @@ run_test("fetch_users", async ({override}) => {
             avatar_url: "",
             avatar_version: 1,
             is_bot: false,
+            is_imported_stub: false,
         },
     ];
 
@@ -1882,6 +1898,8 @@ run_test("fetch_users", async ({override}) => {
     assert.ok(people.is_valid_user_id(16));
     assert.ok(people.is_valid_user_id(42));
     assert.ok(people.is_valid_user_id(17));
+    assert.ok(people.is_valid_user_ids([15, 16, 42, 17]));
+    assert.ok(!people.is_valid_user_ids([15, 16, 42, 9999]));
     assert.equal(people.get_by_email("alice@example.com").user_id, 16);
     assert.equal(people.get_by_email("retiree@example.com").user_id, 15);
 
@@ -1939,6 +1957,7 @@ run_test("fetch_users corner case", async ({override, override_rewire}) => {
             avatar_url: "",
             avatar_version: 1,
             is_bot: false,
+            is_imported_stub: false,
         },
         {
             email: "alice@example.com",
@@ -1954,6 +1973,7 @@ run_test("fetch_users corner case", async ({override, override_rewire}) => {
             avatar_url: "",
             avatar_version: 1,
             is_bot: false,
+            is_imported_stub: false,
         },
     ];
     const second_request_response = [
@@ -1971,6 +1991,7 @@ run_test("fetch_users corner case", async ({override, override_rewire}) => {
             avatar_url: "",
             avatar_version: 1,
             is_bot: false,
+            is_imported_stub: false,
         },
     ];
 
@@ -2014,25 +2035,23 @@ run_test("fetch_users corner case", async ({override, override_rewire}) => {
     let third_promise_resolved = false;
     let first_promise_resolved = false;
 
-    const promise_first = people.get_or_fetch_users_from_ids([1, 2]);
-    promise_first.then(() => {
-        first_promise_resolved = true;
-        assert.ok(third_promise_resolved);
-    });
-    const promise_second = people.get_or_fetch_users_from_ids([1, 2, 3]);
-    promise_second.then(() => {
-        assert.ok(first_promise_resolved);
-        assert.ok(third_promise_resolved);
-    });
-    const promise_third = people.get_or_fetch_users_from_ids([3]);
-    promise_third.then(() => {
-        third_promise_resolved = true;
-        assert.ok(!first_promise_resolved);
-    });
-
-    // Only wait for second promise as we expect it be resolved at last.
-    await promise_second;
-    assert.ok(third_promise_resolved);
+    await Promise.all([
+        (async () => {
+            await people.get_or_fetch_users_from_ids([1, 2]);
+            first_promise_resolved = true;
+            assert.ok(third_promise_resolved);
+        })(),
+        (async () => {
+            await people.get_or_fetch_users_from_ids([1, 2, 3]);
+            assert.ok(first_promise_resolved);
+            assert.ok(third_promise_resolved);
+        })(),
+        (async () => {
+            await people.get_or_fetch_users_from_ids([3]);
+            third_promise_resolved = true;
+            assert.ok(!first_promise_resolved);
+        })(),
+    ]);
 
     const user1 = people.get_by_user_id(1);
     const user2 = people.get_by_user_id(2);
@@ -2040,4 +2059,65 @@ run_test("fetch_users corner case", async ({override, override_rewire}) => {
     assert.equal(user1.full_name, "Retiree");
     assert.equal(user2.full_name, "Alice");
     assert.equal(user3.full_name, "Third user");
+});
+
+run_test("fetch inaccessible user", async ({override, override_rewire}) => {
+    initialize();
+    override_rewire(people, "fetch_users_from_ids_internal", noop);
+    people.add_valid_user_id(1);
+
+    override(settings_data, "user_can_access_all_other_users", () => false);
+    const [inaccessible_user] = await people.get_or_fetch_users_from_ids([1]);
+    assert.equal(inaccessible_user.user_id, 1);
+    assert.equal(inaccessible_user.is_inaccessible_user, true);
+});
+
+run_test("get_by_user_id", () => {
+    initialize();
+    people.add_active_user(maria);
+
+    const user = people.get_by_user_id(maria.user_id);
+    assert.equal(user.full_name, maria.full_name);
+    assert.throws(
+        () => {
+            people.get_by_user_id(9999);
+        },
+        {
+            name: "Error",
+            message: "Unknown user_id in get_by_user_id: 9999",
+        },
+    );
+
+    blueslip.expect("error", "User ID: 8888 is valid but not found in people_by_user_id_dict");
+    people.add_valid_user_id(8888);
+    assert.throws(
+        () => {
+            people.get_by_user_id(8888);
+        },
+        {
+            name: "Error",
+            message: "Unknown user_id in get_by_user_id: 8888",
+        },
+    );
+});
+
+run_test("get_user_mentions_for_display", () => {
+    people.add_active_user(stephen1);
+    people.add_active_user(stephen2);
+    people.add_active_user(maria);
+
+    assert.equal(people.get_user_mentions_for_display([stephen1]), "@**Stephen King|601**");
+    assert.equal(
+        people.get_user_mentions_for_display([stephen1, stephen2]),
+        "@**Stephen King|601** and @**Stephen King|602**",
+    );
+    // User mentions are sorted.
+    assert.equal(
+        people.get_user_mentions_for_display([stephen1, stephen2, maria]),
+        "@**Maria Athens**, @**Stephen King|601**, and @**Stephen King|602**",
+    );
+    assert.equal(
+        people.get_user_mentions_for_display([stephen1, stephen2, maria], true),
+        "@_**Maria Athens**, @_**Stephen King|601**, and @_**Stephen King|602**",
+    );
 });

@@ -2,7 +2,13 @@
 
 const assert = require("node:assert/strict");
 
+const {
+    forward_channel_message_template,
+    quote_message_template,
+} = require("./lib/compose_helpers.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -19,10 +25,11 @@ mock_esm("../src/message_lists", {
 });
 
 const compose_ui = zrequire("compose_ui");
+const linkifiers = zrequire("linkifiers");
 const stream_data = zrequire("stream_data");
+stream_data.set_channel_has_locally_available_topic(() => false);
 const people = zrequire("people");
 const user_status = zrequire("user_status");
-const hash_util = mock_esm("../src/hash_util");
 const channel = mock_esm("../src/channel");
 const compose_reply = zrequire("compose_reply");
 const compose_actions = zrequire("compose_actions");
@@ -30,21 +37,22 @@ const message_lists = zrequire("message_lists");
 const text_field_edit = mock_esm("text-field-edit");
 const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
+const sub_store = zrequire("sub_store");
 
 const realm = make_realm({realm_topics_policy: "allow_empty_topic"});
 set_realm(realm);
 initialize_user_settings({user_settings: {}});
 
-const alice = {
+const alice = make_user({
     email: "alice@zulip.com",
     user_id: 101,
     full_name: "Alice",
-};
-const bob = {
+});
+const bob = make_user({
     email: "bob@zulip.com",
     user_id: 102,
     full_name: "Bob",
-};
+});
 
 people.add_active_user(alice);
 people.add_active_user(bob);
@@ -104,12 +112,11 @@ run_test("autosize_textarea", ({override}) => {
 
 run_test("insert_syntax_and_focus", ({override}) => {
     $("textarea#compose-textarea").val("xyz ");
-    $("textarea#compose-textarea").caret = () => 4;
-    $("textarea#compose-textarea")[0] = "compose-textarea";
+    $("textarea#compose-textarea").caret(4);
     // Since we are using a third party library, we just
     // need to ensure it is being called with the right params.
     override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-        assert.equal(elt, "compose-textarea");
+        assert.equal(elt, $("textarea#compose-textarea")[0]);
         assert.equal(syntax, ":octopus: ");
     });
     compose_ui.insert_syntax_and_focus(":octopus:");
@@ -186,7 +193,7 @@ run_test("replace_syntax", ({override}) => {
     assert.equal(prev_caret + "$$\\pi$$".length - "Bca".length, $textbox.caret());
 });
 
-run_test("compute_placeholder_text", ({override}) => {
+run_test("compute_placeholder_text", ({override, override_rewire}) => {
     let opts = {
         message_type: "stream",
         stream_id: undefined,
@@ -200,11 +207,12 @@ run_test("compute_placeholder_text", ({override}) => {
         $t({defaultMessage: "Compose your message here"}),
     );
 
-    const stream_all = {
+    const stream_all = make_stream({
         subscribed: true,
         name: "all",
         stream_id: 2,
-    };
+        topics_policy: "disable_empty_topic",
+    });
     stream_data.add_sub_for_tests(stream_all);
     opts.stream_id = stream_all.stream_id;
     assert.equal(compose_ui.compute_placeholder_text(opts), $t({defaultMessage: "Message #all"}));
@@ -214,6 +222,31 @@ run_test("compute_placeholder_text", ({override}) => {
         compose_ui.compute_placeholder_text(opts),
         $t({defaultMessage: "Message #all > Test"}),
     );
+
+    // When empty topic is allowed and user can create new topics,
+    // the placeholder should include the "general chat" display name.
+    const stream_open = make_stream({
+        subscribed: true,
+        name: "open",
+        stream_id: 3,
+        topics_policy: "inherit",
+    });
+    stream_data.add_sub_for_tests(stream_open);
+    opts.stream_id = stream_open.stream_id;
+    opts.topic = "";
+    realm.realm_topics_policy = "allow_empty_topic";
+    realm.realm_empty_topic_display_name = "general chat";
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => true);
+    assert.equal(
+        compose_ui.compute_placeholder_text(opts),
+        $t({defaultMessage: "Message #open > translated: general chat"}),
+    );
+
+    // When empty topic is allowed but user cannot create new topics
+    // and no empty topic exists, the placeholder should not include
+    // the empty topic display name.
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => false);
+    assert.equal(compose_ui.compute_placeholder_text(opts), $t({defaultMessage: "Message #open"}));
 
     // direct message narrows
     opts = {
@@ -265,26 +298,173 @@ run_test("compute_placeholder_text", ({override}) => {
     );
 });
 
+run_test("reverse_linkify_text", () => {
+    linkifiers.update_linkifier_rules([
+        {
+            id: 1,
+            pattern: "#(?P<id>\\d+)",
+            url_template: "https://tracker.example.com/issue/{id}",
+            reverse_template: "#{id}",
+        },
+    ]);
+    assert.equal(compose_ui.reverse_linkify_text("https://tracker.example.com/issue/42"), "#42");
+    assert.equal(
+        compose_ui.reverse_linkify_text(
+            "Links https://tracker.example.com/issue/42 and https://tracker.example.com/issue/43",
+        ),
+        "Links #42 and #43",
+    );
+    // Typo in rest of the URL.
+    assert.equal(compose_ui.reverse_linkify_text("https://tracker.example.com/issues/42"), null);
+    // {id} is absent is the URL.
+    assert.equal(compose_ui.reverse_linkify_text("https://tracker.example.com/issues/"), null);
+
+    // Check non HTTP schemes to make sure we don't creep in any HTTP specific
+    // code by mistake.
+    linkifiers.update_linkifier_rules([
+        {
+            id: 2,
+            pattern: "#(?P<id>\\d+)",
+            url_template: "zulip://issue/{id}",
+            reverse_template: "#{id}",
+        },
+    ]);
+    assert.equal(compose_ui.reverse_linkify_text("zulip://issue/42"), "#42");
+
+    // Use `{{` to escape `{`.
+    linkifiers.update_linkifier_rules([
+        {
+            id: 3,
+            pattern: "\\{(?P<id>\\d+)\\}",
+            url_template: "https://tracker.example.com/issue/{id}",
+            reverse_template: "{{{id}}}",
+        },
+    ]);
+    assert.equal(compose_ui.reverse_linkify_text("https://tracker.example.com/issue/42"), "{42}");
+
+    // Ignore reverse template that would not round-trip back to the URL.
+    linkifiers.update_linkifier_rules([
+        {
+            id: 4,
+            pattern: "#(?P<id>.+)",
+            url_template: "https://tracker.example.com/issue/{+id}",
+            reverse_template: "#{id}",
+        },
+    ]);
+    assert.equal(compose_ui.reverse_linkify_text("https://tracker.example.com/issue/a%2Fb"), null);
+    assert.equal(compose_ui.reverse_linkify_text("https://tracker.example.com/issue/a/b"), "#a/b");
+
+    // When reverse linkifier URL templates overlap, the first matching
+    // linkifier should determine the shortened text.
+    linkifiers.update_linkifier_rules([
+        {
+            id: 5,
+            pattern: "flutter#(?P<id>\\d+)",
+            url_template: "https://github.com/zulip/zulip-flutter/pull/{id}",
+            reverse_template: "flutter#{id}",
+        },
+        {
+            id: 6,
+            pattern: "(?P<repo>[a-zA-Z0-9_-]+)#(?P<id>\\d+)",
+            url_template: "https://github.com/zulip/{repo}/pull/{id}",
+            reverse_template: "{repo}#{id}",
+        },
+    ]);
+    assert.equal(
+        compose_ui.reverse_linkify_text("https://github.com/zulip/zulip-flutter/pull/123"),
+        "flutter#123",
+    );
+
+    linkifiers.update_linkifier_rules([
+        {
+            id: 6,
+            pattern: "(?P<repo>[a-zA-Z0-9_-]+)#(?P<id>\\d+)",
+            url_template: "https://github.com/zulip/{repo}/pull/{id}",
+            reverse_template: "{repo}#{id}",
+        },
+        {
+            id: 5,
+            pattern: "flutter#(?P<id>\\d+)",
+            url_template: "https://github.com/zulip/zulip-flutter/pull/{id}",
+            reverse_template: "flutter#{id}",
+        },
+    ]);
+    assert.equal(
+        compose_ui.reverse_linkify_text("https://github.com/zulip/zulip-flutter/pull/123"),
+        "zulip-flutter#123",
+    );
+
+    // Alternative URL templates: match URLs against both primary and alternatives.
+    linkifiers.update_linkifier_rules([
+        {
+            id: 7,
+            pattern: "#(?P<id>\\d+)",
+            url_template: "https://github.com/zulip/zulip/issues/{id}",
+            reverse_template: "#{id}",
+            alternative_url_templates: ["https://github.com/zulip/zulip/pull/{id}"],
+        },
+    ]);
+    // Primary URL template still works.
+    assert.equal(
+        compose_ui.reverse_linkify_text("https://github.com/zulip/zulip/issues/123"),
+        "#123",
+    );
+    // Alternative URL template also works.
+    assert.equal(
+        compose_ui.reverse_linkify_text("https://github.com/zulip/zulip/pull/456"),
+        "#456",
+    );
+    // Non-matching URL returns null.
+    assert.equal(compose_ui.reverse_linkify_text("https://github.com/zulip/zulip/wiki/789"), null);
+
+    // Multiple alternative URL templates.
+    linkifiers.update_linkifier_rules([
+        {
+            id: 8,
+            pattern: "#(?P<id>\\d+)",
+            url_template: "https://github.com/zulip/zulip/issues/{id}",
+            reverse_template: "#{id}",
+            alternative_url_templates: [
+                "https://github.com/zulip/zulip/pull/{id}",
+                "https://github.com/zulip/zulip/discussions/{id}",
+            ],
+        },
+    ]);
+    assert.equal(
+        compose_ui.reverse_linkify_text("https://github.com/zulip/zulip/discussions/42"),
+        "#42",
+    );
+
+    // Alternative templates with no reverse_template are ignored.
+    linkifiers.update_linkifier_rules([
+        {
+            id: 9,
+            pattern: "#(?P<id>\\d+)",
+            url_template: "https://github.com/zulip/zulip/issues/{id}",
+            reverse_template: null,
+            alternative_url_templates: ["https://github.com/zulip/zulip/pull/{id}"],
+        },
+    ]);
+    assert.equal(compose_ui.reverse_linkify_text("https://github.com/zulip/zulip/pull/123"), null);
+});
+
 run_test("quote_message", ({override, override_rewire}) => {
-    const devel_stream = {
+    const devel_stream = make_stream({
         subscribed: false,
         name: "devel",
         stream_id: 20,
-    };
+    });
+
+    sub_store.add_hydrated_sub(devel_stream.stream_id, devel_stream);
 
     const selected_message = {
         type: "stream",
         stream_id: devel_stream.stream_id,
-        topic: "python",
+        topic: "Tornado",
         sender_full_name: "Steve Stephenson",
         sender_id: 90,
+        id: 100,
     };
-
-    override(
-        hash_util,
-        "by_conversation_and_time_url",
-        () => "https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado",
-    );
 
     override(message_lists.current, "get", (id) => (id === 100 ? selected_message : undefined));
 
@@ -293,53 +473,26 @@ run_test("quote_message", ({override, override_rewire}) => {
         success_function = opts.success;
     });
 
-    // zjquery does not simulate caret handling, so we provide
-    // our own versions of val() and caret()
-    let textarea_val = "";
-    let textarea_caret_pos;
+    function run_success_callback() {
+        success_function({
+            message: {
+                content: quote_text,
+                content_type: "text/x-markdown",
+            },
+        });
+    }
 
-    $("textarea#compose-textarea").val = function () {
-        return textarea_val;
-    };
-
-    $("textarea#compose-textarea").caret = function (arg) {
-        if (arg === undefined) {
-            return textarea_caret_pos;
-        }
-        if (typeof arg === "number") {
-            textarea_caret_pos = arg;
-            return this;
-        }
-
-        /* This next block of mocking code is currently unused, but
-           is preserved, since it may be useful in the future. */
-        /* istanbul ignore next */
-        {
-            if (typeof arg !== "string") {
-                console.info(arg);
-                throw new Error("We expected the actual code to pass in a string.");
-            }
-
-            const before = textarea_val.slice(0, textarea_caret_pos);
-            const after = textarea_val.slice(textarea_caret_pos);
-
-            textarea_val = before + arg + after;
-            textarea_caret_pos += arg.length;
-            return this;
-        }
-    };
-    $("textarea#compose-textarea")[0] = "compose-textarea";
     $("textarea#compose-textarea").attr("id", "compose-textarea");
     override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-        assert.equal(elt, "compose-textarea");
+        assert.equal(elt, $("textarea#compose-textarea")[0]);
         assert.equal(syntax, "\n\ntranslated: [Quoting…]\n\n");
     });
 
     function set_compose_content_with_caret(content) {
         const caret_position = content.indexOf("%");
         content = content.slice(0, caret_position) + content.slice(caret_position + 1); // remove the "%"
-        textarea_val = content;
-        textarea_caret_pos = caret_position;
+        $("textarea#compose-textarea").val(content);
+        $("textarea#compose-textarea").caret(caret_position);
         $("textarea#compose-textarea").trigger("focus");
     }
 
@@ -348,21 +501,38 @@ run_test("quote_message", ({override, override_rewire}) => {
         delete selected_message.raw_content;
 
         // Reset compose-box state.
-        textarea_val = "";
-        textarea_caret_pos = 0;
+        $("textarea#compose-textarea").val("");
+        $("textarea#compose-textarea").caret(0);
         $("textarea#compose-textarea").trigger("blur");
     }
 
     function override_with_quote_text(quote_text) {
         override(text_field_edit, "replaceFieldText", (elt, old_syntax, new_syntax) => {
-            assert.equal(elt, "compose-textarea");
+            assert.equal(elt, $("textarea#compose-textarea")[0]);
             assert.equal(old_syntax, "translated: [Quoting…]");
             assert.equal(
                 new_syntax(),
-                "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/channel/92-learning/topic/Tornado):\n" +
-                    "```quote\n" +
-                    `${quote_text}\n` +
-                    "```",
+                quote_message_template({
+                    channel_object: devel_stream,
+                    selected_message,
+                    fence: "```",
+                    content: quote_text,
+                }),
+            );
+        });
+    }
+    function override_with_forward_text(quote_text) {
+        override(text_field_edit, "replaceFieldText", (elt, old_syntax, new_syntax) => {
+            assert.equal(elt, $("textarea#compose-textarea")[0]);
+            assert.equal(old_syntax, "translated: [Quoting…]");
+            assert.equal(
+                new_syntax(),
+                forward_channel_message_template({
+                    channel_object: devel_stream,
+                    selected_message,
+                    fence: "```",
+                    content: quote_text,
+                }),
             );
         });
     }
@@ -370,17 +540,14 @@ run_test("quote_message", ({override, override_rewire}) => {
     override_with_quote_text(quote_text);
     set_compose_content_with_caret("hello %there"); // "%" is used to encode/display position of focus before change
     compose_reply.quote_message({message_id: 100});
-
-    success_function({
-        raw_content: quote_text,
-    });
+    run_success_callback();
 
     reset_test_state();
 
     // If the caret is initially positioned at 0, it should not
     // add newlines before the quoted message.
     override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-        assert.equal(elt, "compose-textarea");
+        assert.equal(elt, $("textarea#compose-textarea")[0]);
         assert.equal(syntax, "translated: [Quoting…]\n\n");
     });
     set_compose_content_with_caret("%hello there");
@@ -388,14 +555,12 @@ run_test("quote_message", ({override, override_rewire}) => {
 
     quote_text = "Testing with caret initially positioned at 0.";
     override_with_quote_text(quote_text);
-    success_function({
-        raw_content: quote_text,
-    });
+    run_success_callback();
 
     override_rewire(compose_reply, "respond_to_message", () => {
         // Reset compose state to replicate the re-opening of compose-box.
-        textarea_val = "";
-        textarea_caret_pos = 0;
+        $("textarea#compose-textarea").val("");
+        $("textarea#compose-textarea").caret(0);
         $("textarea#compose-textarea").trigger("focus");
     });
 
@@ -410,9 +575,7 @@ run_test("quote_message", ({override, override_rewire}) => {
 
     quote_text = "Testing with compose-box closed initially.";
     override_with_quote_text(quote_text);
-    success_function({
-        raw_content: quote_text,
-    });
+    run_success_callback();
 
     reset_test_state();
 
@@ -425,9 +588,7 @@ run_test("quote_message", ({override, override_rewire}) => {
 
     quote_text = "Testing with compose-box containing whitespaces and newlines only.";
     override_with_quote_text(quote_text);
-    success_function({
-        raw_content: quote_text,
-    });
+    run_success_callback();
 
     reset_test_state();
 
@@ -444,17 +605,15 @@ run_test("quote_message", ({override, override_rewire}) => {
     compose_reply.quote_message({forward_message: true});
     assert.ok(new_message);
 
-    override_with_quote_text(quote_text);
-    success_function({
-        raw_content: quote_text,
-    });
+    override_with_forward_text(quote_text);
+    run_success_callback();
 
     reset_test_state();
 
     // When there is already 1 newline before and after the caret,
     // only 1 newline is added before and after the quoted message.
     override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-        assert.equal(elt, "compose-textarea");
+        assert.equal(elt, $("textarea#compose-textarea")[0]);
         assert.equal(syntax, "\ntranslated: [Quoting…]\n");
     });
     set_compose_content_with_caret("1st line\n%\n2nd line");
@@ -462,16 +621,14 @@ run_test("quote_message", ({override, override_rewire}) => {
 
     quote_text = "Testing with caret on a new line between 2 lines of text.";
     override_with_quote_text(quote_text);
-    success_function({
-        raw_content: quote_text,
-    });
+    run_success_callback();
 
     reset_test_state();
 
     // When there are many (>=2) newlines before and after the caret,
     // no newline is added before or after the quoted message.
     override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-        assert.equal(elt, "compose-textarea");
+        assert.equal(elt, $("textarea#compose-textarea")[0]);
         assert.equal(syntax, "translated: [Quoting…]");
     });
     set_compose_content_with_caret("lots of\n\n\n\n%\n\n\nnewlines");
@@ -479,24 +636,16 @@ run_test("quote_message", ({override, override_rewire}) => {
 
     quote_text = "Testing with caret on a new line between many empty newlines.";
     override_with_quote_text(quote_text);
-    success_function({
-        raw_content: quote_text,
-    });
+    run_success_callback();
 });
 
 run_test("set_compose_box_top", () => {
-    let compose_top = "";
-    $("#compose").css = (arg, val) => {
-        assert.equal(arg, "top");
-        compose_top = val;
-    };
-
     $("#navbar-fixed-container").set_height(50);
     compose_ui.set_compose_box_top(true);
-    assert.equal(compose_top, "50px");
+    assert.equal($("#compose")[0].style.getPropertyValue("top"), "50px");
 
     compose_ui.set_compose_box_top(false);
-    assert.equal(compose_top, "");
+    assert.equal($("#compose")[0].style.getPropertyValue("top"), "");
 });
 
 run_test("test_compose_height_changes", ({override, override_rewire}) => {
@@ -523,17 +672,7 @@ run_test("test_compose_height_changes", ({override, override_rewire}) => {
 });
 
 const $textarea = $("textarea#compose-textarea");
-$textarea.get = () => ({
-    setSelectionRange(start, end) {
-        $textarea.range = () => ({
-            start,
-            end,
-            text: $textarea.val().slice(start, end),
-            length: end - start,
-        });
-    },
-    click() {},
-});
+$textarea[0].click = () => {};
 
 // The argument `text_representation` is a string representing the text
 // in the compose box, where `<` and `>` denote the start and end of any
@@ -541,23 +680,12 @@ $textarea.get = () => ({
 // To work as expected, the string must contain either a `|`, or a `<`
 // followed by a `>` with some text in between.
 function init_textarea_state(text_representation) {
-    $textarea.val = () => text_representation.replaceAll(/[<>|]/g, "");
-    $textarea.range = text_representation.includes("|")
-        ? () => ({
-              start: text_representation.indexOf("|"),
-              end: text_representation.indexOf("|"),
-              text: "",
-              length: 0,
-          })
-        : () => ({
-              start: text_representation.indexOf("<"),
-              end: text_representation.indexOf(">") - 1,
-              text: text_representation.slice(
-                  text_representation.indexOf("<") + 1,
-                  text_representation.indexOf(">"),
-              ),
-              length: text_representation.indexOf(">") - text_representation.indexOf("<") - 1,
-          });
+    $textarea.val(text_representation.replaceAll(/[<>|]/g, ""));
+    if (text_representation.includes("|")) {
+        $textarea.caret(text_representation.indexOf("|"));
+    } else {
+        $textarea.range(text_representation.indexOf("<"), text_representation.indexOf(">") - 1);
+    }
 }
 
 // Returns a string representing the text in the compose box, of the same
@@ -575,7 +703,7 @@ run_test("format_text - bold and italic", ({override, override_rewire}) => {
         "insert_and_scroll_into_view",
         (content, _textarea, replace_all) => {
             assert.ok(replace_all);
-            $textarea.val = () => content;
+            $textarea.val(content);
         },
     );
     override(
@@ -588,19 +716,11 @@ run_test("format_text - bold and italic", ({override, override_rewire}) => {
                 $textarea.val().slice($textarea.range().start, $textarea.range().end) +
                 syntax_end +
                 $textarea.val().slice($textarea.range().end);
-            $textarea.val = () => new_val;
-            const new_range = {
-                start: $textarea.range().start + syntax_start.length,
-                end: $textarea.range().end + syntax_start.length,
-                text: $textarea
-                    .val()
-                    .slice(
-                        $textarea.range().start + syntax_start.length,
-                        $textarea.range().end + syntax_start.length,
-                    ),
-                length: $textarea.range().end - $textarea.range().start,
-            };
-            $textarea.range = () => new_range;
+            $textarea.val(new_val);
+            $textarea.range(
+                $textarea.range().start + syntax_start.length,
+                $textarea.range().end + syntax_start.length,
+            );
         },
     );
 
@@ -670,7 +790,7 @@ run_test("format_text - bulleted and numbered lists", ({override_rewire}) => {
         "insert_and_scroll_into_view",
         (content, _textarea, replace_all) => {
             assert.ok(replace_all);
-            $textarea.val = () => content;
+            $textarea.val(content);
         },
     );
 
@@ -731,7 +851,7 @@ run_test("format_text - strikethrough", ({override, override_rewire}) => {
         "insert_and_scroll_into_view",
         (content, _textarea, replace_all) => {
             assert.ok(replace_all);
-            $textarea.val = () => content;
+            $textarea.val(content);
         },
     );
     override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
@@ -741,19 +861,11 @@ run_test("format_text - strikethrough", ({override, override_rewire}) => {
             $textarea.val().slice($textarea.range().start, $textarea.range().end) +
             syntax_end +
             $textarea.val().slice($textarea.range().end);
-        $textarea.val = () => new_val;
-        const new_range = {
-            start: $textarea.range().start + syntax_start.length,
-            end: $textarea.range().end + syntax_start.length,
-            text: $textarea
-                .val()
-                .slice(
-                    $textarea.range().start + syntax_start.length,
-                    $textarea.range().end + syntax_start.length,
-                ),
-            length: $textarea.range().end - $textarea.range().start,
-        };
-        $textarea.range = () => new_range;
+        $textarea.val(new_val);
+        $textarea.range(
+            $textarea.range().start + syntax_start.length,
+            $textarea.range().end + syntax_start.length,
+        );
     });
 
     // Strikethrough selected text
@@ -783,7 +895,7 @@ run_test("format_text - latex", ({override, override_rewire}) => {
         "insert_and_scroll_into_view",
         (content, _textarea, replace_all) => {
             assert.ok(replace_all);
-            $textarea.val = () => content;
+            $textarea.val(content);
         },
     );
     override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
@@ -793,19 +905,11 @@ run_test("format_text - latex", ({override, override_rewire}) => {
             $textarea.val().slice($textarea.range().start, $textarea.range().end) +
             syntax_end +
             $textarea.val().slice($textarea.range().end);
-        $textarea.val = () => new_val;
-        const new_range = {
-            start: $textarea.range().start + syntax_start.length,
-            end: $textarea.range().end + syntax_start.length,
-            text: $textarea
-                .val()
-                .slice(
-                    $textarea.range().start + syntax_start.length,
-                    $textarea.range().end + syntax_start.length,
-                ),
-            length: $textarea.range().end - $textarea.range().start,
-        };
-        $textarea.range = () => new_range;
+        $textarea.val(new_val);
+        $textarea.range(
+            $textarea.range().start + syntax_start.length,
+            $textarea.range().end + syntax_start.length,
+        );
     });
 
     // Latex selected text
@@ -854,7 +958,7 @@ run_test("format_text - code", ({override, override_rewire}) => {
         "insert_and_scroll_into_view",
         (content, _textarea, replace_all) => {
             assert.ok(replace_all);
-            $textarea.val = () => content;
+            $textarea.val(content);
         },
     );
     override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
@@ -864,19 +968,11 @@ run_test("format_text - code", ({override, override_rewire}) => {
             $textarea.val().slice($textarea.range().start, $textarea.range().end) +
             syntax_end +
             $textarea.val().slice($textarea.range().end);
-        $textarea.val = () => new_val;
-        const new_range = {
-            start: $textarea.range().start + syntax_start.length,
-            end: $textarea.range().end + syntax_start.length,
-            text: $textarea
-                .val()
-                .slice(
-                    $textarea.range().start + syntax_start.length,
-                    $textarea.range().end + syntax_start.length,
-                ),
-            length: $textarea.range().end - $textarea.range().start,
-        };
-        $textarea.range = () => new_range;
+        $textarea.val(new_val);
+        $textarea.range(
+            $textarea.range().start + syntax_start.length,
+            $textarea.range().end + syntax_start.length,
+        );
     });
 
     // Code selected text
@@ -925,7 +1021,7 @@ run_test("format_text - quote", ({override, override_rewire}) => {
         "insert_and_scroll_into_view",
         (content, _textarea, replace_all) => {
             assert.ok(replace_all);
-            $textarea.val = () => content;
+            $textarea.val(content);
         },
     );
     override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
@@ -935,19 +1031,11 @@ run_test("format_text - quote", ({override, override_rewire}) => {
             $textarea.val().slice($textarea.range().start, $textarea.range().end) +
             syntax_end +
             $textarea.val().slice($textarea.range().end);
-        $textarea.val = () => new_val;
-        const new_range = {
-            start: $textarea.range().start + syntax_start.length,
-            end: $textarea.range().end + syntax_start.length,
-            text: $textarea
-                .val()
-                .slice(
-                    $textarea.range().start + syntax_start.length,
-                    $textarea.range().end + syntax_start.length,
-                ),
-            length: $textarea.range().end - $textarea.range().start,
-        };
-        $textarea.range = () => new_range;
+        $textarea.val(new_val);
+        $textarea.range(
+            $textarea.range().start + syntax_start.length,
+            $textarea.range().end + syntax_start.length,
+        );
     });
 
     // Quote selected text
@@ -989,7 +1077,7 @@ run_test("format_text - spoiler", ({override, override_rewire}) => {
         "insert_and_scroll_into_view",
         (content, _textarea, replace_all) => {
             assert.ok(replace_all);
-            $textarea.val = () => content;
+            $textarea.val(content);
         },
     );
     override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
@@ -999,7 +1087,7 @@ run_test("format_text - spoiler", ({override, override_rewire}) => {
             $textarea.val().slice($textarea.range().start, $textarea.range().end) +
             syntax_end +
             $textarea.val().slice($textarea.range().end);
-        $textarea.val = () => new_val;
+        $textarea.val(new_val);
         // Since, the original selection is not retained for spoiler,
         // resetting range on wrapping selection is not required.
     });
@@ -1061,7 +1149,7 @@ run_test("format_text - link", ({override, override_rewire}) => {
         "insert_and_scroll_into_view",
         (content, _textarea, replace_all) => {
             assert.ok(replace_all);
-            $textarea.val = () => content;
+            $textarea.val(content);
         },
     );
     override(text_field_edit, "wrapFieldSelection", (_field, syntax_start, syntax_end) => {
@@ -1071,7 +1159,7 @@ run_test("format_text - link", ({override, override_rewire}) => {
             $textarea.val().slice($textarea.range().start, $textarea.range().end) +
             syntax_end +
             $textarea.val().slice($textarea.range().end);
-        $textarea.val = () => new_val;
+        $textarea.val(new_val);
         // Since, the original selection is not retained for spoiler,
         // resetting range on wrapping selection is not required.
     });
@@ -1206,6 +1294,15 @@ run_test("markdown_shortcuts", ({override_rewire}) => {
         compose_ui.handle_keydown(event, $("textarea#compose-textarea"));
         assert.equal(format_text_type, "link");
         format_text_type = undefined;
+
+        // Test code block insertion:
+        // Mac = Cmd+Shift+C
+        // Windows/Linux = Ctrl+Shift+C
+        event.key = "c";
+        event.shiftKey = true;
+        compose_ui.handle_keydown(event, $("textarea#compose-textarea"));
+        assert.equal(format_text_type, "code");
+        format_text_type = undefined;
     }
 
     // This function cross tests the Cmd/Ctrl + Markdown shortcuts in
@@ -1276,7 +1373,7 @@ run_test("right-to-left", () => {
 });
 
 const get_focus_area = compose_ui._get_focus_area;
-run_test("get_focus_area", ({override}) => {
+run_test("get_focus_area", ({override, override_rewire}) => {
     assert.equal(
         get_focus_area({message_type: "private", private_message_recipient_ids: []}),
         "#private_message_recipient",
@@ -1293,12 +1390,13 @@ run_test("get_focus_area", ({override}) => {
         "#compose_select_recipient_widget_wrapper",
     );
 
-    stream_data.add_sub_for_tests({
-        message_type: "stream",
-        name: "fun",
-        stream_id: 4,
-        topics_policy: "inherit",
-    });
+    stream_data.add_sub_for_tests(
+        make_stream({
+            name: "fun",
+            stream_id: 4,
+            topics_policy: "inherit",
+        }),
+    );
 
     override(realm, "realm_topics_policy", "disable_empty_topic");
     assert.equal(
@@ -1306,6 +1404,7 @@ run_test("get_focus_area", ({override}) => {
         "input#stream_message_recipient_topic",
     );
     override(realm, "realm_topics_policy", "allow_empty_topic");
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => true);
     assert.equal(
         get_focus_area({message_type: "stream", stream_name: "fun", stream_id: 4}),
         "textarea#compose-textarea",
@@ -1321,6 +1420,15 @@ run_test("get_focus_area", ({override}) => {
             topic: "more",
             trigger: "clear topic button",
         }),
+        "input#stream_message_recipient_topic",
+    );
+
+    // When empty topics are allowed by policy but the user cannot
+    // create new topics and no empty topic exists, focus should go
+    // to the topic input, not the textarea.
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => false);
+    assert.equal(
+        get_focus_area({message_type: "stream", stream_name: "fun", stream_id: 4}),
         "input#stream_message_recipient_topic",
     );
 });

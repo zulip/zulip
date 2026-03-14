@@ -2,8 +2,10 @@ import hashlib
 import json
 import logging
 import random
+from abc import ABC, abstractmethod
 from base64 import b64encode
-from urllib.parse import quote, urlencode, urljoin
+from typing import Any
+from urllib.parse import quote, urlencode, urljoin, urlsplit
 
 import requests
 from defusedxml import ElementTree
@@ -19,10 +21,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from oauthlib.oauth2 import OAuth2Error
 from pydantic import Json
+from requests import Response
 from requests_oauthlib import OAuth2Session
-from typing_extensions import TypedDict
+from typing_extensions import TypedDict, override
 
-from zerver.actions.video_calls import do_set_zoom_token
+from zerver.actions.video_calls import do_set_video_call_provider_token
 from zerver.decorator import zulip_login_required
 from zerver.lib.cache import (
     cache_with_key,
@@ -30,6 +33,7 @@ from zerver.lib.cache import (
     zoom_server_access_token_cache_key,
 )
 from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.message import truncate_content
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.partial import partial
 from zerver.lib.pysa import mark_sanitized
@@ -47,11 +51,20 @@ class VideoCallSession(OutgoingSession):
         super().__init__(role="video_calls", timeout=5)
 
 
-class InvalidZoomTokenError(JsonableError):
-    code = ErrorCode.INVALID_ZOOM_TOKEN
+class InvalidVideoCallProviderTokenError(JsonableError):
+    code = ErrorCode.INVALID_VIDEO_CALL_PROVIDER_TOKEN
 
-    def __init__(self) -> None:
-        super().__init__(_("Invalid Zoom access token"))
+    def __init__(self, provider_name: str) -> None:
+        super().__init__(
+            _("Invalid {provider_name} access token").format(provider_name=provider_name)
+        )
+
+
+class CreateVideoCallFailedError(JsonableError):
+    def __init__(self, provider_name: str) -> None:
+        super().__init__(
+            _("Failed to create {provider_name} call").format(provider_name=provider_name)
+        )
 
 
 class UnknownZoomUserError(JsonableError):
@@ -61,56 +74,218 @@ class UnknownZoomUserError(JsonableError):
         super().__init__(_("Unknown Zoom user email"))
 
 
-def get_zoom_session(user: UserProfile) -> OAuth2Session:
-    if settings.VIDEO_ZOOM_CLIENT_ID is None:
-        raise JsonableError(_("Zoom credentials have not been configured"))
+class ConstructorGroupsService:
+    def __init__(self) -> None:
+        if (
+            (url := settings.CONSTRUCTOR_GROUPS_URL) is None
+            or (access_key := settings.CONSTRUCTOR_GROUPS_ACCESS_KEY) is None
+            or (secret_key := settings.CONSTRUCTOR_GROUPS_SECRET_KEY) is None
+        ):
+            raise CreateVideoCallFailedError("Constructor Groups")
 
-    client_id = settings.VIDEO_ZOOM_CLIENT_ID
-    client_secret = settings.VIDEO_ZOOM_CLIENT_SECRET
+        self.access_key = access_key
+        self.secret_key = secret_key
+        self.base_url = url.rstrip("/")
 
-    return OAuth2Session(
-        client_id,
-        redirect_uri=urljoin(settings.ROOT_DOMAIN_URI, "/calls/zoom/complete"),
-        auto_refresh_url="https://zoom.us/oauth/token",
-        auto_refresh_kwargs={
-            "client_id": client_id,
-            "client_secret": client_secret,
-        },
-        token=user.zoom_token,
-        token_updater=partial(do_set_zoom_token, user),
-    )
+    def _make_authenticated_request(
+        self, method: str, endpoint: str, data: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        """Make authenticated request to Constructor Groups XAPI"""
+        url = f"{self.base_url}{endpoint}"
+
+        # Construct authentication token: ACCESS_KEY|SHA256(ACCESS_KEY|SECRET_KEY)
+        combined_string = f"{self.access_key}|{self.secret_key}"
+        hash_hex = hashlib.sha256(combined_string.encode("utf-8")).hexdigest()
+        auth_token = f"{self.access_key}|{hash_hex}"
+
+        headers = {
+            "Authorization": f"Bearer {auth_token}",
+            "Content-Type": "application/json",
+        }
+
+        try:
+            session = VideoCallSession()
+            if method.upper() == "POST":
+                response = session.post(url, headers=headers, json=data or {})
+            else:
+                raise ValueError(f"Unsupported HTTP method: {method}")
+
+            response.raise_for_status()
+            return response.json()
+        except requests.HTTPError as e:
+            logging.exception(
+                "Constructor Groups API request failed with status %s", e.response.status_code
+            )
+            raise CreateVideoCallFailedError("Constructor Groups")
+        except Exception:
+            logging.exception("Constructor Groups API request failed")
+            raise CreateVideoCallFailedError("Constructor Groups")
+
+    def get_or_create_default_room(
+        self, creator_email: str, name: str, fallback_name: str
+    ) -> dict[str, Any]:
+        data = {
+            "creator_email": creator_email,
+            "name": name,
+            "fallback_name": fallback_name,
+        }
+
+        return self._make_authenticated_request("POST", "/room/default", data)
 
 
-def get_zoom_sid(request: HttpRequest) -> str:
-    # This is used to prevent CSRF attacks on the Zoom OAuth
-    # authentication flow.  We want this value to be unpredictable and
-    # tied to the session, but we don’t want to expose the main CSRF
-    # token directly to the Zoom server.
+class OAuthVideoCallProvider(ABC):
+    provider_name: str = NotImplemented
+    client_id: str | None = NotImplemented
+    client_secret: str | None = NotImplemented
+    authorization_scope: str | None = NotImplemented
+    authorization_url: str = NotImplemented
+    token_url: str = NotImplemented
+    auto_refresh_url: str = NotImplemented
+    create_meeting_url: str = NotImplemented
+    token_key_name: str = NotImplemented
 
-    csrf.get_token(request)
-    # Use 'mark_sanitized' to cause Pysa to ignore the flow of user controlled
-    # data out of this function. 'request.META' is indeed user controlled, but
-    # post-HMAC output is no longer meaningfully controllable.
-    return mark_sanitized(
-        ""
-        if getattr(request, "_dont_enforce_csrf_checks", False)
-        else salted_hmac("Zulip Zoom sid", request.META["CSRF_COOKIE"]).hexdigest()
-    )
+    def get_token(self, user: UserProfile) -> object | None:
+        return user.third_party_api_state.get(self.token_key_name)
+
+    def update_token(self, user: UserProfile, token: dict[str, object] | None) -> None:
+        do_set_video_call_provider_token(user, self.token_key_name, token)
+
+    @abstractmethod
+    def get_meeting_details(self, request: HttpRequest, response: Response) -> HttpResponse:
+        pass
+
+    def __get_session(self, user: UserProfile) -> OAuth2Session:
+        if self.client_id is None or self.client_secret is None:
+            raise JsonableError(
+                _("{provider_name} credentials have not been configured").format(
+                    provider_name=self.provider_name
+                )
+            )
+
+        return OAuth2Session(
+            self.client_id,
+            scope=self.authorization_scope,
+            redirect_uri=urljoin(
+                settings.ROOT_DOMAIN_URI, f"/calls/{self.provider_name.lower()}/complete"
+            ),
+            auto_refresh_url=self.auto_refresh_url,
+            auto_refresh_kwargs={
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+            },
+            token=self.get_token(user),
+            token_updater=partial(self.update_token, user),
+        )
+
+    def __get_sid(self, request: HttpRequest) -> str:
+        # This is used to prevent CSRF attacks on the OAuth
+        # authentication flow.  We want this value to be unpredictable and
+        # tied to the session, but we don’t want to expose the main CSRF
+        # token directly to the server.
+
+        csrf.get_token(request)
+        # Use 'mark_sanitized' to cause Pysa to ignore the flow of user controlled
+        # data out of this function. 'request.META' is indeed user controlled, but
+        # post-HMAC output is no longer meaningfully controllable.
+        return mark_sanitized(
+            ""
+            if getattr(request, "_dont_enforce_csrf_checks", False)
+            else salted_hmac(
+                f"Zulip {self.provider_name.capitalize()} sid", request.META["CSRF_COOKIE"]
+            ).hexdigest()
+        )
+
+    def register_user(self, request: HttpRequest, **kwargs: Any) -> HttpResponse:
+        assert isinstance(request.user, UserProfile)
+        oauth = self.__get_session(request.user)
+        authorization_url, _state = oauth.authorization_url(
+            self.authorization_url,
+            state=json.dumps(
+                {"realm": get_subdomain(request), "sid": self.__get_sid(request)},
+            ),
+            **kwargs,
+        )
+        return redirect(authorization_url)
+
+    def complete_user(
+        self, request: HttpRequest, sid: str, code: str, **kwargs: Any
+    ) -> HttpResponse:
+        if not constant_time_compare(sid, self.__get_sid(request)):
+            raise JsonableError(
+                _("Invalid {provider_name} session identifier").format(
+                    provider_name=self.provider_name
+                )
+            )
+        assert isinstance(request.user, UserProfile)
+        oauth = self.__get_session(request.user)
+        try:
+            token = oauth.fetch_token(
+                self.token_url, code=code, client_secret=self.client_secret, **kwargs
+            )
+        except OAuth2Error:
+            raise JsonableError(
+                _("Invalid {provider_name} credentials").format(provider_name=self.provider_name)
+            )
+
+        self.update_token(request.user, token)
+        return render(request, "zerver/close_window.html")
+
+    def oauth_post(
+        self,
+        user: UserProfile,
+        url: str,
+        *,
+        json: object = None,
+        **kwargs: Any,
+    ) -> Response:
+        oauth = self.__get_session(user)
+        if not oauth.authorized:
+            raise InvalidVideoCallProviderTokenError(self.provider_name)
+
+        try:
+            response = oauth.post(url, json=json, **kwargs)
+        except OAuth2Error:
+            self.update_token(user, None)
+            raise InvalidVideoCallProviderTokenError(self.provider_name)
+
+        if response.status_code == 401:
+            self.update_token(user, None)
+            raise InvalidVideoCallProviderTokenError(self.provider_name)
+
+        return response
+
+    def make_video_call(
+        self, request: HttpRequest, user: UserProfile, payload: object = {}, **kwargs: Any
+    ) -> HttpResponse:
+        response = self.oauth_post(user, self.create_meeting_url, json=payload, **kwargs)
+        if not response.ok:
+            raise CreateVideoCallFailedError(self.provider_name)
+
+        return self.get_meeting_details(request, response)
+
+
+class ZoomGeneralOAuthProvider(OAuthVideoCallProvider):
+    provider_name = "Zoom"
+    authorization_scope = None
+    token_key_name = "zoom"
+
+    def __init__(self) -> None:
+        self.client_id = settings.VIDEO_ZOOM_CLIENT_ID
+        self.client_secret = settings.VIDEO_ZOOM_CLIENT_SECRET
+        self.authorization_url = urljoin(settings.VIDEO_ZOOM_OAUTH_URL, "/oauth/authorize")
+        self.token_url = urljoin(settings.VIDEO_ZOOM_OAUTH_URL, "/oauth/token")
+        self.auto_refresh_url = urljoin(settings.VIDEO_ZOOM_OAUTH_URL, "/oauth/token")
+        self.create_meeting_url = urljoin(settings.VIDEO_ZOOM_API_URL, "/v2/users/me/meetings")
+
+    @override
+    def get_meeting_details(self, request: HttpRequest, response: Response) -> HttpResponse:
+        return json_success(request, data={"url": response.json()["join_url"]})
 
 
 @zulip_login_required
 @never_cache
 def register_zoom_user(request: HttpRequest) -> HttpResponse:
-    assert request.user.is_authenticated
-
-    oauth = get_zoom_session(request.user)
-    authorization_url, _state = oauth.authorization_url(
-        "https://zoom.us/oauth/authorize",
-        state=json.dumps(
-            {"realm": get_subdomain(request), "sid": get_zoom_sid(request)},
-        ),
-    )
-    return redirect(authorization_url)
+    return ZoomGeneralOAuthProvider().register_user(request=request)
 
 
 class StateDictRealm(TypedDict):
@@ -133,6 +308,7 @@ class ZoomPayload(TypedDict):
 
 
 @never_cache
+@zulip_login_required
 @typed_endpoint
 def complete_zoom_user(
     request: HttpRequest,
@@ -142,61 +318,7 @@ def complete_zoom_user(
 ) -> HttpResponse:
     if get_subdomain(request) != state["realm"]:
         return redirect(urljoin(get_realm(state["realm"]).url, request.get_full_path()))
-    return complete_zoom_user_in_realm(request, code=code, state=state)
-
-
-@zulip_login_required
-@typed_endpoint
-def complete_zoom_user_in_realm(
-    request: HttpRequest,
-    *,
-    code: str,
-    state: Json[StateDict],
-) -> HttpResponse:
-    assert request.user.is_authenticated
-
-    if not constant_time_compare(state["sid"], get_zoom_sid(request)):
-        raise JsonableError(_("Invalid Zoom session identifier"))
-
-    client_secret = settings.VIDEO_ZOOM_CLIENT_SECRET
-
-    oauth = get_zoom_session(request.user)
-    try:
-        token = oauth.fetch_token(
-            "https://zoom.us/oauth/token",
-            code=code,
-            client_secret=client_secret,
-        )
-    except OAuth2Error:
-        raise JsonableError(_("Invalid Zoom credentials"))
-
-    do_set_zoom_token(request.user, token)
-    return render(request, "zerver/close_window.html")
-
-
-def make_user_authenticated_zoom_video_call(
-    request: HttpRequest,
-    user: UserProfile,
-    *,
-    payload: ZoomPayload,
-) -> HttpResponse:
-    oauth = get_zoom_session(user)
-    if not oauth.authorized:
-        raise InvalidZoomTokenError
-
-    try:
-        res = oauth.post("https://api.zoom.us/v2/users/me/meetings", json=payload)
-    except OAuth2Error:
-        do_set_zoom_token(user, None)
-        raise InvalidZoomTokenError
-
-    if res.status_code == 401:
-        do_set_zoom_token(user, None)
-        raise InvalidZoomTokenError
-    elif not res.ok:
-        raise JsonableError(_("Failed to create Zoom call"))
-
-    return json_success(request, data={"url": res.json()["join_url"]})
+    return ZoomGeneralOAuthProvider().complete_user(request, code=code, sid=state["sid"])
 
 
 @cache_with_key(zoom_server_access_token_cache_key, timeout=3600 - 240)
@@ -207,12 +329,12 @@ def get_zoom_server_to_server_access_token(account_id: str) -> str:
     client_id = settings.VIDEO_ZOOM_CLIENT_ID.encode("utf-8")
     client_secret = str(settings.VIDEO_ZOOM_CLIENT_SECRET).encode("utf-8")
 
-    url = "https://zoom.us/oauth/token"
+    url = urljoin(settings.VIDEO_ZOOM_OAUTH_URL, "/oauth/token")
     data = {"grant_type": "account_credentials", "account_id": account_id}
 
     client_information = client_id + b":" + client_secret
     encoded_client = b64encode(client_information).decode("ascii")
-    headers = {"Host": "zoom.us", "Authorization": f"Basic {encoded_client}"}
+    headers = {"Host": urlsplit(url).hostname, "Authorization": f"Basic {encoded_client}"}
 
     response = VideoCallSession().post(url, data, headers=headers)
     if not response.ok:
@@ -226,7 +348,7 @@ def get_zoom_server_to_server_call(
     user: UserProfile, access_token: str, payload: ZoomPayload
 ) -> str:
     email = user.delivery_email
-    url = f"https://api.zoom.us/v2/users/{email}/meetings"
+    url = f"{settings.VIDEO_ZOOM_API_URL}/v2/users/{email}/meetings"
     headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
     response = VideoCallSession().post(url, json=payload, headers=headers)
     if not response.ok:
@@ -250,7 +372,7 @@ def get_zoom_server_to_server_call(
                 response_dict.get("message", str(response_dict)),
             )
             flush_zoom_server_access_token_cache(account_id)
-        raise JsonableError(_("Failed to create Zoom call"))
+        raise CreateVideoCallFailedError("Zoom")
     return response.json()["join_url"]
 
 
@@ -291,7 +413,7 @@ def make_zoom_video_call(
     )
     if settings.VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID is not None:
         return make_server_authenticated_zoom_video_call(request, user, payload=payload)
-    return make_user_authenticated_zoom_video_call(request, user, payload=payload)
+    return ZoomGeneralOAuthProvider().make_video_call(request=request, user=user, payload=payload)
 
 
 @csrf_exempt
@@ -367,15 +489,24 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
             + checksum
         )
         response.raise_for_status()
-    except requests.RequestException:
-        raise JsonableError(_("Error connecting to the BigBlueButton server."))
+    except requests.RequestException as e:
+        if e.response is not None:
+            reason = f"HTTP {response.status_code}: {response.text:.200}"
+        else:
+            reason = str(e)
+        raise JsonableError(
+            _("Error connecting to the BigBlueButton server: {reason}").format(reason=reason)
+        )
 
     payload = ElementTree.fromstring(response.text)
     if assert_is_not_none(payload.find("messageKey")).text == "checksumError":
         raise JsonableError(_("Error authenticating to the BigBlueButton server."))
 
-    if assert_is_not_none(payload.find("returncode")).text != "SUCCESS":
-        raise JsonableError(_("BigBlueButton server returned an unexpected error."))
+    status = assert_is_not_none(payload.find("returncode")).text
+    if status != "SUCCESS":
+        raise JsonableError(
+            _("BigBlueButton server returned an unexpected error: {status}").format(status=status)
+        )
 
     join_params = urlencode(
         {
@@ -406,3 +537,82 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
         settings.BIG_BLUE_BUTTON_URL + "api/join", join_params
     )
     return redirect(append_url_query_string(redirect_url_base, "checksum=" + checksum))
+
+
+@typed_endpoint_without_parameters
+def make_constructor_groups_video_call(
+    request: HttpRequest,
+    user_profile: UserProfile,
+) -> HttpResponse:
+    service = ConstructorGroupsService()
+    room_name = _("{full_name}'s Zulip room").format(full_name=user_profile.full_name)
+
+    room_data = service.get_or_create_default_room(
+        creator_email=user_profile.delivery_email,
+        name=room_name,
+        fallback_name=f"{room_name} ({user_profile.realm_id}-{user_profile.id})",
+    )
+
+    room_url = room_data.get("url", "")
+    if not room_url:
+        logging.error("Constructor Groups API returned room without URL: %s", room_data)
+        raise CreateVideoCallFailedError("Constructor Groups")
+
+    return json_success(request, {"url": room_url})
+
+
+# Nextcloud Talk API limits room names to 255 characters.
+MAX_NEXTCLOUD_TALK_ROOM_NAME_LENGTH = 255
+
+
+@typed_endpoint
+def create_nextcloud_talk_url(
+    request: HttpRequest, user: UserProfile, *, room_name: str
+) -> HttpResponse:
+    if (
+        settings.NEXTCLOUD_SERVER is None
+        or settings.NEXTCLOUD_TALK_USERNAME is None
+        or settings.NEXTCLOUD_TALK_PASSWORD is None
+    ):
+        raise JsonableError(_("Nextcloud Talk is not configured"))
+
+    room_name = truncate_content(room_name, MAX_NEXTCLOUD_TALK_ROOM_NAME_LENGTH, "...")
+    # https://nextcloud-talk.readthedocs.io/en/stable/conversation/#creating-a-new-conversation
+    api_url = urljoin(settings.NEXTCLOUD_SERVER, "/ocs/v2.php/apps/spreed/api/v4/room")
+
+    payload = {
+        # Create a PUBLIC conversation (roomType=3) which allows guest access
+        # https://nextcloud-talk.readthedocs.io/en/latest/constants/#conversation-types
+        "roomType": 3,
+        "roomName": room_name,
+    }
+    username = str(settings.NEXTCLOUD_TALK_USERNAME)
+    password = str(settings.NEXTCLOUD_TALK_PASSWORD)
+    credentials = f"{username}:{password}".encode()
+    encoded_credentials = b64encode(credentials).decode("ascii")
+
+    headers = {
+        "OCS-APIRequest": "true",
+        "Accept": "application/json",
+        "Authorization": f"Basic {encoded_credentials}",
+    }
+
+    try:
+        response = VideoCallSession().post(api_url, json=payload, headers=headers, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        if e.response is not None:
+            reason = f"HTTP {response.status_code}: {response.text:.200}"
+        else:
+            reason = str(e)
+        raise JsonableError(
+            _("Error connecting to the Nextcloud Talk server: {reason}").format(reason=reason)
+        )
+    try:
+        data = response.json()
+        token = data["ocs"]["data"]["token"]
+    except (KeyError, ValueError):
+        raise CreateVideoCallFailedError("Nextcloud Talk")
+
+    call_url = urljoin(settings.NEXTCLOUD_SERVER, f"/index.php/call/{token}")
+    return json_success(request, data={"url": call_url})

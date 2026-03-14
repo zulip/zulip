@@ -4,7 +4,7 @@ class kandra::profile::staging_app_frontend inherits kandra::profile::base {
 
   file { '/etc/nginx/sites-available/zulip-staging':
     ensure  => file,
-    require => Package['nginx-full'],
+    require => [Package['nginx-full'], Exec['generate-default-snakeoil']],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',

@@ -1,13 +1,14 @@
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import {all_messages_data} from "./all_messages_data.ts";
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as direct_message_group_data from "./direct_message_group_data.ts";
-import {Filter} from "./filter.ts";
+import * as emoji_frequency from "./emoji_frequency.ts";
+import type {Filter} from "./filter.ts";
+import * as filter_util from "./filter_util.ts";
 import * as message_feed_loading from "./message_feed_loading.ts";
 import * as message_feed_top_notices from "./message_feed_top_notices.ts";
 import * as message_helper from "./message_helper.ts";
@@ -19,9 +20,10 @@ import {raw_message_schema} from "./message_store.ts";
 import * as message_util from "./message_util.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as narrow_banner from "./narrow_banner.ts";
+import * as navbar_alerts from "./navbar_alerts.ts";
 import {page_params} from "./page_params.ts";
-import * as people from "./people.ts";
 import * as popup_banners from "./popup_banners.ts";
+import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import {narrow_operator_schema} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
@@ -44,6 +46,7 @@ type MessageFetchResponse = z.infer<typeof response_schema>;
 
 type MessageFetchOptions = {
     anchor: string | number;
+    anchor_date?: string | undefined;
     num_before: number;
     num_after: number;
     cont: (data: MessageFetchResponse, args: MessageFetchOptions) => void;
@@ -60,6 +63,7 @@ type MessageFetchAPIParams = {
     client_gravatar: boolean;
     narrow?: string;
     allow_empty_topic_name: boolean;
+    anchor_date?: string;
 };
 
 let first_messages_fetch = true;
@@ -106,9 +110,11 @@ export function load_messages_around_anchor(
     anchor: string,
     cont: () => void,
     msg_list_data: MessageListData,
+    anchor_date?: string,
 ): void {
     load_messages({
         anchor,
+        anchor_date,
         num_before: consts.narrowed_view_backward_batch_size,
         num_after: consts.narrowed_view_forward_batch_size,
         msg_list_data,
@@ -171,8 +177,7 @@ function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): 
     }
 
     direct_message_group_data.process_loaded_messages(messages);
-    stream_list.update_streams_sidebar();
-    stream_list.maybe_scroll_narrow_into_view(!first_messages_fetch);
+    stream_list.update_streams_sidebar_for_messages(messages);
 
     if (
         message_lists.current !== undefined &&
@@ -252,20 +257,13 @@ function get_messages_success(data: MessageFetchResponse, opts: MessageFetchOpti
 }
 
 // This function modifies the narrow data to use integer IDs instead of
-// strings if it is supported for that operator. We currently don't set
-// or convert user emails to IDs directly in the Filter code because
-// doing so breaks the app in various modules that expect a string of
-// user emails.
+// strings if it is supported for that operator.
 function handle_operators_supporting_id_based_api(narrow_parameter: string): string {
-    // We use the canonical operator when checking these sets, so legacy
-    // operators, such as "pm-with" and "stream", are not included here.
-    const operators_supporting_ids = new Set(["dm"]);
-    const operators_supporting_id = new Set(["id", "channel", "sender", "dm-including"]);
     const raw_narrow_term_array_schema = z.array(
         z.object({
             negated: z.optional(z.boolean()),
             operator: z.string(),
-            operand: z.string(),
+            operand: z.union([z.number(), z.string(), z.array(z.number())]),
         }),
     );
     const parsed_narrow_data = raw_narrow_term_array_schema.parse(JSON.parse(narrow_parameter));
@@ -289,41 +287,17 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
         const parsed_narrow_operator = narrow_operator_schema.parse(
             raw_term.operator.toLowerCase(),
         );
-        const canonical_operator = Filter.canonicalize_operator(parsed_narrow_operator);
-
-        if (operators_supporting_ids.has(canonical_operator)) {
-            const user_ids_array = people.emails_strings_to_user_ids_array(raw_term.operand);
-            assert(user_ids_array !== undefined);
-            narrow_term.operand = user_ids_array;
-        }
-
-        if (operators_supporting_id.has(canonical_operator)) {
-            if (canonical_operator === "id") {
-                // The message ID may not exist locally,
-                // so send the term to the server as is.
-                narrow_terms.push(narrow_term);
-                continue;
-            }
-
-            if (canonical_operator === "channel") {
-                // An unknown channel will have an empty string set for
-                // the operand. And the page_params.narrow may have a
-                // channel name as the operand. But all other cases
-                // should have the channel ID set as the string value
-                // for the operand.
-                const stream = stream_data.get_sub_by_id_string(raw_term.operand);
-                if (stream !== undefined) {
-                    narrow_term.operand = stream.stream_id;
-                }
-                narrow_terms.push(narrow_term);
-                continue;
-            }
-
-            // The other operands supporting integer IDs all work with
-            // a single user object.
-            const person = people.get_by_email(raw_term.operand);
-            if (person !== undefined) {
-                narrow_term.operand = person.user_id;
+        const canonical_operator = filter_util.canonicalize_operator(parsed_narrow_operator);
+        // TODO: Migrate `channel` to use `number` operand so that we can avoid this conversion.
+        if (canonical_operator === "channel" && typeof raw_term.operand === "string") {
+            // An unknown channel will have an empty string set for
+            // the operand. And the page_params.narrow may have a
+            // channel name as the operand. But all other cases
+            // should have the channel ID set as the string value
+            // for the operand.
+            const stream = stream_data.get_sub_by_id_string(raw_term.operand);
+            if (stream !== undefined) {
+                narrow_term.operand = stream.stream_id;
             }
         }
         narrow_terms.push(narrow_term);
@@ -333,10 +307,16 @@ function handle_operators_supporting_id_based_api(narrow_parameter: string): str
 }
 
 export function get_narrow_for_message_fetch(filter: Filter): string {
-    let narrow_data: NarrowTerm[] = [];
+    // narrow_data is different from `NarrowTerm[]` because we
+    // expand `dm-including` operators into multiple terms here.
+    let narrow_data: {
+        operator: NarrowTerm["operator"];
+        operand: NarrowTerm["operand"];
+        negated?: boolean | undefined;
+    }[] = [];
     for (const term of filter.public_terms()) {
         if (term.operator === "dm-including") {
-            for (const operand of term.operand.split(",")) {
+            for (const operand of term.operand) {
                 narrow_data.push({
                     ...term,
                     operand,
@@ -390,6 +370,14 @@ export function get_parameters_for_message_fetch_api(
 
     if (msg_list_data === undefined) {
         blueslip.error("Message list data is undefined!");
+    }
+
+    if (opts.anchor === "date") {
+        if (opts.anchor_date === undefined) {
+            blueslip.error("Missing anchor_date for date anchor fetch");
+        } else {
+            data.anchor_date = opts.anchor_date;
+        }
     }
 
     const narrow = get_narrow_for_message_fetch(msg_list_data.filter);
@@ -698,6 +686,12 @@ export function set_initial_pointer_and_offset({
     initial_narrow_offset = narrow_offset;
 }
 
+function post_initial_backfill_for_all_messages_done(): void {
+    initial_backfill_for_all_messages_done = true;
+    emoji_frequency.initialize_frequently_used_emojis();
+    navbar_alerts.check_and_show_muted_messages_banner();
+}
+
 export function initialize(finished_initial_fetch: () => void): void {
     const fetch_target_day_timestamp =
         Date.now() / 1000 - consts.target_days_of_history * 24 * 60 * 60;
@@ -712,25 +706,25 @@ export function initialize(finished_initial_fetch: () => void): void {
         }
 
         if (data.found_oldest) {
-            initial_backfill_for_all_messages_done = true;
+            post_initial_backfill_for_all_messages_done();
             return;
         }
 
         // Stop once we've hit the minimum backfill quantity of
         // messages if we've received a message older than
         // `target_days_of_history`.
-        const latest_message = all_messages_data.first();
+        const latest_message = recent_view_messages_data.first();
         assert(latest_message !== undefined);
         if (
-            all_messages_data.num_items() >= consts.minimum_initial_backfill_size &&
+            recent_view_messages_data.num_items() >= consts.minimum_initial_backfill_size &&
             latest_message.timestamp < fetch_target_day_timestamp
         ) {
-            initial_backfill_for_all_messages_done = true;
+            post_initial_backfill_for_all_messages_done();
             return;
         }
 
-        if (all_messages_data.num_items() >= consts.maximum_initial_backfill_size) {
-            initial_backfill_for_all_messages_done = true;
+        if (recent_view_messages_data.num_items() >= consts.maximum_initial_backfill_size) {
+            post_initial_backfill_for_all_messages_done();
             return;
         }
 
@@ -747,18 +741,22 @@ export function initialize(finished_initial_fetch: () => void): void {
                 anchor: oldest_id,
                 num_before: consts.catch_up_batch_size,
                 num_after: 0,
-                msg_list_data: all_messages_data,
+                msg_list_data: recent_view_messages_data,
                 cont: load_more,
             });
         }, consts.catch_up_backfill_delay);
     }
 
-    // Since `all_messages_data` contains continuous message history
+    // Since `recent_view_messages_data` contains continuous message history
     // which always contains the latest message, it makes sense for
     // Recent view to display the same data and be in sync.
-    all_messages_data.set_add_messages_callback((messages, rows_order_changed) => {
+    recent_view_messages_data.set_add_messages_callback((messages, rows_order_changed) => {
         try {
-            recent_view_ui.process_messages(messages, rows_order_changed, all_messages_data);
+            recent_view_ui.process_messages(
+                messages,
+                rows_order_changed,
+                recent_view_messages_data,
+            );
         } catch (error) {
             blueslip.error("Error in recent_view_ui.process_messages", undefined, error);
         }
@@ -775,7 +773,7 @@ export function initialize(finished_initial_fetch: () => void): void {
         // Since we backfill a lot more messages here compared to rendered message list,
         // we can try populating them if we can do so locally.
         for (const msg_list_data of message_list_data_cache.all()) {
-            if (msg_list_data === all_messages_data) {
+            if (msg_list_data === recent_view_messages_data) {
                 continue;
             }
 
@@ -793,12 +791,15 @@ export function initialize(finished_initial_fetch: () => void): void {
 
             // This callback is only called when backfilling messages,
             // so we need to check for the presence of any message from
-            // the message list in the all_messages_data to
+            // the message list in the recent_view_messages_data to
             // check for continuous message history for the message list.
             const first_message = msg_list_data.first();
             assert(first_message !== undefined);
-            if (all_messages_data.get(first_message.id) !== undefined) {
-                const messages_to_populate = all_messages_data.message_range(0, first_message.id);
+            if (recent_view_messages_data.get(first_message.id) !== undefined) {
+                const messages_to_populate = recent_view_messages_data.message_range(
+                    0,
+                    first_message.id,
+                );
                 if (msg_list_data.rendered_message_list_id) {
                     const msg_list = message_lists.rendered_message_lists.get(
                         msg_list_data.rendered_message_list_id,
@@ -821,7 +822,7 @@ export function initialize(finished_initial_fetch: () => void): void {
         anchor: "newest",
         num_before: consts.initial_backfill_fetch_size,
         num_after: 0,
-        msg_list_data: all_messages_data,
+        msg_list_data: recent_view_messages_data,
         cont: load_more,
     });
 }

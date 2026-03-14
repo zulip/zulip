@@ -1,17 +1,17 @@
-<form id="add-custom-emoji-form">
+<form class="modal-form" id="add-custom-emoji-form">
     <div>
         <input type="file" name="emoji_file_input" class="notvisible"
           id="emoji_file_input" value="{{t 'Upload image or GIF' }}"/>
         {{> ../components/action_button
           label=(t "Clear image")
-          attention="quiet"
+          variant="subtle"
           intent="danger"
           id="emoji_image_clear_button"
           hidden=true
           }}
         {{> ../components/action_button
           label=(t "Upload image or GIF")
-          attention="quiet"
+          variant="subtle"
           intent="brand"
           id="emoji_upload_button"
           }}

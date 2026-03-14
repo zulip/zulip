@@ -1,11 +1,11 @@
 {% if show_message_content %}
-{% for recipient_block in messages %}
+{% with recipient_block=messages %}
 {% for sender_block in recipient_block.senders %}
 {% for message_block in sender_block.content %}
 {{ message_block.plain }}
 {% endfor %}
 {% endfor %}
-{% endfor %}
+{% endwith %}
 {% else %}
 {% if message_content_disabled_by_realm %}
 {% trans hide_content_url=realm_url + "/help/hide-message-content-in-emails" %}

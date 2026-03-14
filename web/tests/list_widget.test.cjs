@@ -77,7 +77,22 @@ function make_scroll_container() {
 }
 
 function make_sort_container() {
-    const $sort_container = {cleared: false};
+    const $sort_container = {cleared: false, siblings_deactivated: false};
+
+    $sort_container.find = (selector) => {
+        assert.equal(selector, "[data-sort].active");
+        return {
+            not($excluded) {
+                assert.ok($excluded !== undefined);
+                return {
+                    removeClass(cls) {
+                        assert.equal(cls, "active");
+                        $sort_container.siblings_deactivated = true;
+                    },
+                };
+            },
+        };
+    };
 
     $sort_container.on = (ev, sel, f) => {
         assert.equal(ev, "click.list_widget_sort");
@@ -468,7 +483,7 @@ run_test("sorting", () => {
     $sort_container.f.apply($button);
 
     assert.ok(cleared);
-    assert.ok($button.siblings_deactivated);
+    assert.ok($sort_container.siblings_deactivated);
 
     expected_html = html_for([alice, bob, cal, dave, ellen]);
     assert.deepEqual($container.$appended_data.html(), expected_html);
@@ -500,12 +515,12 @@ run_test("sorting", () => {
     $button = sort_button(button_opts);
 
     cleared = false;
-    $button.siblings_deactivated = false;
+    $sort_container.siblings_deactivated = false;
 
     $sort_container.f.apply($button);
 
     assert.ok(cleared);
-    assert.ok($button.siblings_deactivated);
+    assert.ok($sort_container.siblings_deactivated);
 
     expected_html = html_for([dave, cal, bob, alice, ellen]);
     assert.deepEqual($container.$appended_data.html(), expected_html);
@@ -587,7 +602,7 @@ run_test("Apply consecutive sorts", () => {
     $sort_container.f.apply($button);
 
     assert.ok(cleared);
-    assert.ok($button.siblings_deactivated);
+    assert.ok($sort_container.siblings_deactivated);
 
     expected_html = html_for([alice, bob_2, bob, cal, cal_2, dave, ellen]);
     assert.deepEqual($container.$appended_data.html(), expected_html);
@@ -660,6 +675,35 @@ run_test("custom sort", () => {
 
     widget.sort(sort_by_y);
     assert.deepEqual($container.$appended_data.html(), "(6, 7)(4, 11)(1, 43)");
+});
+
+run_test("handle_sort without parent_container", () => {
+    // When handle_sort is called without $parent_container, it falls back
+    // to using $th.siblings(".active") to deactivate other sort headers.
+    const $container = make_container();
+    const $scroll_container = make_scroll_container();
+    $container.empty = noop;
+
+    const widget = ListWidget.create($container, [{name: "bob"}, {name: "alice"}], {
+        name: "fallback-sort-test",
+        modifier_html: (item) => div(item.name),
+        get_item: (item) => item,
+        sort_fields: {
+            ...ListWidget.generic_sort_functions("alphabetic", ["name"]),
+        },
+        $simplebar_container: $scroll_container,
+    });
+
+    const $button = sort_button({
+        sort_type: "alphabetic",
+        prop_name: "name",
+        list_name: "fallback-sort-test",
+        active: false,
+    });
+
+    ListWidget.handle_sort($button, widget);
+    assert.ok($button.siblings_deactivated);
+    assert.deepEqual($container.$appended_data.html(), "<div>alice</div><div>bob</div>");
 });
 
 run_test("clear_event_handlers", () => {

@@ -8,17 +8,20 @@ from analytics.models import StreamCount
 from zerver.models import Realm
 
 
-def get_streams_traffic(stream_ids: set[int], realm: Realm) -> dict[int, int] | None:
+def get_streams_traffic(realm: Realm, stream_ids: set[int] | None = None) -> dict[int, int] | None:
     stat = COUNT_STATS["messages_in_stream:is_bot:day"]
     traffic_from = timezone_now() - timedelta(days=28)
 
-    query = StreamCount.objects.filter(
+    filter_kwargs = dict(
         # The realm_id is important, as it makes this significantly better-indexed
         realm_id=realm.id,
-        stream_id__in=stream_ids,
         property=stat.property,
         end_time__gt=traffic_from,
     )
+    if stream_ids is not None:
+        filter_kwargs["stream_id__in"] = stream_ids
+
+    query = StreamCount.objects.filter(**filter_kwargs)
 
     traffic_list = query.values("stream_id").annotate(sum_value=Sum("value"))
     traffic_dict = {}

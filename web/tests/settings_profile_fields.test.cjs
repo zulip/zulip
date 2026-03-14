@@ -5,7 +5,6 @@ const assert = require("node:assert/strict");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
 
 const loading = mock_esm("../src/loading");
 
@@ -17,9 +16,9 @@ const LONG_TEXT_ID = 2;
 const USER_FIELD_ID = 6;
 
 const SHORT_TEXT_NAME = "Short text";
-const SELECT_NAME = "Select";
+const SELECT_NAME = "Dropdown";
 const EXTERNAL_ACCOUNT_NAME = "External account";
-const LONG_TEXT_NAME = "Long text";
+const LONG_TEXT_NAME = "Paragraph";
 const USER_FIELD_NAME = "Person";
 
 const custom_profile_field_types = {
@@ -73,9 +72,6 @@ function test_populate(opts, template_data) {
 
         override(realm, "custom_profile_field_types", custom_profile_field_types);
         override(current_user, "is_admin", opts.is_admin);
-        const $table = $("#admin_profile_fields_table");
-
-        $table[0] = "stub";
 
         loading.destroy_indicator = noop;
 
@@ -90,8 +86,6 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
 
     override(realm, "custom_profile_fields", {});
     override(realm, "realm_default_external_accounts", JSON.stringify({}));
-
-    $("#admin_profile_fields_table .display_in_profile_summary_false").toggleClass = noop;
 
     const template_data = [];
     mock_template("settings/admin_profile_field_list.hbs", false, (data) => {

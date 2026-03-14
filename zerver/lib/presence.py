@@ -15,6 +15,14 @@ from zerver.models import Realm, UserPresence, UserProfile
 def get_presence_dicts_for_rows(
     all_rows: Sequence[Mapping[str, Any]], slim_presence: bool
 ) -> dict[str, dict[str, Any]]:
+    # This function takes the presence data fetched from the database and
+    # turn it into an appropriate format for the API to return to clients.
+    # Used by the two endpoints that conduct realm-wide presence fetch:
+    # 1) `POST /users/me/presence`: https://zulip.com/api/update-presenc
+    # 2) `POST /register` when presence data is requested:
+    #    https://zulip.com/api/register-queue
+    # TODO: For consistency, we likely also should be using this for formatting
+    # presence data for https://zulip.com/api/get-user-presence
     if slim_presence:
         # Stringify user_id here, since it's gonna be turned
         # into a string anyway by JSON, and it keeps mypy happy.

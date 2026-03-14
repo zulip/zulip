@@ -5,20 +5,26 @@ import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
 import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
+import render_recent_view_empty_list_widget_for_table from "../templates/recent_view_empty_list_widget_for_table.hbs";
 import render_recent_view_filters from "../templates/recent_view_filters.hbs";
 import render_recent_view_row from "../templates/recent_view_row.hbs";
 import render_recent_view_body from "../templates/recent_view_table.hbs";
-import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
+import render_users_with_status_icons from "../templates/users_with_status_icons.hbs";
 
 import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
+import * as channel_folders from "./channel_folders.ts";
+import * as compose_actions from "./compose_actions.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
+import * as focus_outline_util from "./focus_outline_util.ts";
+import * as folder_dropdown_widget from "./folder_dropdown_widget.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as list_widget from "./list_widget.ts";
 import type {ListWidget} from "./list_widget.ts";
@@ -37,10 +43,10 @@ import * as recent_view_data from "./recent_view_data.ts";
 import type {ConversationData} from "./recent_view_data.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as typeahead from "./typeahead.ts";
-import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
@@ -78,31 +84,34 @@ export let $current_focus_elem: JQuery | "table" = "table";
 // we store that topic here so that we can restore focus
 // to that topic when user revisits.
 let last_visited_topic: string | undefined;
-let row_focus = 0;
-// Start focus on the topic column, so Down+Enter works to visit a topic.
-let col_focus = 1;
 
 export const COLUMNS = {
-    stream: 0,
-    topic: 1,
-    read: 2,
-    mute: 3,
+    topic: 0,
+    read: 1,
+    mute: 2,
 };
+
+let row_focus = 0;
+// Start focus on the topic column, so Down+Enter works to visit a topic.
+let col_focus = COLUMNS.topic;
 
 // The number of selectable actions in a Recent Conversations view.
 // Used to implement wraparound of elements with the right/left keys.
 // Must be increased when we add new actions, or rethought if we add
 // optional actions that only appear in some rows.
-const MAX_SELECTABLE_TOPIC_COLS = 4;
-const MAX_SELECTABLE_DIRECT_MESSAGE_COLS = 3;
+const MAX_SELECTABLE_TOPIC_COLS = 3;
+const MAX_SELECTABLE_DIRECT_MESSAGE_COLS = 2;
 
 // we use localstorage to persist the recent topic filters
 const ls_key = "recent_topic_filters";
 const ls_dropdown_key = "recent_topic_dropdown_filters";
+const ls_folder_filter_key = "recent_topic_folder_filter";
 const ls = localstorage();
 
 let filters = new Set<string>();
 let dropdown_filters = new Set<string>();
+let folder_filter_value: number = folder_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION;
+let folder_filter_dropdown_widget: dropdown_widget.DropdownWidget | undefined;
 
 const recent_conversation_key_prefix = "recent_conversation:";
 
@@ -114,6 +123,13 @@ let is_waiting_for_revive_current_focus = true;
 // it is hidden to avoid scroll jumping when it is shown again.
 let last_scroll_offset: number | undefined;
 let hide_other_views_callback: (() => void) | undefined;
+
+// Row focus and viewport offset of the focused row before search,
+// so we can restore both focus and scroll position when search is
+// cleared.
+let pre_search_row_focus: number | undefined;
+let pre_search_topic_viewport_offset: number | undefined;
+let previous_search_term = "";
 
 export function set_hide_other_views(callback: () => void): void {
     hide_other_views_callback = callback;
@@ -131,6 +147,7 @@ export function set_backfill_in_progress(value: boolean): void {
 export function clear_for_tests(): void {
     filters.clear();
     dropdown_filters.clear();
+    folder_filter_value = folder_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION;
     recent_view_data.conversations.clear();
     topics_widget = undefined;
 }
@@ -139,9 +156,14 @@ export function set_filters_for_tests(new_filters = [views_util.FILTERS.UNMUTED_
     dropdown_filters = new Set(new_filters);
 }
 
+export function set_folder_filter_for_tests(value: number): void {
+    folder_filter_value = value;
+}
+
 export function save_filters(): void {
     ls.set(ls_key, [...filters]);
     ls.set(ls_dropdown_key, [...dropdown_filters]);
+    ls.set(ls_folder_filter_key, folder_filter_value);
 }
 
 export function is_in_focus(): boolean {
@@ -207,6 +229,29 @@ function set_oldest_message_date(msg_list_data: MessageListData): void {
     }
 }
 
+function get_time_string(): string {
+    const time_obj = new Date(oldest_message_timestamp * 1000);
+    return timerender.get_localized_date_or_time_for_format(
+        time_obj,
+        "full_weekday_dayofyear_year_time",
+    );
+}
+
+function get_loaded_messages_text(): string {
+    const time_string = get_time_string();
+    return $t({defaultMessage: "Showing messages since {time_string}."}, {time_string});
+}
+
+function render_recent_view_empty_list_widget_for_table_with_load_more(context: {
+    empty_list_message: string;
+    column_count: number;
+}): string {
+    return render_recent_view_empty_list_widget_for_table({
+        ...context,
+        load_more_button_text: $t({defaultMessage: "Load more"}),
+    });
+}
+
 function update_load_more_banner(): void {
     if (loading_state === NO_MESSAGES_LOADED) {
         return;
@@ -214,6 +259,7 @@ function update_load_more_banner(): void {
 
     if (loading_state === ALL_MESSAGES_LOADED) {
         $(".recent-view-load-more-container").toggleClass("notvisible", true);
+        $(".recent-view-empty-load-more").toggleClass("notvisible", true);
         return;
     }
 
@@ -222,40 +268,37 @@ function update_load_more_banner(): void {
         return;
     }
 
-    // There are some messages loaded, but not all messages yet. The banner was
-    // hidden on page load, and we make sure to show it now that there are messages
-    // we can display.
-    $(".recent-view-load-more-container").toggleClass("notvisible", false);
-
-    // Until we've found the newest message, we only show the banner with a messages
-    // explaining we're still fetching messages. We don't allow the user to fetch
-    // more messages.
+    // Until we've found the newest message, we only show the banner
+    // explaining we're still fetching messages. We don't allow the
+    // user to fetch more messages.
     if (loading_state === SOME_MESSAGES_LOADED) {
+        $(".recent-view-load-more-container").toggleClass("notvisible", false);
         return;
     }
 
-    const $banner_text = $(".recent-view-load-more-container .last-fetched-message");
-    const time_obj = new Date(oldest_message_timestamp * 1000);
-    const time_string = timerender.get_localized_date_or_time_for_format(
-        time_obj,
-        "full_weekday_dayofyear_year_time",
-    );
-    $banner_text.text($t({defaultMessage: "Showing messages since {time_string}."}, {time_string}));
+    // When the table is empty, show the load-more text inline below
+    // "No conversations match your filters." and hide the banner.
+    // Otherwise, show the banner and hide the inline load-more.
+    assert(topics_widget !== undefined);
+    const is_table_empty = topics_widget.get_current_list().length === 0;
+    $(".recent-view-load-more-container").toggleClass("notvisible", is_table_empty);
+    $(".recent-view-empty-load-more").toggleClass("notvisible", !is_table_empty);
+
+    const $container = is_table_empty
+        ? $(".recent-view-empty-load-more")
+        : $(".recent-view-load-more-container");
+    $container.find(".last-fetched-message").text(get_loaded_messages_text());
 
     if (is_backfill_in_progress) {
         // Keep the button disabled and the loading indicator running
         // until we've finished our recursive backfill.
         return;
     }
-    const $button = $(".recent-view-load-more-container .fetch-messages-button");
-    const $button_label = $(".recent-view-load-more-container .button-label");
+    const $button = $container.find(".fetch-messages-button");
     $button.toggleClass("notvisible", false);
-
-    $button_label.toggleClass("invisible", false);
+    $button.find(".button-label").toggleClass("invisible", false);
     $button.prop("disabled", false);
-    loading.destroy_indicator(
-        $(".recent-view-load-more-container .fetch-messages-button .loading-indicator"),
-    );
+    loading.destroy_indicator($button.find(".loading-indicator"));
 }
 
 function get_min_load_count(already_rendered_count: number, load_count: number): number {
@@ -270,13 +313,23 @@ function is_table_focused(): boolean {
     return $current_focus_elem === "table";
 }
 
+function row_has_mute_column(row: number, $topic_rows: JQuery): boolean {
+    const type = get_row_type(row);
+    if (type === "private") {
+        return false;
+    }
+
+    const $topic_row = $topic_rows.eq(row);
+    return !$topic_row.hasClass("recent-view-archived-channel-row");
+}
+
 function get_row_type(row: number): string {
     // Return "private" or "stream"
     // We use CSS method for finding row type until topics_widget gets initialized.
     if (!topics_widget) {
         const $topic_rows = $("#recent-view-content-tbody tr");
         const $topic_row = $topic_rows.eq(row);
-        const is_private = $topic_row.attr("data-private");
+        const is_private = $topic_row.hasClass("private_conversation_row");
         if (is_private) {
             return "private";
         }
@@ -315,20 +368,21 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
     }
 
     const unread = has_unread(row);
-    if (col === 2 && !unread) {
-        col = 1;
-        col_focus = 1;
-    }
-    const type = get_row_type(row);
-    if (col === 3 && type === "private") {
-        col = unread ? 2 : 1;
-        col_focus = col;
+    if (col === COLUMNS.read && !unread) {
+        col = COLUMNS.topic;
+        col_focus = COLUMNS.topic;
     }
 
     const $topic_row = $topic_rows.eq(row);
+    const type = get_row_type(row);
+    if (col === COLUMNS.mute && !row_has_mute_column(row, $topic_rows)) {
+        col = unread ? COLUMNS.read : COLUMNS.topic;
+        col_focus = col;
+    }
+
     // We need to allow table to render first before setting focus.
     setTimeout(
-        () => $topic_row.find(".recent_view_focusable").eq(col).children().trigger("focus"),
+        () => $topic_row.find(".recent_view_focusable").addBack().eq(col).trigger("focus"),
         0,
     );
     $current_focus_elem = "table";
@@ -361,11 +415,11 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
             };
         }
     } else {
-        const stream_name = $topic_row.find(".recent_topic_stream a").text();
+        const stream_name = $topic_row.find(".recent-view-channel-name").text();
         const stream = stream_data.get_sub_by_name(stream_name);
         reply_recipient_information = {
             stream_id: stream?.stream_id,
-            topic: $topic_row.find(".recent_topic_name a").text(),
+            topic: $topic_row.find(".recent-view-conversation-link").text(),
         };
     }
     compose_closed_ui.update_recipient_text_for_reply_button(reply_recipient_information);
@@ -447,6 +501,10 @@ export function revive_current_focus(): boolean {
         $("#recent-view-filter_widget").trigger("focus");
         return true;
     }
+    if ($current_focus_elem.hasClass("recent-view-folder-filter-button")) {
+        $("#recent_view_folder_filter_button").trigger("focus");
+        return true;
+    }
 
     const filter_button = $current_focus_elem.attr("data-filter");
     if (!filter_button) {
@@ -476,7 +534,7 @@ export function process_messages(
     rows_order_changed = true,
     msg_list_data?: MessageListData,
 ): void {
-    // Always synced with messages in all_messages_data.
+    // Always synced with messages in recent_view_messages_data.
 
     let conversation_data_updated = false;
     const updated_rows = new Set<string>();
@@ -615,6 +673,7 @@ type ConversationContext = {
           is_private: true;
           user_ids_string: string;
           rendered_pm_with_html: string;
+          pm_users_as_plain: string;
           pm_url: string;
           is_group: boolean;
           is_bot: boolean;
@@ -653,7 +712,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
     const full_last_msg_date_time = timerender.get_full_datetime_clarification(time);
     const conversation_key = recent_view_util.get_key_from_message(last_msg);
     const unread_count = message_to_conversation_unread_count(last_msg);
-    const last_msg_time = timerender.relative_time_string_from_date(time);
+    const last_msg_time = timerender.relative_time_string_from_date(time, true);
     const is_private = last_msg.type === "private";
     let all_senders;
 
@@ -674,7 +733,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         const topic = last_msg.topic;
         const topic_display_name = util.get_final_topic_display_name(topic);
         const is_empty_string_topic = topic === "";
-        const topic_url = hash_util.by_channel_topic_permalink(stream_id, topic);
+        const topic_url = stream_topic_history.channel_topic_permalink_hash(stream_id, topic);
 
         // We hide the row according to filters or if it's muted.
         // We only supply the data to the topic rows and let jquery
@@ -712,18 +771,32 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         // Direct message info
         const user_ids_string = last_msg.to_user_ids;
         assert(typeof last_msg.display_recipient !== "string");
-        const rendered_pm_with_html = last_msg.display_recipient
+        const sorted_pm_users = last_msg.display_recipient
             .filter(
                 (recipient: DisplayRecipientUser) =>
                     !people.is_my_user_id(recipient.id) || last_msg.display_recipient.length === 1,
             )
-            .map((user: DisplayRecipientUser) =>
-                render_user_with_status_icon({
-                    name: people.get_display_full_name(user.id),
-                    status_emoji_info: user_status.get_status_emoji(user.id),
-                }),
-            );
-        rendered_pm_with_html.sort();
+            .map((user: DisplayRecipientUser) => ({
+                name: people.get_display_full_name(user.id),
+                status_emoji_info: user_status.get_status_emoji(user.id),
+            }))
+            .toSorted((a, b) => util.strcmp(a.name, b.name));
+
+        const rendered_pm_with_html = render_users_with_status_icons({
+            users: sorted_pm_users,
+        });
+
+        const sorted_pm_usernames_only: string[] = [];
+
+        for (const user of sorted_pm_users) {
+            sorted_pm_usernames_only.push(user.name);
+        }
+
+        const pm_users_as_plain = util.format_array_as_list_with_conjunction(
+            sorted_pm_usernames_only,
+            "long",
+        );
+
         const pm_url = last_msg.pm_with_url;
         const is_group = last_msg.display_recipient.length > 2;
         const has_unread_mention =
@@ -733,7 +806,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         let user_circle_class;
         if (!is_group) {
             const user_id = Number.parseInt(last_msg.to_user_ids, 10);
-            const is_deactivated = !people.is_active_user_for_popover(user_id);
+            const is_deactivated = !people.is_active_user_or_system_bot(user_id);
             const user = people.get_by_user_id(user_id);
             if (user.is_bot) {
                 // We display the bot icon rather than a user circle for bots.
@@ -757,11 +830,8 @@ function format_conversation(conversation_data: ConversationData): ConversationC
 
         dm_context = {
             user_ids_string,
-            rendered_pm_with_html: util.format_array_as_list(
-                rendered_pm_with_html,
-                "long",
-                "conjunction",
-            ),
+            rendered_pm_with_html,
+            pm_users_as_plain,
             pm_url,
             is_group,
             is_bot,
@@ -893,6 +963,22 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
         }
     }
 
+    const folder_filters = folder_dropdown_widget.FOLDER_FILTERS;
+    if (folder_filter_value !== folder_filters.ANY_FOLDER_DROPDOWN_OPTION) {
+        // When a folder filter is active, hide all DMs.
+        if (msg.type === "private") {
+            return true;
+        }
+        const sub = sub_store.get(msg.stream_id);
+        if (folder_filter_value === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION) {
+            if (sub?.folder_id !== null) {
+                return true;
+            }
+        } else if (sub?.folder_id !== folder_filter_value) {
+            return true;
+        }
+    }
+
     if (filters.has("unread")) {
         const unread_count = message_to_conversation_unread_count(msg);
         if (unread_count === 0) {
@@ -976,17 +1062,37 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
     // When doing bulk rerender, we assume that order of rows are not going
     // to change by default. Row insertion can still change the order but
     // we ensure the list remains sorted after insertion.
+    //
+    // Save whether all rows were rendered before updating the data,
+    // so we know if it's safe to use render() for new items below.
+    const was_all_rendered = topics_widget.all_rendered();
     topics_widget.replace_list_data(get_list_data_for_widget(), false);
     topics_widget.filter_and_sort();
-    // Iterate in the order of which the rows should be present so that
+    // Iterate in the order in which the rows should be present so that
     // we are not inserting rows without any rows being present around them.
+    let processed_count = 0;
     for (const topic_data of topics_widget.get_rendered_list()) {
+        if (processed_count >= row_keys.length) {
+            break;
+        }
         const msg = message_store.get(topic_data.last_msg_id);
         assert(msg !== undefined);
         const topic_key = recent_view_util.get_key_from_message(msg);
         if (row_keys.includes(topic_key)) {
             inplace_rerender(topic_key, true);
+            processed_count += 1;
         }
+    }
+    // New conversations from backfilled old messages sort at the end
+    // of the list, beyond the current render offset. Use render() to
+    // efficiently batch-append them in a single DOM operation, rather
+    // than inserting one at a time via insert_rendered_row.
+    //
+    // We can only use render() when the DOM already had all rows up
+    // to the render offset (was_all_rendered), ensuring new items
+    // start right at the offset boundary with no gap.
+    if (processed_count < row_keys.length && was_all_rendered) {
+        topics_widget.render(row_keys.length - processed_count);
     }
     setTimeout(revive_current_focus, 0);
 }
@@ -1112,6 +1218,8 @@ function get_recent_view_filters_params(): {
     filter_muted: boolean;
     filter_pm: boolean;
     is_spectator: boolean;
+    show_folder_filter: boolean;
+    folder_filter_tooltip: string;
 } {
     return {
         filter_unread: filters.has("unread"),
@@ -1119,6 +1227,9 @@ function get_recent_view_filters_params(): {
         filter_muted: filters.has("include_muted"),
         filter_pm: filters.has("include_private"),
         is_spectator: page_params.is_spectator,
+        show_folder_filter: channel_folders.user_has_folders(),
+        folder_filter_tooltip:
+            folder_dropdown_widget.get_tooltip_text_for_folder_filter(folder_filter_value),
     };
 }
 
@@ -1135,11 +1246,69 @@ function setup_dropdown_filters_widget(): void {
     filters_dropdown_widget.setup();
 }
 
+function update_recent_view_folder_filter_button(): void {
+    const folder_filters = folder_dropdown_widget.FOLDER_FILTERS;
+    if (folder_filter_value === folder_filters.ANY_FOLDER_DROPDOWN_OPTION) {
+        $("#recent_view_folder_filter_button").addClass("icon-button-neutral");
+        $("#recent_view_folder_filter_button").removeClass("icon-button-brand");
+        $("#recent_view_folder_filter_button .zulip-icon")
+            .removeClass("zulip-icon-folder-search")
+            .addClass("zulip-icon-folder-chevron");
+    } else {
+        $("#recent_view_folder_filter_button").removeClass("icon-button-neutral");
+        $("#recent_view_folder_filter_button").addClass("icon-button-brand");
+        $("#recent_view_folder_filter_button .zulip-icon")
+            .removeClass("zulip-icon-folder-chevron")
+            .addClass("zulip-icon-folder-search");
+    }
+    const recent_view_folder_filter_wrapper: tippy.ReferenceElement | undefined = $(
+        "#recent_view_folder_filter_container",
+    ).get(0);
+    assert(recent_view_folder_filter_wrapper !== undefined);
+    recent_view_folder_filter_wrapper._tippy?.setContent(
+        folder_dropdown_widget.get_tooltip_text_for_folder_filter(folder_filter_value),
+    );
+}
+
+function folder_filter_click_handler(
+    event: JQuery.ClickEvent,
+    dropdown: tippy.Instance,
+    widget: dropdown_widget.DropdownWidget,
+): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const filter_id = $(event.currentTarget).attr("data-unique-id");
+    assert(filter_id !== undefined);
+    folder_filter_value = Number.parseInt(filter_id, 10);
+    dropdown.hide();
+    widget.render();
+    save_filters();
+    update_recent_view_folder_filter_button();
+
+    assert(topics_widget !== undefined);
+    topics_widget.hard_redraw();
+}
+
+function setup_folder_dropdown_widget(): void {
+    folder_filter_dropdown_widget = folder_dropdown_widget.create_folder_filter_dropdown_widget({
+        widget_name: "recent-view-folder-filter",
+        widget_selector: ".recent-view-folder-filter-button",
+        item_click_callback: folder_filter_click_handler,
+        $events_container: $("#recent_view_filter_buttons"),
+        default_id: folder_filter_value,
+    });
+    folder_filter_dropdown_widget.setup();
+}
+
 export function update_filters_view(): void {
     const rendered_filters = render_recent_view_filters(get_recent_view_filters_params());
     $("#recent_filters_group").html(rendered_filters);
     show_selected_filters();
     filters_dropdown_widget.render();
+    if (folder_filter_dropdown_widget) {
+        update_recent_view_folder_filter_button();
+    }
     assert(topics_widget !== undefined);
     topics_widget.hard_redraw();
 }
@@ -1154,7 +1323,43 @@ function sort_comparator(a: string, b: string): number {
     return -1;
 }
 
-function stream_sort(a: Row, b: Row): number {
+function channel_sort(a: Row, b: Row): number {
+    if (a.type === b.type) {
+        const a_msg = message_store.get(a.last_msg_id);
+        assert(a_msg !== undefined);
+        const b_msg = message_store.get(b.last_msg_id);
+        assert(b_msg !== undefined);
+
+        if (a_msg.type === "stream") {
+            assert(b_msg.type === "stream");
+            const channel_cmp = sort_comparator(
+                stream_data.get_stream_name_from_id(a_msg.stream_id),
+                stream_data.get_stream_name_from_id(b_msg.stream_id),
+            );
+            if (channel_cmp !== 0) {
+                return channel_cmp;
+            }
+        } else {
+            assert(a_msg.type === "private");
+            assert(b_msg.type === "private");
+            const dm_cmp = sort_comparator(a_msg.display_reply_to, b_msg.display_reply_to);
+            if (dm_cmp !== 0) {
+                return dm_cmp;
+            }
+        }
+        // Secondary sort: always most recent first, regardless of channel
+        // sort direction. list_widget negates the entire return value when
+        // in reverse mode, so we compensate here so that recency always
+        // sorts most-recent-first within a channel.
+        const is_descend = $(".recent-view-channel-sort-header").hasClass("descend");
+        const recency = b.last_msg_id - a.last_msg_id;
+        return is_descend ? -recency : recency;
+    }
+    // if type is not same sort between "private" and "stream"
+    return sort_comparator(a.type, b.type);
+}
+
+function conversation_sort(a: Row, b: Row): number {
     if (a.type === b.type) {
         const a_msg = message_store.get(a.last_msg_id);
         assert(a_msg !== undefined);
@@ -1165,6 +1370,10 @@ function stream_sort(a: Row, b: Row): number {
             assert(b_msg.type === "stream");
             const a_stream_name = stream_data.get_stream_name_from_id(a_msg.stream_id);
             const b_stream_name = stream_data.get_stream_name_from_id(b_msg.stream_id);
+
+            if (a_stream_name === b_stream_name) {
+                return sort_comparator(a_msg.topic, b_msg.topic);
+            }
             return sort_comparator(a_stream_name, b_stream_name);
         }
         assert(a_msg.type === "private");
@@ -1173,19 +1382,6 @@ function stream_sort(a: Row, b: Row): number {
     }
     // if type is not same sort between "private" and "stream"
     return sort_comparator(a.type, b.type);
-}
-
-function topic_sort_key(conversation_data: ConversationData): string {
-    const message = message_store.get(conversation_data.last_msg_id);
-    assert(message !== undefined);
-    if (message.type === "private") {
-        return message.display_reply_to;
-    }
-    return message.topic;
-}
-
-function topic_sort(a: ConversationData, b: ConversationData): number {
-    return sort_comparator(topic_sort_key(a), topic_sort_key(b));
 }
 
 function unread_count(conversation_data: ConversationData): number {
@@ -1316,14 +1512,51 @@ function get_list_data_for_widget(): ConversationData[] {
     return [...recent_view_data.get_conversations().values()];
 }
 
+function set_time_column_width_css_variable(): void {
+    if (page_params.is_node_test) {
+        return;
+    }
+    // Measure representative localized time strings to find the
+    // longest one. These cover all formats used by
+    // timerender.relative_time_string_from_date().
+    const candidate_strings = [
+        $t({defaultMessage: "Just now"}),
+        $t({defaultMessage: "{minutes} min ago"}, {minutes: 59}),
+        $t({defaultMessage: "An hour ago"}),
+        $t({defaultMessage: "{hours} hours ago"}, {hours: 23}),
+        $t({defaultMessage: "Yesterday"}),
+        $t({defaultMessage: "{days_old} days ago"}, {days_old: 89}),
+        // Localized short date with year, using a 2-digit day for
+        // maximum width (e.g., "Sep 28, 2000").
+        timerender.get_localized_date_or_time_for_format(new Date(2000, 8, 28), "dayofyear_year"),
+    ];
+    const max_width = util.max_text_content_width(candidate_strings);
+    // The icon and padding space is added via calc() in CSS.
+    $(":root").css("--recent-view-time-text-width", `${Math.ceil(max_width)}px`);
+}
+
+export function update_participants_column_class(): void {
+    if (!page_params.is_node_test) {
+        max_avatars = Number.parseInt($(":root").css("--recent-view-max-avatars"), 10);
+    }
+    $("#recent_view")
+        .removeClass("recent-view-participants-hidden recent-view-participants-3")
+        .addClass(
+            max_avatars === 0
+                ? "recent-view-participants-hidden"
+                : max_avatars === 2
+                  ? "recent-view-participants-3"
+                  : "",
+        );
+}
+
 export function complete_rerender(coming_from_other_views = false): void {
     if (!recent_view_util.is_visible()) {
         return;
     }
 
-    if (!page_params.is_node_test) {
-        max_avatars = Number.parseInt($(":root").css("--recent-view-max-avatars"), 10);
-    }
+    update_participants_column_class();
+    set_time_column_width_css_variable();
 
     // Show topics list
     const mapped_topic_values = get_list_data_for_widget();
@@ -1369,14 +1602,16 @@ export function complete_rerender(coming_from_other_views = false): void {
             },
         },
         sort_fields: {
-            stream_sort,
-            topic_sort,
+            channel_sort,
+            conversation_sort,
             unread_sort,
             ...list_widget.generic_sort_functions("numeric", ["last_msg_id"]),
         },
         html_selector: get_topic_row,
         $simplebar_container: $(":root"),
         callback_after_render,
+        render_empty_list_widget_for_table:
+            render_recent_view_empty_list_widget_for_table_with_load_more,
         is_scroll_position_for_render: views_util.is_scroll_position_for_render,
         post_scroll__pre_render_callback() {
             // Update the focused element for keyboard navigation if needed.
@@ -1385,6 +1620,10 @@ export function complete_rerender(coming_from_other_views = false): void {
         get_min_load_count,
     });
     setup_dropdown_filters_widget();
+    if (channel_folders.user_has_folders()) {
+        setup_folder_dropdown_widget();
+        update_recent_view_folder_filter_button();
+    }
 }
 
 export function update_recent_view_rendered_time(): void {
@@ -1401,7 +1640,7 @@ export function update_recent_view_rendered_time(): void {
         const last_msg = message_store.get(conversation_data.last_msg_id);
         assert(last_msg !== undefined);
         const time = new Date(last_msg.timestamp * 1000);
-        const updated_time = timerender.relative_time_string_from_date(time);
+        const updated_time = timerender.relative_time_string_from_date(time, true);
         const $row = get_topic_row(conversation_data);
         const rendered_time = $row.find(".recent_topic_timestamp").text().trim();
         if (updated_time === rendered_time) {
@@ -1433,6 +1672,7 @@ export function show(): void {
         is_visible: recent_view_util.is_visible,
         set_visible: recent_view_util.set_visible,
         complete_rerender,
+        update_participants_column_class,
     });
     last_scroll_offset = undefined;
 
@@ -1442,16 +1682,16 @@ export function show(): void {
     }
 
     if (onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_recent_view_modal")) {
-        const html_body = render_introduce_zulip_view_modal({
+        const modal_content_html = render_introduce_zulip_view_modal({
             zulip_view: "recent_conversations",
             current_home_view_and_escape_navigation_enabled:
-                user_settings.web_home_view === "recent_topics" &&
+                user_settings.web_home_view === "recent" &&
                 user_settings.web_escape_navigates_to_home_view,
         });
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Welcome to recent conversations!"}),
-            html_body,
-            html_submit_button: $t_html({defaultMessage: "Got it"}),
+            modal_title_html: $t_html({defaultMessage: "Welcome to recent conversations!"}),
+            modal_content_html,
+            modal_submit_button_text: $t({defaultMessage: "Got it"}),
             on_click() {
                 /* This widget is purely informational and clicking only closes it. */
             },
@@ -1533,7 +1773,7 @@ function left_arrow_navigation(row: number, col: number): void {
 }
 
 function right_arrow_navigation(row: number, col: number): void {
-    if (col === 1 && !has_unread(row)) {
+    if (col === COLUMNS.topic && !has_unread(row)) {
         col_focus += 1;
     }
 
@@ -1550,8 +1790,8 @@ function up_arrow_navigation(row: number, col: number): void {
     }
     const type = get_row_type(row);
 
-    if (type === "stream" && col === 2 && row - 1 >= 0 && !has_unread(row - 1)) {
-        col_focus = 1;
+    if (type === "stream" && col === COLUMNS.read && row - 1 >= 0 && !has_unread(row - 1)) {
+        col_focus = COLUMNS.topic;
     }
 }
 
@@ -1631,6 +1871,19 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
     // preventDefault/stopPropagation; false will let the browser
     // handle the key.
 
+    const is_first_navigation = focus_outline_util.maybe_show_focus_outlines(
+        $("#recent_view"),
+        input_key,
+    );
+
+    if (is_first_navigation && is_table_focused()) {
+        // First navigation keypress after page load / view switch:
+        // just reveal the focus ring on the current row without
+        // moving to a different row.
+        set_table_focus(row_focus, col_focus, true);
+        return true;
+    }
+
     if (input_key === "tab" || input_key === "shift_tab") {
         // Tabbing should be handled by browser but to keep the focus element same
         // when we update recent view or user uses other hotkeys, we need to track
@@ -1644,7 +1897,8 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
             if (
                 post_tab_focus_elem.id === "recent_view_search" ||
                 post_tab_focus_elem.classList.contains("button-recent-filters") ||
-                post_tab_focus_elem.classList.contains("dropdown-widget-button")
+                post_tab_focus_elem.classList.contains("dropdown-widget-button") ||
+                post_tab_focus_elem.classList.contains("recent-view-folder-filter-button")
             ) {
                 $current_focus_elem = $(post_tab_focus_elem);
             }
@@ -1720,7 +1974,11 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
                 set_table_focus(row_focus, col_focus);
                 return true;
         }
-    } else if ($elt.hasClass("button-recent-filters") || $elt.hasClass("dropdown-widget-button")) {
+    } else if (
+        $elt.hasClass("button-recent-filters") ||
+        $elt.hasClass("dropdown-widget-button") ||
+        $elt.hasClass("recent-view-folder-filter-button")
+    ) {
         switch (input_key) {
             case "click":
                 $current_focus_elem = $elt;
@@ -1729,16 +1987,38 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
             case "left_arrow":
                 if (filter_buttons().first()[0] === $elt[0]) {
                     $current_focus_elem = $("#recent_view_search");
+                } else if ($elt.hasClass("recent-view-folder-filter-button")) {
+                    // The folder filter button is inside a container div,
+                    // so navigate to the container's previous sibling.
+                    $current_focus_elem = $elt.parent().prev();
                 } else {
-                    $current_focus_elem = $elt.prev();
+                    const $prev = $elt.prev();
+                    // If the previous sibling is the folder filter container,
+                    // focus the button inside it.
+                    if ($prev.attr("id") === "recent_view_folder_filter_container") {
+                        $current_focus_elem = $prev.find(".recent-view-folder-filter-button");
+                    } else {
+                        $current_focus_elem = $prev;
+                    }
                 }
                 break;
             case "vim_right":
             case "right_arrow":
                 if (filter_buttons().last()[0] === $elt[0]) {
                     $current_focus_elem = $("#recent_view_search");
+                } else if ($elt.hasClass("recent-view-folder-filter-button")) {
+                    // The folder filter button is inside a container div,
+                    // so navigate to the container's next sibling.
+                    $current_focus_elem = $elt.parent().next();
                 } else {
-                    $current_focus_elem = $elt.next();
+                    const $next = $elt.next();
+                    // If the next sibling is the folder filter container,
+                    // focus the button inside it.
+                    if ($next.attr("id") === "recent_view_folder_filter_container") {
+                        $current_focus_elem = $next.find(".recent-view-folder-filter-button");
+                    } else {
+                        $current_focus_elem = $next;
+                    }
                 }
                 break;
             case "vim_down":
@@ -1848,6 +2128,20 @@ function load_filters(): void {
     if (dropdown_filters.size === 0 || !is_subset) {
         dropdown_filters = new Set([views_util.FILTERS.UNMUTED_TOPICS]);
     }
+
+    // Load and validate folder filter.
+    const folder_filters = folder_dropdown_widget.FOLDER_FILTERS;
+    const saved_folder_filter = ls.get(ls_folder_filter_key);
+    if (
+        typeof saved_folder_filter === "number" &&
+        (saved_folder_filter === folder_filters.ANY_FOLDER_DROPDOWN_OPTION ||
+            saved_folder_filter === folder_filters.UNCATEGORIZED_DROPDOWN_OPTION ||
+            channel_folders.is_valid_folder_id(saved_folder_filter))
+    ) {
+        folder_filter_value = saved_folder_filter;
+    } else {
+        folder_filter_value = folder_filters.ANY_FOLDER_DROPDOWN_OPTION;
+    }
 }
 
 export function initialize({
@@ -1885,6 +2179,16 @@ export function initialize({
         change_focused_element($(e.target), "click");
     });
 
+    $(window).on("resize", () => {
+        // The saved viewport offset is no longer meaningful after a
+        // resize, so discard it to avoid incorrect scroll restoration.
+        pre_search_topic_viewport_offset = undefined;
+    });
+
+    $("body").on("click", "#recent-view-search-wrapper .input-close-filter-button", () => {
+        set_default_focus();
+    });
+
     $("body").on("click", "#recent-view-content-table .on_hover_topic_read", (e) => {
         e.stopPropagation();
         assert(e.currentTarget instanceof HTMLElement);
@@ -1904,27 +2208,46 @@ export function initialize({
             assert(topic !== undefined);
             on_mark_topic_as_read(stream_id, topic);
         }
-        // If `unread` filter is selected, the focused topic row gets removed
-        // and we automatically move one row down.
-        if (!filters.has("unread")) {
-            change_focused_element($elt, "down_arrow");
+    });
+
+    $("body").on("keydown", ".recent-view-body-row", (e) => {
+        if (keydown_util.is_enter_event(e)) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            switch (col_focus) {
+                case COLUMNS.topic:
+                    $(e.currentTarget).find(".recent-view-conversation-link").trigger("click");
+                    break;
+                case COLUMNS.read:
+                    $(e.currentTarget).find(".on_hover_topic_read").trigger("click");
+                    // If `unread` filter is selected, the focused topic row gets removed
+                    // and we automatically move one row down.
+                    if (!filters.has("unread")) {
+                        assert(e.currentTarget instanceof HTMLElement);
+                        change_focused_element($(e.currentTarget), "down_arrow");
+                    }
+                    break;
+                case COLUMNS.mute:
+                    $(e.currentTarget)
+                        .find(".recent_view_focusable .visibility-status-icon")
+                        .trigger("click");
+                    break;
+            }
         }
     });
 
-    $("body").on("keydown", ".on_hover_topic_read", ui_util.convert_enter_to_click);
-
-    $("body").on("click", ".button-recent-filters", (e) => {
+    $("body").on("click", ".button-recent-filters", function (this: HTMLElement, e) {
         e.stopPropagation();
         if (page_params.is_spectator) {
             // Filter buttons are disabled for spectator.
             return;
         }
 
-        assert(e.target instanceof HTMLElement);
-        change_focused_element($(e.target), "click");
-        assert(e.currentTarget instanceof HTMLElement);
-        assert(e.currentTarget.dataset.filter !== undefined);
-        set_filter(e.currentTarget.dataset.filter);
+        change_focused_element($(this), "click");
+        const filter = this.getAttribute("data-filter");
+        assert(filter !== null);
+        set_filter(filter);
         update_filters_view();
         revive_current_focus();
     });
@@ -1938,14 +2261,21 @@ export function initialize({
         change_focused_element($(e.currentTarget), "click");
     });
 
-    $("body").on("click", "td.recent_topic_stream", (e) => {
+    $("body").on("click", "#recent_view_folder_filter_button", (e) => {
+        assert(e.currentTarget instanceof HTMLElement);
+        change_focused_element($(e.currentTarget), "click");
+    });
+
+    $("body").on("click", "td.recent-view-channel-name", (e) => {
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
 
         e.stopPropagation();
         const topic_row_index = $(e.target).closest("tr").index();
-        focus_clicked_element(topic_row_index, COLUMNS.stream);
+        // Focus topic on channel click since we don't have
+        // separate column for channel and topic.
+        focus_clicked_element(topic_row_index, COLUMNS.topic);
         window.location.href = $(e.currentTarget).find("a").attr("href")!;
     });
 
@@ -1976,22 +2306,73 @@ export function initialize({
         "input",
         "#recent_view_search",
         _.debounce(() => {
-            update_filters_view();
+            const search_term = $<HTMLInputElement>("#recent_view_search").val() ?? "";
+            const is_previous_search_term_empty = previous_search_term === "";
+            previous_search_term = search_term;
+
+            if (search_term !== "" && is_previous_search_term_empty) {
+                // Store the focused row index and its viewport offset
+                // to restore both focus and scroll position when the
+                // search is cleared.
+                pre_search_row_focus = row_focus;
+                const $topic_row = $("#recent-view-content-tbody tr").eq(row_focus);
+                pre_search_topic_viewport_offset = $topic_row[0]?.getBoundingClientRect().top;
+            }
+
+            if (search_term === "") {
+                // Restore scroll position to the row that was focused
+                // before search started.
+                row_focus = pre_search_row_focus ?? 0;
+                update_filters_view();
+                if (topics_widget !== undefined) {
+                    // Clamp row_focus if the list shrank while
+                    // searching (e.g., messages were read with the
+                    // "unread" filter active).
+                    const list_length = topics_widget.get_current_list().length;
+                    if (list_length > 0) {
+                        row_focus = Math.min(row_focus, list_length - 1);
+                    } else {
+                        row_focus = 0;
+                    }
+                    // The initial render might not have rendered enough
+                    // rows for the target row_focus. Calling render()
+                    // will use get_min_load_count to extend rendering
+                    // if needed.
+                    topics_widget.render();
+                }
+                // Restore the row to the same viewport position it
+                // was at before search started.
+                const $topic_row = $("#recent-view-content-tbody tr").eq(row_focus);
+                const current_top = $topic_row[0]?.getBoundingClientRect().top;
+                if (current_top !== undefined && pre_search_topic_viewport_offset !== undefined) {
+                    window.scrollBy(0, current_top - pre_search_topic_viewport_offset);
+                }
+                pre_search_row_focus = undefined;
+                pre_search_topic_viewport_offset = undefined;
+            } else {
+                // Reset focus to first row on new search.
+                row_focus = 0;
+                update_filters_view();
+                // Always scroll to top when there is a search term present.
+                window.scrollTo(0, 0);
+            }
             // Wait for user to go idle before initiating search.
         }, 300),
     );
 
-    $("body").on("click", ".recent-view-load-more-container .fetch-messages-button", () => {
-        $(".recent-view-load-more-container .button-label").toggleClass("invisible", true);
-        $(".recent-view-load-more-container .fetch-messages-button").prop("disabled", true);
-        loading.make_indicator(
-            $(".recent-view-load-more-container .fetch-messages-button .loading-indicator"),
-            {width: 20},
-        );
-        maybe_load_older_messages(unread.first_unread_unmuted_message_id);
-    });
+    $("body").on(
+        "click",
+        ".recent-view-load-more-container .fetch-messages-button, .recent-view-empty-load-more .fetch-messages-button",
+        function (this: HTMLElement) {
+            const $button = $(this);
+            $button.find(".button-label").toggleClass("invisible", true);
+            $button.prop("disabled", true);
+            loading.make_indicator($button.find(".loading-indicator"), {width: 20});
+            maybe_load_older_messages(unread.first_unread_unmuted_message_id);
+        },
+    );
 
-    $(document).on("compose_canceled.zulip", () => {
+    compose_actions.register_compose_cancel_hook(() => {
         if (recent_view_util.is_visible()) {
             revive_current_focus();
         }

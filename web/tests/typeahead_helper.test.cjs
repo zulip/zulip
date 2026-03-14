@@ -4,6 +4,8 @@ const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user, make_bot, Role} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -58,67 +60,54 @@ function user_group_item(user_group) {
     return {type: "user_group", ...user_group};
 }
 
-const a_bot = {
+const a_bot = make_bot({
     email: "a_bot@zulip.com",
     full_name: "A Zulip test bot",
-    is_admin: false,
-    is_bot: true,
     user_id: 1,
-};
+});
 const a_bot_item = user_item(a_bot);
 
-const a_user = {
+const a_user = make_user({
     email: "a_user@zulip.org",
     full_name: "A Zulip user",
-    is_admin: false,
-    is_bot: false,
     user_id: 2,
-};
+});
 const a_user_item = user_item(a_user);
 
-const b_user_1 = {
+const b_user_1 = make_user({
     email: "b_user_1@zulip.net",
     full_name: "Bob 1",
-    is_admin: false,
-    is_bot: false,
     user_id: 3,
-};
+});
 const b_user_1_item = user_item(b_user_1);
 
-const b_user_2 = {
+const b_user_2 = make_user({
     email: "b_user_2@zulip.net",
     full_name: "Bob 2",
-    is_admin: true,
-    is_bot: false,
+    role: Role.ADMINISTRATOR,
     user_id: 4,
-};
+});
 const b_user_2_item = user_item(b_user_2);
 
-const b_user_3 = {
+const b_user_3 = make_user({
     email: "b_user_3@zulip.net",
     full_name: "Bob 3",
-    is_admin: false,
-    is_bot: false,
     user_id: 5,
-};
+});
 const b_user_3_item = user_item(b_user_3);
 
-const b_bot = {
+const b_bot = make_bot({
     email: "b_bot@example.com",
     full_name: "B bot",
-    is_admin: false,
-    is_bot: true,
     user_id: 6,
-};
+});
 const b_bot_item = user_item(b_bot);
 
-const zman = {
+const zman = make_user({
     email: "zman@test.net",
     full_name: "Zman",
-    is_admin: false,
-    is_bot: false,
     user_id: 7,
-};
+});
 const zman_item = user_item(zman);
 
 const matches = [a_bot, a_user, b_user_1, b_user_2, b_user_3, b_bot, zman];
@@ -127,19 +116,21 @@ for (const person of matches) {
     people.add_active_user(person);
 }
 
-const dev_sub = {
+const dev_sub = make_stream({
     name: "Dev",
     color: "blue",
     stream_id: 1,
     subscriber_count: 0,
-};
+    subscribed: true,
+});
 
-const linux_sub = {
+const linux_sub = make_stream({
     name: "Linux",
     color: "red",
     stream_id: 2,
     subscriber_count: 0,
-};
+    subscribed: true,
+});
 stream_data.create_streams([dev_sub, linux_sub]);
 stream_data.add_sub_for_tests(dev_sub);
 stream_data.add_sub_for_tests(linux_sub);
@@ -936,7 +927,7 @@ test("render_person when emails hidden", ({mock_template, override}) => {
     let rendered = false;
     mock_template("typeahead_list_item.hbs", false, (args) => {
         assert.equal(args.primary, b_user_1.full_name);
-        assert.equal(args.secondary, undefined);
+        assert.equal(args.secondary, null);
         rendered = true;
         return "typeahead-item-stub";
     });
@@ -1279,6 +1270,10 @@ test("compare_group_setting_options", () => {
         th.compare_group_setting_options(admins_group_item, bob_group_item, bob_group),
         -1,
     );
+
+    // A user always has a higher priority than a bot.
+    assert.equal(th.compare_group_setting_options(b_bot_item, b_user_1_item, bob_group), 1);
+    assert.equal(th.compare_group_setting_options(b_user_1_item, b_bot_item, bob_group), -1);
 
     // A user who is a member of the group being changed has higher priority.
     // If both the users are not members of the group being changed, alphabetical order
@@ -1663,4 +1658,147 @@ test("compare_stream_or_group_members_options", () => {
         th.compare_stream_or_group_members_options(b_user_1_item, b_user_1_item, undefined, false),
         0,
     );
+});
+
+test("render_person shows value of custom profile fields in secondary", ({
+    mock_template,
+    override,
+}) => {
+    a_user.profile_data ??= {};
+
+    override(realm, "custom_profile_field_types", {
+        SHORT_TEXT: {id: 1, name: "Short text"},
+        PRONOUNS: {id: 3, name: "Pronouns"},
+    });
+
+    override(realm, "custom_profile_fields", [
+        {
+            id: 1,
+            name: "Alpha field",
+            type: realm.custom_profile_field_types.SHORT_TEXT.id,
+            use_for_user_matching: true,
+        },
+    ]);
+
+    people.set_custom_profile_field_data(a_user.user_id, {
+        id: 1,
+        value: "Alpha",
+    });
+
+    let rendered = false;
+
+    mock_template("typeahead_list_item.hbs", false, (args) => {
+        assert.equal(args.secondary, "Alpha");
+        rendered = true;
+        return "typeahead-item-stub";
+    });
+
+    assert.equal(th.render_person(a_user_item, "Alpha"), "typeahead-item-stub");
+    assert.ok(rendered);
+});
+
+test("render_person shows both email and custom profile fields as secondary if both matches", ({
+    mock_template,
+    override,
+}) => {
+    override(realm, "custom_profile_field_types", {
+        SHORT_TEXT: {id: 1, name: "Short text"},
+        PRONOUNS: {id: 3, name: "Pronouns"},
+    });
+
+    override(realm, "custom_profile_fields", [
+        {
+            id: 1,
+            name: "Alpha field",
+            type: realm.custom_profile_field_types.SHORT_TEXT.id,
+            use_for_user_matching: true,
+        },
+    ]);
+
+    people.set_custom_profile_field_data(a_user.user_id, {
+        id: 1,
+        value: "a_user",
+    });
+
+    let rendered = false;
+    mock_template("typeahead_list_item.hbs", false, (args) => {
+        assert.equal(args.secondary, "a_user_delivery@zulip.org, a_user");
+        rendered = true;
+        return "typeahead-item-stub";
+    });
+
+    assert.equal(th.render_person(a_user_item, "a_user"), "typeahead-item-stub");
+    assert.ok(rendered);
+});
+
+test("render_person skips custom profile fields not used for user matching", ({
+    mock_template,
+    override,
+}) => {
+    a_user.profile_data ??= {};
+
+    override(realm, "custom_profile_field_types", {
+        PRONOUNS: {id: 3, name: "Pronouns"},
+    });
+
+    override(realm, "custom_profile_fields", [
+        {
+            id: 1,
+            name: "Alpha field",
+            type: realm.custom_profile_field_types.PRONOUNS.id,
+        },
+    ]);
+
+    people.set_custom_profile_field_data(a_user.user_id, {
+        id: 1,
+        value: "Alpha",
+    });
+
+    let rendered = false;
+
+    mock_template("typeahead_list_item.hbs", false, (args) => {
+        assert.notEqual(args.secondary, "Alpha");
+        rendered = true;
+        return "typeahead-item-stub";
+    });
+
+    assert.equal(th.render_person(a_user_item, "Alpha"), "typeahead-item-stub");
+    assert.ok(rendered);
+});
+
+test("query_matches_person matches custom profile fields when they are enabled for user matching ", ({
+    override,
+}) => {
+    a_user.profile_data ??= {};
+
+    override(realm, "custom_profile_field_types", {
+        SHORT_TEXT: {id: 1, name: "Short text"},
+        EXTERNAL_ACCOUNT: {id: 2, name: "External account"},
+    });
+
+    override(realm, "custom_profile_fields", [
+        {
+            id: 51,
+            name: "Alpha field",
+            type: realm.custom_profile_field_types.SHORT_TEXT.id,
+            use_for_user_matching: true,
+        },
+        {
+            id: 52,
+            name: "Beta field",
+            type: realm.custom_profile_field_types.EXTERNAL_ACCOUNT.id,
+        },
+    ]);
+
+    people.set_custom_profile_field_data(a_user.user_id, {
+        id: 51,
+        value: "Alpha",
+    });
+    people.set_custom_profile_field_data(a_user.user_id, {
+        id: 52,
+        value: "Beta",
+    });
+
+    assert.equal(th.query_matches_person("alpha", a_user_item, undefined, undefined, true), true);
+    assert.equal(th.query_matches_person("beta", a_user_item, undefined, undefined, true), false);
 });

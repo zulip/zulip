@@ -14,6 +14,7 @@ IGNORED_PHRASES = [
     r"AI",
     r"API",
     r"APNS",
+    r"Apple Silicon",
     r"Botserver",
     r"Cookie Bot",
     r"DevAuthBackend",
@@ -21,11 +22,13 @@ IGNORED_PHRASES = [
     r"Esc",
     r"GCM",
     r"GitHub",
+    r"GitLab",
     r"Gravatar",
     r"HTTP",
     r"ID",
     r"IDs",
     r"Inbox",
+    r"Intel",
     r"IP",
     r"JSON",
     r"Jitsi",
@@ -35,17 +38,18 @@ IGNORED_PHRASES = [
     r"Markdown",
     r"OAuth",
     r"OTP",
-    r"Pivotal",
     r"Recent conversations",
     r"DM",
     r"DMs",
     r"Slack",
     r"Google",
     r"Terms of Service",
+    r"TikTok",
     r"Tuesday",
     r"URL",
     r"UUID",
     r"WordPress",
+    r"YouTube",
     r"Zoom",
     r"Zulip",
     r"Zulip Server",
@@ -55,7 +59,11 @@ IGNORED_PHRASES = [
     r"Zulip Cloud Standard",
     r"Zulip Cloud Plus",
     r"Zulip Desktop",
+    r"Download Zulip for macOS \(Apple Silicon\)",
+    r"Download Zulip for macOS \(Intel\)",
     r"BigBlueButton",
+    r"Constructor Groups",
+    r"Nextcloud Talk",
     # Code things
     r"\.zuliprc",
     # BeautifulSoup will remove <z-user> which is horribly confusing,
@@ -147,6 +155,8 @@ IGNORED_PHRASES = [
     # Used in GIPHY popover.
     r"GIFs",
     r"GIPHY",
+    # Used for Tenor attributions
+    r"Search Tenor",
     # Used in our case studies
     r"Technical University of Munich",
     r"University of California San Diego",
@@ -179,6 +189,10 @@ IGNORED_PHRASES = [
     r"resolved",
     # Used in pills for unresolved topics.
     r"unresolved",
+    # Used in pills for followed topics.
+    r"followed",
+    # Used in pills for unfollowed topics.
+    r"unfollowed",
     # This is a reference to a setting/secret and should be lowercase.
     r"zulip_org_id",
     # These are custom time unit options for modal dropdowns

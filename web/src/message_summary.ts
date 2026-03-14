@@ -21,8 +21,8 @@ export function get_narrow_summary(channel_id: number, topic_name: string): void
     const data = {narrow: message_fetch.get_narrow_for_message_fetch(filter)};
     const display_topic_name = util.get_final_topic_display_name(topic_name);
     const unread_topic_params = {
-        html_submit_button: $t({defaultMessage: "Mark topic as read"}),
-        html_exit_button: $t({defaultMessage: "Close"}),
+        modal_submit_button_text: $t({defaultMessage: "Mark topic as read"}),
+        modal_exit_button_text: $t({defaultMessage: "Close"}),
         on_click() {
             unread_ops.mark_topic_as_read(channel_id, topic_name);
         },
@@ -30,7 +30,7 @@ export function get_narrow_summary(channel_id: number, topic_name: string): void
     };
 
     let params = {
-        html_submit_button: $t({defaultMessage: "Close"}),
+        modal_submit_button_text: $t({defaultMessage: "Close"}),
         on_click() {
             // Just close the modal, there is nothing else to do.
         },
@@ -43,12 +43,15 @@ export function get_narrow_summary(channel_id: number, topic_name: string): void
         };
     }
     dialog_widget.launch({
-        text_heading: display_topic_name,
-        html_body: "",
+        modal_title_text: display_topic_name,
+        modal_content_html: "<div></div>", // TODO: Add a loading indicator here instead of a placeholder.
         close_on_submit: true,
         id: "topic-summary-modal",
         footer_minor_text: $t({defaultMessage: "AI summaries may have errors."}),
         ...params,
+        on_show() {
+            $("#topic-summary-modal .modal__content").addClass("hide");
+        },
         post_render() {
             const close_on_success = false;
             dialog_widget.submit_api_request(
@@ -62,7 +65,9 @@ export function get_narrow_summary(channel_id: number, topic_name: string): void
                         const summary_html = render_topic_summary({
                             summary_markdown,
                         });
-                        $("#topic-summary-modal .modal__content").addClass("rendered_markdown");
+                        $("#topic-summary-modal .modal__content")
+                            .removeClass("hide")
+                            .addClass("rendered_markdown");
                         $("#topic-summary-modal .modal__content").html(summary_html);
                         rendered_markdown.update_elements(
                             $("#topic-summary-modal .modal__content"),

@@ -2,7 +2,10 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user, Role} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
@@ -26,57 +29,57 @@ set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
 
-const me = {
+const me = make_user({
     email: "me@zulip.com",
     full_name: "Current User",
     user_id: 100,
-};
+});
 
-const moderator = {
+const moderator = make_user({
     email: "moderator@zulip.com",
     full_name: "Moderator",
     user_id: 2,
-    is_moderator: true,
-};
+    role: Role.MODERATOR,
+});
 
-const admin = {
+const admin = make_user({
     email: "admin@zulip.com",
     full_name: "Admin",
     user_id: 3,
-    is_admin: true,
-};
+    role: Role.ADMINISTRATOR,
+});
 // set up user data
-const admins_group = {
+const admins_group = make_user_group({
     name: "Admins",
     id: 1,
     members: new Set([admin.user_id]),
     is_system_group: true,
     direct_subgroup_ids: new Set(),
-};
+});
 
-const moderators_group = {
+const moderators_group = make_user_group({
     name: "Moderators",
     id: 2,
     members: new Set([moderator.user_id]),
     is_system_group: true,
     direct_subgroup_ids: new Set([admins_group.id]),
-};
+});
 
-const everyone_group = {
+const everyone_group = make_user_group({
     name: "Everyone",
     id: 3,
     members: new Set([me.user_id]),
     is_system_group: true,
     direct_subgroup_ids: new Set([moderators_group.id]),
-};
+});
 
-const nobody_group = {
+const nobody_group = make_user_group({
     name: "Nobody",
     id: 4,
     members: new Set(),
     is_system_group: true,
     direct_subgroup_ids: new Set(),
-};
+});
 user_groups.initialize({
     realm_user_groups: [admins_group, moderators_group, everyone_group, nobody_group],
 });
@@ -155,22 +158,22 @@ run_test("get_deletability", ({override}) => {
     assert.equal(message_delete.get_deletability(message), false);
 
     // Test per-channel delete permission for deleting any message in the channel.
-    const social = {
+    const social = make_stream({
         subscribed: true,
         color: "red",
         name: "social",
         stream_id: 2,
         can_delete_any_message_group: moderators_group.id,
         can_delete_own_message_group: moderators_group.id,
-    };
-    const denmark = {
+    });
+    const denmark = make_stream({
         subscribed: true,
         color: "red",
         name: "denmark",
         stream_id: 3,
         can_delete_any_message_group: nobody_group.id,
         can_delete_own_message_group: moderators_group.id,
-    };
+    });
     stream_data.add_sub_for_tests(social);
     stream_data.add_sub_for_tests(denmark);
 

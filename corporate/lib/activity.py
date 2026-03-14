@@ -97,7 +97,7 @@ def dictfetchall(cursor: CursorWrapper) -> list[dict[str, Any]]:
 
 def format_optional_datetime(date: datetime | None, display_none: bool = False) -> str:
     if date:
-        return date.strftime("%Y-%m-%d %H:%M")
+        return date.replace(tzinfo=None).isoformat(" ", "minutes")
     elif display_none:
         return "None"
     else:
@@ -105,7 +105,7 @@ def format_optional_datetime(date: datetime | None, display_none: bool = False) 
 
 
 def format_datetime_as_date(date: datetime) -> str:
-    return date.strftime("%Y-%m-%d")
+    return date.date().isoformat()
 
 
 def format_none_as_zero(value: int | None) -> int:
@@ -115,11 +115,13 @@ def format_none_as_zero(value: int | None) -> int:
         return 0
 
 
-def user_activity_link(email: str, user_profile_id: int) -> Markup:
+def user_activity_link(link_text: str, user_profile_id: int) -> Markup:
     from corporate.views.user_activity import get_user_activity
 
     url = reverse(get_user_activity, kwargs=dict(user_profile_id=user_profile_id))
-    return Markup('<a href="{url}">{email}</a>').format(url=url, email=email)
+    if link_text == "":
+        return Markup('<a href="{url}"><i class="fa fa-user-circle"></i></a>').format(url=url)
+    return Markup('<a href="{url}">{link_text}</a>').format(url=url, link_text=link_text)
 
 
 def realm_activity_link(realm_str: str) -> Markup:

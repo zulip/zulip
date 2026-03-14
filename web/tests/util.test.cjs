@@ -3,10 +3,9 @@
 const assert = require("node:assert/strict");
 
 const _ = require("lodash");
-const MockDate = require("mockdate");
 
 const {make_realm} = require("./lib/example_realm.cjs");
-const {set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
+const {clock, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const blueslip = zrequire("blueslip");
@@ -337,6 +336,11 @@ run_test("filter_by_word_prefix_match", () => {
     assert.deepEqual(util.filter_by_word_prefix_match(values, "unders", item_to_string, /\s/), []);
 });
 
+run_test("prefix_match", () => {
+    assert.ok(util.prefix_match({value: "VIEWS", search_term: "V"}));
+    assert.ok(!util.prefix_match({value: "VIEWS", search_term: "I"}));
+});
+
 run_test("get_string_diff", () => {
     assert.deepEqual(
         util.get_string_diff("#ann is for updates", "#**announce** is for updates"),
@@ -368,10 +372,6 @@ run_test("format_array_as_list", () => {
         util.format_array_as_list(array, "long", "conjunction"),
         "apple, banana, and orange",
     );
-    assert.equal(
-        util.format_array_as_list_with_highlighted_elements(array, "long", "conjunction"),
-        '<b class="highlighted-element">apple</b>, <b class="highlighted-element">banana</b>, and <b class="highlighted-element">orange</b>',
-    );
 
     // Conjunction format
     assert.equal(
@@ -390,10 +390,6 @@ run_test("format_array_as_list", () => {
             util.format_array_as_list(array, "long", "conjunction"),
             "apple, banana, orange",
         );
-        assert.equal(
-            util.format_array_as_list_with_highlighted_elements(array, "long", "conjunction"),
-            '<b class="highlighted-element">apple</b>, <b class="highlighted-element">banana</b>, <b class="highlighted-element">orange</b>',
-        );
 
         assert.equal(
             util.format_array_as_list_with_conjunction(array, "narrow"),
@@ -411,18 +407,18 @@ run_test("get_remaining_time", () => {
     // Set a random start time
     const start_time = new Date(1000).getTime();
     // Set current time to 400ms ahead of the start time
-    MockDate.set(start_time + 400);
+    clock.setSystemTime(start_time + 400);
     const duration = 500;
     let expected_remaining_time = 100;
     assert.equal(util.get_remaining_time(start_time, duration), expected_remaining_time);
 
     // When current time is greater than start time + duration
     // Set current time to 100ms after the start time + duration
-    MockDate.set(start_time + duration + 100);
+    clock.setSystemTime(start_time + duration + 100);
     expected_remaining_time = 0;
     assert.equal(util.get_remaining_time(start_time, duration), expected_remaining_time);
 
-    MockDate.reset();
+    clock.reset();
 });
 
 run_test("get_custom_time_in_minutes", () => {
@@ -599,4 +595,64 @@ run_test("sha256_hash", async ({override}) => {
     override(window, "isSecureContext", true);
     hash = await util.sha256_hash(data);
     assert.equal(hash, expected_hash);
+});
+
+run_test("call_function_periodically", () => {
+    let num_set_timeout_calls = 0;
+    let num_callback_calls = 0;
+
+    set_global("setTimeout", (callbacK_function, delay) => {
+        assert.equal(delay, 42);
+
+        num_set_timeout_calls += 1;
+        if (num_set_timeout_calls === 100) {
+            return;
+        }
+        callbacK_function();
+    });
+
+    function callback_func() {
+        num_callback_calls += 1;
+    }
+
+    util.call_function_periodically(callback_func, 42);
+    assert.equal(num_set_timeout_calls, 100);
+    assert.equal(num_callback_calls, 99);
+});
+
+run_test("unique_array_insert", () => {
+    const array = [{a: "foo", b: "bar"}];
+    util.unique_array_insert(array, {c: "beep", d: "boop"});
+    assert.deepEqual(array, [
+        {a: "foo", b: "bar"},
+        {c: "beep", d: "boop"},
+    ]);
+    util.unique_array_insert(array, {c: "beep", d: "boop"});
+    util.unique_array_insert(array, {a: "foo", b: "bar"});
+    assert.deepEqual(array, [
+        {a: "foo", b: "bar"},
+        {c: "beep", d: "boop"},
+    ]);
+});
+
+run_test("parse_youtube_start_time", () => {
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/VIDEO_ID?t=120"), 120);
+    assert.equal(
+        util.parse_youtube_start_time("https://www.youtube.com/watch?v=VIDEO_ID&t=150"),
+        150,
+    );
+    assert.equal(
+        util.parse_youtube_start_time("https://www.youtube.com/watch?v=VIDEO_ID"),
+        undefined,
+    );
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/VIDEO_ID?t=1h"), 3600);
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/VIDEO_ID?t=1h1m1s"), 3661);
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/VIDEO_ID?t=1m1s"), 61);
+    assert.equal(
+        util.parse_youtube_start_time("https://www.youtube.com/watch?v=VIDEO_ID&start=100"),
+        100,
+    );
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/ID?t=1m"), 60);
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/ID?t=1h30m"), 5400);
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/ID?t=invalid"), undefined);
 });

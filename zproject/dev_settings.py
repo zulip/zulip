@@ -192,6 +192,8 @@ USE_X_FORWARDED_PORT = True
 
 # Override the default SAML entity ID
 SOCIAL_AUTH_SAML_SP_ENTITY_ID = "http://localhost:9991"
+if IS_DEV_DROPLET:
+    SOCIAL_AUTH_SAML_SP_ENTITY_ID = EXTERNAL_URI_SCHEME + "zulip." + EXTERNAL_HOST
 
 SOCIAL_AUTH_SUBDOMAIN = "auth"
 
@@ -220,6 +222,9 @@ RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 5
 # See: https://zulip.readthedocs.io/en/latest/subsystems/realms.html#working-with-subdomains-in-development-environment
 ROOT_DOMAIN_LANDING_PAGE = True
 
+# Enable demo organizations feature in dev environment.
+DEMO_ORG_DEADLINE_DAYS = 30
+
 # Enable ALTCHA, so that we test this flow; we can only do this on localhost.
 if external_host_env is None and not IS_DEV_DROPLET:
     USING_CAPTCHA = True
@@ -231,3 +236,16 @@ OUTPUT_COST_PER_GIGATOKEN = 590
 INPUT_COST_PER_GIGATOKEN = 790
 MAX_PER_USER_MONTHLY_AI_COST = 1
 MAX_WEB_DATA_IMPORT_SIZE_MB = 1024
+
+# We override some rate limiting rules in development, when they prove
+# excessively limiting for development and testing purposes.
+RATE_LIMITING_RULES = {
+    "sends_email_by_ip": [
+        # This rule puts a limit on actions such as new organization creation,
+        # which we sometimes need to test repeatedly in development.
+        (86400, 1000),
+    ],
+    "demo_realm_creation_by_ip": [
+        (86400, 1000),
+    ],
+}

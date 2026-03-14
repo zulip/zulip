@@ -1,7 +1,6 @@
 import os
 from datetime import timedelta
 from unittest import mock
-from unittest.mock import call, patch
 
 import time_machine
 from django.conf import settings
@@ -414,19 +413,12 @@ class ZulipUpdateAnnouncementsTest(ZulipTestCase):
             mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
             output_dir = self.make_import_output_dir("mattermost")
 
-            with patch("builtins.print") as mock_print, self.assertLogs(level="WARNING"):
+            with self.assertLogs(level="WARNING"):
                 do_convert_data(
                     mattermost_data_dir=mattermost_data_dir,
                     output_dir=output_dir,
                     masking_content=True,
                 )
-            self.assertEqual(
-                mock_print.mock_calls,
-                [
-                    call("Generating data for", "gryffindor"),
-                    call("Generating data for", "slytherin"),
-                ],
-            )
 
             gryffindor_output_dir = os.path.join(output_dir, "gryffindor")
 

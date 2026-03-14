@@ -21,6 +21,13 @@
         {{t "Send all notifications to a single topic"}}
     </label>
 </div>
+<div class="input-group">
+    <div class="topic-to-use-wrapper integration-url-parameter">
+        {{> ../dropdown_widget_with_label
+          widget_name="slack-topics-dropdown"
+          label=(t "Topics to use")}}
+    </div>
+</div>
 <div class="input-group hide">
     <label for="integration-url-topic-input" class="modal-label-field">{{t "Topic"}}</label>
     <input type="text" id="integration-url-topic-input" class="modal_text_input integration-url-parameter" maxlength="{{ max_topic_length }}" />
@@ -40,8 +47,8 @@
 <div class="input-group hide" id="integrations-event-container">
     <label for="integrations-event-options">{{t "Events to include:"}}</label>
     <div class="integration-all-events-buttons">
-        {{> ../components/action_button attention="quiet" intent="neutral" id="add-all-integration-events" label=(t "Check all") }}
-        {{> ../components/action_button attention="quiet" intent="neutral" id="remove-all-integration-events" label=(t "Uncheck all") }}
+        {{> ../components/action_button variant="subtle" intent="neutral" id="add-all-integration-events" label=(t "Check all") }}
+        {{> ../components/action_button variant="subtle" intent="neutral" id="remove-all-integration-events" label=(t "Uncheck all") }}
     </div>
     <div id="integrations-event-options"></div>
 </div>

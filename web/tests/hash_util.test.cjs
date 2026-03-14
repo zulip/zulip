@@ -4,6 +4,8 @@ const assert = require("node:assert/strict");
 
 const message_link_test_cases = require("../../zerver/tests/fixtures/message_link_test_cases.json");
 
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -13,26 +15,25 @@ const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 const spectators = zrequire("spectators");
 
-const hamlet = {
+const hamlet = make_user({
     user_id: 15,
     email: "hamlet@example.com",
     full_name: "Hamlet",
-};
+});
 
-people.add_active_user(hamlet);
+people.add_active_user(hamlet, "server_events");
 
-const frontend_id = 99;
-const frontend = {
-    stream_id: frontend_id,
+const frontend = make_stream({
+    stream_id: 99,
     name: "frontend",
-};
+});
 
 stream_data.add_sub_for_tests(frontend);
 
 run_test("hash_util", () => {
     // Test encode_operand and decode_operand
     function encode_decode_operand(operator, operand, expected_val) {
-        const encode_result = hash_util.encode_operand(operator, operand);
+        const encode_result = hash_util.encode_operand({operator, operand});
         assert.equal(encode_result, expected_val);
         const new_operand = encode_result;
         const decode_result = hash_util.decode_operand(operator, new_operand);
@@ -40,12 +41,12 @@ run_test("hash_util", () => {
     }
 
     let operator = "sender";
-    let operand = hamlet.email;
+    let operand = hamlet.user_id;
 
     encode_decode_operand(operator, operand, "15-Hamlet");
 
-    operator = "stream";
-    operand = frontend_id.toString();
+    operator = "channel";
+    operand = frontend.stream_id.toString();
 
     encode_decode_operand(operator, operand, "99-frontend");
 
@@ -176,11 +177,11 @@ run_test("test_is_in_specified_hash_category", () => {
 
 run_test("test_parse_narrow", () => {
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "99-frontend"]), [
-        {negated: false, operator: "stream", operand: frontend_id.toString()},
+        {negated: false, operator: "channel", operand: frontend.stream_id.toString()},
     ]);
 
     assert.deepEqual(hash_util.parse_narrow(["narrow", "-stream", "99-frontend"]), [
-        {negated: true, operator: "stream", operand: frontend_id.toString()},
+        {negated: true, operator: "channel", operand: frontend.stream_id.toString()},
     ]);
 
     assert.equal(hash_util.parse_narrow(["narrow", "BOGUS"]), undefined);
@@ -188,12 +189,12 @@ run_test("test_parse_narrow", () => {
     // For unknown channel IDs, we still parse it; it could be a valid channel we do
     // not have access to. We'll end up showing "Invalid stream" in the navbar.
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "42-bogus"]), [
-        {negated: false, operator: "stream", operand: "42"},
+        {negated: false, operator: "channel", operand: "42"},
     ]);
 
     // Empty string as a topic name is valid.
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "99-frontend", "topic", ""]), [
-        {negated: false, operator: "stream", operand: frontend_id.toString()},
+        {negated: false, operator: "channel", operand: frontend.stream_id.toString()},
         {negated: false, operator: "topic", operand: ""},
     ]);
 
@@ -270,4 +271,111 @@ run_test("test_search_public_streams_notice_url", () => {
 run_test("test_current_hash_as_next", () => {
     window.location.hash = "#foo";
     assert.equal(spectators.current_hash_as_next(), "next=/%23foo");
+});
+
+run_test("get_link_hash", () => {
+    assert.equal(
+        hash_util.get_link_hash("/#narrow/channel/9-announce"),
+        "#narrow/channel/9-announce",
+    );
+    assert.equal(
+        hash_util.get_link_hash("https://chat.zulip.org/#narrow/channel/127-integrations/"),
+        "#narrow/channel/127-integrations/",
+    );
+    assert.equal(hash_util.get_link_hash("bad-url"), "");
+});
+
+run_test("test_is_overlay_hash", () => {
+    // All overlay categories should return true.
+    const overlay_hashes = [
+        "#streams/all",
+        "#channels/subscribed",
+        "#drafts",
+        "#groups",
+        "#settings/profile",
+        "#organization/profile",
+        "#invite",
+        "#keyboard-shortcuts",
+        "#message-formatting",
+        "#search-operators",
+        "#about-zulip",
+        "#scheduled",
+        "#reminders",
+        "#user/12345",
+    ];
+    for (const hash of overlay_hashes) {
+        assert.equal(hash_parser.is_overlay_hash(hash), true);
+    }
+
+    // Extra path segments still match on the category.
+    assert.equal(hash_parser.is_overlay_hash("#channels/1/general"), true);
+
+    // Non-overlay hashes should return false.
+    assert.equal(hash_parser.is_overlay_hash("#narrow/channel/99-frontend"), false);
+    assert.equal(hash_parser.is_overlay_hash("#recent"), false);
+    assert.equal(hash_parser.is_overlay_hash("#feed"), false);
+    assert.equal(hash_parser.is_overlay_hash(""), false);
+    assert.equal(hash_parser.is_overlay_hash(undefined), false);
+});
+
+run_test("test_is_an_allowed_web_public_narrow", () => {
+    // The special case: "is" operator with "resolved" operand.
+    assert.equal(hash_parser.is_an_allowed_web_public_narrow("is", "resolved"), true);
+
+    // "is" with other operands is not allowed.
+    assert.equal(hash_parser.is_an_allowed_web_public_narrow("is", "starred"), false);
+    assert.equal(hash_parser.is_an_allowed_web_public_narrow("is", "mentioned"), false);
+
+    // Allowed operators return true regardless of operand.
+    assert.equal(hash_parser.is_an_allowed_web_public_narrow("channel", "anything"), true);
+    assert.equal(hash_parser.is_an_allowed_web_public_narrow("topic", "anything"), true);
+    assert.equal(hash_parser.is_an_allowed_web_public_narrow("sender", "anything"), true);
+    assert.equal(hash_parser.is_an_allowed_web_public_narrow("has", "anything"), true);
+    assert.equal(hash_parser.is_an_allowed_web_public_narrow("search", "anything"), true);
+    assert.equal(hash_parser.is_an_allowed_web_public_narrow("near", "anything"), true);
+    assert.equal(hash_parser.is_an_allowed_web_public_narrow("id", "anything"), true);
+    assert.equal(hash_parser.is_an_allowed_web_public_narrow("with", "anything"), true);
+
+    // Disallowed operators should return false.
+    assert.equal(hash_parser.is_an_allowed_web_public_narrow("dm", "someone"), false);
+    assert.equal(hash_parser.is_an_allowed_web_public_narrow("dm-including", "someone"), false);
+});
+
+run_test("test_is_spectator_compatible", () => {
+    // Non-narrow allowed hashes.
+    assert.equal(hash_parser.is_spectator_compatible(""), true);
+    assert.equal(hash_parser.is_spectator_compatible("#recent"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#recent_topics"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#feed"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#all_messages"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#keyboard-shortcuts"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#message-formatting"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#search-operators"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#about-zulip"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#topics"), true);
+
+    // Narrow hashes with allowed operators.
+    assert.equal(hash_parser.is_spectator_compatible("#narrow/channel/99-frontend"), true);
+    assert.equal(
+        hash_parser.is_spectator_compatible("#narrow/channel/99-frontend/topic/testing"),
+        true,
+    );
+    assert.equal(hash_parser.is_spectator_compatible("#narrow/sender/15"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#narrow/has/link"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#narrow/search/hello"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#narrow/id/42"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#narrow/near/100"), true);
+    assert.equal(hash_parser.is_spectator_compatible("#narrow/with/5"), true);
+
+    // Narrow hashes with disallowed operators.
+    assert.equal(hash_parser.is_spectator_compatible("#narrow/dm/15-dm"), false);
+    assert.equal(hash_parser.is_spectator_compatible("#narrow/is/starred"), false);
+
+    // Narrow with "is/resolved" is allowed via is_an_allowed_web_public_narrow.
+    assert.equal(hash_parser.is_spectator_compatible("#narrow/is/resolved"), true);
+
+    // Hashes that are neither narrow nor in the allowed list.
+    assert.equal(hash_parser.is_spectator_compatible("#settings/profile"), false);
+    assert.equal(hash_parser.is_spectator_compatible("#drafts"), false);
+    assert.equal(hash_parser.is_spectator_compatible("#channels/subscribed"), false);
 });

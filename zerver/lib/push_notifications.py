@@ -38,10 +38,15 @@ from zerver.actions.realm_settings import (
     do_set_realm_property,
 )
 from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_user
+from zerver.lib.devices import b64decode_token_id_base64, b64encode_token_id_int
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingRemoteRealmError
-from zerver.lib.message import access_message_and_usermessage, direct_message_group_users
+from zerver.lib.message import (
+    OnlyMessageFields,
+    access_message_and_usermessage,
+    direct_message_group_users,
+)
 from zerver.lib.notification_data import get_mentioned_user_group
 from zerver.lib.remote_server import (
     PushNotificationBouncerError,
@@ -61,8 +66,8 @@ from zerver.lib.users import check_can_access_user
 from zerver.models import (
     AbstractPushDeviceToken,
     ArchivedMessage,
+    Device,
     Message,
-    PushDevice,
     PushDeviceToken,
     Realm,
     Recipient,
@@ -73,6 +78,7 @@ from zerver.models import (
 from zerver.models.realms import get_fake_email_domain
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import get_user_profile_by_id
+from zerver.tornado.django_api import send_event_on_commit
 
 if TYPE_CHECKING:
     import aioapns
@@ -237,7 +243,7 @@ def dedupe_device_tokens(
 @dataclass
 class APNsResultInfo:
     successfully_sent: bool
-    delete_device_id: int | None = None
+    delete_token_id_base64: str | None = None
     delete_device_token: str | None = None
 
 
@@ -262,7 +268,7 @@ def get_info_from_apns_result(
             "APNs: Removing invalid/expired token %s (%s)", device.token, result.description
         )
         if settings.ZILENCER_ENABLED and isinstance(device, RemotePushDevice):
-            result_info.delete_device_id = device.device_id
+            result_info.delete_token_id_base64 = b64encode_token_id_int(device.token_id)
         else:
             result_info.delete_device_token = device.token
     else:
@@ -1059,7 +1065,11 @@ def get_message_payload(
     return data
 
 
-def get_apns_alert_title(message: Message, language: str) -> str:
+def get_apns_alert_title(
+    message: Message,
+    channel_name: str | None = None,
+    topic_display_name: str | None = None,
+) -> str:
     """
     On an iOS notification, this is the first bolded line.
     """
@@ -1069,9 +1079,8 @@ def get_apns_alert_title(message: Message, language: str) -> str:
         if len(recipients) > 2:
             return ", ".join(sorted(r["full_name"] for r in recipients))
     elif message.is_channel_message:
-        stream_name = get_message_stream_name_from_database(message)
-        topic_display_name = get_topic_display_name(message.topic_name(), language)
-        return f"#{stream_name} > {topic_display_name}"
+        assert channel_name is not None and topic_display_name is not None
+        return f"#{channel_name} > {topic_display_name}"
     # For 1:1 direct messages, we just show the sender name.
     return message.sender.full_name
 
@@ -1079,7 +1088,6 @@ def get_apns_alert_title(message: Message, language: str) -> str:
 def get_apns_alert_subtitle(
     message: Message,
     trigger: str,
-    user_profile: UserProfile,
     mentioned_user_group_name: str | None = None,
     can_access_sender: bool = True,
 ) -> str:
@@ -1148,58 +1156,53 @@ def get_apns_badge_count_future(
 
 
 def get_message_payload_apns(
+    message_payload: Mapping[str, Any],
     user_profile: UserProfile,
     message: Message,
     trigger: str,
-    mentioned_user_group_id: int | None = None,
-    mentioned_user_group_name: str | None = None,
     can_access_sender: bool = True,
 ) -> dict[str, Any]:
     """A `message` payload for iOS, via APNs."""
-    zulip_data = get_message_payload(
-        user_profile, message, mentioned_user_group_id, mentioned_user_group_name, can_access_sender
-    )
-    zulip_data.update(
+    message_payload = dict(copy.deepcopy(message_payload))
+    message_payload.update(
         message_ids=[message.id],
     )
-    remove_obsolete_fields_apns(zulip_data)
+    mentioned_user_group_name = message_payload.get("mentioned_user_group_name")
+    remove_obsolete_fields_apns(message_payload)
+
+    if message.is_channel_message:
+        alert_title = get_apns_alert_title(
+            message, message_payload["stream"], message_payload["topic"]
+        )
+    else:
+        alert_title = get_apns_alert_title(message)
 
     assert message.rendered_content is not None
     with override_language(user_profile.default_language):
         content, _ = truncate_content(get_mobile_push_content(message.rendered_content))
         apns_data = {
             "alert": {
-                "title": get_apns_alert_title(message, user_profile.default_language),
+                "title": alert_title,
                 "subtitle": get_apns_alert_subtitle(
-                    message, trigger, user_profile, mentioned_user_group_name, can_access_sender
+                    message, trigger, mentioned_user_group_name, can_access_sender
                 ),
                 "body": content,
             },
             "sound": "default",
             "badge": get_apns_badge_count(user_profile),
-            "custom": {"zulip": zulip_data},
+            "custom": {"zulip": message_payload},
         }
     return apns_data
 
 
 def get_message_payload_gcm(
+    message_payload: Mapping[str, Any],
     user_profile: UserProfile,
     message: Message,
-    mentioned_user_group_id: int | None = None,
-    mentioned_user_group_name: str | None = None,
     can_access_sender: bool = True,
     for_legacy_clients: bool = True,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """A `message` payload + options, for Android via FCM."""
-    data = get_message_payload(
-        user_profile,
-        message,
-        mentioned_user_group_id,
-        mentioned_user_group_name,
-        can_access_sender,
-        for_legacy_clients,
-    )
-
     if not can_access_sender:
         # A guest user can only receive a stream message from an
         # inaccessible user as we allow unsubscribed users to send
@@ -1208,45 +1211,28 @@ def get_message_payload_gcm(
         sender_avatar_url = get_avatar_for_inaccessible_user()
         sender_name = str(UserProfile.INACCESSIBLE_USER_NAME)
     else:
-        sender_avatar_url = absolute_avatar_url(message.sender)
+        sender_avatar_url = absolute_avatar_url(message.sender, message.realm.url)
         sender_name = message.sender.full_name
 
+    message_payload = dict(copy.deepcopy(message_payload))
     if for_legacy_clients:
-        data["event"] = "message"
-        data["zulip_message_id"] = message.id  # message_id is reserved for CCS
+        message_payload["event"] = "message"
+        message_payload["zulip_message_id"] = message.id  # message_id is reserved for CCS
     else:
-        data["type"] = "message"
-        data["message_id"] = message.id
+        message_payload["type"] = "message"
+        message_payload["message_id"] = message.id
 
     assert message.rendered_content is not None
     with override_language(user_profile.default_language):
         content, _truncated = truncate_content(get_mobile_push_content(message.rendered_content))
-        data.update(
+        message_payload.update(
             time=datetime_to_timestamp(message.date_sent),
             content=content,
             sender_full_name=sender_name,
             sender_avatar_url=sender_avatar_url,
         )
     gcm_options = {"priority": "high"}
-    return data, gcm_options
-
-
-def get_payload_data_to_encrypt(
-    user_profile: UserProfile,
-    message: Message,
-    mentioned_user_group_id: int | None = None,
-    mentioned_user_group_name: str | None = None,
-    can_access_sender: bool = True,
-) -> dict[str, Any]:
-    payload_data_to_encrypt, _gcm_options = get_message_payload_gcm(
-        user_profile,
-        message,
-        mentioned_user_group_id,
-        mentioned_user_group_name,
-        can_access_sender,
-        for_legacy_clients=False,
-    )
-    return payload_data_to_encrypt
+    return message_payload, gcm_options
 
 
 def get_remove_payload_gcm(
@@ -1431,7 +1417,7 @@ class RealmPushStatusDict(TypedDict):
 class SendNotificationResponseData(TypedDict):
     android_successfully_sent_count: int
     apple_successfully_sent_count: int
-    delete_device_ids: list[int]
+    delete_token_ids: list[str]
 
 
 class SendNotificationRemoteResponseData(SendNotificationResponseData):
@@ -1450,13 +1436,13 @@ class PushRequestBasePayload:
     # FCM expects in this type must always be strings. Non-string
     # fields must be converted into strings in the FCM code path
     # within send_e2ee_push_notifications.
-    push_account_id: int
+    push_key_id: int
     encrypted_data: str
 
 
 @dataclass
 class FCMPushRequest:
-    device_id: int
+    token_id: str
     fcm_priority: FCMPriority
     payload: PushRequestBasePayload
 
@@ -1476,7 +1462,7 @@ class APNsPayload(PushRequestBasePayload):
 
 @dataclass
 class APNsPushRequest:
-    device_id: int
+    token_id: str
     http_headers: APNsHTTPHeaders
     payload: APNsPayload
 
@@ -1512,7 +1498,7 @@ def get_encrypted_data(payload_data_to_encrypt: dict[str, Any], push_key_bytes: 
 def send_push_notifications(
     user_profile: UserProfile,
     payload_data_to_encrypt: dict[str, Any],
-    push_devices: QuerySet[PushDevice],
+    push_devices: QuerySet[Device],
 ) -> None:
     assert len(push_devices) != 0
 
@@ -1528,30 +1514,32 @@ def send_push_notifications(
     # Prepare payload to send.
     push_requests: list[FCMPushRequest | APNsPushRequest] = []
     for push_device in push_devices:
-        assert push_device.bouncer_device_id is not None  # for mypy
+        assert push_device.push_key is not None  # for mypy
+        assert push_device.push_key_id is not None  # for mypy
+        assert push_device.push_token_id is not None  # for mypy
         encrypted_data = get_encrypted_data(payload_data_to_encrypt, bytes(push_device.push_key))
-        if push_device.token_kind == PushDevice.TokenKind.APNS:
+        if push_device.push_token_kind == Device.PushTokenKind.APNS:
             apns_http_headers = APNsHTTPHeaders(
                 apns_priority=apns_priority,
                 apns_push_type=apns_push_type,
             )
             apns_payload = APNsPayload(
-                push_account_id=push_device.push_account_id,
+                push_key_id=push_device.push_key_id,
                 encrypted_data=encrypted_data,
             )
             apns_push_request = APNsPushRequest(
-                device_id=push_device.bouncer_device_id,
+                token_id=b64encode_token_id_int(push_device.push_token_id),
                 http_headers=apns_http_headers,
                 payload=apns_payload,
             )
             push_requests.append(apns_push_request)
         else:
             fcm_payload = PushRequestBasePayload(
-                push_account_id=push_device.push_account_id,
+                push_key_id=push_device.push_key_id,
                 encrypted_data=encrypted_data,
             )
             fcm_push_request = FCMPushRequest(
-                device_id=push_device.bouncer_device_id,
+                token_id=b64encode_token_id_int(push_device.push_token_id),
                 fcm_priority=fcm_priority,
                 payload=fcm_payload,
             )
@@ -1595,20 +1583,32 @@ def send_push_notifications(
         return
 
     # Handle success response data
-    delete_device_ids = response_data["delete_device_ids"]
+    delete_token_ids_base64 = response_data["delete_token_ids"]
+    delete_token_ids_int = [
+        b64decode_token_id_base64(token_id_base64) for token_id_base64 in delete_token_ids_base64
+    ]
     apple_successfully_sent_count = response_data["apple_successfully_sent_count"]
     android_successfully_sent_count = response_data["android_successfully_sent_count"]
 
-    if len(delete_device_ids) > 0:
+    if len(delete_token_ids_base64) > 0:
         logger.info(
-            "Deleting PushDevice rows with the following device IDs based on response from bouncer: %s",
-            sorted(delete_device_ids),
+            "Clearing `push_token_id` for Device rows with the following token IDs based on response from bouncer: %s",
+            sorted(delete_token_ids_base64),
         )
-        # Filtering on `user_profile` is not necessary here, we do it to take
-        # advantage of 'zerver_pushdevice_user_bouncer_device_id_idx' index.
-        PushDevice.objects.filter(
-            user=user_profile, bouncer_device_id__in=delete_device_ids
-        ).delete()
+        # Uses 'zerver_device_user_push_token_id_idx' index.
+        with transaction.atomic(durable=True):
+            push_devices = Device.objects.select_for_update(no_key=True).filter(
+                user=user_profile, push_token_id__in=delete_token_ids_int
+            )
+            for push_device in push_devices:
+                event = dict(
+                    type="device",
+                    op="update",
+                    device_id=push_device.id,
+                    push_token_id=None,
+                )
+                send_event_on_commit(user_profile.realm, event, [user_profile.id])
+            push_devices.update(push_token_id=None)
 
     do_increment_logging_stat(
         user_profile.realm,
@@ -1644,7 +1644,7 @@ def send_push_notifications(
         if can_push:
             record_push_notifications_recently_working()
 
-    if is_test_notification and len(push_requests) == len(delete_device_ids):
+    if is_test_notification and len(push_requests) == len(delete_token_ids_base64):
         # While sending test push notification, the bouncer reported
         # that there's no active registered push device. Inform the
         # same to the client.
@@ -1683,8 +1683,8 @@ def prepare_payload_and_send_push_notifications(
         )
 
     # Send E2EE push notifications.
-    # Uses 'zerver_pushdevice_user_bouncer_device_id_idx' index.
-    push_devices = PushDevice.objects.filter(user=user_profile, bouncer_device_id__isnull=False)
+    # Uses 'zerver_device_user_push_token_id_idx' index.
+    push_devices = Device.objects.filter(user=user_profile, push_token_id__isnull=False)
     if push_devices:
         payload_to_encrypt = get_payload_to_encrypt()
         send_push_notifications(user_profile, payload_to_encrypt, push_devices)
@@ -1713,6 +1713,29 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         # BUG: Investigate why it's possible to get here.
         return  # nocoverage
 
+    required_message_fields = OnlyMessageFields(
+        select_related=["sender", "realm", "recipient"],
+        fields=[
+            "sender_id",
+            "realm_id",
+            "recipient_id",
+            "is_channel_message",
+            "subject",
+            "rendered_content",
+            "date_sent",
+            "sender__recipient_id",
+            "sender__realm_id",
+            "sender__is_bot",
+            "sender__email",
+            "sender__full_name",
+            "sender__delivery_email",
+            "sender__avatar_source",
+            "sender__avatar_version",
+            "realm__string_id",
+            "realm__can_access_all_users_group_id",
+        ],
+    )
+
     with transaction.atomic(durable=True):
         try:
             (message, user_message) = access_message_and_usermessage(
@@ -1720,11 +1743,18 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
                 missed_message["message_id"],
                 lock_message=True,
                 is_modifying_message=False,
+                only_message_fields=required_message_fields,
             )
         except JsonableError:
             if ArchivedMessage.objects.filter(id=missed_message["message_id"]).exists():
                 # If the cause is a race with the message being deleted,
                 # that's normal and we have no need to log an error.
+                return
+            if Message.objects.filter(id=missed_message["message_id"]).exists():
+                # If the message exists but is no longer accessible to
+                # the user, this is likely because the message was moved
+                # to a channel the user doesn't have access to. This is
+                # a normal race and we have no need to log an error.
                 return
             logging.info(
                 "Unexpected message access failure handling push notifications: %s %s",
@@ -1800,7 +1830,7 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         # the sender because they are sending a message to a public
         # stream that you are subscribed to but they are not.
 
-        can_access_sender = check_can_access_user(message.sender, user_profile)
+        can_access_sender = check_can_access_user(message.sender, user_profile, message.realm)
     else:
         # For private messages, the recipient will gain access
         # to the sender if they did not had access previously.
@@ -1811,13 +1841,20 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
     def get_payload_legacy(
         apple_device_exists: bool, android_device_exists: bool
     ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+        assert apple_device_exists or android_device_exists
+        message_payload = get_message_payload(
+            user_profile,
+            message,
+            mentioned_user_group_id,
+            mentioned_user_group_name,
+            can_access_sender,
+        )
         apns_payload = (
             get_message_payload_apns(
+                message_payload,
                 user_profile,
                 message,
                 trigger,
-                mentioned_user_group_id,
-                mentioned_user_group_name,
                 can_access_sender,
             )
             if apple_device_exists
@@ -1825,10 +1862,9 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         )
         gcm_payload, gcm_options = (
             get_message_payload_gcm(
+                message_payload,
                 user_profile,
                 message,
-                mentioned_user_group_id,
-                mentioned_user_group_name,
                 can_access_sender,
             )
             if android_device_exists
@@ -1837,12 +1873,20 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         return apns_payload, gcm_payload, gcm_options
 
     def get_payload_to_encrypt() -> dict[str, Any]:
-        payload_data_to_encrypt = get_payload_data_to_encrypt(
+        message_payload = get_message_payload(
             user_profile,
             message,
             mentioned_user_group_id,
             mentioned_user_group_name,
             can_access_sender,
+            for_legacy_clients=False,
+        )
+        payload_data_to_encrypt, _gcm_options = get_message_payload_gcm(
+            message_payload,
+            user_profile,
+            message,
+            can_access_sender,
+            for_legacy_clients=False,
         )
         return payload_data_to_encrypt
 
@@ -1919,7 +1963,7 @@ def send_test_push_notification(user_profile: UserProfile, devices: list[PushDev
 
 
 def send_e2ee_test_push_notification(
-    user_profile: UserProfile, push_devices: QuerySet[PushDevice]
+    user_profile: UserProfile, push_devices: QuerySet[Device]
 ) -> None:
     payload_data_to_encrypt = get_base_payload(user_profile, for_legacy_clients=False)
     payload_data_to_encrypt["type"] = "test"
@@ -1997,19 +2041,6 @@ class HostnameAlreadyInUseBouncerError(JsonableError):
 class PushDeviceInfoDict(TypedDict):
     status: Literal["active", "pending", "failed"]
     error_code: str | None
-
-
-def get_push_devices(user_profile: UserProfile) -> dict[str, PushDeviceInfoDict]:
-    # We intentionally don't try to save a database query
-    # if `push_notifications_configured()` is False, in order to avoid
-    # risk of clients deleting their Account records if the server
-    # has its mobile notifications configuration temporarily disabled.
-    rows = PushDevice.objects.filter(user=user_profile)
-
-    return {
-        str(row.push_account_id): {"status": row.status, "error_code": row.error_code}
-        for row in rows
-    }
 
 
 class NoActivePushDeviceError(JsonableError):

@@ -4,14 +4,14 @@ import operator
 import os
 import re
 import sys
-import time
 import typing
 import uuid
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal
 from functools import wraps
+from time import sleep
 from typing import TYPE_CHECKING, Any, Literal, Optional, TypeVar, cast
 from unittest import mock
 from unittest.mock import MagicMock, Mock, patch
@@ -51,8 +51,6 @@ from corporate.lib.stripe import (
     compute_plan_parameters,
     customer_has_credit_card_as_default_payment_method,
     customer_has_last_n_invoices_open,
-    do_deactivate_remote_server,
-    do_reactivate_remote_server,
     downgrade_small_realms_behind_on_payments_as_needed,
     get_latest_seat_count,
     get_plan_renewal_or_end_date,
@@ -85,7 +83,7 @@ from zerver.actions.create_user import (
     do_reactivate_user,
 )
 from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_realm
-from zerver.actions.users import change_user_is_active, do_change_user_role, do_deactivate_user
+from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.remote_server import send_server_data_to_push_bouncer
 from zerver.lib.test_classes import ZulipTestCase
@@ -444,8 +442,8 @@ class StripeTestCase(ZulipTestCase):
         # Add hamlet in `can_manage_billing_group` for testing.
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
-        do_change_user_role(hamlet, UserProfile.ROLE_REALM_OWNER, acting_user=None)
-        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        self.set_user_role(hamlet, UserProfile.ROLE_REALM_OWNER)
+        self.set_user_role(iago, UserProfile.ROLE_REALM_OWNER)
 
         self.billing_session: (
             RealmBillingSession | RemoteRealmBillingSession | RemoteServerBillingSession
@@ -591,7 +589,7 @@ class StripeTestCase(ZulipTestCase):
                         raise AssertionError(
                             f"Did not find expected event {must_have_event} after looking for it multiple times"
                         )
-                    time.sleep(0.2)
+                    sleep(0.2)
                     continue
 
             for event in events_old_to_new:
@@ -786,12 +784,12 @@ class StripeTestCase(ZulipTestCase):
             hamlet = self.example_user("hamlet")
             billing_session = RealmBillingSession(hamlet)
             return billing_session.process_initial_upgrade(
-                CustomerPlan.TIER_CLOUD_STANDARD,
-                licenses,
-                automanage_licenses,
-                billing_schedule,
-                charge_automatically,
-                free_trial,
+                plan_tier=CustomerPlan.TIER_CLOUD_STANDARD,
+                licenses=licenses,
+                automanage_licenses=automanage_licenses,
+                billing_schedule=billing_schedule,
+                charge_automatically=charge_automatically,
+                free_trial=free_trial,
                 stripe_invoice_paid=stripe_invoice_paid,
             )
 
@@ -5490,16 +5488,16 @@ class RequiresBillingAccessTest(StripeTestCase):
                 self.assert_json_error_contains(result, error_message)
 
         check_users_cant_access(
-            [guest],
-            "Must be an organization member",
+            [guest, member],
+            "Insufficient permission",
             "/json/billing/upgrade",
             "POST",
             {},
         )
 
         check_users_cant_access(
-            [guest],
-            "Must be an organization member",
+            [guest, member],
+            "Insufficient permission",
             "/json/billing/sponsorship",
             "POST",
             {},
@@ -5522,16 +5520,16 @@ class RequiresBillingAccessTest(StripeTestCase):
         )
 
         check_users_cant_access(
-            [guest],
-            "Must be an organization member",
+            [guest, member],
+            "Insufficient permission",
             "/json/upgrade/session/start_card_update_session",
             "POST",
             {},
         )
 
         check_users_cant_access(
-            [guest],
-            "Must be an organization member",
+            [guest, member],
+            "Insufficient permission",
             "/json/billing/event/status",
             "GET",
             {},
@@ -5568,6 +5566,45 @@ class RequiresBillingAccessTest(StripeTestCase):
         self.login_user(self.example_user("cordelia"))
         response = self.client_get("/billing/")
         self.assert_in_success_response(["You do not have permission to view this page."], response)
+
+    def test_start_card_update_stripe_session_requires_billing_access(self) -> None:
+        # Verify that only users with billing access can update card.
+        guest = self.example_user("polonius")
+        member = self.example_user("othello")
+        realm_owner = self.example_user("desdemona")
+        realm_owner.role = UserProfile.ROLE_REALM_OWNER
+        realm_owner.save(update_fields=["role"])
+
+        # Guest users should not have access
+        self.login_user(guest)
+        response = self.client_post(
+            "/json/billing/session/start_card_update_session",
+            {},
+            content_type="application/json",
+        )
+        self.assert_json_error_contains(response, "Insufficient permission")
+
+        # Regular members should not have access
+        self.login_user(member)
+        response = self.client_post(
+            "/json/billing/session/start_card_update_session",
+            {},
+            content_type="application/json",
+        )
+        self.assert_json_error_contains(response, "Insufficient permission")
+
+        # Realm owner should have access (they have billing access)
+        self.login_user(realm_owner)
+        with patch(
+            "corporate.lib.stripe.RealmBillingSession.create_card_update_session",
+            return_value={"stripe_session_id": "cs_test_session_id"},
+        ):
+            response = self.client_post(
+                "/json/billing/session/start_card_update_session",
+                {},
+                content_type="application/json",
+            )
+            self.assert_json_success(response)
 
 
 class BillingHelpersTest(ZulipTestCase):
@@ -5606,7 +5643,6 @@ class BillingHelpersTest(ZulipTestCase):
             self.assertEqual(next_month(anchor, last), next_)
 
     def test_compute_plan_parameters(self) -> None:
-        # TODO: test rounding down microseconds
         anchor = datetime(2019, 12, 31, 1, 2, 3, tzinfo=timezone.utc)
         month_later = datetime(2020, 1, 31, 1, 2, 3, tzinfo=timezone.utc)
         year_later = datetime(2020, 12, 31, 1, 2, 3, tzinfo=timezone.utc)
@@ -5691,7 +5727,8 @@ class BillingHelpersTest(ZulipTestCase):
                 (anchor, month_later, month_later, 1200),
             ),
         ]
-        with time_machine.travel(anchor, tick=False):
+        # compute_plan_parameters truncates microseconds in the anchor datetime.
+        with time_machine.travel(anchor + timedelta(microseconds=654321), tick=False):
             for (tier, billing_schedule, customer), output in test_cases:
                 output_ = compute_plan_parameters(
                     tier,
@@ -5910,9 +5947,12 @@ class BillingHelpersTest(ZulipTestCase):
             contact_email="email@example.com",
         )
         self.assertFalse(remote_server.deactivated)
+        remote_server_billing_user = RemoteServerBillingUser.objects.create(
+            remote_server=remote_server, email="admin@example.com"
+        )
 
-        billing_session = RemoteServerBillingSession(remote_server)
-        do_deactivate_remote_server(remote_server, billing_session)
+        billing_session = RemoteServerBillingSession(remote_server, remote_server_billing_user)
+        billing_session.do_deactivate_remote_server()
 
         remote_server = RemoteZulipServer.objects.get(uuid=server_uuid)
         remote_realm_audit_log = RemoteZulipServerAuditLog.objects.filter(
@@ -5920,10 +5960,11 @@ class BillingHelpersTest(ZulipTestCase):
         ).last()
         assert remote_realm_audit_log is not None
         self.assertTrue(remote_server.deactivated)
+        self.assertEqual(remote_realm_audit_log.acting_remote_user, remote_server_billing_user)
 
         # Try to deactivate a remote server that is already deactivated
         with self.assertLogs("corporate.stripe", "WARN") as warning_log:
-            do_deactivate_remote_server(remote_server, billing_session)
+            billing_session.do_deactivate_remote_server()
             self.assertEqual(
                 warning_log.output,
                 [
@@ -5932,7 +5973,7 @@ class BillingHelpersTest(ZulipTestCase):
                 ],
             )
 
-        do_reactivate_remote_server(remote_server)
+        billing_session.do_reactivate_remote_server()
         remote_server.refresh_from_db()
         self.assertFalse(remote_server.deactivated)
         remote_realm_audit_log = RemoteZulipServerAuditLog.objects.latest("id")
@@ -5942,7 +5983,7 @@ class BillingHelpersTest(ZulipTestCase):
         self.assertEqual(remote_realm_audit_log.server, remote_server)
 
         with self.assertLogs("corporate.stripe", "WARN") as warning_log:
-            do_reactivate_remote_server(remote_server)
+            billing_session.do_reactivate_remote_server()
             self.assertEqual(
                 warning_log.output,
                 [
@@ -5950,6 +5991,253 @@ class BillingHelpersTest(ZulipTestCase):
                     f"{remote_server.id}, server is already active."
                 ],
             )
+
+    def test_initialize_fixed_price_plan_realm(self) -> None:
+        billing_cycle_anchor = datetime(2012, 1, 1, 1, 1, 1, tzinfo=timezone.utc)
+        realm = get_realm("zulip")
+
+        # Requires a Customer object for the billing entity.
+        billing_session = RealmBillingSession(None, realm)
+        with self.assertRaises(BillingError) as billing_context:
+            billing_session.initialize_prepaid_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_CLOUD_STANDARD,
+                billing_cycle_anchor=billing_cycle_anchor,
+            )
+        self.assertEqual(
+            "no_customer",
+            billing_context.exception.error_description,
+        )
+
+        # Requires that the Customer object is linked to a
+        # customer ID in Stripe.
+        billing_session.update_or_create_customer()
+        with self.assertRaises(BillingError) as billing_context:
+            billing_session.initialize_prepaid_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_CLOUD_STANDARD,
+                billing_cycle_anchor=billing_cycle_anchor,
+            )
+        self.assertEqual(
+            "no_stripe_id",
+            billing_context.exception.error_description,
+        )
+
+        # Requires a fixed price plan offer to be configured
+        # for the customer.
+        customer = billing_session.get_customer()
+        assert customer is not None
+        customer.stripe_customer_id = "cus_123"
+        customer.save(update_fields=["stripe_customer_id"])
+        with self.assertRaises(BillingError) as billing_context:
+            billing_session.initialize_prepaid_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_CLOUD_STANDARD,
+                billing_cycle_anchor=billing_cycle_anchor,
+            )
+        self.assertEqual(
+            "no_plan_offer",
+            billing_context.exception.error_description,
+        )
+
+        billing_session.set_required_plan_tier(CustomerPlan.TIER_CLOUD_STANDARD)
+        billing_session.configure_fixed_price_plan(1000, None)
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
+        billing_session.initialize_prepaid_fixed_price_plan(
+            plan_tier=CustomerPlan.TIER_CLOUD_STANDARD,
+            billing_cycle_anchor=billing_cycle_anchor,
+        )
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
+        plan = CustomerPlan.objects.first()
+        assert plan is not None
+        self.assertEqual(plan.fixed_price, 100000)
+        self.assertEqual(plan.billing_cycle_anchor, billing_cycle_anchor)
+        license_ledger = LicenseLedger.objects.filter(plan=plan, is_renewal=True).last()
+        assert license_ledger is not None
+        self.assertEqual(license_ledger.event_time, billing_cycle_anchor)
+
+        # Confirm that if there is an active paid plan for the
+        # customer, a new plan can not be initialized.
+        with self.assertRaises(BillingError) as billing_context:
+            billing_session.initialize_prepaid_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_CLOUD_STANDARD,
+                billing_cycle_anchor=billing_cycle_anchor,
+            )
+        self.assertEqual(
+            "on_paid_plan",
+            billing_context.exception.error_description,
+        )
+
+    def test_initialize_fixed_price_plan_remote_realm(self) -> None:
+        billing_cycle_anchor = datetime(2012, 1, 1, 1, 1, 1, tzinfo=timezone.utc)
+        server_uuid = str(uuid.uuid4())
+        remote_server = RemoteZulipServer.objects.create(
+            uuid=server_uuid,
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            contact_email="email@example.com",
+        )
+        realm_uuid = str(uuid.uuid4())
+        remote_realm = RemoteRealm.objects.create(
+            server=remote_server,
+            uuid=realm_uuid,
+            uuid_owner_secret="dummy-owner-secret",
+            host="dummy-hostname",
+            realm_date_created=timezone_now(),
+        )
+
+        # Requires a Customer object for the billing entity.
+        billing_session = RemoteRealmBillingSession(remote_realm)
+        with self.assertRaises(BillingError) as billing_context:
+            billing_session.initialize_prepaid_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
+                billing_cycle_anchor=billing_cycle_anchor,
+            )
+        self.assertEqual(
+            "no_customer",
+            billing_context.exception.error_description,
+        )
+
+        # Requires that the Customer object is linked to a
+        # customer ID in Stripe.
+        billing_session.update_or_create_customer()
+        with self.assertRaises(BillingError) as billing_context:
+            billing_session.initialize_prepaid_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_CLOUD_STANDARD,
+                billing_cycle_anchor=billing_cycle_anchor,
+            )
+        self.assertEqual(
+            "no_stripe_id",
+            billing_context.exception.error_description,
+        )
+
+        # Requires a fixed price plan offer to be configured
+        # for the customer.
+        customer = billing_session.get_customer()
+        assert customer is not None
+        customer.stripe_customer_id = "cus_123"
+        customer.save(update_fields=["stripe_customer_id"])
+        with self.assertRaises(BillingError) as billing_context:
+            billing_session.initialize_prepaid_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_CLOUD_STANDARD,
+                billing_cycle_anchor=billing_cycle_anchor,
+            )
+        self.assertEqual(
+            "no_plan_offer",
+            billing_context.exception.error_description,
+        )
+
+        billing_session.set_required_plan_tier(CustomerPlan.TIER_SELF_HOSTED_BASIC)
+        billing_session.configure_fixed_price_plan(1200, None)
+        self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED)
+        with mock.patch(
+            "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
+            return_value=60,
+        ):
+            billing_session.initialize_prepaid_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
+                billing_cycle_anchor=billing_cycle_anchor,
+            )
+        self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_BASIC)
+        plan = CustomerPlan.objects.first()
+        assert plan is not None
+        self.assertEqual(plan.fixed_price, 120000)
+        self.assertEqual(plan.billing_cycle_anchor, billing_cycle_anchor)
+        license_ledger = LicenseLedger.objects.filter(plan=plan, is_renewal=True).last()
+        assert license_ledger is not None
+        self.assertEqual(license_ledger.event_time, billing_cycle_anchor)
+
+        # Confirm that if there is an active paid plan for the
+        # customer, a new plan can not be initialized.
+        with self.assertRaises(BillingError) as billing_context:
+            billing_session.initialize_prepaid_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_CLOUD_STANDARD,
+                billing_cycle_anchor=billing_cycle_anchor,
+            )
+        self.assertEqual(
+            "on_paid_plan",
+            billing_context.exception.error_description,
+        )
+
+    def test_initialize_fixed_price_plan_remote_server(self) -> None:
+        billing_cycle_anchor = datetime(2012, 1, 1, 1, 1, 1, tzinfo=timezone.utc)
+        server_uuid = str(uuid.uuid4())
+        remote_server = RemoteZulipServer.objects.create(
+            uuid=server_uuid,
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            contact_email="email@example.com",
+        )
+
+        # Requires a Customer object for the billing entity.
+        billing_session = RemoteServerBillingSession(remote_server)
+        with self.assertRaises(BillingError) as billing_context:
+            billing_session.initialize_prepaid_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
+                billing_cycle_anchor=billing_cycle_anchor,
+            )
+        self.assertEqual(
+            "no_customer",
+            billing_context.exception.error_description,
+        )
+
+        # Requires that the Customer object is linked to a
+        # customer ID in Stripe.
+        billing_session.update_or_create_customer()
+        with self.assertRaises(BillingError) as billing_context:
+            billing_session.initialize_prepaid_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_CLOUD_STANDARD,
+                billing_cycle_anchor=billing_cycle_anchor,
+            )
+        self.assertEqual(
+            "no_stripe_id",
+            billing_context.exception.error_description,
+        )
+
+        # Requires a fixed price plan offer to be configured
+        # for the customer.
+        customer = billing_session.get_customer()
+        assert customer is not None
+        customer.stripe_customer_id = "cus_123"
+        customer.save(update_fields=["stripe_customer_id"])
+        with self.assertRaises(BillingError) as billing_context:
+            billing_session.initialize_prepaid_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_CLOUD_STANDARD,
+                billing_cycle_anchor=billing_cycle_anchor,
+            )
+        self.assertEqual(
+            "no_plan_offer",
+            billing_context.exception.error_description,
+        )
+
+        billing_session.set_required_plan_tier(CustomerPlan.TIER_SELF_HOSTED_BASIC)
+        billing_session.configure_fixed_price_plan(1200, None)
+        self.assertEqual(remote_server.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED)
+        with mock.patch(
+            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
+            return_value=60,
+        ):
+            billing_session.initialize_prepaid_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
+                billing_cycle_anchor=billing_cycle_anchor,
+            )
+        self.assertEqual(remote_server.plan_type, RemoteRealm.PLAN_TYPE_BASIC)
+        plan = CustomerPlan.objects.first()
+        assert plan is not None
+        self.assertEqual(plan.fixed_price, 120000)
+        self.assertEqual(plan.billing_cycle_anchor, billing_cycle_anchor)
+        license_ledger = LicenseLedger.objects.filter(plan=plan, is_renewal=True).last()
+        assert license_ledger is not None
+        self.assertEqual(license_ledger.event_time, billing_cycle_anchor)
+
+        # Confirm that if there is an active paid plan for the
+        # customer, a new plan can not be initialized.
+        with self.assertRaises(BillingError) as billing_context:
+            billing_session.initialize_prepaid_fixed_price_plan(
+                plan_tier=CustomerPlan.TIER_CLOUD_STANDARD,
+                billing_cycle_anchor=billing_cycle_anchor,
+            )
+        self.assertEqual(
+            "on_paid_plan",
+            billing_context.exception.error_description,
+        )
 
 
 class LicenseLedgerTest(StripeTestCase):
@@ -6163,9 +6451,9 @@ class LicenseLedgerTest(StripeTestCase):
             acting_user=None,
         )
         # Change guest user role to member
-        do_change_user_role(guest, UserProfile.ROLE_MEMBER, acting_user=None)
+        self.set_user_role(guest, UserProfile.ROLE_MEMBER)
         # Change again to moderator, no LicenseLedger created
-        do_change_user_role(guest, UserProfile.ROLE_MODERATOR, acting_user=None)
+        self.set_user_role(guest, UserProfile.ROLE_MODERATOR)
         ledger_entries = list(
             LicenseLedger.objects.values_list(
                 "is_renewal", "licenses", "licenses_at_next_renewal"
@@ -6513,9 +6801,9 @@ class InvoiceTest(StripeTestCase):
 
         billing_session = RealmBillingSession(user=hamlet, realm=realm)
         next_billing_cycle = billing_session.get_next_billing_cycle(plan)
-        plan_end_date_string = next_billing_cycle.strftime("%Y-%m-%d")
-        plan_end_date = datetime.strptime(plan_end_date_string, "%Y-%m-%d").replace(
-            tzinfo=timezone.utc
+        plan_end_date_string = next_billing_cycle.date().isoformat()
+        plan_end_date = datetime.combine(
+            date.fromisoformat(plan_end_date_string), time(0, 0, 0), tzinfo=timezone.utc
         )
 
         self.logout()
@@ -6663,7 +6951,7 @@ class InvoiceTest(StripeTestCase):
             )
 
         with time_machine.travel(self.now + timedelta(days=10), tick=False):
-            do_change_user_role(user, UserProfile.ROLE_MEMBER, acting_user=None)
+            self.set_user_role(user, UserProfile.ROLE_MEMBER)
 
         billing_session = RealmBillingSession(realm=realm)
         billing_session.invoice_plan(plan, self.next_month)
@@ -7173,7 +7461,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         hamlet_recipient = self.example_user("hamlet").recipient
         message_to_hamlet = Message.objects.filter(
             realm_id=realm.id, sender=sender.id, recipient=hamlet_recipient
-        ).first()
+        ).last()
         assert message_to_hamlet is not None
         self.assertEqual(message_to_hamlet.content, expected_message)
         self.assertEqual(message_to_hamlet.recipient.type, Recipient.PERSONAL)
@@ -8170,7 +8458,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         annual_fixed_price = 1200
 
         # Configure complimentary access plan
-        complimentary_access_plan_end = self.next_year.strftime("%Y-%m-%d")
+        complimentary_access_plan_end = self.next_year.date().isoformat()
         billing_session = RemoteRealmBillingSession(remote_realm=self.remote_realm)
         support_request = SupportViewRequest(
             support_type=SupportType.configure_complimentary_access_plan,
@@ -8330,6 +8618,15 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         self.assertEqual(fixed_price_plan_offer.fixed_price, annual_fixed_price * 100)
         self.assertEqual(fixed_price_plan_offer.sent_invoice_id, sent_invoice_id)
         self.assertEqual(fixed_price_plan_offer.get_plan_status_as_text(), "Configured")
+
+        audit_log = RemoteRealmAuditLog.objects.filter(
+            remote_realm=self.remote_realm,
+            event_type=AuditLogEventType.CUSTOMER_PROPERTY_CHANGED,
+        ).last()
+        assert audit_log is not None
+        self.assertEqual(audit_log.remote_realm, self.remote_realm)
+        self.assertIsNone(audit_log.extra_data["old_value"])
+        self.assertEqual(audit_log.extra_data["property"], "stripe_customer_id")
 
         invoice = Invoice.objects.get(stripe_invoice_id=sent_invoice_id)
         self.assertEqual(invoice.status, Invoice.SENT)
@@ -8713,7 +9010,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             message.body,
         )
         self.assertEqual(
-            f"Fixed-price plan for {billing_entity} ends on {end_date.strftime('%Y-%m-%d')}",
+            f"Fixed-price plan for {billing_entity} ends on {end_date.date().isoformat()}",
             message.subject,
         )
 
@@ -9114,9 +9411,7 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             "Unable to verify current licenses in use, which delays invoicing for this customer.",
             message.body,
         )
-        self.assertIn(
-            f"Last data upload: {last_audit_log_update.strftime('%Y-%m-%d')}", message.body
-        )
+        self.assertIn(f"Last data upload: {last_audit_log_update.date().isoformat()}", message.body)
 
         # Cron runs again, don't send another email to Zulip team.
         invoice_plans_as_needed(self.next_month + timedelta(days=1))
@@ -10187,9 +10482,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             "Unable to verify current licenses in use, but invoicing not delayed because customer has a fixed-price plan.",
             message.body,
         )
-        self.assertIn(
-            f"Last data upload: {last_audit_log_update.strftime('%Y-%m-%d')}", message.body
-        )
+        self.assertIn(f"Last data upload: {last_audit_log_update.date().isoformat()}", message.body)
 
         # Audit log data is up-to-date when the plan is next invoiced.
         with time_machine.travel(updated_invoice_date, tick=False):
@@ -10257,6 +10550,15 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         self.assertEqual(fixed_price_plan_offer.fixed_price, annual_fixed_price * 100)
         self.assertEqual(fixed_price_plan_offer.sent_invoice_id, sent_invoice_id)
         self.assertEqual(fixed_price_plan_offer.get_plan_status_as_text(), "Configured")
+
+        audit_log = RemoteZulipServerAuditLog.objects.filter(
+            server=self.server,
+            event_type=AuditLogEventType.CUSTOMER_PROPERTY_CHANGED,
+        ).last()
+        assert audit_log is not None
+        self.assertEqual(audit_log.server, self.server)
+        self.assertIsNone(audit_log.extra_data["old_value"])
+        self.assertEqual(audit_log.extra_data["property"], "stripe_customer_id")
 
         invoice = Invoice.objects.get(stripe_invoice_id=sent_invoice_id)
         self.assertEqual(invoice.status, Invoice.SENT)
@@ -10701,9 +11003,7 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
             "Unable to verify current licenses in use, which delays invoicing for this customer.",
             message.body,
         )
-        self.assertIn(
-            f"Last data upload: {last_audit_log_upload.strftime('%Y-%m-%d')}", message.body
-        )
+        self.assertIn(f"Last data upload: {last_audit_log_upload.date().isoformat()}", message.body)
 
         # Cron runs again, don't send another email to Zulip team.
         invoice_plans_as_needed(self.next_month + timedelta(days=1))

@@ -8,6 +8,7 @@ import render_right_sidebar from "../templates/right_sidebar.hbs";
 import {buddy_list} from "./buddy_list.ts";
 import * as channel from "./channel.ts";
 import * as compose_ui from "./compose_ui.ts";
+import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import {ListCursor} from "./list_cursor.ts";
@@ -22,7 +23,6 @@ import * as popovers from "./popovers.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as scroll_util from "./scroll_util.ts";
-import * as search_util from "./search_util.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import * as settings_preferences from "./settings_preferences.ts";
@@ -31,6 +31,9 @@ import {current_user} from "./state_data.ts";
 import * as stream_list from "./stream_list.ts";
 import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
+
+const LEFT_SIDEBAR_NAVIGATION_AREA_TITLE = $t({defaultMessage: "VIEWS"});
 
 export let left_sidebar_cursor: ListCursor<JQuery>;
 
@@ -291,8 +294,8 @@ export function initialize(): void {
     );
 }
 
-export function update_expanded_views_for_search(search_value: string): void {
-    if (!search_value) {
+export function update_expanded_views_for_search(search_term: string): void {
+    if (!search_term) {
         // Show all the views if there is no search term.
         $("#left-sidebar-navigation-area, #left-sidebar-navigation-list .top_left_row").removeClass(
             "hidden-by-filters",
@@ -304,11 +307,17 @@ export function update_expanded_views_for_search(search_value: string): void {
 
     let any_view_visible = false;
     const expanded_views = left_sidebar_navigation_area.get_built_in_views();
+    const show_all_views = util.prefix_match({
+        value: LEFT_SIDEBAR_NAVIGATION_AREA_TITLE,
+        search_term,
+    });
     for (const view of expanded_views) {
-        let show_view = search_util.vanilla_match({
-            val: view.name,
-            search_terms: search_util.get_search_terms(search_value),
-        });
+        let show_view =
+            show_all_views ||
+            util.prefix_match({
+                value: view.name,
+                search_term,
+            });
         const $view = $(`.top_left_${view.css_class_suffix}`);
 
         if (show_view && $view.hasClass("top_left_scheduled_messages")) {
@@ -332,16 +341,11 @@ export function initialize_left_sidebar(): void {
 
     const rendered_sidebar = render_left_sidebar({
         is_guest: current_user.is_guest,
-        development_environment: page_params.development_environment,
-        is_inbox_home_view:
-            user_settings.web_home_view === settings_config.web_home_view_values.inbox.code,
-        is_all_messages_home_view:
-            user_settings.web_home_view === settings_config.web_home_view_values.all_messages.code,
-        is_recent_view_home_view:
-            user_settings.web_home_view === settings_config.web_home_view_values.recent_topics.code,
         is_spectator: page_params.is_spectator,
         primary_condensed_views,
         expanded_views,
+        LEFT_SIDEBAR_NAVIGATION_AREA_TITLE,
+        LEFT_SIDEBAR_DIRECT_MESSAGES_TITLE: pm_list.LEFT_SIDEBAR_DIRECT_MESSAGES_TITLE,
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);
@@ -471,7 +475,7 @@ function get_header_rows_selectors(): string {
         // Views header.
         "#left-sidebar-navigation-area:not(.hidden-by-filters) #views-label-container, " +
         // DM Headers
-        "#direct-messages-section-header, " +
+        "#left_sidebar_scroll_container:not(.direct-messages-hidden-by-filters) #direct-messages-section-header, " +
         // All channel headers.
         ".stream-list-section-container:not(.no-display) .stream-list-subsection-header"
     );
@@ -593,7 +597,7 @@ function actually_update_left_sidebar_for_search(): void {
     }
 
     // Update left sidebar DM list.
-    pm_list.update_private_messages(is_left_sidebar_search_active);
+    pm_list.update_private_messages();
 
     // Update left sidebar channel list.
     stream_list.update_streams_sidebar();

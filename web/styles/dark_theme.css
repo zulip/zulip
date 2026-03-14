@@ -50,10 +50,8 @@
     button:disabled:not(.action-button, .icon-button, .info-density-button),
     option:disabled,
     select:disabled,
-    textarea:disabled,
     input:disabled:not(.modal_text_input),
     input:not([type="radio"], .modal_text_input):read-only,
-    textarea:read-only,
     #organization-permissions .dropdown-widget-button:disabled,
     #organization-settings .dropdown-widget-button:disabled {
         color: inherit;
@@ -65,7 +63,6 @@
         opacity: 0.4;
     }
 
-    textarea,
     select,
     .user-status-content-wrapper,
     .custom-time-input-value,
@@ -101,21 +98,13 @@
         }
     }
 
-    textarea:focus,
-    textarea.new_message_textarea:focus,
-    #compose_recipient_box:focus {
+    textarea.schedule-reminder-note:focus {
         border-color: hsl(0deg 0% 0% / 90%);
     }
 
     .popover hr,
     hr {
         opacity: 0.2;
-    }
-
-    .zoom-in {
-        #topics_header {
-            background-color: var(--color-background);
-        }
     }
 
     #recent_view_table {
@@ -128,6 +117,15 @@
         .change_visibility_policy
         .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
         filter: invert(1);
+    }
+
+    #recent-view-content-table {
+        border-width: 0.1875em; /* 3px at 16px/1em */
+        border-bottom-width: 1px;
+
+        .unread_topic a {
+            font-weight: 400;
+        }
     }
 
     .drafts-container .header-body .delete-drafts-group > *:focus {
@@ -158,10 +156,6 @@
     .tip,
     .invite-stream-notice {
         color: inherit;
-    }
-
-    #request-progress-status-banner {
-        background-color: hsl(212deg 32% 14%);
     }
 
     .alert.home-error-bar {
@@ -264,7 +258,6 @@
         color: hsl(200deg 79% 66%);
     }
 
-    #request-progress-status-banner .loading-indicator,
     #loading_older_messages_indicator,
     #recent_view_loading_messages_indicator {
         & path {

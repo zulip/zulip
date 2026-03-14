@@ -337,6 +337,10 @@ def communities_view(request: HttpRequest) -> HttpResponse:
             # Filter out realms who haven't changed their description from the default.
             description="",
         )
+        .exclude(
+            # Filter out demo organizations.
+            demo_organization_scheduled_deletion_date__isnull=False,
+        )
         .order_by("name")
     )
     for realm in want_to_be_advertised_realms:

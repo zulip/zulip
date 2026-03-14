@@ -26,6 +26,10 @@ p {
     text-align: center;
 }
 
+.stats-page h1 {
+    font-weight: 300;
+}
+
 .summary-stats {
     vertical-align: top;
     margin: 0 auto;

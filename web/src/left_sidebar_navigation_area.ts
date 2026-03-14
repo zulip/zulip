@@ -11,6 +11,7 @@ import * as people from "./people.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as settings_config from "./settings_config.ts";
+import type {NarrowTerm} from "./state_data.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 
@@ -75,16 +76,16 @@ export let update_dom_with_unread_counts = function (
     const $mentioned_li = $(".top_left_mentions");
     const $home_view_li = $(".selected-home-view");
     const $condensed_view_li = $(".top_left_condensed_unread_marker");
-    const $back_to_streams = $("#topics_header");
 
     ui_util.update_unread_count_in_dom($mentioned_li, counts.mentioned_message_count);
     ui_util.update_unread_count_in_dom($home_view_li, counts.home_unread_messages);
     ui_util.update_unread_count_in_dom($condensed_view_li, counts.home_unread_messages);
-    ui_util.update_unread_count_in_dom($back_to_streams, counts.stream_unread_messages);
 
     if (!skip_animations) {
-        animate_mention_changes($mentioned_li, counts.mentioned_message_count);
+        animate_unread_changes($mentioned_li, counts.mentioned_message_count, last_mention_count);
     }
+
+    last_mention_count = counts.mentioned_message_count;
 };
 
 export function rewire_update_dom_with_unread_counts(
@@ -107,21 +108,21 @@ export function rewire_select_top_left_corner_item(
 }
 
 export function handle_narrow_activated(filter: Filter): void {
-    let ops: string[];
-    let filter_name: string;
+    let terms: NarrowTerm[];
+    let filter_name: NarrowTerm["operand"];
 
     // TODO: handle confused filters like "in:all stream:foo"
-    ops = filter.operands("in");
-    if (ops[0] !== undefined) {
-        filter_name = ops[0];
+    terms = filter.terms_with_operator("in");
+    if (terms[0] !== undefined) {
+        filter_name = terms[0].operand;
         if (filter_name === "home") {
             highlight_all_messages_view();
             return;
         }
     }
-    ops = filter.operands("is");
-    if (ops[0] !== undefined) {
-        filter_name = ops[0];
+    terms = filter.terms_with_operator("is");
+    if (terms[0] !== undefined) {
+        filter_name = terms[0].operand;
         if (filter_name === "starred") {
             select_top_left_corner_item(".top_left_starred_messages");
             return;
@@ -133,7 +134,7 @@ export function handle_narrow_activated(filter: Filter): void {
     const term_types = filter.sorted_term_types();
     if (
         _.isEqual(term_types, ["sender", "has-reaction"]) &&
-        filter.operands("sender")[0] === people.my_current_email()
+        filter.terms_with_operator("sender")[0]!.operand === people.my_current_user_id()
     ) {
         select_top_left_corner_item(".top_left_my_reactions");
         return;
@@ -204,11 +205,14 @@ function toggle_condensed_navigation_area(): void {
     }
 }
 
-export function animate_mention_changes($li: JQuery, new_mention_count: number): void {
-    if (new_mention_count > last_mention_count) {
+export function animate_unread_changes(
+    $li: JQuery,
+    new_count: number,
+    previous_count: number,
+): void {
+    if (new_count > previous_count) {
         ui_util.do_new_unread_animation($li);
     }
-    last_mention_count = new_mention_count;
 }
 
 export function highlight_inbox_view(): void {
@@ -240,7 +244,7 @@ export function get_view_rows_by_view_name(view: string): JQuery {
         return $(".top_left_all_messages");
     }
 
-    if (view === settings_config.web_home_view_values.recent_topics.code) {
+    if (view === settings_config.web_home_view_values.recent.code) {
         return $(".top_left_recent_view");
     }
 

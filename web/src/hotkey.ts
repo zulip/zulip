@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 import * as activity from "./activity.ts";
 import * as activity_ui from "./activity_ui.ts";
 import * as browser_history from "./browser_history.ts";
+import * as clipboard_handler from "./clipboard_handler.ts";
 import * as color_picker_popover from "./color_picker_popover.ts";
 import * as common from "./common.ts";
 import * as compose from "./compose.ts";
@@ -14,17 +15,21 @@ import * as compose_reply from "./compose_reply.ts";
 import * as compose_send_menu_popover from "./compose_send_menu_popover.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_textarea from "./compose_textarea.ts";
+import * as compose_tooltips from "./compose_tooltips.ts";
 import * as condense from "./condense.ts";
+import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as deprecated_feature_notice from "./deprecated_feature_notice.ts";
 import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
 import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as feedback_widget from "./feedback_widget.ts";
 import * as gear_menu from "./gear_menu.ts";
-import * as giphy from "./giphy.ts";
+import * as gif_picker_ui from "./gif_picker_ui.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
+import {$t} from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
+import * as inbox_util from "./inbox_util.ts";
 import * as lightbox from "./lightbox.ts";
 import * as list_util from "./list_util.ts";
 import * as message_actions_popover from "./message_actions_popover.ts";
@@ -64,6 +69,7 @@ import * as unread_ops from "./unread_ops.ts";
 import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 import {user_settings} from "./user_settings.ts";
+import * as user_status_ui from "./user_status_ui.ts";
 import * as user_topics_ui from "./user_topics_ui.ts";
 import * as util from "./util.ts";
 
@@ -136,12 +142,14 @@ const KEYDOWN_MAPPINGS: Record<string, Hotkey | Hotkey[]> = {
     "Cmd+Enter": {name: "action_with_enter", message_view_only: true},
     "Cmd+C": {name: "copy_with_c", message_view_only: false},
     "Cmd+K": {name: "search_with_k", message_view_only: false},
+    "Cmd+@": {name: "open_mentions_view", message_view_only: true},
     "Cmd+S": {name: "star_message", message_view_only: true},
     "Cmd+.": {name: "narrow_to_compose_target", message_view_only: true},
     "Cmd+'": {name: "open_saved_snippet_dropdown", message_view_only: true},
     "Ctrl+Enter": {name: "action_with_enter", message_view_only: true},
     "Ctrl+C": {name: "copy_with_c", message_view_only: false},
     "Ctrl+K": {name: "search_with_k", message_view_only: false},
+    "Ctrl+@": {name: "open_mentions_view", message_view_only: true},
     "Ctrl+S": {name: "star_message", message_view_only: true},
     "Ctrl+.": {name: "narrow_to_compose_target", message_view_only: true},
     "Ctrl+'": {name: "open_saved_snippet_dropdown", message_view_only: true},
@@ -163,6 +171,7 @@ const KEYDOWN_MAPPINGS: Record<string, Hotkey | Hotkey[]> = {
         {name: "view_selected_stream", message_view_only: false},
         {name: "toggle_read_receipts", message_view_only: true},
     ],
+    "Shift+Y": {name: "set_status", message_view_only: false},
     "Shift+Tab": {name: "shift_tab", message_view_only: false},
     "Shift+ ": {name: "shift_spacebar", message_view_only: true},
     "Shift+ArrowLeft": {name: "left_arrow", message_view_only: false},
@@ -419,6 +428,20 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         return true;
     }
 
+    if (gif_picker_ui.is_popped_from_edit_message()) {
+        gif_picker_ui.focus_current_edit_message();
+        // Hide after setting focus so that `edit_message_id` is
+        // still set in picker.
+        gif_picker_ui.hide_picker_popover();
+        return true;
+    }
+
+    // Hide the GIF picker if it was open and focus the compose textarea.
+    if (!gif_picker_ui.is_popped_from_edit_message() && gif_picker_ui.hide_picker_popover()) {
+        $("textarea#compose-textarea").trigger("focus");
+        return true;
+    }
+
     if (popovers.any_active()) {
         popovers.hide_all();
         return true;
@@ -456,14 +479,6 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
             return true;
         }
 
-        if (giphy.is_popped_from_edit_message()) {
-            giphy.focus_current_edit_message();
-            // Hide after setting focus so that `edit_message_id` is
-            // still set in giphy.
-            giphy.hide_giphy_popover();
-            return true;
-        }
-
         // When the input is focused, we blur and clear the input. A second "Esc"
         // will zoom out, handled below.
         if (stream_list.is_zoomed_in() && $("#topic_filter_query").is(":focus")) {
@@ -478,9 +493,12 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         }
 
         if (compose_state.composing()) {
-            // Check if the giphy popover was open using compose box.
-            // Hide GIPHY popover if it's open.
-            if (!giphy.is_popped_from_edit_message() && giphy.hide_giphy_popover()) {
+            // Check if the GIF picker popover was open using compose box.
+            // Hide GIF picker popover if it's open.
+            if (
+                !gif_picker_ui.is_popped_from_edit_message() &&
+                gif_picker_ui.hide_picker_popover()
+            ) {
                 $("textarea#compose-textarea").trigger("focus");
                 return true;
             }
@@ -743,20 +761,35 @@ export function process_tab_key(): boolean {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
+    const focused_element = document.activeElement;
 
-    let $message_edit_form;
+    if (!(focused_element instanceof HTMLElement)) {
+        return false;
+    }
 
-    const $focused_message_edit_content = $(".message_edit_content:focus");
-    if ($focused_message_edit_content.length > 0) {
-        $message_edit_form = $focused_message_edit_content.closest(".message_edit_form");
+    const $focused_element = $(focused_element);
+    const $message_edit_form = $focused_element.closest(".message_edit_form");
+
+    if ($message_edit_form.length === 0) {
+        return false;
+    }
+
+    const form_element = $message_edit_form[0];
+    if (!form_element) {
+        return false;
+    }
+
+    // 1. Content -> Save
+    if ($focused_element.hasClass("message_edit_content")) {
+        const $message_edit_form = $focused_element.closest(".message_edit_form");
         // Open message edit forms either have a save button or a close button, but not both.
         $message_edit_form.find(".message_edit_save,.message_edit_close").trigger("focus");
         return true;
     }
 
-    const $focused_message_edit_save = $(".message_edit_save:focus");
-    if ($focused_message_edit_save.length > 0) {
-        $message_edit_form = $focused_message_edit_save.closest(".message_edit_form");
+    // 2. Save -> Cancel
+    if ($focused_element.hasClass("message_edit_save")) {
+        const $message_edit_form = $focused_element.closest(".message_edit_form");
         $message_edit_form.find(".message_edit_cancel").trigger("focus");
         return true;
     }
@@ -772,8 +805,13 @@ export function process_shift_tab_key(): boolean {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
+    const focused_element = document.activeElement;
 
-    if ($("#compose-send-button").is(":focus")) {
+    if (!(focused_element instanceof HTMLElement)) {
+        return false;
+    }
+
+    if (focused_element.id === "compose-send-button") {
         // Shift-Tab: go back to content textarea and restore
         // cursor position.
         compose_textarea.restore_compose_cursor();
@@ -1018,6 +1056,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
     }
 
     if (event_name === "narrow_to_compose_target") {
+        compose_tooltips.dismiss_intro_go_to_conversation_tooltip();
         message_view.to_compose_target();
         return true;
     }
@@ -1166,6 +1205,12 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         case "gear_menu":
             gear_menu.toggle();
             return true;
+        case "set_status":
+            if (page_params.is_spectator) {
+                return false;
+            }
+            user_status_ui.open_user_status_modal();
+            return true;
         case "show_shortcuts": // Show keyboard shortcuts page
             browser_history.go_to_location("keyboard-shortcuts");
             return true;
@@ -1176,10 +1221,16 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             message_view.stream_cycle_forward();
             return true;
         case "n_key":
-            message_view.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: false});
+            message_view.narrow_to_next_topic({
+                trigger: "next_topic_unread_hotkey",
+                only_followed_topics: false,
+            });
             return true;
         case "narrow_to_next_unread_followed_topic":
-            message_view.narrow_to_next_topic({trigger: "hotkey", only_followed_topics: true});
+            message_view.narrow_to_next_topic({
+                trigger: "next_topic_unread_hotkey",
+                only_followed_topics: true,
+            });
             return true;
         case "p_key":
             message_view.narrow_to_next_pm_string({trigger: "hotkey"});
@@ -1188,10 +1239,22 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             browser_history.go_to_location("#recent");
             return true;
         case "open_inbox":
+            // Focus search if already in (non-channel) inbox view.
+            if (
+                inbox_util.is_visible() &&
+                !inbox_util.is_channel_view() &&
+                !inbox_ui.is_search_focused()
+            ) {
+                inbox_ui.focus_inbox_search();
+                return true;
+            }
             browser_history.go_to_location("#inbox");
             return true;
         case "open_starred_message_view":
             browser_history.go_to_location("#narrow/is/starred");
+            return true;
+        case "open_mentions_view":
+            browser_history.go_to_location("#narrow/is/mentioned");
             return true;
         case "open_combined_feed":
             browser_history.go_to_location("#feed");
@@ -1222,6 +1285,12 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
                 }
             }
             if (inbox_ui.is_in_focus()) {
+                // Focus search if already in channel view.
+                if (inbox_util.is_channel_view()) {
+                    inbox_ui.focus_inbox_search();
+                    return true;
+                }
+
                 const msg = inbox_ui.get_focused_row_message();
                 if (msg?.msg_type === "stream") {
                     list_of_channel_topics_channel_id = msg.stream_id;
@@ -1390,10 +1459,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             } else {
                 emoji_picker_reference = util.the($row.find(".message-actions-menu-button"));
             }
-
-            emoji_picker.toggle_emoji_popover(emoji_picker_reference, msg.id, {
-                placement: "bottom",
-            });
+            emoji_picker.start_picker_for_message_reaction(emoji_picker_reference, msg.id);
             return true;
         }
         case "thumbs_up_emoji": {
@@ -1444,7 +1510,8 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         case "view_edit_history": {
             if (
                 realm.realm_message_edit_history_visibility_policy !==
-                message_edit_history_visibility_policy_values.never.code
+                    message_edit_history_visibility_policy_values.never.code &&
+                (msg.last_edit_timestamp !== undefined || msg.last_moved_timestamp !== undefined)
             ) {
                 message_edit_history.fetch_and_render_message_history(msg);
                 $("#message-history-overlay .exit-sign").trigger("focus");
@@ -1475,6 +1542,21 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             // but we use `message_view.show` to pass in the `trigger` parameter
             message_view.narrow_to_message_near(msg, "hotkey");
             return true;
+        }
+        case "vim_right": {
+            const url = msg.url;
+            if (url && !msg.locally_echoed) {
+                const $row = message_lists.current.selected_row();
+                const $message_time = $row.find("a.message-time");
+                void (async () => {
+                    await clipboard_handler.copy_link_to_clipboard(url);
+                    show_copied_confirmation(util.the($message_time), {
+                        custom_content: $t({defaultMessage: "Message link copied!"}),
+                    });
+                })();
+                return true;
+            }
+            return false;
         }
     }
 

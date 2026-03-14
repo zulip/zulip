@@ -694,3 +694,42 @@ run_test("should_mask_unread_count", ({override}) => {
     override(user_settings, "web_stream_unreads_count_display_policy", 1);
     assert.equal(settings_data.should_mask_unread_count(sub_muted, unmuted_unread_count), false);
 });
+
+run_test("can_user_manage_folder", ({override}) => {
+    override(current_user, "is_admin", false);
+    assert.equal(settings_data.can_user_manage_folder(), false);
+
+    override(current_user, "is_admin", true);
+    assert.equal(settings_data.can_user_manage_folder(), true);
+});
+
+run_test("two_tier_billing_enabled", ({override}) => {
+    const members = make_user_group({
+        name: "role:members",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+    });
+    const everyone = make_user_group({
+        name: "role:everyone",
+        id: 2,
+        members: new Set([2]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([1]),
+    });
+
+    user_groups.initialize({realm_user_groups: [members, everyone]});
+
+    override(realm, "realm_workplace_users_group", members.id);
+    assert.equal(settings_data.two_tier_billing_enabled(), true);
+
+    override(realm, "realm_workplace_users_group", everyone.id);
+    assert.equal(settings_data.two_tier_billing_enabled(), false);
+
+    override(realm, "realm_workplace_users_group", {
+        direct_members: [1],
+        direct_subgroups: [members.id, everyone.id],
+    });
+    assert.equal(settings_data.two_tier_billing_enabled(), true);
+});

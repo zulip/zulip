@@ -1,0 +1,113 @@
+[
+  {
+    "Id": "1760014861662",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003Cp\u003EDM from deactivated user\u003C/p\u003E"
+    },
+    "CreatedDateTime": "2025-10-09T13:01:01.662+00:00",
+    "LastModifiedDateTime": "2025-10-09T13:01:01.662+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": "",
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": null,
+    "From": {
+      "Application": null,
+      "Device": null,
+      "User": {
+        "Id": "9bd4aca7-99cf-4b1b-a16d-e25717dc9414",
+        "DisplayName": "Will Begon",
+        "UserIdentityType": "aadUser",
+        "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+      }
+    },
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "message",
+    "ChannelIdentity": null,
+    "ChatId": "19:9738fef44f39480baff12e585aa9685e@thread.v2",
+    "EventDetail": null
+  },
+  {
+    "Id": "1760014861194",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003CsystemEventMessage/\u003E"
+    },
+    "CreatedDateTime": "2025-10-09T13:01:01.194+00:00",
+    "LastModifiedDateTime": "2025-10-09T13:01:01.194+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": null,
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": null,
+    "From": null,
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "unknownFutureValue",
+    "ChannelIdentity": null,
+    "ChatId": "19:9738fef44f39480baff12e585aa9685e@thread.v2",
+    "EventDetail": {
+      "EventType": null,
+      "Initiator": {
+        "Application": null,
+        "Device": null,
+        "User": {
+          "DisplayName": null,
+          "Id": "9bd4aca7-99cf-4b1b-a16d-e25717dc9414",
+          "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940",
+          "Thumbnails": null
+        },
+        "Conversation": null,
+        "ConversationIdentityType": null,
+        "Encrypted": null,
+        "OnPremises": null,
+        "Guest": null,
+        "Phone": null
+      },
+      "CallEnded": null,
+      "CallRecording": null,
+      "CallStarted": null,
+      "CallTranscript": null,
+      "ChannelAdded": null,
+      "ChannelDeleted": null,
+      "ChannelDescriptionUpdated": null,
+      "ChannelRenamed": null,
+      "ChannelSetAsFavoriteByDefault": null,
+      "ChannelUnsetAsFavoriteByDefault": null,
+      "ChatRenamed": null,
+      "ConversationMemberRoleUpdated": null,
+      "MeetingPolicyUpdated": null,
+      "MembersAdded": null,
+      "MembersDeleted": null,
+      "MembersJoined": null,
+      "MembersLeft": null,
+      "MessagePinned": null,
+      "MessageUnpinned": null,
+      "TabUpdated": null,
+      "TeamArchived": null,
+      "TeamCreated": null,
+      "TeamDescriptionUpdated": null,
+      "TeamJoiningDisabled": null,
+      "TeamJoiningEnabled": null,
+      "TeamRenamed": null,
+      "TeamsAppInstalled": null,
+      "TeamsAppRemoved": null,
+      "TeamsAppUpgraded": null,
+      "TeamUnarchived": null
+    }
+  }
+]

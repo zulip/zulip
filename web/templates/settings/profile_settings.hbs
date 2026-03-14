@@ -49,7 +49,7 @@
                   widget = "user-avatar"
                   upload_text = (t "Upload new profile picture")
                   delete_text = (t "Delete profile picture")
-                  disabled_text = (t "Avatar changes are disabled in this organization")
+                  disabled_text = (t "Avatar changes are disabled in this organization.")
                   is_editable_by_current_user = user_can_change_avatar
                   image = current_user.avatar_url_medium}}
                 <div id="user-avatar-source">
@@ -69,7 +69,7 @@
             </div>
             {{> ../components/action_button
               label=(t "Preview profile")
-              attention="quiet"
+              variant="subtle"
               intent="brand"
               id="show_my_user_profile_modal"
               icon="external-link"

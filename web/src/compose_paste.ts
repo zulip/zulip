@@ -39,14 +39,35 @@ function image_to_zulip_markdown(
         // For Zulip's custom emoji
         return node.getAttribute("alt") ?? "";
     }
-    const src = node.getAttribute("src") ?? node.getAttribute("href") ?? "";
-    const title = deduplicate_newlines(node.getAttribute("title") ?? "");
-    // Using Zulip's link like syntax for images
-    return src ? "[" + title + "](" + src + ")" : (node.getAttribute("alt") ?? "");
+    // For inline images presented in Markdown syntax, we need
+    // to grab the `data-original-src` attribute, rather than
+    // the thumbnailed image referenced on the `src` attribute
+    const src =
+        node.getAttribute("data-original-src") ??
+        node.getAttribute("src") ??
+        node.getAttribute("href") ??
+        "";
+    // For the label, we prioritize the alt attribute, which will be
+    // present on both Zulip and third-party Markdown images, but use
+    // title as a fallback, since older-style Zulip image previews
+    // only set title.
+    let alt = "";
+    if (node.classList.contains("inline-image")) {
+        alt = node.getAttribute("alt") ?? "";
+    } else {
+        alt = deduplicate_newlines(node.getAttribute("title") ?? "");
+    }
+    // Use Markdown syntax for images
+    return src ? "![" + alt + "](" + src + ")" : (node.getAttribute("alt") ?? "");
 }
 
-// Returns 2 or more if there are multiple valid text nodes in the tree.
-function check_multiple_text_nodes(child_nodes: ChildNode[]): number {
+// Returns the count of valid text nodes in the tree.
+// We return the count as soon as we find at least `cutoff` valid nodes
+// to avoid walking the whole tree.
+function count_valid_text_nodes_upto(child_nodes: ChildNode[], cutoff: number): number {
+    if (cutoff <= 0) {
+        return 0;
+    }
     let textful_nodes = 0;
 
     for (const child of child_nodes) {
@@ -58,14 +79,14 @@ function check_multiple_text_nodes(child_nodes: ChildNode[]): number {
 
         if (child.nodeValue && child.nodeType === Node.TEXT_NODE) {
             textful_nodes += 1;
-            if (textful_nodes >= 2) {
+            if (textful_nodes >= cutoff) {
                 return textful_nodes;
             }
         }
 
-        textful_nodes += check_multiple_text_nodes([...child.childNodes]);
+        textful_nodes += count_valid_text_nodes_upto([...child.childNodes], cutoff - textful_nodes);
 
-        if (textful_nodes >= 2) {
+        if (textful_nodes >= cutoff) {
             return textful_nodes;
         }
     }
@@ -86,7 +107,7 @@ function within_single_element(html_fragment: HTMLElement): boolean {
 // Empty nodes like comments or newline-only text should not be counted.
 function has_single_textful_child_node(html_fragment: HTMLElement): boolean {
     let textful_nodes = 0;
-    textful_nodes = check_multiple_text_nodes([...html_fragment.childNodes]);
+    textful_nodes = count_valid_text_nodes_upto([...html_fragment.childNodes], 2);
     if (textful_nodes >= 2) {
         return false;
     }
@@ -203,13 +224,12 @@ export function is_single_image(paste_html: string): boolean {
     return (
         is_from_excel(html_fragment) ||
         is_from_libreoffice_calc(html_fragment) ||
-        (html_fragment.childNodes.length === 1 &&
-            html_fragment.firstElementChild !== null &&
-            html_fragment.firstElementChild.nodeName === "IMG")
+        (html_fragment.querySelectorAll("img").length === 1 &&
+            count_valid_text_nodes_upto([...html_fragment.childNodes], 1) === 0)
     );
 }
 
-function get_code_block_lanaguage(
+function get_code_block_language(
     pre_element: HTMLElement,
     code_element_class_name: string,
 ): string {
@@ -219,7 +239,6 @@ function get_code_block_lanaguage(
 
     if (parent_contains_lang_metadata) {
         const codehilite_element = pre_element.closest<HTMLElement>(".codehilite");
-        // eslint-disable-next-line unicorn/prefer-dom-node-dataset
         language = codehilite_element?.getAttribute("data-code-language") ?? "";
     } else {
         language = (/language-(\S+)/.exec(code_element_class_name) ?? [null, ""])[1];
@@ -322,7 +341,7 @@ export function paste_handler_converter(
     });
 
     /*
-        Below lies the the thought process behind the parsing for math blocks and inline math expressions.
+        Below lies the thought process behind the parsing for math blocks and inline math expressions.
 
         The general structure of the katex-displays i.e. math blocks is:
         <p>
@@ -472,6 +491,7 @@ export function paste_handler_converter(
             return image_to_zulip_markdown(content, node.firstElementChild);
         },
     });
+
     turndownService.addRule("images", {
         filter: "img",
 
@@ -512,16 +532,12 @@ export function paste_handler_converter(
             assert(code !== null);
 
             const className = codeElement.getAttribute("class") ?? "";
-            const language = get_code_block_lanaguage(node, className);
+            const language = get_code_block_language(node, className);
             // We convert single line code inside a code block which does not have language metadata
             // to inline markdown code, and the code for this is taken from upstream's `code` rule.
-            if (!code.includes("\n") && language === "") {
-                // If the cursor is just after a backtick, then we don't add extra backticks.
-                if (
-                    $textarea &&
-                    $textarea.caret() !== 0 &&
-                    $textarea.val()?.at($textarea.caret() - 1) === "`"
-                ) {
+            if (!code.includes("\n")) {
+                // If the cursor is inside an inline code span, then we don't add extra backticks.
+                if ($textarea && compose_ui.cursor_inside_inline_code_span($textarea)) {
                     return content;
                 }
                 if (!code) {
@@ -559,6 +575,21 @@ export function paste_handler_converter(
             );
         },
     });
+
+    // Block elements wrap their content in two `\n`s as per
+    // the default turndown rules.
+    // We define this rule to avoid that behavior when
+    // the `paste_html` has divs.
+    // We may need to add other block elements in the future
+    // in the filter where we only want one newline as the
+    // separator.
+    turndownService.addRule("no extra newline", {
+        filter: "div",
+        replacement(content) {
+            return "\n" + content + "\n";
+        },
+    });
+
     let markdown_text = turndownService.turndown(paste_html);
 
     // Checks for escaped ordered list syntax.
@@ -610,6 +641,18 @@ function add_text_and_select(text: string, $textarea: JQuery<HTMLTextAreaElement
     insertTextIntoField(textarea, text);
     const new_cursor_pos = textarea.selectionStart;
     textarea.setSelectionRange(init_cursor_pos, new_cursor_pos);
+}
+
+function replace_pasted_text(
+    $textarea: JQuery<HTMLTextAreaElement>,
+    pasted_text: string,
+    replacement_text: string,
+): void {
+    // To ensure you can get the actual pasted URL back via the browser
+    // undo feature, we first paste the URL in, then select it, and then
+    // replace it with the nicer markdown syntax.
+    add_text_and_select(pasted_text, $textarea);
+    compose_ui.insert_and_scroll_into_view(replacement_text, $textarea);
 }
 
 export function try_stream_topic_syntax_text(text: string): string | null {
@@ -667,6 +710,8 @@ function do_paste_text(
     paste_text: string,
     $textarea: JQuery<HTMLTextAreaElement>,
 ): void {
+    let text_to_insert: string;
+
     if (paste_html) {
         const text = paste_handler_converter(paste_html, $textarea);
         const trimmed_paste_text = paste_text.trim();
@@ -677,10 +722,21 @@ function do_paste_text(
             // pre-formatting syntax.
             add_text_and_select(trimmed_paste_text, $textarea);
         }
-        compose_ui.insert_and_scroll_into_view(text, $textarea);
+        text_to_insert = text;
     } else {
-        compose_ui.insert_and_scroll_into_view(paste_text, $textarea);
+        text_to_insert = paste_text;
     }
+
+    const reverse_linkified_text = compose_ui.reverse_linkify_text(text_to_insert);
+    if (reverse_linkified_text) {
+        // For reverse linkification, we want the first undo state
+        // to have original URLs instead of the reverse linkified version.
+        // The second undo state would then contain the plain text
+        // version, if paste_html was truthy.
+        add_text_and_select(text_to_insert, $textarea);
+        text_to_insert = reverse_linkified_text;
+    }
+    compose_ui.insert_and_scroll_into_view(text_to_insert, $textarea);
 }
 
 export function paste_handler(
@@ -705,6 +761,7 @@ export function paste_handler(
         const existing_text = $textarea.val() ?? "";
         const paste_text = clipboardData.getData("text");
         let paste_html = clipboardData.getData("text/html");
+        const reverse_linkified_text = compose_ui.reverse_linkify_text(paste_text);
         // Trim the paste_text to accommodate sloppy copying
         const trimmed_paste_text = paste_text.trim();
         const pasted_text_length = paste_text.length;
@@ -732,9 +789,10 @@ export function paste_handler(
                 paste_to_compose_cb() {
                     do_paste_text(paste_html, paste_text, $textarea);
                 },
+                $textarea,
             });
             setTimeout(() => {
-                $("textarea#compose-textarea").one("input", () => {
+                $textarea.one("input", () => {
                     // The banner only displays until the user does
                     // some further input. This is both reasonable UI
                     // and also is required for undo, see above.
@@ -767,11 +825,12 @@ export function paste_handler(
                 if (syntax_text) {
                     event.preventDefault();
                     event.stopPropagation();
-                    // To ensure you can get the actual pasted URL back via the browser
-                    // undo feature, we first paste the URL in, then select it, and then
-                    // replace it with the nicer markdown syntax.
-                    add_text_and_select(trimmed_paste_text, $textarea);
-                    compose_ui.insert_and_scroll_into_view(syntax_text + " ", $textarea);
+                    replace_pasted_text($textarea, trimmed_paste_text, syntax_text + " ");
+                }
+                if (reverse_linkified_text !== null) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    replace_pasted_text($textarea, paste_text, reverse_linkified_text);
                 }
                 return;
             }
@@ -782,7 +841,7 @@ export function paste_handler(
         // if not, we proceed with the default formatted paste.
         if (
             !compose_ui.cursor_inside_code_block($textarea) &&
-            paste_html &&
+            (paste_html || reverse_linkified_text !== null) &&
             !compose_ui.shift_pressed
         ) {
             if (is_single_image(paste_html)) {

@@ -111,6 +111,7 @@ def get_messages_backend(
     *,
     allow_empty_topic_name: Json[bool] = False,
     anchor_val: Annotated[str | None, ApiParamConfig("anchor")] = None,
+    anchor_date: str | None = None,
     apply_markdown: Json[bool] = True,
     client_gravatar: Json[bool] = True,
     client_requested_message_ids: Annotated[
@@ -141,9 +142,9 @@ def get_messages_backend(
     elif client_requested_message_ids is not None:
         include_anchor = False
 
-    anchor = None
+    anchor_info = None
     if client_requested_message_ids is None:
-        anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
+        anchor_info = parse_anchor_value(anchor_val, use_first_unread_anchor_val, anchor_date)
 
     realm = get_valid_realm_from_request(request)
     narrow = clean_narrow_for_message_fetch(narrow, realm, maybe_user_profile)
@@ -242,7 +243,7 @@ def get_messages_backend(
             user_profile=user_profile,
             realm=realm,
             is_web_public_query=is_web_public_query,
-            anchor=anchor,
+            anchor_info=anchor_info,
             include_anchor=include_anchor,
             num_before=num_before,
             num_after=num_after,

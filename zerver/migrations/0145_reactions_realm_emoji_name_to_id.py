@@ -10,7 +10,7 @@ def realm_emoji_name_to_id(apps: StateApps, schema_editor: BaseDatabaseSchemaEdi
     Reaction = apps.get_model("zerver", "Reaction")
     RealmEmoji = apps.get_model("zerver", "RealmEmoji")
     realm_emoji_by_realm_id: dict[int, dict[str, Any]] = defaultdict(dict)
-    for realm_emoji in RealmEmoji.objects.all():
+    for realm_emoji in RealmEmoji.objects.all().iterator():
         realm_emoji_by_realm_id[realm_emoji.realm_id][realm_emoji.name] = {
             "id": str(realm_emoji.id),
             "name": realm_emoji.name,

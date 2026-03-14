@@ -205,6 +205,8 @@ class OpenAPIArgumentsTest(ZulipTestCase):
     # This will be filled during test_openapi_arguments:
     checked_endpoints: set[str] = set()
     pending_endpoints = {
+        #### For current endpoint documentation priorities see
+        #### https://chat.zulip.org/#narrow/channel/412-api-documentation/topic/Undocumented.20endpoint.20priorities/with/2397881
         #### TODO: These endpoints are a priority to document:
         # These are a priority to document but don't match our normal URL schemes
         # and thus may be complicated to document with our current tooling.
@@ -215,20 +217,13 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         #### These realm administration settings are valuable to document:
         # Delete a data export.
         "/export/realm/{export_id}",
-        # Manage default streams and default stream groups
+        # Default stream groups are an unfinished feature and therefore
+        # shouldn't be added to the documentation until that's completed.
         "/default_stream_groups/create",
         "/default_stream_groups/{group_id}",
         "/default_stream_groups/{group_id}/streams",
-        # Single-stream settings alternative to the bulk endpoint
-        # users/me/subscriptions/properties; probably should just be a
-        # section of the same page.
-        "/users/me/subscriptions/{stream_id}",
-        #### Mobile-app only endpoints; important for mobile developers.
-        # Mobile interface for development environment login
-        "/dev_list_users",
         #### These personal settings endpoints have modest value to document:
         "/users/me/avatar",
-        "/users/me/api_key/regenerate",
         # Much more valuable would be an org admin bulk-upload feature.
         "/users/me/profile_data",
         #### Should be documented as part of interactive bots documentation
@@ -241,7 +236,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/realm/domains/{domain}",
         "/bots",
         "/bots/{bot_id}",
-        "/bots/{bot_id}/api_key/regenerate",
         #### These "organization settings" endpoints have low value to document:
         "/realm/profile_fields/{field_id}",
         "/realm/icon",
@@ -258,7 +252,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/rest-error-handling",
         # Zulip outgoing webhook payload
         "/zulip-outgoing-webhook",
-        "/jwt/fetch_api_key",
         #### Bouncer endpoints
         # Higher priority to document
         "/remotes/push/e2ee/notify",
@@ -277,6 +270,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
     documented_post_only_endpoints = {
         "fetch_api_key",
         "dev_fetch_api_key",
+        "jwt/fetch_api_key",
     }
 
     # Endpoints where the documentation is currently failing our
@@ -557,6 +551,7 @@ so maybe we shouldn't include it in pending_endpoints.
         """
 
         from zilencer import urls as zilencer_urlconf
+        from zproject import tornado_urls as tornado_urlconf
         from zproject import urls as urlconf
 
         # We loop through all the API patterns, looking in particular
@@ -566,6 +561,7 @@ so maybe we shouldn't include it in pending_endpoints.
             urlconf.v1_api_and_json_patterns
             + urlconf.v1_api_mobile_patterns
             + zilencer_urlconf.v1_api_bouncer_patterns
+            + tornado_urlconf.api_and_json_patterns
         ):
             methods_endpoints: dict[str, Any] = {}
             if p.callback not in [rest_dispatch, remote_server_dispatch]:
@@ -760,9 +756,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
     def test_generate_and_render_curl_example(self) -> None:
         generated_curl_example = self.curl_example("/get_stream_id", "GET")
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX GET -G http://localhost:9991/api/v1/get_stream_id \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             "    --data-urlencode stream=Denmark",
             "```",
         ]
@@ -789,9 +785,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
         spec_mock.return_value = self.spec_mock_without_examples
         generated_curl_example = self.curl_example("/mark_stream_as_read", "POST")
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX POST http://localhost:9991/api/v1/mark_stream_as_read \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             "    --data-urlencode stream_id=1 \\",
             "    --data-urlencode bool_param=false",
             "```",
@@ -808,12 +804,17 @@ class TestCurlExampleGeneration(ZulipTestCase):
         generated_curl_example = self.curl_example(
             "/messages",
             "GET",
-            exclude=["use_first_unread_anchor", "message_ids", "allow_empty_topic_name"],
+            exclude=[
+                "use_first_unread_anchor",
+                "message_ids",
+                "allow_empty_topic_name",
+                "anchor_date",
+            ],
         )
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX GET -G http://localhost:9991/api/v1/messages \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             "    --data-urlencode anchor=43 \\",
             "    --data-urlencode include_anchor=false \\",
             "    --data-urlencode num_before=4 \\",
@@ -830,9 +831,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
         spec_mock.return_value = self.spec_mock_using_object
         generated_curl_example = self.curl_example("/endpoint", "GET")
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX GET -G http://localhost:9991/api/v1/endpoint \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             '    --data-urlencode \'param1={"key": "value"}\'',
             "```",
         ]
@@ -859,9 +860,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
         spec_mock.return_value = self.spec_mock_using_param_in_path
         generated_curl_example = self.curl_example("/endpoint/{param1}", "GET")
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX GET -G http://localhost:9991/api/v1/endpoint/35 \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             '    --data-urlencode \'param2={"key": "value"}\'',
             "```",
         ]
@@ -872,9 +873,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "/get_stream_id:GET", api_url="https://zulip.example.com/api"
         )
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX GET -G https://zulip.example.com/api/v1/get_stream_id \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             "    --data-urlencode stream=Denmark",
             "```",
         ]
@@ -890,12 +891,13 @@ class TestCurlExampleGeneration(ZulipTestCase):
                 "use_first_unread_anchor",
                 "message_ids",
                 "allow_empty_topic_name",
+                "anchor_date",
             ],
         )
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX GET -G http://localhost:9991/api/v1/messages \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             "    --data-urlencode anchor=43 \\",
             "    --data-urlencode include_anchor=false \\",
             "    --data-urlencode num_before=4 \\",
@@ -989,14 +991,9 @@ class OpenAPIRegexTest(ZulipTestCase):
         # Some of the undocumented endpoints which are very similar to
         # some of the documented endpoints.
         assert find_openapi_endpoint("/users/me/presence") is None
-        assert find_openapi_endpoint("/users/me/subscriptions/23") is None
         assert find_openapi_endpoint("/users/iago/subscriptions/23") is None
         assert find_openapi_endpoint("/messages/matches_narrow") is None
         # Making sure documented endpoints are matched correctly.
-        assert (
-            find_openapi_endpoint("/users/23/subscriptions/21")
-            == "/users/{user_id}/subscriptions/{stream_id}"
-        )
         assert (
             find_openapi_endpoint("/users/iago@zulip.com/presence")
             == "/users/{user_id_or_email}/presence"

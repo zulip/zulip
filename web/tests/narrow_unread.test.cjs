@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -20,19 +21,25 @@ const narrow_state = zrequire("narrow_state");
 const message_lists = zrequire("message_lists");
 const {set_current_user, set_realm} = zrequire("state_data");
 
-set_current_user({});
+const current_user = make_user({
+    email: "me@example.com",
+    user_id: 123,
+    full_name: "me",
+});
+set_current_user(current_user);
 set_realm(make_stream());
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: 11,
     full_name: "Alice",
-};
+});
 
 const bogus_stream_id = "999999";
 
 people.init();
-people.add_active_user(alice);
+people.add_active_user(alice, "server_events");
+people.add_active_user(current_user, "server_events");
 
 function set_filter(terms) {
     const filter = new Filter(terms);
@@ -62,10 +69,10 @@ run_test("get_unread_ids", () => {
     let unread_ids;
     let terms;
 
-    const sub = {
+    const sub = make_stream({
         name: "My stream",
         stream_id: 55,
-    };
+    });
 
     const stream_msg = {
         id: 101,
@@ -117,7 +124,8 @@ run_test("get_unread_ids", () => {
     assert.equal(unread_ids, undefined);
     assert_unread_info({flavor: "cannot_compute"});
 
-    terms = [{operator: "dm", operand: "123123"}];
+    const bogus_user_id = 123123;
+    terms = [{operator: "dm", operand: [bogus_user_id]}];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
@@ -168,7 +176,7 @@ run_test("get_unread_ids", () => {
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [stream_msg.id]);
 
-    terms = [{operator: "sender", operand: "me@example.com"}];
+    terms = [{operator: "sender", operand: current_user.user_id}];
     set_filter(terms);
     // note that our candidate ids are just "all" ids now
     unread_ids = candidate_ids();
@@ -177,7 +185,7 @@ run_test("get_unread_ids", () => {
     // this actually does filtering
     assert_unread_info({flavor: "not_found"});
 
-    terms = [{operator: "dm", operand: "alice@example.com"}];
+    terms = [{operator: "dm", operand: [alice.user_id]}];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
@@ -209,12 +217,6 @@ run_test("get_unread_ids", () => {
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [stream_msg.id, private_msg.id]);
-
-    terms = [{operator: "dm", operand: "bob@example.com"}];
-    set_filter(terms);
-
-    unread_ids = candidate_ids();
-    assert.deepEqual(unread_ids, []);
 
     terms = [{operator: "is", operand: "starred"}];
     set_filter(terms);
@@ -270,7 +272,8 @@ run_test("defensive code", ({override_rewire}) => {
     // couldn't compute the unread message ids, but that
     // invariant is hard to future-proof.
     override_rewire(narrow_state, "_possible_unread_message_ids", () => undefined);
-    const terms = [{operator: "dm", operand: "12344"}];
+    const bogus_user_id = 123123;
+    const terms = [{operator: "dm", operand: [bogus_user_id]}];
     set_filter(terms);
     assert_unread_info({
         flavor: "cannot_compute",

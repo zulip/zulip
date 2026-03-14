@@ -9,7 +9,7 @@ export const vim_right = "l";
 
 export function handle(opts: {
     $elem: JQuery;
-    handlers: Record<string, (() => boolean) | undefined>;
+    handlers: Record<string, ((e?: JQuery.KeyDownEvent) => boolean) | undefined>;
 }): void {
     opts.$elem.on("keydown", (e) => {
         if (e.altKey || e.ctrlKey || e.shiftKey) {
@@ -22,7 +22,7 @@ export function handle(opts: {
             return;
         }
 
-        const handled = handler();
+        const handled = handler(e);
         if (handled) {
             e.preventDefault();
             e.stopPropagation();

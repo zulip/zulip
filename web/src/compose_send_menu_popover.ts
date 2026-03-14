@@ -25,8 +25,9 @@ const ENTER_SENDS_SELECTION_DELAY = 600;
 let send_later_popover_keyboard_toggle = false;
 
 function set_compose_box_schedule(element: HTMLElement): number {
-    assert(element.dataset.sendStamp !== undefined);
-    const selected_send_at_time = Number.parseInt(element.dataset.sendStamp, 10) / 1000;
+    const send_stamp = element.getAttribute("data-send-stamp");
+    assert(send_stamp !== null);
+    const selected_send_at_time = Number.parseInt(send_stamp, 10) / 1000;
     return selected_send_at_time;
 }
 

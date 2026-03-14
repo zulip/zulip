@@ -23,7 +23,6 @@ from scripts.lib.zulip_tools import (
     WARNING,
     get_dev_uuid_var_path,
     os_families,
-    parse_os_release,
     run,
     run_as_root,
 )
@@ -72,7 +71,7 @@ except OSError:
     )
     sys.exit(1)
 
-distro_info = parse_os_release()
+distro_info = platform.freedesktop_os_release()
 vendor = distro_info["ID"]
 os_version = distro_info["VERSION_ID"]
 if vendor == "debian" and os_version == "12":  # bookworm
@@ -152,7 +151,7 @@ COMMON_YUM_DEPENDENCIES = [
 
 BUILD_GROONGA_FROM_SOURCE = False
 BUILD_PGROONGA_FROM_SOURCE = False
-if (vendor == "debian" and os_version in ["13"]) or (vendor == "ubuntu" and os_version in []):
+if vendor == "debian" and os_version == "13":
     # For platforms without a PGroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True
@@ -400,7 +399,9 @@ def main(options: argparse.Namespace) -> NoReturn:
         "https_proxy=" + os.environ.get("https_proxy", ""),
         "no_proxy=" + os.environ.get("no_proxy", ""),
     ]
-    run_as_root([*proxy_env, "scripts/lib/install-node"], sudo_args=["-H"])
+    # Preserve PATH to catch mistaken extra installations of node in the user's
+    # home directory.
+    run_as_root([*proxy_env, "scripts/lib/install-node"], sudo_args=["--preserve-env=PATH"])
 
     try:
         setup_node_modules()
@@ -417,15 +418,15 @@ def main(options: argparse.Namespace) -> NoReturn:
             sys.exit(1)
 
     # Install shellcheck.
-    run_as_root([*proxy_env, "tools/setup/install-shellcheck"])
+    run_as_root([*proxy_env, "tools/setup/install-shellcheck"], sudo_args=["--preserve-env=PATH"])
     # Install shfmt.
-    run_as_root([*proxy_env, "tools/setup/install-shfmt"])
+    run_as_root([*proxy_env, "tools/setup/install-shfmt"], sudo_args=["--preserve-env=PATH"])
 
     # Install tusd
-    run_as_root([*proxy_env, "tools/setup/install-tusd"])
+    run_as_root([*proxy_env, "tools/setup/install-tusd"], sudo_args=["--preserve-env=PATH"])
 
     # Install Python environment
-    run_as_root([*proxy_env, "scripts/lib/install-uv"])
+    run_as_root([*proxy_env, "scripts/lib/install-uv"], sudo_args=["--preserve-env=PATH"])
     run(
         [*proxy_env, "uv", "sync", "--frozen"],
         env={k: v for k, v in os.environ.items() if k not in {"PYTHONDEVMODE", "PYTHONWARNINGS"}},

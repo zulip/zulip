@@ -240,7 +240,7 @@ rules:
     languages: [python]
     patterns:
       - pattern-either:
-          - pattern: Confirmation.objects.get(...)
+          - pattern: Confirmation.objects.get(..., confirmation_key=..., ...)
           - pattern: Confirmation.objects.filter(..., confirmation_key=..., ...)
       - pattern-not-inside: |
           def get_object_from_key(...):
@@ -389,5 +389,26 @@ rules:
     fix-regex:
       regex: ',\s*type=str'
       replacement: ""
+    languages: [python]
+    severity: ERROR
+
+  - id: iterator-all
+    message: Use .iterator() when iterating over large sets once
+    pattern: |-
+      for $VAR in $THING.objects.all():
+          $BODY
+    fix: |-
+      for $VAR in $THING.objects.all().iterator():
+          $BODY
+    languages: [python]
+    severity: ERROR
+
+  - id: select-for-update-require-no-key
+    message: |
+      Call select_for_update() with an explicit no_key= (True/False) kwarg. We should be purposeful about which lock we need.
+      See https://zulip.readthedocs.io/en/latest/subsystems/database-concurrency.html#select-for-update for guidance.
+    patterns:
+      - pattern: $Q.select_for_update(...)
+      - pattern-not: $Q.select_for_update(..., no_key=..., ...)
     languages: [python]
     severity: ERROR

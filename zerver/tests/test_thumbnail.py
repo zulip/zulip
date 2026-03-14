@@ -369,11 +369,11 @@ class TestStoreThumbnail(ZulipTestCase):
             self.assertEqual(thumbnailed_image.get_n_pages(), 2)
 
         with self.thumbnail_formats(ThumbnailFormat("webp", 100, 75, animated=True)):
-            self.assertEqual(ensure_thumbnails(image_attachment), 0)
+            self.assertEqual(ensure_thumbnails(image_attachment).generated_thumbnail_count, 0)
         self.assert_length(image_attachment.thumbnail_metadata, 1)
 
         with self.thumbnail_formats(ThumbnailFormat("webp", 150, 100, opts="Q=90", animated=False)):
-            self.assertEqual(ensure_thumbnails(image_attachment), 1)
+            self.assertEqual(ensure_thumbnails(image_attachment).generated_thumbnail_count, 1)
         self.assert_length(image_attachment.thumbnail_metadata, 2)
 
         bigger_thumbnail = StoredThumbnailFormat(**image_attachment.thumbnail_metadata[1])
@@ -601,7 +601,7 @@ class TestStoreThumbnail(ZulipTestCase):
             self.assert_length(missing_thumbnails(image_attachment), 1)
 
             with self.assertLogs("zerver.worker.thumbnail", level="ERROR") as error_log:
-                self.assertEqual(ensure_thumbnails(image_attachment), 0)
+                self.assertEqual(ensure_thumbnails(image_attachment).generated_thumbnail_count, 0)
 
         libvips_version = (pyvips.version(0), pyvips.version(1))
         # This error message changed
@@ -744,7 +744,7 @@ class TestStoreThumbnail(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         path_id = upload_backend.generate_message_upload_path(str(hamlet.realm.id), "img.png")
         upload_backend.upload_message_attachment(
-            path_id, "img.png", "image/png", read_test_image_file("img.png"), hamlet
+            path_id, "img.png", "image/png", read_test_image_file("img.png"), hamlet, hamlet.realm
         )
         source = attachment_source(path_id)
         create_attachment("img.png", path_id, "image/png", source, hamlet, hamlet.realm)
@@ -1004,3 +1004,72 @@ class TestThumbnailRetrieval(ZulipTestCase):
             ),
             "100x75.webp",
         )
+
+
+class ThumbnailStatusEndpointTest(ZulipTestCase):
+    def test_thumbnail_status_with_ready_thumbnails(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        with self.thumbnail_formats(ThumbnailFormat("webp", 100, 75, animated=True)):
+            with self.captureOnCommitCallbacks(execute=True):
+                with get_test_image_file("animated_unequal_img.gif") as image_file:
+                    json_response = self.assert_json_success(
+                        self.client_post("/json/user_uploads", {"file": image_file})
+                    )
+                path_id = re.sub(r"/user_uploads/", "", json_response["url"])
+
+            result = self.client_get(f"/json/thumbnail/status/{path_id}")
+            self.assert_json_success(result)
+            self.assertEqual(result.json()["has_thumbnail"], True)
+
+    def test_thumbnail_status_without_ready_thumbnails(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        with self.thumbnail_formats(ThumbnailFormat("webp", 100, 75, animated=True)):
+            # Don't execute callbacks, so thumbnails aren't generated
+            with get_test_image_file("animated_unequal_img.gif") as image_file:
+                json_response = self.assert_json_success(
+                    self.client_post("/json/user_uploads", {"file": image_file})
+                )
+            path_id = re.sub(r"/user_uploads/", "", json_response["url"])
+
+        result = self.client_get(f"/json/thumbnail/status/{path_id}")
+        self.assert_json_success(result)
+        self.assertEqual(result.json()["has_thumbnail"], False)
+
+    def test_thumbnail_status_for_non_image_file(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        fp = StringIO("zulip text file!")
+        fp.name = "zulip.txt"
+
+        json_response = self.assert_json_success(
+            self.client_post("/json/user_uploads", {"file": fp})
+        )
+        path_id = re.sub(r"/user_uploads/", "", json_response["url"])
+
+        result = self.client_get(f"/json/thumbnail/status/{path_id}")
+        self.assert_json_error(result, "Invalid attachment")
+
+    def test_thumbnail_status_nonexistent_file(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        result = self.client_get("/json/thumbnail/status/2/nonexistent/fake.gif")
+        self.assert_json_error(result, "Invalid attachment")
+
+    def test_thumbnail_status_without_access(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        path_id = f"{hamlet.realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/img.gif"
+        create_attachment("img.gif", path_id, "image/gif", b"gif_content", hamlet, hamlet.realm)
+
+        # Iago is not a recipient of the uploaded file so they
+        # should not be able to query its thumbnail status.
+        self.login_user(iago)
+        result = self.client_get(f"/json/thumbnail/status/{path_id}")
+        self.assert_json_error(result, "Invalid attachment")

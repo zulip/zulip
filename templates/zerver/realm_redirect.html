@@ -23,7 +23,7 @@
                             <input
                               type="text" value="{% if form.subdomain.value() %}{{ form.subdomain.value() }}{% endif %}"
                               placeholder="{{ _('your-organization') }}" autofocus id="realm_redirect_subdomain" name="subdomain"
-                              autocomplete="off" required/>
+                              autocomplete="off"/>
                             <span id="realm_redirect_external_host">.{{external_host}}</span>
                         </div>
                         <div id="errors">

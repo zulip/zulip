@@ -108,6 +108,14 @@
             }
         }
     }
+
+    #report-message-preview-container & {
+        /* We don't need these effects applied for message preview in the report
+        message modal. */
+        box-shadow: none;
+        border: 0;
+        background: transparent;
+    }
 }
 
 .message_header_private_message {
@@ -173,7 +181,7 @@
         border-radius: 5px;
 
         .message_row:last-of-type {
-            border-radius: 0 0 7px 7px;
+            border-radius: var(--last-message-row-border-radius);
             border-bottom: 1px solid var(--color-message-list-border);
 
             .unread-marker-fill {
@@ -191,6 +199,10 @@
             .messagebox {
                 padding-top: 5px;
             }
+        }
+
+        .recipient_row_date {
+            cursor: pointer;
         }
     }
 
@@ -269,6 +281,10 @@
     display: flex;
     flex-grow: 1;
     align-items: center;
+
+    &.topic-edit-mode .recipient-bar-control {
+        display: none;
+    }
 }
 
 .on_hover_topic_read {
@@ -317,5 +333,39 @@
     &:hover {
         opacity: 0.4 !important;
         cursor: pointer;
+    }
+}
+
+.spectator-view .recipient_bar_controls .recipient-bar-control {
+    &.recipient-bar-copy-link-to-topic {
+        display: flex;
+    }
+
+    &.recipient-row-topic-menu {
+        display: none;
+    }
+}
+
+@container message-lists (width <  $cq_ml_min) {
+    .recipient-bar-control {
+        display: none;
+
+        /* Always show the vdots */
+        &.recipient-row-topic-menu {
+            display: block;
+        }
+    }
+}
+
+@media (width < $ml_min) {
+    .without-container-query-support {
+        .recipient-bar-control {
+            display: none;
+
+            /* Always show the vdots */
+            &.recipient-row-topic-menu {
+                display: block;
+            }
+        }
     }
 }

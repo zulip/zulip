@@ -4,7 +4,7 @@ Emoji seem like a simple idea, but there's actually a ton of
 complexity that goes into an effective emoji implementation. This
 document discusses a number of these issues.
 
-Currently, Zulip supports these four display formats for emoji:
+Currently, Zulip supports these three display formats for emoji:
 
 - Google
 - Twitter
