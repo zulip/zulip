@@ -17,7 +17,6 @@ import render_user_group_settings from "../templates/user_group_settings/user_gr
 import render_user_group_settings_empty_notice from "../templates/user_group_settings/user_group_settings_empty_notice.hbs";
 import render_user_group_settings_overlay from "../templates/user_group_settings/user_group_settings_overlay.hbs";
 
-import type {Banner} from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as buttons from "./buttons.ts";
@@ -83,22 +82,6 @@ const initial_group_filter = FILTERS.ACTIVE_GROUPS;
 
 let group_list_widget: ListWidget.ListWidget<UserGroup, UserGroup>;
 let group_list_toggler: Toggle;
-
-const GROUP_INFO_BANNER: Banner = {
-    intent: "info",
-    label: $t({
-        defaultMessage:
-            "User groups offer a flexible way to manage permissions in your organization.",
-    }),
-    buttons: [
-        {
-            label: $t({defaultMessage: "Learn more"}),
-            custom_classes: "banner-external-link",
-            variant: "subtle",
-        },
-    ],
-    close_button: false,
-};
 
 function get_user_group_id(target: HTMLElement): number {
     const $row = $(target).closest(
@@ -2001,11 +1984,6 @@ export function setup_page(callback: () => void): void {
         );
         $groups_overlay_container.html(groups_overlay_html);
         update_displayed_groups(initial_group_filter);
-        settings_banner.set_up_banner(
-            $(".group-info-banner"),
-            GROUP_INFO_BANNER,
-            "/help/user-groups",
-        );
 
         settings_banner.set_up_upgrade_banners();
         // Initially as the overlay is build with empty right panel,

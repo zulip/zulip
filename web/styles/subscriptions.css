@@ -562,6 +562,20 @@ h4.user_group_setting_subsection_title {
     gap: 10px;
 }
 
+.user-group-help-icon {
+    font-size: 1.2rem;
+    transition: color 0.2s ease;
+    vertical-align: middle;
+}
+
+.user-group-help-icon .fa {
+    color: var(--color-text-neutral-icon-button);
+}
+
+.user-group-help-icon .fa:hover {
+    color: var(--color-text-neutral-icon-button-hover);
+}
+
 .two-pane-settings-container {
     display: grid;
     grid-template:
@@ -652,8 +666,7 @@ h4.user_group_setting_subsection_title {
     .right .nothing-selected {
         padding: 5px 5px 0;
 
-        .stream-info-banner a,
-        .group-info-banner a {
+        .stream-info-banner a {
             color: inherit;
         }
 

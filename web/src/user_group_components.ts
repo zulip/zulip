@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import render_nothing_selected_title from "../templates/user_group_settings/nothing_selected_title.hbs";
 import render_selected_group_title from "../templates/user_group_settings/selected_group_title.hbs";
 
 import {$t_html} from "./i18n.ts";
@@ -46,10 +47,8 @@ export const show_user_group_settings_pane = {
         $("#groups_overlay .settings, #user-group-creation").hide();
         reset_active_group_id();
         $("#groups_overlay .nothing-selected").show();
-        $("#groups_overlay .user-group-info-title").text(
-            $t_html({defaultMessage: "User group settings"}),
-        );
         $("#groups_overlay .deactivated-user-group-icon-right").hide();
+        $("#user_group_settings_title").html(render_nothing_selected_title({}));
         resize.resize_settings_overlay($("#groups_overlay_container"));
     },
     settings(group: UserGroup) {
@@ -62,13 +61,14 @@ export const show_user_group_settings_pane = {
     create_user_group(container_name = "configure_user_group_settings", group_name?: string) {
         $(".user_group_creation").hide();
         if (container_name === "configure_user_group_settings") {
-            $("#groups_overlay .user-group-info-title").text(
-                $t_html({defaultMessage: "Configure new group settings"}),
+            $("#user_group_settings_title").html(
+                `<span class="user-group-info-title-text">${$t_html({defaultMessage: "Configure new group settings"})}</span>`,
             );
         } else {
-            $("#groups_overlay .user-group-info-title").text(
-                $t_html({defaultMessage: "Add members to {group_name}"}, {group_name}),
+            $("#user_group_settings_title").html(
+                `<span class="user-group-info-title-text">${$t_html({defaultMessage: "Add members to {group_name}"}, {group_name})}</span>`,
             );
+            $("#groups_overlay .user-group-info-title").addClass("showing-info-title");
         }
         update_footer_buttons(container_name);
         $(`.${CSS.escape(container_name)}`).show();
