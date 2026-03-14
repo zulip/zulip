@@ -642,8 +642,7 @@ h4.user_group_setting_subsection_title {
     .right .nothing-selected {
         padding: 5px 5px 0;
 
-        .stream-info-banner a,
-        .group-info-banner a {
+        .stream-info-banner a {
             color: inherit;
         }
 

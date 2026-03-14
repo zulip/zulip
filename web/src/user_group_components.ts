@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import render_nothing_selected_title from "../templates/user_group_settings/nothing_selected_title.hbs";
 import render_selected_group_title from "../templates/user_group_settings/selected_group_title.hbs";
 
 import {$t_html} from "./i18n.ts";
@@ -46,10 +47,8 @@ export const show_user_group_settings_pane = {
         $("#groups_overlay .settings, #user-group-creation").hide();
         reset_active_group_id();
         $("#groups_overlay .nothing-selected").show();
-        $("#groups_overlay .user-group-info-title").text(
-            $t_html({defaultMessage: "User group settings"}),
-        );
-        $("#groups_overlay .deactivated-user-group-icon").hide();
+        $("#groups_overlay .deactivated-user-group-icon-right").hide();
+        $("#user_group_settings_title").html(render_nothing_selected_title({}));
         resize.resize_settings_overlay($("#groups_overlay_container"));
     },
     settings(group: UserGroup) {
