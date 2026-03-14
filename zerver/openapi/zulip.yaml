@@ -14089,6 +14089,90 @@ paths:
                         "result": "success",
                         "subscribed_channel_ids": [3, 5, 10],
                       }
+  /realm/domains:
+    get:
+      description: Get a list of all allowed domains for the organization.
+      operationId: get-realm-domains
+      summary: Get all allowed domains
+      tags:
+        - server_and_organizations
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      domains:
+                        type: array
+                        description: An array of dictionaries, where each dictionary represents an allowed domain.
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            domain:
+                              type: string
+                              description: The domain name.
+                            allow_subdomains:
+                              type: boolean
+                              description: Whether subdomains are allowed for this domain.
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "domains":
+                          [{"domain": "example.com", "allow_subdomains": true}],
+                      }
+    post:
+      description: Add a new allowed domain for the organization.
+      operationId: create-realm-domain
+      summary: Add an allowed domain
+      tags:
+        - server_and_organizations
+      parameters:
+        - in: query
+          name: domain
+          description: The domain to add.
+          required: true
+          schema:
+            type: string
+          example: "example.com"
+        - in: query
+          name: allow_subdomains
+          description: Whether subdomains are allowed for this domain.
+          schema:
+            type: boolean
+          example: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      new_domain:
+                        type: array
+                        description: An array containing the internal ID and the name of the newly added domain.
+                        items:
+                          oneOf:
+                            - type: integer
+                            - type: string
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "new_domain": [8, "example.com"],
+                      }
   /realm/emoji/{emoji_name}:
     post:
       operationId: upload-custom-emoji

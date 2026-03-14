@@ -152,7 +152,8 @@
 * [Create a data export](/api/export-realm)
 * [Get data export consent state](/api/get-realm-export-consents)
 * [Test welcome bot custom message](/api/test-welcome-bot-custom-message)
-
+* [Get all allowed domains](/api/get-realm-domains)
+* [Add an allowed domain](/api/create-realm-domain)
 #### Real-time events
 
 * [Real time events API](/api/real-time-events)

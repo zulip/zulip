@@ -47,11 +47,11 @@ class RealmDomainTest(ZulipTestCase):
             "domain": "",
             "allow_subdomains": orjson.dumps(True).decode(),
         }
-        result = self.client_post("/json/realm/domains", info=data)
+        result = self.client_post("/json/realm/domains", info=data, intentionally_undocumented=True)
         self.assert_json_error(result, "Invalid domain: Domain can't be empty.")
 
         data["domain"] = "acme.com"
-        result = self.client_post("/json/realm/domains", info=data)
+        result = self.client_post("/json/realm/domains", info=data, intentionally_undocumented=True)
         self.assert_json_success(result)
         realm = get_realm("zulip")
         self.assertTrue(
@@ -60,7 +60,7 @@ class RealmDomainTest(ZulipTestCase):
             ).exists()
         )
 
-        result = self.client_post("/json/realm/domains", info=data)
+        result = self.client_post("/json/realm/domains", info=data, intentionally_undocumented=True)
         self.assert_json_error(
             result, "The domain acme.com is already a part of your organization."
         )
@@ -71,7 +71,10 @@ class RealmDomainTest(ZulipTestCase):
         self.set_user_role(mit_user_profile, UserProfile.ROLE_REALM_OWNER)
 
         result = self.client_post(
-            "/json/realm/domains", info=data, HTTP_HOST=mit_user_profile.realm.host
+            "/json/realm/domains",
+            info=data,
+            HTTP_HOST=mit_user_profile.realm.host,
+            intentionally_undocumented=True,
         )
         self.assert_json_success(result)
 
