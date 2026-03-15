@@ -26,6 +26,7 @@ export const update_message_event_schema = z.object({
     type: z.literal("update_message"),
     user_id: z.nullable(z.number()),
     rendering_only: z.boolean(),
+    edit_history_deleted: z.optional(z.boolean()),
     message_id: z.number(),
     message_ids: z.array(z.number()),
     flags: z.array(z.string()),

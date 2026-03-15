@@ -336,7 +336,7 @@ def messages_for_ids(
                     item["topic"], item["prev_topic"]
                 ):
                     last_moved_timestamp = max(last_moved_timestamp, item["timestamp"])
-                if "prev_content" in item:
+                if "prev_content" in item or "history_deleted_by" in item:
                     last_edit_timestamp = max(last_edit_timestamp, item["timestamp"])
             if last_moved_timestamp != 0:
                 msg_dict["last_moved_timestamp"] = last_moved_timestamp
