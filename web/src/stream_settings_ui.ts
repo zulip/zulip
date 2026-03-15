@@ -1019,6 +1019,7 @@ function setup_page(callback: () => void): void {
             stream_privacy_policy_values: settings_config.stream_privacy_policy_values,
             stream_privacy_policy,
             stream_topics_policy_values: settings_config.get_stream_topics_policy_values(),
+            wildcard_mention_policy_values: settings_config.wildcard_mention_policy_values,
             check_default_stream: false,
             history_public_to_subscribers: true,
             zulip_plan_is_not_limited: realm.zulip_plan_is_not_limited,

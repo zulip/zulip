@@ -1591,12 +1591,26 @@ def topic_wildcard_mention_allowed(
 
 
 def stream_wildcard_mention_allowed(sender: UserProfile, stream: Stream, realm: Realm) -> bool:
-    # If there are fewer than Realm.WILDCARD_MENTION_THRESHOLD, we
-    # allow sending.  In the future, we may want to make this behavior
-    # a default, and also just allow explicitly setting whether this
-    # applies to a stream as an override.
+    from zerver.lib.mention import get_stream_wildcard_mention_policy
+    from zerver.models.realms import WildcardMentionPolicyEnum
+
     if num_subscribers_for_stream_id(stream.id) <= Realm.WILDCARD_MENTION_THRESHOLD:
         return True
+
+    policy = get_stream_wildcard_mention_policy(stream, realm)
+
+    if policy == WildcardMentionPolicyEnum.EVERYONE:
+        return True
+
+    if policy == WildcardMentionPolicyEnum.MODERATORS:
+        return sender.is_realm_admin or sender.is_moderator
+
+    if policy == WildcardMentionPolicyEnum.ADMINS:
+        return sender.is_realm_admin
+
+    if policy == WildcardMentionPolicyEnum.NOBODY:
+        return False
+
     return can_mention_many_users(sender)
 
 

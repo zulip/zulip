@@ -52,6 +52,11 @@ class Stream(models.Model):
 
     folder = models.ForeignKey(ChannelFolder, null=True, on_delete=models.SET_NULL)
 
+    wildcard_mention_policy = models.IntegerField(
+        null=True,
+        default=None,
+    )
+
     # Various permission policy configurations
     PERMISSION_POLICIES: dict[str, dict[str, Any]] = {
         "web_public": {
@@ -291,6 +296,7 @@ class Stream(models.Model):
         "can_resolve_topics_group_id",
         "is_recently_active",
         "topics_policy",
+        "wildcard_mention_policy",
     ]
 
 

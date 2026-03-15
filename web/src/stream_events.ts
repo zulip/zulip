@@ -237,6 +237,9 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             channel_folders_ui.update_channel_folder_channels_list(stream_id, value);
             recent_view_ui.complete_rerender();
         },
+        wildcard_mention_policy(value) {
+            sub.wildcard_mention_policy = value;
+        },
     };
 
     if (Object.hasOwn(updaters, property) && updaters[property] !== undefined) {

@@ -949,6 +949,9 @@ export function check_stream_settings_property_changed(
             assert(elem instanceof HTMLSelectElement);
             proposed_val = get_message_retention_setting_value($(elem), false);
             break;
+        case "wildcard_mention_policy":
+            proposed_val = get_input_element_value(elem, "number");
+            break;
         case "channel_privacy":
             proposed_val = get_dropdown_list_widget_setting_value($(elem));
             break;
@@ -1221,7 +1224,11 @@ export function populate_data_for_stream_settings_request(
                 }
 
                 assert(typeof input_value !== "object");
-                data[property_name] = input_value;
+                if (property_name === "wildcard_mention_policy") {
+                    data[property_name] = Number(input_value);
+                } else {
+                    data[property_name] = input_value;
+                }
             }
         }
     }

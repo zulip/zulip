@@ -1167,7 +1167,6 @@ export function create_sub_from_server_data(
 
     // Omit properties not used for the sub object
     const {subscribers, subscriber_count, partial_subscribers, ...attrs} = server_attrs;
-
     assert(server_attrs.subscriber_count !== undefined);
     peer_data.set_subscriber_count(server_attrs.stream_id, server_attrs.subscriber_count);
 
@@ -1301,7 +1300,6 @@ export function initialize(params: StateData["stream_data"]): void {
         We only use it in this function to populate other
         data structures.
     */
-
     const subscriptions = params.subscriptions;
     const unsubscribed = params.unsubscribed;
     const never_subscribed = params.never_subscribed;

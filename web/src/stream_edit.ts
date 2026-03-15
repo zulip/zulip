@@ -471,6 +471,7 @@ export function show_settings_for(node: HTMLElement): void {
         group_setting_labels: settings_config.all_group_setting_labels.stream,
         has_billing_access: settings_data.user_has_billing_access(),
         empty_string_topic_display_name: util.get_final_topic_display_name(""),
+        wildcard_mention_policy_values: settings_config.wildcard_mention_policy_values,
     });
     scroll_util.get_content_element($("#stream_settings")).html(html);
 
@@ -483,7 +484,7 @@ export function show_settings_for(node: HTMLElement): void {
     $("#subscription_overlay .stream_change_property_info").hide();
     $("#subscription_overlay .stream_email_address_error").hide();
     $("#id_topics_policy").val(sub.topics_policy);
-
+    $("#id_wildcard_mention_policy").val(String(sub.wildcard_mention_policy ?? 0));
     $edit_container.addClass("show");
 
     show_subscription_settings(sub);
