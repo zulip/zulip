@@ -171,6 +171,7 @@ def get_web_public_subs(
             stream_weekly_traffic=stream_weekly_traffic,
             subscriber_count=stream.subscriber_count,
             topics_policy=StreamTopicsPolicyEnum(topics_policy).name,
+            wildcard_mention_policy=stream.wildcard_mention_policy,
             wildcard_mentions_notify=wildcard_mentions_notify,
         )
         subscribed.append(sub)
@@ -242,6 +243,8 @@ def build_stream_api_dict(
         raw_stream_dict["can_subscribe_group_id"], anonymous_group_membership
     )
 
+    wildcard_mention_policy = raw_stream_dict.get("wildcard_mention_policy")
+
     return APIStreamDict(
         is_archived=raw_stream_dict["deactivated"],
         can_add_subscribers_group=can_add_subscribers_group,
@@ -271,6 +274,7 @@ def build_stream_api_dict(
         stream_weekly_traffic=stream_weekly_traffic,
         subscriber_count=raw_stream_dict["subscriber_count"],
         topics_policy=raw_stream_dict["topics_policy"],
+        wildcard_mention_policy=wildcard_mention_policy,
         is_announcement_only=is_announcement_only,
         is_recently_active=raw_stream_dict["is_recently_active"],
     )
@@ -281,6 +285,7 @@ def build_stream_dict_for_sub(
     sub_dict: RawSubscriptionDict,
     stream_dict: APIStreamDict,
 ) -> SubscriptionStreamDict:
+    print("DEBUG stream_dict:", stream_dict)
     # Handle Stream.API_FIELDS
     is_archived = stream_dict["is_archived"]
     can_add_subscribers_group = stream_dict["can_add_subscribers_group"]
@@ -310,6 +315,7 @@ def build_stream_dict_for_sub(
     stream_weekly_traffic = stream_dict["stream_weekly_traffic"]
     subscriber_count = stream_dict["subscriber_count"]
     topics_policy = stream_dict["topics_policy"]
+    wildcard_mention_policy = stream_dict.get("wildcard_mention_policy")
     is_announcement_only = stream_dict["is_announcement_only"]
     is_recently_active = stream_dict["is_recently_active"]
 
@@ -327,7 +333,6 @@ def build_stream_dict_for_sub(
     # updated for the in_home_view => is_muted API migration.
     in_home_view = not is_muted
 
-    # Our caller may add a subscribers field.
     return SubscriptionStreamDict(
         is_archived=is_archived,
         audible_notifications=audible_notifications,
@@ -367,6 +372,7 @@ def build_stream_dict_for_sub(
         stream_weekly_traffic=stream_weekly_traffic,
         subscriber_count=subscriber_count,
         topics_policy=topics_policy,
+        wildcard_mention_policy=wildcard_mention_policy,
         wildcard_mentions_notify=wildcard_mentions_notify,
     )
 
@@ -392,6 +398,7 @@ def build_stream_dict_for_never_sub(
     stream_id = raw_stream_dict["id"]
     stream_post_policy = raw_stream_dict["stream_post_policy"]
     subscriber_count = raw_stream_dict["subscriber_count"]
+    wildcard_mention_policy = raw_stream_dict["wildcard_mention_policy"]
     topics_policy = raw_stream_dict["topics_policy"]
 
     if recent_traffic is not None:
@@ -469,6 +476,7 @@ def build_stream_dict_for_never_sub(
         stream_post_policy=stream_post_policy,
         stream_weekly_traffic=stream_weekly_traffic,
         subscriber_count=subscriber_count,
+        wildcard_mention_policy=wildcard_mention_policy,
         topics_policy=topics_policy,
     )
 
@@ -812,6 +820,7 @@ def gather_subscriptions_helper(
     all_stream_dicts = all_streams.values(
         *Stream.API_FIELDS,
         # The realm_id and recipient_id are generally not needed in the API.
+        "wildcard_mention_policy",
         "realm_id",
         "recipient_id",
     )

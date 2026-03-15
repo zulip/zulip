@@ -381,6 +381,24 @@ export const get_stream_topics_policy_values = (): StreamTopicsPolicyValues => {
     };
 };
 
+export const wildcard_mention_policy_values = {
+    allow: {
+        order: 1,
+        code: 1,
+        description: $t({defaultMessage: "Allow all wildcard mentions"}),
+    },
+    admins_only: {
+        order: 2,
+        code: 5,
+        description: $t({defaultMessage: "Admins only"}),
+    },
+    nobody: {
+        order: 3,
+        code: 6,
+        description: $t({defaultMessage: "Nobody (disable wildcard mentions)"}),
+    },
+};
+
 export const time_limit_dropdown_values = [
     {
         text: $t({defaultMessage: "Any time"}),

@@ -486,6 +486,7 @@ def send_subscription_add_events(
                 stream_post_policy=stream_dict["stream_post_policy"],
                 subscriber_count=stream_dict["subscriber_count"],
                 topics_policy=stream_dict["topics_policy"],
+                wildcard_mention_policy=stream_dict["wildcard_mention_policy"],
                 # Computed fields not present in Stream.API_FIELDS
                 is_announcement_only=stream_dict["is_announcement_only"],
             )
@@ -1766,21 +1767,19 @@ def do_set_stream_property(stream: Stream, name: str, value: Any, acting_user: U
         ).format(empty_topic_display_name=empty_topic_display_name),
     }
 
-    NOTIFICATION_MESSAGES = {
-        "topics_policy": _(
+    if name == "topics_policy":
+        notification_message = _(
             '{user_name} changed the "Allow posting to the *general chat* topic?" setting from {old_topics_policy} to {new_topics_policy}.'
         ).format(
             user_name=silent_mention_syntax_for_user(acting_user),
             old_topics_policy=f"**{TOPICS_POLICY_DISPLAY_NAME_MAP[old_value]}**",
             new_topics_policy=f"**{TOPICS_POLICY_DISPLAY_NAME_MAP[value]}**",
-        ),
-    }
-    if NOTIFICATION_MESSAGES.get(name) is not None:
+        )
         with override_language(stream.realm.default_language):
             maybe_send_channel_events_notice(
                 sender,
                 stream,
-                NOTIFICATION_MESSAGES[name],
+                notification_message,
                 archived_channel_notice=stream.deactivated,
             )
 

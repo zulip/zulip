@@ -27,6 +27,7 @@ export const stream_subscription_schema = z.object({
     newly_subscribed: z.boolean(),
     subscribed: z.boolean(),
     previously_subscribed: z.boolean(),
+    wildcard_mention_policy: z.nullable(z.number()),
 });
 export type StreamSubscription = z.infer<typeof stream_subscription_schema>;
 

@@ -62,6 +62,7 @@ export const stream_schema = z.object({
     rendered_description: z.string(),
     stream_id: z.number(),
     stream_post_policy: z.enum(StreamPostPolicy),
+    wildcard_mention_policy: z.nullable(z.number()),
     topics_policy: stream_topics_policy_schema,
 });
 
