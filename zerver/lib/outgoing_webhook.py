@@ -72,7 +72,14 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
             is_incoming_1_to_1=event["message"]["recipient_id"] == self.user_profile.recipient_id,
         )
 
+        # Split command into trigger and content for Slack compatibility
+        parts = event["command"].strip().split(" ", 1)
+        command = parts[0]
+        text = parts[1] if len(parts) > 1 else ""
+
         request_data = {
+            "command": command,
+            "text": text,
             "data": event["command"],
             "message": message_dict,
             "bot_email": self.user_profile.email,

@@ -26032,6 +26032,14 @@ paths:
                     type: string
                     description: |
                       The message content, in raw [Zulip-flavored Markdown](/help/format-your-message-using-markdown) format (not rendered to HTML).
+                  command:
+                    type: string
+                    description: |
+                      The first word of the content string, used as the trigger command.
+                  text:
+                    type: string
+                    description: |
+                      The rest of the content string after the command.
                   trigger:
                     type: string
                     description: |
