@@ -1,0 +1,495 @@
+[35m.claude/skills/fix-backend-coverage/analyze-coverage[m[36m:[m    "zerver/lib/[1;31mprofile[m.py",
+[35manalytics/lib/counts.py[m[36m:[m            "user_[1;31mprofile[m",
+[35manalytics/lib/counts.py[m[36m:[m        .values_list("user_[1;31mprofile[m_id", "user_[1;31mprofile[m__realm_id", "start", "end")
+[35manalytics/lib/counts.py[m[36m:[m        # We limit both user[1;31mprofile[m and message so that we only see
+[35manalytics/lib/counts.py[m[36m:[m            "zerver_user[1;31mprofile[m.realm_id = {} AND zerver_message.realm_id = {} AND"
+[35manalytics/lib/counts.py[m[36m:[m        zerver_user[1;31mprofile[m.id, zerver_user[1;31mprofile[m.realm_id, count(*),
+[35manalytics/lib/counts.py[m[36m:[m    FROM zerver_user[1;31mprofile[m
+[35manalytics/lib/counts.py[m[36m:[m        zerver_user[1;31mprofile[m.id = zerver_message.sender_id
+[35manalytics/lib/counts.py[m[36m:[m        zerver_user[1;31mprofile[m.date_joined < %(time_end)s AND
+[35manalytics/lib/counts.py[m[36m:[m    GROUP BY zerver_user[1;31mprofile[m.id {group_by_clause}
+[35manalytics/lib/counts.py[m[36m:[m        # We limit both user[1;31mprofile[m and message so that we only see
+[35manalytics/lib/counts.py[m[36m:[m            "zerver_user[1;31mprofile[m.realm_id = {} AND zerver_message.realm_id = {} AND"
+[35manalytics/lib/counts.py[m[36m:[m        SELECT zerver_user[1;31mprofile[m.realm_id, zerver_user[1;31mprofile[m.id, count(*),
+[35manalytics/lib/counts.py[m[36m:[m        FROM zerver_user[1;31mprofile[m
+[35manalytics/lib/counts.py[m[36m:[m            zerver_user[1;31mprofile[m.id = zerver_message.sender_id AND
+[35manalytics/lib/counts.py[m[36m:[m            zerver_user[1;31mprofile[m.realm_id, zerver_user[1;31mprofile[m.id,
+[35manalytics/lib/counts.py[m[36m:[m    JOIN zerver_user[1;31mprofile[m
+[35manalytics/lib/counts.py[m[36m:[m        zerver_message.sender_id = zerver_user[1;31mprofile[m.id
+[35manalytics/lib/counts.py[m[36m:[m        zerver_user[1;31mprofile[m.realm_id, count(*), %(property)s, {subgroup}, %(time_end)s
+[35manalytics/lib/counts.py[m[36m:[m    FROM zerver_user[1;31mprofile[m
+[35manalytics/lib/counts.py[m[36m:[m    ) last_user_event ON last_user_event.modified_user_id = zerver_user[1;31mprofile[m.id
+[35manalytics/lib/counts.py[m[36m:[m    GROUP BY zerver_user[1;31mprofile[m.realm_id {group_by_clause}
+[35manalytics/lib/counts.py[m[36m:[m        realm_clause = SQL("zerver_user[1;31mprofile[m.realm_id = {} AND").format(Literal(realm.id))
+[35manalytics/lib/counts.py[m[36m:[m        zerver_user[1;31mprofile[m.id, zerver_user[1;31mprofile[m.realm_id, 1, %(property)s, {subgroup}, %(time_end)s
+[35manalytics/lib/counts.py[m[36m:[m    FROM zerver_user[1;31mprofile[m
+[35manalytics/lib/counts.py[m[36m:[m        zerver_user[1;31mprofile[m.id = zerver_useractivityinterval.user_[1;31mprofile[m_id
+[35manalytics/lib/counts.py[m[36m:[m    GROUP BY zerver_user[1;31mprofile[m.id {group_by_clause}
+[35manalytics/lib/counts.py[m[36m:[m    JOIN zerver_user[1;31mprofile[m ON active_usercount.user_id = zerver_user[1;31mprofile[m.id
+[35manalytics/lib/counts.py[m[36m:[m     AND active_usercount.realm_id = zerver_user[1;31mprofile[m.realm_id
+[35manalytics/lib/counts.py[m[36m:[m            NOT zerver_user[1;31mprofile[m.is_bot
+[35manalytics/management/commands/populate_analytics_db.py[m[36m:[m        UserGroupMembership.objects.create(user_[1;31mprofile[m=shylock, user_group=owners_system_group)
+[35manalytics/management/commands/populate_analytics_db.py[m[36m:[m        UserGroupMembership.objects.create(user_[1;31mprofile[m=bassanio, user_group=guests_system_group)
+[35manalytics/management/commands/populate_analytics_db.py[m[36m:[m            user_[1;31mprofile[m=shylock,
+[35manalytics/migrations/0008_add_count_indexes.py[m[36m:[m        ("zerver", "0050_user[1;31mprofile[m_avatar_version"),
+[35manalytics/tests/test_counts.py[m[36m:[m        user_[1;31mprofile[m: UserProfile,
+[35manalytics/tests/test_counts.py[m[36m:[m            owner=user_[1;31mprofile[m,
+[35manalytics/tests/test_counts.py[m[36m:[m            realm=user_[1;31mprofile[m.realm,
+[35manalytics/tests/test_counts.py[m[36m:[m            user_[1;31mprofile[m=user, start=self.TIME_ZERO - start_offset, end=self.TIME_ZERO - end_offset
+[35manalytics/urls.py[m[36m:[m    # Server admin (user_[1;31mprofile[m.is_staff) visible stats pages
+[35manalytics/views/stats.py[m[36m:[m    user_[1;31mprofile[m: UserProfile,
+[35manalytics/views/stats.py[m[36m:[m        user_[1;31mprofile[m,
+[35manalytics/views/stats.py[m[36m:[m    user_[1;31mprofile[m: UserProfile,
+[35manalytics/views/stats.py[m[36m:[m        user_[1;31mprofile[m,
+[35manalytics/views/stats.py[m[36m:[m        user_[1;31mprofile[m,
+[35manalytics/views/stats.py[m[36m:[m    user_[1;31mprofile[m: UserProfile,
+[35manalytics/views/stats.py[m[36m:[m        user_[1;31mprofile[m,
+[35manalytics/views/stats.py[m[36m:[m    user_[1;31mprofile[m: UserProfile,
+[35manalytics/views/stats.py[m[36m:[m        user_[1;31mprofile[m,
+[35manalytics/views/stats.py[m[36m:[m    user_[1;31mprofile[m: UserProfile,
+[35manalytics/views/stats.py[m[36m:[m        user_[1;31mprofile[m,
+[35manalytics/views/stats.py[m[36m:[m    user_[1;31mprofile[m: UserProfile,
+[35manalytics/views/stats.py[m[36m:[m        user_[1;31mprofile[m,
+[35manalytics/views/stats.py[m[36m:[m    user_[1;31mprofile[m: UserProfile,
+[35manalytics/views/stats.py[m[36m:[m        realm = user_[1;31mprofile[m.realm
+[35manalytics/views/stats.py[m[36m:[m        UserCount: user_[1;31mprofile[m.id,
+[35mapi_docs/changelog.md[m[36m:[m* [`POST /realm/[1;31mprofile[m_fields`](/api/create-custom-[1;31mprofile[m-field),
+[35mapi_docs/changelog.md[m[36m:[m  [`GET /realm/[1;31mprofile[m_fields`](/api/get-custom-[1;31mprofile[m-fields) The
+[35mapi_docs/changelog.md[m[36m:[m  `display_in_[1;31mprofile[m_summary` parameter can now be set to true for the
+[35mapi_docs/changelog.md[m[36m:[m  /realm/[1;31mprofile[m_fields`](/api/create-custom-[1;31mprofile[m-field), [`GET
+[35mapi_docs/changelog.md[m[36m:[m  /realm/[1;31mprofile[m_fields`](/api/get-custom-[1;31mprofile[m-fields) Added a new
+[35mapi_docs/changelog.md[m[36m:[m  parameter `use_for_user_matching` to custom [1;31mprofile[m field objects,
+[35mapi_docs/changelog.md[m[36m:[m  which indicates whether this custom [1;31mprofile[m field should be used to
+[35mapi_docs/changelog.md[m[36m:[m  custom [1;31mprofile[m fields.
+[35mapi_docs/changelog.md[m[36m:[m  the user should be shown an alert, offering to update their [[1;31mprofile[m
+[35mapi_docs/changelog.md[m[36m:[m  [1;31mprofile[m time zone differs from the current time displayed by the time
+[35mapi_docs/changelog.md[m[36m:[m  [`POST /realm/[1;31mprofile[m_fields`](/api/create-custom-[1;31mprofile[m-field),
+[35mapi_docs/changelog.md[m[36m:[m  [`GET /realm/[1;31mprofile[m_fields`](/api/get-custom-[1;31mprofile[m-fields): Added a new
+[35mapi_docs/changelog.md[m[36m:[m  parameter `editable_by_user` to custom [1;31mprofile[m field objects, which indicates whether
+[35mapi_docs/changelog.md[m[36m:[m  regular users can edit the value of the [1;31mprofile[m field on their own account.
+[35mapi_docs/changelog.md[m[36m:[m* `PATCH /realm/[1;31mprofile[m_fields/{field_id}`: `name`, `hint`, `display_in_[1;31mprofile[m_summary`,
+[35mapi_docs/changelog.md[m[36m:[m  [`POST /realm/[1;31mprofile[m_fields`](/api/create-custom-[1;31mprofile[m-field),
+[35mapi_docs/changelog.md[m[36m:[m  [`GET /realm/[1;31mprofile[m_fields`](/api/get-custom-[1;31mprofile[m-fields): Added a new
+[35mapi_docs/changelog.md[m[36m:[m  parameter `required`, on custom [1;31mprofile[m field objects, indicating whether an
+[35mapi_docs/changelog.md[m[36m:[m  [`POST /realm/[1;31mprofile[m_fields`](/api/create-custom-[1;31mprofile[m-field),
+[35mapi_docs/changelog.md[m[36m:[m  [`GET /realm/[1;31mprofile[m_fields`](/api/get-custom-[1;31mprofile[m-fields): Added
+[35mapi_docs/changelog.md[m[36m:[m  pronouns custom [1;31mprofile[m field type.
+[35mapi_docs/changelog.md[m[36m:[m* [`POST /realm/[1;31mprofile[m_fields`](/api/create-custom-[1;31mprofile[m-field),
+[35mapi_docs/changelog.md[m[36m:[m[`GET /realm/[1;31mprofile[m_fields`](/api/get-custom-[1;31mprofile[m-fields): Added a
+[35mapi_docs/changelog.md[m[36m:[mnew parameter `display_in_[1;31mprofile[m_summary`, which clients use to
+[35mapi_docs/changelog.md[m[36m:[muser's [1;31mprofile[m.
+[35mapi_docs/changelog.md[m[36m:[m  `custom_[1;31mprofile[m_fields` events.  These events contain the full set
+[35mapi_docs/changelog.md[m[36m:[m  of configured `custom_[1;31mprofile[m_fields` for the organization
+[35mapi_docs/changelog.md[m[36m:[m* [`GET /users`](/api/get-users): Added `include_custom_[1;31mprofile[m_fields`
+[35mapi_docs/changelog.md[m[36m:[m  to request custom [1;31mprofile[m field data.
+[35mapi_docs/changelog.md[m[36m:[m* Custom [1;31mprofile[m fields: Added `EXTERNAL_ACCOUNT` field type.
+[35mapi_docs/construct-narrow.md[m[36m:[m    A user ID can be found by [viewing a user's [1;31mprofile[m][view-[1;31mprofile[m]
+[35mapi_docs/construct-narrow.md[m[36m:[m[view-[1;31mprofile[m]: /help/view-someones-[1;31mprofile[m
+[35mapi_docs/include/rest-endpoints.md[m[36m:[m* [Get all custom [1;31mprofile[m fields](/api/get-custom-[1;31mprofile[m-fields)
+[35mapi_docs/include/rest-endpoints.md[m[36m:[m* [Reorder custom [1;31mprofile[m fields](/api/reorder-custom-[1;31mprofile[m-fields)
+[35mapi_docs/include/rest-endpoints.md[m[36m:[m* [Create a custom [1;31mprofile[m field](/api/create-custom-[1;31mprofile[m-field)
+[35mconfirmation/models.py[m[36m:[mdef one_click_unsubscribe_link(user_[1;31mprofile[m: UserProfile, email_type: str) -> str:
+[35mconfirmation/models.py[m[36m:[m        user_[1;31mprofile[m, Confirmation.UNSUBSCRIBE, url_args={"email_type": email_type}
+[35mcorporate/lib/activity.py[m[36m:[mdef user_activity_link(link_text: str, user_[1;31mprofile[m_id: int) -> Markup:
+[35mcorporate/lib/activity.py[m[36m:[m    url = reverse(get_user_activity, kwargs=dict(user_[1;31mprofile[m_id=user_[1;31mprofile[m_id))
+[35mcorporate/lib/stripe.py[m[36m:[m            business_[1;31mprofile[m={
+[35mcorporate/lib/stripe.py[m[36m:[m            business_[1;31mprofile[m={
+[35mcorporate/lib/stripe_event_handler.py[m[36m:[mfrom zerver.models.users import get_active_user_[1;31mprofile[m_by_id_in_realm
+[35mcorporate/lib/stripe_event_handler.py[m[36m:[m            user = get_active_user_[1;31mprofile[m_by_id_in_realm(int(user_id), customer.realm)
+[35mcorporate/migrations/0001_initial.py[m[36m:[m        ("zerver", "0189_user[1;31mprofile[m_add_some_emojisets"),
+Binary file [35mcorporate/tests/stripe_fixtures/stripe_billing_portal_urls--billing_portal.Configuration.create.1.json[m matches
+Binary file [35mcorporate/tests/stripe_fixtures/stripe_billing_portal_urls--billing_portal.Configuration.create.2.json[m matches
+Binary file [35mcorporate/tests/stripe_fixtures/stripe_billing_portal_urls--billing_portal.Configuration.create.3.json[m matches
+Binary file [35mcorporate/tests/stripe_fixtures/stripe_billing_portal_urls_for_remote_realm--billing_portal.Configuration.create.1.json[m matches
+Binary file [35mcorporate/tests/stripe_fixtures/stripe_billing_portal_urls_for_remote_realm--billing_portal.Configuration.create.2.json[m matches
+Binary file [35mcorporate/tests/stripe_fixtures/stripe_billing_portal_urls_for_remote_server--billing_portal.Configuration.create.1.json[m matches
+Binary file [35mcorporate/tests/stripe_fixtures/stripe_billing_portal_urls_for_remote_server--billing_portal.Configuration.create.2.json[m matches
+[35mcorporate/tests/test_activity_views.py[m[36m:[m        for activity_user_[1;31mprofile[m in UserProfile.objects.all().iterator():
+[35mcorporate/tests/test_activity_views.py[m[36m:[m                user_[1;31mprofile[m=activity_user_[1;31mprofile[m,
+[35mcorporate/tests/test_activity_views.py[m[36m:[m        user_[1;31mprofile[m = self.example_user("hamlet")
+[35mcorporate/tests/test_activity_views.py[m[36m:[m        user_[1;31mprofile[m.is_staff = True
+[35mcorporate/tests/test_activity_views.py[m[36m:[m        user_[1;31mprofile[m.save(update_fields=["is_staff"])
+[35mcorporate/tests/test_stripe.py[m[36m:[m        for user_[1;31mprofile[m in UserProfile.objects.filter(realm_id=realm.id).exclude(
+[35mcorporate/tests/test_stripe.py[m[36m:[m            do_deactivate_user(user_[1;31mprofile[m, acting_user=None)
+[35mcorporate/tests/test_support_views.py[m[36m:[m        messages = UserMessage.objects.filter(user_[1;31mprofile[m=king_user)
+[35mcorporate/urls.py[m[36m:[m    # Server admin (user_[1;31mprofile[m.is_staff) visible stats pages
+[35mcorporate/urls.py[m[36m:[m    path("user_activity/<user_[1;31mprofile[m_id>/", get_user_activity),
+[35mcorporate/views/installation_activity.py[m[36m:[m            coalesce(user_count_table.value, 0) user_[1;31mprofile[m_count,
+[35mcorporate/views/installation_activity.py[m[36m:[m                    zerver_user[1;31mprofile[m
+[35mcorporate/views/installation_activity.py[m[36m:[m    total_user_[1;31mprofile[m_count = 0
+[35mcorporate/views/installation_activity.py[m[36m:[m        total_user_[1;31mprofile[m_count += int(row["user_[1;31mprofile[m_count"])
+[35mcorporate/views/installation_activity.py[m[36m:[m        total_user_[1;31mprofile[m_count,
+[35mcorporate/views/installation_activity.py[m[36m:[m        join zerver_user[1;31mprofile[m up on up.id = ua.user_[1;31mprofile[m_id
+[35mcorporate/views/realm_activity.py[m[36m:[m        "user_[1;31mprofile[m__full_name",
+[35mcorporate/views/realm_activity.py[m[36m:[m        "user_[1;31mprofile[m__delivery_email",
+[35mcorporate/views/realm_activity.py[m[36m:[m        "user_[1;31mprofile[m__is_bot",
+[35mcorporate/views/realm_activity.py[m[36m:[m        "user_[1;31mprofile[m__bot_type",
+[35mcorporate/views/realm_activity.py[m[36m:[m            user_[1;31mprofile[m__realm__string_id=realm,
+[35mcorporate/views/realm_activity.py[m[36m:[m            user_[1;31mprofile[m__is_active=True,
+[35mcorporate/views/realm_activity.py[m[36m:[m        .order_by("user_[1;31mprofile[m__delivery_email", "-last_visit")
+[35mcorporate/views/realm_activity.py[m[36m:[m        .select_related("user_[1;31mprofile[m")
+[35mcorporate/views/realm_activity.py[m[36m:[m        name = first_record.user_[1;31mprofile[m.full_name
+[35mcorporate/views/realm_activity.py[m[36m:[m        user_[1;31mprofile[m_id = first_record.user_[1;31mprofile[m.id
+[35mcorporate/views/realm_activity.py[m[36m:[m        if not first_record.user_[1;31mprofile[m.is_bot:
+[35mcorporate/views/realm_activity.py[m[36m:[m            assert first_record.user_[1;31mprofile[m.bot_type is not None
+[35mcorporate/views/realm_activity.py[m[36m:[m            bot_type = first_record.user_[1;31mprofile[m.bot_type
+[35mcorporate/views/realm_activity.py[m[36m:[m            if first_record.user_[1;31mprofile[m.bot_owner is not None:
+[35mcorporate/views/realm_activity.py[m[36m:[m                bot_owner_id = first_record.user_[1;31mprofile[m.bot_owner.id
+[35mcorporate/views/realm_activity.py[m[36m:[m        user_id=user_[1;31mprofile[m_id,
+[35mcorporate/views/realm_activity.py[m[36m:[m        return record.user_[1;31mprofile[m.delivery_email
+[35mcorporate/views/support.py[m[36m:[mfrom zerver.models.users import get_user_[1;31mprofile[m_by_id
+[35mcorporate/views/support.py[m[36m:[m            user_[1;31mprofile[m_for_deletion = get_user_[1;31mprofile[m_by_id(delete_user_by_id)
+[35mcorporate/views/support.py[m[36m:[m            user_email = user_[1;31mprofile[m_for_deletion.delivery_email
+[35mcorporate/views/support.py[m[36m:[m            assert user_[1;31mprofile[m_for_deletion.realm == realm
+[35mcorporate/views/support.py[m[36m:[m            do_delete_user_preserving_messages(user_[1;31mprofile[m_for_deletion, acting_user=acting_user)
+[35mcorporate/views/user_activity.py[m[36m:[mfrom zerver.models.users import get_user_[1;31mprofile[m_by_id
+[35mcorporate/views/user_activity.py[m[36m:[m    user_[1;31mprofile[m: UserProfile,
+[35mcorporate/views/user_activity.py[m[36m:[m            user_[1;31mprofile[m=user_[1;31mprofile[m,
+[35mcorporate/views/user_activity.py[m[36m:[mdef get_user_activity(request: HttpRequest, user_[1;31mprofile[m_id: int) -> HttpResponse:
+[35mcorporate/views/user_activity.py[m[36m:[m    user_[1;31mprofile[m = get_user_[1;31mprofile[m_by_id(user_[1;31mprofile[m_id)
+[35mcorporate/views/user_activity.py[m[36m:[m    records = get_user_activity_records(user_[1;31mprofile[m)
+[35mcorporate/views/user_activity.py[m[36m:[m    title = f"{user_[1;31mprofile[m.full_name}"
+[35mcorporate/views/user_activity.py[m[36m:[m    header_entries.append(ActivityHeaderEntry(name="Email", value=user_[1;31mprofile[m.delivery_email))
+[35mcorporate/views/user_activity.py[m[36m:[m    header_entries.append(ActivityHeaderEntry(name="Realm", value=user_[1;31mprofile[m.realm.name))
+[35mcorporate/views/user_activity.py[m[36m:[m    if user_[1;31mprofile[m.is_bot and user_[1;31mprofile[m.bot_owner is not None:
+[35mcorporate/views/user_activity.py[m[36m:[m            user_[1;31mprofile[m.bot_owner.delivery_email, user_[1;31mprofile[m.bot_owner.id
+[35mcorporate/views/user_activity.py[m[36m:[m    user_support = user_support_link(user_[1;31mprofile[m.delivery_email)
+[35mdocs/contributing/code-style.md[m[36m:[mdatabase queries. Instead always use `get_user_[1;31mprofile[m_by_{email,id}`.
+[35mdocs/contributing/code-style.md[m[36m:[mobj: UserProfile = get_user_[1;31mprofile[m_by_id(17)
+[35mdocs/contributing/code-style.md[m[36m:[mobj: UserProfile = get_user_[1;31mprofile[m_by_id(17)
+[35mdocs/contributing/code-style.md[m[36m:[m### Don't call user_[1;31mprofile[m.save() without `update_fields`
+[35mdocs/contributing/continuing-unfinished-work.md[m[36m:[m      properly when a user opened their own [1;31mprofile[m."
+[35mdocs/contributing/counting-contributions.md[m[36m:[m  email addresses that have been deleted from a GitHub [1;31mprofile[m by the
+[35mdocs/contributing/counting-contributions.md[m[36m:[mIf you remove an email address from your GitHub [1;31mprofile[m, the commits
+[35mdocs/contributing/counting-contributions.md[m[36m:[mdisappear from your GitHub [1;31mprofile[m. If you made contributions to Zulip
+[35mdocs/contributing/counting-contributions.md[m[36m:[mGitHub [1;31mprofile[m, here are some important points to keep in mind:
+[35mdocs/contributing/counting-contributions.md[m[36m:[m  commits, but will not link to your GitHub [1;31mprofile[m.
+[35mdocs/contributing/counting-contributions.md[m[36m:[m  can link the contributions to your GitHub [1;31mprofile[m by
+[35mdocs/contributing/counting-contributions.md[m[36m:[m[github-add-email]: https://docs.github.com/en/account-and-[1;31mprofile[m/setting-up-and-managing-your-github-user-account/managing-email-preferences/adding-an-email-address-to-your-github-account
+[35mdocs/development/authentication.md[m[36m:[m### Testing avatar and custom [1;31mprofile[m field synchronization
+[35mdocs/development/authentication.md[m[36m:[m[1;31mprofile[m fields.
+[35mdocs/development/authentication.md[m[36m:[m  `Phone number` custom [1;31mprofile[m fields populated/synced.
+[35mdocs/development/setup-advanced.md[m[36m:[m$ echo 'export "CYGWIN=$CYGWIN winsymlinks:native"' >> ~/.bash_[1;31mprofile[m
+[35mdocs/development/using.md[m[36m:[m  [1;31mprofile[mrs in their built-in developer tools.
+[35mdocs/overview/changelog.md[m[36m:[m- CVE-2026-24050: Some administrative actions on the user [1;31mprofile[m were
+[35mdocs/overview/changelog.md[m[36m:[m- Added button to alphabetize options for a custom [1;31mprofile[m field.
+[35mdocs/overview/changelog.md[m[36m:[m    [1;31mprofile[ms.
+[35mdocs/overview/changelog.md[m[36m:[m- CVE-2025-30369: Custom [1;31mprofile[m fields can be deleted by
+[35mdocs/overview/changelog.md[m[36m:[m- Added support for configuring certain custom [1;31mprofile[m fields to not
+[35mdocs/overview/changelog.md[m[36m:[m- Added new prompt when your timezone doesn't match your [1;31mprofile[m
+[35mdocs/overview/changelog.md[m[36m:[m- Added support for editing group membership on user [1;31mprofile[ms.
+[35mdocs/overview/changelog.md[m[36m:[m  custom [1;31mprofile[m fields are referred to with the prefix `custom__`. See the updated
+[35mdocs/overview/changelog.md[m[36m:[m- Added support for directly linking to a user's [1;31mprofile[m.
+[35mdocs/overview/changelog.md[m[36m:[m- Added support for marking a custom [1;31mprofile[m field as required.
+[35mdocs/overview/changelog.md[m[36m:[m  if a pronoun custom [1;31mprofile[m field is configured.
+[35mdocs/overview/changelog.md[m[36m:[m- Added user [1;31mprofile[m tab for administrators to edit the [1;31mprofile[m.
+[35mdocs/overview/changelog.md[m[36m:[m- Added support for subscribing users in user [1;31mprofile[m streams tab.
+[35mdocs/overview/changelog.md[m[36m:[m- Added support for up to 2 custom [1;31mprofile[m fields being highlighted in
+[35mdocs/overview/changelog.md[m[36m:[m  a user's [1;31mprofile[m summary popover, and added support for a new
+[35mdocs/overview/changelog.md[m[36m:[m  it. Redesigned the custom [1;31mprofile[m fields administrative UI.
+[35mdocs/overview/changelog.md[m[36m:[m- Redesigned full user [1;31mprofile[ms to have a cleaner look and also
+[35mdocs/overview/changelog.md[m[36m:[m  [1;31mprofile[m.
+[35mdocs/overview/changelog.md[m[36m:[m- Improved the search typeahead to show [1;31mprofile[m pictures for users.
+[35mdocs/overview/changelog.md[m[36m:[m- Fixed several subtle bugs involving editing custom [1;31mprofile[m field
+[35mdocs/overview/changelog.md[m[36m:[m- Custom [1;31mprofile[m fields with "Pronouns" in their name and the "short
+[35mdocs/overview/changelog.md[m[36m:[m- Redesigned "Full user [1;31mprofile[m" widget to show the user's stream and
+[35mdocs/overview/changelog.md[m[36m:[m  streams directly from their full [1;31mprofile[m.
+[35mdocs/overview/changelog.md[m[36m:[m- SAML authentication now supports syncing custom [1;31mprofile[m
+[35mdocs/overview/changelog.md[m[36m:[m- New "Manage this user" option in user [1;31mprofile[m popovers simplifies moderation.
+[35mdocs/overview/changelog.md[m[36m:[m  `zulip::foo` to `zulip::[1;31mprofile[m::foo`. Configuration referencing
+[35mdocs/overview/changelog.md[m[36m:[m- Added confirmation dialog before deleting your [1;31mprofile[m picture.
+[35mdocs/overview/changelog.md[m[36m:[m  [1;31mprofile[m fields and direct write access to Zulip's PostgreSQL database.
+[35mdocs/overview/changelog.md[m[36m:[m- Added a new "external account" custom [1;31mprofile[m field type, making it
+[35mdocs/overview/changelog.md[m[36m:[m  convenient to link to [1;31mprofile[ms on GitHub, Twitter, and other tools.
+[35mdocs/overview/changelog.md[m[36m:[m  [1;31mprofile[m fields were configured in the organization.
+[35mdocs/overview/changelog.md[m[36m:[m- Added automation for synchronizing user avatars, custom [1;31mprofile[m
+[35mdocs/overview/changelog.md[m[36m:[m- Added support for copying avatar and other [1;31mprofile[m data when
+[35mdocs/overview/changelog.md[m[36m:[m- Added Markdown rendering of text when displaying custom [1;31mprofile[m fields.
+[35mdocs/overview/changelog.md[m[36m:[m- Organization administrators can now edit users' custom [1;31mprofile[m fields.
+[35mdocs/overview/changelog.md[m[36m:[m  [1;31mprofile[ms; Zulip can now serve as your organization’s employee
+[35mdocs/overview/changelog.md[m[36m:[m- Added support for clicking on a mention to see a user's [1;31mprofile[m.
+[35mdocs/overview/changelog.md[m[36m:[m- Added 'u' hotkey to show a user's [1;31mprofile[m.
+[35mdocs/overview/changelog.md[m[36m:[m  picker, user [1;31mprofile[m popovers, sidebars, compose, and many more.
+[35mdocs/overview/changelog.md[m[36m:[m  pages to show visitors a nice organization [1;31mprofile[m with custom text
+[35mdocs/overview/directory-structure.md[m[36m:[m- `puppet/zulip/manifests/[1;31mprofile[m/standalone.pp` Main manifest for Zulip standalone deployments.
+[35mdocs/production/authentication-methods.md[m[36m:[mDirectory [1;31mprofile[m pictures (usually available in the `thumbnailPhoto`
+[35mdocs/production/authentication-methods.md[m[36m:[m#### Synchronizing custom [1;31mprofile[m fields
+[35mdocs/production/authentication-methods.md[m[36m:[m[custom [1;31mprofile[m fields][custom-[1;31mprofile[m-fields] from LDAP / Active
+[35mdocs/production/authentication-methods.md[m[36m:[m[configure some custom [1;31mprofile[m fields][custom-[1;31mprofile[m-fields] for your
+[35mdocs/production/authentication-methods.md[m[36m:[mif you have a custom [1;31mprofile[m field `LinkedIn Profile` and the
+[35mdocs/production/authentication-methods.md[m[36m:[mto add `'custom_[1;31mprofile[m_field__linkedin_[1;31mprofile[m': 'linkedinProfile'`
+[35mdocs/production/authentication-methods.md[m[36m:[mrole][user-role-help-center] and [custom [1;31mprofile[m
+[35mdocs/production/authentication-methods.md[m[36m:[mfields][custom-[1;31mprofile[m-fields] from the SAML provider.
+[35mdocs/production/authentication-methods.md[m[36m:[mCustom [1;31mprofile[m fields are only synchronized during login, not during
+[35mdocs/production/authentication-methods.md[m[36m:[m   puppet_classes = zulip::[1;31mprofile[m::standalone, zulip::apache_sso
+[35mdocs/production/authentication-methods.md[m[36m:[m    user_[1;31mprofile[m = auth_func(*args, **kwargs)
+[35mdocs/production/authentication-methods.md[m[36m:[m    if user_[1;31mprofile[m is not None and user_[1;31mprofile[m.delivery_email == "protecteduser@example.com":
+[35mdocs/production/authentication-methods.md[m[36m:[m    return user_[1;31mprofile[m
+[35mdocs/production/authentication-methods.md[m[36m:[m[custom-[1;31mprofile[m-fields]: https://zulip.com/help/custom-[1;31mprofile[m-fields
+[35mdocs/production/deployment.md[m[36m:[mAll puppet modules under `zulip::[1;31mprofile[m` are allowed to be configured
+[35mdocs/production/deployment.md[m[36m:[m./scripts/setup/install --puppet-classes zulip::[1;31mprofile[m::redis
+[35mdocs/production/deployment.md[m[36m:[m[standalone.pp]: https://github.com/zulip/zulip/blob/main/puppet/zulip/manifests/[1;31mprofile[m/standalone.pp
+[35mdocs/production/deployment.md[m[36m:[m`zulip::[1;31mprofile[m::smokescreen` Puppet class on that host, and follow
+[35mdocs/production/email-gateway.md[m[36m:[m   puppet_classes = zulip::[1;31mprofile[m::standalone, zulip::local_mailserver
+[35mdocs/production/management-commands.md[m[36m:[mIn [1]: user_[1;31mprofile[m = get_user_[1;31mprofile[m_by_email("email@example.com")
+[35mdocs/production/management-commands.md[m[36m:[mIn [2]: do_change_user_delivery_email(user_[1;31mprofile[m, "new_email@example.com")
+[35mdocs/production/postgresql.md[m[36m:[m    --puppet-classes=zulip::[1;31mprofile[m::standalone_nodb,zulip::process_fts_updates \
+[35mdocs/production/postgresql.md[m[36m:[m    --puppet-classes=zulip::[1;31mprofile[m::standalone_nodb
+[35mdocs/production/postgresql.md[m[36m:[m    --puppet-classes=zulip::[1;31mprofile[m::postgresql
+[35mdocs/production/system-configuration.md[m[36m:[mThe most common is **`zulip::[1;31mprofile[m::standalone`**, used for a
+[35mdocs/production/system-configuration.md[m[36m:[m- **`zulip::[1;31mprofile[m::app_frontend`**
+[35mdocs/production/system-configuration.md[m[36m:[m- **`zulip::[1;31mprofile[m::memcached`**
+[35mdocs/production/system-configuration.md[m[36m:[m- **`zulip::[1;31mprofile[m::postgresql`**
+[35mdocs/production/system-configuration.md[m[36m:[m- **`zulip::[1;31mprofile[m::rabbitmq`**
+[35mdocs/production/system-configuration.md[m[36m:[m- **`zulip::[1;31mprofile[m::redis`**
+[35mdocs/production/system-configuration.md[m[36m:[m- **`zulip::[1;31mprofile[m::smokescreen`**
+[35mdocs/production/upload-backends.md[m[36m:[mfiles uploaded by users of the Zulip server (messages, [1;31mprofile[m
+[35mdocs/subsystems/caching.md[m[36m:[mdef user_[1;31mprofile[m_by_email_realm_id_cache_key(email: str, realm_id: int) -> str:
+[35mdocs/subsystems/caching.md[m[36m:[m    return f"user_[1;31mprofile[m:{hashlib.sha1(email.strip().encode()).hexdigest()}:{realm_id}"
+[35mdocs/subsystems/caching.md[m[36m:[mdef user_[1;31mprofile[m_by_email_realm_cache_key(email: str, realm: "Realm") -> str:
+[35mdocs/subsystems/caching.md[m[36m:[m    return user_[1;31mprofile[m_by_email_realm_id_cache_key(email, realm.id)
+[35mdocs/subsystems/caching.md[m[36m:[m@cache_with_key(user_[1;31mprofile[m_by_email_realm_cache_key, timeout=3600 * 24 * 7)
+[35mdocs/subsystems/caching.md[m[36m:[m- The `user_[1;31mprofile[m_by_email_realm_id_cache_key` function defines a
+[35mdocs/subsystems/caching.md[m[36m:[m  strings are namespaced (the `user_[1;31mprofile[m:` part) so that they won't
+[35mdocs/subsystems/caching.md[m[36m:[mpost_save.connect(flush_user_[1;31mprofile[m, sender=UserProfile)
+[35mdocs/subsystems/caching.md[m[36m:[m`user_[1;31mprofile[m.save(...)` with a UserProfile object in our Django
+[35mdocs/subsystems/caching.md[m[36m:[mproject, Django will call the `flush_user_[1;31mprofile[m` function. Zulip is
+[35mdocs/subsystems/caching.md[m[36m:[mmodifying `user_[1;31mprofile[m` objects (and passing the `update_fields`
+[35mdocs/subsystems/email.md[m[36m:[m- Always use `user_[1;31mprofile[m.delivery_email`, not `user_[1;31mprofile[m.email`,
+[35mdocs/subsystems/email.md[m[36m:[m  `user_[1;31mprofile[m.email` field may not always be valid.
+[35mdocs/subsystems/events-system.md[m[36m:[m    stream = get_stream("Scotland", self.user_[1;31mprofile[m.realm)
+[35mdocs/subsystems/markdown.md[m[36m:[mFor non-message contexts (e.g., an organization's [1;31mprofile[m (aka the
+[35mdocs/subsystems/markdown.md[m[36m:[mor rendering custom [1;31mprofile[m fields), one needs to just pass in a
+[35mdocs/subsystems/markdown.md[m[36m:[morganization [1;31mprofile[m code for this). But for messages, we need to
+[35mdocs/subsystems/performance.md[m[36m:[m## Load [1;31mprofile[ms
+[35mdocs/subsystems/performance.md[m[36m:[mimportant to understand the load [1;31mprofile[ms for production uses.
+[35mdocs/subsystems/performance.md[m[36m:[mof load [1;31mprofile[ms:
+[35mdocs/subsystems/performance.md[m[36m:[m  high volume of messages each. This load [1;31mprofile[m is most important
+[35mdocs/subsystems/performance.md[m[36m:[mThe zulip.com load [1;31mprofile[m is effectively the sum of thousands of
+[35mdocs/subsystems/performance.md[m[36m:[morganizations from each of those two load [1;31mprofile[ms.
+[35mdocs/subsystems/performance.md[m[36m:[memoji, custom [1;31mprofile[m fields, etc., is all included. The nice thing
+[35mdocs/testing/manual-testing.md[m[36m:[m  - Customize [1;31mprofile[m picture
+[35mdocs/testing/testing-with-django.md[m[36m:[mfeatures. We also have a `--[1;31mprofile[m` option to facilitate profiling
+[35mdocs/testing/testing-with-puppeteer.md[m[36m:[m  click on a user's avatar, you need an explicit wait for the [1;31mprofile[m
+[35mdocs/tutorials/new-feature-tutorial.md[m[36m:[m    user_[1;31mprofile[m: UserProfile | None,
+[35mdocs/tutorials/new-feature-tutorial.md[m[36m:[m    user_[1;31mprofile[m: UserProfile,
+[35mdocs/tutorials/new-feature-tutorial.md[m[36m:[m    user_[1;31mprofile[m: UserProfile,
+[35mdocs/tutorials/new-feature-tutorial.md[m[36m:[m                user_[1;31mprofile[m, moderation_request_channel_id, require_content_access=False
+[35mdocs/tutorials/new-feature-tutorial.md[m[36m:[m            acting_user=user_[1;31mprofile[m,
+[35mdocs/tutorials/new-feature-tutorial.md[m[36m:[m        custom_[1;31mprofile[m_field_types: realm.custom_[1;31mprofile[m_field_types,
+[35mdocs/tutorials/writing-views.md[m[36m:[m        user_[1;31mprofile[m: UserProfile,
+[35mdocs/tutorials/writing-views.md[m[36m:[mauthorization of the given `user_[1;31mprofile[m` to make sure it belongs to a
+[35mdocs/tutorials/writing-views.md[m[36m:[m    user_[1;31mprofile[m: UserProfile,
+[35mdocs/tutorials/writing-views.md[m[36m:[m    realm = user_[1;31mprofile[m.realm
+[35mdocs/tutorials/writing-views.md[m[36m:[m            do_set_realm_property(realm, k, v, acting_user=user_[1;31mprofile[m)
+[35mdocs/tutorials/writing-views.md[m[36m:[m`webhook_view` decorator, to fill in the `user_[1;31mprofile[m` and
+[35mdocs/tutorials/writing-views.md[m[36m:[m    user_[1;31mprofile[m: UserProfile,
+[35mdocs/webhooks/incoming-webhooks-overview.md[m[36m:[m  [1;31mprofile[m's custom fields. This enables converting external usernames to silent mentions,
+[35mdocs/webhooks/incoming-webhooks-walkthrough.md[m[36m:[m    user_[1;31mprofile[m: UserProfile,
+[35mdocs/webhooks/incoming-webhooks-walkthrough.md[m[36m:[m    check_send_webhook_message(request, user_[1;31mprofile[m, topic_name, body)
+[35mdocs/webhooks/incoming-webhooks-walkthrough.md[m[36m:[mobject), and `user_[1;31mprofile[m` (Zulip's user object). You can also define
+[35mdocs/webhooks/incoming-webhooks-walkthrough.md[m[36m:[mdef api_querytest_webhook(request: HttpRequest, user_[1;31mprofile[m: UserProfile,
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: templates/analytics/stats.html:50 zerver/models/custom_[1;31mprofile[m_fields.py:108
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:123
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/actions/custom_[1;31mprofile[m_fields.py:162
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/actions/custom_[1;31mprofile[m_fields.py:272 zerver/lib/users.py:556
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/actions/custom_[1;31mprofile[m_fields.py:302 zerver/lib/users.py:551
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:241
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:266
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[mmsgid "LinkedIn [1;31mprofile[m name"
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[mmsgid "Mastodon [1;31mprofile[m"
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m"Go to [Profile settings](#settings/[1;31mprofile[m) to add a [[1;31mprofile[m picture](/help/"
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m"change-your-[1;31mprofile[m-picture)\n"
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m"and edit your [[1;31mprofile[m information](/help/edit-your-[1;31mprofile[m).\n"
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:45
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:53
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:57
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:105
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:120
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:121
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:122
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:126
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:131
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:44
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:58
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:76
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[mmsgid "Field type not supported for display in [1;31mprofile[m summary."
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:85
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:115
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:198
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:272
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[mmsgid "Only 2 custom [1;31mprofile[m fields can be displayed in the [1;31mprofile[m summary."
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:231
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:306
+[35mlocale/ar/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:288
+[35mlocale/ar/translations.json[m[36m:[m  "(links to [1;31mprofile[m but doesn't notify {user})": "",
+[35mlocale/ar/translations.json[m[36m:[m  "<z-link>Upload a [1;31mprofile[m picture</z-link> for your organization.": "",
+[35mlocale/ar/translations.json[m[36m:[m  "Add a new custom [1;31mprofile[m field": "إضافة حقل ملف شخصي مخصص جديد",
+[35mlocale/ar/translations.json[m[36m:[m  "Add a new [1;31mprofile[m field": "إضافة حقل ملف شخصي جديد",
+[35mlocale/ar/translations.json[m[36m:[m  "Are you sure you want to delete your [1;31mprofile[m picture?": "هل أنت متأكد أنك تريد حذف صورة ملفك الشخصي؟",
+[35mlocale/ar/translations.json[m[36m:[m  "Clear [1;31mprofile[m picture": "مسح صورة الملف الشخصي",
+[35mlocale/ar/translations.json[m[36m:[m  "Complete your organization [1;31mprofile[m, which is displayed on your organization's registration and login pages.": "",
+[35mlocale/ar/translations.json[m[36m:[m  "Configure <z-link-1>default new user settings</z-link-1> and <z-link-2>custom [1;31mprofile[m fields</z-link-2>.": "",
+[35mlocale/ar/translations.json[m[36m:[m  "Copy link to [1;31mprofile[m": "نسخ رابط الملف الشخصي",
+[35mlocale/ar/translations.json[m[36m:[m  "Custom [1;31mprofile[m fields": "حقول الملف الشخصي المخصصة",
+[35mlocale/ar/translations.json[m[36m:[m  "Delete custom [1;31mprofile[m field?": "حذف حقل الملف الشخصي المخصص؟",
+[35mlocale/ar/translations.json[m[36m:[m  "Delete [1;31mprofile[m picture": "حذف صورة الملف الشخصي",
+[35mlocale/ar/translations.json[m[36m:[m  "Edit custom [1;31mprofile[m field": "تعديل حقل الملف الشخصي المخصص",
+[35mlocale/ar/translations.json[m[36m:[m  "Edit [1;31mprofile[m": "تعديل الملف الشخصي",
+[35mlocale/ar/translations.json[m[36m:[m  "Edit your [1;31mprofile[m": "عدل ملفك الشخصي",
+[35mlocale/ar/translations.json[m[36m:[m  "Either this user does not exist, or you do not have access to their [1;31mprofile[m.": "إما هذا المستخدم غير موجود أو أنت لا تملك صلاحية الوصول إلي ملفه الشخصي",
+[35mlocale/ar/translations.json[m[36m:[m  "Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <z-link>organization [1;31mprofile[m settings</z-link>.": "خطأ: لا يمكن تعطيل المستخدم الوحيد. يمكنك تعطيل المنظمة بأكملها من خلال <z-link>إعدادات الملف التعريفي لمنظمتك</z-link> .",
+[35mlocale/ar/translations.json[m[36m:[m  "No custom [1;31mprofile[m fields configured.": "",
+[35mlocale/ar/translations.json[m[36m:[m  "Only 2 custom [1;31mprofile[m fields can be displayed on the user card.": "فقط 2 ملف تعريفي يمكنهم الظهور على كارت المستخدم",
+[35mlocale/ar/translations.json[m[36m:[m  "Organization [1;31mprofile[m": "الملف التعريفي للمنظمة",
+[35mlocale/ar/translations.json[m[36m:[m  "Organization [1;31mprofile[m incomplete": "",
+[35mlocale/ar/translations.json[m[36m:[m  "Organization [1;31mprofile[m picture": "صورة الملف التعريفي للمنظمة",
+[35mlocale/ar/translations.json[m[36m:[m  "Preview organization [1;31mprofile[m": "معاينة الملف التعريفي للمنظمة",
+[35mlocale/ar/translations.json[m[36m:[m  "Preview [1;31mprofile[m": "معاينة الملف الشخصي",
+[35mlocale/ar/translations.json[m[36m:[m  "This [1;31mprofile[m field is required.": "حقل الملف الشخصي هذا مطلوب",
+[35mlocale/ar/translations.json[m[36m:[m  "This will clear the <z-field-name></z-field-name> [1;31mprofile[m field for 1 user.": "هذا سوف يحذف حقل الملف الشخصي <z-field-name></z-field-name> لمستخدم واحد 1",
+[35mlocale/ar/translations.json[m[36m:[m  "This will clear the <z-field-name></z-field-name> [1;31mprofile[m field for <z-count></z-count> users.": "هذا سوف يحذف حقل الملف الشخصي <z-field-name></z-field-name> ل <z-count></z-count> مستخدمين.",
+[35mlocale/ar/translations.json[m[36m:[m  "This will delete the <z-[1;31mprofile[m-field-name></z-[1;31mprofile[m-field-name> [1;31mprofile[m field for 1 user.": "هذا سوف يحذف حقل الملف الشخصي <z-[1;31mprofile[m-field-name></z-[1;31mprofile[m-field-name> لمستخدم واحد 1.",
+[35mlocale/ar/translations.json[m[36m:[m  "This will delete the <z-[1;31mprofile[m-field-name></z-[1;31mprofile[m-field-name> [1;31mprofile[m field for <z-count></z-count> users.": "هذا سوف يحذف حقل ملف <z-[1;31mprofile[m-field-name></z-[1;31mprofile[m-field-name> الشخصي للمستخدمين <z-count></z-count>.",
+[35mlocale/ar/translations.json[m[36m:[m  "Upload new [1;31mprofile[m picture": "رفع صورة جديدة للملف الشخصي",
+[35mlocale/ar/translations.json[m[36m:[m  "Upload [1;31mprofile[m picture": "رفع صورة الملف الشخصي",
+[35mlocale/ar/translations.json[m[36m:[m  "View [1;31mprofile[m": "عرض الملف الشخصي",
+[35mlocale/ar/translations.json[m[36m:[m  "View your [1;31mprofile[m": "عرض ملفك الشخصي",
+[35mlocale/ar/translations.json[m[36m:[m  "Your computer's time zone differs from your Zulip [1;31mprofile[m. Update your time zone to {browser_time_zone}?": "",
+[35mlocale/ar/translations.json[m[36m:[m  "Your [1;31mprofile[m is missing required fields.": "ملفك الشخصي ينقصه حقول مطلوبة",
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: templates/analytics/stats.html:50 zerver/models/custom_[1;31mprofile[m_fields.py:108
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:123
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/actions/custom_[1;31mprofile[m_fields.py:162
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/actions/custom_[1;31mprofile[m_fields.py:272 zerver/lib/users.py:556
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/actions/custom_[1;31mprofile[m_fields.py:302 zerver/lib/users.py:551
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:241
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:266
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[mmsgid "LinkedIn [1;31mprofile[m name"
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[mmsgid "Mastodon [1;31mprofile[m"
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m"Go to [Profile settings](#settings/[1;31mprofile[m) to add a [[1;31mprofile[m picture](/help/"
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m"change-your-[1;31mprofile[m-picture)\n"
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m"and edit your [[1;31mprofile[m information](/help/edit-your-[1;31mprofile[m).\n"
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:45
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:53
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:57
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:105
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:120
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:121
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:122
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:126
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:131
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:44
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:58
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:76
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[mmsgid "Field type not supported for display in [1;31mprofile[m summary."
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:85
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:115
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:198
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:272
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[mmsgid "Only 2 custom [1;31mprofile[m fields can be displayed in the [1;31mprofile[m summary."
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:231
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:306
+[35mlocale/be/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:288
+[35mlocale/be/translations.json[m[36m:[m  "(links to [1;31mprofile[m but doesn't notify {user})": "",
+[35mlocale/be/translations.json[m[36m:[m  "<z-link>Upload a [1;31mprofile[m picture</z-link> for your organization.": "",
+[35mlocale/be/translations.json[m[36m:[m  "Add a new custom [1;31mprofile[m field": "",
+[35mlocale/be/translations.json[m[36m:[m  "Add a new [1;31mprofile[m field": "",
+[35mlocale/be/translations.json[m[36m:[m  "Are you sure you want to delete your [1;31mprofile[m picture?": "",
+[35mlocale/be/translations.json[m[36m:[m  "Clear [1;31mprofile[m picture": "",
+[35mlocale/be/translations.json[m[36m:[m  "Complete your organization [1;31mprofile[m, which is displayed on your organization's registration and login pages.": "",
+[35mlocale/be/translations.json[m[36m:[m  "Configure <z-link-1>default new user settings</z-link-1> and <z-link-2>custom [1;31mprofile[m fields</z-link-2>.": "",
+[35mlocale/be/translations.json[m[36m:[m  "Copy link to [1;31mprofile[m": "",
+[35mlocale/be/translations.json[m[36m:[m  "Custom [1;31mprofile[m fields": "",
+[35mlocale/be/translations.json[m[36m:[m  "Delete custom [1;31mprofile[m field?": "",
+[35mlocale/be/translations.json[m[36m:[m  "Delete [1;31mprofile[m picture": "",
+[35mlocale/be/translations.json[m[36m:[m  "Edit custom [1;31mprofile[m field": "",
+[35mlocale/be/translations.json[m[36m:[m  "Edit [1;31mprofile[m": "",
+[35mlocale/be/translations.json[m[36m:[m  "Edit your [1;31mprofile[m": "",
+[35mlocale/be/translations.json[m[36m:[m  "Either this user does not exist, or you do not have access to their [1;31mprofile[m.": "",
+[35mlocale/be/translations.json[m[36m:[m  "Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <z-link>organization [1;31mprofile[m settings</z-link>.": "",
+[35mlocale/be/translations.json[m[36m:[m  "No custom [1;31mprofile[m fields configured.": "",
+[35mlocale/be/translations.json[m[36m:[m  "Only 2 custom [1;31mprofile[m fields can be displayed on the user card.": "",
+[35mlocale/be/translations.json[m[36m:[m  "Organization [1;31mprofile[m": "",
+[35mlocale/be/translations.json[m[36m:[m  "Organization [1;31mprofile[m incomplete": "",
+[35mlocale/be/translations.json[m[36m:[m  "Organization [1;31mprofile[m picture": "",
+[35mlocale/be/translations.json[m[36m:[m  "Preview organization [1;31mprofile[m": "",
+[35mlocale/be/translations.json[m[36m:[m  "Preview [1;31mprofile[m": "",
+[35mlocale/be/translations.json[m[36m:[m  "This [1;31mprofile[m field is required.": "",
+[35mlocale/be/translations.json[m[36m:[m  "This will clear the <z-field-name></z-field-name> [1;31mprofile[m field for 1 user.": "",
+[35mlocale/be/translations.json[m[36m:[m  "This will clear the <z-field-name></z-field-name> [1;31mprofile[m field for <z-count></z-count> users.": "",
+[35mlocale/be/translations.json[m[36m:[m  "This will delete the <z-[1;31mprofile[m-field-name></z-[1;31mprofile[m-field-name> [1;31mprofile[m field for 1 user.": "",
+[35mlocale/be/translations.json[m[36m:[m  "This will delete the <z-[1;31mprofile[m-field-name></z-[1;31mprofile[m-field-name> [1;31mprofile[m field for <z-count></z-count> users.": "",
+[35mlocale/be/translations.json[m[36m:[m  "Upload new [1;31mprofile[m picture": "",
+[35mlocale/be/translations.json[m[36m:[m  "Upload [1;31mprofile[m picture": "",
+[35mlocale/be/translations.json[m[36m:[m  "View [1;31mprofile[m": "",
+[35mlocale/be/translations.json[m[36m:[m  "View your [1;31mprofile[m": "",
+[35mlocale/be/translations.json[m[36m:[m  "Your computer's time zone differs from your Zulip [1;31mprofile[m. Update your time zone to {browser_time_zone}?": "",
+[35mlocale/be/translations.json[m[36m:[m  "Your [1;31mprofile[m is missing required fields.": "",
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: templates/analytics/stats.html:50 zerver/models/custom_[1;31mprofile[m_fields.py:108
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:123
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/actions/custom_[1;31mprofile[m_fields.py:162
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/actions/custom_[1;31mprofile[m_fields.py:272 zerver/lib/users.py:556
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/actions/custom_[1;31mprofile[m_fields.py:302 zerver/lib/users.py:551
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:241
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:266
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[mmsgid "LinkedIn [1;31mprofile[m name"
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[mmsgid "Mastodon [1;31mprofile[m"
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m"Go to [Profile settings](#settings/[1;31mprofile[m) to add a [[1;31mprofile[m picture](/help/"
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m"change-your-[1;31mprofile[m-picture)\n"
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m"and edit your [[1;31mprofile[m information](/help/edit-your-[1;31mprofile[m).\n"
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:45
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:53
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:57
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:105
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:120
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:121
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:122
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:126
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/models/custom_[1;31mprofile[m_fields.py:131
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:44
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:58
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:76
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[mmsgid "Field type not supported for display in [1;31mprofile[m summary."
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:85
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:115
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:198
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:272
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[mmsgid "Only 2 custom [1;31mprofile[m fields can be displayed in the [1;31mprofile[m summary."
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:231
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:306
+[35mlocale/bg/LC_MESSAGES/django.po[m[36m:[m#: zerver/views/custom_[1;31mprofile[m_fields.py:288
+[35mlocale/bg/translations.json[m[36m:[m  "(links to [1;31mprofile[m but doesn't notify {user})": "",
+[35mlocale/bg/translations.json[m[36m:[m  "<z-link>Upload a [1;31mprofile[m picture</z-link> for your organization.": "",
+[35mlocale/bg/translations.json[m[36m:[m  "Add a new custom [1;31mprofile[m field": "Добави ново персонализирано профилно поле",
+[35mlocale/bg/translations.json[m[36m:[m  "Add a new [1;31mprofile[m field": "Добави поле нов профил",
+[35mlocale/bg/translations.json[m[36m:[m  "Are you sure you want to delete your [1;31mprofile[m picture?": "Сигурни ли сте че искате да изтриете вашата профилна снимка?",
+[35mlocale/bg/translations.json[m[36m:[m  "Clear [1;31mprofile[m picture": "Премахнете профилната снимка",
+[35mlocale/bg/translations.json[m[36m:[m  "Complete your organization [1;31mprofile[m, which is displayed on your organization's registration and login pages.": "",
+[35mlocale/bg/translations.json[m[36m:[m  "Configure <z-link-1>default new user settings</z-link-1> and <z-link-2>custom [1;31mprofile[m fields</z-link-2>.": "",
+[35mlocale/bg/translations.json[m[36m:[m  "Copy link to [1;31mprofile[m": "",
+[35mlocale/bg/translations.json[m[36m:[m  "Custom [1;31mprofile[m fields": "Персонализирани профилни полета",
+[35mlocale/bg/translations.json[m[36m:[m  "Delete custom [1;31mprofile[m field?": "Изтрии персонализираното профилно поле?",
+[35mlocale/bg/translations.json[m[36m:[m  "Delete [1;31mprofile[m picture": "Изтрии профилна снимка",
+[35mlocale/bg/translations.json[m[36m:[m  "Edit custom [1;31mprofile[m field": "Редактирай персонализираното профилно поле",
+[35mlocale/bg/translations.json[m[36m:[m  "Edit [1;31mprofile[m": "Редактирай профил",
+[35mlocale/bg/translations.json[m[36m:[m  "Edit your [1;31mprofile[m": "Редактирайте вашия профил",
+[35mlocale/bg/translations.json[m[36m:[m  "Either this user does not exist, or you do not have access to their [1;31mprofile[m.": "",
+[35mlocale/bg/translations.json[m[36m:[m  "Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <z-link>organization [1;31mprofile[m settings</z-link>.": "Грешка: Не можете да деактивирате единственият потребител. Можете, обаче, да деактивирате цялата организация във вашите <z-link>настройки на профила на организацията</z-link>.",
+[35mlocale/bg/translations.json[m[36m:[m  "No custom [1;31mprofile[m fields configured.": "",
+[35mlocale/bg/translations.json[m[36m:[m  "Only 2 custom [1;31mprofile[m fields can be displayed on the user card.": "",
+[35mlocale/bg/translations.json[m[36m:[m  "Organization [1;31mprofile[m": "Профил на организацията",
+[35mlocale/bg/translations.json[m[36m:[m  "Organization [1;31mprofile[m incomplete": "",
+[35mlocale/bg/translations.json[m[36m:[m  "Organization [1;31mprofile[m picture": "Профилна снимка на организацията",
+[35mlocale/bg/translations.json[m[36m:[m  "Preview organization [1;31mprofile[m": "Преглед на профила на организацията",
+[35mlocale/bg/translations.json[m[36m:[m  "Preview [1;31mprofile[m": "Преглед на профила",
+[35mlocale/bg/translations.json[m[36m:[m  "This [1;31mprofile[m field is required.": "",
+[35mlocale/bg/translations.json[m[36m:[m  "This will clear the <z-field-name></z-field-name> [1;31mprofile[m field for 1 user.": "This will clear the <z-field-name></z-field-name> [1;31mprofile[m field for 1 user.",
+[35mlocale/bg/translations.json[m[36m:[m  "This will clear the <z-field-name></z-field-name> [1;31mprofile[m field for <z-count></z-count> users.": "Това ще изчисти <z-field-name></z-field-name> профилното поле на <z-count></z-count> потребителя.",
+[35mlocale/bg/translations.json[m[36m:[m  "This will delete the <z-[1;31mprofile[m-field-name></z-[1;31mprofile[m-field-name> [1;31mprofile[m field for 1 user.": "Това ще изтрие <z-[1;31mprofile[m-field-name></z-[1;31mprofile[m-field-name> профилното поле на 1 потребител.",
+[35mlocale/bg/translations.json[m[36m:[m  "This will delete the <z-[1;31mprofile[m-field-name></z-[1;31mprofile[m-field-name> [1;31mprofile[m field for <z-count></z-count> users.": "Това ще изтрие <z-[1;31mprofile[m-field-name></z-[1;31mprofile[m-field-name> профилното поле на <z-count></z-count> потребителя.",
+[35mlocale/bg/translations.json[m[36m:[m  "Upload new [1;31mprofile[m picture": "Качи нова профилна снимка",
+[35mlocale/bg/translations.json[m[36m:[m  "Upload [1;31mprofile[m picture": "Качи профилна снимка",
+[35mlocale/bg/translations.json[m[36m:[m  "View [1;31mprofile[m": "Прегледай профил",
+[35mlocale/bg/translations.json[m[36m:[m  "View your [1;31mprofile[m": "Прегледай моя профил",
+[35mlocale/bg/translations.json[m[36m:[m  "Your computer's time zone differs from your Zulip [1;31mprofile[m. Update your time zone to {browser_time_zone}?": "",
+[35mlocale/bg/translations.json[m[36m:[m  "Your [1;31mprofile[m is missing required fields.": "",

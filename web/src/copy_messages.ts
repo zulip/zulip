@@ -318,9 +318,31 @@ export function copy_handler(ev: ClipboardEvent): boolean {
     construct_copy_div($div, start_id, end_id);
 
     const html_content = $div.html().trim();
-    const plain_text = $div.text().trim();
-    ev.clipboardData?.setData("text/html", html_content);
-    ev.clipboardData?.setData("text/plain", plain_text);
+
+// Build markdown-style text with nested bullets
+let plain_text = "";
+
+$div.find("li").each(function () {
+    const depth = $(this).parents("ul, ol").length - 1;
+    const indent = "  ".repeat(depth);
+
+    const text = $(this)
+        .clone()
+        .children("ul, ol")
+        .remove()
+        .end()
+        .text()
+        .trim();
+
+    plain_text += `${indent}- ${text}\n`;
+});
+
+if (plain_text.trim() === "") {
+    plain_text = $div.text().trim();
+}
+
+ev.clipboardData?.setData("text/plain", plain_text.trim());
+ev.clipboardData?.setData("text/html", html_content);
 
     // Tell the keyboard code that we did the copy ourselves, and thus
     // the browser should not handle the copy.
