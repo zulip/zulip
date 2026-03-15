@@ -53,6 +53,7 @@ source video conferencing solution. You can configure Zulip to use
 - [Zoom integration](/integrations/zoom)
 - [BigBlueButton integration](/integrations/big-blue-button)
 - [Nextcloud Talk integration](/integrations/nextcloud-talk)
+- [Galène integration](/integrations/galene)
 
 [constructor-groups-api-docs]: https://developer.perculus.com/v2-en
 [constructor-groups]: https://constructor.tech/products/learning/groups

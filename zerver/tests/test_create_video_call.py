@@ -1,4 +1,5 @@
 from unittest import mock
+from urllib.parse import parse_qs, urljoin, urlsplit
 
 import orjson
 import requests
@@ -854,3 +855,337 @@ class NextcloudVideoCallTest(ZulipTestCase):
 
         json = self.assert_json_success(response)
         self.assertEqual(json["url"], "https://nextcloud.example.com/index.php/call/abc123token")
+
+
+class GaleneVideoCallTestModerator(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user = self.example_user("desdemona")
+        self.login_user(self.user)
+        self.galene_api_url = "https://galene.example.org/galene-api/v0/"
+        self.signer = Signer()
+
+    @responses.activate
+    def test_create_galene_topic_video_call_success(self) -> None:
+        responses.add(
+            responses.PUT,
+            urljoin(self.galene_api_url, ".groups/devel"),
+            status=201,
+        )
+
+        response = self.client_post(
+            "/json/calls/galene/create", {"channel": "devel", "topic": "team-check-in"}
+        )
+
+        json = self.assert_json_success(response)
+
+        url = json["url"]
+        signed = self.signer.sign_object(
+            {
+                "n": "devel/team-check-in",
+            }
+        )
+        self.assertEqual(url, "/calls/galene/join?q=" + signed)
+
+        responses.add(
+            responses.POST,
+            urljoin(self.galene_api_url, ".groups/devel/team-check-in/.tokens/"),
+            headers={
+                "location": "nsdofj7hsdf8437",
+            },
+            status=200,
+        )
+        response = self.client_get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            "https://galene.example.org/group/devel/team-check-in/?token=nsdofj7hsdf8437",
+            response["Location"],
+        )
+
+
+class GaleneVideoCallTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user = self.example_user("hamlet")
+        self.login_user(self.user)
+        self.galene_api_url = "https://galene.example.org/galene-api/v0/"
+        self.signer = Signer()
+
+    @responses.activate
+    def test_create_galene_topic_video_call_success(self) -> None:
+        responses.add(
+            responses.PUT,
+            urljoin(self.galene_api_url, ".groups/devel"),
+            status=201,
+        )
+
+        response = self.client_post(
+            "/json/calls/galene/create", {"channel": "devel", "topic": "team-check-in"}
+        )
+
+        json = self.assert_json_success(response)
+
+        url = json["url"]
+        signed = self.signer.sign_object(
+            {
+                "n": "devel/team-check-in",
+            }
+        )
+        self.assertEqual(url, "/calls/galene/join?q=" + signed)
+
+        responses.add(
+            responses.POST,
+            urljoin(self.galene_api_url, ".groups/devel/team-check-in/.tokens/"),
+            headers={
+                "location": "nsdofj7hsdf8437",
+            },
+            status=200,
+        )
+        response = self.client_get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            "https://galene.example.org/group/devel/team-check-in/?token=nsdofj7hsdf8437",
+            response["Location"],
+        )
+
+    @responses.activate
+    def test_create_galene_topic_video_call_strip_checkmark(self) -> None:
+        responses.add(
+            responses.PUT,
+            urljoin(self.galene_api_url, ".groups/devel"),
+            status=201,
+        )
+
+        response = self.client_post(
+            "/json/calls/galene/create", {"channel": "devel", "topic": "✔ team-check-in"}
+        )
+
+        json = self.assert_json_success(response)
+
+        url = json["url"]
+        signed = self.signer.sign_object(
+            {
+                "n": "devel/team-check-in",
+            }
+        )
+        self.assertEqual(url, "/calls/galene/join?q=" + signed)
+
+    @responses.activate
+    def test_create_galene_channel_video_call_success(self) -> None:
+        responses.add(
+            responses.PUT,
+            urljoin(self.galene_api_url, ".groups/devel"),
+            status=201,
+        )
+
+        response = self.client_post("/json/calls/galene/create", {"channel": "devel"})
+
+        json = self.assert_json_success(response)
+
+        url = json["url"]
+        signed = self.signer.sign_object(
+            {
+                "n": "devel",
+            }
+        )
+        self.assertEqual(url, "/calls/galene/join?q=" + signed)
+
+        responses.add(
+            responses.POST,
+            urljoin(self.galene_api_url, ".groups/devel/.tokens/"),
+            headers={
+                "location": "nsdofj7hsdf8437",
+            },
+            status=200,
+        )
+        response = self.client_get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            "https://galene.example.org/group/devel/?token=nsdofj7hsdf8437",
+            response["Location"],
+        )
+
+    @responses.activate
+    def test_create_galene_DM_video_call_success(self) -> None:
+        responses.add(
+            responses.PUT,
+            urljoin(self.galene_api_url, ".groups/DMs"),
+            status=201,
+        )
+
+        response = self.client_post("/json/calls/galene/create", {})
+
+        json = self.assert_json_success(response)
+
+        url = json["url"]
+        self.assertTrue(url.startswith("/calls/galene/join?q="))
+
+        payload = parse_qs(urlsplit(url).query)["q"][0]
+        payload_data = self.signer.unsign_object(payload)
+        group_name = payload_data["n"]
+        self.assertTrue(
+            group_name.startswith("DMs/")
+        )  # the full name is unpredictable in this case
+
+        responses.add(
+            responses.POST,
+            urljoin(self.galene_api_url, f".groups/{group_name}/.tokens/"),
+            headers={
+                "location": "j32890hgdf98hh",
+            },
+            status=200,
+        )
+        response = self.client_get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            f"https://galene.example.org/group/{group_name}/?token=j32890hgdf98hh",
+            response["Location"],
+        )
+
+    def test_create_galene_not_configured(self) -> None:
+        for setting_name in [
+            "GALENE_URL",
+            "GALENE_ADMIN_USERNAME",
+            "GALENE_ADMIN_PASSWORD",
+        ]:
+            with self.settings(**{setting_name: None}):
+                response = self.client_post(
+                    "/json/calls/galene/create",
+                    {"group_name": "team-check-in"},
+                )
+                self.assert_json_error(response, "Galène is not configured")
+
+                response = self.client_get(
+                    "/calls/galene/join",
+                    {"q": "irrelevant"},
+                )
+                self.assert_json_error(response, "Galène is not configured")
+
+    @responses.activate
+    def test_create_galene_server_error(self) -> None:
+        responses.add(
+            responses.PUT,
+            urljoin(self.galene_api_url, ".groups/devel"),
+            status=400,
+            body="Invalid request",
+        )
+
+        response = self.client_post(
+            "/json/calls/galene/create", {"channel": "devel", "topic": "team-check-in"}
+        )
+
+        self.assert_json_error(
+            response,
+            "Failed to create Galène call: connection to https://galene.example.org/galene-api/v0/.groups/devel: HTTP 400: Invalid request",
+        )
+
+    @responses.activate
+    def test_create_galene_server_unexpected_success(self) -> None:
+        responses.add(
+            responses.PUT,
+            urljoin(self.galene_api_url, ".groups/devel"),
+            status=200,
+        )
+
+        response = self.client_post(
+            "/json/calls/galene/create", {"channel": "devel", "topic": "team-check-in"}
+        )
+
+        self.assert_json_error(
+            response,
+            "Failed to create Galène call: request to https://galene.example.org/galene-api/v0/.groups/devel got HTTP 200",
+        )
+
+    @responses.activate
+    def test_create_galene_connection_error(self) -> None:
+        responses.add(
+            responses.PUT,
+            urljoin(self.galene_api_url, ".groups/devel"),
+            body=requests.RequestException("Connection failed"),
+        )
+
+        response = self.client_post(
+            "/json/calls/galene/create", {"channel": "devel", "topic": "team-check-in"}
+        )
+
+        self.assert_json_error(
+            response,
+            "Failed to create Galène call: connection to https://galene.example.org/galene-api/v0/.groups/devel: Connection failed",
+        )
+
+    @responses.activate
+    def test_join_galene_invalid_signature(self) -> None:
+        signed = self.signer.sign_object(
+            {
+                "n": "devel/team-check-in",
+            }
+        )
+        signed = signed[:-4]  # invalidate the signature
+        response = self.client_post("/calls/galene/join", {"q": signed})
+        self.assert_json_error(response, "Invalid signature.")
+
+    @responses.activate
+    def test_join_galene_server_error(self) -> None:
+        # Missing invite token
+        # Question: should Zulip be making a single invite token per call or should it be making a call and then making an invite per user?
+        responses.add(
+            responses.POST,
+            urljoin(self.galene_api_url, ".groups/devel/team-check-in/.tokens/"),
+            status=500,
+        )
+
+        signed = self.signer.sign_object(
+            {
+                "n": "devel/team-check-in",
+            }
+        )
+        response = self.client_post("/calls/galene/join", {"q": signed})
+        self.assert_json_error(
+            response,
+            "Failed to create Galène invite: connection to https://galene.example.org/galene-api/v0/.groups/devel/team-check-in/.tokens/: HTTP 500: ",
+        )
+
+    @responses.activate
+    def test_join_galene_invalid_response(self) -> None:
+        # Missing invite token
+        # Question: should Zulip be making a single invite token per call or should it be making a call and then making an invite per user?
+        responses.add(
+            responses.POST,
+            urljoin(self.galene_api_url, ".groups/devel/team-check-in/.tokens/"),
+            headers={
+                "location": "",
+            },
+            status=200,
+        )
+
+        signed = self.signer.sign_object(
+            {
+                "n": "devel/team-check-in",
+            }
+        )
+        response = self.client_post("/calls/galene/join", {"q": signed})
+        self.assert_json_error(
+            response, "Failed to create Galène invite: token not provided by API"
+        )
+
+    @responses.activate
+    def test_join_galene_connection_error(self) -> None:
+        responses.add(
+            responses.POST,
+            urljoin(self.galene_api_url, ".groups/devel/team-check-in/.tokens/"),
+            body=requests.RequestException("Connection failed"),
+        )
+
+        signed = self.signer.sign_object(
+            {
+                "n": "devel/team-check-in",
+            }
+        )
+        response = self.client_post("/calls/galene/join", {"q": signed})
+
+        self.assert_json_error(
+            response,
+            "Failed to create Galène invite: connection to https://galene.example.org/galene-api/v0/.groups/devel/team-check-in/.tokens/: Connection failed",
+        )

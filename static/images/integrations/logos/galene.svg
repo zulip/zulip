@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="340" height="340" version="1.1" viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg">
+ <defs>
+  <radialGradient id="lensShimmer" cx="157.52" cy="155.44" r="54.08" gradientTransform="translate(-44)" gradientUnits="userSpaceOnUse">
+   <stop stop-color="#fff" stop-opacity=".18" offset="0"/>
+   <stop stop-color="#ccc" stop-opacity="0" offset="1"/>
+  </radialGradient>
+  <clipPath id="lensClip">
+   <circle cx="170" cy="170" r="51"/>
+  </clipPath>
+ </defs>
+ <rect x="126" y="118" width="152" height="104" rx="18" fill="#1e1e1c"/>
+ <rect x="144" y="108" width="100" height="18" rx="8" fill="#151513"/>
+ <rect x="126" y="118" width="152" height="14" rx="18" fill="#fff" opacity=".06"/>
+ <rect x="126" y="206" width="152" height="16" rx="18" opacity=".18"/>
+ <circle cx="248" cy="148" r="7" fill="#888880" opacity=".4"/>
+ <circle cx="248" cy="148" r="4" fill="#555550" opacity=".6"/>
+ <rect x="274" y="138" width="22" height="44" rx="8" fill="#151513"/>
+ <rect x="278" y="142" width="14" height="14" rx="3" fill="#2e2e2c" opacity=".8"/>
+ <circle cx="126" cy="170" r="68" fill="#4a4a48"/>
+ <circle cx="126" cy="170" r="68" fill="none" opacity=".5" stroke="#6a6a68"/>
+ <circle cx="126" cy="170" r="60" fill="#363634"/>
+ <circle cx="126" cy="170" r="52" fill="#e8e6e0"/>
+ <circle cx="126" cy="170" r="52" fill="url(#lensShimmer)"/>
+ <circle cx="126" cy="170" r="44" fill="none" opacity=".3" stroke="#555550" stroke-width=".7"/>
+ <circle cx="126" cy="170" r="34" fill="none" opacity=".2" stroke="#555550" stroke-width=".5"/>
+ <g transform="translate(-44)" clip-path="url(#lensClip)" stroke="#111110" stroke-linecap="round" stroke-width="6">
+  <path d="m198 162a28 28 0 1 0 0 16" fill="none"/>
+  <line x1="198" x2="174" y1="170" y2="170"/>
+ </g>
+</svg>
