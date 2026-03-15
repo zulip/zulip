@@ -55,6 +55,7 @@ source video conferencing solution. You can configure Zulip to use
 - [Google Meet integration](/integrations/google-meet)
 - [Nextcloud Talk integration](/integrations/nextcloud-talk)
 - [Webex integration](/integrations/webex)
+- [Galène integration](/integrations/galene)
 
 [constructor-groups-api-docs]: https://developer.perculus.com/v2-en
 [constructor-groups]: https://constructor.tech/products/learning/groups
