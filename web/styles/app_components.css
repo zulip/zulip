@@ -810,6 +810,10 @@ input.settings_text_input {
     }
 
     .overlay-messages-header {
+        .delete-edit-history-button {
+            display: block;
+            margin: 6px auto 0;
+        }
         padding-top: 4px;
         padding-bottom: 8px;
         text-align: center;

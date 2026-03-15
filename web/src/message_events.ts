@@ -896,7 +896,10 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             // flag is used to indicated update_message events that are
             // triggered by server latency optimizations, not user
             // interactions; these should not generate edit history updates.
-            if (!event.rendering_only && any_message_content_edited) {
+            if (
+                !event.rendering_only &&
+                (any_message_content_edited || event.edit_history_deleted)
+            ) {
                 anchor_message.last_edit_timestamp = event.edit_timestamp;
             }
 
