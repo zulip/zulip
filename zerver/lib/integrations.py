@@ -1028,6 +1028,7 @@ VIDEO_CALL_INTEGRATIONS: list[Integration] = [
     Integration(
         "constructor-groups", ["video-calling", "communication"], display_name="Constructor Groups"
     ),
+    Integration("galene", ["video-calling", "communication"], display_name="Galène"),
     Integration("google-meet", ["video-calling", "communication"], display_name="Google Meet"),
     Integration("jitsi", ["video-calling", "communication"], display_name="Jitsi Meet"),
     Integration(
@@ -1217,6 +1218,7 @@ INTEGRATIONS_WITHOUT_SCREENSHOTS = (
     | {
         "big-blue-button",
         "constructor-groups",
+        "galene",
         "google-meet",
         "jitsi",
         "nextcloud-talk",
