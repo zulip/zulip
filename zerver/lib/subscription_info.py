@@ -285,7 +285,6 @@ def build_stream_dict_for_sub(
     sub_dict: RawSubscriptionDict,
     stream_dict: APIStreamDict,
 ) -> SubscriptionStreamDict:
-    print("DEBUG stream_dict:", stream_dict)
     # Handle Stream.API_FIELDS
     is_archived = stream_dict["is_archived"]
     can_add_subscribers_group = stream_dict["can_add_subscribers_group"]
