@@ -121,7 +121,8 @@
 * [Regenerate your API key](/api/regenerate-api-key)
 * [Get a bot's API key](/api/get-bot-api-key)
 * [Regenerate a bot's API key](/api/regenerate-bot-api-key)
-
+* [Upload an avatar](/api/upload_avatar)
+* [Delete an avatar](/api/delete_avatar)
 #### Invitations
 
 * [Get all invitations](/api/get-invites)
@@ -130,7 +131,6 @@
 * [Resend an email invitation](/api/resend-email-invite)
 * [Revoke an email invitation](/api/revoke-email-invite)
 * [Revoke a reusable invitation link](/api/revoke-invite-link)
-
 #### Server & organizations
 
 * [Get server settings](/api/get-server-settings)
