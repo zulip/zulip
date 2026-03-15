@@ -10,6 +10,7 @@ supported by Zulip are:
 - [Zoom](https://zulip.com/integrations/zoom)
 - [BigBlueButton](https://zulip.com/integrations/big-blue-button)
 - [Constructor Groups](https://zulip.com/integrations/constructor-groups)
+- [Galene](https://zulip.com/integrations/galene)
 - [Nextcloud Talk](https://zulip.com/integrations/nextcloud-talk)
 
 By default, Zulip uses the [cloud version of Jitsi Meet](https://meet.jit.si/)
@@ -91,7 +92,6 @@ type of Zoom application for your Zulip server.
    at the Zoom Marketplace. Create a **General App**.
 
 1. In the **Basic Information** tab:
-
    - Choose an app name such as "ExampleCorp Zulip".
    - Select **User-managed app**.
    - In the **OAuth Information** section, set the **OAuth Redirect URL**
@@ -187,6 +187,15 @@ To use the [Constructor Groups](https://constructor.tech/products/learning/group
 video call integration on a self-hosted Zulip installation, you'll need to
 have a Constructor Groups account. See documentation to configure the Constructor
 Groups video call integration [here](https://zulip.com/integrations/constructor-groups).
+
+## Galène
+
+To use the [Galène](https://galene.org) video call integration on a self-hosted
+Zulip installation, you'll need to have an admin password
+
+<!-- TODO: and/or token, once Galène implements admin tokens fully -->
+
+to a Galène instance. See the guide [here](https://zulip.com/integrations/galene).
 
 ## Nextcloud Talk
 
