@@ -9,6 +9,9 @@ const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
+mock_esm("../src/message_lists.ts");
+mock_esm("../src/stream_data.ts");
+
 const channel = mock_esm("../src/channel");
 const compose_closed_ui = mock_esm("../src/compose_closed_ui");
 const compose_ui = mock_esm("../src/compose_ui");
@@ -63,6 +66,10 @@ const realm_available_video_chat_providers = {
     webex: {
         id: 8,
         name: "Webex",
+    },
+    galene: {
+        id: 9,
+        name: "Galène",
     },
 };
 
@@ -506,6 +513,132 @@ test("videos", ({override}) => {
             .call($textarea, {preventDefault() {}, stopPropagation() {}});
         assert.ok(checked);
     })();
+
+    (function test_galene_video_link_compose_clicked() {
+        let syntax_to_insert;
+        let called = false;
+
+        const $textarea = $.create("galene-target-stub");
+        $textarea.set_parents_result(".message_edit_form", []);
+
+        const ev = {
+            preventDefault() {},
+            stopPropagation() {},
+        };
+
+        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
+            syntax_to_insert = syntax;
+            called = true;
+        });
+
+        $("textarea#compose-textarea").val("");
+
+        override(
+            realm,
+            "realm_video_chat_provider",
+            realm_available_video_chat_providers.galene.id,
+        );
+
+        override(compose_closed_ui, "get_recipient_label_for_call", () => ({
+            label_text: "#devel > weekly check in",
+            stream: {name: "devel"},
+            topic_display_name: "weekly check in",
+        }));
+
+        let success_callback;
+        function call_success_callback() {
+            assert.ok(success_callback !== undefined);
+            success_callback({
+                result: "success",
+                msg: "",
+                url:
+                    "/calls/galene/join?" +
+                    "galene_call_join_details=eyJuIjoiZGV2ZWwvdGVhbS1jaGVjay1pbiJ9:z_mQK9dQk8jSiQuHml1hyst5_4XAjVGPjRFMTUZcCAw",
+            });
+        }
+
+        const xhr_object = {abort() {}};
+        channel.post = (options) => {
+            assert.equal(options.url, "/json/calls/galene/create");
+            assert.equal(options.data.channel, "devel");
+            assert.equal(options.data.topic, "weekly check in");
+            success_callback = options.success;
+            return xhr_object;
+        };
+
+        $("textarea#compose-textarea").val("");
+
+        const video_handler = $("body").get_on_handler("click", ".video_link");
+        video_handler.call($textarea, ev);
+        call_success_callback();
+        const video_link_regex =
+            /\[translated: Join video call\.]\(\/calls\/galene\/join\?galene_call_join_details=eyJuIjoiZGV2ZWwvdGVhbS1jaGVjay1pbiJ9:z_mQK9dQk8jSiQuHml1hyst5_4XAjVGPjRFMTUZcCAw\)/;
+        assert.ok(called);
+        assert.match(syntax_to_insert, video_link_regex);
+    })();
+
+    (function test_galene_video_dm_link_compose_clicked() {
+        let syntax_to_insert;
+        let called = false;
+
+        const $textarea = $.create("galene-target-stub-dm");
+        $textarea.set_parents_result(".message_edit_form", []);
+
+        const ev = {
+            preventDefault() {},
+            stopPropagation() {},
+        };
+
+        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
+            syntax_to_insert = syntax;
+            called = true;
+        });
+
+        $("textarea#compose-textarea").val("");
+
+        override(
+            realm,
+            "realm_video_chat_provider",
+            realm_available_video_chat_providers.galene.id,
+        );
+
+        override(compose_closed_ui, "get_recipient_label_for_call", () => ({
+            label_text: "Alice, Bob, Charlie",
+            user_ids: [123, 45235, 3451],
+        }));
+        override(current_user, "user_id", 99);
+
+        let success_callback;
+        function call_success_callback() {
+            assert.ok(success_callback !== undefined);
+            success_callback({
+                result: "success",
+                msg: "",
+                url:
+                    "/calls/galene/join?" +
+                    "galene_call_join_details=eyJuIjoiZGV2ZWwvdGVhbS1jaGVjay1pbiJ9:z_mQK9dQk8jSiQuHml1hyst5_4XAjVGPjRFMTUZcCAw",
+            });
+        }
+
+        const xhr_object = {abort() {}};
+        channel.post = (options) => {
+            assert.equal(options.url, "/json/calls/galene/create");
+            assert.equal(options.data.channel, "dm");
+            assert.equal(options.data.topic, "99,123,3451,45235");
+            success_callback = options.success;
+            return xhr_object;
+        };
+
+        $("textarea#compose-textarea").val("");
+
+        const video_handler = $("body").get_on_handler("click", ".video_link");
+        video_handler.call($textarea, ev);
+        call_success_callback();
+        const video_link_regex =
+            /\[translated: Join video call\.]\(\/calls\/galene\/join\?galene_call_join_details=eyJuIjoiZGV2ZWwvdGVhbS1jaGVjay1pbiJ9:z_mQK9dQk8jSiQuHml1hyst5_4XAjVGPjRFMTUZcCAw\)/;
+        assert.ok(called);
+        assert.match(syntax_to_insert, video_link_regex);
+    })();
 });
 
 test("test_video_chat_button_toggle disabled", ({override}) => {
@@ -545,6 +678,13 @@ test("test_constructor_groups_video_chat_button_toggle enabled", ({override}) =>
         "realm_video_chat_provider",
         realm_available_video_chat_providers.constructor_groups.id,
     );
+    override(window, "to_$", () => $("window-stub"));
+    compose_setup.initialize();
+    assert.equal($(".compose-control-buttons-container .video_link").visible(), true);
+});
+
+test("test_galene_video_chat_button_toggle enabled", ({override}) => {
+    override(realm, "realm_video_chat_provider", realm_available_video_chat_providers.galene.id);
     override(window, "to_$", () => $("window-stub"));
     compose_setup.initialize();
     assert.equal($(".compose-control-buttons-container .video_link").visible(), true);

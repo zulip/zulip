@@ -1,8 +1,12 @@
+import datetime
+import uuid
 from unittest import mock
+from urllib.parse import urljoin
 
 import orjson
 import requests
 import responses
+import time_machine
 from django.core.signing import Signer
 from django.http import HttpResponseRedirect
 from django.test import override_settings
@@ -1004,3 +1008,314 @@ class NextcloudVideoCallTest(ZulipTestCase):
 
         json = self.assert_json_success(response)
         self.assertEqual(json["url"], "https://nextcloud.example.com/index.php/call/abc123token")
+
+
+class GaleneVideoCallTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user = self.example_user("hamlet")
+        self.login_user(self.user)
+        self.galene_api_url = "https://galene.example.org/galene-api/v0/"
+        self.signer = Signer()
+
+    @responses.activate
+    def test_create_galene_topic_video_call_success(self) -> None:
+        responses.add(
+            responses.PUT,
+            urljoin(self.galene_api_url, ".groups/devel"),
+            status=201,
+        )
+
+        call_id = uuid.UUID("00000000-0000-0000-0000-000000000001")
+        with mock.patch("zerver.views.video_calls.uuid.uuid4", return_value=call_id):
+            response = self.client_post(
+                "/json/calls/galene/create", {"channel": "devel", "topic": "team-check-in"}
+            )
+
+        json = self.assert_json_success(response)
+
+        url = json["url"]
+        signed = self.signer.sign_object(
+            {
+                "name": f"devel/team-check-in-{call_id}",
+            }
+        )
+        self.assertEqual(url, "/calls/galene/join?galene_call_join_details=" + signed)
+
+    @responses.activate
+    def test_create_galene_no_topic_video_call_success(self) -> None:
+        responses.add(
+            responses.PUT,
+            urljoin(self.galene_api_url, ".groups/devel"),
+            status=201,
+        )
+
+        call_id = uuid.UUID("00000000-0000-0000-0000-000000000002")
+        with mock.patch("zerver.views.video_calls.uuid.uuid4", return_value=call_id):
+            response = self.client_post(
+                "/json/calls/galene/create", {"channel": "devel", "topic": ""}
+            )
+
+        json = self.assert_json_success(response)
+
+        url = json["url"]
+        signed = self.signer.sign_object(
+            {
+                "name": f"devel/{call_id}",
+            }
+        )
+        self.assertEqual(url, "/calls/galene/join?galene_call_join_details=" + signed)
+
+    @responses.activate
+    def test_join_galene_topic_video_call_success(self) -> None:
+        responses.add(
+            responses.POST,
+            urljoin(self.galene_api_url, ".groups/devel/team-check-in/.tokens/"),
+            headers={
+                "location": "nsdofj7hsdf8437",
+            },
+            status=200,
+        )
+
+        signed = self.signer.sign_object(
+            {
+                "name": "devel/team-check-in",
+            }
+        )
+        url = append_url_query_string("/calls/galene/join", "galene_call_join_details=" + signed)
+
+        now = datetime.datetime(2026, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc)
+        with time_machine.travel(now, tick=False):
+            response = self.client_get(url)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            "https://galene.example.org/group/devel/team-check-in/?token=nsdofj7hsdf8437",
+            response["Location"],
+        )
+
+        assert responses.calls[-1].request.body is not None
+        payload = orjson.loads(responses.calls[-1].request.body)
+        self.assertEqual(
+            payload,
+            {
+                "username": "King Hamlet",
+                "permissions": ["present", "message"],
+                "expires": "2026-01-01T12:13:00Z",
+            },
+        )
+
+    @responses.activate
+    def test_join_galene_dm_video_call_success(self) -> None:
+        responses.add(
+            responses.POST,
+            urljoin(self.galene_api_url, ".groups/dm/1,2,3/.tokens/"),
+            headers={
+                "location": "nsdofj7hsdf8437",
+            },
+            status=200,
+        )
+
+        signed = self.signer.sign_object(
+            {
+                "name": "dm/1,2,3",
+            }
+        )
+        url = append_url_query_string("/calls/galene/join", "galene_call_join_details=" + signed)
+
+        now = datetime.datetime(2026, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc)
+        with time_machine.travel(now, tick=False):
+            response = self.client_get(url)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            "https://galene.example.org/group/dm/1,2,3/?token=nsdofj7hsdf8437",
+            response["Location"],
+        )
+
+        assert responses.calls[-1].request.body is not None
+        payload = orjson.loads(responses.calls[-1].request.body)
+        self.assertEqual(
+            payload,
+            {
+                "username": "King Hamlet",
+                "permissions": ["op", "present", "message", "caption", "token"],
+                "expires": "2026-01-01T12:13:00Z",
+            },
+        )
+
+    def test_galene_not_configured(self) -> None:
+        for setting_name in [
+            "GALENE_URL",
+            "GALENE_ADMIN_USERNAME",
+            "GALENE_ADMIN_PASSWORD",
+        ]:
+            with self.settings(**{setting_name: None}):
+                response = self.client_post(
+                    "/json/calls/galene/create",
+                    {"channel": "devel", "topic": "team-check-in"},
+                )
+                self.assert_json_error(response, "Galene credentials have not been configured")
+
+                response = self.client_get(
+                    "/calls/galene/join",
+                    {"galene_call_join_details": "irrelevant"},
+                )
+                self.assert_json_error(response, "Galene credentials have not been configured")
+
+    @responses.activate
+    def test_create_galene_server_error(self) -> None:
+        responses.add(
+            responses.PUT,
+            urljoin(self.galene_api_url, ".groups/devel"),
+            status=400,
+            body="Invalid request",
+        )
+
+        with self.assertLogs() as logs:
+            response = self.client_post(
+                "/json/calls/galene/create", {"channel": "devel", "topic": "team-check-in"}
+            )
+            self.assertIn(
+                "ERROR:root:Galene API request to https://galene.example.org/galene-api/v0/.groups/devel failed with status 400",
+                logs.output,
+            )
+
+        self.assert_json_error(
+            response,
+            "Failed to create Galene call",
+        )
+
+    @responses.activate
+    def test_create_galene_server_unexpected_success(self) -> None:
+        responses.add(
+            responses.PUT,
+            urljoin(self.galene_api_url, ".groups/devel"),
+            status=200,
+        )
+
+        with self.assertLogs() as logs:
+            response = self.client_post(
+                "/json/calls/galene/create", {"channel": "devel", "topic": "team-check-in"}
+            )
+            self.assertIn(
+                "ERROR:root:Galene API request to https://galene.example.org/galene-api/v0/.groups/devel failed with status 200",
+                logs.output,
+            )
+
+        self.assert_json_error(
+            response,
+            "Failed to create Galene call",
+        )
+
+    @responses.activate
+    def test_create_galene_connection_error(self) -> None:
+        responses.add(
+            responses.PUT,
+            urljoin(self.galene_api_url, ".groups/devel"),
+            body=requests.RequestException("Connection failed"),
+        )
+
+        with self.assertLogs() as logs:
+            response = self.client_post(
+                "/json/calls/galene/create", {"channel": "devel", "topic": "team-check-in"}
+            )
+            self.assertIn(
+                "ERROR:root:Galene API request to https://galene.example.org/galene-api/v0/.groups/devel failed",
+                logs.output,
+            )
+
+        self.assert_json_error(
+            response,
+            "Failed to create Galene call",
+        )
+
+    @responses.activate
+    def test_join_galene_invalid_signature(self) -> None:
+        signed = self.signer.sign_object(
+            {
+                "name": "devel/team-check-in",
+            }
+        )
+        signed = signed[:-4]  # invalidate the signature
+
+        response = self.client_post("/calls/galene/join", {"galene_call_join_details": signed})
+
+        self.assert_json_error(response, "Invalid signature.")
+
+    @responses.activate
+    def test_join_galene_server_error(self) -> None:
+        responses.add(
+            responses.POST,
+            urljoin(self.galene_api_url, ".groups/devel/team-check-in/.tokens/"),
+            status=500,
+        )
+
+        signed = self.signer.sign_object(
+            {
+                "name": "devel/team-check-in",
+            }
+        )
+        with self.assertLogs() as logs:
+            response = self.client_post("/calls/galene/join", {"galene_call_join_details": signed})
+            self.assertIn(
+                "ERROR:root:Galene API request to https://galene.example.org/galene-api/v0/.groups/devel/team-check-in/.tokens/ failed with status 500",
+                logs.output,
+            )
+
+        self.assert_json_error(
+            response,
+            "Failed to create Galene invite",
+        )
+
+    @responses.activate
+    def test_join_galene_invalid_response(self) -> None:
+        responses.add(
+            responses.POST,
+            urljoin(self.galene_api_url, ".groups/devel/team-check-in/.tokens/"),
+            headers={
+                "location": "",
+            },
+            status=200,
+        )
+
+        signed = self.signer.sign_object(
+            {
+                "name": "devel/team-check-in",
+            }
+        )
+        with self.assertLogs() as logs:
+            response = self.client_post("/calls/galene/join", {"galene_call_join_details": signed})
+            self.assertIn(
+                "ERROR:root:Galene invite token not provided by https://galene.example.org/galene-api/v0/.groups/devel/team-check-in/.tokens/",
+                logs.output,
+            )
+
+        self.assert_json_error(response, "Failed to create Galene invite")
+
+    @responses.activate
+    def test_join_galene_connection_error(self) -> None:
+        responses.add(
+            responses.POST,
+            urljoin(self.galene_api_url, ".groups/devel/team-check-in/.tokens/"),
+            body=requests.RequestException("Connection failed"),
+        )
+
+        signed = self.signer.sign_object(
+            {
+                "name": "devel/team-check-in",
+            }
+        )
+
+        with self.assertLogs() as logs:
+            response = self.client_post("/calls/galene/join", {"galene_call_join_details": signed})
+            self.assertIn(
+                "ERROR:root:Galene API request to https://galene.example.org/galene-api/v0/.groups/devel/team-check-in/.tokens/ failed",
+                logs.output,
+            )
+
+        self.assert_json_error(
+            response,
+            "Failed to create Galene invite",
+        )
