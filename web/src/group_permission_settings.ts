@@ -44,6 +44,7 @@ export function get_group_permission_settings(): GroupGroupSettingName[] {
 const realm_group_setting_names_supporting_anonymous_groups = [
     "can_add_custom_emoji_group",
     "can_add_subscribers_group",
+    "can_change_name_group",
     "can_create_groups",
     "can_create_bots_group",
     "can_create_public_channel_group",
@@ -71,6 +72,7 @@ export const realm_group_setting_name_schema = z.enum([
     ...realm_group_setting_names_supporting_anonymous_groups,
     "can_access_all_users_group",
     "can_create_web_public_channel_group",
+    "can_change_name_group",
 ]);
 export type RealmGroupSettingName = z.infer<typeof realm_group_setting_name_schema>;
 

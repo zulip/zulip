@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import F
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 
 from confirmation.models import Confirmation, create_confirmation_link
 from confirmation.settings import STATUS_REVOKED, STATUS_USED
@@ -19,12 +20,14 @@ from zerver.lib.cache import (
     user_profile_by_api_key_cache_key,
 )
 from zerver.lib.create_user import get_display_email_address
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.i18n import get_language_name
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.types import UserProfileChangeDict
 from zerver.lib.upload import delete_avatar_image
+from zerver.lib.user_groups import is_user_in_group
 from zerver.lib.users import (
     can_access_delivery_email,
     check_bot_name_available,
@@ -225,11 +228,29 @@ def do_change_password(user_profile: UserProfile, password: str, commit: bool = 
 
 @transaction.atomic(savepoint=False)
 def do_change_full_name(
-    user_profile: UserProfile, full_name: str, acting_user: UserProfile | None, notify: bool
+    user_profile: UserProfile,
+    full_name: str,
+    acting_user: UserProfile | None,
+    notify: bool = True,
+    *,
+    skip_permission_check: bool = False,
 ) -> None:
     old_name = user_profile.full_name
     if old_name == full_name:
         return
+
+    if (
+        not skip_permission_check
+        and acting_user is not None
+        and user_profile == acting_user
+        and not acting_user.is_realm_admin
+        and not is_user_in_group(
+            acting_user.realm.can_change_name_group_id,
+            acting_user,
+            direct_member_only=False,
+        )
+    ):
+        raise JsonableError(_("Insufficient permission"))
 
     user_profile.full_name = full_name
     user_profile.save(update_fields=["full_name"])
@@ -264,10 +285,10 @@ def do_change_full_name(
 def check_change_full_name(
     user_profile: UserProfile, full_name_raw: str, acting_user: UserProfile | None
 ) -> str:
-    """Verifies that the user's proposed full name is valid.  The caller
-    is responsible for checking check permissions.  Returns the new
-    full name, which may differ from what was passed in (because this
-    function strips whitespace)."""
+    """Verifies that the user's proposed full name is valid and that the user
+    has permission to change their name. Returns the new full name, which may
+    differ from what was passed in (because this function strips whitespace)."""
+
     new_full_name = check_full_name(
         full_name_raw=full_name_raw, user_profile=user_profile, realm=user_profile.realm
     )
