@@ -8,8 +8,12 @@ import {compose_call_session_manager} from "./compose_call_session.ts";
 import {get_recipient_label} from "./compose_closed_ui.ts";
 import * as compose_ui from "./compose_ui.ts";
 import {$t, $t_html} from "./i18n.ts";
+import * as message_lists from "./message_lists.ts";
+import * as people from "./people.ts";
+import {unresolve_name} from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import {current_user, realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
 
@@ -202,6 +206,63 @@ export function generate_and_insert_audio_or_video_call_link(
                 xhr = channel.post({
                     url: "/json/calls/constructorgroups/create",
                     data: {},
+                    success: handle_success,
+                    error: handle_error,
+                });
+                break;
+            }
+            case available_providers.galene?.id: {
+                const selected_message = message_lists?.current?.selected_message();
+                if (selected_message === undefined) {
+                    break;
+                }
+
+                let stream;
+                let topic;
+                if (selected_message?.is_stream) {
+                    // group chat
+                    stream = stream_data.get_sub_by_id(selected_message.stream_id)?.name;
+                    topic = unresolve_name(selected_message.topic);
+                } else {
+                    // DM
+                    // to_user_ids only includes the *other* users in the DM
+                    // make sure we have a consistent call topic no matter who started it
+                    const user_ids = people.user_ids_string_to_ids_array(
+                        selected_message.to_user_ids,
+                    );
+                    user_ids.push(current_user.user_id);
+                    topic = util.sorted_ids(user_ids).join(",");
+                }
+
+                const handle_success = (response: unknown): void => {
+                    const callback = (): void => {
+                        const data = call_response_schema.parse(response);
+                        insert_video_call_url(data.url, $target_textarea);
+                    };
+                    compose_call_session.maybe_run_xhr_callback(xhr, callback);
+                };
+
+                const handle_error = (
+                    _xhr: JQuery.jqXHR<unknown>,
+                    status: JQuery.Ajax.ErrorTextStatus,
+                ): void => {
+                    const callback = (): void => {
+                        if (status !== "abort") {
+                            ui_report.generic_embed_error(
+                                $t_html({defaultMessage: "Failed to create video call."}),
+                                2000,
+                            );
+                        }
+                    };
+                    compose_call_session.maybe_run_xhr_callback(xhr, callback);
+                };
+
+                xhr = channel.post({
+                    url: "/json/calls/galene/create",
+                    data: {
+                        channel: stream,
+                        topic,
+                    },
                     success: handle_success,
                     error: handle_error,
                 });
