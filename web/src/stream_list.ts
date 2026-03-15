@@ -1598,7 +1598,8 @@ export function set_event_handlers({
 
     let mark_scroll_inactive_timeout: ReturnType<typeof setTimeout> | undefined;
     // check for user scrolls on streams list for first time
-    scroll_util.get_scroll_element($("#left_sidebar_scroll_container")).on("scroll", () => {
+    const $scroll_container = scroll_util.get_scroll_element($("#left_sidebar_scroll_container"));
+    $scroll_container.on("scroll", () => {
         is_actively_scrolling = true;
         clearTimeout(mark_scroll_inactive_timeout);
         mark_scroll_inactive_timeout = setTimeout(() => {
@@ -1606,6 +1607,28 @@ export function set_event_handlers({
         }, 200);
 
         toggle_pm_header_icon();
+
+        // Toggle drop shadow on sticky headers when content scrolls beneath them.
+        // Read all positions before writing classes to avoid layout thrashing.
+        const scroll_container_rect = $scroll_container[0]!.getBoundingClientRect();
+        const has_scrolled_down = $scroll_container.scrollTop()! > 0;
+
+        const $sticky_headers = $scroll_container.find(
+            "#direct-messages-section-header, .stream-list-subsection-header",
+        );
+        const headers_to_update = [...$sticky_headers].map((header) => {
+            // Each sticky header pins at scroll_container_rect.top + its CSS `top` offset.
+            const sticky_top = Number.parseFloat(getComputedStyle(header).top) || 0;
+            const stuck_position = scroll_container_rect.top + sticky_top;
+            const at_stuck_position =
+                Math.abs(header.getBoundingClientRect().top - stuck_position) < 1;
+            const is_stuck = has_scrolled_down && at_stuck_position;
+            return {header, is_stuck};
+        });
+
+        for (const {header, is_stuck} of headers_to_update) {
+            $(header).toggleClass("sidebar-header-drop-shadow", is_stuck);
+        }
     });
 
     $("#streams_list").on(

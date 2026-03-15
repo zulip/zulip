@@ -288,6 +288,17 @@
         background-color: var(--color-background);
     }
 
+    &.sidebar-header-drop-shadow {
+        box-shadow: 0 4px 4px -2px var(--color-shadow-sidebar-row-hover);
+    }
+
+    /* Combine hover border with drop shadow since CSS box-shadow doesn't stack. */
+    &:not(.zoom-in):hover.sidebar-header-drop-shadow {
+        box-shadow:
+            inset 0 0 0 1px var(--color-shadow-sidebar-row-hover),
+            0 4px 4px -2px var(--color-shadow-sidebar-row-hover);
+    }
+
     #toggle-direct-messages-section-icon {
         grid-area: starting-anchor-element;
         /* Horizontally center the icon in its allotted grid area. */
@@ -460,6 +471,10 @@
        below. This extra margin prevents that overlap. */
     margin-bottom: 1px;
 
+    &.sidebar-header-drop-shadow {
+        box-shadow: 0 4px 4px -2px var(--color-shadow-sidebar-row-hover);
+    }
+
     .markers-and-unreads {
         display: flex;
         align-items: center;
@@ -502,6 +517,13 @@
 
         .add_stream_icon {
             visibility: visible;
+        }
+
+        /* Combine hover border with drop shadow since CSS box-shadow doesn't stack. */
+        &.sidebar-header-drop-shadow {
+            box-shadow:
+                inset 0 0 0 1px var(--color-shadow-sidebar-row-hover),
+                0 4px 4px -2px var(--color-shadow-sidebar-row-hover);
         }
     }
 

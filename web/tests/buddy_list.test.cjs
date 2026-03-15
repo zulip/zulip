@@ -35,6 +35,7 @@ function init_simulated_scrolling() {
     const $wrapper = $.create("#buddy_list_wrapper");
     $wrapper[0].scrollHeight = 0;
     $wrapper[0].scrollTop = 0;
+    $wrapper[0].getBoundingClientRect = () => ({top: 0});
 
     $("#buddy_list_wrapper_padding").set_height(0);
 
@@ -351,6 +352,45 @@ run_test("find_li w/bad key", ({override}) => {
     });
 
     assert.deepEqual($undefined_li, undefined);
+});
+
+run_test("drop_shadow_on_scroll", ({override}) => {
+    const buddy_list = new BuddyList();
+    override(buddy_list, "fill_screen_with_content", noop);
+    stub_buddy_list_elements();
+    const elem = init_simulated_scrolling();
+    stub_buddy_list_elements();
+
+    override(background_task, "run_async_function_without_await", noop);
+    clear_buddy_list(buddy_list);
+    buddy_list.start_scroll_handler();
+
+    const $header = $(".buddy-list-subsection-header");
+
+    // Simulate scrolling with the header stuck at the container's top edge.
+    elem.scrollTop = 5;
+    $header[0].getBoundingClientRect = () => ({
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        width: 0,
+        height: 0,
+    });
+    $(buddy_list.scroll_container_selector).trigger("scroll");
+    assert.ok($header.hasClass("sidebar-header-drop-shadow"));
+
+    // Simulate the header returning to its natural (non-stuck) position.
+    $header[0].getBoundingClientRect = () => ({
+        top: 100,
+        bottom: 100,
+        left: 0,
+        right: 0,
+        width: 0,
+        height: 0,
+    });
+    $(buddy_list.scroll_container_selector).trigger("scroll");
+    assert.ok(!$header.hasClass("sidebar-header-drop-shadow"));
 });
 
 run_test("scrolling", ({override}) => {

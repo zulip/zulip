@@ -1185,6 +1185,23 @@ export class BuddyList extends BuddyListConf {
 
         $scroll_container.on("scroll", () => {
             this.fill_screen_with_content();
+
+            // Toggle drop shadow on sticky headers when content scrolls beneath them.
+            const scroll_container_rect = $scroll_container[0]!.getBoundingClientRect();
+            const has_scrolled_down = $scroll_container.scrollTop()! > 0;
+
+            // Separate reads and writes to avoid layout thrashing.
+            const headers_to_update = [...$(".buddy-list-subsection-header")].map((el) => {
+                const rect = el.getBoundingClientRect();
+                return {
+                    $el: $(el),
+                    is_stuck: has_scrolled_down && rect.top <= scroll_container_rect.top,
+                };
+            });
+
+            for (const {$el, is_stuck} of headers_to_update) {
+                $el.toggleClass("sidebar-header-drop-shadow", is_stuck);
+            }
         });
     }
 
