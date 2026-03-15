@@ -20,6 +20,7 @@ type RecipientLabel = {
     label_text: string;
     has_empty_string_topic?: boolean;
     stream_name?: string;
+    topic?: string;
     is_dm_with_self?: boolean;
 };
 
@@ -31,6 +32,7 @@ function get_stream_recipient_label(stream_id: number, topic: string): Recipient
             label_text: "#" + stream.name + " > " + topic_display_name,
             has_empty_string_topic: topic === "",
             stream_name: stream.name,
+            topic,
         };
         return recipient_label;
     }

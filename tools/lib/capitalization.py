@@ -63,6 +63,7 @@ IGNORED_PHRASES = [
     r"Download Zulip for macOS \(Intel\)",
     r"BigBlueButton",
     r"Constructor Groups",
+    r"Galène",
     r"Nextcloud Talk",
     # Code things
     r"\.zuliprc",
