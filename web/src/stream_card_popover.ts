@@ -52,7 +52,10 @@ export function initialize(): void {
                     const can_change_stream_permissions =
                         stream_data.can_change_permissions_requiring_metadata_access(sub);
                     let stream_edit_hash = hash_util.channels_settings_edit_url(sub, "general");
-                    if (!can_change_stream_permissions) {
+                    if (
+                        !can_change_stream_permissions &&
+                        stream_data.is_subscribed(sub.stream_id)
+                    ) {
                         stream_edit_hash = hash_util.channels_settings_edit_url(sub, "personal");
                     }
                     browser_history.go_to_location(stream_edit_hash);
