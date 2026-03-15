@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0782_stream_wildcard_mention_policy"),
         ("zerver", "0788_realmfilter_alternative_url_templates"),
