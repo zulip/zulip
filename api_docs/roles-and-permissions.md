@@ -39,11 +39,6 @@ Note that [`POST /register`](/api/register-queue) also returns an
 at least an organization moderator. The property will be true for admins
 and owners too.
 
-Additionally, user account data include an `is_billing_admin` property
-specifying whether the user is a billing administrator for the Zulip
-organization, which is not related to one of the roles listed above,
-but rather allows for specific permissions related to billing
-administration in [paid Zulip Cloud plans](https://zulip.com/plans/).
 
 ### User account data in the API
 
