@@ -32,12 +32,15 @@
                     {{t "ADD ALL USERS IN CURRENT CHANNEL" }}
                 </a>
             </div>
-            <div class="pill-container" id="rsvp-invite-users-container">
-                <div class="input" contenteditable="true" id="rsvp-invite-users" data-placeholder="{{t 'Add users' }}"></div>
+            <div class="rsvp-invite-row">
+                <div class="pill-container" id="rsvp-invite-users-container">
+                    <div class="input" contenteditable="true" id="rsvp-invite-users" data-placeholder="{{t 'Add users' }}"></div>
+                </div>
                 <button type="button" id="rsvp-user-dropdown-button" class="compose-new-recipient-button tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Add user' }}" tabindex="-1">
                     <i class="zulip-icon zulip-icon-square-plus"></i>
                 </button>
             </div>
+
             <div id="rsvp-user-dropdown" class="rsvp-user-dropdown" style="display: none;"></div>
         </div>
 
@@ -48,7 +51,6 @@
             {{t 'Create new channel'}}
         </label>
 </div>
-        
+
     </form>
 </div>
-
