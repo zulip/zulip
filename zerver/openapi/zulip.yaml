@@ -16239,6 +16239,53 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+  /export/realm/{export_id}:
+    delete:
+      description: |
+        Delete a completed realm export.
+      operationId: delete-realm-export
+      summary: Delete a data export
+      tags:
+        - server_and_organizations
+      parameters:
+        - name: export_id
+          in: path
+          description: The ID of the export to be deleted.
+          required: true
+          schema:
+            type: integer
+          example: 3
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                description: A successful response.  # <--- ADD THIS LINE
+                type: object
+                additionalProperties: false
+                properties:
+                  result:
+                    type: string
+                    enum:
+                      - success
+                  msg:
+                    type: string
+                example:
+                  result: success
+                  msg: ""
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CodedError"
+              examples:
+                invalid_export_id:
+                  value:
+                    result: error
+                    msg: Invalid data export ID
+                    code: BAD_REQUEST
   /export/realm:
     get:
       operationId: get-realm-exports

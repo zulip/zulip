@@ -150,6 +150,7 @@
 * [Update realm-level defaults of user settings](/api/update-realm-user-settings-defaults)
 * [Get all data exports](/api/get-realm-exports)
 * [Create a data export](/api/export-realm)
+* [Delete a data export](/api/delete-realm-export)
 * [Get data export consent state](/api/get-realm-export-consents)
 * [Test welcome bot custom message](/api/test-welcome-bot-custom-message)
 
