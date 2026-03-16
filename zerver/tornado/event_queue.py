@@ -51,6 +51,11 @@ EVENT_QUEUE_GC_FREQ_MSECS = 1000 * 60 * 1
 # to live
 MAX_QUEUE_TIMEOUT_SECS = 7 * 24 * 60 * 60
 
+# How long a client must go without polling before it is
+# considered offline. Once offline, the missedmessage_hook
+# is called to potentially send push/email notifications.
+EVENT_QUEUE_OFFLINE_TIMEOUT_SECS = 60 * 10
+
 # The heartbeats effectively act as a server-side timeout for
 # get_events().  The actual timeout value is randomized for each
 # client connection based on the below value.  We ensure that the
@@ -122,6 +127,7 @@ class ClientDescriptor:
         self.archived_channels = archived_channels
         self.empty_topic_name = empty_topic_name
         self.simplified_presence_events = simplified_presence_events
+        self.offline = False
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -155,6 +161,7 @@ class ClientDescriptor:
             archived_channels=self.archived_channels,
             empty_topic_name=self.empty_topic_name,
             simplified_presence_events=self.simplified_presence_events,
+            offline=self.offline,
         )
 
     @override
@@ -197,6 +204,7 @@ class ClientDescriptor:
             simplified_presence_events=d.get("simplified_presence_events", False),
         )
         ret.last_connection_time = d["last_connection_time"]
+        ret.offline = d.get("offline", False)
         return ret
 
     def add_event(self, event: Mapping[str, Any]) -> None:
@@ -281,6 +289,7 @@ class ClientDescriptor:
         self.current_client_name = client_name
         set_descriptor_by_handler_id(handler_id, self)
         self.last_connection_time = time.time()
+        self.offline = False
 
         def timeout_callback() -> None:
             self._timeout_handle = None
