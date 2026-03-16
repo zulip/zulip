@@ -298,7 +298,18 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                     };
                 case "resolved":
                     return {
-                        title: $t({defaultMessage: "No topics are marked as resolved."}),
+                        title_html: $t_html(
+                            {
+                                defaultMessage:
+                                    "No topics in <z-link>your history</z-link> are marked as resolved.",
+                            },
+                            {
+                                "z-link": (content_html) =>
+                                    `<a href="/help/search-for-messages#searching-shared-history" target="_blank" rel="noopener noreferrer">${content_html.join(
+                                        "",
+                                    )}</a>`,
+                            },
+                        ),
                     };
                 case "followed":
                     return {

@@ -398,7 +398,10 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
-        empty_narrow_html("translated: No topics are marked as resolved."),
+        empty_narrow_html(
+            undefined,
+            `translated: No topics in <a href="/help/search-for-messages#searching-shared-history" target="_blank" rel="noopener noreferrer">your history</a> are marked as resolved.`,
+        ),
     );
 
     current_filter = set_filter([["is", "followed"]]);
