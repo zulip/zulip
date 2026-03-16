@@ -35,9 +35,9 @@ def unfollow_user(
     followed_user = access_user_by_id(
         user_profile, followed_user_id, allow_deactivated=True, allow_bots=True, for_admin=False
     )
-    
-    # TODO: Once model is implemented, check if user is actually followed
-    # For now, we allow the action to proceed as a placeholder.
-    
+
+    if not get_follow_object(user_profile, followed_user):
+        raise JsonableError(_("User is not followed."))
+
     do_unfollow_user(user_profile, followed_user)
     return json_success(request)

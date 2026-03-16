@@ -684,7 +684,7 @@ def flush_muting_users_cache(*, instance: "MutedUser", **kwargs: object) -> None
     cache_delete(get_muting_users_cache_key(mute_object.muted_user_id))
 
 
-def flush_following_users_cache(*, instance: "FollowedUser", **kwards: object) -> None:
+def flush_following_users_cache(*, instance: "FollowedUser", **kwargs: object) -> None:
     follow_object = instance
     cache_delete(get_followed_users_cache_key(follow_object.followed_user_id))
 
