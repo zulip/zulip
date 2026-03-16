@@ -1406,6 +1406,7 @@ label.preferences-radio-choice-label {
 
 #show_api_key {
     .api-key-container {
+        padding-bottom: 10px;
         display: flex;
         align-items: center;
         gap: 8px;

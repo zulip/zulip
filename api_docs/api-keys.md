@@ -45,7 +45,8 @@ Zulip API with a specific account on a Zulip server.
 
 ## Invalidate an API key
 
-To invalidate an existing API key, you have to generate a new key.
+To invalidate an existing API key, you have to generate a new key. Generating a
+new API key will immediately log you out of this account on all mobile devices.
 
 {start_tabs}
 
