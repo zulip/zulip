@@ -835,12 +835,12 @@ def fetch_initial_state_data(
         else:
             sub_info = get_web_public_subs(realm, anonymous_group_membership_data_dict)
 
-    state["subscriptions"] = sub_info.subscriptions
-    state["unsubscribed"] = sub_info.unsubscribed
-    state["never_subscribed"] = sub_info.never_subscribed
-    for sub_list in [state["subscriptions"], state["unsubscribed"], state["never_subscribed"]]:
-        for stream in sub_list:
-            stream.setdefault("wildcard_mention_policy", None)
+        state["subscriptions"] = sub_info.subscriptions
+        state["unsubscribed"] = sub_info.unsubscribed
+        state["never_subscribed"] = sub_info.never_subscribed
+        for sub_list in [state["subscriptions"], state["unsubscribed"], state["never_subscribed"]]:
+            for stream in sub_list:
+                stream.setdefault("wildcard_mention_policy", None)
     if want("channel_folders"):
         if user_profile is None:
             state["channel_folders"] = [

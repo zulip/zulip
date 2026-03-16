@@ -820,14 +820,9 @@ export function set_wildcard_mention_threshold(value: number): void {
 
 export function validate_stream_message_mentions(opts: StreamWildcardOptions): boolean {
     const subscriber_count = peer_data.get_subscriber_count(opts.stream_id) || 0;
-
-    const stream = stream_data.get_sub_by_id(opts.stream_id);
     // Default to EVERYONE (1) if policy not set
-    const wildcard_policy = stream?.wildcard_mention_policy ?? 1;
-
     if (opts.stream_wildcard_mention) {
-        // WildcardMentionPolicyEnum.NOBODY = 6 → block completely
-        if (wildcard_policy === 6) {
+        if (!stream_wildcard_mention_allowed()) {
             const new_row_html = render_wildcard_mention_not_allowed_error({
                 banner_type: compose_banner.ERROR,
                 classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
@@ -840,22 +835,7 @@ export function validate_stream_message_mentions(opts: StreamWildcardOptions): b
             return false;
         }
 
-        // WildcardMentionPolicyEnum.ADMINS = 5 → only admins allowed
-        if (wildcard_policy === 5 && !current_user.is_admin) {
-            const new_row_html = render_wildcard_mention_not_allowed_error({
-                banner_type: compose_banner.ERROR,
-                classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
-                wildcard_mention_string: opts.stream_wildcard_mention,
-            });
-            compose_banner.append_compose_banner_to_banner_list(
-                $(new_row_html),
-                opts.$banner_container,
-            );
-            return false;
-        }
-
-        // WildcardMentionPolicyEnum.EVERYONE = 1 → warn if large stream
-        if (subscriber_count > 15 && !user_acknowledged_stream_wildcard) {
+        if (subscriber_count > wildcard_mention_threshold && !user_acknowledged_stream_wildcard) {
             show_stream_wildcard_warnings(opts);
             return false;
         }
