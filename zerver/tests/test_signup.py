@@ -1894,11 +1894,11 @@ class UserSignUpTest(ZulipTestCase):
 
         # Step 3: Simulate the race — do_create_realm raises IntegrityError
         # because another request already created the same subdomain
-    with patch(
+        with patch(
         "zerver.views.registration.do_create_realm",
         side_effect=IntegrityError,
     ):
-        result = self.submit_reg_form_for_user(
+            result = self.submit_reg_form_for_user(
             email,
             "password",
             realm_subdomain="custom-test",
