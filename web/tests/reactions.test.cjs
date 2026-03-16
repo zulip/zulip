@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_reaction} = require("./lib/example_reaction.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
@@ -16,20 +17,20 @@ const alice_user_id = 5;
 const sample_message = {
     id: 1001,
     reactions: [
-        {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f604"},
-        {emoji_name: "smile", user_id: 6, reaction_type: "unicode_emoji", emoji_code: "1f604"},
-        {emoji_name: "frown", user_id: 7, reaction_type: "unicode_emoji", emoji_code: "1f641"},
+        make_reaction({emoji_name: "smile", user_id: 5}),
+        make_reaction({emoji_name: "smile", user_id: 6}),
+        make_reaction({emoji_name: "frown", user_id: 7}),
 
-        {emoji_name: "tada", user_id: 7, reaction_type: "unicode_emoji", emoji_code: "1f389"},
-        {emoji_name: "tada", user_id: 8, reaction_type: "unicode_emoji", emoji_code: "1f389"},
+        make_reaction({emoji_name: "tada", user_id: 7}),
+        make_reaction({emoji_name: "tada", user_id: 8}),
 
-        {emoji_name: "rocket", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f680"},
-        {emoji_name: "rocket", user_id: 6, reaction_type: "unicode_emoji", emoji_code: "1f680"},
-        {emoji_name: "rocket", user_id: 7, reaction_type: "unicode_emoji", emoji_code: "1f680"},
+        make_reaction({emoji_name: "rocket", user_id: 5}),
+        make_reaction({emoji_name: "rocket", user_id: 6}),
+        make_reaction({emoji_name: "rocket", user_id: 7}),
 
-        {emoji_name: "wave", user_id: 6, reaction_type: "unicode_emoji", emoji_code: "1f44b"},
-        {emoji_name: "wave", user_id: 7, reaction_type: "unicode_emoji", emoji_code: "1f44b"},
-        {emoji_name: "wave", user_id: 8, reaction_type: "unicode_emoji", emoji_code: "1f44b"},
+        make_reaction({emoji_name: "wave", user_id: 6}),
+        make_reaction({emoji_name: "wave", user_id: 7}),
+        make_reaction({emoji_name: "wave", user_id: 8}),
 
         {
             emoji_name: "inactive_realm_emoji",
@@ -234,12 +235,12 @@ test("reactions from unknown users", () => {
     const message = {
         id: 1001,
         reactions: [
-            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f604"},
-            {emoji_name: "smile", user_id: 9, reaction_type: "unicode_emoji", emoji_code: "1f604"},
-            {emoji_name: "frown", user_id: 9, reaction_type: "unicode_emoji", emoji_code: "1f641"},
+            make_reaction({emoji_name: "smile", user_id: 5}),
+            make_reaction({emoji_name: "smile", user_id: 9}),
+            make_reaction({emoji_name: "frown", user_id: 9}),
 
-            {emoji_name: "tada", user_id: 6, reaction_type: "unicode_emoji", emoji_code: "1f389"},
-            {emoji_name: "tada", user_id: 10, reaction_type: "unicode_emoji", emoji_code: "1f389"},
+            make_reaction({emoji_name: "tada", user_id: 6}),
+            make_reaction({emoji_name: "tada", user_id: 10}),
         ],
     };
 
@@ -900,12 +901,10 @@ test("insert_new_reaction (first reaction)", ({mock_template, override_rewire}) 
     const message = {
         id: message_id,
         reactions: [
-            {
+            make_reaction({
                 emoji_name: "8ball",
                 user_id: alice.user_id,
-                reaction_type: "unicode_emoji",
-                emoji_code: "1f3b1",
-            },
+            }),
         ],
     };
 
@@ -971,18 +970,14 @@ test("insert_new_reaction (me w/unicode emoji)", ({mock_template}) => {
     const message = {
         id: message_id,
         reactions: [
-            {
+            make_reaction({
                 emoji_name: "+1",
                 user_id: bob.user_id,
-                reaction_type: "unicode_emoji",
-                emoji_code: "1f44d",
-            },
-            {
+            }),
+            make_reaction({
                 emoji_name: "8ball",
                 user_id: alice.user_id,
-                reaction_type: "unicode_emoji",
-                emoji_code: "1f3b1",
-            },
+            }),
         ],
     };
 
@@ -1049,18 +1044,14 @@ test("insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
     const message = {
         id: message_id,
         reactions: [
-            {
+            make_reaction({
                 emoji_name: "+1",
                 user_id: bob.user_id,
-                reaction_type: "unicode_emoji",
-                emoji_code: "1f44d",
-            },
-            {
+            }),
+            make_reaction({
                 emoji_name: "8ball",
                 user_id: bob.user_id,
-                reaction_type: "unicode_emoji",
-                emoji_code: "1f3b1",
-            },
+            }),
         ],
     };
     convert_reactions_to_clean_reactions(message);
@@ -1089,18 +1080,14 @@ test("update_existing_reaction (me)", () => {
     const message = {
         id: message_id,
         reactions: [
-            {
-                emoji_code: "1f3b1",
+            make_reaction({
                 emoji_name: "8ball",
-                reaction_type: "unicode_emoji",
                 user_id: alice.user_id,
-            },
-            {
-                emoji_code: "1f3b1",
+            }),
+            make_reaction({
                 emoji_name: "8ball",
-                reaction_type: "unicode_emoji",
                 user_id: bob.user_id,
-            },
+            }),
         ],
     };
     convert_reactions_to_clean_reactions(message);
@@ -1134,30 +1121,22 @@ test("update_existing_reaction (them)", () => {
     const message = {
         id: message_id,
         reactions: [
-            {
-                emoji_code: "1f3b1",
+            make_reaction({
                 emoji_name: "8ball",
-                reaction_type: "unicode_emoji",
                 user_id: alice.user_id,
-            },
-            {
-                emoji_code: "1f3b1",
+            }),
+            make_reaction({
                 emoji_name: "8ball",
-                reaction_type: "unicode_emoji",
                 user_id: bob.user_id,
-            },
-            {
-                emoji_code: "1f3b1",
+            }),
+            make_reaction({
                 emoji_name: "8ball",
-                reaction_type: "unicode_emoji",
                 user_id: cali.user_id,
-            },
-            {
-                emoji_code: "1f3b1",
+            }),
+            make_reaction({
                 emoji_name: "8ball",
-                reaction_type: "unicode_emoji",
                 user_id: alexus.user_id,
-            },
+            }),
         ],
     };
     convert_reactions_to_clean_reactions(message);
@@ -1193,18 +1172,14 @@ test("remove_reaction_from_view (me)", () => {
     const message = {
         id: message_id,
         reactions: [
-            {
-                emoji_code: "1f3b1",
+            make_reaction({
                 emoji_name: "8ball",
-                reaction_type: "unicode_emoji",
                 user_id: bob.user_id,
-            },
-            {
-                emoji_code: "1f3b1",
+            }),
+            make_reaction({
                 emoji_name: "8ball",
-                reaction_type: "unicode_emoji",
                 user_id: cali.user_id,
-            },
+            }),
         ],
     };
     convert_reactions_to_clean_reactions(message);
@@ -1240,12 +1215,10 @@ test("remove_reaction_from_view (them)", () => {
     const message = {
         id: message_id,
         reactions: [
-            {
-                emoji_code: "1f3b1",
+            make_reaction({
                 emoji_name: "8ball",
-                reaction_type: "unicode_emoji",
                 user_id: alice.user_id,
-            },
+            }),
         ],
     };
     convert_reactions_to_clean_reactions(message);
@@ -1287,18 +1260,14 @@ test("remove_reaction_from_view (last person to react)", ({override_rewire}) => 
     const message = {
         id: message_id,
         reactions: [
-            {
-                emoji_code: "1f3b1",
+            make_reaction({
                 emoji_name: "8ball",
-                reaction_type: "unicode_emoji",
                 user_id: bob.user_id,
-            },
-            {
-                emoji_code: "1f44d",
+            }),
+            make_reaction({
                 emoji_name: "thumbs_up",
-                reaction_type: "unicode_emoji",
                 user_id: alice.user_id,
-            },
+            }),
         ],
     };
 
@@ -1467,8 +1436,8 @@ test("duplicates", () => {
     const dup_reaction_message = {
         id: 1001,
         reactions: [
-            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f604"},
-            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f604"},
+            make_reaction({emoji_name: "smile", user_id: 5}),
+            make_reaction({emoji_name: "smile", user_id: 5}),
         ],
     };
 
