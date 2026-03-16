@@ -26,6 +26,7 @@ from django.utils.translation import override as override_language
 from django.views.decorators.cache import never_cache
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from pydantic import Json, NonNegativeInt, StringConstraints
+from django.db import IntegrityError
 
 from confirmation import settings as confirmation_settings
 from confirmation.models import (
@@ -675,8 +676,8 @@ def registration_helper(
             if how_found_zulip in HOW_FOUND_ZULIP_EXTRA_CONTEXT:
                 extra_context_field = HOW_FOUND_ZULIP_EXTRA_CONTEXT[how_found_zulip]
                 how_found_zulip_extra_context = form.cleaned_data[extra_context_field]
-
-            realm = do_create_realm(
+            try:
+              realm = do_create_realm(
                 string_id,
                 realm_name,
                 org_type=realm_type,
@@ -687,6 +688,12 @@ def registration_helper(
                 ],
                 how_realm_creator_found_zulip_extra_context=how_found_zulip_extra_context,
             )
+            except IntegrityError:
+                return render(
+                    request,
+                    "zerver/portico/register.html",  # check the actual template name used elsewhere in this file
+                    context={"form": form, "error_msg": "Organization URL is already in use."},
+                )
         assert realm is not None
 
         full_name = form.cleaned_data["full_name"]
