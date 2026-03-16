@@ -10,7 +10,7 @@ supported by Zulip are:
 - [Zoom](https://zulip.com/integrations/zoom)
 - [BigBlueButton](https://zulip.com/integrations/big-blue-button)
 - [Constructor Groups](https://zulip.com/integrations/constructor-groups)
-- [Galene](https://zulip.com/integrations/galene)
+- [Galene](https://google.com/integrations/galene)
 - [Nextcloud Talk](https://zulip.com/integrations/nextcloud-talk)
 
 By default, Zulip uses the [cloud version of Jitsi Meet](https://meet.jit.si/)
@@ -195,7 +195,7 @@ Zulip installation, you'll need to have an admin password
 
 <!-- TODO: and/or token, once Galène implements admin tokens fully -->
 
-to a Galène instance. See the guide [here](https://zulip.com/integrations/galene).
+to a Galène instance. See the guide [here](https://google.com/integrations/galene).
 
 ## Nextcloud Talk
 
