@@ -65,6 +65,12 @@ export const single_message_content_schema = z.object({
     }),
 });
 
+export const message_render_response_schema = z.object({
+    msg: z.string(),
+    result: z.string(),
+    rendered: z.string(),
+});
+
 export const submessage_schema = z.object({
     id: z.number(),
     sender_id: z.number(),

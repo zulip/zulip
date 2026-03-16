@@ -24,6 +24,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as linkifiers from "./linkifiers.ts";
 import * as loading from "./loading.ts";
 import * as markdown from "./markdown.ts";
+import {message_render_response_schema} from "./message_store.ts";
 import * as people from "./people.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
@@ -66,12 +67,6 @@ type SelectedLinesSections = {
     separating_new_line_after: boolean;
     after_lines: string;
 };
-
-const message_render_response_schema = z.object({
-    msg: z.string(),
-    result: z.string(),
-    rendered: z.string(),
-});
 
 export let compose_spinner_visible = false;
 
