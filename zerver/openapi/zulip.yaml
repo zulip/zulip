@@ -16256,12 +16256,12 @@ paths:
             type: integer
           example: 3
       responses:
-        '200':
+        "200":
           description: Success.
           content:
             application/json:
               schema:
-                description: A successful response.  # <--- ADD THIS LINE
+                description: A successful response. # <--- ADD THIS LINE
                 type: object
                 additionalProperties: false
                 properties:
