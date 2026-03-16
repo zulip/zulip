@@ -26,7 +26,6 @@ from django.utils.translation import override as override_language
 from django.views.decorators.cache import never_cache
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from pydantic import Json, NonNegativeInt, StringConstraints
-from django.db import IntegrityError
 
 from confirmation import settings as confirmation_settings
 from confirmation.models import (
