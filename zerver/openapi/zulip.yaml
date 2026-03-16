@@ -12644,13 +12644,6 @@ paths:
                   $ref: "#/components/schemas/MessageRetentionDays"
                 topics_policy:
                   $ref: "#/components/schemas/TopicsPolicy"
-                wildcard_mention_policy:
-                  type: integer
-                  nullable: true
-                  description: |
-                    The channel-level wildcard mention policy. When `null`, the
-                    organization-level policy applies.
-                    **Changes**: New in Zulip 11.0 (feature level TODO).
                 can_add_subscribers_group:
                   $ref: "#/components/schemas/ChannelCanAddSubscribersGroup"
                 can_remove_subscribers_group:
@@ -18221,8 +18214,6 @@ paths:
                                   nullable: true
                                 history_public_to_subscribers: {}
                                 topics_policy: {}
-                                wildcard_mention_policy:
-                                  nullable: true
                                 first_message_id:
                                   nullable: true
                                 folder_id:
@@ -23247,15 +23238,11 @@ paths:
                                   nullable: true
                                 history_public_to_subscribers: {}
                                 topics_policy: {}
-                                wildcard_mention_policy:
-                                  nullable: true
                                 first_message_id:
                                   nullable: true
                                 folder_id:
                                   nullable: true
                                 is_recently_active: {}
-                                is_announcement_only: {}
-                                can_add_subscribers_group: {}
                                 can_remove_subscribers_group: {}
                                 can_administer_channel_group: {}
                                 can_delete_any_message_group: {}
@@ -26375,8 +26362,6 @@ components:
               nullable: true
             history_public_to_subscribers: {}
             topics_policy: {}
-            wildcard_mention_policy:
-              nullable: true
             first_message_id:
               nullable: true
             folder_id:
@@ -26550,17 +26535,6 @@ components:
             assumption, as we may change that behavior in the future.
         topics_policy:
           $ref: "#/components/schemas/TopicsPolicy"
-        wildcard_mention_policy:
-          type: integer
-          nullable: true
-          description: |
-            The channel-level policy for which users can use wildcard mentions
-            in this channel. When `null`, the organization-level policy applies.
-
-            - `1`: Everyone can use wildcard mentions.
-            - `5`: Only administrators can use wildcard mentions.
-            - `6`: Nobody can use wildcard mentions.
-              **Changes**: New in Zulip 11.0 (feature level TODO).
         first_message_id:
           type: integer
           nullable: true
@@ -27706,14 +27680,6 @@ components:
             Intended to help clients determine whether they need to display
             UI like the "show all topics" widget that would suggest the channel
             has older history that can be accessed.
-        wildcard_mention_policy:
-          type: integer
-          nullable: true
-          description: |
-            The channel-level wildcard mention policy. When `null`, the
-            organization-level policy applies.
-            **Changes**: New in Zulip 11.0 (feature level TODO).
-            Is `null` for channels with no message history.
         folder_id:
           $ref: "#/components/schemas/FolderId"
         topics_policy:
