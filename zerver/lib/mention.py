@@ -20,7 +20,7 @@ from zerver.lib.user_groups import (
 from zerver.lib.users import get_inaccessible_user_ids
 from zerver.models import NamedUserGroup, UserProfile
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import Realm, WildcardMentionPolicyEnum
+from zerver.models.realms import Realm
 from zerver.models.streams import Stream
 from zerver.models.users import is_cross_realm_bot_email
 
@@ -298,6 +298,7 @@ def get_stream_wildcard_mention_policy(stream: Stream, realm: Realm) -> int:
         return stream.wildcard_mention_policy
     # Fall back to WildcardMentionPolicyEnum.EVERYONE if no stream policy set
     return None
+
 
 def extract_mention_text(m: Match[str]) -> MentionText:
     text = m.group("match")
