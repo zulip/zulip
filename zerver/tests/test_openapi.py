@@ -217,8 +217,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         #### These realm administration settings are valuable to document:
         # Single-stream settings alternative to the bulk endpoint
         # users/me/subscriptions/properties; probably should just be a
-        # section of the same page.
-        "/users/me/subscriptions/{stream_id}",
         # Default stream groups are an unfinished feature and therefore
         # shouldn't be added to the documentation until that's completed.
         "/default_stream_groups/create",
