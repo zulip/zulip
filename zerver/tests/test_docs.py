@@ -506,6 +506,8 @@ class DocPageTest(ZulipTestCase):
             # Images used in docs of disabled integrations
             "logos/intercom.svg",
             "intercom/001.png",
+            "logos/hubot.png",
+            "hubot/001.png",
         }
         images_in_dir.update(exception_images)
         images_in_docs.update(exception_images)

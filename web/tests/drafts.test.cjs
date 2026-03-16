@@ -622,6 +622,7 @@ test("format_drafts", ({override, mock_template}) => {
     });
 
     override(messages_overlay_ui, "set_initial_element", noop);
+    override(messages_overlay_ui, "get_and_clear_pending_restore_element_id", () => undefined);
 
     $.set_results(".drafts-list", []);
     $.set_results("#drafts_table .overlay-message-row", []);
@@ -768,6 +769,7 @@ test("filter_drafts", ({override, mock_template}) => {
     });
 
     override(messages_overlay_ui, "set_initial_element", noop);
+    override(messages_overlay_ui, "get_and_clear_pending_restore_element_id", () => undefined);
 
     override(user_pill, "get_user_ids", () => [aaron.user_id]);
     compose_state.set_message_type("private");

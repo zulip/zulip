@@ -456,7 +456,13 @@ def do_update_embedded_data(
         for group_id in rendered_content.mentions_user_group_ids:
             members = mention_data.get_group_members(group_id)
             rendered_content.mentions_user_ids.update(members)
-        update_user_message_flags(rendered_content, ums)
+
+        topic_participant_user_ids: set[int] = set()
+        if rendered_content.mentions_topic_wildcard and message.is_channel_message:
+            topic_participant_user_ids = participants_for_topic(
+                message.realm_id, message.recipient_id, message.topic_name()
+            )
+        update_user_message_flags(rendered_content, ums, topic_participant_user_ids)
         message.rendered_content = rendered_content.rendered_content
         message.rendered_content_version = markdown_version
         update_fields.append("rendered_content_version")
@@ -951,11 +957,12 @@ def do_update_message(
     save_changes_for_propagation_mode()
 
     # Invalidate the message cache for all changed messages.  They'll
-    # be lazily rebuilt from the database on next access.  The DB has
-    # up-to-date content for all of them: the target message was saved
-    # above, and propagated messages were updated by
-    # save_changes_for_propagation_mode().
-    cache_delete_many(to_dict_cache_key_id(msg_id) for msg_id in changed_message_ids)
+    # be lazily rebuilt from the database on next access.  We defer
+    # this to after the transaction commits so that concurrent readers
+    # don't repopulate the cache with stale pre-commit data.
+    transaction.on_commit(
+        lambda: cache_delete_many(to_dict_cache_key_id(msg_id) for msg_id in changed_message_ids)
+    )
     event["message_ids"] = sorted(changed_message_ids)
 
     # The following blocks arranges that users who are subscribed to a

@@ -1149,6 +1149,29 @@ def update_subscription_settings(client: Client) -> None:
     validate_against_openapi_schema(result, "/users/me/subscriptions/properties", "POST", "200")
 
 
+@openapi_test_function("/users/me/subscriptions/{stream_id}:patch")
+def update_subscription_property(client: Client) -> None:
+    subscriptions = client.get_subscriptions()["subscriptions"]
+    assert len(subscriptions) >= 1
+    stream_id = subscriptions[0]["stream_id"]
+
+    # {code_example|start}
+    # Update the user's subscription of the channel with ID `stream_id`
+    # so that it's pinned to the top of the user's channel list.
+    request = {
+        "property": "pin_to_top",
+        "value": True,
+    }
+    result = client.call_endpoint(
+        f"users/me/subscriptions/{stream_id}",
+        method="PATCH",
+        request=request,
+    )
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/users/me/subscriptions/{stream_id}", "patch", "200")
+
+
 @openapi_test_function("/messages/render:post")
 def render_message(client: Client) -> None:
     # {code_example|start}
@@ -1699,6 +1722,30 @@ def upload_file(client: Client) -> None:
     validate_against_openapi_schema(result, "/user_uploads", "post", "200")
 
 
+@openapi_test_function("/thumbnail/status/{realm_id_str}/{filename}:get")
+def check_thumbnail_status(client: Client) -> None:
+    path_to_file = os.path.join(ZULIP_DIR, "zerver", "tests", "images", "img.jpg")
+    with open(path_to_file, "rb") as fp:
+        result = client.upload_file(fp)
+
+    uri = result["uri"]
+    parts = uri.split("/")
+    realm_id_str = parts[2]
+    filename = "/".join(parts[3:])
+
+    # {code_example|start}
+    # Check thumbnail status.
+    result = client.call_endpoint(
+        url=f"/thumbnail/status/{realm_id_str}/{filename}",
+        method="GET",
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(
+        result, "/thumbnail/status/{realm_id_str}/{filename}", "get", "200"
+    )
+
+
 @openapi_test_function("/users/me/{stream_id}/topics:get")
 def get_stream_topics(client: Client, stream_id: int) -> None:
     # {code_example|start}
@@ -2057,6 +2104,7 @@ def test_invalid_stream_error(client: Client) -> None:
 
 
 def test_messages(client: Client, nonadmin_client: Client) -> None:
+    check_thumbnail_status(client)
     render_message(client)
     message_id, content = send_message(client)
     set_message_edit_typing_status(client, message_id)
@@ -2149,6 +2197,7 @@ def test_streams(client: Client, nonadmin_client: Client) -> None:
     toggle_mute_topic(client)
     update_user_topic(client)
     update_subscription_settings(client)
+    update_subscription_property(client)
     get_stream_topics(client, 1)
     delete_topic(client, 1, "test")
     archive_stream(client)

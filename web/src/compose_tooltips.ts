@@ -369,7 +369,7 @@ export function initialize(): void {
                     _.isEqual(narrow_filter.sorted_term_types(), ["channel"]) &&
                     compose_state.get_message_type() === "stream" &&
                     narrow_filter.terms_with_operator("channel")[0]!.operand ===
-                        compose_state.stream_name()
+                        compose_state.stream_id()?.toString()
                 ) {
                     display_current_view = $t({
                         defaultMessage: "Currently viewing the entire channel.",

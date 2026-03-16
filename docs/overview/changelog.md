@@ -13,6 +13,179 @@ log][commit-log] for an up-to-date list of all changes.
 
 _Unreleased_
 
+### Zulip Server 12.0-beta1
+
+_Released 2026-03-12_
+
+#### Highlights
+
+- Server support for end-to-end encrypted mobile push notifications is
+  now generally available, with full mobile app support expected to be
+  released before the 12.0 final release.
+- Uploaded images and audio files now use the `![alt text](url)` markdown
+  syntax, which does not require a separate link element.
+- Added a new organization setting for media preview size,
+  controlling image and video thumbnail sizes in message content.
+- Added support for using Jdenticons for default profile pictures.
+  Jdenticons better in both Zulip themes and have less privacy risk than
+  Gravatar, and are the default for new organizations.
+- Redesigned the Recent Conversations view with a new table layout,
+  one-line conversation display, folder filter dropdown, improved
+  column sizing and alignment, and better touchscreen support.
+- Redesigned channel-specific settings, with a much cleaner view and a
+  dedicated "Permissions" tab. Channel settings now supports filtering
+  channels by folder and better highlights when a channel is archived.
+- Emoji-only messages now render the emoji extra large.
+- Linkifiers now support reverse linkification: pasting a URL that
+  matches a linkifier pattern now auto-converts to the short text
+  form.
+- Added a jump-to-date picker in the message feed. Users can click a
+  date separator and navigate to any date in the conversation history.
+- Added support for administrators to bulk-edit most settings for
+  existing users via the "Default user settings" panel. Administrators
+  can choose to only edit settings for users who haven't already
+  changed that setting. (Security and privacy settings cannot be
+  edited by administrators).
+- Added Nextcloud Talk, Constructor Groups, and Webex as video call
+  provider options.
+- Added a "Report message" feature, with a configurable private channel
+  for moderators to handle reports.
+- Demo organizations allow testing Zulip without sharing an email address.
+- Improved search typeahead with topic suggestions from all subscribed
+  channels and nicer styling for channel/topic pair suggestions.-
+- Added many new default external account types for custom profile
+  fields, and made URL pattern optional for external
+  accounts. External accounts can now be used for matching users in
+  typeahead.
+- Added a beta data import tool for Microsoft Teams.
+- Migrated the help center to Starlight, the Astro-based static site
+  generator, adding full-text search and a modernized design.
+
+#### Full feature changelog
+
+- Added a "frequently used" section to the web app emoji picker.
+- Added a channel-specific setting for who can create topics.
+- Added an organization setting to disable automated messages about
+  channel events (e.g., channel description changes).
+- Added a Roles tab in group settings, detailing the permissions
+  assigned to users with specific roles.
+- Added a `mentions` search operator for finding messages that mention
+  a specific user, distinct from `has:mention` which filters to
+  messages mentioning yourself.
+- Added an icon button in recipient headers to copy the topic link.
+- Added an "unsupported browser" warning for ancient browser versions.
+- Added an `is:followed` filter for topics in the left sidebar.
+- Added image cropping support for realm logo, realm icon, and user
+  avatar uploads.
+- When deactivating a user, administrators now have convenient options
+  to delete their messages or scrub their profile information.
+- Redesigned modals across the app.
+- Redesigned the left sidebar's "all topics" view.
+- Redesigned the GIF picker with nice keyboard UI, and support for
+  multiple GIF search backends, including Giphy and Tenor. (Tenor is
+  expected to be shut down mid-2026, but the restructuring greatly
+  simplifies adding other providers).
+- Redesigned how messages by muted users are displayed.
+- Redesigned the bot management settings panel to match the rest of
+  settings, with consolidated "All bots" / "Your bots" tabbed views.
+- Redesigned the data export UI to better explain the consent model.
+- Redesigned user pills to show "deactivated" status with real-time
+  updates, and present purple group pills across the UI with proper
+  bot and deactivated user icons.
+- Improved the left sidebar to visually separate the DM section from
+  channels and keep the DM header pinned.
+- Improved the left sidebar `n` key to better handle channels in
+  collapsed or muted folder sections.
+- Added an expand/collapse-all-sections toggle in the left sidebar
+  filter menu.
+- Left sidebar folder headers now have UI for editing the folder.
+- Messages with pending reminders now indicate that state.
+- Improved the scroll-to-bottom button with a blur-on-hover effect.
+- Improved threading of message notification emails with
+  `In-Reply-To` and `References` headers.
+- Improved channel and topic filtering with fancier matching.
+- The message edit box is now resizable with a drag handle.
+- Improved Markdown table rendering with cell vertical alignment and
+  better white-space wrapping.
+- Improved settings responsiveness for narrow screens.
+- Improved keyboard navigation in settings UI.
+- Improved the language settings picker to sort languages by display
+  name and show each language name in its own script.
+- Improved IPv6 support and error pages for the rate limiting system.
+- Improved notification emails for admin-initiated profile changes
+  (name changes, role changes, custom profile field updates).
+- Improved handling of revoked invitations to preserve objects and
+  record audit log entries.
+- Improved how drafts with an incomplete recipient are displayed.
+- Renamed "Joined" to "Created" in bot profiles.
+- The Markdown process now linkifies RFC 2392 `mid:` URLs.
+- Added a keyboard shortcut (`Shift+Y`) to open the set-status modal.
+- Added a keyboard shortcut (`L`) to copy a link to the currently
+  selected message.
+- Added a compose box keyboard shortcut (`Ctrl+Shift+C`) for wrapping
+  text in an inline code span.
+- Added an icon button in recipient headers to copy the topic link.
+- Added a `+` button for adding DM recipients in the compose box.
+- Added a "new topic" button in the left sidebar all topics view.
+- Added support for opening media in the lightbox from scheduled
+  messages and message edit history.
+- YouTube video links with a timestamp now correctly open to that
+  point in the video in the lightbox.
+- Emoji settings UI now warns when overriding a unicode emoji with a
+  custom emoji.
+- Added new webhook integrations for Notion, Redmine, and dbt Cloud.
+  Rewrote the Intercom webhook integration with full support for
+  ticket, conversation, contact, and company events.
+- Added GitLab webhook support for emoji reaction events, design
+  comments, and an option to ignore events from private projects.
+- Added GitHub webhook support for `repository_advisory` events and
+  silent mentions for linked GitHub profiles.
+- Removed several integrations where the service had shut down
+  (Pivotal, Insping, Bitbucket Server, Jira plugin) or no longer
+  supported the original API (Twitter).
+- Updated documentation for dozens of integrations, including fixing
+  names for products that had been renamed.
+- Fixed several issues with pasting logic.
+- Fixed several live-update issues with the Recent Conversations view
+  as well as the left sidebar.
+- Fixed topic suggestion display name for _general chat_.
+- Fixed the user's cursor in the combined feed being lost on reload.
+- Fixed messages deleted via a message retention policy being
+  incorrectly not removed until the web app reloaded.
+- Fixed several issues with the poll and todo widgets.
+- Fixed the emoji name mapping for the `:smile:` emoji.
+- Fixed various scroll-to-bottom button hiding issues in topic views
+  and non-message views.
+- Fixed several compose box UI bugs for the web and mobile web experience.
+- Fixed the left sidebar not highlighting the DM header when viewing
+  all DMs.
+- Fixed various settings overlay issues on narrow screens.
+- Fixed user profile modal closing when showing channel/group cards.
+- Fixed several bugs involving the back button after moving messages.
+- Fixed several minor issues in digest email rendering.
+- Fixed several minor bugs with keyboard shortcuts, typeahead, and
+  focus management.
+- Fixed several minor issues with text selection in the main views.
+- Fixed name validation to permit 1-character user names (E.g., a
+  single Chinese character).
+- Fixed how the incoming email integration handles general chat.
+- Fixed exception emails containing excessive settings data.
+- Enabled several modern HTTP headers for security hardening.
+- Improved correctness and performance of data import tools for
+  Slack, Mattermost, and Rocket.Chat.
+- Improved performance of data import/export with parallel file
+  downloading, streaming iterators, etc.
+- The web app now loads about 2x faster in organizations with more
+  than 10,000 users, thanks to a new protocol for syncing peer
+  subscriber data.
+- Implemented dozens of significant performance optimizations across
+  the system.
+- Added support for PostgreSQL 18, including defaulting to
+  `io_method=io_uring` on PostgreSQL 18 for better performance.
+- Removed legacy Zephyr mirroring support.
+- Updated all dependencies. Emoji 16 is now supported.
+- Updated translations. New Estonian (et) locale.
+
 ### Upgrade notes for 12.0
 
 - The `LDAP_SYNCHRONIZED_GROUPS_BY_REALM` setting for LDAP group

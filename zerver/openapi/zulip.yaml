@@ -104,6 +104,114 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiKeyResponse"
+  /jwt/fetch_api_key:
+    post:
+      operationId: jwt-fetch-api-key
+      summary: Fetch an API key (JWT)
+      tags: ["authentication"]
+      description: |
+        This API endpoint is used by clients to implement JSON Web Token
+        (JWT) authentication. Given a JWT identifying a Zulip user, it
+        returns a Zulip API key that the client can use to make requests
+        as the user.
+
+        !!! warn ""
+
+            **Note:** This endpoint is only useful for Zulip servers/organizations
+            with [JSON web token authentication][prod-jwt-auth] enabled.
+
+        See the [API keys](/api/api-keys) documentation for more details
+        on how to manage API keys manually.
+
+        **Changes**: New in Zulip 7.0 (feature level 160).
+
+        [prod-jwt-auth]: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#json-web-tokens-jwt
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                token:
+                  description: |
+                    A JSON Web Token for the target user.
+
+                    The token payload must contain a custom `email` claim with the target
+                    user's email address, e.g., `{"email": "<target user email>"}`.
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImhhbWxldEB6dWxpcC5jb20ifQ.EsHxSVt54zPR-ywgPH54TB1FYmrGKsfq7hsQEhp_9w0"
+                include_profile:
+                  type: boolean
+                  default: false
+                  example: false
+                  description: |
+                    Whether to include a `user` object containing the target
+                    user's profile details in the response.
+              required:
+                - token
+      security: []
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - required:
+                      - api_key
+                      - email
+                    additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      api_key:
+                        type: string
+                        description: |
+                          The API key that can be used to authenticate as the requested user.
+                      email:
+                        type: string
+                        description: |
+                          The email address of the user who owns the API key.
+                      user:
+                        description: |
+                          Only present if `include_profile` parameter was set to `true`.
+
+                          A dictionary with data on the target user.
+                        allOf:
+                          - $ref: "#/components/schemas/UserBase"
+                          - additionalProperties: false
+                            properties:
+                              user_id: {}
+                              delivery_email:
+                                nullable: true
+                              email: {}
+                              full_name: {}
+                              date_joined: {}
+                              is_active: {}
+                              is_owner: {}
+                              is_admin: {}
+                              is_guest: {}
+                              is_bot: {}
+                              bot_type:
+                                nullable: true
+                              bot_owner_id:
+                                nullable: true
+                              role: {}
+                              timezone: {}
+                              avatar_url:
+                                nullable: true
+                              avatar_version: {}
+                              is_imported_stub: {}
+                    example:
+                      {
+                        "api_key": "gjA04ZYcqXKalvYMA8OeXSfzUOLrtbZv",
+                        "email": "hamlet@zulip.com",
+                        "msg": "",
+                        "result": "success",
+                      }
   /dev_fetch_api_key:
     post:
       operationId: dev-fetch-api-key
@@ -143,6 +251,89 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiKeyResponse"
+  /dev_list_users:
+    get:
+      operationId: dev-list-users
+      summary: List users (development only)
+      tags:
+        - authentication
+      description: |
+        Get a list of all, non-bot users in a [Zulip development
+        server](https://zulip.readthedocs.io/en/latest/development/overview.html).
+        This endpoint is used by mobile developers to fetch users for the
+        development login flow.
+
+        !!! warn ""
+
+            **Note:** This endpoint is only available on Zulip development
+            servers; for obvious security reasons it will always return an error
+            in a Zulip production server.
+      security: []
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - type: object
+                    additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      direct_admins:
+                        type: array
+                        description: |
+                          A list of administrators in the development server.
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            email:
+                              type: string
+                              description: |
+                                The email of the dev admin user.
+                            realm_url:
+                              type: string
+                              description: |
+                                The URL of the dev admin user's organization.
+                      direct_users:
+                        type: array
+                        description: |
+                          A list of non-admin users in the development server.
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            email:
+                              type: string
+                              description: |
+                                The email of the dev user.
+                            realm_url:
+                              type: string
+                              description: |
+                                The URL of the dev user's organization.
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "direct_admins":
+                          [
+                            {
+                              "email": "iago@zulip.com",
+                              "realm_url": http://localhost:9991,
+                            },
+                          ],
+                        "direct_users":
+                          [
+                            {
+                              "email": "hamlet@zulip.com",
+                              "realm_url": http://localhost:9991,
+                            },
+                          ],
+                      }
   /events:
     get:
       operationId: get-events
@@ -10518,6 +10709,59 @@ paths:
                         "url": "/user_uploads/1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt",
                         "filename": "zulip.txt",
                       }
+  /thumbnail/status/{realm_id_str}/{filename}:
+    get:
+      operationId: check-thumbnail-status
+      summary: Check thumbnail status
+      tags: ["messages"]
+      description: |
+        Check whether a thumbnail exists for a specific file uploaded by a user.
+        This endpoint is intended to be polled by clients to determine when
+        thumbnail generation is complete.
+
+        **Changes**: New in Zulip 12.0 (feature level 479).
+      parameters:
+        - name: realm_id_str
+          in: path
+          description: |
+            The realm ID component of the file's `path_id`. If the `path_id` is
+            `1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt`, the `realm_id_str` would be `1`.
+          schema:
+            type: integer
+          example: 1
+          required: true
+        - name: filename
+          in: path
+          description: |
+            The file path component of the file's `path_id` (everything
+            after the first `/`). If the `path_id` is
+            `1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt`, the `filename`
+            would be `4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt`.
+          schema:
+            type: string
+          example: 4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      has_thumbnail:
+                        type: boolean
+                        description: |
+                          A boolean indicating whether the thumbnail exists.
+                    required:
+                      - has_thumbnail
+                    example:
+                      {"msg": "", "result": "success", "has_thumbnail": true}
   /user_uploads/{realm_id_str}/{filename}:
     get:
       operationId: get-file-temporary-url
@@ -10538,7 +10782,8 @@ paths:
         - name: realm_id_str
           in: path
           description: |
-            The ID of the Zulip organization.
+            The realm ID component of the file's `path_id`. If the `path_id` is
+            `1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt`, the `realm_id_str` would be `1`.
           schema:
             type: integer
           example: 1
@@ -10546,7 +10791,10 @@ paths:
         - name: filename
           in: path
           description: |
-            Path to the [uploaded file](/api/upload-file).
+            The file path component of the file's `path_id` (everything
+            after the first `/`). If the `path_id` is
+            `1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt`, the `filename`
+            would be `4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt`.
           schema:
             type: string
           example: 4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt
@@ -11297,7 +11545,7 @@ paths:
                           **Changes**: New in Zulip 12.0 (feature level 433).
                         example: false
                       profile_data:
-                        $ref: "#/components/schemas/profile_data"
+                        $ref: "#/components/schemas/ProfileData"
                     example:
                       {
                         "avatar_url": "https://secure.gravatar.com/avatar/af4f06322c177ef4e1e9b2c424986b54?d=identicon&version=1",
@@ -15085,17 +15333,21 @@ paths:
   /users/me/subscriptions/properties:
     post:
       operationId: update-subscription-settings
-      summary: Update subscription settings
+      summary: Bulk update subscription settings
       tags: ["channels"]
       description: |
-        This endpoint is used to update the user's personal settings for the
-        channels they are subscribed to, including muting, color, pinning, and
-        per-channel notification settings.
+        Update the current user's personal settings for channels they are
+        subscribed to. These settings include [color](/help/change-the-color-of-a-channel),
+        [muting](/help/mute-a-channel), [pinning](/help/pin-a-channel)
+        and [per-channel notification settings](/help/channel-notifications).
 
-        **Changes**: Prior to Zulip 5.0 (feature level 111), response
-        object included the `subscription_data` in the
-        request. The endpoint now returns the more ergonomic
-        [`ignored_parameters_unsupported`][ignored-parameters] array instead.
+        There is a single channel alternative to this bulk endpoint:
+        [`POST /users/me/subscriptions/{stream_id}`](/api/update-subscription-property).
+
+        **Changes**: Prior to Zulip 5.0 (feature level 111), the response object
+        included the `subscription_data` in the request. The endpoint now returns
+        the more ergonomic [`ignored_parameters_unsupported`][ignored-parameters]
+        array instead.
 
         [ignored-parameters]: /api/rest-error-handling#ignored-parameters
       requestBody:
@@ -15121,61 +15373,9 @@ paths:
                         description: |
                           The unique ID of a channel.
                       property:
-                        type: string
-                        enum:
-                          - color
-                          - is_muted
-                          - in_home_view
-                          - pin_to_top
-                          - desktop_notifications
-                          - audible_notifications
-                          - push_notifications
-                          - email_notifications
-                          - wildcard_mentions_notify
-                        description: |
-                          One of the channel properties described below:
-
-                          - `"color"`: The hex value of the user's display color for the channel.
-
-                          - `"is_muted"`: Whether the channel is [muted](/help/mute-a-channel).<br>
-                            **Changes**: As of Zulip 6.0 (feature level 139), updating either
-                            `"is_muted"` or `"in_home_view"` generates two [subscription update
-                            events](/api/get-events#subscription-update), one for each property,
-                            that are sent to clients. Prior to this feature level, updating either
-                            property only generated a subscription update event for
-                            `"in_home_view"`. <br>
-                            Prior to Zulip 2.1.0, this feature was represented
-                            by the more confusingly named `"in_home_view"` (with the
-                            opposite value: `in_home_view=!is_muted`); for
-                            backwards-compatibility, modern Zulip still accepts that property.
-
-                          - `"pin_to_top"`: Whether to pin the channel at the top of the channel list.
-
-                          - `"desktop_notifications"`: Whether to show desktop notifications
-                            for all messages sent to the channel.
-
-                          - `"audible_notifications"`: Whether to play a sound
-                            notification for all messages sent to the channel.
-
-                          - `"push_notifications"`: Whether to trigger a mobile push
-                            notification for all messages sent to the channel.
-
-                          - `"email_notifications"`: Whether to trigger an email
-                            notification for all messages sent to the channel.
-
-                          - `"wildcard_mentions_notify"`: Whether wildcard mentions trigger
-                            notifications as though they were personal mentions in this channel.
+                        $ref: "#/components/schemas/SubscriptionProperty"
                       value:
-                        oneOf:
-                          - type: boolean
-                          - type: string
-                        description: |
-                          The new value of the property being modified.
-
-                          If the property is `"color"`, then `value` is a string
-                          representing the hex value of the user's display
-                          color for the channel. For all other above properties,
-                          `value` is a boolean.
+                        $ref: "#/components/schemas/SubscriptionPropertyValue"
                     required:
                       - stream_id
                       - property
@@ -15195,6 +15395,38 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SuccessIgnoredParameters"
+  /users/me/subscriptions/{stream_id}:
+    patch:
+      operationId: update-subscription-property
+      summary: Update a subscription setting
+      tags: ["channels"]
+      description: |
+        Update the current user's personal settings for a specific channel they
+        are subscribed to. These settings include [color](/help/change-the-color-of-a-channel),
+        [muting](/help/mute-a-channel), [pinning](/help/pin-a-channel)
+        and [per-channel notification settings](/help/channel-notifications).
+
+        This is a single channel alternative to the bulk endpoint:
+        [`POST /users/me/subscriptions/properties`](/api/update-subscription-settings).
+      parameters:
+        - $ref: "#/components/parameters/ChannelIdInPath"
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                property:
+                  $ref: "#/components/schemas/SubscriptionProperty"
+                value:
+                  $ref: "#/components/schemas/SubscriptionPropertyValue"
+              required:
+                - property
+                - value
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /users/{email}:
     get:
       operationId: get-user-by-email
@@ -21463,7 +21695,6 @@ paths:
                                 avatar_url:
                                   nullable: true
                                 avatar_version: {}
-                                profile_data: {}
                                 is_imported_stub: {}
                       server_report_message_types:
                         description: |
@@ -28546,7 +28777,8 @@ components:
               nullable: true
             avatar_version: {}
             is_imported_stub: {}
-            profile_data: {}
+            profile_data:
+              $ref: "#/components/schemas/ProfileData"
     UserBase:
       type: object
       description: |
@@ -28706,9 +28938,7 @@ components:
 
             **Changes**: New in Zulip 12.0 (feature level 433).
           example: false
-        profile_data:
-          $ref: "#/components/schemas/profile_data"
-    profile_data:
+    ProfileData:
       type: object
       description: |
         Only present if `is_bot` is false; bots can't have custom profile fields.
@@ -29779,6 +30009,68 @@ components:
         Is `null` if channel does not belong to any folder.
 
         **Changes**: New in Zulip 11.0 (feature level 389).
+    SubscriptionProperty:
+      type: string
+      enum:
+        - color
+        - is_muted
+        - in_home_view
+        - pin_to_top
+        - desktop_notifications
+        - audible_notifications
+        - push_notifications
+        - email_notifications
+        - wildcard_mentions_notify
+      description: |
+        One of the channel properties described below:
+
+        - `"color"`: The hex value of the user's display color for the channel.
+
+        - `"is_muted"`: Whether the channel is [muted](/help/mute-a-channel).<br>
+          **Changes**: As of Zulip 6.0 (feature level 139), updating either
+          `"is_muted"` or `"in_home_view"` generates two [subscription update
+          events](/api/get-events#subscription-update), one for each property,
+          that are sent to clients. Prior to this feature level, updating either
+          property only generated a subscription update event for
+          `"in_home_view"`. <br>
+          Prior to Zulip 2.1.0, this feature was represented
+          by the more confusingly named `"in_home_view"` (with the
+          opposite value: `in_home_view=!is_muted`); for
+          backwards-compatibility, modern Zulip still accepts that property.
+
+        - `"pin_to_top"`: Whether to pin the channel at the top of the channel list.
+
+        - `"desktop_notifications"`: Whether to show desktop notifications
+          for all messages sent to the channel.
+
+        - `"audible_notifications"`: Whether to play a sound
+          notification for all messages sent to the channel.
+
+        - `"push_notifications"`: Whether to trigger a mobile push
+          notification for all messages sent to the channel.
+
+        - `"email_notifications"`: Whether to trigger an email
+          notification for all messages sent to the channel.
+
+        - `"wildcard_mentions_notify"`: Whether wildcard mentions trigger
+          notifications as though they were personal mentions in this channel.
+      example: "pin_to_top"
+    SubscriptionPropertyValue:
+      oneOf:
+        - type: boolean
+          description: |
+            The new boolean value for the specified property.
+        - type: string
+          description: |
+            The hex value of the user's display color for the channel.
+      description: |
+        The new value of the property being modified.
+
+        If the property is `"color"`, then `value` is a string
+        representing the hex value of the user's display
+        color for the channel. For all other above properties,
+        `value` is a boolean.
+      example: "true"
 
   ###################
   # Shared responses

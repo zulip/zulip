@@ -545,11 +545,12 @@ def make_constructor_groups_video_call(
     user_profile: UserProfile,
 ) -> HttpResponse:
     service = ConstructorGroupsService()
+    room_name = _("{full_name}'s Zulip room").format(full_name=user_profile.full_name)
 
     room_data = service.get_or_create_default_room(
         creator_email=user_profile.delivery_email,
-        name=f"{user_profile.full_name}'s Zulip room",
-        fallback_name=f"{user_profile.full_name}'s Zulip room ({user_profile.realm_id}-{user_profile.id})",
+        name=room_name,
+        fallback_name=f"{room_name} ({user_profile.realm_id}-{user_profile.id})",
     )
 
     room_url = room_data.get("url", "")

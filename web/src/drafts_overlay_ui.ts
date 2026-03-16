@@ -305,6 +305,19 @@ function setup_event_handlers(): void {
             return;
         }
 
+        if (
+            messages_overlay_ui.handle_overlay_media_click(
+                e,
+                "drafts",
+                keyboard_handling_context,
+                () => {
+                    browser_history.go_to_location("#drafts");
+                },
+            )
+        ) {
+            return;
+        }
+
         e.stopPropagation();
 
         const $draft_row = $(this).closest(".overlay-message-row");
@@ -402,8 +415,14 @@ export function launch(): void {
     $("#draft_overlay").css("opacity");
 
     open_overlay();
-    const first_element_id = [...narrow_drafts, ...other_drafts][0]?.draft_id;
-    messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
+    const restore_id = messages_overlay_ui.get_and_clear_pending_restore_element_id();
+    if (
+        restore_id === undefined ||
+        !messages_overlay_ui.try_set_initial_element(restore_id, keyboard_handling_context)
+    ) {
+        const first_element_id = [...narrow_drafts, ...other_drafts][0]?.draft_id;
+        messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
+    }
     setup_event_handlers();
     setup_bulk_actions_handlers();
 }

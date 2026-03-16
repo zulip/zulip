@@ -216,7 +216,13 @@ class Integration:
         self.doc = doc
 
     def is_enabled_in_catalog(self) -> bool:
-        return self.name not in ("intercom", "notion")
+        return self.name not in (
+            # Integrations being incrementally added
+            "intercom",
+            "notion",
+            # Broken integrations awaiting fixes
+            "hubot",
+        )
 
     def get_logo_path(self, fallback_logo_path: str | None = None) -> str:
         paths_to_check = [
@@ -434,7 +440,10 @@ class HubotIntegration(Integration):
         display_name: str | None = None,
         logo: str | None = None,
         git_url: str | None = None,
-        legacy: bool = False,
+        # Hide all integrations available via Hubot from the catalog until
+        # the Hubot integration (https://github.com/zulip/hubot-zulip)
+        # becomes functional again.
+        legacy: bool = True,
     ) -> None:
         if git_url is None:
             git_url = self.GIT_URL_TEMPLATE.format(name)
@@ -575,6 +584,10 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         "codeship",
         ["continuous-integration", "deployment"],
         [WebhookScreenshotConfig("error_build.json")],
+        # TODO: Delete integration in 2027. Reached EOL Jan 2026.
+        # Compare payload format similarity with its replacement
+        # CloudBees Unify to consider conversion instead of deletion.
+        legacy=True,
     ),
     IncomingWebhookIntegration(
         "crashlytics", ["monitoring"], [WebhookScreenshotConfig("issue_message.json")]
@@ -1091,7 +1104,6 @@ HUBOT_INTEGRATIONS: list[HubotIntegration] = [
     HubotIntegration("assembla", ["version-control", "project-management"]),
     HubotIntegration("bonusly", ["hr"]),
     HubotIntegration("chartbeat", ["marketing"]),
-    HubotIntegration("darksky", ["misc"], display_name="Dark Sky"),
     HubotIntegration("google-translate", ["misc"], display_name="Google Translate"),
     HubotIntegration(
         "instagram",

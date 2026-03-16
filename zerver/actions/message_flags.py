@@ -2,7 +2,6 @@ import time
 from collections import defaultdict
 from dataclasses import asdict, dataclass, field
 
-from django.conf import settings
 from django.db import transaction
 from django.db.models import F
 from django.utils.timezone import now as timezone_now
@@ -15,7 +14,7 @@ from zerver.lib.message import (
     format_unread_message_details,
     get_raw_unread_data,
 )
-from zerver.lib.queue import queue_event_on_commit
+from zerver.lib.queue import mobile_notifications_queue_name, queue_event_on_commit
 from zerver.lib.stream_subscription import get_subscribed_stream_recipient_ids_for_user
 from zerver.lib.topic import filter_by_topic_name_via_message
 from zerver.lib.user_message import DEFAULT_HISTORICAL_FLAGS, create_historical_user_messages
@@ -302,11 +301,7 @@ def do_clear_mobile_push_notifications_for_ids(
             "user_profile_id": user_profile_id,
             "message_ids": event_message_ids,
         }
-        if settings.MOBILE_NOTIFICATIONS_SHARDS > 1:  # nocoverage
-            shard_id = user_profile_id % settings.MOBILE_NOTIFICATIONS_SHARDS + 1
-            queue_event_on_commit(f"missedmessage_mobile_notifications_shard{shard_id}", notice)
-        else:
-            queue_event_on_commit("missedmessage_mobile_notifications", notice)
+        queue_event_on_commit(mobile_notifications_queue_name(user_profile_id), notice)
 
 
 def do_update_message_flags(

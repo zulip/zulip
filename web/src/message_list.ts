@@ -554,14 +554,14 @@ export class MessageList {
         $recipient_row.find(".topic_edit").append($form);
         $recipient_row.find(".stream_topic").hide();
         $recipient_row.find(".topic_edit").show();
-        $recipient_row.find(".recipient-bar-control").hide();
+        $recipient_row.find(".recipient_bar_controls").addClass("topic-edit-mode");
     }
 
     hide_edit_topic_on_recipient_row($recipient_row: JQuery): void {
         $recipient_row.find(".stream_topic").show();
         $recipient_row.find(".topic_edit").empty();
         $recipient_row.find(".topic_edit").hide();
-        $recipient_row.find(".recipient-bar-control").show();
+        $recipient_row.find(".recipient_bar_controls").removeClass("topic-edit-mode");
     }
 
     reselect_selected_id(): void {

@@ -1693,6 +1693,7 @@ export function switch_group_tab(tab_name: string): void {
         use `group_list_toggler.goto`.
     */
 
+    update_filter_widget_visibility(tab_name);
     redraw_left_panel(tab_name);
     setup_group_list_tab_hash(tab_name);
 }
@@ -1885,15 +1886,22 @@ function setup_dropdown_filters_widget(): void {
     filters_dropdown_widget.setup();
 }
 
-function update_filter_widget_visibility(): void {
-    if (user_groups.realm_has_deactivated_user_groups()) {
-        $("#user-group-edit-filter-options").show();
-    } else {
+function update_filter_widget_visibility(tab_name?: string): void {
+    const active_tab = tab_name ?? get_active_data().$tabs.first().attr("data-tab-key");
+    if (active_tab === "roles") {
+        // Roles cannot be deactivated, so the active/deactivated filter
+        // dropdown is not applicable on the roles tab. We hide the dropdown
+        // and ignore the filter value completely for this tab.
+        $("#user-group-edit-filter-options").hide();
+        update_displayed_groups(FILTERS.ACTIVE_GROUPS);
+    } else if (!user_groups.realm_has_deactivated_user_groups()) {
         $("#user-group-edit-filter-options").hide();
         update_displayed_groups(FILTERS.ACTIVE_GROUPS);
         if (filters_dropdown_widget) {
             filters_dropdown_widget.render(FILTERS.ACTIVE_GROUPS);
         }
+    } else {
+        $("#user-group-edit-filter-options").show();
     }
 }
 
@@ -2291,6 +2299,7 @@ export function initialize(): void {
                     modal_content_html: render_confirm_join_group_direct_member({
                         associated_subgroup_names,
                     }),
+                    is_compact: true,
                     id: "confirm_join_group_direct_member",
                     on_click() {
                         const $group_row = row_for_group_id(user_group_id);

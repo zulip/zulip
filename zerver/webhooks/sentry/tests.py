@@ -266,16 +266,6 @@ Traceback:
         expected_message = """Issue **Exception: program has entered an invalid state.** was marked as resolved by **Hemanth V. Alluri**."""
         self.check_webhook("issue_resolved", expected_topic_name, expected_message)
 
-    def test_deprecated_exception_message(self) -> None:
-        expected_topic_name = "zulip"
-        expected_message = """\
-:orange_circle: New [issue](https://sentry.io/zulip/zulip/issues/156699934/) (level: ERROR):
-
-``` quote
-This is an example python exception
-```"""
-        self.check_webhook("deprecated_exception_message", expected_topic_name, expected_message)
-
     def test_sample_event_through_alert(self) -> None:
         expected_topic_name = "This is an example Python exception"
         expected_message = """\

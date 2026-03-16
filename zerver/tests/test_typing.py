@@ -893,3 +893,24 @@ class TestSendTypingNotificationsSettings(ZulipTestCase):
         self.assert_length(events, 1)
         event_user_ids = set(events[0]["users"])
         self.assertEqual(expected_recipient_ids, event_user_ids)
+
+    def test_message_edit_notifications_for_direct_messages_to_self(self) -> None:
+        hamlet = self.example_user("hamlet")
+        msg_id = self.send_personal_message(hamlet, hamlet)
+
+        params = dict(
+            op="start",
+        )
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.api_post(hamlet, f"/api/v1/messages/{msg_id}/typing", params)
+
+        self.assert_json_success(result)
+        self.assert_length(events, 1)
+
+        # Make sure that hamlet being both the sender and recipient is not included twice.
+        self.assert_length(events[0]["users"], 1)
+        self.assertEqual([hamlet.id], events[0]["users"])
+
+        event = events[0]["event"]
+        self.assert_length(event["recipient"]["user_ids"], 1)
+        self.assertEqual([hamlet.id], event["recipient"]["user_ids"])

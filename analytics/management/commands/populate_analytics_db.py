@@ -160,14 +160,13 @@ class Command(ZulipBaseCommand):
             end_times = time_range(
                 last_end_time, last_end_time, stat.frequency, len(next(iter(fixture_data.values())))
             )
-            if table == InstallationCount:
-                id_args: dict[str, Any] = {}
+            id_args: dict[str, Realm | UserProfile | Stream] = {}
             if table == RealmCount:
                 id_args = {"realm": realm}
             if table == UserCount:
                 id_args = {"realm": realm, "user": shylock}
             if table == StreamCount:
-                id_args = {"stream": stream, "realm": realm}
+                id_args = {"realm": realm, "stream": stream}
 
             for subgroup, values in fixture_data.items():
                 table._default_manager.bulk_create(

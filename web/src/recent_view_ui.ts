@@ -124,6 +124,13 @@ let is_waiting_for_revive_current_focus = true;
 let last_scroll_offset: number | undefined;
 let hide_other_views_callback: (() => void) | undefined;
 
+// Row focus and viewport offset of the focused row before search,
+// so we can restore both focus and scroll position when search is
+// cleared.
+let pre_search_row_focus: number | undefined;
+let pre_search_topic_viewport_offset: number | undefined;
+let previous_search_term = "";
+
 export function set_hide_other_views(callback: () => void): void {
     hide_other_views_callback = callback;
 }
@@ -1048,7 +1055,7 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
 }
 
 export function bulk_inplace_rerender(row_keys: string[]): void {
-    if (!topics_widget) {
+    if (!topics_widget || !recent_view_util.is_visible()) {
         return;
     }
 
@@ -2172,6 +2179,16 @@ export function initialize({
         change_focused_element($(e.target), "click");
     });
 
+    $(window).on("resize", () => {
+        // The saved viewport offset is no longer meaningful after a
+        // resize, so discard it to avoid incorrect scroll restoration.
+        pre_search_topic_viewport_offset = undefined;
+    });
+
+    $("body").on("click", "#recent-view-search-wrapper .input-close-filter-button", () => {
+        set_default_focus();
+    });
+
     $("body").on("click", "#recent-view-content-table .on_hover_topic_read", (e) => {
         e.stopPropagation();
         assert(e.currentTarget instanceof HTMLElement);
@@ -2289,9 +2306,56 @@ export function initialize({
         "input",
         "#recent_view_search",
         _.debounce(() => {
-            // Reset focus to first row on new search.
-            row_focus = 0;
-            update_filters_view();
+            const search_term = $<HTMLInputElement>("#recent_view_search").val() ?? "";
+            const is_previous_search_term_empty = previous_search_term === "";
+            previous_search_term = search_term;
+
+            if (search_term !== "" && is_previous_search_term_empty) {
+                // Store the focused row index and its viewport offset
+                // to restore both focus and scroll position when the
+                // search is cleared.
+                pre_search_row_focus = row_focus;
+                const $topic_row = $("#recent-view-content-tbody tr").eq(row_focus);
+                pre_search_topic_viewport_offset = $topic_row[0]?.getBoundingClientRect().top;
+            }
+
+            if (search_term === "") {
+                // Restore scroll position to the row that was focused
+                // before search started.
+                row_focus = pre_search_row_focus ?? 0;
+                update_filters_view();
+                if (topics_widget !== undefined) {
+                    // Clamp row_focus if the list shrank while
+                    // searching (e.g., messages were read with the
+                    // "unread" filter active).
+                    const list_length = topics_widget.get_current_list().length;
+                    if (list_length > 0) {
+                        row_focus = Math.min(row_focus, list_length - 1);
+                    } else {
+                        row_focus = 0;
+                    }
+                    // The initial render might not have rendered enough
+                    // rows for the target row_focus. Calling render()
+                    // will use get_min_load_count to extend rendering
+                    // if needed.
+                    topics_widget.render();
+                }
+                // Restore the row to the same viewport position it
+                // was at before search started.
+                const $topic_row = $("#recent-view-content-tbody tr").eq(row_focus);
+                const current_top = $topic_row[0]?.getBoundingClientRect().top;
+                if (current_top !== undefined && pre_search_topic_viewport_offset !== undefined) {
+                    window.scrollBy(0, current_top - pre_search_topic_viewport_offset);
+                }
+                pre_search_row_focus = undefined;
+                pre_search_topic_viewport_offset = undefined;
+            } else {
+                // Reset focus to first row on new search.
+                row_focus = 0;
+                update_filters_view();
+                // Always scroll to top when there is a search term present.
+                window.scrollTo(0, 0);
+            }
             // Wait for user to go idle before initiating search.
         }, 300),
     );

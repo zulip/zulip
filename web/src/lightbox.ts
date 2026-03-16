@@ -34,6 +34,7 @@ type Media = {
 let is_open = false;
 let open_image: ($media: JQuery<HTMLImageElement>) => void;
 let open_video: ($media: JQuery<HTMLMediaElement>) => void;
+let overlay_restore_callback: (() => void) | undefined;
 
 // The asset map is a map of all retrieved images and YouTube videos that are memoized instead of
 // being looked up multiple times. It is keyed by the message id with each value being the
@@ -209,6 +210,7 @@ export class PanZoomControl {
 export function clear_for_testing(): void {
     is_open = false;
     asset_map.clear();
+    overlay_restore_callback = undefined;
 }
 
 export function invalidate_asset_map_of_message(message_id: number): void {
@@ -376,12 +378,21 @@ function display_video(payload: Media): void {
     $(".media-actions .open").attr("href", payload.url);
 }
 
+function invoke_overlay_restore_callback(): void {
+    const callback = overlay_restore_callback;
+    overlay_restore_callback = undefined;
+    if (callback) {
+        callback();
+    }
+}
+
 export function build_open_media_function(
     on_close = (): void => {
         remove_video_players();
         is_open = false;
         assert(document.activeElement instanceof HTMLElement);
         document.activeElement.blur();
+        invoke_overlay_restore_callback();
     },
 ): ($media: JQuery<HTMLMediaElement | HTMLImageElement>) => void {
     return function ($media: JQuery<HTMLMediaElement | HTMLImageElement>): void {
@@ -528,7 +539,9 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
     const $parent = $media.parent();
     let type: MediaType;
     let source;
-    const url = $parent.attr("href");
+    // Client-rendered images (e.g., in drafts) are bare <img> tags
+    // not wrapped in an <a>, so fall back to the image's src.
+    const url = $parent.attr("href") ?? $media.attr("src");
     assert(url !== undefined);
 
     let preview_src = $media.attr("src");
@@ -646,6 +659,14 @@ export function handle_inline_media_element_click(
     $("#lightbox_overlay .center").toggleClass("invisible", hide_navigation_arrows);
 }
 
+export function handle_overlay_media_element_click(
+    $media: JQuery<HTMLMediaElement> | JQuery<HTMLImageElement>,
+    on_lightbox_close: () => void,
+): void {
+    overlay_restore_callback = on_lightbox_close;
+    handle_inline_media_element_click($media, true);
+}
+
 // this is a block of events that are required for the lightbox to work.
 export function initialize(): void {
     // Renders the DOM for the lightbox.
@@ -665,6 +686,7 @@ export function initialize(): void {
         if (pan_zoom_control.isActive()) {
             pan_zoom_control.reset();
         }
+        invoke_overlay_restore_callback();
     };
 
     open_image = build_open_media_function(reset_lightbox_state);
