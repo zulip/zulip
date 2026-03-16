@@ -76,7 +76,7 @@ def messages_for_topic(
         recipient_id=stream_recipient_id,
         subject__iexact=topic_name,
         is_channel_message=True,
-    )
+    ).select_related("sender")
 
 
 def get_latest_message_for_user_in_topic(
