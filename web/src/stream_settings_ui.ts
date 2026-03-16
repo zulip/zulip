@@ -237,6 +237,14 @@ export function update_topics_policy_setting(
     stream_ui_updates.update_setting_element(sub, "topics_policy");
 }
 
+export function update_wildcard_mention_policy_setting(
+    sub: StreamSubscription,
+    new_value: number,
+): void {
+    stream_data.update_wildcard_mention_policy_setting(sub, new_value);
+    stream_ui_updates.update_setting_element(sub, "wildcard_mention_policy");
+}
+
 export function update_stream_permission_group_setting(
     setting_name: StreamPermissionGroupSetting,
     sub: StreamSubscription,
@@ -1360,3 +1368,4 @@ export function initialize(): void {
         window.location.href = hash_util.channel_url_by_user_setting(stream_id);
     });
 }
+

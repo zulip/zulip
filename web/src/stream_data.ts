@@ -489,6 +489,13 @@ export function update_topics_policy_setting(
     sub.topics_policy = topics_policy;
 }
 
+export function update_wildcard_mention_policy_setting(
+    sub: StreamSubscription,
+    wildcard_mention_policy: number,
+): void {
+    sub.wildcard_mention_policy = wildcard_mention_policy;
+}
+
 export function update_stream_permission_group_setting(
     setting_name: StreamPermissionGroupSetting,
     sub: StreamSubscription,
