@@ -28,6 +28,20 @@ mock_esm("../src/people", {
     small_avatar_url: () => "fake/small/avatar/url",
     get_muted_user_avatar_url: () => "fake/muted_user/avatar/url",
     maybe_get_user_by_id: noop,
+    pm_perma_link: () => "",
+});
+
+mock_esm("../src/narrow_state", {
+    is_message_feed_visible: () => true,
+});
+mock_esm("../src/message_viewport", {
+    is_scrolled_up: () => false,
+});
+mock_esm("../src/condense", {
+    condense_and_collapse: noop,
+});
+mock_esm("../src/message_lists", {
+    current: undefined,
 });
 
 const {Filter} = zrequire("../src/filter");
@@ -862,4 +876,78 @@ test("render_windows", ({mock_template}) => {
         move_end: 250,
         no_move_start: 0,
     });
+});
+
+test("save_scroll_position_fallback", ({override, mock_template}) => {
+    // This test verifies that save_scroll_position falls back to
+    // message_lists.current.selected_id() if this.selected_row() is empty.
+    mock_template("recipient_row.hbs", false, () => "<recipient-row-stub>");
+    mock_template("single_message.hbs", false, () => "<single-message-stub>");
+    mock_template("bookend.hbs", false, () => "<bookend-stub>");
+
+    const list = new message_list.MessageList({
+        data: new MessageListData({
+            filter: new Filter([]),
+            excludes_muted_topics: false,
+        }),
+        is_node_test: true,
+    });
+    const view = list.view;
+
+    let row_offset_called = false;
+    const selected_id = 100;
+
+    // Mock message_lists.current
+    override(zrequire("message_lists"), "current", list);
+
+    // Mock selected_id
+    list.data.set_selected_id(selected_id);
+
+    // Mock get_row to return a fake row for the selected_id
+    const $row = $.create("row-stub");
+    $row.length = 1;
+    $row.get_offset_to_window = () => {
+        row_offset_called = true;
+        return {top: 50};
+    };
+
+    override(view, "get_row", (id) => {
+        if (id === selected_id) {
+            return $row;
+        }
+        return $.create("empty-id-list", {elements: []});
+    });
+
+    // Mock selected_row to be empty (simulating the bug condition where selection row isn't in DOM or established)
+    override(view, "selected_row", () => $.create("empty-selected-row", {elements: []}));
+
+    // We need to trigger a render that calls save_scroll_position.
+    // We mock build_message_groups and merge_message_groups to simulate a prepend operation.
+    const messages = [{id: 1, timestamp: 100}];
+    const message_containers = [{msg: messages[0]}];
+    override(view, "build_message_groups", () => [{message_containers}]);
+    override(view, "merge_message_groups", (groups) => ({
+        prepend_groups: groups,
+        rerender_groups: [],
+        append_groups: [],
+        append_messages: [],
+    }));
+    const $rendered_group = $.create("fake-group");
+    override(view, "_render_group", () => {
+        $rendered_group.find = () => $.create("empty-find-results", {elements: []});
+        return $rendered_group;
+    });
+
+    // We also need to mock those things that are called after _render_group
+    $rendered_group.first = () => ({
+        prev: () => ({
+            remove: noop,
+        }),
+    });
+    override(view, "_post_process", noop);
+
+    // Trigger render with "top" to invoke prepending logic which calls save_scroll_position
+    view.render(messages, "top");
+
+    assert.ok(row_offset_called, "Should have called get_offset_to_window on the fallback row");
 });

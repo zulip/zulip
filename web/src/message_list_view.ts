@@ -1175,8 +1175,20 @@ export class MessageListView {
         }
 
         const save_scroll_position = (): void => {
-            if (orig_scrolltop_offset === undefined && this.selected_row().length > 0) {
-                orig_scrolltop_offset = this.selected_row().get_offset_to_window().top;
+            if (orig_scrolltop_offset !== undefined) {
+                return;
+            }
+
+            let $selected_row = this.selected_row();
+            if ($selected_row.length === 0) {
+                const selected_id = message_lists.current?.selected_id();
+                if (selected_id !== undefined && selected_id > -1) {
+                    $selected_row = this.get_row(selected_id);
+                }
+            }
+
+            if ($selected_row.length > 0 && $selected_row[0]) {
+                orig_scrolltop_offset = $selected_row.get_offset_to_window().top;
             }
         };
 
@@ -1316,12 +1328,16 @@ export class MessageListView {
         if (list === message_lists.current) {
             // Update the fade.
 
-            const get_element = (message_group: MessageGroup): JQuery => {
+            const get_element = (message_group: MessageGroup): JQuery | undefined => {
                 // We don't have a MessageGroup class, but we can at least hide the messy details
                 // of rows.ts from compose_fade.  We provide a callback function to be lazy--
                 // compose_fade may not actually need the elements depending on its internal
                 // state.
-                const $message_row = this.get_row(message_group.message_containers[0]!.msg.id);
+                const first_container = message_group.message_containers[0];
+                if (first_container === undefined || first_container.msg === undefined) {
+                    return undefined;
+                }
+                const $message_row = this.get_row(first_container.msg.id);
                 return rows.get_message_recipient_row($message_row);
             };
 
