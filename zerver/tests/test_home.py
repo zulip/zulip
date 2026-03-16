@@ -61,6 +61,7 @@ class HomeTest(ZulipTestCase):
         "presence_history_limit_days_for_web_app",
         "promote_sponsoring_zulip",
         "realm_rendered_description",
+        "register_params",
         "request_language",
         "show_try_zulip_modal",
         "state_data",
