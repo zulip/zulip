@@ -1873,7 +1873,8 @@ def apply_event(
     elif event["type"] == "followed_users":
         state["followed_users"] = event["followed_users"]
     elif event["type"] == "onboarding_steps":
-
+        state["onboarding_steps"] = event["onboarding_steps"]
+    elif event["type"] == "realm_linkifiers":
         # We only send realm_linkifiers event to clients that indicate
         # support for linkifiers with URL templates. Otherwise, silently
         # ignore the event.
