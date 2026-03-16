@@ -297,8 +297,7 @@ def get_stream_wildcard_mention_policy(stream: Stream, realm: Realm) -> int:
     if stream.wildcard_mention_policy is not None:
         return stream.wildcard_mention_policy
     # Fall back to WildcardMentionPolicyEnum.EVERYONE if no stream policy set
-    return WildcardMentionPolicyEnum.EVERYONE.value
-
+    return None
 
 def extract_mention_text(m: Match[str]) -> MentionText:
     text = m.group("match")

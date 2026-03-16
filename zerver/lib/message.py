@@ -1599,6 +1599,9 @@ def stream_wildcard_mention_allowed(sender: UserProfile, stream: Stream, realm: 
 
     policy = get_stream_wildcard_mention_policy(stream, realm)
 
+    if policy is None:
+        return can_mention_many_users(sender)
+
     if policy == WildcardMentionPolicyEnum.EVERYONE:
         return True
 
