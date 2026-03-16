@@ -849,23 +849,36 @@ $(() => {
                 client_capabilities: JSON.stringify(client_capabilities),
             };
         }
-        channel.post({
-            url: "/json/register",
-            data,
-            success(response_data) {
-                const state_data = state_data_schema.parse(response_data);
-                initialize_everything(state_data);
-                if (page_params.show_try_zulip_modal) {
-                    show_try_zulip_modal();
-                }
-            },
-            error() {
-                $("#app-loading-middle-content").hide();
-                $("#app-loading-bottom-content").hide();
-                $(".app").hide();
-                $("#app-loading-error").css({visibility: "visible"});
-            },
-        });
+        let register_failures = 0;
+        function fetch_state_data() {
+            channel.post({
+                url: "/json/register",
+                data,
+                success(response_data) {
+                    const state_data = state_data_schema.parse(response_data);
+                    initialize_everything(state_data);
+                    if (page_params.show_try_zulip_modal) {
+                        show_try_zulip_modal();
+                    }
+                },
+                error(xhr) {
+                    register_failures += 1;
+                    if (register_failures <= 5) {
+                        const retry_delay_secs = util.get_retry_backoff_seconds(
+                            xhr,
+                            register_failures,
+                        );
+                        setTimeout(fetch_state_data, retry_delay_secs * 1000);
+                        return;
+                    }
+                    $("#app-loading-middle-content").hide();
+                    $("#app-loading-bottom-content").hide();
+                    $(".app").hide();
+                    $("#app-loading-error").css({visibility: "visible"});
+                },
+            });
+        }
+        fetch_state_data();
     } else {
         const state_data = page_params.state_data;
         assert(state_data !== null);
