@@ -312,7 +312,6 @@ def update_stream_backend(
     message_retention_days: Json[str] | Json[int] | None = None,
     new_name: str | None = None,
     stream_id: PathOnly[int],
-    wildcard_mention_policy: Json[int] | None = None,
     topics_policy: TopicsPolicy = None,
 ) -> HttpResponse:
     # Most settings updates only require metadata access, not content
@@ -525,15 +524,6 @@ def update_stream_backend(
                     old_setting_api_value=current_setting_api_value,
                     acting_user=user_profile,
                 )
-
-    if wildcard_mention_policy is not None:
-        print(f"DEBUG: saving wildcard_mention_policy = {wildcard_mention_policy}", flush=True)
-        do_set_stream_property(
-            stream,
-            "wildcard_mention_policy",
-            wildcard_mention_policy,
-            acting_user=user_profile,
-        )
 
     return json_success(request)
 
