@@ -110,6 +110,7 @@ function show_compose_box(opts: ComposeActionsOpts): void {
     } else {
         opts_by_message_type = {
             trigger: opts.trigger,
+            focus_message_box: true,
             message_type: "stream",
             stream_id: opts.stream_id,
             topic: opts.topic,
