@@ -1521,6 +1521,15 @@ export function set_event_handlers({
 }: {
     show_channel_feed: (stream_id: number, trigger: string) => void;
 }): void {
+    $("#stream_filters").on("mousedown", "li .subscription_block", (e) => {
+        // Prevent default behavior of text selection upon multiple clicks
+        // to allow toggling in #topics narrows.
+        // https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/detail
+        if (e.detail > 1) {
+            e.preventDefault();
+        }
+    });
+
     $("#stream_filters").on("click", "li .subscription_block", (e) => {
         // Left sidebar channel links have an `href` so that the
         // browser will preview the URL and you can middle-click it.
