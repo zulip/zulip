@@ -4401,9 +4401,9 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to all users in a Zulip organization when the set of
-                                [allowed domains for new users](/help/restrict-account-creation#configuring-email-domain-restrictions)
-                                has changed.
+                                Event sent to all users in a Zulip organization when a new domain has been
+                                added to the set of [allowed domains for account creation and email
+                                changes](/help/restrict-account-creation#configuring-email-domain-restrictions).
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -4417,7 +4417,10 @@ paths:
                                   enum:
                                     - add
                                 realm_domain:
-                                  $ref: "#/components/schemas/RealmDomain"
+                                  allOf:
+                                    - $ref: "#/components/schemas/RealmDomain"
+                                    - description: |
+                                        Object containing details of the newly added domain.
                               example:
                                 {
                                   "type": "realm_domains",
@@ -4433,7 +4436,8 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users in a Zulip organization when the set of
-                                [allowed domains for new users](/help/restrict-account-creation#configuring-email-domain-restrictions)
+                                [allowed domains for account creation and email
+                                changes](/help/restrict-account-creation#configuring-email-domain-restrictions)
                                 has changed.
                               properties:
                                 id:
@@ -4448,19 +4452,10 @@ paths:
                                   enum:
                                     - change
                                 realm_domain:
-                                  type: object
-                                  additionalProperties: false
-                                  description: |
-                                    Object containing details of the edited domain.
-                                  properties:
-                                    domain:
-                                      type: string
-                                      description: |
-                                        The domain whose settings have changed.
-                                    allow_subdomains:
-                                      type: boolean
-                                      description: |
-                                        Whether subdomains are allowed for this domain.
+                                  allOf:
+                                    - $ref: "#/components/schemas/RealmDomain"
+                                    - description: |
+                                        Object containing details of the edited domain.
                               example:
                                 {
                                   "type": "realm_domains",
@@ -4475,9 +4470,9 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to all users in a Zulip organization when the set of
-                                [allowed domains for new users](/help/restrict-account-creation#configuring-email-domain-restrictions)
-                                has changed.
+                                Event sent to all users in a Zulip organization when a domain has been
+                                removed from the set of [allowed domains for account creation and email
+                                changes](/help/restrict-account-creation#configuring-email-domain-restrictions).
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -14295,6 +14290,174 @@ paths:
                         "result": "success",
                         "server_timestamp": 1656958539.6287155,
                       }
+  /realm/domains:
+    get:
+      operationId: get-realm-domains
+      summary: Get allowed domains
+      tags: ["server_and_organizations"]
+      description: |
+        Get the set of allowed domains configured in the organization for user
+        account email addresses.
+
+        As each Zulip user account is associated with an email address, organization
+        owners can [restrict new account creation (and email
+        changes)](/help/restrict-account-creation) to email addresses with these
+        domains.
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      domains:
+                        type: array
+                        description: |
+                          A list of objects containing details of each domain allowed
+                          for user account email addresses.
+                        items:
+                          $ref: "#/components/schemas/RealmDomain"
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "domains":
+                          [
+                            {
+                              "domain": "example.com",
+                              "allow_subdomains": false,
+                            },
+                          ],
+                      }
+    post:
+      operationId: add-realm-domain
+      summary: Add an allowed domain
+      tags: ["server_and_organizations"]
+      description: |
+        Add a domain to the set of allowed domains configured in the organization
+        for [user account email addresses](/help/restrict-account-creation).
+
+        **Changes**: Prior to Zulip 6.0 (feature level 143), organization
+        administrators who were not owners could access this endpoint.
+      x-requires-owner: true
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                domain:
+                  description: |
+                    The new domain.
+
+                    **Changes**: In Zulip 4.0 (feature level 63), the unnecessary
+                    JSON-encoding of this parameter was removed.
+                  type: string
+                  example: "example.com"
+                allow_subdomains:
+                  description: |
+                    Whether subdomains are allowed for this domain.
+                  type: boolean
+                  example: false
+              required:
+                - domain
+                - allow_subdomains
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      new_domain:
+                        type: array
+                        description: |
+                          An array containing the ID of the newly added domain
+                          and the submitted domain name string.
+                        items:
+                          oneOf:
+                            - type: integer
+                            - type: string
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "new_domain": [1, "example.com"],
+                      }
+  /realm/domains/{domain}:
+    patch:
+      operationId: patch-realm-domain
+      summary: Update an allowed domain
+      tags: ["server_and_organizations"]
+      description: |
+        Update whether subdomains are allowed in [user account email
+        addresses](/help/restrict-account-creation) for the specified domain.
+
+        **Changes**: Prior to Zulip 6.0 (feature level 143), organization
+        administrators who were not owners could access this endpoint.
+      x-requires-owner: true
+      parameters:
+        - name: domain
+          in: path
+          description: |
+            The domain to update.
+          schema:
+            type: string
+            example: "example.com"
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                allow_subdomains:
+                  description: |
+                    Whether subdomains are allowed for this domain.
+                  type: boolean
+                  example: true
+              required:
+                - allow_subdomains
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+    delete:
+      operationId: delete-realm-domain
+      summary: Remove an allowed domain
+      tags: ["server_and_organizations"]
+      description: |
+        Remove the specified domain from the set of allowed domains configured in
+        the organization for [user account email addresses](/help/restrict-account-creation).
+
+        **Changes**: Prior to Zulip 6.0 (feature level 143), organization
+        administrators who were not owners could access this endpoint.
+      x-requires-owner: true
+      parameters:
+        - name: domain
+          in: path
+          description: |
+            The domain to remove.
+          schema:
+            type: string
+            example: "example.com"
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /realm/profile_fields:
     get:
       operationId: get-custom-profile-fields
@@ -17903,8 +18066,8 @@ paths:
                         description: |
                           Present if `realm_domains` is present in `fetch_event_types`.
 
-                          An array of dictionaries where each dictionary describes a domain within
-                          which users can join the organization without and invitation.
+                          An array of dictionaries where each dictionary describes an allowed domain
+                          for [user account email addresses](/help/restrict-account-creation).
                         items:
                           $ref: "#/components/schemas/RealmDomain"
                       realm_emoji:
@@ -27009,17 +27172,18 @@ components:
     RealmDomain:
       type: object
       additionalProperties: false
-      description: |
-        Object containing details of the newly added domain.
       properties:
         domain:
           type: string
           description: |
-            The new allowed domain.
+            The allowed domain.
         allow_subdomains:
           type: boolean
           description: |
             Whether subdomains are allowed for this domain.
+      required:
+        - domain
+        - allow_subdomains
     RealmPlayground:
       type: object
       additionalProperties: false

@@ -3190,9 +3190,11 @@ user's profile.
   `emails_restricted_to_domains`, `invite_required`, and
   `waiting_period_threshold` settings can no longer be changed by
   organization administrators who are not owners.
-* `PATCH /realm/domains`, `POST /realm/domains`, `DELETE
-  /realm/domains`: Organization administrators who are not owners can
-  no longer access these endpoints.
+* [`POST /realm/domains`](/api/add-realm-domain),
+  [`PATCH /realm/domains/{domain}`](/api/patch-realm-domain),
+  [`DELETE /realm/domains/{domain}`](/api/delete-realm-domain):
+  Organization administrators who are not owners can no longer access
+  these endpoints.
 
 **Feature level 142**
 
@@ -3809,8 +3811,8 @@ No changes; feature level used for Zulip 4.0 release.
   parameter `default_language`.
 * `POST /users/me/tutorial_status`: Removed unnecessary JSON-encoding of string
   parameter `status`.
-* `POST /realm/domains`: Removed unnecessary JSON-encoding of string
-  parameter `domain`.
+* [`POST /realm/domains`](/api/add-realm-domain): Removed unnecessary
+  JSON-encoding of string parameter `domain`.
 * `PATCH /default_stream_groups/{user_id}`: Removed unnecessary JSON-encoding of string
   parameters `new_group_name` and `new_description`.
 * `POST /users/me/hotspots`: Removed unnecessary JSON-encoding of string
