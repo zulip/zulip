@@ -63,7 +63,7 @@
         }
 
         &:focus {
-            outline: 2px solid var(--color-outline-focus);
+            outline: 1.5px solid var(--color-outline-focus);
 
             > .change_visibility_policy .recent-view-row-topic-menu {
                 opacity: 0.2;
