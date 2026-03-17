@@ -12,6 +12,7 @@ Here are some best practices for keeping your Zulip server secure:
 4. [Become familiar with Zulip's access management model.](#4-become-familiar-with-zulips-access-management-model)
 5. [Understand security for user-uploaded content and user-generated requests.](#5-understand-security-for-user-uploaded-content-and-user-generated-requests)
 6. [Understand Zulip's rate-limiting system.](#6-understand-zulips-rate-limiting-system)
+7. [Responding to a security breach.](#7-responding-to-a-security-breach)
 
 If you believe you've identified a security issue, please report it to Zulip's
 security team at [security@zulip.com](mailto:security@zulip.com) as soon as
@@ -159,3 +160,59 @@ See also our [API documentation on rate limiting][rate-limit-api].
 
 [management-commands]: ../production/management-commands.md
 [rate-limit-api]: https://zulip.com/api/rest-error-handling#rate-limit-exceeded
+
+## 7. Responding to a security breach.
+
+If you suspect that user credentials have been compromised (e.g., due to a
+breach of a password database or a compromised authentication provider), you
+can use Zulip's management commands to respond quickly.
+
+### Log out all users and rotate API keys
+
+The first step is to invalidate all active sessions and API keys, so that
+any stolen credentials can no longer be used:
+
+```bash
+./manage.py logout_all_users -r REALM --rotate-api-keys
+```
+
+Replace `REALM` with your organization's realm string. This will:
+
+- End all active browser sessions for users in the realm.
+- Rotate all API keys, which also logs users out of the mobile and
+  desktop apps.
+
+If the breach affects the entire server rather than a single organization,
+omit the `-r REALM` flag to log out all users across all realms.
+
+:::{note}
+Without the `--rotate-api-keys` flag, users logged in via the mobile
+app will remain logged in, since mobile sessions are tied to API keys
+rather than browser sessions.
+:::
+
+### Send password reset emails
+
+After invalidating sessions, send password reset emails so that users can
+set new passwords:
+
+```bash
+./manage.py send_password_reset_email -r REALM --all-users
+```
+
+To send password reset emails to every user across all realms on the server:
+
+```bash
+./manage.py send_password_reset_email --entire-server
+```
+
+### Summary of steps
+
+1. **Invalidate all sessions and API keys** using `logout_all_users`
+   with `--rotate-api-keys`.
+2. **Send password reset emails** using `send_password_reset_email`.
+3. **Notify users** about the breach and what actions have been taken.
+   You can use `./manage.py send_custom_email` to send a
+   notification to affected users explaining the situation.
+4. **Investigate the cause** of the breach and take steps to prevent
+   it from happening again.
