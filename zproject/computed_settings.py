@@ -1162,6 +1162,7 @@ else:
 
 SOCIAL_AUTH_GITHUB_SECRET = get_secret("social_auth_github_secret")
 SOCIAL_AUTH_GITLAB_SECRET = get_secret("social_auth_gitlab_secret")
+SOCIAL_AUTH_DISCORD_SECRET = get_secret("social_auth_discord_secret")
 SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET = get_secret("social_auth_azuread_oauth2_secret")
 
 SOCIAL_AUTH_GITHUB_SCOPE = ["user:email"]
@@ -1171,6 +1172,7 @@ SOCIAL_AUTH_GITHUB_ORG_KEY = SOCIAL_AUTH_GITHUB_KEY
 SOCIAL_AUTH_GITHUB_ORG_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 SOCIAL_AUTH_GITHUB_TEAM_KEY = SOCIAL_AUTH_GITHUB_KEY
 SOCIAL_AUTH_GITHUB_TEAM_SECRET = SOCIAL_AUTH_GITHUB_SECRET
+SOCIAL_AUTH_DISCORD_SCOPE = ["identify", "email"]
 
 SOCIAL_AUTH_GOOGLE_SECRET = get_secret("social_auth_google_secret")
 # Fallback to google-oauth settings in case social auth settings for
