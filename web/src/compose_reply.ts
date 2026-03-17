@@ -211,7 +211,10 @@ export function rewire_selection_within_message_id(
     selection_within_message_id = value;
 }
 
-function get_quote_target(opts: {message_id?: number; quote_content?: string | undefined}): {
+function get_quote_target_for_single_message(opts: {
+    message_id?: number;
+    quote_content?: string | undefined;
+}): {
     message_id: number;
     message: Message;
     quote_content: string | undefined;
@@ -251,7 +254,7 @@ function get_quote_target(opts: {message_id?: number; quote_content?: string | u
 }
 
 export function quote_message(opts: QuoteMessageOpts): void {
-    const {message_id, message, quote_content} = get_quote_target(opts);
+    const {message_id, message, quote_content} = get_quote_target_for_single_message(opts);
     const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
 
     // If the last compose type textarea focused on is still in the DOM, we add
