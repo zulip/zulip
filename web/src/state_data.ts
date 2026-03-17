@@ -389,6 +389,7 @@ const custom_profile_field_types_schema = z.object({
     EXTERNAL_ACCOUNT: z.object({id: z.number(), name: z.string()}),
     USER: z.object({id: z.number(), name: z.string()}),
     PRONOUNS: z.object({id: z.number(), name: z.string()}),
+    PHONE_NUMBER: z.object({id: z.number(), name: z.string()}),
 });
 
 export type CustomProfileFieldTypes = z.infer<typeof custom_profile_field_types_schema>;

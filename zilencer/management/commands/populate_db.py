@@ -792,7 +792,7 @@ class Command(ZulipBaseCommand):
 
             # Create custom profile field data
             phone_number = try_add_realm_custom_profile_field(
-                zulip_realm, "Phone number", CustomProfileField.SHORT_TEXT, hint=""
+                zulip_realm, "Phone number", CustomProfileField.PHONE_NUMBER, hint=""
             )
             biography = try_add_realm_custom_profile_field(
                 zulip_realm,
@@ -854,7 +854,7 @@ class Command(ZulipBaseCommand):
             do_update_user_custom_profile_data_if_changed(
                 hamlet,
                 [
-                    {"id": phone_number.id, "value": "+0-11-23-456-7890"},
+                    {"id": phone_number.id, "value": "+44 20 7946 0958"},
                     {
                         "id": biography.id,
                         "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",

@@ -7,6 +7,7 @@ from email.headerregistry import Address
 from operator import itemgetter
 from typing import Any, TypedDict
 
+import phonenumbers
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q, QuerySet
@@ -559,8 +560,19 @@ def validate_user_custom_profile_data(
 
         try:
             validate_user_custom_profile_field(realm_id, field, item["value"])
+
+            # Format the phone number after validation before passing it to the action layer.
+            if field.field_type == CustomProfileField.PHONE_NUMBER:
+                parsed = phonenumbers.parse(str(item["value"]), "US")
+                clean_number = phonenumbers.format_number(
+                    parsed, phonenumbers.PhoneNumberFormat.E164
+                )
+                item["value"] = clean_number
+
         except ValidationError as error:
             raise JsonableError(error.message)
+        except Exception:  # nocoverage
+            pass  # nocoverage
 
 
 def can_access_delivery_email(

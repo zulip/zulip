@@ -40,6 +40,7 @@ export function append_custom_profile_fields(element_id: string, user_id: number
         [all_field_types.EXTERNAL_ACCOUNT.id, "text"],
         [all_field_types.URL.id, "url"],
         [all_field_types.PRONOUNS.id, "text"],
+        [all_field_types.PHONE_NUMBER.id, "tel"],
     ]);
 
     for (const field of all_custom_fields) {
@@ -73,6 +74,7 @@ export function append_custom_profile_fields(element_id: string, user_id: number
             is_date_field: field.type === all_field_types.DATE.id,
             is_url_field: field.type === all_field_types.URL.id,
             is_pronouns_field: field.type === all_field_types.PRONOUNS.id,
+            is_phone_number_field: field.type === all_field_types.PHONE_NUMBER.id,
             is_select_field,
             field_choices,
             for_manage_user_modal: element_id === "#edit-user-form .custom-profile-field-form",
@@ -99,9 +101,9 @@ function update_custom_profile_field(
         data = JSON.stringify([field]);
     }
 
-    const $spinner_element = $(
-        `.custom_user_field[data-field-id="${CSS.escape(field.id.toString())}"] .custom-field-status`,
-    ).expectOne();
+    const $field_row = $(`.custom_user_field[data-field-id="${CSS.escape(field.id.toString())}"]`);
+    const $spinner_element = $field_row.find(".custom-field-status").expectOne();
+
     settings_ui.do_settings_change(method, "/json/users/me/profile_data", {data}, $spinner_element);
 }
 

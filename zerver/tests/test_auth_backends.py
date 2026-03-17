@@ -3302,7 +3302,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
                 account_data_dict,
                 subdomain="zulip",
                 extra_attributes=dict(
-                    mobilePhone=["123412341234"], birthday=["2021-01-01"], zulip_role=["owner"]
+                    mobilePhone=["+442079460958"], birthday=["2021-01-01"], zulip_role=["owner"]
                 ),
             )
         data = load_subdomain_token(result)
@@ -3317,7 +3317,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         phone_field_value = CustomProfileFieldValue.objects.get(
             user_profile=self.user_profile, field=phone_field
         ).value
-        self.assertEqual(phone_field_value, "123412341234")
+        self.assertEqual(phone_field_value, "+442079460958")
 
         # Verify the Birthday field doesn't get synced - because it isn't configured for syncing.
         new_birthday_field_value = CustomProfileFieldValue.objects.get(
@@ -3375,7 +3375,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         phone_field_value = CustomProfileFieldValue.objects.get(
             user_profile=self.user_profile, field=phone_field
         ).value
-        self.assertEqual(phone_field_value, "123412341234")
+        self.assertEqual(phone_field_value, "+442079460958")
 
         # Verify with none of these attributes sent at all.
         with self.settings(
@@ -3395,7 +3395,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         phone_field_value = CustomProfileFieldValue.objects.get(
             user_profile=self.user_profile, field=phone_field
         ).value
-        self.assertEqual(phone_field_value, "123412341234")
+        self.assertEqual(phone_field_value, "+442079460958")
 
         # Disable syncing of role in SOCIAL_AUTH_SYNC_ATTRS_DICT, while keeping
         # role in extra_attrs. This edge case means the attribute will be read from the
@@ -7543,7 +7543,7 @@ class TestLDAP(ZulipLDAPTestCase):
         new_external_auth_id = external_auth_ids[0]
         self.assertEqual(new_external_auth_id.realm_id, realm.id)
         self.assertEqual(new_external_auth_id.external_auth_method_name, "ldap")
-        self.assertEqual(new_external_auth_id.external_auth_id, "123456789")
+        self.assertEqual(new_external_auth_id.external_auth_id, "+12345678900")
 
     @override_settings(
         AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
@@ -8290,7 +8290,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         test_data = [
             {
                 "field_name": "Phone number",
-                "expected_value": "123456789",
+                "expected_value": "+12345678900",
             },
             {
                 "field_name": "Birthday",
