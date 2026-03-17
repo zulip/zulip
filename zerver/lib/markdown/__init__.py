@@ -78,6 +78,7 @@ ReturnT = TypeVar("ReturnT")
 html_safelisted_schemes = (
     "bitcoin",
     "geo",
+    "hansoft",
     "im",
     "irc",
     "ircs",
@@ -98,8 +99,9 @@ html_safelisted_schemes = (
     "webcal",
     "wtai",
     "xmpp",
+    "zotero",
 )
-auto_linked_schemes = ["https?", "obsidian"]
+auto_linked_schemes = ["https?", "hansoft", "obsidian", "zotero"]
 allowed_schemes = ("http", "https", "ftp", "file", "mid", *html_safelisted_schemes)
 
 
