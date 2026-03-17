@@ -27,6 +27,15 @@ import * as sub_store from "./sub_store.ts";
 import * as topic_link_util from "./topic_link_util.ts";
 import * as unread_ops from "./unread_ops.ts";
 
+type QuoteMessageOpts = {
+    message_id?: number;
+    quote_content?: string | undefined;
+    keep_composebox_empty?: boolean;
+    reply_type?: "personal";
+    trigger?: string;
+    forward_message?: boolean;
+};
+
 export let respond_to_message = (opts: {
     keep_composebox_empty?: boolean;
     message_id?: number;
@@ -241,14 +250,7 @@ function get_quote_target(opts: {message_id?: number; quote_content?: string | u
     return {message_id, message, quote_content};
 }
 
-export function quote_message(opts: {
-    message_id?: number;
-    quote_content?: string | undefined;
-    keep_composebox_empty?: boolean;
-    reply_type?: "personal";
-    trigger?: string;
-    forward_message?: boolean;
-}): void {
+export function quote_message(opts: QuoteMessageOpts): void {
     const {message_id, message, quote_content} = get_quote_target(opts);
     const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
 
