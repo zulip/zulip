@@ -284,6 +284,13 @@ class ClientDescriptor:
             and now - self.last_connection_time >= self.queue_timeout
         )
 
+    def should_mark_offline(self, now: float) -> bool:
+        return (
+            self.current_handler_id is None
+            and not self.offline
+            and now - self.last_connection_time >= EVENT_QUEUE_OFFLINE_TIMEOUT_SECS
+        )
+
     def connect_handler(self, handler_id: int, client_name: str) -> None:
         self.current_handler_id = handler_id
         self.current_client_name = client_name
@@ -568,6 +575,7 @@ def do_gc_event_queues(
     # by the `active_mobile_push_notification` flag on UserMessage,
     # but email notifications are not — duplicate
     # ScheduledMessageNotificationEmail rows will be created.
+    # The same issue exists in mark_clients_offline below.
     for id in to_remove:
         web_reload_clients.pop(id, None)
         for cb in gc_hooks:
@@ -579,6 +587,34 @@ def do_gc_event_queues(
         del clients[id]
 
 
+def mark_clients_offline(
+    to_mark_offline: AbstractSet[str], affected_users: AbstractSet[int]
+) -> None:
+    """For long-lived queues (e.g. mobile), mark them offline
+    and fire missedmessage_hook so notifications are sent after
+    EVENT_QUEUE_OFFLINE_TIMEOUT_SECS rather than waiting for the
+    full queue_timeout.
+    """
+    # Pre-compute which users still have active queues after
+    # offline marking, following the same pattern as
+    # do_gc_event_queues for last_client_for_user.
+    users_with_active_queues: set[int] = set()
+    for user_id in affected_users:
+        for c in get_client_descriptors_for_user(user_id):
+            if c.accepts_messages() and not c.offline and c.event_queue.id not in to_mark_offline:
+                users_with_active_queues.add(user_id)
+                break
+
+    for id in to_mark_offline:
+        client = clients[id]
+        missedmessage_hook(
+            client.user_profile_id,
+            client,
+            client.user_profile_id not in users_with_active_queues,
+        )
+        client.offline = True
+
+
 def gc_event_queues(port: int) -> None:
     # We cannot use perf_counter here, since we store and compare UNIX
     # timestamps to it in the queues.
@@ -586,16 +622,25 @@ def gc_event_queues(port: int) -> None:
     to_remove: set[str] = set()
     affected_users: set[int] = set()
     affected_realms: set[int] = set()
+    to_mark_offline: set[str] = set()
+    offline_affected_users: set[int] = set()
     for id, client in clients.items():
         if client.expired(start):
             to_remove.add(id)
             affected_users.add(client.user_profile_id)
             affected_realms.add(client.realm_id)
+        elif client.should_mark_offline(start):
+            to_mark_offline.add(id)
+            offline_affected_users.add(client.user_profile_id)
 
     # We don't need to call e.g. finish_current_handler on the clients
     # being removed because they are guaranteed to be idle (because
     # they are expired) and thus not have a current handler.
     do_gc_event_queues(to_remove, affected_users, affected_realms)
+
+    # Mark long-lived queues offline after expired queues are
+    # removed, so that last_client_for_user is computed correctly.
+    mark_clients_offline(to_mark_offline, offline_affected_users)
 
     if settings.PRODUCTION:
         logging.info(
@@ -824,27 +869,32 @@ def missedmessage_hook(
 ) -> None:
     """The receiver_is_off_zulip logic used to determine whether a user
     has no active client suffers from a somewhat fundamental race
-    condition.  If the client is no longer on the Internet,
+    condition. If the client is no longer on the Internet,
     receiver_is_off_zulip will still return False for
-    DEFAULT_EVENT_QUEUE_TIMEOUT_SECS, until the queue is
-    garbage-collected.  This would cause us to reliably miss
-    push/email notifying users for messages arriving during the
-    DEFAULT_EVENT_QUEUE_TIMEOUT_SECS after they suspend their laptop (for
-    example).  We address this by, when the queue is garbage-collected
-    at the end of those 10 minutes, checking to see if it's the last
-    one, and if so, potentially triggering notifications to the user
-    at that time, resulting in at most a DEFAULT_EVENT_QUEUE_TIMEOUT_SECS
+    EVENT_QUEUE_OFFLINE_TIMEOUT_SECS, until the queue is marked
+    offline or garbage-collected. This would cause us to reliably
+    miss push/email notifying users for messages arriving during
+    that window after they suspend their laptop (for example).
+
+    We address this by, when the queue is marked offline or
+    garbage-collected, checking to see if it's the last active one,
+    and if so, potentially triggering notifications to the user at
+    that time, resulting in at most an EVENT_QUEUE_OFFLINE_TIMEOUT_SECS
     delay in the arrival of their notifications.
 
-    As Zulip's APIs get more popular and the mobile apps start using
-    long-lived event queues for perf optimization, future versions of
-    this will likely need to replace checking `last_client_for_user` with
-    something more complicated, so that we only consider clients like
-    web browsers, not the mobile apps or random API scripts.
+    For long-lived queues (e.g. mobile), mark_clients_offline calls
+    this hook when the client has been idle for
+    EVENT_QUEUE_OFFLINE_TIMEOUT_SECS, without deleting the queue.
+    When the queue later expires and is garbage-collected, we skip
+    this hook since notifications were already handled.
     """
-    # Only process missedmessage hook when the last queue for a
-    # user has been garbage collected
     if not last_client_for_user:
+        return
+
+    # For long-lived queues, notifications are sent when the queue
+    # is first marked offline. When the queue later expires, we
+    # skip it here to avoid duplicate notifications.
+    if client.offline:
         return
 
     for event in client.event_queue.contents(include_internal_data=True):
@@ -955,13 +1005,15 @@ def missedmessage_hook(
 
 
 def receiver_is_off_zulip(user_profile_id: int) -> bool:
-    # If a user has no message-receiving event queues, they've got no open zulip
-    # session so we notify them.
+    # If a user has no active, non-offline message-receiving event
+    # queues, they've got no open Zulip session so we notify them.
     all_client_descriptors = get_client_descriptors_for_user(user_profile_id)
-    message_event_queues = [
-        client for client in all_client_descriptors if client.accepts_messages()
+    not_offline_message_event_queues = [
+        client
+        for client in all_client_descriptors
+        if client.accepts_messages() and not client.offline
     ]
-    off_zulip = len(message_event_queues) == 0
+    off_zulip = len(not_offline_message_event_queues) == 0
     return off_zulip
 
 
