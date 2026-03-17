@@ -1875,6 +1875,7 @@ class UserSignUpTest(ZulipTestCase):
                 f"/accounts/login/?email={quote(email)}&already_registered=1"
             )
         )
+
     def test_realm_creation_race_condition(self) -> None:
         """
         If two realm creation requests race and do_create_realm raises
@@ -1885,8 +1886,8 @@ class UserSignUpTest(ZulipTestCase):
 
         # Step 1: Submit the realm creation form to get a confirmation email
         self.submit_realm_creation_form(
-        email, realm_subdomain="custom-test", realm_name="Zulip test"
-    )
+            email, realm_subdomain="custom-test", realm_name="Zulip test"
+        )
 
         # Step 2: Follow the confirmation link
         confirmation_url = self.get_confirmation_url_from_outbox(email)
@@ -1895,15 +1896,15 @@ class UserSignUpTest(ZulipTestCase):
         # Step 3: Simulate the race — do_create_realm raises IntegrityError
         # because another request already created the same subdomain
         with patch(
-        "zerver.views.registration.do_create_realm",
-        side_effect=IntegrityError,
-    ):
+            "zerver.views.registration.do_create_realm",
+            side_effect=IntegrityError,
+        ):
             result = self.submit_reg_form_for_user(
-            email,
-            "password",
-            realm_subdomain="custom-test",
-            realm_name="Zulip test",
-        )
+                email,
+                "password",
+                realm_subdomain="custom-test",
+                realm_name="Zulip test",
+            )
 
         # Should get a 400, not a 500
         self.assertEqual(result.status_code, 400)

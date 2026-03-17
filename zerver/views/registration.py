@@ -676,17 +676,17 @@ def registration_helper(
                 extra_context_field = HOW_FOUND_ZULIP_EXTRA_CONTEXT[how_found_zulip]
                 how_found_zulip_extra_context = form.cleaned_data[extra_context_field]
             try:
-              realm = do_create_realm(
-                string_id,
-                realm_name,
-                org_type=realm_type,
-                default_language=realm_default_language,
-                prereg_realm=prereg_realm,
-                how_realm_creator_found_zulip=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[
-                    how_found_zulip
-                ],
-                how_realm_creator_found_zulip_extra_context=how_found_zulip_extra_context,
-            )
+                realm = do_create_realm(
+                    string_id,
+                    realm_name,
+                    org_type=realm_type,
+                    default_language=realm_default_language,
+                    prereg_realm=prereg_realm,
+                    how_realm_creator_found_zulip=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[
+                        how_found_zulip
+                    ],
+                    how_realm_creator_found_zulip_extra_context=how_found_zulip_extra_context,
+                )
             except IntegrityError:
                 return render(
                     request,
