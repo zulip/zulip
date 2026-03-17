@@ -18,13 +18,15 @@
                                 <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
                             </span>
                             <i class="zulip-icon zulip-icon-chevron-right"></i>
-                            <span class="recent-view-conversation-sort-header" data-sort="conversation_sort">
-                                {{t 'Conversation' }}
-                                <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
-                            </span>
-                            <span class="recent-view-unread-sort-header hidden-for-spectators tippy-zulip-delayed-tooltip" data-sort="unread_sort" data-tippy-content="{{t 'Sort by unread message count' }}">
-                                <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
-                            </span>
+                            <div class="recent-view-conversation-name-wrapper">
+                                <span class="recent-view-unread-sort-header hidden-for-spectators tippy-zulip-delayed-tooltip" data-sort="unread_sort" data-tippy-content="{{t 'Sort by unread message count' }}">
+                                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                                </span>
+                                <span class="recent-view-conversation-sort-header" data-sort="conversation_sort">
+                                    {{t 'Conversation' }}
+                                    <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                                </span>
+                            </div>
                         </div>
                     </th>
                     <th class='recent-view-participants-header participants_header'>

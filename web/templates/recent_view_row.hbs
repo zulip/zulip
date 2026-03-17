@@ -26,24 +26,26 @@
                 {{/if}}
             </div>
             <i class="zulip-icon zulip-icon-chevron-right"></i>
-            {{#if is_private}}
-            <a href="{{pm_url}}" class="recent-view-conversation-link recent-view-table-link {{#if is_group}}recent-view-dm-group{{else}}recent-view-dm{{/if}}" data-tippy-content="{{pm_users_as_plain}}" tabindex="-1">{{{rendered_pm_with_html}}}</a>
-            {{else}}
-            <a class="recent-view-conversation-link recent-view-table-link {{#if is_empty_string_topic}}empty-topic-display{{/if}}" data-tippy-content="{{topic_display_name}}" href="{{topic_url}}" tabindex="-1">{{topic_display_name}}</a>
-            {{/if}}
-            <div class="recent-view-unread-mention-and-count-wrapper">
+            <div class="recent-view-conversation-name-wrapper">
+                <div class="recent-view-unread-mention-and-count-wrapper">
+                    {{#if is_private}}
+                    <span class="unread_mention_info tippy-zulip-delayed-tooltip {{#unless has_unread_mention}}unread_hidden{{/unless}}"
+                      data-tippy-content="{{t 'You have unread mentions' }}">@</span>
+                    <div class="recent_topic_actions recent-view-unread-count-wrapper">
+                        <span class="unread_count unread_count_pm recent-view-table-unread-count recent_view_focusable {{#if (eq unread_count 0)}}unread_hidden{{/if}} tippy-zulip-delayed-tooltip on_hover_topic_read" data-user-ids-string="{{user_ids_string}}" data-tippy-content="{{t 'Mark as read' }}" role="button" aria-label="{{t 'Mark as read' }}" data-col-index="{{ column_indexes.read }}" tabindex="0">{{unread_count}}</span>
+                    </div>
+                    {{else}}
+                    <span class="unread_mention_info tippy-zulip-delayed-tooltip {{#unless mention_in_unread}}unread_hidden{{/unless}}"
+                      data-tippy-content="{{t 'You have unread mentions'}}">@</span>
+                    <div class="recent_topic_actions recent-view-unread-count-wrapper">
+                        <span class="unread_count recent-view-table-unread-count hidden-for-spectators recent_view_focusable {{#if (eq unread_count 0)}}unread_hidden{{/if}} tippy-zulip-delayed-tooltip on_hover_topic_read" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as read' }}" role="button" aria-label="{{t 'Mark as read' }}" data-col-index="{{ column_indexes.read }}" tabindex="0">{{unread_count}}</span>
+                    </div>
+                    {{/if}}
+                </div>
                 {{#if is_private}}
-                <span class="unread_mention_info tippy-zulip-tooltip {{#unless has_unread_mention}}unread_hidden{{/unless}}"
-                  data-tippy-content="{{t 'You have unread mentions' }}">@</span>
-                <div class="recent_topic_actions recent-view-unread-count-wrapper">
-                    <span class="unread_count unread_count_pm recent-view-table-unread-count recent_view_focusable {{#if (eq unread_count 0)}}unread_hidden{{/if}} tippy-zulip-tooltip on_hover_topic_read" data-user-ids-string="{{user_ids_string}}" data-tippy-content="{{t 'Mark as read' }}" role="button" aria-label="{{t 'Mark as read' }}" data-col-index="{{ column_indexes.read }}" tabindex="0">{{unread_count}}</span>
-                </div>
+                <a href="{{pm_url}}" class="recent-view-conversation-link recent-view-table-link {{#if is_group}}recent-view-dm-group{{else}}recent-view-dm{{/if}}" data-tippy-content="{{pm_users_as_plain}}" tabindex="-1">{{{rendered_pm_with_html}}}</a>
                 {{else}}
-                <span class="unread_mention_info tippy-zulip-tooltip {{#unless mention_in_unread}}unread_hidden{{/unless}}"
-                  data-tippy-content="{{t 'You have unread mentions'}}">@</span>
-                <div class="recent_topic_actions recent-view-unread-count-wrapper">
-                    <span class="unread_count recent-view-table-unread-count hidden-for-spectators recent_view_focusable {{#if (eq unread_count 0)}}unread_hidden{{/if}} tippy-zulip-tooltip on_hover_topic_read" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as read' }}" role="button" aria-label="{{t 'Mark as read' }}" data-col-index="{{ column_indexes.read }}" tabindex="0">{{unread_count}}</span>
-                </div>
+                <a class="recent-view-conversation-link recent-view-table-link {{#if is_empty_string_topic}}empty-topic-display{{/if}}" data-tippy-content="{{topic_display_name}}" href="{{topic_url}}" tabindex="-1">{{topic_display_name}}</a>
                 {{/if}}
             </div>
         </div>

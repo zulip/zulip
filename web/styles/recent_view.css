@@ -599,7 +599,7 @@
                     ),
                     33.3%
                 )
-                auto 1fr var(--recent-view-unread-column-width, 0);
+                auto 1fr;
             align-items: center;
         }
 
@@ -636,17 +636,37 @@
             }
         }
 
-        .recent-view-conversation-sort-header {
-            /* Prevent hover pill highlight from extending into
-               the adjacent unread sort column. */
-            margin-right: 0.3125em; /* 5px at 16px/1em */
+        .recent-view-conversation-name-wrapper {
+            display: flex;
+            align-items: center;
+            position: relative;
+            /* Match the padding-left on conversation links so
+               the "Conversation" header aligns with topic names. */
+            padding-left: var(--recent-view-unread-column-width, 0);
         }
 
         .recent-view-unread-sort-header {
-            /* Stretch to fill the grid cell so the hover area
-               covers the full unread count / @ marker column. */
-            justify-self: stretch;
+            position: absolute;
+            left: 0;
+            /* Match the data row wrapper width so the arrow
+               right-aligns directly above the unread counters. */
+            width: var(--recent-view-unread-column-width, 0);
+            display: flex;
             justify-content: flex-end;
+
+            /* Sort arrow follows the same hover/active pattern
+               as other column headers. */
+            .table-sortable-arrow {
+                opacity: 0;
+            }
+
+            &:hover .table-sortable-arrow {
+                opacity: 0.7;
+            }
+
+            &.active .table-sortable-arrow {
+                opacity: 1;
+            }
         }
     }
 
@@ -700,8 +720,8 @@
         .recent-view-conversation-with-unread-wrapper {
             display: grid;
             grid-template-areas:
-                "conversation-type chevron-right conversation-name unread-mention-and-count"
-                ".                 .             conversation-name .";
+                "conversation-type chevron-right conversation-name"
+                ".                 .             conversation-name";
             width: 100%;
             /* We add 1em for the privacy icon and 8px for the flexbox
                gap between the icon and the channel name. */
@@ -712,7 +732,7 @@
                     ),
                     33.3%
                 )
-                auto 1fr auto;
+                auto 1fr;
             align-items: center;
         }
 
@@ -727,15 +747,42 @@
             }
         }
 
-        .recent-view-conversation-link {
+        .recent-view-conversation-name-wrapper {
             grid-area: conversation-name;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            min-width: 0;
+            position: relative;
         }
 
         .recent-view-unread-mention-and-count-wrapper {
-            grid-area: unread-mention-and-count;
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            /* Narrower than the padding-left on conversation links
+               to leave a gap between the count and topic text.
+               The 6px gap is included in the variable total. */
+            width: calc(var(--recent-view-unread-column-width, 0px) - 6px);
+            justify-content: flex-end;
+        }
+
+        .recent-view-unread-count-wrapper {
+            display: flex;
+            align-items: center;
+            align-self: stretch;
+        }
+
+        .recent-view-conversation-link {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+            /* Reserve space for the absolutely-positioned unread
+               badge and @ mention marker so topic names align
+               in read and unread rows. */
+            padding-left: var(--recent-view-unread-column-width, 0);
         }
 
         .zulip-icon-chevron-right {
@@ -899,12 +946,6 @@
     .unread_mention_info {
         /* Unset margin in favor of flex gap. */
         margin: 0;
-    }
-
-    .recent-view-unread-count-wrapper {
-        display: flex;
-        align-items: center;
-        align-self: stretch;
     }
 }
 

@@ -1476,8 +1476,6 @@ function recenter_focus_if_off_screen(): void {
 }
 
 function callback_after_render(): void {
-    update_unread_column_width();
-
     // It is important to restore the scroll position as soon
     // as the rendering is complete to avoid scroll jumping.
     if (last_scroll_offset !== undefined) {
@@ -1614,6 +1612,7 @@ export function complete_rerender(coming_from_other_views = false): void {
     const mapped_topic_values = get_list_data_for_widget();
 
     if (topics_widget) {
+        update_unread_column_width();
         topics_widget.replace_list_data(mapped_topic_values);
         return;
     }
@@ -1636,6 +1635,7 @@ export function complete_rerender(coming_from_other_views = false): void {
     // have the correct classes (checked or not) if Recent Conversations
     // was not the first view loaded in the app.
     show_selected_filters();
+    update_unread_column_width();
 
     const $container = $("#recent-view-content-tbody");
     $container.empty();
