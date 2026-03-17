@@ -36,6 +36,8 @@ type QuoteMessageOpts = {
     forward_message?: boolean;
 };
 
+const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
+
 export let respond_to_message = (opts: {
     keep_composebox_empty?: boolean;
     message_id?: number;
@@ -255,7 +257,6 @@ function get_quote_target_for_single_message(opts: {
 
 export function quote_message(opts: QuoteMessageOpts): void {
     const {message_id, message, quote_content} = get_quote_target_for_single_message(opts);
-    const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
 
     // If the last compose type textarea focused on is still in the DOM, we add
     // the quote in that textarea, else we default to the compose box.
