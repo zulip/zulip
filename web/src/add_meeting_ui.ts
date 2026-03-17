@@ -87,8 +87,23 @@ function populate_user_dropdown(): void {
       user,
     };
 
-    const html = typeahead_helper.render_person(item);
-    const $option = $(`<div class="rsvp-user-option">${html}</div>`);
+    const html = `
+      <div class="rsvp-user-item">
+        <img src="${user.avatar_url}" class="avatar" />
+        <div class="user-info">
+          <div class="user-name">
+            ${user.full_name}
+            ${user.pronouns ? `<span class="pronouns">${user.pronouns}</span>` : ""}
+          </div>
+          <div class="user-email">${user.email}</div>
+        </div>
+      </div>
+    `;
+    const $option = $(`
+      <div class="rsvp-user-option horizontal-user">
+        ${html}
+      </div>
+    `);
 
     $option.on("click", () => {
       user_pill.append_user(user, invite_users_widget);
