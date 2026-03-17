@@ -1992,7 +1992,7 @@ label.preferences-radio-choice-label {
     /* 5px at 16px and 10px at 16px */
     padding: 0.3125em 0.625em;
     background-color: var(--background-color-view-only-textarea);
-    border: 1px solid var(--border-color-textarea);
+    border: var(--input-border-width) solid var(--border-color-textarea);
     border-radius: 4px;
 }
 
