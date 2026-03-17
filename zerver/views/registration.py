@@ -688,11 +688,8 @@ def registration_helper(
                     how_realm_creator_found_zulip_extra_context=how_found_zulip_extra_context,
                 )
             except IntegrityError:
-                return render(
-                    request,
-                    "zerver/portico/register.html",  # check the actual template name used elsewhere in this file
-                    context={"form": form, "error_msg": "Organization URL is already in use."},
-                )
+                   raise JsonableError(_("Organization already exists."))
+            
         assert realm is not None
 
         full_name = form.cleaned_data["full_name"]
