@@ -483,7 +483,7 @@ realm_clients_all_streams: dict[int, list[ClientDescriptor]] = {}
 
 # list of registered gc hooks.
 # each one will be called with a user profile id, queue, and bool
-# last_for_client that is true if this is the last queue pertaining
+# last_client_for_user that is true if this is the last queue pertaining
 # to this user_profile_id
 # that is about to be deleted
 gc_hooks: list[Callable[[int, ClientDescriptor, bool], None]] = []
@@ -813,7 +813,7 @@ def build_offline_notification(user_profile_id: int, message_id: int) -> dict[st
 
 
 def missedmessage_hook(
-    user_profile_id: int, client: ClientDescriptor, last_for_client: bool
+    user_profile_id: int, client: ClientDescriptor, last_client_for_user: bool
 ) -> None:
     """The receiver_is_off_zulip logic used to determine whether a user
     has no active client suffers from a somewhat fundamental race
@@ -831,13 +831,13 @@ def missedmessage_hook(
 
     As Zulip's APIs get more popular and the mobile apps start using
     long-lived event queues for perf optimization, future versions of
-    this will likely need to replace checking `last_for_client` with
+    this will likely need to replace checking `last_client_for_user` with
     something more complicated, so that we only consider clients like
     web browsers, not the mobile apps or random API scripts.
     """
     # Only process missedmessage hook when the last queue for a
-    # client has been garbage collected
-    if not last_for_client:
+    # user has been garbage collected
+    if not last_client_for_user:
         return
 
     for event in client.event_queue.contents(include_internal_data=True):

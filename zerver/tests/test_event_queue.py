@@ -120,7 +120,7 @@ class StreamWatchersTest(ZulipTestCase):
         missedmessage_hook(
             user_profile_id=hamlet.id,
             client=client,
-            last_for_client=True,
+            last_client_for_user=True,
         )
 
 
