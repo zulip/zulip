@@ -437,6 +437,13 @@
         }
     }
 
+    & tr .recent_topic_name {
+        /* Extra left padding to make room for the unread marker bar
+           alongside the keyboard selection outline, applied to all
+           rows so content aligns between read and unread rows. */
+        padding-left: 0.75em; /* 12px at 16px/1em */
+    }
+
     .unread_topic {
         background-color: var(--color-background-recent-view-unread-row);
 
@@ -455,6 +462,38 @@
                 );
             }
         }
+
+        .recent_topic_name {
+            position: relative;
+
+            &::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 2px;
+                height: 100%;
+                background: linear-gradient(
+                    90deg,
+                    var(--color-unread-marker) 30%,
+                    hsl(217deg 64% 59% / 0%)
+                );
+                border-radius: 2px 0 0 2px;
+            }
+        }
+    }
+
+    /* When consecutive rows are both unread, make the blue
+       marker bar continuous with no gap between them. */
+    .unread_topic + .unread_topic .recent_topic_name::before {
+        border-top-left-radius: 0;
+    }
+
+    /* Also remove the bottom radius on the preceding unread
+       row when followed by another unread row. We use
+       :has() to look ahead at the next sibling. */
+    .unread_topic:has(+ .unread_topic) .recent_topic_name::before {
+        border-bottom-left-radius: 0;
     }
 
     .last_msg_time {
@@ -529,8 +568,9 @@
     }
 
     .recent-view-topic-header {
-        /* Match horizontal padding with non header rows. */
-        padding: 0.25em 0.5em; /* 4px 8px at 16px/1em */
+        /* Match left padding with row td (.recent_topic_name),
+           including the extra space for the unread marker bar. */
+        padding: 0.25em 0.5em 0.25em 0.75em; /* 4px 8px 4px 12px at 16px/1em */
         /* th no longer has data-sort; the individual sort spans handle
            cursor and hover. */
         cursor: default;
