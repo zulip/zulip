@@ -255,6 +255,25 @@ function get_quote_target_for_single_message(opts: {
     return {message_id, message, quote_content};
 }
 
+function setup_compose_to_forward_single_message(message: Message, opts: QuoteMessageOpts): void {
+    let topic = "";
+    let stream_id: number | undefined;
+    if (message.is_stream) {
+        topic = message.topic;
+        stream_id = message.stream_id;
+    }
+    compose_state.set_is_processing_forward_message(true);
+    compose_actions.start({
+        message_type: message.type,
+        topic,
+        keep_composebox_empty: opts.keep_composebox_empty,
+        content: quoting_placeholder,
+        stream_id,
+        private_message_recipient_ids: [],
+    });
+    compose_recipient.toggle_compose_recipient_dropdown();
+}
+
 export function quote_message(opts: QuoteMessageOpts): void {
     const {message_id, message, quote_content} = get_quote_target_for_single_message(opts);
 
@@ -267,22 +286,7 @@ export function quote_message(opts: QuoteMessageOpts): void {
             : $<HTMLTextAreaElement>("textarea#compose-textarea");
 
     if (opts.forward_message) {
-        let topic = "";
-        let stream_id: number | undefined;
-        if (message.is_stream) {
-            topic = message.topic;
-            stream_id = message.stream_id;
-        }
-        compose_state.set_is_processing_forward_message(true);
-        compose_actions.start({
-            message_type: message.type,
-            topic,
-            keep_composebox_empty: opts.keep_composebox_empty,
-            content: quoting_placeholder,
-            stream_id,
-            private_message_recipient_ids: [],
-        });
-        compose_recipient.toggle_compose_recipient_dropdown();
+        setup_compose_to_forward_single_message(message, opts);
     } else {
         if ($textarea.attr("id") === "compose-textarea" && !compose_state.has_message_content()) {
             // Whether or not the compose box is open, it's empty, so
