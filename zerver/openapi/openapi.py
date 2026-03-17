@@ -239,6 +239,11 @@ def check_requires_administrator(endpoint: str, method: str) -> bool:
     )
 
 
+def check_requires_owner(endpoint: str, method: str) -> bool:
+    """Fetch if the endpoint requires owner config."""
+    return openapi_spec.openapi()["paths"][endpoint][method.lower()].get("x-requires-owner", False)
+
+
 def check_additional_imports(endpoint: str, method: str) -> list[str] | None:
     """Fetch the additional imports required for an endpoint."""
     return openapi_spec.openapi()["paths"][endpoint][method.lower()].get(
