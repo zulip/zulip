@@ -169,31 +169,51 @@ export function resize_stream_subscribers_list(): void {
     }
 
     const $subscriptions_info = $("#subscription_overlay .two-pane-settings-container .right");
-    const classes_above_subscribers_list = [
-        ".display-type", // = stream_settings_title
-        ".subscriber_list_settings_container .stream_settings_header",
-        ".subscription_settings .stream_setting_subsection_title",
-        ".subscription_settings .subscriber_list_settings",
-        ".subscription_settings .stream_setting_subsection_title",
-    ];
-    const $classes_above_subscribers_list = $subscriptions_info.find(
-        classes_above_subscribers_list.join(", "),
+
+    const $tab_container = $("#stream_settings .stream_settings_header");
+    const $add_subscribers_heading = $(
+        ".subscriber_list_settings_container .add-subscribers-heading",
     );
-    let total_height_of_classes_above_subscribers_list = 0;
-    $classes_above_subscribers_list.each(function () {
-        const outer_height = $(this).outerHeight(true);
+    const $add_subscribers_widget = $(
+        ".subscriber_list_settings_container .subscriber_list_settings",
+    );
+    const $notification_message_container = $(
+        ".subscriber_list_settings_container .send_notification_to_new_subscribers_container",
+    );
+    const $subscribers_list_header = $("#stream_settings .subscribers-list-header");
+
+    const elements_above_subscribers_list = [
+        $tab_container,
+        $add_subscribers_heading,
+        $add_subscribers_widget,
+        $notification_message_container,
+        $subscribers_list_header,
+    ];
+
+    let total_height_of_elements_above_subscribers_list = 0;
+    for (const $elem of elements_above_subscribers_list) {
+        const outer_height = $elem.outerHeight(true);
         assert(outer_height !== undefined);
-        total_height_of_classes_above_subscribers_list += outer_height;
-    });
-    const subscribers_list_header_height = 30;
-    const margin_between_tab_switcher_and_add_subscribers_title = 20;
+        total_height_of_elements_above_subscribers_list += outer_height;
+    }
+
+    const right_subheader_height = height_of($(".right .two-pane-settings-subheader"));
+    // Margin of 18px is present at both top and bottom, so 2*18px will be
+    // subtracted to calculate maximum allowed height for subscribers list.
+    const subscription_settings_inner_box_margin = 18;
     const subscriptions_info_height = $subscriptions_info.height();
     assert(subscriptions_info_height !== undefined);
+
+    // Since .subscribers_list_container has box-sizing set to content-box,
+    // the max-height should not include border width.
+    const susbcribers_list_container_bottom_border_width = 1;
+
     const subscribers_list_height =
         subscriptions_info_height -
-        total_height_of_classes_above_subscribers_list -
-        subscribers_list_header_height -
-        margin_between_tab_switcher_and_add_subscribers_title;
+        total_height_of_elements_above_subscribers_list -
+        right_subheader_height -
+        2 * subscription_settings_inner_box_margin -
+        susbcribers_list_container_bottom_border_width;
     $(":root").css("--stream-subscriber-list-max-height", `${subscribers_list_height}px`);
 }
 
@@ -333,9 +353,9 @@ export function resize_page_components(): void {
     resize_navbar_alerts();
     resize_sidebars();
     resize_bottom_whitespace();
-    resize_stream_subscribers_list();
     resize_settings_overlay($("#groups_overlay_container"));
     resize_settings_overlay($("#channels_overlay_container"));
     resize_settings_creation_overlay($("#groups_overlay_container"));
     resize_settings_creation_overlay($("#channels_overlay_container"));
+    resize_stream_subscribers_list();
 }

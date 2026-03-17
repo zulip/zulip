@@ -78,12 +78,14 @@ ReturnT = TypeVar("ReturnT")
 html_safelisted_schemes = (
     "bitcoin",
     "geo",
+    "hansoft",
     "im",
     "irc",
     "ircs",
     "magnet",
     "mailto",
     "matrix",
+    "obsidian",
     "mms",
     "news",
     "nntp",
@@ -97,7 +99,9 @@ html_safelisted_schemes = (
     "webcal",
     "wtai",
     "xmpp",
+    "zotero",
 )
+auto_linked_schemes = ["https?", "hansoft", "obsidian", "zotero"]
 allowed_schemes = ("http", "https", "ftp", "file", "mid", *html_safelisted_schemes)
 
 
@@ -229,6 +233,7 @@ def get_web_link_regex() -> Pattern[str]:
     # caching the value is super important here.
 
     tlds = r"|".join(list_of_tlds())
+    schemes_regex = r"|".join(auto_linked_schemes)
 
     # A link starts at a word boundary, and ends at space, punctuation, or end-of-input.
     #
@@ -257,7 +262,7 @@ def get_web_link_regex() -> Pattern[str]:
                              # (Double-negative lookbehind to allow start-of-string)
         (?P<url>             # Main group
             (?:(?:           # Domain part
-                https?://[\w.:@-]+?   # If it has a protocol, anything goes.
+                (?:{schemes_regex})://[\w.:@-]+?   # If it has a protocol, anything goes.
                |(?:                   # Or, if not, be more strict to avoid false-positives
                     (?:[\w-]+\.)+     # One or more domain components, separated by dots
                     (?:{tlds})        # TLDs

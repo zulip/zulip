@@ -67,6 +67,56 @@ class CreateVideoCallFailedError(JsonableError):
         )
 
 
+class VideoCallProviderNotConfiguredError(JsonableError):
+    def __init__(self, provider_name: str) -> None:
+        super().__init__(
+            _("{provider_name} credentials have not been configured").format(
+                provider_name=provider_name
+            )
+        )
+
+
+class VideoCallProviderCredentialsError(JsonableError):
+    def __init__(self, provider_name: str) -> None:
+        super().__init__(
+            _("Invalid {provider_name} credentials").format(provider_name=provider_name)
+        )
+
+
+class VideoCallServerConnectionError(JsonableError):
+    def __init__(self, provider_name: str, reason: str) -> None:
+        super().__init__(
+            _("Error connecting to the {provider_name} server: {reason}").format(
+                provider_name=provider_name, reason=reason
+            )
+        )
+
+
+class VideoCallServerAuthError(JsonableError):
+    def __init__(self, provider_name: str) -> None:
+        super().__init__(
+            _("Error authenticating to the {provider_name} server").format(
+                provider_name=provider_name
+            )
+        )
+
+
+class VideoCallServerStatusError(JsonableError):
+    def __init__(self, provider_name: str, status: str | None) -> None:
+        super().__init__(
+            _("{provider_name} server returned an unexpected error: {status}").format(
+                provider_name=provider_name, status=status
+            )
+        )
+
+
+class VideoCallProviderSessionIdError(JsonableError):
+    def __init__(self, provider_name: str) -> None:
+        super().__init__(
+            _("Invalid {provider_name} session identifier").format(provider_name=provider_name)
+        )
+
+
 class UnknownZoomUserError(JsonableError):
     code = ErrorCode.UNKNOWN_ZOOM_USER
 
@@ -156,11 +206,7 @@ class OAuthVideoCallProvider(ABC):
 
     def __get_session(self, user: UserProfile) -> OAuth2Session:
         if self.client_id is None or self.client_secret is None:
-            raise JsonableError(
-                _("{provider_name} credentials have not been configured").format(
-                    provider_name=self.provider_name
-                )
-            )
+            raise VideoCallProviderNotConfiguredError(self.provider_name)
 
         return OAuth2Session(
             self.client_id,
@@ -211,11 +257,7 @@ class OAuthVideoCallProvider(ABC):
         self, request: HttpRequest, sid: str, code: str, **kwargs: Any
     ) -> HttpResponse:
         if not constant_time_compare(sid, self.__get_sid(request)):
-            raise JsonableError(
-                _("Invalid {provider_name} session identifier").format(
-                    provider_name=self.provider_name
-                )
-            )
+            raise VideoCallProviderSessionIdError(self.provider_name)
         assert isinstance(request.user, UserProfile)
         oauth = self.__get_session(request.user)
         try:
@@ -223,9 +265,7 @@ class OAuthVideoCallProvider(ABC):
                 self.token_url, code=code, client_secret=self.client_secret, **kwargs
             )
         except OAuth2Error:
-            raise JsonableError(
-                _("Invalid {provider_name} credentials").format(provider_name=self.provider_name)
-            )
+            raise VideoCallProviderCredentialsError(self.provider_name)
 
         self.update_token(request.user, token)
         return render(request, "zerver/close_window.html")
@@ -324,7 +364,7 @@ def complete_zoom_user(
 @cache_with_key(zoom_server_access_token_cache_key, timeout=3600 - 240)
 def get_zoom_server_to_server_access_token(account_id: str) -> str:
     if settings.VIDEO_ZOOM_CLIENT_ID is None:
-        raise JsonableError(_("Zoom credentials have not been configured"))
+        raise VideoCallProviderNotConfiguredError("Zoom")
 
     client_id = settings.VIDEO_ZOOM_CLIENT_ID.encode("utf-8")
     client_secret = str(settings.VIDEO_ZOOM_CLIENT_SECRET).encode("utf-8")
@@ -340,7 +380,7 @@ def get_zoom_server_to_server_access_token(account_id: str) -> str:
     if not response.ok:
         # {reason: 'Bad request', error: 'invalid_request'} for invalid account ID
         # {'reason': 'Invalid client_id or client_secret', 'error': 'invalid_client'}
-        raise JsonableError(_("Invalid Zoom credentials"))
+        raise VideoCallProviderCredentialsError("Zoom")
     return response.json()["access_token"]
 
 
@@ -462,7 +502,7 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
     assert request.user.is_authenticated
 
     if settings.BIG_BLUE_BUTTON_URL is None or settings.BIG_BLUE_BUTTON_SECRET is None:
-        raise JsonableError(_("BigBlueButton is not configured."))
+        raise VideoCallProviderNotConfiguredError("BigBlueButton")
 
     try:
         bigbluebutton_data = Signer().unsign_object(bigbluebutton)
@@ -494,19 +534,15 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
             reason = f"HTTP {response.status_code}: {response.text:.200}"
         else:
             reason = str(e)
-        raise JsonableError(
-            _("Error connecting to the BigBlueButton server: {reason}").format(reason=reason)
-        )
+        raise VideoCallServerConnectionError("BigBlueButton", reason=reason)
 
     payload = ElementTree.fromstring(response.text)
     if assert_is_not_none(payload.find("messageKey")).text == "checksumError":
-        raise JsonableError(_("Error authenticating to the BigBlueButton server."))
+        raise VideoCallServerAuthError("BigBlueButton")
 
     status = assert_is_not_none(payload.find("returncode")).text
     if status != "SUCCESS":
-        raise JsonableError(
-            _("BigBlueButton server returned an unexpected error: {status}").format(status=status)
-        )
+        raise VideoCallServerStatusError("BigBlueButton", status=status)
 
     join_params = urlencode(
         {
@@ -574,7 +610,7 @@ def create_nextcloud_talk_url(
         or settings.NEXTCLOUD_TALK_USERNAME is None
         or settings.NEXTCLOUD_TALK_PASSWORD is None
     ):
-        raise JsonableError(_("Nextcloud Talk is not configured"))
+        raise VideoCallProviderNotConfiguredError("Nextcloud Talk")
 
     room_name = truncate_content(room_name, MAX_NEXTCLOUD_TALK_ROOM_NAME_LENGTH, "...")
     # https://nextcloud-talk.readthedocs.io/en/stable/conversation/#creating-a-new-conversation
@@ -605,9 +641,7 @@ def create_nextcloud_talk_url(
             reason = f"HTTP {response.status_code}: {response.text:.200}"
         else:
             reason = str(e)
-        raise JsonableError(
-            _("Error connecting to the Nextcloud Talk server: {reason}").format(reason=reason)
-        )
+        raise VideoCallServerConnectionError("Nextcloud Talk", reason=reason)
     try:
         data = response.json()
         token = data["ocs"]["data"]["token"]
