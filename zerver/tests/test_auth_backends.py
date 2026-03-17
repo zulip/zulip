@@ -126,6 +126,7 @@ from zproject.backends import (
     AuthFuncT,
     AzureADAuthBackend,
     DevAuthBackend,
+    DiscordAuthBackend,
     EmailAuthBackend,
     ExternalAuthDataDict,
     ExternalAuthMethod,
@@ -8959,6 +8960,24 @@ class LDAPGroupSyncTest(ZulipTestCase):
 
 
 # Don't load the base class as a test: https://bugs.python.org/issue17519.
+class DiscordAuthBackendTest(SocialAuthBase):
+    BACKEND_CLASS = DiscordAuthBackend
+    CLIENT_KEY_SETTING = 'SOCIAL_AUTH_DISCORD_KEY'
+    CLIENT_SECRET_SETTING = 'SOCIAL_AUTH_DISCORD_SECRET'
+    LOGIN_URL = '/accounts/login/social/discord'
+    SIGNUP_URL = '/accounts/register/social/discord'
+    AUTHORIZATION_URL = 'https://discord.com/api/oauth2/authorize'
+    ACCESS_TOKEN_URL = 'https://discord.com/api/oauth2/token'
+    USER_INFO_URL = 'https://discord.com/api/users/@me'
+    AUTH_FINISH_URL = '/complete/discord/'
+
+    def get_account_data_dict(self, email: str, name: str) -> dict[str, Any]:
+        return dict(
+            email=email,
+            username='discord_user',
+            global_name=name,
+        )
+
 del SocialAuthBase
 
 
@@ -9048,22 +9067,3 @@ class TestCustomAuthDecorator(ZulipTestCase):
             self.assertEqual(UserProfile.objects.latest("id").delivery_email, alice_email)
             self.assertEqual(call_count, 5)
 
-
-class DiscordAuthBackendTest(SocialAuthBase):
-    BACKEND_CLASS = DiscordAuthBackend
-    CLIENT_KEY_SETTING = 'SOCIAL_AUTH_DISCORD_KEY'
-    CLIENT_SECRET_SETTING = 'SOCIAL_AUTH_DISCORD_SECRET'
-    LOGIN_URL = '/accounts/login/social/discord'
-    SIGNUP_URL = '/accounts/register/social/discord'
-    AUTHORIZATION_URL = 'https://discord.com/api/oauth2/authorize'
-    ACCESS_TOKEN_URL = 'https://discord.com/api/oauth2/token'
-    USER_INFO_URL = 'https://discord.com/api/users/@me'
-    AUTH_FINISH_URL = '/complete/discord/'
-
-    @override
-    def get_account_data_dict(self, email: str, name: str) -> dict[str, Any]:
-        return dict(
-            email=email,
-            username='discord_user',
-            global_name=name,
-        )
