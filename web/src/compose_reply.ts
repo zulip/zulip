@@ -255,6 +255,17 @@ function get_quote_target_for_single_message(opts: {
     return {message_id, message, quote_content};
 }
 
+function get_textarea_to_quote(forward_message?: boolean): JQuery<HTMLTextAreaElement> {
+    // If the last compose type textarea focused on is still in the DOM, we add
+    // the quote in that textarea, else we default to the compose box.
+    const last_focused_compose_type_input = compose_state.get_last_focused_compose_type_input();
+    const $textarea =
+        last_focused_compose_type_input?.isConnected && forward_message
+            ? $(last_focused_compose_type_input)
+            : $<HTMLTextAreaElement>("textarea#compose-textarea");
+    return $textarea;
+}
+
 function setup_compose_to_forward_single_message(message: Message, opts: QuoteMessageOpts): void {
     let topic = "";
     let stream_id: number | undefined;
@@ -276,14 +287,7 @@ function setup_compose_to_forward_single_message(message: Message, opts: QuoteMe
 
 export function quote_message(opts: QuoteMessageOpts): void {
     const {message_id, message, quote_content} = get_quote_target_for_single_message(opts);
-
-    // If the last compose type textarea focused on is still in the DOM, we add
-    // the quote in that textarea, else we default to the compose box.
-    const last_focused_compose_type_input = compose_state.get_last_focused_compose_type_input();
-    const $textarea =
-        last_focused_compose_type_input?.isConnected && !opts.forward_message
-            ? $(last_focused_compose_type_input)
-            : $<HTMLTextAreaElement>("textarea#compose-textarea");
+    const $textarea = get_textarea_to_quote(opts.forward_message);
 
     if (opts.forward_message) {
         setup_compose_to_forward_single_message(message, opts);
