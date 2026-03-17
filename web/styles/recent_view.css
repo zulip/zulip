@@ -438,22 +438,9 @@
     }
 
     .unread_topic {
-        background-color: var(--color-background-recent-view-unread-row);
-
         & a {
             color: var(--color-recent-view-link-unread);
             font-weight: 500;
-        }
-
-        /* Avoid annoying, confusing hover-state when scrolling on
-           touch devices like iPad that treat a tap-and-hold/swipe
-           as a hover. */
-        @media (hover: hover) and (pointer: fine) {
-            &:hover {
-                background-color: var(
-                    --color-background-recent-view-unread-row-hover
-                );
-            }
         }
     }
 
