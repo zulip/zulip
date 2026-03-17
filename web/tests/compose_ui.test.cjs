@@ -446,6 +446,24 @@ run_test("reverse_linkify_text", () => {
         },
     ]);
     assert.equal(compose_ui.reverse_linkify_text("https://github.com/zulip/zulip/pull/123"), null);
+
+    // Pattern with an optional group.
+    linkifiers.update_linkifier_rules([
+        {
+            id: 10,
+            pattern: "(?P<prefix>[a-z]+-)?ZUL-(?P<id>\\d+)",
+            url_template: "https://realm.com/my_realm_filter/{prefix}ZUL-{id}",
+            reverse_template: "{prefix}ZUL-{id}",
+        },
+    ]);
+    assert.equal(
+        compose_ui.reverse_linkify_text("https://realm.com/my_realm_filter/ZUL-15"),
+        "ZUL-15",
+    );
+    assert.equal(
+        compose_ui.reverse_linkify_text("https://realm.com/my_realm_filter/abc-ZUL-15"),
+        "abc-ZUL-15",
+    );
 });
 
 run_test("quote_message", ({override, override_rewire}) => {
