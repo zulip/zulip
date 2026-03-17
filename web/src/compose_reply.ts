@@ -285,6 +285,24 @@ function setup_compose_to_forward_single_message(message: Message, opts: QuoteMe
     compose_recipient.toggle_compose_recipient_dropdown();
 }
 
+function setup_compose_to_quote_single_message(message_id: number, opts: QuoteMessageOpts): void {
+    const $textarea = get_textarea_to_quote(opts.forward_message);
+    if ($textarea.attr("id") === "compose-textarea" && !compose_state.has_message_content()) {
+        // Whether or not the compose box is open, it's empty, so
+        // we start a new message replying to the quoted message.
+        respond_to_message({
+            ...opts,
+            // Critically, we pass the message_id of the message we
+            // just quoted, to avoid incorrectly replying to an
+            // unrelated selected message in interleaved views.
+            message_id,
+            keep_composebox_empty: true,
+        });
+    }
+
+    compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
+}
+
 export function quote_message(opts: QuoteMessageOpts): void {
     const {message_id, message, quote_content} = get_quote_target_for_single_message(opts);
     const $textarea = get_textarea_to_quote(opts.forward_message);
@@ -292,20 +310,7 @@ export function quote_message(opts: QuoteMessageOpts): void {
     if (opts.forward_message) {
         setup_compose_to_forward_single_message(message, opts);
     } else {
-        if ($textarea.attr("id") === "compose-textarea" && !compose_state.has_message_content()) {
-            // Whether or not the compose box is open, it's empty, so
-            // we start a new message replying to the quoted message.
-            respond_to_message({
-                ...opts,
-                // Critically, we pass the message_id of the message we
-                // just quoted, to avoid incorrectly replying to an
-                // unrelated selected message in interleaved views.
-                message_id,
-                keep_composebox_empty: true,
-            });
-        }
-
-        compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
+        setup_compose_to_quote_single_message(message_id, opts);
     }
 
     function replace_content(
