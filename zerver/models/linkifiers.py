@@ -50,7 +50,10 @@ def expand_reverse_template(
                     ),
                     params={"name": name},
                 )
-            output.append(match.group(name))
+            # For optional groups, match.group might return None, which we cannot
+            # append in the output to be .join(ed) later, so we add an empty string
+            # in that case.
+            output.append(match.group(name) or "")
             index = end_index + 1
         else:
             output.append(reverse_template[index])
