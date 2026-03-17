@@ -2839,6 +2839,7 @@ class UserSignUpTest(ZulipTestCase):
         subdomain = "zulip"
 
         self.init_default_ldap_database()
+        self.change_ldap_user_attr("newuser", "homePhone", "+12345678900")
         ldap_user_attr_map = {
             "full_name": "cn",
             "custom_profile_field__phone_number": "homePhone",
@@ -2863,7 +2864,7 @@ class UserSignUpTest(ZulipTestCase):
             phone_number_field_value = CustomProfileFieldValue.objects.get(
                 user_profile=user_profile, field=phone_number_field
             )
-            self.assertEqual(phone_number_field_value.value, "a-new-number")
+            self.assertEqual(phone_number_field_value.value, "+12345678900")
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_ldap_auto_registration_on_login_invalid_email_in_directory(self) -> None:

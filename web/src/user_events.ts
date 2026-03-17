@@ -202,6 +202,12 @@ export const update_person = function update(event: UserUpdate): void {
 
             const field_id = event.custom_profile_field.id;
             const field_value = people.get_custom_profile_data(event.user_id, field_id)?.value;
+            const $settings_input = $(
+                `.custom_user_field[data-field-id="${CSS.escape(field_id.toString())}"] .custom_user_field_value`,
+            );
+            if ($settings_input.length > 0 && field_value !== undefined) {
+                $settings_input.val(field_value);
+            }
             const is_field_required = realm.custom_profile_fields?.find(
                 (f) => field_id === f.id,
             )?.required;

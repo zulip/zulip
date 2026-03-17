@@ -558,7 +558,7 @@ def validate_user_custom_profile_data(
             )
 
         try:
-            validate_user_custom_profile_field(realm_id, field, item["value"])
+            item["value"] = validate_user_custom_profile_field(realm_id, field, item["value"])
         except ValidationError as error:
             raise JsonableError(error.message)
 
