@@ -471,7 +471,7 @@ export function sort_languages(matches: LanguageSuggestion[], query: string): La
     }));
 }
 
-const get_user_matches_with_quality = <UserType extends UserOrMentionPillData | UserPillData>(
+const = <UserType extends UserOrMentionPillData | UserPillData>(
     users: UserType[],
     query: string,
     sort_relevance: (items: UserType[]) => UserType[],
@@ -500,15 +500,16 @@ const get_user_matches_with_quality = <UserType extends UserOrMentionPillData | 
     ];
     const email_okay_matches = [...email_results.word_boundary_matches];
     const best_users = (): UserType[] => [
-        ...sort_relevance(users_name_good_matches),
-        ...sort_relevance(users_name_okay_matches),
-    ];
-    const ok_users = (): UserType[] => [
-        ...sort_relevance(email_good_matches),
-        ...sort_relevance(email_okay_matches),
-    ];
-    const worst_users = (): UserType[] => sort_relevance(email_results.no_matches);
-    return {best_users, ok_users, worst_users};
+    ...sort_relevance(users_name_good_matches),
+    ...sort_relevance(email_good_matches),
+    ...sort_relevance(users_name_okay_matches),
+];
+const ok_users = (): UserType[] => [
+    ...sort_relevance(email_okay_matches),
+];
+const worst_users = (): UserType[] => sort_relevance(email_results.no_matches);
+return {best_users, ok_users, worst_users};
+
 };
 
 export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillData>({
@@ -537,7 +538,7 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
 
     const [bots, non_bots] = _.partition(users, is_bot);
 
-    const {best_users, ok_users, worst_users} = get_user_matches_with_quality(
+    const {best_users, ok_users, worst_users} =(
         non_bots,
         query,
         sort_relevance,
@@ -547,7 +548,7 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
         best_users: best_bots,
         ok_users: ok_bots,
         worst_users: worst_bots,
-    } = get_user_matches_with_quality(bots, query, sort_relevance);
+    } =(bots, query, sort_relevance);
 
     const groups_results = typeahead.triage_raw_with_multiple_items(query, groups, (g) => {
         if (g.name === "role:members") {
