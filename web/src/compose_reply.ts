@@ -38,6 +38,12 @@ type QuoteMessageOpts = {
     highlighted_message_ids?: number[];
 };
 
+type ReplaceContentOpts = {
+    message: Message;
+    raw_content: string;
+    forward_message: boolean | undefined;
+};
+
 const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
 
 export let respond_to_message = (opts: {
@@ -313,7 +319,8 @@ function setup_compose_to_quote_single_message(message_id: number, opts: QuoteMe
     compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
 }
 
-function replace_content(message: Message, raw_content: string, forward_message?: boolean): void {
+function generate_replace_content(info: ReplaceContentOpts): string {
+    const {message, raw_content, forward_message} = info;
     let content;
     const sender_mention = `@_**${message.sender_full_name}|${message.sender_id}**`;
 
@@ -393,7 +400,11 @@ function replace_content(message: Message, raw_content: string, forward_message?
     content += "\n";
     const fence = fenced_code.get_unused_fence(raw_content);
     content += `${fence}quote\n${raw_content}\n${fence}`;
+    return content;
+}
 
+function replace_content(message: Message, raw_content: string, forward_message?: boolean): void {
+    const content = generate_replace_content({message, raw_content, forward_message});
     const $textarea = get_textarea_to_quote(forward_message);
     compose_ui.replace_syntax(quoting_placeholder, content, $textarea, forward_message);
     compose_ui.autosize_textarea($textarea);
