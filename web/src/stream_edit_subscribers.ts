@@ -20,6 +20,7 @@ import * as loading from "./loading.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
+import * as resize from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -204,6 +205,7 @@ async function render_subscriber_list_widget(
     });
     loading.destroy_indicator($(".subscriber-list-settings-loading"));
     $(".subscriber_list_settings_container").toggleClass("no-display", false);
+    resize.resize_stream_subscribers_list();
 }
 
 function make_list_widget({
