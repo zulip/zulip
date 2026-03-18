@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -34,12 +35,12 @@ set_global("getSelection", () => ({
 
 let typeahead_forced_open = false;
 
-const verona = {
+const verona = make_stream({
     subscribed: true,
     color: "blue",
     name: "Verona",
     stream_id: 1,
-};
+});
 stream_data.add_sub_for_tests(verona);
 
 const zoe = {
