@@ -1,5 +1,4 @@
 import contextlib
-import hashlib
 import logging
 import os
 import re
@@ -596,6 +595,7 @@ def get_header(option: str | None, header: str | None, name: str) -> str:
 
 
 def custom_email_sender(
+    campaign_name: str,
     markdown_template_path: str,
     dry_run: bool,
     subject: str | None = None,
@@ -603,13 +603,12 @@ def custom_email_sender(
     from_name: str | None = None,
     reply_to: str | None = None,
     **kwargs: Any,
-) -> tuple[Callable[..., None], str]:
+) -> Callable[..., None]:
     with open(markdown_template_path) as f:
         text = f.read()
         parsed_email_template = Parser(_class=EmailMessage, policy=default).parsestr(text)
-        email_template_hash = hashlib.sha256(text.encode()).hexdigest()[0:32]
 
-    email_id = f"zerver/emails/custom/custom_email_{email_template_hash}"
+    email_id = f"zerver/emails/custom/custom_email_{campaign_name}"
     markdown_email_base_template_path = "templates/zerver/emails/custom_email_base.pre.html"
     html_template_path = f"templates/{email_id}.html"
     plain_text_template_path = f"templates/{email_id}.txt"
@@ -684,14 +683,14 @@ def custom_email_sender(
                     event_type=AuditLogEventType.CUSTOM_EMAIL_SENT,
                     event_time=timezone_now(),
                     extra_data={
-                        "email_id": email_template_hash,
+                        "campaign_name": campaign_name,
                         "email_subject": get_header(
                             subject, parsed_email_template.get("subject"), "subject"
                         ),
                     },
                 )
 
-    return send_one_email, email_template_hash
+    return send_one_email
 
 
 def send_custom_email(
@@ -712,7 +711,8 @@ def send_custom_email(
         from_name="Sender Name")
     )
     """
-    email_sender, email_template_hash = custom_email_sender(**options, dry_run=dry_run)
+    email_sender = custom_email_sender(**options, dry_run=dry_run)
+    campaign_name = options["campaign_name"]
 
     users = users.select_related("realm")
 
@@ -727,7 +727,7 @@ def send_custom_email(
         already_sent_emails = (
             RealmAuditLog.objects.filter(
                 event_type=AuditLogEventType.CUSTOM_EMAIL_SENT,
-                extra_data__email_id=email_template_hash,
+                extra_data__campaign_name=campaign_name,
                 modified_user__isnull=False,
             )
             .annotate(lower_email=Lower("modified_user__delivery_email"))
@@ -745,7 +745,7 @@ def send_custom_email(
     else:
         # For regular emails: exclude by user ID
         already_sent_users = RealmAuditLog.objects.filter(
-            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT, extra_data__email_id=email_template_hash
+            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT, extra_data__campaign_name=campaign_name
         ).values_list("modified_user_id", flat=True)
 
         already_sent_count = already_sent_users.count()
@@ -786,7 +786,7 @@ def send_custom_server_email(
 
     email_sender = custom_email_sender(
         **options, dry_run=dry_run, from_address=BILLING_SUPPORT_EMAIL
-    )[0]
+    )
 
     for server in remote_servers:
         context = {
