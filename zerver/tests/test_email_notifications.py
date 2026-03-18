@@ -650,3 +650,25 @@ class TestHtmlToMarkdown(ZulipTestCase):
         self.assertEqual(
             convert_html_to_markdown("a rose is not a ros&eacute;"), "a rose is not a rosé"
         )
+
+
+class TestUtmParamsInEmailLinks(ZulipTestCase):
+    def test_add_utm_paras_to_links(self) -> None:
+        from zerver.lib.send_email import add_utm_params_to_links
+
+        campaign_name = "test_campaign"
+
+        html = '<a href="https://zulip.com/pricing">Pricing</a>'
+        expected = '<a href="https://zulip.com/pricing?utm_source=newsletter&amp;utm_medium=email&amp;utm_campaign=test_campaign">Pricing</a>'
+        self.assertEqual(add_utm_params_to_links(html, campaign_name), expected)
+
+        html_frag = '<a href="https://zulip.com/help#topic">Help</a>'
+        expected_frag = '<a href="https://zulip.com/help?utm_source=newsletter&amp;utm_medium=email&amp;utm_campaign=test_campaign#topic">Help</a>'
+        self.assertEqual(add_utm_params_to_links(html_frag, campaign_name), expected_frag)
+
+        html_ext = '<a href="https://github.com/zulip/zulip">GitHub</a>'
+        self.assertEqual(add_utm_params_to_links(html_ext, campaign_name), html_ext)
+
+        html_query = '<a href="https://blog.zulip.com/?page=2">Blog</a>'
+        expected_query = '<a href="https://blog.zulip.com/?page=2&amp;utm_source=newsletter&amp;utm_medium=email&amp;utm_campaign=test_campaign">Blog</a>'
+        self.assertEqual(add_utm_params_to_links(html_query, campaign_name), expected_query)

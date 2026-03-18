@@ -13,10 +13,12 @@ from email.policy import default
 from email.utils import formataddr, parseaddr
 from email.utils import formatdate as email_formatdate
 from typing import Any
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import backoff
 import css_inline
 import orjson
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives, get_connection
 from django.core.mail.backends.base import BaseEmailBackend
@@ -594,6 +596,30 @@ def get_header(option: str | None, header: str | None, name: str) -> str:
     return str(option or header)
 
 
+def add_utm_params_to_links(html_content: str, campaign_name: str) -> str:
+    target_domains = {"zulip.com", "blog.zulip.com", "zulip.readthedocs.io"}
+    soup = BeautifulSoup(html_content, "html.parser")
+
+    for a_tag in soup.find_all("a", href=True):
+        url = a_tag["href"]
+        parsed = urlsplit(url)
+
+        if parsed.netloc in target_domains:
+            query_params = dict(parse_qsl(parsed.query))
+            query_params["utm_source"] = "newsletter"
+            query_params["utm_medium"] = "email"
+            query_params["utm_campaign"] = campaign_name
+
+            new_query = urlencode(query_params)
+            new_url = urlunsplit(
+                (parsed.scheme, parsed.netloc, parsed.path, new_query, parsed.fragment)
+            )
+
+            a_tag["href"] = new_url
+
+    return str(soup)
+
+
 def custom_email_sender(
     campaign_name: str,
     markdown_template_path: str,
@@ -637,7 +663,12 @@ def custom_email_sender(
         #  3. Have that interpolation happen in the context of
         #     each individual email we send, so the contents can
         #     vary user-to-user
-        f.write(base_template.read().replace("{{ rendered_input }}", rendered_input))
+        html_body = base_template.read().replace("{{ rendered_input }}", rendered_input)
+
+        if campaign_name:
+            html_body = add_utm_params_to_links(html_body, campaign_name)
+
+        f.write(html_body)
 
     # Add the manage_preferences block content in the plain_text template.
     manage_preferences_block_template_path = (
