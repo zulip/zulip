@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_stream} = require("./lib/example_stream.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
@@ -142,7 +143,7 @@ test("fetch on search", async ({override}) => {
     override(popovers, "hide_all", noop);
     stub_buddy_list_empty_list_message_lengths();
 
-    const office = {stream_id: 23, name: "office", subscribed: true};
+    const office = make_stream({stream_id: 23, name: "office", subscribed: true});
     stream_data.add_sub_for_tests(office);
     message_lists.set_current(
         make_message_list([{operator: "stream", operand: office.stream_id.toString()}]),
@@ -166,9 +167,9 @@ test("fetch on search", async ({override}) => {
     // buddy list for the second fetch (the first fetch returns early).
     get_call_count = 0;
     populate_call_count = 0;
-    const kitchen = {stream_id: 25, name: "kitchen", subscribed: true};
+    const kitchen = make_stream({stream_id: 25, name: "kitchen", subscribed: true});
     stream_data.add_sub_for_tests(kitchen);
-    const living_room = {stream_id: 26, name: "living_room", subscribed: true};
+    const living_room = make_stream({stream_id: 26, name: "living_room", subscribed: true});
     stream_data.add_sub_for_tests(living_room);
     message_lists.set_current(
         make_message_list([{operator: "stream", operand: kitchen.stream_id.toString()}]),
