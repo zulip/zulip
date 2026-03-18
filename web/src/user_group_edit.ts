@@ -347,12 +347,16 @@ function update_group_membership_button(group_id: number): void {
     );
     if (is_direct_member) {
         $group_settings_button
-            .text($t({defaultMessage: "Leave group"}))
+            .find(".action-button-label")
+            .text($t({defaultMessage: "Leave group"}));
+        $group_settings_button
             .removeClass("action-button-subtle-brand")
             .addClass("action-button-neutral");
     } else {
         $group_settings_button
-            .text($t({defaultMessage: "Join group"}))
+            .find(".action-button-label")
+            .text($t({defaultMessage: "Join group"}));
+        $group_settings_button
             .removeClass("action-button-subtle-neutral")
             .addClass("action-button-subtle-brand");
     }
@@ -1698,7 +1702,11 @@ export function switch_group_tab(tab_name: string): void {
     setup_group_list_tab_hash(tab_name);
 }
 
-export function add_or_remove_from_group(group: UserGroup, $group_row?: JQuery): void {
+export function add_or_remove_from_group(
+    group: UserGroup,
+    $group_row?: JQuery,
+    $button_element?: JQuery,
+): void {
     const user_id = people.my_current_user_id();
     const is_direct_member = user_groups.is_direct_member_of(user_id, group.id);
     function success_callback(): void {
@@ -1716,17 +1724,29 @@ export function add_or_remove_from_group(group: UserGroup, $group_row?: JQuery):
                 open_group_edit_panel_for_row(util.the($group_row));
             }
         }
+
+        if ($button_element !== undefined) {
+            buttons.hide_button_loading_indicator($button_element);
+        }
     }
 
     function error_callback(): void {
         if ($group_row !== undefined && $group_row.length > 0) {
             hide_membership_toggle_spinner($group_row);
         }
+
+        if ($button_element !== undefined) {
+            buttons.hide_button_loading_indicator($button_element);
+        }
     }
 
     if ($group_row !== undefined && $group_row.length > 0) {
         display_membership_toggle_spinner($group_row);
     }
+    if ($button_element !== undefined) {
+        buttons.show_button_loading_indicator($button_element);
+    }
+
     if (is_direct_member) {
         user_group_edit_members.edit_user_group_membership({
             group,
@@ -2304,7 +2324,7 @@ export function initialize(): void {
                     id: "confirm_join_group_direct_member",
                     on_click() {
                         if ($target_elem.hasClass("action-button")) {
-                            add_or_remove_from_group(user_group);
+                            add_or_remove_from_group(user_group, undefined, $target_elem);
                         } else {
                             const $group_row = row_for_group_id(user_group_id);
                             add_or_remove_from_group(user_group, $group_row);
@@ -2313,7 +2333,7 @@ export function initialize(): void {
                 });
             } else {
                 if ($target_elem.hasClass("action-button")) {
-                    add_or_remove_from_group(user_group);
+                    add_or_remove_from_group(user_group, undefined, $target_elem);
                 } else {
                     const $group_row = row_for_group_id(user_group_id);
                     add_or_remove_from_group(user_group, $group_row);
