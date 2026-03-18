@@ -266,7 +266,7 @@ export const update_elements = ($content: JQuery): void => {
                 });
                 $(this).replaceWith($(topic_link_html));
             } else {
-                const message_link_html = render_channel_message_link(context);
+                const message_link_html = render_channel_message_link({stream: sub, ...context});
                 $(this).replaceWith($(message_link_html));
             }
         }

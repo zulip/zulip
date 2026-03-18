@@ -518,6 +518,7 @@ run_test("message-links", ({mock_template}) => {
 
     // Final asserts
     assert.deepEqual(channel_message_link_context, {
+        stream,
         channel_name: stream.name,
         topic_display_name: `translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}`,
         is_empty_string_topic: true,
@@ -839,8 +840,16 @@ run_test("stream-private", ({mock_template}) => {
     $topic.addClass("stream-topic");
     $topic[0].replaceWith = noop;
 
+    const $message_link = $.create("a.message-link");
+    $message_link.attr(
+        "href",
+        `/#narrow/channel/${private_stream.stream_id}-secret-stream/topic/test/near/123`,
+    );
+    $message_link.set_find_results(".highlight", []);
+    $message_link[0].replaceWith = noop;
+
     $content.set_find_results("a.stream", $stream);
-    $content.set_find_results("a.stream-topic, a.message-link", $topic);
+    $content.set_find_results("a.stream-topic, a.message-link", [...$topic, ...$message_link]);
 
     let stream_name_context;
     mock_template("inline_decorated_channel_name.hbs", true, (data, html) => {
@@ -854,6 +863,12 @@ run_test("stream-private", ({mock_template}) => {
         return html;
     });
 
+    let message_link_context;
+    mock_template("channel_message_link.hbs", true, (data, html) => {
+        message_link_context = data;
+        return html;
+    });
+
     rm.update_elements($content);
 
     // Verify inline_decorated_channel_name was called with the private stream.
@@ -863,6 +878,10 @@ run_test("stream-private", ({mock_template}) => {
     // Verify topic_link was called with the private stream.
     assert.ok(topic_link_context, "topic_link should be called");
     assert.ok(topic_link_context.stream.invite_only, "Topic stream should be private");
+
+    // Verify channel_message_link was called with the private stream.
+    assert.ok(message_link_context, "channel_message_link should be called");
+    assert.ok(message_link_context.stream.invite_only, "Message link stream should be private");
 });
 
 run_test("stream-web-public", ({mock_template}) => {
@@ -890,8 +909,16 @@ run_test("stream-web-public", ({mock_template}) => {
     $topic.addClass("stream-topic");
     $topic[0].replaceWith = noop;
 
+    const $message_link = $.create("a.message-link");
+    $message_link.attr(
+        "href",
+        `/#narrow/channel/${web_public_stream.stream_id}-web-public-stream/topic/test/near/123`,
+    );
+    $message_link.set_find_results(".highlight", []);
+    $message_link[0].replaceWith = noop;
+
     $content.set_find_results("a.stream", $stream);
-    $content.set_find_results("a.stream-topic, a.message-link", $topic);
+    $content.set_find_results("a.stream-topic, a.message-link", [...$topic, ...$message_link]);
 
     let stream_name_context;
     mock_template("inline_decorated_channel_name.hbs", true, (data, html) => {
@@ -905,6 +932,12 @@ run_test("stream-web-public", ({mock_template}) => {
         return html;
     });
 
+    let message_link_context;
+    mock_template("channel_message_link.hbs", true, (data, html) => {
+        message_link_context = data;
+        return html;
+    });
+
     rm.update_elements($content);
 
     // Verify inline_decorated_channel_name was called with the web-public stream.
@@ -914,6 +947,13 @@ run_test("stream-web-public", ({mock_template}) => {
     // Verify topic_link was called with the web-public stream.
     assert.ok(topic_link_context, "topic_link should be called");
     assert.ok(topic_link_context.stream.is_web_public, "Topic stream should be web-public");
+
+    // Verify channel_message_link was called with the web-public stream.
+    assert.ok(message_link_context, "channel_message_link should be called");
+    assert.ok(
+        message_link_context.stream.is_web_public,
+        "Message link stream should be web-public",
+    );
 });
 
 run_test("stream-archived", ({mock_template}) => {
@@ -938,8 +978,16 @@ run_test("stream-archived", ({mock_template}) => {
     $topic.addClass("stream-topic");
     $topic[0].replaceWith = noop;
 
+    const $message_link = $.create("a.message-link");
+    $message_link.attr(
+        "href",
+        `/#narrow/channel/${archived_stream.stream_id}-old-stream/topic/test/near/123`,
+    );
+    $message_link.set_find_results(".highlight", []);
+    $message_link[0].replaceWith = noop;
+
     $content.set_find_results("a.stream", $stream);
-    $content.set_find_results("a.stream-topic, a.message-link", $topic);
+    $content.set_find_results("a.stream-topic, a.message-link", [...$topic, ...$message_link]);
 
     let stream_name_context;
     mock_template("inline_decorated_channel_name.hbs", true, (data, html) => {
@@ -953,6 +1001,12 @@ run_test("stream-archived", ({mock_template}) => {
         return html;
     });
 
+    let message_link_context;
+    mock_template("channel_message_link.hbs", true, (data, html) => {
+        message_link_context = data;
+        return html;
+    });
+
     rm.update_elements($content);
 
     // Verify inline_decorated_channel_name was called with the archived stream.
@@ -962,6 +1016,10 @@ run_test("stream-archived", ({mock_template}) => {
     // Verify topic_link was called with the archived stream.
     assert.ok(topic_link_context, "topic_link should be called");
     assert.ok(topic_link_context.stream.is_archived, "Topic stream should be archived");
+
+    // Verify channel_message_link was called with the archived stream.
+    assert.ok(message_link_context, "channel_message_link should be called");
+    assert.ok(message_link_context.stream.is_archived, "Message link stream should be archived");
 });
 
 run_test("rtl", () => {
