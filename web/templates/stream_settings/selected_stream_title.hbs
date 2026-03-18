@@ -29,11 +29,13 @@
                 </span>
             </template>
             <button class="action-button subscribe-button sub_unsub_button {{#if subscribed}}action-button-subtle-neutral{{else}}action-button-subtle-brand{{/if}} {{#if should_display_subscription_button}}toggle-subscription-tooltip{{/if}} {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button"  data-tooltip-template-id="toggle-subscription-tooltip-template" {{#unless should_display_subscription_button}}disabled="disabled"{{/unless}}>
-                {{#if subscribed }}
-                    {{t "Unsubscribe" }}
-                {{else}}
-                    {{t "Subscribe" }}
-                {{/if}}
+                <span class="action-button-label">
+                    {{#if subscribed }}
+                        {{t "Unsubscribe" }}
+                    {{else}}
+                        {{t "Subscribe" }}
+                    {{/if}}
+                </span>
             </button>
         </div>
         {{> ../components/action_button

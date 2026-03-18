@@ -852,13 +852,12 @@ export function initialize(): void {
                 // button in the right side subheader, we do not pass
                 // $stream_row as we do not want the spinner to appear
                 // replacing the checkmark.
-                stream_settings_components.sub_or_unsub(sub);
+                stream_settings_components.sub_or_unsub(sub, undefined, $(this));
             } else {
                 stream_settings_components.sub_or_unsub(sub, $stream_row);
-            }
-
-            if (!sub.subscribed) {
-                open_edit_panel_for_row(util.the($stream_row));
+                if (!sub.subscribed) {
+                    open_edit_panel_for_row(util.the($stream_row));
+                }
             }
             stream_ui_updates.update_channel_email_section(sub);
 
