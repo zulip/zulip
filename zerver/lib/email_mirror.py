@@ -1,6 +1,8 @@
+import encodings.aliases
 import logging
 import re
 import secrets
+import sys
 from email.headerregistry import Address, AddressHeader
 from email.message import EmailMessage
 from re import Match
@@ -44,6 +46,15 @@ from zerver.models.clients import get_client
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream_by_id_in_realm
 from zerver.models.users import get_system_bot, get_user_profile_by_id
 from zproject.backends import is_user_active
+
+if sys.version_info < (3, 14):
+    # https://github.com/python/cpython/issues/62824
+    encodings.aliases.aliases.update(
+        {
+            "iso_8859_8_i": "iso8859_8",
+            "iso_8859_8_e": "iso8859_8",
+        }
+    )
 
 logger = logging.getLogger(__name__)
 
