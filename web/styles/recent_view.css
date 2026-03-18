@@ -836,8 +836,17 @@
 .recent-view-unread-mention-and-count-wrapper {
     display: flex;
     align-items: center;
+    /* Stretch to the full row height so the unread count
+       is a larger click target for "Mark as read". */
+    align-self: stretch;
     margin-left: auto;
     flex-direction: row;
+
+    .recent-view-unread-count-wrapper {
+        display: flex;
+        align-items: center;
+        align-self: stretch;
+    }
 }
 
 .recent-view-body-row {
