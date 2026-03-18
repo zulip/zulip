@@ -471,7 +471,7 @@ export function sort_languages(matches: LanguageSuggestion[], query: string): La
     }));
 }
 
-const = <UserType extends UserOrMentionPillData | UserPillData>(
+const get_user_matches_with_quality = <UserType extends UserOrMentionPillData | UserPillData>(
     users: UserType[],
     query: string,
     sort_relevance: (items: UserType[]) => UserType[],
