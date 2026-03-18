@@ -1698,11 +1698,11 @@ export function switch_group_tab(tab_name: string): void {
     setup_group_list_tab_hash(tab_name);
 }
 
-export function add_or_remove_from_group(group: UserGroup, $group_row: JQuery): void {
+export function add_or_remove_from_group(group: UserGroup, $group_row?: JQuery): void {
     const user_id = people.my_current_user_id();
     const is_direct_member = user_groups.is_direct_member_of(user_id, group.id);
     function success_callback(): void {
-        if ($group_row.length > 0) {
+        if ($group_row !== undefined && $group_row.length > 0) {
             hide_membership_toggle_spinner($group_row);
             // This should only be triggered when a user is on another group
             // edit panel and they join a group via the left panel plus button.
@@ -1719,12 +1719,12 @@ export function add_or_remove_from_group(group: UserGroup, $group_row: JQuery): 
     }
 
     function error_callback(): void {
-        if ($group_row.length > 0) {
+        if ($group_row !== undefined && $group_row.length > 0) {
             hide_membership_toggle_spinner($group_row);
         }
     }
 
-    if ($group_row.length > 0) {
+    if ($group_row !== undefined && $group_row.length > 0) {
         display_membership_toggle_spinner($group_row);
     }
     if (is_direct_member) {
@@ -2285,6 +2285,7 @@ export function initialize(): void {
                 people.my_current_user_id(),
                 user_group_id,
             );
+            const $target_elem = $(this);
 
             if (is_member && !is_direct_member) {
                 const associated_subgroups = user_groups.get_associated_subgroups(
@@ -2302,13 +2303,21 @@ export function initialize(): void {
                     is_compact: true,
                     id: "confirm_join_group_direct_member",
                     on_click() {
-                        const $group_row = row_for_group_id(user_group_id);
-                        add_or_remove_from_group(user_group, $group_row);
+                        if ($target_elem.hasClass("action-button")) {
+                            add_or_remove_from_group(user_group);
+                        } else {
+                            const $group_row = row_for_group_id(user_group_id);
+                            add_or_remove_from_group(user_group, $group_row);
+                        }
                     },
                 });
             } else {
-                const $group_row = row_for_group_id(user_group_id);
-                add_or_remove_from_group(user_group, $group_row);
+                if ($target_elem.hasClass("action-button")) {
+                    add_or_remove_from_group(user_group);
+                } else {
+                    const $group_row = row_for_group_id(user_group_id);
+                    add_or_remove_from_group(user_group, $group_row);
+                }
             }
             e.stopPropagation();
         },
