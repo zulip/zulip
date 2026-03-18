@@ -231,25 +231,23 @@ def send_mm_reply_to_stream(
 
 
 def get_message_part_by_type(message: EmailMessage, content_type: str) -> str | None:
-    charsets = message.get_charsets()
-
-    for idx, part in enumerate(message.walk()):
+    for part in message.walk():
         if part.get_content_type() == content_type:
             content = part.get_payload(decode=True)
             assert isinstance(content, bytes)
-            charset = charsets[idx]
-            if charset is not None:
-                try:
-                    return content.decode(charset, errors="ignore")
-                except LookupError:
-                    # The RFCs do not define how to handle unknown
-                    # charsets, but treating as US-ASCII seems
-                    # reasonable; fall through to below.
-                    pass
 
-            # If no charset has been specified in the header, assume us-ascii,
-            # by RFC6657: https://tools.ietf.org/html/rfc6657
-            return content.decode("us-ascii", errors="ignore")
+            charset = part.get_content_charset()
+            if charset is None:
+                # If no charset has been specified in the header, assume us-ascii,
+                # by RFC6657: https://tools.ietf.org/html/rfc6657
+                charset = "us-ascii"
+
+            try:
+                return content.decode(charset, errors="ignore")
+            except LookupError:
+                # The RFCs do not define how to handle unknown charsets,
+                # but treating as US-ASCII seems reasonable.
+                return content.decode("us-ascii", errors="ignore")
 
     return None
 
