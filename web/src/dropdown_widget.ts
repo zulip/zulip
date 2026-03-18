@@ -82,6 +82,7 @@ export type DropdownWidgetOptions = {
     // Text to show if the current value is not in `get_options()`.
     text_if_current_value_not_in_options?: string;
     hide_search_box?: boolean;
+    hide_search_box_focus_first_item_on_keyboard_open?: boolean;
     min_items_to_show_search_box?: number;
     // Disable the widget for spectators.
     disable_for_spectators?: boolean;
@@ -130,6 +131,7 @@ export class DropdownWidget {
     initial_hide_search_box: boolean;
     // Only show the search box if options.length > threshold.
     min_items_to_show_search_box: number;
+    hide_search_box_focus_first_item_on_keyboard_open: boolean;
     disable_for_spectators: boolean;
     dropdown_input_visible_selector: string;
     prefer_top_start_placement: boolean;
@@ -172,6 +174,8 @@ export class DropdownWidget {
         this.hide_search_box = options.hide_search_box ?? false;
         // Preserve caller's original request to hide the search box.
         this.initial_hide_search_box = options.hide_search_box ?? false;
+        this.hide_search_box_focus_first_item_on_keyboard_open =
+            options.hide_search_box_focus_first_item_on_keyboard_open ?? false;
         // Use constant default if the caller didn't provide a value.
         this.min_items_to_show_search_box =
             options.min_items_to_show_search_box ?? MIN_ITEMS_TO_SHOW_SEARCH_BOX;
@@ -428,6 +432,7 @@ export class DropdownWidget {
 
                     const $search_input = $popper.find(".dropdown-list-search-input");
                     const $sticky_bottom_option = $popper.find(".sticky-bottom-option-button");
+                    const $dropdown_list_container = $popper.find(".dropdown-list-container");
                     assert(this.list_widget !== undefined);
                     const list_items = this.list_widget.get_current_list();
                     if (
@@ -499,6 +504,7 @@ export class DropdownWidget {
                     const handle_arrow_down_on_sequential_focus = (): void => {
                         switch (e.target) {
                             case $search_input.get(0):
+                            case $dropdown_list_container.get(0):
                                 handle_arrow_down_on_search_input();
                                 break;
                             case $sticky_bottom_option.get(0):
@@ -631,6 +637,7 @@ export class DropdownWidget {
                             case "ArrowUp":
                                 switch (e.target) {
                                     case $search_input.get(0):
+                                    case $dropdown_list_container.get(0):
                                         handle_arrow_up_on_search_input();
                                         break;
                                     case $sticky_bottom_option.get(0):
@@ -685,34 +692,37 @@ export class DropdownWidget {
                 setTimeout(() => {
                     if (this.hide_search_box) {
                         if (this.dropdown_triggered_via_keyboard) {
-                            // IF the dropdown is opened by keyboard, focus on the first item.
-                            const $selected_item = $dropdown_list_body.find(
-                                `.list-item[data-unique-id="${this.current_value}"]`,
-                            );
-                            $selected_item.trigger("focus");
-                        } else {
                             assert(this.list_widget !== undefined);
-                            // Above, we avoided focusing on any item of the dropdown
-                            // when it is opened by a mousedown event. However, as soon
-                            // as the user presses ArrowUp or ArrowDown, we move the focus
-                            // on the first item of the dropdown.
-                            const first_item = this.list_widget.get_current_list()[0];
-                            if (first_item) {
-                                const $first_item = $popper.find(
-                                    `.list-item[data-unique-id="${first_item.unique_id}"]`,
-                                );
-                                this.$events_container.one(
-                                    "keydown",
-                                    `${this.widget_selector}, ${this.widget_wrapper_id}`,
-                                    (e) => {
-                                        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-                                            $first_item.trigger("focus");
-                                            e.stopPropagation();
-                                            e.preventDefault();
-                                        }
-                                    },
+                            let $focus_target = $();
+
+                            if (!this.hide_search_box_focus_first_item_on_keyboard_open) {
+                                $focus_target = $dropdown_list_body.find(
+                                    `.list-item[data-unique-id="${this.current_value}"]`,
                                 );
                             }
+
+                            if ($focus_target.length === 0) {
+                                const first_item = this.list_widget.get_current_list()[0];
+                                if (first_item !== undefined) {
+                                    $focus_target = $dropdown_list_body.find(
+                                        `.list-item[data-unique-id="${first_item.unique_id}"]`,
+                                    );
+                                }
+                            }
+
+                            if ($focus_target.length === 0 && this.sticky_bottom_option) {
+                                $focus_target = $popper.find(".sticky-bottom-option-button");
+                            }
+
+                            if ($focus_target.length === 0) {
+                                return;
+                            }
+
+                            $focus_target.trigger("focus");
+                        } else {
+                            // Focus the dropdown container so that the popper's
+                            // keydown handler can take care of the keyboard navigation.
+                            $popper.find(".dropdown-list-container").trigger("focus");
                         }
                     } else {
                         $search_input.trigger("focus");
