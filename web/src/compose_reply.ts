@@ -396,6 +396,10 @@ function replace_content(message: Message, raw_content: string, forward_message?
 }
 
 export function quote_message(opts: QuoteMessageOpts): void {
+    quote_single_message(opts);
+}
+
+function quote_single_message(opts: QuoteMessageOpts): void {
     const {message_id, message, quote_content} = get_quote_target_for_single_message(opts);
 
     if (opts.forward_message) {
