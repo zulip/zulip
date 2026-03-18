@@ -1070,63 +1070,68 @@ export function initialize(): void {
 
     // MAIN CLICK HANDLER
 
-    $(document).on("click", (e) => {
-        if (e.button !== 0 || $(e.target).is(".drag")) {
-            // Firefox emits right click events on the document, but not on
-            // the child nodes, so the #compose stopPropagation doesn't get a
-            // chance to capture right clicks.
-            return;
+    // MAIN CLICK HANDLER
+$(document).on("click", (e) => {
+    if (e.button !== 0 || $(e.target).is(".drag")) {
+        // Firefox emits right click events on the document, but not on
+        // the child nodes, so the #compose stopPropagation doesn't get a
+        // chance to capture right clicks.
+        return;
+    }
+
+    const is_click_within_link = $(e.target).closest("a").length > 0;
+    if (is_click_within_link) {
+        // Never close the compose box when clicking a link; just let
+        // the browser handle navigation and keep the draft intact.
+        if (compose_state.composing()) {
+            $("textarea#compose-textarea").trigger("focus");
         }
+        return;
+    }
 
-        if (compose_state.composing() && $(e.target).parents("#compose").length === 0) {
-            const is_click_within_link = $(e.target).closest("a").length > 0;
-            if (is_click_within_link || $(e.target).closest(".copy_codeblock").length > 0) {
-                const is_selecting_link_text = is_click_within_link && mouse_drag.is_drag(e);
-                if (is_selecting_link_text) {
-                    // Avoid triggering the click handler for a link
-                    // when just dragging over it to select the text.
-                    e.preventDefault();
-                    return;
-                }
-
-                // Refocus compose message text box if one clicks an external
-                // link/url to view something else while composing a message.
-                // See issue #4331 for more details.
-                //
-                // We do the same when copying a code block, since the
-                // most likely next action within Zulip is to paste it
-                // into compose and modify it.
-                $("textarea#compose-textarea").trigger("focus");
+    if (compose_state.composing() && $(e.target).parents("#compose").length === 0) {
+        if ($(e.target).closest(".copy_codeblock").length > 0) {
+            const is_selecting_text = mouse_drag.is_drag(e);
+            if (is_selecting_text) {
+                // Avoid triggering the click handler when just dragging
+                // to select text.
+                e.preventDefault();
                 return;
-            } else if (
-                !window.getSelection()?.toString() &&
-                // Clicking any input or text area should not close
-                // the compose box; this means using the sidebar
-                // filters or search widgets won't unnecessarily close
-                // compose.
-                $(e.target).closest("input").length === 0 &&
-                $(e.target).closest(".todo-widget label.checkbox").length === 0 &&
-                $(e.target).closest("textarea").length === 0 &&
-                $(e.target).closest("select").length === 0 &&
-                // Clicks inside an overlay, popover, custom
-                // modal, or backdrop of one of the above
-                // should not have any effect on the compose
-                // state.
-                $(e.target).closest(".overlay").length === 0 &&
-                $(e.target).closest(".micromodal").length === 0 &&
-                $(e.target).closest("[data-tippy-root]").length === 0 &&
-                $(e.target).closest(".typeahead").length === 0 &&
-                $(e.target).closest(".flatpickr-calendar").length === 0 &&
-                $(e.target).closest("body").length > 0
-            ) {
-                // Unfocus our compose area if we click out of it. Don't let exits out
-                // of overlays or selecting text (for copy+paste) trigger cancelling.
-                // Check if the click is within the body to prevent extensions from
-                // interfering with the compose box.
-                compose_actions.cancel();
             }
+
+            // When copying a code block, refocus compose so the next
+            // action (usually paste) goes into the draft.
+            $("textarea#compose-textarea").trigger("focus");
+            return;
+        } else if (
+            !window.getSelection()?.toString() &&
+            // Clicking any input or text area should not close
+            // the compose box; this means using the sidebar
+            // filters or search widgets won't unnecessarily close
+            // compose.
+            $(e.target).closest("input").length === 0 &&
+            $(e.target).closest(".todo-widget label.checkbox").length === 0 &&
+            $(e.target).closest("textarea").length === 0 &&
+            $(e.target).closest("select").length === 0 &&
+            // Clicks inside an overlay, popover, custom
+            // modal, or backdrop of one of the above
+            // should not have any effect on the compose
+            // state.
+            $(e.target).closest(".overlay").length === 0 &&
+            $(e.target).closest(".micromodal").length === 0 &&
+            $(e.target).closest("[data-tippy-root]").length === 0 &&
+            $(e.target).closest(".typeahead").length === 0 &&
+            $(e.target).closest(".flatpickr-calendar").length === 0 &&
+            $(e.target).closest("body").length > 0
+        ) {
+            // Unfocus our compose area if we click out of it. Don't let exits out
+            // of overlays or selecting text (for copy+paste) trigger cancelling.
+            // Check if the click is within the body to prevent extensions from
+            // interfering with the compose box.
+            compose_actions.cancel();
         }
-    });
+    }
+});
 
     // Workaround for Bootstrap issue #5900, which basically makes dropdowns
     // unclickable on mobile devices.
