@@ -77,6 +77,7 @@ from zerver.lib.string_validation import check_stream_name
 from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import get_topic_display_name, participants_for_topic
+from zerver.lib.topic_link_util import get_stream_link_syntax
 from zerver.lib.types import UserProfileChangeDict
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import (
@@ -1547,6 +1548,31 @@ def send_pm_if_empty_stream(
         send_rate_limited_pm_notification_to_bot_owner(sender, realm, content)
 
 
+def send_pm_if_not_authorized_to_stream(
+    stream: Stream,
+    realm: Realm,
+    sender: UserProfile,
+) -> None:
+    """If a bot tries to send a message to a stream and does not have
+    permission to send to that stream, sends a notification to the bot
+    owner (if not a cross-realm bot) so that the owner can correct the
+    issue."""
+    assert sender.bot_owner is not None
+    with override_language(sender.bot_owner.default_language):
+        channel_link = get_stream_link_syntax(stream.id, stream.name)
+        permissions_url = f"#channels/{stream.id}/{stream.name}/permissions"
+        content = _(
+            "@_**{bot_name}** failed to send a message to {channel_link} "
+            "because it doesn't have permission to do so. "
+            "[Update permissions]({permissions_url})"
+        ).format(
+            bot_name=sender.full_name,
+            channel_link=channel_link,
+            permissions_url=permissions_url,
+        )
+    send_rate_limited_pm_notification_to_bot_owner(sender, realm, content)
+
+
 def validate_stream_name_with_pm_notification(
     stream_name: str, realm: Realm, sender: UserProfile
 ) -> Stream:
@@ -1770,14 +1796,20 @@ def check_message(
         user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
         system_groups_name_dict = get_realm_system_groups_name_dict(stream.realm_id)
         if not skip_stream_access_check:
-            access_stream_for_send_message(
-                sender=sender,
-                stream=stream,
-                forwarder_user_profile=forwarder_user_profile,
-                archived_channel_notice=archived_channel_notice,
-                user_group_membership_details=user_group_membership_details,
-                system_groups_name_dict=system_groups_name_dict,
-            )
+            try:
+                access_stream_for_send_message(
+                    sender=sender,
+                    stream=stream,
+                    forwarder_user_profile=forwarder_user_profile,
+                    archived_channel_notice=archived_channel_notice,
+                    user_group_membership_details=user_group_membership_details,
+                    system_groups_name_dict=system_groups_name_dict,
+                )
+            except JsonableError:
+                # Notify bot owner about access failure
+                if sender.is_bot and sender.bot_owner is not None:
+                    send_pm_if_not_authorized_to_stream(stream, sender.realm, sender)
+                raise
         else:
             # Defensive assertion - the only currently supported use case
             # for this option is for outgoing webhook bots and since this

@@ -3669,6 +3669,46 @@ class CheckMessageTest(ZulipTestCase):
         self.assertEqual(ret.message.sender.email, "othello-bot@zulip.com")
         self.assertEqual(ret.message.content, message_content)
 
+    def test_bot_pm_feature_for_access_denied(self) -> None:
+        """We send a direct message to a bot's owner if their bot tries to
+        send a message to a stream it doesn't have access to"""
+        parent = self.example_user("othello")
+        bot = do_create_user(
+            email="othello-bot@zulip.com",
+            password="",
+            realm=parent.realm,
+            full_name="Othello Bot",
+            bot_type=UserProfile.DEFAULT_BOT,
+            bot_owner=parent,
+            acting_user=None,
+        )
+        bot.last_reminder = None
+
+        sender = bot
+        client = make_client(name="test suite")
+        stream_name = "private_stream"
+        topic_name = "test"
+        message_content = "whatever"
+
+        # Create a private stream that the bot doesn't have access to
+        stream = self.make_stream(stream_name, invite_only=True)
+        addressee = Addressee.for_stream(stream, topic_name)
+        old_count = message_stream_count(parent)
+
+        # Try sending to stream that bot doesn't have access to
+        with self.assertRaises(JsonableError):
+            check_message(sender, client, addressee, message_content)
+
+        new_count = message_stream_count(parent)
+        self.assertEqual(new_count, old_count + 1)
+
+        recent_msg = most_recent_message(parent).content
+        self.assertIn("@_**Othello Bot**", recent_msg)
+        self.assertIn("#**private_stream**", recent_msg)
+        self.assertIn("doesn't have permission to do so", recent_msg)
+        self.assertIn("[Update permissions]", recent_msg)
+        self.assertIn(f"#channels/{stream.id}/{stream_name}/permissions", recent_msg)
+
     def test_bot_pm_error_handling(self) -> None:
         # This just test some defensive code.
         cordelia = self.example_user("cordelia")
