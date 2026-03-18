@@ -273,7 +273,10 @@ function ajaxUnsubscribe(sub: StreamSubscription, $stream_row: JQuery | undefine
     });
 }
 
-export function unsubscribe_from_private_stream(sub: StreamSubscription): void {
+export function unsubscribe_from_private_stream(
+    sub: StreamSubscription,
+    $stream_row: JQuery | undefined,
+): void {
     const invite_only = sub.invite_only;
     const sub_count = peer_data.get_subscriber_count(sub.stream_id);
     const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({
@@ -290,15 +293,6 @@ export function unsubscribe_from_private_stream(sub: StreamSubscription): void {
     });
 
     function unsubscribe_from_stream(): void {
-        let $stream_row;
-        if (overlays.streams_open()) {
-            $stream_row = $(
-                "#channels_overlay_container div.stream-row[data-stream-id='" +
-                    sub.stream_id +
-                    "']",
-            );
-        }
-
         ajaxUnsubscribe(sub, $stream_row);
     }
 
@@ -319,7 +313,7 @@ export function sub_or_unsub(sub: StreamSubscription, $stream_row?: JQuery): voi
             (sub.invite_only && !stream_data.has_content_access_via_group_permissions(sub)) ||
             current_user.is_guest
         ) {
-            unsubscribe_from_private_stream(sub);
+            unsubscribe_from_private_stream(sub, $stream_row);
             return;
         }
         ajaxUnsubscribe(sub, $stream_row);
