@@ -2,8 +2,8 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");

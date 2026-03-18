@@ -2,8 +2,8 @@
 
 const assert = require("node:assert/strict");
 
-const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
 const {clock, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");

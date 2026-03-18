@@ -2,8 +2,8 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire, mock_esm} = require("./lib/namespace.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
+const {zrequire, mock_esm} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const topic_link_util = zrequire("topic_link_util");
