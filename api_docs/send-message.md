@@ -65,6 +65,7 @@ file.
 ## Parameters
 The `to` parameter specifies who will receive the message.
 For direct messages, it should be a list of user IDs or email addresses. Including your own user ID or email is allowed, but it will be ignored by the server.
+Fixes #19619.
 
 {generate_api_arguments_table|zulip.yaml|/messages:post}
 
