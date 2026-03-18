@@ -94,6 +94,7 @@ from zerver.views.message_report import report_message_backend
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
 from zerver.views.message_summary import get_messages_summary
 from zerver.views.muted_users import mute_user, unmute_user
+from zerver.views.followed_users import follow_user, unfollow_user
 from zerver.views.navigation_views import (
     add_navigation_view,
     get_navigation_views,
@@ -591,6 +592,8 @@ v1_api_and_json_patterns = [
     rest_path("user_topics", POST=update_user_topic),
     # user-muting -> zerver.views.user_mutes
     rest_path("users/me/muted_users/<int:muted_user_id>", POST=mute_user, DELETE=unmute_user),
+    # user-following -> zerver.views.followed_users
+    rest_path("users/me/followed_users/<int:followed_user_id>", POST=follow_user, DELETE=unfollow_user),
     # used to register for an event queue in tornado
     rest_path("register", POST=(events_register_backend, {"allow_anonymous_user_web"})),
     # events -> zerver.tornado.views

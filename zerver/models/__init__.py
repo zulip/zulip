@@ -9,6 +9,7 @@ from zerver.models.custom_profile_fields import CustomProfileField as CustomProf
 from zerver.models.custom_profile_fields import CustomProfileFieldValue as CustomProfileFieldValue
 from zerver.models.devices import Device as Device
 from zerver.models.drafts import Draft as Draft
+from zerver.models.followed_users import FollowedUser as FollowedUser
 from zerver.models.groups import GroupGroupMembership as GroupGroupMembership
 from zerver.models.groups import NamedUserGroup as NamedUserGroup
 from zerver.models.groups import UserGroup as UserGroup

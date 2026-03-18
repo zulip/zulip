@@ -275,6 +275,16 @@ class EventMutedUsers(BaseEvent):
     muted_users: list[MutedUser]
 
 
+class FollowedUser(BaseModel):
+    id: int
+    timestamp: int
+
+
+class EventFollowedUsers(BaseEvent):
+    type: Literal["followed_users"]
+    followed_users: list[FollowedUser]
+
+
 class OnboardingSteps(BaseModel):
     type: str
     name: str
