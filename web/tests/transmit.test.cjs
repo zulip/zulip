@@ -135,10 +135,12 @@ run_test("topic wildcard mention not allowed", ({override}) => {
 
 run_test("reply_message_stream", ({override}) => {
     const social_stream_id = 555;
-    stream_data.add_sub_for_tests(make_stream({
-        name: "social",
-        stream_id: social_stream_id,
-    }));
+    stream_data.add_sub_for_tests(
+        make_stream({
+            name: "social",
+            stream_id: social_stream_id,
+        }),
+    );
 
     const stream_message = {
         type: "stream",

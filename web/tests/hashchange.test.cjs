@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -46,12 +47,12 @@ const user_settings = {};
 initialize_user_settings({user_settings});
 
 const devel_id = 100;
-const devel = {
+const devel = make_stream({
     name: "devel",
     stream_id: devel_id,
     color: "blue",
     subscribed: true,
-};
+});
 stream_data.add_sub_for_tests(devel);
 
 run_test("terms_round_trip", () => {
@@ -87,10 +88,10 @@ run_test("terms_round_trip", () => {
 
     // test new encodings, where we have a stream id
     const florida_id = 987;
-    const florida_stream = {
+    const florida_stream = make_stream({
         name: "Florida, USA",
         stream_id: florida_id,
-    };
+    });
     stream_data.add_sub_for_tests(florida_stream);
     terms = [{operator: "channel", operand: florida_id.toString()}];
     hash = hash_util.search_terms_to_hash(terms);
@@ -245,11 +246,13 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     assert.equal(window.location.hash, "#recent");
 
     const denmark_id = 1;
-    stream_data.add_sub_for_tests({
-        subscribed: true,
-        name: "Denmark",
-        stream_id: denmark_id,
-    });
+    stream_data.add_sub_for_tests(
+        make_stream({
+            subscribed: true,
+            name: "Denmark",
+            stream_id: denmark_id,
+        }),
+    );
     window.location.hash = "#narrow/channel/Denmark";
 
     helper.clear_events();
