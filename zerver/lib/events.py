@@ -170,6 +170,7 @@ def fetch_initial_state_data(
     realm: Realm,
     event_types: Iterable[str] | None = None,
     queue_id: str | None = "",
+    idle_queue_timeout_secs: int | None = None,
     client_gravatar: bool = False,
     user_avatar_url_field_optional: bool = False,
     slim_presence: bool = False,
@@ -197,6 +198,9 @@ def fetch_initial_state_data(
     code to apply_events (and add a test in test_events.py).
     """
     state: dict[str, Any] = {"queue_id": queue_id}
+
+    if idle_queue_timeout_secs is not None:
+        state["idle_queue_timeout_secs"] = idle_queue_timeout_secs
 
     if event_types is None:
         # return True always
@@ -2076,7 +2080,7 @@ def do_events_register(
     presence_last_update_id_fetched_by_client: int | None = None,
     presence_history_limit_days: int | None = None,
     event_types: Sequence[str] | None = None,
-    idle_queue_timeout: int = 0,
+    idle_queue_timeout: int | Literal["mobile"] | None = None,
     all_public_streams: bool = False,
     include_subscribers: bool | Literal["partial"] = True,
     include_streams: bool = True,
@@ -2155,7 +2159,7 @@ def do_events_register(
 
     # Note that we pass event_types, not fetch_event_types here, since
     # that's what controls which future events are sent.
-    queue_id = request_event_queue(
+    result = request_event_queue(
         user_profile,
         user_client,
         apply_markdown,
@@ -2176,14 +2180,17 @@ def do_events_register(
         simplified_presence_events=simplified_presence_events,
     )
 
-    if queue_id is None:
+    if result is None:
         raise JsonableError(_("Could not allocate event queue"))
+
+    queue_id = result.queue_id
 
     ret = fetch_initial_state_data(
         user_profile,
         realm=realm,
         event_types=event_types_set,
         queue_id=queue_id,
+        idle_queue_timeout_secs=result.idle_queue_timeout_secs,
         client_gravatar=client_gravatar,
         user_avatar_url_field_optional=user_avatar_url_field_optional,
         slim_presence=slim_presence,

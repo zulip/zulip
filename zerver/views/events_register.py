@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
-from pydantic import Json
+from pydantic import Json, PositiveInt
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.compatibility import is_pronouns_field_type_supported
@@ -14,7 +14,7 @@ from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import ApiParamConfig, DocumentationStatus, typed_endpoint
+from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.models import Stream, UserProfile
 from zerver.views.streams import parse_include_subscribers
 
@@ -50,9 +50,7 @@ def events_register_backend(
     include_subscribers: Literal["true", "false", "partial"] = "false",
     narrow: Json[NarrowT] | None = None,
     presence_history_limit_days: Json[int] | None = None,
-    idle_queue_timeout: Annotated[
-        Json[int], ApiParamConfig(documentation_status=DocumentationStatus.DOCUMENTATION_PENDING)
-    ] = 0,
+    idle_queue_timeout: Json[PositiveInt | Literal["mobile"]] | None = None,
     slim_presence: Json[bool] = False,
 ) -> HttpResponse:
     if narrow is None:

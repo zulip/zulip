@@ -56,6 +56,9 @@ MAX_QUEUE_TIMEOUT_SECS = 7 * 24 * 60 * 60
 # is called to potentially send push/email notifications.
 EVENT_QUEUE_OFFLINE_TIMEOUT_SECS = 60 * 10
 
+# Queue timeout for mobile clients.
+MOBILE_EVENT_QUEUE_TIMEOUT_SECS = 12 * 60 * 60
+
 # The heartbeats effectively act as a server-side timeout for
 # get_events().  The actual timeout value is randomized for each
 # client connection based on the below value.  We ensure that the
@@ -82,7 +85,7 @@ class ClientDescriptor:
         client_gravatar: bool,
         slim_presence: bool,
         all_public_streams: bool,
-        idle_queue_timeout: int,
+        idle_queue_timeout: int | Literal["mobile"] | None,
         narrow: Collection[Sequence[str]],
         bulk_message_deletion: bool,
         stream_typing_notifications: bool,
@@ -131,8 +134,10 @@ class ClientDescriptor:
 
         # Default for idle_queue_timeout is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
-        if idle_queue_timeout == 0:
+        if idle_queue_timeout is None:
             idle_queue_timeout = DEFAULT_EVENT_QUEUE_TIMEOUT_SECS
+        elif idle_queue_timeout == "mobile":
+            idle_queue_timeout = MOBILE_EVENT_QUEUE_TIMEOUT_SECS
         self.queue_timeout = min(idle_queue_timeout, MAX_QUEUE_TIMEOUT_SECS)
 
     def to_dict(self) -> dict[str, Any]:
@@ -831,6 +836,7 @@ def fetch_events(
             )
             if orig_queue_id is None:
                 response["queue_id"] = queue_id
+                response["idle_queue_timeout_secs"] = client.queue_timeout
             if len(response["events"]) == 1:
                 extra_log_data = "[{}/{}/{}]".format(
                     queue_id, len(response["events"]), response["events"][0]["type"]

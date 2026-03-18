@@ -1,12 +1,12 @@
 import time
 from collections.abc import Callable
-from typing import Annotated, Any, TypeVar
+from typing import Annotated, Any, Literal, TypeVar
 
 from asgiref.sync import async_to_sync
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
-from pydantic import BaseModel, Json, NonNegativeInt, StringConstraints, model_validator
+from pydantic import BaseModel, Json, PositiveInt, StringConstraints, model_validator
 from typing_extensions import ParamSpec
 
 from zerver.decorator import internal_api_view, process_client
@@ -179,9 +179,9 @@ def get_events_backend(
         ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
     ] = None,
     idle_queue_timeout: Annotated[
-        Json[NonNegativeInt],
+        Json[PositiveInt | Literal["mobile"]] | None,
         ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
-    ] = 0,
+    ] = None,
     bulk_message_deletion: Annotated[
         Json[bool],
         ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),

@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 481**
+
+* [`POST /register`](/api/register-queue): Added `idle_queue_timeout`
+  request parameter, allowing clients to configure how long the server
+  keeps the event queue alive when the client is not polling. The
+  string `"mobile"` can be passed to use the server's recommended
+  timeout for mobile clients. The response now includes
+  `idle_queue_timeout_secs` with the effective timeout in seconds.
+
 **Feature level 480**
 
 * [`GET /streams/{stream_id}`](/api/get-stream-by-id): Details of

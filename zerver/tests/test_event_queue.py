@@ -22,6 +22,8 @@ from zerver.models.streams import get_stream
 from zerver.tornado.event_queue import (
     DEFAULT_EVENT_QUEUE_TIMEOUT_SECS,
     EVENT_QUEUE_OFFLINE_TIMEOUT_SECS,
+    MAX_QUEUE_TIMEOUT_SECS,
+    MOBILE_EVENT_QUEUE_TIMEOUT_SECS,
     ClientDescriptor,
     access_client_descriptor,
     add_client_gc_hook,
@@ -1592,7 +1594,7 @@ class OfflineEventQueueTest(ZulipTestCase):
     def allocate_queue(
         self,
         user: UserProfile,
-        queue_timeout: int,
+        queue_timeout: int | str | None,
     ) -> ClientDescriptor:
         queue_data: dict[str, Any] = dict(
             all_public_streams=False,
@@ -1737,3 +1739,22 @@ class OfflineEventQueueTest(ZulipTestCase):
             # For the expired queue, the long-lived queue is still active so
             # last_client_for_user is False and it short-circuits.
             mock_enqueue.assert_called_once()
+
+    def test_idle_queue_timeout_resolution(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        # None resolves to the default timeout.
+        client = self.allocate_queue(hamlet, queue_timeout=None)
+        self.assertEqual(client.queue_timeout, DEFAULT_EVENT_QUEUE_TIMEOUT_SECS)
+
+        # "mobile" resolves to the mobile timeout.
+        client = self.allocate_queue(hamlet, queue_timeout="mobile")
+        self.assertEqual(client.queue_timeout, MOBILE_EVENT_QUEUE_TIMEOUT_SECS)
+
+        # Explicit integer is used as-is.
+        client = self.allocate_queue(hamlet, queue_timeout=3600)
+        self.assertEqual(client.queue_timeout, 3600)
+
+        # Values above the max are capped.
+        client = self.allocate_queue(hamlet, queue_timeout=MAX_QUEUE_TIMEOUT_SECS + 1000)
+        self.assertEqual(client.queue_timeout, MAX_QUEUE_TIMEOUT_SECS)
