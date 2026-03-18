@@ -205,6 +205,8 @@ class RecipientInfoResult:
     stream_wildcard_mention_user_ids: set[int]
     followed_topic_email_user_ids: set[int]
     followed_topic_push_user_ids: set[int]
+    followed_user_push_user_ids: set[int]
+    followed_user_email_user_ids: set[int]
     topic_wildcard_mention_in_followed_topic_user_ids: set[int]
     stream_wildcard_mention_in_followed_topic_user_ids: set[int]
     muted_sender_user_ids: set[int]
@@ -255,6 +257,8 @@ def get_recipient_info(
     stream_wildcard_mention_user_ids: set[int] = set()
     followed_topic_push_user_ids: set[int] = set()
     followed_topic_email_user_ids: set[int] = set()
+    followed_user_push_user_ids: set[int] = set()
+    followed_user_email_user_ids: set[int] = set()
     topic_wildcard_mention_in_followed_topic_user_ids: set[int] = set()
     stream_wildcard_mention_in_followed_topic_user_ids: set[int] = set()
     muted_sender_user_ids: set[int] = get_muting_users(sender_id)
@@ -373,6 +377,19 @@ def get_recipient_info(
             "email_notifications"
         )
         followed_topic_push_user_ids = followed_topic_notification_recipients("push_notifications")
+
+        # Get followers of the message sender who have push notifications enabled
+        # and have access to the stream.
+        from zerver.lib.followed_users import get_followers_who_can_see_stream_message
+
+        followed_user_push_user_ids = get_followers_who_can_see_stream_message(
+            followed_user_id=sender_id,
+            stream_id=stream_topic.stream_id,
+            realm_id=realm_id,
+        )
+        # Email notifications for followed users are not yet implemented,
+        # but keeping the structure for future extensibility.
+        followed_user_email_user_ids: set[int] = set()
 
         if possible_stream_wildcard_mention or possible_topic_wildcard_mention:
             # We calculate `wildcard_mentions_notify_user_ids` and `followed_topic_wildcard_mentions_notify_user_ids`
@@ -541,6 +558,8 @@ def get_recipient_info(
         stream_wildcard_mention_user_ids=stream_wildcard_mention_user_ids,
         followed_topic_push_user_ids=followed_topic_push_user_ids,
         followed_topic_email_user_ids=followed_topic_email_user_ids,
+        followed_user_push_user_ids=followed_user_push_user_ids,
+        followed_user_email_user_ids=followed_user_email_user_ids,
         topic_wildcard_mention_in_followed_topic_user_ids=topic_wildcard_mention_in_followed_topic_user_ids,
         stream_wildcard_mention_in_followed_topic_user_ids=stream_wildcard_mention_in_followed_topic_user_ids,
         muted_sender_user_ids=muted_sender_user_ids,
@@ -750,6 +769,8 @@ def build_message_send_dict(
         stream_email_user_ids=info.stream_email_user_ids,
         followed_topic_push_user_ids=info.followed_topic_push_user_ids,
         followed_topic_email_user_ids=info.followed_topic_email_user_ids,
+        followed_user_push_user_ids=info.followed_user_push_user_ids,
+        followed_user_email_user_ids=info.followed_user_email_user_ids,
         muted_sender_user_ids=info.muted_sender_user_ids,
         um_eligible_user_ids=info.um_eligible_user_ids,
         long_term_idle_user_ids=info.long_term_idle_user_ids,
@@ -782,6 +803,8 @@ def create_user_messages(
     mentioned_user_ids: AbstractSet[int],
     followed_topic_push_user_ids: AbstractSet[int],
     followed_topic_email_user_ids: AbstractSet[int],
+    followed_user_push_user_ids: AbstractSet[int],
+    followed_user_email_user_ids: AbstractSet[int],
     mark_as_read_user_ids: set[int],
     limit_unread_user_ids: set[int] | None,
     topic_participant_user_ids: set[int],
@@ -839,6 +862,8 @@ def create_user_messages(
             and user_profile_id not in stream_email_user_ids
             and user_profile_id not in followed_topic_push_user_ids
             and user_profile_id not in followed_topic_email_user_ids
+            and user_profile_id not in followed_user_push_user_ids
+            and user_profile_id not in followed_user_email_user_ids
             and is_stream_message
             and int(flags) == 0
         ):
@@ -978,6 +1003,8 @@ def do_send_messages(
             mentioned_user_ids=mentioned_user_ids,
             followed_topic_push_user_ids=send_request.followed_topic_push_user_ids,
             followed_topic_email_user_ids=send_request.followed_topic_email_user_ids,
+            followed_user_push_user_ids=send_request.followed_user_push_user_ids,
+            followed_user_email_user_ids=send_request.followed_user_email_user_ids,
             mark_as_read_user_ids=mark_as_read_user_ids,
             limit_unread_user_ids=send_request.limit_unread_user_ids,
             topic_participant_user_ids=send_request.topic_participant_user_ids,
