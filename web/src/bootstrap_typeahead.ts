@@ -725,6 +725,21 @@ export class Typeahead<ItemType extends string | object> {
             return;
         }
 
+        // On macOS, Ctrl+N/P are standard Emacs keybindings for
+        // moving down/up, equivalent to arrow keys in menus.
+        if (e.ctrlKey && (e.key === "n" || e.key === "N")) {
+            e.preventDefault();
+            this.next();
+            this.maybeStopAdvance(e);
+            return;
+        }
+        if (e.ctrlKey && (e.key === "p" || e.key === "P")) {
+            e.preventDefault();
+            this.prev();
+            this.maybeStopAdvance(e);
+            return;
+        }
+
         switch (e.key) {
             case "Tab":
                 if (!this.tabIsEnter) {

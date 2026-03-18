@@ -218,12 +218,12 @@ run_test("mappings", () => {
     assert.equal(map_down("t", false, true), undefined);
     assert.equal(map_down("r", false, true), undefined);
     assert.equal(map_down("o", false, true), undefined);
-    assert.equal(map_down("p", false, true), undefined);
+    assert.equal(map_down("p", false, true).name, "up_arrow");
     assert.equal(map_down("a", false, true), undefined);
     assert.equal(map_down("f", false, true), undefined);
     assert.equal(map_down("h", false, true), undefined);
     assert.equal(map_down("x", false, true), undefined);
-    assert.equal(map_down("n", false, true), undefined);
+    assert.equal(map_down("n", false, true).name, "down_arrow");
     assert.equal(map_down("m", false, true), undefined);
     assert.equal(map_down("c", false, false, true), undefined);
     assert.equal(map_down("k", false, false, true), undefined);
@@ -249,6 +249,9 @@ run_test("mappings", () => {
     assert.equal(map_down("s", false, true, false), undefined);
     assert.equal(map_down(".", false, false, true).name, "narrow_to_compose_target");
     assert.equal(map_down(".", false, true, false), undefined);
+    // Ctrl+N/P pass through on Mac as standard Emacs keybindings.
+    assert.equal(map_down("n", false, true, false).name, "down_arrow");
+    assert.equal(map_down("p", false, true, false).name, "up_arrow");
     // Reset platform
     navigator.platform = "";
 
@@ -297,12 +300,12 @@ run_test("mappings non-latin keyboard", () => {
     assert.equal(map_down("е", "KeyT", false, true), undefined);
     assert.equal(map_down("к", "KeyR", false, true), undefined);
     assert.equal(map_down("щ", "KeyO", false, true), undefined);
-    assert.equal(map_down("з", "KeyP", false, true), undefined);
+    assert.equal(map_down("з", "KeyP", false, true).name, "up_arrow");
     assert.equal(map_down("ф", "KeyA", false, true), undefined);
     assert.equal(map_down("а", "KeyF", false, true), undefined);
     assert.equal(map_down("р", "KeyH", false, true), undefined);
     assert.equal(map_down("ч", "KeyX", false, true), undefined);
-    assert.equal(map_down("т", "KeyN", false, true), undefined);
+    assert.equal(map_down("т", "KeyN", false, true).name, "down_arrow");
     assert.equal(map_down("ь", "KeyM", false, true), undefined);
     assert.equal(map_down("с", "KeyC", false, false, true), undefined);
     assert.equal(map_down("л", "KeyK", false, false, true), undefined);
@@ -325,6 +328,9 @@ run_test("mappings non-latin keyboard", () => {
     assert.equal(map_down("@", "Digit2", true, true, false), undefined);
     assert.equal(map_down("ы", "KeyS", false, false, true).name, "star_message");
     assert.equal(map_down("ы", "KeyS", false, true, false), undefined);
+    // Ctrl+N/P pass through on Mac as standard Emacs keybindings.
+    assert.equal(map_down("т", "KeyN", false, true, false).name, "down_arrow");
+    assert.equal(map_down("з", "KeyP", false, true, false).name, "up_arrow");
     // Reset platform
     navigator.platform = "";
 

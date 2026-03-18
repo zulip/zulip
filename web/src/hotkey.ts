@@ -150,6 +150,8 @@ const KEYDOWN_MAPPINGS: Record<string, Hotkey | Hotkey[]> = {
     "Ctrl+C": {name: "copy_with_c", message_view_only: false},
     "Ctrl+K": {name: "search_with_k", message_view_only: false},
     "Ctrl+@": {name: "open_mentions_view", message_view_only: true},
+    "Ctrl+N": {name: "down_arrow", message_view_only: false},
+    "Ctrl+P": {name: "up_arrow", message_view_only: false},
     "Ctrl+S": {name: "star_message", message_view_only: true},
     "Ctrl+.": {name: "narrow_to_compose_target", message_view_only: true},
     "Ctrl+'": {name: "open_saved_snippet_dropdown", message_view_only: true},
@@ -356,8 +358,10 @@ export function get_keydown_hotkey(e: JQuery.KeyDownEvent): Hotkey | Hotkey[] | 
         }
     }
 
-    if (common.has_mac_keyboard() && e.ctrlKey && key !== "[") {
-        // On macOS, Cmd is used instead of Ctrl. Except 'Ctrl + ['.
+    if (common.has_mac_keyboard() && e.ctrlKey && !["[", "n", "p"].includes(key)) {
+        // On macOS, Cmd is used instead of Ctrl. Except 'Ctrl + [',
+        // and 'Ctrl + N'/'Ctrl + P' (standard macOS Emacs keybindings
+        // for moving down/up in menus and dropdowns).
         return undefined;
     }
     if (!common.has_mac_keyboard() && e.metaKey) {
