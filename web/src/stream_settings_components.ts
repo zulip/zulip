@@ -191,7 +191,11 @@ function hide_subscribe_toggle_spinner($stream_row: JQuery): void {
     loading.destroy_indicator($spinner);
 }
 
-export function ajaxSubscribe(stream: string, color?: string, $stream_row?: JQuery): void {
+export function ajaxSubscribe(
+    stream: string,
+    color: string,
+    $stream_row: JQuery | undefined,
+): void {
     // Subscribe yourself to a single stream.
     let true_stream_name;
 
