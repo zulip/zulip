@@ -1,18 +1,23 @@
 # Zulip overview
 
-[Zulip](https://zulip.com) is an open-source organized team chat app with unique
-[topic-based threading][why-zulip] that combines the best of email and chat to
-make remote work productive and delightful. Fortune 500 companies, [leading open
-source projects][rust-case-study], and thousands of other organizations use
-Zulip every day. Zulip is the only [modern team chat app][features] that is
-designed for both live and asynchronous conversations.
+[Zulip](https://zulip.com) is an open-source organized team chat application with unique
+[topic-based threading][why-zulip]. It combines the best elements of email and chat,
+making remote collaboration more productive and easier to manage.
 
-Zulip is built by a distributed community of developers from all around the
-world, with 99+ people who have each contributed 100+ commits. With
-over 1,500 contributors merging over 500 commits a month, Zulip is the
-largest and fastest growing open source team chat project.
+Organizations of all sizes use Zulip daily, including Fortune 500 companies,
+[leading open-source projects][rust-case-study], and thousands of other teams around the
+world. Zulip is one of the few [modern team chat applications][features] designed to
+support both real-time discussions and asynchronous communication effectively.
 
-Come find us on the [development community chat](https://zulip.com/development-community/)!
+Zulip is built by a distributed community of developers from around the world.
+More than **99 contributors have each made over 100 commits**, and the project
+has **over 1,500 contributors** in total. With **500+ commits merged every month**,
+Zulip is one of the largest and fastest-growing open-source team chat platforms.
+
+Come find us on the
+[development community chat](https://zulip.com/development-community/).
+
+---
 
 [![GitHub Actions build status](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml/badge.svg)](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml?query=branch%3Amain)
 [![coverage status](https://img.shields.io/codecov/c/github/zulip/zulip/main.svg)](https://codecov.io/gh/zulip/zulip)
@@ -25,56 +30,134 @@ Come find us on the [development community chat](https://zulip.com/development-c
 [![Twitter](https://img.shields.io/badge/twitter-@zulip-blue.svg?style=flat)](https://twitter.com/zulip)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/zulip)](https://github.com/sponsors/zulip)
 
+---
+
+# Features
+
+Zulip provides a modern communication platform designed to help teams stay organized
+while managing many conversations at once.
+
+## Topic-based threading
+
+Messages are organized into topics within streams. This structure keeps discussions
+focused and makes it easy to follow conversations without losing context.
+
+## Real-time and asynchronous communication
+
+Zulip is designed for both instant conversations and asynchronous collaboration.
+Users can catch up on discussions later without losing important information.
+
+## Powerful search
+
+Zulip includes a powerful search system that allows users to find messages across
+streams, topics, and participants.
+
+## Open-source and customizable
+
+Because Zulip is open-source, developers can modify the platform, build integrations,
+and extend it according to their needs.
+
+## Self-hosting support
+
+Organizations can deploy Zulip on their own infrastructure or use the hosted Zulip Cloud service.
+
+---
+
+# Getting started
+
+## Clone the repository
+
+```bash
+git clone https://github.com/zulip/zulip.git
+cd zulip
+```
+
+## Development setup
+
+To run Zulip locally, follow the official development setup guide:
+
+https://zulip.readthedocs.io/en/latest/development/setup.html
+
+This guide explains how to install dependencies, configure the environment,
+and run the development server.
+
+---
+
+# Contributing
+
+Contributions are welcome from developers of all experience levels.
+
+To contribute:
+
+1. Fork the repository
+2. Create a new branch for your change
+3. Make your changes
+4. Commit the changes
+5. Push the branch to your fork
+6. Open a Pull Request
+
+Before contributing, please read the contributor documentation:
+
+https://zulip.readthedocs.io/en/latest/contributing/
+
+---
+
+# Ways to contribute
+
+There are many ways to contribute to the Zulip project:
+
+- Fix bugs
+- Improve documentation
+- Implement new features
+- Improve user interface and design
+- Review pull requests
+- Help other contributors in discussions
+
+Even small contributions help improve the project.
+
+---
+
+# Community
+
+You can interact with the Zulip development community and ask questions here:
+
+https://chat.zulip.org
+
+---
+
+# Documentation
+
+Official documentation:
+
+https://zulip.readthedocs.io
+
+API documentation:
+
+https://zulip.com/api
+
+---
+
+# Outreach programs
+
+Zulip regularly participates in open-source mentorship programs such as:
+
+- Google Summer of Code (GSoC)
+- Outreachy
+
+These programs allow contributors to work on major features while receiving mentorship
+from experienced developers.
+
+---
+
+# License
+
+Zulip is distributed under the **Apache 2.0 License**.
+
+See the LICENSE file for more details.
+
+---
+
 [mypy-coverage]: https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/
 [why-zulip]: https://zulip.com/why-zulip/
 [rust-case-study]: https://zulip.com/case-studies/rust/
 [features]: https://zulip.com/features/
-
-## Getting started
-
-- **Contributing code**. Check out our [guide for new
-  contributors](https://zulip.readthedocs.io/en/latest/contributing/contributing.html)
-  to get started. We have invested in making Zulip’s code highly
-  readable, thoughtfully tested, and easy to modify. Beyond that, we
-  have written an extraordinary 185K words of documentation for Zulip
-  contributors.
-
-- **Contributing non-code**. [Report an
-  issue](https://zulip.readthedocs.io/en/latest/contributing/reporting-bugs.html),
-  [translate](https://zulip.readthedocs.io/en/latest/translating/translating.html)
-  Zulip into your language, or [give us
-  feedback](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html).
-  We'd love to hear from you, whether you've been using Zulip for years, or are just
-  trying it out for the first time.
-
-- **Checking Zulip out**. The best way to see Zulip in action is to [drop
-  by](https://chat.zulip.org/?show_try_zulip_modal) the Zulip development
-  community (no account required). We also recommend reading about Zulip's
-  [unique approach](https://zulip.com/why-zulip/) to organizing conversations.
-
-- **Running a Zulip server**. Self-host Zulip directly on Ubuntu or Debian
-  Linux, in [Docker](https://github.com/zulip/docker-zulip), or with prebuilt
-  images for [Digital Ocean](https://marketplace.digitalocean.com/apps/zulip) and
-  [Render](https://render.com/docs/deploy-zulip).
-  Learn more about [self-hosting Zulip](https://zulip.com/self-hosting/).
-
-- **Using Zulip without setting up a server**. Learn about [Zulip
-  Cloud](https://zulip.com/zulip-cloud/) hosting options. Zulip sponsors free [Zulip
-  Cloud Standard](https://zulip.com/plans/) for hundreds of worthy
-  organizations, including [fellow open-source
-  projects](https://zulip.com/for/open-source/).
-
-- **Participating in [outreach
-  programs](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#outreach-programs)**
-  like [Google Summer of Code](https://developers.google.com/open-source/gsoc/).
-
-- **Supporting Zulip**. Learn about all the ways you can [support
-  Zulip](https://zulip.com/help/support-zulip-project), including contributing
-  financially, and helping others discover it.
-
-You may also be interested in reading our [blog](https://blog.zulip.org/), and
-following us on [LinkedIn](https://www.linkedin.com/company/zulip-project/),
-[Mastodon](https://fosstodon.org/@zulip), and [X](https://x.com/zulip).
-
-Zulip is distributed under the
-[Apache 2.0](https://github.com/zulip/zulip/blob/main/LICENSE) license.
