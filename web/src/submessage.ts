@@ -41,12 +41,25 @@ export function get_message_events(message: Message): SubmessageEvents | undefin
 
     message.submessages.sort((m1, m2) => m1.id - m2.id);
 
-    const events = message.submessages.map((obj): {sender_id: number; data: unknown} => ({
-        sender_id: obj.sender_id,
-        data: JSON.parse(obj.content),
-    }));
-    const clean_events = submessages_event_schema.parse(events);
-    return clean_events;
+    const events: {sender_id: number; data: unknown}[] = [];
+
+    for (const obj of message.submessages) {
+        let data: unknown;
+        try {
+            data = JSON.parse(obj.content);
+        } catch {
+            return undefined;
+        }
+
+        events.push({sender_id: obj.sender_id, data});
+    }
+
+    const parsed = submessages_event_schema.safeParse(events);
+    if (!parsed.success) {
+        return undefined;
+    }
+
+    return parsed.data;
 }
 
 export function render_widget_rows_in_list(list: MessageList | undefined): void {

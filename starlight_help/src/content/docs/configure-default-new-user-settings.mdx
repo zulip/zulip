@@ -2,47 +2,36 @@
 title: Configure default settings for new users
 ---
 
+import FlattenedList from "../../components/FlattenedList.astro";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import AdminOnly from "../include/_AdminOnly.mdx";
+import DefaultUserSettingsList from "../include/_DefaultUserSettingsList.mdx";
 import SaveChanges from "../include/_SaveChanges.mdx";
 
 <AdminOnly />
 
-Organization administrators can configure the default values of
-personal preference settings for new users joining the
-organization. This can help seamlessly customize the Zulip experience
-to match how the organization in question is using Zulip.
+You can configure the default values of personal preference settings for new
+users joining your organization. This lets you customize the Zulip experience to
+match how your organization is using Zulip.
 
-Existing users' preferences cannot be modified by administrators, and
-users will be able to customize their own settings once they
-join. Administrators can customize defaults for all personal
-preference settings, including the following:
+Users will be able to customize their own settings once they join.
+If needed, administrators can [reset settings for
+users](/help/reset-settings-for-users) to the organization default.
 
-* Privacy settings:
-  * Displaying [availability](/help/status-and-availability) to other users
-  * Allowing others to see when the user has [read
-    messages](/help/read-receipts)
-  * Allowing others to see when the user is [typing a
-    message](/help/typing-notifications)
-* Preferences:
-  * [Language](/help/change-your-language)
-  * [Time format](/help/change-the-time-format)
-  * [Light theme vs. dark theme](/help/dark-theme)
-  * [Font size](/help/font-size)
-  * [Line spacing](/help/line-spacing)
-  * [Emoji theme](/help/emoji-and-emoticons#change-your-emoji-set)
-  * [Home view](/help/configure-home-view)
-    ([**Inbox**](/help/inbox) vs.
-    [**Recent conversations**](/help/recent-conversations) vs.
-    [**Combined feed**](/help/reading-strategies#combined-feed))
-* Notification settings:
-  * What types of messages [trigger notifications][default-notifications]
-  * Which topics users will [automatically follow](/help/follow-a-topic). This
-    minimizes the need to [mention](/help/mention-a-user-or-group) other users
-    to get their attention.
+Administrators can customize defaults for all personal preference
+settings, including the following:
 
-[default-notifications]: /help/channel-notifications#configure-default-notifications-for-all-channels
+<FlattenedList>
+  * Privacy settings:
+    * Displaying [availability](/help/status-and-availability) to other users
+    * Allowing others to see when the user has [read
+      messages](/help/read-receipts)
+    * Allowing others to see when the user is [typing a
+      message](/help/typing-notifications)
+
+  <DefaultUserSettingsList />
+</FlattenedList>
 
 ## Configure default settings for new users
 
@@ -74,6 +63,7 @@ API](/api/create-user).
 
 ## Related articles
 
+* [Reset settings for users](/help/reset-settings-for-users)
 * [Moving to Zulip](/help/moving-to-zulip)
 * [Customize settings for new users](/help/customize-settings-for-new-users)
 * [Set default channels for new users](/help/set-default-channels-for-new-users)

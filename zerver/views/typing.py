@@ -106,7 +106,8 @@ def send_message_edit_notification_backend(
             raise JsonableError(_("User has disabled typing notifications for direct messages"))
 
         if recipient.type == Recipient.PERSONAL:
-            recipient_ids = [user_profile.id, recipient.type_id]
+            # For self-DMs, both IDs are the same; deduplicate.
+            recipient_ids = list({user_profile.id, recipient.type_id})
         else:
             recipient_ids = list(get_direct_message_group_user_ids(recipient))
 

@@ -142,12 +142,14 @@ const KEYDOWN_MAPPINGS: Record<string, Hotkey | Hotkey[]> = {
     "Cmd+Enter": {name: "action_with_enter", message_view_only: true},
     "Cmd+C": {name: "copy_with_c", message_view_only: false},
     "Cmd+K": {name: "search_with_k", message_view_only: false},
+    "Cmd+@": {name: "open_mentions_view", message_view_only: true},
     "Cmd+S": {name: "star_message", message_view_only: true},
     "Cmd+.": {name: "narrow_to_compose_target", message_view_only: true},
     "Cmd+'": {name: "open_saved_snippet_dropdown", message_view_only: true},
     "Ctrl+Enter": {name: "action_with_enter", message_view_only: true},
     "Ctrl+C": {name: "copy_with_c", message_view_only: false},
     "Ctrl+K": {name: "search_with_k", message_view_only: false},
+    "Ctrl+@": {name: "open_mentions_view", message_view_only: true},
     "Ctrl+S": {name: "star_message", message_view_only: true},
     "Ctrl+.": {name: "narrow_to_compose_target", message_view_only: true},
     "Ctrl+'": {name: "open_saved_snippet_dropdown", message_view_only: true},
@@ -1251,6 +1253,9 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         case "open_starred_message_view":
             browser_history.go_to_location("#narrow/is/starred");
             return true;
+        case "open_mentions_view":
+            browser_history.go_to_location("#narrow/is/mentioned");
+            return true;
         case "open_combined_feed":
             browser_history.go_to_location("#feed");
             return true;
@@ -1505,7 +1510,8 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         case "view_edit_history": {
             if (
                 realm.realm_message_edit_history_visibility_policy !==
-                message_edit_history_visibility_policy_values.never.code
+                    message_edit_history_visibility_policy_values.never.code &&
+                (msg.last_edit_timestamp !== undefined || msg.last_moved_timestamp !== undefined)
             ) {
                 message_edit_history.fetch_and_render_message_history(msg);
                 $("#message-history-overlay .exit-sign").trigger("focus");

@@ -199,21 +199,23 @@ class EditMessageTest(ZulipTestCase):
         msg_id = self.send_stream_message(
             self.example_user("hamlet"), "Denmark", topic_name="editing", content="before edit"
         )
-        result = self.client_patch(
-            f"/json/messages/{msg_id}",
-            {
-                "content": "after edit",
-            },
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.client_patch(
+                f"/json/messages/{msg_id}",
+                {
+                    "content": "after edit",
+                },
+            )
         self.assert_json_success(result)
         self.check_message(msg_id, topic_name="editing", content="after edit")
 
-        result = self.client_patch(
-            f"/json/messages/{msg_id}",
-            {
-                "topic": "edited",
-            },
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.client_patch(
+                f"/json/messages/{msg_id}",
+                {
+                    "topic": "edited",
+                },
+            )
         self.assert_json_success(result)
         self.assertEqual(Message.objects.get(id=msg_id).topic_name(), "edited")
 

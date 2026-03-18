@@ -4,12 +4,25 @@ const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
-const {zrequire, set_global} = require("./lib/namespace.cjs");
+const {zrequire, set_global, mock_esm} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const emoji = zrequire("emoji");
 const emoji_frequency = zrequire("emoji_frequency");
-const emoji_frequency_data = zrequire("emoji_frequency_data");
+
+const map = new Map();
+const emoji_frequency_data = mock_esm("../src/emoji_frequency_data", {
+    reaction_data: {
+        set: (emoji, emoji_usage) => map.set(emoji, emoji_usage),
+    },
+    preferred_emoji_list() {
+        const emojis = [...map.values()].toSorted((a, b) => b.score - a.score);
+        const count = emojis.length;
+        const emojis_per_row = 6;
+        return emojis.slice(0, count - (count % emojis_per_row));
+    },
+});
+
 const emoji_picker = zrequire("emoji_picker");
 const typeahead = zrequire("typeahead");
 

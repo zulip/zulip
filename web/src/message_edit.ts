@@ -1372,7 +1372,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
             collapsed: message.collapsed,
             alerted: message.alerted,
             mentioned: message.mentioned,
-            mentioned_me_directly: message.mentioned,
+            mentioned_me_directly: message.mentioned_me_directly,
         });
         edit_locally_echoed = true;
 
@@ -1504,6 +1504,7 @@ function warn_user_about_unread_msgs(last_sent_msg_id: number, num_unread: numbe
         modal_content_html: render_confirm_edit_messages({
             num_unread,
         }),
+        is_compact: true,
         on_click() {
             // Select the message we want to edit to mark messages between it and the
             // current selected id as read.

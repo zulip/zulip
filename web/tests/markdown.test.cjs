@@ -262,6 +262,10 @@ test("markdown_detection", () => {
         "User Mention @**leo with some name**",
         "Group Mention @*hamletcharacters*",
         "Stream #**Verona**",
+        "Twitter URL https://twitter.com/jacobian/status/407886996565016579",
+        "https://twitter.com/jacobian/status/407886996565016579",
+        "then https://twitter.com/jacobian/status/407886996565016579",
+        "Twitter URL http://twitter.com/jacobian/status/407886996565016579",
     ];
 
     const markup = [
@@ -272,10 +276,6 @@ test("markdown_detection", () => {
         "https://zulip.com/image.jpg too",
         "Contains a zulip.com/foo.jpeg file",
         "Contains a https://zulip.com/image.png file",
-        "Twitter URL https://twitter.com/jacobian/status/407886996565016579",
-        "https://twitter.com/jacobian/status/407886996565016579",
-        "then https://twitter.com/jacobian/status/407886996565016579",
-        "Twitter URL http://twitter.com/jacobian/status/407886996565016579",
         "YouTube URL https://www.youtube.com/watch?v=HHZ8iqswiCw&feature=youtu.be&a",
     ];
 

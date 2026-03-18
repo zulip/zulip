@@ -1,6 +1,7 @@
 from typing import Any
 
 import requests
+from django.conf import settings
 from typing_extensions import override
 from urllib3.util import Retry
 
@@ -40,7 +41,7 @@ class OutgoingSession(requests.Session):
         if headers:
             self.headers.update(headers)
 
-        if proxies is None:
+        if proxies is None and not settings.DEVELOPMENT:
             proxy_host = get_config("http_proxy", "host", "localhost")
             proxy_port = get_config("http_proxy", "port", "4750")
             proxy = ""
@@ -52,7 +53,7 @@ class OutgoingSession(requests.Session):
                         "https": proxy,
                     }
                 )
-        else:
+        elif proxies is not None:
             self.proxies.update(proxies)
 
 

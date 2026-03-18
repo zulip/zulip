@@ -215,7 +215,18 @@
         padding-right: 10px;
         margin: 0 5px var(--markdown-interelement-space-px);
         max-width: fit-content;
+        /* The `display: block` property is critical, given the
+           current markup, to allowing oversize tables to scroll.
+           It's possible that in the future we'll want to wrap
+           a `<div>` element around tables and allow it to handle
+           overscroll, allowing the table to take its normal
+           `display: table` property. */
+        display: block;
         overflow-x: auto;
+        /* Firefox's devtools will report that this property has
+           no effect because of `display: block`, but that is
+           incorrect. Without this, cells separate in ways we
+           do not want. */
         border-collapse: collapse;
     }
 

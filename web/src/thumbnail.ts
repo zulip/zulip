@@ -1,7 +1,6 @@
 import $ from "jquery";
 import type * as z from "zod/mini";
 
-import * as message_lists from "./message_lists.ts";
 import {realm} from "./state_data.ts";
 import type {thumbnail_format_schema} from "./state_data.ts";
 
@@ -21,13 +20,6 @@ export function set_media_preview_size_css_variable(): void {
 
 export function get_media_preview_size(): number {
     return (realm.realm_media_preview_size / 100) * DEFAULT_PREVIEW_SIZE_EM;
-}
-
-export function update_thumbnails(): void {
-    set_media_preview_size_css_variable();
-    for (const msg_list of message_lists.all_rendered_message_lists()) {
-        msg_list.rerender();
-    }
 }
 
 export function initialize(): void {

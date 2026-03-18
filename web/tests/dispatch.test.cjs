@@ -47,9 +47,6 @@ const message_events = mock_esm("../src/message_events", {
     update_current_view_for_topic_visibility: noop,
 });
 const message_lists = mock_esm("../src/message_lists");
-mock_esm("../src/thumbnail", {
-    update_thumbnails: noop,
-});
 const user_topics_ui = mock_esm("../src/user_topics_ui");
 const muted_users_ui = mock_esm("../src/muted_users_ui");
 const narrow_title = mock_esm("../src/narrow_title");

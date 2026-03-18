@@ -51,6 +51,10 @@ type ListWidgetOpts<Key, Item = Key> = {
     post_scroll__pre_render_callback?: () => void;
     get_min_load_count?: (rendered_count: number, load_count: number) => number;
     is_scroll_position_for_render?: () => boolean;
+    render_empty_list_widget_for_table?: (context: {
+        empty_list_message: string;
+        column_count: number;
+    }) => string;
     filter?: ListWidgetFilterOpts<Item>;
     multiselect?: {
         selected_items: Key[];
@@ -219,6 +223,10 @@ function get_column_count_for_table($table: JQuery): number {
 export function render_empty_list_message_if_needed(
     $container: JQuery,
     has_active_filters?: boolean,
+    custom_render_empty_list_widget_for_table?: (context: {
+        empty_list_message: string;
+        column_count: number;
+    }) => string,
 ): void {
     let empty_list_message = $container.attr("data-empty");
 
@@ -240,7 +248,9 @@ export function render_empty_list_message_if_needed(
         }
 
         const column_count = get_column_count_for_table($table);
-        empty_list_widget_html = render_empty_list_widget_for_table({
+        const render_fn =
+            custom_render_empty_list_widget_for_table ?? render_empty_list_widget_for_table;
+        empty_list_widget_html = render_fn({
             empty_list_message,
             column_count,
         });
@@ -383,7 +393,11 @@ export function create<Key, Item = Key>(
             // Stop once the offset reaches the length of the original list.
             if (this.all_rendered()) {
                 meta.has_active_filters = opts.filter?.is_active?.() ?? Boolean(meta.filter_value);
-                render_empty_list_message_if_needed($container, meta.has_active_filters);
+                render_empty_list_message_if_needed(
+                    $container,
+                    meta.has_active_filters,
+                    opts.render_empty_list_widget_for_table,
+                );
                 if (opts.callback_after_render) {
                     opts.callback_after_render();
                 }

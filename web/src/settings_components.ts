@@ -990,8 +990,8 @@ export function get_group_setting_widget_value(
         return direct_subgroups[0];
     }
 
-    direct_subgroups.sort();
-    direct_members.sort();
+    direct_subgroups.sort((a, b) => a - b);
+    direct_members.sort((a, b) => a - b);
     return {direct_subgroups, direct_members};
 }
 

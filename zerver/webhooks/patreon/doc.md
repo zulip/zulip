@@ -9,7 +9,7 @@ Get Patreon notifications in Zulip!
 1. {!generate-webhook-url-basic.md!}
 
 1. Login to your Patreon developer account, navigate to your Patreon
-   Portal, and click on **My Webhooks**
+   Portal, and click on **My Webhooks**.
 
 1. Paste the URL generated above in the webhook URL field, and click the
    **plus** (**+**) button. Enable the [events](#filtering-incoming-events)

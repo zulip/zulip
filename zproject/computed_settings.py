@@ -35,6 +35,7 @@ from .configured_settings import (
     DEFAULT_RATE_LIMITING_RULES,
     EMAIL_BACKEND,
     EMAIL_HOST,
+    EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES,
     ERROR_REPORTING,
     EXTERNAL_HOST,
     EXTERNAL_HOST_WITHOUT_PORT,
@@ -299,6 +300,9 @@ TORNADO_PROCESSES = len(TORNADO_PORTS)
 RUNNING_INSIDE_TORNADO = (
     len(sys.argv) > 1 and "manage.py" in sys.argv[0] and sys.argv[1] == "runtornado"
 )
+
+if RUNNING_INSIDE_TORNADO:
+    ROOT_URLCONF = "zproject.tornado_urls"
 
 SILENCED_SYSTEM_CHECKS = [
     # auth.W004 checks that the UserProfile field named by USERNAME_FIELD has
@@ -1239,8 +1243,11 @@ elif not EMAIL_HOST:
     WARN_NO_EMAIL = True
     EMAIL_BACKEND = "django.core.mail.backends.dummy.EmailBackend"
 else:
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-
+    # Route '0' to Django's default, everything else to custom class
+    if EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES == 0:
+        EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    else:
+        EMAIL_BACKEND = "zproject.email_backends.PersistentSMTPEmailBackend"
 EMAIL_TIMEOUT = 15
 
 if DEVELOPMENT:

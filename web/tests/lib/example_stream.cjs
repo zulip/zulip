@@ -48,6 +48,7 @@ exports.make_stream = (opts = {}) => {
         stream_weekly_traffic: 0,
         /* Most tests want to work with a channel the current user is subscribed to. */
         subscribed: true,
+        topics_policy: "inherit",
         wildcard_mentions_notify: false,
         folder_id: null,
     };

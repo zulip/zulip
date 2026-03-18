@@ -5,6 +5,7 @@ import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
 import render_introduce_zulip_view_modal from "../templates/introduce_zulip_view_modal.hbs";
+import render_recent_view_empty_list_widget_for_table from "../templates/recent_view_empty_list_widget_for_table.hbs";
 import render_recent_view_filters from "../templates/recent_view_filters.hbs";
 import render_recent_view_row from "../templates/recent_view_row.hbs";
 import render_recent_view_body from "../templates/recent_view_table.hbs";
@@ -123,6 +124,13 @@ let is_waiting_for_revive_current_focus = true;
 let last_scroll_offset: number | undefined;
 let hide_other_views_callback: (() => void) | undefined;
 
+// Row focus and viewport offset of the focused row before search,
+// so we can restore both focus and scroll position when search is
+// cleared.
+let pre_search_row_focus: number | undefined;
+let pre_search_topic_viewport_offset: number | undefined;
+let previous_search_term = "";
+
 export function set_hide_other_views(callback: () => void): void {
     hide_other_views_callback = callback;
 }
@@ -221,6 +229,29 @@ function set_oldest_message_date(msg_list_data: MessageListData): void {
     }
 }
 
+function get_time_string(): string {
+    const time_obj = new Date(oldest_message_timestamp * 1000);
+    return timerender.get_localized_date_or_time_for_format(
+        time_obj,
+        "full_weekday_dayofyear_year_time",
+    );
+}
+
+function get_loaded_messages_text(): string {
+    const time_string = get_time_string();
+    return $t({defaultMessage: "Showing messages since {time_string}."}, {time_string});
+}
+
+function render_recent_view_empty_list_widget_for_table_with_load_more(context: {
+    empty_list_message: string;
+    column_count: number;
+}): string {
+    return render_recent_view_empty_list_widget_for_table({
+        ...context,
+        load_more_button_text: $t({defaultMessage: "Load more"}),
+    });
+}
+
 function update_load_more_banner(): void {
     if (loading_state === NO_MESSAGES_LOADED) {
         return;
@@ -228,6 +259,7 @@ function update_load_more_banner(): void {
 
     if (loading_state === ALL_MESSAGES_LOADED) {
         $(".recent-view-load-more-container").toggleClass("notvisible", true);
+        $(".recent-view-empty-load-more").toggleClass("notvisible", true);
         return;
     }
 
@@ -236,40 +268,37 @@ function update_load_more_banner(): void {
         return;
     }
 
-    // There are some messages loaded, but not all messages yet. The banner was
-    // hidden on page load, and we make sure to show it now that there are messages
-    // we can display.
-    $(".recent-view-load-more-container").toggleClass("notvisible", false);
-
-    // Until we've found the newest message, we only show the banner with a messages
-    // explaining we're still fetching messages. We don't allow the user to fetch
-    // more messages.
+    // Until we've found the newest message, we only show the banner
+    // explaining we're still fetching messages. We don't allow the
+    // user to fetch more messages.
     if (loading_state === SOME_MESSAGES_LOADED) {
+        $(".recent-view-load-more-container").toggleClass("notvisible", false);
         return;
     }
 
-    const $banner_text = $(".recent-view-load-more-container .last-fetched-message");
-    const time_obj = new Date(oldest_message_timestamp * 1000);
-    const time_string = timerender.get_localized_date_or_time_for_format(
-        time_obj,
-        "full_weekday_dayofyear_year_time",
-    );
-    $banner_text.text($t({defaultMessage: "Showing messages since {time_string}."}, {time_string}));
+    // When the table is empty, show the load-more text inline below
+    // "No conversations match your filters." and hide the banner.
+    // Otherwise, show the banner and hide the inline load-more.
+    assert(topics_widget !== undefined);
+    const is_table_empty = topics_widget.get_current_list().length === 0;
+    $(".recent-view-load-more-container").toggleClass("notvisible", is_table_empty);
+    $(".recent-view-empty-load-more").toggleClass("notvisible", !is_table_empty);
+
+    const $container = is_table_empty
+        ? $(".recent-view-empty-load-more")
+        : $(".recent-view-load-more-container");
+    $container.find(".last-fetched-message").text(get_loaded_messages_text());
 
     if (is_backfill_in_progress) {
         // Keep the button disabled and the loading indicator running
         // until we've finished our recursive backfill.
         return;
     }
-    const $button = $(".recent-view-load-more-container .fetch-messages-button");
-    const $button_label = $(".recent-view-load-more-container .button-label");
+    const $button = $container.find(".fetch-messages-button");
     $button.toggleClass("notvisible", false);
-
-    $button_label.toggleClass("invisible", false);
+    $button.find(".button-label").toggleClass("invisible", false);
     $button.prop("disabled", false);
-    loading.destroy_indicator(
-        $(".recent-view-load-more-container .fetch-messages-button .loading-indicator"),
-    );
+    loading.destroy_indicator($button.find(".loading-indicator"));
 }
 
 function get_min_load_count(already_rendered_count: number, load_count: number): number {
@@ -1026,24 +1055,44 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
 }
 
 export function bulk_inplace_rerender(row_keys: string[]): void {
-    if (!topics_widget) {
+    if (!topics_widget || !recent_view_util.is_visible()) {
         return;
     }
 
     // When doing bulk rerender, we assume that order of rows are not going
     // to change by default. Row insertion can still change the order but
     // we ensure the list remains sorted after insertion.
+    //
+    // Save whether all rows were rendered before updating the data,
+    // so we know if it's safe to use render() for new items below.
+    const was_all_rendered = topics_widget.all_rendered();
     topics_widget.replace_list_data(get_list_data_for_widget(), false);
     topics_widget.filter_and_sort();
-    // Iterate in the order of which the rows should be present so that
+    // Iterate in the order in which the rows should be present so that
     // we are not inserting rows without any rows being present around them.
+    let processed_count = 0;
     for (const topic_data of topics_widget.get_rendered_list()) {
+        if (processed_count >= row_keys.length) {
+            break;
+        }
         const msg = message_store.get(topic_data.last_msg_id);
         assert(msg !== undefined);
         const topic_key = recent_view_util.get_key_from_message(msg);
         if (row_keys.includes(topic_key)) {
             inplace_rerender(topic_key, true);
+            processed_count += 1;
         }
+    }
+    // New conversations from backfilled old messages sort at the end
+    // of the list, beyond the current render offset. Use render() to
+    // efficiently batch-append them in a single DOM operation, rather
+    // than inserting one at a time via insert_rendered_row.
+    //
+    // We can only use render() when the DOM already had all rows up
+    // to the render offset (was_all_rendered), ensuring new items
+    // start right at the offset boundary with no gap.
+    if (processed_count < row_keys.length && was_all_rendered) {
+        topics_widget.render(row_keys.length - processed_count);
     }
     setTimeout(revive_current_focus, 0);
 }
@@ -1463,6 +1512,29 @@ function get_list_data_for_widget(): ConversationData[] {
     return [...recent_view_data.get_conversations().values()];
 }
 
+function set_time_column_width_css_variable(): void {
+    if (page_params.is_node_test) {
+        return;
+    }
+    // Measure representative localized time strings to find the
+    // longest one. These cover all formats used by
+    // timerender.relative_time_string_from_date().
+    const candidate_strings = [
+        $t({defaultMessage: "Just now"}),
+        $t({defaultMessage: "{minutes} min ago"}, {minutes: 59}),
+        $t({defaultMessage: "An hour ago"}),
+        $t({defaultMessage: "{hours} hours ago"}, {hours: 23}),
+        $t({defaultMessage: "Yesterday"}),
+        $t({defaultMessage: "{days_old} days ago"}, {days_old: 89}),
+        // Localized short date with year, using a 2-digit day for
+        // maximum width (e.g., "Sep 28, 2000").
+        timerender.get_localized_date_or_time_for_format(new Date(2000, 8, 28), "dayofyear_year"),
+    ];
+    const max_width = util.max_text_content_width(candidate_strings);
+    // The icon and padding space is added via calc() in CSS.
+    $(":root").css("--recent-view-time-text-width", `${Math.ceil(max_width)}px`);
+}
+
 export function update_participants_column_class(): void {
     if (!page_params.is_node_test) {
         max_avatars = Number.parseInt($(":root").css("--recent-view-max-avatars"), 10);
@@ -1484,6 +1556,7 @@ export function complete_rerender(coming_from_other_views = false): void {
     }
 
     update_participants_column_class();
+    set_time_column_width_css_variable();
 
     // Show topics list
     const mapped_topic_values = get_list_data_for_widget();
@@ -1537,6 +1610,8 @@ export function complete_rerender(coming_from_other_views = false): void {
         html_selector: get_topic_row,
         $simplebar_container: $(":root"),
         callback_after_render,
+        render_empty_list_widget_for_table:
+            render_recent_view_empty_list_widget_for_table_with_load_more,
         is_scroll_position_for_render: views_util.is_scroll_position_for_render,
         post_scroll__pre_render_callback() {
             // Update the focused element for keyboard navigation if needed.
@@ -2104,6 +2179,16 @@ export function initialize({
         change_focused_element($(e.target), "click");
     });
 
+    $(window).on("resize", () => {
+        // The saved viewport offset is no longer meaningful after a
+        // resize, so discard it to avoid incorrect scroll restoration.
+        pre_search_topic_viewport_offset = undefined;
+    });
+
+    $("body").on("click", "#recent-view-search-wrapper .input-close-filter-button", () => {
+        set_default_focus();
+    });
+
     $("body").on("click", "#recent-view-content-table .on_hover_topic_read", (e) => {
         e.stopPropagation();
         assert(e.currentTarget instanceof HTMLElement);
@@ -2221,22 +2306,71 @@ export function initialize({
         "input",
         "#recent_view_search",
         _.debounce(() => {
-            // Reset focus to first row on new search.
-            row_focus = 0;
-            update_filters_view();
+            const search_term = $<HTMLInputElement>("#recent_view_search").val() ?? "";
+            const is_previous_search_term_empty = previous_search_term === "";
+            previous_search_term = search_term;
+
+            if (search_term !== "" && is_previous_search_term_empty) {
+                // Store the focused row index and its viewport offset
+                // to restore both focus and scroll position when the
+                // search is cleared.
+                pre_search_row_focus = row_focus;
+                const $topic_row = $("#recent-view-content-tbody tr").eq(row_focus);
+                pre_search_topic_viewport_offset = $topic_row[0]?.getBoundingClientRect().top;
+            }
+
+            if (search_term === "") {
+                // Restore scroll position to the row that was focused
+                // before search started.
+                row_focus = pre_search_row_focus ?? 0;
+                update_filters_view();
+                if (topics_widget !== undefined) {
+                    // Clamp row_focus if the list shrank while
+                    // searching (e.g., messages were read with the
+                    // "unread" filter active).
+                    const list_length = topics_widget.get_current_list().length;
+                    if (list_length > 0) {
+                        row_focus = Math.min(row_focus, list_length - 1);
+                    } else {
+                        row_focus = 0;
+                    }
+                    // The initial render might not have rendered enough
+                    // rows for the target row_focus. Calling render()
+                    // will use get_min_load_count to extend rendering
+                    // if needed.
+                    topics_widget.render();
+                }
+                // Restore the row to the same viewport position it
+                // was at before search started.
+                const $topic_row = $("#recent-view-content-tbody tr").eq(row_focus);
+                const current_top = $topic_row[0]?.getBoundingClientRect().top;
+                if (current_top !== undefined && pre_search_topic_viewport_offset !== undefined) {
+                    window.scrollBy(0, current_top - pre_search_topic_viewport_offset);
+                }
+                pre_search_row_focus = undefined;
+                pre_search_topic_viewport_offset = undefined;
+            } else {
+                // Reset focus to first row on new search.
+                row_focus = 0;
+                update_filters_view();
+                // Always scroll to top when there is a search term present.
+                window.scrollTo(0, 0);
+            }
             // Wait for user to go idle before initiating search.
         }, 300),
     );
 
-    $("body").on("click", ".recent-view-load-more-container .fetch-messages-button", () => {
-        $(".recent-view-load-more-container .button-label").toggleClass("invisible", true);
-        $(".recent-view-load-more-container .fetch-messages-button").prop("disabled", true);
-        loading.make_indicator(
-            $(".recent-view-load-more-container .fetch-messages-button .loading-indicator"),
-            {width: 20},
-        );
-        maybe_load_older_messages(unread.first_unread_unmuted_message_id);
-    });
+    $("body").on(
+        "click",
+        ".recent-view-load-more-container .fetch-messages-button, .recent-view-empty-load-more .fetch-messages-button",
+        function (this: HTMLElement) {
+            const $button = $(this);
+            $button.find(".button-label").toggleClass("invisible", true);
+            $button.prop("disabled", true);
+            loading.make_indicator($button.find(".loading-indicator"), {width: 20});
+            maybe_load_older_messages(unread.first_unread_unmuted_message_id);
+        },
+    );
 
     compose_actions.register_compose_cancel_hook(() => {
         if (recent_view_util.is_visible()) {

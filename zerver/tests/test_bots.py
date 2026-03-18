@@ -234,6 +234,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.get_bot_user(email)
 
     def test_add_bot_with_username_in_use(self) -> None:
+        hamlet = self.example_user("hamlet")
         self.login("hamlet")
         self.assert_num_bots_equal(0)
         self.create_bot()
@@ -256,6 +257,17 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         )
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, "Name is already in use.")
+
+        # Duplicate names are not allowed for bots even when require_unique_names
+        # is false, but this test is added just for completion.
+        dup_full_name = hamlet.full_name
+        do_set_realm_property(hamlet.realm, "require_unique_names", True, acting_user=None)
+        bot_info = dict(
+            full_name=dup_full_name,
+            short_name="whatever",
+        )
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, "Unique names required in this organization.")
 
     def test_add_bot_with_user_avatar(self) -> None:
         email = "hambot-bot@zulip.testserver"

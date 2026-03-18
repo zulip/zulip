@@ -1247,8 +1247,8 @@ export function convert_mentions_to_silent_in_direct_messages(
         return mention_text;
     }
 
-    const recipient_user_id = compose_pm_pill.get_user_ids();
-    if (recipient_user_id.toString() !== user_id.toString()) {
+    const recipient_user_ids = compose_pm_pill.get_user_ids();
+    if (recipient_user_ids.length !== 1 || recipient_user_ids[0] !== user_id) {
         return mention_text;
     }
 

@@ -93,7 +93,6 @@ import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import * as submessage from "./submessage.ts";
 import * as theme from "./theme.ts";
-import * as thumbnail from "./thumbnail.ts";
 import {group_setting_value_schema} from "./types.ts";
 import * as typing_events from "./typing_events.ts";
 import * as unread_ops from "./unread_ops.ts";
@@ -316,7 +315,7 @@ export function dispatch_normal_event(event) {
                 direct_message_permission_group: noop,
                 email_changes_disabled: settings_account.update_email_change_display,
                 disallow_disposable_email_addresses: noop,
-                media_preview_size: thumbnail.update_thumbnails,
+                media_preview_size: message_live_update.update_thumbnails,
                 inline_image_preview: noop,
                 inline_url_embed_preview: noop,
                 invite_required: noop,

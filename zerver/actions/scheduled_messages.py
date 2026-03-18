@@ -22,7 +22,6 @@ from zerver.lib.exceptions import (
     RealmDeactivatedError,
     UserDeactivatedError,
 )
-from zerver.lib.markdown import render_message_markdown
 from zerver.lib.message import SendMessageRequest, access_message, truncate_topic
 from zerver.lib.recipient_parsing import extract_direct_message_recipient_ids, extract_stream_id
 from zerver.lib.reminders import get_reminder_formatted_content, notify_remove_reminder
@@ -114,11 +113,8 @@ def do_schedule_messages(
         scheduled_message.recipient = send_request.message.recipient
         topic_name = send_request.message.topic_name()
         scheduled_message.set_topic_name(topic_name=topic_name)
-        rendering_result = render_message_markdown(
-            send_request.message, send_request.message.content, send_request.realm
-        )
         scheduled_message.content = send_request.message.content
-        scheduled_message.rendered_content = rendering_result.rendered_content
+        scheduled_message.rendered_content = send_request.rendering_result.rendered_content
         scheduled_message.sending_client = send_request.message.sending_client
         scheduled_message.stream = send_request.stream
         scheduled_message.realm = send_request.realm
@@ -192,6 +188,7 @@ def edit_scheduled_message(
         scheduled_message_object.recipient, sender.id
     )
 
+    send_request: SendMessageRequest | None = None
     # If any recipient information or message content has been updated,
     # we check the message again.
     if recipient_type_name is not None or message_to is not None or message_content is not None:
@@ -238,6 +235,7 @@ def edit_scheduled_message(
         )
 
     if recipient_type_name is not None or message_to is not None:
+        assert send_request is not None
         # User has updated the scheduled message's recipient.
         scheduled_message_object.recipient = send_request.message.recipient
         scheduled_message_object.stream = send_request.stream
@@ -253,14 +251,12 @@ def edit_scheduled_message(
         scheduled_message_object.set_topic_name(topic_name=new_topic_name)
 
     if message_content is not None:
+        assert send_request is not None
         # User has updated the scheduled messages's content.
-        rendering_result = render_message_markdown(
-            send_request.message, send_request.message.content, send_request.realm
-        )
         scheduled_message_object.content = send_request.message.content
-        scheduled_message_object.rendered_content = rendering_result.rendered_content
+        scheduled_message_object.rendered_content = send_request.rendering_result.rendered_content
         attachment_reference_change = check_attachment_reference_change(
-            scheduled_message_object, rendering_result
+            scheduled_message_object, send_request.rendering_result
         )
         scheduled_message_object.has_attachment = attachment_reference_change.did_attachment_change
 

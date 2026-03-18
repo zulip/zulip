@@ -738,7 +738,7 @@
   "Failed to load read receipts.": "Nalaganje potrdil o branju ni uspelo.",
   "Failed to load subscribed channels.": "",
   "Failed to subscribe participants": "Naročanje udeležencev ni uspelo",
-  "Failed to upload %'{file}'": "Nalaganje datoteke '%{file}' ni uspelo",
+  "Failed to upload %'{file}'": "Nalaganje datoteke %'{file}' ni uspelo",
   "Failed!": "Neuspelo!",
   "Failed: A custom emoji with this name already exists.": "Neuspelo: Emoji po meri s tem imenom že obstaja.",
   "Failed: Emoji name is required.": "Neuspelo: Ime emojija je obvezno.",

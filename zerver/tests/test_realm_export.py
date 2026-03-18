@@ -296,12 +296,19 @@ class RealmExportTest(ZulipTestCase):
     def test_upload_and_message_limit(self) -> None:
         admin = self.example_user("iago")
         self.login_user(admin)
-        realm_count = RealmCount.objects.create(
+        public_realm_count = RealmCount.objects.create(
             realm_id=admin.realm.id,
             end_time=timezone_now(),
             value=0,
             property="messages_sent:message_type:day",
             subgroup="public_stream",
+        )
+        private_realm_count = RealmCount.objects.create(
+            realm_id=admin.realm.id,
+            end_time=timezone_now(),
+            value=0,
+            property="messages_sent:message_type:day",
+            subgroup="private_stream",
         )
 
         # Space limit is set as 20 GiB
@@ -316,13 +323,32 @@ class RealmExportTest(ZulipTestCase):
         )
 
         # Message limit is set as 250000
-        realm_count.value = 250001
-        realm_count.save(update_fields=["value"])
+        public_realm_count.value = 250001
+        public_realm_count.save(update_fields=["value"])
         result = self.client_post("/json/export/realm")
         self.assert_json_error(
             result,
             f"The export you requested is too large for automatic processing. Please request a manual export by contacting {settings.ZULIP_ADMINISTRATOR}.",
         )
+
+        # Test when public message count is within the limit but total
+        # count for public and private messages exceed the limit.
+        public_realm_count.value = 150000
+        public_realm_count.save(update_fields=["value"])
+        private_realm_count.value = 100001
+        private_realm_count.save(update_fields=["value"])
+        result = self.client_post(
+            "/json/export/realm",
+            {
+                "export_type": self.FULL_WITH_CONSENT_EXPORT_TYPE,
+            },
+        )
+        self.assert_json_error(
+            result,
+            f"The export you requested is too large for automatic processing. Please request a manual export by contacting {settings.ZULIP_ADMINISTRATOR}.",
+        )
+
+        self.check_success_realm_export(admin, self.PUBLIC_EXPORT_TYPE)
 
     def test_get_users_export_consents(self) -> None:
         admin = self.example_user("iago")

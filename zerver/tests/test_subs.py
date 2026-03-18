@@ -1518,6 +1518,10 @@ class StreamAdminTest(ZulipTestCase):
                 {"is_private": orjson.dumps(False).decode()},
                 f"@_**Desdemona|{desdemona.id}** changed the [access permissions]",
             ),
+            (
+                {"topics_policy": StreamTopicsPolicyEnum.allow_empty_topic.name},
+                f'@_**Desdemona|{desdemona.id}** changed the "Allow posting to the *general chat* topic?" setting',
+            ),
         ]
 
         for param, notice in param_to_notice_list:
@@ -1782,7 +1786,9 @@ class StreamAdminTest(ZulipTestCase):
         def get_notified_user_ids() -> set[int]:
             # Two events should be sent: stream_name update and notification message.
             with self.capture_send_event_calls(expected_num_events=2) as events:
-                stream_id = get_stream("stream_name1", user_profile.realm).id
+                stream = get_stream("stream_name1", user_profile.realm)
+                stream_id = stream.id
+                old_name = stream.name
                 result = self.client_patch(
                     f"/json/streams/{stream_id}", {"new_name": "stream_name2"}
                 )
@@ -1796,7 +1802,7 @@ class StreamAdminTest(ZulipTestCase):
                     property="name",
                     value="stream_name2",
                     stream_id=stream_id,
-                    name="sTREAm_name1",
+                    name=old_name,
                 ),
             )
             self.assertRaises(Stream.DoesNotExist, get_stream, "stream_name1", realm)

@@ -662,7 +662,7 @@ def add_bot_backend(
     if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
         service_name = service_name or short_name
     full_name = check_full_name(
-        full_name_raw=full_name_raw, user_profile=user_profile, realm=user_profile.realm
+        full_name_raw=full_name_raw, user_profile=None, realm=user_profile.realm
     )
     form = CreateUserForm({"full_name": full_name, "email": email})
 
@@ -899,7 +899,7 @@ def create_user_backend(
         raise JsonableError(_("User not authorized to create users"))
 
     full_name = check_full_name(
-        full_name_raw=full_name_raw, user_profile=user_profile, realm=user_profile.realm
+        full_name_raw=full_name_raw, user_profile=None, realm=user_profile.realm
     )
     form = CreateUserForm({"full_name": full_name, "email": email})
     if not form.is_valid():

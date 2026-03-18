@@ -587,6 +587,9 @@ export async function initialize_everything(state_data) {
     user_group_edit.initialize();
     stream_edit_subscribers.initialize();
     stream_data.initialize(state_data.stream_data);
+    stream_data.set_channel_has_locally_available_topic(
+        stream_topic_history.channel_has_locally_available_topic,
+    );
     user_group_edit_members.initialize();
     stream_card_popover.initialize();
     pm_conversations.recent.initialize(state_data.pm_conversations);

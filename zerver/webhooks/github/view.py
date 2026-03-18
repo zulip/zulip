@@ -9,6 +9,7 @@ from typing_extensions import override
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
+from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.partial import partial
 from zerver.lib.response import json_success
@@ -43,7 +44,7 @@ fixture_to_headers = default_fixture_to_headers("HTTP_X_GITHUB_EVENT")
 
 TOPIC_FOR_DISCUSSION = "{repo} discussion #{number}: {title}"
 DISCUSSION_TEMPLATES = {
-    "created": "{sender} created [discussion #{discussion_number}]({url}) in {category}:\n\n~~~ quote\n### {title}\n{body}\n~~~",
+    "created": "{sender} created [discussion #{discussion_number}]({url}) in {category}:\n\n{body_fence} quote\n### {title}\n{body}\n{body_fence}",
     "generic_action": "{sender} {action} [discussion #{discussion_number}{configured_title}]({url}).",
     "deleted": "{sender} {action} discussion #{discussion_number}{configured_title}.",
     "closed": "{sender} {action} [discussion #{discussion_number}{configured_title}]({url}) as {closed_reason}.",
@@ -52,10 +53,10 @@ DISCUSSION_TEMPLATES = {
     "unlabeled": "{sender} removed the {label} label from [discussion #{discussion_number}{configured_title}]({url}).",
     "category_changed": "{sender} changed the category of [discussion #{discussion_number}{configured_title}]({url}) from {old_category} to {category}.",
     "transferred": "{sender} {action} discussion #{discussion_number}{configured_title} from {repository_name} to {new_repository_name} as [discussion #{new_discussion_number}]({url}).",
-    "answered": "{sender} marked [comment #{comment_id}]({answer_url}) as the answer:\n\n~~~ quote\n{answer_body}\n~~~",
+    "answered": "{sender} marked [comment #{comment_id}]({answer_url}) as the answer:\n\n{answer_body_fence} quote\n{answer_body}\n{answer_body_fence}",
     "unanswered": "{sender} marked [comment #{comment_id}]({answer_url}) as not the answer.",
-    "edited_title": "{sender} edited the title of [discussion #{discussion_number}{configured_title}]({url}):\n\n~~~ quote\n### {title}\n~~~",
-    "edited_body": "{sender} edited [discussion #{discussion_number}{configured_title}]({url}):\n\n~~~ quote\n{body}\n~~~",
+    "edited_title": "{sender} edited the title of [discussion #{discussion_number}{configured_title}]({url}):\n\n``` quote\n### {title}\n```",
+    "edited_body": "{sender} edited [discussion #{discussion_number}{configured_title}]({url}):\n\n{body_fence} quote\n{body}\n{body_fence}",
 }
 
 
@@ -350,6 +351,7 @@ class LazyContext(dict[str, str | int]):
             "category": lambda: self.payload["discussion"]["category"]["name"].tame(check_string),
             "title": lambda: self.payload["discussion"]["title"].tame(check_string),
             "body": lambda: self.payload["discussion"]["body"].tame(check_string),
+            "body_fence": lambda: get_unused_fence(str(self.template_values["body"]())),
             "repository_name": lambda: self.payload["repository"]["name"].tame(check_string),
             "new_repository_name": lambda: self.payload["changes"]["new_repository"]["name"].tame(
                 check_string
@@ -385,6 +387,9 @@ class LazyContext(dict[str, str | int]):
             "answer_body": lambda: self.payload[self.template_values["answer_field"]()][
                 "body"
             ].tame(check_string),
+            "answer_body_fence": lambda: get_unused_fence(
+                str(self.template_values["answer_body"]())
+            ),
             "comment_id": lambda: self.payload[self.template_values["answer_field"]()]["id"].tame(
                 check_int
             ),
@@ -471,13 +476,17 @@ def get_repository_advisory_body(helper: Helper) -> str:
     payload = helper.payload
     action = payload["action"].tame(check_string)
     if action == "reported":
-        return "{} reported [{}]({}) in {}: {}\n\n```quote\n{}\n```".format(
+        description = payload["repository_advisory"]["description"].tame(check_string)
+        fence = get_unused_fence(description)
+        return "{} reported [{}]({}) in {}: {}\n\n{}quote\n{}\n{}".format(
             get_sender_name(helper),
             payload["repository_advisory"]["ghsa_id"].tame(check_string),
             payload["repository_advisory"]["html_url"].tame(check_string),
             get_repository_full_name(payload),
             payload["repository_advisory"]["summary"].tame(check_string),
-            payload["repository_advisory"]["description"].tame(check_string),
+            fence,
+            description,
+            fence,
         )
     else:
         return "{} published [{}]({})".format(
@@ -512,7 +521,10 @@ def get_team_body(helper: Helper) -> str:
     if "description" in changes:
         actor = get_sender_name(helper)
         new_description = payload["team"]["description"].tame(check_string)
-        return f"{actor} changed the team description to:\n\n~~~ quote\n{new_description}\n~~~"
+        fence = get_unused_fence(new_description)
+        return (
+            f"{actor} changed the team description to:\n\n{fence} quote\n{new_description}\n{fence}"
+        )
     if "name" in changes:
         original_name = changes["name"]["from"].tame(check_string)
         new_name = payload["team"]["name"].tame(check_string)
@@ -562,8 +574,12 @@ def get_page_build_body(helper: Helper) -> str:
 
     action = actions.get(status, f"is {status}")
     if build["error"]["message"]:
+        message = build["error"]["message"].tame(check_string)
         action = action.format(
-            CONTENT_MESSAGE_TEMPLATE.format(message=build["error"]["message"].tame(check_string)),
+            CONTENT_MESSAGE_TEMPLATE.format(
+                message=message,
+                fence=get_unused_fence(message),
+            ),
         )
 
     return "GitHub Pages build, triggered by {}, {}.".format(

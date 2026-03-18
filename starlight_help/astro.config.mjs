@@ -556,6 +556,7 @@ export default defineConfig({
                         "change-a-users-name",
                         "manage-user-channel-subscriptions",
                         "manage-user-group-membership",
+                        "reset-settings-for-users",
                     ],
                 },
                 {

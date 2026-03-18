@@ -139,7 +139,7 @@ configured! 🎉"
   development environment. This enables you to do end-to-end testing with
   live data from the third-party service you're integrating, and can help
   you spot why something isn't working or if the service is using [custom
-  HTTP headers](incoming-webhooks-walkthrough.md#custom-http-event-type-headers).
+  HTTP headers](incoming-webhooks-reference.md#custom-http-headers).
 
 ## URL specification
 

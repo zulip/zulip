@@ -1910,7 +1910,7 @@ export class Filter {
         // the property that it's possible for their true value to
         // change as a result of messages being moved into the
         // channel/topic pair provided in the parameters.
-        if (this.has_operand_case_insensitive("channel", new_channel_id)) {
+        if (this.has_operand("channel", new_channel_id)) {
             return true;
         }
 

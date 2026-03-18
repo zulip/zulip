@@ -86,7 +86,7 @@ def get_reminder_formatted_content(
         recipients: list[UserProfile | UserDisplayRecipient] = [
             user
             for user in get_display_recipient(message.recipient)
-            if user["id"] is not message.sender.id
+            if user["id"] != message.sender.id
         ]
 
         if not recipients:

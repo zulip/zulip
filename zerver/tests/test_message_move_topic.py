@@ -1850,35 +1850,6 @@ class MessageMoveTopicTest(ZulipTestCase):
             f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
         )
 
-        # Now move to a weird state and confirm we get the normal topic moved message.
-        weird_topic_name = "✔ ✔✔" + original_topic_name
-        result = self.client_patch(
-            "/json/messages/" + str(id1),
-            {
-                "topic": weird_topic_name,
-                "propagate_mode": "change_all",
-            },
-        )
-
-        self.assert_json_success(result)
-        for msg_id in [id1, id2]:
-            msg = Message.objects.get(id=msg_id)
-            self.assertEqual(
-                weird_topic_name,
-                msg.topic_name(),
-            )
-
-        messages = get_topic_messages(admin_user, stream, weird_topic_name)
-        self.assert_length(messages, 4)
-        self.assertEqual(
-            messages[2].content,
-            f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
-        )
-        self.assertEqual(
-            messages[3].content,
-            f"This topic was moved here from #**new>✔ topic 1** by @_**Iago|{admin_user.id}**.",
-        )
-
         unresolved_topic_name = original_topic_name
         result = self.client_patch(
             "/json/messages/" + str(id1),
@@ -1897,14 +1868,136 @@ class MessageMoveTopicTest(ZulipTestCase):
             )
 
         messages = get_topic_messages(admin_user, stream, unresolved_topic_name)
-        self.assert_length(messages, 5)
+        self.assert_length(messages, 4)
         self.assertEqual(
             messages[2].content, f"@_**Iago|{admin_user.id}** has marked this topic as resolved."
         )
         self.assertEqual(
-            messages[4].content,
+            messages[3].content,
             f"@_**Iago|{admin_user.id}** has marked this topic as unresolved.",
         )
+
+    def test_topic_resolve_detection(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        self.login("iago")
+        realm = hamlet.realm
+        stream = get_stream("Denmark", realm)
+
+        def check_topic_resolved(
+            original_topic_name: str, new_topic_name: str, topic_resolved: bool
+        ) -> None:
+            msg_id = self.send_stream_message(hamlet, "Denmark", topic_name=original_topic_name)
+            result = self.client_patch(
+                "/json/messages/" + str(msg_id),
+                {
+                    "topic": new_topic_name,
+                    "propagate_mode": "change_all",
+                },
+            )
+            self.assert_json_success(result)
+
+            messages = get_topic_messages(hamlet, stream, new_topic_name)
+            self.assert_length(messages, 2)
+
+            if topic_resolved:
+                self.assertEqual(
+                    messages[1].content,
+                    f"@_**Iago|{iago.id}** has marked this topic as resolved.",
+                )
+            else:
+                self.assertEqual(
+                    messages[1].content,
+                    f"This topic was moved here from #**Denmark>{original_topic_name}** by @_**Iago|{iago.id}**.",
+                )
+
+            # Delete messages in the topic so that we can test
+            # next case with a clear state.
+            do_delete_messages(realm, messages, acting_user=None)
+
+        # Adding only "✔ " at the beginning without any
+        # other change is considered as resolving the topic.
+        check_topic_resolved("test", "✔ test", True)
+        check_topic_resolved("test", "✔test", False)
+        check_topic_resolved("test", "✔ test 1", False)
+        check_topic_resolved("test", "test ✔", False)
+        check_topic_resolved("test", "test ✔ topic", False)
+        check_topic_resolved("test", "✔ ✔ test", False)
+        check_topic_resolved("test", "✔ ✔test", False)
+
+        # If the original topic already begins with "✔ " then
+        # the renaming is not considered as resolving the
+        # topic as the topic was already resolved.
+        check_topic_resolved("✔ test", "✔ ✔ test", False)
+
+    def test_topic_unresolve_detection(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        self.login("iago")
+        realm = hamlet.realm
+        stream = get_stream("Denmark", realm)
+
+        def check_topic_unresolved(
+            original_topic_name: str, new_topic_name: str, topic_unresolved: bool
+        ) -> None:
+            msg_id = self.send_stream_message(hamlet, "Denmark", topic_name=original_topic_name)
+            result = self.client_patch(
+                "/json/messages/" + str(msg_id),
+                {
+                    "topic": new_topic_name,
+                    "propagate_mode": "change_all",
+                },
+            )
+            self.assert_json_success(result)
+
+            messages = get_topic_messages(hamlet, stream, new_topic_name)
+            self.assert_length(messages, 2)
+
+            if topic_unresolved:
+                self.assertEqual(
+                    messages[1].content,
+                    f"@_**Iago|{iago.id}** has marked this topic as unresolved.",
+                )
+            else:
+                self.assertEqual(
+                    messages[1].content,
+                    f"This topic was moved here from #**Denmark>{original_topic_name}** by @_**Iago|{iago.id}**.",
+                )
+
+            # Delete messages in the topic so that we can test
+            # next case with a clear state.
+            do_delete_messages(realm, messages, acting_user=None)
+
+        # Stripping the leading "✔ " is considered as
+        # unresolving the topic.
+        check_topic_unresolved("✔ test", "test", True)
+        check_topic_unresolved("✔ test ✔", "test ✔", True)
+        check_topic_unresolved("test ✔ topic", "test topic", False)
+
+        # Stripping the leading "✔ ", and any number of
+        # "✔" and space characters after, is considered
+        # as unresolving the topic.
+        check_topic_unresolved("✔ ✔ test", "test", True)
+        check_topic_unresolved("✔ ✔✔✔test", "test", True)
+        check_topic_unresolved("✔  test", "test", True)
+
+        # The original topic should start with "✔ " to be
+        # considered as unresolving the topic.
+        check_topic_unresolved("✔✔ test", "test", False)
+
+        # The new topic should not start with "✔ " to be
+        # considered as unresolving the topic.
+        check_topic_unresolved("✔ ✔ test", "✔ test", False)
+
+        # All leading "✔" and space characters need to
+        # be stripped to consider this renaming as
+        # unresolving the topic.
+        check_topic_unresolved("✔ ✔ test", "✔test", False)
+
+        # There is a change other than just stripping the
+        # leading "✔" and space characters.
+        check_topic_unresolved("✔ test", "test 1", False)
+        check_topic_unresolved("✔ ✔ test", "test 1", False)
 
     def test_resolved_topic_notice_auto_read_policy(self) -> None:
         # Test that resolved and unresolved-topic notices are marked as

@@ -27,7 +27,11 @@ from zerver.lib.message_cache import MessageDict
 from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
 from zerver.lib.narrow_predicate import build_narrow_predicate
 from zerver.lib.notification_data import UserMessageNotificationsData
-from zerver.lib.queue import queue_json_publish_rollback_unsafe, retry_event
+from zerver.lib.queue import (
+    mobile_notifications_queue_name,
+    queue_json_publish_rollback_unsafe,
+    retry_event,
+)
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
 from zerver.middleware import async_request_timer_restart
 from zerver.models import CustomProfileField, Message
@@ -971,15 +975,9 @@ def maybe_enqueue_notifications(
         notice["type"] = "add"
         notice["mentioned_user_group_id"] = mentioned_user_group_id
         if not already_notified.get("push_notified"):
-            if settings.MOBILE_NOTIFICATIONS_SHARDS > 1:
-                shard_id = (
-                    user_notifications_data.user_id % settings.MOBILE_NOTIFICATIONS_SHARDS + 1
-                )
-                queue_json_publish_rollback_unsafe(
-                    f"missedmessage_mobile_notifications_shard{shard_id}", notice
-                )
-            else:
-                queue_json_publish_rollback_unsafe("missedmessage_mobile_notifications", notice)
+            queue_json_publish_rollback_unsafe(
+                mobile_notifications_queue_name(user_notifications_data.user_id), notice
+            )
             notified["push_notified"] = True
 
     # Send missed_message emails if a direct message or a

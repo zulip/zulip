@@ -78,7 +78,7 @@ def send_message_report(
                 [
                     user
                     for user in get_display_recipient(reported_message.recipient)
-                    if user["id"] is not reported_user.id
+                    if user["id"] != reported_user.id
                 ]
             ),
             reported_message_date_sent=reported_message_date_sent,

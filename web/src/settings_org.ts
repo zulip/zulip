@@ -466,6 +466,11 @@ function set_welcome_message_custom_text_visibility(): void {
 }
 
 export let set_two_tier_billing_settings_visibility = (): void => {
+    if (!page_params.development_environment) {
+        // Remove this when the feature is ready for production.
+        return;
+    }
+
     if (!page_params.non_workplace_pricing_eligible) {
         return;
     }
@@ -1613,7 +1618,7 @@ export let initialize_group_setting_widgets = (): void => {
 
         if (
             setting_name === "workplace_users_group" &&
-            !page_params.non_workplace_pricing_eligible
+            (!page_params.development_environment || !page_params.non_workplace_pricing_eligible)
         ) {
             continue;
         }
