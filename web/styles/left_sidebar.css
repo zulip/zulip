@@ -2420,6 +2420,22 @@ li.topic-list-item {
     }
 }
 
+/* For spectators, the topic menu has no DM section to leave space
+   for, so the padding-top and content height set above are adjusted. */
+.spectator-view #left-sidebar.zoom-in-topics #left-sidebar-modal {
+    .left-sidebar-modal-close-area {
+        padding-top: var(--left-sidebar-modal-close-area-padding-top);
+    }
+
+    #left-sidebar-modal-content {
+        height: calc(
+            100dvh - var(--navbar-fixed-height) -
+                var(--left-sidebar-modal-close-area-padding-top) -
+                var(--left-sidebar-modal-close-area-height)
+        );
+    }
+}
+
 @container app (width <= $cq_ml_min) {
     .left-sidebar-modal-close-area .zulip-icon-close {
         margin-right: 5px;
