@@ -50,7 +50,7 @@ def events_register_backend(
     include_subscribers: Literal["true", "false", "partial"] = "false",
     narrow: Json[NarrowT] | None = None,
     presence_history_limit_days: Json[int] | None = None,
-    queue_lifespan_secs: Annotated[
+    idle_queue_timeout: Annotated[
         Json[int], ApiParamConfig(documentation_status=DocumentationStatus.DOCUMENTATION_PENDING)
     ] = 0,
     slim_presence: Json[bool] = False,
@@ -123,7 +123,7 @@ def events_register_backend(
         None,
         presence_history_limit_days,
         event_types,
-        queue_lifespan_secs,
+        idle_queue_timeout,
         all_public_streams,
         narrow=modern_narrow,
         include_subscribers=parsed_include_subscribers,

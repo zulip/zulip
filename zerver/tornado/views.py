@@ -178,7 +178,7 @@ def get_events_backend(
         Json[list[list[str]]] | None,
         ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
     ] = None,
-    lifespan_secs: Annotated[
+    idle_queue_timeout: Annotated[
         Json[NonNegativeInt],
         ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
     ] = 0,
@@ -247,7 +247,7 @@ def get_events_backend(
             client_gravatar=client_gravatar,
             slim_presence=slim_presence,
             all_public_streams=all_public_streams,
-            queue_timeout=lifespan_secs,
+            queue_timeout=idle_queue_timeout,
             last_connection_time=time.time(),
             narrow=narrow,
             bulk_message_deletion=bulk_message_deletion,

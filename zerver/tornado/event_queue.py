@@ -82,7 +82,7 @@ class ClientDescriptor:
         client_gravatar: bool,
         slim_presence: bool,
         all_public_streams: bool,
-        lifespan_secs: int,
+        idle_queue_timeout: int,
         narrow: Collection[Sequence[str]],
         bulk_message_deletion: bool,
         stream_typing_notifications: bool,
@@ -129,11 +129,11 @@ class ClientDescriptor:
         self.simplified_presence_events = simplified_presence_events
         self.offline = False
 
-        # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
+        # Default for idle_queue_timeout is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
-        if lifespan_secs == 0:
-            lifespan_secs = DEFAULT_EVENT_QUEUE_TIMEOUT_SECS
-        self.queue_timeout = min(lifespan_secs, MAX_QUEUE_TIMEOUT_SECS)
+        if idle_queue_timeout == 0:
+            idle_queue_timeout = DEFAULT_EVENT_QUEUE_TIMEOUT_SECS
+        self.queue_timeout = min(idle_queue_timeout, MAX_QUEUE_TIMEOUT_SECS)
 
     def to_dict(self) -> dict[str, Any]:
         # If you add a new key to this dict, make sure you add appropriate
@@ -191,7 +191,7 @@ class ClientDescriptor:
             client_gravatar=d["client_gravatar"],
             slim_presence=d["slim_presence"],
             all_public_streams=d["all_public_streams"],
-            lifespan_secs=d["queue_timeout"],
+            idle_queue_timeout=d["queue_timeout"],
             narrow=d.get("narrow", []),
             bulk_message_deletion=d.get("bulk_message_deletion", False),
             stream_typing_notifications=d.get("stream_typing_notifications", False),
