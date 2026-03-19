@@ -561,6 +561,13 @@ def do_gc_event_queues(
     for realm_id in affected_realms:
         filter_client_dict(realm_clients_all_streams, realm_id)
 
+    # TODO: If a user has multiple queues and all of them are being
+    # removed in the same sweep, `last_client_for_user` will be
+    # True for all of them, causing `missedmessage_hook` to enqueue
+    # duplicate notifications. Push notifications are deduplicated
+    # by the `active_mobile_push_notification` flag on UserMessage,
+    # but email notifications are not — duplicate
+    # ScheduledMessageNotificationEmail rows will be created.
     for id in to_remove:
         web_reload_clients.pop(id, None)
         for cb in gc_hooks:
