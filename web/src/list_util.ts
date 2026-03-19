@@ -6,6 +6,7 @@ const list_selectors = [
     "#buddy-list-users-matching-view",
     "#buddy-list-other-users",
     "#buddy-list-participants",
+    "#modal-direct-messages-list",
 ];
 
 export function inside_list(e: JQuery.KeyDownEvent): boolean {
