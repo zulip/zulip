@@ -828,7 +828,8 @@ export function zoom_out_topics(): void {
 export function set_in_home_view(stream_id: number, in_home: boolean): void {
     const $li = get_stream_li(stream_id);
     if (!$li) {
-        blueslip.error("passed in bad stream id", {stream_id});
+        // When zoomed into a channel's topic list, only the
+        // zoomed-in channel has a row in the sidebar.
         return;
     }
 
