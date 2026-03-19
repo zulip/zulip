@@ -397,3 +397,31 @@ test("error in callback", () => {
         },
     });
 });
+
+let banner_shown = false;
+let banner_retry_secs;
+
+channel.set_rate_limit_banner_callback((retry_after_secs) => {
+    banner_shown = true;
+    banner_retry_secs = retry_after_secs;
+});
+
+run_test("rate_limit_banner_on_429", () => {
+    banner_shown = false;
+    banner_retry_secs = undefined;
+
+    test_with_mock_ajax({
+        xhr: {
+            status: 429,
+            responseJSON: {code: "RATE_LIMIT_HIT", "retry-after": 90},
+        },
+        run_code() {
+            channel.post({url: "/json/endpoint"});
+        },
+        check_ajax_options(options) {
+            options.simulate_error();
+            assert.ok(banner_shown);
+            assert.equal(banner_retry_secs, 90);
+        },
+    });
+});

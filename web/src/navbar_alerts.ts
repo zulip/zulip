@@ -320,6 +320,45 @@ const SERVER_NEEDS_UPGRADE_BANNER: AlertBanner = {
     custom_classes: "navbar-alert-banner",
 };
 
+const rate_limit_banner = (retry_after: number): AlertBanner => {
+    const minutes = Math.floor(retry_after / 60);
+    const seconds = retry_after % 60;
+    let label = "";
+    if (minutes > 0 && seconds > 0) {
+        label = $t(
+            {
+                defaultMessage:
+                    "You are sending too many requests. Please wait {minutes, plural, one {# minute} other {# minutes}} and {seconds, plural, one {# second} other {# seconds}} before trying again.",
+            },
+            {minutes, seconds},
+        );
+    } else if (minutes > 0) {
+        label = $t(
+            {
+                defaultMessage:
+                    "You are sending too many requests. Please wait {minutes, plural, one {# minute} other {# minutes}} before trying again.",
+            },
+            {minutes},
+        );
+    } else {
+        label = $t(
+            {
+                defaultMessage:
+                    "You are sending too many requests. Please wait {seconds, plural, one {# second} other {# seconds}} before trying again.",
+            },
+            {seconds},
+        );
+    }
+    return {
+        process: "rate-limit",
+        intent: "danger",
+        label,
+        buttons: [],
+        close_button: true,
+        custom_classes: "navbar-alert-banner",
+    };
+};
+
 const bankruptcy_banner = (): AlertBanner => {
     const old_unreads_missing = unread.old_unreads_missing;
     const unread_msgs_count = unread.get_unread_message_count();
@@ -515,7 +554,17 @@ export function check_and_show_muted_messages_banner(): void {
     }
 }
 
+export function open_rate_limit_banner(retry_after: number): void {
+    // Don't show a second banner if one is already visible.
+    const $existing = $("#navbar_alerts_wrapper").find(".banner[data-process='rate-limit']");
+    if ($existing.length > 0) {
+        return;
+    }
+    open_navbar_banner_and_resize(rate_limit_banner(retry_after));
+}
+
 export function initialize(): void {
+    channel.set_rate_limit_banner_callback(open_rate_limit_banner);
     const ls = localstorage();
     const browser_time_zone = timerender.browser_time_zone();
     if (realm.demo_organization_scheduled_deletion_date) {
@@ -807,6 +856,10 @@ export function initialize(): void {
                     realm.demo_organization_scheduled_deletion_date =
                         new Date("2025-01-30T10:00:00.000Z").getTime() / 1000;
                     open_navbar_banner_and_resize(demo_organization_deadline_banner());
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+                $popper.on("click", ".rate-limit", () => {
+                    open_navbar_banner_and_resize(rate_limit_banner(90));
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
                 $popper.on("click", ".time_zone_update_offer", () => {
