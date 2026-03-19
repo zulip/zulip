@@ -1388,6 +1388,11 @@ export function build_person_matcher(query: string): (user: User) => boolean {
             return true;
         }
 
+        const domain = visible_email.split("@")[1]!;
+        if (domain.startsWith(query.toLowerCase())) {
+            return true;
+        }
+
         return termlet_matchers.every((matcher) => matcher(user));
     };
 }
