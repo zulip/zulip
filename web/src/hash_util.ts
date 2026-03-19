@@ -390,7 +390,11 @@ export function decode_dm_recipient_user_ids_from_narrow_url(narrow_url: string)
             return null;
         }
 
-        if (terms[1]?.operator !== "with" && terms[1]?.operator !== "near") {
+        if (
+            terms[1] !== undefined &&
+            terms[1].operator !== "with" &&
+            terms[1].operator !== "near"
+        ) {
             return null;
         }
 
