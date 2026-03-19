@@ -1222,12 +1222,8 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     const $stream_li = get_stream_li(stream_id);
 
     if (!$stream_li) {
-        // This is a sanity check.  When we narrow to a subscribed
-        // stream, there will always be a stream list item
-        // corresponding to that stream in our sidebar.  This error
-        // stopped appearing from March 2018 until at least
-        // April 2020, so if it appears again, something regressed.
-        blueslip.error("No stream_li for subscribed stream", {stream_id});
+        // When zoomed into a channel's topic list, only the
+        // zoomed-in channel has a row in the sidebar.
         clear_topics();
         return undefined;
     }
