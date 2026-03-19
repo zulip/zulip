@@ -136,7 +136,7 @@ test("basic_get_suggestions_for_spectator", () => {
     stream_data.delete_sub(sub.stream_id);
     query = "channels:";
     suggestions = get_suggestions(query);
-    assert.deepEqual(suggestions, []);
+    assert.deepEqual(suggestions, ["channels:archived"]);
     page_params.is_spectator = false;
 });
 
