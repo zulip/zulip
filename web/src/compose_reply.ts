@@ -16,6 +16,7 @@ import * as inbox_util from "./inbox_util.ts";
 import * as internal_url from "./internal_url.ts";
 import * as message_fetch_raw_content from "./message_fetch_raw_content.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_store from "./message_store.ts";
 import {type Message} from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";
@@ -41,6 +42,8 @@ type ReplaceContentOpts = {
     message: Message;
     raw_content: string;
     forward_message: boolean | undefined;
+    previous_message?: Message | undefined;
+    is_first_message_from_quote_chain?: boolean;
 };
 
 const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
@@ -318,6 +321,35 @@ function setup_compose_to_quote_single_message(message_id: number, opts: QuoteMe
     compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
 }
 
+function setup_compose_for_unknown_recipient(opts: QuoteMessageOpts): void {
+    compose_actions.start({
+        message_type: "stream",
+        keep_composebox_empty: opts.keep_composebox_empty,
+        content: quoting_placeholder,
+    });
+}
+
+function setup_compose_for_same_channel_messages(message: Message, opts: QuoteMessageOpts): void {
+    assert(message.type === "stream");
+    compose_actions.start({
+        content: quoting_placeholder,
+        message_type: "stream",
+        topic: message.topic,
+        keep_composebox_empty: opts.keep_composebox_empty,
+        stream_id: message.stream_id,
+    });
+    $("#stream_message_recipient_topic").trigger("focus");
+}
+
+function setup_compose_for_quoting_dm_conversations(opts: QuoteMessageOpts): void {
+    compose_actions.start({
+        content: quoting_placeholder,
+        message_type: "private",
+        keep_composebox_empty: opts.keep_composebox_empty,
+    });
+    $("#private_message_recipient").trigger("focus");
+}
+
 function generate_sender_mention(sent_message: Message): string {
     return `@_**${sent_message.sender_full_name}|${sent_message.sender_id}**`;
 }
@@ -401,19 +433,80 @@ function generate_private_message_quote_context(message: Message): string {
     );
 }
 
-function generate_replace_content(info: ReplaceContentOpts): string {
-    const {message, raw_content, forward_message} = info;
-    let content;
+type QuoteContext = "INCLUDE_SENDER" | "INCLUDE_SENDER_AND_RECIPIENT" | "INCLUDE_NOTHING";
 
-    if (!forward_message) {
-        content = generate_sender_only_quote_context(message);
-    } else if (message.type === "stream") {
-        content = generate_channel_message_quote_context(message);
-    } else {
-        content = generate_private_message_quote_context(message);
+// Returns what context the line before the quote block having the quoted message content
+// should contain.
+export function get_quote_context_for_message(info: {
+    forward_message: boolean | undefined;
+    current_message: Message;
+    previous_message: Message | undefined;
+    is_first_message_from_quote_chain: boolean | undefined;
+}): QuoteContext {
+    const {current_message, previous_message, forward_message, is_first_message_from_quote_chain} =
+        info;
+    if (is_first_message_from_quote_chain) {
+        return "INCLUDE_SENDER_AND_RECIPIENT";
+    }
+    if (previous_message) {
+        if (all_messages_have_same_recipient([current_message, previous_message])) {
+            // We don't include the sender or the recipient details
+            // for a message that has the same (sender, recipient) pair
+            // as the previous message.
+            if (current_message.sender_id === previous_message.sender_id) {
+                return "INCLUDE_NOTHING";
+            }
+            // We include the sender context in case only the sender
+            // differs compared to the previous message.
+            return "INCLUDE_SENDER";
+        }
+        return "INCLUDE_SENDER_AND_RECIPIENT";
     }
 
-    content += "\n";
+    // This message is quoted individually and not is part
+    // of some collection of quoted messages
+    if (!forward_message) {
+        return "INCLUDE_SENDER";
+    }
+    return "INCLUDE_SENDER_AND_RECIPIENT";
+}
+
+function generate_replace_content(info: ReplaceContentOpts): string {
+    const {
+        message,
+        raw_content,
+        forward_message,
+        previous_message,
+        is_first_message_from_quote_chain,
+    } = info;
+    const required_quote_context = get_quote_context_for_message({
+        current_message: message,
+        forward_message,
+        previous_message,
+        is_first_message_from_quote_chain,
+    });
+
+    let content;
+
+    switch (required_quote_context) {
+        case "INCLUDE_SENDER":
+            content = generate_sender_only_quote_context(message);
+            break;
+        case "INCLUDE_SENDER_AND_RECIPIENT":
+            if (message.type === "stream") {
+                content = generate_channel_message_quote_context(message);
+            } else {
+                content = generate_private_message_quote_context(message);
+            }
+            break;
+        case "INCLUDE_NOTHING":
+            content = "";
+            break;
+    }
+
+    // An absent quote context means we don't need a new line to
+    // separate the context line from the quote content.
+    content += required_quote_context === "INCLUDE_NOTHING" ? "" : "\n";
     const fence = fenced_code.get_unused_fence(raw_content);
     content += `${fence}quote\n${raw_content}\n${fence}`;
     return content;
@@ -422,10 +515,33 @@ function generate_replace_content(info: ReplaceContentOpts): string {
 function replace_quoting_placeholder_with(info: {
     content: string;
     forward_message: boolean | undefined;
+    // When the user is quoting messages that belong
+    // to the same channel. All messages must have
+    // their `type` as `stream`.
+    quoting_messages_from_same_channel?: boolean;
+    // When the user is quoting messages that belong
+    // to more than one DM conversations. All messages
+    // must have their `type` as `private`.
+    quoting_messages_from_dm_conversations?: boolean;
 }): void {
-    const {content, forward_message} = info;
+    const {
+        forward_message,
+        quoting_messages_from_dm_conversations,
+        quoting_messages_from_same_channel,
+        content,
+    } = info;
+
+    // These cases require focus either in the topic/dm recipient
+    // input or the channel/DM picker.
+    /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
+    const should_focus_recipient =
+        forward_message ||
+        quoting_messages_from_same_channel ||
+        quoting_messages_from_dm_conversations ||
+        false;
+    /* eslint-enable @typescript-eslint/prefer-nullish-coalescing */
     const $textarea = get_textarea_to_quote(forward_message);
-    compose_ui.replace_syntax(quoting_placeholder, content, $textarea, forward_message);
+    compose_ui.replace_syntax(quoting_placeholder, content, $textarea, should_focus_recipient);
     compose_ui.autosize_textarea($textarea);
 
     if (!forward_message) {
@@ -450,6 +566,9 @@ export function quote_messages(opts: QuoteMessageOpts): void {
     } else if (highlighted_message_ids.length === 1) {
         opts.highlighted_message_ids = highlighted_message_ids;
         quote_single_message(opts);
+    } else {
+        opts.highlighted_message_ids = highlighted_message_ids;
+        quote_multiple_messages(opts);
     }
 }
 
@@ -503,6 +622,195 @@ function quote_single_message(opts: QuoteMessageOpts): void {
             replace_quoting_placeholder_with({content, forward_message: opts.forward_message});
         },
     });
+}
+
+export function all_messages_have_same_channel(messages: Message[]): boolean {
+    assert(messages.length > 0);
+    const first_message = messages[0]!;
+    if (first_message.type !== "stream") {
+        return false;
+    }
+    const target_stream_id = first_message.stream_id;
+    return messages.every((msg) => msg.type === "stream" && msg.stream_id === target_stream_id);
+}
+
+export function all_messages_are_private(messages: Message[]): boolean {
+    assert(messages.length > 0);
+    return messages.every((msg) => msg.type === "private");
+}
+
+export function all_messages_have_same_recipient(messages: Message[]): boolean {
+    assert(messages.length > 0);
+    if (!message_lists.current?.data.filter.may_contain_multiple_conversations()) {
+        // We are guaranteed that the highlighted messages
+        // won't have more than one recipient.
+        return true;
+    }
+    const first_message = messages[0]!;
+
+    if (first_message.type === "private") {
+        const target_user_ids = first_message.to_user_ids;
+
+        return messages.every(
+            (msg) => msg.type === "private" && msg.to_user_ids === target_user_ids,
+        );
+    }
+    // Stream messages must match both the stream ID and the topic.
+    const target_stream_id = first_message.stream_id;
+    const target_topic = first_message.topic.toLowerCase();
+
+    return messages.every(
+        (msg) =>
+            msg.type === "stream" &&
+            msg.stream_id === target_stream_id &&
+            msg.topic.toLowerCase() === target_topic,
+    );
+}
+
+type MultipleMessageStatus =
+    | "QUOTING_MESSAGES_FROM_SAME_CHANNEL_AND_MULTIPLE_TOPICS"
+    | "QUOTING_MESSAGES_FROM_DIFFERENT_DM_CONVERSATIONS"
+    | "FORWARDING_MESSAGES_FROM_SAME_CHANNEL_AND_MULTIPLE_TOPICS"
+    | "MESSAGES_WITH_NOTHING_IN_COMMON"
+    | "MESSAGES_WITH_SAME_RECIPIENT";
+
+export function get_multi_message_quote_status(
+    messages: Message[],
+    is_forwarding: boolean | undefined,
+): MultipleMessageStatus {
+    const do_messages_have_same_recipient = all_messages_have_same_recipient(messages);
+    if (do_messages_have_same_recipient) {
+        return "MESSAGES_WITH_SAME_RECIPIENT";
+    }
+
+    const messages_belong_to_same_channel = all_messages_have_same_channel(messages);
+    if (messages_belong_to_same_channel) {
+        if (!is_forwarding) {
+            return "QUOTING_MESSAGES_FROM_SAME_CHANNEL_AND_MULTIPLE_TOPICS";
+        }
+        return "FORWARDING_MESSAGES_FROM_SAME_CHANNEL_AND_MULTIPLE_TOPICS";
+    }
+
+    const messages_are_private = all_messages_are_private(messages);
+    if (messages_are_private && !is_forwarding) {
+        return "QUOTING_MESSAGES_FROM_DIFFERENT_DM_CONVERSATIONS";
+    }
+    return "MESSAGES_WITH_NOTHING_IN_COMMON";
+}
+
+type QuoteAsset = {
+    message: Message;
+    quote_content: string;
+};
+
+export function build_and_process_quote_assets_for_messages(
+    message_ids: number[],
+    callback: (quote_assets: QuoteAsset[]) => void,
+): void {
+    const messages: Message[] = [];
+    for (const id of message_ids) {
+        const message = message_store.get(id);
+        assert(message !== undefined);
+        messages.push(message);
+    }
+
+    const quote_assets: QuoteAsset[] = [];
+    message_fetch_raw_content.get_raw_content_for_messages({
+        message_ids,
+        on_success(raw_content_arr) {
+            for (const [i, message] of messages.entries()) {
+                const raw_content = raw_content_arr[i]!;
+                assert(raw_content !== undefined);
+                quote_assets.push({message, quote_content: raw_content});
+            }
+            callback(quote_assets);
+        },
+        on_error() {
+            for (const message of messages) {
+                const fallback_markdown_content = compose_paste.paste_handler_converter(
+                    message.content,
+                );
+                quote_assets.push({
+                    message,
+                    quote_content: message.raw_content ?? fallback_markdown_content,
+                });
+            }
+            callback(quote_assets);
+        },
+        timeout_ms: 1000,
+    });
+}
+
+function quote_multiple_messages(opts: QuoteMessageOpts): void {
+    const highlighted_message_ids = opts.highlighted_message_ids;
+    assert(highlighted_message_ids !== undefined && highlighted_message_ids.length > 1);
+    build_and_process_quote_assets_for_messages(
+        highlighted_message_ids,
+        (quote_assets: QuoteAsset[]) => {
+            const msg_for_compose_box = quote_assets[0]!.message;
+            const messages = quote_assets.map((asset) => asset.message);
+            const status = get_multi_message_quote_status(messages, opts.forward_message);
+            switch (status) {
+                case "QUOTING_MESSAGES_FROM_SAME_CHANNEL_AND_MULTIPLE_TOPICS":
+                    // When quoting multiple topics from the same channel
+                    // (e.g., from the channel feed), we put initial focus
+                    // into the topic field, rather than in the message body.
+                    setup_compose_for_same_channel_messages(msg_for_compose_box, opts);
+                    break;
+                case "FORWARDING_MESSAGES_FROM_SAME_CHANNEL_AND_MULTIPLE_TOPICS":
+                    // When forwarding multiple topics from the same channel, we
+                    // pop open the recipient picker (as for a single message).
+                    setup_compose_to_forward_single_message(msg_for_compose_box, opts);
+                    break;
+                case "QUOTING_MESSAGES_FROM_DIFFERENT_DM_CONVERSATIONS":
+                    // When quoting from multiple DM conversations (e.g., from the DM feed),
+                    // we use DM as the recipient and put focus in the private recipient field
+                    setup_compose_for_quoting_dm_conversations(opts);
+                    break;
+                case "MESSAGES_WITH_NOTHING_IN_COMMON":
+                    // We cannot determine the recipients for messages that don't share
+                    // a common recipient. So we let the user decide by opening the composebox
+                    // in an "unset" state.
+                    setup_compose_for_unknown_recipient(opts);
+                    break;
+                case "MESSAGES_WITH_SAME_RECIPIENT":
+                    // All the highlighted messages have the same recipient
+                    // so we can reuse the setup methods for quoting/forwarding
+                    // a single message.
+                    if (opts.forward_message) {
+                        setup_compose_to_forward_single_message(msg_for_compose_box, opts);
+                    } else {
+                        setup_compose_to_quote_single_message(msg_for_compose_box.id, opts);
+                    }
+                    break;
+            }
+
+            const content_string = quote_assets
+                .map((asset, i) => {
+                    const {message, quote_content} = asset;
+                    const info: ReplaceContentOpts = {
+                        message,
+                        raw_content: quote_content,
+                        forward_message: opts.forward_message,
+                        // Use the index to determine the previous message
+                        previous_message: i > 0 ? quote_assets[i - 1]!.message : undefined,
+                        is_first_message_from_quote_chain: i === 0,
+                    };
+
+                    return generate_replace_content(info);
+                })
+                .join("\n\n");
+
+            replace_quoting_placeholder_with({
+                content: content_string,
+                forward_message: opts.forward_message,
+                quoting_messages_from_dm_conversations:
+                    status === "QUOTING_MESSAGES_FROM_DIFFERENT_DM_CONVERSATIONS",
+                quoting_messages_from_same_channel:
+                    status === "QUOTING_MESSAGES_FROM_SAME_CHANNEL_AND_MULTIPLE_TOPICS",
+            });
+        },
+    );
 }
 
 function extract_range_html(range: Range, preserve_ancestors = false): string {
