@@ -2,7 +2,6 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_paste from "./compose_paste.ts";
 import * as compose_recipient from "./compose_recipient.ts";
@@ -15,9 +14,9 @@ import {$t} from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as inbox_util from "./inbox_util.ts";
 import * as internal_url from "./internal_url.ts";
+import * as message_fetch_raw_content from "./message_fetch_raw_content.ts";
 import * as message_lists from "./message_lists.ts";
-import {type Message, single_message_content_schema} from "./message_store.ts";
-import * as message_store from "./message_store.ts";
+import {type Message} from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
@@ -452,16 +451,12 @@ function quote_single_message(opts: QuoteMessageOpts): void {
         return;
     }
 
-    void channel.get({
-        url: "/json/messages/" + message_id,
-        data: {allow_empty_topic_name: true, apply_markdown: false},
-        success(raw_data) {
-            const data = single_message_content_schema.parse(raw_data);
-            assert(data.message.content_type === "text/x-markdown");
-            message_store.maybe_update_raw_content(message.id, data.message.content);
+    message_fetch_raw_content.get_raw_content_for_single_message({
+        message_id,
+        on_success(raw_content) {
             const content = generate_replace_content({
                 message,
-                raw_content: data.message.content,
+                raw_content,
                 forward_message: opts.forward_message,
             });
             replace_quoting_placeholder_with(content, opts.forward_message);
@@ -469,8 +464,8 @@ function quote_single_message(opts: QuoteMessageOpts): void {
         // We set a timeout here to trigger usage of the fallback markdown via the
         // error callback below, which is much better UX than waiting for 10 seconds and
         // feeling that the quoting mechanism is broken.
-        timeout: 1000,
-        error() {
+        timeout_ms: 1000,
+        on_error() {
             // We fall back to using the available message content and pass it
             // through the `paste_handler_converter` to generate the replacement
             // markdown, in case the request timed out or failed for another reason,
