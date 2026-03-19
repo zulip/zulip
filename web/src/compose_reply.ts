@@ -371,44 +371,46 @@ function generate_channel_message_quote_context(message: Message): string {
     );
 }
 
+function generate_private_message_quote_context(message: Message): string {
+    assert(message.type === "private");
+    const sender_mention = generate_sender_mention(message);
+
+    const dm_user_ids = people.all_user_ids_in_pm(message)!;
+    const recipient_user_ids =
+        dm_user_ids.length > 1
+            ? dm_user_ids.filter((id) => id !== message.sender_id)
+            : [message.sender_id];
+    const recipient_users = recipient_user_ids.map((recipient_id) =>
+        people.get_by_user_id(recipient_id),
+    );
+    // Final message looks like:
+    //     @_**Iago|5** [said](link to message) to {direct message recipient mentions}:
+    //     ```quote
+    //     message content
+    //     ```
+    // Keep syntax in sync with direct message reminder format in zerver/lib/reminders.py
+    return $t(
+        {
+            defaultMessage: "{username} [said]({link_to_message}) to {list_of_recipient_mentions}:",
+        },
+        {
+            username: sender_mention,
+            link_to_message: hash_util.by_conversation_and_time_url(message),
+            list_of_recipient_mentions: people.get_user_mentions_for_display(recipient_users, true),
+        },
+    );
+}
+
 function generate_replace_content(info: ReplaceContentOpts): string {
     const {message, raw_content, forward_message} = info;
     let content;
-    const sender_mention = generate_sender_mention(message);
 
     if (!forward_message) {
         content = generate_sender_only_quote_context(message);
     } else if (message.type === "stream") {
         content = generate_channel_message_quote_context(message);
     } else {
-        const dm_user_ids = people.all_user_ids_in_pm(message)!;
-        const recipient_user_ids =
-            dm_user_ids.length > 1
-                ? dm_user_ids.filter((id) => id !== message.sender_id)
-                : [message.sender_id];
-        const recipient_users = recipient_user_ids.map((recipient_id) =>
-            people.get_by_user_id(recipient_id),
-        );
-        // Final message looks like:
-        //     @_**Iago|5** [said](link to message) to {direct message recipient mentions}:
-        //     ```quote
-        //     message content
-        //     ```
-        // Keep syntax in sync with direct message reminder format in zerver/lib/reminders.py
-        content = $t(
-            {
-                defaultMessage:
-                    "{username} [said]({link_to_message}) to {list_of_recipient_mentions}:",
-            },
-            {
-                username: sender_mention,
-                link_to_message: hash_util.by_conversation_and_time_url(message),
-                list_of_recipient_mentions: people.get_user_mentions_for_display(
-                    recipient_users,
-                    true,
-                ),
-            },
-        );
+        content = generate_private_message_quote_context(message);
     }
 
     content += "\n";
