@@ -22,8 +22,18 @@ const _document = {
     hasFocus() {
         return true;
     },
+    to_$() {
+        return $("document-stub");
+    },
 };
 
+const _window = {
+    to_$() {
+        return $("window-stub");
+    },
+};
+
+const browser_idle_detection = mock_esm("../src/browser_idle_detection");
 const buddy_list_presence = mock_esm("../src/buddy_list_presence");
 const keydown_util = mock_esm("../src/keydown_util", {handle() {}});
 const padded_widget = mock_esm("../src/padded_widget");
@@ -35,6 +45,7 @@ const scroll_util = mock_esm("../src/scroll_util");
 const background_task = mock_esm("../src/background_task");
 
 set_global("document", _document);
+set_global("window", _window);
 
 const muted_users = zrequire("muted_users");
 const presence = zrequire("presence");
@@ -656,4 +667,34 @@ test("check_should_redraw_new_user", ({override}) => {
     override(realm, "realm_presence_disabled", false);
     // A new user that didn't have presence info should not be redrawn.
     assert.equal(activity_ui.check_should_redraw_new_user(99999), false);
+});
+
+test("browser_idle_detection", ({override}) => {
+    override(browser_idle_detection, "supported", () => false);
+    activity.setup_idle_handler();
+    blueslip.expect("log", "Browser idle detector not supported");
+
+    override(browser_idle_detection, "supported", () => true);
+
+    let on_granted;
+    override(browser_idle_detection, "init", () => ({
+        // eslint-disable-next-line unicorn/no-thenable
+        then(cb) {
+            on_granted = cb;
+        },
+    }));
+    override(browser_idle_detection, "on_permission_change", (cb) => cb());
+
+    activity.reset_idle_handler_for_testing();
+    activity.setup_idle_handler();
+    // Cover the idempotency guard.
+    activity.setup_idle_handler();
+
+    blueslip.expect("info", "Browser IdleDetector started");
+    on_granted("started");
+
+    on_granted({name: "NotAllowedError"});
+
+    blueslip.expect("error", "Browser IdleDetector failed to start: error message");
+    on_granted({name: "SomeOtherError", message: "error message"});
 });

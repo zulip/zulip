@@ -3,6 +3,8 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
+import * as blueslip from "./blueslip.ts";
+import * as browser_idle_detection from "./browser_idle_detection.ts";
 import * as channel from "./channel.ts";
 import {electron_bridge} from "./electron_bridge.ts";
 import {page_params} from "./page_params.ts";
@@ -56,6 +58,8 @@ export let client_is_active = document.hasFocus();
 export let new_user_input = true;
 
 export let received_new_messages = false;
+
+let idle_handler_setup_done = false;
 
 type UserInputHook = () => void;
 const on_new_user_input_hooks: UserInputHook[] = [];
@@ -187,6 +191,52 @@ export function mark_client_active(): void {
     mark_client_idle_later();
 }
 
+export function setup_idle_handler(): void {
+    // This code is separated out of `initialize` to facilitate testing
+    if (!browser_idle_detection.supported()) {
+        blueslip.log("Browser idle detector not supported");
+        return;
+    }
+
+    if (idle_handler_setup_done) {
+        return;
+    }
+    idle_handler_setup_done = true;
+
+    $(document).one(
+        "keypress click",
+        /* istanbul ignore next */ () => {
+            void browser_idle_detection.request_permission();
+        },
+    );
+
+    void browser_idle_detection.on_permission_change(() => {
+        void browser_idle_detection
+            .init({
+                idle_timeout: 60 * 1000,
+                on_idle: mark_client_idle,
+                on_active: mark_client_active,
+            })
+            // eslint-disable-next-line promise/prefer-await-to-then
+            .then((result) => {
+                if (result === "started") {
+                    $(window).off("keydown mousedown mousemove touchmove touchstart wheel");
+                    mark_client_idle_later.cancel();
+                    blueslip.info("Browser IdleDetector started");
+                    return;
+                }
+                if (result.name !== "NotAllowedError") {
+                    blueslip.error("Browser IdleDetector failed to start: " + result.message);
+                }
+                return;
+            });
+    });
+}
+
+export function reset_idle_handler_for_testing(): void {
+    idle_handler_setup_done = false;
+}
+
 export function initialize(): void {
     $(document).on("mousemove", () => {
         set_new_user_input(true);
@@ -199,4 +249,6 @@ export function initialize(): void {
     if (client_is_active) {
         mark_client_idle_later();
     }
+
+    setup_idle_handler();
 }
