@@ -808,9 +808,9 @@
     padding: 4px 25px 4px 6px;
     color: var(--color-text-default);
     border-radius: 4px;
-    border: var(--input-border-width) solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid var(--color-border-legacy-input);
     cursor: pointer;
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--color-background-legacy-input);
     max-width: 100%;
     font-size: inherit;
 
@@ -819,7 +819,7 @@
 
         /* The background-color of select elements inside modal is different than the others in
         settings pages, because the background of the modal is brighter than the setting page. */
-        background-color: hsl(0deg 0% 90%);
+        background-color: var(--color-background-disabled-modal-select);
 
         /* This is reset for other browsers to use Chrome's opacity. */
         opacity: 0.7;
