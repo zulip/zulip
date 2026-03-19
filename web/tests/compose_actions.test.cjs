@@ -130,7 +130,7 @@ const start = compose_actions.start;
 const cancel = compose_actions.cancel;
 const respond_to_message = compose_reply.respond_to_message;
 const reply_with_mention = compose_reply.reply_with_mention;
-const quote_message = compose_reply.quote_message;
+const quote_messages = compose_reply.quote_messages;
 
 function assert_visible(sel) {
     assert.ok($(sel).visible());
@@ -461,7 +461,7 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     assert.equal(syntax_to_insert, "@**Bob Roberts|40**");
 });
 
-test("quote_message", ({disallow, override, override_rewire}) => {
+test("quote_messages", ({disallow, override, override_rewire}) => {
     override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
     override_rewire(compose_recipient, "update_recipient_row_attention_level", noop);
     override_rewire(compose_reply, "get_highlighted_message_ids", () => undefined);
@@ -576,7 +576,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         fence: "```",
         content: "Testing.",
     });
-    quote_message(opts);
+    quote_messages(opts);
 
     run_success_callback();
     assert.ok(replaced);
@@ -597,7 +597,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         content: "Testing.",
     });
 
-    quote_message(opts);
+    quote_messages(opts);
 
     run_success_callback();
     assert.ok(replaced);
@@ -626,7 +626,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     });
 
     disallow(message_fetch_raw_content, "get_raw_content_for_single_message");
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     opts = {
@@ -641,7 +641,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         fence: "```",
         content: "Testing.",
     });
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     opts = {
@@ -667,7 +667,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         content: selected_message.raw_content,
     });
 
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     opts = {
@@ -681,7 +681,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         fence: "````",
         content: selected_message.raw_content,
     });
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     // Group direct message to 3 other users
@@ -715,7 +715,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     override(message_lists.current, "get", (id) =>
         id === selected_message.id ? selected_message : undefined,
     );
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     // Group direct message to only 2 other users
@@ -749,7 +749,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     override(message_lists.current, "get", (id) =>
         id === selected_message.id ? selected_message : undefined,
     );
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     // Other's group direct message
@@ -783,7 +783,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     override(message_lists.current, "get", (id) =>
         id === selected_message.id ? selected_message : undefined,
     );
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     // Direct message to other user
@@ -817,7 +817,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     override(message_lists.current, "get", (id) =>
         id === selected_message.id ? selected_message : undefined,
     );
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     // Other user's direct message
@@ -851,7 +851,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     override(message_lists.current, "get", (id) =>
         id === selected_message.id ? selected_message : undefined,
     );
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     // One's own direct message
@@ -885,7 +885,7 @@ test("quote_message", ({disallow, override, override_rewire}) => {
     override(message_lists.current, "get", (id) =>
         id === selected_message.id ? selected_message : undefined,
     );
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     const topic_with_invalid_characters = "[zulip/zulip>topic]";
@@ -922,7 +922,7 @@ ${fence}`;
     override(message_lists.current, "get", (id) =>
         id === selected_message.id ? selected_message : undefined,
     );
-    quote_message(opts);
+    quote_messages(opts);
     assert.ok(replaced);
 
     // Quoting a highlighted(selected) part of a message using the ">" hotkey trigger
@@ -954,7 +954,7 @@ ${fence}`;
         content: "Hello world",
     });
     override(message_lists.current, "get", (id) => (id === 50 ? highlighted_message : undefined));
-    quote_message(opts);
+    quote_messages(opts);
     const {opts: opts_when_message_has_selection} = stub.get_args("opts");
     assert.equal(opts_when_message_has_selection.trigger, "hotkey");
     assert.equal(opts_when_message_has_selection.message_id, 50);
@@ -975,7 +975,7 @@ ${fence}`;
         fence: "```",
         content: message_with_pointer.raw_content,
     });
-    quote_message(opts);
+    quote_messages(opts);
     const {opts: opts_when_message_has_no_selection} = stub.get_args("opts");
     assert.equal(opts_when_message_has_no_selection.trigger, "hotkey");
     assert.equal(opts_when_message_has_no_selection.message_id, 100);
