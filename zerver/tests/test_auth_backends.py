@@ -5074,17 +5074,29 @@ class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
         return result
 
     @override
-    def social_auth_test_finish(self, *args: Any, **kwargs: Any) -> "TestHttpResponse":
+    def social_auth_test_finish(
+        self,
+        result: "TestHttpResponse",
+        account_data_dict: dict[str, str],
+        *args: Any,
+        **kwargs: Any,
+    ) -> "TestHttpResponse":
         # Trying to generate a (access_token, id_token) pair here in tests that would
         # successfully pass validation by validate_and_return_id_token is impractical
         # and unnecessary (see python-social-auth implementation of the method for
         # how the validation works).
-        # We can simply mock the method to make it succeed and return an empty dict, because
-        # the return value is not used for anything.
+        # We can simply mock the method to make it succeed and return just the
+        # claims that are used: iss for ExternalAuthID lookup, and sub, which
+        # python-social-auth requires to match the sub from the UserInfo endpoint.
         with mock.patch.object(
-            GenericOpenIdConnectBackend, "validate_and_return_id_token", return_value={}
+            GenericOpenIdConnectBackend,
+            "validate_and_return_id_token",
+            return_value={
+                "iss": account_data_dict.get("iss", self.BASE_OIDC_URL),
+                "sub": account_data_dict["sub"],
+            },
         ):
-            return super().social_auth_test_finish(*args, **kwargs)
+            return super().social_auth_test_finish(result, account_data_dict, *args, **kwargs)
 
     @override
     def register_extra_endpoints(
@@ -5132,6 +5144,7 @@ class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
             family_name = None
 
         return dict(
+            sub="123-test-sub",
             email=email,
             name=name,
             nickname="somenickname",
@@ -5493,6 +5506,180 @@ class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
         comprehensive config_error pages.
         """
         return
+
+    def test_external_auth_id_oidc_login(self) -> None:
+        """
+        Test that OIDC login creates an ExternalAuthID record on first login,
+        and uses it for subsequent logins even if the email changes at the IdP.
+        """
+        hamlet = self.example_user("hamlet")
+
+        idps_config_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
+        idps_config_dict["testoidc"]["enable_external_auth_id_auth"] = True
+        sub_value = "testsub"
+        expected_method_name = f"oidc:<testoidc>:<{self.BASE_OIDC_URL}>"
+
+        # First login: no ExternalAuthID exists yet. One should be created.
+        self.assertEqual(ExternalAuthID.objects.filter(user=hamlet).count(), 0)
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        account_data_dict["sub"] = sub_value
+        with (
+            self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=idps_config_dict),
+            self.assertLogs(self.logger_string, level="INFO"),
+        ):
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+            )
+        self.assertEqual(result.status_code, 302)
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], hamlet.delivery_email)
+
+        external_auth_ids = list(ExternalAuthID.objects.filter(user=hamlet))
+        self.assert_length(external_auth_ids, 1)
+        self.assertEqual(external_auth_ids[0].external_auth_method_name, expected_method_name)
+        self.assertEqual(external_auth_ids[0].external_auth_id, sub_value)
+
+        # Login with a new email, but same sub value - user should be found by ExternalAuthID
+        # and the email should be synced.
+        new_email = "hamlet_new@zulip.com"
+        new_account_data_dict = self.get_account_data_dict(email=new_email, name=self.name)
+        new_account_data_dict["sub"] = sub_value
+        with (
+            self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=idps_config_dict),
+            self.assertLogs(self.logger_string, level="INFO") as m,
+        ):
+            result = self.social_auth_test(
+                new_account_data_dict,
+                subdomain="zulip",
+            )
+        self.assertEqual(result.status_code, 302)
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], new_email)
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.delivery_email, new_email)
+
+        self.assertIn("has mismatched email. Syncing:", m.output[0])
+
+        # The same sub from a different issuer isn't matched to the existing
+        # ExternalAuthID. The user is found by email and linked to the new issuer.
+        new_account_data_dict["iss"] = "https://other-issuer.example.com"
+        with (
+            self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=idps_config_dict),
+            self.assertLogs(self.logger_string, level="INFO"),
+        ):
+            result = self.social_auth_test(
+                new_account_data_dict,
+                subdomain="zulip",
+            )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], new_email)
+        self.assertEqual(
+            set(
+                ExternalAuthID.objects.filter(user=hamlet).values_list(
+                    "external_auth_method_name", "external_auth_id"
+                )
+            ),
+            {
+                (expected_method_name, sub_value),
+                ("oidc:<testoidc>:<https://other-issuer.example.com>", sub_value),
+            },
+        )
+
+    def test_external_auth_id_oidc_email_conflict(self) -> None:
+        """
+        Test that email is NOT synced when another user already has the target email.
+        """
+
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        idps_config_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
+        idps_config_dict["testoidc"]["enable_external_auth_id_auth"] = True
+        sub_value = "testsub"
+        expected_method_name = f"oidc:<testoidc>:<{self.BASE_OIDC_URL}>"
+
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        account_data_dict["sub"] = sub_value
+        with (
+            self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=idps_config_dict),
+            self.assertLogs(self.logger_string, level="INFO"),
+        ):
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+            )
+        self.assertEqual(result.status_code, 302)
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], hamlet.delivery_email)
+
+        external_auth_ids = list(ExternalAuthID.objects.filter(user=hamlet))
+        self.assert_length(external_auth_ids, 1)
+        self.assertEqual(external_auth_ids[0].external_auth_method_name, expected_method_name)
+        self.assertEqual(external_auth_ids[0].external_auth_id, sub_value)
+
+        # Try to login with othello's email but hamlet's sub - authentication should find hamlet
+        # by ExternalAuthID but NOT sync the email since othello already has it.
+        othello_email = othello.delivery_email
+        conflict_data = self.get_account_data_dict(email=othello_email, name=self.name)
+        conflict_data["sub"] = sub_value
+        with (
+            self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=idps_config_dict),
+            self.assertLogs(self.logger_string, level="INFO") as m,
+        ):
+            result = self.social_auth_test(
+                conflict_data,
+                subdomain="zulip",
+            )
+        self.assertEqual(result.status_code, 302)
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], hamlet.delivery_email)
+
+        hamlet.refresh_from_db()
+        # Email should NOT have changed.
+        self.assertEqual(hamlet.delivery_email, self.email)
+        self.assertIn(
+            f"Can't sync email for user {hamlet.id}: "
+            f"another user exists with target email {othello_email}",
+            m.output[1],
+        )
+
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
+    def test_external_auth_id_oidc_registration(self) -> None:
+        email = "newuser@zulip.com"
+        name = "New User"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        idps_config_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
+        idps_config_dict["testoidc"]["enable_external_auth_id_auth"] = True
+        sub_value = "newuser_sub"
+
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+        account_data_dict["sub"] = sub_value
+        with self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=idps_config_dict):
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain=subdomain,
+                is_signup=True,
+            )
+            self.stage_two_of_registration(
+                result,
+                realm,
+                subdomain,
+                email,
+                name,
+                name,
+                self.BACKEND_CLASS.full_name_validated,
+            )
+        user_profile = get_user_by_delivery_email(email, realm)
+        self.assertTrue(user_profile.is_active)
+        external_auth_ids = list(ExternalAuthID.objects.filter(user=user_profile))
+        self.assert_length(external_auth_ids, 1)
+        self.assertEqual(
+            external_auth_ids[0].external_auth_method_name,
+            f"oidc:<testoidc>:<{self.BASE_OIDC_URL}>",
+        )
+        self.assertEqual(external_auth_ids[0].external_auth_id, sub_value)
 
 
 class GitHubAuthBackendTest(SocialAuthBase):
