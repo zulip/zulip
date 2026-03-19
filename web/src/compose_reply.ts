@@ -318,10 +318,14 @@ function setup_compose_to_quote_single_message(message_id: number, opts: QuoteMe
     compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
 }
 
+function generate_sender_mention(sent_message: Message): string {
+    return `@_**${sent_message.sender_full_name}|${sent_message.sender_id}**`;
+}
+
 function generate_replace_content(info: ReplaceContentOpts): string {
     const {message, raw_content, forward_message} = info;
     let content;
-    const sender_mention = `@_**${message.sender_full_name}|${message.sender_id}**`;
+    const sender_mention = generate_sender_mention(message);
 
     if (!forward_message) {
         // Final message looks like:
