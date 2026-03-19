@@ -322,24 +322,29 @@ function generate_sender_mention(sent_message: Message): string {
     return `@_**${sent_message.sender_full_name}|${sent_message.sender_id}**`;
 }
 
+function generate_sender_only_quote_context(message: Message): string {
+    const sender_mention = generate_sender_mention(message);
+    // Final message looks like:
+    //     @_**Iago|5** [said](link to message):
+    //     ```quote
+    //     message content
+    //     ```
+    return $t(
+        {defaultMessage: "{username} [said]({link_to_message}):"},
+        {
+            username: sender_mention,
+            link_to_message: hash_util.by_conversation_and_time_url(message),
+        },
+    );
+}
+
 function generate_replace_content(info: ReplaceContentOpts): string {
     const {message, raw_content, forward_message} = info;
     let content;
     const sender_mention = generate_sender_mention(message);
 
     if (!forward_message) {
-        // Final message looks like:
-        //     @_**Iago|5** [said](link to message):
-        //     ```quote
-        //     message content
-        //     ```
-        content = $t(
-            {defaultMessage: "{username} [said]({link_to_message}):"},
-            {
-                username: sender_mention,
-                link_to_message: hash_util.by_conversation_and_time_url(message),
-            },
-        );
+        content = generate_sender_only_quote_context(message);
     } else if (message.type === "stream") {
         const link = internal_url.by_stream_topic_url(
             message.stream_id,
