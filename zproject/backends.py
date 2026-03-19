@@ -3801,6 +3801,44 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
         assert isinstance(secret, str)
         return client_id, secret
 
+    @override
+    def get_authenticated_user(
+        self,
+        email: str,
+        realm: Realm,
+        return_data: dict[str, Any],
+        **kwargs: Any,
+    ) -> UserProfile | None:
+        idp_name = self.get_idp_name()
+
+        if not self.settings_dict.get("enable_external_auth_id_auth", False):
+            return common_get_active_user(email, realm, return_data)
+
+        sub = self.get_user_id(kwargs["details"], kwargs["response"])
+        assert sub
+
+        id_token: dict[str, Any] = self.id_token  # type: ignore[assignment] # set by request_access_token
+        iss = id_token["iss"]
+        # The sub value is supposed to be unique, but only within the specific issuer. Theoretically,
+        # the same sub value can correspond to two different users for two different issuers. This could
+        # cause very bad bugs if a server administrators changes the underlying issuer in the OIDC config
+        # without changing the idp_name.
+        # We prevent this by including the iss value in the ExternalAuthID entries.
+        external_auth_method_name = f"oidc:<{idp_name}>:<{iss}>"
+        user_profile = get_and_sync_user_profile_by_external_auth_id(
+            external_auth_method_name=external_auth_method_name,
+            external_auth_id=sub,
+            email=email,
+            realm=realm,
+            return_data=return_data,
+            logger=self.logger,
+        )
+        return_data["external_auth_id_dict_for_registration"] = {
+            "external_auth_method_name": external_auth_method_name,
+            "external_auth_id": sub,
+        }
+        return user_profile
+
     # Discovery endpoint for the superclass to read all the appropriate
     # configuration from.
     @property

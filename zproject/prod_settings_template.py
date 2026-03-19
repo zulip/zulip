@@ -429,6 +429,13 @@ SOCIAL_AUTH_OIDC_ENABLED_IDPS: dict[str, Any] = {
         ## default, Zulip asks the user whether they want to create an
         ## account or try to log in again using another method.
         # "auto_signup": False,
+        ##
+        ## When enabled, users are identified by their permanent OIDC
+        ## "sub" claim rather than by email. This allows Zulip to
+        ## automatically update users' email addresses when they
+        ## change at the IdP. See:
+        ## https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#openid-connect
+        # "enable_external_auth_id_auth": True,
     }
 }
 
