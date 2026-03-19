@@ -419,7 +419,11 @@ function generate_replace_content(info: ReplaceContentOpts): string {
     return content;
 }
 
-function replace_quoting_placeholder_with(content: string, forward_message?: boolean): void {
+function replace_quoting_placeholder_with(info: {
+    content: string;
+    forward_message: boolean | undefined;
+}): void {
+    const {content, forward_message} = info;
     const $textarea = get_textarea_to_quote(forward_message);
     compose_ui.replace_syntax(quoting_placeholder, content, $textarea, forward_message);
     compose_ui.autosize_textarea($textarea);
@@ -464,7 +468,7 @@ function quote_single_message(opts: QuoteMessageOpts): void {
             raw_content: quote_content,
             forward_message: opts.forward_message,
         });
-        replace_quoting_placeholder_with(content, opts.forward_message);
+        replace_quoting_placeholder_with({content, forward_message: opts.forward_message});
         return;
     }
 
@@ -476,7 +480,7 @@ function quote_single_message(opts: QuoteMessageOpts): void {
                 raw_content,
                 forward_message: opts.forward_message,
             });
-            replace_quoting_placeholder_with(content, opts.forward_message);
+            replace_quoting_placeholder_with({content, forward_message: opts.forward_message});
         },
         // We set a timeout here to trigger usage of the fallback markdown via the
         // error callback below, which is much better UX than waiting for 10 seconds and
@@ -496,7 +500,7 @@ function quote_single_message(opts: QuoteMessageOpts): void {
                 raw_content: md,
                 forward_message: opts.forward_message,
             });
-            replace_quoting_placeholder_with(content, opts.forward_message);
+            replace_quoting_placeholder_with({content, forward_message: opts.forward_message});
         },
     });
 }
