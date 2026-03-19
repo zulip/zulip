@@ -344,6 +344,12 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
             // else fallthrough to default case
             break;
         }
+        case "channels": {
+            return {
+                title: $t({defaultMessage: "There are no messages here."}),
+                html: "",
+            };
+        }
         case "search": {
             // You are narrowed to empty search results.
             return empty_search_query_banner(current_filter);
