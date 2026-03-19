@@ -358,14 +358,14 @@ h3,
     padding: 0 25px 0 6px;
     color: var(--color-text-default);
     border-radius: 4px;
-    border: var(--input-border-width) solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid var(--color-border-legacy-input);
     cursor: pointer;
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--color-background-legacy-input);
     font-size: inherit;
 
     &:disabled {
         cursor: not-allowed;
-        background-color: hsl(0deg 0% 93%);
+        background-color: var(--color-background-disabled-settings-select);
 
         /* This is reset for other browsers to use Chrome's opacity. */
         opacity: 0.7;
