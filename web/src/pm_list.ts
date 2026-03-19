@@ -5,6 +5,7 @@ import * as z from "zod/mini";
 import type {Filter} from "./filter.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import {ListCursor} from "./list_cursor.ts";
 import {localstorage} from "./localstorage.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as pm_list_data from "./pm_list_data.ts";
@@ -42,6 +43,52 @@ let previous_search_term = "";
 
 export function is_zoomed_in(): boolean {
     return zoomed;
+}
+
+let dm_list_cursor: ListCursor<JQuery>;
+
+function get_dm_items(): JQuery {
+    return scroll_util
+        .get_content_element($("#modal-direct-messages-list"))
+        .find("li.dm-list-item");
+}
+
+function reset_dm_list_cursor({show_highlight}: {show_highlight: boolean}): void {
+    dm_list_cursor.set_is_highlight_visible(show_highlight);
+    dm_list_cursor.reset();
+}
+
+function initialize_dm_list_cursor(): void {
+    dm_list_cursor = new ListCursor({
+        highlight_class: "highlighted_row",
+        list: {
+            scroll_container_selector: "#modal-direct-messages-list",
+            find_li(opts) {
+                return opts.key;
+            },
+            first_key() {
+                const $items = get_dm_items();
+                if ($items.length === 0) {
+                    return undefined;
+                }
+                return $items.first();
+            },
+            prev_key($key) {
+                const $prev = $key.prev("li.dm-list-item");
+                if ($prev.length === 0) {
+                    return $key;
+                }
+                return $prev;
+            },
+            next_key($key) {
+                const $next = $key.next("li.dm-list-item");
+                if ($next.length === 0) {
+                    return $key;
+                }
+                return $next;
+            },
+        },
+    });
 }
 
 function get_private_messages_section_header(): JQuery {
@@ -354,6 +401,7 @@ function zoom_out(): void {
         return;
     }
     zoomed = false;
+    dm_list_cursor.clear();
     ui_util.enable_left_sidebar_search();
     clear_search();
     $("#left-sidebar").removeClass("zoom-in");
@@ -363,6 +411,7 @@ function zoom_out(): void {
 
 export function clear_search(): void {
     const $filter = $(".direct-messages-list-filter").expectOne();
+    dm_list_cursor.set_is_highlight_visible(false);
     $filter.val("");
     update_private_messages();
     $filter.trigger("blur");
@@ -376,6 +425,44 @@ export function initialize(): void {
     } else {
         expand();
     }
+
+    initialize_dm_list_cursor();
+
+    const $filter = $(".direct-messages-list-filter").expectOne();
+    $filter.on("focus", () => {
+        reset_dm_list_cursor({show_highlight: $filter.val() !== ""});
+    });
+    $filter.on("blur", () => {
+        dm_list_cursor.clear();
+    });
+    keydown_util.handle({
+        $elem: $filter,
+        handlers: {
+            ArrowUp() {
+                dm_list_cursor.prev();
+                return true;
+            },
+            ArrowDown() {
+                dm_list_cursor.next();
+                return true;
+            },
+            Enter() {
+                const $current_row = dm_list_cursor.get_key();
+                if ($current_row === undefined) {
+                    // This can happen for empty searches, no need to warn.
+                    return false;
+                }
+                // If the row has a link, we click it.
+                const $nearest_link = $current_row.find("a").first();
+                if ($nearest_link.length > 0) {
+                    $nearest_link[0]!.click();
+                    return true;
+                }
+                // If the row does not have a link, let the browser handle it.
+                return false;
+            },
+        },
+    });
 
     $(".direct-messages-container").on("click", "#show-more-direct-messages", (e) => {
         e.stopPropagation();
@@ -420,6 +507,7 @@ export function initialize(): void {
                 update_private_messages();
                 // Restore previous scroll position.
                 left_sidebar_scroll_container.scrollTop(pre_search_scroll_position);
+                reset_dm_list_cursor({show_highlight: false});
             });
         } else {
             if (is_previous_search_term_empty) {
@@ -430,6 +518,7 @@ export function initialize(): void {
                 update_private_messages();
                 // Always scroll to top when there is a search term present.
                 left_sidebar_scroll_container.scrollTop(0);
+                reset_dm_list_cursor({show_highlight: true});
             });
         }
     }, 50);
