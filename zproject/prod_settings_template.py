@@ -449,6 +449,13 @@ SOCIAL_AUTH_OIDC_ENABLED_IDPS: dict[str, Any] = {
         ## These attributes will be available for synchronizing user
         ## profile fields in SOCIAL_AUTH_SYNC_ATTRS_DICT.
         # "extra_attrs": ["title", "mobilePhone", "zulip_role"],
+        ##
+        ## When enabled, users are identified by their permanent OIDC
+        ## "sub" claim rather than by email. This allows Zulip to
+        ## automatically update users' email addresses when they
+        ## change at the IdP. See:
+        ## https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#openid-connect
+        # "enable_external_auth_id_auth": True,
     },
     ## Example: Microsoft Entra ID (AzureAD) OIDC configuration.
     ## This is the recommended approach for Entra ID SSO on self-hosted servers.
