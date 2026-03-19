@@ -435,7 +435,7 @@ function replace_quoting_placeholder_with(content: string, forward_message?: boo
     }
 }
 
-export function quote_message(opts: QuoteMessageOpts): void {
+export function quote_messages(opts: QuoteMessageOpts): void {
     if (opts.message_id) {
         quote_single_message(opts);
         return;
