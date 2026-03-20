@@ -255,6 +255,7 @@ class HomeTest(ZulipTestCase):
         "server_google_meet_app_internal",
         "server_inline_image_preview",
         "server_inline_url_embed_preview",
+        "server_jitsi_jwt_configured",
         "server_jitsi_server_url",
         "server_max_deactivated_realm_deletion_days",
         "server_min_deactivated_realm_deletion_days",

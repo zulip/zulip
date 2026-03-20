@@ -135,6 +135,7 @@ exports.make_realm = (opts = {}) => {
         server_inline_url_embed_preview: false,
         server_max_deactivated_realm_deletion_days: null,
         server_min_deactivated_realm_deletion_days: null,
+        server_jitsi_jwt_configured: false,
         server_jitsi_server_url: null,
         server_name_changes_disabled: false,
         server_needs_upgrade: false,
