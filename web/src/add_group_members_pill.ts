@@ -91,6 +91,7 @@ export function create({
     with_add_button,
     onPillCreateAction,
     onPillRemoveAction,
+    add_button_pill_update_callback,
 }: {
     $pill_container: JQuery;
     get_potential_members: () => User[];
@@ -98,6 +99,7 @@ export function create({
     with_add_button: boolean;
     onPillCreateAction?: (pill_user_ids: number[], pill_subgroup_ids: number[]) => void;
     onPillRemoveAction?: (pill_user_ids: number[], pill_subgroup_ids: number[]) => void;
+    add_button_pill_update_callback?: () => void;
 }): CombinedPillContainer {
     const pill_widget = input_pill.create<CombinedPill>({
         $container: $pill_container,
@@ -154,7 +156,11 @@ export function create({
     });
 
     if (with_add_button) {
-        add_subscribers_pill.set_up_handlers_for_add_button_state(pill_widget, $pill_container);
+        add_subscribers_pill.set_up_handlers_for_add_button_state(
+            pill_widget,
+            $pill_container,
+            add_button_pill_update_callback,
+        );
     }
 
     return pill_widget;

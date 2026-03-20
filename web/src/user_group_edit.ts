@@ -1220,6 +1220,11 @@ export function setup_group_settings(group: UserGroup): void {
             select_tab = key;
             const hash = hash_util.group_edit_url(group, select_tab);
             browser_history.update(hash);
+            if (key === "members") {
+                requestAnimationFrame(() => {
+                    resize.resize_group_members_list();
+                });
+            }
         },
     });
 

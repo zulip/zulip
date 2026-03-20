@@ -194,13 +194,20 @@ h4.user_group_setting_subsection_title {
     border-right: 1px solid var(--color-border-table-subscriber-list);
     border-radius: 4px;
 
+    .member_list_container {
+        max-height: var(--group-member-list-max-height);
+    }
+
+    .subscriber_list_container {
+        max-height: var(--stream-subscriber-list-max-height);
+    }
+
     .member_list_container,
     .subscriber_list_container {
         position: relative;
         border-bottom: 1px solid var(--color-border-table-subscriber-list);
         border-bottom-left-radius: 4px;
         border-bottom-right-radius: 4px;
-        max-height: var(--stream-subscriber-list-max-height);
         overflow: auto;
         text-align: left;
         -webkit-overflow-scrolling: touch;
