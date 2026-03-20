@@ -812,6 +812,10 @@ export function can_subscribe_others(sub: StreamSubscription): boolean {
 }
 
 export function can_resolve_topics(sub: StreamSubscription | undefined): boolean {
+    if (sub?.is_archived) {
+        return false;
+    }
+
     if (settings_data.user_can_resolve_topic()) {
         return true;
     }
