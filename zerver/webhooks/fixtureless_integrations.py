@@ -68,17 +68,6 @@ ASANA = ScreenshotContent(
     content=f"{BO_NAME} created a new task **[{TASK_TITLE}]()**.\n> {TASK_DESCRIPTION}",
 )
 
-BAREMETRICS = ScreenshotContent(
-    topic="Available commands",
-    content="""- help: Display bot info
-- list-commands: Display the list of available commands
-- account-info : Display the account info
-- list-sources : List the sources
-- list-plans <source_id> : List the plans for the source
-- list-customers <source_id> : List the customers in the source
-- list-subscriptions <source_id> : List the subscriptions in the source""",
-)
-
 CAPISTRANO = ScreenshotContent(
     topic=PROJECT_NAME,
     content=f"The [deployment]() to **{PROJECT_STAGE}** (version {VERSION_NUMBER}) has been completed successfully! :rocket:",
