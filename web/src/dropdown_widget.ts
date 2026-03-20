@@ -472,9 +472,9 @@ export class DropdownWidget {
                     };
 
                     const handle_arrow_down_on_sticky_bottom_option = (): void => {
-                        if (this.hide_search_box) {
+                        if (this.hide_search_box && list_items.length > 0) {
                             trigger_element_focus(first_item());
-                        } else {
+                        } else if (!this.hide_search_box) {
                             trigger_element_focus($search_input);
                         }
                     };
