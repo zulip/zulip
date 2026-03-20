@@ -275,7 +275,7 @@ export function get_topic_popover_content_context({
     const can_rename_topic =
         stream_data.user_can_move_messages_within_channel(sub) &&
         !stream_data.is_empty_topic_only_channel(sub.stream_id);
-    const can_resolve_topic = !sub.is_archived && stream_data.can_resolve_topics(sub);
+    const can_resolve_topic = stream_data.can_resolve_topics(sub);
 
     const visibility_policy = user_topics.get_topic_visibility_policy(sub.stream_id, topic_name);
     const all_visibility_policies = user_topics.all_visibility_policies;
