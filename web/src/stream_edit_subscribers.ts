@@ -435,6 +435,7 @@ function remove_subscriber({
         }
 
         const stream_name_with_privacy_symbol_html = render_decorated_channel_name({
+            inline_with_text: true,
             stream: sub,
         });
 

@@ -753,11 +753,39 @@ input.settings_text_input {
     }
 }
 
-.channel-privacy-type-icon {
+.decorated-channel-name-wrapper:not(.inline-decorated-channel-name) {
+    display: flex;
+    gap: var(--decorated-channel-name-privacy-icon-gap);
+    flex-wrap: nowrap;
+    align-items: baseline;
+
+    .channel-privacy-type-icon .zulip-icon {
+        /* Calculated from visual inspection
+           to look good for 12px-20px font sizes. */
+        top: 0.1467em; /* 2.2px at 15px/1em */
+        font-size: 0.9375em; /* 15px at 16px/1em */
+
+        &.zulip-icon-lock {
+            /* Calculated from visual inspection
+               to look good for 12px-20px font sizes. */
+            top: 0.08em; /* 1.2px at 15px/1em */
+        }
+    }
+}
+
+.inline-decorated-channel-name {
+    display: inline;
+
+    .decorated-channel-name {
+        margin-left: var(--inline-decorated-channel-name-privacy-icon-gap);
+    }
+}
+
+.channel-privacy-type-icon .zulip-icon {
     position: relative;
-    top: 0.06rem;
-    padding-right: 1px;
-    width: 12px;
+    /* Calculated from visual inspection
+        to look good for 12px-20px font sizes. */
+    top: 0.0688em; /* 1.1px at 16px/1em */
 
     &.zulip-icon-globe,
     &.zulip-icon-archive,
@@ -777,16 +805,6 @@ input.settings_text_input {
        uniform margin throughout the UI. */
     /* 3.5px at 16px/1em */
     margin-top: -0.2188em !important;
-}
-
-.dropdown-list-container
-    .dropdown-list
-    .dropdown-list-item-common-styles
-    .zulip-icon-lock {
-    /* We do not need to pull up lock icons in dropdowns
-       so we reset their margin-top to the original value
-       for a dropdown's .zulip-icon */
-    margin-top: 0 !important;
 }
 
 /* This includes css needed to display messages in an overlay. */

@@ -881,7 +881,10 @@ export async function build_move_topic_to_stream_popover(
             );
         } else {
             $("#move_topic_to_stream_widget .dropdown_widget_value").html(
-                render_decorated_channel_name({stream, show_colored_icon: true}),
+                render_decorated_channel_name({
+                    stream,
+                    show_colored_icon: true,
+                }),
             );
         }
     }

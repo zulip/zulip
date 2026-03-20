@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as compose_recipient from "./compose_recipient.ts";
 import * as inbox_util from "./inbox_util.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_view_header from "./message_view_header.ts";
@@ -76,4 +77,5 @@ export function update_stream_color(sub: StreamSubscription, color: string): voi
     update_message_recipient_color(sub.name, color);
     update_stream_privacy_color(stream_id, color);
     message_view_header.colorize_message_view_header();
+    compose_recipient.adjust_compose_channel_privacy_icon_color();
 }

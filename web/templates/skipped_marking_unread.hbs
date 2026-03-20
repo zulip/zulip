@@ -3,7 +3,7 @@
     {{#*inline "z-streams" ~}}
     <strong>
         {{~#list_each streams as |stream| ~}}
-        {{> decorated_channel_name stream=stream}}
+        {{> decorated_channel_name inline_with_text=true stream=stream}}
         {{~/list_each ~}}
     </strong>
     {{~/inline}}
