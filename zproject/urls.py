@@ -268,7 +268,9 @@ from zerver.views.video_calls import (
     create_nextcloud_talk_url,
     deauthorize_zoom_user,
     get_bigbluebutton_url,
+    get_jitsi_url,
     join_bigbluebutton,
+    join_jitsi,
     make_constructor_groups_video_call,
     make_webex_video_call,
     make_zoom_video_call,
@@ -599,6 +601,8 @@ v1_api_and_json_patterns = [
     rest_path("calls/webex/create", POST=make_webex_video_call),
     # Used to generate a BigBlueButton video call URL
     rest_path("calls/bigbluebutton/create", GET=get_bigbluebutton_url),
+    # Used to generate a Jitsi Meet video call URL (JWT auth only)
+    rest_path("calls/jitsi/create", GET=get_jitsi_url),
     # Used to generate a Constructor Groups video call URL
     rest_path("calls/constructorgroups/create", POST=make_constructor_groups_video_call),
     # Used to generate a Nextcloud Talk video call URL
@@ -739,6 +743,8 @@ i18n_urls = [
     path("calls/webex/complete", complete_webex_user),
     # Used to join a BigBlueButton video call
     path("calls/bigbluebutton/join", join_bigbluebutton),
+    # Used to join a Jitsi Meet video call (JWT auth only)
+    path("calls/jitsi/join", join_jitsi),
     # Integrations documentation
     path(
         "integrations/",

@@ -34,6 +34,7 @@ from zerver.lib.user_groups import (
     get_group_setting_value_for_audit_log_data,
 )
 from zerver.lib.utils import optional_bytes_to_mib
+from zerver.lib.video_calls import get_effective_jitsi_server_url, get_jitsi_jwt_config
 from zerver.models import (
     ArchivedAttachment,
     Attachment,
@@ -147,6 +148,21 @@ def do_set_realm_property(
             data={
                 "description": realm.description,
                 "rendered_description": realm.rendered_description,
+            },
+        )
+    if name == "jitsi_server_url":
+        # jitsi_jwt_enabled is a server-computed derived field that
+        # the client cannot recompute on its own (it depends on
+        # JITSI_SERVER_APP_ID/SECRET). Bundle it with the URL change
+        # so live clients pick the correct frontend code path.
+        effective_url = get_effective_jitsi_server_url(realm)
+        event = dict(
+            type="realm",
+            op="update_dict",
+            property="default",
+            data={
+                "jitsi_server_url": value,
+                "jitsi_jwt_enabled": get_jitsi_jwt_config(effective_url) is not None,
             },
         )
 

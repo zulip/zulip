@@ -82,6 +82,7 @@ from zerver.lib.event_types import (
     RealmEmojiUpdateOneEvent,
     RealmExportConsentEvent,
     RealmExportEvent,
+    RealmJitsiServerUrlData,
     RealmLinkifiersEvent,
     RealmPlaygroundsEvent,
     RealmTopicsPolicyData,
@@ -554,6 +555,8 @@ def check_realm_update_dict(
             sub_type = RealmTopicsPolicyData
         elif "description" in event["data"]:
             sub_type = RealmDescriptionData
+        elif "jitsi_server_url" in event["data"]:
+            sub_type = RealmJitsiServerUrlData
         else:
             raise AssertionError("unhandled fields in data")
 

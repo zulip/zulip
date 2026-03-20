@@ -4605,6 +4605,7 @@ class RealmPropertyActionTest(BaseAction):
                 "message_content_edit_limit_seconds",
                 "topics_policy",
                 "description",
+                "jitsi_server_url",
             ]:
                 check_realm_update_dict("events[0]", events[0])
             else:
