@@ -163,6 +163,7 @@ function item_button_click_callback(event: JQuery.ClickEvent): void {
                 submit_edit_saved_snippet_form(saved_snippet.id);
             },
             on_shown: () => $("#edit-saved-snippet-title").trigger("focus"),
+            on_hidden: () => get_dropdown_target_textarea()?.trigger("focus"),
             post_render() {
                 saved_snippet_edit_modal_post_render(saved_snippet);
             },
@@ -195,6 +196,7 @@ function item_click_callback(
             update_submit_disabled_state_on_change: true,
             on_click: submit_create_saved_snippet_form,
             on_shown: () => $("#new-saved-snippet-title").trigger("focus"),
+            on_hidden: () => $target_textarea.trigger("focus"),
             post_render: saved_snippet_modal_post_render,
         });
     } else {
