@@ -293,9 +293,6 @@ export class DropdownWidget {
     update_hover_state($popper: JQuery): void {
         assert(this.list_widget !== undefined);
         const list_items = this.list_widget.get_current_list();
-        if (list_items.length === 0) {
-            return;
-        }
         $popper.find(".list-item.current_selection").removeClass("current_selection");
         if (this.sticky_bottom_option) {
             $popper
@@ -304,19 +301,22 @@ export class DropdownWidget {
         }
         if (this.current_hover_index === list_items.length && this.sticky_bottom_option) {
             $popper.find(".sticky-bottom-option-button").addClass("current_selection");
-        } else {
-            const current_hover_item = list_items[this.current_hover_index];
-            assert(current_hover_item !== undefined);
-            const $item = $popper
-                .find(`.list-item[data-unique-id="${current_hover_item.unique_id}"]`)
-                .addClass("current_selection");
-            if ($item.length === 0) {
-                this.list_widget.render(this.current_hover_index + 1);
-            }
-            const element = $item[0];
-            if (element) {
-                element.scrollIntoView({block: "nearest"});
-            }
+            return;
+        }
+        if (list_items.length === 0) {
+            return;
+        }
+        const current_hover_item = list_items[this.current_hover_index];
+        assert(current_hover_item !== undefined);
+        const $item = $popper
+            .find(`.list-item[data-unique-id="${current_hover_item.unique_id}"]`)
+            .addClass("current_selection");
+        if ($item.length === 0) {
+            this.list_widget.render(this.current_hover_index + 1);
+        }
+        const element = $item[0];
+        if (element) {
+            element.scrollIntoView({block: "nearest"});
         }
     }
 
