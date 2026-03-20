@@ -207,6 +207,7 @@ export function setup_saved_snippets_dropdown_widget(widget_selector: string): v
         $events_container: $("body"),
         unique_id_type: "number",
         hide_search_box_focus_first_item_on_keyboard_open: true,
+        highlight_current_value: false,
         sticky_bottom_option: $t({
             defaultMessage: "Create a new saved snippet",
         }),

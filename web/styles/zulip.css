@@ -2374,7 +2374,7 @@ body:not(.spectator-view) {
                 --background-color-current-selection-dropdown-item
             );
 
-            &:not(.current_user_setting):hover {
+            &:not(.highlight_value):hover {
                 background-color: transparent;
             }
         }
@@ -2396,7 +2396,7 @@ body:not(.spectator-view) {
             border-radius: 4px;
         }
 
-        &.current_user_setting {
+        &.highlight_value {
             background-color: var(
                 --background-color-current-setting-dropdown-item
             );

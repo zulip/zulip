@@ -79,6 +79,7 @@ export type DropdownWidgetOptions = {
     // NOTE: Any value other than `undefined` will be rendered when class is initialized.
     default_id?: string | number | undefined;
     unique_id_type?: DataType;
+    highlight_current_value?: boolean;
     // Text to show if the current value is not in `get_options()`.
     text_if_current_value_not_in_options?: string;
     hide_search_box?: boolean;
@@ -123,6 +124,7 @@ export class DropdownWidget {
     default_id: string | number | undefined;
     current_value: string | number | undefined;
     unique_id_type: DataType | undefined;
+    highlight_current_value: boolean;
     $events_container: JQuery;
     text_if_current_value_not_in_options: string;
     // Effective value used while dropdown is open.
@@ -168,6 +170,7 @@ export class DropdownWidget {
         this.default_id = options.default_id;
         this.current_value = this.default_id;
         this.unique_id_type = options.unique_id_type;
+        this.highlight_current_value = options.highlight_current_value ?? true;
         this.$events_container = options.$events_container;
         this.text_if_current_value_not_in_options =
             options.text_if_current_value_not_in_options ?? "";
@@ -376,6 +379,7 @@ export class DropdownWidget {
                 }
 
                 const selected_item_unique_id = this.current_value;
+                const highlight_current_value = this.highlight_current_value;
 
                 this.list_widget = ListWidget.create(
                     $dropdown_list_body,
@@ -387,7 +391,9 @@ export class DropdownWidget {
                             return render_dropdown_list({
                                 item: {
                                     ...item,
-                                    is_current_user_setting:
+                                    highlight_value:
+                                        highlight_current_value &&
+                                        // Checks if the current item is current_value.
                                         item.unique_id === selected_item_unique_id,
                                 },
                             });
