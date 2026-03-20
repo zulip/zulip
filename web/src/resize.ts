@@ -163,8 +163,17 @@ export function resize_stream_subscribers_list(): void {
     // This avoids the stream settings from overflowing the container and
     // having a scroll bar.
 
-    if ($("#stream_settings").length === 0) {
-        // Don't run if stream settings (like $subscriptions_info below) is not open.
+    if ($("#channels_overlay_container").find(".two-pane-settings-overlay.show").length === 0) {
+        // Don't run if stream settings overlay is not open.
+        return;
+    }
+
+    if (
+        $("#stream_settings .stream_section[data-stream-section='subscribers']").length === 0 ||
+        $("#stream_settings .stream_section[data-stream-section='subscribers']").css("display") ===
+            "none"
+    ) {
+        // Don't run if subscribers section is not opened.
         return;
     }
 
