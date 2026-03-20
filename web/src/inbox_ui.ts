@@ -1538,6 +1538,7 @@ function focus_current_id(): void {
 export function focus_inbox_search(): void {
     current_navigated_id = INBOX_SEARCH_ID;
     focus_current_id();
+    compose_closed_ui.set_standard_text_for_reply_button();
 }
 
 function is_navigated_to_list(): boolean {
@@ -1621,9 +1622,15 @@ function update_closed_compose_text($row: JQuery, is_header_row: boolean): void 
             };
         }
     } else {
-        const $stream = $row.parent(".inbox-topic-container").prev(".inbox-header");
+        let stream_id: number;
+        if (inbox_util.is_channel_view()) {
+            stream_id = inbox_util.get_channel_id();
+        } else {
+            const $stream = $row.parent(".inbox-topic-container").prev(".inbox-header");
+            stream_id = Number($stream.attr("data-stream-id"));
+        }
         reply_recipient_information = {
-            stream_id: Number($stream.attr("data-stream-id")),
+            stream_id,
             topic: $row.find(".inbox-topic-name a").text(),
         };
     }
@@ -1786,6 +1793,7 @@ function set_list_focus(input_key?: string): void {
 function focus_filters_dropdown(): void {
     current_navigated_id = INBOX_FILTERS_DROPDOWN_ID;
     $(`#${CSS.escape(INBOX_FILTERS_DROPDOWN_ID)}`).trigger("focus");
+    compose_closed_ui.set_standard_text_for_reply_button();
 }
 
 export function is_search_focused(): boolean {
