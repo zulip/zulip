@@ -1223,6 +1223,10 @@
         hsl(0deg 0% 15% / 75%),
         hsl(0deg 0% 100% / 50%)
     );
+    --color-text-recent-view-last-msg-time-unread: light-dark(
+        hsl(0deg 0% 0% / 75%),
+        hsl(0deg 0% 100% / 58%)
+    );
 
     /* Compose box colors */
     --color-compose-box-background: light-dark(
