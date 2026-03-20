@@ -1547,6 +1547,7 @@ function focus_current_id(): void {
 export function focus_inbox_search(): void {
     current_navigated_id = INBOX_SEARCH_ID;
     focus_current_id();
+    compose_closed_ui.set_standard_text_for_reply_button();
 }
 
 function is_navigated_to_list(): boolean {
@@ -1630,9 +1631,19 @@ function update_closed_compose_text($row: JQuery, is_header_row: boolean): void 
             };
         }
     } else {
-        const $topic_menu_elt = $row.find(".inbox-topic-menu");
+        let stream_id: number;
+        // In the "list of topics" channel view, we get the stream_id
+        // from the current filter via get_channel_id(). For the general inbox
+        // view (#inbox), we get the stream_id from the inbox header's
+        // data-stream-id attribute.
+        if (inbox_util.is_channel_view()) {
+            stream_id = inbox_util.get_channel_id();
+        } else {
+            const $topic_menu_elt = $row.find(".inbox-topic-menu");
+            stream_id = Number($topic_menu_elt.attr("data-stream-id"));
+        }
         reply_recipient_information = {
-            stream_id: Number($topic_menu_elt.attr("data-stream-id")),
+            stream_id,
             topic: $row.find(".inbox-topic-name a").text(),
         };
     }
@@ -1795,6 +1806,7 @@ function set_list_focus(input_key?: string): void {
 function focus_filters_dropdown(): void {
     current_navigated_id = INBOX_FILTERS_DROPDOWN_ID;
     $(`#${CSS.escape(INBOX_FILTERS_DROPDOWN_ID)}`).trigger("focus");
+    compose_closed_ui.set_standard_text_for_reply_button();
 }
 
 export function is_search_focused(): boolean {
