@@ -523,8 +523,12 @@ export class DropdownWidget {
 
                     const handle_arrow_up_on_first_item = (): void => {
                         if (this.hide_search_box) {
-                            render_all_items();
-                            trigger_element_focus(last_item());
+                            if (this.sticky_bottom_option) {
+                                trigger_element_focus($sticky_bottom_option);
+                            } else {
+                                render_all_items();
+                                trigger_element_focus(last_item());
+                            }
                         } else {
                             trigger_element_focus($search_input);
                         }
