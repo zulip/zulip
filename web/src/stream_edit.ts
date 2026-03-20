@@ -876,7 +876,10 @@ export function initialize(): void {
         const stream_id = get_stream_id(this);
         const stream = sub_store.get(stream_id);
 
-        const stream_name_with_privacy_symbol_html = render_decorated_channel_name({stream});
+        const stream_name_with_privacy_symbol_html = render_decorated_channel_name({
+            inline_with_text: true,
+            stream,
+        });
 
         const is_moderation_request_channel =
             stream_id === realm.realm_moderation_request_channel_id;
@@ -938,7 +941,10 @@ export function initialize(): void {
         }
 
         const stream = sub_store.get(stream_id);
-        const stream_name_with_privacy_symbol_html = render_decorated_channel_name({stream});
+        const stream_name_with_privacy_symbol_html = render_decorated_channel_name({
+            inline_with_text: true,
+            stream,
+        });
         const modal_content_html = render_settings_reactivation_stream_modal();
 
         confirm_dialog.launch({

@@ -533,11 +533,6 @@ input[type="checkbox"] {
            16px-square box (at 16px/1em) for the
            chevron icon. */
         max-width: calc(100% - 1em);
-        display: flex;
-        align-items: baseline;
-        /* Mimic the space from the previous inline
-           layout. */
-        gap: 0.4ch;
     }
 
     .decorated-channel-name {
@@ -656,14 +651,6 @@ input[type="checkbox"] {
                 visibility: visible;
             }
         }
-    }
-}
-
-#confirm_reset_stream_notifications_modal {
-    .channel-privacy-type-icon {
-        padding-left: 3px;
-        padding-right: 0;
-        width: auto;
     }
 }
 

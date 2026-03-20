@@ -1763,29 +1763,24 @@ textarea.new_message_textarea {
            surrounding negative space. */
         /* 7px at 20px/1em; 4px at 20px/1em. */
         grid-template:
-            "lefthand-offset privacy-icon privacy-icon-gap channel-name righthand-offset" auto / 0.35em [select-label-start] auto 0.2em minmax(
-                0,
-                1fr
+            "lefthand-offset privacy-icon privacy-icon-gap channel-name righthand-offset" auto
+            / 0.35em [select-label-start] auto var(
+                --dropdown-list-item-label-icon-gap
             )
-            [select-label-end]
-            0.35em;
+            minmax(0, 1fr) [select-label-end] 0.35em;
+
+        .decorated-channel-name-wrapper {
+            display: grid;
+            grid-area: select-label;
+            grid-template-columns: subgrid;
+            gap: 0;
+        }
 
         .channel-privacy-type-icon {
             grid-area: privacy-icon;
-            place-self: center;
-            font-size: 0.95em; /* 19px at 20px/1em */
-            margin-top: -0.0579em; /* Eyeball work; 1.1px at 19px/1em */
-            color: var(--privacy-icon-color-original);
-            /* Eliminate inherited component styles. */
-            position: static;
-            padding: 0;
-            width: 1em;
-            height: 1em;
 
-            &.zulip-icon-lock {
-                /* The lock looks better centered without
-                   a negative margin-top adjustment. */
-                margin-top: 0;
+            .zulip-icon {
+                color: var(--privacy-icon-color-original);
             }
         }
 

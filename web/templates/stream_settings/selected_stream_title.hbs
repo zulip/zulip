@@ -11,7 +11,7 @@
             <span class="view-channel-text">
                 {{#tr}}
                     View <z-channel-name></z-channel-name>
-                    {{#*inline "z-channel-name"}}{{> ../decorated_channel_name stream=sub}}{{/inline}}
+                    {{#*inline "z-channel-name"}}{{> ../decorated_channel_name inline_with_text=true stream=sub}}{{/inline}}
                 {{/tr}}
             </span>
             {{tooltip_hotkey_hints "Shift" "V"}}
@@ -24,7 +24,7 @@
                 <span>
                     {{#tr}}
                         Cannot subscribe to private channel <z-stream></z-stream>
-                        {{#*inline "z-stream"}}{{> ../decorated_channel_name stream=../sub}}{{/inline}}
+                        {{#*inline "z-stream"}}{{> ../decorated_channel_name inline_with_text=true stream=../sub}}{{/inline}}
                     {{/tr}}
                 </span>
             </template>
