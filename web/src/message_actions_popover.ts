@@ -4,7 +4,10 @@ import type * as tippy from "tippy.js";
 
 import render_message_actions_popover from "../templates/popovers/message_actions_popover.hbs";
 
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
 import * as clipboard_handler from "./clipboard_handler.ts";
+import * as feedback_widget from "./feedback_widget.ts";
 import * as compose_reply from "./compose_reply.ts";
 import * as condense from "./condense.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
@@ -26,6 +29,33 @@ import * as unread_ops from "./unread_ops.ts";
 import {the} from "./util.ts";
 
 let message_actions_popover_keyboard_toggle = false;
+
+function create_task_from_message(message_id: number, title: string, description: string): void {
+    const url = `/json/messages/${message_id}/tasks`;
+    
+    channel.post({
+        url,
+        data: {
+            title,
+            description,
+        },
+        success: (response: any) => {
+            blueslip.info("Task created successfully from message", response);
+            
+            // Show success feedback to user
+            feedback_widget.show({
+                title_text: "Task added successfully!",
+                populate: ($content: JQuery) => {
+                    $content.text("The message has been added to your task list.");
+                },
+                hide_delay: 3000,
+            });
+        },
+        error: (xhr: JQuery.jqXHR) => {
+            blueslip.error("Failed to create task from message", {status: xhr.status, responseText: xhr.responseText});
+        },
+    });
+}
 
 function get_action_menu_menu_items(): JQuery {
     return $("[data-tippy-root] #message-actions-menu-dropdown li:not(.divider) a");
@@ -237,6 +267,34 @@ export function initialize({
                     instance.reference.parentElement,
                     message_id,
                 );
+                popover_menus.hide_current_popover_if_visible(instance);
+            });
+
+            $popper.one("click", ".add-message-to-tasks", (e) => {
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
+                assert(message_lists.current !== undefined);
+                const message = message_lists.current.get(message_id);
+                assert(message !== undefined);
+                
+                // Extract message content for task creation
+                // Strip HTML tags and get clean text
+                const tempDiv = document.createElement("div");
+                tempDiv.innerHTML = message.content || "";
+                const plainText = tempDiv.textContent || tempDiv.innerText || "";
+                
+                // Create title (first 100 characters of plain text)
+                const title = plainText.length > 100 
+                    ? plainText.substring(0, 97) + "..." 
+                    : plainText;
+                
+                // Use full plain text as description
+                const description = plainText;
+                
+                // Create task from message
+                create_task_from_message(message_id, title, description);
+                
+                e.preventDefault();
+                e.stopPropagation();
                 popover_menus.hide_current_popover_if_visible(instance);
             });
 

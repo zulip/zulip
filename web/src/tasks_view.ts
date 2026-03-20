@@ -2,7 +2,6 @@ import $ from "jquery";
 import * as channel from "./channel.ts";
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
-import {page_params} from "./page_params.ts";
 
 type Task = {
     task_id: number;
@@ -15,6 +14,8 @@ type Task = {
     creator_email: string;
     creator_full_name: string;
     message_id: number;
+    stream_id: number | null;
+    topic: string | null;
 };
 
 export class TasksView {
@@ -39,7 +40,7 @@ export class TasksView {
                 this.render();
             },
             error: (xhr: JQuery.jqXHR) => {
-                blueslip.error("Failed to load tasks", xhr);
+                blueslip.error("Failed to load tasks", {status: xhr.status, responseText: xhr.responseText});
                 this.loading = false;
                 this.render();
             },
@@ -104,7 +105,7 @@ export class TasksView {
                 this.render();
             },
             error: (xhr: JQuery.jqXHR) => {
-                blueslip.error("Failed to update task", xhr);
+                blueslip.error("Failed to update task", {status: xhr.status, responseText: xhr.responseText});
             },
         });
     }
@@ -121,7 +122,7 @@ export class TasksView {
                 this.render();
             },
             error: (xhr: JQuery.jqXHR) => {
-                blueslip.error("Failed to delete task", xhr);
+                blueslip.error("Failed to delete task", {status: xhr.status, responseText: xhr.responseText});
             },
         });
     }
@@ -169,6 +170,15 @@ export class TasksView {
         const checked_attr = task.completed ? "checked" : "";
         const due_date_str = task.due_date ? new Date(task.due_date).toLocaleDateString() : "";
 
+        // Generate proper message link
+        let message_link = "#";
+        if (task.stream_id && task.topic) {
+            message_link = `#narrow/channel/${task.stream_id}/${encodeURIComponent(task.topic)}/near/${task.message_id}`;
+        } else if (task.message_id) {
+            // Fallback for DM messages or if stream info is missing
+            message_link = `#narrow/dm/near/${task.message_id}`;
+        }
+
         return `
             <div class="task-item ${completed_class}" data-task-id="${task.task_id}">
                 <div class="task-checkbox">
@@ -180,7 +190,7 @@ export class TasksView {
                     <div class="task-meta">
                         <span class="task-creator">${task.creator_full_name}</span>
                         ${due_date_str ? `<span class="task-due-date">Due: ${due_date_str}</span>` : ""}
-                        <a href="#narrow/stream/${task.message_id}" class="task-message-link">View Message</a>
+                        <a href="${message_link}" class="task-message-link">View Message</a>
                     </div>
                     ${task.description ? `<div class="task-description">${task.description}</div>` : ""}
                 </div>
