@@ -59,6 +59,7 @@ from zerver.views.digest import digest_page
 from zerver.views.documentation import MarkdownDirectoryView, integrations_catalog, integrations_doc
 from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_drafts
 from zerver.views.events_register import events_register_backend
+from zerver.views.followed_users import follow_user, unfollow_user
 from zerver.views.health import health
 from zerver.views.home import accounts_accept_terms, desktop_home, doc_permalinks_view, home
 from zerver.views.invite import (
@@ -87,7 +88,6 @@ from zerver.views.message_report import report_message_backend
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
 from zerver.views.message_summary import get_messages_summary
 from zerver.views.muted_users import mute_user, unmute_user
-from zerver.views.followed_users import follow_user, unfollow_user
 from zerver.views.navigation_views import (
     add_navigation_view,
     get_navigation_views,
@@ -590,7 +590,9 @@ v1_api_and_json_patterns = [
     # user-muting -> zerver.views.user_mutes
     rest_path("users/me/muted_users/<int:muted_user_id>", POST=mute_user, DELETE=unmute_user),
     # user-following -> zerver.views.followed_users
-    rest_path("users/me/followed_users/<int:followed_user_id>", POST=follow_user, DELETE=unfollow_user),
+    rest_path(
+        "users/me/followed_users/<int:followed_user_id>", POST=follow_user, DELETE=unfollow_user
+    ),
     # used to register for an event queue in tornado
     rest_path("register", POST=(events_register_backend, {"allow_anonymous_user_web"})),
     # Used to generate a Zoom video call URL

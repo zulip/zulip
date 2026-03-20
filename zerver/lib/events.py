@@ -33,6 +33,7 @@ from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.devices import get_devices
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import get_default_external_accounts
+from zerver.lib.followed_users import get_user_follows
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.integrations import (
     EMBEDDED_BOTS,
@@ -51,7 +52,6 @@ from zerver.lib.message import (
     remove_message_id_from_unread_mgs,
 )
 from zerver.lib.muted_users import get_user_mutes
-from zerver.lib.followed_users import get_user_follows
 from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm, read_stop_words
 from zerver.lib.narrow_predicate import check_narrow_for_events
 from zerver.lib.navigation_views import get_navigation_views_for_user

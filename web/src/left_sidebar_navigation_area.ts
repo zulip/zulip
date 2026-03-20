@@ -123,12 +123,22 @@ export function handle_narrow_activated(filter: Filter): void {
     terms = filter.terms_with_operator("is");
     if (terms[0] !== undefined) {
         filter_name = terms[0].operand;
-        if (filter_name === "starred") {
-            select_top_left_corner_item(".top_left_starred_messages");
-            return;
-        } else if (filter_name === "mentioned") {
-            select_top_left_corner_item(".top_left_mentions");
-            return;
+        switch (filter_name) {
+            case "starred": {
+                select_top_left_corner_item(".top_left_starred_messages");
+                return;
+            }
+            case "mentioned": {
+                select_top_left_corner_item(".top_left_mentions");
+                return;
+            }
+            case "followed-user": {
+                // Highlight the "Following Feed" sidebar entry when the user
+                // navigates to is:followed-user.
+                select_top_left_corner_item(".top_left_following_feed");
+                return;
+            }
+            // No default
         }
     }
     const term_types = filter.sorted_term_types();

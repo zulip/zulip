@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 import render_search_description from "../templates/search_description.hbs";
 
 import * as filter_util from "./filter_util.ts";
+import * as followed_users_data from "./followed_users_data.ts";
 import * as hash_parser from "./hash_parser.ts";
 import {$t} from "./i18n.ts";
 import * as internal_url from "./internal_url.ts";
@@ -135,6 +136,10 @@ function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) =>
                     return (message) =>
                         message.type === "stream" &&
                         user_topics.is_topic_followed(message.stream_id, message.topic);
+                case "followed-user":
+                    // Show only messages whose sender is in the current user's follow list.
+                    // Distinct from "followed" above, which filters by followed topics.
+                    return (message) => followed_users_data.is_user_followed(message.sender_id);
                 case "muted":
                     return (message) => !message_in_home(message);
                 default:
@@ -572,6 +577,9 @@ export class Filter {
                     "unread",
                     "resolved",
                     "followed",
+                    // "followed-user" filters by sender membership in the follow list;
+                    // distinct from "followed" which filters by followed topics.
+                    "followed-user",
                     "muted",
                 ].includes(term.operand);
             case "in":
@@ -673,6 +681,9 @@ export class Filter {
             "is-unread",
             "is-resolved",
             "is-followed",
+            // "is-followed-user": messages from users the current user follows.
+            "is-followed-user",
+            "not-is-followed-user",
             "is-muted",
             "has-link",
             "has-image",
@@ -1267,6 +1278,11 @@ export class Filter {
         if (_.isEqual(term_types, ["is-followed"])) {
             return true;
         }
+        // The followed-user list is stored client-side, so this narrow can be
+        // applied locally without a server round-trip.
+        if (_.isEqual(term_types, ["is-followed-user"])) {
+            return true;
+        }
         if (
             _.isEqual(term_types, ["sender", "has-reaction"]) &&
             this.terms_with_operator("sender")[0]!.operand === people.my_current_user_id()
@@ -1434,6 +1450,11 @@ export class Filter {
             case "is-followed":
                 zulip_icon = "follow";
                 break;
+            case "is-followed-user":
+                // Reuse the follow icon to visually associate this view with
+                // the follow-user feature (distinct from is-followed for topics).
+                zulip_icon = "follow";
+                break;
             default:
                 icon = undefined;
                 break;
@@ -1543,6 +1564,9 @@ export class Filter {
                     return $t({defaultMessage: "Resolved topics"});
                 case "is-followed":
                     return $t({defaultMessage: "Followed topics"});
+                case "is-followed-user":
+                    // Title shown in the message view header for the Following Feed narrow.
+                    return $t({defaultMessage: "Following feed"});
                 // These cases return false for is_common_narrow, and therefore are not
                 // formatted in the message view header. They are used in narrow.js to
                 // update the browser title.
@@ -1583,6 +1607,14 @@ export class Filter {
                         defaultMessage: "Messages in topics you follow.",
                     }),
                     link: "/help/follow-a-topic",
+                };
+            case "is-followed-user":
+                // Description shown beneath the narrow header for is:followed-user.
+                return {
+                    description: $t({
+                        defaultMessage: "Messages from users you follow.",
+                    }),
+                    link: "/help/follow-a-user",
                 };
         }
         if (
@@ -1931,6 +1963,10 @@ export class Filter {
             "not-topic",
             "is-followed",
             "not-is-followed",
+            // A message moved between channels/topics is still from the same sender,
+            // so is-followed-user narrows remain accurate after a move.
+            "is-followed-user",
+            "not-is-followed-user",
             "is-resolved",
             "not-is-resolved",
             "channels-public",

@@ -50,6 +50,7 @@ import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as emojisets from "./emojisets.ts";
 import * as fenced_code from "./fenced_code.ts";
+import * as followed_users_data from "./followed_users_data.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as gif_picker_ui from "./gif_picker_ui.ts";
 import * as gif_state from "./gif_state.ts";
@@ -595,6 +596,9 @@ export async function initialize_everything(state_data) {
     pm_conversations.recent.initialize(state_data.pm_conversations);
     user_topics.initialize(state_data.user_topics);
     muted_users.initialize(state_data.muted_users);
+    // Initialize the set of followed users so that the is:followed-user narrow
+    // can apply client-side filtering without additional server requests.
+    followed_users_data.initialize(state_data.followed_users);
     stream_settings_ui.initialize();
     left_sidebar_navigation_area.initialize();
     stream_list_sort.initialize();
