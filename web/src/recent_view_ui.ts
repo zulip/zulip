@@ -1210,6 +1210,10 @@ function show_selected_filters(): void {
             .addClass("button-recent-selected")
             .attr("aria-checked", "true");
     }
+
+    // Toggle class so CSS can hide the unread marker bar when
+    // every visible row is already unread.
+    $("#recent_view").toggleClass("recent-view-filtered-by-unread", filters.has("unread"));
 }
 
 function get_recent_view_filters_params(): {
