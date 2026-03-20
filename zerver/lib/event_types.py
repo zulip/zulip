@@ -605,6 +605,11 @@ class RealmDescriptionData(BaseModel):
     rendered_description: str
 
 
+class RealmJitsiServerUrlData(BaseModel):
+    jitsi_server_url: str | None
+    jitsi_jwt_enabled: bool
+
+
 class NightLogoData(BaseModel):
     night_logo_url: str
     night_logo_source: str

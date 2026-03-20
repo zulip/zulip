@@ -372,6 +372,12 @@ export function dispatch_normal_event(event) {
                             for (const [key, value] of Object.entries(event.data)) {
                                 if (key === "max_file_upload_size_mib") {
                                     realm[key] = value;
+                                } else if (key === "jitsi_jwt_enabled") {
+                                    // Stored unprefixed alongside
+                                    // server_jitsi_server_url — it's a
+                                    // server-computed flag, not a realm
+                                    // property.
+                                    realm.jitsi_jwt_enabled = value;
                                 } else {
                                     realm["realm_" + key] = value;
                                 }

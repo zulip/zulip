@@ -482,6 +482,8 @@ exports.fixtures = {
             upload_quota_mib: 50000,
             max_file_upload_size_mib: 1024,
             topics_policy: "disable_empty_topic",
+            jitsi_server_url: "https://jitsi.example.com",
+            jitsi_jwt_enabled: true,
         },
     },
 

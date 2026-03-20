@@ -792,7 +792,9 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## Controls the Jitsi Meet video call integration.  By default, the
 ## integration uses the SaaS https://meet.jit.si server.  You can specify
 ## your own Jitsi Meet server, or if you'd like to disable the
-## integration, set JITSI_SERVER_URL = None.
+## integration, set JITSI_SERVER_URL = None. To enable JWT authentication
+## for a self-hosted Jitsi Meet server, set jitsi_server_app_id and
+## jitsi_server_app_secret in zulip-secrets.conf.
 # JITSI_SERVER_URL = "https://jitsi.example.com"
 
 ## Controls the BigBlueButton video call integration.  You must also
