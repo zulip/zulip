@@ -986,8 +986,11 @@ integration](../production/scim.md).
    should be
    `https://authentik.company/application/saml/<application slug>/sso/binding/redirect/` where `<application slug>`
    is the application slug you've assigned to this application in Authentik settings (e.g `zulip`).
+   
 1. Update the attribute mapping in your new entry in `SOCIAL_AUTH_SAML_ENABLED_IDPS` to match how
    Authentik specifies attributes in its `SAMLResponse`:
+
+
 
    ```
    "attr_user_permanent_id": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
@@ -997,15 +1000,23 @@ integration](../production/scim.md).
    "attr_email": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
    ```
 
+
+
+!!! warning "Avoid duplicate name attributes"
+
+   Do not map both `attr_first_name` and `attr_last_name` to the same SAML attribute (such as `name`), as this can result in duplicated display names (e.g., "Jane Hacker Jane Hacker").
+
+   Instead, configure separate attributes like `given_name` and `family_name`, or use an appropriate display name field.
+
 1. Your Authentik public certificate must be saved on the Zulip server
-   as `/etc/zulip/saml/idps/{idp_name}.crt`. You can obtain the
-   certificate from the Authentik UI in the `Certificates` section or directly
-   from the provider's page.
+as `/etc/zulip/saml/idps/{idp_name}.crt`. You can obtain the
+certificate from the Authentik UI in the `Certificates` section or directly
+from the provider's page.
 
-   (Alternatively, open the settings page of the provider you created and copy the certificate embedded in the
-   SAML Metadata's `<ds:X509Certificate>` field.).
+(Alternatively, open the settings page of the provider you created and copy the certificate embedded in the
+SAML Metadata's `<ds:X509Certificate>` field.).
 
-   Save the certificate in a new `{idp_name}.crt` file constructed as follows:
+Save the certificate in a new `{idp_name}.crt` file constructed as follows:
 
    ```
    -----BEGIN CERTIFICATE-----
