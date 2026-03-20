@@ -69,6 +69,7 @@ CATEGORIES: dict[str, StrPromise] = {
 # avoid circular dependency
 FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "asana",
+    "baremetrics",
     "capistrano",
     "codebase",
     "discourse",
@@ -1083,7 +1084,12 @@ PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
 ]
 
 BOT_INTEGRATIONS: list[BotIntegration] = [
-    BotIntegration("baremetrics", ["financial", "bots"], display_name="Baremetrics"),
+    BotIntegration(
+        "baremetrics",
+        ["financial", "bots"],
+        [FixturelessScreenshotConfigOptions(image_name="001.png")],
+        display_name="Baremetrics",
+    ),
     BotIntegration("github_detail", ["version-control", "bots"], display_name="GitHub Detail"),
     BotIntegration("xkcd", ["bots", "entertainment"], display_name="xkcd"),
 ]
