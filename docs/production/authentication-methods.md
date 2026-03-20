@@ -1001,9 +1001,7 @@ integration](../production/scim.md).
    ```
 
 
-
 !!! warning "Avoid duplicate name attributes"
-
    Do not map both `attr_first_name` and `attr_last_name` to the same SAML attribute (such as `name`), as this can result in duplicated display names (e.g., "Jane Hacker Jane Hacker").
 
    Instead, configure separate attributes like `given_name` and `family_name`, or use an appropriate display name field.
