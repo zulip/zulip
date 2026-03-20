@@ -161,9 +161,7 @@ export function rewire_update_reply_button_state(value: typeof update_reply_butt
     update_reply_button_state = value;
 }
 
-function update_new_conversation_button(
-    data_attribute_string: "direct" | "stream" | "non-specific",
-): void {
+function update_new_conversation_button(data_attribute_string: "stream" | "non-specific"): void {
     $("#new_conversation_button").attr("data-conversation-type", data_attribute_string);
 }
 
@@ -206,22 +204,20 @@ export function update_buttons(update_type?: string): void {
         // Based on whether there's a direct message recipient for
         // the current narrow_state.
         disable_reply_button = should_disable_compose_reply_button_for_direct_message();
-    } else {
+        update_new_conversation_button("non-specific");
+        update_reply_button_state(disable_reply_button);
+    } else if (update_type === "stream") {
         // Based on whether there's a selected channel message in
         // the current message list.
         disable_reply_button = should_disable_compose_reply_button_for_stream();
-    }
-
-    if (update_type === "direct" || update_type === "stream") {
-        update_new_conversation_button(update_type);
+        update_new_conversation_button("stream");
         update_reply_button_state(disable_reply_button);
-        return;
+    } else {
+        // Default case for most views.
+        update_new_conversation_button("non-specific");
+        update_reply_button_state(false);
+        set_standard_text_for_reply_button();
     }
-
-    // Default case for most views.
-    update_new_conversation_button("non-specific");
-    update_reply_button_state(disable_reply_button);
-    set_standard_text_for_reply_button();
 }
 
 export function maybe_update_buttons_for_dm_recipient(): void {
