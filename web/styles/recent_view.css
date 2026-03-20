@@ -483,6 +483,12 @@
         border-bottom-left-radius: 0;
     }
 
+    /* Hide the unread marker bar when the "Unread" filter is active,
+       since every visible row is already unread. */
+    &.recent-view-filtered-by-unread .unread_topic .recent_topic_name::before {
+        display: none;
+    }
+
     .last_msg_time {
         float: left;
         margin-right: 5px;
