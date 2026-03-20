@@ -1238,6 +1238,7 @@ div.overlay .flex.overlay-content > .overlay-container,
 .sticky-bottom-option-button {
     width: 100%;
     display: flex;
+    position: relative;
     padding: 7px 14px;
     background-color: var(--color-background-zulip-button);
     justify-content: flex-start;
@@ -1257,8 +1258,22 @@ div.overlay .flex.overlay-content > .overlay-container,
 
     &:focus,
     &.current_selection {
-        background-color: var(--background-color-active-dropdown-item);
+        background-color: var(
+            --background-color-current-selection-dropdown-item
+        );
         outline: none;
+    }
+
+    &:focus::before,
+    &.current_selection::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 1px;
+        bottom: 2px;
+        width: 3px;
+        background-color: var(--color-outline-focus);
+        border-radius: 4px;
     }
 }
 
