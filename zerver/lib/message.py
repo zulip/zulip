@@ -143,6 +143,12 @@ class SendMessageRequest:
     # IDs of users who have followed the topic the message is being sent to,
     # and have the followed topic email notifications setting ON.
     followed_topic_email_user_ids: set[int]
+    # IDs of users who are following the sender of this message,
+    # and have the followed user push notifications setting ON.
+    followed_user_push_user_ids: set[int]
+    # IDs of users who are following the sender of this message,
+    # and have the followed user email notifications setting ON.
+    followed_user_email_user_ids: set[int]
     muted_sender_user_ids: set[int]
     um_eligible_user_ids: set[int]
     long_term_idle_user_ids: set[int]

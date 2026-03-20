@@ -205,6 +205,10 @@ class UserBaseSettings(models.Model):
     notification_sound = models.CharField(max_length=20, default="zulip")
     wildcard_mentions_notify = models.BooleanField(default=True)
 
+    #adding followed_users notifications
+    enable_followed_user_push_notifications = models.BooleanField(default=False)
+    enable_followed_user_email_notifications = models.BooleanField(default=False)
+
     # Followed Topics notifications.
     enable_followed_topic_desktop_notifications = models.BooleanField(default=True)
     enable_followed_topic_email_notifications = models.BooleanField(default=True)
