@@ -1687,6 +1687,15 @@ label.preferences-radio-choice-label {
     .jitsi_server_url_custom_input_label {
         margin-bottom: var(--margin-bottom-field-description);
     }
+
+    .jitsi-jwt-override-warning {
+        display: none;
+        margin-top: var(--margin-bottom-field-description);
+        margin-bottom: 0;
+        max-width: 25em;
+        color: var(--color-text-settings-field-hint);
+        font-size: 0.9em;
+    }
 }
 
 #profile-settings,

@@ -4903,7 +4903,12 @@ paths:
                                 events into the corresponding [realm/update_dict](#realm-update_dict)
                                 event and then process that.
 
-                                **Changes**: Removed the `rendered_description` property in
+                                **Changes**: In Zulip 13.0 (feature level ZF-c876d2), the
+                                `jitsi_server_url` property is no longer sent through this event.
+                                It is now sent through the [`realm` op: `update_dict`](#realm-update_dict)
+                                event, bundled with the recomputed `jitsi_jwt_enabled` value.
+
+                                Removed the `rendered_description` property in
                                 Zulip 12.0 (feature level 464). It had been briefly present only
                                 since feature level 462 and can be safely ignored by all clients.
 
@@ -5105,7 +5110,12 @@ paths:
                                 member of. When deactivating the user, event is only sent to users
                                 who cannot access the deactivated user.
 
-                                **Changes**: Starting with Zulip 10.0 (feature level 303), this
+                                **Changes**: In Zulip 13.0 (feature level ZF-c876d2), the
+                                `jitsi_server_url` property is now sent through this event,
+                                moved from the [`realm` op: `update`](#realm-update) event
+                                and bundled with the recomputed `jitsi_jwt_enabled` value.
+
+                                Starting with Zulip 10.0 (feature level 303), this
                                 event can also be sent when deactivating or reactivating a user.
 
                                 In Zulip 7.0 (feature level 163), the realm setting
@@ -5652,12 +5662,29 @@ paths:
                                         The URL of the custom Jitsi Meet server configured in this organization's
                                         settings.
 
-                                        `null`, the default, means that the organization is using the should use the
+                                        `null`, the default, means that the organization is using the
                                         server-level configuration, `server_jitsi_server_url`.
 
-                                        **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
-                                        available as a server-level configuration, and required a server restart to
-                                        change.
+                                        When `null`, `jitsi_jwt_enabled` reflects the server's JWT
+                                        configuration; a non-null value always disables JWT for the
+                                        organization, since the server's JWT credentials only apply to
+                                        the server-wide default Jitsi Meet server.
+
+                                        **Changes**: As of Zulip 13.0 (feature level ZF-c876d2), this
+                                        property is always accompanied by `jitsi_jwt_enabled` in the same
+                                        event, since the latter is derived from this value combined with
+                                        server-level Jitsi JWT credentials.
+
+                                        New in Zulip 8.0 (feature level 212). Previously, this was only available
+                                        as a server-level configuration, and required a server restart to change.
+                                    jitsi_jwt_enabled:
+                                      type: boolean
+                                      description: |
+                                        Whether JWT-authenticated Jitsi Meet calls are usable for this organization,
+                                        recomputed from the new `jitsi_server_url` value. Only sent when
+                                        `jitsi_server_url` is also present in this event.
+
+                                        **Changes**: New in Zulip 13.0 (feature level ZF-c876d2).
                                     logo_source:
                                       type: string
                                       description: |
@@ -22048,6 +22075,32 @@ paths:
 
                           **Changes**: New in Zulip 8.0 (feature level 212). Previously, this value
                           was available as the now-deprecated `jitsi_server_url`.
+                      jitsi_jwt_enabled:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether JWT-authenticated Jitsi Meet calls are usable for this
+                          organization. When `true`, clients should use the [`GET
+                          /calls/jitsi/create`](/api/create-jitsi-video-call) endpoint to
+                          generate meeting links rather than constructing them client-side.
+
+                          Always `false` when the realm has overridden `jitsi_server_url` to a
+                          custom Jitsi Meet server, since the Zulip server's JWT credentials only
+                          belong to `server_jitsi_server_url`.
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-c876d2).
+                      server_jitsi_jwt_configured:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether the Zulip server has JWT credentials configured for its
+                          `server_jitsi_server_url`. Clients can use this to warn organization
+                          administrators that overriding `realm_jitsi_server_url` to a custom Jitsi
+                          Meet server will disable JWT authentication for the organization.
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-c876d2).
                       server_can_summarize_topics:
                         type: boolean
                         description: |
@@ -27397,6 +27450,67 @@ paths:
                     "bot_email": "outgoing-bot@localhost",
                     "bot_full_name": "Outgoing webhook test",
                   }
+
+  /calls/jitsi/create:
+    get:
+      tags: ["channels"]
+      operationId: create-jitsi-video-call
+      summary: Create JWT Jitsi Meet video call
+      description: |
+        Create a video call URL for a Jitsi Meet video call using JWT
+        authentication. Requires [Jitsi Meet](/integrations/jitsi) with a
+        JWT app ID and secret configured on the Zulip server.
+
+        The returned URL points to a Zulip endpoint that generates a
+        per-user JWT and redirects to the Jitsi server.
+
+        **Changes**: New in Zulip 13.0 (feature level ZF-c876d2).
+      parameters:
+        - in: query
+          name: meeting_name
+          schema:
+            type: string
+          required: true
+          description: |
+            Meeting name for the Jitsi video call.
+          example: "general meeting"
+        - in: query
+          name: voice_only
+          schema:
+            type: boolean
+            default: false
+          required: false
+          description: |
+            Whether the call is voice-only. If true, cameras are
+            disabled for all participants. Only the call
+            creator/moderator can edit this configuration.
+          example: false
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      url:
+                        description: |
+                          The Zulip join URL for the Jitsi Meet video call.
+                          Visiting this URL while logged in will redirect to
+                          the Jitsi server with a signed JWT.
+                        type: string
+                        example: "/calls/jitsi/join?jitsi=SIGNED_DATA"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "url": "/calls/jitsi/join?jitsi=SIGNED_DATA",
+                      }
 
   /calls/bigbluebutton/create:
     get:

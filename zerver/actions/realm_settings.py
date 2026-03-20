@@ -34,6 +34,7 @@ from zerver.lib.user_groups import (
     get_group_setting_value_for_audit_log_data,
 )
 from zerver.lib.utils import optional_bytes_to_mib
+from zerver.lib.video_calls import get_jitsi_jwt_config
 from zerver.models import (
     ArchivedAttachment,
     Attachment,
@@ -147,6 +148,20 @@ def do_set_realm_property(
             data={
                 "description": realm.description,
                 "rendered_description": realm.rendered_description,
+            },
+        )
+    if name == "jitsi_server_url":
+        # jitsi_jwt_enabled is derivable on the client from
+        # server_jitsi_jwt_configured and realm.jitsi_server_url,
+        # but we send it explicitly so the "realm URL override
+        # disables JWT" policy stays defined on the server.
+        event = dict(
+            type="realm",
+            op="update_dict",
+            property="default",
+            data={
+                "jitsi_server_url": value,
+                "jitsi_jwt_enabled": get_jitsi_jwt_config(realm) is not None,
             },
         )
 

@@ -220,6 +220,9 @@
                         </label>
                         <input type="text" id="id_realm_jitsi_server_url_custom_input" autocomplete="off"
                           name="realm_jitsi_server_url_custom_input" class="realm_jitsi_server_url_custom_input settings_url_input" maxlength="200" />
+                        <p id="realm_jitsi_server_url_jwt_warning" class="jitsi-jwt-override-warning">
+                            {{t "This Zulip server has JWT authentication configured for its default Jitsi server. Overriding the URL disables JWT authentication for your organization." }}
+                        </p>
                     </div>
                 </div>
             </div>
