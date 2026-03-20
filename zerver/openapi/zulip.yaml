@@ -28584,10 +28584,9 @@ components:
       properties:
         id:
           type: integer
+          readOnly: true
           description: |
-            The unique ID of the draft. It will only used whenever the drafts are
-            fetched. This field should not be specified when the draft is being
-            created or edited.
+            The unique ID of the draft.
         type:
           type: string
           description: |
