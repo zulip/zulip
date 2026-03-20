@@ -27,6 +27,14 @@ instance of Jitsi Meet.
 
 {end_tabs}
 
+
+!!! tip ""
+
+      Self-hosted Jitsi Meet servers can be configured to require JWT tokens for
+      authentication. You will need to [configure your Jitsi
+      application](https://zulip.readthedocs.io/en/stable/production/video-calls.html#jwt-authentication)
+      in order to use this functionality.
+
 ## Related documentation
 
 - [How to start a call](/help/start-a-call)

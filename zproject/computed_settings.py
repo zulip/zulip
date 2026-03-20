@@ -536,6 +536,9 @@ DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
 BIG_BLUE_BUTTON_SECRET = get_secret("big_blue_button_secret")
 
+JITSI_SERVER_APP_ID = get_secret("jitsi_server_app_id")
+JITSI_SERVER_APP_SECRET = get_secret("jitsi_server_app_secret")
+
 CONSTRUCTOR_GROUPS_ACCESS_KEY = get_secret("constructor_groups_access_key")
 CONSTRUCTOR_GROUPS_SECRET_KEY = get_secret("constructor_groups_secret_key")
 

@@ -20811,6 +20811,18 @@ paths:
 
                           **Changes**: New in Zulip 8.0 (feature level 212). Previously, this value
                           was available as the now-deprecated `jitsi_server_url`.
+                      server_jitsi_app_id:
+                        type: string
+                        nullable: true
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The Jitsi Meet app ID configured on the Zulip server, used for JWT
+                          authentication with a self-hosted Jitsi server. When non-null, clients
+                          should use the `/calls/jitsi/create` API to generate meeting links rather
+                          than constructing them client-side.
+
+                          **Changes**: New in Zulip 12.0 (feature level ZF-c876d2).
                       server_can_summarize_topics:
                         type: boolean
                         description: |
@@ -26113,6 +26125,67 @@ paths:
                     "bot_email": "outgoing-bot@localhost",
                     "bot_full_name": "Outgoing webhook test",
                   }
+
+  /calls/jitsi/create:
+    get:
+      tags: ["channels"]
+      operationId: create-jitsi-video-call
+      summary: Create Jitsi Meet video call
+      description: |
+        Create a Zulip join link for a Jitsi Meet video call using JWT
+        authentication. Requires a Jitsi Meet app ID and secret to be
+        configured on the Zulip server.
+
+        The returned URL points to a Zulip endpoint that generates a
+        per-user JWT and redirects to the Jitsi server.
+
+        **Changes**: New in Zulip 12.0 (feature level ZF-c876d2).
+      parameters:
+        - in: query
+          name: meeting_name
+          schema:
+            type: string
+          required: true
+          description: |
+            Meeting name for the Jitsi video call.
+          example: "general meeting"
+        - in: query
+          name: is_video_call
+          schema:
+            type: boolean
+            default: true
+          required: false
+          description: |
+            Configures whether the call is voice-only; if true,
+            disables cameras for all users. Only the call
+            creator/moderator can edit this configuration.
+          example: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      url:
+                        description: |
+                          The Zulip join URL for the Jitsi Meet video call.
+                          Visiting this URL while logged in will redirect to
+                          the Jitsi server with a signed JWT.
+                        type: string
+                        example: "/calls/jitsi/join?jitsi=SIGNED_DATA"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "url": "/calls/jitsi/join?jitsi=SIGNED_DATA",
+                      }
 
   /calls/bigbluebutton/create:
     get:

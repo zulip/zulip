@@ -98,6 +98,95 @@ test("videos", ({override}) => {
         });
     })();
 
+    (function test_jitsi_jwt_video_and_audio_links_compose_clicked() {
+        let syntax_to_insert;
+        let called = false;
+
+        const $textarea = $.create("jitsi-jwt-target-stub");
+        $textarea.set_parents_result(".message_edit_form", []);
+
+        const ev = {
+            preventDefault() {},
+            stopPropagation() {},
+        };
+
+        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
+            syntax_to_insert = syntax;
+            called = true;
+        });
+
+        override(
+            realm,
+            "realm_video_chat_provider",
+            realm_available_video_chat_providers.jitsi_meet.id,
+        );
+        override(realm, "realm_jitsi_server_url", "https://jitsi.example.com");
+        override(realm, "server_jitsi_app_id", "my_app");
+
+        override(compose_closed_ui, "get_recipient_label", () => ({label_text: "general"}));
+
+        channel.get = (payload) => {
+            assert.equal(payload.url, "/json/calls/jitsi/create");
+            assert.equal(payload.data.meeting_name, "general meeting");
+            assert.equal(payload.data.is_video_call, true);
+            payload.success({
+                result: "success",
+                msg: "",
+                url: "/calls/jitsi/join?jitsi=SIGNED_DATA",
+            });
+            return {abort() {}};
+        };
+
+        $("textarea#compose-textarea").val("");
+        const video_handler = $("body").get_on_handler("click", ".video_link");
+        video_handler.call($textarea, ev);
+        assert.ok(called);
+        assert.match(
+            syntax_to_insert,
+            /\[translated: Join video call\.]\(\/calls\/jitsi\/join\?jitsi=SIGNED_DATA\)/,
+        );
+
+        called = false;
+        channel.get = (payload) => {
+            assert.equal(payload.data.is_video_call, false);
+            payload.success({
+                result: "success",
+                msg: "",
+                url: "/calls/jitsi/join?jitsi=SIGNED_DATA_AUDIO",
+            });
+            return {abort() {}};
+        };
+        const audio_handler = $("body").get_on_handler("click", ".audio_link");
+        audio_handler.call($textarea, ev);
+        assert.ok(called);
+        assert.match(
+            syntax_to_insert,
+            /\[translated: Join voice call\.]\(\/calls\/jitsi\/join\?jitsi=SIGNED_DATA_AUDIO\)/,
+        );
+
+        override(realm, "server_jitsi_app_id", null);
+        called = false;
+        with_overrides(({disallow}) => {
+            disallow(channel, "get");
+            video_handler.call($textarea, ev);
+        });
+        assert.ok(called);
+        assert.match(
+            syntax_to_insert,
+            /\[translated: Join video call\.]\(https:\/\/jitsi\.example\.com\/\d{15}#config\.startWithVideoMuted=false\)/,
+        );
+
+        override(realm, "server_jitsi_app_id", "my_app");
+        override(realm, "realm_jitsi_server_url", null);
+        override(realm, "server_jitsi_server_url", "https://meet.jit.si");
+        called = false;
+        with_overrides(({disallow}) => {
+            disallow(channel, "get");
+            video_handler.call($textarea, ev);
+        });
+        assert.ok(called);
+    })();
+
     (function test_jitsi_video_link_compose_clicked() {
         let syntax_to_insert;
         let called = false;
@@ -114,6 +203,8 @@ test("videos", ({override}) => {
             syntax_to_insert = syntax;
             called = true;
         });
+
+        override(realm, "server_jitsi_app_id", null);
 
         const handler = $("body").get_on_handler("click", ".video_link");
         $("textarea#compose-textarea").val("");
