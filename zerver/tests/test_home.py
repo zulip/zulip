@@ -256,6 +256,7 @@ class HomeTest(ZulipTestCase):
         "server_jitsi_server_url",
         "server_max_deactivated_realm_deletion_days",
         "server_min_deactivated_realm_deletion_days",
+        "server_jitsi_jwt_enabled",
         "server_name_changes_disabled",
         "server_needs_upgrade",
         "server_presence_offline_threshold_seconds",

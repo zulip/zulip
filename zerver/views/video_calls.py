@@ -3,11 +3,13 @@ import hashlib
 import json
 import logging
 import random
+import re
 from abc import ABC, abstractmethod
 from base64 import b64encode
 from typing import Any, Literal
 from urllib.parse import quote, urlencode, urljoin, urlsplit
 
+import jwt
 import requests
 from defusedxml import ElementTree
 from django.conf import settings
@@ -29,6 +31,7 @@ from typing_extensions import TypedDict, override
 
 from zerver.actions.video_calls import do_set_video_call_provider_token
 from zerver.decorator import zulip_login_required
+from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import (
     cache_with_key,
     flush_zoom_server_access_token_cache,
@@ -686,6 +689,94 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
         settings.BIG_BLUE_BUTTON_URL + "api/join", join_params
     )
     return redirect(append_url_query_string(redirect_url_base, "checksum=" + checksum))
+
+
+@typed_endpoint
+def get_jitsi_url(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    meeting_name: str,
+    voice_only: Json[bool] = False,
+) -> HttpResponse:
+    jitsi_server_url = (
+        user_profile.realm.jitsi_server_url
+        if user_profile.realm.jitsi_server_url is not None
+        else settings.JITSI_SERVER_URL
+    )
+    if jitsi_server_url is None:
+        raise VideoCallProviderNotConfiguredError("Jitsi")
+
+    if settings.JITSI_SERVER_APP_ID is None or settings.JITSI_SERVER_APP_SECRET is None:
+        raise VideoCallProviderNotConfiguredError("Jitsi")
+
+    # Build a room name that is human-readable (derived from the meeting
+    # name) but unique per call (random suffix)
+    slug = re.sub(r"[^a-z0-9]+", "-", meeting_name.lower()).strip("-")
+    room = f"{slug}-{random.randint(100000000000, 999999999999)}"
+
+    signed = Signer().sign_object(
+        {
+            "room": room,
+            "voice_only": voice_only,
+            "moderator": user_profile.id,
+        }
+    )
+    url = append_url_query_string("/calls/jitsi/join", "jitsi=" + signed)
+    return json_success(request, data={"url": url})
+
+
+@zulip_login_required
+@never_cache
+@typed_endpoint
+def join_jitsi(request: HttpRequest, *, jitsi: str) -> HttpResponse:
+    assert isinstance(request.user, UserProfile)
+    user_profile = request.user
+    jitsi_server_url = (
+        user_profile.realm.jitsi_server_url
+        if user_profile.realm.jitsi_server_url is not None
+        else settings.JITSI_SERVER_URL
+    )
+    if jitsi_server_url is None:
+        raise VideoCallProviderNotConfiguredError("Jitsi")
+
+    if settings.JITSI_SERVER_APP_ID is None or settings.JITSI_SERVER_APP_SECRET is None:
+        raise VideoCallProviderNotConfiguredError("Jitsi")
+
+    try:
+        jitsi_data = Signer().unsign_object(jitsi)
+    except Exception:
+        raise JsonableError(_("Invalid signature."))
+
+    room = jitsi_data["room"]
+    voice_only = jitsi_data["voice_only"]
+
+    payload = {
+        # https://jitsi.github.io/handbook/docs/devops-guide/devops-guide-docker/#authentication-using-jwt-tokens
+        "iss": settings.JITSI_SERVER_APP_ID,
+        "aud": "jitsi",
+        "sub": urlsplit(jitsi_server_url).hostname,
+        "exp": int((timezone_now() + datetime.timedelta(minutes=5)).timestamp()),
+        "room": room,
+        "context": {
+            "user": {
+                "name": user_profile.full_name,
+                "email": user_profile.delivery_email,
+                "avatar": avatar_url(user_profile) or "",
+                "id": str(user_profile.id),
+                "affiliation": "owner" if jitsi_data["moderator"] == user_profile.id else "member",
+            }
+        },
+    }
+    token = jwt.encode(payload, settings.JITSI_SERVER_APP_SECRET, algorithm="HS256")
+
+    video_muted = "true" if voice_only else "false"
+    jwt_query = urlencode({"jwt": token})
+    redirect_url = urljoin(
+        jitsi_server_url,
+        f"/{room}?{jwt_query}#config.startWithVideoMuted={video_muted}",
+    )
+    return redirect(redirect_url)
 
 
 @typed_endpoint_without_parameters

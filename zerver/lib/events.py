@@ -569,6 +569,10 @@ def fetch_initial_state_data(
             settings.JITSI_SERVER_URL.rstrip("/") if settings.JITSI_SERVER_URL is not None else None
         )
         state["server_jitsi_server_url"] = server_default_jitsi_server_url
+        state["server_jitsi_jwt_enabled"] = (
+            settings.JITSI_SERVER_APP_ID is not None
+            and settings.JITSI_SERVER_APP_SECRET is not None
+        )
         state["jitsi_server_url"] = (
             realm.jitsi_server_url
             if realm.jitsi_server_url is not None
