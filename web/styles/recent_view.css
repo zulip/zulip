@@ -501,6 +501,10 @@
         }
     }
 
+    .unread_topic .last-msg-link {
+        color: var(--color-text-recent-view-last-msg-time-unread);
+    }
+
     & thead th {
         box-sizing: border-box;
         text-align: left;
