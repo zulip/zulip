@@ -14,9 +14,9 @@ Details: [changes](https://github.com/sathwikshetty33/travis-test/commit/193da1b
 """.strip()
 
     EXPECTED_PULL_REQUEST_MESSAGE = """
-Author: josh_mandel
-Build status: Passed :thumbs_up:
-Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6c457d366a31), [build log](https://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)
+Author: Sathwik Shetty
+Build status: Pending :counterclockwise:
+Details: [changes](https://github.com/sathwikshetty33/travis-test/pull/1), [build log](https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277712246)
 """.strip()
 
     def test_travis_message(self) -> None:
