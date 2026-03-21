@@ -2,8 +2,8 @@
 
 A well-formed question helps you learn, respects the person answering, and makes
 efficient use of time for everyone involved. Asking the right question, to the
-right person, in the right way, at the right time, is a skill which requires a
-lifetime of fine-tuning. This page offers some guidelines and resources that the
+right person, in the right way, at the right time, is a skill that requires a
+lifetime of fine-tuning. This page offers some guidelines and resources the
 [Zulip community](https://zulip.com/development-community/) has found helpful in this pursuit.
 
 ## Where to ask your question
@@ -36,7 +36,7 @@ In brief, to formulate a great question, you should:
 - Try to solve your own problem first, including reading through relevant
   documentation and code.
 - Identify the precise point on which you feel stuck.
-- Formulate a clear question, which includes an appropriate amount of context
+- Formulate a clear question that includes an appropriate amount of context
   and a specific request for help.
 
 When your question is answered, follow through on the advice you receive, and (when
