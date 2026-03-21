@@ -640,6 +640,12 @@ def remove_subscriptions_backend(
         realm, people_to_unsub, streams, acting_user=user_profile
     )
 
+    if removed:
+        send_user_unsubscribed_notifications(
+            acting_user=user_profile,
+            removed=removed,
+        )
+
     for subscriber, removed_stream in removed:
         result["removed"].append(removed_stream.name)
     for subscriber, not_subscribed_stream in not_subscribed:
@@ -665,6 +671,27 @@ def you_were_just_subscribed_message(
         )
     message += "\n\n"
     for channel_name in subscriptions:
+        message += f"* #**{channel_name}**\n"
+    return message
+
+
+def you_were_just_unsubscribed_message(
+    acting_user: UserProfile, recipient_user: UserProfile, stream_names: set[str]
+) -> str:
+    streams = sorted(stream_names)
+    if len(streams) == 1:
+        with override_language(recipient_user.default_language):
+            return _("{user_full_name} unsubscribed you from {channel_name}.").format(
+                user_full_name=silent_mention_syntax_for_user(acting_user),
+                channel_name=f"#**{streams[0]}**",
+            )
+
+    with override_language(recipient_user.default_language):
+        message = _("{user_full_name} unsubscribed you from the following channels:").format(
+            user_full_name=silent_mention_syntax_for_user(acting_user),
+        )
+    message += "\n\n"
+    for channel_name in streams:
         message += f"* #**{channel_name}**\n"
     return message
 
@@ -964,6 +991,52 @@ def add_subscriptions_backend(
     if not authorization_errors_fatal:
         result["unauthorized"] = [s.name for s in unauthorized_streams]
     return json_success(request, data=result)
+
+
+def send_user_unsubscribed_notifications(
+    acting_user: UserProfile,
+    removed: list[tuple[UserProfile, Stream]],
+) -> None:
+    # Group removed streams by user, filtering out bots and self-unsubscribes.
+    streams_by_user: dict[int, set[str]] = defaultdict(set)
+    user_by_id: dict[int, UserProfile] = {}
+    for user, stream in removed:
+        if user.id == acting_user.id:
+            # Don't notify users who unsubscribed themselves.
+            continue
+        if user.is_bot:
+            # Don't send notification DMs to bots.
+            continue
+        streams_by_user[user.id].add(stream.name)
+        user_by_id[user.id] = user
+
+    if not streams_by_user:
+        return
+
+    if len(streams_by_user) > settings.MAX_BULK_NEW_SUBSCRIPTION_MESSAGES:
+        return
+
+    sender = get_system_bot(settings.NOTIFICATION_BOT, acting_user.realm_id)
+    mention_backend = MentionBackend(acting_user.realm_id)
+    notifications = []
+    for user_id, stream_names in streams_by_user.items():
+        recipient_user = user_by_id[user_id]
+        msg = you_were_just_unsubscribed_message(
+            acting_user=acting_user,
+            recipient_user=recipient_user,
+            stream_names=stream_names,
+        )
+        notifications.append(
+            internal_prep_private_message(
+                sender=sender,
+                recipient_user=recipient_user,
+                content=msg,
+                mention_backend=mention_backend,
+                acting_user=acting_user,
+            )
+        )
+
+    do_send_messages(notifications, mark_as_read=[acting_user.id])
 
 
 def send_user_subscribed_and_new_channel_notifications(
