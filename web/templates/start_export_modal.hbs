@@ -3,9 +3,9 @@
     <div class="input-group">
         <label for="export_type" class="modal-field-label">{{t "Data to export" }} {{> help_link_widget
             link="/help/export-your-organization" }}</label>
-        <select id="export_type" class="modal_select modal_select_wide bootstrap-focus-style"> {{#each
-            export_type_values}}
-            <option {{#if this.default }}selected{{/if}} value="{{this.slug}}">{{this.description}}</option>
+        <select id="export_type" class="modal_select modal_select_wide bootstrap-focus-style">
+            {{#each export_type_values}}
+                <option {{#if this.default }}selected{{/if}} value="{{this.slug}}">{{this.description}}</option>
             {{/each}}
         </select>
     </div>
