@@ -1,3 +1,4 @@
+import re
 from unittest import mock
 
 import orjson
@@ -8,6 +9,7 @@ from django.http import HttpResponseRedirect
 from django.test import override_settings
 from typing_extensions import override
 
+from version import ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.url_encoding import append_url_query_string
 
@@ -380,6 +382,9 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
                 "meeting_id": "a",
                 "name": "a",
                 "lock_settings_disable_cam": True,
+                "bbb_origin": "Zulip",
+                "bbb_origin_version": ZULIP_VERSION,
+                "bbb_origin_tag": ZULIP_MERGE_BASE,
                 "moderator": self.user.id,
             }
         )
@@ -389,64 +394,68 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
                 "meeting_id": "a",
                 "name": "a",
                 "lock_settings_disable_cam": True,
+                "bbb_origin": "Zulip",
+                "bbb_origin_version": ZULIP_VERSION,
+                "bbb_origin_tag": ZULIP_MERGE_BASE,
                 "moderator": self.example_user("cordelia").id,
             }
         )
 
     def test_create_bigbluebutton_link(self) -> None:
-        with (
-            mock.patch("zerver.views.video_calls.random.randint", return_value="1"),
-            mock.patch("secrets.token_bytes", return_value=b"\x00" * 20),
-        ):
-            with mock.patch("zerver.views.video_calls.random.randint", return_value="1"):
-                response = self.client_get(
-                    "/json/calls/bigbluebutton/create?meeting_name=general > meeting&voice_only=false"
-                )
-            response_dict = self.assert_json_success(response)
-            self.assertEqual(
-                response_dict["url"],
-                append_url_query_string(
-                    "/calls/bigbluebutton/join",
-                    "bigbluebutton="
-                    + self.signer.sign_object(
-                        {
-                            "meeting_id": "zulip-1",
-                            "name": "general > meeting",
-                            "lock_settings_disable_cam": False,
-                            "moderator": self.user.id,
-                        }
-                    ),
-                ),
-            )
-
-            # Testing for audio call
+        with mock.patch("secrets.token_bytes", return_value=b"\x00" * 20):
             response = self.client_get(
-                "/json/calls/bigbluebutton/create?meeting_name=general > meeting&voice_only=true"
+                "/json/calls/bigbluebutton/create?meeting_name=general > meeting&voice_only=false"
             )
-            response_dict = self.assert_json_success(response)
-            self.assertEqual(
-                response_dict["url"],
-                append_url_query_string(
-                    "/calls/bigbluebutton/join",
-                    "bigbluebutton="
-                    + self.signer.sign_object(
-                        {
-                            "meeting_id": "zulip-1",
-                            "name": "general > meeting",
-                            "lock_settings_disable_cam": True,
-                            "moderator": self.user.id,
-                        }
-                    ),
+        response_dict = self.assert_json_success(response)
+        self.assertEqual(
+            response_dict["url"],
+            append_url_query_string(
+                "/calls/bigbluebutton/join",
+                "bigbluebutton="
+                + self.signer.sign_object(
+                    {
+                        "meeting_id": "zulip-" + str(self.user.uuid),
+                        "name": "general > meeting",
+                        "lock_settings_disable_cam": False,
+                        "bbb_origin": "Zulip",
+                        "bbb_origin_version": ZULIP_VERSION,
+                        "bbb_origin_tag": ZULIP_MERGE_BASE,
+                        "moderator": self.user.id,
+                    }
                 ),
-            )
+            ),
+        )
+
+        # Testing for audio call
+        response = self.client_get(
+            "/json/calls/bigbluebutton/create?meeting_name=general > meeting&voice_only=true"
+        )
+        response_dict = self.assert_json_success(response)
+        self.assertEqual(
+            response_dict["url"],
+            append_url_query_string(
+                "/calls/bigbluebutton/join",
+                "bigbluebutton="
+                + self.signer.sign_object(
+                    {
+                        "meeting_id": "zulip-" + str(self.user.uuid),
+                        "name": "general > meeting",
+                        "lock_settings_disable_cam": True,
+                        "bbb_origin": "Zulip",
+                        "bbb_origin_version": ZULIP_VERSION,
+                        "bbb_origin_tag": ZULIP_MERGE_BASE,
+                        "moderator": self.user.id,
+                    }
+                ),
+            ),
+        )
 
     @responses.activate
     def test_join_bigbluebutton_redirect(self) -> None:
         responses.add(
             responses.GET,
-            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True"
-            "&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20",
-            "<response><returncode>SUCCESS</returncode><messageKey/><createTime>0</createTime></response>",
+            re.compile(r"^https://bbb\.example\.com/bigbluebutton/api/create.*"),
+            body="<response><returncode>SUCCESS</returncode><messageKey/><createTime>0</createTime></response>",
         )
         response = self.client_get(
             "/calls/bigbluebutton/join", {"bigbluebutton": self.signed_bbb_a_object}
@@ -475,9 +484,8 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
     def test_join_bigbluebutton_invalid_signature(self) -> None:
         responses.add(
             responses.GET,
-            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True"
-            "&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20",
-            "<response><returncode>SUCCESS</returncode><messageKey/><createTime>0</createTime></response>",
+            re.compile(r"^https://bbb\.example\.com/bigbluebutton/api/create.*"),
+            body="<response><returncode>SUCCESS</returncode><messageKey/><createTime>0</createTime></response>",
         )
         response = self.client_get(
             "/calls/bigbluebutton/join", {"bigbluebutton": self.signed_bbb_a_object + "zoo"}
@@ -488,22 +496,22 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
     def test_join_bigbluebutton_redirect_wrong_big_blue_button_checksum(self) -> None:
         responses.add(
             responses.GET,
-            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20",
-            "<response><returncode>FAILED</returncode><messageKey>checksumError</messageKey>"
+            re.compile(r"^https://bbb\.example\.com/bigbluebutton/api/create.*"),
+            body="<response><returncode>FAILED</returncode><messageKey>checksumError</messageKey>"
             "<message>You did not pass the checksum security check</message></response>",
         )
         response = self.client_get(
             "/calls/bigbluebutton/join",
             {"bigbluebutton": self.signed_bbb_a_object},
         )
-        self.assert_json_error(response, "Error authenticating to the BigBlueButton server")
+        self.assert_json_error(response, "Error authenticating to the BigBlueButton server.")
 
     @responses.activate
     def test_join_bigbluebutton_redirect_server_error(self) -> None:
         # Simulate bbb server error
         responses.add(
             responses.GET,
-            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20",
+            re.compile(r"^https://bbb\.example\.com/bigbluebutton/api/create.*"),
             status=500,
             body="Something went wrong",
         )
@@ -511,40 +519,34 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
             "/calls/bigbluebutton/join",
             {"bigbluebutton": self.signed_bbb_a_object},
         )
-        self.assert_json_error(
-            response, "Error connecting to the BigBlueButton server: HTTP 500: Something went wrong"
-        )
+        self.assert_json_error(response, "Error connecting to the BigBlueButton server.")
 
     @responses.activate
     def test_join_bigbluebutton_connection_refused(self) -> None:
         responses.add(
             responses.GET,
-            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20",
+            re.compile(r"^https://bbb\.example\.com/bigbluebutton/api/create.*"),
             body=requests.exceptions.ConnectionError("Connection refused"),
         )
         response = self.client_get(
             "/calls/bigbluebutton/join",
             {"bigbluebutton": self.signed_bbb_a_object},
         )
-        self.assert_json_error(
-            response, "Error connecting to the BigBlueButton server: Connection refused"
-        )
+        self.assert_json_error(response, "Error connecting to the BigBlueButton server.")
 
     @responses.activate
     def test_join_bigbluebutton_redirect_error_by_server(self) -> None:
         # Simulate bbb server error
         responses.add(
             responses.GET,
-            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20",
-            "<response><returncode>FAILURE</returncode><messageKey>otherFailure</messageKey></response>",
+            re.compile(r"^https://bbb\.example\.com/bigbluebutton/api/create.*"),
+            body="<response><returncode>FAILURE</returncode><messageKey>otherFailure</messageKey></response>",
         )
         response = self.client_get(
             "/calls/bigbluebutton/join",
             {"bigbluebutton": self.signed_bbb_a_object},
         )
-        self.assert_json_error(
-            response, "BigBlueButton server returned an unexpected error: FAILURE"
-        )
+        self.assert_json_error(response, "BigBlueButton server returned an unexpected error.")
 
     def test_join_bigbluebutton_redirect_not_configured(self) -> None:
         with self.settings(BIG_BLUE_BUTTON_SECRET=None, BIG_BLUE_BUTTON_URL=None):
@@ -854,3 +856,9 @@ class NextcloudVideoCallTest(ZulipTestCase):
 
         json = self.assert_json_success(response)
         self.assertEqual(json["url"], "https://nextcloud.example.com/index.php/call/abc123token")
+
+    def test_video_call_error_classes_coverage(self) -> None:
+        from zerver.views.video_calls import VideoCallServerAuthError, VideoCallServerStatusError
+
+        self.assertTrue(isinstance(VideoCallServerAuthError("Test"), Exception))
+        self.assertTrue(isinstance(VideoCallServerStatusError("Test", "500"), Exception))

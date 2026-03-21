@@ -1,7 +1,6 @@
 import hashlib
 import json
 import logging
-import random
 from abc import ABC, abstractmethod
 from base64 import b64encode
 from typing import Any
@@ -25,6 +24,7 @@ from requests import Response
 from requests_oauthlib import OAuth2Session
 from typing_extensions import TypedDict, override
 
+from version import ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.video_calls import do_set_video_call_provider_token
 from zerver.decorator import zulip_login_required
 from zerver.lib.cache import (
@@ -471,30 +471,23 @@ def get_bigbluebutton_url(
     meeting_name: str,
     voice_only: Json[bool] = False,
 ) -> HttpResponse:
-    # https://docs.bigbluebutton.org/dev/api.html#create for reference on the API calls
-    # https://docs.bigbluebutton.org/dev/api.html#usage for reference for checksum
-    id = "zulip-" + str(random.randint(100000000000, 999999999999))
+    meeting_id = "zulip-" + str(user_profile.uuid)
 
-    # We sign our data here to ensure a Zulip user cannot tamper with
-    # the join link to gain access to other meetings that are on the
-    # same bigbluebutton server.
     signed = Signer().sign_object(
         {
-            "meeting_id": id,
+            "meeting_id": meeting_id,
             "name": meeting_name,
             "lock_settings_disable_cam": voice_only,
+            "bbb_origin": "Zulip",
+            "bbb_origin_version": ZULIP_VERSION,
+            "bbb_origin_tag": ZULIP_MERGE_BASE,
             "moderator": request.user.id,
         }
     )
     url = append_url_query_string("/calls/bigbluebutton/join", "bigbluebutton=" + signed)
-    return json_success(request, {"url": url})
+    return json_success(request, data={"url": url})
 
 
-# We use zulip_login_required here mainly to get access to the user's
-# full name from Zulip to prepopulate the user's name in the
-# BigBlueButton meeting.  Since the meeting's details are encoded in
-# the link the user is clicking, there is no validation tying this
-# meeting to the Zulip organization it was created in.
 @zulip_login_required
 @never_cache
 @typed_endpoint
@@ -502,7 +495,7 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
     assert request.user.is_authenticated
 
     if settings.BIG_BLUE_BUTTON_URL is None or settings.BIG_BLUE_BUTTON_SECRET is None:
-        raise VideoCallProviderNotConfiguredError("BigBlueButton")
+        raise JsonableError(_("BigBlueButton credentials have not been configured"))
 
     try:
         bigbluebutton_data = Signer().unsign_object(bigbluebutton)
@@ -514,6 +507,9 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
             "meetingID": bigbluebutton_data["meeting_id"],
             "name": bigbluebutton_data["name"],
             "lockSettingsDisableCam": bigbluebutton_data["lock_settings_disable_cam"],
+            "meta_bbb-origin": bigbluebutton_data["bbb_origin"],
+            "meta_bbb-origin-version": bigbluebutton_data["bbb_origin_version"],
+            "meta_bbb-origin-tag": bigbluebutton_data["bbb_origin_tag"],
         },
         quote_via=quote,
     )
@@ -529,38 +525,21 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
             + checksum
         )
         response.raise_for_status()
-    except requests.RequestException as e:
-        if e.response is not None:
-            reason = f"HTTP {response.status_code}: {response.text:.200}"
-        else:
-            reason = str(e)
-        raise VideoCallServerConnectionError("BigBlueButton", reason=reason)
+    except requests.RequestException:
+        raise JsonableError(_("Error connecting to the BigBlueButton server."))
 
     payload = ElementTree.fromstring(response.text)
     if assert_is_not_none(payload.find("messageKey")).text == "checksumError":
-        raise VideoCallServerAuthError("BigBlueButton")
+        raise JsonableError(_("Error authenticating to the BigBlueButton server."))
 
-    status = assert_is_not_none(payload.find("returncode")).text
-    if status != "SUCCESS":
-        raise VideoCallServerStatusError("BigBlueButton", status=status)
+    if assert_is_not_none(payload.find("returncode")).text != "SUCCESS":
+        raise JsonableError(_("BigBlueButton server returned an unexpected error."))
 
     join_params = urlencode(
         {
             "meetingID": bigbluebutton_data["meeting_id"],
-            # We use the moderator role only for the user who created the
-            # meeting, the attendee role for everyone else, so that only
-            # the user who created the meeting can convert a voice-only
-            # call to a video call.
             "role": "MODERATOR" if bigbluebutton_data["moderator"] == request.user.id else "VIEWER",
             "fullName": request.user.full_name,
-            # https://docs.bigbluebutton.org/dev/api.html#create
-            # The createTime option is used to have the user redirected to a link
-            # that is only valid for this meeting.
-            #
-            # Even if the same link in Zulip is used again, a new
-            # createTime parameter will be created, as the meeting on
-            # the BigBlueButton server has to be recreated. (after a
-            # few minutes)
             "createTime": assert_is_not_none(payload.find("createTime")).text,
         },
         quote_via=quote,
