@@ -1368,3 +1368,72 @@
         vertical-align: -0.1429em; /* -2px at 14px/1em */
     }
 }
+
+.message_link_tooltip {
+    max-height: 200px;
+    max-width: min(600px, 70vw);
+    overflow: hidden;
+
+    .messagebox-content {
+        display: grid;
+        align-items: center;
+        grid-template:
+            minmax(var(--message-box-sender-line-height), auto) 1fr /
+            var(--message-box-avatar-column-width) minmax(0, 1fr);
+        grid-template-areas:
+            "avatar sender "
+            "avatar message";
+
+        &.is-me-message {
+            grid-template-areas:
+                ".      .     "
+                "avatar sender"
+                "avatar sender";
+            grid-template-rows:
+                var(--message-box-vertical-margin) var(
+                    --message-box-avatar-height
+                )
+                minmax(0, auto);
+        }
+
+        .message-avatar {
+            grid-area: avatar;
+        }
+
+        .message_sender {
+            grid-area: sender;
+        }
+
+        .message_content:not(.status-message) {
+            grid-area: message;
+            color: var(--color-text-message-default);
+
+            & > p,
+            & > ul,
+            & > ol {
+                display: -webkit-box;
+                -webkit-box-orient: vertical;
+                -webkit-line-clamp: 3;
+                -webkit-box-align: start;
+                overflow: hidden;
+                overflow-wrap: break-word;
+                white-space: normal;
+            }
+        }
+    }
+
+    code {
+        color: var(--color-text-default);
+        background-color: var(--color-background-disabled);
+        border-radius: 3px;
+        padding: 0 2px;
+    }
+
+    .codehilite pre {
+        color: light-dark(hsl(0deg 0% 87%), hsl(0deg 0% 87%));
+        background-color: light-dark(
+            hsl(0deg 0% 70% / 4%),
+            hsl(0deg 0% 100% / 4%)
+        );
+    }
+}
