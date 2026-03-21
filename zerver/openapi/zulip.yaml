@@ -326,22 +326,14 @@ paths:
                       - direct_admins
                       - direct_users
                     example:
-                      {
-                        "msg": "",
-                        "result": "success",
-                        "direct_admins": [
-                          {
-                            "email": "iago@zulip.com",
-                            "realm_url": "http://localhost:9991"
-                          }
-                        ],
-                        "direct_users": [
-                          {
-                            "email": "hamlet@zulip.com",
-                            "realm_url": "http://localhost:9991"
-                          }
-                        ]
-                      }
+                      msg: ""
+                      result: "success"
+                      direct_admins:
+                        - email: "iago@zulip.com"
+                          realm_url: "http://localhost:9991"
+                      direct_users:
+                        - email: "hamlet@zulip.com"
+                          realm_url: "http://localhost:9991"
   /events:
     get:
       operationId: get-events
