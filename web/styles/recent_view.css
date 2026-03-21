@@ -598,10 +598,12 @@
 
         .recent-view-header-wrapper {
             /* Match the row grid so "Channel" and "Conversation" sort
-               spans align with channel and topic text in rows. Sort
-               arrows are inside the spans, so 3 columns suffice.
+               spans align with channel and topic text in rows.
                1em = 16px at 16px/1em, matching the 1em (16px
-               at 16px/1em) privacy icon width in data rows. */
+               at 16px/1em) privacy icon width in data rows.
+               The last column uses the dynamic unread column width
+               so the unread sort hover area covers the @ marker /
+               unread count zone, matching the data rows. */
             display: grid;
             grid-template-columns:
                 min(
@@ -610,7 +612,7 @@
                     ),
                     33.3%
                 )
-                auto 1fr auto;
+                auto 1fr var(--recent-view-unread-column-width, 0);
             align-items: center;
         }
 
@@ -654,8 +656,10 @@
         }
 
         .recent-view-unread-sort-header {
-            margin-right: -0.1563em; /* 2.5px at 16px/1em */
-            justify-self: end;
+            /* Stretch to fill the grid cell so the hover area
+               covers the full unread count / @ marker column. */
+            justify-self: stretch;
+            justify-content: flex-end;
         }
     }
 
