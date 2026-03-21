@@ -326,6 +326,17 @@
         flex-flow: row nowrap;
     }
 
+    .recent-view-unread-mention-and-count-wrapper .recent_topic_actions {
+        /* Unset margin; gap on the wrapper handles spacing. */
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .recent-view-unread-mention-and-count-wrapper .unread_count {
+        /* Unset margin; gap on the wrapper handles spacing. */
+        margin: 0;
+    }
+
     .mention_in_unread {
         opacity: 0.7;
     }
@@ -882,6 +893,13 @@
     align-self: stretch;
     margin-left: auto;
     flex-direction: row;
+    /* Match the left sidebar gap between @ marker and unread count. */
+    gap: 5px;
+
+    .unread_mention_info {
+        /* Unset margin in favor of flex gap. */
+        margin: 0;
+    }
 
     .recent-view-unread-count-wrapper {
         display: flex;
