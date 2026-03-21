@@ -7,7 +7,13 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class TravisHookTests(WebhookTestCase):
     TOPIC_NAME = "builds"
-    EXPECTED_MESSAGE = """
+    EXPECTED_PUSH_MESSAGE = """
+Author: sathwikshetty33
+Build status: Pending :counterclockwise:
+Details: [changes](https://github.com/sathwikshetty33/travis-test/commit/193da1b72346), [build log](https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277712204)
+""".strip()
+
+    EXPECTED_PULL_REQUEST_MESSAGE = """
 Author: josh_mandel
 Build status: Passed :thumbs_up:
 Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6c457d366a31), [build log](https://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)
@@ -22,9 +28,9 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         """
 
         self.check_webhook(
-            "build",
+            "push",
             self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            self.EXPECTED_PUSH_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -34,12 +40,12 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         self.check_webhook(
             "pull_request",
             self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            self.EXPECTED_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
         self.check_webhook(
-            "build",
+            "push",
             content_type="application/x-www-form-urlencoded",
             expect_noop=True,
         )
@@ -54,9 +60,9 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         )
 
         self.check_webhook(
-            "build",
+            "push",
             self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            self.EXPECTED_PUSH_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -64,9 +70,9 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         self.url = f'{self.build_webhook_url()}&only_events=["push"]'
 
         self.check_webhook(
-            "build",
+            "push",
             self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            self.EXPECTED_PUSH_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -80,7 +86,7 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         self.url = f'{self.build_webhook_url()}&exclude_events=["push"]'
 
         self.check_webhook(
-            "build",
+            "push",
             content_type="application/x-www-form-urlencoded",
             expect_noop=True,
         )
@@ -88,7 +94,7 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         self.check_webhook(
             "pull_request",
             self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            self.EXPECTED_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -98,14 +104,14 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         self.check_webhook(
             "pull_request",
             self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            self.EXPECTED_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
         self.check_webhook(
-            "build",
+            "push",
             self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            self.EXPECTED_PUSH_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -119,7 +125,7 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         )
 
         self.check_webhook(
-            "build",
+            "push",
             content_type="application/x-www-form-urlencoded",
             expect_noop=True,
         )
@@ -133,7 +139,7 @@ one or more new messages.
 
         with self.assertRaises(Exception) as exc:
             self.check_webhook(
-                "build", content_type="application/x-www-form-urlencoded", expect_noop=True
+                "push", content_type="application/x-www-form-urlencoded", expect_noop=True
             )
         self.assertEqual(str(exc.exception), expected_error_message)
 

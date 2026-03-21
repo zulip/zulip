@@ -915,7 +915,7 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
     IncomingWebhookIntegration(
         "travis",
         ["continuous-integration"],
-        [WebhookScreenshotConfig("build.json", payload_as_query_param=True)],
+        [WebhookScreenshotConfig("push.json", payload_as_query_param=True)],
         display_name="Travis CI",
     ),
     IncomingWebhookIntegration(
