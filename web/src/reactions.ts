@@ -741,3 +741,16 @@ export function rewire_update_vote_text_on_message(
 ): void {
     update_vote_text_on_message = value;
 }
+
+export function update_user_full_name(user_id: number): void {
+    // When a user's full name changes, we need to re-render the
+    // vote text on any reaction pill that includes that user, since
+    // vote text may contain display names.
+    for (const msg_list of message_lists.all_rendered_message_lists()) {
+        for (const message of msg_list.all_messages()) {
+            if ([...message.clean_reactions.values()].some((r) => r.user_ids.includes(user_id))) {
+                update_vote_text_on_message(message);
+            }
+        }
+    }
+}

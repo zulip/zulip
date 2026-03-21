@@ -555,6 +555,25 @@ test("update_vote_text_on_message", ({override, override_rewire}) => {
     assert.deepEqual(message, updated_message);
 });
 
+test("update_user_full_name", ({override, override_rewire}) => {
+    const message = sample_message_with_clean_reactions();
+    override(message_lists, "all_rendered_message_lists", () => [{all_messages: () => [message]}]);
+
+    let updated_messages = [];
+    override_rewire(reactions, "update_vote_text_on_message", (msg) => {
+        updated_messages.push(msg.id);
+    });
+
+    // alice_user_id (5) is in reactions — should trigger update.
+    reactions.update_user_full_name(alice_user_id);
+    assert.deepEqual(updated_messages, [1001]);
+
+    // User 999 has no reactions — should not trigger update.
+    updated_messages = [];
+    reactions.update_user_full_name(999);
+    assert.deepEqual(updated_messages, []);
+});
+
 test("find_reaction", () => {
     const message_id = 99;
     const local_id = "unicode_emoji,1f44b";

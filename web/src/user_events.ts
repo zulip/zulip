@@ -15,6 +15,7 @@ import * as message_live_update from "./message_live_update.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
+import * as reactions from "./reactions.ts";
 import * as settings from "./settings.ts";
 import * as settings_account from "./settings_account.ts";
 import * as settings_bots from "./settings_bots.ts";
@@ -97,6 +98,7 @@ export const update_person = function update(event: UserUpdate): void {
         settings_users.update_user_data(event.user_id, event);
         activity_ui.redraw();
         message_live_update.update_user_full_name(event.user_id, event.full_name);
+        reactions.update_user_full_name(event.user_id);
         pm_list.update_private_messages();
         user_profile.update_profile_modal_ui(user, event);
         if (people.is_my_user_id(event.user_id)) {
