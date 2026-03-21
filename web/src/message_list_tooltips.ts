@@ -1,22 +1,36 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
+import {z} from "zod/mini";
 
 import render_message_edit_notice_tooltip from "../templates/message_edit_notice_tooltip.hbs";
+import render_message_link_tooltip from "../templates/message_link_tooltip.hbs";
 import render_message_media_preview_tooltip from "../templates/message_media_preview_tooltip.hbs";
 import render_message_row_date_tooltip from "../templates/message_row_date_tooltip.hbs";
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
 import render_narrow_tooltip_list_of_topics from "../templates/narrow_tooltip_list_of_topics.hbs";
 
+import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as flatpickr from "./flatpickr.ts";
+import * as generic_widget from "./generic_widget.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as message_helper from "./message_helper.ts";
 import * as message_lists from "./message_lists.ts";
+import type {Message} from "./message_store.ts";
+import {raw_message_schema} from "./message_store.ts";
+import * as message_store from "./message_store.ts";
+import {page_params} from "./page_params.ts";
+import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as reactions from "./reactions.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
 import * as rows from "./rows.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import {realm} from "./state_data.ts";
+import * as submessage from "./submessage.ts";
 import * as timerender from "./timerender.ts";
 import {
     INTERACTIVE_HOVER_DELAY,
@@ -490,4 +504,118 @@ export function initialize(): void {
             instance.destroy();
         },
     });
+
+    message_list_tooltip(".message_content a.message-link", {
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const href = $elem.attr("href");
+            assert(href !== undefined);
+
+            if (page_params.is_spectator) {
+                return false;
+            }
+
+            const channel_topic = hash_util.decode_stream_topic_from_url(href);
+            if (!channel_topic?.message_id) {
+                return false;
+            }
+
+            const message_id = Number(channel_topic.message_id);
+            instance.setProps({maxWidth: "70vw"});
+
+            const message = message_store.get(message_id);
+            if (message === undefined) {
+                void channel.get({
+                    url: "/json/messages/" + message_id,
+                    data: {allow_empty_topic_name: true},
+                    success(raw_data) {
+                        const data = z.object({message: raw_message_schema}).parse(raw_data);
+                        message_helper.process_new_server_message(data.message);
+                        instance.show();
+                    },
+                    error() {
+                        blueslip.info("Failed to fetch message for message link tooltip");
+                    },
+                });
+                return false;
+            }
+
+            render_message_link_tooltip_content(message, instance);
+            return undefined;
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+}
+
+function render_message_link_tooltip_content(message: Message, instance: tippy.Instance): void {
+    let status_message: string | undefined;
+    if (message.is_me_message) {
+        status_message = message.content.slice("<p>/me".length);
+    }
+
+    const sender_is_bot = people.sender_is_bot(message);
+    const sender_is_guest = people.sender_is_guest(message);
+    const sender_is_deactivated = people.sender_is_deactivated(message);
+    const should_add_guest_indicator_for_sender = people.should_add_guest_user_indicator(
+        message.sender_id,
+    );
+
+    const $tooltip_content = $(
+        render_message_link_tooltip({
+            small_avatar_url: people.small_avatar_url(message),
+            msg: message,
+            sender_is_bot,
+            sender_is_guest,
+            sender_is_deactivated,
+            status_message,
+            should_add_guest_indicator_for_sender,
+            show_message_body_in_tooltip: true,
+        }),
+    );
+
+    const $message_content = $tooltip_content.find(".message_content");
+    rendered_markdown.update_elements($message_content);
+
+    const event = submessage.get_message_events(message);
+    if (event) {
+        const $widget_elem = $("<div>").addClass("widget-content");
+        const [widget_event, ...inbound_events] = event;
+
+        const widget_instance = generic_widget.create_widget_instance({
+            message,
+            any_data: widget_event.data,
+        });
+
+        if (inbound_events.length > 0) {
+            widget_instance.handle_inbound_events(inbound_events);
+        }
+
+        generic_widget.render_widget_instance({
+            post_to_server() {
+                // Do not send outbound events for tooltip widgets.
+            },
+            $widget_elem,
+            message,
+            widget_data: widget_instance.get_widget_data(),
+            rerender: false,
+        });
+
+        $widget_elem
+            .find(
+                ".poll-edit-question, .poll-option-bar, .todo-edit-task-list-title, .add-task-bar",
+            )
+            .hide();
+        $widget_elem
+            .find("button, input, select, .poll-vote, .todo-checkbox input")
+            .prop("disabled", true);
+
+        $tooltip_content.find(".message_content").empty().append($widget_elem);
+    }
+
+    const $tooltip_container = $("<div>");
+    $tooltip_container.append($tooltip_content);
+    instance.setContent(parse_html($tooltip_container.html()));
 }

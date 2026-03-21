@@ -1414,6 +1414,7 @@
                 display: -webkit-box;
                 -webkit-box-orient: vertical;
                 -webkit-line-clamp: 3;
+                /* stylelint-disable-next-line property-no-deprecated */
                 -webkit-box-align: start;
                 overflow: hidden;
                 overflow-wrap: break-word;
