@@ -1177,6 +1177,7 @@ export function update_topic_visibility_policy(stream_id: number, topic: string)
 
 export function update_topic_unread_count(message: Message): void {
     const topic_key = recent_view_util.get_key_from_message(message);
+    update_unread_column_width();
     inplace_rerender(topic_key);
 }
 
@@ -1305,6 +1306,7 @@ export function update_filters_view(): void {
     const rendered_filters = render_recent_view_filters(get_recent_view_filters_params());
     $("#recent_filters_group").html(rendered_filters);
     show_selected_filters();
+    update_unread_column_width();
     filters_dropdown_widget.render();
     if (folder_filter_dropdown_widget) {
         update_recent_view_folder_filter_button();
@@ -1470,6 +1472,8 @@ function recenter_focus_if_off_screen(): void {
 }
 
 function callback_after_render(): void {
+    update_unread_column_width();
+
     // It is important to restore the scroll position as soon
     // as the rendering is complete to avoid scroll jumping.
     if (last_scroll_offset !== undefined) {
@@ -1510,6 +1514,49 @@ function filter_click_handler(
 
 function get_list_data_for_widget(): ConversationData[] {
     return [...recent_view_data.get_conversations().values()];
+}
+
+function update_unread_column_width(): void {
+    if (!document.documentElement) {
+        return;
+    }
+    // Compute the width needed for the unread badge column based
+    // on the current data: max unread count digits and whether any
+    // conversation has an @ mention marker. Uses em units so the
+    // column scales correctly at all font sizes.
+    let max_unread_count = 0;
+    let has_mention = false;
+
+    for (const conversation_data of recent_view_data.get_conversations().values()) {
+        const msg = message_store.get(conversation_data.last_msg_id);
+        if (msg === undefined) {
+            continue;
+        }
+        const count = message_to_conversation_unread_count(msg);
+        if (count > max_unread_count) {
+            max_unread_count = count;
+        }
+        if (!has_mention) {
+            if (msg.type === "stream") {
+                has_mention = unread.topic_has_any_unread_mentions(msg.stream_id, msg.topic);
+            } else {
+                has_mention = unread.num_unread_mentions_for_user_ids_strings(msg.to_user_ids) > 0;
+            }
+        }
+    }
+
+    // Badge width in em: base padding + per-digit width.
+    // These values are derived from the unread_count CSS at 1em = 16px.
+    const digit_count = max_unread_count === 0 ? 0 : Math.floor(Math.log10(max_unread_count)) + 1;
+    const count_width_em = digit_count === 0 ? 0 : 0.5 + digit_count * 0.4375;
+    // @ marker ≈ 0.85em + 0.3125em gap
+    const mention_width_em = has_mention ? 1.1875 : 0;
+    // 0.375em breathing room to the right
+    const gap_em = max_unread_count === 0 ? 0 : 0.375;
+    const total_width_em = mention_width_em + count_width_em + gap_em;
+    const total_width = total_width_em > 0 ? `${total_width_em}em` : "0px";
+
+    document.documentElement.style.setProperty("--recent-view-unread-column-width", total_width);
 }
 
 function set_time_column_width_css_variable(): void {
@@ -1557,6 +1604,7 @@ export function complete_rerender(coming_from_other_views = false): void {
 
     update_participants_column_class();
     set_time_column_width_css_variable();
+    update_unread_column_width();
 
     // Show topics list
     const mapped_topic_values = get_list_data_for_widget();
