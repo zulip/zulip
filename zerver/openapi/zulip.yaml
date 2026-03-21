@@ -11323,6 +11323,20 @@ paths:
             type: string
           example: iago@zulip.com
           required: true
+        - name: slim_presence
+          in: query
+          description: |
+            Setting this to `true` will return the user's presence data in the
+            modern format, with `active_timestamp` and `idle_timestamp` fields.
+
+            When `false` or not provided, the response uses the legacy format with
+            `status` and `timestamp` fields nested under `website` and `aggregated` keys.
+
+            **Changes**: New in Zulip 12.0 (feature level ZF-8ad0a0).
+          schema:
+            type: boolean
+            default: false
+          example: false
       responses:
         "200":
           description: Success.
@@ -11338,47 +11352,50 @@ paths:
                       ignored_parameters_unsupported: {}
                       presence:
                         type: object
+                        additionalProperties: {}
                         description: |
                           An object containing the presence details for the user.
-                        additionalProperties:
-                          type: object
-                          additionalProperties: false
-                          properties:
-                            timestamp:
-                              type: integer
-                              description: |
-                                When this update was received. If the timestamp
-                                is more than a few minutes in the past, the user is offline.
-                            status:
-                              type: string
-                              description: |
-                                Whether the user had recently interacted with Zulip at the time
-                                of the timestamp.
 
-                                Will be either `"active"` or `"idle"`
-                          description: |
-                            `{client_name}` or `"aggregated"`: Object containing the details of the user's
-                            presence.
+                          The format depends on the `slim_presence` parameter:
 
-                            **Changes**: Starting with Zulip 7.0 (feature level 178), this will always
-                            contain two keys, `"website"` and `"aggregated"`, with identical data. The
-                            server no longer stores which client submitted presence updates.
+                          - **Legacy format** (default, `slim_presence=false`): Contains
+                            `website` and `aggregated` keys, each with `status` and
+                            `timestamp` fields.
 
-                            Previously, the `{client_name}` keys for these objects were the names of the
-                            different clients where the user was logged in, for example `website` or
-                            `ZulipDesktop`.
-                    example:
-                      {
-                        "presence":
-                          {
-                            "website":
-                              {"timestamp": 1532697622, "status": "active"},
-                            "aggregated":
-                              {"timestamp": 1532697622, "status": "active"},
-                          },
-                        "result": "success",
-                        "msg": "",
-                      }
+                          - **Modern format** (`slim_presence=true`): Contains
+                            `active_timestamp` and `idle_timestamp` fields directly.
+
+                          **Changes**: New in Zulip 12.0 (feature level ZF-8ad0a0), the
+                          `slim_presence` parameter can be used to request the modern format.
+              examples:
+                legacy-presence-format:
+                  description: |
+                    Legacy presence format (default):
+                  value:
+                    {
+                      "msg": "",
+                      "presence":
+                        {
+                          "website":
+                            {"timestamp": 1532697622, "status": "active"},
+                          "aggregated":
+                            {"timestamp": 1532697622, "status": "active"},
+                        },
+                      "result": "success",
+                    }
+                modern-presence-format:
+                  description: |
+                    Modern presence format (when `slim_presence=true`):
+                  value:
+                    {
+                      "msg": "",
+                      "presence":
+                        {
+                          "active_timestamp": 1656958520,
+                          "idle_timestamp": 1656958530,
+                        },
+                      "result": "success",
+                    }
   /users/me:
     get:
       operationId: get-own-user

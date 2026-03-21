@@ -21,12 +21,16 @@ from zerver.models import UserPresence, UserProfile
 from zerver.models.users import get_active_user, get_active_user_profile_by_id_in_realm
 
 
+@typed_endpoint
 def get_presence_backend(
-    request: HttpRequest, user_profile: UserProfile, user_id_or_email: str
+    request: HttpRequest,
+    user_profile: UserProfile,
+    user_id_or_email: PathOnly[str],
+    *,
+    slim_presence: Json[bool] = False,
 ) -> HttpResponse:
-    # This isn't used by the web app; it's available for API use by
-    # bots and other clients.  We may want to add slim_presence
-    # support for it (or just migrate its API wholesale) later.
+    # This endpoint is available for API use by bots and other clients.
+    # It's most useful for embedding presence data in external sites.
 
     try:
         try:
@@ -50,21 +54,26 @@ def get_presence_backend(
     ):
         raise JsonableError(_("Insufficient permission"))
 
-    presence_dict = get_presence_for_user(target.id)
+    presence_dict = get_presence_for_user(target.id, slim_presence)
     if len(presence_dict) == 0:
         raise JsonableError(
             _("No presence data for {user_id_or_email}").format(user_id_or_email=user_id_or_email)
         )
 
-    # For initial version, we just include the status and timestamp keys
-    result = dict(presence=presence_dict[target.email])
-    aggregated_info = result["presence"]["aggregated"]
-    aggr_status_duration = datetime_to_timestamp(timezone_now()) - aggregated_info["timestamp"]
-    if aggr_status_duration > settings.OFFLINE_THRESHOLD_SECS:
-        aggregated_info["status"] = "offline"
-    for val in result["presence"].values():
-        val.pop("client", None)
-        val.pop("pushable", None)
+    if slim_presence:
+        # Modern format: data is keyed by user_id, contains active_timestamp/idle_timestamp
+        result = dict(presence=presence_dict[str(target.id)])
+    else:
+        # Legacy format: data is keyed by email, requires additional processing
+        result = dict(presence=presence_dict[target.email])
+        aggregated_info = result["presence"]["aggregated"]
+        aggr_status_duration = datetime_to_timestamp(timezone_now()) - aggregated_info["timestamp"]
+        if aggr_status_duration > settings.OFFLINE_THRESHOLD_SECS:
+            aggregated_info["status"] = "offline"
+        for val in result["presence"].values():
+            val.pop("client", None)
+            val.pop("pushable", None)
+
     return json_success(request, data=result)
 
 
