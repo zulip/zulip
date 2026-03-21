@@ -1,4 +1,4 @@
-/* global $, CSS */
+/* global CSS */
 
 import * as assert from "node:assert/strict";
 import * as fs from "node:fs";
@@ -85,7 +85,9 @@ async function run(): Promise<void> {
             `${message_list_id}`,
         )}"] .unread_marker`;
         await page.evaluate((sel) => {
-            $(sel).remove();
+            for (const element of globalThis.document.querySelectorAll(sel)) {
+                element.remove();
+            }
         }, marker);
 
         const messageSelector = `#message-row-${message_list_id}-${CSS.escape(messageId)}`;
@@ -93,13 +95,18 @@ async function run(): Promise<void> {
 
         const messageListBox = await page.$(messageListSelector);
         assert.ok(messageListBox !== null);
-        await page.evaluate((msg) => $(msg).removeClass("selected_message"), messageSelector);
+        await page.evaluate((msg) => {
+            const element = globalThis.document.querySelector(msg);
+            element?.classList.remove("selected_message");
+        }, messageSelector);
 
         // This is done so as to get white background while capturing screenshots.
         const background_selectors = [".app-main", ".message-feed", ".message_header"];
         await page.evaluate((selectors) => {
             for (const selector of selectors) {
-                $(selector).css("background-color", "white");
+                for (const element of globalThis.document.querySelectorAll<HTMLElement>(selector)) {
+                    element.style.backgroundColor = "white";
+                }
             }
         }, background_selectors);
 

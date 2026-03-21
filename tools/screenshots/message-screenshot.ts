@@ -1,4 +1,4 @@
-/* global $, CSS */
+/* global CSS */
 
 import * as assert from "node:assert/strict";
 import * as fs from "node:fs";
@@ -73,10 +73,17 @@ async function run(): Promise<void> {
         await page.waitForSelector(messageSelector);
         // remove unread marker and don't select message
         const marker = `#message-row-${message_list_id}-${CSS.escape(messageId)} .unread_marker`;
-        await page.evaluate((sel) => $(sel).remove(), marker);
+        await page.evaluate((sel) => {
+            for (const element of globalThis.document.querySelectorAll(sel)) {
+                element.remove();
+            }
+        }, marker);
         const messageBox = await page.$(messageSelector);
         assert.ok(messageBox !== null);
-        await page.evaluate((msg) => $(msg).removeClass("selected_message"), messageSelector);
+        await page.evaluate((msg) => {
+            const element = globalThis.document.querySelector(msg);
+            element?.classList.remove("selected_message");
+        }, messageSelector);
         const messageGroup = await messageBox.$("xpath/..");
         assert.ok(messageGroup !== null);
         // Compute screenshot area, with some padding around the message group
