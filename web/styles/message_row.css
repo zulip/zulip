@@ -1373,6 +1373,9 @@
     max-height: 200px;
     max-width: min(600px, 70vw);
     overflow: hidden;
+    /* Use the same surface background as message rows so the text color
+       (--color-text-message-default) renders correctly in both themes. */
+    background-color: var(--color-background-stream-message-content);
 
     .messagebox-content {
         display: grid;
@@ -1421,20 +1424,5 @@
                 white-space: normal;
             }
         }
-    }
-
-    code {
-        color: var(--color-text-default);
-        background-color: var(--color-background-disabled);
-        border-radius: 3px;
-        padding: 0 2px;
-    }
-
-    .codehilite pre {
-        color: light-dark(hsl(0deg 0% 87%), hsl(0deg 0% 87%));
-        background-color: light-dark(
-            hsl(0deg 0% 70% / 4%),
-            hsl(0deg 0% 100% / 4%)
-        );
     }
 }
