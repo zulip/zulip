@@ -1,0 +1,83 @@
+{
+  "id": 277713381,
+  "number": "5",
+  "config": {
+    "language": "ruby",
+    "os": [
+      "linux"
+    ],
+    "dist": "focal",
+    "notifications": {
+      "webhooks": [
+        {
+          "urls": [
+            "https://4f4e-49-37-250-23.ngrok-free.app/api/v1/external/travis?api_key=qgbRyggtXVwFxCWeEwRS2sCeyfMleyFZ&stream=12"
+          ],
+          "on_success": "always",
+          "on_failure": "always",
+          "on_start": "always"
+        }
+      ]
+    }
+  },
+  "type": "api",
+  "state": "started",
+  "status": null,
+  "result": null,
+  "status_message": "Pending",
+  "result_message": "Pending",
+  "started_at": "2026-03-18T10:28:09Z",
+  "finished_at": null,
+  "duration": null,
+  "build_url": "https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277713381",
+  "commit_id": 1277801499,
+  "commit": "2eab9aaa002563c4b8db90a77eac9a1ba4e24643",
+  "base_commit": null,
+  "head_commit": null,
+  "branch": "main",
+  "message": "update ci url",
+  "compare_url": "https://github.com/sathwikshetty33/travis-test/compare/193da1b723460e185115a27554dfddab7ae0ec6e...2eab9aaa002563c4b8db90a77eac9a1ba4e24643",
+  "committed_at": "2026-03-18T10:26:24Z",
+  "author_name": "sathwikshetty33",
+  "author_email": "sathwikshetty2005@gmail.com",
+  "committer_name": "sathwikshetty33",
+  "committer_email": "sathwikshetty2005@gmail.com",
+  "pull_request": false,
+  "pull_request_number": null,
+  "pull_request_title": null,
+  "tag": null,
+  "repository": {
+    "id": 29853331,
+    "name": "travis-test",
+    "owner_name": "sathwikshetty33",
+    "url": null
+  },
+  "matrix": [
+    {
+      "id": 638475660,
+      "repository_id": 29853331,
+      "parent_id": 277713381,
+      "number": "5.1",
+      "state": "started",
+      "config": {
+        "os": "linux",
+        "language": "ruby",
+        "dist": "focal"
+      },
+      "status": null,
+      "result": null,
+      "commit": "2eab9aaa002563c4b8db90a77eac9a1ba4e24643",
+      "branch": "main",
+      "message": "update ci url",
+      "compare_url": "https://github.com/sathwikshetty33/travis-test/compare/193da1b723460e185115a27554dfddab7ae0ec6e...2eab9aaa002563c4b8db90a77eac9a1ba4e24643",
+      "started_at": "2026-03-18T10:28:09Z",
+      "finished_at": null,
+      "committed_at": "2026-03-18T10:26:24Z",
+      "author_name": "sathwikshetty33",
+      "author_email": "sathwikshetty2005@gmail.com",
+      "committer_name": "sathwikshetty33",
+      "committer_email": "sathwikshetty2005@gmail.com",
+      "allow_failure": null
+    }
+  ]
+}

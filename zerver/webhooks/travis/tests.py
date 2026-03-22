@@ -34,6 +34,18 @@ class TravisHookTests(WebhookTestCase):
             content_type="application/x-www-form-urlencoded",
         )
 
+    def test_travis_api(self) -> None:
+        expected_message = (
+            "**Build [#5](https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277713381)** "
+            "is **being built** :time_ticking: for commit: [update ci url](https://github.com/sathwikshetty33/travis-test/compare/193da1b723460e185115a27554dfddab7ae0ec6e...2eab9aaa002563c4b8db90a77eac9a1ba4e24643) by sathwikshetty33 (triggered by api)."
+        )
+        self.check_webhook(
+            "api",
+            self.PUSH_TOPIC,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
+
     def test_travis_only_pull_request_event(self) -> None:
         self.url = f'{self.build_webhook_url()}&only_events=["pull_request"]'
 

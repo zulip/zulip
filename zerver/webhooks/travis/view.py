@@ -15,6 +15,7 @@ from zerver.models import UserProfile
 ALL_EVENT_TYPES = [
     "push",
     "pull_request",
+    "api",
 ]
 
 STATUS_MAP = {
@@ -30,7 +31,7 @@ STATUS_MAP = {
 
 MESSAGE_TEMPLATE = """
 **Build [#{build_number}]({build_url})** {status} {emoji} \
-for commit: [{commit_message}]({compare_url}) by {author}.
+for commit: [{commit_message}]({compare_url}) by {author}{trigger}.
 """.strip()
 
 
@@ -52,13 +53,13 @@ class TravisPayload(BaseModel):
     pull_request_title: str | None = None
 
 
-def get_message_body(payload: TravisPayload) -> str:
+def get_message_body(payload: TravisPayload, event: str) -> str:
     commit_message = (
         payload.message.strip().splitlines()[0] if payload.message else "(no commit message)"
     )
 
     status_message, emoji = STATUS_MAP[payload.status_message]
-
+    trigger = f" (triggered by {payload.type})" if event == "api" else ""
     body = MESSAGE_TEMPLATE.format(
         build_number=payload.number,
         build_url=payload.build_url,
@@ -67,13 +68,14 @@ def get_message_body(payload: TravisPayload) -> str:
         author=payload.author_name,
         emoji=emoji,
         compare_url=payload.compare_url,
+        trigger=trigger,
     )
 
     return body
 
 
 def get_message(payload: TravisPayload, event: str) -> tuple[str, str]:
-    body = get_message_body(payload)
+    body = get_message_body(payload, event)
 
     if event == "pull_request":
         topic = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
