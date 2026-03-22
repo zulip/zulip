@@ -34,7 +34,7 @@ type TermPattern = Omit<NarrowTerm, "operand"> & Partial<Pick<NarrowTerm, "opera
 const channel_incompatible_patterns: TermPattern[] = [
     {operator: "is", operand: "dm"},
     {operator: "channel"},
-    {operator: "dm-including"},
+    {operator: "dm-with"},
     {operator: "dm"},
     {operator: "in"},
     {operator: "channels"},
@@ -87,7 +87,7 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
     topic: [
         {operator: "dm"},
         {operator: "is", operand: "dm"},
-        {operator: "dm-including"},
+        {operator: "dm-with"},
         {operator: "topic"},
     ],
     dm: [
@@ -96,18 +96,18 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
         {operator: "channel"},
         {operator: "is", operand: "resolved"},
     ],
-    "dm-including": [{operator: "channel"}, {operator: "stream"}],
+    "dm-with": [{operator: "channel"}, {operator: "stream"}],
     "is:resolved": [
         {operator: "is", operand: "resolved"},
         {operator: "is", operand: "dm"},
         {operator: "dm"},
-        {operator: "dm-including"},
+        {operator: "dm-with"},
     ],
     "-is:resolved": [
         {operator: "is", operand: "resolved"},
         {operator: "is", operand: "dm"},
         {operator: "dm"},
-        {operator: "dm-including"},
+        {operator: "dm-with"},
     ],
     "is:dm": [
         {operator: "is", operand: "dm"},
@@ -124,7 +124,7 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
         {operator: "is", operand: "followed"},
         {operator: "is", operand: "dm"},
         {operator: "dm"},
-        {operator: "dm-including"},
+        {operator: "dm-with"},
     ],
     "is:alerted": [{operator: "is", operand: "alerted"}],
     "is:unread": [{operator: "is", operand: "unread"}],
@@ -269,7 +269,7 @@ function get_channel_suggestions(
 }
 
 function get_group_suggestions(
-    group_operator: "dm" | "dm-including",
+    group_operator: "dm" | "dm-with",
 ): (last: NarrowCanonicalTermSuggestion, terms: NarrowCanonicalTerm[]) => Suggestion[] {
     return (last: NarrowCanonicalTermSuggestion, terms: NarrowCanonicalTerm[]): Suggestion[] => {
         // We only suggest groups once a term with a valid user already exists
@@ -387,7 +387,7 @@ function get_person_suggestions(
     people_getter: () => User[],
     last: NarrowCanonicalTermSuggestion,
     terms: NarrowCanonicalTerm[],
-    autocomplete_operator: "dm" | "sender" | "dm-including",
+    autocomplete_operator: "dm" | "sender" | "dm-with",
 ): Suggestion[] {
     if (last.operator === "is" && last.operand === "dm") {
         last = {operator: "dm", operand: "", negated: false};
@@ -407,7 +407,7 @@ function get_person_suggestions(
         const terms: NarrowCanonicalTerm[] = [];
         switch (autocomplete_operator) {
             case "dm":
-            case "dm-including":
+            case "dm-with":
                 terms.push({
                     operator: autocomplete_operator,
                     operand: [person.user_id],
@@ -852,11 +852,11 @@ function get_operator_suggestions(
             "channel",
             "topic",
             "dm",
-            "dm-including",
+            "dm-with",
             "sender",
             "near",
         ];
-        legacy_operator_choices = ["from", "pm-with", "streams", "stream"];
+        legacy_operator_choices = ["from", "pm-with", "dm-including", "streams", "stream"];
     }
 
     // We remove suggestion choice if its incompatible_pattern matches
@@ -895,13 +895,17 @@ function get_operator_suggestions(
         if (choice === "streams") {
             choice = "channels";
         }
-
+        // Map results for "dm-with:" operator for users
+        // who have "dm-including" in their muscle memory.
+        if (choice === "dm-including") {
+            choice = "dm-with";
+        }
         // Set is_operator_suggestion to true, since we're only suggesting
         // the operator and don't want any operand, but we can't put empty
         // strings here for typescript reasons..
         switch (choice) {
             case "dm":
-            case "dm-including":
+            case "dm-with":
                 return format_as_suggestion(
                     [
                         {
@@ -1025,7 +1029,7 @@ class Attacher {
                 const new_search_string = suggestion;
                 if (
                     (new_search_string.startsWith("dm:") ||
-                        new_search_string.startsWith("dm-including:")) &&
+                        new_search_string.startsWith("dm-with:")) &&
                     new_search_string.includes(last_base_string)
                 ) {
                     suggestion_line = [...this.base.slice(0, -1), suggestion];
@@ -1091,7 +1095,7 @@ export let get_suggestions = function (
         last = text_search_terms.at(-1)!;
     }
 
-    const person_suggestion_ops = ["sender", "dm", "dm-including"];
+    const person_suggestion_ops = ["sender", "dm", "dm-with"];
 
     // Handle spaces in person name in new suggestions only. Checks if the last operator is 'search'
     // and the second last operator in search_terms is one out of person_suggestion_ops.
@@ -1143,7 +1147,7 @@ export let get_suggestions = function (
     const people_getter = make_people_getter(last);
 
     function get_people(
-        flavor: "dm" | "sender" | "dm-including",
+        flavor: "dm" | "sender" | "dm-with",
     ): (last: NarrowCanonicalTermSuggestion, base_terms: NarrowCanonicalTerm[]) => Suggestion[] {
         return function (
             last: NarrowCanonicalTermSuggestion,
@@ -1160,7 +1164,7 @@ export let get_suggestions = function (
         // name, and if there's already has a DM pill then the
         // searching user probably is looking to make a group DM.
         get_group_suggestions("dm"),
-        get_group_suggestions("dm-including"),
+        get_group_suggestions("dm-with"),
         get_channels_filter_suggestions,
         get_operator_suggestions,
         get_is_filter_suggestions,
@@ -1168,7 +1172,7 @@ export let get_suggestions = function (
         get_channel_suggestions,
         get_people("dm"),
         get_people("sender"),
-        get_people("dm-including"),
+        get_people("dm-with"),
         get_topic_suggestions,
         get_has_filter_suggestions,
     ];
