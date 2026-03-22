@@ -245,6 +245,13 @@ export function update_wildcard_mention_policy_setting(
     stream_ui_updates.update_setting_element(sub, "wildcard_mention_policy");
 }
 
+export function update_stream_ui_element(
+    sub: StreamSubscription,
+    setting: string,
+): void {
+    stream_ui_updates.update_setting_element(sub, setting);
+}
+
 export function update_stream_permission_group_setting(
     setting_name: StreamPermissionGroupSetting,
     sub: StreamSubscription,
