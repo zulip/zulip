@@ -276,6 +276,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.staticfiles",
     "confirmation",
+    "oauth2_provider",
     "zerver",
     "social_django",
     "django_scim",
@@ -728,12 +729,28 @@ two_factor_template_engine_settings = {
     "OPTIONS": two_factor_template_options,
 }
 
+# oauth2_provider uses the default Django template engine (not Jinja2), so we
+# need to add config for it here.
+oauth_templates_options = deepcopy(default_template_engine_settings["OPTIONS"])
+del oauth_templates_options["environment"]
+del oauth_templates_options["extensions"]
+oauth_templates_options["loaders"] = ["zproject.template_loaders.OauthLoader"]
+
+oauth_template_engine_settings = {
+    "NAME": "OAuth_Server",
+    "BACKEND": "django.template.backends.django.DjangoTemplates",
+    "DIRS": [],
+    "APP_DIRS": False,
+    "OPTIONS": oauth_templates_options,
+}
+
 # The order here is important; get_template and related/parent functions try
 # the template engines in order until one succeeds.
 TEMPLATES = [
     default_template_engine_settings,
     non_html_template_engine_settings,
     two_factor_template_engine_settings,
+    oauth_template_engine_settings,
 ]
 ########################################################################
 # LOGGING SETTINGS
