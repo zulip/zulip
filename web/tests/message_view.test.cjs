@@ -275,7 +275,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
     // for non-subbed public stream
     const rome_id = 99;
     stream_data.add_sub_for_tests(
-        make_stream({name: "ROME", subscribed: false, stream_id: rome_id}),
+        make_stream({name: "ROME", stream_id: rome_id, subscribed: false}),
     );
     current_filter = set_filter([["stream", rome_id.toString()]]);
     narrow_banner.show_empty_narrow_message(current_filter);
