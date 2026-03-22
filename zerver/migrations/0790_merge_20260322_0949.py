@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0789_add_external_auth_fields_to_preregistrationuser"),
         ("zerver", "0789_merge_20260315_1955"),
