@@ -12139,6 +12139,128 @@ paths:
                       "server_timestamp": 1656958539.6287155,
                       "presence_last_update_id": 1000,
                     }
+  /users/me/profile_data:
+    patch:
+      operationId: update-profile-data
+      summary: Update your profile data
+      tags: ["users"]
+      description: |
+        Update the current user's [profile data](/help/edit-your-profile) for
+        one or more of the [custom profile fields](/help/custom-profile-fields)
+        configured in the organization.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  description: |
+                    An array of objects describing updates to the custom profile
+                    field data for the user.
+                  type: array
+                  example:
+                    [{"id": 4, "value": "0"}, {"id": 5, "value": "1909-04-05"}]
+                  items:
+                    $ref: "#/components/schemas/ProfileDataUpdate"
+              required:
+                - data
+            encoding:
+              data:
+                contentType: application/json
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "You are not allowed to change this field. Contact an administrator to update it.",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when editing custom profile fields
+                          is restricted in the organization:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Field id 99 not found.",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when a custom profile field
+                          ID does not exist:
+    delete:
+      operationId: remove-profile-data
+      summary: Remove your profile data
+      tags: ["users"]
+      description: |
+        Remove the current user's [profile data](/help/edit-your-profile) for
+        one or more of the [custom profile fields](/help/custom-profile-fields)
+        configured in the organization.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  description: |
+                    An array of custom profile field IDs to remove any data set for
+                    the user.
+                  type: array
+                  example: [1]
+                  items:
+                    type: integer
+              required:
+                - data
+            encoding:
+              data:
+                contentType: application/json
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "You are not allowed to change this field. Contact an administrator to update it.",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when editing custom profile fields
+                          is restricted in the organization:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "Field id 99 not found.",
+                            "code": "BAD_REQUEST",
+                          }
+                        description: |
+                          An example JSON error response when a custom profile field
+                          ID does not exist:
   /users/me/status:
     post:
       operationId: update-status
