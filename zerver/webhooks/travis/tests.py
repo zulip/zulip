@@ -6,7 +6,9 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class TravisHookTests(WebhookTestCase):
-    TOPIC_NAME = "builds"
+    PUSH_TOPIC = "travis-test / main"
+    PR_TOPIC = "travis-test / PR #1 Add hello header to xyz.txt"
+
     EXPECTED_PUSH_MESSAGE = (
         "**Build [#1](https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277712204)** "
         "is **being built** :counterclockwise: for commit: [Add Projects model.](https://github.com/sathwikshetty33/travis-test/commit/193da1b72346) by sathwikshetty33."
@@ -27,7 +29,7 @@ class TravisHookTests(WebhookTestCase):
 
         self.check_webhook(
             "push",
-            self.TOPIC_NAME,
+            self.PUSH_TOPIC,
             self.EXPECTED_PUSH_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
@@ -37,7 +39,7 @@ class TravisHookTests(WebhookTestCase):
 
         self.check_webhook(
             "pull_request",
-            self.TOPIC_NAME,
+            self.PR_TOPIC,
             self.EXPECTED_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
@@ -59,7 +61,7 @@ class TravisHookTests(WebhookTestCase):
 
         self.check_webhook(
             "push",
-            self.TOPIC_NAME,
+            self.PUSH_TOPIC,
             self.EXPECTED_PUSH_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
@@ -69,7 +71,7 @@ class TravisHookTests(WebhookTestCase):
 
         self.check_webhook(
             "push",
-            self.TOPIC_NAME,
+            self.PUSH_TOPIC,
             self.EXPECTED_PUSH_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
@@ -91,7 +93,7 @@ class TravisHookTests(WebhookTestCase):
 
         self.check_webhook(
             "pull_request",
-            self.TOPIC_NAME,
+            self.PR_TOPIC,
             self.EXPECTED_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
@@ -101,14 +103,14 @@ class TravisHookTests(WebhookTestCase):
 
         self.check_webhook(
             "pull_request",
-            self.TOPIC_NAME,
+            self.PR_TOPIC,
             self.EXPECTED_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
         self.check_webhook(
             "push",
-            self.TOPIC_NAME,
+            self.PUSH_TOPIC,
             self.EXPECTED_PUSH_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
