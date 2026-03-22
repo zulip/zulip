@@ -757,7 +757,6 @@ input.settings_text_input {
     position: relative;
     top: 0.06rem;
     padding-right: 1px;
-    width: 12px;
 
     &.zulip-icon-globe,
     &.zulip-icon-archive,
@@ -769,6 +768,12 @@ input.settings_text_input {
     &.zulip-icon-users {
         font-size: 0.8em;
     }
+}
+
+.decorated-channel-and-icon-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .zulip-icon-lock {
