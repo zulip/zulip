@@ -16,6 +16,7 @@ ALL_EVENT_TYPES = [
     "push",
     "pull_request",
     "api",
+    "cron",
 ]
 
 STATUS_MAP = {
@@ -59,7 +60,7 @@ def get_message_body(payload: TravisPayload, event: str) -> str:
     )
 
     status_message, emoji = STATUS_MAP[payload.status_message]
-    trigger = f" (triggered by {payload.type})" if event == "api" else ""
+    trigger = f" (triggered by {payload.type})" if event in {"api", "cron"} else ""
     body = MESSAGE_TEMPLATE.format(
         build_number=payload.number,
         build_url=payload.build_url,
