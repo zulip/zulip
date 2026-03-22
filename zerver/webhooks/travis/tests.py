@@ -11,12 +11,12 @@ class TravisHookTests(WebhookTestCase):
 
     EXPECTED_PUSH_MESSAGE = (
         "**Build [#1](https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277712204)** "
-        "is **being built** :counterclockwise: for commit: [Add Projects model.](https://github.com/sathwikshetty33/travis-test/commit/193da1b72346) by sathwikshetty33."
+        "is **being built** :time_ticking: for commit: [Add Projects model.](https://github.com/sathwikshetty33/travis-test/commit/193da1b72346) by sathwikshetty33."
     )
 
     EXPECTED_PULL_REQUEST_MESSAGE = (
         "**Build [#3](https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277712246)** "
-        "is **being built** :counterclockwise: for commit: [Add hello header to xyz.txt](https://github.com/sathwikshetty33/travis-test/pull/1) by Sathwik Shetty."
+        "is **being built** :time_ticking: for commit: [Add hello header to xyz.txt](https://github.com/sathwikshetty33/travis-test/pull/1) by Sathwik Shetty."
     )
 
     def test_travis_message(self) -> None:

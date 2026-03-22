@@ -12,23 +12,20 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE
 from zerver.models import UserProfile
 
-GOOD_STATUSES = ["Passed", "Fixed"]
-BAD_STATUSES = ["Failed", "Broken", "Still Failing", "Errored", "Canceled"]
-PENDING_STATUSES = ["Pending"]
 ALL_EVENT_TYPES = [
     "push",
     "pull_request",
 ]
 
 STATUS_MAP = {
-    "Passed": "**passed**",
-    "Fixed": "was **fixed**",
-    "Failed": "**failed**",
-    "Broken": "is **broken**",
-    "Still Failing": "is **still failing**",
-    "Canceled": "was **canceled**",
-    "Errored": "**errored**",
-    "Pending": "is **being built**",
+    "Passed": ("**passed**", ":check:"),
+    "Fixed": ("was **fixed**", ":check:"),
+    "Failed": ("**failed**", ":cross_mark:"),
+    "Broken": ("is **broken**", ":cross_mark:"),
+    "Still Failing": ("is **still failing**", ":rotating_light:"),
+    "Canceled": ("was **canceled**", ":no_entry:"),
+    "Errored": ("**errored**", ":cross_mark:"),
+    "Pending": ("is **being built**", ":time_ticking:"),
 }
 
 MESSAGE_TEMPLATE = """
@@ -59,21 +56,13 @@ def get_message_body(payload: TravisPayload) -> str:
     commit_message = (
         payload.message.strip().splitlines()[0] if payload.message else "(no commit message)"
     )
-    status_message = payload.status_message
 
-    if status_message in GOOD_STATUSES:
-        emoji = ":thumbs_up:"
-    elif status_message in BAD_STATUSES:
-        emoji = ":thumbs_down:"
-    elif status_message in PENDING_STATUSES:
-        emoji = ":counterclockwise:"
-    else:
-        emoji = f"(No emoji specified for status '{status_message}'.)"
+    status_message, emoji = STATUS_MAP[payload.status_message]
 
     body = MESSAGE_TEMPLATE.format(
         build_number=payload.number,
         build_url=payload.build_url,
-        status=STATUS_MAP[status_message],
+        status=status_message,
         commit_message=commit_message,
         author=payload.author_name,
         emoji=emoji,
