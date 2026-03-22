@@ -6,6 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from pydantic import BaseModel, Json
 
 from zerver.decorator import webhook_view
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -103,6 +104,9 @@ def api_travis_webhook(
     message: Annotated[Json[TravisPayload], ApiParamConfig("payload")],
 ) -> HttpResponse:
     event = message.type
+    if event not in ALL_EVENT_TYPES:
+        raise UnsupportedWebhookEventTypeError(event)
+
     topic_name, body = get_message(message, event)
     check_send_webhook_message(request, user_profile, topic_name, body, event)
     return json_success(request)
