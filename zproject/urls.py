@@ -16,6 +16,7 @@ from django.views.generic import RedirectView
 
 from zerver.forms import LoggingSetPasswordForm
 from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
+from zerver.lib.oauth2 import oauth2_endpoint_views
 from zerver.lib.rest import rest_path
 from zerver.lib.url_redirects import DOCUMENTATION_REDIRECTS, get_integration_category_redirects
 from zerver.views.alert_words import add_alert_words, list_alert_words, remove_alert_words
@@ -1004,6 +1005,11 @@ if settings.DEVELOPMENT:
 
 urls += [
     path("api/v1/", include(v1_api_mobile_patterns)),
+]
+
+# Experimental oauth provider support.
+urls += [
+    path("o/", include((oauth2_endpoint_views, "oauth2_provider"))),
 ]
 
 # Healthcheck URL
