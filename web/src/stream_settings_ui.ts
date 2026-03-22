@@ -245,10 +245,7 @@ export function update_wildcard_mention_policy_setting(
     stream_ui_updates.update_setting_element(sub, "wildcard_mention_policy");
 }
 
-export function update_stream_ui_element(
-    sub: StreamSubscription,
-    setting: string,
-): void {
+export function update_stream_ui_element(sub: StreamSubscription, setting: string): void {
     stream_ui_updates.update_setting_element(sub, setting);
 }
 
@@ -1375,4 +1372,3 @@ export function initialize(): void {
         window.location.href = hash_util.channel_url_by_user_setting(stream_id);
     });
 }
-

@@ -297,15 +297,15 @@ test("update_property", ({override, override_rewire}) => {
     }
 
     // Test stream wildcard_mention_policy change event
-{
-    const stub = make_stub();
-    override(stream_settings_ui, "update_stream_ui_element", stub.f);
-    stream_events.update_property(stream_id, "wildcard_mention_policy", 5);
-    assert.equal(stub.num_calls, 1);
-    const args = stub.get_args("sub", "setting");
-    assert.equal(args.sub.stream_id, stream_id);
-    assert.equal(args.setting, "wildcard_mention_policy");
-}
+    {
+        const stub = make_stub();
+        override(stream_settings_ui, "update_stream_ui_element", stub.f);
+        stream_events.update_property(stream_id, "wildcard_mention_policy", 5);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("sub", "setting");
+        assert.equal(args.sub.stream_id, stream_id);
+        assert.equal(args.setting, "wildcard_mention_policy");
+    }
 
     // Test stream can_remove_subscribers_group change event
     {
