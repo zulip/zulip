@@ -1376,6 +1376,10 @@
     /* Use the same surface background as message rows so the text color
        (--color-text-message-default) renders correctly in both themes. */
     background-color: var(--color-background-stream-message-content);
+    /* Set text color explicitly for both themes. The tippy container sets
+       white text, and --color-text-sender-name is only defined in dark mode,
+       so we need an explicit color that works in light mode too. */
+    color: light-dark(hsl(0deg 0% 15%), hsl(0deg 0% 87%));
 
     .messagebox-content {
         display: grid;
