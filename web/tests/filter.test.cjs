@@ -3220,4 +3220,13 @@ run_test("get_stringified_narrow_for_server_query", () => {
         narrow,
         '[{"operator":"channel","operand":1,"negated":false},{"operator":"topic","operand":"bar","negated":false}]',
     );
+
+    // Regression test: keep huge IDs as strings so they cannot collapse to 1.
+    const huge_channel_filter = new Filter([
+        {operator: "channel", operand: "11234879138471092384709182374"},
+    ]);
+    assert.equal(
+        huge_channel_filter.get_stringified_narrow_for_server_query(),
+        '[{"operator":"channel","operand":"11234879138471092384709182374","negated":false}]',
+    );
 });
