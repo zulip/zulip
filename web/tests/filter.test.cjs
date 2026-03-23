@@ -3229,4 +3229,13 @@ run_test("get_stringified_narrow_for_server_query", () => {
         huge_channel_filter.get_stringified_narrow_for_server_query(),
         '[{"operator":"channel","operand":"11234879138471092384709182374","negated":false}]',
     );
+
+    // Keep non-canonical channel operands unchanged.
+    const non_canonical_channel_filter = new Filter([
+        {operator: "channel", operand: "11234879138471092384709182374xyz"},
+    ]);
+    assert.equal(
+        non_canonical_channel_filter.get_stringified_narrow_for_server_query(),
+        '[{"operator":"channel","operand":"11234879138471092384709182374xyz","negated":false}]',
+    );
 });
