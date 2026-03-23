@@ -17,7 +17,7 @@ async function get_decoded_url_in_selector(page: Page, selector: string): Promis
 }
 
 async function open_manage_bot_tab(page: Page, user_id: number): Promise<void> {
-    const manage_button_selector = `#admin_your_bots_table .user_row[data-user-id="${user_id}"] .manage-user-button`;
+    const manage_button_selector = `#personal_your_bots_table .user_row[data-user-id="${user_id}"] .manage-user-button`;
     await page.waitForSelector(manage_button_selector, {visible: true});
     await page.click(manage_button_selector);
 
@@ -86,6 +86,7 @@ async function test_change_password(page: Page): Promise<void> {
 async function test_get_api_key(page: Page): Promise<void> {
     await page.click('[data-section="account-and-privacy"]');
     const show_change_api_key_selector = "#api_key_button";
+    await page.waitForSelector(show_change_api_key_selector, {visible: true});
     await page.click(show_change_api_key_selector);
 
     const get_api_key_button_selector = "#get_api_key_button";
@@ -115,7 +116,8 @@ async function test_get_api_key(page: Page): Promise<void> {
 }
 
 async function test_webhook_bot_creation(page: Page): Promise<void> {
-    await page.click("#admin-bot-list .add-a-new-bot");
+    await page.waitForSelector("#personal-bot-list .add-a-new-bot", {visible: true});
+    await page.click("#personal-bot-list .add-a-new-bot");
     await common.wait_for_micromodal_to_open(page);
     assert.strictEqual(
         await common.get_text_from_selector(page, ".dialog_heading"),
@@ -136,6 +138,13 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
     await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
+    // Wait for the bot to appear in the local data store, since the
+    // bot_add event may not have been processed yet when the modal closes.
+    await page.waitForFunction(
+        (bot_name: string) => zulip_test.get_user_id_from_name(bot_name) !== undefined,
+        {},
+        "Bot 1",
+    );
     const user_id = await common.get_user_id_from_name(page, "Bot 1");
     await open_manage_bot_tab(page, user_id!);
 
@@ -165,7 +174,8 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
 }
 
 async function test_normal_bot_creation(page: Page): Promise<void> {
-    await page.click("#admin-bot-list .add-a-new-bot");
+    await page.waitForSelector("#personal-bot-list .add-a-new-bot", {visible: true});
+    await page.click("#personal-bot-list .add-a-new-bot");
     await common.wait_for_micromodal_to_open(page);
     assert.strictEqual(
         await common.get_text_from_selector(page, ".dialog_heading"),
@@ -185,6 +195,13 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
     await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
+    // Wait for the bot to appear in the local data store, since the
+    // bot_add event may not have been processed yet when the modal closes.
+    await page.waitForFunction(
+        (bot_name: string) => zulip_test.get_user_id_from_name(bot_name) !== undefined,
+        {},
+        "Bot 2",
+    );
     const user_id = await common.get_user_id_from_name(page, "Bot 2");
     await open_manage_bot_tab(page, user_id!);
 
@@ -207,11 +224,14 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
 }
 
 async function test_botserverrc(page: Page): Promise<void> {
-    await page.click("#download-botserverrc-file");
-    await page.waitForSelector('#hidden-botserverrc-download[href^="data:application"]');
+    await page.waitForSelector("#personal-bot-list .download-botserverrc-file", {visible: true});
+    await page.click("#personal-bot-list .download-botserverrc-file");
+    await page.waitForSelector(
+        '#personal-bot-list .hidden-botserverrc-download[href^="data:application"]',
+    );
     const botserverrc_decoded_url = await get_decoded_url_in_selector(
         page,
-        "#hidden-botserverrc-download",
+        "#personal-bot-list .hidden-botserverrc-download",
     );
     const botserverrc_regex =
         /^data:application\/octet-stream;charset=utf-8,\[]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
@@ -301,7 +321,7 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
 }
 
 async function test_your_bots_section(page: Page): Promise<void> {
-    await page.click(".your-bots-link");
+    await page.click('.normal-settings-list [data-section="bots"]');
     await test_webhook_bot_creation(page);
     await test_normal_bot_creation(page);
     await test_botserverrc(page);
@@ -338,7 +358,7 @@ async function get_alert_words_status_text(page: Page): Promise<string> {
 async function close_alert_words_status(page: Page): Promise<void> {
     const status_close_button = ".alert-word-status-banner .banner-close-button";
     await page.click(status_close_button);
-    assert.ok((await page.$(alert_word_status_banner_selector)) === null);
+    await page.waitForSelector(alert_word_status_banner_selector, {hidden: true});
 }
 
 async function test_duplicate_alert_words_cannot_be_added(

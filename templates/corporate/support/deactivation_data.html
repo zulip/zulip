@@ -16,12 +16,10 @@
         {% if deactivation_data.billing_user %}
         <li><b>Billing user</b>: {{ deactivation_data.billing_user.email}} (ID: {{ deactivation_data.billing_user.id }})</li>
         {% endif %}
-        {% if not remote_support_view %}
         {% if deactivation_data.reason %}
         <li><b>Deactivation reason</b>: {{ deactivation_data.reason }}</li>
         {% else %}
         <li><b>Deactivation reason</b>: Not in audit log data</li>
-        {% endif %}
         {% endif %}
     </ul>
     {% endif %}

@@ -156,6 +156,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
             instance.setContent(ui_util.parse_html(content));
         },
         onMount(instance) {
+            popover_menus.focus_popover(instance);
             const $popper = $(instance.popper);
             popover_menus.popover_instances.stream_actions_popover = instance;
             ui_util.show_left_sidebar_menu_icon(elt);
@@ -832,6 +833,12 @@ export async function build_move_topic_to_stream_popover(
         }
 
         assert(new_topic_name !== undefined);
+
+        // Don't show this warning in case only rename.
+        if (new_topic_name.trim().toLowerCase() === args.topic_name.trim().toLowerCase()) {
+            return false;
+        }
+
         let stream_id: number;
         if (stream_widget_value === undefined) {
             // Set stream_id to current_stream_id since the user is not
@@ -1213,18 +1220,29 @@ export async function build_move_topic_to_stream_popover(
 }
 
 export function initialize(): void {
-    $("#stream_filters").on("click", ".stream-sidebar-menu-icon", function (this: HTMLElement, e) {
+    function on_sidebar_menu_icon_click(element: HTMLElement, e: JQuery.ClickEvent): void {
         e.preventDefault();
-        const $stream_li = $(this).parents("li");
+        const $stream_li = $(element).parents("li");
         const stream_id = elem_to_stream_id($stream_li);
 
         build_stream_popover({
-            elt: this,
+            elt: element,
             stream_id,
         });
 
         e.stopPropagation();
+    }
+    $("#stream_filters").on("click", ".stream-sidebar-menu-icon", function (this: HTMLElement, e) {
+        on_sidebar_menu_icon_click(this, e);
     });
+
+    $("#left-sidebar-modal").on(
+        "click",
+        "#more-topics-modal .stream-sidebar-menu-icon",
+        function (this: HTMLElement, e) {
+            on_sidebar_menu_icon_click(this, e);
+        },
+    );
 
     $("body").on("click", ".inbox-stream-menu", function (this: HTMLElement, e) {
         const stream_id = Number.parseInt($(this).attr("data-stream-id")!, 10);

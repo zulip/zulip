@@ -53,7 +53,7 @@ from zerver.actions.default_streams import (
     do_remove_streams_from_default_stream_group,
     lookup_default_stream_groups,
 )
-from zerver.actions.devices import do_register_device
+from zerver.actions.devices import do_register_device, do_remove_device
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_invite_users,
@@ -151,6 +151,7 @@ from zerver.actions.user_groups import (
 from zerver.actions.user_settings import (
     do_change_avatar_fields,
     do_change_full_name,
+    do_change_user_date_joined,
     do_change_user_delivery_email,
     do_change_user_setting,
     do_regenerate_api_key,
@@ -162,7 +163,7 @@ from zerver.actions.users import (
     do_deactivate_user,
     do_update_outgoing_webhook_service,
 )
-from zerver.actions.video_calls import do_set_zoom_token
+from zerver.actions.video_calls import do_set_video_call_provider_token
 from zerver.lib.drafts import DraftData, do_create_drafts, do_delete_draft, do_edit_draft
 from zerver.lib.event_schema import (
     check_alert_words,
@@ -177,6 +178,7 @@ from zerver.lib.event_schema import (
     check_default_streams,
     check_delete_message,
     check_device_add,
+    check_device_remove,
     check_device_update,
     check_direct_message,
     check_draft_add,
@@ -524,7 +526,7 @@ class BaseAction(ZulipTestCase):
                         # this isn't guaranteed to match
                         del stream["subscriber_count"]
             if "realm_bots" in state:
-                state["realm_bots"] = {u["email"]: u for u in state["realm_bots"]}
+                state["realm_bots"] = {u["user_id"]: u for u in state["realm_bots"]}
             # Since time is different for every call, just fix the value
             state["server_timestamp"] = 0
             if "presence_last_update_id" in state:
@@ -1306,7 +1308,7 @@ class NormalActionsTest(BaseAction):
         message_obj = events[0]["message"]
         self.assertEqual(message_obj["sender_full_name"], iago.full_name)
         self.assertEqual(message_obj["sender_email"], iago.delivery_email)
-        self.assertIsNone(message_obj["avatar_url"])
+        self.assertIsNotNone(message_obj["avatar_url"])
 
     def test_add_reaction(self) -> None:
         message_id = self.send_stream_message(self.example_user("hamlet"), "Verona", "hello")
@@ -2639,6 +2641,12 @@ class NormalActionsTest(BaseAction):
         with self.verify_action(num_events=0, state_change_expected=False):
             do_change_full_name(cordelia, "Cordelia", self.user_profile, notify=False)
 
+    def test_change_date_joined(self) -> None:
+        now = timezone_now()
+        with self.verify_action() as events:
+            do_change_user_date_joined(self.user_profile, now)
+        check_realm_user_update("events[0]", events[0], "date_joined")
+
     def test_change_user_delivery_email_email_address_visibility_admins(self) -> None:
         do_change_user_setting(
             self.user_profile,
@@ -3440,7 +3448,7 @@ class NormalActionsTest(BaseAction):
     def test_create_bot(self) -> None:
         with self.verify_action(num_events=4) as events:
             self.create_bot("test")
-        check_realm_bot_add("events[3]", events[3])
+        check_realm_bot_add("events[3]", events[3], UserProfile.DEFAULT_BOT)
 
         with self.verify_action(num_events=4) as events:
             self.create_bot(
@@ -3452,7 +3460,7 @@ class NormalActionsTest(BaseAction):
             )
         # The third event is the second call of notify_created_bot, which contains additional
         # data for services (in contrast to the first call).
-        check_realm_bot_add("events[3]", events[3])
+        check_realm_bot_add("events[3]", events[3], UserProfile.OUTGOING_WEBHOOK_BOT)
 
         with self.verify_action(num_events=4) as events:
             self.create_bot(
@@ -3462,26 +3470,24 @@ class NormalActionsTest(BaseAction):
                 config_data=orjson.dumps({"foo": "bar"}).decode(),
                 bot_type=UserProfile.EMBEDDED_BOT,
             )
-        check_realm_bot_add("events[3]", events[3])
+        check_realm_bot_add("events[3]", events[3], UserProfile.EMBEDDED_BOT)
 
     def test_change_bot_full_name(self) -> None:
         bot = self.create_bot("test")
-        with self.verify_action(num_events=2) as events:
+        with self.verify_action(num_events=1) as events:
             do_change_full_name(bot, "New Bot Name", self.user_profile, notify=False)
-        check_realm_bot_update("events[1]", events[1], "full_name")
+        check_realm_user_update("events[0]", events[0], "full_name")
 
     def test_regenerate_bot_api_key(self) -> None:
         bot = self.create_bot("test")
-        with self.verify_action() as events:
+        with self.verify_action(num_events=0, state_change_expected=False):
             do_regenerate_api_key(bot, self.user_profile)
-        check_realm_bot_update("events[0]", events[0], "api_key")
 
     def test_change_bot_avatar_source(self) -> None:
         bot = self.create_bot("test")
-        with self.verify_action(num_events=2) as events:
+        with self.verify_action(num_events=1) as events:
             do_change_avatar_fields(bot, bot.AVATAR_FROM_USER, acting_user=self.user_profile)
-        check_realm_bot_update("events[0]", events[0], "avatar_url")
-        self.assertEqual(events[1]["type"], "realm_user")
+        check_realm_user_update("events[0]", events[0], "avatar_fields")
 
     def test_change_realm_icon_source(self) -> None:
         with self.verify_action(state_change_expected=True) as events:
@@ -3536,26 +3542,25 @@ class NormalActionsTest(BaseAction):
         self.user_profile = self.example_user("iago")
         owner = self.example_user("hamlet")
         bot = self.create_bot("test")
-        with self.verify_action(num_events=2) as events:
+        with self.verify_action(num_events=1) as events:
             do_change_bot_owner(bot, owner, self.user_profile)
-        check_realm_bot_update("events[0]", events[0], "owner_id")
-        check_realm_user_update("events[1]", events[1], "bot_owner_id")
+        check_realm_user_update("events[0]", events[0], "bot_owner_id")
 
         self.user_profile = self.example_user("aaron")
         owner = self.example_user("hamlet")
         bot = self.create_bot("test1", full_name="Test1 Testerson")
         with self.verify_action(num_events=2) as events:
             do_change_bot_owner(bot, owner, self.user_profile)
-        check_realm_bot_delete("events[0]", events[0])
-        check_realm_user_update("events[1]", events[1], "bot_owner_id")
+        check_realm_user_update("events[0]", events[0], "bot_owner_id")
+        check_realm_bot_delete("events[1]", events[1])
 
         previous_owner = self.example_user("aaron")
         self.user_profile = self.example_user("hamlet")
         bot = self.create_test_bot("test2", previous_owner, full_name="Test2 Testerson")
         with self.verify_action(num_events=2) as events:
             do_change_bot_owner(bot, self.user_profile, previous_owner)
-        check_realm_bot_add("events[0]", events[0])
-        check_realm_user_update("events[1]", events[1], "bot_owner_id")
+        check_realm_user_update("events[0]", events[0], "bot_owner_id")
+        check_realm_bot_add("events[1]", events[1], UserProfile.DEFAULT_BOT)
 
     def test_do_update_outgoing_webhook_service(self) -> None:
         self.user_profile = self.example_user("iago")
@@ -3603,10 +3608,9 @@ class NormalActionsTest(BaseAction):
 
     def test_do_deactivate_bot(self) -> None:
         bot = self.create_bot("test")
-        with self.verify_action(num_events=2) as events:
+        with self.verify_action(num_events=1) as events:
             do_deactivate_user(bot, acting_user=None)
         check_realm_user_update("events[0]", events[0], "is_active")
-        check_realm_bot_update("events[1]", events[1], "is_active")
 
     def test_do_deactivate_user(self) -> None:
         user_profile = self.example_user("cordelia")
@@ -3761,21 +3765,21 @@ class NormalActionsTest(BaseAction):
         self.make_stream("Test private stream", invite_only=True)
         self.subscribe(bot, "Test private stream")
         do_deactivate_user(bot, acting_user=None)
-        with self.verify_action(num_events=5) as events:
+        with self.verify_action(num_events=4) as events:
             do_reactivate_user(bot, acting_user=None)
-        check_realm_bot_update("events[1]", events[1], "is_active")
-        check_subscription_peer_add("events[2]", events[2])
+        check_realm_user_update("events[0]", events[0], "is_active")
+        check_subscription_peer_add("events[1]", events[1])
+        check_user_group_add_members("events[2]", events[2])
         check_user_group_add_members("events[3]", events[3])
-        check_user_group_add_members("events[4]", events[4])
 
         # Test 'peer_add' event for private stream is received only if user is subscribed to it.
         do_deactivate_user(bot, acting_user=None)
         self.subscribe(self.example_user("hamlet"), "Test private stream")
-        with self.verify_action(num_events=6) as events:
+        with self.verify_action(num_events=5) as events:
             do_reactivate_user(bot, acting_user=None)
-        check_realm_bot_update("events[1]", events[1], "is_active")
+        check_realm_user_update("events[0]", events[0], "is_active")
+        check_subscription_peer_add("events[1]", events[1])
         check_subscription_peer_add("events[2]", events[2])
-        check_subscription_peer_add("events[3]", events[3])
 
         do_deactivate_user(bot, acting_user=None)
         do_deactivate_user(self.example_user("hamlet"), acting_user=None)
@@ -3784,13 +3788,12 @@ class NormalActionsTest(BaseAction):
         bot.refresh_from_db()
 
         self.user_profile = self.example_user("iago")
-        with self.verify_action(num_events=8) as events:
+        with self.verify_action(num_events=6) as events:
             do_reactivate_user(bot, acting_user=self.example_user("iago"))
-        check_realm_bot_update("events[1]", events[1], "is_active")
-        check_realm_bot_update("events[2]", events[2], "owner_id")
-        check_realm_user_update("events[3]", events[3], "bot_owner_id")
-        check_subscription_peer_add("events[4]", events[4])
-        check_subscription_peer_add("events[5]", events[5])
+        check_realm_user_update("events[0]", events[0], "is_active")
+        check_realm_user_update("events[1]", events[1], "bot_owner_id")
+        check_subscription_peer_add("events[2]", events[2])
+        check_subscription_peer_add("events[3]", events[3])
 
         user_profile = self.example_user("cordelia")
         members_group = NamedUserGroup.objects.get(
@@ -4287,6 +4290,12 @@ class NormalActionsTest(BaseAction):
             do_register_device(self.user_profile)
         check_device_add("events[0]", events[0])
 
+    def test_remove_device(self) -> None:
+        device = Device.objects.create(user=self.user_profile)
+        with self.verify_action() as events:
+            do_remove_device(self.user_profile, device.id)
+        check_device_remove("events[0]", events[0])
+
     def test_register_push_device(self) -> None:
         self.login_user(self.user_profile)
         device = Device.objects.create(user=self.user_profile)
@@ -4367,11 +4376,11 @@ class NormalActionsTest(BaseAction):
 
     def test_has_zoom_token(self) -> None:
         with self.verify_action() as events:
-            do_set_zoom_token(self.user_profile, {"access_token": "token"})
+            do_set_video_call_provider_token(self.user_profile, "zoom", {"access_token": "token"})
         check_has_zoom_token("events[0]", events[0], value=True)
 
         with self.verify_action() as events:
-            do_set_zoom_token(self.user_profile, None)
+            do_set_video_call_provider_token(self.user_profile, "zoom", None)
         check_has_zoom_token("events[0]", events[0], value=False)
 
     def test_restart_event(self) -> None:
@@ -4437,6 +4446,7 @@ class RealmPropertyActionTest(BaseAction):
             move_messages_within_stream_limit_seconds=[1000, 1100, 1200, None],
             move_messages_between_streams_limit_seconds=[1000, 1100, 1200, None],
             topics_policy=Realm.REALM_TOPICS_POLICY_TYPES,
+            media_preview_size=[100, 150, 200],
             default_avatar_source=["G", "J"],
         )
 

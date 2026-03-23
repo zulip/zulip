@@ -901,3 +901,64 @@ class RegisterPushDeviceToServer(BouncerTestCase):
             result = self.client_post("/json/mobile_push/register", payload)
         self.assert_json_error(result, "A registration for the device already in progress.")
         m.assert_not_called()
+
+    @activate_push_notification_service()
+    @override_settings(ZILENCER_ENABLED=False)
+    @responses.activate
+    def test_no_plan_purchased_registration_succeeds(self) -> None:
+        """Registration succeeds even when no plan is purchased.
+
+        The plan check only happens when sending push notifications,
+        not during device registration.
+        """
+        self.add_mock_response()
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        payload = self.get_register_push_device_payload()
+
+        devices = Device.objects.all()
+        self.assert_length(devices, 1)
+        self.assert_push_fields_null(devices[0])
+
+        # Assert remote_realm is not on any plan.
+        remote_realm = RemoteRealm.objects.get(uuid=hamlet.realm.uuid)
+        self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED)
+
+        time_now = now()
+        with (
+            time_machine.travel(time_now, tick=False),
+            self.capture_send_event_calls(expected_num_events=2) as events,
+        ):
+            result = self.client_post("/json/mobile_push/register", payload)
+        self.assert_json_success(result)
+
+        devices = Device.objects.all()
+        self.assert_length(devices, 1)
+        device = devices[0]
+        assert type(payload["token_id"]) is str  # for mypy
+        self.assertEqual(device.push_token_id, b64decode_token_id_base64(payload["token_id"]))
+        self.assertIsNone(device.pending_push_token_id)
+        self.assertIsNone(device.push_registration_error_code)
+        self.assertEqual(
+            events[0]["event"],
+            dict(
+                type="device",
+                op="update",
+                device_id=device.id,
+                push_key_id=device.push_key_id,
+                pending_push_token_id=payload["token_id"],
+                push_token_last_updated_timestamp=datetime_to_timestamp(time_now),
+                push_registration_error_code=None,
+            ),
+        )
+        self.assertEqual(
+            events[1]["event"],
+            dict(
+                type="device",
+                op="update",
+                device_id=device.id,
+                push_token_id=payload["token_id"],
+                pending_push_token_id=None,
+            ),
+        )

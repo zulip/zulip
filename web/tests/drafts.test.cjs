@@ -2,13 +2,11 @@
 
 const assert = require("node:assert/strict");
 
-const MockDate = require("mockdate");
-
 const {mock_banners} = require("./lib/compose_banner.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
-const {mock_esm, mock_cjs, set_global, zrequire} = require("./lib/namespace.cjs");
+const {clock, mock_esm, mock_cjs, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
@@ -157,7 +155,6 @@ const short_msg = {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        $("#draft_overlay").css = noop;
         $(".top_left_drafts").set_find_results(".unread_count", $("<unread-count-stub>"));
         $(".compose-drafts-count-container").set_find_results(
             ".compose-drafts-count",
@@ -250,8 +247,6 @@ test("draft_model delete", () => {
 test("snapshot_message", ({override}) => {
     override(user_pill, "get_user_ids", () => [aaron.user_id]);
     mock_banners();
-
-    $(".narrow_to_compose_recipients").toggleClass = noop;
 
     let curr_draft;
 
@@ -594,8 +589,6 @@ test("format_drafts", ({override, mock_template}) => {
         },
     ];
 
-    $("#drafts_table").append = noop;
-
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     const data = {
@@ -615,7 +608,7 @@ test("format_drafts", ({override, mock_template}) => {
     expected[5].is_empty_string_topic = true;
     assert.deepEqual(draft_model.get(), data);
 
-    MockDate.set(1549958107000);
+    clock.setSystemTime(1549958107000);
 
     override(user_pill, "get_user_ids", () => []);
     compose_state.set_message_type("private");
@@ -630,9 +623,9 @@ test("format_drafts", ({override, mock_template}) => {
 
     override(messages_overlay_ui, "set_initial_element", noop);
 
-    $.create(".drafts-list", {children: []});
-    $.create("#drafts_table .overlay-message-row", {children: []});
-    $(".draft-selection-checkbox").filter = () => [];
+    $.set_results(".drafts-list", []);
+    $.set_results("#drafts_table .overlay-message-row", []);
+    $.set_results(".draft-selection-checkbox", []);
     drafts_overlay_ui.launch();
 });
 
@@ -753,8 +746,6 @@ test("filter_drafts", ({override, mock_template}) => {
         },
     ];
 
-    $("#drafts_table").append = noop;
-
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     const data = {
@@ -767,7 +758,7 @@ test("filter_drafts", ({override, mock_template}) => {
     ls.set("drafts", data);
     assert.deepEqual(draft_model.get(), data);
 
-    MockDate.set(1549958107000);
+    clock.setSystemTime(1549958107000);
 
     mock_template("draft_table_body.hbs", false, (data) => {
         // Tests splitting up drafts by current narrow.
@@ -781,12 +772,8 @@ test("filter_drafts", ({override, mock_template}) => {
     override(user_pill, "get_user_ids", () => [aaron.user_id]);
     compose_state.set_message_type("private");
 
-    $.create(".drafts-list", {children: []});
-    $.create("#drafts_table .overlay-message-row", {children: []});
-    $(".draft-selection-checkbox").filter = () => [];
+    $.set_results(".drafts-list", []);
+    $.set_results("#drafts_table .overlay-message-row", []);
+    $.set_results(".draft-selection-checkbox", []);
     drafts_overlay_ui.launch();
-});
-
-run_test("reset MockDate", () => {
-    MockDate.reset();
 });

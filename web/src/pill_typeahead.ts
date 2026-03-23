@@ -35,6 +35,7 @@ export function set_up_user(
     opts: {
         exclude_bots?: boolean;
         update_func?: () => void;
+        non_tippy_parent_element?: string;
     },
 ): void {
     const exclude_bots = opts.exclude_bots;
@@ -44,6 +45,7 @@ export function set_up_user(
     };
     new Typeahead(bootstrap_typeahead_input, {
         dropup: true,
+        non_tippy_parent_element: opts.non_tippy_parent_element,
         source(_query: string): UserPillData[] {
             return user_pill.typeahead_source(pills, exclude_bots);
         },
@@ -81,6 +83,7 @@ export function set_up_stream(
         hide_on_empty_after_backspace?: boolean;
         invite_streams?: boolean;
         update_func?: () => void;
+        non_tippy_parent_element?: string;
     },
 ): void {
     const bootstrap_typeahead_input: TypeaheadInputElement = {
@@ -91,6 +94,7 @@ export function set_up_stream(
     opts.hide_on_empty_after_backspace ??= false;
     new Typeahead(bootstrap_typeahead_input, {
         dropup: true,
+        non_tippy_parent_element: opts.non_tippy_parent_element,
         helpOnEmptyStrings: opts.help_on_empty_strings,
         hideOnEmptyAfterBackspace: opts.hide_on_empty_after_backspace,
         source(_query: string): StreamPillData[] {

@@ -14,7 +14,6 @@ import * as activity from "./activity.ts";
 import * as activity_ui from "./activity_ui.ts";
 import * as add_stream_options_popover from "./add_stream_options_popover.ts";
 import * as alert_words from "./alert_words.ts";
-import {all_messages_data} from "./all_messages_data.ts";
 import * as audible_notifications from "./audible_notifications.ts";
 import * as banners from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
@@ -106,6 +105,7 @@ import * as pygments_data from "./pygments_data.ts";
 import * as realm_logo from "./realm_logo.ts";
 import * as realm_playground from "./realm_playground.ts";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults.ts";
+import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as reload_setup from "./reload_setup.ts";
 import * as recurring_scheduled_messages from "./recurring_scheduled_messages.ts";
@@ -472,6 +472,7 @@ export async function initialize_everything(state_data) {
         theme.initialize_theme_for_spectator();
     }
     thumbnail.initialize();
+    thumbnail.set_media_preview_size_css_variable();
     widgets.initialize();
     tippyjs.initialize();
     compose_tooltips.initialize();
@@ -506,6 +507,11 @@ export async function initialize_everything(state_data) {
 
     await people.initialize(current_user.user_id, state_data.people, state_data.user_groups);
     starred_messages.initialize(state_data.starred_messages);
+
+    // Must happen after people.initialize(). And also before
+    // settings.initialize(), as we check if the user owns any
+    // bot to show the lock icon for "Bots" panel
+    bot_data.initialize(state_data.bot);
 
     // The emoji module must be initialized before the right sidebar
     // module, so that we can display custom emoji in statuses.
@@ -551,7 +557,7 @@ export async function initialize_everything(state_data) {
         maybe_load_older_messages(first_unread_message_id) {
             recent_view_ui.set_backfill_in_progress(true);
             message_fetch.maybe_load_older_messages({
-                msg_list_data: all_messages_data,
+                msg_list_data: recent_view_messages_data,
                 recent_view: true,
                 // To have a hard anchor on our target of first unread message id,
                 // we pass it from here, otherwise it might get updated and lead to confusion.
@@ -585,6 +591,9 @@ export async function initialize_everything(state_data) {
     user_group_edit.initialize();
     stream_edit_subscribers.initialize();
     stream_data.initialize(state_data.stream_data);
+    stream_data.set_channel_has_locally_available_topic(
+        stream_topic_history.channel_has_locally_available_topic,
+    );
     user_group_edit_members.initialize();
     stream_card_popover.initialize();
     pm_conversations.recent.initialize(state_data.pm_conversations);
@@ -647,7 +656,6 @@ export async function initialize_everything(state_data) {
     drafts.initialize(); // Must happen before reload_setup.initialize()
     reload_setup.initialize();
     unread.initialize(state_data.unread);
-    bot_data.initialize(state_data.bot); // Must happen after people.initialize()
     message_fetch.initialize(() => {
         recent_view_ui.set_initial_message_fetch_status(false);
         recent_view_ui.revive_current_focus();
@@ -763,6 +771,8 @@ export async function initialize_everything(state_data) {
     // is defined. Also, must happen after people.initialize()
     onboarding_steps.initialize(state_data.onboarding_steps, {
         show_message_view: message_view.show,
+        update_recipient_row_attention_level:
+            compose_recipient.update_recipient_row_attention_level,
     });
     typing.initialize();
     starred_messages_ui.initialize();

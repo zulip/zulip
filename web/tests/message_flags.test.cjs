@@ -2,7 +2,7 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
+const {clock, mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const channel = mock_esm("../src/channel");
@@ -193,6 +193,7 @@ run_test("read", ({override}) => {
         messages: [1, 2, 3, 4, 5],
     };
     channel_post_opts.success(success_response_data);
+    clock.runAll();
     assert.deepEqual(channel_post_opts, {
         url: "/json/messages/flags",
         data: {
@@ -231,31 +232,17 @@ run_test("read", ({override}) => {
     });
 
     // Messages still not acked yet
-    const events = {};
-    const stub_delay = 100;
-    function set_timeout(f, delay) {
-        assert.equal(delay, stub_delay);
-        events.f = f;
-        events.timer_set = true;
-        return;
-    }
-    set_global("setTimeout", set_timeout);
     // Mock successful flagging of ids
     success_response_data = {
         messages: [3, 4, 5, 6, 7],
     };
     channel_post_opts.success(success_response_data);
-    assert.ok(events.timer_set);
+    clock.tick(1100);
 
     // Mark them non-local
     local_msg_1.locally_echoed = false;
     local_msg_2.locally_echoed = false;
-
-    // Mock successful flagging of ids
-    success_response_data = {
-        messages: [3, 4, 5, 6, 7],
-    };
-    channel_post_opts.success(success_response_data);
+    clock.runAll();
 
     // Former locally echoed messages flagging retried
     assert.deepEqual(channel_post_opts, {
@@ -278,6 +265,8 @@ run_test("read", ({override}) => {
             flag: "read",
         },
     });
+
+    clock.reset();
 });
 
 run_test("read_empty_data", ({override}) => {

@@ -26,34 +26,82 @@ const fred = make_user({
     user_id: 3,
 });
 
+const bot_0_user = make_user({
+    email: "bot0@zulip.com",
+    full_name: "Bot 0",
+    user_id: 42,
+    is_bot: true,
+    bot_type: 1, // DEFAULT_BOT
+    bot_owner_id: 4,
+});
+const webhook_bot_user = make_user({
+    email: "outgoingwebhook@zulip.com",
+    full_name: "Outgoing webhook",
+    user_id: 314,
+    is_bot: true,
+    bot_type: 3, // OUTGOING_WEBHOOK_BOT
+    bot_owner_id: 5,
+});
+const test_bot_user = make_user({
+    email: "bot1@zulip.com",
+    full_name: "Bot 1",
+    user_id: 43,
+    // Default bot
+    bot_type: 1,
+    is_bot: true,
+    bot_owner_id: 6,
+});
+const test_embedded_bot_user = make_user({
+    email: "embedded-bot@zulip.com",
+    full_name: "Embedded bot 1",
+    user_id: 143,
+    is_bot: true,
+    bot_type: 4, // EMBEDDED_BOT
+    bot_owner_id: 7,
+});
+
+const test_bot_1_user = make_user({
+    email: "bot1@zulip.com",
+    full_name: "Bot 1",
+    user_id: 44,
+    // Default bot
+    bot_type: 1,
+    is_bot: true,
+    bot_owner_id: me.user_id,
+});
+const test_bot_2_user = make_user({
+    email: "bot2@zulip.com",
+    full_name: "Bot 1",
+    user_id: 45,
+    // Default bot
+    bot_type: 1,
+    is_bot: true,
+    bot_owner_id: me.user_id,
+});
+const test_bot_3_user = make_user({
+    email: "bot3@zulip.com",
+    full_name: "Bot 1",
+    user_id: 46,
+    // Default bot
+    bot_type: 1,
+    is_bot: true,
+    bot_owner_id: fred.user_id,
+});
+
 const bot_data_params = {
     realm_bots: [
         {
-            api_key: "1234567890qwertyuioop",
-            avatar_url: "",
-            bot_type: 1, // DEFAULT_BOT
             default_all_public_streams: true,
             default_events_register_stream: "register stream 42",
             default_sending_stream: "sending stream 42",
-            email: "bot0@zulip.com",
-            full_name: "Bot 0",
-            is_active: true,
-            owner_id: 4,
             user_id: 42,
             services: [],
             extra: "This field should be ignored",
         },
         {
-            api_key: "1234567890zxcvbnm",
-            avatar_url: "",
-            bot_type: 3, // OUTGOING_WEBHOOK_BOT
             default_all_public_streams: true,
             default_events_register_stream: "register stream 314",
             default_sending_stream: "sending stream 314",
-            email: "outgoingwebhook@zulip.com",
-            full_name: "Outgoing webhook",
-            is_active: true,
-            owner_id: 5,
             user_id: 314,
             services: [{base_url: "http://foo.com", interface: 1, token: "basictoken12345"}],
             extra: "This field should be ignored",
@@ -64,6 +112,13 @@ const bot_data_params = {
 function test(label, f) {
     run_test(label, ({override}) => {
         people.add_active_user(me);
+        people.add_active_user(bot_0_user);
+        people.add_active_user(webhook_bot_user);
+        people.add_active_user(test_bot_user);
+        people.add_active_user(test_embedded_bot_user);
+        people.add_active_user(test_bot_1_user);
+        people.add_active_user(test_bot_2_user);
+        people.add_active_user(test_bot_3_user);
         people.initialize_current_user(me.user_id);
         bot_data.initialize(bot_data_params);
         // Our startup logic should have added Bot 0 from page_params.
@@ -76,32 +131,17 @@ function test(label, f) {
 test("test_basics", () => {
     people.add_active_user(fred);
     const test_bot = {
-        api_key: "qwertyuioop1234567890",
-        avatar_url: "",
-        // Default bot
-        bot_type: 1,
         default_all_public_streams: true,
         default_events_register_stream: "register stream 43",
         default_sending_stream: "sending stream 43",
-        email: "bot1@zulip.com",
-        full_name: "Bot 1",
-        is_active: true,
-        owner_id: 6,
         user_id: 43,
         services: [],
         extra: "This field should be ignored",
     };
     const test_embedded_bot = {
-        api_key: "zxcvbnm1234567890",
-        avatar_url: "",
-        bot_type: 4, // EMBEDDED_BOT
         default_all_public_streams: true,
         default_events_register_stream: "register stream 143",
         default_sending_stream: "sending stream 143",
-        email: "embedded-bot@zulip.com",
-        full_name: "Embedded bot 1",
-        is_active: true,
-        owner_id: 7,
         user_id: 143,
         services: [
             {
@@ -115,8 +155,6 @@ test("test_basics", () => {
     (function test_add() {
         bot_data.add(test_bot);
         const bot = bot_data.get(43);
-        assert.equal("qwertyuioop1234567890", bot.api_key);
-        assert.equal("", bot.avatar_url);
         assert.equal(1, bot.bot_type);
         assert.equal(true, bot.default_all_public_streams);
         assert.equal("register stream 43", bot.default_events_register_stream);
@@ -127,33 +165,6 @@ test("test_basics", () => {
         assert.equal(6, bot.owner_id);
         assert.equal(43, bot.user_id);
         assert.equal(undefined, bot.extra);
-    })();
-
-    (function test_update() {
-        bot_data.add(test_bot);
-
-        let bot = bot_data.get(43);
-        assert.equal("Bot 1", bot.full_name);
-        bot_data.update(43, {
-            ...test_bot,
-            full_name: "New Bot 1",
-        });
-        bot = bot_data.get(43);
-        assert.equal("New Bot 1", bot.full_name);
-
-        const change_owner_event = {
-            owner_id: fred.user_id,
-        };
-        bot_data.update(43, {...test_bot, ...change_owner_event});
-
-        bot = bot_data.get(43);
-        assert.equal(bot.owner_id, fred.user_id);
-
-        bot_data.update(43, {...test_bot, is_active: false});
-        assert.ok(!bot_data.get(43).is_active);
-
-        bot_data.update(43, {...test_bot, is_active: true});
-        assert.ok(bot_data.get(43).is_active);
     })();
 
     (function test_embedded_bot_update() {
@@ -220,55 +231,23 @@ test("test_basics", () => {
 });
 
 test("get_all_bots_ids_for_current_user", () => {
+    // Ensure bots owned by others are not included
     bot_data.add({
-        api_key: "testkey123",
-        avatar_url: "",
-        bot_type: 1,
         default_all_public_streams: true,
         default_events_register_stream: "register stream test",
         default_sending_stream: "sending stream test",
-        email: "testbot@zulip.com",
-        full_name: "Test Bot",
-        is_active: true,
-        owner_id: me.user_id,
-        user_id: 101,
+        user_id: 44,
         services: [],
     });
 
     bot_data.add({
-        api_key: "anotherkey456",
-        avatar_url: "",
-        bot_type: 1,
         default_all_public_streams: true,
         default_events_register_stream: "register stream another",
         default_sending_stream: "sending stream another",
-        email: "anotherbot@zulip.com",
-        full_name: "Another Bot",
-        is_active: true,
-        owner_id: fred.user_id,
-        user_id: 102,
+        user_id: 46,
         services: [],
     });
 
     const my_bot_ids = bot_data.get_all_bots_ids_for_current_user();
-    assert.deepEqual(my_bot_ids, [101]);
-
-    // Ensure bots owned by others are not included
-    bot_data.add({
-        api_key: "anotherkey789",
-        avatar_url: "",
-        bot_type: 1,
-        default_all_public_streams: true,
-        default_events_register_stream: "register stream extra",
-        default_sending_stream: "sending stream extra",
-        email: "extrabot@zulip.com",
-        full_name: "Extra Bot",
-        is_active: true,
-        owner_id: fred.user_id,
-        user_id: 103,
-        services: [],
-    });
-
-    const my_updated_bot_ids = bot_data.get_all_bots_ids_for_current_user();
-    assert.deepEqual(my_updated_bot_ids, [101]);
+    assert.deepEqual(my_bot_ids, [44]);
 });

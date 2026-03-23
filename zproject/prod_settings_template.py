@@ -86,6 +86,13 @@ EXTERNAL_HOST = "zulip.example.com"
 # EMAIL_USE_TLS = True
 # EMAIL_PORT = 587
 
+## By default, Zulip will open a new SMTP connection for each outgoing email.
+## This has a small overhead, though not one which is relevant in most installs,
+## which send very low volumes of email. You can set to a positive number to
+## reuse SMTP connections for that many minutes; set to None to leave connections
+## open indefinitely.
+# EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES = 0
+
 ## The noreply address to be used as the sender for certain generated
 ## emails.  Messages sent to this address could contain sensitive user
 ## data and should not be delivered anywhere.  The default is

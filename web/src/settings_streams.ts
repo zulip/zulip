@@ -16,6 +16,7 @@ import * as scroll_util from "./scroll_util.ts";
 import * as settings_profile_fields from "./settings_profile_fields.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store";
 import * as sub_store from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
 
@@ -46,11 +47,11 @@ function create_choice_row(): void {
     $container.append($(row_html));
 
     // List of non-default streams that are not yet selected.
-    function get_options(): {name: string; unique_id: number}[] {
+    function get_options(): {name: string; unique_id: number; stream: StreamSubscription}[] {
         const chosen_default_streams = get_chosen_default_streams();
 
         return stream_data
-            .get_non_default_stream_names()
+            .get_default_stream_options()
             .filter((e) => !chosen_default_streams.has(e.unique_id));
     }
 

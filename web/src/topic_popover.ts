@@ -86,7 +86,7 @@ export function initialize(): void {
     });
 
     popover_menus.register_popover_menu(
-        "#stream_filters .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu, .recipient-row-topic-menu, .recent_view_focusable .visibility-status-icon",
+        "#stream_filters .topic-sidebar-menu-icon, #more-topics-modal .topic-sidebar-menu-icon, .inbox-row .inbox-topic-menu, .recipient-row-topic-menu, .recent_view_focusable .visibility-status-icon",
         {
             ...popover_menus.left_sidebar_tippy_options,
             onShow(instance) {
@@ -123,6 +123,8 @@ export function initialize(): void {
                     popover_menus.hide_current_popover_if_visible(instance);
                     return;
                 }
+
+                popover_menus.focus_popover(instance);
 
                 $popper.on("change", "input[name='sidebar-topic-visibility-select']", (e) => {
                     const start_time = Date.now();

@@ -51,5 +51,106 @@
                 <span class="popover-menu-label">{{t 'Custom time'}}</span>
             </a>
         </li>
+        {{#unless is_reminder}}
+        <li role="separator" class="popover-menu-separator"></li>
+        <li role="none" class="popover-menu-list-item recurring-batch-builder-item">
+            <div class="recurring-batch-builder-content">
+                <div class="popover-header-name recurring-batch-title">{{t "Schedule recurring message (TODO)" }}</div>
+                <div class="recurring-batch-grid">
+                    <label class="recurring-field-label" for="recurring_frequency">{{t "Repeats" }}</label>
+                    <select id="recurring_frequency" class="recurring-field-input recurring-frequency-input" tabindex="0">
+                        <option value="daily">{{t "Daily" }}</option>
+                        <option value="weekly">{{t "Weekly" }}</option>
+                        <option value="monthly">{{t "Monthly" }}</option>
+                    </select>
+
+                    <label class="recurring-field-label" for="recurring_time">{{t "Time" }}</label>
+                    <input id="recurring_time" class="recurring-field-input recurring-time-input" type="time" tabindex="0" />
+                </div>
+                <div class="recurring-custom-options">
+                    <div class="recurring-weekly-options recurring-hidden">
+                        <span class="recurring-field-label">{{t "Weekly on" }}</span>
+                        <div class="recurring-weekday-checkboxes">
+                            <label><input type="checkbox" class="recurring-weekday" value="MO" />{{t "Mon" }}</label>
+                            <label><input type="checkbox" class="recurring-weekday" value="TU" />{{t "Tue" }}</label>
+                            <label><input type="checkbox" class="recurring-weekday" value="WE" />{{t "Wed" }}</label>
+                            <label><input type="checkbox" class="recurring-weekday" value="TH" />{{t "Thu" }}</label>
+                            <label><input type="checkbox" class="recurring-weekday" value="FR" />{{t "Fri" }}</label>
+                            <label><input type="checkbox" class="recurring-weekday" value="SA" />{{t "Sat" }}</label>
+                            <label><input type="checkbox" class="recurring-weekday" value="SU" />{{t "Sun" }}</label>
+                        </div>
+                    </div>
+                    <div class="recurring-monthly-options recurring-hidden">
+                        <span class="recurring-field-label">{{t "Monthly on" }}</span>
+                        <div class="recurring-monthly-pattern-list" role="group" aria-label="{{t 'Monthly recurrence rule' }}">
+                            <label class="recurring-monthly-pattern recurring-monthly-pattern-day">
+                                <input
+                                  type="radio"
+                                  name="recurring_monthly_pattern"
+                                  class="recurring-monthly-mode"
+                                  value="day"
+                                  checked
+                                  />
+                                <span>{{t "On the" }}</span>
+                                <select id="recurring_monthday" class="recurring-field-input recurring-monthday-input" tabindex="0"></select>
+                                <span>{{t "day of the month" }}</span>
+                            </label>
+                            <label class="recurring-monthly-pattern recurring-monthly-pattern-last-day">
+                                <input
+                                  type="radio"
+                                  name="recurring_monthly_pattern"
+                                  class="recurring-monthly-mode"
+                                  value="last_day"
+                                  />
+                                <span>{{t "On the last day of the month" }}</span>
+                            </label>
+                            <label class="recurring-monthly-pattern recurring-monthly-pattern-weekday">
+                                <input
+                                  type="radio"
+                                  name="recurring_monthly_pattern"
+                                  class="recurring-monthly-mode"
+                                  value="weekday"
+                                  />
+                                <span>{{t "On the" }}</span>
+                                <select
+                                  id="recurring_monthly_ordinal"
+                                  class="recurring-field-input recurring-monthly-ordinal-input"
+                                  tabindex="0"
+                                  ></select>
+                                <select
+                                  id="recurring_monthly_weekday"
+                                  class="recurring-field-input recurring-monthly-weekday-input"
+                                  tabindex="0"
+                                  ></select>
+                            </label>
+                        </div>
+                        <div class="recurring-monthly-note recurring-short-month-note recurring-hidden">
+                            {{t "For shorter months, this uses the last available day." }}
+                        </div>
+                        <div class="recurring-monthly-summary" aria-live="polite"></div>
+                    </div>
+                </div>
+
+                <div class="recurring-destination-pickers">
+                    <label class="recurring-field-label" for="recurring_channel_picker">{{t "Channels" }}</label>
+                    <div id="recurring_channel_picker" class="pill-container recurring-channels-pill-container">
+                        <div class="input" contenteditable="true" data-placeholder="{{t 'Search channels' }}">
+                            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+                        </div>
+                    </div>
+
+                    <label class="recurring-field-label" for="recurring_dm_picker">{{t "Direct messages" }}</label>
+                    <div id="recurring_dm_picker" class="pill-container recurring-users-pill-container">
+                        <div class="input" contenteditable="true" data-placeholder="{{t 'Search people' }}">
+                            {{~! Squash whitespace so that placeholder is displayed when empty. ~}}
+                        </div>
+                    </div>
+                </div>
+                <div class="recurring-builder-feedback" aria-live="polite"></div>
+
+                <button type="button" class="button small rounded validate-recurring-draft" tabindex="0">{{t "Check Draft is Valid (must implement backend)" }}</button>
+            </div>
+        </li>
+        {{/unless}}
     </ul>
 </div>

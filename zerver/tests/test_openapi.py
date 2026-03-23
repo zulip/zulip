@@ -205,6 +205,8 @@ class OpenAPIArgumentsTest(ZulipTestCase):
     # This will be filled during test_openapi_arguments:
     checked_endpoints: set[str] = set()
     pending_endpoints = {
+        #### For current endpoint documentation priorities see
+        #### https://chat.zulip.org/#narrow/channel/412-api-documentation/topic/Undocumented.20endpoint.20priorities/with/2397881
         #### TODO: These endpoints are a priority to document:
         # These are a priority to document but don't match our normal URL schemes
         # and thus may be complicated to document with our current tooling.
@@ -215,20 +217,20 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         #### These realm administration settings are valuable to document:
         # Delete a data export.
         "/export/realm/{export_id}",
-        # Manage default streams and default stream groups
-        "/default_stream_groups/create",
-        "/default_stream_groups/{group_id}",
-        "/default_stream_groups/{group_id}/streams",
         # Single-stream settings alternative to the bulk endpoint
         # users/me/subscriptions/properties; probably should just be a
         # section of the same page.
         "/users/me/subscriptions/{stream_id}",
+        # Default stream groups are an unfinished feature and therefore
+        # shouldn't be added to the documentation until that's completed.
+        "/default_stream_groups/create",
+        "/default_stream_groups/{group_id}",
+        "/default_stream_groups/{group_id}/streams",
         #### Mobile-app only endpoints; important for mobile developers.
         # Mobile interface for development environment login
         "/dev_list_users",
         #### These personal settings endpoints have modest value to document:
         "/users/me/avatar",
-        "/users/me/api_key/regenerate",
         # Much more valuable would be an org admin bulk-upload feature.
         "/users/me/profile_data",
         #### Should be documented as part of interactive bots documentation
@@ -241,7 +243,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/realm/domains/{domain}",
         "/bots",
         "/bots/{bot_id}",
-        "/bots/{bot_id}/api_key/regenerate",
         #### These "organization settings" endpoints have low value to document:
         "/realm/profile_fields/{field_id}",
         "/realm/icon",
@@ -760,9 +761,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
     def test_generate_and_render_curl_example(self) -> None:
         generated_curl_example = self.curl_example("/get_stream_id", "GET")
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX GET -G http://localhost:9991/api/v1/get_stream_id \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             "    --data-urlencode stream=Denmark",
             "```",
         ]
@@ -789,9 +790,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
         spec_mock.return_value = self.spec_mock_without_examples
         generated_curl_example = self.curl_example("/mark_stream_as_read", "POST")
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX POST http://localhost:9991/api/v1/mark_stream_as_read \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             "    --data-urlencode stream_id=1 \\",
             "    --data-urlencode bool_param=false",
             "```",
@@ -816,9 +817,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
             ],
         )
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX GET -G http://localhost:9991/api/v1/messages \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             "    --data-urlencode anchor=43 \\",
             "    --data-urlencode include_anchor=false \\",
             "    --data-urlencode num_before=4 \\",
@@ -835,9 +836,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
         spec_mock.return_value = self.spec_mock_using_object
         generated_curl_example = self.curl_example("/endpoint", "GET")
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX GET -G http://localhost:9991/api/v1/endpoint \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             '    --data-urlencode \'param1={"key": "value"}\'',
             "```",
         ]
@@ -864,9 +865,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
         spec_mock.return_value = self.spec_mock_using_param_in_path
         generated_curl_example = self.curl_example("/endpoint/{param1}", "GET")
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX GET -G http://localhost:9991/api/v1/endpoint/35 \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             '    --data-urlencode \'param2={"key": "value"}\'',
             "```",
         ]
@@ -877,9 +878,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
             "/get_stream_id:GET", api_url="https://zulip.example.com/api"
         )
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX GET -G https://zulip.example.com/api/v1/get_stream_id \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             "    --data-urlencode stream=Denmark",
             "```",
         ]
@@ -899,9 +900,9 @@ class TestCurlExampleGeneration(ZulipTestCase):
             ],
         )
         expected_curl_example = [
-            "```curl",
+            "{!curl-auth-credentials.md!}\n\n```curl",
             "curl -sSX GET -G http://localhost:9991/api/v1/messages \\",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \\",
+            "    -u EMAIL_ADDRESS:API_KEY \\",
             "    --data-urlencode anchor=43 \\",
             "    --data-urlencode include_anchor=false \\",
             "    --data-urlencode num_before=4 \\",

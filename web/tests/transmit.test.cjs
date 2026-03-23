@@ -150,9 +150,13 @@ run_test("reply_message_stream", ({override}) => {
     const content = "hello";
 
     let send_message_args;
+    const tracked_local_ids = [];
 
     override(channel, "post", ({data}) => {
         send_message_args = data;
+    });
+    override(sent_messages, "start_tracking_message", ({local_id}) => {
+        tracked_local_ids.push(local_id);
     });
 
     override(current_user, "user_id", 44);
@@ -161,6 +165,7 @@ run_test("reply_message_stream", ({override}) => {
 
     transmit.reply_message(stream_message, content);
 
+    assert.deepEqual(tracked_local_ids, ["99"]);
     assert.deepEqual(send_message_args, {
         sender_id: 44,
         queue_id: 66,

@@ -61,7 +61,7 @@ class AzuredevopsHookTests(WebhookTestCase):
 
     def test_pull_request_opened(self) -> None:
         expected_topic_name = "test-zulip / PR #1 Add PR request"
-        expected_message = "Yuro Itaki created [PR #1 Add PR request](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/pullrequest/1) from `dev` to `main`:\n\n~~~ quote\nAdd PR request\n~~~"
+        expected_message = "Yuro Itaki created [PR #1 Add PR request](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/pullrequest/1) from `dev` to `main`:\n\n``` quote\nAdd PR request\n```"
         self.check_webhook("code_pull_request__opened", expected_topic_name, expected_message)
 
     def test_pull_request_opened_without_description(self) -> None:
@@ -88,5 +88,5 @@ class AzuredevopsHookTests(WebhookTestCase):
 
     def test_pull_request_updated(self) -> None:
         expected_topic_name = "test-zulip / PR #2 Raised 2nd PR!"
-        expected_message = "Yuro Itaki updated [PR #2 Raised 2nd PR!](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/pullrequest/2)\n\n~~~ quote\nYuro Itaki updated the source branch of [pull request 2](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/pullrequest/2) (Raised 2nd PR!) in [test-zulip](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/)\r\nRaised 2nd PR!\r\n\n~~~"
+        expected_message = "Yuro Itaki updated [PR #2 Raised 2nd PR!](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/pullrequest/2)\n\n``` quote\nYuro Itaki updated the source branch of [pull request 2](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/pullrequest/2) (Raised 2nd PR!) in [test-zulip](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/)\r\nRaised 2nd PR!\r\n\n```"
         self.check_webhook("code_pull_request__updated", expected_topic_name, expected_message)

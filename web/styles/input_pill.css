@@ -261,6 +261,21 @@
     }
 }
 
+.low-attention-recipient-row #compose-direct-recipient .pill-container {
+    &:has(.pill) {
+        /* In the low-attention state, prevent this from being
+           part of the flex layout on .pill-container when there
+           are already user pills (when the "Add user" text is
+           never displayed, as specified on the
+           .input:first-child:empty::before selector above). */
+        #private_message_recipient {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    }
+}
+
 #invitee_emails_container .pill-container,
 #integration-url-filter-branches .pill-container {
     width: 100%;

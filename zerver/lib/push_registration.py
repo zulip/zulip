@@ -14,7 +14,6 @@ from zerver.lib.exceptions import (
     MissingRemoteRealmError,
     RequestExpiredError,
 )
-from zerver.lib.push_notifications import PushNotificationsDisallowedByBouncerError
 from zerver.lib.remote_server import (
     PushNotificationBouncerError,
     PushNotificationBouncerRetryLaterError,
@@ -106,8 +105,6 @@ def handle_register_push_device_to_bouncer(
         MissingRemoteRealmError,
         # Invalid credentials or unexpected status code
         PushNotificationBouncerError,
-        # Plan doesn't allow sending push notifications
-        PushNotificationsDisallowedByBouncerError,
     ):
         # Server admins need to fix these set of errors, report them.
         # Server should keep retrying to register until `RequestExpiredError` is raised.

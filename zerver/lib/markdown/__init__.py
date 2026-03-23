@@ -53,6 +53,7 @@ from zerver.lib.mention import (
 )
 from zerver.lib.mime_types import AUDIO_INLINE_MIME_TYPES, guess_type
 from zerver.lib.outgoing_http import OutgoingSession
+from zerver.lib.per_request_cache import cache_for_current_request
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import (
@@ -1087,11 +1088,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             found_url.result[0] for found_url in found_urls if not found_url.family.in_blockquote
         }
 
-        # Set has_link and similar flags whenever a message is processed by Markdown
-        if self.zmd.zulip_message:
-            self.zmd.zulip_message.has_link = len(found_urls) > 0
-            self.zmd.zulip_message.has_image = False  # This is updated in self.add_a
+        # Update message.has_link attribute.
+        if len(found_urls) > 0 and self.zmd.zulip_message:
+            self.zmd.zulip_message.has_link = True
 
+        if self.zmd.zulip_message:
             for url in unique_urls:
                 maybe_add_attachment_path_id(url, self.zmd)
 
@@ -2176,6 +2177,10 @@ class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
                 metadata.original_content_type,
             )
 
+        # Update message.has_image attribute.
+        if self.zmd.zulip_message:
+            self.zmd.zulip_message.has_image = True
+
         return img
 
     @override
@@ -2458,6 +2463,7 @@ class TopicLinkMatch:
 # function on the URLs; they are expected to be HTML-escaped when
 # rendered by clients (just as links rendered into message bodies
 # are validated and escaped inside `url_to_a`).
+@cache_for_current_request
 def topic_links(linkifiers_key: int, topic_name: str) -> list[dict[str, str]]:
     matches: list[TopicLinkMatch] = []
     linkifiers = linkifiers_for_realm(linkifiers_key)
@@ -2622,6 +2628,14 @@ def do_convert(
         potential_attachment_path_ids=[],
         thumbnail_spinners=set(),
     )
+
+    # Set has_image and has_link attributes on message to False before
+    # converting to Markdown each time a message's content is processed.
+    # This way if a message's content is edited these attributes are
+    # checked and set to True when the updated content is processed.
+    if message is not None:
+        message.has_image = False
+        message.has_link = False
 
     md_engine.zulip_message = message
     md_engine.zulip_rendering_result = rendering_result

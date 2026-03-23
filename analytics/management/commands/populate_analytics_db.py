@@ -26,7 +26,7 @@ from zerver.lib.stream_subscription import create_stream_subscription
 from zerver.lib.streams import get_default_values_for_stream_permission_group_settings
 from zerver.lib.timestamp import floor_to_day
 from zerver.lib.upload import upload_message_attachment_from_request
-from zerver.models import Client, Realm, RealmAuditLog, Recipient, Stream, UserProfile
+from zerver.models import Attachment, Client, Realm, RealmAuditLog, Recipient, Stream, UserProfile
 from zerver.models.groups import NamedUserGroup, SystemGroups, UserGroupMembership
 from zerver.models.realm_audit_logs import AuditLogEventType
 
@@ -67,6 +67,10 @@ class Command(ZulipBaseCommand):
         # TODO: This should arguably only delete the objects
         # associated with the "analytics" realm.
         do_drop_all_analytics_tables()
+
+        # Delete attachment added for summary statistic before deleting
+        # the Realm object.
+        Attachment.objects.filter(realm__string_id="analytics").delete()
 
         # This also deletes any objects with this realm as a foreign key
         Realm.objects.filter(string_id="analytics").delete()

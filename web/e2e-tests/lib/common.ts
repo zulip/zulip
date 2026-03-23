@@ -409,7 +409,7 @@ export async function select_stream_in_compose_via_dropdown(
     const stream_to_select = `.dropdown-list-container .list-item[data-name="${stream_name}"]`;
     await page.waitForSelector(stream_to_select, {visible: true});
     await page.click(stream_to_select);
-    assert.ok((await page.$(".dropdown-list-container")) === null);
+    await page.waitForSelector(".dropdown-list-container", {hidden: true});
 }
 
 // Wait for any previous send to finish, then send a message.

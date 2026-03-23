@@ -45,7 +45,7 @@ function choose_topics(
     zoomed: boolean,
     topic_choice_state: TopicChoiceState,
 ): void {
-    for (const [idx, topic_name] of topic_names.entries()) {
+    for (const topic_name of topic_names) {
         const num_unread = unread.num_unread_for_topic(stream_id, topic_name);
         const is_active_topic = topic_choice_state.active_topic === topic_name.toLowerCase();
         const is_topic_muted = user_topics.is_topic_muted(stream_id, topic_name);
@@ -83,9 +83,9 @@ function choose_topics(
                     return false;
                 }
 
-                // We include the most recent MAX_TOPICS topics,
+                // We include the most recent, unmuted MAX_TOPICS topics,
                 // even if there are no unread messages.
-                if (idx < MAX_TOPICS && topics_selected < MAX_TOPICS) {
+                if (topics_selected < MAX_TOPICS) {
                     return true;
                 }
 
@@ -244,12 +244,11 @@ export function get_list_info(
         const unmuted_or_followed_topics = topic_names.filter((topic) =>
             user_topics.is_topic_unmuted_or_followed(stream_id, topic),
         );
-        choose_topics(stream_id, unmuted_or_followed_topics, zoomed, topic_choice_state);
-
         const other_topics = topic_names.filter(
             (topic) => !user_topics.is_topic_unmuted_or_followed(stream_id, topic),
         );
-        choose_topics(stream_id, other_topics, zoomed, topic_choice_state);
+        const reordered_topics = [...unmuted_or_followed_topics, ...other_topics];
+        choose_topics(stream_id, reordered_topics, zoomed, topic_choice_state);
     } else {
         choose_topics(stream_id, topic_names, zoomed, topic_choice_state);
     }

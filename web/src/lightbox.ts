@@ -735,6 +735,9 @@ export function initialize(): void {
         const media_element = $original_media_element[0];
         if (media_element instanceof HTMLImageElement) {
             open_image($(media_element));
+        } else {
+            assert(media_element instanceof HTMLMediaElement);
+            open_video($(media_element));
         }
 
         if (!$(".image-list .image.selected").hasClass("lightbox_video") || !is_video) {

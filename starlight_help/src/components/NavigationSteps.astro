@@ -119,6 +119,11 @@ const setting_link_mapping: Record<
         setting_name: "Users",
         setting_link: "/#organization/users/active",
     },
+    imported: {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Users",
+        setting_link: "/#organization/users/imported",
+    },
     deactivated: {
         setting_type: ORGANIZATION_SETTINGS_TYPE,
         setting_name: "Users",
@@ -299,6 +304,10 @@ const relative_link_mapping: Record<
             all: {
                 label: "All groups",
                 relative_link: "/#groups/all",
+            },
+            roles: {
+                label: "Roles",
+                relative_link: "/#groups/roles",
             },
         },
         template: `

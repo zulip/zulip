@@ -23,6 +23,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
+import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as pygments_data from "./pygments_data.ts";
 import * as realm_icon from "./realm_icon.ts";
@@ -121,20 +122,61 @@ export function maybe_disable_widgets(): void {
         .addClass("control-label-disabled");
 }
 
+const DEFAULT_PLACEHOLDER = $t({defaultMessage: "Add roles, groups or users"});
+const NOBODY_DISABLED_PLACEHOLDER = $t({defaultMessage: "Nobody"});
+const NOBODY_ENABLED_PLACEHOLDER = $t({
+    defaultMessage: "Nobody. Add roles, groups or users",
+});
+const ADMINS_DISABLED_PLACEHOLDER = $t({defaultMessage: "Administrators"});
+const ADMINS_ENABLED_PLACEHOLDER = $t({
+    defaultMessage: "Administrators. Add roles, groups or users",
+});
+
+function set_special_org_permission_placeholders(enabled: boolean): void {
+    // Admins always have permission to add subscribers and to set
+    // topics and message deletion policy for a channel regardless
+    // of the setting value, so "Administrators" is a more accurate
+    // placeholder than "Nobody".
+    $(
+        "#id_realm_can_add_subscribers_group, #id_realm_can_set_topics_policy_group, #id_realm_can_set_delete_message_policy_group",
+    )
+        .find(".input")
+        .attr(
+            "data-placeholder",
+            enabled ? ADMINS_ENABLED_PLACEHOLDER : ADMINS_DISABLED_PLACEHOLDER,
+        );
+
+    // The effective permission to delete own messages also depends on
+    // realm_can_delete_any_message_group and the permission to create
+    // write only bots also depends on realm_can_create_bots_group, so we
+    // don't use "Nobody" here. When enabled, restore the default template
+    // placeholder.
+    $("#id_realm_can_delete_own_message_group, #id_realm_can_create_write_only_bots_group")
+        .find(".input")
+        .attr("data-placeholder", enabled ? DEFAULT_PLACEHOLDER : "");
+}
+
 export function enable_or_disable_group_permission_settings(): void {
     if (current_user.is_owner) {
-        const $permission_pill_container_elements = $("#organization-permissions").find(
-            ".pill-container",
+        const $permission_pill_container_elements = $(
+            "#organization-permissions, #organization-settings",
+        ).find(".pill-container");
+        settings_components.enable_group_permission_setting(
+            $permission_pill_container_elements,
+            NOBODY_ENABLED_PLACEHOLDER,
         );
-        settings_components.enable_group_permission_setting($permission_pill_container_elements);
+        set_special_org_permission_placeholders(true);
         return;
     }
 
     if (current_user.is_admin) {
-        const $permission_pill_container_elements = $("#organization-permissions").find(
-            ".pill-container",
+        const $permission_pill_container_elements = $(
+            "#organization-permissions, #organization-settings",
+        ).find(".pill-container");
+        settings_components.enable_group_permission_setting(
+            $permission_pill_container_elements,
+            NOBODY_ENABLED_PLACEHOLDER,
         );
-        settings_components.enable_group_permission_setting($permission_pill_container_elements);
 
         // Admins are not allowed to update organization joining and group
         // related settings.
@@ -146,15 +188,23 @@ export function enable_or_disable_group_permission_settings(): void {
         ];
         for (const setting_name of owner_editable_settings) {
             const $permission_pill_container = $(`#id_${CSS.escape(setting_name)}`);
-            settings_components.disable_group_permission_setting($permission_pill_container);
+            settings_components.disable_group_permission_setting(
+                $permission_pill_container,
+                NOBODY_DISABLED_PLACEHOLDER,
+            );
         }
+        set_special_org_permission_placeholders(true);
         return;
     }
 
-    const $permission_pill_container_elements = $("#organization-permissions").find(
-        ".pill-container",
+    const $permission_pill_container_elements = $(
+        "#organization-permissions, #organization-settings",
+    ).find(".pill-container");
+    settings_components.disable_group_permission_setting(
+        $permission_pill_container_elements,
+        NOBODY_DISABLED_PLACEHOLDER,
     );
-    settings_components.disable_group_permission_setting($permission_pill_container_elements);
+    set_special_org_permission_placeholders(false);
 }
 
 type OrganizationSettingsOptions = {
@@ -359,6 +409,7 @@ function disable_create_user_groups_if_on_limited_plan(): void {
     if (!realm.zulip_plan_is_not_limited) {
         settings_components.disable_group_permission_setting(
             $("#id_realm_can_create_groups").closest(".input-group"),
+            NOBODY_DISABLED_PLACEHOLDER,
         );
     }
 }
@@ -412,6 +463,47 @@ function set_welcome_message_custom_text_visibility(): void {
         $("#id_realm_welcome_message_custom_text").val("");
     }
     update_test_welcome_bot_custom_message_button_status();
+}
+
+export let set_two_tier_billing_settings_visibility = (): void => {
+    if (!page_params.development_environment) {
+        // Remove this when the feature is ready for production.
+        return;
+    }
+
+    if (!page_params.non_workplace_pricing_eligible) {
+        return;
+    }
+
+    if (page_params.is_cloud_realm_with_discounted_plan) {
+        $("input#id_realm_enable_two_tier_billing").prop("checked", false).prop("disabled", true);
+        $("input#id_realm_enable_two_tier_billing")
+            .closest(".input-group")
+            .addClass("control-label-disabled");
+        settings_components.change_element_block_display_property(
+            "id_realm_workplace_users_group",
+            false,
+        );
+        if (current_user.is_owner) {
+            $("input#id_realm_enable_two_tier_billing")
+                .closest(".input-group")
+                .addClass("two-tier-billing-disabled");
+        }
+        return;
+    }
+
+    const two_tier_billing_enabled = settings_data.two_tier_billing_enabled();
+    $("input#id_realm_enable_two_tier_billing").prop("checked", two_tier_billing_enabled);
+    settings_components.change_element_block_display_property(
+        "id_realm_workplace_users_group",
+        two_tier_billing_enabled,
+    );
+};
+
+export function rewire_set_two_tier_billing_settings_visibility(
+    value: typeof set_two_tier_billing_settings_visibility,
+): void {
+    set_two_tier_billing_settings_visibility = value;
 }
 
 function update_view_welcome_bot_custom_message_button_status(
@@ -473,10 +565,12 @@ export function check_disable_direct_message_initiator_group_widget(): void {
     if (user_groups.is_setting_group_empty(direct_message_permission_value)) {
         settings_components.disable_group_permission_setting(
             $("#id_realm_direct_message_initiator_group"),
+            NOBODY_DISABLED_PLACEHOLDER,
         );
     } else if (current_user.is_admin) {
         settings_components.enable_group_permission_setting(
             $("#id_realm_direct_message_initiator_group"),
+            NOBODY_ENABLED_PLACEHOLDER,
         );
     }
 }
@@ -587,6 +681,9 @@ function update_dependent_subsettings(property_name: string): void {
         case "realm_direct_message_permission_group":
             check_disable_direct_message_initiator_group_widget();
             break;
+        case "realm_workplace_users_group":
+            set_two_tier_billing_settings_visibility();
+            break;
     }
 }
 
@@ -638,7 +735,8 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         case "realm_can_summarize_topics_group":
         case "realm_create_multiuse_invite_group":
         case "realm_direct_message_initiator_group":
-        case "realm_direct_message_permission_group": {
+        case "realm_direct_message_permission_group":
+        case "realm_workplace_users_group": {
             const pill_widget = settings_components.get_group_setting_widget(property_name);
             assert(pill_widget !== null);
             settings_components.set_group_setting_widget_value(
@@ -1290,8 +1388,6 @@ export function set_up_dropdown_widget_for_realm_group_settings(): void {
 export let init_dropdown_widgets = (): void => {
     const disabled_option = {
         is_setting_disabled: true,
-        show_disabled_icon: true,
-        show_disabled_option_name: false,
         unique_id: DISABLED_STATE_ID,
         name: $t({defaultMessage: "Disabled"}),
     };
@@ -1372,8 +1468,6 @@ export const combined_code_language_options = (): dropdown_widget.Option[] => {
 
     const disabled_option = {
         is_setting_disabled: true,
-        show_disabled_icon: true,
-        show_disabled_option_name: false,
         unique_id: "",
         name: $t({defaultMessage: "No language set"}),
     };
@@ -1426,6 +1520,30 @@ export function register_save_discard_widget_handlers(
                 $("#id_realm_welcome_message_custom_text").val("");
             } else {
                 $("#id_realm_welcome_message_custom_text").trigger("focus");
+            }
+        }
+
+        if ($(this).hasClass("realm_enable_two_tier_billing")) {
+            const is_checked = $(this).is(":checked");
+            settings_components.change_element_block_display_property(
+                "id_realm_workplace_users_group",
+                is_checked,
+            );
+            const pill_widget = settings_components.get_group_setting_widget(
+                "realm_workplace_users_group",
+            );
+            assert(pill_widget !== null);
+            if (!is_checked) {
+                const everyone_group = user_groups.get_user_group_from_name("role:everyone")!;
+                settings_components.set_group_setting_widget_value(
+                    pill_widget,
+                    group_setting_value_schema.parse(everyone_group.id),
+                );
+            } else {
+                settings_components.set_group_setting_widget_value(
+                    pill_widget,
+                    group_setting_value_schema.parse(realm.realm_workplace_users_group),
+                );
             }
         }
 
@@ -1498,6 +1616,13 @@ export let initialize_group_setting_widgets = (): void => {
             continue;
         }
 
+        if (
+            setting_name === "workplace_users_group" &&
+            (!page_params.development_environment || !page_params.non_workplace_pricing_eligible)
+        ) {
+            continue;
+        }
+
         const opts: {
             $pill_container: JQuery;
             setting_name: RealmGroupSettingNameSupportingAnonymousGroups;
@@ -1559,6 +1684,7 @@ export function build_page(): void {
     disable_create_user_groups_if_on_limited_plan();
     set_welcome_message_custom_text_visibility();
     set_default_avatar_source_setting();
+    set_two_tier_billing_settings_visibility();
 
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
     maybe_restore_unsaved_welcome_message_custom_text();

@@ -6,7 +6,7 @@ const {make_realm} = require("./lib/example_realm.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_channel_get} = require("./lib/mock_channel.cjs");
-const {set_global, mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {clock, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
@@ -29,12 +29,6 @@ const fake_buddy_list = {
 mock_esm("../src/buddy_list", {
     buddy_list: fake_buddy_list,
 });
-
-function mock_setTimeout() {
-    set_global("setTimeout", (func) => {
-        func();
-    });
-}
 
 const popovers = mock_esm("../src/popovers");
 const presence = mock_esm("../src/presence");
@@ -93,18 +87,18 @@ function test(label, f) {
 function set_input_val(val) {
     $("input.user-list-filter").val(val);
     $("input.user-list-filter").trigger("input");
+    clock.runAll();
 }
 
 function stub_buddy_list_empty_list_message_lengths() {
-    $("#buddy-list-users-matching-view .empty-list-message").length = 0;
-    $("#buddy-list-other-users .empty-list-message").length = 0;
+    $.set_results("#buddy-list-users-matching-view .empty-list-message", []);
+    $.set_results("#buddy-list-other-users .empty-list-message", []);
 }
 
 test("clear_search with button", ({override}) => {
     override(presence, "get_status", () => "active");
     override(presence, "get_user_ids", () => all_user_ids);
     override(popovers, "hide_all", noop);
-    $("#buddy-list-loading-subscribers").css = noop;
 
     stub_buddy_list_empty_list_message_lengths();
 
@@ -125,7 +119,6 @@ test("clear_search with button", ({override}) => {
 
 test("clear_search", ({override}) => {
     override(realm, "realm_presence_disabled", true);
-    $("#buddy-list-loading-subscribers").css = noop;
 
     override(popovers, "hide_all", noop);
     stub_buddy_list_empty_list_message_lengths();
@@ -146,7 +139,6 @@ test("fetch on search", async ({override}) => {
     override(fake_buddy_list, "populate", () => {
         populate_call_count += 1;
     });
-    $("#buddy-list-loading-subscribers").css = noop;
     override(popovers, "hide_all", noop);
     stub_buddy_list_empty_list_message_lengths();
 
@@ -199,32 +191,32 @@ test("fetch on search", async ({override}) => {
 test("blur search right", ({override}) => {
     override(sidebar_ui, "show_userlist_sidebar", noop);
     override(popovers, "hide_all", noop);
-    mock_setTimeout();
 
-    $("input.user-list-filter").closest = (selector) => {
-        assert.equal(selector, ".app-main [class^='column-']");
-        return $.create("right-sidebar").addClass("column-right");
-    };
+    $("input.user-list-filter").set_closest_results(
+        ".app-main [class^='column-']",
+        $.create("right-sidebar").addClass("column-right"),
+    );
 
     $("input.user-list-filter").trigger("blur");
     assert.equal($("input.user-list-filter").is_focused(), false);
     activity_ui.initiate_search();
+    clock.runAll();
     assert.equal($("input.user-list-filter").is_focused(), true);
 });
 
 test("blur search left", ({override}) => {
     override(sidebar_ui, "show_streamlist_sidebar", noop);
     override(popovers, "hide_all", noop);
-    mock_setTimeout();
 
-    $("input.user-list-filter").closest = (selector) => {
-        assert.equal(selector, ".app-main [class^='column-']");
-        return $.create("right-sidebar").addClass("column-left");
-    };
+    $("input.user-list-filter").set_closest_results(
+        ".app-main [class^='column-']",
+        $.create("right-sidebar").addClass("column-left"),
+    );
 
     $("input.user-list-filter").trigger("blur");
     assert.equal($("input.user-list-filter").is_focused(), false);
     activity_ui.initiate_search();
+    clock.runAll();
     assert.equal($("input.user-list-filter").is_focused(), true);
 });
 

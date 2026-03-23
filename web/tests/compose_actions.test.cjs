@@ -20,6 +20,8 @@ const $ = require("./lib/zjquery.cjs");
 const {set_current_user} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
+const {will_produce_broken_stream_topic_link} = zrequire("topic_link_util");
+
 initialize_user_settings({
     user_settings: {
         default_language: "en",
@@ -49,7 +51,10 @@ set_global("requestAnimationFrame", (func) => func());
 const autosize = noop;
 autosize.update = noop;
 mock_esm("autosize", {default: autosize});
-mock_esm("../src/compose_tooltips", {initialize_compose_tooltips: noop});
+mock_esm("../src/compose_tooltips", {
+    initialize_compose_tooltips: noop,
+    dismiss_intro_go_to_conversation_tooltip: noop,
+});
 
 const channel = mock_esm("../src/channel");
 const compose_fade = mock_esm("../src/compose_fade", {
@@ -97,6 +102,12 @@ mock_esm("../src/popovers", {
 mock_esm("../src/saved_snippets_ui", {
     setup_saved_snippets_dropdown_widget_if_needed: noop,
 });
+mock_esm("../src/dropdown_widget", {
+    DropdownWidget: function DropdownWidget() {
+        this.current_value = undefined;
+        this.setup = noop;
+    },
+});
 
 const people = zrequire("people");
 
@@ -142,23 +153,16 @@ function override_private_message_recipient_ids({override}) {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        // We don't test the css calls; we just skip over them.
-        $("#compose").css = noop;
-        $(".new_message_textarea").css = noop;
-
         people.init();
         compose_state.set_message_type(undefined);
+        compose_recipient.initialize();
         f(helpers);
     });
 }
 
 function stub_message_row($textarea) {
-    const $stub = $.create("message_row_stub");
-    $textarea.closest = (selector) => {
-        assert.equal(selector, ".message_row");
-        $stub.length = 0;
-        return $stub;
-    };
+    const $stub = $.set_results("message_row_stub", []);
+    $textarea.set_closest_results(".message_row", $stub);
 }
 
 test("initial_state", () => {
@@ -188,7 +192,7 @@ test("start", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_recipient, "update_recipient_row_attention_level", noop);
     override_rewire(stream_data, "can_post_messages_in_stream", () => true);
     override_rewire(stream_data, "can_create_new_topics_in_stream", () => true);
-    mock_template("inline_decorated_channel_name.hbs", false, noop);
+    mock_template("inline_decorated_channel_name.hbs", false, () => "");
 
     let compose_defaults;
     override(narrow_state, "set_compose_defaults", () => compose_defaults);
@@ -341,7 +345,7 @@ test("respond_to_message", ({override, override_rewire, mock_template}) => {
     override_rewire(compose_validate, "update_posting_policy_banner_post_validation", noop);
     override_rewire(compose_recipient, "update_recipient_row_attention_level", noop);
     override_private_message_recipient_ids({override});
-    mock_template("inline_decorated_channel_name.hbs", false, noop);
+    mock_template("inline_decorated_channel_name.hbs", false, () => "");
 
     override(realm, "realm_direct_message_permission_group", nobody.id);
     override(realm, "realm_direct_message_initiator_group", everyone.id);
@@ -407,7 +411,7 @@ test("reply_with_mention", ({override, override_rewire, mock_template}) => {
     $elem.set_find_results(".message-limit-indicator", $indicator);
 
     override_private_message_recipient_ids({override});
-    mock_template("inline_decorated_channel_name.hbs", false, noop);
+    mock_template("inline_decorated_channel_name.hbs", false, () => "");
 
     override_rewire(stream_data, "can_post_messages_in_stream", () => true);
 
@@ -564,7 +568,6 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         }
     });
 
-    $("textarea#compose-textarea").caret = noop;
     $("textarea#compose-textarea").attr("id", "compose-textarea");
 
     replaced = false;
@@ -879,6 +882,43 @@ test("quote_message", ({disallow, override, override_rewire}) => {
         message_id: selected_message.id,
         forward_message: true,
     };
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
+    quote_message(opts);
+    assert.ok(replaced);
+
+    const topic_with_invalid_characters = "[zulip/zulip>topic]";
+    assert.ok(will_produce_broken_stream_topic_link(topic_with_invalid_characters));
+
+    selected_message = {
+        type: "stream",
+        stream_id: denmark_stream.stream_id,
+        topic: topic_with_invalid_characters,
+        sender_full_name: steve.full_name,
+        sender_id: steve.user_id,
+        raw_content: "test invalid topic",
+        id: 11,
+    };
+    opts = {
+        reply_type: "personal",
+        forward_message: true,
+        message_id: selected_message.id,
+    };
+
+    const html_entity_encoded_topic_name = "&#91;zulip/zulip&gt;topic&#93;";
+    const url_encoded_topic_name = ".5Bzulip.2Fzulip.3Etopic.5D";
+
+    const near_url = `http://zulip.zulipdev.com/#narrow/channel/${selected_message.stream_id}-${channel_object.name}/topic/${url_encoded_topic_name}/near/${selected_message.id}`;
+    const with_url = `#narrow/channel/${selected_message.stream_id}-${channel_object.name}/topic/${url_encoded_topic_name}/with/${selected_message.id}`;
+    const topic_link_syntax = `[#${channel_object.name} > ${html_entity_encoded_topic_name}](${with_url})`;
+
+    const fence = "```";
+    expected_replacement = `translated: @_**${selected_message.sender_full_name}|${selected_message.sender_id}** [said](${near_url}) in ${topic_link_syntax}:
+${fence}quote
+${selected_message.raw_content}
+${fence}`;
     replaced = false;
     override(message_lists.current, "get", (id) =>
         id === selected_message.id ? selected_message : undefined,

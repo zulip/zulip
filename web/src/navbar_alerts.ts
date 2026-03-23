@@ -15,15 +15,18 @@ import * as feedback_widget from "./feedback_widget.ts";
 import {$t} from "./i18n.ts";
 import type {LocalStorage} from "./localstorage.ts";
 import {localstorage} from "./localstorage.ts";
+import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
+import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
+import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
 
 function open_navbar_banner_and_resize(banner: AlertBanner): void {
@@ -431,6 +434,87 @@ const time_zone_update_offer_banner = (): AlertBanner => {
     };
 };
 
+const majority_messages_muted_banner = (percent_muted_messages: number): AlertBanner => {
+    const truncated_percent_muted_messages = Math.trunc(percent_muted_messages);
+    return {
+        process: "too-many-muted-messages",
+        intent: "warning",
+        label: $t(
+            {
+                defaultMessage:
+                    "{truncated_percent_muted_messages}% of your recent messages are muted, which may slow down the app.",
+            },
+            {
+                truncated_percent_muted_messages,
+            },
+        ),
+        buttons: [
+            {
+                variant: "subtle",
+                label: $t({defaultMessage: "Learn more"}),
+                custom_classes: "managing-muted-channels",
+            },
+            {
+                variant: "text",
+                label: $t({defaultMessage: "Dismiss for 3 months"}),
+                custom_classes: "dismiss-majority-messages-muted-banner",
+            },
+        ],
+        close_button: true,
+        custom_classes: "navbar-alert-banner",
+    };
+};
+
+export function check_and_show_muted_messages_banner(): void {
+    const ls = localstorage();
+    if (
+        localstorage.supported() &&
+        ls.get("majority_muted_messages_banner_dismissal_date") !== undefined
+    ) {
+        const last_dismissal_date = ls.get("majority_muted_messages_banner_dismissal_date");
+        assert(typeof last_dismissal_date === "number");
+        const today = Date.now();
+
+        if (
+            differenceInCalendarDays(last_dismissal_date, today, {in: timerender.display_tz}) <= 90
+        ) {
+            // If the user had previously dismissed the banner,
+            // wait for 3 months before showing the banner again.
+            return;
+        }
+    }
+
+    if (recent_view_messages_data.empty()) {
+        // If recent_view_messages_data is empty, even after the initial
+        // backfill for recent_view_messages_data is done, then there are
+        // no messages to check and the ratio calculation below
+        // would result in a division by zero.
+        return;
+    }
+
+    // We use all_messages_after_mute_filtering() here because
+    // recent_view_messages_data is initialized with muting disabled
+    // (excludes_muted_topics: false, excludes_muted_users: false).
+    // Therefore, this method returns all messages, effectively ignoring muting.
+    const messages = recent_view_messages_data.all_messages_after_mute_filtering();
+
+    const muted_messages = messages.filter(
+        (message) =>
+            muted_users.is_user_muted(message.sender_id) ||
+            (message.type === "stream" &&
+                !user_topics.is_topic_visible_in_home(message.stream_id, message.topic)),
+    );
+
+    const percent_muted_messages = (muted_messages.length / messages.length) * 100;
+    if (muted_messages.length >= 5000 && percent_muted_messages > 50) {
+        // If more than 50% of the loaded messages are muted, and that quantity exceeds
+        // at least 5000 messages, show the banner. We use an absolute number threshold
+        // to avoid showing the banner when there are very few messages loaded to have
+        // any impact on the performance.
+        open_navbar_banner_and_resize(majority_messages_muted_banner(percent_muted_messages));
+    }
+}
+
 export function initialize(): void {
     const ls = localstorage();
     const browser_time_zone = timerender.browser_time_zone();
@@ -525,6 +609,8 @@ export function initialize(): void {
         demo_organizations_ui.show_convert_demo_organization_modal();
     });
 
+    // NOTE: The `window.open()` click handlers are required over here since the
+    // the buttons component framework doesn't support link buttons as of now.
     $("#navbar_alerts_wrapper").on("click", ".demo-organizations-help", () => {
         window.open("https://zulip.com/help/demo-organizations", "_blank", "noopener,noreferrer");
     });
@@ -560,6 +646,26 @@ export function initialize(): void {
     $("#navbar_alerts_wrapper").on("click", ".unsupported-browser-learn-more", () => {
         window.open("/help/supported-browsers", "_blank", "noopener,noreferrer");
     });
+
+    $("#navbar_alerts_wrapper").on("click", ".managing-muted-channels", () => {
+        window.open(
+            "/help/mute-a-channel#managing-muted-channels",
+            "_blank",
+            "noopener,noreferrer",
+        );
+    });
+
+    $("#navbar_alerts_wrapper").on(
+        "click",
+        ".dismiss-majority-messages-muted-banner",
+        function (this: HTMLElement) {
+            const $banner = $(this).closest(".banner");
+            close_navbar_banner_and_resize($banner);
+            if (localstorage.supported()) {
+                ls.set("majority_muted_messages_banner_dismissal_date", Date.now());
+            }
+        },
+    );
 
     $("#navbar_alerts_wrapper").on(
         "click",

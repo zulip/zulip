@@ -116,6 +116,10 @@ Once you've created a pull request on GitHub, you can use one of the [custom
 linkifiers][dev-community-linkifiers] in the development community to easily
 link to your pull request from the relevant conversation.
 
+[zulip-dev-community]: https://chat.zulip.org
+[link-to-message]: https://zulip.com/help/link-to-a-message-or-conversation#get-a-link-to-a-specific-message
+[dev-community-linkifiers]: https://zulip.com/development-community/#linking-to-github-issues-and-pull-requests
+
 ## Review your own work
 
 Before requesting a review for your pull request, follow our [review

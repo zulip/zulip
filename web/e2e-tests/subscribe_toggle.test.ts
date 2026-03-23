@@ -16,6 +16,7 @@ async function test_subscription_button(page: Page): Promise<void> {
             `xpath///*[${common.has_class_x("stream-info-title")}]//*[${common.has_class_x(
                 "sub_unsub_button",
             )} and normalize-space()="Unsubscribe"]`,
+            {visible: true},
         );
         return await page.waitForSelector(subscribed_selector, {visible: true});
     }
@@ -25,6 +26,7 @@ async function test_subscription_button(page: Page): Promise<void> {
             `xpath///*[${common.has_class_x("stream-info-title")}]//*[${common.has_class_x(
                 "sub_unsub_button",
             )} and normalize-space()="Subscribe"]`,
+            {visible: true},
         );
         return await page.waitForSelector(unsubscribed_selector, {visible: true});
     }

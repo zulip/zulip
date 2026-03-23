@@ -5,6 +5,7 @@ import * as z from "zod/mini";
 
 import render_bot_api_key_details from "../templates/settings/bot_api_key_details.hbs";
 
+import * as banners from "./banners.ts";
 import * as bot_data from "./bot_data.ts";
 import type {Bot} from "./bot_data.ts";
 import * as buttons from "./buttons.ts";
@@ -13,9 +14,7 @@ import * as clipboard_handler from "./clipboard_handler.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t_html} from "./i18n.ts";
-import * as scroll_util from "./scroll_util.ts";
 import {realm} from "./state_data.ts";
-import * as ui_report from "./ui_report.ts";
 
 export function validate_bot_short_name(value: string): boolean {
     // Adapted from Django's EmailValidator
@@ -76,7 +75,19 @@ export async function fetch_bot_api_key(
         const raw_data = await channel.get({
             url: `/json/bots/${bot_id}/api_key`,
             error(xhr) {
-                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $error_element);
+                const error_message = channel.xhr_error_message(
+                    $t_html({defaultMessage: "Failed"}),
+                    xhr,
+                );
+                banners.open(
+                    {
+                        intent: "danger",
+                        label: error_message,
+                        buttons: [],
+                        close_button: false,
+                    },
+                    $error_element,
+                );
             },
         });
 
@@ -134,10 +145,7 @@ export async function show_api_key_modal(bot_id: number): Promise<void> {
     );
 
     if (!api_key) {
-        scroll_util.scroll_element_into_container(
-            $("#bot-edit-form-error"),
-            $("#user-profile-modal .modal__body"),
-        );
+        $("#bot-edit-form").closest(".simplebar-content-wrapper").animate({scrollTop: 0}, "fast");
         return;
     }
 
@@ -200,6 +208,9 @@ export function initialize_bot_click_handlers(): void {
             const bot_email = $bot_info.attr("data-email");
             const api_key = await fetch_bot_api_key(bot_id, $("#bot-edit-form-error"), $(this));
             if (!api_key) {
+                $("#bot-edit-form")
+                    .closest(".simplebar-content-wrapper")
+                    .animate({scrollTop: 0}, "fast");
                 return;
             }
 
@@ -217,6 +228,9 @@ export function initialize_bot_click_handlers(): void {
             const bot = bot_data.get(bot_id)!;
             const api_key = await fetch_bot_api_key(bot_id, $("#bot-edit-form-error"), $(this));
             if (!api_key) {
+                $("#bot-edit-form")
+                    .closest(".simplebar-content-wrapper")
+                    .animate({scrollTop: 0}, "fast");
                 return;
             }
 

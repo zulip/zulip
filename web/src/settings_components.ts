@@ -246,6 +246,7 @@ export function get_subsection_property_elements($subsection: JQuery): HTMLEleme
 
 export const simple_dropdown_realm_settings_schema = z.pick(realm_schema, {
     realm_org_type: true,
+    realm_media_preview_size: true,
     realm_message_edit_history_visibility_policy: true,
     realm_topics_policy: true,
 });
@@ -890,7 +891,8 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_can_summarize_topics_group":
         case "realm_create_multiuse_invite_group":
         case "realm_direct_message_initiator_group":
-        case "realm_direct_message_permission_group": {
+        case "realm_direct_message_permission_group":
+        case "realm_workplace_users_group": {
             const pill_widget = get_group_setting_widget(property_name);
             assert(pill_widget !== null);
             proposed_val = get_group_setting_widget_value(pill_widget);
@@ -1152,6 +1154,7 @@ export function populate_data_for_realm_settings_request(
                     "create_multiuse_invite_group",
                     "direct_message_initiator_group",
                     "direct_message_permission_group",
+                    "workplace_users_group",
                 ]);
                 if (realm_group_settings.has(property_name)) {
                     const old_value = get_realm_settings_property_value(
@@ -1623,14 +1626,20 @@ export function disable_opening_typeahead_on_clicking_label($container: JQuery):
     $group_setting_labels.off("click");
 }
 
-export function disable_group_permission_setting($containers: JQuery): void {
+export function disable_group_permission_setting($containers: JQuery, placeholder?: string): void {
     $containers.find(".input").prop("contenteditable", false);
+    if (placeholder !== undefined) {
+        $containers.find(".input").attr("data-placeholder", placeholder);
+    }
     $containers.closest(".input-group").addClass("group_setting_disabled");
     disable_opening_typeahead_on_clicking_label($containers.closest(".input-group"));
 }
 
-export function enable_group_permission_setting($containers: JQuery): void {
+export function enable_group_permission_setting($containers: JQuery, placeholder?: string): void {
     $containers.find(".input").prop("contenteditable", true);
+    if (placeholder !== undefined) {
+        $containers.find(".input").attr("data-placeholder", placeholder);
+    }
     $containers.closest(".input-group").removeClass("group_setting_disabled");
     enable_opening_typeahead_on_clicking_label($containers.closest(".input-group"));
 }
@@ -1674,6 +1683,7 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["realm_create_multiuse_invite_group", null],
     ["realm_direct_message_initiator_group", null],
     ["realm_direct_message_permission_group", null],
+    ["realm_workplace_users_group", null],
 ]);
 
 export function get_group_setting_widget(setting_name: string): GroupSettingPillContainer | null {

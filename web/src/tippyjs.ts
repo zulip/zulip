@@ -679,6 +679,7 @@ export function initialize(): void {
         target: [
             ".custom-profile-field-value",
             ".copy-custom-profile-field-link",
+            ".copy-custom-profile-field-long-text",
             "#popover-menu-copy-email",
             ".personal-menu-clear-status",
             ".user-card-clear-status-button",
@@ -1025,6 +1026,41 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".recent-view-channel-name",
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            // Show channel name tooltip only if it's truncated.
+            if (instance.reference.scrollWidth > instance.reference.clientWidth) {
+                return undefined;
+            }
+            return false;
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".recent-view-conversation-link",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        placement: "top",
+        onShow(instance) {
+            const name_element = instance.reference;
+            assert(name_element instanceof HTMLElement);
+            // Only show tooltip if the stream or group name is truncated.
+            // See https://stackoverflow.com/questions/21064101/understanding-offsetwidth-clientwidth-scrollwidth-and-height-respectively
+            // for more details.
+            if (name_element.offsetWidth >= name_element.scrollWidth) {
+                return false;
+            }
+
+            return undefined;
+        },
+    });
+
+    tippy.delegate("body", {
         target: "#recipient_box_clear_topic_button",
         delay: LONG_HOVER_DELAY,
         onShow(instance) {
@@ -1033,6 +1069,22 @@ export function initialize(): void {
             if (stream_id && !stream_data.can_create_new_topics_in_stream(stream_id)) {
                 content = $t({defaultMessage: "Clear topic"});
             }
+            instance.setContent(content);
+        },
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".two-tier-billing-disabled",
+        delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const content = $t(
+                {defaultMessage: "Contact {sales_email} to enable"},
+                {sales_email: "sales@zulip.com"},
+            );
             instance.setContent(content);
         },
         appendTo: () => document.body,

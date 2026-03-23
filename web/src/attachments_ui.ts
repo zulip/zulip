@@ -131,19 +131,19 @@ function delete_attachments(attachment: string, file_name: string): void {
 }
 
 function sort_mentioned_in(a: Attachment, b: Attachment): number {
-    const a_m = a.messages[0];
-    const b_m = b.messages[0];
+    const a_id = a.message_ids[0];
+    const b_id = b.message_ids[0];
 
-    if (!a_m) {
+    if (a_id === undefined) {
         return 1;
     }
-    if (!b_m) {
+    if (b_id === undefined) {
         return -1;
     }
 
-    if (a_m.id > b_m.id) {
+    if (a_id > b_id) {
         return 1;
-    } else if (a_m.id === b_m.id) {
+    } else if (a_id === b_id) {
         return 0;
     }
 

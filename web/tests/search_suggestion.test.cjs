@@ -636,7 +636,7 @@ test("sent_by_me_suggestions", ({override}) => {
     assert.deepEqual(suggestions, expected);
 });
 
-test("topic_suggestions", ({override}) => {
+test("topic_suggestions", ({override, override_rewire}) => {
     let suggestions;
     let expected;
 
@@ -762,6 +762,7 @@ test("topic_suggestions", ({override}) => {
         });
     }
 
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     stream_data.subscribe_myself(stream_data.get_sub("devel"));
     stream_data.subscribe_myself(stream_data.get_sub("office"));
     suggestions = get_suggestions("topic:");
@@ -817,6 +818,28 @@ test("topic_suggestions", ({override}) => {
         "channel:6 topic:talks",
         "channel:6 topic:tower",
     ];
+    assert.deepEqual(suggestions, expected);
+
+    // This is the case where the last term's
+    // operand is not a stringified channel id.
+    // We avoid suggesting topics in this case.
+    suggestions = get_suggestions("channel:foobar");
+    expected = [];
+    assert.deepEqual(suggestions, expected);
+
+    // We shouldn't see topic suggestions for the case
+    // where the last term is a channel with an operand
+    // that couldn't be converted to a string id by the
+    // Filter.parse step.
+    suggestions = get_suggestions("hello channel:foobar");
+    expected = [];
+    assert.deepEqual(suggestions, expected);
+
+    // We shouldn't see topic suggestions for an
+    // empty operand with channel as the operator for
+    // the last term.
+    suggestions = get_suggestions("hello channel:");
+    expected = ["hello channel:5", "hello channel:6"];
     assert.deepEqual(suggestions, expected);
 });
 

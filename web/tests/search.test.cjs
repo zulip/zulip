@@ -25,7 +25,7 @@ function stub_pills() {
     const $pill_container = $("#searchbox-input-container.pill-container");
     const $pill_input = $.create("pill_input");
     $pill_container.set_find_results(".input", $pill_input);
-    $pill_input.before = noop;
+    $pill_input[0].before = noop;
 }
 
 set_global("getSelection", () => ({
@@ -71,14 +71,14 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     function mock_pill_removes(widget) {
         const pills = widget._get_pills_for_testing();
         for (const pill of pills) {
-            pill.$element.remove = noop;
+            pill.$element[0].remove = noop;
         }
     }
 
     let opts;
     override(bootstrap_typeahead, "Typeahead", (input_element, opts_) => {
         opts = opts_;
-        assert.equal(input_element.$element, $search_query_box);
+        assert.equal(input_element.$element[0], $search_query_box[0]);
         assert.equal(opts.items, 999);
         assert.equal(opts.helpOnEmptyStrings, true);
         assert.equal(opts.matcher(), true);
@@ -158,13 +158,13 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             const _setup = (terms) => {
                 const pills = search.search_pill_widget._get_pills_for_testing();
                 for (const pill of pills) {
-                    pill.$element.remove = noop;
+                    pill.$element[0].remove = noop;
                 }
                 search_pill.set_search_bar_contents(
                     terms,
                     search.search_pill_widget,
                     false,
-                    $search_query_box.text,
+                    (text) => $search_query_box.text(text),
                 );
             };
 
@@ -179,7 +179,6 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             _setup(terms);
             input_pill_displayed = false;
             mock_pill_removes(search.search_pill_widget);
-            $(".navbar-search.expanded").length = 1;
             assert.equal(opts.updater("ver"), "ver");
             assert.ok(!input_pill_displayed);
 
@@ -222,7 +221,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             default_prevented = true;
         },
     };
-    $search_query_box.is = () => false;
+    $search_query_box.trigger("blur");
     assert.equal(keydown(ev), undefined);
     assert.ok(!default_prevented);
 
@@ -231,7 +230,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     assert.ok(!default_prevented);
 
     ev.key = "Enter";
-    $search_query_box.is = () => true;
+    $search_query_box.trigger("focus");
     assert.equal(keydown(ev), undefined);
     assert.ok(default_prevented);
 
@@ -242,13 +241,10 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     const _setup = (terms) => {
         const pills = search.search_pill_widget._get_pills_for_testing();
         for (const pill of pills) {
-            pill.$element.remove = noop;
+            pill.$element[0].remove = noop;
         }
-        search_pill.set_search_bar_contents(
-            terms,
-            search.search_pill_widget,
-            false,
-            $search_query_box.text,
+        search_pill.set_search_bar_contents(terms, search.search_pill_widget, false, (text) =>
+            $search_query_box.text(text),
         );
     };
 
@@ -263,7 +259,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
 
     ev.key = "a";
     /* istanbul ignore next */
-    $search_query_box.is = () => false;
+    $search_query_box.trigger("blur");
     $searchbox_form.trigger(ev);
 
     let search_exited = false;
@@ -272,19 +268,15 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     });
 
     ev.key = "Enter";
-    $search_query_box.is = () => false;
+    $search_query_box.trigger("blur");
     $searchbox_form.trigger(ev);
     assert.ok(!search_exited);
 
     ev.key = "Enter";
-    $search_query_box.is = () => true;
+    $search_query_box.trigger("focus");
     $searchbox_form.trigger(ev);
     assert.ok(search_exited);
 
-    let is_blurred = false;
-    $search_query_box.on("blur", () => {
-        is_blurred = true;
-    });
     terms = [
         {
             negated: false,
@@ -298,9 +290,9 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     override_rewire(search, "is_using_input_method", true);
     $searchbox_form.trigger(ev);
     // No change on first Enter keyup event
-    assert.ok(!is_blurred);
+    assert.ok($search_query_box.is(":focus"));
     $searchbox_form.trigger(ev);
-    assert.ok(is_blurred);
+    assert.ok(!$search_query_box.is(":focus"));
 });
 
 run_test("initiate_search", ({override_rewire}) => {
@@ -308,7 +300,7 @@ run_test("initiate_search", ({override_rewire}) => {
     override_rewire(search, "open_search_bar_and_close_narrow_description", () => {
         search_bar_opened = true;
     });
-    $(".navbar-search.expanded").length = 0;
+    $.set_results(".navbar-search.expanded", []);
     $("#search_query").text("");
     search.initiate_search();
     assert.ok(typeahead_forced_open);

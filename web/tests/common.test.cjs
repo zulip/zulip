@@ -52,7 +52,7 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
     ]);
 
     override(navigator, "platform", "MacIntel");
-    $("<span>").contents = () => $("<contents-stub>");
+    $("<span>").set_contents($("<contents-stub>"));
 
     const test_items = [];
     let key_no = 1;
@@ -63,10 +63,10 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
         $stub.text(old_key);
         if (old_key === "data-mac-following-key") {
             $stub.attr("data-mac-following-key", "⌥");
-            $stub.after = ($plus, $elem) => {
-                assert.equal($plus.selector, "<contents-stub>");
-                assert.equal($elem.selector, "<kbd>");
-                assert.equal($elem.text(), $stub.attr("data-mac-following-key"));
+            $stub[0].after = (plus, element) => {
+                assert.equal(plus.innerHTML, "<contents-stub>");
+                assert.equal(element.innerHTML, "<kbd>");
+                assert.equal(element.textContent, $stub.attr("data-mac-following-key"));
             };
         }
         test_item.$stub = $stub;
@@ -75,9 +75,9 @@ run_test("adjust_mac_kbd_tags mac", ({override}) => {
         key_no += 1;
     }
 
-    const children = test_items.map((test_item) => ({to_$: () => test_item.$stub}));
+    const elements = test_items.map((test_item) => ({to_$: () => test_item.$stub}));
 
-    $.create(".markdown kbd", {children});
+    $.create(".markdown kbd", {elements});
 
     common.adjust_mac_kbd_tags(".markdown kbd");
 
@@ -161,8 +161,6 @@ run_test("adjust_mac_hotkey_hints mac random", ({override}) => {
 
 run_test("show password", () => {
     const password_selector = "#id_password ~ .password_visibility_toggle";
-
-    $(password_selector)[0] = noop;
 
     function set_attribute(type) {
         $("#id_password").attr("type", type);

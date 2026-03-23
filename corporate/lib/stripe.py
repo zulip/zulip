@@ -64,6 +64,7 @@ from zilencer.models import (
     RemoteRealmAuditLog,
     RemoteRealmBillingUser,
     RemoteServerBillingUser,
+    RemoteServerDeactivationReasonType,
     RemoteZulipServer,
     RemoteZulipServerAuditLog,
     get_remote_realm_guest_and_non_guest_count,
@@ -1145,6 +1146,24 @@ class BillingSession(ABC):
             self.replace_payment_method(customer.stripe_customer_id, payment_method, True)
         return customer
 
+    # Callers of this function should check if overwriting an existing stripe_customer_id
+    # on the Customer object is allowed for that specific billing action.
+    def link_stripe_customer_id(self, new_stripe_customer_id: str) -> None:
+        customer = self.get_customer()
+        assert customer is not None
+        old_stripe_customer_id = customer.stripe_customer_id
+        customer.stripe_customer_id = new_stripe_customer_id
+        customer.save(update_fields=["stripe_customer_id"])
+        self.write_to_audit_log(
+            event_type=BillingSessionEventType.CUSTOMER_PROPERTY_CHANGED,
+            event_time=timezone_now(),
+            extra_data={
+                "old_value": old_stripe_customer_id,
+                "new_value": new_stripe_customer_id,
+                "property": "stripe_customer_id",
+            },
+        )
+
     def create_stripe_invoice_and_charge(
         self,
         metadata: dict[str, Any],
@@ -1540,8 +1559,7 @@ class BillingSession(ABC):
                 # invoices are manually created first in stripe, it's important
                 # for our billing page to have our Customer object correctly
                 # linked to the customer in stripe.
-                customer.stripe_customer_id = str(invoice_customer_id)
-                customer.save(update_fields=["stripe_customer_id"])
+                self.link_stripe_customer_id(str(invoice_customer_id))
 
             fixed_price_plan_params["sent_invoice_id"] = sent_invoice_id
             Invoice.objects.create(
@@ -3579,11 +3597,8 @@ class BillingSession(ABC):
             except Session.DoesNotExist:
                 raise JsonableError(_("Session not found"))
 
-            if (
-                session.type == Session.CARD_UPDATE_FROM_BILLING_PAGE
-                and not self.has_billing_access()
-            ):
-                raise JsonableError(_("Insufficient permission"))
+            if session.type == Session.CARD_UPDATE_FROM_BILLING_PAGE:
+                assert self.has_billing_access()
             return {"session": session.to_dict()}
 
         stripe_invoice_id = event_status_request.stripe_invoice_id
@@ -5447,7 +5462,9 @@ class RemoteServerBillingSession(BillingSession):
         )
 
     @transaction.atomic(durable=True)
-    def do_deactivate_remote_server(self) -> None:
+    def do_deactivate_remote_server(
+        self, deactivation_reason: RemoteServerDeactivationReasonType = "owner_request"
+    ) -> None:
         if self.remote_server.deactivated:
             billing_logger.warning(
                 "Cannot deactivate remote server with ID %d, server has already been deactivated.",
@@ -5493,6 +5510,9 @@ class RemoteServerBillingSession(BillingSession):
             event_time=timezone_now(),
             acting_support_user=self.support_staff,
             acting_remote_user=self.remote_billing_user,
+            extra_data={
+                "deactivation_reason": deactivation_reason,
+            },
         )
 
 

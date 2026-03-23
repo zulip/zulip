@@ -73,7 +73,7 @@
         display: flex;
         padding: 0;
         flex-wrap: wrap;
-        gap: 0.125em; /* 2px at 16px em */
+        gap: 0.3571em; /* 5px at 14px em, matches pill spacing in typeahead dropdown */
         align-self: center;
     }
 

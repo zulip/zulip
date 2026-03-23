@@ -18,16 +18,16 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 04:54+0000\n"
-"PO-Revision-Date: 2025-10-27 23:22+0000\n"
-"Last-Translator: Flammie A Pirinen <flammie@iki.fi>\n"
-"Language-Team: Finnish <https://hosted.weblate.org/projects/zulip/django/fi/"
-">\n"
+"PO-Revision-Date: 2026-02-24 20:18+0000\n"
+"Last-Translator: Mitja <mitja.leino@hotmail.com>\n"
+"Language-Team: Finnish <https://hosted.weblate.org/projects/zulip/django/fi/>"
+"\n"
 "Language: fi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.14.1-dev\n"
+"X-Generator: Weblate 5.16.1-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -1414,21 +1414,17 @@ msgid "Zulip for business"
 msgstr "Zulip yrityksille"
 
 #: templates/corporate/role/engineers.html:23
-#, fuzzy
-#| msgid "Zulip guide for open-source projects"
 msgid "Zulip for open source"
-msgstr "Zulipin ohje avoimen lähdekoodin projekteille"
+msgstr "Zulip avoimen lähdekoodin projekteille"
 
 #: templates/corporate/role/engineers.html:64
 msgid "Dog in glasses with a laptop"
-msgstr ""
+msgstr "Silmälaseilla varustettu koira kannettavan kanssa"
 
 #: templates/corporate/role/engineers.html:77
 #: templates/corporate/role/engineers.html:123
-#, fuzzy
-#| msgid "start a conversation"
 msgid "Screenshot of Zulip conversation"
-msgstr "aloita keskustelu"
+msgstr "Kuvakaappaus Zulip keskustelusta"
 
 #: templates/corporate/role/engineers.html:165
 msgid "Screenshot of Zulip conversation with sentry bot"
@@ -1437,7 +1433,7 @@ msgstr ""
 #: templates/corporate/role/engineers.html:178
 #: templates/corporate/role/engineers.html:215
 msgid "Screenshot of Zulip inbox"
-msgstr ""
+msgstr "Kuvakaappaus Zulip saapuneet-näkymästä"
 
 #: templates/corporate/role/engineers.html:262
 msgid "Open laptop with book inside"
@@ -1708,10 +1704,8 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/create_realm/create_demo_realm.html:27
-#, fuzzy
-#| msgid "Try Zulip now"
 msgid "Try Zulip"
-msgstr "Kokeile Zulippia nyt"
+msgstr "Kokeile Zulippia"
 
 #: templates/zerver/create_realm/create_realm.html:5
 msgid "Create a new organization"
@@ -2347,7 +2341,7 @@ msgid ""
 "If you have any questions, please contact this Zulip server's administrators "
 "at %(support_email)s."
 msgstr ""
-"Jos on kysmyksiä niin kannattaa ottaa yhteyttä tämän Zulip-palvelimen "
+"Jos sinulla on kysymyksiä niin ota yhteyttä tämän Zulip-palvelimen "
 "ylläpitoon sähköpostilla %(support_email)s."
 
 #: templates/zerver/emails/confirm_demo_organization_email.html:8
@@ -2760,7 +2754,7 @@ msgid ""
 "%(referrer_name)s wants you to join them on Zulip &mdash; the team "
 "communication tool designed for productivity."
 msgstr ""
-"%(referrer_name)stoivoo, että liittyisit seuraan Zulipissa &mdash; "
+"%(referrer_name)s toivoo, että liittyisit seuraan Zulipissa &mdash; "
 "tuottavuuteen suunnitellussa viestintätyökalussa."
 
 #: templates/zerver/emails/invitation.html:15
@@ -2839,7 +2833,7 @@ msgid ""
 "If you have any questions, please contact this Zulip server's administrators "
 "at <a href=\"mailto:%(email)s\">%(email)s</a>."
 msgstr ""
-"Jos on kysmyksiä niin kannattaa ottaa yhteyttä tämän Zulip-palvelimen "
+"Jos sinulla on kysymyksiä, niin ota yhteyttä tämän Zulip-palvelimen "
 "ylläpitoon sähköpostilla <a href=\"mailto:%(email)s\">%(email)s</a>."
 
 #: templates/zerver/emails/macros.html:18
@@ -4336,7 +4330,7 @@ msgstr ""
 #: templates/zerver/portico_error_pages/unsupported_browser.html:4
 #: templates/zerver/portico_error_pages/unsupported_browser.html:11
 msgid "Unsupported browser"
-msgstr "Ei-tuettu selain"
+msgstr "Tukematon selain"
 
 #: templates/zerver/portico_error_pages/unsupported_browser.html:13
 #, python-format
@@ -6489,7 +6483,7 @@ msgid ""
 "and above.\n"
 msgstr ""
 "\n"
-"Zulip on järjestelty tehostamaan kommunikaatiota. Keksustelut\n"
+"Zulip on järjestelty tehostamaan kommunikaatiota. Keskustelut\n"
 "on järjestelty aiheisiin, jotka kertovat mistä on kyse.\n"
 "\n"
 "Esimerkiksi aihe \"{topic_name}\"\n"
@@ -6520,7 +6514,7 @@ msgid ""
 "conversations with unread messages.\n"
 msgstr ""
 "\n"
-":point_right: Lisää keksusteluja ja lukemattomia viestejä\n"
+":point_right: Lisää keskusteluja ja lukemattomia viestejä\n"
 "löytyy [saapuneista](/#inbox).\n"
 
 #: zerver/lib/onboarding.py:405
@@ -7990,7 +7984,7 @@ msgstr "Vienti epäonnistui, ei poistettavia"
 
 #: zerver/views/realm_export.py:139
 msgid "Export still in progress"
-msgstr "Vienti vielä keksen"
+msgstr "Vienti vielä kesken"
 
 #: zerver/views/realm_icon.py:20
 msgid "You must upload exactly one icon."
@@ -8288,7 +8282,7 @@ msgstr "Käyttäjäryhmä {group_id} ei ole tämän ryhmän aliryhmä."
 
 #: zerver/views/user_settings.py:77
 msgid "Avatar changes are disabled in this organization."
-msgstr "Avatarin muutokset on estetty tässä organisaatiossa."
+msgstr "Tämä organisaatio ei salli avatarmuutoksia."
 
 #: zerver/views/user_settings.py:85
 msgid "Email address changes are disabled in this organization."

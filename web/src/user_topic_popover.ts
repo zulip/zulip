@@ -90,6 +90,8 @@ export function initialize(): void {
                 return;
             }
 
+            popover_menus.focus_popover(instance);
+
             $popper.on("change", "input[name='visibility-policy-select']", (e) => {
                 const start_time = Date.now();
 

@@ -16,6 +16,7 @@ const compose_state = zrequire("compose_state");
 const narrow_banner = zrequire("narrow_banner");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
+stream_data.set_channel_has_locally_available_topic(() => false);
 const {Filter} = zrequire("../src/filter");
 const message_fetch = mock_esm("../src/message_fetch", {
     load_messages_around_anchor() {},
@@ -229,7 +230,7 @@ run_test("urls", () => {
     assert.deepEqual(user_ids, [5]);
 });
 
-run_test("show_empty_narrow_message", ({mock_template, override}) => {
+run_test("show_empty_narrow_message", ({mock_template, override, override_rewire}) => {
     settings_data.user_can_access_all_other_users = () => true;
     settings_data.user_has_permission_for_group_setting = () => true;
     override(realm, "stop_words", []);
@@ -589,6 +590,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         stream_id: my_stream_id,
     };
     stream_data.add_sub_for_tests(my_stream);
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     stream_data.subscribe_myself(my_stream);
     current_filter = set_filter([["stream", my_stream_id.toString()]]);
     const list = new MessageList({
@@ -823,7 +825,7 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
         {operator: "topic", operand: "four"},
     ]);
 
-    // Test with blank topic, with realm_topics_policy
+    // Test with blank topic, empty topic not allowed
     override(realm, "realm_topics_policy", "disable_empty_topic");
     compose_state.topic("");
     args.called = false;
@@ -831,8 +833,9 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "channel", operand: rome_id.toString()}]);
 
-    // Test with blank topic, without realm_topics_policy
+    // Test with blank topic, empty topic allowed
     override(realm, "realm_topics_policy", "allow_empty_topic");
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => true);
     compose_state.topic("");
     args.called = false;
     message_view.to_compose_target();
@@ -842,24 +845,15 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
         {operator: "topic", operand: ""},
     ]);
 
-    // Test with no topic, with realm mandatory topics
-    override(realm, "realm_topics_policy", "disable_empty_topic");
-    compose_state.topic(undefined);
+    // When empty topic is allowed by policy but user cannot create
+    // topics and no empty topic exists, narrowing with blank topic
+    // should not include the topic term.
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => false);
+    compose_state.topic("");
     args.called = false;
     message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "channel", operand: rome_id.toString()}]);
-
-    // Test with no topic, without realm mandatory topics
-    override(realm, "realm_topics_policy", "allow_empty_topic");
-    compose_state.topic(undefined);
-    args.called = false;
-    message_view.to_compose_target();
-    assert.equal(args.called, true);
-    assert.deepEqual(args.terms, [
-        {operator: "channel", operand: rome_id.toString()},
-        {operator: "topic", operand: ""},
-    ]);
 });
 
 run_test("narrow_to_compose_target direct messages", ({override, override_rewire}) => {

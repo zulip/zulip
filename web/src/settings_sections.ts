@@ -24,7 +24,7 @@ import * as settings_users from "./settings_users.ts";
 const load_func_dict = new Map<string, () => void>(); // key is a group
 const loaded_groups = new Set();
 
-export function get_group(section: string): string {
+export function get_group(section: string, base: string): string {
     // Sometimes several sections all share the same code.
 
     switch (section) {
@@ -34,8 +34,12 @@ export function get_group(section: string): string {
         case "auth-methods":
             return "org_misc";
 
-        case "bots":
-            return "org_bots";
+        case "bots": {
+            if (base === "organization") {
+                return "org_bots";
+            }
+            return "personal_bots";
+        }
 
         case "users":
             return "org_users";
@@ -67,6 +71,7 @@ export function initialize(): void {
     // org
     load_func_dict.set("org_misc", settings_org.set_up);
     load_func_dict.set("org_bots", settings_bots.set_up_bots);
+    load_func_dict.set("personal_bots", settings_bots.set_up_bots_for_personal_tab);
     load_func_dict.set("org_users", settings_users.set_up_humans);
     load_func_dict.set("emoji-settings", settings_emoji.set_up);
     load_func_dict.set("default-channels-list", settings_streams.set_up);
@@ -81,8 +86,8 @@ export function initialize(): void {
     load_func_dict.set("channel-folders", settings_folders.set_up);
 }
 
-export function load_settings_section(section: string): void {
-    const group = get_group(section);
+export function load_settings_section(section: string, base: string): void {
+    const group = get_group(section, base);
 
     if (!load_func_dict.has(group)) {
         blueslip.error("Unknown section " + section);

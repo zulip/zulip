@@ -13,6 +13,7 @@ import ImportIntoAZulipCloudOrganization from "../include/_ImportIntoAZulipCloud
 import ImportSelfHostedServerTips from "../include/_ImportSelfHostedServerTips.mdx";
 import ImportYourDataIntoZulip from "../include/_ImportYourDataIntoZulip.mdx";
 import ImportZulipCloudOrganizationWarning from "../include/_ImportZulipCloudOrganizationWarning.mdx";
+import ViewImportedUsers from "../include/_ViewImportedUsers.mdx";
 
 You can import your current workspace into a Zulip organization. It's a great way
 to preserve your workspace history when you migrate to Zulip, and to
@@ -271,7 +272,11 @@ Once the import process is completed, you will need to:
   1. **Make sure all users [change their Zulip email
      addresses](/help/change-your-email-address) from their Microsoft tenant
      emails** to ones they can continue to access, before your organization's
-     Microsoft subscription expires.
+     Microsoft subscription expires. Zulip's [management
+     tools](https://zulip.readthedocs.io/en/latest/production/management-commands.html)
+     also allow self-hosted server administrators to change user emails directly;
+     Zulip Cloud users can [contact support](mailto:support@zulip.com) for
+     assistance.
   1. Migrate any [integrations](/integrations/).
 </Steps>
 
@@ -284,6 +289,8 @@ Once the import process is completed, you will need to:
 
   ### Manual password resets
 </ImportHowUsersWillLogIn>
+
+<ViewImportedUsers />
 
 ## Related articles
 

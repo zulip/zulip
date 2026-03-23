@@ -1,9 +1,9 @@
-import {all_messages_data} from "./all_messages_data.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
 import * as pm_conversations from "./pm_conversations.ts";
+import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import * as unread from "./unread.ts";
 import * as unread_ui from "./unread_ui.ts";
 
@@ -32,7 +32,7 @@ export function get_count_of_messages_in_topic_sent_after_current_message(
 }
 
 export function get_loaded_messages_in_topic(stream_id: number, topic: string): Message[] {
-    return all_messages_data
+    return recent_view_messages_data
         .all_messages_after_mute_filtering()
         .filter(
             (x) =>
@@ -43,14 +43,14 @@ export function get_loaded_messages_in_topic(stream_id: number, topic: string): 
 }
 
 export function get_messages_in_dm_conversations(user_ids_strings: Set<string>): Message[] {
-    return all_messages_data
+    return recent_view_messages_data
         .all_messages_after_mute_filtering()
         .filter((x) => x.type === "private" && user_ids_strings.has(x.to_user_ids));
 }
 
 export function get_max_message_id_in_stream(stream_id: number): number {
     let max_message_id = 0;
-    for (const msg of all_messages_data.all_messages_after_mute_filtering()) {
+    for (const msg of recent_view_messages_data.all_messages_after_mute_filtering()) {
         if (msg.type === "stream" && msg.stream_id === stream_id && msg.id > max_message_id) {
             max_message_id = msg.id;
         }

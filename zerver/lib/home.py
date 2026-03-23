@@ -18,6 +18,10 @@ from zerver.lib.i18n import (
 from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm
 from zerver.lib.realm_description import get_realm_rendered_description
 from zerver.lib.request import RequestNotes
+from zerver.lib.workplace_users import (
+    realm_eligible_for_non_workplace_pricing,
+    realm_on_discounted_cloud_plan,
+)
 from zerver.models import Message, Realm, Stream, UserProfile
 from zerver.views.message_flags import get_latest_update_message_flag_activity
 
@@ -175,6 +179,8 @@ def build_page_params_for_home_page_load(
         # events support for spectators is not implemented yet.
         no_event_queue=user_profile is None,
         show_try_zulip_modal=show_try_zulip_modal,
+        non_workplace_pricing_eligible=realm_eligible_for_non_workplace_pricing(realm),
+        is_cloud_realm_with_discounted_plan=realm_on_discounted_cloud_plan(realm),
     )
 
     page_params["state_data"] = state_data

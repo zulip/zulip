@@ -1888,13 +1888,28 @@ class MarkdownLinkifierTest(ZulipTestCase):
         ):
             self.assertEqual(linkifiers_for_realm(realm.id), [])
 
-        linkifier = RealmFilter(realm=realm, pattern=r"whatever", url_template="whatever")
+        linkifier = RealmFilter(
+            realm=realm,
+            pattern=r"whatever",
+            url_template="whatever",
+            example_input="whatever",
+            reverse_template="whatever",
+        )
         linkifier.save()
 
         # cache gets properly invalidated by virtue of our save
         self.assertEqual(
             linkifiers_for_realm(realm.id),
-            [{"id": linkifier.id, "pattern": "whatever", "url_template": "whatever"}],
+            [
+                {
+                    "id": linkifier.id,
+                    "pattern": "whatever",
+                    "url_template": "whatever",
+                    "example_input": "whatever",
+                    "reverse_template": "whatever",
+                    "alternative_url_templates": [],
+                }
+            ],
         )
 
         # And the in-process cache works again.
@@ -1904,7 +1919,16 @@ class MarkdownLinkifierTest(ZulipTestCase):
         ):
             self.assertEqual(
                 linkifiers_for_realm(realm.id),
-                [{"id": linkifier.id, "pattern": "whatever", "url_template": "whatever"}],
+                [
+                    {
+                        "id": linkifier.id,
+                        "pattern": "whatever",
+                        "url_template": "whatever",
+                        "example_input": "whatever",
+                        "reverse_template": "whatever",
+                        "alternative_url_templates": [],
+                    }
+                ],
             )
 
 
@@ -3735,7 +3759,7 @@ class MarkdownErrorTests(ZulipTestCase):
         markdown_input = [
             "``` curl",
             "curl {{ api_url }}/v1/register",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY",
+            "    -u EMAIL_ADDRESS:API_KEY",
             '    -d "queue_id=fb67bf8a-c031-47cc-84cf-ed80accacda8"',
             "```",
         ]
@@ -3749,14 +3773,14 @@ class MarkdownErrorTests(ZulipTestCase):
         markdown_input = [
             "``` curl",
             "curl {{ api_url }}/v1/register",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY",
+            "    -u EMAIL_ADDRESS:API_KEY",
             '    -d "queue_id=fb67bf8a-c031-47cc-84cf-ed80accacda8"',
             "```",
         ]
         expected = [
             "",
             "**curl:curl {{ api_url }}/v1/register",
-            "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY",
+            "    -u EMAIL_ADDRESS:API_KEY",
             '    -d "queue_id=fb67bf8a-c031-47cc-84cf-ed80accacda8"**',
             "",
             "",

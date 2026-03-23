@@ -1597,7 +1597,7 @@ def send_push_notifications(
         )
         # Uses 'zerver_device_user_push_token_id_idx' index.
         with transaction.atomic(durable=True):
-            push_devices = Device.objects.select_for_update().filter(
+            push_devices = Device.objects.select_for_update(no_key=True).filter(
                 user=user_profile, push_token_id__in=delete_token_ids_int
             )
             for push_device in push_devices:
@@ -1749,6 +1749,12 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
             if ArchivedMessage.objects.filter(id=missed_message["message_id"]).exists():
                 # If the cause is a race with the message being deleted,
                 # that's normal and we have no need to log an error.
+                return
+            if Message.objects.filter(id=missed_message["message_id"]).exists():
+                # If the message exists but is no longer accessible to
+                # the user, this is likely because the message was moved
+                # to a channel the user doesn't have access to. This is
+                # a normal race and we have no need to log an error.
                 return
             logging.info(
                 "Unexpected message access failure handling push notifications: %s %s",

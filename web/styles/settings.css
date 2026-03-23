@@ -385,7 +385,8 @@ select.settings_select {
 }
 
 #admin-active-users-list,
-#admin-bot-list {
+#admin-bot-list,
+#personal-bot-list {
     .table tr:first-of-type td {
         border-top: none;
     }
@@ -396,7 +397,8 @@ select.settings_select {
     }
 }
 
-#admin-bot-list .user-status-settings {
+#admin-bot-list .user-status-settings,
+#personal-bot-list .user-status-settings {
     display: flex;
     justify-content: flex-end;
 }
@@ -1046,9 +1048,36 @@ input[type="checkbox"] {
     }
 }
 
-#admin-linkifier-pattern-status,
-#admin-linkifier-template-status {
-    margin: 20px 0 0;
+.admin_linkifiers_table {
+    th:first-child,
+    td:first-child {
+        white-space: nowrap;
+    }
+
+    th.convert-url-heading {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    td.convert-cell {
+        text-align: center;
+    }
+}
+
+.alternative-url-template-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+
+    & input {
+        flex: 1;
+    }
+
+    &:last-child .delete-alternative-url-template {
+        visibility: hidden;
+    }
 }
 
 #organization-permissions {
@@ -1063,7 +1092,8 @@ input[type="checkbox"] {
     }
 }
 
-.org-permissions-form .pill-container {
+.org-permissions-form .pill-container,
+.org-settings-form .pill-container {
     /* Subtract 2 * (2px padding) + 2 * (1px border) */
     min-width: calc(var(--modal-input-width) - 6px);
 
@@ -1372,6 +1402,22 @@ label.preferences-radio-choice-label {
 
 .open-user-form {
     min-width: initial !important;
+}
+
+#show_api_key {
+    .api-key-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .copy-button {
+            padding: 0;
+
+            &:focus {
+                outline: none;
+            }
+        }
+    }
 }
 
 #api_key_buttons {
@@ -2090,7 +2136,8 @@ label.preferences-radio-choice-label {
     }
 
     #admin-user-list,
-    #admin-bot-list {
+    #admin-bot-list,
+    #personal-bot-list {
         .user_row {
             .user_name,
             .email {
@@ -2109,7 +2156,8 @@ label.preferences-radio-choice-label {
 
 @media (width < $sm_min) {
     #admin-user-list,
-    #admin-bot-list {
+    #admin-bot-list,
+    #personal-bot-list {
         .user_row,
         .table-sticky-headers {
             .bot_type,
@@ -2190,8 +2238,8 @@ label.preferences-radio-choice-label {
 }
 
 #edit-linkifier-form {
-    #edit-linkifier-pattern,
-    #edit-linkifier-url-template {
+    #linkifier-pattern,
+    #linkifier-url-template {
         width: 400px;
     }
 
@@ -2199,8 +2247,8 @@ label.preferences-radio-choice-label {
         margin-bottom: 4px;
     }
 
-    #edit-linkifier-pattern-status,
-    #edit-linkifier-template-status {
+    #linkifier-pattern-status,
+    #linkifier-template-status {
         margin-top: 10px;
     }
 
@@ -2321,6 +2369,7 @@ label.preferences-radio-choice-label {
 }
 
 #admin_users_table .deactivated_user,
+#admin_imported_users_table .deactivated_user,
 #admin_deactivated_users_table .active-user {
     color: hsl(0deg 0% 64%);
 

@@ -2,7 +2,6 @@
 
 const assert = require("node:assert/strict");
 
-const {noop} = require("./test.cjs");
 const $ = require("./zjquery.cjs");
 
 class FakeComposeBox {
@@ -19,12 +18,8 @@ class FakeComposeBox {
             $(".message-limit-indicator"),
         );
 
-        const $message_row_stub = $.create("message_row_stub");
-        this.$content_textarea.closest = (selector) => {
-            assert.equal(selector, ".message_row");
-            $message_row_stub.length = 0;
-            return $message_row_stub;
-        };
+        const $message_row_stub = $.set_results("message_row_stub", []);
+        this.$content_textarea.set_closest_results(".message_row", $message_row_stub);
 
         this.reset();
     }
@@ -33,14 +28,13 @@ class FakeComposeBox {
         $(".message-limit-indicator").html("");
         $(".message-limit-indicator").text("");
 
-        $("#compose_banners .user_not_subscribed").length = 0;
+        $.reset_selector("#compose_banners .user_not_subscribed");
+        $.set_results("#compose_banners .user_not_subscribed", []);
 
-        this.$content_textarea.toggleClass = noop;
         this.$content_textarea.set_height(50);
         this.$content_textarea.val("default message");
         this.$content_textarea.trigger("blur");
 
-        this.$preview_message_area.css = noop;
         $(".compose-submit-button .loader").show();
     }
 
@@ -88,10 +82,6 @@ class FakeComposeBox {
 
     show_submit_button_spinner() {
         $(".compose-submit-button .loader").show();
-    }
-
-    set_textarea_toggle_class_function(f) {
-        this.$content_textarea.toggleClass = f;
     }
 
     is_recipient_not_subscribed_banner_visible() {

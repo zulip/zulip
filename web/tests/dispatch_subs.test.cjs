@@ -15,8 +15,14 @@ const event_fixtures = events.fixtures;
 const test_user = events.test_user;
 
 const compose_recipient = mock_esm("../src/compose_recipient");
+mock_esm("../src/inbox_ui", {
+    complete_rerender: noop,
+});
 const message_events = mock_esm("../src/message_events");
 const overlays = mock_esm("../src/overlays");
+mock_esm("../src/recent_view_ui", {
+    complete_rerender: noop,
+});
 const settings_org = mock_esm("../src/settings_org");
 const settings_streams = mock_esm("../src/settings_streams");
 const stream_events = mock_esm("../src/stream_events");
@@ -185,6 +191,12 @@ test("stream update", ({override}) => {
     assert.equal(args.stream_id, event.stream_id);
     assert.equal(args.property, event.property);
     assert.equal(args.value, event.value);
+
+    // Dispatch a stream update with property "name" to exercise
+    // the complete_rerender calls for inbox and recent views.
+    const name_event = {...event, property: "name", value: "new_name"};
+    dispatch(name_event);
+    assert.equal(stub.num_calls, 2);
 });
 
 test("stream create", ({override}) => {
@@ -202,7 +214,7 @@ test("stream create", ({override}) => {
     assert.deepEqual(sub_store.get(102).name, "test");
 });
 
-test("stream delete (normal)", ({override}) => {
+test("stream delete (normal)", ({override, override_rewire}) => {
     const event = event_fixtures.stream__delete;
 
     const devel_sub = make_stream({
@@ -220,6 +232,8 @@ test("stream delete (normal)", ({override}) => {
 
     stream_data.add_sub_for_tests(test_sub);
     stream_data.add_sub_for_tests(devel_sub);
+
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
 
     stream_data.subscribe_myself(devel_sub);
 
@@ -241,7 +255,7 @@ test("stream delete (normal)", ({override}) => {
     assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
 });
 
-test("stream delete (special streams)", ({override}) => {
+test("stream delete (special streams)", ({override, override_rewire}) => {
     const event = event_fixtures.stream__delete;
 
     const devel_sub = make_stream({
@@ -259,6 +273,7 @@ test("stream delete (special streams)", ({override}) => {
     stream_data.add_sub_for_tests(devel_sub);
     stream_data.add_sub_for_tests(test_sub);
 
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     stream_data.subscribe_myself(devel_sub);
 
     const removed_stream_ids = [];

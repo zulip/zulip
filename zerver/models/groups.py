@@ -151,6 +151,14 @@ class NamedUserGroup(UserGroup):
         ),
     }
 
+    MEMBERSHIP_MANAGEMENT_SETTINGS = [
+        "can_add_members_group",
+        "can_join_group",
+        "can_leave_group",
+        "can_manage_group",
+        "can_remove_members_group",
+    ]
+
     class Meta:
         unique_together = (("realm_for_sharding", "name"),)
 

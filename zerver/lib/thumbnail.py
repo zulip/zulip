@@ -104,8 +104,8 @@ TRANSCODED_IMAGE_FORMAT = ThumbnailFormat("webp", 4032, 3024, animated=False)
 # this does not provide any *security*, since the content-type is
 # provided by the browser, and may not match the bytes they uploaded.
 #
-# This should be kept synced with the client-side image-picker in
-# web/upload_widget.ts.  Any additions below must be accompanied by
+# This should be kept synced with the client-side list in
+# web/src/upload.ts.  Any additions below must be accompanied by
 # changes to the pyvips block below as well.
 THUMBNAIL_ACCEPT_IMAGE_TYPES = frozenset(
     [
@@ -441,7 +441,7 @@ def manifest_and_get_user_upload_previews(
         realm_id=realm_id, path_id__in=path_ids
     ).order_by("id")
     if lock:
-        image_attachments = image_attachments.select_for_update(of=("self",))
+        image_attachments = image_attachments.select_for_update(of=("self",), no_key=True)
     for image_attachment in image_attachments:
         if image_attachment.thumbnail_metadata == []:
             # Image exists, and header of it parsed as a valid image,

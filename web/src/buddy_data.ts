@@ -180,6 +180,11 @@ export function user_last_seen_time_status(
         return $t({defaultMessage: "Idle"});
     }
 
+    const user = people.get_by_user_id(user_id);
+    if (user.is_imported_stub) {
+        return $t({defaultMessage: "Imported account not activated"});
+    }
+
     const last_active_date = presence.last_active_date(user_id);
     if (last_active_date === undefined) {
         // There are situations where the client has incomplete presence

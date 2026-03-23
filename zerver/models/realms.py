@@ -162,6 +162,12 @@ class RealmTopicsPolicyEnum(Enum):
     disable_empty_topic = 3
 
 
+class RealmMediaPreviewSizeEnum(IntEnum):
+    SMALL = 100
+    MEDIUM = 150
+    LARGE = 200
+
+
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_DESCRIPTION_LENGTH = 1000
@@ -225,6 +231,10 @@ class Realm(models.Model):
     # Whether the organization has enabled inline image and URL previews.
     inline_image_preview = models.BooleanField(default=True)
     inline_url_embed_preview = models.BooleanField(default=False)
+
+    media_preview_size = models.PositiveSmallIntegerField(
+        default=RealmMediaPreviewSizeEnum.SMALL.value
+    )
 
     # Whether digest emails are enabled for the organization.
     digest_emails_enabled = models.BooleanField(default=False)
@@ -719,6 +729,11 @@ class Realm(models.Model):
     # Whether to notify client when a DM has a guest recipient.
     enable_guest_user_dm_warning = models.BooleanField(default=True)
 
+    # UserGroup whose users will be considered as workplace users for billing.
+    workplace_users_group = models.ForeignKey(
+        "UserGroup", on_delete=models.RESTRICT, related_name="+"
+    )
+
     # Avatar source for new users
     AVATAR_FROM_GRAVATAR = "G"
     AVATAR_FROM_JDENTICON = "J"
@@ -727,7 +742,7 @@ class Realm(models.Model):
         (AVATAR_FROM_JDENTICON, "Generated using Jdenticon"),
     )
     default_avatar_source = models.CharField(
-        default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1
+        default=AVATAR_FROM_JDENTICON, choices=AVATAR_SOURCES, max_length=1
     )
 
     # Define the types of the various automatically managed properties
@@ -748,6 +763,7 @@ class Realm(models.Model):
         enable_read_receipts=bool,
         enable_spectator_access=bool,
         gif_rating_policy=int,
+        media_preview_size=int,
         inline_image_preview=bool,
         inline_url_embed_preview=bool,
         invite_required=bool,
@@ -901,6 +917,11 @@ class Realm(models.Model):
             default_group_name=SystemGroups.EVERYONE,
         ),
         direct_message_permission_group=GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=True,
+            default_group_name=SystemGroups.EVERYONE,
+        ),
+        workplace_users_group=GroupPermissionSetting(
             allow_nobody_group=True,
             allow_everyone_group=True,
             default_group_name=SystemGroups.EVERYONE,

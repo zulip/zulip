@@ -281,6 +281,7 @@ EXEMPT_FILES = make_set(
         "web/src/thumbnail.ts",
         "web/src/timerender.ts",
         "web/src/tippyjs.ts",
+        "web/src/todo_data.ts",
         "web/src/todo_widget.ts",
         "web/src/topic_filter_pill.ts",
         "web/src/topic_generator.ts",
@@ -324,7 +325,6 @@ EXEMPT_FILES = make_set(
         "web/src/zulip_test.ts",
         # Test library code isn't always fully used.
         "web/tests/lib/mdiff.cjs",
-        "web/tests/lib/real_jquery.cjs",
         "web/tests/lib/zjquery_element.cjs",
         "web/tests/lib/zpage_billing_params.cjs",
         # There are some important functions which are not called right now but will

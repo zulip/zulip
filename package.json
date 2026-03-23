@@ -1,6 +1,6 @@
 {
   "private": true,
-  "packageManager": "pnpm@10.28.2+sha512.41872f037ad22f7348e3b1debbaf7e867cfd448f2726d9cf74c08f19507c31d2c8e7a11525b983febc2df640b5438dee6023ebb1f84ed43cc2d654d2bc326264",
+  "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be",
   "type": "module",
   "dependencies": {
     "@babel/core": "^7.5.5",
@@ -13,6 +13,7 @@
     "@koa/bodyparser": "^6.0.0",
     "@sentry/browser": "^10.5.0",
     "@sentry/core": "^10.5.0",
+    "@sinonjs/fake-timers": "^15.1.1",
     "@uppy/core": "^5.0.1",
     "@uppy/dashboard": "^5.0.4",
     "@uppy/image-editor": "^4.0.2",
@@ -30,11 +31,11 @@
     "clean-css": "^5.1.0",
     "clipboard": "^2.0.4",
     "colord": "^2.9.3",
-    "compression-webpack-plugin": "^11.1.0",
+    "compression-webpack-plugin": "^12.0.0",
     "compressorjs": "^1.2.1",
     "core-js": "^3.48.0",
     "css-loader": "^7.1.1",
-    "css-minimizer-webpack-plugin": "^7.0.0",
+    "css-minimizer-webpack-plugin": "^8.0.0",
     "date-fns": "^4.1.0",
     "email-addresses": "^5.0.0",
     "emoji-datasource-google": "^16.0.0",
@@ -107,6 +108,7 @@
     "@types/blueimp-md5": "^2.18.0",
     "@types/co-body": "^6.1.3",
     "@types/confusing-browser-globals": "^1.0.3",
+    "@types/css-tree": "^2.3.11",
     "@types/eslint-config-prettier": "^6.11.3",
     "@types/gtag.js": "^0.0.20",
     "@types/is-url": "^1.2.32",
@@ -149,11 +151,10 @@
     "eslint-plugin-mdx": "^3.6.2",
     "eslint-plugin-no-jquery": "^3.0.2",
     "eslint-plugin-promise": "^7.2.1",
-    "eslint-plugin-unicorn": "^62.0.0",
+    "eslint-plugin-unicorn": "^63.0.0",
     "globals": "^17.0.0",
     "jsdom": "^28.0.0",
-    "mockdate": "^3.0.2",
-    "nyc": "^17.0.0",
+    "nyc": "^18.0.0",
     "openapi-examples-validator": "^6.0.1",
     "postcss-load-config": "^6.0.1",
     "preact": "^10.24.3",
@@ -186,7 +187,8 @@
       "svgicons2svgfont": "patches/svgicons2svgfont.patch",
       "textarea-caret@3.1.0": "patches/textarea-caret@3.1.0.patch",
       "tippy.js@6.3.7": "patches/tippy.js@6.3.7.patch",
-      "autosize": "patches/autosize.patch"
+      "autosize": "patches/autosize.patch",
+      "jdenticon": "patches/jdenticon.patch"
     }
   },
   "nyc": {

@@ -9,7 +9,7 @@ from zerver.lib.cache import (
     generic_bulk_cached_fetch,
     single_user_display_recipient_cache_key,
 )
-from zerver.lib.per_request_cache import return_same_value_during_entire_request
+from zerver.lib.per_request_cache import cache_for_current_request
 from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 
 if TYPE_CHECKING:
@@ -209,7 +209,7 @@ def bulk_fetch_display_recipients(
     return {**stream_display_recipients, **direct_message_display_recipients}
 
 
-@return_same_value_during_entire_request
+@cache_for_current_request
 def get_display_recipient_by_id(
     recipient_id: int, recipient_type: int, recipient_type_id: int | None
 ) -> list[UserDisplayRecipient]:

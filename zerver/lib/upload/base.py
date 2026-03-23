@@ -1,5 +1,6 @@
 import os
 from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from typing import IO, Any, Protocol
@@ -47,13 +48,29 @@ class ZulipUploadBackend:
     def attachment_source(self, path_id: str) -> StreamingSourceWithSize:
         raise NotImplementedError
 
-    def delete_message_attachment(self, path_id: str) -> None:
-        """This must delete the attachment, any adjacent .info files, and any thumbnails."""
+    def delete_message_attachment(self, path_id: str, *, raw_path: bool = False) -> None:
+        """This must delete the attachment, any adjacent .info files, and any thumbnails.
+
+        If raw_path is passed, just delete the one path provided.
+        This is used in rare cases where we're iterating _files_, not
+        path_ids.
+
+        """
         raise NotImplementedError
 
-    def delete_message_attachments(self, path_ids: list[str]) -> None:
-        for path_id in path_ids:
-            self.delete_message_attachment(path_id)
+    @contextmanager
+    def delete_message_attachments(
+        self,
+        *,
+        raw_paths: bool = False,
+        flush: None | Callable[[list[str]], None] = None,
+    ) -> Iterator[Callable[[str], None]]:
+        def delete_one(path_id: str) -> None:
+            self.delete_message_attachment(path_id, raw_path=raw_paths)
+            if flush:
+                flush([path_id])
+
+        yield delete_one
 
     def all_message_attachments(
         self,

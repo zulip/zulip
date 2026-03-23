@@ -49,12 +49,14 @@ class HomeTest(ZulipTestCase):
         "embedded_bots_enabled",
         "furthest_read_time",
         "insecure_desktop_app",
+        "is_cloud_realm_with_discounted_plan",
         "is_spectator",
         "language_list",
         "login_page",
         "narrow",
         "narrow_stream",
         "no_event_queue",
+        "non_workplace_pricing_eligible",
         "page_type",
         "presence_history_limit_days_for_web_app",
         "promote_sponsoring_zulip",
@@ -193,6 +195,7 @@ class HomeTest(ZulipTestCase):
         "realm_logo_source",
         "realm_logo_url",
         "realm_mandatory_topics",
+        "realm_media_preview_size",
         "realm_message_content_allowed_in_email_notifications",
         "realm_message_content_delete_limit_seconds",
         "realm_message_content_edit_limit_seconds",
@@ -232,6 +235,7 @@ class HomeTest(ZulipTestCase):
         "realm_want_advertise_in_communities_directory",
         "realm_welcome_message_custom_text",
         "realm_wildcard_mention_policy",
+        "realm_workplace_users_group",
         "realm_zulip_update_announcements_stream_id",
         "realm_moderation_request_channel_id",
         "recent_private_conversations",
@@ -323,16 +327,9 @@ class HomeTest(ZulipTestCase):
         # TODO: Inspect the page_params data further.
         # print(orjson.dumps(page_params, option=orjson.OPT_INDENT_2).decode())
         realm_bots_expected_keys = [
-            "api_key",
-            "avatar_url",
-            "bot_type",
             "default_all_public_streams",
             "default_events_register_stream",
             "default_sending_stream",
-            "email",
-            "full_name",
-            "is_active",
-            "owner_id",
             "services",
             "user_id",
         ]
@@ -386,11 +383,13 @@ class HomeTest(ZulipTestCase):
             "embedded_bots_enabled",
             "furthest_read_time",
             "insecure_desktop_app",
+            "is_cloud_realm_with_discounted_plan",
             "is_spectator",
             "language_cookie_name",
             "language_list",
             "login_page",
             "no_event_queue",
+            "non_workplace_pricing_eligible",
             "page_type",
             "presence_history_limit_days_for_web_app",
             "promote_sponsoring_zulip",
@@ -488,6 +487,15 @@ class HomeTest(ZulipTestCase):
 
         # Changing the plan_type to Standard grants access to AzureAD, but not SAML:
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
+        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_id")
+        CustomerPlan.objects.create(
+            customer=customer,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            next_invoice_date=timezone_now(),
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
+            status=CustomerPlan.ACTIVE,
+        )
 
         with self.settings(
             AUTHENTICATION_BACKENDS=(
@@ -764,6 +772,22 @@ class HomeTest(ZulipTestCase):
         user = self.example_user("hamlet")
         self.assertFalse(user.is_imported_stub)
 
+        # Test date_joined is set to the current time when user logs in for the
+        # first time.
+        user.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
+        user.save()
+
+        now = timezone_now()
+        with time_machine.travel(now, tick=False):
+            result = self.client_post("/accounts/accept_terms/", {"terms": True})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/")
+
+        user = self.example_user("hamlet")
+        # Check that date_joined is updated to the time when user accepts ToS
+        # when logging in for the first time.
+        self.assertEqual(user.date_joined, now)
+
     def test_set_email_address_visibility_without_terms_of_service(self) -> None:
         self.login("hamlet")
         user = self.example_user("hamlet")
@@ -923,12 +947,13 @@ class HomeTest(ZulipTestCase):
             users = page_params["state_data"][field]
             self.assertGreaterEqual(len(users), 3, field)
             for rec in users:
-                self.assertEqual(rec["user_id"], get_user(rec["email"], realm).id)
                 if field == "realm_bots":
+                    self.assertIn("user_id", rec)
                     self.assertNotIn("is_bot", rec)
-                    self.assertIn("is_active", rec)
-                    self.assertIn("owner_id", rec)
+                    self.assertNotIn("owner_id", rec)
+                    self.assertNotIn("is_active", rec)
                 else:
+                    self.assertEqual(rec["user_id"], get_user(rec["email"], realm).id)
                     self.assertIn("is_bot", rec)
                     self.assertNotIn("is_active", rec)
 

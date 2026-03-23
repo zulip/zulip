@@ -281,6 +281,10 @@
     display: flex;
     flex-grow: 1;
     align-items: center;
+
+    &.topic-edit-mode .recipient-bar-control {
+        display: none;
+    }
 }
 
 .on_hover_topic_read {
@@ -339,5 +343,29 @@
 
     &.recipient-row-topic-menu {
         display: none;
+    }
+}
+
+@container message-lists (width <  $cq_ml_min) {
+    .recipient-bar-control {
+        display: none;
+
+        /* Always show the vdots */
+        &.recipient-row-topic-menu {
+            display: block;
+        }
+    }
+}
+
+@media (width < $ml_min) {
+    .without-container-query-support {
+        .recipient-bar-control {
+            display: none;
+
+            /* Always show the vdots */
+            &.recipient-row-topic-menu {
+                display: block;
+            }
+        }
     }
 }

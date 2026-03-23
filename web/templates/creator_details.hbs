@@ -33,7 +33,5 @@
 {{/tr}}
 {{/unless}}
 {{#unless (eq group_id undefined)}}
-{{# tr}}
-    {{#if group}}{{#unless group.is_system_group}}&nbsp;{{/unless}}{{else}}&nbsp;{{/if}}Group ID: {group_id}.
-{{/tr}}
+    {{#if group}}{{#unless group.is_system_group}}&nbsp;{{/unless}}{{else}}&nbsp;{{/if}}{{#tr}}Group ID: {group_id}.{{/tr}}
 {{/unless}}

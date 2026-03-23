@@ -16,6 +16,7 @@ import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_send_menu_popover from "./compose_send_menu_popover.ts";
 import * as compose_state from "./compose_state.ts";
+import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
 import * as composebox_typeahead from "./composebox_typeahead.ts";
@@ -55,7 +56,9 @@ function setup_compose_actions_hooks(): void {
     compose_actions.register_compose_box_clear_hook(compose.clear_preview_area);
 
     compose_actions.register_compose_cancel_hook(abort_xhr);
-    compose_actions.register_compose_cancel_hook(compose_call.abort_video_callbacks);
+    compose_actions.register_compose_cancel_hook(() => {
+        compose_call.abandon_all_callbacks_for_key("");
+    });
 }
 
 export function initialize(): void {
@@ -598,6 +601,7 @@ export function initialize(): void {
 
     $("#compose").on("click", ".narrow_to_compose_recipients", (e) => {
         e.preventDefault();
+        compose_tooltips.dismiss_intro_go_to_conversation_tooltip();
         message_view.to_compose_target();
     });
 

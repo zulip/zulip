@@ -4,24 +4,15 @@ from django.conf import settings
 from django.core.management.base import CommandError, CommandParser
 from typing_extensions import override
 
-from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.models.realms import Realm
-from zilencer.models import RemoteRealm, RemoteZulipServer
 
 if settings.BILLING_ENABLED:
-    from corporate.lib.stripe import (
-        BillingError,
-        BillingSession,
-        RealmBillingSession,
-        RemoteRealmBillingSession,
-        RemoteServerBillingSession,
-        get_configured_fixed_price_plan_offer,
-    )
+    from corporate.lib.billing_management import BillingSessionCommand
+    from corporate.lib.stripe import BillingError, get_configured_fixed_price_plan_offer
     from corporate.models.plans import CustomerPlan
 
 
-class Command(ZulipBaseCommand):
+class Command(BillingSessionCommand):
     help = """
     Initialize a paid fixed-price plan for a billing customer (Realm, RemoteRealm or RemoteZulipServer).
     Defaults to `--dry-run=True` so that the billing changes are run in preview mode first.
@@ -43,19 +34,7 @@ class Command(ZulipBaseCommand):
             required=False,
             help="Adjusted billing cycle anchor timestamp. Must be in the past.",
         )
-        parser.add_argument(
-            "--remote-server",
-            dest="remote_server_uuid",
-            required=False,
-            help="The UUID of the registered remote Zulip server to modify.",
-        )
-        parser.add_argument(
-            "--remote-realm",
-            dest="remote_realm_uuid",
-            required=False,
-            help="The UUID of the remote realm to modify.",
-        )
-        self.add_realm_args(parser)
+        self.add_billing_entity_args(parser)
         parser.add_argument(
             "--dry-run",
             dest="dry_run",
@@ -79,44 +58,8 @@ class Command(ZulipBaseCommand):
             anchor_timestamp = options["billing_cycle_anchor"]
             billing_cycle_anchor = timestamp_to_datetime(anchor_timestamp)
 
-        realm: Realm | None = None
-        remote_realm: RemoteRealm | None = None
-        remote_server: RemoteZulipServer | None = None
-        billing_session: BillingSession | None = None
-        if options["realm_id"]:
-            realm = self.get_realm(options)
-            if realm is None:
-                raise CommandError("No realm found.")
-            billing_session = RealmBillingSession(user=None, realm=realm)
-        elif options["remote_realm_uuid"]:
-            remote_realm_uuid = options["remote_realm_uuid"]
-            try:
-                remote_realm = RemoteRealm.objects.get(uuid=remote_realm_uuid)
-                billing_session = RemoteRealmBillingSession(remote_realm=remote_realm)
-            except RemoteRealm.DoesNotExist:
-                raise CommandError(
-                    "There is no remote realm with uuid '{}'. Aborting.".format(
-                        options["remote_realm_uuid"]
-                    )
-                )
-        elif options["remote_server_uuid"]:
-            remote_server_uuid = options["remote_server_uuid"]
-            try:
-                remote_server = RemoteZulipServer.objects.get(uuid=remote_server_uuid)
-                billing_session = RemoteServerBillingSession(remote_server=remote_server)
-            except RemoteZulipServer.DoesNotExist:
-                raise CommandError(
-                    "There is no remote server with uuid '{}'. Aborting.".format(
-                        options["remote_server_uuid"]
-                    )
-                )
+        billing_session = self.get_billing_session_from_args(options)
 
-        if realm is None and remote_realm is None and remote_server is None:
-            raise CommandError(
-                "No billing entity (Realm, RemoteRealm or RemoteZulipServer) specified."
-            )
-
-        assert billing_session is not None
         if options["dry_run"]:
             try:
                 billing_session.check_can_configure_prepaid_fixed_price_plan(plan_tier)

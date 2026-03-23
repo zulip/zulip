@@ -2,10 +2,8 @@
 
 const assert = require("node:assert/strict");
 
-const MockDate = require("mockdate");
-
 const {make_user_group} = require("./lib/example_group.cjs");
-const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {clock, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 
@@ -305,7 +303,7 @@ run_test("update_message_lists", () => {
 
 run_test("insert_local_message streams", ({override}) => {
     const fake_now = 555;
-    MockDate.set(new Date(fake_now * 1000));
+    clock.setSystemTime(new Date(fake_now * 1000));
 
     const local_id_float = 101.01;
 
@@ -448,8 +446,4 @@ run_test("test reify_message_id", ({override}) => {
     const history = stream_topic_history.find_or_create(general_sub.stream_id);
     assert.equal(history.max_message_id, 110);
     assert.equal(history.topics.get("test").message_id, 110);
-});
-
-run_test("reset MockDate", () => {
-    MockDate.reset();
 });

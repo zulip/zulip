@@ -878,6 +878,10 @@ input.settings_text_input {
            so that the scrollbar appears to reach all the way
            to the bottom of the content. */
         padding-bottom: 0;
+        /* Override the `min-width: auto` default for grid
+           items so the SimpleBar container can shrink on
+           window resize. */
+        min-width: 0;
     }
 }
 
@@ -1023,12 +1027,7 @@ div.overlay .flex.overlay-content > .overlay-container,
 
 .dropdown-current-value-not-in-options,
 .setting-disabled-option {
-    color: hsl(38deg 46% 54%);
-
-    .setting-disabled-option-text,
-    .setting-disabled-option-icon {
-        color: hsl(38deg 46% 54%);
-    }
+    font-style: italic;
 
     .setting-disabled-option-icon {
         align-self: center;

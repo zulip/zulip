@@ -660,7 +660,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         (AVATAR_FROM_JDENTICON, "Generated using Jdenticon"),
         (AVATAR_FROM_USER, "Uploaded by user"),
     )
-    DEFAULT_AVATAR_SOURCE = AVATAR_FROM_GRAVATAR
+    DEFAULT_AVATAR_SOURCE = AVATAR_FROM_JDENTICON
     avatar_source = models.CharField(
         default=DEFAULT_AVATAR_SOURCE, choices=AVATAR_SOURCES, max_length=1
     )

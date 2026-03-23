@@ -115,6 +115,11 @@ Zulip has over 185,000 words of developer documentation. Before working on any a
   commented code using clever tricks. Comments should explain "why" when
   the reason isn't obvious, not narrate "what" the code does.
 - Comments should have a line to themself except for CSS px math.
+- **Review CSS for redundant rules.** After writing CSS, review the
+  full set of rules affecting the same elements. Look for rules that
+  are immediately overridden by a more specific selector, duplicated
+  selector lists, or cases where scoping (e.g., `:not()`) would
+  eliminate the need for an override.
 
 See: https://zulip.readthedocs.io/en/latest/contributing/code-style.html
 
@@ -138,6 +143,8 @@ coherent idea."** This is non-negotiable.
 - Mix multiple separable changes in a single commit.
 - Create a commit that "fixes" a mistake from an earlier commit in the same PR;
   always edit Git to fix the original commit.
+- Add content in one commit only to remove or move it in the next;
+  plan upfront what belongs where and do it right the first time.
 - Include debugging code, commented-out code, or temporary TODOs.
 
 ### Commit Message Format
@@ -171,6 +178,8 @@ Fixes #123.
 
 - `Fixes #123.` - Automatically closes the issue
 - `Fixes part of #123.` - Does not close (for partial fixes)
+- In a multi-commit PR, use `Fixes part of #123.` in earlier commits
+  and `Fixes #123.` in the final commit.
 - Never: `Partially fixes #123.` (GitHub ignores "partially")
 
 ### Rebasing Commits (Non-Interactive)
@@ -178,7 +187,11 @@ Fixes #123.
 Since `git rebase -i` requires an interactive editor, use
 `GIT_SEQUENCE_EDITOR` to supply the todo list via a script:
 
-1. **Squashing fixups into existing commits:** Create fixup commits with
+1. **Updating the HEAD commit:** If the commit you need to modify is
+   already at HEAD, just use `git commit --amend` directly. The
+   fixup+rebase workflow below is only needed for non-HEAD commits.
+
+2. **Squashing fixups into existing commits:** Create fixup commits with
    `git commit --fixup=<target-hash>`, then write a shell script that
    outputs the desired todo (with `pick` and `fixup` lines in order)
    and run:
@@ -190,12 +203,17 @@ Since `git rebase -i` requires an interactive editor, use
    Note: `--autosquash` alone without `-i` does **not** reorder or
    squash anything.
 
-2. **Rewording commit messages:** In the todo script, use `exec` lines:
+3. **Rewording commit messages:** Use `git format-patch` to export
+   commits as patch files, edit the message headers in the patch
+   files, then reapply:
+
+   ```bash
+   git format-patch <base> -o /tmp/patches/
+   # Edit the commit message in each /tmp/patches/000N-*.patch file
+   # (the message is between the Subject: line and the --- line)
+   git reset --hard <base>
+   git am /tmp/patches/*.patch
    ```
-   pick <hash> Original message
-   exec GIT_EDITOR=/path/to/new-msg-script.sh git commit --amend
-   ```
-   where the message script writes the new commit message to `$1`.
 
 ## Testing Requirements
 
@@ -370,6 +388,10 @@ faster and easier to just plan and write them well the first time.
 
 ### PR Description Should:
 
+When opening a pull request, prefix the PR title with `[ai]` (e.g.,
+`[ai] compose: Fix cursor position after emoji insertion.`). Use
+`upstream/main` as the base branch.
+
 Output the PR description in a markdown code block so that formatting
 (bold, headers, checkboxes, etc.) copy-pastes correctly into GitHub.
 
@@ -472,14 +494,19 @@ a sidebar entry in `starlight_help/astro.config.mjs`.
 See `docs/documentation/helpcenter.md` for the full writing guide. Key points:
 
 - **Bold** UI element names (e.g., **Settings** page, **Save changes** button).
-- Do not specify default values or list out options in instructions — the user
-  can see them in the UI.
+- Do not specify default values or list out options — the user can see
+  them in the UI. For dropdowns, refer to the setting by its label name
+  rather than enumerating the choices.
 - Do not use "we" to refer to Zulip; use "you" for the reader.
 - Fewer words is better; many users have English as a second language.
 - Use `<kbd>Enter</kbd>` for keyboard keys (non-Mac; auto-translated for Mac).
+- Use `FlattenedList` to merge adjacent bullet lists (inline markdown
+  and/or include components) into a single visual list. Use
+  `FlattenedSteps` for the same purpose with ordered (numbered) lists.
 - Common components and their imports:
   ```
   import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+  import FlattenedList from "../../components/FlattenedList.astro";
   import FlattenedSteps from "../../components/FlattenedSteps.astro";
   import NavigationSteps from "../../components/NavigationSteps.astro";
   import ZulipTip from "../../components/ZulipTip.astro";

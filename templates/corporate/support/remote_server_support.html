@@ -163,12 +163,26 @@
                     </form>
                 </div>
                 {% else %}
-                <form method="POST" class="deactivate-remote-server-form">
-                    {{ csrf_input }}
-                    <input type="hidden" name="remote_server_id" value="{{ remote_server.id }}" />
-                    <input type="hidden" name="remote_server_status" value="deactivated" />
-                    <button class="deactivate-remote-server-button"><b>Deactivate</b>: {{ remote_server.hostname }}</button>
-                </form>
+                <div class="deactivation-information-container">
+                    <p class="support-section-header">⚠️ Deactivate remote server:</p>
+                    <form method="POST" class="deactivate-remote-server-form">
+                        {{ csrf_input }}
+                        <input type="hidden" name="remote_server_id" value="{{ remote_server.id }}" />
+                        <input type="hidden" name="remote_server_status" value="deactivated" />
+                        <b>Deactivation reason</b>:<br />
+                        <select name="remote_server_deactivation_reason" id="remote_server_deactivation_reason">
+                            {% for reason in DEACTIVATION_REASONS %}
+                                {% if reason == "owner_request" %}
+                                    <option value="{{ reason }}" selected>{{ reason }}</option>
+                                {% else %}
+                                    <option value="{{ reason }}">{{ reason }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <br />
+                        <button class="deactivate-remote-server-button"><b>Deactivate</b>: {{ remote_server.hostname }}</button>
+                    </form>
+                </div>
                 {% endif %}
             </div>
             <div class="remote-realms-section">

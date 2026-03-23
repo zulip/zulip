@@ -7,6 +7,7 @@ import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as settings_muted_users from "./settings_muted_users.ts";
+import * as typing_events from "./typing_events.ts";
 
 export function rerender_for_muted_user(): void {
     for (const msg_list of message_lists.all_rendered_message_lists()) {
@@ -19,6 +20,8 @@ export function rerender_for_muted_user(): void {
 
     activity_ui.redraw();
     pm_list.update_private_messages();
+
+    typing_events.render_notifications_for_narrow();
 
     // If a user is (un)muted, we want to update their avatars on the Recent Conversations
     // participants column.

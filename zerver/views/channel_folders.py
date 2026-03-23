@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from typing import Annotated
 
 from django.http import HttpRequest, HttpResponse
@@ -50,7 +51,10 @@ def get_channel_folders(
     include_archived: Json[bool] = False,
 ) -> HttpResponse:
     channel_folders = get_channel_folders_in_realm(user_profile.realm, include_archived)
-    return json_success(request, data={"channel_folders": channel_folders})
+    return json_success(
+        request,
+        data={"channel_folders": [asdict(folder) for folder in channel_folders]},
+    )
 
 
 @require_realm_admin

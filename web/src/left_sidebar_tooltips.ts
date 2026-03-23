@@ -138,7 +138,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: ".stream-list-section-container .add-stream-tooltip",
+        target: ".stream-list-section-container .add-stream-tooltip, .left-sidebar-controls .channel-new-topic-button",
         appendTo: () => document.body,
     });
 
@@ -177,7 +177,9 @@ export function initialize(): void {
     tippy.delegate("body", {
         target: ".dm-tooltip-target",
         onShow(instance) {
-            if ($(".direct-messages-container").hasClass("zoom-in")) {
+            // Collapsing doesn't happen when the modal is shown.
+            const modal_hidden = $("#direct-messages-modal").hasClass("no-display");
+            if (!modal_hidden) {
                 return false;
             }
 

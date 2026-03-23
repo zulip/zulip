@@ -283,6 +283,26 @@ class UnreadTopicCounter {
         this.reverse_lookup.delete(message_id);
     }
 
+    update_topic_name_case(stream_id: number, old_topic: string, new_topic: string): void {
+        const per_stream_bucketer = this.bucketer.get(stream_id);
+        if (per_stream_bucketer === undefined) {
+            return;
+        }
+
+        const topic_bucket = per_stream_bucketer.get(old_topic);
+        if (topic_bucket === undefined) {
+            return;
+        }
+
+        // Resetting with new_topic updates the display casing for
+        // topic_bucket.
+        per_stream_bucketer.set(new_topic, topic_bucket);
+
+        for (const message_id of topic_bucket) {
+            this.reverse_lookup.set(message_id, {stream_id, topic: new_topic});
+        }
+    }
+
     get_counts_per_topic(): UnreadTopicCounts {
         let stream_unread_messages = 0;
         const topic_counts_by_stream_id = new Map<
@@ -727,6 +747,14 @@ export function update_unread_topics(
         stream_id: new_stream_id ?? msg.stream_id,
         topic: new_topic ?? msg.topic,
     });
+}
+
+export function update_unread_topic_name_case(
+    stream_id: number,
+    old_topic: string,
+    new_topic: string,
+): void {
+    unread_topic_counter.update_topic_name_case(stream_id, old_topic, new_topic);
 }
 
 export function process_loaded_messages(

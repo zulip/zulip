@@ -2,15 +2,13 @@
 
 const assert = require("node:assert/strict");
 
-const MockDate = require("mockdate");
-
 const {mock_banners} = require("./lib/compose_banner.cjs");
 const {FakeComposeBox} = require("./lib/compose_helpers.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_bot, make_user} = require("./lib/example_user.cjs");
-const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
+const {clock, mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
@@ -51,7 +49,9 @@ const sent_messages = mock_esm("../src/sent_messages");
 const server_events_state = mock_esm("../src/server_events_state");
 const transmit = mock_esm("../src/transmit");
 const upload = mock_esm("../src/upload");
-const onboarding_steps = mock_esm("../src/onboarding_steps");
+const onboarding_steps = mock_esm("../src/onboarding_steps", {
+    ONE_TIME_NOTICES_TO_DISPLAY: new Set(),
+});
 mock_esm("../src/settings_data", {
     user_has_permission_for_group_setting: () => true,
 });
@@ -172,10 +172,6 @@ function simulate_draft_ui_interactions() {
     $(".top_left_drafts").set_find_results(".unread_count", $.create("draft-unread-count-stub"));
 }
 
-function assert_compose_send_button_attr_is_undefined() {
-    assert.equal($("#compose-send-button").attr(), undefined);
-}
-
 test_ui("send_message_success", ({override, override_rewire}) => {
     mock_banners();
 
@@ -262,7 +258,7 @@ test_ui("send_message_success", ({override, override_rewire}) => {
 
 test_ui("send_message", ({override, override_rewire, mock_template}) => {
     mock_banners();
-    MockDate.set(new Date(fake_now * 1000));
+    clock.setSystemTime(new Date(fake_now * 1000));
 
     const fake_compose_box = new FakeComposeBox();
 
@@ -491,17 +487,14 @@ test_ui("finish", ({override, override_rewire}) => {
         fake_compose_box.set_textarea_val("burrito");
         compose_state.set_message_type("stream");
 
-        fake_compose_box.set_textarea_toggle_class_function((classname, value) => {
-            assert.equal(classname, "invalid");
-            assert.equal(value, true);
-        });
-
+        assert.ok(!fake_compose_box.$content_textarea.hasClass("invalid"));
         fake_compose_box.set_textarea_val("");
 
         override_rewire(compose_ui, "compose_spinner_visible", false);
         const res = compose.finish();
         assert.equal(res, false);
 
+        assert.ok(fake_compose_box.$content_textarea.hasClass("invalid"));
         assert.ok(!fake_compose_box.is_recipient_not_subscribed_banner_visible());
         assert.ok(!fake_compose_box.is_submit_button_spinner_visible());
 
@@ -602,8 +595,6 @@ test_ui("initialize", ({override}) => {
 
         compose_setup.abort_xhr();
 
-        // I'm not sure this proves anything interesting.
-        assert_compose_send_button_attr_is_undefined();
         assert.ok(uppy_cancel_all_called);
     })();
 });
@@ -850,8 +841,4 @@ test_ui("DM policy disabled", ({override}) => {
     // For human user and bot user, the "Message X" button is disabled
     reply_disabled = compose_closed_ui.should_disable_compose_reply_button_for_direct_message();
     assert.ok(reply_disabled);
-});
-
-run_test("reset MockDate", () => {
-    MockDate.reset();
 });

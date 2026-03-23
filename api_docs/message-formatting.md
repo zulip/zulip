@@ -437,7 +437,7 @@ audio `Content-Type`, Zulip will generate an HTML5 `<audio>` player
 element. Supported MIME types are currently `audio/aac`, `audio/flac`,
 `audio/mpeg`, and `audio/wav`.
 
-For example, `[file.mp3](/user_uploads/path/to/file.mp3)` renders as:
+For example, `![file.mp3](/user_uploads/path/to/file.mp3)` renders as:
 
 ``` html
 <audio controls preload="metadata"

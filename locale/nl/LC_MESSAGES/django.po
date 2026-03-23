@@ -13,15 +13,15 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 04:54+0000\n"
-"PO-Revision-Date: 2025-08-07 23:52+0000\n"
-"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
+"PO-Revision-Date: 2026-02-10 19:43+0000\n"
+"Last-Translator: Sietse Planting <sietse@planting.nu>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/zulip/django/nl/>\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.16-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -33,24 +33,25 @@ msgstr "Ongeldige organisatie"
 
 #: analytics/views/stats.py:391
 msgid "Public channels"
-msgstr ""
+msgstr "Openbare kanalen"
 
 #: analytics/views/stats.py:392
 msgid "Private channels"
-msgstr ""
+msgstr "Privékanalen"
 
 #: analytics/views/stats.py:393
 msgid "Direct messages"
-msgstr ""
+msgstr "Privéberichten"
 
 #: analytics/views/stats.py:394
+#, fuzzy
 msgid "Group direct messages"
-msgstr ""
+msgstr "Groepsberichten"
 
 #: analytics/views/stats.py:417
 #, python-brace-format
 msgid "Missing channel for chart: {chart_name}"
-msgstr ""
+msgstr "Ontbrekend kanaal voor tabel: {chart_name}"
 
 #: analytics/views/stats.py:425
 #, python-brace-format
@@ -1307,14 +1308,14 @@ msgstr ""
 #: templates/corporate/why-zulip.html:21
 #: templates/zerver/create_realm/create_realm.html:49
 msgid "Create organization"
-msgstr "Aanmaken organisatie"
+msgstr "Organisatie aanmaken"
 
 #: templates/corporate/for/business.html:21
 #: templates/corporate/self-hosting.html:21
 #: templates/corporate/why-zulip.html:24
 #: templates/corporate/zulip-cloud.html:23 templates/zerver/footer.html:47
 msgid "Get a demo"
-msgstr ""
+msgstr "Demo aanvragen"
 
 #: templates/corporate/for/business.html:24
 #: templates/corporate/for/communities.html:38
@@ -1329,7 +1330,7 @@ msgstr ""
 #: templates/corporate/for/use-cases.html:23
 #: templates/corporate/role/engineers.html:561
 msgid "Self-host Zulip"
-msgstr ""
+msgstr "Zulip self-hosten"
 
 #: templates/corporate/for/communities.html:35
 #: templates/corporate/for/communities.html:67
@@ -1340,25 +1341,25 @@ msgstr ""
 #: templates/corporate/for/research.html:32
 #: templates/corporate/for/research.html:467
 msgid "Request sponsorship"
-msgstr ""
+msgstr "Sponsoring aanvragen"
 
 #: templates/corporate/for/education.html:28
 msgid "Education pricing"
-msgstr ""
+msgstr "Prijzen voor onderwijsinstellingen"
 
 #: templates/corporate/for/use-cases.html:20
 msgid "View pricing"
-msgstr ""
+msgstr "Prijzen bekijken"
 
 #: templates/corporate/role/engineers.html:20
 #: templates/corporate/role/engineers.html:558
 #: templates/corporate/self-hosting.html:27
 msgid "Zulip for business"
-msgstr ""
+msgstr "Zulip voor ondernemingen"
 
 #: templates/corporate/role/engineers.html:23
 msgid "Zulip for open source"
-msgstr ""
+msgstr "Zulip voor open-source"
 
 #: templates/corporate/role/engineers.html:64
 msgid "Dog in glasses with a laptop"
@@ -1367,35 +1368,33 @@ msgstr ""
 #: templates/corporate/role/engineers.html:77
 #: templates/corporate/role/engineers.html:123
 msgid "Screenshot of Zulip conversation"
-msgstr ""
+msgstr "Screenshot van een Zulip-gesprek"
 
 #: templates/corporate/role/engineers.html:165
 msgid "Screenshot of Zulip conversation with sentry bot"
-msgstr ""
+msgstr "Screenshot van een Zulip-gesprek met een Sentry-bot"
 
 #: templates/corporate/role/engineers.html:178
 #: templates/corporate/role/engineers.html:215
 msgid "Screenshot of Zulip inbox"
-msgstr ""
+msgstr "Screenshot van Zulip-inbox"
 
 #: templates/corporate/role/engineers.html:262
 msgid "Open laptop with book inside"
-msgstr ""
+msgstr "Geopende laptop met een boek erin"
 
 #: templates/corporate/role/engineers.html:275
 #: templates/corporate/role/engineers.html:333
 msgid "Two hands assembling puzzle"
-msgstr ""
+msgstr "Twee handen die een puzzel samenstellen"
 
 #: templates/corporate/role/engineers.html:364
-#, fuzzy
-#| msgid "Messages sent over time"
 msgid "Message with code"
-msgstr "Berichten verstuurd"
+msgstr "Bericht met code"
 
 #: templates/corporate/role/engineers.html:403
 msgid "Lightning"
-msgstr ""
+msgstr "Bliksem"
 
 #: templates/corporate/role/engineers.html:451
 #: zerver/models/custom_profile_fields.py:123
@@ -1404,16 +1403,16 @@ msgstr "Link"
 
 #: templates/corporate/role/engineers.html:487
 msgid "Ship wheel"
-msgstr ""
+msgstr "Stuurwiel"
 
 #: templates/corporate/support/support_request.html:9
 #: templates/zerver/footer.html:46
 msgid "Contact support"
-msgstr ""
+msgstr "Neem contact op met de klantenservice"
 
 #: templates/corporate/support/support_request.html:17
 msgid "From"
-msgstr ""
+msgstr "Van"
 
 #: templates/corporate/support/support_request.html:21
 msgid "Organization"
@@ -1421,38 +1420,40 @@ msgstr "Organisatie"
 
 #: templates/corporate/support/support_request.html:25
 msgid "Subject"
-msgstr ""
+msgstr "Onderwerp"
 
 #: templates/corporate/support/support_request.html:29
 msgid "Message"
-msgstr ""
+msgstr "Bericht"
 
 #: templates/corporate/support/support_request.html:35
 #: templates/zerver/slack_import.html:59
 msgid "Submit"
-msgstr ""
+msgstr "Versturen"
 
 #: templates/corporate/support/support_request_thanks.html:4
 msgid "Thanks for contacting us"
-msgstr ""
+msgstr "Bedankt voor je bericht"
 
 #: templates/corporate/support/support_request_thanks.html:10
 msgid "Thanks for contacting us!"
-msgstr ""
+msgstr "Bedankt voor je bericht!"
 
 #: templates/corporate/support/support_request_thanks.html:11
 msgid "We will be in touch with you soon."
-msgstr ""
+msgstr "We zullen snel contact met je opnemen."
 
 #: templates/corporate/support/support_request_thanks.html:13
 msgid ""
 "You can find answers to frequently asked questions in the <a href=\"/help/"
 "\">Zulip help center</a>."
 msgstr ""
+"Je kan antwoorden voor veelgestelde vragen vinden in het <a href=\"/help/\">"
+"helpcentrup van Zulip</a>."
 
 #: templates/corporate/zulip-cloud.html:20
 msgid "Get started"
-msgstr ""
+msgstr "Beginnen"
 
 #: templates/corporate/zulipchat_migration_tos.html:3
 msgid ""
@@ -1463,19 +1464,19 @@ msgstr ""
 
 #: templates/two_factor/_wizard_forms.html:26
 msgid "Or, alternatively, use one of your backup phones:"
-msgstr "Of gebruik één back-up telefoons:"
+msgstr "Of gebruik een van je backup-telefoons:"
 
 #: templates/two_factor/_wizard_forms.html:37
 msgid "As a last resort, you can use a backup token:"
-msgstr "Laatste mogelijkheid is een back-up token te gebruiken:"
+msgstr "De laatste mogelijkheid is om een backuptoken te gebruiken:"
 
 #: templates/two_factor/_wizard_forms.html:41
 msgid "Use backup token"
-msgstr "Gebruik back-up token"
+msgstr "Gebruik backup-token"
 
 #: templates/zerver/accounts_accept_terms.html:4
 msgid "Accept the Terms of Service"
-msgstr ""
+msgstr "Gebruikersvoorwaarden accepteren"
 
 #: templates/zerver/accounts_accept_terms.html:18
 msgid "Welcome to Zulip"
@@ -1493,16 +1494,16 @@ msgstr "E-mail"
 #: templates/zerver/create_user/register.html:217
 #: templates/zerver/reset_confirm.html:64
 msgid "Subscribe me to Zulip's low-traffic newsletter (a few emails a year)."
-msgstr ""
+msgstr "Meld je aan voor Zulip's nieuwsbrief (een paar e-mails per jaar)."
 
 #: templates/zerver/accounts_accept_terms.html:54
 msgid "Continue"
-msgstr ""
+msgstr "Doorgaan"
 
 #: templates/zerver/accounts_send_confirm.html:5
 #: templates/zerver/accounts_send_confirm.html:17
 msgid "Confirm your email address"
-msgstr ""
+msgstr "Bevestig je e-mailadres"
 
 #: templates/zerver/accounts_send_confirm.html:21
 #, python-format
@@ -1511,12 +1512,16 @@ msgid ""
 "class=\"user_email semi-bold\">%(email)s</span>) for a confirmation email "
 "from Zulip."
 msgstr ""
+"Om je aanmelding te voltooien, check je e-mail (<span class=\"user_email "
+"semi-bold\">%(email)s</span>) voor een bevestigings-e-mail van Zulip."
 
 #: templates/zerver/accounts_send_confirm.html:25
 msgid ""
 "If you don't see a confirmation email in your Inbox or Spam folder, we can "
 "<a href=\"#\" id=\"resend_email_link\">resend it</a>."
 msgstr ""
+"Als je geen bevestigings-e-mail in je inbox or spammap ziet, kunnen we hem "
+"<a href=\"#\" id=\"resend_email_link\">opnieuw sturen</a>."
 
 #: templates/zerver/app/index.html:6
 #, python-brace-format

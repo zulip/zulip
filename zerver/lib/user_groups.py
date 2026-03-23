@@ -121,9 +121,17 @@ def get_user_group_by_id_in_realm(
         if for_read:
             user_group = NamedUserGroup.objects.get(id=user_group_id, realm_for_sharding=realm)
         else:
-            user_group = NamedUserGroup.objects.select_for_update().get(
-                id=user_group_id, realm_for_sharding=realm
-            )
+            user_group = NamedUserGroup.objects.select_for_update(
+                # We never fully DELETE NamedUserGroup rows; however, we do want this getter
+                # to prevent the addition of new users to the group while we hold the lock,
+                # to block with hypothetical other codepath that might try to modify memberships
+                # without taking an appropriate explicit lock.
+                # Ideally, we would wish to also prevent the deletion of group memberships for the
+                # duration of the lock even if the transaction doing the deletion forgets to take
+                # its own FOR UPDATE lock on this group, but SELECT FOR UPDATE does not offer
+                # that possibility. We accept this as a limitation for now.
+                no_key=False,
+            ).get(id=user_group_id, realm_for_sharding=realm)
 
         if not allow_deactivated and user_group.deactivated:
             raise JsonableError(_("User group is deactivated."))
@@ -333,7 +341,12 @@ def lock_subgroups_with_respect_to_supergroup(
         recursive_subgroups = list(
             get_recursive_subgroups_for_groups(
                 potential_subgroup_ids, acting_user.realm
-            ).select_for_update(nowait=True)
+            ).select_for_update(
+                nowait=True,
+                # We want to prevent insertion of new memberships to these rows while
+                # the lock is held.
+                no_key=False,
+            )
         )
         # TODO: This select_for_update query is subject to deadlocking, and
         # better error handling is needed. We may use
@@ -460,7 +473,7 @@ def update_or_create_user_group_for_setting(
     )
     user_group.direct_members.set(member_users)
 
-    potential_subgroups = NamedUserGroup.objects.select_for_update().filter(
+    potential_subgroups = NamedUserGroup.objects.select_for_update(no_key=True).filter(
         realm_for_sharding=realm, id__in=direct_subgroups
     )
     group_ids_found = [group.id for group in potential_subgroups]
@@ -1294,3 +1307,103 @@ def check_any_user_has_permission_by_role(
             return True
 
     return False
+
+
+def check_group_membership_management_permissions_with_admins_only(
+    groups_to_check_permissions: list[NamedUserGroup],
+    realm: Realm,
+    system_groups_name_dict: dict[str, NamedUserGroup],
+) -> bool:
+    system_groups_with_admin_only_permissions = {
+        system_groups_name_dict[SystemGroups.NOBODY].id,
+        system_groups_name_dict[SystemGroups.OWNERS].id,
+        system_groups_name_dict[SystemGroups.ADMINISTRATORS].id,
+    }
+
+    if realm.can_manage_all_groups_id not in system_groups_with_admin_only_permissions:
+        return False
+
+    for group in groups_to_check_permissions:
+        for setting_name in NamedUserGroup.MEMBERSHIP_MANAGEMENT_SETTINGS:
+            if (
+                getattr(group, setting_name + "_id")
+                not in system_groups_with_admin_only_permissions
+            ):
+                return False
+    return True
+
+
+def validate_group_membership_management_setting(
+    user_group: NamedUserGroup,
+    setting_name: str,
+    setting_value: int | UserGroupMembersData,
+    realm: Realm,
+    system_groups_name_dict: dict[str, NamedUserGroup],
+) -> None:
+    system_groups_with_admin_only_permissions = {
+        system_groups_name_dict[SystemGroups.NOBODY].id,
+        system_groups_name_dict[SystemGroups.OWNERS].id,
+        system_groups_name_dict[SystemGroups.ADMINISTRATORS].id,
+    }
+
+    # If setting is being set to one of the nobody, owners or admins system groups then
+    # we do not check further. Otherwise, we check if the group being updated is
+    # used for workplace_users_group.
+    if (
+        isinstance(setting_value, int)
+        and setting_value in system_groups_with_admin_only_permissions
+    ):
+        return
+
+    # The group being updated is the same as workplace_users_group.
+    if realm.workplace_users_group_id == user_group.id:
+        raise JsonableError(
+            _(
+                "'{setting_name}' must be restricted to organization administrators for groups used in 'workplace_users_group'."
+            ).format(setting_name=setting_name)
+        )
+
+    # The group being updated is one of the subgroups of workplace_users_group.
+    if user_group.id in get_subgroup_ids(realm.workplace_users_group):
+        raise JsonableError(
+            _(
+                "'{setting_name}' must be restricted to organization administrators for groups used in 'workplace_users_group'."
+            ).format(setting_name=setting_name)
+        )
+
+
+def validate_can_manage_all_groups(
+    can_manage_all_groups: int | UserGroupMembersData, realm: Realm
+) -> None:
+    system_groups_name_dict = get_role_based_system_groups_dict(realm)
+    system_groups_with_admin_only_permissions = {
+        system_groups_name_dict[SystemGroups.NOBODY].id,
+        system_groups_name_dict[SystemGroups.OWNERS].id,
+        system_groups_name_dict[SystemGroups.ADMINISTRATORS].id,
+    }
+
+    # If setting is being set to one of the nobody, owners or admins
+    # system groups then we do not check further. Otherwise, we check
+    # if any non-system group is being used for workplace_users_group.
+    if (
+        isinstance(can_manage_all_groups, int)
+        and can_manage_all_groups in system_groups_with_admin_only_permissions
+    ):
+        return
+
+    workplace_users_group = realm.workplace_users_group
+    error_message = _(
+        "'can_manage_all_groups' must be restricted to organization administrators when 'workplace_users_group' includes user-defined groups."
+    )
+    if hasattr(workplace_users_group, "named_user_group"):
+        if realm.workplace_users_group.named_user_group.is_system_group:
+            return
+
+        raise JsonableError(error_message)
+
+    # Since we cannot update subgroups of a system group, it is enough to check
+    # if any non-system group is a direct subgroup of workplace_users_group.
+    subgroups_of_workplace_users_group = workplace_users_group.direct_subgroups.all()
+    for subgroup in subgroups_of_workplace_users_group:
+        if not subgroup.is_system_group:
+            raise JsonableError(error_message)

@@ -1,3 +1,4 @@
+import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
@@ -40,6 +41,15 @@ const DEFAULT_COLOR = "#c2c2c2";
 
 // Expose get_subscriber_count for our automated puppeteer tests.
 export const get_subscriber_count = peer_data.get_subscriber_count;
+
+// This is stream_topic_history.channel_has_locally_available_topic.
+// We have to indirectly set it to avoid a circular dependency.
+let channel_has_locally_available_topic: (channel_id: number, topic_name: string) => boolean;
+export function set_channel_has_locally_available_topic(
+    f: (channel_id: number, topic_name: string) => boolean,
+): void {
+    channel_has_locally_available_topic = f;
+}
 
 class BinaryDict<T> {
     /*
@@ -145,6 +155,7 @@ export function rename_sub(sub: StreamSubscription, new_name: string): void {
     stream_info.set(sub.stream_id, sub);
     stream_ids_by_name.delete(old_name);
     stream_ids_by_name.set(new_name, sub.stream_id);
+    void set_max_channel_width_css_variable();
 }
 
 export function subscribe_myself(sub: StreamSubscription): void {
@@ -153,6 +164,7 @@ export function subscribe_myself(sub: StreamSubscription): void {
     sub.subscribed = true;
     sub.newly_subscribed = true;
     stream_info.set_true(sub.stream_id, sub);
+    void set_max_channel_width_css_variable();
 }
 
 export function unsubscribe_myself(sub: StreamSubscription): void {
@@ -162,6 +174,7 @@ export function unsubscribe_myself(sub: StreamSubscription): void {
     sub.subscribed = false;
     sub.newly_subscribed = false;
     stream_info.set_false(sub.stream_id, sub);
+    void set_max_channel_width_css_variable();
 }
 
 export function add_sub_for_tests(sub: StreamSubscription, subscriber_count = 0): void {
@@ -333,16 +346,20 @@ export function delete_sub(stream_id: number): void {
     stream_info.delete(stream_id);
 }
 
-export function get_non_default_stream_names(): {name: string; unique_id: number}[] {
+export function get_default_stream_options(): {
+    name: string;
+    unique_id: number;
+    stream: StreamSubscription;
+}[] {
     let subs = [...stream_info.values()];
     subs = subs.filter(
         (sub) => !is_default_stream_id(sub.stream_id) && !sub.invite_only && !sub.is_archived,
     );
-    const names = subs.map((sub) => ({
+    return subs.map((sub) => ({
         name: sub.name,
         unique_id: sub.stream_id,
+        stream: sub,
     }));
-    return names;
 }
 
 export function get_unsorted_subs(): StreamSubscription[] {
@@ -1215,11 +1232,25 @@ export function can_use_empty_topic(stream_id: number | undefined): boolean {
     if (sub.topics_policy === settings_config.get_stream_topics_policy_values().inherit.code) {
         topics_policy = realm.realm_topics_policy;
     }
-    return (
-        topics_policy ===
-            settings_config.get_stream_topics_policy_values().allow_empty_topic.code ||
-        topics_policy === settings_config.get_stream_topics_policy_values().empty_topic_only.code
-    );
+
+    if (
+        topics_policy === settings_config.get_stream_topics_policy_values().disable_empty_topic.code
+    ) {
+        return false;
+    }
+
+    if (can_create_new_topics_in_stream(stream_id)) {
+        return true;
+    }
+
+    // We expect the local check to be accurate because we fetch
+    // topic history from the server while preparing topic typeahead,
+    // inbox, search suggestion, topic list in left sidebar.
+    if (channel_has_locally_available_topic(stream_id, "")) {
+        return true;
+    }
+
+    return false;
 }
 
 export function is_empty_topic_only_channel(stream_id: number | undefined): boolean {
@@ -1301,6 +1332,8 @@ export function initialize(params: StateData["stream_data"]): void {
     populate_subscriptions(subscriptions, true, true);
     populate_subscriptions(unsubscribed, false, true);
     populate_subscriptions(never_subscribed, false, false);
+
+    void set_max_channel_width_css_variable();
 }
 
 export function remove_default_stream(stream_id: number): void {
@@ -1336,4 +1369,20 @@ export function get_streams_for_move_messages_widget(): (dropdown_widget.Option 
             unique_id: stream.stream_id,
             stream,
         }));
+}
+
+export let set_max_channel_width_css_variable = async (): Promise<void> => {
+    // Return a promise to avoid blocking main thread.
+    const promise = new Promise<void>((resolve) => {
+        const length = util.max_text_content_width([...subscribed_streams()]);
+        $(":root").css("--longest-subscribed-channel-name-width", `${length}px`);
+        resolve();
+    });
+    return promise;
+};
+
+export function rewire_set_max_channel_width_css_variable(
+    value: typeof set_max_channel_width_css_variable,
+): void {
+    set_max_channel_width_css_variable = value;
 }

@@ -1138,7 +1138,7 @@ export function end_message_row_edit($row: JQuery): void {
         currently_editing_messages.delete(message.id);
         resized_edit_box_height.delete(message.id);
         message_lists.current.hide_edit_message($row);
-        compose_call.abort_video_callbacks(message.id.toString());
+        compose_call.abandon_all_callbacks_for_key(message.id.toString());
     }
     if ($row.find(".could-be-condensed").length > 0) {
         if ($row.find(".condensed").length > 0) {

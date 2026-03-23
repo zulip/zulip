@@ -669,6 +669,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             "/activity/remote/support",
             {
                 "remote_server_id": f"{remote_server_with_upgrade.id}",
+                "remote_server_deactivation_reason": "tos_violation",
                 "remote_server_status": "deactivated",
             },
         )
@@ -687,6 +688,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
             "/activity/remote/support",
             {
                 "remote_server_id": f"{remote_server_no_upgrade.id}",
+                "remote_server_deactivation_reason": "tos_violation",
                 "remote_server_status": "deactivated",
             },
         )
@@ -708,6 +710,7 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 '<span class="remote-label">Remote server: deactivated</span>',
                 "♻️ Reactivate server:",
                 "<b>Acting user</b>: iago@zulip.com",
+                "<b>Deactivation reason</b>: tos_violation",
             ],
             result,
         )

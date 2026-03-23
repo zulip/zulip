@@ -6,8 +6,9 @@ const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_user, make_bot, Role} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
+const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 // TODO: Remove after we enable support for
@@ -22,6 +23,7 @@ const stream_data = zrequire("stream_data");
 const hash_util = zrequire("hash_util");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_settings_data = zrequire("stream_settings_data");
+const util = zrequire("util");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
@@ -643,7 +645,8 @@ test("get_streams_for_user", async ({override}) => {
     ]);
 });
 
-test("renames", () => {
+test("renames", ({override_rewire}) => {
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     const id = 42;
     let sub = {
         name: "Denmark",
@@ -942,8 +945,8 @@ test("default_stream_names", () => {
     stream_data.add_sub_for_tests(private_stream);
     stream_data.add_sub_for_tests(general);
 
-    const names = stream_data.get_non_default_stream_names();
-    assert.deepEqual(names, [{name: "public", unique_id: 102}]);
+    const names = stream_data.get_default_stream_options();
+    assert.deepEqual(names, [{name: "public", stream: public_stream, unique_id: 102}]);
 
     const default_stream_ids = stream_data.get_default_stream_ids();
     assert.deepEqual(default_stream_ids.toSorted(), [announce.stream_id, general.stream_id]);
@@ -1346,7 +1349,7 @@ test("creator_id", ({override}) => {
     );
 });
 
-test("initialize", ({override}) => {
+test("initialize", ({override, override_rewire}) => {
     function get_params() {
         return {
             subscriptions: [
@@ -1382,6 +1385,7 @@ test("initialize", ({override}) => {
     }
 
     override(realm, "realm_new_stream_announcements_stream_id", -1);
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
 
     initialize();
 
@@ -2529,7 +2533,7 @@ run_test("is_empty_topic_only_channel", ({override}) => {
     assert.equal(stream_data.is_empty_topic_only_channel(scotland.stream_id), false);
 });
 
-run_test("can_use_empty_topic", ({override}) => {
+run_test("can_use_empty_topic", ({override, override_rewire}) => {
     const social = {
         subscribed: true,
         color: "red",
@@ -2538,6 +2542,30 @@ run_test("can_use_empty_topic", ({override}) => {
         topics_policy: "empty_topic_only",
     };
     stream_data.add_sub_for_tests(social);
+
+    assert.equal(stream_data.can_use_empty_topic(undefined), false);
+    assert.equal(stream_data.can_use_empty_topic(99), false);
+
+    let has_empty_topic = false;
+    stream_data.set_channel_has_locally_available_topic(
+        (_channel_id, _topic_name) => has_empty_topic,
+    );
+
+    // With empty_topic_only policy, if the channel already has an empty topic,
+    // the user can use it even without topic creation permission.
+    has_empty_topic = true;
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => false);
+    assert.equal(stream_data.can_use_empty_topic(social.stream_id), true);
+
+    // Without an existing empty topic and without topic creation
+    // permission, the user cannot use empty topic.
+    has_empty_topic = false;
+    assert.equal(stream_data.can_use_empty_topic(social.stream_id), false);
+
+    // With topic creation permission
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => true);
+    assert.equal(stream_data.can_use_empty_topic(social.stream_id), true);
+
     const scotland = {
         subscribed: true,
         color: "red",
@@ -2545,15 +2573,56 @@ run_test("can_use_empty_topic", ({override}) => {
         stream_id: 3,
         topics_policy: "inherit",
     };
-    override(realm, "realm_topics_policy", "allow_empty_topic");
-    assert.equal(stream_data.can_use_empty_topic(undefined), false);
-    assert.equal(stream_data.can_use_empty_topic(99), false);
-
-    assert.equal(stream_data.can_use_empty_topic(social.stream_id), true);
-
     stream_data.add_sub_for_tests(scotland);
 
+    // With allow_empty_topic policy, if the channel already has an empty topic,
+    // the user can use it even without topic creation permission.
+    realm.realm_topics_policy = "allow_empty_topic";
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => false);
+    has_empty_topic = true;
     assert.equal(stream_data.can_use_empty_topic(scotland.stream_id), true);
+
+    // Without an existing empty topic and without topic creation
+    // permission, the user cannot use empty topic.
+    has_empty_topic = false;
+    assert.equal(stream_data.can_use_empty_topic(scotland.stream_id), false);
+
+    // With topic creation permission
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => true);
+    assert.equal(stream_data.can_use_empty_topic(scotland.stream_id), true);
+
+    // disable_empty_topic always returns false regardless of other factors.
     override(realm, "realm_topics_policy", "disable_empty_topic");
     assert.equal(stream_data.can_use_empty_topic(scotland.stream_id), false);
+});
+
+test("set_max_channel_width_css_variable", async ({override_rewire}) => {
+    const stream = {
+        subscribed: true,
+        color: "blue",
+        name: "abc",
+        stream_id: 500,
+        is_muted: false,
+        invite_only: false,
+        history_public_to_subscribers: true,
+        can_add_subscribers_group: admins_group.id,
+        can_administer_channel_group: admins_group.id,
+        can_subscribe_group: admins_group.id,
+    };
+    stream_data.add_sub_for_tests(stream);
+
+    const $root = $(":root");
+
+    override_rewire(util, "max_text_content_width", (candidates) => {
+        // Return the length of the longest candidate string.
+        let max_len = 0;
+        for (const s of candidates) {
+            max_len = Math.max(max_len, s.length);
+        }
+        return max_len;
+    });
+
+    await stream_data.set_max_channel_width_css_variable();
+
+    assert.equal($root[0].style.getPropertyValue("--longest-subscribed-channel-name-width"), "3px");
 });

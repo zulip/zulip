@@ -190,7 +190,19 @@ def generate_avatar_jdenticon(input: str, medium: bool) -> bytes:
         else os.path.join(settings.DEPLOY_ROOT, "node_modules/jdenticon/bin/jdenticon.js")
     )
     size = str(MEDIUM_AVATAR_SIZE if medium else DEFAULT_AVATAR_SIZE)
-    command = ["node", jdenticon_path, input, "-s", size, "-p", "0"]
+    command = [
+        "node",
+        jdenticon_path,
+        input,
+        "-s",
+        size,
+        "-p",
+        "0",
+        "--lightness-color",
+        "0.3,0.7",
+        "--lightness-grayscale",
+        "0.3,0.7",
+    ]
     try:
         stdout = subprocess.check_output(command)
         return stdout

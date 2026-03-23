@@ -4,6 +4,7 @@ import copy
 import logging
 import time
 from collections.abc import Callable, Collection, Iterable, Sequence
+from dataclasses import asdict
 from typing import Any, Literal
 
 from django.conf import settings
@@ -297,7 +298,9 @@ def fetch_initial_state_data(
         # account, we'd maybe need to store their state using cookies
         # or local storage, rather than in the database.
         state["onboarding_steps"] = (
-            [] if user_profile is None else get_next_onboarding_steps(user_profile)
+            []
+            if user_profile is None
+            else [asdict(step) for step in get_next_onboarding_steps(user_profile)]
         )
         state["navigation_tour_video_url"] = settings.NAVIGATION_TOUR_VIDEO_URL
 
@@ -844,9 +847,13 @@ def fetch_initial_state_data(
 
     if want("channel_folders"):
         if user_profile is None:
-            state["channel_folders"] = get_channel_folders_for_spectators(realm)
+            state["channel_folders"] = [
+                asdict(folder) for folder in get_channel_folders_for_spectators(realm)
+            ]
         else:
-            state["channel_folders"] = get_channel_folders_in_realm(user_profile.realm, True)
+            state["channel_folders"] = [
+                asdict(folder) for folder in get_channel_folders_in_realm(user_profile.realm, True)
+            ]
 
     if want("update_message_flags") and want("message"):
         # Keeping unread_msgs updated requires both message flag updates and
@@ -956,12 +963,6 @@ def fetch_initial_state_data(
 
     if want("device"):
         state["devices"] = {} if user_profile is None else get_devices(user_profile)
-
-    if user_profile is None:
-        # To ensure we have the correct user state set.
-        assert state["is_admin"] is False
-        assert state["is_owner"] is False
-        assert state["is_guest"] is True
 
     return state
 
@@ -1387,11 +1388,7 @@ def apply_event(
         elif event["op"] == "update":
             for bot in state["realm_bots"]:
                 if bot["user_id"] == event["bot"]["user_id"]:
-                    if "owner_id" in event["bot"]:
-                        bot_owner_id = event["bot"]["owner_id"]
-                        bot["owner_id"] = bot_owner_id
-                    else:
-                        bot.update(event["bot"])
+                    bot.update(event["bot"])
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "stream":
@@ -2043,6 +2040,8 @@ def apply_event(
                 "push_token_last_updated_timestamp": None,
                 "push_registration_error_code": None,
             }
+        elif event["op"] == "remove":
+            del state["devices"][str(event["device_id"])]
         elif event["op"] == "update":
             if "push_key_id" in event:
                 state["devices"][str(event["device_id"])]["push_key_id"] = event["push_key_id"]

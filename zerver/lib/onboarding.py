@@ -580,7 +580,7 @@ This **greetings** topic is a great place to say “hi” :wave: to your teammat
     # We find the one of our just-sent greetings messages, and react to it.
     # This is a bit hacky, but works and is kinda a 1-off thing.
     greetings_message = (
-        Message.objects.select_for_update()
+        Message.objects.select_for_update(no_key=True)
         .filter(
             id__in=message_ids, content=remove_single_newlines(content1_of_greetings_topic_name)
         )

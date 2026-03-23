@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
                     ("U", "Uploaded by user"),
                 ],
                 max_length=1,
-                default="G",
+                default="J",
             ),
         ),
     ]

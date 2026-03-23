@@ -1610,7 +1610,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
         do_scrub_avatar_images(user, acting_user=user)
 
-        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
         self.assertFalse(os.path.isfile(avatar_path_id))
         self.assertFalse(os.path.isfile(avatar_original_path_id))
         self.assertFalse(os.path.isfile(avatar_medium_path_id))

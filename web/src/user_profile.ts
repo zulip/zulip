@@ -44,7 +44,6 @@ import * as modals from "./modals.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
-import * as scroll_util from "./scroll_util.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -80,6 +79,7 @@ export type CustomProfileFieldData = {
     required: boolean;
     value: string;
     rendered_value?: string | null | undefined;
+    is_long_text: boolean;
     subtype?: string;
     link?: string;
 };
@@ -489,6 +489,7 @@ export function get_custom_profile_field_data(
         is_user_field: false,
         is_link: field_type === field_types.URL.id,
         is_external_account: field_type === field_types.EXTERNAL_ACCOUNT.id,
+        is_long_text: field_type === field_types.LONG_TEXT.id,
         type: field_type,
         display_in_profile_summary: field.display_in_profile_summary,
         required: field.required,
@@ -732,6 +733,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         user_is_guest: user.is_guest,
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
+        is_imported_stub: user.is_imported_stub,
     };
 
     if (user.is_bot) {
@@ -1127,10 +1129,9 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                         $button,
                     );
                     if (!api_key) {
-                        scroll_util.scroll_element_into_container(
-                            $("#bot-edit-form-error"),
-                            $("#user-profile-modal .modal__body"),
-                        );
+                        $("#bot-edit-form")
+                            .closest(".simplebar-content-wrapper")
+                            .animate({scrollTop: 0}, "fast");
                         return;
                     }
                     integration_url_modal.show_generate_integration_url_modal(api_key);

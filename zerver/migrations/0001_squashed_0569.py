@@ -1042,7 +1042,7 @@ class Migration(migrations.Migration):
                             ("J", "Generated using Jdenticon"),
                             ("U", "Uploaded by user"),
                         ],
-                        default="G",
+                        default="J",
                         max_length=1,
                     ),
                 ),
@@ -3099,7 +3099,7 @@ class Migration(migrations.Migration):
                         validators=[
                             django.core.validators.RegexValidator(
                                 message="Invalid characters in pygments language",
-                                regex="^[ a-zA-Z0-9_+-./#]*$",
+                                regex="^[a-zA-Z0-9_+-./#]+$",
                             )
                         ],
                     ),

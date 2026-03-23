@@ -9,15 +9,15 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 04:54+0000\n"
-"PO-Revision-Date: 2025-09-08 15:49+0000\n"
-"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
+"PO-Revision-Date: 2026-02-27 14:36+0000\n"
+"Last-Translator: Anders Kaseorg <andersk@mit.edu>\n"
 "Language-Team: Tamil <https://hosted.weblate.org/projects/zulip/django/ta/>\n"
 "Language: ta\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.16.1-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -6230,7 +6230,7 @@ msgstr ""
 "உதவியைப் பெறுங்கள், பின்வரும் செய்திகளில் ஒன்றை முயற்சிக்கவும்: {bot_commands}\n"
 
 #: zerver/lib/onboarding.py:368
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid ""
 "\n"
 "If anything is out of place, it’s easy to [move messages]"
@@ -6240,11 +6240,6 @@ msgid ""
 "or even move a topic [to a different channel]"
 "({move_content_another_channel_help_url}).\n"
 msgstr ""
-"\n"
-"ஏதேனும் இடத்திற்கு வெளியே இருந்தால், [செய்திகளை நகர்த்துவது] "
-"({move_content_another_topic_help_url}), \n"
-". \n"
-"அல்லது ஒரு தலைப்பை [வேறு சேனலுக்கு] ({rename_topic_help_url}) நகர்த்தவும்.\n"
 
 #: zerver/lib/onboarding.py:379
 msgid ""

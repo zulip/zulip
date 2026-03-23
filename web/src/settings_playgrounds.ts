@@ -146,12 +146,7 @@ function build_page(): void {
                 },
                 error(xhr) {
                     $add_playground_button.prop("disabled", false);
-                    ui_report.error(
-                        $t_html({defaultMessage: "Failed"}),
-                        xhr,
-                        $playground_status,
-                        3000,
-                    );
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $playground_status);
                 },
             });
         });

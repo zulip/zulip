@@ -1254,7 +1254,9 @@ def delete_in_topic(
             return json_success(request, data={"complete": False})
         with transaction.atomic(durable=True):
             messages_to_delete = messages.order_by("-id")[0:batch_size].select_for_update(
-                of=("self",)
+                # We're deleting, so a FOR UPDATE lock is needed.
+                no_key=False,
+                of=("self",),
             )
             if not messages_to_delete:
                 break

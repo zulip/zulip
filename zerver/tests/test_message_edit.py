@@ -51,9 +51,11 @@ class EditMessageTest(ZulipTestCase):
         """
         We assume our caller just edited a message.
 
-        Next, we will make sure we properly cached the messages.  We still have
-        to do a query to hydrate recipient info, but we won't need to hit the
-        zerver_message table.
+        Next, we will make sure we can fetch the message correctly.
+        Stream message edits invalidate the cache (rather than eagerly
+        rebuilding it), so the first access triggers a lazy rebuild
+        from the database.  We verify the rebuild populates the cache
+        by checking that a second fetch needs no message-table query.
         """
 
         with queries_captured(keep_cache_warm=True) as queries:
@@ -69,9 +71,24 @@ class EditMessageTest(ZulipTestCase):
                 realm=msg.realm,
             )
 
+        # The lazy rebuild should have populated the cache, so a
+        # second fetch only needs a sender-info query, not a
+        # message-table query.
+        with queries_captured(keep_cache_warm=True) as queries:
+            messages_for_ids(
+                message_ids=[msg.id],
+                user_message_flags={msg_id: []},
+                search_fields={},
+                apply_markdown=False,
+                client_gravatar=False,
+                allow_empty_topic_name=True,
+                message_edit_history_visibility_policy=MessageEditHistoryVisibilityPolicyEnum.all.value,
+                user_profile=None,
+                realm=msg.realm,
+            )
+
         self.assert_length(queries, 1)
-        for query in queries:
-            self.assertNotIn("message", query.sql)
+        self.assertNotIn("message", queries[0].sql)
 
         self.assertEqual(
             fetch_message_dict[TOPIC_NAME],

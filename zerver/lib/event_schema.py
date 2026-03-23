@@ -31,6 +31,7 @@ from zerver.lib.event_types import (
     EventDefaultStreams,
     EventDeleteMessage,
     EventDeviceAdd,
+    EventDeviceRemove,
     EventDeviceUpdate,
     EventDirectMessage,
     EventDraftsAdd,
@@ -112,6 +113,7 @@ from zerver.lib.event_types import (
     PersonAvatarFields,
     PersonBotOwnerId,
     PersonCustomProfileField,
+    PersonDateJoined,
     PersonDeliveryEmail,
     PersonEmail,
     PersonFullName,
@@ -177,6 +179,7 @@ check_custom_profile_fields = make_checker(EventCustomProfileFields)
 check_default_stream_groups = make_checker(EventDefaultStreamGroups)
 check_default_streams = make_checker(EventDefaultStreams)
 check_device_add = make_checker(EventDeviceAdd)
+check_device_remove = make_checker(EventDeviceRemove)
 check_device_update = make_checker(EventDeviceUpdate)
 check_direct_message = make_checker(EventDirectMessage)
 check_draft_add = make_checker(EventDraftsAdd)
@@ -272,6 +275,7 @@ PERSON_TYPES: dict[str, type[BaseModel]] = dict(
     avatar_fields=PersonAvatarFields,
     bot_owner_id=PersonBotOwnerId,
     custom_profile_field=PersonCustomProfileField,
+    date_joined=PersonDateJoined,
     delivery_email=PersonDeliveryEmail,
     email=PersonEmail,
     full_name=PersonFullName,
@@ -372,11 +376,11 @@ def check_modern_presence(var_name: str, event: dict[str, object], user_id: int)
 def check_realm_bot_add(
     var_name: str,
     event: dict[str, object],
+    bot_type: int,
 ) -> None:
     _check_realm_bot_add(var_name, event)
 
     assert isinstance(event["bot"], dict)
-    bot_type = event["bot"]["bot_type"]
 
     services = event["bot"]["services"]
 

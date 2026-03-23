@@ -36,6 +36,7 @@ run_test("rerender_alert_words_ui", ({mock_template}) => {
         assert.ok(["foo", "bar"].includes(args.alert_word.word));
         // do a super easy sanity check
         assert.ok(html.includes("alert_word_listing"));
+        return "<alert-word-settings-item-stub>";
     });
 
     assert.equal(alert_words_ui.loaded, false);

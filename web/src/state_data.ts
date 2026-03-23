@@ -222,6 +222,7 @@ export const user_schema = z.intersection(
         avatar_url: z.nullish(z.string()),
         avatar_version: z.number(),
         profile_data: z.optional(z.record(z.coerce.number<string>(), profile_datum_schema)),
+        is_imported_stub: z.boolean(),
         // used for fake user objects.
         is_missing_server_data: z.optional(z.boolean()),
         // used for inaccessible user objects.
@@ -420,6 +421,9 @@ export const realm_linkifier_schema = z.object({
     pattern: z.string(),
     url_template: z.string(),
     id: z.number(),
+    example_input: z.optional(z.nullable(z.string())),
+    reverse_template: z.optional(z.nullable(z.string())),
+    alternative_url_templates: z.optional(z.array(z.string())),
 });
 
 export const realm_report_message_types = z.object({
@@ -556,6 +560,7 @@ export const realm_schema = z.object({
             ),
         }),
     ),
+    realm_media_preview_size: z.number(),
     realm_inline_image_preview: z.boolean(),
     realm_inline_url_embed_preview: z.boolean(),
     realm_invite_required: z.boolean(),
@@ -596,6 +601,7 @@ export const realm_schema = z.object({
     realm_waiting_period_threshold: z.number(),
     realm_want_advertise_in_communities_directory: z.boolean(),
     realm_welcome_message_custom_text: z.string(),
+    realm_workplace_users_group: group_setting_value_schema,
     realm_zulip_update_announcements_stream_id: z.number(),
     server_avatar_changes_disabled: z.boolean(),
     server_can_summarize_topics: z.boolean(),

@@ -30,6 +30,7 @@ from zerver.lib.subdomains import get_subdomain
 from zerver.lib.user_groups import (
     check_user_group_name,
     get_role_based_system_groups_dict,
+    get_user_group_by_id_in_realm,
     get_user_group_direct_member_ids,
 )
 from zerver.models import Realm, UserProfile
@@ -579,8 +580,7 @@ class ZulipSCIMGroup(SCIMGroup):
             return
 
         with transaction.atomic(savepoint=False):
-            # We need to lock the group now to conduct update operations without race conditions.
-            user_group = NamedUserGroup.objects.select_for_update().get(id=self.obj.id)
+            user_group = get_user_group_by_id_in_realm(self.obj.id, realm, for_read=False)
             current_member_ids = set(get_user_group_direct_member_ids(user_group))
             if name_new_value is not None:
                 do_update_user_group_name(self.obj, name_new_value, acting_user=None)

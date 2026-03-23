@@ -1421,13 +1421,6 @@ textarea.new_message_textarea {
     z-index: 1;
     font-size: inherit;
 
-    @media (width < $sm_min), ((width >= $sm_min) and (width < $mc_min)) {
-        /* Drop to a square button,
-           and don't flex any wider. */
-        width: 30px;
-        flex-grow: 0;
-    }
-
     .zulip-icon-send {
         display: block;
         font-size: 1.2143em; /* 17px at 14px/em */
@@ -1436,6 +1429,23 @@ textarea.new_message_textarea {
 
     .loader {
         display: none;
+    }
+}
+
+@media (width < $sm_min), ((width >= $sm_min) and (width < $mc_min)) {
+    #compose-send-button {
+        /* Drop to a square button,
+        and don't flex any wider. */
+        width: 30px;
+        flex-grow: 0;
+
+        /* Given the fixed-pixel width of the narrow send button,
+           don't let the send icon grow larger than a font-size
+           of 20px, which is as large as the send icon can grow
+           inside the squared off send button. */
+        .zulip-icon-send {
+            font-size: min(1.2143em, 20px);
+        }
     }
 }
 
@@ -1896,6 +1906,13 @@ textarea.new_message_textarea {
             /* Keep vdots centered above the
                Send button at smallest sizes. */
             padding-left: 0;
+        }
+
+        @media (width < $sm_min), ((width >= $sm_min) and (width < $mc_min)) {
+            /* As with the send icon, we limit the vdots to 20px
+               so it doesn't appear too crowded above the send
+               button. */
+            font-size: min(1.2143em, 20px);
         }
     }
 }

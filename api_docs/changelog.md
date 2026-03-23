@@ -20,6 +20,95 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 478**
+
+* [`POST /realm/filters`](/api/add-linkifier),
+  [`PATCH /realm/filters/{filter_id}`](/api/update-linkifier): Added
+  `alternative_url_templates` parameter for specifying additional URL
+  templates used only for reverse linkification (converting pasted URLs
+  to linkifier pattern text). These templates have no effect on forward
+  linkification.
+* [`GET /realm/linkifiers`](/api/get-linkifiers),
+  [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Linkifier objects now include the
+  `alternative_url_templates` field.
+
+**Feature level 477**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `workplace_users_group`
+  field which is a [group-setting value](/api/group-setting-values)
+  describing the set of users who will be considered as workplace
+  users for billing.
+
+**Feature level 476**
+
+* [`POST /realm/profile_fields`](/api/create-custom-profile-field),
+  [`GET /realm/profile_fields`](/api/get-custom-profile-fields) The
+  `display_in_profile_summary` parameter can now be set to true for the
+  `Paragraph` field type.
+
+**Feature level 475**
+
+* [`GET /events`](/api/get-events): `realm_user` events with `op: "update"`
+  are now sent when the `date_joined` field is updated after an imported
+  stub user or a user created via the API logs in for the first time.
+* [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email),
+  [`GET /users/me`](/api/get-own-user): The `date_joined` field is initially
+  set to the account creation time and is updated to the time of first login
+  for imported stub users and users created via the API.
+
+**Feature level 474**
+
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  Removed `api_key` field from bot objects.
+* [`GET /events`](/api/get-events): `realm_bot/update` event is no longer
+  sent when a bot's api key is regenerated.
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  Removed `avatar_url`, `bot_type`, `email`, `full_name`, `is_active` and
+  `owner_id` fields from bot objects.
+* [`GET /events`](/api/get-events): `realm_bot/update` event is no longer
+  sent when updating a bot's avatar, email, name, or owner and also when
+  deactivating or reactivating a bot.
+
+**Feature level 473**
+
+- [`POST /users/{user_id}/status`](/api/update-status-for-user): Bots
+  with administrator permissions can now use this endpoint.
+
+**Feature level 472**
+
+* [`GET /attachments`](/api/get-attachments), [`GET /events`](/api/get-events):
+  Previously, the `messages` field in `Attachment` was array of
+  objects containing `id` and `date_sent` properties. That has been replaced
+  by a `message_ids` field, which is a flat array of message IDs.
+
+**Feature level 471**
+
+* [`GET /events`](/api/get-events), [`GET /realm/linkifiers`](/api/get-linkifiers),
+  [`POST /realm/filters`](/api/add-linkifier),
+  [`PATCH /realm/filters/{filter_id}`](/api/update-linkifier):
+  Added `example_input` and `reverse_template` to linkifier objects.
+  `example_input` is a sample string matching the url_pattern for the linkifier.
+  `reverse_template` is a string that can process input params and turn a url into
+  it's abbreviated form.
+  `reverse_template` requires `example_input` to be provided.
+  Pass an empty string during PATCH to set either of these fields back to null, given
+  they satisfy the requirements stated above.
+
+**Feature level 470**
+
+* [`POST /remove_client_device`](/api/remove-client-device):
+  Added a new endpoint to remove a registered device.
+
+**Feature level 469**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added a new
+  `media_preview_size` realm setting that controls the size of
+  image and video thumbnails in messages.
+
 **Feature level 468**
 
 * [`POST /register_client_device`](/api/register-client-device):
@@ -254,7 +343,8 @@ element to plain escaped text.
 * [`GET /events`](/api/get-events): The deprecated `update_display_settings`
   and `update_global_notifications` event types are no longer sent to any
   clients. These legacy event types were deprecated in Zulip 5.0 (feature
-  level 89) and replaced by the `user_settings` event type.
+  level 89) and replaced by the [`user_settings` event
+  type](/api/get-events#user_settings-update).
 
 **Feature level 438**
 

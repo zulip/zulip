@@ -54,7 +54,7 @@ can be seen on a still screenshot. See
 [below](#capturing-and-presenting-short-videos) for how to capture reviewable videos.
 
 For updates or changes to CSS class rules, it's a good practice
-to include the results of a [git-grep][git-grep] search for
+to include the results of a [`git grep`][git-grep] search for
 the class name(s) to confirm that you've tested and captured screenshots
 of all the impacted areas of the UI or Zulip documentation.
 
