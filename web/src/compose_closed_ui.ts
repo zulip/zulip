@@ -275,8 +275,8 @@ export function update_reply_button_with_recipient_context(
 // update_reply_button_with_recipient_context() runs before
 // update_reply_button_state(), ensuring that the button wrapper
 // contains the relevant recipient metadata.
-export function update_reply_button(): void {
-    update_reply_button_with_recipient_context();
+export function update_reply_button(recipient_information?: ReplyRecipientInformation): void {
+    update_reply_button_with_recipient_context(recipient_information);
     update_reply_button_state();
 }
 
