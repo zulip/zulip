@@ -2,7 +2,7 @@
 
 > **Project:** AI-powered catch-up feature for Zulip
 > **Repository:** [zulip-what-did-i-miss](https://github.com/CtrlAltGiri/zulip-what-did-i-miss)
-> **Last Updated:** 2026-02-17
+> **Last Updated:** 2026-03-23
 
 ---
 
@@ -15,6 +15,7 @@
 | **Phase 3** | Frontend — View Infrastructure | **COMPLETE** |
 | **Phase 4** | Frontend — Interactive Features | **COMPLETE** |
 | **Phase 4.5** | Runtime Bug Fixes | **COMPLETE** |
+| **Phase 4.6** | PR Review Fixes | **COMPLETE** |
 | Phase 5 | Refinement & User Preferences | Not Started |
 | Phase 6 | Testing & Polish | Not Started |
 
@@ -717,6 +718,55 @@ real presence-based inactivity detection.
 2. **Django BitField lookups:** Use `flags__andnz=<flag>.mask`, not `flags__and=<flag>`.
 3. **Vagrant/Docker file sync:** Host-side edits may not be detected by file watchers inside the container. Restart `run-dev` after making changes to ensure they take effect.
 4. **Dev testing presence:** Since the user is actively browsing, `get_last_active_time()` returns "right now" — making catch-up data empty. A temporary override or the `since` API parameter is needed for testing.
+
+---
+
+---
+
+## Phase 4.6: PR Review Fixes
+
+**Status: COMPLETE**
+**Completed: 2026-03-23**
+
+### Changes made in response to PR #6 review by CtrlAltGiri
+
+#### 1. `CatchUpSummary.to_dict()` — moved serialisation into the dataclasses
+
+`summary_to_dict()` was a standalone module-level function. Per reviewer
+feedback, serialisation belongs on the dataclasses themselves. Added
+`to_dict()` to `ContextLink`, `ActionItem`, `TopicSummary`, and
+`CatchUpSummary`. Removed the old `summary_to_dict()` function and updated
+`catchup_overview.py` to call `summary.to_dict()` directly.
+
+**Files:** `zerver/lib/catchup_claude.py`, `zerver/views/catchup_overview.py`
+
+#### 2. Overview panel HTML — moved into Handlebars templates
+
+`render_overview_panel()` built all panel HTML as a string inside TypeScript,
+which is against Zulip's convention of using `.hbs` templates. Extracted into
+two new templates:
+
+- `catch_up_overview_panel.hbs` — full panel content (overview, keywords,
+  action items, topic summaries with key messages, footer)
+- `catch_up_overview_status.hbs` — loading and error states
+
+Replaced `render_overview_panel()` with `prepare_overview_context()`, which
+pre-computes resolved topic URLs and adds boolean flags required by Zulip's
+strict Handlebars mode (no arrays/numbers in `{{#if}}`).
+
+Removed the `esc()` helper — Handlebars handles escaping automatically.
+
+**Files:** `web/src/catch_up_ui.ts`,
+`web/templates/catch_up_view/catch_up_overview_panel.hbs` (new),
+`web/templates/catch_up_view/catch_up_overview_status.hbs` (new)
+
+#### 3. `window as unknown as {stream_data}` — removed
+
+`resolve_topic_url()` accessed `stream_data` via a `window` cast instead of
+using the already-imported module. Fixed to use `stream_data.get_sub_by_name()`
+directly from the import at the top of the file.
+
+**File:** `web/src/catch_up_ui.ts`
 
 ---
 
