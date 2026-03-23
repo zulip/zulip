@@ -409,8 +409,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonErrorBase"
-
+                $ref: "#/components/schemas/CodedError"
   /export/realm/{export_id}:
     delete:
       operationId: delete-realm-export
@@ -441,7 +440,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonErrorBase"                    
+                $ref: "#/components/schemas/CodedError"
   /events:
     get:
       operationId: get-events
