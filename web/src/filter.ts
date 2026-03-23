@@ -468,8 +468,14 @@ export class Filter {
                     }
                 }
 
-                if (for_pills && operator === "sender" && operand.toLowerCase() === "me") {
-                    operand = String(people.my_current_user_id());
+                if (for_pills && operand.toLowerCase() === "me") {
+                    if (operator === "sender") {
+                        operand = String(people.my_current_user_id());
+                    } else if (operator === "mentions") {
+                        // mentions:me is equivalent to is:mentioned.
+                        operator = "is";
+                        operand = "mentioned";
+                    }
                 }
 
                 // Check if the operator is known, if not then we treat
@@ -558,6 +564,15 @@ export class Filter {
                     break;
                 }
                 case "mentions": {
+                    // mentions:me is equivalent to is:mentioned.
+                    if (suggestion.operand.toLowerCase() === "me") {
+                        potential_narrow_term = {
+                            operator: "is",
+                            operand: "mentioned",
+                            negated: suggestion.negated,
+                        };
+                        break;
+                    }
                     const result = convert_single_user_id_suggestion_to_term(
                         suggestion,
                         canonical_operator,

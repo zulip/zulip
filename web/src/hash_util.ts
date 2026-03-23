@@ -233,10 +233,17 @@ export function parse_narrow(hash: string[]): NarrowCanonicalTerm[] | undefined 
             return undefined;
         }
 
-        const canonical_operator = filter_util.canonicalize_operator(
+        let canonical_operator = filter_util.canonicalize_operator(
             narrow_operator_schema.parse(operator),
         );
-        const operand = decode_operand(canonical_operator, raw_operand);
+        let operand = decode_operand(canonical_operator, raw_operand);
+
+        // mentions:me is equivalent to is:mentioned.
+        if (canonical_operator === "mentions" && raw_operand === "me") {
+            canonical_operator = "is";
+            operand = "mentioned";
+        }
+
         terms.push({
             negated,
             operator: canonical_operator,
