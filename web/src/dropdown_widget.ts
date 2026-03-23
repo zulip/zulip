@@ -27,6 +27,7 @@ const noop = (): void => {
 };
 
 export type DataType = "number" | "string";
+export type DropdownTrigger = "keyboard" | "mouse";
 
 export type Option = {
     unique_id: number | string;
@@ -208,7 +209,7 @@ export class DropdownWidget {
             `${this.widget_selector}, ${this.widget_wrapper_id}`,
             (e) => {
                 if (e.key === "Enter") {
-                    $(this.widget_selector)[0]?.click();
+                    this.open({trigger: "keyboard"});
                     e.stopPropagation();
                     e.preventDefault();
                 }
@@ -760,6 +761,16 @@ export class DropdownWidget {
 
     value(): number | string | undefined {
         return this.current_value;
+    }
+
+    open({trigger = "mouse"}: {trigger?: DropdownTrigger} = {}): void {
+        const widget_element = $(this.widget_selector).get(0);
+        if (widget_element === undefined) {
+            return;
+        }
+
+        this.dropdown_triggered_via_keyboard = trigger === "keyboard";
+        widget_element.click();
     }
 
     // NOTE: This function needs to be explicitly called when you want to update the
