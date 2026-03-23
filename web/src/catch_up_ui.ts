@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import render_catch_up_overview_panel from "../templates/catch_up_view/catch_up_overview_panel.hbs";
+import render_catch_up_overview_status from "../templates/catch_up_view/catch_up_overview_status.hbs";
 import render_catch_up_view from "../templates/catch_up_view/catch_up_view.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -551,5 +553,110 @@ export function hide(): void {
     card_focus = -1;
     current_filter = "all";
     current_stream_filter = "all";
+    overview_open = false;
+    cached_overview = null;
     catch_up_data.clear_data();
 }
+
+// ── Global AI Summary (US-08: context linking across all missed messages) ─────
+
+type OverviewActionItem = {
+    text: string;
+    assignee: string | null;
+    message_id: number | null;
+    narrow_url: string | null;
+};
+
+type OverviewTopic = {
+    stream: string;
+    topic: string;
+    summary: string;
+    narrow_url: string;
+    key_messages: {id: number; excerpt: string; narrow_url: string}[];
+};
+
+type OverviewResponse = {
+    structured: boolean;
+    overview: string;
+    keywords: string[];
+    action_items: OverviewActionItem[];
+    topics: OverviewTopic[];
+    model_used: string;
+    message_count: number;
+};
+
+let overview_open = false;
+let cached_overview: OverviewResponse | null = null;
+
+function resolve_topic_url(stream: string, topic: string): string {
+    const sub = stream_data.get_sub_by_name(stream);
+    if (sub === undefined) {
+        return "";
+    }
+    return hash_util.by_stream_topic_url(sub.stream_id, topic);
+}
+
+function prepare_overview_context(data: OverviewResponse): object {
+    const action_items = data.action_items.map((item) => ({
+        ...item,
+        has_assignee: item.assignee !== null && item.assignee !== "",
+        resolved_url: item.narrow_url ? resolve_topic_url(
+            item.narrow_url.split("/topic/")[0]?.split("-").slice(1).join("-") ?? "",
+            item.narrow_url.split("/topic/")[1] ?? "",
+        ) : "",
+        has_resolved_url: false as boolean,
+    })).map((item) => ({...item, has_resolved_url: item.resolved_url !== ""}));
+
+    const topics = data.topics.map((t) => {
+        const topic_url = resolve_topic_url(t.stream, t.topic);
+        return {
+            ...t,
+            topic_url,
+            has_topic_url: topic_url !== "",
+            key_messages: t.key_messages.map((km) => {
+                const jump_url = resolve_topic_url(t.stream, t.topic);
+                return {...km, jump_url, has_jump_url: jump_url !== ""};
+            }),
+        };
+    });
+
+    return {
+        ...data,
+        has_keywords: data.keywords.length > 0,
+        has_action_items: data.action_items.length > 0,
+        has_topics: data.topics.length > 0,
+        action_items,
+        topics,
+    };
+}
+
+$(document).on("click", "#catch-up-overview-btn", () => {
+    overview_open = !overview_open;
+    const $panel = $("#catch-up-overview-panel");
+
+    if (!overview_open) {
+        $panel.slideUp(150);
+        return;
+    }
+
+    if (cached_overview) {
+        $panel.html(render_catch_up_overview_panel(prepare_overview_context(cached_overview))).slideDown(160);
+        return;
+    }
+
+    $panel
+        .html(render_catch_up_overview_status({is_loading: true, error_msg: ""}))
+        .slideDown(160);
+
+    void $.get("/json/catch-up/overview")
+        .done((data: {result: string} & OverviewResponse) => {
+            cached_overview = data;
+            if (overview_open) {
+                $panel.html(render_catch_up_overview_panel(prepare_overview_context(data)));
+            }
+        })
+        .fail((xhr: {responseJSON?: {msg?: string}}) => {
+            const error_msg = (xhr.responseJSON?.msg) ?? "Failed to generate summary.";
+            $panel.html(render_catch_up_overview_status({is_loading: false, error_msg}));
+        });
+});

@@ -229,11 +229,11 @@ DEMO_ORG_DEADLINE_DAYS = 30
 if external_host_env is None and not IS_DEV_DROPLET:
     USING_CAPTCHA = True
 
-TOPIC_SUMMARIZATION_MODEL = "groq/llama-3.3-70b-versatile"
-# Defaults based on groq's pricing for Llama 3.3 70B Versatile 128k.
-# https://groq.com/pricing/
-OUTPUT_COST_PER_GIGATOKEN = 590
-INPUT_COST_PER_GIGATOKEN = 790
+TOPIC_SUMMARIZATION_MODEL = "anthropic/claude-sonnet-4-5"
+# Claude Sonnet 4.5 pricing (USD per billion tokens).
+# https://www.anthropic.com/pricing
+OUTPUT_COST_PER_GIGATOKEN = 15_000  # $15 / million output tokens
+INPUT_COST_PER_GIGATOKEN = 3_000    # $3 / million input tokens
 MAX_PER_USER_MONTHLY_AI_COST = 1
 MAX_WEB_DATA_IMPORT_SIZE_MB = 1024
 

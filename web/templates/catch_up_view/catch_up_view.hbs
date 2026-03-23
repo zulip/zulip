@@ -29,8 +29,12 @@
                 <i class="zulip-icon zulip-icon-hash" aria-hidden="true"></i>
                 {{total_topics}} {{t "topics" }}
             </span>
+            <button id="catch-up-overview-btn" class="catch-up-overview-btn" tabindex="0">
+                ✦ {{t "AI Summary" }}
+            </button>
         </div>
     </div>
+    <div id="catch-up-overview-panel" class="catch-up-overview-panel" style="display:none;"></div>
     <div class="catch-up-filters" role="group" aria-label="{{t 'Filters' }}">
         <div class="catch-up-filter-buttons">
             <button class="catch-up-filter-btn {{#if is_all_filter}}active{{/if}}" data-filter="all" tabindex="0">

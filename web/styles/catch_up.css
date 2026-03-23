@@ -582,3 +582,209 @@
         gap: 6px;
     }
 }
+
+/* ── Global AI Summary panel (US-08: context linking) ── */
+
+.catch-up-overview-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    background: hsl(218 57% 28%);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0 0 0 / 0.2);
+}
+
+.catch-up-overview-btn:hover {
+    background: hsl(218 57% 22%);
+}
+
+.catch-up-overview-panel {
+    margin: 0 0 16px;
+    border: 1px solid var(--color-border-sidebar, #e0e4ea);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--color-background, #fff);
+    box-shadow: 0 2px 12px rgba(0 0 0 / 0.08);
+}
+
+.catch-up-overview-body {
+    padding: 16px 20px;
+}
+
+.catch-up-overview-summary {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--color-text-default);
+    margin-bottom: 14px;
+}
+
+.catch-up-overview-section {
+    margin-bottom: 14px;
+}
+
+.catch-up-overview-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+}
+
+.catch-up-keyword-pill {
+    display: inline-block;
+    background: hsl(230 100% 95%);
+    color: hsl(230 57% 38%);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 2px 4px 2px 0;
+}
+
+.catch-up-action-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.catch-up-action-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: hsl(230 100% 98%);
+    border: 1px solid hsl(230 100% 90%);
+    border-radius: 6px;
+    padding: 7px 12px;
+}
+
+.catch-up-action-bullet {
+    color: hsl(230 57% 48%);
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.catch-up-action-text {
+    flex: 1;
+    font-size: 13.5px;
+    line-height: 1.5;
+}
+
+.catch-up-assignee-badge {
+    background: hsl(45 100% 92%);
+    color: hsl(30 80% 30%);
+    border-radius: 4px;
+    padding: 1px 7px;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.catch-up-context-link {
+    color: hsl(218 57% 38%);
+    font-weight: 600;
+    font-size: 12px;
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.catch-up-context-link:hover {
+    text-decoration: underline;
+}
+
+.catch-up-topic-summaries {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.catch-up-topic-summary-card {
+    border: 1px solid var(--color-border-sidebar, #e0e4ea);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.catch-up-topic-summary-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    background: var(--color-background-sidebar, #f5f7fa);
+    border-bottom: 1px solid var(--color-border-sidebar, #e8edf2);
+}
+
+.catch-up-stream-badge {
+    background: hsl(218 57% 28%);
+    color: #fff;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.catch-up-topic-summary-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.catch-up-topic-summary-text {
+    padding: 8px 12px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--color-text-default);
+}
+
+.catch-up-key-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 4px 12px;
+    border-top: 1px solid var(--color-border-sidebar, #f0f2f5);
+}
+
+.catch-up-key-message-arrow {
+    color: #aaa;
+    font-size: 11px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.catch-up-key-message-text {
+    flex: 1;
+    font-size: 12.5px;
+    color: #555;
+    line-height: 1.5;
+}
+
+.catch-up-overview-footer {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--color-border-sidebar, #f0f2f5);
+    font-size: 11px;
+    color: #aaa;
+    display: flex;
+    justify-content: space-between;
+}
+
+.catch-up-overview-loading,
+.catch-up-overview-error {
+    padding: 16px 20px;
+    font-size: 14px;
+    color: #888;
+    font-style: italic;
+}
+
+.catch-up-overview-error {
+    color: #c0392b;
+    font-style: normal;
+}

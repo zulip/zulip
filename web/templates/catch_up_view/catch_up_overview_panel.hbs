@@ -1,0 +1,60 @@
+<div class="catch-up-overview-body">
+    <div class="catch-up-overview-summary">{{overview}}</div>
+
+    {{#if has_keywords}}
+    <div class="catch-up-overview-section">
+        <div class="catch-up-overview-section-label">Keywords</div>
+        <div>
+            {{#each keywords}}
+            <span class="catch-up-keyword-pill">{{this}}</span>
+            {{/each}}
+        </div>
+    </div>
+    {{/if}}
+
+    {{#if has_action_items}}
+    <div class="catch-up-overview-section">
+        <div class="catch-up-overview-section-label">Action Items</div>
+        <div class="catch-up-action-list">
+            {{#each action_items}}
+            <div class="catch-up-action-item">
+                <span class="catch-up-action-bullet">◆</span>
+                <span class="catch-up-action-text">{{text}}</span>
+                {{#if has_assignee}}<span class="catch-up-assignee-badge">{{assignee}}</span>{{/if}}
+                {{#if has_resolved_url}}<a href="{{resolved_url}}" class="catch-up-context-link">View source ↗</a>{{/if}}
+            </div>
+            {{/each}}
+        </div>
+    </div>
+    {{/if}}
+
+    {{#if has_topics}}
+    <div class="catch-up-overview-section">
+        <div class="catch-up-overview-section-label">Topics</div>
+        <div class="catch-up-topic-summaries">
+            {{#each topics}}
+            <div class="catch-up-topic-summary-card">
+                <div class="catch-up-topic-summary-header">
+                    <span class="catch-up-stream-badge">#{{stream}}</span>
+                    <span class="catch-up-topic-summary-name">{{topic}}</span>
+                    {{#if has_topic_url}}<a href="{{topic_url}}" class="catch-up-context-link">View thread ↗</a>{{/if}}
+                </div>
+                <div class="catch-up-topic-summary-text">{{summary}}</div>
+                {{#each key_messages}}
+                <div class="catch-up-key-message">
+                    <span class="catch-up-key-message-arrow">↳</span>
+                    <span class="catch-up-key-message-text">{{excerpt}}</span>
+                    {{#if has_jump_url}}<a href="{{jump_url}}" class="catch-up-context-link">Jump ↗</a>{{/if}}
+                </div>
+                {{/each}}
+            </div>
+            {{/each}}
+        </div>
+    </div>
+    {{/if}}
+
+    <div class="catch-up-overview-footer">
+        <span>{{message_count}} messages analysed</span>
+        <span>model: {{model_used}}</span>
+    </div>
+</div>
