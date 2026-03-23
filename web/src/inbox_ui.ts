@@ -1634,7 +1634,7 @@ function update_closed_compose_text($row: JQuery, is_header_row: boolean): void 
             topic: $row.find(".inbox-topic-name a").text(),
         };
     }
-    compose_closed_ui.update_recipient_text_for_reply_button(reply_recipient_information);
+    compose_closed_ui.update_reply_button_with_recipient_context(reply_recipient_information);
 }
 
 export function get_focused_row_message(): {message?: Message | undefined} & (

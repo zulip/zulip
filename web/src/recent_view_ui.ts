@@ -422,7 +422,7 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
             topic: $topic_row.find(".recent-view-conversation-link").text(),
         };
     }
-    compose_closed_ui.update_recipient_text_for_reply_button(reply_recipient_information);
+    compose_closed_ui.update_reply_button_with_recipient_context(reply_recipient_information);
     return true;
 }
 

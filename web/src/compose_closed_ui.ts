@@ -21,6 +21,8 @@ type RecipientLabel = {
     has_empty_string_topic?: boolean;
     stream_name?: string;
     is_dm_with_self?: boolean;
+    user_ids?: number[];
+    stream_id?: number;
 };
 
 function get_stream_recipient_label(stream_id: number, topic: string): RecipientLabel | undefined {
@@ -31,6 +33,7 @@ function get_stream_recipient_label(stream_id: number, topic: string): Recipient
             label_text: "#" + stream.name + " > " + topic_display_name,
             has_empty_string_topic: topic === "",
             stream_name: stream.name,
+            stream_id,
         };
         return recipient_label;
     }
@@ -48,6 +51,7 @@ function get_direct_message_recipient_label(user_ids: number[]): RecipientLabel 
     const recipient_label: RecipientLabel = {
         label_text,
         is_dm_with_self,
+        user_ids,
     };
     return recipient_label;
 }
@@ -128,32 +132,35 @@ export function get_recipient_label(
 }
 
 // Exported for tests
-export let update_reply_button_state = (disable = false): void => {
+export let update_reply_button_state = (): void => {
+    const $compose_reply_button_wrapper = $(
+        "#legacy-closed-compose-box .compose-reply-button-wrapper",
+    );
+    const stream_id_str = $compose_reply_button_wrapper.attr("data-stream-id");
+    const user_ids_string = $compose_reply_button_wrapper.attr("data-user-ids-string");
+
+    let disable = false;
+    if (stream_id_str !== undefined) {
+        disable = should_disable_compose_reply_button_for_stream(
+            Number.parseInt(stream_id_str, 10),
+        );
+    } else if (user_ids_string !== undefined) {
+        disable = should_disable_compose_reply_button_for_direct_message(user_ids_string);
+    }
+
     $(".compose_reply_button").attr("disabled", disable ? "disabled" : null);
     if (disable) {
-        if (maybe_get_selected_message_stream_id() !== undefined) {
-            $("#legacy-closed-compose-box .compose-reply-button-wrapper").attr(
-                "data-reply-button-type",
-                "stream_disabled",
-            );
+        if (stream_id_str !== undefined) {
+            $compose_reply_button_wrapper.attr("data-reply-button-type", "stream_disabled");
         } else {
-            $("#legacy-closed-compose-box .compose-reply-button-wrapper").attr(
-                "data-reply-button-type",
-                "direct_disabled",
-            );
+            $compose_reply_button_wrapper.attr("data-reply-button-type", "direct_disabled");
         }
         return;
     }
     if (narrow_state.is_message_feed_visible()) {
-        $("#legacy-closed-compose-box .compose-reply-button-wrapper").attr(
-            "data-reply-button-type",
-            "selected_message",
-        );
+        $compose_reply_button_wrapper.attr("data-reply-button-type", "selected_message");
     } else {
-        $("#legacy-closed-compose-box .compose-reply-button-wrapper").attr(
-            "data-reply-button-type",
-            "selected_conversation",
-        );
+        $compose_reply_button_wrapper.attr("data-reply-button-type", "selected_conversation");
     }
 };
 
@@ -165,58 +172,34 @@ function update_new_conversation_button(data_attribute_string: "stream" | "non-s
     $("#new_conversation_button").attr("data-conversation-type", data_attribute_string);
 }
 
-function maybe_get_selected_message_stream_id(): number | undefined {
-    if (message_lists.current?.visibly_empty()) {
-        return undefined;
+function should_disable_compose_reply_button_for_stream(stream_id: number): boolean {
+    if (page_params.is_spectator) {
+        return false;
     }
-    const selected_message = message_lists.current?.selected_message();
-    if (!selected_message?.is_stream) {
-        return undefined;
-    }
-    return selected_message.stream_id;
-}
-
-function should_disable_compose_reply_button_for_stream(): boolean {
-    const stream_id = maybe_get_selected_message_stream_id();
-    if (stream_id !== undefined && !page_params.is_spectator) {
-        const stream = stream_data.get_sub_by_id(stream_id);
-        if (stream && !stream_data.can_post_messages_in_stream(stream)) {
-            return true;
-        }
-    }
-    return false;
+    const stream = stream_data.get_sub_by_id(stream_id);
+    return stream !== undefined && !stream_data.can_post_messages_in_stream(stream);
 }
 
 // Exported for tests
-export function should_disable_compose_reply_button_for_direct_message(): boolean {
-    const pm_ids_string = narrow_state.pm_ids_string();
-    // If we can identify a direct message recipient, and the user can't
-    // reply to that recipient, then we disable the compose_reply_button.
-    if (pm_ids_string && !message_util.user_can_send_direct_message(pm_ids_string)) {
-        return true;
-    }
-    return false;
+export function should_disable_compose_reply_button_for_direct_message(
+    user_ids_string: string,
+): boolean {
+    return !message_util.user_can_send_direct_message(user_ids_string);
 }
 
-export function update_buttons(update_type?: string): void {
-    let disable_reply_button;
-    if (update_type === "direct") {
-        // Based on whether there's a direct message recipient for
-        // the current narrow_state.
-        disable_reply_button = should_disable_compose_reply_button_for_direct_message();
-        update_new_conversation_button("non-specific");
-        update_reply_button_state(disable_reply_button);
-    } else if (update_type === "stream") {
-        // Based on whether there's a selected channel message in
-        // the current message list.
-        disable_reply_button = should_disable_compose_reply_button_for_stream();
-        update_new_conversation_button("stream");
-        update_reply_button_state(disable_reply_button);
+export function update_buttons(
+    update_type?: string,
+    recipient_information?: ReplyRecipientInformation,
+): void {
+    if (update_type === "direct" || update_type === "stream") {
+        const type = update_type === "direct" ? "non-specific" : "stream";
+        update_new_conversation_button(type);
+        update_reply_button(recipient_information);
     } else {
         // Default case for most views.
         update_new_conversation_button("non-specific");
-        update_reply_button_state(false);
         set_standard_text_for_reply_button();
+        update_reply_button_state();
     }
 }
 
@@ -233,12 +216,20 @@ function set_reply_button_label(label: string): void {
 
 export function set_standard_text_for_reply_button(): void {
     set_reply_button_label($t({defaultMessage: "Compose message"}));
+    const $compose_reply_button_wrapper = $(
+        "#legacy-closed-compose-box .compose-reply-button-wrapper",
+    );
+    $compose_reply_button_wrapper.removeAttr("data-stream-id");
+    $compose_reply_button_wrapper.removeAttr("data-user-ids-string");
 }
 
-export function update_recipient_text_for_reply_button(
+export function update_reply_button_with_recipient_context(
     recipient_information?: ReplyRecipientInformation,
 ): void {
     const recipient_label = get_recipient_label(recipient_information);
+    const $compose_reply_button_wrapper = $(
+        "#legacy-closed-compose-box .compose-reply-button-wrapper",
+    );
     if (recipient_label !== undefined) {
         const empty_string_topic_display_name = util.get_final_topic_display_name("");
         const rendered_recipient_label = render_reply_recipient_label({
@@ -248,22 +239,40 @@ export function update_recipient_text_for_reply_button(
             empty_string_topic_display_name,
             label_text: recipient_label.label_text,
         });
+        // Set data attributes so that update_reply_button_state can
+        // determine whether to disable the reply button without
+        // needing to re-examine the message list or narrow state.
+        if (recipient_label.stream_id) {
+            // Channel message recipient.
+            $compose_reply_button_wrapper.removeAttr("data-user-ids-string");
+            $compose_reply_button_wrapper.attr(
+                "data-stream-id",
+                recipient_label.stream_id.toString(),
+            );
+        } else if (recipient_label.user_ids) {
+            // Direct message recipient.
+            $compose_reply_button_wrapper.removeAttr("data-stream-id");
+            $compose_reply_button_wrapper.attr(
+                "data-user-ids-string",
+                recipient_label.user_ids.join(","),
+            );
+        } else {
+            // Fallback case: recipient label from display_reply_to
+            // text when we couldn't decode user IDs from the narrow
+            // URL. We can't check permissions, so we leave the
+            // button enabled.
+            $compose_reply_button_wrapper.removeAttr("data-stream-id");
+            $compose_reply_button_wrapper.removeAttr("data-user-ids-string");
+        }
         $("#left_bar_compose_reply_button_big").html(rendered_recipient_label);
     } else {
         set_standard_text_for_reply_button();
     }
 }
 
-function can_user_reply_to_message(message_id: number): boolean {
-    const selected_message = message_store.get(message_id);
-    if (selected_message === undefined) {
-        return false;
-    }
-    if (selected_message.is_stream) {
-        return !should_disable_compose_reply_button_for_stream();
-    }
-    assert(selected_message.is_private);
-    return message_util.user_can_send_direct_message(selected_message.to_user_ids);
+export function update_reply_button(recipient_information?: ReplyRecipientInformation): void {
+    update_reply_button_with_recipient_context(recipient_information);
+    update_reply_button_state();
 }
 
 export function initialize(): void {
@@ -273,10 +282,7 @@ export function initialize(): void {
             // message_selected events can occur with Recent Conversations
             // open due to the combined feed view loading in the background,
             // so we only update if message feed is visible.
-            update_recipient_text_for_reply_button();
-            update_reply_button_state(
-                !can_user_reply_to_message(message_lists.current!.selected_id()),
-            );
+            update_reply_button();
         }
     });
 
