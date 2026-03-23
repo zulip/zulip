@@ -944,6 +944,7 @@ export function dispatch_normal_event(event) {
                 "fluid_layout_width",
                 "hide_ai_features",
                 "high_contrast_mode",
+                "pin_views_section",
                 "receives_typing_notifications",
                 "resolved_topic_notice_auto_read_policy",
                 "starred_message_counts",
@@ -1107,6 +1108,13 @@ export function dispatch_normal_event(event) {
                 // Message feed
                 for (const msg_list of message_lists.all_rendered_message_lists()) {
                     msg_list.rerender();
+                }
+            }
+            if (event.property === "pin_views_section") {
+                if (event.value === 1) {
+                    left_sidebar_navigation_area.set_views_section_pinned(false);
+                } else {
+                    left_sidebar_navigation_area.set_views_section_pinned(true);
                 }
             }
             settings_preferences.update_page(event.property);

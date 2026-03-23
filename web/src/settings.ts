@@ -140,6 +140,8 @@ export function build_page(): void {
             settings_config.all_notifications(user_settings).disabled_notification_settings,
         information_density_settings: settings_config.get_information_density_preferences(),
         settings_render_only: settings_config.get_settings_render_only(),
+        pin_left_sidebar_views_section_values:
+            settings_config.pin_left_sidebar_views_section_values,
         user_can_change_name: settings_data.user_can_change_name(),
         user_can_change_avatar: settings_data.user_can_change_avatar(),
         user_can_change_email: settings_data.user_can_change_email(),

@@ -100,7 +100,7 @@ const stream_ui_updates = mock_esm("../src/stream_ui_updates", {
     update_announce_stream_option() {},
 });
 const submessage = mock_esm("../src/submessage");
-mock_esm("../src/left_sidebar_navigation_area", {
+const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_area", {
     update_starred_count() {},
     update_scheduled_messages_row() {},
     update_reminders_row() {},
@@ -1475,6 +1475,18 @@ run_test("user_settings", ({override}) => {
     override(settings_exports, "refresh_allow_private_data_export_banner", noop);
     dispatch(event);
     assert_same(user_settings.allow_private_data_export, true);
+
+    event = event_fixtures.user_settings__pin_views_section;
+    override(user_settings, "pin_views_section", 1);
+    override(left_sidebar_navigation_area, "set_views_section_pinned", noop);
+    dispatch(event);
+    assert_same(user_settings.pin_views_section, 2);
+
+    event = event_fixtures.user_settings__unpin_views_section;
+    override(user_settings, "pin_views_section", 2);
+    override(left_sidebar_navigation_area, "set_views_section_pinned", noop);
+    dispatch(event);
+    assert_same(user_settings.pin_views_section, 1);
 });
 
 run_test("update_message (read)", ({override}) => {
