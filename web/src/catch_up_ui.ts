@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import render_catch_up_overview_panel from "../templates/catch_up_view/catch_up_overview_panel.hbs";
+import render_catch_up_overview_status from "../templates/catch_up_view/catch_up_overview_status.hbs";
 import render_catch_up_view from "../templates/catch_up_view/catch_up_view.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -542,77 +544,46 @@ type OverviewResponse = {
 let overview_open = false;
 let cached_overview: OverviewResponse | null = null;
 
-function esc(s: string): string {
-    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
 function resolve_topic_url(stream: string, topic: string): string {
-    // Use hash_util for a properly encoded narrow URL.
-    // We look this up fresh each call since stream data is always available.
-    const {stream_data} = window as unknown as {stream_data?: {get_sub_by_name(n: string): {stream_id: number} | undefined}};
-    if (stream_data) {
-        const sub = stream_data.get_sub_by_name(stream);
-        if (sub) {
-            return hash_util.by_stream_topic_url(sub.stream_id, topic);
-        }
+    const sub = stream_data.get_sub_by_name(stream);
+    if (sub === undefined) {
+        return "";
     }
-    return "";
+    return hash_util.by_stream_topic_url(sub.stream_id, topic);
 }
 
-function render_overview_panel(data: OverviewResponse): string {
-    let html = `<div class="catch-up-overview-body">`;
+function prepare_overview_context(data: OverviewResponse): object {
+    const action_items = data.action_items.map((item) => ({
+        ...item,
+        has_assignee: item.assignee !== null && item.assignee !== "",
+        resolved_url: item.narrow_url ? resolve_topic_url(
+            item.narrow_url.split("/topic/")[0]?.split("-").slice(1).join("-") ?? "",
+            item.narrow_url.split("/topic/")[1] ?? "",
+        ) : "",
+        has_resolved_url: false as boolean,
+    })).map((item) => ({...item, has_resolved_url: item.resolved_url !== ""}));
 
-    html += `<div class="catch-up-overview-summary">${esc(data.overview)}</div>`;
+    const topics = data.topics.map((t) => {
+        const topic_url = resolve_topic_url(t.stream, t.topic);
+        return {
+            ...t,
+            topic_url,
+            has_topic_url: topic_url !== "",
+            key_messages: t.key_messages.map((km) => {
+                const jump_url = resolve_topic_url(t.stream, t.topic);
+                return {...km, jump_url, has_jump_url: jump_url !== ""};
+            }),
+        };
+    });
 
-    if (data.keywords.length > 0) {
-        const pills = data.keywords
-            .map((k) => `<span class="catch-up-keyword-pill">${esc(k)}</span>`)
-            .join("");
-        html += `<div class="catch-up-overview-section"><div class="catch-up-overview-section-label">Keywords</div><div>${pills}</div></div>`;
-    }
-
-    if (data.action_items.length > 0) {
-        html += `<div class="catch-up-overview-section"><div class="catch-up-overview-section-label">Action Items</div><div class="catch-up-action-list">`;
-        for (const item of data.action_items) {
-            const resolved_url = resolve_topic_url(
-                item.narrow_url?.split("/topic/")[0]?.split("-").slice(1).join("-") ?? "",
-                item.narrow_url?.split("/topic/")[1] ?? "",
-            );
-            const link = resolved_url
-                ? `<a href="${resolved_url}" class="catch-up-context-link">View source ↗</a>`
-                : "";
-            const badge = item.assignee
-                ? `<span class="catch-up-assignee-badge">${esc(item.assignee)}</span>`
-                : "";
-            html += `<div class="catch-up-action-item"><span class="catch-up-action-bullet">◆</span><span class="catch-up-action-text">${esc(item.text)}</span>${badge}${link}</div>`;
-        }
-        html += `</div></div>`;
-    }
-
-    if (data.topics.length > 0) {
-        html += `<div class="catch-up-overview-section"><div class="catch-up-overview-section-label">Topics</div><div class="catch-up-topic-summaries">`;
-        for (const t of data.topics) {
-            const topic_url = resolve_topic_url(t.stream, t.topic);
-            const thread_link = topic_url
-                ? `<a href="${topic_url}" class="catch-up-context-link">View thread ↗</a>`
-                : "";
-            const key_msgs = t.key_messages
-                .map((km) => {
-                    const jump_url = resolve_topic_url(t.stream, t.topic);
-                    const jump_link = jump_url
-                        ? `<a href="${jump_url}" class="catch-up-context-link">Jump ↗</a>`
-                        : "";
-                    return `<div class="catch-up-key-message"><span class="catch-up-key-message-arrow">↳</span><span class="catch-up-key-message-text">${esc(km.excerpt)}</span>${jump_link}</div>`;
-                })
-                .join("");
-            html += `<div class="catch-up-topic-summary-card"><div class="catch-up-topic-summary-header"><span class="catch-up-stream-badge">#${esc(t.stream)}</span><span class="catch-up-topic-summary-name">${esc(t.topic)}</span>${thread_link}</div><div class="catch-up-topic-summary-text">${esc(t.summary)}</div>${key_msgs}</div>`;
-        }
-        html += `</div></div>`;
-    }
-
-    html += `<div class="catch-up-overview-footer"><span>${data.message_count} messages analysed</span><span>model: ${esc(data.model_used)}</span></div>`;
-    html += `</div>`;
-    return html;
+    return {
+        ...data,
+        has_keywords: data.keywords.length > 0,
+        has_action_items: data.action_items.length > 0,
+        has_topics: data.topics.length > 0,
+        action_items,
+        topics,
+    };
 }
 
 $(document).on("click", "#catch-up-overview-btn", () => {
@@ -625,23 +596,23 @@ $(document).on("click", "#catch-up-overview-btn", () => {
     }
 
     if (cached_overview) {
-        $panel.html(render_overview_panel(cached_overview)).slideDown(160);
+        $panel.html(render_catch_up_overview_panel(prepare_overview_context(cached_overview))).slideDown(160);
         return;
     }
 
     $panel
-        .html(`<div class="catch-up-overview-loading">✦ Claude is analysing your missed messages…</div>`)
+        .html(render_catch_up_overview_status({is_loading: true, error_msg: ""}))
         .slideDown(160);
 
     void $.get("/json/catch-up/overview")
         .done((data: {result: string} & OverviewResponse) => {
             cached_overview = data;
             if (overview_open) {
-                $panel.html(render_overview_panel(data));
+                $panel.html(render_catch_up_overview_panel(prepare_overview_context(data)));
             }
         })
         .fail((xhr: {responseJSON?: {msg?: string}}) => {
-            const msg = (xhr.responseJSON?.msg) ?? "Failed to generate summary.";
-            $panel.html(`<div class="catch-up-overview-error">⚠️ ${esc(msg)}</div>`);
+            const error_msg = (xhr.responseJSON?.msg) ?? "Failed to generate summary.";
+            $panel.html(render_catch_up_overview_status({is_loading: false, error_msg}));
         });
 });
