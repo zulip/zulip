@@ -9,6 +9,7 @@ const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
+const {page_params} = require("./lib/zpage_params.cjs");
 
 // Mocking and stubbing things
 set_global("document", "document-stub");
@@ -27,6 +28,10 @@ mock_esm("../src/message_list_view", {
 });
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
+    user_has_permission_for_group_setting: () => true,
+});
+const message_util = mock_esm("../src/message_util", {
+    user_can_send_direct_message: () => true,
 });
 
 const stream_data = zrequire("stream_data");
@@ -244,4 +249,96 @@ run_test("test_non_message_list_input", ({mock_template}) => {
     });
     label = $("#left_bar_compose_reply_button_big").text();
     assert.equal(label, "translated: Compose message");
+});
+
+run_test("update_reply_button_state", ({override, override_rewire}) => {
+    const $compose_reply_wrapper = $("#legacy-closed-compose-box .compose-reply-button-wrapper");
+    const $reply_button = $(".compose_reply_button");
+
+    const postable_stream = make_stream({
+        subscribed: true,
+        name: "postable_stream",
+        stream_id: 20,
+    });
+    stream_data.add_sub_for_tests(postable_stream);
+
+    const restricted_stream = make_stream({
+        subscribed: true,
+        name: "restricted_stream",
+        stream_id: 21,
+    });
+    stream_data.add_sub_for_tests(restricted_stream);
+    override_rewire(
+        stream_data,
+        "can_post_messages_in_stream",
+        (stream) => stream.stream_id !== restricted_stream.stream_id,
+    );
+
+    // Reply button is enabled for stream where user can post.
+    message_lists.current = {};
+    $compose_reply_wrapper.attr("data-stream-id", postable_stream.stream_id.toString());
+    $compose_reply_wrapper.removeAttr("data-user-ids-string");
+    compose_closed_ui.update_reply_button_state();
+    assert.notEqual($reply_button.attr("disabled"), "disabled");
+    assert.equal($compose_reply_wrapper.attr("data-reply-button-type"), "selected_message");
+
+    // Reply button is disabled for stream where user cannot post.
+    $compose_reply_wrapper.attr("data-stream-id", restricted_stream.stream_id.toString());
+    compose_closed_ui.update_reply_button_state();
+    assert.equal($reply_button.attr("disabled"), "disabled");
+    assert.equal($compose_reply_wrapper.attr("data-reply-button-type"), "stream_disabled");
+
+    // Reply button is enabled for DM where user can send.
+    override(message_util, "user_can_send_direct_message", () => true);
+    $compose_reply_wrapper.removeAttr("data-stream-id");
+    $compose_reply_wrapper.attr("data-user-ids-string", "2");
+    compose_closed_ui.update_reply_button_state();
+    assert.notEqual($reply_button.attr("disabled"), "disabled");
+    assert.equal($compose_reply_wrapper.attr("data-reply-button-type"), "selected_message");
+
+    // Reply button is disabled for DM where user cannot send.
+    override(message_util, "user_can_send_direct_message", () => false);
+    compose_closed_ui.update_reply_button_state();
+    assert.equal($reply_button.attr("disabled"), "disabled");
+    assert.equal($compose_reply_wrapper.attr("data-reply-button-type"), "direct_disabled");
+
+    // No data attributes leads to enabled reply button.
+    message_lists.current = undefined;
+    $compose_reply_wrapper.removeAttr("data-stream-id");
+    $compose_reply_wrapper.removeAttr("data-user-ids-string");
+    compose_closed_ui.update_reply_button_state();
+    assert.notEqual($reply_button.attr("disabled"), "disabled");
+
+    // Button is not disabled for spectators.
+    page_params.is_spectator = true;
+    message_lists.current = {};
+    $compose_reply_wrapper.attr("data-stream-id", restricted_stream.stream_id.toString());
+    compose_closed_ui.update_reply_button_state();
+    assert.notEqual($reply_button.attr("disabled"), "disabled");
+    assert.equal($compose_reply_wrapper.attr("data-reply-button-type"), "selected_message");
+    page_params.is_spectator = false;
+});
+
+run_test("set_standard_text_resets_stale_state", ({override}) => {
+    const $compose_reply_wrapper = $("#legacy-closed-compose-box .compose-reply-button-wrapper");
+    const $reply_button = $(".compose_reply_button");
+
+    // Put the button in the "direct_disabled" state, with a recipient the
+    // user cannot message, so it carries a data-user-ids-string attribute.
+    override(message_util, "user_can_send_direct_message", () => false);
+    message_lists.current = {};
+    $compose_reply_wrapper.removeAttr("data-stream-id");
+    $compose_reply_wrapper.attr("data-user-ids-string", "2");
+    compose_closed_ui.update_reply_button_state();
+    assert.equal($reply_button.attr("disabled"), "disabled");
+    assert.equal($compose_reply_wrapper.attr("data-reply-button-type"), "direct_disabled");
+
+    // Resetting to the standard text must clear the recipient context along
+    // with the stale button type and disabled state, so the hover tooltip
+    // never sees "direct_disabled" without a data-user-ids-string attribute.
+    compose_closed_ui.set_standard_text_for_reply_button();
+    assert.equal($("#left_bar_compose_reply_button_big").text(), "translated: Compose message");
+    assert.equal($compose_reply_wrapper.attr("data-user-ids-string"), undefined);
+    assert.equal($compose_reply_wrapper.attr("data-reply-button-type"), undefined);
+    assert.notEqual($reply_button.attr("disabled"), "disabled");
 });
