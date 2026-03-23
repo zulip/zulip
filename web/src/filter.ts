@@ -227,6 +227,8 @@ function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) =>
         // can_apply_locally() when a search term is present.
         // istanbul ignore next
         case "search":
+        // istanbul ignore next -- falls through
+        case "mentions":
             throw new Error("build_term_predicate called for search term");
     }
 
@@ -238,6 +240,7 @@ function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) =>
 const USER_OPERATORS = new Set([
     "dm-including",
     "dm",
+    "mentions",
     "sender",
     "from",
     "pm-with",
@@ -295,6 +298,7 @@ export class Filter {
             case "topic":
                 break;
             case "sender":
+            case "mentions":
             case "dm":
             case "dm-including":
                 break;
@@ -542,6 +546,20 @@ export class Filter {
                     };
                     break;
                 }
+                case "mentions": {
+                    const operand = Number(suggestion.operand);
+
+                    if (Number.isNaN(operand)) {
+                        return undefined;
+                    }
+
+                    potential_narrow_term = {
+                        operator: canonical_operator,
+                        operand,
+                        negated: suggestion.negated,
+                    };
+                    break;
+                }
                 default:
                     potential_narrow_term = {
                         operator: canonical_operator,
@@ -591,6 +609,7 @@ export class Filter {
             case "topic":
                 return true;
             case "sender":
+            case "mentions":
                 return people.is_valid_user_id(term.operand);
             case "dm":
             case "dm-including":
@@ -669,6 +688,7 @@ export class Filter {
             "dm-including",
             "with",
             "sender",
+            "mentions",
             "near",
             "id",
             "is-alerted",
@@ -740,6 +760,9 @@ export class Filter {
 
             case "dm-including":
                 return verb + "direct messages including";
+
+            case "mentions":
+                return verb + "messages mentioning";
 
             case "in":
                 return verb + "messages in";
@@ -1679,6 +1702,10 @@ export class Filter {
             // rendered by the backend; links, attachments, and images
             // are not handled properly by the local echo Markdown
             // processor.
+            return false;
+        }
+
+        if (this.has_operator("mentions")) {
             return false;
         }
 
