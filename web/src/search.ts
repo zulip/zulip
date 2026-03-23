@@ -294,6 +294,13 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         // `is_using_input_method` before searching.
         // More details in the commit message that added this line.
         is_using_input_method = true;
+        // Reset after the current event loop iteration so that the flag
+        // does not remain stale for iOS swipe keyboards, where
+        // compositionend fires on swipe completion, not on Enter.
+        // Fixes #27494.
+        setTimeout(() => {
+            is_using_input_method = false;
+        }, 0);
     });
 
     let typeahead_was_open_on_enter = false;
