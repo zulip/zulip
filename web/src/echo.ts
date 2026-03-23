@@ -11,6 +11,7 @@ import * as browser_history from "./browser_history.ts";
 import type * as compose from "./compose.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_ui from "./compose_ui.ts";
+import * as drafts from "./drafts.ts";
 import * as echo_state from "./echo_state.ts";
 import * as hash_util from "./hash_util.ts";
 import * as local_message from "./local_message.ts";
@@ -628,7 +629,11 @@ export function rewire_message_send_error(value: typeof message_send_error): voi
     message_send_error = value;
 }
 
-function abort_message(message: Message): void {
+function remove_locally_echoed_message(message: LocalMessage): void {
+    // Draft handling is left to the caller; this only clears the feed and
+    // waiting_for_ack state.
+    echo_state.remove_message_from_waiting_for_ack(message.local_id);
+
     // Update the rendered data first since it is most user visible.
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.remove_and_rerender([message.id]);
@@ -637,6 +642,20 @@ function abort_message(message: Message): void {
     for (const msg_list_data of message_lists.non_rendered_data()) {
         msg_list_data.remove([message.id]);
     }
+}
+
+function abort_message(message: LocalMessage): void {
+    // Dismissing from the feed keeps the draft for later editing; reset
+    // is_sending_saving so it appears in Drafts rather than the Outbox.
+    if (message.draft_id !== undefined) {
+        const draft = drafts.draft_model.getDraft(message.draft_id);
+        if (draft !== false) {
+            draft.is_sending_saving = false;
+            drafts.draft_model.editDraft(message.draft_id, draft);
+        }
+    }
+
+    remove_locally_echoed_message(message);
 }
 
 export function display_slow_send_loading_spinner(message: Message): void {
@@ -651,6 +670,41 @@ export function display_slow_send_loading_spinner(message: Message): void {
     }
 }
 
+type ResendCallbacks = {
+    on_send_message_success: typeof compose.send_message_success;
+    send_message: typeof transmit.send_message;
+};
+
+let resend_callbacks: ResendCallbacks | undefined;
+
+export function resend_message_by_draft_id(draft_id: string): void {
+    assert(resend_callbacks !== undefined);
+    const message = echo_state.get_message_waiting_for_ack_by_draft_id(draft_id);
+    if (message === undefined) {
+        // Shouldn't happen if the caller filtered with has_local_echo_for_draft,
+        // but guard against a TOCTOU race.
+        blueslip.warn("resend_message_by_draft_id: no waiting message", {draft_id});
+        return;
+    }
+    const $row = message_lists.all_rendered_row_for_message_id(message.id);
+    resend_message(message, $row, resend_callbacks);
+}
+
+export function abort_message_by_draft_id(draft_id: string): void {
+    const message = echo_state.get_message_waiting_for_ack_by_draft_id(draft_id);
+    if (message === undefined) {
+        return;
+    }
+    // Unlike the feed dismiss (abort_message), cancelling from the Outbox
+    // is an explicit abandonment, so delete the draft entirely.
+    drafts.draft_model.deleteDrafts([draft_id]);
+    remove_locally_echoed_message(message);
+}
+
+export function has_local_echo_for_draft(draft_id: string): boolean {
+    return echo_state.get_message_waiting_for_ack_by_draft_id(draft_id) !== undefined;
+}
+
 export function initialize({
     on_send_message_success,
     send_message,
@@ -658,6 +712,8 @@ export function initialize({
     on_send_message_success: typeof compose.send_message_success;
     send_message: typeof transmit.send_message;
 }): void {
+    resend_callbacks = {on_send_message_success, send_message};
+
     function on_failed_action(
         selector: string,
         callback: (
