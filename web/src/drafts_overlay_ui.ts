@@ -6,13 +6,16 @@ import assert from "minimalistic-assert";
 import render_banner from "../templates/components/banner.hbs";
 import render_draft_table_body from "../templates/draft_table_body.hbs";
 import render_drafts_list from "../templates/drafts_list.hbs";
+import render_outbox_list from "../templates/outbox_list.hbs";
 
 import * as browser_history from "./browser_history.ts";
 import * as channel from "./channel.ts";
+import * as components from "./components.ts";
 import * as compose_actions from "./compose_actions.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import type {FormattedDraft, LocalStorageDraft} from "./drafts.ts";
 import * as drafts from "./drafts.ts";
+import * as echo from "./echo.ts";
 import {$t} from "./i18n.ts";
 import * as markdown from "./markdown.ts";
 import {message_render_response_schema} from "./message_store.ts";
@@ -26,6 +29,9 @@ import * as rendered_markdown from "./rendered_markdown.ts";
 import * as stream_data from "./stream_data.ts";
 import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
+
+type DraftTab = "drafts" | "outbox";
+let current_tab: DraftTab = "drafts";
 
 let draft_undo_delete_list: LocalStorageDraft[] = [];
 let clipboard_instance: ClipboardJS | undefined;
@@ -150,6 +156,29 @@ function remove_drafts($draft_rows: JQuery): void {
     );
 }
 
+function cancel_outbox_messages($outbox_rows: JQuery): void {
+    // No undo list — cancellation is an intentional discard.
+    // Each abort triggers a rerender; acceptable given typical outbox sizes.
+    $outbox_rows.each(function () {
+        const draft_id = $(this).attr("data-draft-id")!;
+        echo.abort_message_by_draft_id(draft_id);
+        $(this).remove();
+    });
+
+    const has_outbox = $(".outbox-tab-pane .overlay-message-row").length > 0;
+    $(".no-outbox-messages").toggle(!has_outbox);
+
+    if (!has_outbox) {
+        current_tab = "drafts";
+        update_tab_visibility();
+        render_tab_switcher($(".drafts-tab-pane .overlay-message-row").length, 0);
+    }
+}
+
+function resend_outbox_draft(draft_id: string): void {
+    echo.resend_message_by_draft_id(draft_id);
+}
+
 function update_rendered_drafts(
     has_drafts_from_conversation: boolean,
     has_other_drafts: boolean,
@@ -169,9 +198,10 @@ function update_rendered_drafts(
 
 const keyboard_handling_context: messages_overlay_ui.Context = {
     get_items_ids() {
+        const container = current_tab === "outbox" ? ".outbox-tab-pane" : ".drafts-tab-pane";
         const draft_ids: string[] = [];
         for (const row of document.querySelectorAll<HTMLElement>(
-            "#drafts_table .overlay-message-row",
+            `#drafts_table ${container} .overlay-message-row`,
         )) {
             const id = row.dataset["draftId"];
             assert(id !== undefined);
@@ -180,36 +210,35 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
         return draft_ids;
     },
     on_enter() {
-        // This handles when pressing Enter while looking at drafts.
-        // It restores draft that is focused.
         const draft_id_arrow = this.get_items_ids();
-
         if (draft_id_arrow.length === 0) {
-            // Do nothing if there are no drafts.
             return;
         }
-
-        const focused_draft_id = messages_overlay_ui.get_focused_element_id(this);
-        if (focused_draft_id !== undefined) {
-            restore_draft(focused_draft_id);
+        const draft_id = messages_overlay_ui.get_focused_element_id(this) ?? draft_id_arrow.at(-1);
+        assert(draft_id !== undefined);
+        if (current_tab === "outbox") {
+            resend_outbox_draft(draft_id);
         } else {
-            const first_draft = draft_id_arrow.at(-1);
-            assert(first_draft !== undefined);
-            restore_draft(first_draft);
+            restore_draft(draft_id);
         }
     },
     on_delete() {
-        // Allows user to delete drafts with Backspace
         const focused_element_id = messages_overlay_ui.get_focused_element_id(this);
         if (focused_element_id === undefined) {
             return;
         }
         const $focused_row = messages_overlay_ui.row_with_focus(this);
         messages_overlay_ui.focus_on_sibling_element(this);
-        remove_drafts($focused_row);
+        if (current_tab === "outbox") {
+            cancel_outbox_messages($focused_row);
+        } else {
+            remove_drafts($focused_row);
+        }
     },
     items_container_selector: "drafts-container",
-    items_list_selector: "drafts-list",
+    get items_list_selector(): string {
+        return current_tab === "outbox" ? "outbox-list" : "drafts-list";
+    },
     row_item_selector: "draft-message-row",
     box_item_selector: "draft-message-info-box",
     id_attribute_name: "data-draft-id",
@@ -254,17 +283,85 @@ function get_formatted_drafts_data(): {
     narrow_drafts: FormattedDraft[];
     other_drafts: FormattedDraft[];
     narrow_drafts_header: string;
+    outbox_drafts: FormattedDraft[];
 } {
     const all_drafts = drafts.draft_model.get();
-    const narrow_drafts_raw = drafts.filter_drafts_by_compose_box_and_recipient(all_drafts);
+    const outbox_raw: Record<string, LocalStorageDraft> = {};
+    const regular_raw: Record<string, LocalStorageDraft> = {};
+    for (const [id, draft] of Object.entries(all_drafts)) {
+        if (draft.is_sending_saving && echo.has_local_echo_for_draft(id)) {
+            outbox_raw[id] = draft;
+        } else {
+            // Drafts with is_sending_saving but no local echo (send failed before
+            // local echo was created) are shown as regular drafts with the flag
+            // cleared so the template renders copy/restore controls.
+            regular_raw[id] = draft.is_sending_saving
+                ? {...draft, is_sending_saving: false}
+                : draft;
+        }
+    }
+
+    const narrow_drafts_raw = drafts.filter_drafts_by_compose_box_and_recipient(regular_raw);
     const other_drafts_raw = _.pick(
-        all_drafts,
-        _.difference(Object.keys(all_drafts), Object.keys(narrow_drafts_raw)),
+        regular_raw,
+        _.difference(Object.keys(regular_raw), Object.keys(narrow_drafts_raw)),
     );
     const narrow_drafts = format_drafts(narrow_drafts_raw);
     const other_drafts = format_drafts(other_drafts_raw);
+    const outbox_drafts = format_drafts(outbox_raw);
     const narrow_drafts_header = get_header_for_narrow_drafts();
-    return {narrow_drafts, other_drafts, narrow_drafts_header};
+    return {narrow_drafts, other_drafts, narrow_drafts_header, outbox_drafts};
+}
+
+function render_tab_switcher(draft_count: number, outbox_count: number): void {
+    const $container = $("#draft-overlay-tab-switcher");
+    $container.empty();
+
+    if (outbox_count === 0) {
+        return;
+    }
+
+    const toggler = components.toggle({
+        html_class: "draft-overlay-tab-switcher",
+        values: [
+            {
+                label: $t({defaultMessage: "Drafts ({draft_count})"}, {draft_count}),
+                key: "drafts",
+            },
+            {
+                label: $t({defaultMessage: "Outbox ({outbox_count})"}, {outbox_count}),
+                key: "outbox",
+            },
+        ],
+        callback(_label, key) {
+            if (key === "drafts" || key === "outbox") {
+                current_tab = key;
+            }
+            update_tab_visibility();
+        },
+        selected: current_tab === "outbox" ? 1 : 0,
+    });
+
+    const $toggler_component = toggler.get();
+    $container.append($toggler_component);
+}
+
+function update_tab_visibility(): void {
+    if (current_tab === "drafts") {
+        $(".drafts-tab-pane").show();
+        $(".outbox-tab-pane").hide();
+        $(".delete-drafts-group").show();
+        $(".outbox-actions-group").hide();
+        $(".drafts-instruction-note").show();
+        $(".outbox-instruction-note").hide();
+    } else {
+        $(".drafts-tab-pane").hide();
+        $(".outbox-tab-pane").show();
+        $(".delete-drafts-group").hide();
+        $(".outbox-actions-group").show();
+        $(".drafts-instruction-note").hide();
+        $(".outbox-instruction-note").show();
+    }
 }
 
 function fetch_server_rendered_drafts(formatted_drafts: FormattedDraft[]): void {
@@ -302,6 +399,7 @@ function render_widgets(
     narrow_drafts: FormattedDraft[],
     other_drafts: FormattedDraft[],
     narrow_drafts_header: string,
+    outbox_drafts: FormattedDraft[],
 ): void {
     const $drafts_table = $("#drafts_table");
     if ($(".drafts-list").length === 0) {
@@ -310,6 +408,7 @@ function render_widgets(
                 narrow_drafts_header,
                 narrow_drafts,
                 other_drafts,
+                outbox_drafts,
             },
         });
         $drafts_table.append($(rendered));
@@ -320,7 +419,12 @@ function render_widgets(
             other_drafts,
         });
         $(".drafts-list").replaceWith($(rendered));
+        const rendered_outbox = render_outbox_list({outbox_drafts});
+        $(".outbox-list").replaceWith($(rendered_outbox));
     }
+    const draft_count = narrow_drafts.length + other_drafts.length;
+    render_tab_switcher(draft_count, outbox_drafts.length);
+    update_tab_visibility();
     if ($(".drafts-tab-pane .overlay-message-row").length > 0) {
         $(".no-drafts").hide();
         // Update possible dynamic elements.
@@ -330,6 +434,15 @@ function render_widgets(
         $rendered_drafts.each(function () {
             rendered_markdown.update_elements($(this));
         });
+    }
+    if ($(".outbox-tab-pane .overlay-message-row").length > 0) {
+        $(".no-outbox-messages").hide();
+        // Update possible dynamic elements.
+        $drafts_table.find(".outbox-tab-pane .message_content.rendered_markdown").each(function () {
+            rendered_markdown.update_elements($(this));
+        });
+    } else {
+        $(".no-outbox-messages").show();
     }
     update_rendered_drafts(narrow_drafts.length > 0, other_drafts.length > 0);
     update_bulk_delete_ui();
@@ -442,16 +555,22 @@ function setup_bulk_actions_handlers(): void {
 }
 
 function rerender_drafts(): void {
-    const {narrow_drafts, other_drafts, narrow_drafts_header} = get_formatted_drafts_data();
-    render_widgets(narrow_drafts, other_drafts, narrow_drafts_header);
+    const {narrow_drafts, other_drafts, narrow_drafts_header, outbox_drafts} =
+        get_formatted_drafts_data();
+    if (current_tab === "outbox" && outbox_drafts.length === 0) {
+        current_tab = "drafts";
+    }
+    render_widgets(narrow_drafts, other_drafts, narrow_drafts_header, outbox_drafts);
     setup_event_handlers();
 }
 
 export function launch(): void {
-    const {narrow_drafts, other_drafts, narrow_drafts_header} = get_formatted_drafts_data();
+    current_tab = "drafts";
+    const {narrow_drafts, other_drafts, narrow_drafts_header, outbox_drafts} =
+        get_formatted_drafts_data();
 
     $("#drafts_table").empty();
-    render_widgets(narrow_drafts, other_drafts, narrow_drafts_header);
+    render_widgets(narrow_drafts, other_drafts, narrow_drafts_header, outbox_drafts);
 
     // We need to force a style calculation on the newly created
     // element in order for the CSS transition to take effect.
@@ -468,6 +587,7 @@ export function launch(): void {
     }
     setup_event_handlers();
     setup_bulk_actions_handlers();
+    drafts.set_on_draft_update(rerender_drafts);
 }
 
 export function update_bulk_delete_ui(): void {
@@ -508,6 +628,7 @@ export function open_overlay(): void {
             browser_history.exit_overlay();
             drafts.sync_count();
             draft_undo_delete_list = [];
+            drafts.set_on_draft_update(undefined);
         },
     });
 }
