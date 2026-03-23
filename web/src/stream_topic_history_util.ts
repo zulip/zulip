@@ -75,7 +75,7 @@ export function update_topic_last_message_id(
         url: "/json/messages",
         data: {
             narrow: JSON.stringify([
-                {operator: "stream", operand: stream_id},
+                {operator: "channel", operand: stream_id},
                 {operator: "topic", operand: topic_name},
             ]),
             anchor: "newest",

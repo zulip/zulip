@@ -170,7 +170,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
                 message_view.show(
                     [
                         {
-                            operator: "stream",
+                            operator: "channel",
                             operand: sub.stream_id.toString(),
                         },
                     ],
