@@ -39,7 +39,7 @@ import {
 } from "./stream_types.ts";
 import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
-import type {StreamSubscription} from "./sub_store.ts";
+import type {StreamSpecificNotificationSettings, StreamSubscription} from "./sub_store.ts";
 import {group_setting_value_schema} from "./types.ts";
 import * as unread_ui from "./unread_ui.ts";
 import * as user_group_edit from "./user_group_edit.ts";
@@ -195,6 +195,10 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         message_retention_days(value) {
             stream_settings_ui.update_message_retention_setting(sub, value);
         },
+        push_notifications_enabled(value) {
+            sub.push_notifications_enabled = value;
+            stream_settings_ui.update_push_notifications_enabled_setting(sub, value);
+        },
         topics_policy(value) {
             stream_settings_ui.update_topics_policy_setting(sub, value);
             compose_recipient.update_topic_inputbox_on_topics_policy_change();
@@ -264,16 +268,26 @@ function show_first_stream_created_modal(stream: StreamSubscription): void {
 }
 
 // Add yourself to a stream we already know about client-side.
-// It's likely we should be passing in the full sub object from the caller/backend,
-// but for now we just pass in the subscribers and color (things likely to be different).
 export function mark_subscribed(
     sub: StreamSubscription,
     subscribers: number[],
     color: string | undefined,
+    notification_settings: StreamSpecificNotificationSettings,
 ): void {
     if (sub.subscribed) {
         return;
     }
+
+    // A never-subscribed sub carries null for all notification fields; fill in
+    // the real per-subscription values before any UI code reads them.
+    sub.push_notifications = notification_settings.push_notifications;
+    sub.desktop_notifications = notification_settings.desktop_notifications;
+    sub.audible_notifications = notification_settings.audible_notifications;
+    sub.email_notifications = notification_settings.email_notifications;
+    sub.wildcard_mentions_notify = notification_settings.wildcard_mentions_notify;
+    // push_notifications may be non-null when push_notifications_enabled is true
+    // on the stream; the other four fields are always null for new subscriptions.
+    update_property(sub.stream_id, "push_notifications", sub.push_notifications);
 
     // If the backend sent us a color, use that
     if (color !== undefined && sub.color !== color) {

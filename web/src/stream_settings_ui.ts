@@ -237,6 +237,14 @@ export function update_topics_policy_setting(
     stream_ui_updates.update_setting_element(sub, "topics_policy");
 }
 
+export function update_push_notifications_enabled_setting(
+    sub: StreamSubscription,
+    new_value: boolean,
+): void {
+    stream_data.update_push_notifications_enabled(sub, new_value);
+    stream_ui_updates.update_setting_element(sub, "push_notifications_enabled");
+}
+
 export function update_stream_permission_group_setting(
     setting_name: StreamPermissionGroupSetting,
     sub: StreamSubscription,
@@ -1033,6 +1041,7 @@ function setup_page(callback: () => void): void {
             realm_has_archived_channels,
             has_billing_access: settings_data.user_has_billing_access(),
             is_admin: current_user.is_admin,
+            disable_push_notifications: !realm.realm_push_notifications_enabled,
             empty_string_topic_display_name: util.get_final_topic_display_name(""),
         };
 
