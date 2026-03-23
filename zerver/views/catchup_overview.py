@@ -73,7 +73,7 @@ def get_catch_up_overview(
     if not message_list:
         raise JsonableError("No messages found to summarise.")
 
-    from zerver.lib.catchup_claude import CatchUpSummary, summarize_with_claude, summary_to_dict
+    from zerver.lib.catchup_claude import CatchUpSummary, summarize_with_claude
 
     try:
         summary: CatchUpSummary = summarize_with_claude(
@@ -85,4 +85,4 @@ def get_catch_up_overview(
     except Exception as e:
         raise JsonableError(f"Claude API error: {e}") from e
 
-    return json_success(request, {"structured": True, **summary_to_dict(summary)})
+    return json_success(request, {"structured": True, **summary.to_dict()})

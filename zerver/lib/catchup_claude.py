@@ -51,6 +51,13 @@ class ContextLink:
     narrow_url: str
     excerpt: str = ""
 
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.message_id,
+            "excerpt": self.excerpt,
+            "narrow_url": self.narrow_url,
+        }
+
 
 @dataclass
 class ActionItem:
@@ -58,6 +65,14 @@ class ActionItem:
     assignee: str | None
     message_id: int | None
     narrow_url: str | None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "text": self.text,
+            "assignee": self.assignee,
+            "message_id": self.message_id,
+            "narrow_url": self.narrow_url,
+        }
 
 
 @dataclass
@@ -68,6 +83,15 @@ class TopicSummary:
     narrow_url: str
     key_messages: list[ContextLink] = field(default_factory=list)
 
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "stream": self.stream,
+            "topic": self.topic,
+            "summary": self.summary,
+            "narrow_url": self.narrow_url,
+            "key_messages": [km.to_dict() for km in self.key_messages],
+        }
+
 
 @dataclass
 class CatchUpSummary:
@@ -77,6 +101,16 @@ class CatchUpSummary:
     topics: list[TopicSummary]
     model_used: str = ""
     message_count: int = 0
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "overview": self.overview,
+            "keywords": self.keywords,
+            "action_items": [a.to_dict() for a in self.action_items],
+            "topics": [t.to_dict() for t in self.topics],
+            "model_used": self.model_used,
+            "message_count": self.message_count,
+        }
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -267,38 +301,3 @@ def summarize_with_claude(
     )
 
 
-# ── Serialisation helpers (for the API response) ──────────────────────────────
-
-def summary_to_dict(summary: CatchUpSummary) -> dict[str, Any]:
-    return {
-        "overview": summary.overview,
-        "keywords": summary.keywords,
-        "action_items": [
-            {
-                "text": a.text,
-                "assignee": a.assignee,
-                "message_id": a.message_id,
-                "narrow_url": a.narrow_url,
-            }
-            for a in summary.action_items
-        ],
-        "topics": [
-            {
-                "stream": t.stream,
-                "topic": t.topic,
-                "summary": t.summary,
-                "narrow_url": t.narrow_url,
-                "key_messages": [
-                    {
-                        "id": km.message_id,
-                        "excerpt": km.excerpt,
-                        "narrow_url": km.narrow_url,
-                    }
-                    for km in t.key_messages
-                ],
-            }
-            for t in summary.topics
-        ],
-        "model_used": summary.model_used,
-        "message_count": summary.message_count,
-    }
