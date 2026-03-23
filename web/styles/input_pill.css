@@ -215,13 +215,29 @@
         flex: 1 1 auto;
 
         outline: none;
+    }
 
-        &.shake {
-            animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-            transform: translate3d(0, 0, 0);
-            backface-visibility: hidden;
-            perspective: 1000px;
-        }
+    .pill.shake,
+    .input.shake {
+        animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        perspective: 1000px;
+    }
+
+    .editable-pill {
+        flex: 0 1 auto;
+        min-width: 2em;
+        padding: 0 var(--input-pill-side-padding);
+        overflow-wrap: normal;
+        white-space: nowrap;
+        height: var(--height-input-pill);
+        box-sizing: border-box;
+        border-radius: 4px;
+        background-color: var(--color-background-input-pill);
+        /* Match .pill:focus */
+        box-shadow: 0 0 0 1px var(--color-focus-outline-input-pill) inset;
+        cursor: text;
     }
 
     &.not-editable-by-user {
