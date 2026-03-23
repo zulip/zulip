@@ -117,7 +117,7 @@ class UserSyncService:
                 if not realm:
                     raise ValueError(f"Realm not found for workspace {request.workspace_id}")
 
-                if extension.zulip_user:
+                if extension.zulip_user and extension.zulip_user.realm_id == realm.id:
                     user = self._update_user(extension.zulip_user, request, realm)
                 else:
                     # Check if user already exists in this realm (created via workspace sync)
