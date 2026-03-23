@@ -173,6 +173,8 @@ function cancel_outbox_messages($outbox_rows: JQuery): void {
         update_tab_visibility();
         render_tab_switcher($(".drafts-tab-pane .overlay-message-row").length, 0);
     }
+
+    update_bulk_outbox_ui();
 }
 
 function resend_outbox_draft(draft_id: string): void {
@@ -529,6 +531,24 @@ function setup_event_handlers(): void {
         });
     });
 
+    $("#drafts_table .outbox-resend-message").on("click", function (e) {
+        e.stopPropagation();
+        const $row = $(this).closest(".overlay-message-row");
+        const draft_id = $row.attr("data-draft-id")!;
+        resend_outbox_draft(draft_id);
+    });
+
+    $("#drafts_table .outbox-cancel-message").on("click", function (e) {
+        e.stopPropagation();
+        const $row = $(this).closest(".overlay-message-row");
+        cancel_outbox_messages($row);
+    });
+
+    $("#drafts_table .outbox-selection-checkbox").on("click", (e) => {
+        const is_checked = is_checkbox_icon_checked($(e.target));
+        toggle_checkbox_icon_state($(e.target), !is_checked);
+        update_bulk_outbox_ui();
+    });
 }
 
 function setup_bulk_actions_handlers(): void {
@@ -552,6 +572,73 @@ function setup_bulk_actions_handlers(): void {
         update_bulk_delete_ui();
     });
 
+    $(".select-outbox-button").on("click", (e) => {
+        e.preventDefault();
+        const $unchecked = $(".outbox-selection-checkbox").filter(function () {
+            return !is_checkbox_icon_checked($(this));
+        });
+        const check_all = $unchecked.length > 0;
+        $(".outbox-selection-checkbox").each(function () {
+            toggle_checkbox_icon_state($(this), check_all);
+        });
+        update_bulk_outbox_ui();
+    });
+
+    $(".resend-selected-outbox-button").on("click", () => {
+        // Collect ids first so DOM removals don't affect iteration.
+        const draft_ids: string[] = [];
+        $(".outbox-list")
+            .find(".outbox-selection-checkbox.fa-check-square")
+            .closest(".overlay-message-row")
+            .each(function () {
+                draft_ids.push($(this).attr("data-draft-id")!);
+            });
+        for (const draft_id of draft_ids) {
+            resend_outbox_draft(draft_id);
+        }
+    });
+
+    $(".cancel-selected-outbox-button").on("click", () => {
+        const $selected_rows = $(".outbox-list")
+            .find(".outbox-selection-checkbox.fa-check-square")
+            .closest(".overlay-message-row");
+        cancel_outbox_messages($selected_rows);
+        update_bulk_outbox_ui();
+    });
+}
+
+export function update_bulk_outbox_ui(): void {
+    const $unchecked = $(".outbox-selection-checkbox").filter(function () {
+        return !is_checkbox_icon_checked($(this));
+    });
+    const $checked = $(".outbox-selection-checkbox").filter(function () {
+        return is_checkbox_icon_checked($(this));
+    });
+    const $select_button = $(".select-outbox-button");
+    const $select_indicator = $(".select-outbox-button .select-state-indicator");
+    const $resend_button = $(".resend-selected-outbox-button");
+    const $cancel_button = $(".cancel-selected-outbox-button");
+
+    if ($checked.length > 0) {
+        $resend_button.prop("disabled", false);
+        $cancel_button.prop("disabled", false);
+        if ($unchecked.length === 0) {
+            toggle_checkbox_icon_state($select_indicator, true);
+        } else {
+            toggle_checkbox_icon_state($select_indicator, false);
+        }
+    } else {
+        if ($unchecked.length > 0) {
+            $select_button.show();
+            $resend_button.show().prop("disabled", true);
+            $cancel_button.show().prop("disabled", true);
+            toggle_checkbox_icon_state($select_indicator, false);
+        } else {
+            $select_button.hide();
+            $resend_button.hide();
+            $cancel_button.hide();
+        }
+    }
 }
 
 function rerender_drafts(): void {

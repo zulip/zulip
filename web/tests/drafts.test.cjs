@@ -655,6 +655,134 @@ test("format_drafts", ({override, mock_template}) => {
     drafts_overlay_ui.launch();
 });
 
+test("outbox resend uses echo pipeline", ({override, mock_template}) => {
+    const outbox_draft = {
+        stream_id,
+        topic: "topic",
+        type: "stream",
+        content: "Sending message",
+        updatedAt: mock_current_timestamp,
+        is_sending_saving: true,
+        drafts_version: 1,
+    };
+    const ls = localstorage();
+    ls.set("drafts", {outbox_id: outbox_draft});
+
+    clock.setSystemTime(mock_current_timestamp);
+
+    override(user_pill, "get_user_ids", () => []);
+    compose_state.set_message_type("private");
+    override(messages_overlay_ui, "set_initial_element", noop);
+    override(settings_data, "using_dark_theme", () => false);
+    override(echo, "has_local_echo_for_draft", (id) => id === "outbox_id");
+
+    mock_template("draft_table_body.hbs", false, () => "<draft table stub>");
+
+    $.set_results(".drafts-list", []);
+    $.set_results(".drafts-tab-pane .overlay-message-row", []);
+    $.set_results(".outbox-tab-pane .overlay-message-row", []);
+    $.set_results(".draft-selection-checkbox", []);
+    $.set_results(".outbox-selection-checkbox", []);
+    drafts_overlay_ui.launch();
+
+    const $row = $.create("outbox row");
+    $row.attr("data-draft-id", "outbox_id");
+
+    const $resend_btn = $("#drafts_table .outbox-resend-message");
+    $resend_btn.set_closest_results(".overlay-message-row", $row);
+
+    let resend_called_with;
+    override(echo, "resend_message_by_draft_id", (draft_id) => {
+        resend_called_with = draft_id;
+    });
+
+    $resend_btn.trigger("click");
+    assert.equal(resend_called_with, "outbox_id");
+});
+
+test("outbox cancel propagates to echo abort pipeline", ({override, mock_template}) => {
+    const outbox_draft = {
+        stream_id,
+        topic: "topic",
+        type: "stream",
+        content: "Sending message",
+        updatedAt: mock_current_timestamp,
+        is_sending_saving: true,
+        drafts_version: 1,
+    };
+    const ls = localstorage();
+    ls.set("drafts", {outbox_id: outbox_draft});
+
+    clock.setSystemTime(mock_current_timestamp);
+
+    override(user_pill, "get_user_ids", () => []);
+    compose_state.set_message_type("private");
+    override(messages_overlay_ui, "set_initial_element", noop);
+    override(settings_data, "using_dark_theme", () => false);
+    override(echo, "has_local_echo_for_draft", (id) => id === "outbox_id");
+
+    mock_template("draft_table_body.hbs", false, () => "<draft table stub>");
+
+    $.set_results(".drafts-list", []);
+    $.set_results(".drafts-tab-pane .overlay-message-row", []);
+    $.set_results(".draft-selection-checkbox", []);
+    $.set_results(".outbox-selection-checkbox", []);
+    $.set_results(".outbox-tab-pane .overlay-message-row", []);
+    drafts_overlay_ui.launch();
+
+    const $row = $.create("outbox full cancel row");
+    $row.attr("data-draft-id", "outbox_id");
+    $row[0].remove = () => {};
+
+    const $cancel_btn = $("#drafts_table .outbox-cancel-message");
+    $cancel_btn.set_closest_results(".overlay-message-row", $row);
+
+    let abort_called_with;
+    override(echo, "abort_message_by_draft_id", (draft_id) => {
+        abort_called_with = draft_id;
+    });
+
+    $cancel_btn.trigger("click");
+
+    assert.equal(abort_called_with, "outbox_id");
+});
+
+test("ghost outbox draft treated as regular draft", ({override, mock_template}) => {
+    const ghost_draft = {
+        stream_id,
+        topic: "topic",
+        type: "stream",
+        content: "Ghost message",
+        updatedAt: mock_current_timestamp,
+        is_sending_saving: true,
+        drafts_version: 1,
+    };
+    const ls = localstorage();
+    ls.set("drafts", {ghost_id: ghost_draft});
+
+    clock.setSystemTime(mock_current_timestamp);
+
+    override(user_pill, "get_user_ids", () => []);
+    compose_state.set_message_type("private");
+    override(messages_overlay_ui, "set_initial_element", noop);
+    override(settings_data, "using_dark_theme", () => false);
+
+    mock_template("draft_table_body.hbs", false, (data) => {
+        assert.deepEqual(data.context.outbox_drafts, []);
+        assert.equal(data.context.other_drafts.length, 1);
+        assert.equal(data.context.other_drafts[0].draft_id, "ghost_id");
+        assert.equal(data.context.other_drafts[0].is_sending_saving, false);
+        return "<draft table stub>";
+    });
+
+    $.set_results(".drafts-list", []);
+    $.set_results(".drafts-tab-pane .overlay-message-row", []);
+    $.set_results(".outbox-tab-pane .overlay-message-row", []);
+    $.set_results(".draft-selection-checkbox", []);
+    $.set_results(".outbox-selection-checkbox", []);
+    drafts_overlay_ui.launch();
+});
+
 test("outbox tab", ({override, mock_template}) => {
     const outbox_draft = {
         stream_id,
