@@ -210,7 +210,7 @@ function item_click_callback(
 }
 
 export function setup_saved_snippets_dropdown_widget(widget_selector: string): void {
-    new dropdown_widget.DropdownWidget({
+    saved_snippets_widget = new dropdown_widget.DropdownWidget({
         widget_name: "saved_snippets",
         widget_selector,
         get_options: saved_snippets.get_options_for_dropdown_widget,
@@ -223,8 +223,7 @@ export function setup_saved_snippets_dropdown_widget(widget_selector: string): v
         sticky_bottom_option: $t({
             defaultMessage: "Create a new saved snippet",
         }),
-        on_show_callback(dropdown: tippy.Instance, widget: dropdown_widget.DropdownWidget) {
-            saved_snippets_widget = widget;
+        on_show_callback(dropdown: tippy.Instance) {
             saved_snippets_dropdown = dropdown;
         },
         on_exit_with_escape_callback: () => get_dropdown_target_textarea()?.trigger("focus"),
@@ -236,7 +235,12 @@ export function setup_saved_snippets_dropdown_widget(widget_selector: string): v
             // recipient dropdown widget.
             offset: [-100, 5],
         },
-    }).setup();
+    });
+    saved_snippets_widget.setup();
+}
+
+export function open_saved_snippets_dropdown_via_hotkey(): void {
+    saved_snippets_widget?.open({trigger: "keyboard"});
 }
 
 export function setup_saved_snippets_dropdown_widget_if_needed(): void {
