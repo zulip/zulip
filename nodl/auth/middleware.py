@@ -247,7 +247,8 @@ class SupabaseJWTMiddleware:
         if path in self.EXEMPT_EXACT:
             return True
         return any(
-            path == prefix or path.startswith(prefix + "/") for prefix in self.EXEMPT_PREFIXES
+            path == prefix or path.startswith(prefix if prefix.endswith("/") else prefix + "/")
+            for prefix in self.EXEMPT_PREFIXES
         )
 
     def _is_optional_auth(self, path: str) -> bool:
