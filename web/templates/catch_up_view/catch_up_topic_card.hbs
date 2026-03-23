@@ -34,33 +34,13 @@
         {{sender_list}}
     </div>
     <div class="catch-up-card-body">
-        {{#if has_key_messages}}
-        <div class="catch-up-card-key-messages">
-            {{#each key_messages}}
-            <div class="catch-up-key-message">
-                <div class="catch-up-key-message-header">
-                    <strong class="catch-up-key-message-sender">{{sender_full_name}}</strong>
-                    {{#each tags}}
-                    <span class="catch-up-tag catch-up-tag-{{this}}">{{this}}</span>
-                    {{/each}}
-                </div>
-                <div class="catch-up-key-message-content">{{content}}</div>
-            </div>
-            {{/each}}
-        </div>
-        {{else if has_sample_messages}}
+        {{#if has_sample_messages}}
         <div class="catch-up-card-preview">
             {{#each sample_messages}}
-            <div class="catch-up-preview-message">
-                <strong>{{sender_full_name}}:</strong> {{content}}
+            <div class="catch-up-preview-message-row">
+                <strong>{{sender_full_name}}:</strong>
+                <div class="catch-up-preview-message rendered_markdown">{{rendered_markdown rendered_content}}</div>
             </div>
-            {{/each}}
-        </div>
-        {{/if}}
-        {{#if has_keywords}}
-        <div class="catch-up-card-keywords">
-            {{#each keywords}}
-            <span class="catch-up-keyword">{{this}}</span>
             {{/each}}
         </div>
         {{/if}}
@@ -73,13 +53,6 @@
                 {{t "Open topic" }}
                 {{/if}}
             </a>
-            {{#unless is_dm}}
-            <button class="catch-up-summarize-btn" data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}" tabindex="-1">
-                <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
-                {{t "AI Summary" }}
-            </button>
-            {{/unless}}
         </div>
-        <div class="catch-up-summary-container"></div>
     </div>
 </div>

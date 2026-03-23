@@ -18,6 +18,7 @@ from zerver.lib.catch_up_summarizer import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
+    CatchUpSession,
     Message,
     Reaction,
     Recipient,
@@ -382,7 +383,8 @@ class CatchUpEndpointTest(ZulipTestCase):
 
     def test_catch_up_endpoint_unauthenticated(self) -> None:
         result = self.client_get("/json/catch-up")
-        self.assert_json_error(result, "Not logged in: API authentication or target user required", 401)
+        #self.assert_json_error(result, "Not logged in: API authentication or target user required", 401)
+        self.assert_json_error(result, "Not logged in: API authentication or user session required", 401)
 
     def test_catch_up_endpoint_no_messages(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -397,6 +399,34 @@ class CatchUpEndpointTest(ZulipTestCase):
         self.assertEqual(data["total_messages"], 0)
         self.assertEqual(data["total_topics"], 0)
         self.assertEqual(data["topics"], [])
+
+    def test_catch_up_usage_endpoint_success(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        result = self.client_post("/json/catch-up/usage", {"duration_ms": "1500"})
+        self.assert_json_success(result)
+
+        session = CatchUpSession.objects.get(user_profile=hamlet)
+        self.assertEqual(session.realm_id, hamlet.realm_id)
+        self.assertEqual(session.duration_ms, 1500)
+        self.assertLess(session.started_at, session.ended_at)
+
+    def test_catch_up_usage_endpoint_invalid_duration(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        result = self.client_post("/json/catch-up/usage", {"duration_ms": "0"})
+        self.assert_json_error(result, "'duration_ms' must be a positive integer.")
+
+        result = self.client_post("/json/catch-up/usage", {"duration_ms": str(24 * 60 * 60 * 1000 + 1)})
+        self.assert_json_error(result, "'duration_ms' must be at most 86400000 (24 hours).")
+
+    def test_catch_up_usage_endpoint_unauthenticated(self) -> None:
+        result = self.client_post("/json/catch-up/usage", {"duration_ms": "1500"})
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
 
     def test_catch_up_endpoint_topics_are_sorted_by_score(self) -> None:
         hamlet = self.example_user("hamlet")

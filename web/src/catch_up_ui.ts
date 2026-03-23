@@ -12,13 +12,38 @@ import * as hash_util from "./hash_util.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
 import * as stream_data from "./stream_data.ts";
 import * as views_util from "./views_util.ts";
 
 let is_catch_up_visible = false;
+let catch_up_visible_start_time_ms: number | undefined;
+
+function start_catch_up_usage_timer(): void {
+    if (catch_up_visible_start_time_ms !== undefined) {
+        return;
+    }
+    catch_up_visible_start_time_ms = Date.now();
+}
+
+function stop_and_report_catch_up_usage_timer(): void {
+    if (catch_up_visible_start_time_ms === undefined) {
+        return;
+    }
+
+    const duration_ms = Date.now() - catch_up_visible_start_time_ms;
+    catch_up_visible_start_time_ms = undefined;
+
+    // Filter out accidental flashes and negative/invalid durations.
+    if (!Number.isFinite(duration_ms) || duration_ms < 1000) {
+        return;
+    }
+
+    catch_up_data.report_catch_up_usage(duration_ms);
+}
 
 // Filter state
-type FilterMode = "all" | "mentions" | "important";
+type FilterMode = "all" | "mentions" | "important" | "ai-summary";
 let current_filter: FilterMode = "all";
 let current_stream_filter: number | "all" = "all";
 
@@ -48,6 +73,24 @@ export function is_in_focus(): boolean {
 }
 
 function set_visible(value: boolean): void {
+    /*
+    if (value && !is_catch_up_visible) {
+        start_catch_up_usage_timer();
+    } else if (!value && is_catch_up_visible) {
+        stop_and_report_catch_up_usage_timer();
+    }
+    is_catch_up_visible = value;*/
+
+    if (value === is_catch_up_visible) {
+        return;
+    }
+
+    if (value) {
+        start_catch_up_usage_timer();
+    } else {
+        stop_and_report_catch_up_usage_timer();
+    }
+
     is_catch_up_visible = value;
 }
 
@@ -96,6 +139,23 @@ function prepare_topic_for_render(topic: CatchUpTopic): Record<string, unknown> 
     };
 }
 
+function get_ai_summary_entries(
+    topics: CatchUpTopic[],
+): Array<{sender_full_name: string; rendered_content: string}> {
+    const entries: Array<{sender_full_name: string; rendered_content: string}> = [];
+
+    for (const topic of topics) {
+        for (const message of topic.all_messages) {
+            entries.push({
+                sender_full_name: message.sender_full_name,
+                rendered_content: message.rendered_content ?? message.content,
+            });
+        }
+    }
+
+    return entries;
+}
+
 function get_unique_streams(
     topics: CatchUpTopic[],
 ): Array<{id: number; name: string}> {
@@ -126,6 +186,7 @@ function render_empty(): void {
 function render_data(data: catch_up_data.CatchUpData): void {
     const topics = data.topics.map((topic) => prepare_topic_for_render(topic));
     const streams = get_unique_streams(data.topics);
+    const ai_summary_entries = get_ai_summary_entries(data.topics);
 
     const html = render_catch_up_view({
         loading: false,
@@ -136,50 +197,32 @@ function render_data(data: catch_up_data.CatchUpData): void {
         topics,
         streams,
         has_streams: streams.length > 0,
+        has_ai_summary_entries: ai_summary_entries.length > 0,
+        ai_summary_entries,
+        is_all_filter: current_filter === "all",
+        is_mentions_filter: current_filter === "mentions",
+        is_important_filter: current_filter === "important",
+        is_ai_summary_filter: current_filter === "ai-summary",
     });
 
     $("#catch-up-pane").html(html);
 
+    $("#catch-up-pane")
+        .find(".rendered_markdown")
+        .each(function () {
+            rendered_markdown.update_elements($(this));
+        });
+
     // Reset filter and focus state for fresh render.
-    current_filter = "all";
-    current_stream_filter = "all";
     card_focus = -1;
 
     setup_event_handlers();
+    if (current_filter !== "ai-summary") {
+        apply_filters();
+    }
 }
 
 function setup_event_handlers(): void {
-    // "AI Summary" button click handler.
-    $(".catch-up-summarize-btn").on("click", function (this: HTMLElement, e) {
-        e.stopPropagation();
-        const $btn = $(this);
-        const stream_id = Number($btn.attr("data-stream-id"));
-        const topic_name = $btn.attr("data-topic-name");
-
-        if (!topic_name || Number.isNaN(stream_id)) {
-            return;
-        }
-
-        const $card = $btn.closest(".catch-up-topic-card");
-        const $summary_container = $card.find(".catch-up-summary-container");
-
-        // Show loading state.
-        $summary_container.html(
-            '<div class="catch-up-summary-loading"><div class="loading_indicator_spinner"></div> Generating summary…</div>',
-        );
-
-        void catch_up_data
-            .fetch_topic_summary(stream_id, topic_name)
-            .then((summary) => {
-                $summary_container.html(summary);
-            })
-            .catch(() => {
-                $summary_container.html(
-                    '<div class="catch-up-summary-error">Failed to generate summary. AI features may not be enabled on this server.</div>',
-                );
-            });
-    });
-
     // Filter button click handlers.
     $(".catch-up-filter-btn").on("click", function (this: HTMLElement) {
         const filter = $(this).attr("data-filter") as FilterMode | undefined;
@@ -187,9 +230,10 @@ function setup_event_handlers(): void {
             return;
         }
         current_filter = filter;
-        $(".catch-up-filter-btn").removeClass("active");
-        $(this).addClass("active");
-        apply_filters();
+        const data = catch_up_data.get_current_data();
+        if (data !== undefined) {
+            render_data(data);
+        }
     });
 
     // Stream filter dropdown.

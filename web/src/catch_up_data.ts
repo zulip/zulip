@@ -4,6 +4,7 @@ export type SampleMessage = {
     id: number;
     sender_full_name: string;
     content: string;
+    rendered_content?: string;
     date_sent: string;
 };
 
@@ -31,6 +32,7 @@ export type CatchUpTopic = {
     latest_message_id: number;
     first_message_id: number;
     sample_messages: SampleMessage[];
+    all_messages: SampleMessage[];
     key_messages?: KeyMessage[];
     keywords?: string[];
     is_dm?: boolean;
@@ -97,5 +99,22 @@ export async function fetch_topic_summary(
                 reject(new Error(`Failed to fetch summary: ${xhr.status}`));
             },
         });
+    });
+}
+
+export function report_catch_up_usage(duration_ms: number): void {
+    // Best-effort analytics; ignore failures.
+    if (!Number.isFinite(duration_ms) || duration_ms <= 0) {
+        return;
+    }
+    /*if (duration_ms <= 0) {
+        return;
+    }*/
+
+    void channel.post({
+        url: "/json/catch-up/usage",
+        data: {
+            duration_ms: JSON.stringify(Math.round(duration_ms)),
+        },
     });
 }

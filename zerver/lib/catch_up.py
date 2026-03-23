@@ -87,6 +87,10 @@ def get_last_active_time(user_profile: UserProfile) -> datetime:
     # Default: assume the user was last active DEFAULT_INACTIVITY_THRESHOLD_HOURS ago.
     return timezone_now() - timedelta(hours=DEFAULT_INACTIVITY_THRESHOLD_HOURS)
 
+    # Suggestion: new user protection; Use date_joined if they are newer than the given threshold.
+    # We don't give summaries of old messages for new summaries. If approved, we need to add 2 tests to ensure that new users only see new messages: 1 has eligible messages before user joined. 
+    #return max(user_profile.date_joined, timezone_now() - timedelta(hours=DEFAULT_INACTIVITY_THRESHOLD_HOURS))
+
 
 def clamp_since_time(since: datetime) -> datetime:
     """Clamp the 'since' time to be no more than MAX_ABSENCE_DAYS in the past."""
@@ -111,6 +115,7 @@ class CatchUpTopic:
     first_message_id: int = 0
     latest_date_sent: datetime | None = None
     sample_messages: list[dict[str, object]] = field(default_factory=list)
+    all_messages: list[dict[str, object]] = field(default_factory=list)
     key_messages: list[dict[str, object]] = field(default_factory=list)
     keywords: list[str] = field(default_factory=list)
     is_dm: bool = False
@@ -138,6 +143,11 @@ class CatchUpTopic:
 
         # Sender diversity: more people talking = more important.
         s += self.sender_count * WEIGHT_SENDER_DIVERSITY
+
+
+        # the current sender diversity logic assigns equal weighting for any number of senders
+        # we could assign a stronger weight for more than 2 people talking
+        # s += (self.sender_count * WEIGHT_SENDER_DIVERSITY) * 1.5 if sender_count > 3 else 1 
 
         # Message volume.
         s += self.message_count * WEIGHT_MESSAGE_COUNT
@@ -170,6 +180,7 @@ class CatchUpTopic:
             "latest_message_id": self.latest_message_id,
             "first_message_id": self.first_message_id,
             "sample_messages": self.sample_messages,
+            "all_messages": self.all_messages,
         }
         if self.key_messages:
             result["key_messages"] = self.key_messages
@@ -266,8 +277,10 @@ def get_catch_up_messages(
         Message.objects.filter(
             realm_id=user_profile.realm_id,
             recipient_id__in=recipient_ids,
-            date_sent__gt=since,
-            is_channel_message=True,
+            #date_sent__gt=since,
+            date_sent__gt=clamp_since_time(since),
+            # added: use our clamping function, can make a test for this
+            is_channel_message=True
         )
         .order_by("id")
         .select_related("sender")[:MAX_CATCH_UP_MESSAGES]
@@ -310,13 +323,24 @@ def get_catch_up_messages(
         topic.latest_message_id = message.id
         topic.latest_date_sent = message.date_sent
 
+        topic.all_messages.append(
+            {
+                "id": message.id,
+                "sender_full_name": message.sender.full_name,
+                "content": message.content,
+                "rendered_content": message.rendered_content or "",
+                "date_sent": str(message.date_sent),
+            }
+        )
+
         # Collect sample messages (first N non-bot messages).
         if len(topic.sample_messages) < MAX_SAMPLE_MESSAGES_PER_TOPIC:
             topic.sample_messages.append(
                 {
                     "id": message.id,
                     "sender_full_name": message.sender.full_name,
-                    "content": message.content[:200],  # Truncate for preview
+                    "content": message.content,
+                    "rendered_content": message.rendered_content or "",
                     "date_sent": str(message.date_sent),
                 }
             )
@@ -522,12 +546,23 @@ def get_catch_up_dm_messages(
         topic.latest_message_id = message.id
         topic.latest_date_sent = message.date_sent
 
+        topic.all_messages.append(
+            {
+                "id": message.id,
+                "sender_full_name": message.sender.full_name,
+                "content": message.content,
+                "rendered_content": message.rendered_content or "",
+                "date_sent": str(message.date_sent),
+            }
+        )
+
         if len(topic.sample_messages) < MAX_SAMPLE_MESSAGES_PER_TOPIC:
             topic.sample_messages.append(
                 {
                     "id": message.id,
                     "sender_full_name": message.sender.full_name,
-                    "content": message.content[:200],
+                    "content": message.content,
+                    "rendered_content": message.rendered_content or "",
                     "date_sent": str(message.date_sent),
                 }
             )

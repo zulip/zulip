@@ -4,6 +4,7 @@ from zerver.models.bots import BotConfigData as BotConfigData
 from zerver.models.bots import BotStorageData as BotStorageData
 from zerver.models.bots import Service as Service
 from zerver.models.channel_folders import ChannelFolder as ChannelFolder
+from zerver.models.catch_up import CatchUpSession as CatchUpSession
 from zerver.models.clients import Client as Client
 from zerver.models.custom_profile_fields import CustomProfileField as CustomProfileField
 from zerver.models.custom_profile_fields import CustomProfileFieldValue as CustomProfileFieldValue

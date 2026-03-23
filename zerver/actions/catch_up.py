@@ -25,7 +25,7 @@ from zerver.lib.catch_up import (
 )
 from zerver.lib.catch_up_summarizer import extract_key_messages, extract_keywords
 from zerver.lib.narrow import NarrowParameter
-from zerver.models import Message, Recipient, UserProfile
+from zerver.models import CatchUpSession, Client, Message, Recipient, UserProfile
 
 logger = logging.getLogger(__name__)
 
@@ -173,3 +173,24 @@ def do_get_catch_up_summary(
         NarrowParameter(operator="topic", operand=topic_name, negated=False),
     ]
     return do_summarize_narrow(user_profile, narrow)
+
+
+def do_record_catch_up_usage(
+    *,
+    user_profile: UserProfile,
+    client: Client,
+    duration_ms: int,
+    ended_at: datetime | None = None,
+) -> None:
+    if ended_at is None:
+        ended_at = timezone_now()
+
+    started_at = ended_at - timedelta(milliseconds=duration_ms)
+    CatchUpSession.objects.create(
+        user_profile=user_profile,
+        realm=user_profile.realm,
+        client=client,
+        started_at=started_at,
+        ended_at=ended_at,
+        duration_ms=duration_ms,
+    )

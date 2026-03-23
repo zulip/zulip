@@ -37,27 +37,49 @@
     <div id="catch-up-overview-panel" class="catch-up-overview-panel" style="display:none;"></div>
     <div class="catch-up-filters" role="group" aria-label="{{t 'Filters' }}">
         <div class="catch-up-filter-buttons">
-            <button class="catch-up-filter-btn active" data-filter="all" tabindex="0">
+            <button class="catch-up-filter-btn {{#if is_all_filter}}active{{/if}}" data-filter="all" tabindex="0">
                 {{t "All" }}
             </button>
-            <button class="catch-up-filter-btn" data-filter="mentions" tabindex="0">
+            <button class="catch-up-filter-btn {{#if is_mentions_filter}}active{{/if}}" data-filter="mentions" tabindex="0">
                 <i class="zulip-icon zulip-icon-at-sign" aria-hidden="true"></i>
                 {{t "Mentions" }}
             </button>
-            <button class="catch-up-filter-btn" data-filter="important" tabindex="0">
+            <button class="catch-up-filter-btn {{#if is_important_filter}}active{{/if}}" data-filter="important" tabindex="0">
                 <i class="zulip-icon zulip-icon-star" aria-hidden="true"></i>
                 {{t "Important" }}
             </button>
+            <button class="catch-up-filter-btn {{#if is_ai_summary_filter}}active{{/if}}" data-filter="ai-summary" tabindex="0">
+                <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
+                {{t "AI Summary" }}
+            </button>
         </div>
         {{#if has_streams}}
+        {{#unless is_ai_summary_filter}}
         <select id="catch-up-stream-filter" class="catch-up-stream-filter" aria-label="{{t 'Filter by channel' }}">
             <option value="all">{{t "All channels" }}</option>
             {{#each streams}}
             <option value="{{this.id}}">{{this.name}}</option>
             {{/each}}
         </select>
+        {{/unless}}
         {{/if}}
     </div>
+    {{#if is_ai_summary_filter}}
+    <div class="catch-up-ai-summary-block">
+        {{#if has_ai_summary_entries}}
+        <ul class="catch-up-ai-summary-list">
+            {{#each ai_summary_entries}}
+            <li class="catch-up-ai-summary-item">
+                <strong class="catch-up-ai-summary-sender">{{sender_full_name}}:</strong>
+                <div class="catch-up-ai-summary-message rendered_markdown">{{rendered_markdown rendered_content}}</div>
+            </li>
+            {{/each}}
+        </ul>
+        {{else}}
+        <p class="catch-up-ai-summary-empty">{{t "No messages available for the summary view." }}</p>
+        {{/if}}
+    </div>
+    {{else}}
     <div id="catch-up-no-filter-results" class="catch-up-no-filter-results" style="display: none;">
         {{t "No topics match your current filters." }}
     </div>
@@ -66,5 +88,6 @@
             {{> catch_up_topic_card this}}
         {{/each}}
     </div>
+    {{/if}}
     {{/if}}
 </div>

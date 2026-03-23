@@ -2,12 +2,18 @@ from datetime import datetime, timezone
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from pydantic import Json
 
 from analytics.lib.counts import COUNT_STATS
-from zerver.actions.catch_up import do_get_catch_up_data, do_get_catch_up_summary
+from zerver.actions.catch_up import (
+    do_get_catch_up_data,
+    do_get_catch_up_summary,
+    do_record_catch_up_usage,
+)
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.models import UserProfile
@@ -90,3 +96,29 @@ def get_catch_up_summary(
         raise JsonableError(_("No messages in this topic to summarize."))
 
     return json_success(request, data={"summary": summary})
+
+
+@typed_endpoint
+def report_catch_up_usage(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    duration_ms: Json[int],
+) -> HttpResponse:
+    if duration_ms <= 0:
+        raise JsonableError(_("'duration_ms' must be a positive integer."))
+
+    # Guardrail to limit abuse and obvious clock bugs.
+    if duration_ms > 24 * 60 * 60 * 1000:
+        raise JsonableError(_("'duration_ms' must be at most 86400000 (24 hours)."))
+
+    request_notes = RequestNotes.get_notes(request)
+    assert request_notes.client is not None
+
+    do_record_catch_up_usage(
+        user_profile=user_profile,
+        client=request_notes.client,
+        duration_ms=duration_ms,
+        ended_at=timezone_now(),
+    )
+    return json_success(request)
