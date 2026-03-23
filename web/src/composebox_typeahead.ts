@@ -1805,11 +1805,8 @@ export function initialize({
         },
     });
 
-    const private_message_typeahead_input: TypeaheadInputElement = {
-        $element: $("#private_message_recipient"),
-        type: "contenteditable",
-    };
-    private_message_recipient_typeahead = new Typeahead(private_message_typeahead_input, {
+    // Shared between the main PM input and editable pills.
+    const pm_recipient_typeahead_opts = {
         source: get_pm_people,
         items: max_num_items,
         dropup: true,
@@ -1826,6 +1823,18 @@ export function initialize({
             set_recipient_from_typeahead(item);
         },
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter
+    };
+
+    const private_message_typeahead_input: TypeaheadInputElement = {
+        $element: $("#private_message_recipient"),
+        type: "contenteditable",
+    };
+    private_message_recipient_typeahead = new Typeahead(
+        private_message_typeahead_input,
+        pm_recipient_typeahead_opts,
+    );
+    compose_pm_pill.widget.setSetupTypeahead(($edit) => {
+        new Typeahead({$element: $edit, type: "contenteditable"}, pm_recipient_typeahead_opts);
     });
 
     initialize_compose_typeahead($("textarea#compose-textarea"));
