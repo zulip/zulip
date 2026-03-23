@@ -1253,7 +1253,6 @@ div.overlay .flex.overlay-content > .overlay-container,
     &:hover {
         color: var(--color-dropdown-item);
         background-color: var(--background-color-active-dropdown-item);
-        border-color: var(--color-border-zulip-button-interactive);
     }
 
     &:focus,
