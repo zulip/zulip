@@ -38,14 +38,18 @@ initialize_user_settings({
 });
 markdown.initialize(markdown_config.get_helpers());
 
-stream_data.add_sub_for_tests(make_stream({
-    stream_id: 4,
-    name: "Rome",
-}));
-stream_data.add_sub_for_tests(make_stream({
-    stream_id: 5,
-    name: "Romeo`s lair",
-}));
+stream_data.add_sub_for_tests(
+    make_stream({
+        stream_id: 4,
+        name: "Rome",
+    }),
+);
+stream_data.add_sub_for_tests(
+    make_stream({
+        stream_id: 5,
+        name: "Romeo`s lair",
+    }),
+);
 
 run_test("try_stream_topic_syntax_text", () => {
     const test_cases = [
