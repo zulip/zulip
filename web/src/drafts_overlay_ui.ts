@@ -28,6 +28,7 @@ import * as user_card_popover from "./user_card_popover.ts";
 import * as user_group_popover from "./user_group_popover.ts";
 
 let draft_undo_delete_list: LocalStorageDraft[] = [];
+let clipboard_instance: ClipboardJS | undefined;
 
 function clear_undo_list(): void {
     draft_undo_delete_list = [];
@@ -140,12 +141,12 @@ function remove_drafts($draft_rows: JQuery): void {
         show_delete_banner();
     }
 
-    if ($("#drafts_table .overlay-message-row").length === 0) {
-        $("#drafts_table .no-drafts").show();
+    if ($(".drafts-tab-pane .overlay-message-row").length === 0) {
+        $(".no-drafts").show();
     }
     update_rendered_drafts(
-        $("#drafts-from-conversation .overlay-message-row").length > 0,
-        $("#other-drafts .overlay-message-row").length > 0,
+        $(".drafts-tab-pane #drafts-from-conversation .overlay-message-row").length > 0,
+        $(".drafts-tab-pane #other-drafts .overlay-message-row").length > 0,
     );
 }
 
@@ -320,8 +321,8 @@ function render_widgets(
         });
         $(".drafts-list").replaceWith($(rendered));
     }
-    if ($("#drafts_table .overlay-message-row").length > 0) {
-        $("#drafts_table .no-drafts").hide();
+    if ($(".drafts-tab-pane .overlay-message-row").length > 0) {
+        $(".no-drafts").hide();
         // Update possible dynamic elements.
         const $rendered_drafts = $drafts_table.find(
             ".message_content.rendered_markdown.restore-overlay-message",
@@ -396,20 +397,25 @@ function setup_event_handlers(): void {
         update_bulk_delete_ui();
     });
 
-    new ClipboardJS("#drafts_table .overlay_message_controls .copy-overlay-message", {
-        text(trigger): string {
-            const draft_id = $(trigger).attr("data-draft-id")!;
-            const draft = drafts.draft_model.getDraft(draft_id);
-            if (!draft) {
-                return "";
-            }
-            return draft.content ?? "";
+    clipboard_instance?.destroy();
+    clipboard_instance = new ClipboardJS(
+        "#drafts_table .overlay_message_controls .copy-overlay-message",
+        {
+            text(trigger): string {
+                const draft_id = $(trigger).attr("data-draft-id")!;
+                const draft = drafts.draft_model.getDraft(draft_id);
+                if (!draft) {
+                    return "";
+                }
+                return draft.content ?? "";
+            },
         },
-    }).on("success", (e) => {
+    ).on("success", (e) => {
         show_copied_confirmation(e.trigger, {
             show_check_icon: true,
         });
     });
+
 }
 
 function setup_bulk_actions_handlers(): void {
@@ -432,6 +438,7 @@ function setup_bulk_actions_handlers(): void {
         remove_drafts($selected_rows);
         update_bulk_delete_ui();
     });
+
 }
 
 function rerender_drafts(): void {

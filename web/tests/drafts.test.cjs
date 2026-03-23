@@ -630,7 +630,7 @@ test("format_drafts", ({override, mock_template}) => {
     override(messages_overlay_ui, "get_and_clear_pending_restore_element_id", () => undefined);
 
     $.set_results(".drafts-list", []);
-    $.set_results("#drafts_table .overlay-message-row", []);
+    $.set_results(".drafts-tab-pane .overlay-message-row", []);
     $.set_results(".draft-selection-checkbox", []);
     drafts_overlay_ui.launch();
 });
@@ -780,7 +780,7 @@ test("filter_drafts", ({override, mock_template}) => {
     compose_state.set_message_type("private");
 
     $.set_results(".drafts-list", []);
-    $.set_results("#drafts_table .overlay-message-row", []);
+    $.set_results(".drafts-tab-pane .overlay-message-row", []);
     $.set_results(".draft-selection-checkbox", []);
     drafts_overlay_ui.launch();
 });
