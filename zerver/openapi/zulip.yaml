@@ -12313,6 +12313,9 @@ paths:
         [bot](/help/bots-overview#bot-type) will only have access to messages
         sent after the bot was subscribed to the channel, instead of when the
         user subscribed.
+
+        **Changes**: Before Zulip 12.0 (feature level 480), this
+        endpoint was not supported for archived channels.
       parameters:
         - $ref: "#/components/parameters/ChannelIdInPath"
         - name: allow_empty_topic_name
@@ -23053,6 +23056,9 @@ paths:
       tags: ["channels"]
       description: |
         Get all users subscribed to a channel.
+
+        **Changes**: Before Zulip 12.0 (feature level 480), this
+        endpoint was not supported for archived channels.
       parameters:
         - $ref: "#/components/parameters/ChannelIdInPath"
       responses:
@@ -23366,7 +23372,10 @@ paths:
       description: |
         Fetch details for the channel with the ID `stream_id`.
 
-        **Changes**: New in Zulip 6.0 (feature level 132).
+        **Changes**: Before Zulip 12.0 (feature level 480), this
+        endpoint was not supported for archived channels.
+
+        New in Zulip 6.0 (feature level 132).
       parameters:
         - $ref: "#/components/parameters/ChannelIdInPath"
       responses:

@@ -4,7 +4,7 @@ from unittest import mock
 import orjson
 from django.utils.timezone import now as timezone_now
 
-from zerver.actions.streams import do_change_stream_permission
+from zerver.actions.streams import do_change_stream_permission, do_deactivate_stream
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.events import ClientCapabilities, do_events_register
 from zerver.lib.test_classes import ZulipTestCase
@@ -852,3 +852,9 @@ class EmptyTopicNameTest(ZulipTestCase):
             result = self.client_get(f"/json/users/me/{channel_id}/topics", params)
             data = self.assert_json_success(result)
             self.assertEqual(data["topics"][0]["name"], "")
+
+        do_deactivate_stream(channel_one, acting_user=None)
+        result = self.client_get(f"/json/users/me/{channel_one.id}/topics")
+        data = self.assert_json_success(result)
+        self.assertEqual(data["topics"][0]["name"], "channel events")
+        self.assertEqual(data["topics"][1]["name"], Message.EMPTY_TOPIC_FALLBACK_NAME)

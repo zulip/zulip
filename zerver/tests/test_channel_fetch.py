@@ -439,6 +439,14 @@ class GetStreamsTest(ZulipTestCase):
         self.assertEqual(json["stream"]["name"], "private_stream")
         self.assertEqual(json["stream"]["stream_id"], private_stream.id)
 
+        # Archived stream can also be accessed.
+        do_deactivate_stream(denmark_stream, acting_user=None)
+        result = self.client_get(f"/json/streams/{denmark_stream.id}")
+        json = self.assert_json_success(result)
+        self.assertEqual(json["stream"]["name"], "Denmark")
+        self.assertEqual(json["stream"]["stream_id"], denmark_stream.id)
+        self.assertTrue(json["stream"]["is_archived"])
+
     def test_get_stream_email_address(self) -> None:
         self.login("hamlet")
         hamlet = self.example_user("hamlet")
@@ -680,6 +688,19 @@ class GetSubscribersTest(ZulipTestCase):
         get_subscribers returns the list of subscribers.
         """
         stream_name = gather_subscriptions(self.user_profile)[0][0]["name"]
+        self.make_successful_subscriber_request(stream_name)
+
+    def test_subscriber_archived_stream(self) -> None:
+        """
+        A user can fetch subscribers of an archived stream.
+        """
+        stream_name = "Saxony"
+        self.subscribe_via_post(self.user_profile, [stream_name])
+        stream = get_stream(stream_name, self.user_profile.realm)
+        do_deactivate_stream(stream, acting_user=None)
+
+        other_user = self.example_user("othello")
+        self.login_user(other_user)
         self.make_successful_subscriber_request(stream_name)
 
     @override_settings(MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE=5)
