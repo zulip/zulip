@@ -987,6 +987,15 @@ run_test("items() excludes the pill being edited", ({mock_template}) => {
 run_test("typeahead selection repositions new pill at original index", ({mock_template}) => {
     const {widget, pills, $container, items} = set_up_for_editing(mock_template);
 
+    let pill_removed = false;
+    let pill_created = false;
+    widget.onPillRemove(() => {
+        pill_removed = true;
+    });
+    widget.onPillCreate(() => {
+        pill_created = true;
+    });
+
     // Register a no-op typeahead setup to activate the onPillCreate hook.
     widget.setSetupTypeahead(noop);
 
@@ -1009,6 +1018,8 @@ run_test("typeahead selection repositions new pill at original index", ({mock_te
         ["YELLOW", "RED"],
     );
     assert.deepEqual(widget.items()[0], items.yellow);
+    assert.ok(pill_removed);
+    assert.ok(pill_created);
 });
 
 run_test("ArrowLeft at start of edit cancels and restores pill", ({mock_template}) => {

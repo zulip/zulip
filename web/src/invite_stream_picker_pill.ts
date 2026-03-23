@@ -33,6 +33,9 @@ function set_up_pill_typeahead({pill_widget, $pill_container}: SetUpPillTypeahea
         invite_streams: true,
     };
     set_up_stream($pill_container.find(".input"), pill_widget, opts);
+    pill_widget.setSetupTypeahead(($edit) => {
+        set_up_stream($edit, pill_widget, opts);
+    });
 }
 
 export function add_default_stream_pills(pill_widget: stream_pill.StreamPillWidget): void {

@@ -413,7 +413,6 @@ export function create<ItemType extends {type: string}>(
                     const current_idx = store.pills.findIndex(
                         (p) => p.$element[0] === pill.$element[0],
                     );
-                    // Remove directly without calling removePill to skip onPillRemove callbacks.
                     if (current_idx !== -1) {
                         pill.$element.remove();
                         store.pills.splice(current_idx, 1);
@@ -425,7 +424,8 @@ export function create<ItemType extends {type: string}>(
                     );
                     $edit.before(new_pill.$element);
                     $edit.remove();
-                    // Don't call saved() — pill editing must not trigger onPillCreate side effects.
+                    store.onPillRemove?.(pill, "close");
+                    saved?.();
                     store.$input.trigger("focus");
                 };
 

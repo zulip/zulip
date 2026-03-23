@@ -1221,6 +1221,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         items: () => pill_items,
         onPillCreate() {},
         onPillRemove() {},
+        setSetupTypeahead() {},
         appendValidatedData(item) {
             appended_names.push(user_pill.get_display_value_from_item(item));
         },
