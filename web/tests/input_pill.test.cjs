@@ -16,6 +16,9 @@ mock_esm("../src/ui_util", {
 
 set_global("getSelection", () => ({
     anchorOffset: 0,
+    toString() {
+        return "";
+    },
 }));
 
 const input_pill = zrequire("input_pill");
@@ -514,7 +517,7 @@ run_test("misc things", () => {
     input_pill.create(info.config);
 
     // animation
-    const animation_end_handler = $container.get_on_handler("animationend", ".input");
+    const animation_end_handler = $container.get_on_handler("animationend", ".input, .pill");
 
     let shake_class_removed = false;
 
@@ -737,4 +740,306 @@ run_test("updatePill", ({mock_template}) => {
     // Blue pill data should remain unchanged
     assert.equal(blue_pill.item.color_name, "DARK BLUE");
     assert.equal(blue_pill.item.description, "color of the deep ocean");
+});
+
+function set_up_for_editing(mock_template) {
+    mock_template("input_pill.hbs", true, (data, html) => {
+        $(html)[0] = `<pill-stub ${data.display_value}>`;
+        $(html).length = 1;
+        return html;
+    });
+    mock_template("editable_pill.hbs", false, () => "<div class='editable-pill'>");
+
+    const info = set_up();
+    const {config, $container, $pill_input, items} = info;
+
+    $pill_input.before = noop;
+
+    const widget = input_pill.create(config);
+    widget.appendValue("blue,red");
+
+    const pills = widget._get_pills_for_testing();
+    for (const pill of pills) {
+        pill.$element.remove = noop;
+        pill.$element.detach = noop;
+        pill.$element.before = noop;
+    }
+
+    return {widget, pills, $container, $pill_input, items};
+}
+
+function start_editing_pill_via_dblclick($container, pill) {
+    let $captured_edit;
+    pill.$element.before = ($elem) => {
+        $captured_edit = $elem;
+    };
+
+    const dblclick_handler = $container.get_on_handler("dblclick", ".pill");
+    dblclick_handler.call(pill.$element[0], {
+        target: {
+            to_$: () => ({
+                closest(_sel) {
+                    return {length: 0};
+                },
+            }),
+        },
+        preventDefault: noop,
+    });
+
+    return $captured_edit;
+}
+
+run_test("dblclick starts in-place editing", ({mock_template}) => {
+    const {widget, pills, $container} = set_up_for_editing(mock_template);
+
+    const blue_pill = pills[0];
+    assert.equal(blue_pill.item.color_name, "BLUE");
+
+    const $edit = start_editing_pill_via_dblclick($container, blue_pill);
+
+    assert.ok($edit !== undefined);
+    assert.equal(widget._get_pills_for_testing().length, 2);
+    assert.equal($edit.text(), "BLUE");
+});
+
+run_test("Enter key commits in-place edit", ({mock_template}) => {
+    const {widget, pills, $container, items} = set_up_for_editing(mock_template);
+
+    let pill_removed = false;
+    let pill_created = false;
+    widget.onPillRemove(() => {
+        pill_removed = true;
+    });
+    widget.onPillCreate(() => {
+        pill_created = true;
+    });
+
+    const blue_pill = pills[0];
+    const $edit = start_editing_pill_via_dblclick($container, blue_pill);
+
+    let new_pill_positioned = false;
+    $edit.remove = noop;
+    $edit.before = () => {
+        new_pill_positioned = true;
+    };
+
+    $edit.text("yellow");
+
+    const edit_keydown = $edit.get_on_handler("keydown");
+    edit_keydown({
+        key: "Enter",
+        preventDefault: noop,
+        stopPropagation: noop,
+    });
+
+    assert.ok(new_pill_positioned);
+    // YELLOW replaces BLUE at index 0; store.pills must stay in DOM order.
+    assert.deepEqual(
+        widget.items().map((i) => i.color_name),
+        ["YELLOW", "RED"],
+    );
+    assert.deepEqual(widget.items()[0], items.yellow);
+    assert.ok(pill_removed);
+    assert.ok(pill_created);
+});
+
+run_test("empty edit deletes the pill", ({mock_template}) => {
+    const {widget, pills, $container} = set_up_for_editing(mock_template);
+
+    let pill_removed = false;
+    widget.onPillRemove(() => {
+        pill_removed = true;
+    });
+
+    const blue_pill = pills[0];
+    const $edit = start_editing_pill_via_dblclick($container, blue_pill);
+
+    $edit.remove = noop;
+
+    $edit.text("");
+
+    const edit_keydown = $edit.get_on_handler("keydown");
+    edit_keydown({
+        key: "Enter",
+        preventDefault: noop,
+        stopPropagation: noop,
+    });
+
+    assert.deepEqual(
+        widget.items().map((i) => i.color_name),
+        ["RED"],
+    );
+    assert.ok(pill_removed);
+});
+
+run_test("Escape cancels in-place edit", ({mock_template}) => {
+    const {widget, pills, $container} = set_up_for_editing(mock_template);
+
+    const blue_pill = pills[0];
+    const $edit = start_editing_pill_via_dblclick($container, blue_pill);
+
+    $edit.remove = noop;
+    let original_pill_restored = false;
+    $edit.before = ($elem) => {
+        if ($elem === blue_pill.$element) {
+            original_pill_restored = true;
+        }
+    };
+
+    const edit_keydown = $edit.get_on_handler("keydown");
+    edit_keydown({
+        key: "Escape",
+        preventDefault: noop,
+        stopPropagation: noop,
+    });
+
+    assert.ok(original_pill_restored);
+    assert.deepEqual(
+        widget.items().map((i) => i.color_name),
+        ["BLUE", "RED"],
+    );
+});
+
+run_test("Enter on focused pill starts editing", ({mock_template}) => {
+    const {pills, $container} = set_up_for_editing(mock_template);
+
+    const blue_pill = pills[0];
+
+    let $edit_captured;
+    blue_pill.$element.before = ($elem) => {
+        $edit_captured = $elem;
+    };
+
+    // find(".pill:focus") is how the keydown handler locates the focused pill.
+    $container.set_find_results(".pill:focus", blue_pill.$element);
+
+    const pill_keydown = $container.get_on_handler("keydown", ".pill");
+    pill_keydown({
+        key: "Enter",
+        preventDefault: noop,
+        stopPropagation: noop,
+    });
+
+    assert.ok($edit_captured !== undefined);
+    assert.equal($edit_captured.text(), "BLUE");
+});
+
+run_test("unchanged edit cancels instead of validating", ({mock_template}) => {
+    const {widget, pills, $container} = set_up_for_editing(mock_template);
+    const blue_pill = pills[0];
+    const $edit = start_editing_pill_via_dblclick($container, blue_pill);
+    $edit.remove = noop;
+    $edit.before = noop;
+    // Trigger Enter without changing the text.
+    const edit_keydown = $edit.get_on_handler("keydown");
+    edit_keydown({
+        key: "Enter",
+        preventDefault: noop,
+        stopPropagation: noop,
+    });
+    assert.deepEqual(
+        widget.items().map((i) => i.color_name),
+        ["BLUE", "RED"],
+    );
+});
+
+run_test("invalid edit restores pill and applies shake", ({mock_template}) => {
+    const {widget, pills, $container, $pill_input} = set_up_for_editing(mock_template);
+    const blue_pill = pills[0];
+    const $edit = start_editing_pill_via_dblclick($container, blue_pill);
+    $edit.remove = noop;
+    $edit.before = noop;
+    $edit.text("invalid_color_name");
+    const edit_keydown = $edit.get_on_handler("keydown");
+    edit_keydown({
+        key: "Enter",
+        preventDefault: noop,
+        stopPropagation: noop,
+    });
+    assert.deepEqual(
+        widget.items().map((i) => i.color_name),
+        ["BLUE", "RED"],
+    );
+    // The validation shake should be redirected from the main input to the restored pill.
+    assert.ok(!$pill_input.hasClass("shake"));
+    assert.ok(widget._get_pills_for_testing()[0].$element.hasClass("shake"));
+});
+
+run_test("items() excludes the pill being edited", ({mock_template}) => {
+    const {widget, pills, $container} = set_up_for_editing(mock_template);
+    const blue_pill = pills[0];
+
+    assert.deepEqual(
+        widget.items().map((i) => i.color_name),
+        ["BLUE", "RED"],
+    );
+
+    start_editing_pill_via_dblclick($container, blue_pill);
+
+    // While editing, the pill being edited must not appear in items() since
+    // the edit hasn't been committed yet.
+    assert.deepEqual(
+        widget.items().map((i) => i.color_name),
+        ["RED"],
+    );
+});
+
+run_test("typeahead selection repositions new pill at original index", ({mock_template}) => {
+    const {widget, pills, $container, items} = set_up_for_editing(mock_template);
+
+    // Register a no-op typeahead setup to activate the onPillCreate hook.
+    widget.setSetupTypeahead(noop);
+
+    const blue_pill = pills[0];
+    const $edit = start_editing_pill_via_dblclick($container, blue_pill);
+
+    let new_pill_positioned = false;
+    $edit.remove = noop;
+    $edit.before = () => {
+        new_pill_positioned = true;
+    };
+
+    // Simulate typeahead selecting "yellow": appendValue triggers onPillCreate
+    // which should reinsert the new pill at index 0 (where BLUE was).
+    widget.appendValue("yellow");
+
+    assert.ok(new_pill_positioned);
+    assert.deepEqual(
+        widget.items().map((i) => i.color_name),
+        ["YELLOW", "RED"],
+    );
+    assert.deepEqual(widget.items()[0], items.yellow);
+});
+
+run_test("ArrowLeft at start of edit cancels and restores pill", ({mock_template}) => {
+    const {widget, pills, $container} = set_up_for_editing(mock_template);
+    const blue_pill = pills[0];
+    const $edit = start_editing_pill_via_dblclick($container, blue_pill);
+
+    $edit.remove = noop;
+    let pill_restored = false;
+    $edit.before = ($elem) => {
+        if ($elem === blue_pill.$element) {
+            pill_restored = true;
+        }
+    };
+
+    // Provide a previous sibling so the ArrowLeft handler finds a pill to focus.
+    const $prev_pill = $.create("prev-pill");
+    $prev_pill.trigger = noop;
+    $edit.prev = (sel) => (sel === ".pill" ? $prev_pill : {length: 0});
+
+    const edit_keydown = $edit.get_on_handler("keydown");
+    edit_keydown({
+        key: "ArrowLeft",
+        preventDefault: noop,
+        stopPropagation: noop,
+    });
+
+    // Edit should be cancelled and the original pill restored.
+    assert.ok(pill_restored);
+    assert.deepEqual(
+        widget.items().map((i) => i.color_name),
+        ["BLUE", "RED"],
+    );
 });
