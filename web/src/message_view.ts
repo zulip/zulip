@@ -1565,7 +1565,7 @@ export function narrow_by_recipient(
             show(
                 [
                     {
-                        operator: "stream",
+                        operator: "channel",
                         operand: message.stream_id.toString(),
                     },
                 ],
