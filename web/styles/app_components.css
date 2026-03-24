@@ -247,6 +247,10 @@ div.overlay {
     .overlay-container {
         background-color: var(--color-background-modal);
     }
+
+    &:focus {
+        outline: none;
+    }
 }
 
 .input-append {
