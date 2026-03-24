@@ -488,6 +488,7 @@ export function clear_topic_search(e: JQuery.Event): void {
     // the `input` event handler without having to manually
     // manage the reset of the topic list.
     $input.trigger("input");
+    $input.trigger("blur");
 }
 
 export function active_stream_id(): number | undefined {
