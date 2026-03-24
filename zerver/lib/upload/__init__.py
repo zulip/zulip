@@ -601,4 +601,4 @@ def upload_export_tarball(
 
 
 def delete_export_tarball(export_path: str) -> None:
-    upload_backend.delete_export_tarball(export_path)
+    upload_backend.delete_export_tarball_from_storage(export_path)
