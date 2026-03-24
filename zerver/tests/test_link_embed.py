@@ -12,6 +12,8 @@ from requests.exceptions import ConnectionError
 from typing_extensions import override
 
 from zerver.actions.message_delete import do_delete_messages
+from zerver.actions.message_edit import get_hidden_preview_urls
+from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.cache import cache_delete, cache_get, preview_url_cache_key
 from zerver.lib.camo import get_camo_url
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
@@ -21,7 +23,8 @@ from zerver.lib.url_preview.oembed import get_oembed_data, strip_cdata
 from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
 from zerver.lib.url_preview.preview import get_link_embed_data
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
-from zerver.models import Message, Realm, UserMessage, UserProfile
+from zerver.models import Message, NamedUserGroup, Realm, UserMessage, UserProfile
+from zerver.models.groups import SystemGroups
 from zerver.worker.embed_links import FetchLinksEmbedData
 
 
@@ -1178,3 +1181,476 @@ class PreviewTestCase(ZulipTestCase):
         msg.refresh_from_db()
         expected_content = f"""<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube link</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="{get_camo_url("https://i.ytimg.com/vi/eSJTXC7Ixgg/mqdefault.jpg")}"></a></div>"""
         self.assertEqual(expected_content, msg.rendered_content)
+
+
+@override_settings(INLINE_URL_EMBED_PREVIEW=True)
+class HidePreviewTest(ZulipTestCase):
+    open_graph_html = PreviewTestCase.open_graph_html
+
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        Realm.objects.all().update(inline_url_embed_preview=True)
+
+    def _send_and_embed_url(self, user: UserProfile, url: str) -> Message:
+        """Send a message with a URL and process the embed worker."""
+        # Clear any cached data so the mock response is actually fetched.
+        cache_delete(preview_url_cache_key(url))
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="test", content=url)
+            patched.assert_called_once()
+            event = patched.call_args[0][1]
+
+        PreviewTestCase.create_mock_response(url)
+        with self.settings(TEST_SUITE=False), self.assertLogs(level="INFO"):
+            FetchLinksEmbedData().consume(event)
+
+        return Message.objects.select_related("sender").get(id=msg_id)
+
+    @responses.activate
+    def test_hide_preview_url_suppresses_embed(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+
+        msg = self._send_and_embed_url(user, url)
+        assert msg.rendered_content is not None
+        self.assertIn("message_embed", msg.rendered_content)
+
+        # Hide the preview via the API.
+        result = self.client_patch(
+            f"/json/messages/{msg.id}",
+            {"hide_preview_url": url},
+        )
+        self.assert_json_success(result)
+
+        msg.refresh_from_db()
+        assert msg.rendered_content is not None
+        self.assertNotIn("message_embed", msg.rendered_content)
+        self.assertIn(url, msg.rendered_content)
+
+        # Verify the URL is stored in hidden_preview_urls.
+        hidden_urls = get_hidden_preview_urls(msg)
+        self.assertEqual(hidden_urls, [url])
+
+    @responses.activate
+    def test_hide_preview_url_idempotent(self) -> None:
+        """Hiding the same URL twice should not create duplicates."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+
+        msg = self._send_and_embed_url(user, url)
+
+        # Hide the same URL twice.
+        result = self.client_patch(
+            f"/json/messages/{msg.id}",
+            {"hide_preview_url": url},
+        )
+        self.assert_json_success(result)
+
+        # Re-hiding an already-hidden URL is a no-op: it changes nothing
+        # and emits no message-update event.
+        with self.capture_send_event_calls(expected_num_events=0):
+            result = self.client_patch(
+                f"/json/messages/{msg.id}",
+                {"hide_preview_url": url},
+            )
+            self.assert_json_success(result)
+
+        msg.refresh_from_db()
+        hidden_urls = get_hidden_preview_urls(msg)
+        self.assertEqual(hidden_urls, [url])
+
+    @responses.activate
+    def test_hide_preview_url_null_field(self) -> None:
+        """Hiding works when hidden_preview_urls is initially NULL."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+
+        msg = self._send_and_embed_url(user, url)
+
+        # Confirm field is initially NULL.
+        self.assertIsNone(msg.hidden_preview_urls)
+
+        result = self.client_patch(
+            f"/json/messages/{msg.id}",
+            {"hide_preview_url": url},
+        )
+        self.assert_json_success(result)
+
+        msg.refresh_from_db()
+        self.assertEqual(msg.hidden_preview_urls, [url])
+
+    @responses.activate
+    def test_hide_preview_permission_non_sender(self) -> None:
+        """Non-sender cannot hide previews."""
+        sender = self.example_user("hamlet")
+        other_user = self.example_user("cordelia")
+        self.login_user(sender)
+        url = "http://test.org/"
+
+        msg = self._send_and_embed_url(sender, url)
+
+        # Login as a different user and try to hide.
+        self.login_user(other_user)
+        result = self.client_patch(
+            f"/json/messages/{msg.id}",
+            {"hide_preview_url": url},
+        )
+        self.assert_json_error(result, "You don't have permission to edit this message")
+
+    @responses.activate
+    def test_embed_worker_respects_hidden_urls(self) -> None:
+        """The embed worker must not restore a hidden preview, even when
+        handed a (possibly stale) event that still lists the hidden URL."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+
+        msg = self._send_and_embed_url(user, url)
+        assert msg.rendered_content is not None
+        self.assertIn("message_embed", msg.rendered_content)
+
+        # Hide the preview.
+        result = self.client_patch(
+            f"/json/messages/{msg.id}",
+            {"hide_preview_url": url},
+        )
+        self.assert_json_success(result)
+        msg.refresh_from_db()
+        self.assertNotIn("message_embed", msg.rendered_content)
+
+        # The renderer consults hidden_preview_urls directly, so even an
+        # embed event that still lists the hidden URL does not restore it.
+        event = {
+            "message_id": msg.id,
+            "message_content": msg.content,
+            "message_realm_id": msg.realm_id,
+            "urls": [url],
+        }
+        PreviewTestCase.create_mock_response(url)
+        with self.settings(TEST_SUITE=False), self.assertLogs(level="INFO"):
+            FetchLinksEmbedData().consume(event)
+
+        msg.refresh_from_db()
+        assert msg.rendered_content is not None
+        self.assertNotIn("message_embed", msg.rendered_content)
+
+    @responses.activate
+    def test_content_edit_preserves_hidden_inline_image(self) -> None:
+        """A hidden inline image must stay hidden after a content edit.
+
+        Inline image/video previews never pass through the embed worker, so
+        the renderer must skip hidden URLs itself -- otherwise they reappear
+        on edit.
+        """
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "https://example.com/photo.jpg"
+
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="test", content=url)
+
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        assert msg.rendered_content is not None
+        self.assertIn("message_inline_image", msg.rendered_content)
+
+        # Hide the inline image preview.
+        result = self.client_patch(f"/json/messages/{msg.id}", {"hide_preview_url": url})
+        self.assert_json_success(result)
+        msg.refresh_from_db()
+        assert msg.rendered_content is not None
+        self.assertNotIn("message_inline_image", msg.rendered_content)
+
+        # Editing the message content must not restore the hidden image.
+        result = self.client_patch(
+            f"/json/messages/{msg.id}",
+            {"content": f"{url} updated text"},
+        )
+        self.assert_json_success(result)
+
+        msg.refresh_from_db()
+        assert msg.rendered_content is not None
+        self.assertNotIn("message_inline_image", msg.rendered_content)
+        self.assertIn(url, msg.rendered_content)
+
+    @responses.activate
+    def test_hide_preview_requeues_uncached_remaining_urls(self) -> None:
+        """Hiding one URL re-queues sibling previews that are not cached."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url1 = "http://test.org/"
+        url2 = "http://other.org/"
+        content = f"{url1}\n{url2}"
+
+        # Send a message with two URLs and process embeds for both.
+        cache_delete(preview_url_cache_key(url1))
+        cache_delete(preview_url_cache_key(url2))
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="test", content=content)
+            patched.assert_called_once()
+            event = patched.call_args[0][1]
+
+        PreviewTestCase.create_mock_response(url1)
+        PreviewTestCase.create_mock_response(url2)
+        with self.settings(TEST_SUITE=False), self.assertLogs(level="INFO"):
+            FetchLinksEmbedData().consume(event)
+
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        assert msg.rendered_content is not None
+        self.assertIn("message_embed", msg.rendered_content)
+
+        # Evict url2 from the preview cache, so the hide re-render cannot
+        # reuse its embed data and must re-queue it for the embed worker.
+        cache_delete(preview_url_cache_key(url2))
+
+        # Hide url1. The re-render encounters url2 without cached embed
+        # data, so it is enqueued for fetching (and url1 is not).
+        with mock_queue_publish("zerver.actions.message_edit.queue_event_on_commit") as patched:
+            result = self.client_patch(
+                f"/json/messages/{msg.id}",
+                {"hide_preview_url": url1},
+            )
+            self.assert_json_success(result)
+            patched.assert_called_once()
+            requeue_event = patched.call_args[0][1]
+            self.assertIn(url2, requeue_event["urls"])
+            self.assertNotIn(url1, requeue_event["urls"])
+
+        # After consuming the re-queued event, url2's embed should appear.
+        PreviewTestCase.create_mock_response(url2)
+        with self.settings(TEST_SUITE=False), self.assertLogs(level="INFO"):
+            FetchLinksEmbedData().consume(requeue_event)
+        msg.refresh_from_db()
+        assert msg.rendered_content is not None
+        self.assertIn("message_embed", msg.rendered_content)
+
+    @responses.activate
+    def test_hide_preview_reuses_cached_sibling_embeds(self) -> None:
+        """Hiding one preview reuses the cached embed data of the others, so
+        they stay inline and are not re-fetched by the embed worker."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url1 = "http://test.org/"
+        url2 = "http://other.org/"
+        content = f"{url1}\n{url2}"
+
+        cache_delete(preview_url_cache_key(url1))
+        cache_delete(preview_url_cache_key(url2))
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="test", content=content)
+            event = patched.call_args[0][1]
+
+        PreviewTestCase.create_mock_response(url1)
+        PreviewTestCase.create_mock_response(url2)
+        with self.settings(TEST_SUITE=False), self.assertLogs(level="INFO"):
+            FetchLinksEmbedData().consume(event)
+
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        assert msg.rendered_content is not None
+        self.assertEqual(msg.rendered_content.count('class="message_embed"'), 2)
+
+        # Both URLs' embed data is warm in the cache. Hiding url1 should keep
+        # url2's embed inline and NOT re-queue it to the embed worker.
+        with mock_queue_publish("zerver.actions.message_edit.queue_event_on_commit") as patched:
+            result = self.client_patch(
+                f"/json/messages/{msg.id}",
+                {"hide_preview_url": url1},
+            )
+            self.assert_json_success(result)
+            patched.assert_not_called()
+
+        msg.refresh_from_db()
+        assert msg.rendered_content is not None
+        self.assertEqual(msg.rendered_content.count('class="message_embed"'), 1)
+        self.assertIn(url2, msg.rendered_content)
+
+    def test_hide_preview_nothing_to_change(self) -> None:
+        """Sending no parameters should return an error."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        msg_id = self.send_stream_message(user, "Denmark", topic_name="test", content="hello")
+        result = self.client_patch(f"/json/messages/{msg_id}", {})
+        self.assert_json_error(result, "Nothing to change")
+
+    def test_hide_preview_url_not_in_content(self) -> None:
+        """Hiding a URL that doesn't appear in the message should fail."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
+            msg_id = self.send_stream_message(
+                user, "Denmark", topic_name="test", content="http://test.org/"
+            )
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {"hide_preview_url": "http://not-in-message.org/"},
+        )
+        self.assert_json_error(result, "URL does not have a link preview")
+
+    def test_hide_preview_url_must_be_a_previewable_link(self) -> None:
+        """A URL that is only a substring of a real link, or appears only in
+        a code block, has no preview and must be rejected rather than stored."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
+            # The real link is the full URL; `http://example.com/` is just a
+            # substring of it, and the code-span URL is not a link at all.
+            msg_id = self.send_stream_message(
+                user,
+                "Denmark",
+                topic_name="test",
+                content="http://example.com/article and `http://test.org/`",
+            )
+
+        for url in ["http://example.com/", "http://test.org/"]:
+            result = self.client_patch(
+                f"/json/messages/{msg_id}",
+                {"hide_preview_url": url},
+            )
+            self.assert_json_error(result, "URL does not have a link preview")
+
+        msg = Message.objects.get(id=msg_id)
+        self.assertIsNone(msg.hidden_preview_urls)
+
+    def test_hide_preview_with_content_edit(self) -> None:
+        """Sending both content and hide_preview_url should fail."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="test", content=url)
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {"content": "new content", "hide_preview_url": url},
+        )
+        self.assert_json_error(result, "Cannot remove link preview while editing message content")
+
+    def test_hide_preview_with_topic_move(self) -> None:
+        """Sending both topic_name and hide_preview_url should fail."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="test", content=url)
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {"topic": "new topic", "hide_preview_url": url},
+        )
+        self.assert_json_error(result, "Cannot remove link preview while moving message")
+
+    def test_hide_preview_url_suppresses_youtube_embed(self) -> None:
+        """Hiding a YouTube URL removes the video embed from rendered content."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "https://www.youtube.com/watch?v=eSJTXC7Ixgg"
+
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="test", content=url)
+
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        assert msg.rendered_content is not None
+        self.assertIn("youtube-video", msg.rendered_content)
+
+        result = self.client_patch(f"/json/messages/{msg.id}", {"hide_preview_url": url})
+        self.assert_json_success(result)
+
+        msg.refresh_from_db()
+        assert msg.rendered_content is not None
+        self.assertNotIn("youtube-video", msg.rendered_content)
+        self.assertIn(url, msg.rendered_content)
+
+    def test_hide_preview_url_suppresses_inline_image(self) -> None:
+        """Hiding a direct image URL removes the inline image from rendered content."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "https://example.com/photo.jpg"
+
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="test", content=url)
+
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        assert msg.rendered_content is not None
+        self.assertIn("message_inline_image", msg.rendered_content)
+
+        result = self.client_patch(f"/json/messages/{msg.id}", {"hide_preview_url": url})
+        self.assert_json_success(result)
+
+        msg.refresh_from_db()
+        assert msg.rendered_content is not None
+        self.assertNotIn("message_inline_image", msg.rendered_content)
+        self.assertIn(url, msg.rendered_content)
+
+    def test_hide_preview_url_with_rewritten_source(self) -> None:
+        """Previews whose rendered link is a rewritten form of the message
+        URL (Wikipedia File: correction, Dropbox media) can still be hidden,
+        even though the client sends the rewritten URL, not the original."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        cases = [
+            (
+                "https://en.wikipedia.org/wiki/File:Example.jpg",
+                "https://en.wikipedia.org/wiki/Special:FilePath/File:Example.jpg",
+            ),
+            (
+                "https://www.dropbox.com/scl/fi/abc123/photo.jpg",
+                "https://www.dropbox.com/scl/fi/abc123/photo.jpg?raw=1",
+            ),
+        ]
+        for original, rendered_url in cases:
+            with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
+                msg_id = self.send_stream_message(
+                    user, "Denmark", topic_name="test", content=original
+                )
+            msg = Message.objects.get(id=msg_id)
+            assert msg.rendered_content is not None
+            self.assertIn("message_inline_image", msg.rendered_content)
+            # The preview links to the rewritten URL, which is what the
+            # client sends back to hide it.
+            self.assertIn(rendered_url, msg.rendered_content)
+
+            result = self.client_patch(
+                f"/json/messages/{msg.id}", {"hide_preview_url": rendered_url}
+            )
+            self.assert_json_success(result)
+            msg.refresh_from_db()
+            assert msg.rendered_content is not None
+            self.assertNotIn("message_inline_image", msg.rendered_content)
+
+    def test_hide_preview_on_dm_skips_content_edit_checks(self) -> None:
+        """Hiding a preview is not a content edit, so it must not re-run
+        content-edit permission checks.  In a direct message that mentions a
+        group the sender can no longer mention, hiding an unrelated preview
+        must still succeed rather than failing the group-mention check."""
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        self.login_user(cordelia)
+
+        leadership = check_add_user_group(
+            cordelia.realm, "leadership", [cordelia], acting_user=cordelia
+        )
+        url = "https://example.com/photo.jpg"
+        msg_id = self.send_personal_message(cordelia, hamlet, f"@*leadership* {url}")
+
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        assert msg.rendered_content is not None
+        self.assertIn("message_inline_image", msg.rendered_content)
+
+        # Restrict the group so cordelia may no longer mention it.  A real
+        # content edit would now be rejected, but hiding a preview must not.
+        moderators = NamedUserGroup.objects.get(
+            realm_for_sharding=cordelia.realm,
+            name=SystemGroups.MODERATORS,
+            is_system_group=True,
+        )
+        leadership.can_mention_group = moderators
+        leadership.save()
+
+        result = self.client_patch(f"/json/messages/{msg.id}", {"hide_preview_url": url})
+        self.assert_json_success(result)
+
+        msg.refresh_from_db()
+        assert msg.rendered_content is not None
+        self.assertNotIn("message_inline_image", msg.rendered_content)
+        self.assertEqual(get_hidden_preview_urls(msg), [url])
