@@ -61,7 +61,7 @@ class ZulipUploadBackend:
         raise NotImplementedError
 
     @contextmanager
-    def delete_message_attachments(
+    def delete_message_attachments_from_storage(
         self,
         *,
         raw_paths: bool = False,

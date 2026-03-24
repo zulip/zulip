@@ -315,7 +315,7 @@ def delete_message_attachments(
                 db_class._default_manager.filter(path_id__in=path_ids).delete()
 
         flush_path_ids = delete_from_database
-    with upload_backend.delete_message_attachments(
+    with upload_backend.delete_message_attachments_from_storage(
         raw_paths=raw_paths, flush=flush_path_ids
     ) as delete_one:
         yield delete_one
