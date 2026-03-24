@@ -50,10 +50,12 @@ from zerver.data_import.slack import (
     check_slack_token_access,
     convert_slack_workspace_messages,
     do_convert_zipfile,
+    fetch_canvas_markdown,
     fetch_shared_channel_users,
     get_admin,
     get_guest,
     get_message_sending_user,
+    get_messages_iterator,
     get_owner,
     get_slack_api_data,
     get_subscription,
@@ -2321,6 +2323,202 @@ To Do
         self.assertEqual(zerver_message[4]["content"], expected_message_block_4)
         self.assertEqual(zerver_message[4]["sender"], slack_user_id_to_zulip_user_id["B06NWMNUQ3W"])
 
+    @mock.patch(
+        "zerver.data_import.slack.fetch_canvas_markdown",
+        return_value="# Canvas\n\nSome content",
+    )
+    @mock.patch("zerver.data_import.slack.get_data_file")
+    @mock.patch("zerver.data_import.slack.os.listdir")
+    def test_canvas_message_fetched_and_converted(
+        self,
+        mock_listdir: mock.Mock,
+        mock_get_data_file: mock.Mock,
+        mock_fetch_canvas: mock.Mock,
+    ) -> None:
+        token = "xoxb-test-token"
+        download_url = "https://files.slack.com/files-pri/T1/canvas.html"
+        canvas_message = {
+            "type": "message",
+            "user": "U061A1R2R",
+            "ts": "1705123456.000100",
+            "text": "",
+            "files": [
+                {
+                    "id": "F001",
+                    "mimetype": "application/vnd.slack-docs",
+                    "url_private_download": download_url,
+                }
+            ],
+        }
+        mock_listdir.return_value = ["2024-01-15.json"]
+        mock_get_data_file.return_value = [canvas_message]
+
+        added_channels: AddedChannelsT = {"general": ("c1", 1)}
+        messages = list(get_messages_iterator("/fake/dir", added_channels, {}, {}, {}, token))
+
+        self.assert_length(messages, 1)
+        self.assertEqual(messages[0]["text"], "# Canvas\n\nSome content")
+        self.assertEqual(messages[0]["channel_name"], "general")
+        # The flag tells channel_message_to_zerver_message to skip Slack
+        # formatting conversion, which would corrupt already-valid Zulip Markdown.
+        self.assertTrue(messages[0]["zulip_canvas"])
+        mock_fetch_canvas.assert_called_once_with(download_url, token)
+
+    @mock.patch("zerver.data_import.slack.request_file_stream")
+    def test_fetch_canvas_markdown_uses_bearer_auth_and_strips_img_tags(
+        self, mock_request_file_stream: mock.Mock
+    ) -> None:
+        token = "xoxb-test-token"
+        download_url = "https://files.slack.com/files-pri/T1/canvas.html"
+        mock_response = mock.Mock()
+        mock_response.content = (
+            b'<h1>Title</h1><img src="data:text/html;base64,/9j/AAAA" /><p>Body</p>'
+        )
+        mock_request_file_stream.return_value = mock_response
+
+        result = fetch_canvas_markdown(download_url, token)
+
+        mock_request_file_stream.assert_called_once_with(
+            download_url,
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        # img tags must be stripped before conversion.
+        assert result is not None
+        self.assertNotIn("data:", result)
+        self.assertIn("Title", result)
+        self.assertIn("Body", result)
+
+    @mock.patch(
+        "zerver.data_import.slack.request_file_stream",
+        side_effect=Exception("network error"),
+    )
+    def test_fetch_canvas_markdown_returns_none_on_error(
+        self, mock_request_file_stream: mock.Mock
+    ) -> None:
+        url = "https://files.slack.com/canvas.html"
+        with self.assertLogs(level="WARNING") as log:
+            result = fetch_canvas_markdown(url, "xoxb-test-token")
+        self.assertIsNone(result)
+        self.assertIn(url, log.output[0])
+
+    @mock.patch("zerver.data_import.slack.get_data_file")
+    @mock.patch("zerver.data_import.slack.os.listdir")
+    def test_canvas_message_without_download_url_is_skipped(
+        self,
+        mock_listdir: mock.Mock,
+        mock_get_data_file: mock.Mock,
+    ) -> None:
+        canvas_message = {
+            "type": "message",
+            "user": "U061A1R2R",
+            "ts": "1705123456.000100",
+            "text": "",
+            "files": [
+                {
+                    "id": "F001",
+                    "mimetype": "application/vnd.slack-docs",
+                    # No url_private_download field
+                }
+            ],
+        }
+        mock_listdir.return_value = ["2024-01-15.json"]
+        mock_get_data_file.return_value = [canvas_message]
+
+        added_channels: AddedChannelsT = {"general": ("c1", 1)}
+        messages = list(
+            get_messages_iterator("/fake/dir", added_channels, {}, {}, {}, "xoxb-test-token")
+        )
+
+        self.assert_length(messages, 0)
+
+    def test_canvas_file_skipped_in_process_message_files(self) -> None:
+        # Canvas files must not be treated as attachments; their content is
+        # already fetched and stored as message text in get_messages_iterator.
+        alice_id = 7
+        alice = dict(id=alice_id, profile=dict(email="alice@example.com"))
+        message = dict(
+            user=alice_id,
+            files=[
+                dict(
+                    url_private="https://files.slack.com/canvas.html",
+                    title="My Canvas",
+                    name="canvas.html",
+                    mimetype="application/vnd.slack-docs",
+                    timestamp=9999,
+                    created=8888,
+                    size=1000,
+                )
+            ],
+        )
+        zerver_attachment: list[dict[str, Any]] = []
+        uploads_list: list[UploadRecordData] = []
+
+        info = process_message_files(
+            message=message,
+            domain_name="example.com",
+            realm_id=5,
+            message_id=99,
+            slack_user_id="alice",
+            users=[alice],
+            slack_user_id_to_zulip_user_id={"alice": alice_id},
+            zerver_attachment=zerver_attachment,
+            uploads_list=uploads_list,
+            do_download_and_export_upload_file=lambda request: None,
+        )
+
+        # Canvas file should produce no attachment and no content.
+        self.assert_length(zerver_attachment, 0)
+        self.assert_length(uploads_list, 0)
+        self.assertEqual(info["content"], "")
+
+    @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
+    def test_canvas_markdown_not_corrupted_by_slack_formatting(
+        self, mock_build_usermessage: mock.Mock
+    ) -> None:
+        # Canvas content is already valid Zulip Markdown.  Verify that
+        # channel_message_to_zerver_message does not pass it through Slack
+        # formatting conversion, which would turn "* item" bullets into
+        # "** item" (treating them as Slack *bold* delimiters).
+        canvas_content = "# Title\n\n* Bullet 1\n* Bullet 2"
+        canvas_message: dict[str, Any] = {
+            "type": "message",
+            "text": canvas_content,
+            "zulip_canvas": True,
+            "user": "U061A1R2R",
+            "ts": "1705123456.000100",
+            "channel_name": "general",
+        }
+        user_data = [
+            {
+                "id": "U061A1R2R",
+                "name": "jon",
+                "deleted": False,
+                "real_name": "Jon",
+                "profile": {"email": "jon@example.com"},
+            }
+        ]
+        slack_user_id_to_zulip_user_id = {"U061A1R2R": 43}
+        slack_recipient_name_to_zulip_recipient_id = {"general": 1}
+
+        result = channel_message_to_zerver_message(
+            realm_id=1,
+            users=user_data,
+            slack_user_id_to_zulip_user_id=slack_user_id_to_zulip_user_id,
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
+            all_messages=[canvas_message],
+            zerver_realmemoji=[],
+            subscriber_map={},
+            added_channels={"general": ("c1", 1)},
+            dm_members={},
+            domain_name="example.com",
+            long_term_idle=set(),
+            convert_slack_threads=False,
+            do_download_and_export_upload_file=lambda request: None,
+        )
+
+        self.assert_length(result.zerver_message, 1)
+        self.assertEqual(result.zerver_message[0]["content"], canvas_content)
+
     @mock.patch("zerver.data_import.slack.channel_message_to_zerver_message")
     @mock.patch("zerver.data_import.slack.get_messages_iterator")
     def test_convert_slack_workspace_messages(
@@ -2340,6 +2538,7 @@ To Do
             added_mpims: AddedMPIMsT,
             added_dms: AddedDMsT,
             dm_members: DMMembersT,
+            token: str,
         ) -> Iterator[ZerverFieldsT]:
             import copy
 
@@ -2390,6 +2589,7 @@ To Do
                 output_dir=output_dir,
                 convert_slack_threads=False,
                 do_download_and_export_upload_file=lambda request: None,
+                token="xoxb-test-token",
                 chunk_size=1,
             )
 

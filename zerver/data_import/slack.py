@@ -58,6 +58,7 @@ from zerver.data_import.slack_message_conversion import (
 from zerver.lib.emoji import codepoint_to_name
 from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
+from zerver.lib.markdown.from_html import convert_html_to_markdown
 from zerver.lib.message import truncate_content
 from zerver.lib.mime_types import guess_type
 from zerver.lib.parallel import run_parallel_queue
@@ -795,9 +796,12 @@ def process_long_term_idle_users(
     added_dms: AddedDMsT,
     dm_members: DMMembersT,
     zerver_userprofile: list[ZerverFieldsT],
+    token: str,
 ) -> set[int]:
     return long_term_idle_helper(
-        get_messages_iterator(slack_data_dir, added_channels, added_mpims, added_dms, dm_members),
+        get_messages_iterator(
+            slack_data_dir, added_channels, added_mpims, added_dms, dm_members, token
+        ),
         get_message_sending_user,
         get_timestamp_from_message,
         lambda id: slack_user_id_to_zulip_user_id[id],
@@ -823,6 +827,7 @@ def convert_slack_workspace_messages(
     output_dir: str,
     convert_slack_threads: bool,
     do_download_and_export_upload_file: Callable[[UploadFileRequest], None],
+    token: str,
     chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE,
 ) -> tuple[list[ZerverFieldsT], list[UploadRecordData], list[ZerverFieldsT]]:
     """
@@ -841,10 +846,11 @@ def convert_slack_workspace_messages(
         added_dms,
         dm_members,
         zerver_userprofile,
+        token,
     )
 
     all_messages = get_messages_iterator(
-        slack_data_dir, added_channels, added_mpims, added_dms, dm_members
+        slack_data_dir, added_channels, added_mpims, added_dms, dm_members, token
     )
     logging.info("######### IMPORTING MESSAGES STARTED #########\n")
 
@@ -894,12 +900,34 @@ def convert_slack_workspace_messages(
     return total_reactions, total_uploads, total_attachments
 
 
+def fetch_canvas_markdown(file_url: str, token: str) -> str | None:
+    # Fetch a Slack canvas HTML file and return it as Zulip Markdown.
+    try:
+        response = request_file_stream(
+            file_url,
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        html = response.content.decode()
+        # Strip all img tags from the canvas HTML.  Slack embeds JPEG canvas
+        # previews as inline images; these are not readable content and make
+        # the message very large.
+        html = re.sub(r"<img\b.*?/?>", "", html, flags=re.DOTALL | re.IGNORECASE)
+        return convert_html_to_markdown(html)
+    except Exception:
+        logging.warning(
+            "Failed to fetch canvas content from %s; skipping.",
+            file_url,
+        )
+        return None
+
+
 def get_messages_iterator(
     slack_data_dir: str,
     added_channels: dict[str, Any],
     added_mpims: AddedMPIMsT,
     added_dms: AddedDMsT,
     dm_members: DMMembersT,
+    token: str,
 ) -> Iterator[ZerverFieldsT]:
     """This function is an iterator that returns all the messages across
     all Slack channels, in order by timestamp.  It's important to
@@ -931,11 +959,30 @@ def get_messages_iterator(
                     # change this to point to slackbot instead, but
                     # skipping those messages is simpler.
                     continue
-                if message.get("mimetype") == "application/vnd.slack-docs":
-                    # This is a Slack "Post" which is HTML-formatted,
-                    # and we don't have a clean way to import at the
-                    # moment.  We skip them on import.
-                    continue
+                has_canvas = False
+                canvas_texts = []
+                for canvas_file in message.get("files", []):
+                    if canvas_file.get("mimetype") != "application/vnd.slack-docs":
+                        continue
+                    # This file is a Slack "Post" (Canvas), stored as HTML at a
+                    # private download URL.  Fetch and convert it to Markdown.
+                    has_canvas = True
+                    file_url = canvas_file.get("url_private_download")
+                    if file_url is None:
+                        continue
+                    text = fetch_canvas_markdown(file_url, token)
+                    if text is not None:
+                        canvas_texts.append(text)
+                if has_canvas:
+                    if not canvas_texts:
+                        # All canvas files failed to load; skip the message.
+                        continue
+                    message["text"] = "\n\n".join(canvas_texts)
+                    # Mark the message so channel_message_to_zerver_message
+                    # can skip Slack-to-Zulip formatting conversion, which
+                    # would corrupt already-valid Zulip Markdown (e.g. by
+                    # treating "* item" bullets as Slack *bold* markers).
+                    message["zulip_canvas"] = True
                 if dir_name in added_channels:
                     message["channel_name"] = dir_name
                 elif dir_name in added_mpims:
@@ -1086,18 +1133,27 @@ def channel_message_to_zerver_message(
         ]:
             continue
 
-        raw_content = process_slack_block_and_attachment(
-            (to_wild_value("message", json.dumps(message))),
-        )
-
-        try:
-            content, mentioned_user_ids, has_link = convert_to_zulip_markdown(
-                raw_content, users, added_channels, slack_user_id_to_zulip_user_id
+        if message.get("zulip_canvas"):
+            # Canvas content has already been converted to Zulip Markdown in
+            # get_messages_iterator and must not go through Slack formatting
+            # conversion, which would corrupt it (e.g. treating "* item"
+            # bullets as Slack *bold* markers).
+            content = message["text"]
+            mentioned_user_ids: list[int] = []
+            has_link = False
+        else:
+            raw_content = process_slack_block_and_attachment(
+                (to_wild_value("message", json.dumps(message))),
             )
-        except Exception:
-            print("Slack message unexpectedly missing text representation:")
-            print(orjson.dumps(message, option=orjson.OPT_INDENT_2).decode())
-            continue
+
+            try:
+                content, mentioned_user_ids, has_link = convert_to_zulip_markdown(
+                    raw_content, users, added_channels, slack_user_id_to_zulip_user_id
+                )
+            except Exception:
+                print("Slack message unexpectedly missing text representation:")
+                print(orjson.dumps(message, option=orjson.OPT_INDENT_2).decode())
+                continue
         rendered_content = None
 
         if "channel_name" in message:
@@ -1283,6 +1339,12 @@ def process_message_files(
         if fileinfo.get("file_access", "") in ["access_denied", "file_not_found"]:
             # Slack sometimes includes file stubs for files it declares
             # inaccessible and does not further reference.
+            continue
+
+        if fileinfo.get("mimetype") == "application/vnd.slack-docs":
+            # Canvas content is fetched and converted to Markdown text in
+            # get_messages_iterator; skip it here to avoid treating it as a
+            # file attachment.
             continue
 
         url = fileinfo["url_private"]
@@ -1518,7 +1580,7 @@ def fetch_shared_channel_users(
                 if user_id not in normal_user_ids:
                     mirror_dummy_user_ids.add(user_id)
 
-    all_messages = get_messages_iterator(slack_data_dir, added_channels, {}, {}, {})
+    all_messages = get_messages_iterator(slack_data_dir, added_channels, {}, {}, {}, token)
     for message in all_messages:
         if is_integration_bot_message(message):
             # This message is likely from an integration bot. Since Slack's integration
@@ -1760,6 +1822,7 @@ def do_convert_directory(
             output_dir,
             convert_slack_threads,
             do_download_and_export_upload_file,
+            token,
         )
 
     # Move zerver_reactions to realm.json file

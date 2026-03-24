@@ -49,6 +49,7 @@ from zerver.lib.markdown import (
     url_to_a,
 )
 from zerver.lib.markdown.fenced_code import FencedBlockPreprocessor
+from zerver.lib.markdown.from_html import convert_html_to_markdown
 from zerver.lib.mdiff import diff_strings
 from zerver.lib.mention import (
     FullNameInfo,
@@ -3809,3 +3810,34 @@ class MarkdownErrorTests(ZulipTestCase):
         self.assertIn("print('pygments fallback test')", rendered_html)
         mocked_hilite.assert_called()
         self.assertIn("Failed to highlight fenced code block", log.output[0])
+
+
+class TestHtmlToMarkdown(ZulipTestCase):
+    def test_html_entity_decoding(self) -> None:
+        self.assertEqual(
+            convert_html_to_markdown("a rose is not a ros&eacute;"), "a rose is not a rosé"
+        )
+
+    def test_unordered_list_renders_as_bullets(self) -> None:
+        # Zulip requires "* item" (with space) to render as a bullet; html2text
+        # produced "*item" (no space), which rendered as a literal asterisk.
+        html = "<ul><li>foo</li><li>bar</li></ul>"
+        result = convert_html_to_markdown(html)
+        self.assertIn("* foo", result)
+        self.assertIn("* bar", result)
+
+    def test_atx_style_headings(self) -> None:
+        self.assertEqual(convert_html_to_markdown("<h1>Title</h1>"), "# Title")
+        self.assertEqual(convert_html_to_markdown("<h2>Sub</h2>"), "## Sub")
+
+    def test_img_tag_preserved_as_markdown_image(self) -> None:
+        html = '<img src="http://example.com/img.png" alt="photo">'
+        self.assertIn("![photo](http://example.com/img.png)", convert_html_to_markdown(html))
+
+    def test_anchor_tag_preserved_as_markdown_link(self) -> None:
+        html = '<a href="http://example.com">click here</a>'
+        self.assertEqual(convert_html_to_markdown(html), "[click here](http://example.com)")
+
+    def test_bold_and_italic(self) -> None:
+        self.assertEqual(convert_html_to_markdown("<strong>bold</strong>"), "**bold**")
+        self.assertEqual(convert_html_to_markdown("<em>italic</em>"), "*italic*")
