@@ -159,7 +159,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         return image_data, content_type or "application/octet-stream"
 
     @override
-    def upload_single_avatar_image(
+    def store_single_avatar_image(
         self,
         file_path: str,
         *,
