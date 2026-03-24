@@ -124,6 +124,9 @@ export function open_overlay(opts: OverlayOptions): void {
     opts.$overlay.attr("aria-hidden", "false");
     $(".app").attr("aria-hidden", "true");
     $("#navbar-fixed-container").attr("aria-hidden", "true");
+    // Move focus into the overlay so that keyboard focus is trapped within it
+    // and does not remain on the page behind it.
+    opts.$overlay.trigger("focus");
 }
 
 export function close_overlay(name: string): void {
@@ -321,6 +324,24 @@ export function trap_focus_for_settings_overlay(): void {
                 e.preventDefault();
                 visible_focusable_elements[0]!.focus();
             }
+        }
+    });
+
+    // These overlays show a single list or dialog (no two-pane layout), so one
+    // delegated handler traps Tab within them using the wrap_overlay_tab_focus()
+    // helper. They are rendered into their containers on open, hence the
+    // delegation on "body".
+    const overlay_focus_trap_selector = "#draft_overlay";
+    $("body").on("keydown", overlay_focus_trap_selector, function (this: HTMLElement, e) {
+        if (e.key !== "Tab") {
+            return;
+        }
+
+        const visible_focusable_elements =
+            overlay_util.get_visible_focusable_elements_in_overlay_container($(this));
+
+        if (overlay_util.wrap_overlay_tab_focus(e.shiftKey, visible_focusable_elements)) {
+            e.preventDefault();
         }
     });
 }
