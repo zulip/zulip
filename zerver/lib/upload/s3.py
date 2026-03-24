@@ -392,7 +392,7 @@ class S3UploadBackend(ZulipUploadBackend):
         )
 
     @override
-    def delete_avatar_image(self, path_id: str) -> None:
+    def delete_avatar_image_from_storage(self, path_id: str) -> None:
         self.delete_file_from_s3(path_id + ".original", self.avatar_bucket)
         self.delete_file_from_s3(self.get_avatar_path(path_id, True), self.avatar_bucket)
         self.delete_file_from_s3(self.get_avatar_path(path_id, False), self.avatar_bucket)

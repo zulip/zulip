@@ -105,7 +105,7 @@ class ZulipUploadBackend:
     ) -> None:
         raise NotImplementedError
 
-    def delete_avatar_image(self, path_id: str) -> None:
+    def delete_avatar_image_from_storage(self, path_id: str) -> None:
         raise NotImplementedError
 
     # Realm icon and logo uploads
