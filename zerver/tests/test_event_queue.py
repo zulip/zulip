@@ -25,6 +25,7 @@ from zerver.tornado.event_queue import (
     maybe_enqueue_notifications,
     missedmessage_hook,
     persistent_queue_filename,
+    process_notification,
 )
 from zerver.tornado.views import cleanup_event_queue, get_events
 
@@ -80,6 +81,38 @@ class MaybeEnqueueNotificationsTest(ZulipTestCase):
 
             email_notice = mock_queue_json_publish.call_args_list[1][0][1]
             self.assertEqual(email_notice["mentioned_user_group_id"], 33)
+
+
+class ProcessNotificationCompatibilityTest(ZulipTestCase):
+    def test_realm_uri_aliases_to_realm_url(self) -> None:
+        notice = {
+            "event": {"type": "test_event", "realm_uri": "http://zulip.testserver"},
+            "users": [self.example_user("hamlet").id],
+        }
+
+        with mock.patch("zerver.tornado.event_queue.process_event") as mock_process_event:
+            process_notification(notice)
+
+        processed_event = mock_process_event.call_args[0][0]
+        self.assertEqual(processed_event["realm_uri"], "http://zulip.testserver")
+        self.assertEqual(processed_event["realm_url"], "http://zulip.testserver")
+
+    def test_realm_url_not_overridden_by_realm_uri(self) -> None:
+        notice = {
+            "event": {
+                "type": "test_event",
+                "realm_uri": "http://old.zulip.testserver",
+                "realm_url": "http://new.zulip.testserver",
+            },
+            "users": [self.example_user("hamlet").id],
+        }
+
+        with mock.patch("zerver.tornado.event_queue.process_event") as mock_process_event:
+            process_notification(notice)
+
+        processed_event = mock_process_event.call_args[0][0]
+        self.assertEqual(processed_event["realm_uri"], "http://old.zulip.testserver")
+        self.assertEqual(processed_event["realm_url"], "http://new.zulip.testserver")
 
 
 class StreamWatchersTest(ZulipTestCase):
