@@ -146,3 +146,48 @@ def check_auth_settings(
                         )
                     )
     return errors
+
+
+def check_uploads_settings(
+    app_configs: Sequence[AppConfig] | None,
+    databases: Sequence[str] | None,
+    **kwargs: Any,
+) -> Iterable[checks.CheckMessage]:
+    uploads_dir = settings.LOCAL_UPLOADS_DIR
+    if uploads_dir is None:
+        errors = []
+        if settings.S3_AUTH_UPLOADS_BUCKET == "":
+            errors.append(
+                checks.Error(
+                    "Neither settings.LOCAL_UPLOADS_DIR nor settings.S3_AUTH_UPLOADS_BUCKET is set",
+                    obj="settings.S3_AUTH_UPLOADS_BUCKET",
+                    id="zulip.E005",
+                )
+            )
+        if settings.S3_AVATAR_BUCKET == "":
+            errors.append(
+                checks.Error(
+                    "Neither settings.LOCAL_UPLOADS_DIR nor settings.S3_AVATAR_BUCKET is set",
+                    obj="settings.S3_AVATAR_BUCKET",
+                    id="zulip.E005",
+                )
+            )
+        return errors
+
+    if not os.path.isdir(uploads_dir):
+        return [
+            checks.Error(
+                f"settings.LOCAL_UPLOADS_DIR ({uploads_dir}) does not exist",
+                obj="settings.LOCAL_UPLOADS_DIR",
+                id="zulip.E006",
+            )
+        ]
+    elif not os.access(uploads_dir, os.W_OK):
+        return [
+            checks.Error(
+                f"settings.LOCAL_UPLOADS_DIR ({uploads_dir}) is not writable",
+                obj="settings.LOCAL_UPLOADS_DIR",
+                id="zulip.E006",
+            )
+        ]
+    return []
