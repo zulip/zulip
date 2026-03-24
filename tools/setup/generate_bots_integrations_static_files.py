@@ -56,7 +56,17 @@ def generate_zulip_bots_static_files() -> None:
 
             if os.path.isfile(doc_path):
                 os.makedirs(dst_dir, exist_ok=True)
-                shutil.copyfile(doc_path, os.path.join(dst_dir, "doc.md"))
+
+                with open(doc_path) as f:
+                    content = f.read()
+
+                # Fix image links to point to the correct static directory
+                content = content.replace("](assets/", f"*(/static/generated/bots/{name}/assets/")
+                # replacing the temporary * we used with ]
+                content = content.replace("*(", "](")
+
+                with open(os.path.join(dst_dir, "doc.md"), "w") as f:
+                    f.write(content)
 
                 logo_pattern = os.path.join(src_dir, "logo.*")
                 logos = glob.glob(logo_pattern)

@@ -1096,6 +1096,7 @@ PYTHON_API_INTEGRATIONS: list[PythonAPIIntegration] = [
 ]
 
 BOT_INTEGRATIONS: list[BotIntegration] = [
+    BotIntegration("baremetrics", ["financial", "bots"], display_name="Baremetrics"),
     BotIntegration("github_detail", ["version-control", "bots"], display_name="GitHub Detail"),
     BotIntegration("xkcd", ["bots", "entertainment"], display_name="xkcd"),
 ]
@@ -1149,7 +1150,7 @@ INTEGRATIONS_MISSING_SCREENSHOT_CONFIG = (
     # Disabled integrations that are in the process of being added or rewritten.
     | {"intercom", "notion"}
     # Integrations that call external API endpoints.
-    | {"slack"}
+    | {"baremetrics", "slack"}
     # Integrations that require screenshots of message threads - support is yet to be added
     | {
         "errbot",
