@@ -10,6 +10,7 @@ import render_topic_list_new_topic from "../templates/topic_list_new_topic.hbs";
 import * as blueslip from "./blueslip.ts";
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
+import {ListCursor} from "./list_cursor.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {recent_view_messages_data} from "./recent_view_messages_data.ts";
@@ -40,6 +41,59 @@ let zoomed = false;
 // Scroll position before user started searching.
 let pre_search_scroll_position = 0;
 let previous_search_term = "";
+
+let topic_list_cursor: ListCursor<JQuery>;
+
+function get_topic_items(): JQuery {
+    return scroll_util
+        .get_content_element($("#more-topics-modal .topic-list-scroll-container"))
+        .find("li.topic-list-item");
+}
+
+function initialize_topic_list_cursor(): void {
+    topic_list_cursor = new ListCursor({
+        highlight_class: "highlighted_row",
+        list: {
+            scroll_container_selector: "#more-topics-modal .topic-list-scroll-container",
+            find_li(opts) {
+                return opts.key;
+            },
+            first_key() {
+                const $items = get_topic_items();
+                if ($items.length === 0) {
+                    return undefined;
+                }
+                return $items.first();
+            },
+            prev_key($key) {
+                const $prev = $key.prev("li.topic-list-item");
+                if ($prev.length === 0) {
+                    return $key;
+                }
+                return $prev;
+            },
+            next_key($key) {
+                const $next = $key.next("li.topic-list-item");
+                if ($next.length === 0) {
+                    return $key;
+                }
+                return $next;
+            },
+        },
+    });
+}
+
+function is_topic_filter_active(): boolean {
+    return (
+        get_left_sidebar_topic_search_term() !== "" ||
+        (topic_filter_pill_widget?.items().length ?? 0) > 0
+    );
+}
+
+function reset_topic_list_cursor({show_highlight}: {show_highlight: boolean}): void {
+    topic_list_cursor.set_is_highlight_visible(show_highlight);
+    topic_list_cursor.reset();
+}
 
 export function update(): void {
     for (const widget of active_widgets.values()) {
@@ -94,6 +148,7 @@ export function zoom_out(): void {
     }
 
     zoomed = false;
+    topic_list_cursor.clear();
     ui_util.enable_left_sidebar_search();
 
     const stream_id = zoomed_in_widget?.my_stream_id;
@@ -423,6 +478,7 @@ export function clear_topic_search(e: JQuery.Event): void {
     e.stopPropagation();
 
     topic_filter_pill_widget?.clear(true);
+    topic_list_cursor.set_is_highlight_visible(false);
 
     const $input = $("#topic_filter_query");
     // Since the `clear` function of the topic_filter_pill_widget
@@ -548,6 +604,7 @@ export function zoom_in($stream_li: JQuery): void {
     zoomed_in_widget = new LeftSidebarTopicListWidget($stream_li, stream_id, true);
     const spinner = true;
     zoomed_in_widget.build(spinner);
+    reset_topic_list_cursor({show_highlight: false});
 
     function on_success(): void {
         if (!active_widgets.has(stream_id!)) {
@@ -570,6 +627,7 @@ export function zoom_in($stream_li: JQuery): void {
         // to a different position anyway.
         left_sidebar_scroll_zoomed_in_topic_into_view();
         topic_state_typeahead?.lookup(true);
+        topic_list_cursor.reset();
     }
 
     stream_topic_history_util.get_server_history(stream_id, on_success);
@@ -617,6 +675,7 @@ export function setup_topic_search_typeahead(): void {
         return;
     }
 
+    initialize_topic_list_cursor();
     topic_filter_pill_widget = topic_filter_pill.create_pills($pill_container);
 
     const typeahead_input: TypeaheadInputElement = {
@@ -659,19 +718,55 @@ export function setup_topic_search_typeahead(): void {
 
     topic_state_typeahead = new Typeahead(typeahead_input, options);
 
+    $input.on("focus", () => {
+        reset_topic_list_cursor({show_highlight: is_topic_filter_active()});
+    });
+
+    $input.on("blur", () => {
+        topic_list_cursor.clear();
+    });
+
     $input.on("keydown", (e: JQuery.KeyDownEvent) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            e.stopPropagation();
-        } else if (e.key === ",") {
-            e.stopPropagation();
-            return;
+        switch (e.key) {
+            case "Enter": {
+                const $current_row = topic_list_cursor.get_key();
+                if ($current_row !== undefined) {
+                    const $nearest_link = $current_row.find("a").first();
+                    if ($nearest_link.length > 0) {
+                        $nearest_link[0]!.click();
+                    }
+                }
+                e.preventDefault();
+                e.stopPropagation();
+
+                break;
+            }
+            case "ArrowDown": {
+                topic_list_cursor.next();
+                e.preventDefault();
+                e.stopPropagation();
+
+                break;
+            }
+            case "ArrowUp": {
+                topic_list_cursor.prev();
+                e.preventDefault();
+                e.stopPropagation();
+
+                break;
+            }
+            case ",": {
+                e.stopPropagation();
+                return;
+            }
+            // No default
         }
     });
 
     topic_filter_pill_widget.onPillRemove(() => {
         if (zoomed_in_widget) {
             zoomed_in_widget.build();
+            reset_topic_list_cursor({show_highlight: is_topic_filter_active()});
         }
     });
 }
@@ -730,6 +825,7 @@ export function initialize({
         const search_term = get_left_sidebar_topic_search_term();
         const is_previous_search_term_empty = previous_search_term === "";
         previous_search_term = search_term;
+        const topic_filter_active = is_topic_filter_active();
 
         const left_sidebar_scroll_container = scroll_util.get_left_sidebar_scroll_container();
         if (search_term === "") {
@@ -737,6 +833,7 @@ export function initialize({
                 zoomed_in_widget!.build();
                 // Restore previous scroll position.
                 left_sidebar_scroll_container.scrollTop(pre_search_scroll_position);
+                reset_topic_list_cursor({show_highlight: topic_filter_active});
             });
 
             // When the contenteditable div is empty, the browser
@@ -760,6 +857,7 @@ export function initialize({
                 zoomed_in_widget!.build();
                 // Always scroll to top when there is a search term present.
                 left_sidebar_scroll_container.scrollTop(0);
+                reset_topic_list_cursor({show_highlight: topic_filter_active});
             });
         }
     });

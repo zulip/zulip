@@ -7,6 +7,7 @@ const list_selectors = [
     "#buddy-list-other-users",
     "#buddy-list-participants",
     "#modal-direct-messages-list",
+    "#more-topics-modal .topic-list-scroll-container",
 ];
 
 export function inside_list(e: JQuery.KeyDownEvent): boolean {
