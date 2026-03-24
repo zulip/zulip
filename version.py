@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 480
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (373, 0)  # bumped 2026-03-11 to upgrade JavaScript dependencies
+PROVISION_VERSION = (373, 1)  # bumped 2026-03-24 to add markdownify dependency
