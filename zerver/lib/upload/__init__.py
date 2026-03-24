@@ -483,7 +483,7 @@ def upload_logo_image(
 ) -> None:
     if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
         raise BadImageError(_("Invalid image format"))
-    upload_backend.upload_realm_logo_image(user_file, user_profile, night, content_type)
+    upload_backend.store_realm_logo_image(user_file, user_profile, night, content_type)
 
 
 # Realm emoji uploads

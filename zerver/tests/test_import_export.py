@@ -218,12 +218,12 @@ class ExportFile(ZulipTestCase):
             do_change_icon_source(realm, Realm.ICON_UPLOADED, acting_user=None)
 
         with get_test_image_file("img.png") as img_file:
-            upload.upload_backend.upload_realm_logo_image(
+            upload.upload_backend.store_realm_logo_image(
                 img_file, user_profile, night=False, content_type="image/png"
             )
             do_change_logo_source(realm, Realm.LOGO_UPLOADED, False, acting_user=user_profile)
         with get_test_image_file("img.png") as img_file:
-            upload.upload_backend.upload_realm_logo_image(
+            upload.upload_backend.store_realm_logo_image(
                 img_file, user_profile, night=True, content_type="image/png"
             )
             do_change_logo_source(realm, Realm.LOGO_UPLOADED, True, acting_user=user_profile)
