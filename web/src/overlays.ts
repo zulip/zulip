@@ -336,4 +336,30 @@ export function trap_focus_for_settings_overlay(): void {
             target.focus();
         }
     });
+
+    $(".overlay[data-overlay='informationalOverlays']").on("keydown", (e) => {
+        if (e.key !== "Tab") {
+            return;
+        }
+
+        const $overlay = $(e.currentTarget);
+        const visible_focusable_elements =
+            overlay_util.get_visible_focusable_elements_in_overlay_container($overlay);
+
+        if (visible_focusable_elements.length === 0) {
+            return;
+        }
+
+        if (e.shiftKey) {
+            if (document.activeElement === visible_focusable_elements[0]) {
+                e.preventDefault();
+                visible_focusable_elements.at(-1)!.focus();
+            }
+        } else {
+            if (document.activeElement === visible_focusable_elements.at(-1)) {
+                e.preventDefault();
+                visible_focusable_elements[0]!.focus();
+            }
+        }
+    });
 }
