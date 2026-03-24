@@ -7,12 +7,22 @@ const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
 const channel = mock_esm("../src/channel");
+mock_esm("../src/popup_banners", {
+    open_reloading_application_banner: noop,
+});
 
 // override file-level function call in reload.ts
 window.addEventListener = noop;
 const reload = zrequire("reload");
+const reload_state = zrequire("reload_state");
 
-set_global("window", {to_$: () => $("window-stub")});
+set_global("window", {
+    to_$: () => $("window-stub"),
+    location: {
+        reload: noop,
+        replace: noop,
+    },
+});
 
 run_test("old_metadata_string_is_stale", () => {
     assert.ok(reload.is_stale_refresh_token({reload_data: {hash: ""}}, Date.now()), true);
@@ -64,4 +74,17 @@ run_test("reload", () => {
     reload.maybe_reset_pending_reload_timeout("compose_start");
 
     reload.maybe_reset_pending_reload_timeout("compose_end");
+});
+
+run_test("immediate_reload_skips_compatibility_check", () => {
+    reload_state.clear_for_testing();
+
+    // do_reload_app should run synchronously without the /compatibility
+    // check, so channel.get should not be called. Setting it to
+    // undefined ensures a clear error if it is called unexpectedly.
+    channel.get = undefined;
+
+    reload.initiate({immediate: true, save_compose: true});
+
+    assert.ok(reload_state.is_in_progress());
 });
