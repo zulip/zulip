@@ -4448,6 +4448,7 @@ class RealmPropertyActionTest(BaseAction):
             topics_policy=Realm.REALM_TOPICS_POLICY_TYPES,
             media_preview_size=[100, 150, 200],
             default_avatar_source=["G", "J"],
+            topic_resolution_message_requirement=Realm.TOPIC_RESOLUTION_MESSAGE_REQUIREMENT_TYPES,
         )
 
         vals = test_values.get(name)

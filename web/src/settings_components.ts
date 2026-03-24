@@ -248,6 +248,7 @@ export const simple_dropdown_realm_settings_schema = z.pick(realm_schema, {
     realm_org_type: true,
     realm_media_preview_size: true,
     realm_message_edit_history_visibility_policy: true,
+    realm_topic_resolution_message_requirement: true,
     realm_topics_policy: true,
 });
 export type SimpleDropdownRealmSettings = z.infer<typeof simple_dropdown_realm_settings_schema>;
