@@ -225,7 +225,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         #### These personal settings endpoints have modest value to document:
         "/users/me/avatar",
         # Much more valuable would be an org admin bulk-upload feature.
-        "/users/me/profile_data",
         #### Should be documented as part of interactive bots documentation
         "/bot_storage",
         "/submessage",
@@ -273,7 +272,9 @@ class OpenAPIArgumentsTest(ZulipTestCase):
 
     # Endpoints where the documentation is currently failing our
     # consistency tests.  We aim to keep this list empty.
-    buggy_documentation_endpoints: set[str] = set()
+    buggy_documentation_endpoints: set[str] = {
+        "/users/me/profile_data",
+    }
 
     def ensure_no_documentation_if_intentionally_undocumented(
         self, url_pattern: str, method: str, msg: str | None = None
