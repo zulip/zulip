@@ -319,10 +319,9 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
         );
     }
     if (base === "settings" && section === "your-bots") {
-        // #settings/your-bots is being redirected to #organization/bots/your-bots.
+        // #settings/your-bots is being redirected to #settings/bots/your-bots.
         section = "bots";
-        base = "organization";
-        window.history.replaceState(null, "", "#organization/bots/your-bots");
+        window.history.replaceState(null, "", "#settings/bots/your-bots");
     }
     if ((base === "settings" || base === "organization") && !section) {
         let settings_panel_object = settings_panel_menu.normal_settings;
