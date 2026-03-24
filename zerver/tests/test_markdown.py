@@ -49,6 +49,7 @@ from zerver.lib.markdown import (
     url_to_a,
 )
 from zerver.lib.markdown.fenced_code import FencedBlockPreprocessor
+from zerver.lib.markdown.from_html import convert_html_to_markdown
 from zerver.lib.mdiff import diff_strings
 from zerver.lib.mention import (
     FullNameInfo,
@@ -3809,3 +3810,10 @@ class MarkdownErrorTests(ZulipTestCase):
         self.assertIn("print('pygments fallback test')", rendered_html)
         mocked_hilite.assert_called()
         self.assertIn("Failed to highlight fenced code block", log.output[0])
+
+
+class TestHtmlToMarkdown(ZulipTestCase):
+    def test_unicode(self) -> None:
+        self.assertEqual(
+            convert_html_to_markdown("a rose is not a ros&eacute;"), "a rose is not a rosé"
+        )
