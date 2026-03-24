@@ -17,6 +17,7 @@ import type {EmojiDict} from "./emoji.ts";
 import * as flatpickr from "./flatpickr.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as linkifiers from "./linkifiers.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import * as muted_users from "./muted_users.ts";
@@ -1195,13 +1196,28 @@ export function get_candidates(
         }
 
         current_token = current_token.slice(1);
-        if (current_token.startsWith("**")) {
+        const has_channel_syntax = current_token.startsWith("**");
+        if (has_channel_syntax) {
             current_token = current_token.slice(2);
         }
 
         // Don't autocomplete if there is a space following a '#'
         if (current_token.startsWith(" ")) {
             return [];
+        }
+
+        // When the typed text matches a linkifier pattern, require at
+        // least 3 characters before showing channel suggestions to
+        // avoid distracting typeahead when typing issue numbers.
+        if (!has_channel_syntax && current_token.length < 3) {
+            const text_with_hash = "#" + current_token;
+            for (const pattern of linkifiers.get_linkifier_map().keys()) {
+                const matches = pattern.test(text_with_hash);
+                pattern.lastIndex = 0;
+                if (matches) {
+                    return [];
+                }
+            }
         }
 
         completing = "stream";
