@@ -1,5 +1,5 @@
-import time
-from datetime import datetime, timedelta, timezone
+import time as time_module
+from datetime import datetime, time, timedelta, timezone
 from typing import Any
 
 import orjson
@@ -90,6 +90,121 @@ class ComputeNextDeliveryTest(ZulipTestCase):
                 RecurringScheduledMessage.SPECIFIC_DAYS, [], time(9, 0), NOW
             )
 
+    # ------------------------------------------------------------------
+    # Monthly — calendar_day rules
+    # ------------------------------------------------------------------
+
+    def test_monthly_calendar_day_in_current_month(self) -> None:
+        # day=15 has not yet passed in January; next delivery is Jan 15.
+        result = compute_next_delivery(
+            RecurringScheduledMessage.MONTHLY,
+            {"type": "calendar_day", "day": 15},
+            time(9, 0),
+            NOW,
+        )
+        self.assertEqual(result, datetime(2026, 1, 15, 9, 0, 0, tzinfo=UTC))
+
+    def test_monthly_calendar_day_past_this_month(self) -> None:
+        # day=5 is before NOW (Jan 7); next delivery rolls over to Feb 5.
+        result = compute_next_delivery(
+            RecurringScheduledMessage.MONTHLY,
+            {"type": "calendar_day", "day": 5},
+            time(9, 0),
+            NOW,
+        )
+        self.assertEqual(result, datetime(2026, 2, 5, 9, 0, 0, tzinfo=UTC))
+
+    def test_monthly_calendar_day_last_day(self) -> None:
+        # day=-1 resolves to Jan 31 (last day of January).
+        result = compute_next_delivery(
+            RecurringScheduledMessage.MONTHLY,
+            {"type": "calendar_day", "day": -1},
+            time(9, 0),
+            NOW,
+        )
+        self.assertEqual(result, datetime(2026, 1, 31, 9, 0, 0, tzinfo=UTC))
+
+    def test_monthly_calendar_day_last_day_is_leap_day(self) -> None:
+        # 2024 is a leap year; last day of February is Feb 29.
+        after = datetime(2024, 1, 31, 10, 0, 0, tzinfo=UTC)
+        result = compute_next_delivery(
+            RecurringScheduledMessage.MONTHLY,
+            {"type": "calendar_day", "day": -1},
+            time(9, 0),
+            after,
+        )
+        self.assertEqual(result, datetime(2024, 2, 29, 9, 0, 0, tzinfo=UTC))
+
+    def test_monthly_calendar_day_clamped_for_short_month(self) -> None:
+        # day=31 does not exist in February; it is clamped to Feb 28 (non-leap year).
+        after = datetime(2026, 1, 31, 10, 0, 0, tzinfo=UTC)
+        result = compute_next_delivery(
+            RecurringScheduledMessage.MONTHLY,
+            {"type": "calendar_day", "day": 31},
+            time(9, 0),
+            after,
+        )
+        self.assertEqual(result, datetime(2026, 2, 28, 9, 0, 0, tzinfo=UTC))
+
+    # ------------------------------------------------------------------
+    # Monthly — ordinal_weekday rules
+    # ------------------------------------------------------------------
+
+    def test_monthly_ordinal_weekday_first_monday_past_this_month(self) -> None:
+        # First Monday of January 2026 is Jan 5 — before NOW (Jan 7).
+        # The next first Monday is Feb 2 (Feb 1 is Sunday).
+        result = compute_next_delivery(
+            RecurringScheduledMessage.MONTHLY,
+            {"type": "ordinal_weekday", "ordinal": 1, "weekday": 0},
+            time(9, 0),
+            NOW,
+        )
+        self.assertEqual(result, datetime(2026, 2, 2, 9, 0, 0, tzinfo=UTC))
+
+    def test_monthly_ordinal_weekday_last_friday(self) -> None:
+        # Last Friday of January 2026: Jan 31 is Saturday, so last Friday is Jan 30.
+        result = compute_next_delivery(
+            RecurringScheduledMessage.MONTHLY,
+            {"type": "ordinal_weekday", "ordinal": -1, "weekday": 4},
+            time(9, 0),
+            NOW,
+        )
+        self.assertEqual(result, datetime(2026, 1, 30, 9, 0, 0, tzinfo=UTC))
+
+    def test_monthly_ordinal_weekday_fourth_in_current_month(self) -> None:
+        # Jan 1 is Thursday; first Wednesday is Jan 7; fourth Wednesday is Jan 28.
+        # Jan 28 09:00 is after NOW (Jan 7 10:00), so delivery is Jan 28.
+        # Note: the 4th occurrence of any weekday always falls on day 22–28, so
+        # it exists in every month and a month is never skipped for ordinal=4.
+        result = compute_next_delivery(
+            RecurringScheduledMessage.MONTHLY,
+            {"type": "ordinal_weekday", "ordinal": 4, "weekday": 2},
+            time(9, 0),
+            NOW,
+        )
+        self.assertEqual(result, datetime(2026, 1, 28, 9, 0, 0, tzinfo=UTC))
+
+    def test_monthly_ordinal_weekday_advances_to_next_month_when_past(self) -> None:
+        # The fourth Wednesday of January (Jan 28) has already passed at 10:00.
+        # Feb 1 is Sunday; first Wednesday is Feb 4; fourth Wednesday is Feb 25.
+        after = datetime(2026, 1, 28, 10, 0, 0, tzinfo=UTC)
+        result = compute_next_delivery(
+            RecurringScheduledMessage.MONTHLY,
+            {"type": "ordinal_weekday", "ordinal": 4, "weekday": 2},
+            time(9, 0),
+            after,
+        )
+        self.assertEqual(result, datetime(2026, 2, 25, 9, 0, 0, tzinfo=UTC))
+
+    def test_monthly_invalid_rule_type_raises(self) -> None:
+        with self.assertRaises(ValueError):
+            compute_next_delivery(
+                RecurringScheduledMessage.MONTHLY,
+                {"type": "biweekly"},
+                time(9, 0),
+                NOW,
+            )
+
 
 # ---------------------------------------------------------------------------
 # API tests: GET, POST, DELETE
@@ -124,6 +239,37 @@ class RecurringScheduledMessageAPITest(ZulipTestCase):
             "scheduled_time": "09:00",
         }
 
+    def _make_monthly_calendar_day_payload(
+        self,
+        day: int = 15,
+        stream_name: str = "Verona",
+        topic: str = "standup",
+    ) -> dict[str, Any]:
+        return {
+            "content": "Monthly calendar day message",
+            "destinations": orjson.dumps([self._stream_destination(stream_name, topic)]).decode(),
+            "recurrence_type": "monthly",
+            "recurrence_days": orjson.dumps({"type": "calendar_day", "day": day}).decode(),
+            "scheduled_time": "09:00",
+        }
+
+    def _make_monthly_ordinal_weekday_payload(
+        self,
+        ordinal: int = 1,
+        weekday: int = 0,
+        stream_name: str = "Verona",
+        topic: str = "standup",
+    ) -> dict[str, Any]:
+        return {
+            "content": "Monthly ordinal weekday message",
+            "destinations": orjson.dumps([self._stream_destination(stream_name, topic)]).decode(),
+            "recurrence_type": "monthly",
+            "recurrence_days": orjson.dumps(
+                {"type": "ordinal_weekday", "ordinal": ordinal, "weekday": weekday}
+            ).decode(),
+            "scheduled_time": "09:00",
+        }
+
     def _make_one_time_payload(
         self,
         content: str = "One-time message",
@@ -138,7 +284,7 @@ class RecurringScheduledMessageAPITest(ZulipTestCase):
             "recurrence_type": "one_time",
             "recurrence_days": orjson.dumps([]).decode(),
             "scheduled_time": "09:00",
-            "scheduled_delivery_timestamp": int(time.time()) + 86400,
+            "scheduled_delivery_timestamp": int(time_module.time()) + 86400,
         }
 
     # ------------------------------------------------------------------
@@ -263,13 +409,13 @@ class RecurringScheduledMessageAPITest(ZulipTestCase):
         payload = self._make_weekly_payload()
         del payload["content"]
         result = self._post(payload)
-        self.assert_json_error(result, "content is missing", status_code=400)
+        self.assert_json_error(result, "Missing 'content' argument", status_code=400)
 
     def test_create_rejects_empty_content(self) -> None:
         self.login("hamlet")
         payload = self._make_weekly_payload(content="   ")
         result = self._post(payload)
-        self.assert_json_error(result, "content is too short", status_code=400)
+        self.assert_json_error(result, "content cannot be blank", status_code=400)
 
     def test_create_rejects_empty_destinations(self) -> None:
         self.login("hamlet")
@@ -325,9 +471,13 @@ class RecurringScheduledMessageAPITest(ZulipTestCase):
     def test_create_rejects_invalid_recurrence_type(self) -> None:
         self.login("hamlet")
         payload = self._make_weekly_payload()
-        payload["recurrence_type"] = "monthly"
+        payload["recurrence_type"] = "quarterly"
         result = self._post(payload)
-        self.assert_json_error(result, "Invalid recurrence_type", status_code=400)
+        self.assert_json_error(
+            result,
+            "Invalid recurrence_type: Value error, Not in the list of possible values",
+            status_code=400,
+        )
 
     def test_create_rejects_weekly_without_recurrence_days(self) -> None:
         self.login("hamlet")
@@ -384,7 +534,7 @@ class RecurringScheduledMessageAPITest(ZulipTestCase):
     def test_create_one_time_rejects_past_timestamp(self) -> None:
         self.login("hamlet")
         payload = self._make_one_time_payload()
-        payload["scheduled_delivery_timestamp"] = int(time.time()) - 3600  # 1 hour ago
+        payload["scheduled_delivery_timestamp"] = int(time_module.time()) - 3600  # 1 hour ago
         result = self._post(payload)
         self.assert_json_error(result, "Scheduled delivery time must be in the future.", status_code=400)
 
@@ -432,6 +582,113 @@ class RecurringScheduledMessageAPITest(ZulipTestCase):
         result = self.client_delete("/json/recurring_scheduled_messages/999999")
         self.assert_json_error(
             result, "Recurring scheduled message does not exist.", status_code=404
+        )
+
+    # ------------------------------------------------------------------
+    # POST — monthly creation
+    # ------------------------------------------------------------------
+
+    def test_create_monthly_calendar_day_job(self) -> None:
+        self.login("hamlet")
+        result = self._post(self._make_monthly_calendar_day_payload(day=15))
+        data = self.assert_json_success(result)
+
+        job = RecurringScheduledMessage.objects.get(id=data["recurring_scheduled_message_id"])
+        self.assertEqual(job.recurrence_type, RecurringScheduledMessage.MONTHLY)
+        self.assertEqual(job.recurrence_days, {"type": "calendar_day", "day": 15})
+
+    def test_create_monthly_last_day_job(self) -> None:
+        self.login("hamlet")
+        result = self._post(self._make_monthly_calendar_day_payload(day=-1))
+        data = self.assert_json_success(result)
+
+        job = RecurringScheduledMessage.objects.get(id=data["recurring_scheduled_message_id"])
+        self.assertEqual(job.recurrence_days, {"type": "calendar_day", "day": -1})
+
+    def test_create_monthly_ordinal_weekday_job(self) -> None:
+        # "First Monday of the month"
+        self.login("hamlet")
+        result = self._post(self._make_monthly_ordinal_weekday_payload(ordinal=1, weekday=0))
+        data = self.assert_json_success(result)
+
+        job = RecurringScheduledMessage.objects.get(id=data["recurring_scheduled_message_id"])
+        self.assertEqual(job.recurrence_type, RecurringScheduledMessage.MONTHLY)
+        self.assertEqual(
+            job.recurrence_days, {"type": "ordinal_weekday", "ordinal": 1, "weekday": 0}
+        )
+
+    def test_create_monthly_last_weekday_job(self) -> None:
+        # "Last Friday of the month"
+        self.login("hamlet")
+        result = self._post(self._make_monthly_ordinal_weekday_payload(ordinal=-1, weekday=4))
+        data = self.assert_json_success(result)
+
+        job = RecurringScheduledMessage.objects.get(id=data["recurring_scheduled_message_id"])
+        self.assertEqual(
+            job.recurrence_days, {"type": "ordinal_weekday", "ordinal": -1, "weekday": 4}
+        )
+
+    # ------------------------------------------------------------------
+    # POST — monthly validation errors
+    # ------------------------------------------------------------------
+
+    def test_create_monthly_rejects_list_for_recurrence_days(self) -> None:
+        self.login("hamlet")
+        payload = self._make_monthly_calendar_day_payload()
+        payload["recurrence_days"] = orjson.dumps([0, 2, 4]).decode()
+        result = self._post(payload)
+        self.assert_json_error(
+            result, "monthly recurrence_days must be a dict.", status_code=400
+        )
+
+    def test_create_monthly_rejects_unknown_rule_type(self) -> None:
+        self.login("hamlet")
+        payload = self._make_monthly_calendar_day_payload()
+        payload["recurrence_days"] = orjson.dumps({"type": "biweekly"}).decode()
+        result = self._post(payload)
+        self.assert_json_error(
+            result,
+            "monthly recurrence_days must have type 'calendar_day' or 'ordinal_weekday', "
+            "got 'biweekly'.",
+            status_code=400,
+        )
+
+    def test_create_monthly_rejects_out_of_range_calendar_day(self) -> None:
+        self.login("hamlet")
+        payload = self._make_monthly_calendar_day_payload()
+        payload["recurrence_days"] = orjson.dumps({"type": "calendar_day", "day": 32}).decode()
+        result = self._post(payload)
+        self.assert_json_error(
+            result,
+            "calendar_day rule requires 'day' as an integer 1\u201331 or -1 for last day.",
+            status_code=400,
+        )
+
+    def test_create_monthly_rejects_invalid_ordinal(self) -> None:
+        self.login("hamlet")
+        payload = self._make_monthly_ordinal_weekday_payload()
+        payload["recurrence_days"] = orjson.dumps(
+            {"type": "ordinal_weekday", "ordinal": 5, "weekday": 0}
+        ).decode()
+        result = self._post(payload)
+        self.assert_json_error(
+            result,
+            "ordinal_weekday rule requires 'ordinal' as 1\u20134 or -1 for last.",
+            status_code=400,
+        )
+
+    def test_create_monthly_rejects_invalid_weekday(self) -> None:
+        self.login("hamlet")
+        payload = self._make_monthly_ordinal_weekday_payload()
+        payload["recurrence_days"] = orjson.dumps(
+            {"type": "ordinal_weekday", "ordinal": 1, "weekday": 7}
+        ).decode()
+        result = self._post(payload)
+        self.assert_json_error(
+            result,
+            "ordinal_weekday rule requires 'weekday' as an integer "
+            "0 (Monday) \u2013 6 (Sunday).",
+            status_code=400,
         )
 
 
@@ -538,6 +795,10 @@ class RecurringScheduledMessageDeliveryTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         job = self._make_stream_job(sender_name="hamlet")
         change_user_is_active(hamlet, False)
+
+        # Refresh the job to clear the cached sender relation; otherwise
+        # job.sender still reflects the pre-deactivation in-memory state.
+        job.refresh_from_db()
 
         with self.assertRaises(Exception):
             do_deliver_recurring_scheduled_message(job)

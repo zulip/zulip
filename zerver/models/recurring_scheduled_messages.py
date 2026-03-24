@@ -12,12 +12,14 @@ class RecurringScheduledMessage(models.Model):
     DAILY = "daily"
     WEEKLY = "weekly"
     SPECIFIC_DAYS = "specific_days"
+    MONTHLY = "monthly"
 
     RECURRENCE_TYPES = [
         (ONE_TIME, "One time"),
         (DAILY, "Daily"),
         (WEEKLY, "Weekly"),
         (SPECIFIC_DAYS, "Specific days"),
+        (MONTHLY, "Monthly"),
     ]
 
     sender = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
@@ -35,9 +37,16 @@ class RecurringScheduledMessage(models.Model):
         default=ONE_TIME,
     )
 
-    # List of weekday integers (0=Monday … 6=Sunday).
-    # Used when recurrence_type is WEEKLY or SPECIFIC_DAYS.
-    # Empty list for ONE_TIME and DAILY.
+    # Recurrence rule data; interpretation depends on recurrence_type:
+    #   one_time / daily       — empty list []
+    #   weekly / specific_days — list of weekday ints (0=Monday … 6=Sunday)
+    #   monthly                — dict with one of two shapes:
+    #     {"type": "calendar_day", "day": <int>}
+    #         day 1–31, or -1 for the last day of the month; days beyond
+    #         the month's length are clamped to the last day of that month.
+    #     {"type": "ordinal_weekday", "ordinal": <int>, "weekday": <int>}
+    #         ordinal 1–4 for the nth occurrence, or -1 for the last;
+    #         weekday 0=Monday … 6=Sunday.
     recurrence_days = models.JSONField(default=list)
 
     # Time of day to send, stored in UTC.

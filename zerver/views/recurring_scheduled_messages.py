@@ -13,6 +13,7 @@ from zerver.actions.recurring_scheduled_messages import (
     do_get_recurring_scheduled_messages,
 )
 from zerver.lib.exceptions import DeliveryTimeNotInFutureError, JsonableError
+from zerver.lib.recurring_scheduled_messages import validate_monthly_rule
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
@@ -25,6 +26,7 @@ VALID_RECURRENCE_TYPES = [
     RecurringScheduledMessage.DAILY,
     RecurringScheduledMessage.WEEKLY,
     RecurringScheduledMessage.SPECIFIC_DAYS,
+    RecurringScheduledMessage.MONTHLY,
 ]
 
 
@@ -69,18 +71,37 @@ def _validate_destinations(destinations: list[dict[str, Any]]) -> None:
             )
 
 
-def _validate_recurrence_days(recurrence_days: list[int], recurrence_type: str) -> None:
-    """Validate weekday list for recurrence types that require it."""
+def _validate_recurrence_days(
+    recurrence_days: list[int] | dict[str, str | int], recurrence_type: str
+) -> None:
+    """Validate the recurrence_days value for the given recurrence_type."""
     if recurrence_type in (
+        RecurringScheduledMessage.ONE_TIME,
+        RecurringScheduledMessage.DAILY,
+    ):
+        if recurrence_days:
+            raise JsonableError(
+                _("recurrence_days must be empty for one_time and daily recurrence types.")
+            )
+
+    elif recurrence_type in (
         RecurringScheduledMessage.WEEKLY,
         RecurringScheduledMessage.SPECIFIC_DAYS,
     ):
-        if not recurrence_days:
+        if not isinstance(recurrence_days, list) or not recurrence_days:
             raise JsonableError(
                 _("recurrence_days is required for weekly and specific_days recurrence types.")
             )
         if not all(isinstance(d, int) and 0 <= d <= 6 for d in recurrence_days):
-            raise JsonableError(_("recurrence_days must be integers between 0 (Monday) and 6 (Sunday)."))
+            raise JsonableError(
+                _("recurrence_days must be integers between 0 (Monday) and 6 (Sunday).")
+            )
+
+    elif recurrence_type == RecurringScheduledMessage.MONTHLY:
+        try:
+            validate_monthly_rule(recurrence_days)
+        except ValueError as e:
+            raise JsonableError(_(str(e))) from e
 
 
 def get_recurring_scheduled_messages(
@@ -108,7 +129,7 @@ def create_recurring_scheduled_message(
     recurrence_type: Annotated[
         str, check_string_in_validator(VALID_RECURRENCE_TYPES)
     ],
-    recurrence_days: Json[list[int]] = [],
+    recurrence_days: Json[list[int] | dict[str, str | int]] = [],
     scheduled_time: str = "00:00",
     scheduled_delivery_timestamp: Json[int] | None = None,
 ) -> HttpResponse:
