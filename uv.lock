@@ -1130,6 +1130,21 @@ wheels = [
 ]
 
 [[package]]
+name = "django-oauth-toolkit"
+version = "3.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+    { name = "jwcrypto" },
+    { name = "oauthlib" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a7/95/efd83b35c34b86eb2249d2b54c5eaf383c48f3f19034aa6f3807e37471b6/django_oauth_toolkit-3.2.0.tar.gz", hash = "sha256:c36761ae6810083d95a652e9c820046cde0d45a2e2a5574bbe7202656ec20bb6", size = 114211, upload-time = "2026-01-08T22:03:13.311Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ae/cc/f27a784c0ecd13335abd9ef85ebb80dbc04945f919da5f496f56e3562751/django_oauth_toolkit-3.2.0-py3-none-any.whl", hash = "sha256:bd2cd2719b010231a2f370f927dbcc740454fb1d0dd7e7f4138f36227363dc26", size = 87077, upload-time = "2026-01-08T22:03:12.123Z" },
+]
+
+[[package]]
 name = "django-otp"
 version = "1.7.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2345,6 +2360,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/37/88/8678fcb9f7db1aa7efb338d58f320203b74e865a12583c108291ed9d3df7/jsx-lexer-2.0.1.tar.gz", hash = "sha256:0d9aa653e74d7973d74021dde8349896c0df094d8e40349b92b35e0930ed7f71", size = 4007, upload-time = "2023-05-16T15:16:04.613Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2f/2d/6369d2f3ce55cee200202e37435601e5e50d575c2f8ffb367129e584f3f5/jsx_lexer-2.0.1-py2.py3-none-any.whl", hash = "sha256:508a08757764356aa36fd703596fdd59f789104f44b6568c7a14e27e62e57ad4", size = 4071, upload-time = "2023-05-16T15:16:02.786Z" },
+]
+
+[[package]]
+name = "jwcrypto"
+version = "1.5.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cryptography" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e1/db/870e5d5fb311b0bcf049630b5ba3abca2d339fd5e13ba175b4c13b456d08/jwcrypto-1.5.6.tar.gz", hash = "sha256:771a87762a0c081ae6166958a954f80848820b2ab066937dc8b8379d65b1b039", size = 87168, upload-time = "2024-03-06T19:58:31.831Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cd/58/4a1880ea64032185e9ae9f63940c9327c6952d5584ea544a8f66972f2fda/jwcrypto-1.5.6-py3-none-any.whl", hash = "sha256:150d2b0ebbdb8f40b77f543fb44ffd2baeff48788be71f67f03566692fd55789", size = 92520, upload-time = "2024-03-06T19:58:29.765Z" },
 ]
 
 [[package]]
@@ -6389,6 +6417,7 @@ dev = [
     { name = "django-bitfield" },
     { name = "django-bmemcached" },
     { name = "django-cte" },
+    { name = "django-oauth-toolkit" },
     { name = "django-scim2" },
     { name = "django-stubs" },
     { name = "django-stubs-ext" },
@@ -6531,6 +6560,7 @@ prod = [
     { name = "django-bitfield" },
     { name = "django-bmemcached" },
     { name = "django-cte" },
+    { name = "django-oauth-toolkit" },
     { name = "django-scim2" },
     { name = "django-stubs-ext" },
     { name = "django-two-factor-auth", extra = ["call", "phonenumberslite", "sms"] },
@@ -6629,6 +6659,7 @@ dev = [
     { name = "django-bitfield" },
     { name = "django-bmemcached" },
     { name = "django-cte" },
+    { name = "django-oauth-toolkit" },
     { name = "django-scim2" },
     { name = "django-stubs" },
     { name = "django-stubs-ext" },
@@ -6773,6 +6804,7 @@ prod = [
     { name = "django-bitfield" },
     { name = "django-bmemcached" },
     { name = "django-cte" },
+    { name = "django-oauth-toolkit" },
     { name = "django-scim2" },
     { name = "django-stubs-ext" },
     { name = "django-two-factor-auth", extras = ["call", "phonenumberslite", "sms"] },

@@ -84,15 +84,15 @@ class TestNonSCIMAPIAccess(SCIMTestCase):
         with mock.patch("zerver.middleware.validate_scim_bearer_token", return_value=None) as m:
             result = self.client_get(f"/api/v1/users/{hamlet.id}", {}, **self.scim_headers())
 
-        # The SCIM format of the Authorization header (bearer token) is rejected as a bad request
-        # by our regular API authentication logic.
-        self.assert_json_error(result, "This endpoint requires HTTP basic authentication.", 400)
+        # The SCIM format of the Authorization header (bearer token) is rejected
+        # as an unauthorized request by our regular API authentication logic.
+        self.assert_json_error(result, "OAuth token verification failed", 401)
         m.assert_not_called()
 
         # Now simply test end-to-end that access gets denied, without any mocking
         # interfering with the process.
         result = self.client_get(f"/api/v1/users/{hamlet.id}", {}, **self.scim_headers())
-        self.assert_json_error(result, "This endpoint requires HTTP basic authentication.", 400)
+        self.assert_json_error(result, "OAuth token verification failed", 401)
 
 
 class TestExceptionDetailsNotRevealedToClient(SCIMTestCase):
