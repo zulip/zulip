@@ -609,6 +609,11 @@ class CreateUserForm(forms.Form):
 class OurAuthenticationForm(AuthenticationForm):
     logger = logging.getLogger("zulip.auth.OurAuthenticationForm")
 
+    username = forms.CharField(
+        max_length=EMAIL_MAX_LENGTH,
+        widget=forms.TextInput(attrs={"autofocus": True}),
+    )
+
     @override
     def clean(self) -> dict[str, Any]:
         username = self.cleaned_data.get("username")
