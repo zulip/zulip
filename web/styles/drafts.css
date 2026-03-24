@@ -76,3 +76,7 @@
         width: 15px;
     }
 }
+
+#draft_overlay:focus {
+    outline: none;
+}

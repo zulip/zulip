@@ -462,6 +462,9 @@ export function launch(): void {
         // may not be applied.
         setTimeout(() => {
             messages_overlay_ui.set_initial_element(first_element_id, keyboard_handling_context);
+            if (first_element_id === undefined) {
+                $("#draft_overlay").trigger("focus");
+            }
         }, 0);
     }
     setup_event_handlers();
