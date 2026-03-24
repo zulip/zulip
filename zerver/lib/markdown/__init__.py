@@ -1117,6 +1117,15 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             else:
                 continue
 
+            # url_embed_data[url] = None means the preview was hidden;
+            # skip all preview generation for this URL.
+            if (
+                self.zmd.url_embed_data is not None
+                and url in self.zmd.url_embed_data
+                and self.zmd.url_embed_data[url] is None
+            ):
+                continue
+
             dropbox_media = self.dropbox_media(url)
             if dropbox_media is not None:
                 is_image = dropbox_media["is_image"]
