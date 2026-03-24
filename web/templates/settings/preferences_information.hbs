@@ -92,6 +92,14 @@
       show_reset_button=for_realm_settings}}
 
     {{> settings_checkbox
+      setting_name="web_link_previews_enabled"
+      is_checked=settings_object.web_link_previews_enabled
+      label=settings_label.web_link_previews_enabled
+      help_link="/help/image-video-and-website-previews"
+      prefix=prefix
+      show_reset_button=for_realm_settings}}
+
+    {{> settings_checkbox
       setting_name="fluid_layout_width"
       is_checked=settings_object.fluid_layout_width
       label=settings_label.fluid_layout_width

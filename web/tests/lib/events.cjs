@@ -1277,6 +1277,13 @@ exports.fixtures = {
         value: 130,
     },
 
+    user_settings__web_link_previews_enabled: {
+        type: "user_settings",
+        op: "update",
+        property: "web_link_previews_enabled",
+        value: false,
+    },
+
     user_settings__web_mark_read_on_scroll_policy: {
         type: "user_settings",
         op: "update",
