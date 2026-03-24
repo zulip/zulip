@@ -98,6 +98,7 @@ authenticate users with:
 - Google accounts, with `GoogleAuthBackend`
 - GitHub accounts, with `GitHubAuthBackend`
 - GitLab accounts, with `GitLabAuthBackend`
+- Discord accounts, with `DiscordAuthBackend`
 
 Each of these requires one to a handful of lines of configuration in
 `settings.py`, as well as a secret in `zulip-secrets.conf`. Details
