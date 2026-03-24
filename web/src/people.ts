@@ -1808,6 +1808,22 @@ export function extract_people_from_message(message: MessageWithBooleans): void 
     }
 }
 
+export function add_missing_people_for_message_reactions(reactions: {user_id: number}[]): void {
+    // Ensure all users referenced in reactions exist in the people
+    // store, creating placeholder users for any that are missing.
+    // This mirrors extract_people_from_message above and prevents
+    // assert failures in reactions processing.
+    for (const reaction of reactions) {
+        if (people_by_user_id_dict.has(reaction.user_id)) {
+            continue;
+        }
+
+        const email = "user" + reaction.user_id + "@" + realm.realm_bot_domain;
+        report_late_add(reaction.user_id, email);
+        _add_user(make_user(reaction.user_id, email, INACCESSIBLE_USER_NAME));
+    }
+}
+
 function safe_lower(s?: string | null): string {
     return (s ?? "").toLowerCase();
 }
