@@ -90,7 +90,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         )
 
     @override
-    def upload_message_attachment(
+    def store_message_attachment(
         self,
         path_id: str,
         filename: str,
