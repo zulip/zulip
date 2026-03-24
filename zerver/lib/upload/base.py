@@ -92,7 +92,7 @@ class ZulipUploadBackend:
         else:
             return f"{hash_key}.png"
 
-    def upload_single_avatar_image(
+    def store_single_avatar_image(
         self,
         file_path: str,
         *,
