@@ -427,6 +427,34 @@ test("get_list_info unreads", ({override}) => {
         ],
     );
 
+    // Unread followed topics in older history should be prioritized
+    // over non-followed unread topics for the unzoomed overflow slots.
+    override(user_topics, "is_topic_followed", (stream_id, topic_name) => {
+        assert.equal(stream_id, general.stream_id);
+        return topic_name === "topic 14";
+    });
+    list_info = get_list_info();
+    assert.equal(list_info.items.length, 10);
+    assert.equal(list_info.more_topics_unreads, 2);
+    assert.equal(list_info.more_topics_have_unread_mention_messages, true);
+    assert.equal(list_info.num_possible_topics, 16);
+    assert.deepEqual(
+        list_info.items.map((li) => li.topic_name),
+        [
+            "topic 0",
+            "topic 1",
+            "topic 2",
+            "topic 3",
+            "topic 4",
+            "topic 5",
+            "topic 14",
+            "topic 10",
+            "topic 11",
+            "topic 12",
+        ],
+    );
+    override(user_topics, "is_topic_followed", () => false);
+
     add_unreads("topic 9", 1);
 
     add_unreads("topic 4", 1);

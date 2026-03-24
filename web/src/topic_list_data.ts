@@ -218,6 +218,25 @@ export function get_filtered_topic_names(
     return filter_topics(topic_names);
 }
 
+function prioritize_overflow_followed_unreads(stream_id: number, topic_names: string[]): string[] {
+    const recent_topics = topic_names.slice(0, MAX_TOPICS);
+    const overflow_topics = topic_names.slice(MAX_TOPICS);
+    const prioritized_overflow_topics = overflow_topics.slice().sort((topic_a, topic_b) => {
+        const topic_a_is_unread_followed =
+            unread.num_unread_for_topic(stream_id, topic_a) > 0 &&
+            user_topics.is_topic_followed(stream_id, topic_a);
+        const topic_b_is_unread_followed =
+            unread.num_unread_for_topic(stream_id, topic_b) > 0 &&
+            user_topics.is_topic_followed(stream_id, topic_b);
+        if (topic_a_is_unread_followed === topic_b_is_unread_followed) {
+            return 0;
+        }
+        return topic_a_is_unread_followed ? -1 : 1;
+    });
+
+    return [...recent_topics, ...prioritized_overflow_topics];
+}
+
 export function get_list_info(
     stream_id: number,
     zoomed: boolean,
@@ -248,6 +267,9 @@ export function get_list_info(
             (topic) => !user_topics.is_topic_unmuted_or_followed(stream_id, topic),
         );
         const reordered_topics = [...unmuted_or_followed_topics, ...other_topics];
+        choose_topics(stream_id, reordered_topics, zoomed, topic_choice_state);
+    } else if (!zoomed) {
+        const reordered_topics = prioritize_overflow_followed_unreads(stream_id, topic_names);
         choose_topics(stream_id, reordered_topics, zoomed, topic_choice_state);
     } else {
         choose_topics(stream_id, topic_names, zoomed, topic_choice_state);
