@@ -558,8 +558,6 @@ def get_emoji_file_content(
 
 
 def handle_reupload_emojis_event(realm: Realm, logger: logging.Logger) -> None:  # nocoverage
-    from zerver.lib.emoji import get_emoji_url
-
     session = OutgoingSession(role="reupload_emoji", timeout=3, max_retries=3)
 
     query = RealmEmoji.objects.filter(realm=realm).order_by("id")
@@ -568,7 +566,7 @@ def handle_reupload_emojis_event(realm: Realm, logger: logging.Logger) -> None: 
         logger.info("Processing emoji %s", realm_emoji.id)
         emoji_filename = realm_emoji.file_name
         assert emoji_filename is not None
-        emoji_url = get_emoji_url(emoji_filename, realm_emoji.realm_id)
+        emoji_url = upload_backend.get_emoji_url(emoji_filename, realm_emoji.realm_id)
         if emoji_url.startswith("/"):
             emoji_url = urljoin(realm_emoji.realm.url, emoji_url)
 
