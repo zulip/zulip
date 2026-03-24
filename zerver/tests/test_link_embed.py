@@ -1,4 +1,5 @@
 import re
+import threading
 from collections import OrderedDict
 from typing import Any
 from unittest import mock
@@ -12,7 +13,7 @@ from requests.exceptions import ConnectionError
 from typing_extensions import override
 
 from zerver.actions.message_delete import do_delete_messages
-from zerver.lib.cache import cache_delete, cache_get, preview_url_cache_key
+from zerver.lib.cache import cache_delete, cache_get, cache_set, preview_url_cache_key
 from zerver.lib.camo import get_camo_url
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.test_classes import ZulipTestCase
@@ -22,6 +23,7 @@ from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
 from zerver.lib.url_preview.preview import get_link_embed_data
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 from zerver.models import Message, Realm, UserMessage, UserProfile
+from zerver.views.message_send import COMPOSE_PREVIEW_MAX_URLS
 from zerver.worker.embed_links import FetchLinksEmbedData
 
 
@@ -1178,3 +1180,125 @@ class PreviewTestCase(ZulipTestCase):
         msg.refresh_from_db()
         expected_content = f"""<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube link</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="{get_camo_url("https://i.ytimg.com/vi/eSJTXC7Ixgg/mqdefault.jpg")}"></a></div>"""
         self.assertEqual(expected_content, msg.rendered_content)
+
+
+class ComposePreviewLinkEmbedTest(PreviewTestCase):
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True, CAMO_URI="")
+    def test_compose_preview_with_cached_url(self) -> None:
+        url = "http://test.org/"
+        cache_delete(preview_url_cache_key(url))
+
+        embed_data = UrlEmbedData(
+            title="The Rock",
+            description="Description text",
+            image="http://ia.media-imdb.com/images/rock.jpg",
+        )
+        cache_set(preview_url_cache_key(url), embed_data)
+
+        hamlet = self.example_user("hamlet")
+        result = self.api_post(hamlet, "/api/v1/messages/render", {"content": url})
+        self.assert_json_success(result)
+        rendered = result.json()["rendered"]
+        self.assertIn("message_embed", rendered)
+        self.assertIn("The Rock", rendered)
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True, CAMO_URI="")
+    def test_compose_preview_uncached_url_triggers_background_fetch(self) -> None:
+        url = "http://test.org/"
+        cache_delete(preview_url_cache_key(url))
+
+        embed_data = UrlEmbedData(
+            title="The Rock",
+            description="Description text",
+            image="http://ia.media-imdb.com/images/rock.jpg",
+        )
+
+        hamlet = self.example_user("hamlet")
+
+        fetch_called = threading.Event()
+
+        def mock_get_embed(url: str, **kwargs: object) -> UrlEmbedData:
+            # Populate the cache as @cache_with_key would.
+            cache_set(preview_url_cache_key(url), embed_data)
+            fetch_called.set()
+            return embed_data
+
+        with mock.patch(
+            "zerver.lib.url_preview.preview.get_link_embed_data",
+            side_effect=mock_get_embed,
+        ):
+            result = self.api_post(hamlet, "/api/v1/messages/render", {"content": url})
+            self.assert_json_success(result)
+            rendered = result.json()["rendered"]
+            self.assertNotIn("message_embed", rendered)
+            self.assertIn(url, rendered)
+
+            self.assertTrue(fetch_called.wait(timeout=5))
+
+        # Simulate a frontend poll after the background thread has cached the data.
+        result = self.api_post(hamlet, "/api/v1/messages/render", {"content": url})
+        self.assert_json_success(result)
+        rendered = result.json()["rendered"]
+        self.assertIn("message_embed", rendered)
+        self.assertIn("The Rock", rendered)
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_compose_preview_respects_realm_setting(self) -> None:
+        url = "http://test.org/"
+        cache_delete(preview_url_cache_key(url))
+
+        hamlet = self.example_user("hamlet")
+        hamlet.realm.inline_url_embed_preview = False
+        hamlet.realm.save()
+
+        result = self.api_post(hamlet, "/api/v1/messages/render", {"content": url})
+        self.assert_json_success(result)
+        rendered = result.json()["rendered"]
+        self.assertNotIn("message_embed", rendered)
+        self.assertIn(url, rendered)
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True, CAMO_URI="")
+    def test_compose_preview_url_limit(self) -> None:
+        urls = [
+            "http://aaa.test.org/",
+            "http://bbb.test.org/",
+            "http://ccc.test.org/",  # beyond the limit; should not be fetched
+        ]
+        for url in urls:
+            cache_delete(preview_url_cache_key(url))
+
+        fetched_urls: list[str] = []
+        all_fetched = threading.Event()
+
+        def mock_get_embed(url: str, **kwargs: object) -> UrlEmbedData:
+            fetched_urls.append(url)
+            if len(fetched_urls) >= COMPOSE_PREVIEW_MAX_URLS:
+                all_fetched.set()
+            return UrlEmbedData(title="Test Title")
+
+        hamlet = self.example_user("hamlet")
+        with mock.patch(
+            "zerver.lib.url_preview.preview.get_link_embed_data",
+            side_effect=mock_get_embed,
+        ):
+            result = self.api_post(hamlet, "/api/v1/messages/render", {"content": " ".join(urls)})
+            self.assert_json_success(result)
+            self.assertTrue(all_fetched.wait(timeout=5))
+
+        self.assertCountEqual(fetched_urls, sorted(urls)[:COMPOSE_PREVIEW_MAX_URLS])
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_compose_preview_graceful_on_fetch_error(self) -> None:
+        url = "http://test.org/"
+        cache_delete(preview_url_cache_key(url))
+
+        hamlet = self.example_user("hamlet")
+        with mock.patch(
+            "zerver.lib.url_preview.preview.get_link_embed_data",
+            side_effect=Exception("Unexpected error"),
+        ):
+            result = self.api_post(hamlet, "/api/v1/messages/render", {"content": url})
+        self.assert_json_success(result)
+        rendered = result.json()["rendered"]
+        self.assertNotIn("message_embed", rendered)
+        self.assertIn(url, rendered)
