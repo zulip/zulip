@@ -72,24 +72,34 @@ function is_somebody_else_profile_open(): boolean {
     );
 }
 
-function handle_invalid_section_url(section: "bots" | "users", settings_tab: string): string {
+function handle_invalid_settings_tab(
+    base: string,
+    section: "bots" | "users",
+    settings_tab: string,
+): string {
     const valid_tab_values = {
         users: new Set(["active", "imported", "deactivated", "invitations"]),
         bots: new Set(["all-bots", "your-bots"]),
     };
 
     if (!valid_tab_values[section].has(settings_tab)) {
-        const valid_section_url = `#organization/${section}/${[...valid_tab_values[section]][0]}`;
-        browser_history.update(valid_section_url);
-        return [...valid_tab_values[section]][0]!;
+        let default_tab = [...valid_tab_values[section]][0]!;
+        if (section === "bots" && base === "settings") {
+            // For bots panel in "Personal" tab we open "Your bots"
+            // tab by default.
+            default_tab = "your-bots";
+        }
+        const valid_section_url = `#${base}/${section}/${default_tab}`;
+        window.history.replaceState(null, "", browser_history.get_full_url(valid_section_url));
+        return default_tab;
     }
     return settings_tab;
 }
 
-function get_settings_tab(section: string): string | undefined {
+function get_settings_tab(base: string, section: string): string | undefined {
     if (section === "users" || section === "bots") {
         const current_settings_tab = hash_parser.get_current_nth_hash_section(2);
-        return handle_invalid_section_url(section, current_settings_tab);
+        return handle_invalid_settings_tab(base, section, current_settings_tab);
     }
     return undefined;
 }
@@ -398,7 +408,7 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             }
             settings_panel_menu.normal_settings.activate_section_or_default(
                 section,
-                get_settings_tab(section),
+                get_settings_tab(base, section),
             );
             return;
         }
@@ -411,7 +421,7 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             }
             settings_panel_menu.org_settings.activate_section_or_default(
                 section,
-                get_settings_tab(section),
+                get_settings_tab(base, section),
             );
             return;
         }
@@ -433,17 +443,19 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             settings_panel_menu.normal_settings.set_current_tab(section);
             if (section === "bots") {
                 settings_panel_menu.normal_settings.set_bot_settings_tab(
-                    get_settings_tab(section)!,
+                    get_settings_tab(base, section)!,
                     "personal",
                 );
             }
         } else {
             settings_panel_menu.org_settings.set_current_tab(section);
             if (section === "users") {
-                settings_panel_menu.org_settings.set_user_settings_tab(get_settings_tab(section));
+                settings_panel_menu.org_settings.set_user_settings_tab(
+                    get_settings_tab(base, section),
+                );
             } else if (section === "bots") {
                 settings_panel_menu.org_settings.set_bot_settings_tab(
-                    get_settings_tab(section)!,
+                    get_settings_tab(base, section)!,
                     "org",
                 );
             }
@@ -513,14 +525,14 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     if (base === "settings") {
         settings.build_page();
         admin.build_page();
-        settings.launch(section, get_settings_tab(section));
+        settings.launch(section, get_settings_tab(base, section));
         return;
     }
 
     if (base === "organization") {
         settings.build_page();
         admin.build_page();
-        admin.launch(section, get_settings_tab(section));
+        admin.launch(section, get_settings_tab(base, section));
         return;
     }
 
