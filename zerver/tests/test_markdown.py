@@ -66,7 +66,7 @@ from zerver.lib.streams import user_has_content_access, user_has_metadata_access
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
 from zerver.lib.types import UserGroupMembersData
-from zerver.lib.upload import upload_backend, upload_message_attachment
+from zerver.lib.upload import get_emoji_url, upload_message_attachment
 from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.models import Message, NamedUserGroup, RealmEmoji, RealmFilter, UserMessage, UserProfile
 from zerver.models.clients import get_client
@@ -1282,7 +1282,7 @@ class MarkdownEmojiTest(ZulipTestCase):
         def emoji_img(name: str, file_name: str, realm_id: int) -> str:
             return '<img alt="{}" class="emoji" src="{}" title="{}">'.format(
                 name,
-                upload_backend.get_emoji_url(file_name, realm_id),
+                get_emoji_url(file_name, realm_id),
                 name[1:-1].replace("_", " "),
             )
 

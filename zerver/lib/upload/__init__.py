@@ -181,11 +181,29 @@ else:  # nocoverage
 
     upload_backend = S3UploadBackend()
 
+
 # Message attachment uploads
 
 
 def get_public_upload_root_url() -> str:
     return upload_backend.get_public_upload_root_url()
+
+
+def generate_message_upload_path(realm_id: str, uploaded_file_name: str) -> str:
+    return upload_backend.generate_message_upload_path(realm_id, uploaded_file_name)
+
+
+def store_message_attachment(
+    path_id: str,
+    filename: str,
+    content_type: str,
+    file_data: bytes,
+    user_profile: UserProfile | None,
+    target_realm: Realm | None,
+) -> None:
+    upload_backend.store_message_attachment(
+        path_id, filename, content_type, file_data, user_profile, target_realm
+    )
 
 
 def sanitize_name(value: str, *, strict: bool = False) -> str:
@@ -334,6 +352,10 @@ def get_avatar_url(hash_key: str, medium: bool = False) -> str:
     return upload_backend.get_avatar_url(hash_key, medium)
 
 
+def get_avatar_path(hash_key: str, medium: bool = False) -> str:
+    return upload_backend.get_avatar_path(hash_key, medium)
+
+
 def write_avatar_images(
     file_path: str,
     user_profile: UserProfile,
@@ -472,6 +494,18 @@ def delete_avatar_image(user_profile: UserProfile, avatar_version: int) -> None:
 # Realm icon and logo uploads
 
 
+def get_realm_icon_url(realm_id: int, version: int) -> str:
+    return upload_backend.get_realm_icon_url(realm_id, version)
+
+
+def get_realm_logo_url(realm_id: int, version: int, night: bool) -> str:
+    return upload_backend.get_realm_logo_url(realm_id, version, night)
+
+
+def realm_avatar_and_logo_path(realm: Realm) -> str:
+    return upload_backend.realm_avatar_and_logo_path(realm)
+
+
 def upload_icon_image(user_file: IO[bytes], user_profile: UserProfile, content_type: str) -> None:
     if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
         raise BadImageError(_("Invalid image format"))
@@ -487,6 +521,10 @@ def upload_logo_image(
 
 
 # Realm emoji uploads
+
+
+def get_emoji_url(emoji_file_name: str, realm_id: int, still: bool = False) -> str:
+    return upload_backend.get_emoji_url(emoji_file_name, realm_id, still)
 
 
 def upload_emoji_image(
@@ -588,6 +626,10 @@ def handle_reupload_emojis_event(realm: Realm, logger: logging.Logger) -> None: 
 
 
 # Export tarballs
+
+
+def get_export_tarball_url(realm: Realm, export_path: str) -> str:
+    return upload_backend.get_export_tarball_url(realm, export_path)
 
 
 def upload_export_tarball(

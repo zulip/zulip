@@ -91,7 +91,7 @@ from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.lib.types import LinkifierDict, RealmPlaygroundDict
-from zerver.lib.upload import upload_backend
+from zerver.lib.upload import get_emoji_url
 from zerver.lib.user_groups import get_group_setting_value_for_api
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -1222,7 +1222,7 @@ class TestRealmAuditLog(ZulipTestCase):
         added_emoji = EmojiInfo(
             id=str(realm_emoji.id),
             name="test_emoji",
-            source_url=upload_backend.get_emoji_url(
+            source_url=get_emoji_url(
                 get_emoji_file_name("image/png", realm_emoji.id), user.realm_id
             ),
             deactivated=False,
@@ -1252,7 +1252,7 @@ class TestRealmAuditLog(ZulipTestCase):
         deactivated_emoji = EmojiInfo(
             id=str(realm_emoji.id),
             name="test_emoji",
-            source_url=upload_backend.get_emoji_url(
+            source_url=get_emoji_url(
                 get_emoji_file_name("image/png", realm_emoji.id), user.realm_id
             ),
             deactivated=True,

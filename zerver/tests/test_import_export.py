@@ -72,8 +72,8 @@ from zerver.lib.thumbnail import BadImageError
 from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.lib.upload import (
     claim_attachment,
+    get_emoji_url,
     upload_avatar_image,
-    upload_backend,
     upload_message_attachment,
 )
 from zerver.lib.utils import assert_is_not_none, get_fk_field_name
@@ -3044,7 +3044,7 @@ class RealmImportExportTest(ExportFile):
             self.assertEqual(imported_realm_emoji.author.id, int(realm_emoji_info["author_id"]))
             self.assertEqual(imported_realm_emoji.name, realm_emoji_info["name"])
             imported_emoji_path = os.path.dirname(
-                upload_backend.get_emoji_url(
+                get_emoji_url(
                     get_emoji_file_name("image/png", imported_realm_emoji.id), imported_realm.id
                 )
             )
