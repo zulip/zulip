@@ -297,4 +297,43 @@ export function trap_focus_for_settings_overlay(): void {
             }
         }
     });
+
+    $("body").on("keydown.drafts_focus_trap", (e) => {
+        if (e.key !== "Tab" || !drafts_open()) {
+            return;
+        }
+
+        const $overlay = $("#draft_overlay");
+        const elements = overlay_util.get_visible_focusable_elements_in_overlay_container($overlay);
+
+        if (elements.length === 0) {
+            return;
+        }
+
+        const activeElement = document.activeElement;
+        const active = activeElement instanceof HTMLElement ? activeElement : null;
+
+        const index = active ? elements.indexOf(active) : -1;
+        let target: HTMLElement | undefined;
+
+        if (e.shiftKey) {
+            if (index === -1) {
+                const infoBoxIndex = elements.findIndex((el) =>
+                    $(el).hasClass("overlay-message-info-box"),
+                );
+                target = infoBoxIndex > 0 ? elements[infoBoxIndex - 1] : elements.at(-1);
+            } else if (index === 0) {
+                target = elements.at(-1);
+            }
+        } else {
+            if (index === elements.length - 1 || index === -1) {
+                target = elements[0];
+            }
+        }
+
+        if (target) {
+            e.preventDefault();
+            target.focus();
+        }
+    });
 }
