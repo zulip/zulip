@@ -775,6 +775,7 @@ input.settings_text_input {
 
 .inline-decorated-channel-name {
     display: inline;
+    padding-left: var(--inline-decorated-channel-name-padding-left);
 
     .decorated-channel-name {
         margin-left: var(--inline-decorated-channel-name-privacy-icon-gap);
