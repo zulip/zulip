@@ -235,7 +235,7 @@ class LocalUploadBackend(ZulipUploadBackend):
             )
 
     @override
-    def upload_single_emoji_image(
+    def store_single_emoji_image(
         self, path: str, content_type: str | None, user_profile: UserProfile, image_data: bytes
     ) -> None:
         write_local_file("avatars", path, image_data)

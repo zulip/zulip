@@ -130,7 +130,7 @@ class ZulipUploadBackend:
     def get_emoji_url(self, emoji_file_name: str, realm_id: int, still: bool = False) -> str:
         raise NotImplementedError
 
-    def upload_single_emoji_image(
+    def store_single_emoji_image(
         self,
         path: str,
         content_type: str | None,

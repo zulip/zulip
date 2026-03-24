@@ -514,7 +514,7 @@ def upload_emoji_image(
     )
 
     image_data = emoji_file.read()
-    backend.upload_single_emoji_image(
+    backend.store_single_emoji_image(
         f"{emoji_path}.original", content_type, user_profile, image_data
     )
     resized_image_data, still_image_data = resize_emoji(image_data, emoji_file_name)
@@ -523,7 +523,7 @@ def upload_emoji_image(
             raise BadImageError(_("Image size exceeds limit"))
     elif len(resized_image_data) > MAX_EMOJI_GIF_FILE_SIZE_BYTES:  # nocoverage
         raise BadImageError(_("Image size exceeds limit"))
-    backend.upload_single_emoji_image(emoji_path, content_type, user_profile, resized_image_data)
+    backend.store_single_emoji_image(emoji_path, content_type, user_profile, resized_image_data)
     if still_image_data is None:
         return False
 
@@ -531,7 +531,7 @@ def upload_emoji_image(
         realm_id=user_profile.realm_id,
         emoji_filename_without_extension=os.path.splitext(emoji_file_name)[0],
     )
-    backend.upload_single_emoji_image(still_path, "image/png", user_profile, still_image_data)
+    backend.store_single_emoji_image(still_path, "image/png", user_profile, still_image_data)
     return True
 
 
