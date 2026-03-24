@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 506
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (382, 0)  # bumped 2026-05-21 to remove sqlalchemy
+PROVISION_VERSION = (382, 1)  # bumped 2026-06-10 to add markdownify dependency
