@@ -293,7 +293,9 @@ class S3UploadBackend(ZulipUploadBackend):
         )
 
     @override
-    def delete_message_attachment(self, path_id: str, *, raw_path: bool = False) -> None:
+    def delete_message_attachment_from_storage(
+        self, path_id: str, *, raw_path: bool = False
+    ) -> None:
         with self.delete_message_attachments(raw_paths=raw_path) as delete_one:
             delete_one(path_id)
 

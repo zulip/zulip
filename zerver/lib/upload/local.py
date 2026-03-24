@@ -118,7 +118,9 @@ class LocalUploadBackend(ZulipUploadBackend):
         )
 
     @override
-    def delete_message_attachment(self, path_id: str, *, raw_path: bool = False) -> None:
+    def delete_message_attachment_from_storage(
+        self, path_id: str, *, raw_path: bool = False
+    ) -> None:
         delete_local_file("files", path_id)
         if not raw_path:
             delete_local_file("files", f"{path_id}.info")
