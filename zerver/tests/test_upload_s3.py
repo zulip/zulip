@@ -190,7 +190,9 @@ class S3Test(ZulipTestCase):
             self.assertIsNotNone(bucket.Object(path_id).get())
             path_ids.append(path_id)
 
-        with patch.object(S3UploadBackend, "delete_message_attachment") as single_delete:
+        with patch.object(
+            S3UploadBackend, "delete_message_attachment_from_storage"
+        ) as single_delete:
             with delete_message_attachments() as delete_one:
                 for path_id in path_ids:
                     delete_one(path_id)

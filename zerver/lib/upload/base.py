@@ -48,7 +48,9 @@ class ZulipUploadBackend:
     def attachment_source(self, path_id: str) -> StreamingSourceWithSize:
         raise NotImplementedError
 
-    def delete_message_attachment(self, path_id: str, *, raw_path: bool = False) -> None:
+    def delete_message_attachment_from_storage(
+        self, path_id: str, *, raw_path: bool = False
+    ) -> None:
         """This must delete the attachment, any adjacent .info files, and any thumbnails.
 
         If raw_path is passed, just delete the one path provided.
@@ -66,7 +68,7 @@ class ZulipUploadBackend:
         flush: None | Callable[[list[str]], None] = None,
     ) -> Iterator[Callable[[str], None]]:
         def delete_one(path_id: str) -> None:
-            self.delete_message_attachment(path_id, raw_path=raw_paths)
+            self.delete_message_attachment_from_storage(path_id, raw_path=raw_paths)
             if flush:
                 flush([path_id])
 

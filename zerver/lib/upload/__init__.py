@@ -297,7 +297,7 @@ def save_attachment_contents(path_id: str, filehandle: IO[bytes]) -> None:
 
 
 def delete_message_attachment(path_id: str, *, raw_path: bool = False) -> None:
-    upload_backend.delete_message_attachment(path_id)
+    upload_backend.delete_message_attachment_from_storage(path_id)
 
 
 @contextmanager
