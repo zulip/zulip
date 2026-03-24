@@ -374,7 +374,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_user_avatars_base(self) -> None:
-        backend = zerver.lib.upload.upload_backend
+        backend = zerver.lib.upload.get_upload_backend()
         assert isinstance(backend, S3UploadBackend)
         self.assertEqual(
             backend.construct_public_upload_url_base(),
@@ -561,7 +561,7 @@ class S3Test(ZulipTestCase):
 
         user_profile = self.example_user("hamlet")
         with get_test_image_file("img.png") as image_file:
-            zerver.lib.upload.upload_backend.store_realm_icon_image(
+            zerver.lib.upload.get_upload_backend().store_realm_icon_image(
                 image_file, user_profile, content_type="image/png"
             )
 
@@ -581,7 +581,7 @@ class S3Test(ZulipTestCase):
 
         user_profile = self.example_user("hamlet")
         with get_test_image_file("img.png") as image_file:
-            zerver.lib.upload.upload_backend.store_realm_logo_image(
+            zerver.lib.upload.get_upload_backend().store_realm_logo_image(
                 image_file, user_profile, night, "image/png"
             )
 
@@ -608,7 +608,7 @@ class S3Test(ZulipTestCase):
         bucket = settings.S3_AVATAR_BUCKET
         path = RealmEmoji.PATH_ID_TEMPLATE.format(realm_id=realm_id, emoji_file_name=emoji_name)
 
-        url = zerver.lib.upload.upload_backend.get_emoji_url("emoji.png", realm_id)
+        url = zerver.lib.upload.get_emoji_url("emoji.png", realm_id)
 
         expected_url = f"https://{bucket}.s3.amazonaws.com/{path}"
         self.assertEqual(expected_url, url)
@@ -620,10 +620,8 @@ class S3Test(ZulipTestCase):
             realm_id=realm_id, emoji_filename_without_extension=os.path.splitext(emoji_name)[0]
         )
 
-        url = zerver.lib.upload.upload_backend.get_emoji_url("animated_image.gif", realm_id)
-        still_url = zerver.lib.upload.upload_backend.get_emoji_url(
-            "animated_image.gif", realm_id, still=True
-        )
+        url = zerver.lib.upload.get_emoji_url("animated_image.gif", realm_id)
+        still_url = zerver.lib.upload.get_emoji_url("animated_image.gif", realm_id, still=True)
 
         expected_url = f"https://{bucket}.s3.amazonaws.com/{path}"
         self.assertEqual(expected_url, url)
@@ -769,7 +767,7 @@ class S3Test(ZulipTestCase):
         with override_settings(S3_EXPORT_BUCKET=""):
             backend = S3UploadBackend()
             avatar_bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
-            with patch("zerver.lib.upload.upload_backend", backend):
+            with patch("zerver.lib.upload._upload_backend", backend):
                 public_url = upload_export_tarball(user_profile.realm, tarball_path)
                 avatar_object_key = urlsplit(public_url).path.removeprefix("/")
 
@@ -824,7 +822,7 @@ class S3Test(ZulipTestCase):
         with override_settings(S3_EXPORT_BUCKET=settings.S3_EXPORT_BUCKET):
             backend = S3UploadBackend()
             export_bucket = create_s3_buckets(settings.S3_EXPORT_BUCKET)[0]
-            with patch("zerver.lib.upload.upload_backend", backend):
+            with patch("zerver.lib.upload._upload_backend", backend):
                 public_url = upload_export_tarball(user_profile.realm, tarball_path)
                 export_object_key = urlsplit(public_url).path.removeprefix("/")
 

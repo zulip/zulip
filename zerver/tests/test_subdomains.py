@@ -98,8 +98,9 @@ class SubdomainsTest(ZulipTestCase):
         def test(url: str) -> bool:
             return is_static_or_current_realm_url(url, realm)
 
-        upload_backend = zerver.lib.upload.upload_backend
-        self.assertTrue(test(upload_backend.get_realm_icon_url(realm.id, version=1)))
-        self.assertTrue(test(upload_backend.get_realm_logo_url(realm.id, version=1, night=False)))
-        self.assertTrue(test(upload_backend.get_avatar_url("deadbeefcafe")))
-        self.assertTrue(test(upload_backend.get_emoji_url("emoji.gif", realm.id)))
+        self.assertTrue(test(zerver.lib.upload.get_realm_icon_url(realm.id, version=1)))
+        self.assertTrue(
+            test(zerver.lib.upload.get_realm_logo_url(realm.id, version=1, night=False))
+        )
+        self.assertTrue(test(zerver.lib.upload.get_avatar_url("deadbeefcafe")))
+        self.assertTrue(test(zerver.lib.upload.get_emoji_url("emoji.gif", realm.id)))

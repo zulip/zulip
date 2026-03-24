@@ -219,16 +219,16 @@ class ExportFile(ZulipTestCase):
         realm = user_profile.realm
 
         with get_test_image_file("img.png") as img_file:
-            upload.upload_backend.store_realm_icon_image(img_file, user_profile, "image/png")
+            upload.get_upload_backend().store_realm_icon_image(img_file, user_profile, "image/png")
             do_change_icon_source(realm, Realm.ICON_UPLOADED, acting_user=None)
 
         with get_test_image_file("img.png") as img_file:
-            upload.upload_backend.store_realm_logo_image(
+            upload.get_upload_backend().store_realm_logo_image(
                 img_file, user_profile, night=False, content_type="image/png"
             )
             do_change_logo_source(realm, Realm.LOGO_UPLOADED, False, acting_user=user_profile)
         with get_test_image_file("img.png") as img_file:
-            upload.upload_backend.store_realm_logo_image(
+            upload.get_upload_backend().store_realm_logo_image(
                 img_file, user_profile, night=True, content_type="image/png"
             )
             do_change_logo_source(realm, Realm.LOGO_UPLOADED, True, acting_user=user_profile)
@@ -2526,7 +2526,7 @@ class RealmImportExportTest(ExportFile):
         self.assertTrue(os.path.isfile(avatar_file_path))
 
         # Test realm icon and logo
-        upload_path = upload.upload_backend.realm_avatar_and_logo_path(imported_realm)
+        upload_path = upload.realm_avatar_and_logo_path(imported_realm)
         full_upload_path = os.path.join(settings.LOCAL_AVATARS_DIR, upload_path)
 
         with open(os.path.join(full_upload_path, "icon.original"), "rb") as f:
@@ -2602,7 +2602,7 @@ class RealmImportExportTest(ExportFile):
             self.assertEqual(image_get_response["ResponseMetadata"]["HTTPStatusCode"], 200)
 
         # Test realm icon and logo
-        upload_path = upload.upload_backend.realm_avatar_and_logo_path(imported_realm)
+        upload_path = upload.realm_avatar_and_logo_path(imported_realm)
 
         original_icon_path_id = os.path.join(upload_path, "icon.original")
         original_icon_key = avatar_bucket.Object(original_icon_path_id)
