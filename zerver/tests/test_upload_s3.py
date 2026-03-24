@@ -579,7 +579,7 @@ class S3Test(ZulipTestCase):
 
         user_profile = self.example_user("hamlet")
         with get_test_image_file("img.png") as image_file:
-            zerver.lib.upload.upload_backend.upload_realm_logo_image(
+            zerver.lib.upload.upload_backend.store_realm_logo_image(
                 image_file, user_profile, night, "image/png"
             )
 
@@ -595,7 +595,7 @@ class S3Test(ZulipTestCase):
         self.assertEqual(DEFAULT_AVATAR_SIZE, resized_image.height)
         self.assertEqual(DEFAULT_AVATAR_SIZE, resized_image.width)
 
-    def test_upload_realm_logo_image(self) -> None:
+    def test_store_realm_logo_image(self) -> None:
         self._test_upload_logo_image(night=False, file_name="logo")
         self._test_upload_logo_image(night=True, file_name="night_logo")
 

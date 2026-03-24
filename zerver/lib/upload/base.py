@@ -121,7 +121,7 @@ class ZulipUploadBackend:
     def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
         raise NotImplementedError
 
-    def upload_realm_logo_image(
+    def store_realm_logo_image(
         self, logo_file: IO[bytes], user_profile: UserProfile, night: bool, content_type: str
     ) -> None:
         raise NotImplementedError

@@ -200,7 +200,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         return f"/user_avatars/{realm_id}/realm/{file_name}?version={version}"
 
     @override
-    def upload_realm_logo_image(
+    def store_realm_logo_image(
         self, logo_file: IO[bytes], user_profile: UserProfile, night: bool, content_type: str
     ) -> None:
         upload_path = self.realm_avatar_and_logo_path(user_profile.realm)
