@@ -480,7 +480,7 @@ class S3UploadBackend(ZulipUploadBackend):
             return self.get_public_upload_url(emoji_path)
 
     @override
-    def upload_single_emoji_image(
+    def store_single_emoji_image(
         self, path: str, content_type: str | None, user_profile: UserProfile, image_data: bytes
     ) -> None:
         upload_content_to_s3(
