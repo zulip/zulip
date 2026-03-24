@@ -466,7 +466,7 @@ def ensure_avatar_image(user_profile: UserProfile, medium: bool = False) -> None
 
 def delete_avatar_image(user_profile: UserProfile, avatar_version: int) -> None:
     path_id = user_avatar_base_path_from_ids(user_profile.id, avatar_version, user_profile.realm_id)
-    upload_backend.delete_avatar_image(path_id)
+    upload_backend.delete_avatar_image_from_storage(path_id)
 
 
 # Realm icon and logo uploads

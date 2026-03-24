@@ -173,7 +173,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         write_local_file("avatars", file_path, image_data)
 
     @override
-    def delete_avatar_image(self, path_id: str) -> None:
+    def delete_avatar_image_from_storage(self, path_id: str) -> None:
         delete_local_file("avatars", path_id + ".original")
         delete_local_file("avatars", self.get_avatar_path(path_id, True))
         delete_local_file("avatars", self.get_avatar_path(path_id, False))
