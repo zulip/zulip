@@ -246,7 +246,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         return realm.url + export_path
 
     @override
-    def upload_export_tarball(
+    def store_export_tarball(
         self,
         realm: Realm,
         tarball_path: str,

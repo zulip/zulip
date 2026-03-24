@@ -143,7 +143,7 @@ class ZulipUploadBackend:
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
         raise NotImplementedError
 
-    def upload_export_tarball(
+    def store_export_tarball(
         self,
         realm: Realm,
         tarball_path: str,

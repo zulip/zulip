@@ -595,7 +595,7 @@ def handle_reupload_emojis_event(realm: Realm, logger: logging.Logger) -> None: 
 def upload_export_tarball(
     realm: Realm, tarball_path: str, percent_callback: Callable[[Any], None] | None = None
 ) -> str:
-    return upload_backend.upload_export_tarball(
+    return upload_backend.store_export_tarball(
         realm, tarball_path, percent_callback=percent_callback
     )
 
