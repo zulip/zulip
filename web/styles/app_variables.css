@@ -717,6 +717,7 @@
     /* Decorated channel name related values */
     --decorated-channel-name-privacy-icon-gap: 0.3125em; /* 5px at 16px/em */
     --inline-decorated-channel-name-privacy-icon-gap: 0.125em; /* 2px at 16px/em */
+    --inline-decorated-channel-name-padding-left: 0.0937em; /* 1.5px at 16px/em */
 
     /* Color picker popover values */
     --size-color-swatch: 1em;
