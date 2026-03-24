@@ -377,6 +377,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     let fixed_url;
     override(history, "replaceState", (_state, _title, url) => {
         fixed_url = url;
+        window.location.hash = new URL(url).hash;
     });
 
     window.location.hash = "#organization/user-list-admin";
