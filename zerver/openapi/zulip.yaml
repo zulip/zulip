@@ -14933,6 +14933,14 @@ paths:
                     **Changes**: New in Zulip 11.0 (feature level 398).
                   type: boolean
                   example: true
+                web_link_previews_enabled:
+                  description: |
+                    Whether to show [link previews](/help/image-video-and-website-previews)
+                    when links are included in messages in the web/desktop application.
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-cafed8).
+                  type: boolean
+                  example: true
                 enable_stream_desktop_notifications:
                   description: |
                     Enable visual desktop notifications for channel messages.
@@ -15264,6 +15272,8 @@ paths:
               web_left_sidebar_show_channel_folders:
                 contentType: application/json
               web_left_sidebar_unreads_count_summary:
+                contentType: application/json
+              web_link_previews_enabled:
                 contentType: application/json
               enable_stream_desktop_notifications:
                 contentType: application/json
@@ -18804,6 +18814,13 @@ paths:
                               the unread message count summary.
 
                               **Changes**: New in Zulip 11.0 (feature level 398).
+                          web_link_previews_enabled:
+                            type: boolean
+                            description: |
+                              Whether to show [link previews](/help/image-video-and-website-previews)
+                              when links are included in messages in the web/desktop application.
+
+                              **Changes**: New in Zulip 12.0 (feature level ZF-cafed8).
                           timezone:
                             type: string
                             description: |
@@ -21192,6 +21209,13 @@ paths:
                               the unread message count summary.
 
                               **Changes**: New in Zulip 11.0 (feature level 398).
+                          web_link_previews_enabled:
+                            type: boolean
+                            description: |
+                              Whether to show [link previews](/help/image-video-and-website-previews)
+                              when links are included in messages in the web/desktop application.
+
+                              **Changes**: New in Zulip 12.0 (feature level ZF-cafed8).
                           enable_stream_desktop_notifications:
                             type: boolean
                             description: |
@@ -22557,6 +22581,14 @@ paths:
                     **Changes**: New in Zulip 11.0 (feature level 398).
                   type: boolean
                   example: true
+                web_link_previews_enabled:
+                  description: |
+                    Whether to show [link previews](/help/image-video-and-website-previews)
+                    when links are included in messages in the web/desktop application.
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-cafed8).
+                  type: boolean
+                  example: true
                 timezone:
                   description: |
                     The IANA identifier of the user's [profile time zone](/help/change-your-timezone),
@@ -22977,6 +23009,8 @@ paths:
               web_left_sidebar_show_channel_folders:
                 contentType: application/json
               web_left_sidebar_unreads_count_summary:
+                contentType: application/json
+              web_link_previews_enabled:
                 contentType: application/json
               enable_stream_desktop_notifications:
                 contentType: application/json
