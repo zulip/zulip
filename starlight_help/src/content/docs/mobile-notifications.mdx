@@ -30,10 +30,13 @@ topics](/help/follow-a-topic#configure-notifications-for-followed-topics).
 
 ## End-to-end encryption (E2EE) for mobile push notifications
 
-Zulip Server 11.0+ and Zulip Cloud support end-to-end encryption for mobile push
+Zulip Server 12.0+ and Zulip Cloud support end-to-end encryption for mobile push
 notifications. Support is [coming soon][e2ee-flutter-issue] to the Zulip mobile
 app. Once implemented, all push notifications sent from an up-to-date version of
-the server to an updated version of the app will be end-to-end encrypted.
+the server to an updated version of the app will be end-to-end encrypted. E2EE
+push notifications ensure that message content and metadata (including the
+sender's name, and the channel and topic where the message was sent) is not
+visible to intermediaries.
 
 [e2ee-flutter-issue]: https://github.com/zulip/zulip-flutter/issues/1764
 
