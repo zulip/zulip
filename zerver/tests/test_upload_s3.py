@@ -559,7 +559,7 @@ class S3Test(ZulipTestCase):
 
         user_profile = self.example_user("hamlet")
         with get_test_image_file("img.png") as image_file:
-            zerver.lib.upload.upload_backend.upload_realm_icon_image(
+            zerver.lib.upload.upload_backend.store_realm_icon_image(
                 image_file, user_profile, content_type="image/png"
             )
 

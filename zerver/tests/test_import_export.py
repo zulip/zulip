@@ -214,7 +214,7 @@ class ExportFile(ZulipTestCase):
         realm = user_profile.realm
 
         with get_test_image_file("img.png") as img_file:
-            upload.upload_backend.upload_realm_icon_image(img_file, user_profile, "image/png")
+            upload.upload_backend.store_realm_icon_image(img_file, user_profile, "image/png")
             do_change_icon_source(realm, Realm.ICON_UPLOADED, acting_user=None)
 
         with get_test_image_file("img.png") as img_file:

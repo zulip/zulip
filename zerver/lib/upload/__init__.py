@@ -475,7 +475,7 @@ def delete_avatar_image(user_profile: UserProfile, avatar_version: int) -> None:
 def upload_icon_image(user_file: IO[bytes], user_profile: UserProfile, content_type: str) -> None:
     if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:
         raise BadImageError(_("Invalid image format"))
-    upload_backend.upload_realm_icon_image(user_file, user_profile, content_type)
+    upload_backend.store_realm_icon_image(user_file, user_profile, content_type)
 
 
 def upload_logo_image(
