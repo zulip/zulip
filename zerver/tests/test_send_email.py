@@ -227,6 +227,27 @@ class TestSendEmail(ZulipTestCase):
             self.assertEqual(close_call.call_count, 0)
             self.assertEqual(_open_call.call_count, 2)
             self.assertEqual(old_connection_mock.noop.call_count, 0)
+            close_call.reset_mock()
+            _open_call.reset_mock()
+
+            # Connections older than 24 hours are properly
+            # recycled: timedelta.seconds wraps at 24 hours, but
+            # total_seconds() does not.
+            with time_machine.travel(
+                timezone_now() + timedelta(hours=25),
+                tick=False,
+            ):
+                old_connection_mock = mock.MagicMock(spec=SMTP)
+                backend.connection = old_connection_mock
+                with mock.patch(
+                    "django.core.mail.backends.smtp.EmailBackend.open", side_effect=[False, True]
+                ):
+                    initialize_connection(backend)
+                self.assertEqual(backend.opened_at, timezone_now())
+
+            # Noop should not have been attempted on the old connection.
+            self.assertEqual(old_connection_mock.noop.call_count, 0)
+            self.assertEqual(_open_call.call_count, 2)
 
     def test_send_email_exceptions(self) -> None:
         hamlet = self.example_user("hamlet")

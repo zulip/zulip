@@ -130,7 +130,7 @@ class PersistentSMTPEmailBackend(EmailBackend):
             return True
 
         status = None
-        time_elapsed = (timezone_now() - self.opened_at).seconds / 60
+        time_elapsed = (timezone_now() - self.opened_at).total_seconds() / 60
         if (
             settings.EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES is None
             or time_elapsed <= settings.EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES
