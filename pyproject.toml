@@ -52,6 +52,7 @@ prod = [
 
   # Needed for the email mirror
   "html2text",
+  "markdownify",
   "talon-core",
 
   # Needed for inlining the CSS in emails
