@@ -296,12 +296,12 @@ class S3UploadBackend(ZulipUploadBackend):
     def delete_message_attachment_from_storage(
         self, path_id: str, *, raw_path: bool = False
     ) -> None:
-        with self.delete_message_attachments(raw_paths=raw_path) as delete_one:
+        with self.delete_message_attachments_from_storage(raw_paths=raw_path) as delete_one:
             delete_one(path_id)
 
     @contextmanager
     @override
-    def delete_message_attachments(
+    def delete_message_attachments_from_storage(
         self, *, raw_paths: bool = False, flush: None | Callable[[list[str]], None] = None
     ) -> Iterator[Callable[[str], None]]:
         paths: list[tuple[str, bool]] = []
