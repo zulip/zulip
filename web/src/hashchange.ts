@@ -289,21 +289,36 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     }
 
     const coming_from_overlay = hash_parser.is_overlay_hash(old_hash);
-    if (section === "display-settings") {
+    if (base === "settings" && section === "display-settings") {
         // Since display-settings was deprecated and replaced with preferences
         // #settings/display-settings is being redirected to #settings/preferences.
         section = "preferences";
+        window.history.replaceState(
+            null,
+            "",
+            browser_history.get_full_url("#settings/preferences"),
+        );
     }
-    if (section === "bot-list-admin") {
-        // #organization/bot-list-admin is being redirected to #organization/bots.
+    if (base === "organization" && section === "bot-list-admin") {
+        // #organization/bot-list-admin is being redirected to #organization/bots/all-bots.
         section = "bots";
-        base = "organization";
+        window.history.replaceState(
+            null,
+            "",
+            browser_history.get_full_url("#organization/bots/all-bots"),
+        );
     }
-    if (section === "user-list-admin") {
-        // #settings/user-list-admin is being redirected to #settings/users after it was renamed.
+    if (base === "organization" && section === "user-list-admin") {
+        // #organization/user-list-admin is being redirected to #organization/users/active
+        // after it was renamed.
         section = "users";
+        window.history.replaceState(
+            null,
+            "",
+            browser_history.get_full_url("#organization/users/active"),
+        );
     }
-    if (section === "your-bots") {
+    if (base === "settings" && section === "your-bots") {
         // #settings/your-bots is being redirected to #organization/bots/your-bots.
         section = "bots";
         base = "organization";
