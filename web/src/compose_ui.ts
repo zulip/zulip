@@ -1477,6 +1477,12 @@ let thumbnail_poll_timeout: ReturnType<typeof setTimeout> | null = null;
 let pending_thumbnail_paths = new Set<string>();
 const MAX_THUMBNAIL_RETRIES = 5;
 
+let embed_poll_timeout: ReturnType<typeof setTimeout> | null = null;
+// Progressive delays (ms) between embed poll attempts: short first delay
+// for fast sites (oEmbed), denser follow-ups to catch sites that require
+// two HTTP round trips (~3–6 s total).
+const EMBED_POLL_DELAYS_MS = [1000, 2000, 3000, 5000];
+
 function extract_thumbnail_paths($preview_content: JQuery): Set<string> {
     const paths = new Set<string>();
 
@@ -1580,6 +1586,76 @@ export function clear_thumbnail_polling(): void {
     pending_thumbnail_paths.clear();
 }
 
+export function clear_embed_polling(): void {
+    if (embed_poll_timeout !== null) {
+        clearTimeout(embed_poll_timeout);
+        embed_poll_timeout = null;
+    }
+}
+
+// Re-query /json/messages/render until the backend's cache-warming threads
+// have populated embed data.  We post directly rather than calling
+// render_and_show_preview so that preview_render_count is not incremented.
+function poll_embed_status(
+    $preview_container: JQuery,
+    $preview_content_box: JQuery,
+    content: string,
+    render_generation: number,
+    attempt = 0,
+): void {
+    if (attempt >= EMBED_POLL_DELAYS_MS.length || !$preview_container.hasClass("preview_mode")) {
+        return;
+    }
+
+    embed_poll_timeout = setTimeout(() => {
+        embed_poll_timeout = null;
+
+        if (
+            compose_state.get_preview_render_count() !== render_generation ||
+            !$preview_container.hasClass("preview_mode")
+        ) {
+            return;
+        }
+
+        void channel.post({
+            url: "/json/messages/render",
+            data: {content},
+            success(response_data) {
+                if (
+                    compose_state.get_preview_render_count() !== render_generation ||
+                    !$preview_container.hasClass("preview_mode")
+                ) {
+                    return;
+                }
+
+                const data = message_render_response_schema.parse(response_data);
+
+                if (data.rendered.includes('class="message_embed"')) {
+                    $preview_content_box.html(postprocess_content(data.rendered));
+                    rendered_markdown.update_elements($preview_content_box);
+                } else {
+                    poll_embed_status(
+                        $preview_container,
+                        $preview_content_box,
+                        content,
+                        render_generation,
+                        attempt + 1,
+                    );
+                }
+            },
+            error() {
+                poll_embed_status(
+                    $preview_container,
+                    $preview_content_box,
+                    content,
+                    render_generation,
+                    attempt + 1,
+                );
+            },
+        });
+    }, EMBED_POLL_DELAYS_MS[attempt]);
+}
+
 // We use this module-level variable to suppress the preview spinner for
 // the next render cycle. We need this state because the preview update
 // is triggered via a global input event listener when we modify the textarea
@@ -1633,6 +1709,22 @@ export function render_and_show_preview(
                 $preview_spinner,
                 $preview_content_box,
                 content,
+            );
+        }
+
+        // Only poll for embeds after the authoritative backend render
+        // (raw_content defined); the client-side renderer never produces embeds.
+        clear_embed_polling();
+        if (
+            raw_content !== undefined &&
+            $preview_content_box.find("a").length > 0 &&
+            $preview_content_box.find(".message_embed").length === 0
+        ) {
+            poll_embed_status(
+                $preview_container,
+                $preview_content_box,
+                content,
+                preview_render_count,
             );
         }
     }
