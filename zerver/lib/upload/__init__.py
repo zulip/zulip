@@ -238,7 +238,7 @@ def upload_message_attachment(
     uploaded_file_name = re.sub(r"\x00", "", uploaded_file_name)
 
     with transaction.atomic(durable=True):
-        upload_backend.upload_message_attachment(
+        upload_backend.store_message_attachment(
             path_id,
             uploaded_file_name,
             content_type,

@@ -144,7 +144,7 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> ThumbnailingResult:
             thumbnail_path = get_image_thumbnail_path(image_attachment, thumbnail_format)
             logger.debug("Uploading %d bytes to %s", len(thumbnailed_bytes), thumbnail_path)
             start_time = time.perf_counter()
-            upload_backend.upload_message_attachment(
+            upload_backend.store_message_attachment(
                 thumbnail_path,
                 str(thumbnail_format),
                 content_type,
