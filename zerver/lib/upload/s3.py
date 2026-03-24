@@ -535,7 +535,7 @@ class S3UploadBackend(ZulipUploadBackend):
             )
 
     @override
-    def upload_export_tarball(
+    def store_export_tarball(
         self,
         realm: Realm,
         tarball_path: str,

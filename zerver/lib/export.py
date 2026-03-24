@@ -3095,7 +3095,7 @@ def export_realm_wrapper(
             return None
 
         print("Uploading export tarball...")
-        public_url = zerver.lib.upload.upload_backend.upload_export_tarball(
+        public_url = zerver.lib.upload.upload_backend.store_export_tarball(
             export_row.realm, tarball_path, percent_callback=percent_callback
         )
         print(f"\nUploaded to {public_url}")
