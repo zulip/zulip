@@ -31,8 +31,9 @@ from zerver.lib.upload import (
     all_message_attachments,
     attachment_source,
     create_attachment,
+    generate_message_upload_path,
     save_attachment_contents,
-    upload_backend,
+    store_message_attachment,
 )
 from zerver.models import Attachment, ImageAttachment
 from zerver.views.upload import closest_thumbnail_format
@@ -742,8 +743,8 @@ class TestStoreThumbnail(ZulipTestCase):
         # chunked upload), and then use the streaming source to
         # create the attachment, we still thumbnail correctly.
         hamlet = self.example_user("hamlet")
-        path_id = upload_backend.generate_message_upload_path(str(hamlet.realm.id), "img.png")
-        upload_backend.store_message_attachment(
+        path_id = generate_message_upload_path(str(hamlet.realm.id), "img.png")
+        store_message_attachment(
             path_id, "img.png", "image/png", read_test_image_file("img.png"), hamlet, hamlet.realm
         )
         source = attachment_source(path_id)

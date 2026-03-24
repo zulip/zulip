@@ -11,8 +11,9 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import create_s3_buckets, find_key_by_email, use_s3_backend
 from zerver.lib.upload import (
     create_attachment,
+    generate_message_upload_path,
     sanitize_name,
-    upload_backend,
+    store_message_attachment,
     upload_message_attachment,
 )
 from zerver.lib.upload.s3 import S3UploadBackend
@@ -471,10 +472,8 @@ class TusdPreFinishTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
 
         # Act like tusd does -- put the file and its .info in place
-        path_id = upload_backend.generate_message_upload_path(
-            str(hamlet.realm.id), sanitize_name("zulip.txt")
-        )
-        upload_backend.store_message_attachment(
+        path_id = generate_message_upload_path(str(hamlet.realm.id), sanitize_name("zulip.txt"))
+        store_message_attachment(
             path_id,
             "zulip.txt",
             "text/plain",
@@ -499,7 +498,7 @@ class TusdPreFinishTest(ZulipTestCase):
             partial_uploads=None,
             storage=None,
         )
-        upload_backend.store_message_attachment(
+        store_message_attachment(
             f"{path_id}.info",
             "zulip.txt.info",
             "application/octet-stream",
@@ -540,12 +539,8 @@ class TusdPreFinishTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
 
         # Act like tusd does -- put the file and its .info in place
-        path_id = upload_backend.generate_message_upload_path(
-            str(hamlet.realm.id), sanitize_name("")
-        )
-        upload_backend.store_message_attachment(
-            path_id, "", "ignored", b"zulip!", hamlet, hamlet.realm
-        )
+        path_id = generate_message_upload_path(str(hamlet.realm.id), sanitize_name(""))
+        store_message_attachment(path_id, "", "ignored", b"zulip!", hamlet, hamlet.realm)
 
         info = TusUpload(
             id=path_id,
@@ -558,7 +553,7 @@ class TusdPreFinishTest(ZulipTestCase):
             partial_uploads=None,
             storage=None,
         )
-        upload_backend.store_message_attachment(
+        store_message_attachment(
             f"{path_id}.info",
             ".info",
             "ignored",
@@ -756,10 +751,8 @@ class TusdPreTerminateTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
 
         # Act like tusd does -- put the file and its .info in place
-        path_id = upload_backend.generate_message_upload_path(
-            str(hamlet.realm.id), sanitize_name("zulip.txt")
-        )
-        upload_backend.store_message_attachment(
+        path_id = generate_message_upload_path(str(hamlet.realm.id), sanitize_name("zulip.txt"))
+        store_message_attachment(
             path_id, "zulip.txt", "text/plain", b"zulip!", hamlet, hamlet.realm
         )
 

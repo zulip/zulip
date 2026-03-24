@@ -61,7 +61,13 @@ from zerver.lib.thumbnail import (
     maybe_thumbnail,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.upload import ensure_avatar_image, sanitize_name, upload_backend, upload_emoji_image
+from zerver.lib.upload import (
+    ensure_avatar_image,
+    generate_message_upload_path,
+    get_avatar_path,
+    sanitize_name,
+    upload_emoji_image,
+)
 from zerver.lib.upload.s3 import get_bucket
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import create_system_user_groups_for_realm
@@ -1175,7 +1181,7 @@ def import_uploads(
             if sanitized_record.safe_resolved_source_path.endswith(".original"):
                 relative_path += ".original"
             else:
-                relative_path = upload_backend.get_avatar_path(relative_path, medium=False)
+                relative_path = get_avatar_path(relative_path, medium=False)
         elif processing_emojis:
             # For emojis we follow the function 'upload_emoji_image'
             emoji_file_name = assert_is_not_none(sanitized_record.sanitized_file_name)
@@ -1195,7 +1201,7 @@ def import_uploads(
             # This relative_path is basically the new location of the file,
             # which will later be copied from its original location as
             # specified in record["path"].
-            relative_path = upload_backend.generate_message_upload_path(
+            relative_path = generate_message_upload_path(
                 str(sanitized_record.raw_record["realm_id"]),
                 sanitize_name(os.path.basename(sanitized_record.original_relative_path)),
             )

@@ -608,7 +608,7 @@ class S3Test(ZulipTestCase):
         bucket = settings.S3_AVATAR_BUCKET
         path = RealmEmoji.PATH_ID_TEMPLATE.format(realm_id=realm_id, emoji_file_name=emoji_name)
 
-        url = zerver.lib.upload.upload_backend.get_emoji_url("emoji.png", realm_id)
+        url = zerver.lib.upload.get_emoji_url("emoji.png", realm_id)
 
         expected_url = f"https://{bucket}.s3.amazonaws.com/{path}"
         self.assertEqual(expected_url, url)
@@ -620,10 +620,8 @@ class S3Test(ZulipTestCase):
             realm_id=realm_id, emoji_filename_without_extension=os.path.splitext(emoji_name)[0]
         )
 
-        url = zerver.lib.upload.upload_backend.get_emoji_url("animated_image.gif", realm_id)
-        still_url = zerver.lib.upload.upload_backend.get_emoji_url(
-            "animated_image.gif", realm_id, still=True
-        )
+        url = zerver.lib.upload.get_emoji_url("animated_image.gif", realm_id)
+        still_url = zerver.lib.upload.get_emoji_url("animated_image.gif", realm_id, still=True)
 
         expected_url = f"https://{bucket}.s3.amazonaws.com/{path}"
         self.assertEqual(expected_url, url)

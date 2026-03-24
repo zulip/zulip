@@ -248,7 +248,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
         with get_test_image_file("img.png") as image_file:
             upload_emoji_image(image_file, file_name, user_profile, "image/png")
-        url = zerver.lib.upload.upload_backend.get_emoji_url(file_name, user_profile.realm_id)
+        url = zerver.lib.upload.get_emoji_url(file_name, user_profile.realm_id)
 
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=user_profile.realm_id,
@@ -260,10 +260,8 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         file_name = "emoji.gif"
         with get_test_image_file("animated_img.gif") as image_file:
             upload_emoji_image(image_file, file_name, user_profile, "image/png")
-        url = zerver.lib.upload.upload_backend.get_emoji_url(file_name, user_profile.realm_id)
-        still_url = zerver.lib.upload.upload_backend.get_emoji_url(
-            file_name, user_profile.realm_id, still=True
-        )
+        url = zerver.lib.upload.get_emoji_url(file_name, user_profile.realm_id)
+        still_url = zerver.lib.upload.get_emoji_url(file_name, user_profile.realm_id, still=True)
 
         emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
             realm_id=user_profile.realm_id,

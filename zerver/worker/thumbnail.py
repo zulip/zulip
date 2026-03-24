@@ -20,7 +20,7 @@ from zerver.lib.thumbnail import (
     missing_thumbnails,
     rewrite_thumbnailed_images,
 )
-from zerver.lib.upload import save_attachment_contents, upload_backend
+from zerver.lib.upload import save_attachment_contents, store_message_attachment
 from zerver.models import ArchivedMessage, ImageAttachment, Message
 from zerver.worker.base import QueueProcessingWorker, assign_queue
 
@@ -144,7 +144,7 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> ThumbnailingResult:
             thumbnail_path = get_image_thumbnail_path(image_attachment, thumbnail_format)
             logger.debug("Uploading %d bytes to %s", len(thumbnailed_bytes), thumbnail_path)
             start_time = time.perf_counter()
-            upload_backend.store_message_attachment(
+            store_message_attachment(
                 thumbnail_path,
                 str(thumbnail_format),
                 content_type,

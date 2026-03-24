@@ -71,8 +71,8 @@ from zerver.lib.thumbnail import BadImageError
 from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.lib.upload import (
     claim_attachment,
+    get_emoji_url,
     upload_avatar_image,
-    upload_backend,
     upload_message_attachment,
 )
 from zerver.lib.utils import get_fk_field_name
@@ -2513,7 +2513,7 @@ class RealmImportExportTest(ExportFile):
         self.assertTrue(os.path.isfile(avatar_file_path))
 
         # Test realm icon and logo
-        upload_path = upload.upload_backend.realm_avatar_and_logo_path(imported_realm)
+        upload_path = upload.realm_avatar_and_logo_path(imported_realm)
         full_upload_path = os.path.join(settings.LOCAL_AVATARS_DIR, upload_path)
 
         with open(os.path.join(full_upload_path, "icon.original"), "rb") as f:
@@ -2589,7 +2589,7 @@ class RealmImportExportTest(ExportFile):
             self.assertEqual(image_get_response["ResponseMetadata"]["HTTPStatusCode"], 200)
 
         # Test realm icon and logo
-        upload_path = upload.upload_backend.realm_avatar_and_logo_path(imported_realm)
+        upload_path = upload.realm_avatar_and_logo_path(imported_realm)
 
         original_icon_path_id = os.path.join(upload_path, "icon.original")
         original_icon_key = avatar_bucket.Object(original_icon_path_id)
@@ -3031,7 +3031,7 @@ class RealmImportExportTest(ExportFile):
             self.assertEqual(imported_realm_emoji.author.id, int(realm_emoji_info["author_id"]))
             self.assertEqual(imported_realm_emoji.name, realm_emoji_info["name"])
             imported_emoji_path = os.path.dirname(
-                upload_backend.get_emoji_url(
+                get_emoji_url(
                     get_emoji_file_name("image/png", imported_realm_emoji.id), imported_realm.id
                 )
             )
