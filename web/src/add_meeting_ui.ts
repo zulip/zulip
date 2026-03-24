@@ -13,7 +13,6 @@ import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as pill_typeahead from "./pill_typeahead.ts";
 import * as timerender from "./timerender.ts";
-import * as typeahead_helper from "./typeahead_helper.ts";
 import * as user_pill from "./user_pill.ts";
 import * as flatpickr from "./flatpickr.ts";
 import * as util from "./util.ts";
@@ -82,23 +81,16 @@ function populate_user_dropdown(): void {
   }
 
   for (const user of users) {
-    const item: user_pill.UserPillData = {
-      type: "user",
-      user,
-    };
-
     const html = `
-      <div class="rsvp-user-item">
-        <img src="${user.avatar_url}" class="avatar" />
-        <div class="user-info">
-          <div class="user-name">
-            ${user.full_name}
-            ${user.pronouns ? `<span class="pronouns">${user.pronouns}</span>` : ""}
-          </div>
-          <div class="user-email">${user.email}</div>
+        <div class="rsvp-user-item">
+            <img src="${user.avatar_url}" class="avatar" />
+            <div class="user-info">
+                <div class="user-name">${user.full_name}</div>
+                <div class="user-email">${user.email}</div>
+            </div>
         </div>
-      </div>
     `;
+
     const $option = $(`
       <div class="rsvp-user-option horizontal-user">
         ${html}
@@ -107,7 +99,7 @@ function populate_user_dropdown(): void {
 
     $option.on("click", () => {
       user_pill.append_user(user, invite_users_widget);
-      $("#rsvp-user-dropdown").hide();
+      $dropdown.hide();
     });
 
     $dropdown.append($option);
@@ -128,12 +120,37 @@ function rsvp_meeting_modal_post_render(): void {
     $("#rsvp-invite-users-container"),
   );
 
-  pill_typeahead.set_up_user($("#rsvp-invite-users"), invite_users_widget, {
-    exclude_bots: false,
+  $("#rsvp-invite-users").on("input", () => {
+    const query = ($("#rsvp-invite-users").text() ?? "").toLowerCase().trim();
+    const $dropdown = $("#rsvp-user-dropdown");
+
+    if (!$dropdown.is(":visible")) {
+      return;
+    }
+
+    $dropdown.find(".rsvp-user-option").each(function () {
+      const name = $(this).find(".user-name").text().toLowerCase();
+      const email = $(this).find(".user-email").text().toLowerCase();
+      $(this).toggle(name.includes(query) || email.includes(query));
+    });
+
+    const containerEl = $("#rsvp-invite-users-container")[0];
+    if (containerEl) {
+      const rect = containerEl.getBoundingClientRect();
+      const dropdownEl = $dropdown[0];
+      if (dropdownEl) {
+        const dropdownHeight = dropdownEl.offsetHeight;
+        $dropdown.css("top", rect.top - dropdownHeight - 4);
+      }
+    }
   });
 
   $("#rsvp-invite-users").on("focus", () => {
-    $("#rsvp-invite-users").trigger("input");
+    if (!$("#rsvp-user-dropdown").is(":visible")) {
+      setTimeout(() => {
+        $("#rsvp-user-dropdown-button").trigger("click");
+      }, 0);
+    }
   });
 
   $("#rsvp-user-dropdown-button").on("click", () => {
@@ -145,7 +162,25 @@ function rsvp_meeting_modal_post_render(): void {
     }
 
     populate_user_dropdown();
+
+    const $container = $("#rsvp-invite-users-container");
+    const containerEl = $container[0];
+    if (!containerEl) {
+      return;
+    }
+    const rect = containerEl.getBoundingClientRect();
+    const dropdownEl = $dropdown[0];
+
+    if (!dropdownEl) {
+      return;
+    }
     $dropdown.show();
+    const dropdownHeight = dropdownEl.offsetHeight;
+    $dropdown.css({
+      top: rect.top - dropdownHeight - 4,
+      left: rect.left,
+      width: rect.width,
+    });
   });
 
   // open flatpickr calendar when clicking the datetime input and populate it

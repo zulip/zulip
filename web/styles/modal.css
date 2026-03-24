@@ -54,6 +54,11 @@
   box-sizing: border-box;
 }
 
+.modal__container:has(#add-rsvp-meeting-modal) {
+  overflow: visible;
+  will-change: auto;
+}
+
 .modal__header {
   display: grid;
   /* The grid structure uses two grid columns to define the
@@ -201,7 +206,7 @@
   overflow: visible;
   line-height: 1.15;
   margin: 0;
-  will-change: transform;
+  will-change: auto;
   backface-visibility: hidden;
   transform: translateZ(0);
   transition: transform 0.25s ease-out;
@@ -1268,6 +1273,11 @@ ul.modal-options-list {
 
 /* RSVP meeting invite user input */
 
+.modal__container:has(#add-rsvp-meeting-modal) {
+  overflow: visible;
+  will-change: auto;
+}
+
 #rsvp-invite-users-container {
   display: flex;
   flex: 1;
@@ -1278,62 +1288,6 @@ ul.modal-options-list {
   &:focus-visible {
     outline-color: var(--color-compose-focus-ring);
   }
-}
-
-.rsvp-invite-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-#rsvp-invite-users {
-  min-height: 24px;
-  line-height: 24px;
-}
-
-.rsvp-user-option {
-  padding: 6px 10px;
-  cursor: pointer;
-  color: var(--color-text-default);
-  align-items: center;
-}
-
-.rsvp-user-option .person {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.rsvp-user-option .person_row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  display: inline-flex !important;
-}
-
-.rsvp-user-option .person_name {
-  font-weight: 500;
-}
-
-.rsvp-user-option .email {
-  opacity: 0.7;
-  font-size: 0.9em;
-}
-
-.rsvp-user-option .person_row .person_name {
-  margin-right: 6px;
-}
-
-.rsvp-user-option .person_row .email {
-  opacity: 0.7;
-}
-
-.rsvp-user-option .avatar {
-  flex-shrink: 0;
-}
-
-.rsvp-user-option:hover {
-  background-color: var(--color-background-hover);
 }
 
 #rsvp-invite-users-container .compose-new-recipient-button {
@@ -1359,139 +1313,22 @@ ul.modal-options-list {
   }
 }
 
+.rsvp-invite-row {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+#rsvp-invite-users {
+  min-height: 24px;
+  line-height: 24px;
+}
+
 #rsvp-invite-users:empty::before {
   content: attr(data-placeholder);
   color: var(--color-text-placeholder);
   pointer-events: none;
   cursor: text;
-}
-
-.rsvp-user-dropdown {
-  position: relative;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  background: var(--color-background-modal);
-  border: 1px solid var(--color-border-dropdown);
-  border-radius: 4px;
-  max-height: 320px;
-  overflow-y: auto;
-  width: 100%;
-  z-index: 1000;
-}
-
-.rsvp-user-option {
-  padding: 10px 12px;
-  cursor: pointer;
-  color: var(--color-text-default);
-  align-items: center;
-  display: flex !important;
-  gap: 12px;
-  margin-bottom: 4px;
-  border-radius: 6px;
-}
-
-.rsvp-user-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.rsvp-user-item .avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 6px;
-  flex-shrink: 0;
-}
-
-.rsvp-user-item .user-info {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-}
-
-.user-name {
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-.pronouns {
-  margin-left: 6px;
-  font-weight: 400;
-  opacity: 0.6;
-  font-size: 0.9em;
-}
-
-.user-email {
-  font-size: 0.85em;
-  opacity: 0.6;
-  line-height: 1.2;
-}
-
-.user-name,
-.user-email {
-  width: 100%;
-  text-align: left;
-}
-
-.rsvp-user-option .person {
-  display: flex !important;
-  align-items: center;
-  gap: 10px;
-}
-
-.rsvp-user-option .person > div {
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: center;
-  gap: 6px;
-}
-
-.rsvp-user-option * {
-  display: inline-flex !important;
-  align-items: center !important;
-}
-
-.rsvp-user-option img,
-.rsvp-user-option .avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  flex-shrink: 0;
-  margin-right: 8px;
-}
-
-.rsvp-user-option .person_row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  display: inline-flex !important;
-}
-
-.rsvp-user-option .person_name {
-  margin-right: 8px;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-.rsvp-user-option .email {
-  opacity: 0.6;
-  font-size: 0.85em;
-  line-height: 1.2;
-  margin-left: 4px;
-}
-
-.rsvp-user-option .person_row .person_name {
-  margin-right: 6px;
-}
-
-.rsvp-user-option .person_row .email {
-  opacity: 0.7;
-}
-
-.rsvp-user-option .avatar {
-  flex-shrink: 0;
 }
 
 .rsvp-invite-label {
@@ -1512,13 +1349,72 @@ ul.modal-options-list {
   text-decoration: none !important;
   cursor: pointer;
   line-height: 1;
+
+  &:hover {
+    background: var(--color-background-sidebar-action-heading-hover);
+    box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+    color: hsl(240deg 52% 67%);
+  }
 }
 
-.rsvp-add-all-users-link:hover {
-  background: var(--color-background-sidebar-action-heading-hover);
-  box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
-  text-decoration: none !important;
-  color: hsl(240deg 52% 67%);
+.rsvp-user-dropdown {
+  position: fixed;
+  background: var(--color-background-modal);
+  border: 1px solid var(--color-border-dropdown);
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10000;
+  box-shadow: 0 4px 12px hsl(0deg 0% 0% / 30%);
+  padding: 4px 0;
+}
+
+.rsvp-user-option {
+  padding: 5px 10px;
+  cursor: pointer;
+  color: var(--color-text-default);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    background-color: var(--color-background-hover-popover-menu);
+  }
+}
+
+.rsvp-user-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rsvp-user-item .avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.rsvp-user-item .user-info {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.rsvp-user-item .user-name {
+  font-weight: 400;
+  font-size: 1em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.rsvp-user-item .user-email {
+  font-size: 0.85em;
+  opacity: 0.6;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .flatpickr-calendar.open::before,
