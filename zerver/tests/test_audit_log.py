@@ -84,13 +84,14 @@ from zerver.actions.user_settings import (
     do_regenerate_api_key,
 )
 from zerver.actions.users import do_change_is_imported_stub, do_change_user_role, do_deactivate_user
-from zerver.lib.emoji import get_emoji_file_name, get_emoji_url
+from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.message import get_last_message_id
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.lib.types import LinkifierDict, RealmPlaygroundDict
+from zerver.lib.upload import upload_backend
 from zerver.lib.user_groups import get_group_setting_value_for_api
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -1221,7 +1222,7 @@ class TestRealmAuditLog(ZulipTestCase):
         added_emoji = EmojiInfo(
             id=str(realm_emoji.id),
             name="test_emoji",
-            source_url=get_emoji_url(
+            source_url=upload_backend.get_emoji_url(
                 get_emoji_file_name("image/png", realm_emoji.id), user.realm_id
             ),
             deactivated=False,
@@ -1251,7 +1252,7 @@ class TestRealmAuditLog(ZulipTestCase):
         deactivated_emoji = EmojiInfo(
             id=str(realm_emoji.id),
             name="test_emoji",
-            source_url=get_emoji_url(
+            source_url=upload_backend.get_emoji_url(
                 get_emoji_file_name("image/png", realm_emoji.id), user.realm_id
             ),
             deactivated=True,

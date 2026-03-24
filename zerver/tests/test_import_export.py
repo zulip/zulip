@@ -47,7 +47,7 @@ from zerver.lib import upload
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.bot_lib import StateHandler
-from zerver.lib.emoji import get_emoji_file_name, get_emoji_url
+from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.export import (
     PRESERVED_AUDIT_LOG_EVENT_TYPES,
     Record,
@@ -70,7 +70,12 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.thumbnail import BadImageError
 from zerver.lib.topic import DB_TOPIC_NAME
-from zerver.lib.upload import claim_attachment, upload_avatar_image, upload_message_attachment
+from zerver.lib.upload import (
+    claim_attachment,
+    upload_avatar_image,
+    upload_backend,
+    upload_message_attachment,
+)
 from zerver.lib.utils import assert_is_not_none, get_fk_field_name
 from zerver.models import (
     AlertWord,
@@ -3039,7 +3044,7 @@ class RealmImportExportTest(ExportFile):
             self.assertEqual(imported_realm_emoji.author.id, int(realm_emoji_info["author_id"]))
             self.assertEqual(imported_realm_emoji.name, realm_emoji_info["name"])
             imported_emoji_path = os.path.dirname(
-                get_emoji_url(
+                upload_backend.get_emoji_url(
                     get_emoji_file_name("image/png", imported_realm_emoji.id), imported_realm.id
                 )
             )

@@ -76,12 +76,12 @@ def get_all_custom_emoji_for_realm_uncached(realm_id: int) -> dict[str, EmojiInf
         file_name=None,
     )
     d = {}
-    from zerver.lib.emoji import get_emoji_url
+    from zerver.lib.upload import upload_backend
 
     for realm_emoji in query.all():
         author_id = realm_emoji.author_id
         assert realm_emoji.file_name is not None
-        emoji_url = get_emoji_url(realm_emoji.file_name, realm_emoji.realm_id)
+        emoji_url = upload_backend.get_emoji_url(realm_emoji.file_name, realm_emoji.realm_id)
 
         emoji_dict: EmojiInfo = dict(
             id=str(realm_emoji.id),
@@ -97,7 +97,7 @@ def get_all_custom_emoji_for_realm_uncached(realm_id: int) -> dict[str, EmojiInf
             # version of the image, so that clients can display the
             # emoji in a less distracting (not animated) fashion when
             # desired.
-            emoji_dict["still_url"] = get_emoji_url(
+            emoji_dict["still_url"] = upload_backend.get_emoji_url(
                 realm_emoji.file_name, realm_emoji.realm_id, still=True
             )
 
