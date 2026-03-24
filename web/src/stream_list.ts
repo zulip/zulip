@@ -958,6 +958,10 @@ export let update_streams_sidebar = (force_rerender = false): void => {
 
     const filter = narrow_state.filter();
     if (!filter) {
+        const search_term = ui_util.get_left_sidebar_search_term();
+        if (search_term.startsWith("topic:")) {
+            update_stream_sidebar_for_search();
+        }
         return;
     }
 
@@ -1225,6 +1229,16 @@ function deselect_stream_items(): void {
     $("ul#stream_filters li").removeClass("active-filter stream-expanded");
 }
 
+export function update_stream_sidebar_for_search(): void {
+    for (const subscribed_stream_id of stream_list_sort.get_stream_ids()) {
+        const row = stream_sidebar.get_row(subscribed_stream_id);
+        if (!row) {
+            continue;
+        }
+        topic_list.rebuild_left_sidebar(row.get_li(), subscribed_stream_id, true);
+    }
+}
+
 export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undefined {
     const info = get_sidebar_stream_topic_info(filter);
 
@@ -1232,8 +1246,16 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
 
     const stream_id = info.stream_id;
 
+    const search_term = ui_util.get_left_sidebar_search_term();
+    const render_for_search = search_term.startsWith("topic:");
+    if (render_for_search) {
+        update_stream_sidebar_for_search();
+    }
+
     if (!stream_id) {
-        clear_topics();
+        if (!render_for_search) {
+            clear_topics();
+        }
         return undefined;
     }
 
@@ -1246,7 +1268,9 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
         // stopped appearing from March 2018 until at least
         // April 2020, so if it appears again, something regressed.
         blueslip.error("No stream_li for subscribed stream", {stream_id});
-        clear_topics();
+        if (!render_for_search) {
+            clear_topics();
+        }
         return undefined;
     }
 
@@ -1259,14 +1283,17 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     // masked unread counts.
     $stream_li.addClass("stream-expanded");
 
-    if (stream_id !== topic_list.active_stream_id()) {
+    if (stream_id !== topic_list.active_stream_id() && !render_for_search) {
         clear_topics();
     }
 
     // We want to update channel view for inbox for the same reasons
     // we want to the topics list here.
     update_inbox_channel_view_callback(stream_id);
-    topic_list.rebuild_left_sidebar($stream_li, stream_id);
+    
+    if (!render_for_search) {
+        topic_list.rebuild_left_sidebar($stream_li, stream_id);
+    }
     topic_list.topic_state_typeahead?.lookup(true);
 
     // If we're updating a view for a highlighted stream, it's possible

@@ -525,6 +525,52 @@ test("left_sidebar_search", ({override}) => {
     assert.deepEqual(sorted_sections[2].default_visible_streams, []);
 });
 
+test("left_sidebar_topic_search", ({override}) => {
+    add_all_subs();
+
+    // Add topics to a few streams
+    const history_scalene = stream_topic_history.find_or_create(scalene.stream_id);
+    history_scalene.add_or_update("design discussions", 1);
+
+    const history_fast_tortoise = stream_topic_history.find_or_create(fast_tortoise.stream_id);
+    history_fast_tortoise.add_or_update("frontend design", 1);
+
+    const history_pneumonia = stream_topic_history.find_or_create(pneumonia.stream_id);
+    history_pneumonia.add_or_update("backend architecture", 1);
+
+    // Filter using 'topic:' prefix
+    // Only scalene and fast_tortoise should match 'design'
+    let sorted_sections = stream_list_sort.sort_groups(
+        stream_data.subscribed_stream_ids(),
+        "topic: design",
+    ).sections;
+
+    assert.deepEqual(sorted_sections.length, 2);
+    assert.deepEqual(sorted_sections[0].id, "pinned-streams");
+    assert.deepEqual(sorted_sections[0].default_visible_streams, [scalene.stream_id]);
+    
+    assert.deepEqual(sorted_sections[1].id, "normal-streams");
+    assert.deepEqual(sorted_sections[1].default_visible_streams, [fast_tortoise.stream_id]);
+
+    // Test with channel folders enabled
+    override(user_settings, "web_left_sidebar_show_channel_folders", true);
+    sorted_sections = stream_list_sort.sort_groups(
+        stream_data.subscribed_stream_ids(),
+        "topic: design",
+    ).sections;
+
+    // Both scalene and fast_tortoise are in frontend_folder. But scalene is pinned.
+    assert.deepEqual(sorted_sections.length, 3);
+    assert.deepEqual(sorted_sections[0].id, "pinned-streams");
+    assert.deepEqual(sorted_sections[0].default_visible_streams, [scalene.stream_id]);
+
+    assert.deepEqual(sorted_sections[2].id, String(frontend_folder.id));
+    assert.deepEqual(sorted_sections[2].default_visible_streams, [fast_tortoise.stream_id]);
+    
+    assert.deepEqual(sorted_sections[1].id, "normal-streams");
+    assert.deepEqual(sorted_sections[1].default_visible_streams, []);
+});
+
 test("filter inactives", ({override}) => {
     // Test that we automatically switch to filtering out inactive streams
     // once the user has more than 30 streams.

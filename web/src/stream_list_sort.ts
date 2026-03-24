@@ -148,11 +148,16 @@ export function sort_groups(
         other_section_visible_without_search_term &&
         util.prefix_match({value: NORMAL_SECTION_TITLE_WITH_OTHER_FOLDERS, search_term});
 
+    const is_topic_filter = search_term.startsWith("topic:");
+    const topic_search_term = is_topic_filter ? search_term.slice(6).trimStart() : search_term;
+
     const stream_id_to_name = (stream_id: number): string => sub_store.get(stream_id)!.name;
     const normalize = (s: string): string => s.replaceAll(/[:/_-]+/g, " ");
     const normalized_query = normalize(search_term);
     // Use -, _, : and / as word separators apart from the default space character
-    let matching_stream_ids = show_all_channels
+    let matching_stream_ids = is_topic_filter
+        ? []
+        : show_all_channels
         ? all_subscribed_stream_ids
         : all_subscribed_stream_ids.filter((stream_id) => {
               const normalized_name = normalize(stream_id_to_name(stream_id));
@@ -166,35 +171,60 @@ export function sort_groups(
 
     const current_channel_id = narrow_state.stream_id(narrow_state.filter(), true);
     const current_topic_name = narrow_state.topic()?.toLowerCase();
-    if (
-        current_channel_id !== undefined &&
-        stream_data.is_subscribed(current_channel_id) &&
-        !matching_stream_ids.includes(current_channel_id)
-    ) {
-        // If any of the unmuted topics of the channel match the search
-        // term, or a muted topic matches the current topic, we include
-        // the channel in the list of matches.
-        const topics = topic_list_data.get_filtered_topic_names(current_channel_id, (topic_names) =>
-            topic_list_data.filter_topics_by_search_term(
-                current_channel_id,
-                topic_names,
-                search_term,
-            ),
-        );
+    
+    if (is_topic_filter) {
+        for (const stream_id of all_subscribed_stream_ids) {
+            if (matching_stream_ids.includes(stream_id)) {
+                continue;
+            }
+            const topics = topic_list_data.get_filtered_topic_names(stream_id, (topic_names) =>
+                topic_list_data.filter_topics_by_search_term(
+                    stream_id,
+                    topic_names,
+                    topic_search_term,
+                ),
+            );
+            if (
+                topics.some(
+                    (topic) =>
+                        (current_channel_id === stream_id && topic.toLowerCase() === current_topic_name) ||
+                        !user_topics.is_topic_muted(stream_id, topic),
+                )
+            ) {
+                matching_stream_ids.push(stream_id);
+            }
+        }
+    } else {
         if (
-            topics.some(
-                (topic) =>
-                    topic.toLowerCase() === current_topic_name ||
-                    !user_topics.is_topic_muted(current_channel_id, topic),
-            )
+            current_channel_id !== undefined &&
+            stream_data.is_subscribed(current_channel_id) &&
+            !matching_stream_ids.includes(current_channel_id)
         ) {
-            matching_stream_ids.push(current_channel_id);
+            // If any of the unmuted topics of the channel match the search
+            // term, or a muted topic matches the current topic, we include
+            // the channel in the list of matches.
+            const topics = topic_list_data.get_filtered_topic_names(current_channel_id, (topic_names) =>
+                topic_list_data.filter_topics_by_search_term(
+                    current_channel_id,
+                    topic_names,
+                    search_term,
+                ),
+            );
+            if (
+                topics.some(
+                    (topic) =>
+                        topic.toLowerCase() === current_topic_name ||
+                        !user_topics.is_topic_muted(current_channel_id, topic),
+                )
+            ) {
+                matching_stream_ids.push(current_channel_id);
+            }
         }
     }
 
     // If the channel folder matches the search term, include all channels
     // of that folder.
-    if (user_settings.web_left_sidebar_show_channel_folders && search_term) {
+    if (!is_topic_filter && user_settings.web_left_sidebar_show_channel_folders && search_term) {
         matching_stream_ids = [
             ...new Set([
                 ...matching_stream_ids,
@@ -208,7 +238,7 @@ export function sort_groups(
 
     const folder_sections = new Map<number, StreamListSection>();
 
-    if (!show_all_channels && include_all_pinned_channels) {
+    if (!is_topic_filter && !show_all_channels && include_all_pinned_channels) {
         matching_stream_ids = [
             ...matching_stream_ids,
             ...all_subscribed_stream_ids.filter(
@@ -217,7 +247,7 @@ export function sort_groups(
         ];
     }
 
-    if (!show_all_channels && search_term_prefix_matches_other_section_title) {
+    if (!is_topic_filter && !show_all_channels && search_term_prefix_matches_other_section_title) {
         matching_stream_ids = [
             ...matching_stream_ids,
             ...all_subscribed_stream_ids.filter((stream_id) => {

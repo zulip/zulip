@@ -297,7 +297,10 @@
     {{t 'Cancel' }}
 </template>
 <template id="filter-left-sidebar-tooltip-template">
-    {{t 'Filter left sidebar' }}
+    <div>
+        <div>{{t "Filter left sidebar" }}</div>
+        <div class="tooltip-inner-content italic">{{t "Use topic: to filter by topic." }}</div>
+    </div>
     {{tooltip_hotkey_hints "Q"}}
 </template>
 <template id="inbox-channel-mute-toggle-tooltip-template">
