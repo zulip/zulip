@@ -1,5 +1,6 @@
 import os
 import re
+import warnings
 from dataclasses import dataclass
 from html import escape
 from textwrap import dedent
@@ -9,7 +10,7 @@ from unittest import mock
 import orjson
 import requests
 import responses
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, MarkupResemblesLocatorWarning
 from django.conf import settings
 from django.test import override_settings
 from markdown import Markdown
@@ -3958,42 +3959,69 @@ class TestHtmlToMarkdown(ZulipTestCase):
 
     def test_unordered_lists(self) -> None:
         html = "<ul><li>foo</li><li>bar</li></ul>"
-        self.assertEqual(convert_html_to_markdown(html), "* foo\n  * bar")
+        self.assertEqual(convert_html_to_markdown(html), "* foo\n* bar")
+
+    def test_title_is_stripped(self) -> None:
+        html = "<html><head><title>Some title</title></head><body><p>Hello</p></body></html>"
+        self.assertEqual(convert_html_to_markdown(html), "Hello")
 
     def test_atx_style_headings(self) -> None:
         self.assertEqual(convert_html_to_markdown("<h1>Title</h1>"), "# Title")
         self.assertEqual(convert_html_to_markdown("<h2>Sub</h2>"), "## Sub")
 
     def test_external_img_with_alt(self) -> None:
+        # Zulip doesn't inline-render external images, so an external <img>
+        # must become a [label](url) link to render at all.
         html = '<img src="http://example.com/img.png" alt="photo">'
-        self.assertEqual(convert_html_to_markdown(html), "![photo](http://example.com/img.png)")
+        self.assertEqual(convert_html_to_markdown(html), "[photo](http://example.com/img.png)")
 
     def test_external_img_with_query_string(self) -> None:
+        # The query string is stripped from the filename label but kept in
+        # the URL, where it can be important (e.g. signed URLs).
         html = '<img src="http://foo.com/image.png?12345">'
-        self.assertEqual(convert_html_to_markdown(html), "[image.png](http://foo.com/image.png)")
+        self.assertEqual(
+            convert_html_to_markdown(html), "[image.png](http://foo.com/image.png?12345)"
+        )
 
     def test_external_img_without_alt_or_filename(self) -> None:
         html = '<img src="https://example.com/?token=abc">'
-        self.assertEqual(convert_html_to_markdown(html), "[](https://example.com/)")
+        self.assertEqual(convert_html_to_markdown(html), "https://example.com/?token=abc")
 
     def test_external_img_alt_with_brackets(self) -> None:
+        # Brackets in link text break Zulip's escaping-free Markdown.
         html = '<img src="http://x.com/a.png" alt="see [details]">'
-        self.assertEqual(
-            convert_html_to_markdown(html), "![see \\[details\\]](http://x.com/a.png)"
-        )
+        self.assertEqual(convert_html_to_markdown(html), "[see details](http://x.com/a.png)")
+
+    def test_img_without_src(self) -> None:
+        self.assertEqual(convert_html_to_markdown('<img alt="logo">'), "logo")
 
     def test_data_uri_img(self) -> None:
+        # Inline base64 data: images (e.g. email/canvas placeholders) aren't
+        # linkable and Zulip can't render them; emit the alt text, or nothing,
+        # rather than a bogus link or a dumped base64 blob.
         data_uri = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
-        self.assertEqual(
-            convert_html_to_markdown(f'<img src="{data_uri}" alt="logo">'), f"![logo]({data_uri})"
-        )
-        self.assertEqual(convert_html_to_markdown(f'<img src="{data_uri}">'), f"![]({data_uri})")
+        self.assertEqual(convert_html_to_markdown(f'<img src="{data_uri}" alt="logo">'), "logo")
+        self.assertEqual(convert_html_to_markdown(f'<img src="{data_uri}">'), "")
 
     def test_linked_external_img(self) -> None:
+        # Inside an <a>, only the image's label is emitted, so that the
+        # anchor doesn't end up with a nested link inside it.
         html = '<a href="https://example.com"><img src="https://foo.com/a.png" alt="logo"></a>'
+        self.assertEqual(convert_html_to_markdown(html), "[logo](https://example.com)")
+
+    def test_linked_external_img_without_alt_or_filename(self) -> None:
+        # With no alt text or filename to fall back on, the image's bare
+        # src URL is emitted as the anchor's label.
+        html = '<a href="https://example.com"><img src="https://foo.com/?token=abc"></a>'
         self.assertEqual(
-            convert_html_to_markdown(html), "[![logo](https://foo.com/a.png)](https://example.com)"
+            convert_html_to_markdown(html), "[https://foo.com/?token=abc](https://example.com)"
         )
+
+    def test_linked_external_img_alt_with_brackets(self) -> None:
+        html = (
+            '<a href="https://example.com"><img src="http://x.com/a.png" alt="see [details]"></a>'
+        )
+        self.assertEqual(convert_html_to_markdown(html), "[see details](https://example.com)")
 
     def test_anchor_tag(self) -> None:
         html = '<a href="http://example.com">click here</a>'
@@ -4001,7 +4029,7 @@ class TestHtmlToMarkdown(ZulipTestCase):
 
     def test_bold_and_italic(self) -> None:
         self.assertEqual(convert_html_to_markdown("<strong>bold</strong>"), "**bold**")
-        self.assertEqual(convert_html_to_markdown("<em>italic</em>"), "_italic_")
+        self.assertEqual(convert_html_to_markdown("<em>italic</em>"), "*italic*")
 
     def test_special_characters_are_not_escaped(self) -> None:
         html = "<p>snake_case_var and 2*3 stars</p>"
@@ -4009,17 +4037,39 @@ class TestHtmlToMarkdown(ZulipTestCase):
 
     def test_bare_url_content(self) -> None:
         # Message content (e.g. from the email mirror) is often a bare URL.
+        # convert_html_to_markdown suppresses BeautifulSoup's warning about
+        # such input; promote that warning to an error here so this test fails
+        # if the suppression is ever removed. The warning would also be fatal
+        # under the PYTHONWARNINGS=error policy CI runs with.
         url = "https://www.youtube.com/watch?v=MRmGDhlMhNA"
-        self.assertEqual(convert_html_to_markdown(url), url)
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", MarkupResemblesLocatorWarning)
+            self.assertEqual(convert_html_to_markdown(url), url)
 
-    def test_paragraph_wrapping(self) -> None:
+    def test_no_unnecessary_paragraph_wrapping(self) -> None:
         sentence = (
             "The quick brown fox jumps over the lazy dog"
             " again and again until the sentence is long. "
         )
         self.assertEqual(
-            convert_html_to_markdown("<p>" + sentence * 2 + "</p>"),
-            "The quick brown fox jumps over the lazy dog again and again until the sentence\n"
-            "is long. The quick brown fox jumps over the lazy dog again and again until the\n"
-            "sentence is long.",
+            convert_html_to_markdown("<p>" + sentence * 2 + "</p>"), (sentence * 2).strip()
+        )
+
+    def test_new_line_in_source_html(self) -> None:
+        html = (
+            "<p>Thanks for signing up for Acme. To get started, click the button\n"
+            "below and confirm your email address.</p>"
+        )
+        self.assertEqual(
+            convert_html_to_markdown(html),
+            "Thanks for signing up for Acme. To get started, click the button below and"
+            " confirm your email address.",
+        )
+
+    def test_explicit_line_break_is_preserved(self) -> None:
+        self.assertEqual(
+            convert_html_to_markdown("<p>line one<br>line two</p>"), "line one  \nline two"
+        )
+        self.assertEqual(
+            convert_html_to_markdown("<p>line one<br>\nline two</p>"), "line one  \nline two"
         )
