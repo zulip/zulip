@@ -266,7 +266,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         return self.get_export_tarball_url(realm, "/user_avatars/" + path)
 
     @override
-    def delete_export_tarball(self, export_path: str) -> None:
+    def delete_export_tarball_from_storage(self, export_path: str) -> None:
         assert export_path.startswith("/")
         file_path = export_path.removeprefix("/").split("/", 1)[-1]
         delete_local_file("avatars", file_path)
