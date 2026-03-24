@@ -985,17 +985,22 @@ integration](../production/scim.md).
    `https://authentik.example.com/`, then `url`
    should be
    `https://authentik.company/application/saml/<application slug>/sso/binding/redirect/` where `<application slug>`
-   is the application slug you've assigned to this application in Authentik settings (e.g `zulip`).
+   is the application slug you've assigned to this application in Authentik settings (e.g., `zulip`).
 1. Update the attribute mapping in your new entry in `SOCIAL_AUTH_SAML_ENABLED_IDPS` to match how
    Authentik specifies attributes in its `SAMLResponse`:
 
    ```
    "attr_user_permanent_id": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
-   "attr_first_name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
-   "attr_last_name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
    "attr_username": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
    "attr_email": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
    ```
+
+   By default, Authentik provides a single full name value via
+   `http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name`. Setting both
+   `attr_first_name` and `attr_last_name` to this value will result in doubled
+   names in Zulip (e.g., "Jane Hacker Jane Hacker"). If your Authentik setup
+   provides separate first/last name attributes, you can configure them here;
+   otherwise, omit these settings and let users set their Zulip display names.
 
 1. Your Authentik public certificate must be saved on the Zulip server
    as `/etc/zulip/saml/idps/{idp_name}.crt`. You can obtain the
