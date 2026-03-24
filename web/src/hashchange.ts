@@ -72,34 +72,12 @@ function is_somebody_else_profile_open(): boolean {
     );
 }
 
-function handle_invalid_settings_tab(
-    base: string,
-    section: "bots" | "users",
-    settings_tab: string,
-): string {
-    const valid_tab_values = {
-        users: new Set(["active", "imported", "deactivated", "invitations"]),
-        bots: new Set(["all-bots", "your-bots"]),
-    };
-
-    if (!valid_tab_values[section].has(settings_tab)) {
-        let default_tab = [...valid_tab_values[section]][0]!;
-        if (section === "bots" && base === "settings") {
-            // For bots panel in "Personal" tab we open "Your bots"
-            // tab by default.
-            default_tab = "your-bots";
-        }
-        const valid_section_url = `#${base}/${section}/${default_tab}`;
-        window.history.replaceState(null, "", browser_history.get_full_url(valid_section_url));
-        return default_tab;
-    }
-    return settings_tab;
-}
-
-function get_settings_tab(base: string, section: string): string | undefined {
+function get_settings_tab(section: string): string | undefined {
     if (section === "users" || section === "bots") {
         const current_settings_tab = hash_parser.get_current_nth_hash_section(2);
-        return handle_invalid_settings_tab(base, section, current_settings_tab);
+        // URL will be updated in hash_util.validate_settings_hash to contain
+        // the correct tab value.
+        return current_settings_tab;
     }
     return undefined;
 }
@@ -299,50 +277,20 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     }
 
     const coming_from_overlay = hash_parser.is_overlay_hash(old_hash);
-    if (base === "settings" && section === "display-settings") {
-        // Since display-settings was deprecated and replaced with preferences
-        // #settings/display-settings is being redirected to #settings/preferences.
-        section = "preferences";
-        window.history.replaceState(
-            null,
-            "",
-            browser_history.get_full_url("#settings/preferences"),
-        );
-    }
-    if (base === "organization" && section === "bot-list-admin") {
-        // #organization/bot-list-admin is being redirected to #organization/bots/all-bots.
-        section = "bots";
-        window.history.replaceState(
-            null,
-            "",
-            browser_history.get_full_url("#organization/bots/all-bots"),
-        );
-    }
-    if (base === "organization" && section === "user-list-admin") {
-        // #organization/user-list-admin is being redirected to #organization/users/active
-        // after it was renamed.
-        section = "users";
-        window.history.replaceState(
-            null,
-            "",
-            browser_history.get_full_url("#organization/users/active"),
-        );
-    }
-    if (base === "settings" && section === "your-bots") {
-        // #settings/your-bots is being redirected to #settings/bots/your-bots.
-        section = "bots";
-        window.history.replaceState(null, "", "#settings/bots/your-bots");
-    }
-    if ((base === "settings" || base === "organization") && !section) {
+    if (base === "settings" || base === "organization") {
         let settings_panel_object = settings_panel_menu.normal_settings;
         if (base === "organization") {
             settings_panel_object = settings_panel_menu.org_settings;
         }
-        window.history.replaceState(
-            null,
-            "",
-            browser_history.get_full_url(base + "/" + settings_panel_object.current_tab),
+        const valid_hash = hash_util.validate_settings_hash(
+            window.location.hash,
+            settings_panel_object,
         );
+
+        if (valid_hash !== window.location.hash) {
+            window.history.replaceState(null, "", browser_history.get_full_url(valid_hash));
+            section = hash_parser.get_hash_section(valid_hash);
+        }
     }
 
     // In 2024, stream was renamed to channel in the Zulip API and UI.
@@ -408,7 +356,7 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             }
             settings_panel_menu.normal_settings.activate_section_or_default(
                 section,
-                get_settings_tab(base, section),
+                get_settings_tab(section),
             );
             return;
         }
@@ -421,7 +369,7 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             }
             settings_panel_menu.org_settings.activate_section_or_default(
                 section,
-                get_settings_tab(base, section),
+                get_settings_tab(section),
             );
             return;
         }
@@ -443,19 +391,17 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             settings_panel_menu.normal_settings.set_current_tab(section);
             if (section === "bots") {
                 settings_panel_menu.normal_settings.set_bot_settings_tab(
-                    get_settings_tab(base, section)!,
+                    get_settings_tab(section)!,
                     "personal",
                 );
             }
         } else {
             settings_panel_menu.org_settings.set_current_tab(section);
             if (section === "users") {
-                settings_panel_menu.org_settings.set_user_settings_tab(
-                    get_settings_tab(base, section),
-                );
+                settings_panel_menu.org_settings.set_user_settings_tab(get_settings_tab(section));
             } else if (section === "bots") {
                 settings_panel_menu.org_settings.set_bot_settings_tab(
-                    get_settings_tab(base, section)!,
+                    get_settings_tab(section)!,
                     "org",
                 );
             }
@@ -525,14 +471,14 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     if (base === "settings") {
         settings.build_page();
         admin.build_page();
-        settings.launch(section, get_settings_tab(base, section));
+        settings.launch(section, get_settings_tab(section));
         return;
     }
 
     if (base === "organization") {
         settings.build_page();
         admin.build_page();
-        admin.launch(section, get_settings_tab(base, section));
+        admin.launch(section, get_settings_tab(section));
         return;
     }
 

@@ -6,11 +6,13 @@ import * as z from "zod/mini";
 import * as blueslip from "./blueslip.ts";
 import * as channel_folders from "./channel_folders.ts";
 import * as filter_util from "./filter_util.ts";
+import * as hash_parser from "./hash_parser.ts";
 import * as internal_url from "./internal_url.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
+import type {SettingsPanelMenu} from "./settings_panel_menu.ts";
 import {
     current_user,
     narrow_canonical_term_schema,
@@ -368,6 +370,119 @@ export function validate_group_settings_hash(hash: string): string {
         return "#groups/your";
     }
     return hash;
+}
+
+function handle_invalid_settings_tab(
+    base: string,
+    section: "bots" | "users",
+    settings_tab: string,
+): string {
+    const valid_tab_values = {
+        users: new Set(["active", "imported", "deactivated", "invitations"]),
+        bots: new Set(["all-bots", "your-bots"]),
+    };
+
+    if (!valid_tab_values[section].has(settings_tab)) {
+        let default_tab = [...valid_tab_values[section]][0]!;
+        if (section === "bots" && base === "settings") {
+            // For bots panel in "Personal" tab we open "Your bots"
+            // tab by default.
+            default_tab = "your-bots";
+        }
+        return default_tab;
+    }
+    return settings_tab;
+}
+
+function get_settings_tab(base: string, section: string): string | undefined {
+    if (section === "users" || section === "bots") {
+        const current_settings_tab = hash_parser.get_current_nth_hash_section(2);
+        return handle_invalid_settings_tab(base, section, current_settings_tab);
+    }
+    return undefined;
+}
+
+export function validate_settings_hash(
+    hash: string,
+    settings_panel_object: SettingsPanelMenu,
+): string {
+    const hash_components = hash.slice(1).split(/\//);
+    const base = hash_components[0]!;
+    let section = hash_components[1];
+
+    if (!section) {
+        const settings_tab = settings_panel_object.get_settings_tab(
+            settings_panel_object.current_tab,
+        );
+        if (settings_tab) {
+            return `#${base}/${settings_panel_object.current_tab}/${settings_tab}`;
+        }
+        return `#${base}/${settings_panel_object.current_tab}`;
+    }
+
+    let settings_tab = get_settings_tab(base, section);
+
+    if (base === "settings" && section === "display-settings") {
+        // Since display-settings was deprecated and replaced with preferences
+        // #settings/display-settings is being redirected to #settings/preferences.
+        section = "preferences";
+    }
+    if (base === "organization" && section === "bot-list-admin") {
+        // #organization/bot-list-admin is being redirected to #organization/bots/all-bots.
+        section = "bots";
+        settings_tab = "all-bots";
+    }
+    if (base === "organization" && section === "user-list-admin") {
+        // #organization/user-list-admin is being redirected to #organization/users/active
+        // after it was renamed.
+        section = "users";
+        settings_tab = "active";
+    }
+    if (base === "settings" && section === "your-bots") {
+        // #settings/your-bots is being redirected to #settings/bots/your-bots.
+        section = "bots";
+        settings_tab = "your-bots";
+    }
+
+    const valid_personal_section_values = new Set([
+        "profile",
+        "account-and-privacy",
+        "preferences",
+        "notifications",
+        "bots",
+        "alert-words",
+        "uploaded-files",
+        "topics",
+        "muted-users",
+    ]);
+    const valid_organization_section_values = new Set([
+        "organization-profile",
+        "organization-settings",
+        "organization-permissions",
+        "emoji-settings",
+        "linkifier-settings",
+        "playground-settings",
+        "users",
+        "bots",
+        "profile-field-settings",
+        "organization-level-user-defaults",
+        "channel-folders",
+        "default-channels-list",
+        "auth-methods",
+        "data-exports-admin",
+    ]);
+
+    if (base === "settings" && !valid_personal_section_values.has(section)) {
+        return "#settings/profile";
+    }
+    if (base === "organization" && !valid_organization_section_values.has(section)) {
+        return "#organization/organization-profile";
+    }
+
+    if (settings_tab) {
+        return `#${base}/${section}/${settings_tab}`;
+    }
+    return `#${base}/${section}`;
 }
 
 export function decode_dm_recipient_user_ids_from_narrow_url(narrow_url: string): number[] | null {
