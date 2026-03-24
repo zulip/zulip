@@ -324,6 +324,13 @@ function handle_post_message_list_change(
     compose_recipient.handle_middle_pane_transition();
 }
 
+function get_selected_message_top_offset(): number {
+    const navbar_height = $("#navbar-fixed-container").height()!;
+    // 30px height + 10px top margin.
+    const sticky_header_outer_height = 40;
+    return navbar_height + sticky_header_outer_height;
+}
+
 export function try_rendering_locally_for_same_narrow(
     filter: Filter,
     opts: ShowMessageViewOpts,
@@ -701,12 +708,8 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                 const $row = message_lists.current.get_row(opts.then_select_id);
                 if ($row.length > 0) {
                     const row_props = $row.get_offset_to_window();
-                    const navbar_height = $("#navbar-fixed-container").height()!;
-                    // 30px height + 10px top margin.
                     const compose_box_top = $("#compose").get_offset_to_window().top;
-                    const sticky_header_outer_height = 40;
-                    const min_height_for_message_top_visible =
-                        navbar_height + sticky_header_outer_height;
+                    const min_height_for_message_top_visible = get_selected_message_top_offset();
 
                     if (
                         // We want to keep the selected message in the same scroll position after the narrow changes if possible.
@@ -992,11 +995,15 @@ function navigate_to_anchor_message(opts: {
 
     function select_msg_id(msg_id: number, select_opts?: SelectIdOpts): void {
         assert(message_lists.current !== undefined);
-        message_lists.current.select_id(msg_id, {
+        const updated_select_opts = {
             then_scroll: true,
             from_scroll: false,
             ...select_opts,
-        });
+        };
+        if (anchor === "date") {
+            updated_select_opts.target_scroll_offset = get_selected_message_top_offset();
+        }
+        message_lists.current.select_id(msg_id, updated_select_opts);
     }
 
     function select_anchor_using_data(data: MessageListData): void {
