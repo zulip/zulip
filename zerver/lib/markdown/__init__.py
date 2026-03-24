@@ -120,6 +120,9 @@ class MessageRenderingResult:
     mentions_user_group_ids: set[int]
     alert_words: set[str]
     links_for_preview: set[str]
+    # All URLs in the message that are candidates for a link preview
+    # (real links, excluding those in code blocks/quotes).
+    previewable_urls: set[str]
     user_ids_with_alert_words: set[int]
     potential_attachment_path_ids: list[str]
     thumbnail_spinners: set[str]
@@ -1088,6 +1091,20 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if info["remove"] is not None:
             info["parent"].remove(info["remove"])
 
+    def get_preview_url_aliases(self, url: str) -> set[str]:
+        # Some previews link to a rewritten form of the source URL (Dropbox
+        # media, image-source correction), so the URL recorded when hiding
+        # can differ from the one written in the message.  Match all forms.
+        aliases = {url}
+        dropbox = self.dropbox_media(url)
+        if dropbox is not None:
+            aliases.add(dropbox["media_url"])
+        elif self.is_image(url):
+            corrected = self.corrected_image_source(url)
+            if corrected is not None:
+                aliases.add(corrected)
+        return aliases
+
     @override
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
@@ -1098,6 +1115,13 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         unique_previewable_urls = {
             found_url.result[0] for found_url in found_urls if not found_url.family.in_blockquote
         }
+
+        hidden_preview_urls: set[str] = set()
+        if (
+            self.zmd.zulip_message is not None
+            and self.zmd.zulip_message.hidden_preview_urls is not None
+        ):
+            hidden_preview_urls = set(self.zmd.zulip_message.hidden_preview_urls)
 
         # Update message.has_link attribute.
         if len(found_urls) > 0:
@@ -1113,6 +1137,14 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if len(unique_previewable_urls) > self.INLINE_PREVIEW_LIMIT_PER_MESSAGE:
             return
 
+        # URLs that can have a preview (including rewritten forms), so
+        # hide_preview_url can be validated against them.  Computed after the
+        # early returns so oversized messages skip the alias resolution, which
+        # can fetch OpenGraph data.
+        self.zmd.zulip_rendering_result.previewable_urls = {
+            alias for url in unique_previewable_urls for alias in self.get_preview_url_aliases(url)
+        }
+
         processed_urls: set[str] = set()
 
         for found_url in found_urls:
@@ -1121,6 +1153,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if url in unique_previewable_urls and url not in processed_urls:
                 processed_urls.add(url)
             else:
+                continue
+
+            # Skip preview generation for URLs the message's editor has
+            # hidden, matching the preview's rewritten URL forms too.
+            if hidden_preview_urls and self.get_preview_url_aliases(url) & hidden_preview_urls:
                 continue
 
             dropbox_media = self.dropbox_media(url)
@@ -2633,6 +2670,7 @@ def do_convert(
         mentions_user_group_ids=set(),
         alert_words=set(),
         links_for_preview=set(),
+        previewable_urls=set(),
         user_ids_with_alert_words=set(),
         potential_attachment_path_ids=[],
         thumbnail_spinners=set(),
