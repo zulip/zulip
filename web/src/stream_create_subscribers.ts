@@ -7,6 +7,7 @@ import * as add_subscribers_pill from "./add_subscribers_pill.ts";
 import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as people from "./people.ts";
+import * as resize from "./resize.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_create_subscribers_data from "./stream_create_subscribers_data.ts";
 import type {CombinedPillContainer} from "./typeahead_helper.ts";
@@ -53,18 +54,27 @@ function build_pill_widget({
     const $pill_container = $parent_container.find(".pill-container");
     const get_potential_subscribers = stream_create_subscribers_data.get_potential_subscribers;
     const get_user_groups = user_groups.get_all_realm_user_groups;
+    const on_pill_create = (user_ids: number[]): void => {
+        add_user_ids(user_ids);
+        resize.resize_stream_creation_subscribers_list();
+    };
+    const on_pill_remove = (user_ids: number[]): void => {
+        sync_user_ids(user_ids);
+        resize.resize_stream_creation_subscribers_list();
+    };
+
     return add_subscribers_pill.create({
         $pill_container,
         get_potential_subscribers,
         get_user_groups,
         with_add_button: false,
-        onPillCreateAction: add_user_ids,
+        onPillCreateAction: on_pill_create,
         // It is better to sync the current set of user ids in the input
         // instead of removing user_ids from the user_ids_set, otherwise
         // we'll have to have more complex logic of when to remove
         // a user and when not to depending upon their group, channel
         // and individual pills.
-        onPillRemoveAction: sync_user_ids,
+        onPillRemoveAction: on_pill_remove,
     });
 }
 
