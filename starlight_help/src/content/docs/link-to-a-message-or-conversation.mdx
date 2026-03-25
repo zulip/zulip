@@ -5,6 +5,7 @@ title: Link to a message or conversation
 import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import KeyboardTip from "../../components/KeyboardTip.astro";
 import ZulipNote from "../../components/ZulipNote.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
 import ChannelActions from "../include/_ChannelActions.mdx";
@@ -146,6 +147,10 @@ When you send your message, the link will appear as
 
       1. Click **Copy link to message**.
     </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>L</kbd> to copy a link to the selected message.
+    </KeyboardTip>
 
     <ZulipTip>
       If using Zulip in a browser, you can also click on the timestamp
