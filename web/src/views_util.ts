@@ -108,6 +108,10 @@ export function show(opts: {
 
     // Hide selected elements in the left sidebar.
     opts.highlight_view_in_left_sidebar();
+    // Switching between message and non-message views changes the active narrow
+    // context, which can change whether a left-sidebar topic-state pill applies
+    // and which channels/topics remain visible.
+    sidebar_ui.refresh_left_sidebar_search_for_narrow_change();
 
     unread_ui.hide_unread_banner();
     opts.update_compose();

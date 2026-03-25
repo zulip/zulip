@@ -23,12 +23,14 @@ set_current_user(current_user);
 // We use this with override.
 let unread_unmuted_count;
 let stream_has_any_unread_mentions;
+let left_sidebar_topics_state = "";
 
 const topic_list = mock_esm("../src/topic_list");
 mock_esm("../src/left_sidebar_filter", {
     has_left_sidebar_filter_value: () =>
         $("#left-sidebar-filter-query").text().trim() !== "" ||
         $("#left-sidebar-filter-input .pill").length > 0,
+    get_effective_topics_state_for_search: () => left_sidebar_topics_state,
 });
 mock_esm("../src/unread", {
     unread_count_info_for_stream: () => ({
@@ -165,6 +167,7 @@ function test_ui(label, f) {
         $("#left-sidebar-filter-query").text("");
         $.reset_selector("#left-sidebar-filter-input .pill");
         $.set_results("#left-sidebar-filter-input .pill", []);
+        left_sidebar_topics_state = "";
         f(helpers);
     });
 }
