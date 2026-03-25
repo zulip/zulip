@@ -462,6 +462,8 @@ def do_send_missedmessage_events_reply_in_zulip(
         message = missed_message["message"]
         if message.recipient.type == Recipient.PERSONAL:
             recipients.add((message.recipient_id, message.sender_id))
+        elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+            recipients.add((message.recipient_id, ""))
         else:
             recipients.add((message.recipient_id, message.topic_name().lower()))
     assert len(recipients) == 1, f"Unexpectedly multiple recipients: {recipients!r}"
