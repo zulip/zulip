@@ -151,11 +151,6 @@ class TestSendEmail(ZulipTestCase):
             self.assertEqual(_open_call.call_count, 1)
             self.assertEqual(backend.connection.noop.call_count, 0)
             self.assertEqual(backend.opened_at, timezone_now())
-            # Test that close() is a no-op and does not drop the connection.
-            connection_before = backend.connection
-            backend.close()
-            self.assertEqual(backend.connection, connection_before)
-            self.assertIsNotNone(backend.connection)
             close_call.reset_mock()
             _open_call.reset_mock()
 
@@ -248,6 +243,23 @@ class TestSendEmail(ZulipTestCase):
             # Noop should not have been attempted on the old connection.
             self.assertEqual(old_connection_mock.noop.call_count, 0)
             self.assertEqual(_open_call.call_count, 2)
+
+    def test_open_returns_false_for_new_connection(self) -> None:
+        """open() returns False even for new connections, which
+        prevents Django's send_messages from auto-closing the
+        persistent connection."""
+        backend = PersistentSMTPEmailBackend()
+        with mock.patch.object(EmailBackend, "open", return_value=True):
+            result = backend.open()
+        self.assertIs(result, False)
+
+    def test_close_clears_connection(self) -> None:
+        """close() actually closes the connection, enabling error
+        recovery in send_immediate_email."""
+        backend = PersistentSMTPEmailBackend()
+        backend.connection = mock.MagicMock(spec=SMTP)
+        backend.close()
+        self.assertIsNone(backend.connection)
 
     def test_send_email_exceptions(self) -> None:
         hamlet = self.example_user("hamlet")
