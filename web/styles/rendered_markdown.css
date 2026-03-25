@@ -349,6 +349,7 @@
 
     .alert-word {
         background-color: var(--color-background-alert-word);
+        color: var(--color-text-alert-word);
     }
 
     /* Timestamps */
@@ -872,6 +873,26 @@
             & code {
                 color: var(--color-markdown-code-link-hover);
             }
+        }
+
+        /* Link styles that are also related to alert words */
+        &:has(.alert-word) {
+            &:hover,
+            &:focus {
+                text-decoration-color: var(
+                    --color-markdown-link-alert-word-hover
+                );
+            }
+        }
+
+        & .alert-word {
+            color: var(--color-markdown-link-alert-word);
+            font-weight: 500;
+        }
+
+        &:hover .alert-word,
+        &:focus .alert-word {
+            color: var(--color-markdown-link-alert-word-hover);
         }
     }
 
