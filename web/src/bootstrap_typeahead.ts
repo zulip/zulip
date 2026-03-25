@@ -200,6 +200,7 @@ const FOOTER_ELEMENT_HTML =
     '<p class="typeahead-footer"><span id="typeahead-footer-text"></span></p>';
 const CONTAINER_HTML = '<div class="typeahead dropdown-menu"></div>';
 const MENU_HTML = '<ul class="typeahead-menu" data-simplebar></ul>';
+const SCROLL_SHADOW_HTML = '<div class="typeahead-scroll-shadow"></div>';
 const ITEM_HTML = '<li class="typeahead-item"><a class="typeahead-item-link"></a></li>';
 const MIN_LENGTH = 1;
 
@@ -258,6 +259,7 @@ export class Typeahead<ItemType extends string | object> {
     non_tippy_parent_element: string | undefined;
     values: WeakMap<HTMLElement, ItemType>;
     instance: tippy.Instance | undefined;
+    $scroll_shadow: JQuery;
     requireHighlight: boolean;
     shouldHighlightFirstResult: () => boolean;
     // Used for contenteditble divs. If this is set to false, we
@@ -291,6 +293,12 @@ export class Typeahead<ItemType extends string | object> {
             $(options.non_tippy_parent_element).append(this.$container);
         }
         this.$menu = $(MENU_HTML).appendTo(this.$container);
+        this.$scroll_shadow = $(SCROLL_SHADOW_HTML).appendTo(this.$container);
+        // Listen for scroll events on the menu to update the
+        // bottom scroll shadow as the user scrolls.
+        scroll_util.get_scroll_element(this.$menu).on("scroll", () => {
+            this.update_scroll_shadow();
+        });
         this.$footer = $(FOOTER_ELEMENT_HTML).appendTo(this.$container);
         this.source = options.source;
         this.dropup = options.dropup ?? false;
@@ -632,7 +640,21 @@ export class Typeahead<ItemType extends string | object> {
         // before we render it.
         scroll_util.get_scroll_element(this.$menu);
         scroll_util.get_content_element(this.$menu).empty().append($items);
+        this.update_scroll_shadow();
         return this;
+    }
+
+    update_scroll_shadow(): void {
+        const $scroll_element = scroll_util.get_scroll_element(this.$menu);
+        const scroll_element = $scroll_element[0]!;
+        const can_scroll_down =
+            scroll_element.scrollHeight > scroll_element.clientHeight &&
+            scroll_element.scrollTop + scroll_element.clientHeight <
+                scroll_element.scrollHeight - 1;
+        this.$container.toggleClass("typeahead-scroll-shadow-bottom", can_scroll_down);
+        // Position the gradient at the bottom edge of the menu.
+        const menu_bottom = this.$menu[0]!.offsetTop + this.$menu[0]!.offsetHeight;
+        this.$scroll_shadow.css("top", menu_bottom - 36 + "px");
     }
 
     next(): void {
@@ -652,6 +674,7 @@ export class Typeahead<ItemType extends string | object> {
 
         $next.addClass("active");
         scroll_util.scroll_element_into_container($next, this.$menu);
+        this.update_scroll_shadow();
     }
 
     prev(): void {
@@ -671,6 +694,7 @@ export class Typeahead<ItemType extends string | object> {
 
         $prev.addClass("active");
         scroll_util.scroll_element_into_container($prev, this.$menu);
+        this.update_scroll_shadow();
     }
 
     listen(): void {

@@ -140,11 +140,34 @@
 }
 
 .typeahead.dropdown-menu {
+    position: relative;
+
     .typeahead-menu {
         list-style: none;
         margin: 4px 0;
         max-height: min(248px, 95vh);
         overflow-y: auto;
+    }
+
+    /* Gradient that fades the bottom of the scrollable menu
+       to indicate more content below. */
+    .typeahead-scroll-shadow {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 36px;
+        background: linear-gradient(
+            to bottom,
+            transparent,
+            var(--color-background-dropdown-widget)
+        );
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 80ms ease-in;
+    }
+
+    &.typeahead-scroll-shadow-bottom .typeahead-scroll-shadow {
+        opacity: 1;
     }
 
     .typeahead-footer {
