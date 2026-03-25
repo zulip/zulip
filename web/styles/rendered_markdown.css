@@ -346,6 +346,36 @@
 
     .alert-word {
         background-color: var(--color-background-alert-word);
+        color: var(--color-text-alert-word);
+
+        & a:not(.icon-button) {
+            color: var(--color-markdown-link-alert-word);
+            font-weight: 500;
+
+            &:hover,
+            &:focus {
+                color: var(--color-markdown-link-alert-word-hover);
+                font-weight: 500;
+            }
+        }
+    }
+
+    & a:not(.icon-button):has(.alert-word) {
+        &:hover,
+        &:focus {
+            text-decoration-color: var(--color-markdown-link-alert-word-hover);
+        }
+    }
+
+    & a:not(.icon-button) .alert-word {
+        color: var(--color-markdown-link-alert-word);
+        font-weight: 500;
+    }
+
+    & a:not(.icon-button):hover .alert-word,
+    & a:not(.icon-button):focus .alert-word {
+        color: var(--color-markdown-link-alert-word-hover);
+        font-weight: 500;
     }
 
     /* Timestamps */
