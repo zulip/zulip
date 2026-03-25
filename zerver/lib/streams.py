@@ -1414,7 +1414,7 @@ def bulk_can_remove_subscribers_from_streams(
         subscribers_by_stream_id = get_user_ids_for_streams({stream.id for stream in streams})
 
     if not bulk_check_basic_stream_access(user_profile, streams, subscribers_by_stream_id):
-        return False
+        raise JsonableError(_("Invalid channel ID"))
 
     for stream in streams:
         if not is_user_in_can_remove_subscribers_group(stream, user_recursive_group_ids):
