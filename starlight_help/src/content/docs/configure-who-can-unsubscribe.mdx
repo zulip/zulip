@@ -4,15 +4,37 @@ title: Configure who can unsubscribe from a channel
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
+import AdminOnly from "../include/_AdminOnly.mdx";
 import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
 import SaveChanges from "../include/_SaveChanges.mdx";
 import SelectChannelViewPermissions from "../include/_SelectChannelViewPermissions.mdx";
 
-You can configure who can unsubscribe themselves from a channel. Organization
-administrators, [channel
+You can configure who can unsubscribe themselves from channels. There is an
+[organization-wide
+permission](#configure-who-can-unsubscribe-from-channels-in-general), which by
+default lets everyone unsubscribe themselves from any channel. You can also
+configure who can unsubscribe themselves from a [specific
+channel](#configure-who-can-unsubscribe-from-a-specific-channel).
+
+Organization administrators, [channel
 administrators](/help/configure-who-can-administer-a-channel), and users who can
 [unsubscribe anyone](/help/configure-who-can-unsubscribe-others) can always
 unsubscribe themselves.
+
+## Configure who can unsubscribe from channels in general
+
+<AdminOnly />
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-permissions" />
+
+  1. Under **Channel permissions**, configure **Who can unsubscribe from
+     channels**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+## Configure who can unsubscribe from a specific channel
 
 If you have permission to administer a channel, you can configure who can
 unsubscribe themselves from it.

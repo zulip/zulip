@@ -739,6 +739,10 @@ export function can_unsubscribe_themselves(
         return true;
     }
 
+    if (settings_data.user_can_unsubscribe_from_channels(user)) {
+        return true;
+    }
+
     return settings_data.user_has_permission_for_group_setting(
         sub.can_unsubscribe_group,
         "can_unsubscribe_group",
