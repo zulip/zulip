@@ -51,7 +51,10 @@ export type UpdateMessageEvent = z.output<typeof update_message_event_schema>;
 export const message_details_schema = z.record(
     z.coerce.number<string>(),
     z.intersection(
-        z.object({mentioned: z.optional(z.boolean())}),
+        z.object({
+            mentioned: z.optional(z.boolean()),
+            has_watched_phrase: z.optional(z.boolean()),
+        }),
         z.discriminatedUnion("type", [
             z.object({type: z.literal("private"), user_ids: z.array(z.number())}),
             z.object({
