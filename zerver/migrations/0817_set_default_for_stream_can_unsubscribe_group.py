@@ -43,8 +43,8 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ("zerver", "0808_stream_can_unsubscribe_group"),
-    ]
+    ("zerver", "0816_stream_can_unsubscribe_group"),
+]
 
     operations = [
         migrations.RunPython(
