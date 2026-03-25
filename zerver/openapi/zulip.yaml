@@ -14092,6 +14092,119 @@ paths:
                         "result": "success",
                         "subscribed_channel_ids": [3, 5, 10],
                       }
+  /realm:
+    patch:
+      summary: Update organization settings.
+      description: |
+        Update the settings for the organization (realm).
+      tags:
+        - server_and_organizations
+      operationId: update-realm
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                name:
+                  description: |
+                    The new name of the organization.
+
+                    **Changes**: Prior to Zulip 4.0 (feature level 52), this parameter required JSON-encoding.
+                  type: string
+                  example: "Zulip HQ"
+                description:
+                  description: |
+                    The new description of the organization.
+
+                    **Changes**: Prior to Zulip 4.0 (feature level 52), this parameter required JSON-encoding.
+                  type: string
+                  example: "The official organization for Zulip development."
+                emails_restricted_to_domains:
+                  description: |
+                    Whether emails are restricted to specific domains.
+
+                    **Changes**: As of Zulip 6.0 (feature level 143), only organization owners can change this setting.
+                  type: boolean
+                  example: false
+                allow_message_editing:
+                  description: |
+                    Whether users are allowed to edit their messages.
+                  type: boolean
+                  example: true
+                message_content_edit_limit_seconds:
+                  description: |
+                    The time limit for editing messages, in seconds.
+
+                    **Changes**: As of Zulip 5.0 (feature level 138), one sets this to no limit by passing the string `"unlimited"`, rather than the integer `0`.
+                  type: integer
+                  example: 600
+                default_language:
+                  description: |
+                    The default language for the organization.
+
+                    **Changes**: Prior to Zulip 4.0 (feature level 52), this parameter required JSON-encoding.
+                  type: string
+                  example: "en"
+                waiting_period_threshold:
+                  description: |
+                    The waiting period threshold for new users, in days.
+
+                    **Changes**: As of Zulip 6.0 (feature level 143), only organization owners can change this setting.
+                  type: integer
+                  example: 3
+                invite_required:
+                  description: |
+                    Whether an invitation is required to join the organization.
+
+                    **Changes**: As of Zulip 6.0 (feature level 143), only organization owners can change this setting.
+                  type: boolean
+                  example: true
+                org_type:
+                  description: |
+                    The type of organization (e.g., corporate, academic).
+
+                    **Changes**: New in Zulip 5.0 (feature level 128).
+                  type: integer
+                  example: 1
+                enable_spectator_access:
+                  description: |
+                    Whether web public channels are accessible to spectators.
+
+                    **Changes**: New in Zulip 5.0 (feature level 109).
+                  type: boolean
+                  example: false
+                digest_emails_enabled:
+                  description: |
+                    Whether digest emails are enabled for the organization.
+
+                    **Changes**: New in Zulip 2.1.
+                  type: boolean
+                  example: true
+                send_welcome_emails:
+                  description: Whether to send welcome emails to new users.
+                  type: boolean
+                  example: true
+
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+              examples:
+                success:
+                  value:
+                    result: success
+                    msg: ""
   /realm/emoji/{emoji_name}:
     post:
       operationId: upload-custom-emoji
