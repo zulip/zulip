@@ -427,7 +427,7 @@ def main(options: argparse.Namespace) -> NoReturn:
     # Install Python environment
     run_as_root([*proxy_env, "scripts/lib/install-uv"])
     run(
-        [*proxy_env, "uv", "sync", "--frozen"],
+        [*proxy_env, "uv", "sync", "--frozen", "--no-managed-python"],
         env={k: v for k, v in os.environ.items() if k not in {"PYTHONDEVMODE", "PYTHONWARNINGS"}},
     )
     # Clean old symlinks used before uv migration
