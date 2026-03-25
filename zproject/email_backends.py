@@ -115,22 +115,18 @@ class EmailLogBackEnd(EmailBackend):
 
 
 class PersistentSMTPEmailBackend(EmailBackend):
-    def _open(self, **kwargs: Any) -> bool | None:
-        is_opened = super().open(**kwargs)
-        if is_opened:
-            self.opened_at = timezone_now()
-            return True
-
-        return is_opened
-
     @override
     def open(self, **kwargs: Any) -> bool:
-        is_opened = self._open(**kwargs)
-        if is_opened:
-            # Return False (not True) so that Django's send_messages
-            # does not auto-close the connection after sending.
-            return False
+        if super().open(**kwargs):
+            self.opened_at = timezone_now()
+        # Always return False so that Django's send_messages does not
+        # auto-close the connection after sending.
+        return False
 
+    def validate_or_reconnect(self) -> None:
+        """Validate that the existing SMTP connection is still alive,
+        reconnecting if necessary. Called from initialize_connection
+        with backoff protection, not from open()."""
         status = None
         time_elapsed = (timezone_now() - self.opened_at).total_seconds() / 60
         if (
@@ -147,6 +143,4 @@ class PersistentSMTPEmailBackend(EmailBackend):
         if status is None or status != 250:
             # Close and connect again.
             super().close()
-            self._open()
-
-        return False
+            self.open()

@@ -321,8 +321,6 @@ def send_immediate_email(
     logger.info("Sending %s email to %s%s", template, logging_recipient, cause)
 
     try:
-        # This will call .open() for us, which is a no-op if it's already open;
-        # it will only call .close() if it was not open to begin with
         if connection.send_messages([mail]) == 0:
             logger.error("Unknown error sending %s email to %s", template, mail.to)
             connection.close()
@@ -403,11 +401,15 @@ def send_email(
 
 @backoff.on_exception(backoff.expo, OSError, max_tries=MAX_CONNECTION_TRIES, logger=None)
 def initialize_connection(connection: BaseEmailBackend | None = None) -> BaseEmailBackend:
+    from zproject.email_backends import PersistentSMTPEmailBackend
+
     if not connection:
         connection = get_connection()
         assert connection is not None
 
     connection.open()
+    if isinstance(connection, PersistentSMTPEmailBackend):
+        connection.validate_or_reconnect()
     return connection
 
 
