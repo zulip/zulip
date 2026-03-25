@@ -244,7 +244,7 @@ run_test("inline_image_galleries", ({override}) => {
     );
 });
 
-run_test("message_inline_animated_image_still", ({override}) => {
+run_test("message_image_thumbnailing", ({override}) => {
     const thumbnail_formats = [
         {
             name: "840x560-anim.webp",
