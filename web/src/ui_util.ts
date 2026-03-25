@@ -1,5 +1,4 @@
 import $ from "jquery";
-import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import * as blueslip from "./blueslip.ts";
@@ -338,16 +337,40 @@ export function enable_element_and_remove_tooltip($element: JQuery): void {
 }
 
 export function get_left_sidebar_search_term(): string {
-    const $search_box = $<HTMLInputElement>("input.left-sidebar-search-input").expectOne();
-    const search_term = $search_box.val();
-    assert(search_term !== undefined);
+    // Read the text content from the contenteditable input,
+    // excluding any pill elements which are separate from
+    // the user's typed search text.
+    //
+    // We use .text() for the real browser since it's a contenteditable div.
+    // However, the zjquery test mock returns "never-been-set" by default
+    // for textContent, so we must map that to an empty string.
+    const $input = $("#left-sidebar-filter-query");
+    const text_val = $input.text();
+    const search_term = text_val === "never-been-set" ? "" : text_val;
     return search_term.trim();
 }
 
+// Shared state for the left sidebar filter pill syntax (e.g.,
+// "is:followed"). Stored here in ui_util to avoid a dependency
+// cycle between sidebar_ui.ts and topic_list.ts. sidebar_ui sets
+// this via the setter; topic_list reads it via the getter.
+let left_sidebar_filter_pill_syntax = "";
+
+export function get_left_sidebar_filter_pill_syntax(): string {
+    return left_sidebar_filter_pill_syntax;
+}
+
+export function set_left_sidebar_filter_pill_syntax(syntax: string): void {
+    left_sidebar_filter_pill_syntax = syntax;
+}
+
 export function disable_left_sidebar_search(): void {
-    if ($<HTMLInputElement>("#left-sidebar-search input").val()) {
-        // Triggle click on the close button to clear the search term and
-        // update the left sidebar.
+    const search_term = get_left_sidebar_search_term();
+    const has_pills = $("#left-sidebar-filter-input .pill").length > 0;
+    if (search_term || has_pills) {
+        // Trigger the close button to clear both the text and any
+        // active filter pills (e.g., is:followed), which also
+        // re-renders the sidebar.
         $("#left-sidebar-search .input-close-filter-button").trigger("click");
     }
     $("#left-sidebar-search").toggleClass("no-display", true);
