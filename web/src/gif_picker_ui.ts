@@ -194,9 +194,7 @@ function toggle_picker_popover(target: HTMLElement): void {
             },
             onCreate(instance) {
                 const provider = network.get_provider();
-                instance.setContent(
-                    gif_picker_popover_content.get_gif_popover_content(provider === "giphy"),
-                );
+                instance.setContent(gif_picker_popover_content.get_gif_popover_content(provider));
                 if (provider === "tenor") {
                     $(instance.popper).addClass("tenor-popover");
                 } else {
