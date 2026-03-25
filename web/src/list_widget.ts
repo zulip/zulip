@@ -561,6 +561,11 @@ export function create<Key, Item = Key>(
             rendered_row.remove();
             // We removed a rendered row, so we need to reduce one offset.
             widget.reduce_rendered_offset();
+            // If the container is now empty, render() will display
+            // the empty-list message.
+            if (this.all_rendered()) {
+                this.render();
+            }
         },
 
         clean_redraw() {
