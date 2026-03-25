@@ -14,7 +14,6 @@
         </div>
 
         <div class="input-group">
-         <div class="input-group">
             <label for="rsvp-meeting-datetime" class="modal-field-label">{{t "Meeting Time and Date" }}</label>
             <input
                 id="rsvp-meeting-datetime"
@@ -25,30 +24,31 @@
             <input type="hidden" id="rsvp-meeting-datetime-value" name="datetime" />
         </div>
 
-         <div class="input-group">
+        <div class="input-group">
             <div class="rsvp-invite-label modal-field-label">
                 <span>{{t "Invite Users" }}</span>
                 <a id="rsvp-add-all-users" class="rsvp-add-all-users-link" role="button">
                     {{t "ADD ALL USERS IN CURRENT CHANNEL" }}
                 </a>
             </div>
-            <div class="pill-container" id="rsvp-invite-users-container">
-                <div class="input" contenteditable="true" id="rsvp-invite-users" data-placeholder="{{t 'Add users' }}"></div>
-                <button type="button" id="rsvp-user-dropdown-button" class="compose-new-recipient-button tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Add user' }}" tabindex="-1">
-                    <i class="zulip-icon zulip-icon-square-plus"></i>
-                </button>
+            <div class="rsvp-invite-row">
+                <div class="pill-container" id="rsvp-invite-users-container">
+                    <div class="input" contenteditable="true" id="rsvp-invite-users" data-placeholder="{{t 'Add users' }}"></div>
+                    <button type="button" id="rsvp-user-dropdown-button" class="compose-new-recipient-button tippy-zulip-delayed-tooltip" data-tippy-content="{{t 'Add user' }}" tabindex="-1">
+                        <i class="zulip-icon zulip-icon-square-plus"></i>
+                    </button>
+                </div>
+                {{!-- Dropdown is OUTSIDE pill-container so create_pills() doesn't destroy it --}}
+                <div id="rsvp-user-dropdown" class="rsvp-user-dropdown" style="display: none;"></div>
             </div>
-            <div id="rsvp-user-dropdown" class="rsvp-user-dropdown" style="display: none;"></div>
         </div>
 
-<div class="input-group">
-    <label class="checkbox display-block">
-            <input type="checkbox" id="rsvp-create-channel" name="create_channel" />
-            <span class="rendered-checkbox"></span>
-            {{t 'Create new channel'}}
-        </label>
-</div>
-        
+        <div class="input-group">
+            <label class="checkbox display-block">
+                    <input type="checkbox" id="rsvp-create-channel" name="create_channel" />
+                    <span class="rendered-checkbox"></span>
+                    {{t 'Create new channel'}}
+                </label>
+        </div>
     </form>
 </div>
-
