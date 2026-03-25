@@ -142,11 +142,30 @@ export function stream_id(
     if (channel_terms.length === 1) {
         const channel_operand = channel_terms[0]?.operand;
         if (channel_operand !== undefined) {
+            // Multi-channel search uses comma-separated IDs; in that case,
+            // return undefined since there's no single channel context.
+            if (channel_operand.includes(",")) {
+                return undefined;
+            }
             const id = Number.parseInt(channel_operand, 10);
             if (!Number.isNaN(id)) {
                 return only_valid_id ? stream_data.get_sub_by_id(id)?.stream_id : id;
             }
         }
+    }
+    return undefined;
+}
+
+// Returns array of stream IDs for multi-channel narrows.
+// Returns undefined if not a multi-channel narrow.
+export function stream_ids(current_filter: Filter | undefined = filter()): number[] | undefined {
+    if (current_filter === undefined) {
+        return undefined;
+    }
+    const channels_operand = current_filter.terms_with_operator("channels")[0]?.operand;
+    if (channels_operand?.includes(",")) {
+        const ids = channels_operand.split(",").map((id_str) => Number.parseInt(id_str.trim(), 10));
+        return ids.filter((id) => !Number.isNaN(id));
     }
     return undefined;
 }

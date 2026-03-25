@@ -2,6 +2,7 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
+import render_search_channel_pill from "../templates/search_channel_pill.hbs";
 import render_search_list_item from "../templates/search_list_item.hbs";
 import render_search_user_pill from "../templates/search_user_pill.hbs";
 
@@ -36,7 +37,23 @@ export type SearchUserPillContext = {
     }[];
 };
 
-type SearchPill = ({type: "generic_operator"} & NarrowCanonicalTerm) | SearchUserPill;
+export type SearchChannelPill = {
+    type: "search_channel";
+    operator: "channel" | "channels";
+    negated: boolean;
+    channels: {
+        stream_id: number;
+        name: string;
+        color: string | undefined;
+        invite_only: boolean;
+        is_web_public: boolean;
+    }[];
+};
+
+type SearchPill =
+    | ({type: "generic_operator"} & NarrowCanonicalTerm)
+    | SearchUserPill
+    | SearchChannelPill;
 
 export type SearchPillWidget = InputPillContainer<SearchPill>;
 
@@ -50,7 +67,8 @@ type PillRenderData =
               is_combined_channel_topic?: boolean;
               combined_channel_name?: string;
           })
-    | SearchUserPill;
+    | SearchUserPill
+    | SearchChannelPill;
 
 export function create_item_from_search_string(search_string: string): SearchPill | undefined {
     const search_term = util.the(Filter.parse(search_string));
@@ -66,29 +84,37 @@ export function create_item_from_search_string(search_string: string): SearchPil
     return undefined;
 }
 
-export function get_search_string_from_item(item: SearchPill): string {
-    let operand: string;
-    switch (item.operator) {
-        case "dm":
-        case "dm-including":
-        case "sender":
-            assert(item.type === "search_user");
-            operand = item.users.map((user) => user.email).join(",");
-            break;
-        case "topic":
-            operand = util.get_final_topic_display_name(item.operand);
-            break;
-        case "channel":
-            if (item.operand === "") {
-                operand = "";
-            }
-            operand = stream_data.get_valid_sub_by_id_string(item.operand).name;
-            break;
-        default:
-            operand = item.operand;
+function parse_channel_ids_operand(
+    operand: string,
+    require_multiple = false,
+    require_single = false,
+): number[] | undefined {
+    const id_strings = operand.split(",").map((id_str) => id_str.trim());
+    if (id_strings.some((id_str) => id_str === "" || !/^\d+$/.test(id_str))) {
+        return undefined;
     }
 
+    const stream_ids = id_strings.map((id_str) => Number.parseInt(id_str, 10));
+    const unique_stream_ids = [...new Set(stream_ids)];
+    if (unique_stream_ids.length !== stream_ids.length) {
+        return undefined;
+    }
+    if (require_multiple && unique_stream_ids.length < 2) {
+        return undefined;
+    }
+    if (require_single && unique_stream_ids.length !== 1) {
+        return undefined;
+    }
+
+    return unique_stream_ids;
+}
+
+export function get_search_string_from_item(item: SearchPill): string {
     const sign = item.negated ? "-" : "";
+    const operand = get_search_operand(item, true);
+    if (operand === "") {
+        return `${sign}${item.operator}:`;
+    }
     return `${sign}${item.operator}: ${operand}`;
 }
 
@@ -102,6 +128,47 @@ function on_pill_exit(
     remove_pill: (pill: HTMLElement) => void,
 ): void {
     const $user_pill_container = $(clicked_element).parents(".user-pill-container");
+    const $channel_pill_container = $(clicked_element).parents(".channel-pill-container");
+
+    if ($channel_pill_container.length > 0) {
+        const stream_id_string = $(clicked_element).closest(".pill").attr("data-stream-id");
+        assert(stream_id_string !== undefined);
+        const stream_id = Number.parseInt(stream_id_string, 10);
+
+        const outer_idx = all_pills.findIndex(
+            (pill) => pill.$element[0] === $channel_pill_container[0],
+        );
+        assert(outer_idx !== -1);
+        const channel_container_pill = all_pills[outer_idx]!.item;
+        assert(channel_container_pill?.type === "search_channel");
+
+        if (channel_container_pill.channels.length === 1) {
+            assert(util.the(channel_container_pill.channels).stream_id === stream_id);
+            remove_pill(util.the($channel_pill_container));
+            return;
+        }
+
+        const channel_idx = channel_container_pill.channels.findIndex(
+            (channel) => channel.stream_id === stream_id,
+        );
+        assert(channel_idx !== -1);
+        channel_container_pill.channels.splice(channel_idx, 1);
+
+        channel_container_pill.operator =
+            channel_container_pill.channels.length > 1 ? "channels" : "channel";
+
+        const $outer_container = all_pills[outer_idx]!.$element;
+        const $channel_pill = $($outer_container.children(".pill")[channel_idx]!);
+        assert($channel_pill.attr("data-stream-id") === stream_id.toString());
+        $channel_pill.remove();
+        $outer_container
+            .find("> .pill-label")
+            .text(
+                `${channel_container_pill.negated ? "-" : ""}${channel_container_pill.operator}:`,
+            );
+        return;
+    }
+
     if ($user_pill_container.length === 0) {
         // This is just a regular search pill, so we don't need to do fancy logic.
         const $clicked_pill = $(clicked_element).closest(".pill");
@@ -284,6 +351,14 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
                     description_html,
                 };
             }
+            case "channel":
+            case "channels":
+                if (search_pill.operand !== "") {
+                    const channel_pill_data = search_channel_pill_data_from_term(search_pill);
+                    if (channel_pill_data !== undefined) {
+                        return channel_pill_data;
+                    }
+                }
         }
 
         return {
@@ -343,6 +418,32 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
                 pills: pill_render_data,
                 description_html,
             });
+        } else if (render_data.type === "search_channel") {
+            // Only show description for single-channel pills (channel operator)
+            if (render_data.operator === "channel") {
+                const is_operator_suggestion =
+                    search_terms[0]!.operator !== "" && !text_query.includes(":");
+                let description_html = Filter.search_description_as_html(
+                    [
+                        {
+                            operator: render_data.operator,
+                            operand: get_search_operand(render_data, false),
+                            negated: render_data.negated,
+                        },
+                    ],
+                    is_operator_suggestion,
+                );
+                const capitalized_first_letter = description_html.charAt(0).toUpperCase();
+                description_html = capitalized_first_letter + description_html.slice(1);
+                return render_search_list_item({
+                    pills: pill_render_data,
+                    description_html,
+                });
+            }
+            // For multi-channel pills (channels operator), don't show description
+            return render_search_list_item({
+                pills: pill_render_data,
+            });
         }
     }
 
@@ -359,28 +460,22 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
         split_text_on_comma: false,
         convert_to_pill_on_enter: false,
         generate_pill_html(item) {
-            switch (item.operator) {
-                case "dm":
-                case "dm-including":
-                case "sender":
-                    assert(item.type === "search_user");
-                    return render_search_user_pill(item);
-                case "topic":
-                    if (item.operand === "") {
-                        return render_input_pill({
-                            is_empty_string_topic: true,
-                            sign: item.negated ? "-" : "",
-                            topic_display_name: util.get_final_topic_display_name(""),
-                        });
-                    }
-                    return render_input_pill({
-                        display_value: get_search_string_from_item(item),
-                    });
-                default:
-                    return render_input_pill({
-                        display_value: get_search_string_from_item(item),
-                    });
+            if (item.type === "search_user") {
+                return render_search_user_pill(item);
             }
+            if (item.type === "search_channel") {
+                return render_search_channel_pill(item);
+            }
+            if (item.operator === "topic" && item.operand === "") {
+                return render_input_pill({
+                    is_empty_string_topic: true,
+                    sign: item.negated ? "-" : "",
+                    topic_display_name: util.get_final_topic_display_name(""),
+                });
+            }
+            return render_input_pill({
+                display_value: get_search_string_from_item(item),
+            });
         },
         get_display_value_from_item: get_search_string_from_item,
         on_pill_exit,
@@ -407,6 +502,19 @@ function search_user_pill_data_from_term(term: NarrowCanonicalTerm): SearchUserP
     const user_ids = get_user_ids_from_term_with_user_pill_operator(term);
     const users = user_ids.map((user_id) => people.get_by_user_id(user_id));
     return search_user_pill_data(users, term.operator, term.negated ?? false);
+}
+
+function search_channel_pill_data_from_term(
+    term: NarrowCanonicalTerm,
+): SearchChannelPill | undefined {
+    assert(term.operator === "channel" || term.operator === "channels");
+    const require_multiple = term.operator === "channels";
+    const require_single = term.operator === "channel";
+    const stream_ids = parse_channel_ids_operand(term.operand, require_multiple, require_single);
+    if (stream_ids === undefined) {
+        return undefined;
+    }
+    return search_channel_pill_data(stream_ids, term.negated ?? false);
 }
 
 function is_sent_by_me_pill(pill: SearchUserPill): boolean {
@@ -445,6 +553,38 @@ function append_user_pill(
     negated: boolean,
 ): void {
     const pill_data = search_user_pill_data(users, operator, negated);
+    pill_widget.appendValidatedData(pill_data);
+    pill_widget.clear_text();
+}
+
+function search_channel_pill_data(stream_ids: number[], negated: boolean): SearchChannelPill {
+    const normalized_stream_ids = [...new Set(stream_ids)];
+    assert(normalized_stream_ids.length > 0);
+    const operator: "channel" | "channels" =
+        normalized_stream_ids.length > 1 ? "channels" : "channel";
+    return {
+        type: "search_channel",
+        operator,
+        negated,
+        channels: normalized_stream_ids.map((stream_id) => {
+            const sub = stream_data.get_sub_by_id(stream_id);
+            return {
+                stream_id,
+                name: sub?.name ?? `#${stream_id}`,
+                color: sub?.color,
+                invite_only: sub?.invite_only ?? false,
+                is_web_public: sub?.is_web_public ?? false,
+            };
+        }),
+    };
+}
+
+function append_channel_pill(
+    stream_ids: number[],
+    pill_widget: SearchPillWidget,
+    negated: boolean,
+): void {
+    const pill_data = search_channel_pill_data(stream_ids, negated);
     pill_widget.appendValidatedData(pill_data);
     pill_widget.clear_text();
 }
@@ -493,13 +633,43 @@ export function set_search_bar_contents(
             continue;
         }
 
-        switch (term.operator) {
+        switch (narrow_term.operator) {
             case "dm":
             case "dm-including":
             case "sender": {
                 const user_ids = get_user_ids_from_term_with_user_pill_operator(narrow_term);
                 const users = user_ids.map((user_id) => people.get_by_user_id(user_id));
-                append_user_pill(users, pill_widget, term.operator, term.negated ?? false);
+                append_user_pill(
+                    users,
+                    pill_widget,
+                    narrow_term.operator,
+                    narrow_term.negated ?? false,
+                );
+                added_pills_as_input_strings.add(input);
+                break;
+            }
+            case "channel": {
+                const stream_ids = parse_channel_ids_operand(narrow_term.operand, false, true);
+                if (stream_ids === undefined) {
+                    pill_widget.appendValue(input);
+                } else {
+                    append_channel_pill(stream_ids, pill_widget, narrow_term.negated ?? false);
+                }
+                added_pills_as_input_strings.add(input);
+                break;
+            }
+            case "channels": {
+                if (!narrow_term.operand.includes(",")) {
+                    pill_widget.appendValue(input);
+                    added_pills_as_input_strings.add(input);
+                    break;
+                }
+                const stream_ids = parse_channel_ids_operand(narrow_term.operand, true);
+                if (stream_ids === undefined) {
+                    pill_widget.appendValue(input);
+                } else {
+                    append_channel_pill(stream_ids, pill_widget, narrow_term.negated ?? false);
+                }
                 added_pills_as_input_strings.add(input);
                 break;
             }
@@ -525,10 +695,52 @@ export function set_search_bar_contents(
     }
 }
 
+function get_search_operand(item: SearchPill, for_display: boolean): string {
+    if (item.type === "search_user") {
+        return item.users.map((user) => user.email).join(",");
+    }
+    if (item.type === "search_channel") {
+        const unique_channel_ids = [...new Set(item.channels.map((channel) => channel.stream_id))];
+        if (for_display) {
+            return item.channels.map((channel) => channel.name).join(", ");
+        }
+        return unique_channel_ids.map((channel_id) => channel_id.toString()).join(",");
+    }
+
+    if (for_display) {
+        if (item.operator === "channel" && item.operand !== "") {
+            const ids = item.operand.split(",");
+            return ids
+                .map((id) => {
+                    const sub = stream_data.get_valid_sub_by_id_string(id.trim());
+                    return sub?.name ?? id.trim();
+                })
+                .join(", ");
+        }
+        if (item.operator === "topic") {
+            return util.get_final_topic_display_name(item.operand);
+        }
+    }
+
+    if (Array.isArray(item.operand)) {
+        return item.operand.join(",");
+    }
+    return String(item.operand);
+}
+
 export function get_current_search_pill_terms(
     pill_widget: SearchPillWidget,
 ): NarrowCanonicalTerm[] {
     return pill_widget.items().map((item) => {
+        if (item.type === "search_channel") {
+            const operator: "channel" | "channels" =
+                item.channels.length > 1 ? "channels" : "channel";
+            return {
+                operator,
+                operand: get_search_operand(item, false),
+                negated: item.negated,
+            };
+        }
         switch (item.operator) {
             case "dm":
             case "dm-including":
