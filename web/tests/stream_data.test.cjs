@@ -2569,6 +2569,22 @@ run_test("can_toggle_subscription", ({override}) => {
 
     override(current_user, "is_admin", true);
     assert.equal(stream_data.can_toggle_subscription(social), true);
+
+    override(current_user, "is_admin", false);
+    override(realm, "realm_can_unsubscribe_group", me_group.id);
+    assert.equal(stream_data.can_toggle_subscription(social), true);
+
+    const bot = {
+        user_id: test_user.user_id,
+        is_bot: true,
+        bot_owner_id: me.user_id,
+    };
+    social.can_unsubscribe_group = nobody_group.id;
+    override(realm, "realm_can_unsubscribe_group", nobody_group.id);
+    assert.equal(stream_data.can_unsubscribe_themselves(social, bot), false);
+
+    social.can_unsubscribe_group = everyone_group.id;
+    assert.equal(stream_data.can_unsubscribe_themselves(social, bot), true);
 });
 
 run_test("can_archive_stream", ({override}) => {

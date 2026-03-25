@@ -1434,6 +1434,9 @@ def can_unsubscribe_self_from_streams(
     if user_profile.is_realm_admin:
         return True
 
+    if user_profile.can_unsubscribe_from_channels():
+        return True
+
     user_recursive_group_ids = set(
         get_recursive_membership_groups(user_profile).values_list("id", flat=True)
     )
@@ -1464,14 +1467,19 @@ def check_can_unsubscribe_users_from_streams(
         raise JsonableError(_("Insufficient permission"))
 
     # The remaining users are bots that `acting_user` directly
-    # controls, as verified by the caller. We check each bot's own
-    # permission to unsubscribe, since it is the bot's subscription
-    # being removed; that way an owner cannot use a bot to bypass a
-    # channel's unsubscribe permissions.
+    # controls, as verified by the caller. If the acting user is an
+    # organization administrator or has permission to remove subscribers
+    # from the channel, they can unsubscribe their owned bot. Otherwise,
+    # we check each bot's own permission to unsubscribe, so an owner
+    # cannot use a bot to bypass a channel's unsubscribe permissions.
     owned_bots = [user for user in people_to_unsub if user != acting_user]
-    for bot in owned_bots:
-        if not can_unsubscribe_self_from_streams(streams, bot, subscribers_by_stream_id):
-            raise JsonableError(_("You do not have permission to unsubscribe this bot."))
+    if owned_bots and not (
+        acting_user.is_realm_admin
+        or bulk_can_remove_subscribers_from_streams(streams, acting_user, subscribers_by_stream_id)
+    ):
+        for bot in owned_bots:
+            if not can_unsubscribe_self_from_streams(streams, bot, subscribers_by_stream_id):
+                raise JsonableError(_("You do not have permission to unsubscribe this bot."))
 
 
 def get_streams_to_which_user_cannot_add_subscribers(

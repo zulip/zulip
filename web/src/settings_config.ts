@@ -825,6 +825,9 @@ export const all_group_setting_labels = {
             }),
         ),
         workplace_users_group: $t({defaultMessage: "Workplace users"}),
+        can_unsubscribe_group: $t({
+            defaultMessage: "Who can unsubscribe from channels",
+        }),
     },
     stream: {
         can_add_subscribers_group: $t({defaultMessage: "Who can subscribe anyone to this channel"}),
@@ -885,6 +888,7 @@ export const realm_group_permission_settings: {
             "can_create_web_public_channel_group",
             "can_create_private_channel_group",
             "can_add_subscribers_group",
+            "can_unsubscribe_group",
             "can_mention_many_users_group",
             "can_set_topics_policy_group",
         ],

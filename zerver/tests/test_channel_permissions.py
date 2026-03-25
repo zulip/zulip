@@ -781,6 +781,19 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             self.assert_length(json["not_removed"], 0)
             self.assertFalse(subscribed_to_stream(user, stream.id))
 
+        # Test that a user can unsubscribe themselves as the
+        # realm-level can_unsubscribe_group is set to the
+        # everyone group by default.
+        check_unsubscribing_user(aaron)
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_unsubscribe_group",
+            nobody_group,
+            acting_user=admin,
+        )
         anonymous_group_member_dict = UserGroupMembersData(
             direct_members=[aaron.id], direct_subgroups=[]
         )
@@ -824,9 +837,6 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         # Test that an admin can always unsubscribe themselves.
         check_unsubscribing_user(admin)
 
-        nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
-        )
         do_change_stream_group_based_setting(
             stream,
             "can_unsubscribe_group",
@@ -865,6 +875,17 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         # unsubscribe themselves
         check_unsubscribing_user(cordelia, expect_fail=True)
 
+        # Test that a user in the realm-level can_unsubscribe_group can
+        # unsubscribe themselves
+        cordelia_realm_group = self.create_or_update_anonymous_group_for_setting([cordelia], [])
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_unsubscribe_group",
+            cordelia_realm_group,
+            acting_user=admin,
+        )
+        check_unsubscribing_user(cordelia)
+
         # Test that a user cannot unsubscribe from an inaccessible private stream.
         private_stream = self.make_stream("private_stream", invite_only=True)
         aaron_unsubscribe_group = UserGroupMembersData(
@@ -886,9 +907,27 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Invalid channel ID")
 
+        # A guest can unsubscribe via the realm-level can_unsubscribe_group.
+        polonius = self.example_user("polonius")  # guest
+        everyone_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_unsubscribe_group", everyone_group, acting_user=admin
+        )
+        check_unsubscribing_user(polonius)
+
     def test_bot_owner_unsubscribing_owned_bot(self) -> None:
         admin = self.example_user("iago")
         aaron = self.example_user("aaron")
+        realm = admin.realm
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_unsubscribe_group", nobody_group, acting_user=admin
+        )
 
         bot_stream = self.make_stream("bot_test_stream")
         bot = self.create_test_bot("testbot", aaron)
@@ -916,6 +955,22 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             {
                 "subscriptions": orjson.dumps([bot_stream.name]).decode(),
                 "principals": orjson.dumps([bot.id]).decode(),
+            },
+        )
+        json = self.assert_json_success(result)
+        self.assert_length(json["removed"], 1)
+
+        # An administrator can unsubscribe their owned bot even if the channel
+        # and realm settings do not permit the bot itself to unsubscribe.
+        admin_stream = self.make_stream("admin_bot_test_stream")
+        admin_bot = self.create_test_bot("adminbot", admin, full_name="Admin Bot")
+        self.subscribe(admin_bot, admin_stream.name)
+        result = self.api_delete(
+            admin,
+            "/api/v1/users/me/subscriptions",
+            {
+                "subscriptions": orjson.dumps([admin_stream.name]).decode(),
+                "principals": orjson.dumps([admin_bot.id]).decode(),
             },
         )
         json = self.assert_json_success(result)
