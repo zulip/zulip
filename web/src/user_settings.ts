@@ -30,10 +30,17 @@ export type FollowedTopicNotificationSettings = z.infer<
     typeof followed_topic_notification_settings_schema
 >;
 
+export const reaction_notification_settings_schema = z.object({
+    enable_reaction_audible_notifications: z.boolean(),
+    enable_reaction_desktop_notifications: z.boolean(),
+});
+export type ReactionNotificationSettings = z.infer<typeof reaction_notification_settings_schema>;
+
 export const user_settings_schema = z.object({
     ...stream_notification_settings_schema.shape,
     ...pm_notification_settings_schema.shape,
     ...followed_topic_notification_settings_schema.shape,
+    ...reaction_notification_settings_schema.shape,
     allow_private_data_export: z.boolean(),
     automatically_follow_topics_policy: z.number(),
     automatically_follow_topics_where_mentioned: z.boolean(),
