@@ -147,6 +147,8 @@
 * [Get all custom profile fields](/api/get-custom-profile-fields)
 * [Reorder custom profile fields](/api/reorder-custom-profile-fields)
 * [Create a custom profile field](/api/create-custom-profile-field)
+* [Update a custom profile field](/api/update-custom-profile-field)
+* [Delete a custom profile field](/api/delete-custom-profile-field)
 * [Update realm-level defaults of user settings](/api/update-realm-user-settings-defaults)
 * [Get all data exports](/api/get-realm-exports)
 * [Create a data export](/api/export-realm)
