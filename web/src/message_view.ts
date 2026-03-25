@@ -56,6 +56,7 @@ import {
     message_edit_history_visibility_policy_values,
     web_mark_read_on_scroll_policy_values,
 } from "./settings_config.ts";
+import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spectators from "./spectators.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import {realm} from "./state_data.ts";
@@ -1625,6 +1626,9 @@ function handle_post_view_change(
     left_sidebar_navigation_area.handle_narrow_activated(filter);
     stream_list.handle_narrow_activated(filter, opts.change_hash, opts.show_more_topics);
     pm_list.handle_narrow_activated(filter);
+    // A message-view narrow change can activate or deactivate a left-sidebar
+    // topic-state pill, so refresh sidebar matches after the narrow updates.
+    sidebar_ui.refresh_left_sidebar_search_for_narrow_change();
     // This also builds the user sidebar.
     activity_ui.clear_search();
 }
