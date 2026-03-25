@@ -1397,7 +1397,7 @@ def bulk_can_remove_subscribers_from_streams(
 def bulk_can_unsubscribe_self_from_streams(
     streams: list[Stream], user_profile: UserProfile
 ) -> bool:
-    if user_profile.is_realm_admin:
+    if user_profile.is_realm_admin or user_profile.can_unsubscribe_from_channels():
         return True
     if not bulk_check_basic_stream_access(user_profile, streams):
         raise JsonableError(_("Invalid channel ID"))

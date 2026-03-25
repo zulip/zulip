@@ -772,6 +772,19 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             self.assert_length(json["not_removed"], 0)
             self.assertFalse(subscribed_to_stream(user, stream.id))
 
+        # Test that a user can unsubscribe themselves as the
+        # realm-level can_unsubscribe_group is set to the
+        # everyone group by default.
+        check_unsubscribing_user(aaron)
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_unsubscribe_group",
+            nobody_group,
+            acting_user=admin,
+        )
         anonymous_group_member_dict = UserGroupMembersData(
             direct_members=[aaron.id], direct_subgroups=[]
         )
@@ -815,9 +828,6 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         # Test that an admin can always unsubscribe themselves.
         check_unsubscribing_user(admin)
 
-        nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
-        )
         do_change_stream_group_based_setting(
             stream,
             "can_unsubscribe_group",
@@ -856,6 +866,17 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
         # unsubscribe themselves
         check_unsubscribing_user(cordelia, expect_fail=True)
 
+        # Test that a user in the realm-level can_unsubscribe_group can
+        # unsubscribe themselves
+        cordelia_realm_group = self.create_or_update_anonymous_group_for_setting([cordelia], [])
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_unsubscribe_group",
+            cordelia_realm_group,
+            acting_user=admin,
+        )
+        check_unsubscribing_user(cordelia)
+
         # Test that a user cannot unsubscribe from an inaccessible private stream.
         private_stream = self.make_stream("private_stream", invite_only=True)
         aaron_unsubscribe_group = UserGroupMembersData(
@@ -889,6 +910,21 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             },
         )
         self.assert_json_error(result, "You do not have permission to unsubscribe this bot.")
+
+    def test_bulk_can_unsubscribe_self_from_streams(self) -> None:
+        admin = self.example_user("iago")
+        realm = admin.realm
+
+        stream_obj = self.make_stream("private_stream_bulk", invite_only=True)
+
+        everyone_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_unsubscribe_group", everyone_group, acting_user=admin
+        )
+        guest = self.example_user("polonius")  # polonius is a guest in test data
+        self.assertTrue(bulk_can_unsubscribe_self_from_streams([stream_obj], guest))
 
     def test_change_stream_message_retention_days_requires_realm_owner(self) -> None:
         user_profile = self.example_user("iago")

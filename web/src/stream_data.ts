@@ -719,6 +719,9 @@ export function can_unsubscribe_themselves(
     sub: StreamSubscription,
     user: CurrentUser | User = current_user,
 ): boolean {
+    if (settings_data.user_can_unsubscribe_from_channels()) {
+        return true;
+    }
     // Handles if the user is an organization admin, or in one of these groups:
     // can_administer_channel_group or can_remove_subscribers_group.
     if (can_unsubscribe_others(sub)) {
