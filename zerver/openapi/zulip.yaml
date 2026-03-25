@@ -7003,6 +7003,176 @@ paths:
                       }
                     description: |
                       A typical failed JSON response for when the user is not logged in:
+  /bot_storage:
+    put:
+      operationId: update-bot-storage
+      summary: Update bot storage
+      tags: ["bots"]
+      x-python-examples-extra-imports: ["json"]
+      description: |
+        Store or update one or more key-value pairs in the bot's persistent storage.
+
+        This endpoint is used by interactive bots to maintain state between messages.
+        Each bot has its own isolated storage keyed by the bot's user profile.
+
+        Keys and values must both be strings. The total size of all stored key-value
+        pairs is limited by the server's `USER_STATE_SIZE_LIMIT` setting (default
+        10,000,000 characters).
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                storage:
+                  description: |
+                    A JSON-encoded dictionary mapping string keys to string values
+                    to store or update in the bot's storage.
+                  type: object
+                  additionalProperties:
+                    type: string
+                  example: {"key 1": "value 1", "key 2": "value 2"}
+              required:
+                - storage
+            encoding:
+              storage:
+                contentType: application/json
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Request exceeds storage limit by 42 characters. The limit is 10000000 characters.",
+                        "result": "error",
+                      }
+                    description: |
+                      A typical failed JSON response when the request would exceed the
+                      server's storage size limit:
+    get:
+      operationId: get-bot-storage
+      summary: Get bot storage
+      tags: ["bots"]
+      description: |
+        Retrieve key-value pairs from the bot's persistent storage.
+
+        If `keys` is provided, only those specific keys are returned. If omitted,
+        all key-value pairs in the bot's storage are returned.
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - keys
+      parameters:
+        - name: keys
+          in: query
+          description: |
+            A JSON-encoded list of keys to retrieve from the bot's storage.
+            If not provided, all keys in the bot's storage are returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example: ["key 1", "key 2"]
+          required: false
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      storage:
+                        type: object
+                        additionalProperties:
+                          type: string
+                          description: The stored string value for this key.
+                        description: |
+                          A dictionary mapping string keys to their stored string values.
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "storage": {"key 1": "value 1", "key 2": "value 2"},
+                      }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Key does not exist.",
+                        "result": "error",
+                      }
+                    description: |
+                      A typical failed JSON response when a requested key does not exist
+                      in the bot's storage:
+    delete:
+      operationId: remove-bot-storage
+      summary: Remove bot storage
+      tags: ["bots"]
+      description: |
+        Delete one or more key-value pairs from the bot's persistent storage.
+
+        If `keys` is provided, only those specific keys are deleted. If omitted,
+        the entire storage for the bot is cleared.
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                keys:
+                  description: |
+                    A JSON-encoded list of keys to delete from the bot's storage.
+                    If not provided, all key-value pairs in the bot's storage are deleted.
+                  type: array
+                  items:
+                    type: string
+            encoding:
+              keys:
+                contentType: application/json
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Key does not exist.",
+                        "result": "error",
+                      }
+                    description: |
+                      A typical failed JSON response when a key to be deleted does not exist
+                      in the bot's storage:
   /drafts:
     get:
       operationId: get-drafts
