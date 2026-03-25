@@ -513,8 +513,8 @@ export function check_and_show_muted_messages_banner(): void {
     );
 
     const percent_muted_messages = (muted_messages.length / messages.length) * 100;
-    if (muted_messages.length >= 5000 && percent_muted_messages > 50) {
-        // If more than 50% of the loaded messages are muted, and that quantity exceeds
+    if (muted_messages.length >= 5000 && percent_muted_messages > 75) {
+        // If more than 75% of the loaded messages are muted, and that quantity exceeds
         // at least 5000 messages, show the banner. We use an absolute number threshold
         // to avoid showing the banner when there are very few messages loaded to have
         // any impact on the performance.
