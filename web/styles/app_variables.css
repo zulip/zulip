@@ -693,7 +693,7 @@
     This value will be overridden when stream settings is opened.
     */
     --stream-subscriber-list-max-height: 100%;
-
+    --new-stream-subscriber-list-max-height: 100%;
     /*
       Reusable dimensions and offsets.
     */
