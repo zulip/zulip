@@ -30,6 +30,7 @@ import * as hashchange from "./hashchange.ts";
 import {$t} from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as inbox_util from "./inbox_util.ts";
+import * as left_sidebar_filter from "./left_sidebar_filter.ts";
 import * as lightbox from "./lightbox.ts";
 import * as list_util from "./list_util.ts";
 import * as message_actions_popover from "./message_actions_popover.ts";
@@ -527,6 +528,11 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
 
     if (compose_state.composing()) {
         compose_actions.cancel();
+        return true;
+    }
+
+    if (left_sidebar_filter.has_left_sidebar_filter_value()) {
+        stream_list.clear_search();
         return true;
     }
 

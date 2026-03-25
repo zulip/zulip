@@ -88,7 +88,7 @@ function clear_without_updating(): void {
     clear_query_without_updating();
 }
 
-export function notify_left_sidebar_filter_changed(): void {
+function notify_left_sidebar_filter_changed(): void {
     $("#left-sidebar-filter-input").trigger("input");
 }
 
