@@ -64,7 +64,6 @@ export function render(opts: {$elem: JQuery; message: Message; widget_data: Widg
         const html = render_widgets_zform_choices(data);
         const $elem = $(html);
 
-
         $elem.find("button").on("click", (e) => {
             e.stopPropagation();
 
@@ -81,9 +80,6 @@ export function render(opts: {$elem: JQuery; message: Message; widget_data: Widg
         return $elem;
     }
 
-    if (data_with_choices_with_idx.type === "choices") {
-        const $choices = make_choices(data_with_choices_with_idx);
-        $outer_elem.empty().append($choices);
-    }
-    return;
+    const $choices = make_choices(data);
+    $outer_elem.empty().append($choices);
 }
