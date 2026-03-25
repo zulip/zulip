@@ -12141,7 +12141,7 @@ paths:
                     }
   /users/me/profile_data:
     patch:
-      operationId: updateOwnProfileData
+      operationId: update-own-profile-data
       summary: Update own profile data
       description: |
         Update the value of one or more custom profile fields for the
@@ -12171,11 +12171,16 @@ paths:
                         type: integer
                         description: The ID of the custom profile field.
                       value:
-                        type: string
-                        nullable: true
+                        oneOf:
+                          - type: string
+                            nullable: true
+                          - type: array
+                            items:
+                              type: integer
                         description: |
                           The value for the custom profile field, or `null`
-                          to unset it.
+                          to unset it. For USER-type fields, pass a list of
+                          user IDs instead of a string.
                   description: |
                     A list of objects, each containing the `id` of a custom
                     profile field and the `value` to set for it.
@@ -12186,7 +12191,7 @@ paths:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
     delete:
-      operationId: removeOwnProfileData
+      operationId: remove-own-profile-data
       summary: Remove own profile data
       description: |
         Remove the values of one or more custom profile fields for the
@@ -30390,11 +30395,16 @@ components:
                       type: integer
                       description: The ID of the custom profile field to update.
                     value:
-                      type: string
-                      nullable: true
+                      oneOf:
+                        - type: string
+                          nullable: true
+                        - type: array
+                          items:
+                            type: integer
                       description: |
                         The value to set for this custom profile field,
-                        or `null` to unset it.
+                        or `null` to unset it. For USER-type fields, pass
+                        a list of user IDs instead of a string.
                 example:
                   [{"id": 4, "value": "0"}, {"id": 5, "value": "1909-04-05"}]
               new_email:
