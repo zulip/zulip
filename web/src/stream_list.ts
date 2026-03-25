@@ -20,6 +20,7 @@ import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as left_sidebar_filter from "./left_sidebar_filter.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import {localstorage} from "./localstorage.ts";
 import type {Message} from "./message_store.ts";
@@ -1629,14 +1630,19 @@ function toggle_inactive_or_muted_channels($section_container: JQuery): void {
 }
 
 export function searching(): boolean {
-    return $(".left-sidebar-search-input").expectOne().is(":focus");
+    const $filter_input = $("#left-sidebar-filter-query").expectOne();
+    const $left_sidebar_pills = $("#left-sidebar-filter-input .pill");
+    return (
+        $filter_input.is(":focus") ||
+        ($left_sidebar_pills.length > 0 && $left_sidebar_pills.is(":focus"))
+    );
 }
 
 export function clear_search(): void {
-    const $filter = $(".left-sidebar-search-input").expectOne();
-    if ($filter.val() !== "") {
-        $filter.val("");
-        $filter.trigger("input");
+    const $filter = $("#left-sidebar-filter-query").expectOne();
+    if (left_sidebar_filter.has_left_sidebar_filter_value()) {
+        $("#left-sidebar-search .input-close-filter-button").trigger("click");
+        return;
     }
     $filter.trigger("blur");
 }
