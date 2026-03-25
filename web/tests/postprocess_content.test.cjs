@@ -74,8 +74,8 @@ run_test("postprocess_media_and_embeds", () => {
     assert.equal(
         postprocess_content(
             '<div class="message_inline_image message_inline_video">' +
-                '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp4">' +
-                '<video src="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp4"></video>' +
+                '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline-video-embed.mp4">' +
+                '<video src="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline-video-embed.mp4"></video>' +
                 "</a>" +
                 "</div>" +
                 '<div class="youtube-video message_inline_image">' +
@@ -95,8 +95,8 @@ run_test("postprocess_media_and_embeds", () => {
         ),
         '<div class="message-thumbnail-gallery">' +
             '<div class="message-media-preview-video message_inline_video">' +
-            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp4" target="_blank" rel="noopener noreferrer" class="media-anchor-element">' +
-            '<video src="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp4" class="media-video-element media-image-element"></video>' +
+            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline-video-embed.mp4" target="_blank" rel="noopener noreferrer" class="media-anchor-element">' +
+            '<video src="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline-video-embed.mp4" class="media-video-element media-image-element"></video>' +
             "</a>" +
             "</div>" +
             '<div class="youtube-video message-media-preview-image">' +
@@ -133,26 +133,26 @@ run_test("inline_image_galleries", ({override}) => {
         postprocess_content(
             "<p>Message text</p>" +
                 '<div class="message_inline_image">' +
-                '<a href="/user_uploads/path/to/image.png" title="image.png">' +
-                '<img data-original-dimensions="1000x2000" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">' +
+                '<a href="/user_uploads/path/to/legacy-portrait-image.png" title="legacy-portrait-image.png">' +
+                '<img data-original-dimensions="1000x2000" src="/user_uploads/thumbnail/path/to/legacy-portrait-image.png/840x560.webp">' +
                 "</a>" +
                 "</div>" +
                 '<div class="message_inline_image">' +
-                '<a href="/user_uploads/path/to/image.png" title="image.png">' +
-                '<img data-original-dimensions="2000x1000" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">' +
+                '<a href="/user_uploads/path/to/legacy-landscape-image.png" title="legacy-landscape-image.png">' +
+                '<img data-original-dimensions="2000x1000" src="/user_uploads/thumbnail/path/to/legacy-landscape-image.png/840x560.webp">' +
                 "</a>" +
                 "</div>",
         ),
         "<p>Message text</p>" +
             '<div class="message-thumbnail-gallery">' +
             '<div class="message-media-preview-image">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
-            '<img data-original-dimensions="1000x2000" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" class="media-image-element portrait-thumbnail" loading="lazy" width="1000" height="2000" style="width: 5em;">' +
+            '<a href="/user_uploads/path/to/legacy-portrait-image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="legacy-portrait-image.png">' +
+            '<img data-original-dimensions="1000x2000" src="/user_uploads/thumbnail/path/to/legacy-portrait-image.png/840x560.webp" class="media-image-element portrait-thumbnail" loading="lazy" width="1000" height="2000" style="width: 5em;">' +
             "</a>" +
             "</div>" +
             '<div class="message-media-preview-image">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
-            '<img data-original-dimensions="2000x1000" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" class="media-image-element landscape-thumbnail" loading="lazy" width="2000" height="1000" style="width: 20em;">' +
+            '<a href="/user_uploads/path/to/legacy-landscape-image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="legacy-landscape-image.png">' +
+            '<img data-original-dimensions="2000x1000" src="/user_uploads/thumbnail/path/to/legacy-landscape-image.png/840x560.webp" class="media-image-element landscape-thumbnail" loading="lazy" width="2000" height="1000" style="width: 20em;">' +
             "</a>" +
             "</div>" +
             "</div>",
@@ -163,16 +163,16 @@ run_test("inline_image_galleries", ({override}) => {
         postprocess_content(
             "<p>Message text</p>" +
                 '<div class="message_inline_image">' +
-                '<a href="/user_uploads/path/to/image.png" title="image.png">' +
-                '<img data-original-dimensions="1000x1000" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">' +
+                '<a href="/user_uploads/path/to/legacy-singleton-image.png" title="legacy-singleton-image.png">' +
+                '<img data-original-dimensions="1000x1000" src="/user_uploads/thumbnail/path/to/legacy-singleton-image.png/840x560.webp">' +
                 "</a>" +
                 "</div>",
         ),
         "<p>Message text</p>" +
             '<div class="message-thumbnail-gallery">' +
             '<div class="message-media-preview-image">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
-            '<img data-original-dimensions="1000x1000" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" class="media-image-element portrait-thumbnail" loading="lazy" width="1000" height="1000" style="width: 10em;">' +
+            '<a href="/user_uploads/path/to/legacy-singleton-image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="legacy-singleton-image.png">' +
+            '<img data-original-dimensions="1000x1000" src="/user_uploads/thumbnail/path/to/legacy-singleton-image.png/840x560.webp" class="media-image-element portrait-thumbnail" loading="lazy" width="1000" height="1000" style="width: 10em;">' +
             "</a>" +
             "</div>" +
             "</div>",
@@ -182,21 +182,21 @@ run_test("inline_image_galleries", ({override}) => {
     assert.equal(
         postprocess_content(
             "<p>" +
-                '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/900x600.webp">' +
+                '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/inline-image-wide.png" src="/user_uploads/thumbnail/path/to/inline-image-wide.png/900x600.webp">' +
                 " or " +
-                '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/image-tall.png" src="/user_uploads/thumbnail/path/to/image.png/600x900.webp">' +
+                '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/inline-image-tall.png" src="/user_uploads/thumbnail/path/to/inline-image-tall.png/600x900.webp">' +
                 "</p>",
         ),
         "<p>" +
             '<span class="message-media-inline-image">' +
-            '<a href="/user_uploads/path/to/image-wide.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
-            '<img alt="image" class="inline-image image-opens-message media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" loading="lazy" width="900" height="600" style="width: 15em;">' +
+            '<a href="/user_uploads/path/to/inline-image-wide.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
+            '<img alt="image" class="inline-image image-opens-message media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/inline-image-wide.png" src="/user_uploads/thumbnail/path/to/inline-image-wide.png/840x560.webp" loading="lazy" width="900" height="600" style="width: 15em;">' +
             "</a>" +
             "</span>" +
             " or " +
             '<span class="message-media-inline-image">' +
-            '<a href="/user_uploads/path/to/image-tall.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
-            '<img alt="image" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/image-tall.png" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" loading="lazy" width="600" height="900" style="width: 6.666666666666667em;">' +
+            '<a href="/user_uploads/path/to/inline-image-tall.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
+            '<img alt="image" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/inline-image-tall.png" src="/user_uploads/thumbnail/path/to/inline-image-tall.png/840x560.webp" loading="lazy" width="600" height="900" style="width: 6.666666666666667em;">' +
             "</a>" +
             "</span>" +
             "</p>",
@@ -206,21 +206,21 @@ run_test("inline_image_galleries", ({override}) => {
     assert.equal(
         postprocess_content(
             "<p>" +
-                '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/900x600.webp">' +
+                '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/inline-image-wide.png" src="/user_uploads/thumbnail/path/to/inline-image-wide.png/900x600.webp">' +
                 "<br>\n" +
-                '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/image-tall.png" src="/user_uploads/thumbnail/path/to/image.png/600x900.webp">' +
+                '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/inline-image-tall.png" src="/user_uploads/thumbnail/path/to/inline-image-tall.png/600x900.webp">' +
                 "</p>",
         ),
         "<p>" +
             '<span class="message-thumbnail-gallery">' +
             '<span class="message-media-inline-image message-media-gallery-image">' +
-            '<a href="/user_uploads/path/to/image-wide.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
-            '<img alt="image" class="inline-image media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" loading="lazy" width="900" height="600" style="width: 15em;">' +
+            '<a href="/user_uploads/path/to/inline-image-wide.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
+            '<img alt="image" class="inline-image media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/inline-image-wide.png" src="/user_uploads/thumbnail/path/to/inline-image-wide.png/840x560.webp" loading="lazy" width="900" height="600" style="width: 15em;">' +
             "</a>" +
             "</span>" +
             '<span class="message-media-inline-image message-media-gallery-image">' +
-            '<a href="/user_uploads/path/to/image-tall.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
-            '<img alt="image" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/image-tall.png" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" loading="lazy" width="600" height="900" style="width: 6.666666666666667em;">' +
+            '<a href="/user_uploads/path/to/inline-image-tall.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
+            '<img alt="image" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/inline-image-tall.png" src="/user_uploads/thumbnail/path/to/inline-image-tall.png/840x560.webp" loading="lazy" width="600" height="900" style="width: 6.666666666666667em;">' +
             "</a>" +
             "</span>" +
             "</span>\n" +
@@ -230,16 +230,16 @@ run_test("inline_image_galleries", ({override}) => {
 
     assert.equal(
         postprocess_content(
-            '<p>And here is a gallery in the inline style, with text before the images...<br>\n<img alt="image-01.png" class="inline-image" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/17/k0c4iGRefC2aCr4Jxf6NQdfH/image-01.png" src="/user_uploads/thumbnail/2/17/k0c4iGRefC2aCr4Jxf6NQdfH/image-01.png/840x560.webp"><br>\n<img alt="image-02.png" class="inline-image" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/3f/B0vUyCSpixMgDLG29fKeUkk6/image-02.png" src="/user_uploads/thumbnail/2/3f/B0vUyCSpixMgDLG29fKeUkk6/image-02.png/840x560.webp"><br>\n...and text after (again, line breaks only, no new paragraphs).</p>' +
-                '<p><img alt="square.png" class="inline-image" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/48/mo114lAto6fft973UYWtik2T/square.png" src="/user_uploads/thumbnail/2/48/mo114lAto6fft973UYWtik2T/square.png/840x560.webp"></p>' +
-                '<p><img alt="image-03.png" class="inline-image" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/1e/qsBe-4wztqriUHkB2ukYdauM/image-03.png" src="/user_uploads/thumbnail/2/1e/qsBe-4wztqriUHkB2ukYdauM/image-03.png/840x560.webp"> inline image with trailing text</p>',
+            '<p>And here is a gallery in the inline style, with text before the images...<br>\n<img alt="inline-image-01.png" class="inline-image" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/17/k0c4iGRefC2aCr4Jxf6NQdfH/inline-image-01.png" src="/user_uploads/thumbnail/2/17/k0c4iGRefC2aCr4Jxf6NQdfH/inline-image-01.png/840x560.webp"><br>\n<img alt="inline-image-02.png" class="inline-image" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/3f/B0vUyCSpixMgDLG29fKeUkk6/inline-image-02.png" src="/user_uploads/thumbnail/2/3f/B0vUyCSpixMgDLG29fKeUkk6/inline-image-02.png/840x560.webp"><br>\n...and text after (again, line breaks only, no new paragraphs).</p>' +
+                '<p><img alt="inline-image-square.png" class="inline-image" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/48/mo114lAto6fft973UYWtik2T/inline-image-square.png" src="/user_uploads/thumbnail/2/48/mo114lAto6fft973UYWtik2T/inline-image-square.png/840x560.webp"></p>' +
+                '<p><img alt="inline-image-03.png" class="inline-image" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/1e/qsBe-4wztqriUHkB2ukYdauM/inline-image-03.png" src="/user_uploads/thumbnail/2/1e/qsBe-4wztqriUHkB2ukYdauM/inline-image-03.png/840x560.webp"> inline image with trailing text</p>',
         ),
         "<p>And here is a gallery in the inline style, with text before the images...\n" +
-            '<span class="message-thumbnail-gallery"><span class="message-media-inline-image message-media-gallery-image"><a href="/user_uploads/2/17/k0c4iGRefC2aCr4Jxf6NQdfH/image-01.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image-01.png"><img alt="image-01.png" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/17/k0c4iGRefC2aCr4Jxf6NQdfH/image-01.png" src="/user_uploads/thumbnail/2/17/k0c4iGRefC2aCr4Jxf6NQdfH/image-01.png/840x560.webp" loading="lazy" width="800" height="800" style="width: 10em;"></a></span><span class="message-media-inline-image message-media-gallery-image"><a href="/user_uploads/2/3f/B0vUyCSpixMgDLG29fKeUkk6/image-02.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image-02.png"><img alt="image-02.png" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/3f/B0vUyCSpixMgDLG29fKeUkk6/image-02.png" src="/user_uploads/thumbnail/2/3f/B0vUyCSpixMgDLG29fKeUkk6/image-02.png/840x560.webp" loading="lazy" width="800" height="800" style="width: 10em;"></a></span></span>\n' +
+            '<span class="message-thumbnail-gallery"><span class="message-media-inline-image message-media-gallery-image"><a href="/user_uploads/2/17/k0c4iGRefC2aCr4Jxf6NQdfH/inline-image-01.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="inline-image-01.png"><img alt="inline-image-01.png" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/17/k0c4iGRefC2aCr4Jxf6NQdfH/inline-image-01.png" src="/user_uploads/thumbnail/2/17/k0c4iGRefC2aCr4Jxf6NQdfH/inline-image-01.png/840x560.webp" loading="lazy" width="800" height="800" style="width: 10em;"></a></span><span class="message-media-inline-image message-media-gallery-image"><a href="/user_uploads/2/3f/B0vUyCSpixMgDLG29fKeUkk6/inline-image-02.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="inline-image-02.png"><img alt="inline-image-02.png" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/3f/B0vUyCSpixMgDLG29fKeUkk6/inline-image-02.png" src="/user_uploads/thumbnail/2/3f/B0vUyCSpixMgDLG29fKeUkk6/inline-image-02.png/840x560.webp" loading="lazy" width="800" height="800" style="width: 10em;"></a></span></span>\n' +
             "\n" +
             "...and text after (again, line breaks only, no new paragraphs).</p>" +
-            '<p><span class="message-thumbnail-gallery"><span class="message-media-inline-image message-media-gallery-image"><a href="/user_uploads/2/48/mo114lAto6fft973UYWtik2T/square.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="square.png"><img alt="square.png" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/48/mo114lAto6fft973UYWtik2T/square.png" src="/user_uploads/thumbnail/2/48/mo114lAto6fft973UYWtik2T/square.png/840x560.webp" loading="lazy" width="800" height="800" style="width: 10em;"></a></span></span></p>' +
-            '<p><span class="message-media-inline-image"><a href="/user_uploads/2/1e/qsBe-4wztqriUHkB2ukYdauM/image-03.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image-03.png"><img alt="image-03.png" class="inline-image image-opens-message media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/1e/qsBe-4wztqriUHkB2ukYdauM/image-03.png" src="/user_uploads/thumbnail/2/1e/qsBe-4wztqriUHkB2ukYdauM/image-03.png/840x560.webp" loading="lazy" width="800" height="800" style="width: 10em;"></a></span> inline image with trailing text</p>',
+            '<p><span class="message-thumbnail-gallery"><span class="message-media-inline-image message-media-gallery-image"><a href="/user_uploads/2/48/mo114lAto6fft973UYWtik2T/inline-image-square.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="inline-image-square.png"><img alt="inline-image-square.png" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/48/mo114lAto6fft973UYWtik2T/inline-image-square.png" src="/user_uploads/thumbnail/2/48/mo114lAto6fft973UYWtik2T/inline-image-square.png/840x560.webp" loading="lazy" width="800" height="800" style="width: 10em;"></a></span></span></p>' +
+            '<p><span class="message-media-inline-image"><a href="/user_uploads/2/1e/qsBe-4wztqriUHkB2ukYdauM/inline-image-03.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="inline-image-03.png"><img alt="inline-image-03.png" class="inline-image image-opens-message media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="800x800" data-original-src="/user_uploads/2/1e/qsBe-4wztqriUHkB2ukYdauM/inline-image-03.png" src="/user_uploads/thumbnail/2/1e/qsBe-4wztqriUHkB2ukYdauM/inline-image-03.png/840x560.webp" loading="lazy" width="800" height="800" style="width: 10em;"></a></span> inline image with trailing text</p>',
         "** Inline image gallery with leading text, break separator failed to post-process",
     );
 });
@@ -290,15 +290,15 @@ run_test("message_image_thumbnailing", ({override}) => {
     assert.equal(
         postprocess_content(
             '<div class="message_inline_image">' +
-                '<a href="/user_uploads/path/to/image.png" title="image.png">' +
-                '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">' +
+                '<a href="/user_uploads/path/to/landscape-thumbnailed-image.png" title="landscape-thumbnailed-image.png">' +
+                '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/landscape-thumbnailed-image.png/840x560.webp">' +
                 "</a>" +
                 "</div>",
         ),
         '<div class="message-thumbnail-gallery">' +
             '<div class="message-media-preview-image">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
-            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" class="media-image-element landscape-thumbnail" loading="lazy" width="3264" height="2448" style="width: 13.333333333333334em;">' +
+            '<a href="/user_uploads/path/to/landscape-thumbnailed-image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="landscape-thumbnailed-image.png">' +
+            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/landscape-thumbnailed-image.png/300x200.webp" class="media-image-element landscape-thumbnail" loading="lazy" width="3264" height="2448" style="width: 13.333333333333334em;">' +
             "</a>" +
             "</div>" +
             "</div>",
@@ -308,15 +308,15 @@ run_test("message_image_thumbnailing", ({override}) => {
     assert.equal(
         postprocess_content(
             '<div class="message_inline_image">' +
-                '<a href="/user_uploads/path/to/image.png" title="image.png">' +
-                '<img data-original-dimensions="100x200" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">' +
+                '<a href="/user_uploads/path/to/portrait-thumbnailed-image.png" title="portrait-thumbnailed-image.png">' +
+                '<img data-original-dimensions="100x200" src="/user_uploads/thumbnail/path/to/portrait-thumbnailed-image.png/840x560.webp">' +
                 "</a>" +
                 "</div>",
         ),
         '<div class="message-thumbnail-gallery">' +
             '<div class="message-media-preview-image">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
-            '<img data-original-dimensions="100x200" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" class="media-image-element portrait-thumbnail" loading="lazy" width="100" height="200" style="width: 5em;">' +
+            '<a href="/user_uploads/path/to/portrait-thumbnailed-image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="portrait-thumbnailed-image.png">' +
+            '<img data-original-dimensions="100x200" src="/user_uploads/thumbnail/path/to/portrait-thumbnailed-image.png/300x200.webp" class="media-image-element portrait-thumbnail" loading="lazy" width="100" height="200" style="width: 5em;">' +
             "</a>" +
             "</div>" +
             "</div>",
@@ -326,15 +326,15 @@ run_test("message_image_thumbnailing", ({override}) => {
     assert.equal(
         postprocess_content(
             '<div class="message_inline_image">' +
-                '<a href="/user_uploads/path/to/image.png" title="image.png">' +
-                '<img data-original-dimensions="1x10" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">' +
+                '<a href="/user_uploads/path/to/dinky-thumbnailed-image.png" title="dinky-thumbnailed-image.png">' +
+                '<img data-original-dimensions="1x10" src="/user_uploads/thumbnail/path/to/dinky-thumbnailed-image.png/840x560.webp">' +
                 "</a>" +
                 "</div>",
         ),
         '<div class="message-thumbnail-gallery">' +
             '<div class="message-media-preview-image">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
-            '<img data-original-dimensions="1x10" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" class="media-image-element dinky-thumbnail extreme-aspect-ratio portrait-thumbnail" loading="lazy" width="1" height="10" style="width: 1px;">' +
+            '<a href="/user_uploads/path/to/dinky-thumbnailed-image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="dinky-thumbnailed-image.png">' +
+            '<img data-original-dimensions="1x10" src="/user_uploads/thumbnail/path/to/dinky-thumbnailed-image.png/300x200.webp" class="media-image-element dinky-thumbnail extreme-aspect-ratio portrait-thumbnail" loading="lazy" width="1" height="10" style="width: 1px;">' +
             "</a>" +
             "</div>" +
             "</div>",
@@ -345,33 +345,33 @@ run_test("message_image_thumbnailing", ({override}) => {
     assert.equal(
         postprocess_content(
             '<div class="message_inline_image">' +
-                '<a href="/user_uploads/path/to/image.png" title="image.png">' +
-                '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" data-animated="true">' +
+                '<a href="/user_uploads/path/to/preview-animated-legacy-image.png" title="preview-animated-legacy-image.png">' +
+                '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/preview-animated-legacy-image.png/840x560.webp" data-animated="true">' +
                 "</a>" +
                 "</div>" +
                 "<p>" +
-                '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/900x600.webp" data-animated="true">' +
+                '<img alt="preview-animated-image-landscape" class="inline-image" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/preview-animated-image-landscape.png" src="/user_uploads/thumbnail/path/to/preview-animated-image-landscape.png/900x600.webp" data-animated="true">' +
                 " or " +
-                '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/image-tall.png" src="/user_uploads/thumbnail/path/to/image.png/600x900.webp" data-animated="true">' +
+                '<img alt="preview-animated-image-portrait" class="inline-image" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/preview-animated-image-portrait.png" src="/user_uploads/thumbnail/path/to/preview-animated-image-portrait.png/600x900.webp" data-animated="true">' +
                 "</p>",
         ),
         '<div class="message-thumbnail-gallery">' +
             '<div class="message-media-preview-image">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
-            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200-anim.webp" data-animated="true" class="media-image-element landscape-thumbnail" loading="lazy" width="3264" height="2448" style="width: 13.333333333333334em;">' +
+            '<a href="/user_uploads/path/to/preview-animated-legacy-image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="preview-animated-legacy-image.png">' +
+            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/preview-animated-legacy-image.png/300x200-anim.webp" data-animated="true" class="media-image-element landscape-thumbnail" loading="lazy" width="3264" height="2448" style="width: 13.333333333333334em;">' +
             "</a>" +
             "</div>" +
             "</div>" +
             "<p>" +
             '<span class="message-media-inline-image">' +
-            '<a href="/user_uploads/path/to/image-wide.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
-            '<img alt="image" class="inline-image image-opens-message media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/300x200-anim.webp" data-animated="true" loading="lazy" width="900" height="600" style="width: 15em;">' +
+            '<a href="/user_uploads/path/to/preview-animated-image-landscape.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="preview-animated-image-landscape">' +
+            '<img alt="preview-animated-image-landscape" class="inline-image image-opens-message media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/preview-animated-image-landscape.png" src="/user_uploads/thumbnail/path/to/preview-animated-image-landscape.png/300x200-anim.webp" data-animated="true" loading="lazy" width="900" height="600" style="width: 15em;">' +
             "</a>" +
             "</span>" +
             " or " +
             '<span class="message-media-inline-image">' +
-            '<a href="/user_uploads/path/to/image-tall.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
-            '<img alt="image" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/image-tall.png" src="/user_uploads/thumbnail/path/to/image.png/300x200-anim.webp" data-animated="true" loading="lazy" width="600" height="900" style="width: 6.666666666666667em;">' +
+            '<a href="/user_uploads/path/to/preview-animated-image-portrait.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="preview-animated-image-portrait">' +
+            '<img alt="preview-animated-image-portrait" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/preview-animated-image-portrait.png" src="/user_uploads/thumbnail/path/to/preview-animated-image-portrait.png/300x200-anim.webp" data-animated="true" loading="lazy" width="600" height="900" style="width: 6.666666666666667em;">' +
             "</a>" +
             "</span>" +
             "</p>",
@@ -382,33 +382,33 @@ run_test("message_image_thumbnailing", ({override}) => {
     assert.equal(
         postprocess_content(
             '<div class="message_inline_image">' +
-                '<a href="/user_uploads/path/to/image.png" title="image.png">' +
-                '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" data-animated="true">' +
+                '<a href="/user_uploads/path/to/preview-animated-legacy-image.png" title="preview-animated-legacy-image.png">' +
+                '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/preview-animated-legacy-image.png/840x560.webp" data-animated="true">' +
                 "</a>" +
                 "</div>" +
                 "<p>" +
-                '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/900x600.webp" data-animated="true">' +
+                '<img alt="preview-animated-image-landscape" class="inline-image" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/preview-animated-image-landscape.png" src="/user_uploads/thumbnail/path/to/preview-animated-image-landscape.png/900x600.webp" data-animated="true">' +
                 " or " +
-                '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/image-tall.png" src="/user_uploads/thumbnail/path/to/image.png/600x900.webp" data-animated="true">' +
+                '<img alt="preview-animated-image-portrait" class="inline-image" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/preview-animated-image-portrait.png" src="/user_uploads/thumbnail/path/to/preview-animated-image-portrait.png/600x900.webp" data-animated="true">' +
                 "</p>",
         ),
         '<div class="message-thumbnail-gallery">' +
             '<div class="message-media-preview-image message_inline_animated_image_still">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
-            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" class="media-image-element landscape-thumbnail" loading="lazy" width="3264" height="2448" style="width: 13.333333333333334em;">' +
+            '<a href="/user_uploads/path/to/preview-animated-legacy-image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="preview-animated-legacy-image.png">' +
+            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/preview-animated-legacy-image.png/300x200.webp" data-animated="true" class="media-image-element landscape-thumbnail" loading="lazy" width="3264" height="2448" style="width: 13.333333333333334em;">' +
             "</a>" +
             "</div>" +
             "</div>" +
             "<p>" +
             '<span class="message-media-inline-image message_inline_animated_image_still">' +
-            '<a href="/user_uploads/path/to/image-wide.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
-            '<img alt="image" class="inline-image image-opens-message media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" loading="lazy" width="900" height="600" style="width: 15em;">' +
+            '<a href="/user_uploads/path/to/preview-animated-image-landscape.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="preview-animated-image-landscape">' +
+            '<img alt="preview-animated-image-landscape" class="inline-image image-opens-message media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/preview-animated-image-landscape.png" src="/user_uploads/thumbnail/path/to/preview-animated-image-landscape.png/300x200.webp" data-animated="true" loading="lazy" width="900" height="600" style="width: 15em;">' +
             "</a>" +
             "</span>" +
             " or " +
             '<span class="message-media-inline-image message_inline_animated_image_still">' +
-            '<a href="/user_uploads/path/to/image-tall.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
-            '<img alt="image" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/image-tall.png" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" loading="lazy" width="600" height="900" style="width: 6.666666666666667em;">' +
+            '<a href="/user_uploads/path/to/preview-animated-image-portrait.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="preview-animated-image-portrait">' +
+            '<img alt="preview-animated-image-portrait" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/preview-animated-image-portrait.png" src="/user_uploads/thumbnail/path/to/preview-animated-image-portrait.png/300x200.webp" data-animated="true" loading="lazy" width="600" height="900" style="width: 6.666666666666667em;">' +
             "</a>" +
             "</span>" +
             "</p>",
@@ -418,33 +418,33 @@ run_test("message_image_thumbnailing", ({override}) => {
     assert.equal(
         postprocess_content(
             '<div class="message_inline_image">' +
-                '<a href="/user_uploads/path/to/image.png" title="image.png">' +
-                '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" data-animated="true">' +
+                '<a href="/user_uploads/path/to/preview-animated-legacy-image.png" title="preview-animated-legacy-image.png">' +
+                '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/preview-animated-legacy-image.png/840x560.webp" data-animated="true">' +
                 "</a>" +
                 "</div>" +
                 "<p>" +
-                '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/900x600.webp" data-animated="true">' +
+                '<img alt="preview-animated-image-landscape" class="inline-image" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/preview-animated-image-landscape.png" src="/user_uploads/thumbnail/path/to/preview-animated-image-landscape.png/900x600.webp" data-animated="true">' +
                 " or " +
-                '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/image-tall.png" src="/user_uploads/thumbnail/path/to/image.png/600x900.webp" data-animated="true">' +
+                '<img alt="preview-animated-image-portrait" class="inline-image" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/preview-animated-image-portrait.png" src="/user_uploads/thumbnail/path/to/preview-animated-image-portrait.png/600x900.webp" data-animated="true">' +
                 "</p>",
         ),
         '<div class="message-thumbnail-gallery">' +
             '<div class="message-media-preview-image message_inline_animated_image_still">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image.png">' +
-            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" class="media-image-element landscape-thumbnail" loading="lazy" width="3264" height="2448" style="width: 13.333333333333334em;">' +
+            '<a href="/user_uploads/path/to/preview-animated-legacy-image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="preview-animated-legacy-image.png">' +
+            '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/preview-animated-legacy-image.png/300x200.webp" data-animated="true" class="media-image-element landscape-thumbnail" loading="lazy" width="3264" height="2448" style="width: 13.333333333333334em;">' +
             "</a>" +
             "</div>" +
             "</div>" +
             "<p>" +
             '<span class="message-media-inline-image message_inline_animated_image_still">' +
-            '<a href="/user_uploads/path/to/image-wide.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
-            '<img alt="image" class="inline-image image-opens-message media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/image-wide.png" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" loading="lazy" width="900" height="600" style="width: 15em;">' +
+            '<a href="/user_uploads/path/to/preview-animated-image-landscape.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="preview-animated-image-landscape">' +
+            '<img alt="preview-animated-image-landscape" class="inline-image image-opens-message media-image-element landscape-thumbnail" data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/preview-animated-image-landscape.png" src="/user_uploads/thumbnail/path/to/preview-animated-image-landscape.png/300x200.webp" data-animated="true" loading="lazy" width="900" height="600" style="width: 15em;">' +
             "</a>" +
             "</span>" +
             " or " +
             '<span class="message-media-inline-image message_inline_animated_image_still">' +
-            '<a href="/user_uploads/path/to/image-tall.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
-            '<img alt="image" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/image-tall.png" src="/user_uploads/thumbnail/path/to/image.png/300x200.webp" data-animated="true" loading="lazy" width="600" height="900" style="width: 6.666666666666667em;">' +
+            '<a href="/user_uploads/path/to/preview-animated-image-portrait.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="preview-animated-image-portrait">' +
+            '<img alt="preview-animated-image-portrait" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/preview-animated-image-portrait.png" src="/user_uploads/thumbnail/path/to/preview-animated-image-portrait.png/300x200.webp" data-animated="true" loading="lazy" width="600" height="900" style="width: 6.666666666666667em;">' +
             "</a>" +
             "</span>" +
             "</p>",
@@ -480,11 +480,11 @@ run_test("inline_images", ({override}) => {
 
     assert.equal(
         postprocess_content(
-            '<img alt="image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="128x128" data-original-src="/user_uploads/path/to/image.png" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp">',
+            '<img alt="dinky-inline-image" class="inline-image" data-original-content-type="image/png" data-original-dimensions="128x128" data-original-src="/user_uploads/path/to/dinky-inline-image.png" src="/user_uploads/thumbnail/path/to/dinky-inline-image.png/840x560.webp">',
         ),
         '<span class="message-media-inline-image">' +
-            '<a href="/user_uploads/path/to/image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
-            '<img alt="image" class="inline-image media-image-element dinky-thumbnail portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="128x128" data-original-src="/user_uploads/path/to/image.png" src="/user_uploads/thumbnail/path/to/image.png/840x560.webp" loading="lazy" width="128" height="128" style="width: 128px;">' +
+            '<a href="/user_uploads/path/to/dinky-inline-image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="dinky-inline-image">' +
+            '<img alt="dinky-inline-image" class="inline-image media-image-element dinky-thumbnail portrait-thumbnail" data-original-content-type="image/png" data-original-dimensions="128x128" data-original-src="/user_uploads/path/to/dinky-inline-image.png" src="/user_uploads/thumbnail/path/to/dinky-inline-image.png/840x560.webp" loading="lazy" width="128" height="128" style="width: 128px;">' +
             "</a>" +
             "</span>",
     );
