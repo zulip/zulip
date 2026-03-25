@@ -546,7 +546,18 @@ export class DropdownWidget {
                         this.update_hover_state($popper);
                     };
 
-                    switch (e.key) {
+                    // On macOS, Ctrl+N/P are standard Emacs keybindings
+                    // for moving down/up, equivalent to arrow keys.
+                    let key = e.key;
+                    if (e.ctrlKey && (key === "n" || key === "N")) {
+                        key = "ArrowDown";
+                        e.preventDefault();
+                    } else if (e.ctrlKey && (key === "p" || key === "P")) {
+                        key = "ArrowUp";
+                        e.preventDefault();
+                    }
+
+                    switch (key) {
                         case "Enter":
                             if (
                                 list_items.length === 0 ||
@@ -606,7 +617,7 @@ export class DropdownWidget {
                     }
 
                     if (!this.hide_search_box && this.keep_focus_on_search) {
-                        switch (e.key) {
+                        switch (key) {
                             case "ArrowDown":
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -619,7 +630,7 @@ export class DropdownWidget {
                                 break;
                         }
                     } else {
-                        switch (e.key) {
+                        switch (key) {
                             case "ArrowDown":
                                 handle_arrow_down_on_sequential_focus();
                                 break;
