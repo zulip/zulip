@@ -332,6 +332,14 @@ exports.server_supported_permission_settings = {
             default_for_system_groups: null,
             allowed_system_groups: [],
         },
+        can_unsubscribe_group: {
+            require_system_group: false,
+            allow_internet_group: false,
+            allow_nobody_group: true,
+            allow_everyone_group: true,
+            default_group_name: "role:everyone",
+            allowed_system_groups: [],
+        },
     },
     group: {
         can_add_members_group: {

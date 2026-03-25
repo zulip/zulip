@@ -1436,6 +1436,9 @@ def can_unsubscribe_self_from_streams(
     if user_profile.is_realm_admin:
         return True
 
+    if user_profile.can_unsubscribe_from_channels():
+        return True
+
     user_recursive_group_ids = set(
         get_recursive_membership_groups(user_profile).values_list("id", flat=True)
     )
