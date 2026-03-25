@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 481**
+
+* [`PATCH /users/me/profile_data`](/api/updateOwnProfileData): New endpoint to update the current user's custom profile field data.
+* [`DELETE /users/me/profile_data`](/api/removeOwnProfileData): New endpoint to remove the current user's custom profile field data.
+
 **Feature level 480**
 
 * [`GET /streams/{stream_id}`](/api/get-stream-by-id): Details of

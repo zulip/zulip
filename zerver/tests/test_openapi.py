@@ -272,9 +272,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
 
     # Endpoints where the documentation is currently failing our
     # consistency tests.  We aim to keep this list empty.
-    buggy_documentation_endpoints: set[str] = {
-        "/users/me/profile_data",
-    }
+    buggy_documentation_endpoints: set[str] = set()
 
     def ensure_no_documentation_if_intentionally_undocumented(
         self, url_pattern: str, method: str, msg: str | None = None
