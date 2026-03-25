@@ -404,6 +404,12 @@ export function create<Key, Item = Key>(
                 return;
             }
 
+            // When no items have been rendered yet, clear any
+            // previously shown empty-list message before appending.
+            if (meta.offset === 0) {
+                $container.empty();
+            }
+
             const slice = meta.filtered_list.slice(meta.offset, meta.offset + load_count);
 
             let html = "";
