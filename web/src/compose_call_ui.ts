@@ -4,6 +4,7 @@ import * as z from "zod/mini";
 import * as channel from "./channel.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_call from "./compose_call.ts";
+import {compose_call_session_manager} from "./compose_call_session.ts";
 import {get_recipient_label} from "./compose_closed_ui.ts";
 import * as compose_ui from "./compose_ui.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -64,62 +65,78 @@ export function generate_and_insert_audio_or_video_call_link(
         realm.realm_video_chat_provider === available_providers.zoom_server_to_server?.id;
     const key = edit_message_id ?? "";
     const oauth_call_provider = compose_call.current_oauth_call_provider();
+    const compose_call_session = compose_call_session_manager.get_compose_call_session(key);
 
     if (oauth_call_provider !== null) {
         const request = {
             is_video_call: !is_audio_call,
         };
 
-        const make_oauth_call = (): void => {
+        const handle_success = (res: unknown): void => {
+            const callback = (): void => {
+                const data = call_response_schema.parse(res);
+                if (is_audio_call) {
+                    insert_audio_call_url(data.url, $target_textarea);
+                } else {
+                    insert_video_call_url(data.url, $target_textarea);
+                }
+            };
+            compose_call_session.maybe_run_xhr_callback(xhr, callback);
+        };
+
+        const handle_error = (
+            _xhr: JQuery.jqXHR<unknown>,
+            status: JQuery.Ajax.ErrorTextStatus,
+        ): void => {
+            const callback = (): void => {
+                const parsed = z.object({code: z.string()}).safeParse(_xhr.responseJSON);
+                if (
+                    status === "error" &&
+                    parsed.success &&
+                    parsed.data.code === "INVALID_VIDEO_CALL_PROVIDER_TOKEN"
+                ) {
+                    if (oauth_call_provider === "webex") {
+                        current_user.has_webex_token = false;
+                    } else {
+                        current_user.has_zoom_token = false;
+                    }
+                }
+                if (
+                    status === "error" &&
+                    parsed.success &&
+                    parsed.data.code === "UNKNOWN_ZOOM_USER"
+                ) {
+                    compose_banner.show_unknown_zoom_user_error(current_user.delivery_email);
+                } else if (status !== "abort") {
+                    ui_report.generic_embed_error(
+                        $t_html({defaultMessage: "Failed to create video call."}),
+                    );
+                }
+            };
+            compose_call_session.maybe_run_xhr_callback(xhr, callback);
+        };
+        const make_oauth_call = (from_token_callback?: boolean): void => {
             xhr = channel.post({
                 url: `/json/calls/${oauth_call_provider}/create`,
                 data: request,
-                success(res) {
-                    if (xhr && compose_call.ignored_call_xhrs.has(xhr)) {
-                        return;
-                    }
-                    const data = call_response_schema.parse(res);
-                    if (is_audio_call) {
-                        insert_audio_call_url(data.url, $target_textarea);
-                    } else {
-                        insert_video_call_url(data.url, $target_textarea);
-                    }
-                },
-                error(_xhr, status) {
-                    if (xhr && compose_call.ignored_call_xhrs.has(xhr)) {
-                        return;
-                    }
-                    const parsed = z.object({code: z.string()}).safeParse(_xhr.responseJSON);
-                    if (
-                        status === "error" &&
-                        parsed.success &&
-                        parsed.data.code === "INVALID_VIDEO_CALL_PROVIDER_TOKEN"
-                    ) {
-                        current_user.has_zoom_token = false;
-                    }
-                    if (
-                        status === "error" &&
-                        parsed.success &&
-                        parsed.data.code === "UNKNOWN_ZOOM_USER"
-                    ) {
-                        compose_banner.show_unknown_zoom_user_error(current_user.delivery_email);
-                    } else if (status !== "abort") {
-                        ui_report.generic_embed_error(
-                            $t_html({defaultMessage: "Failed to create video call."}),
-                        );
-                    }
-                },
+                success: handle_success,
+                error: handle_error,
             });
+            if (xhr && from_token_callback) {
+                compose_call_session.append_pending_xhr(xhr);
+            }
         };
 
-        if (current_user.has_zoom_token || provider_is_zoom_server_to_server) {
+        if (
+            ((current_user.has_zoom_token || provider_is_zoom_server_to_server) &&
+                oauth_call_provider === "zoom") ||
+            (current_user.has_webex_token && oauth_call_provider === "webex")
+        ) {
             make_oauth_call();
         } else {
-            compose_call.update_oauth_provider_callback_for_key(
-                oauth_call_provider,
-                key,
-                make_oauth_call,
-            );
+            compose_call_session.add_oauth_token_callback(oauth_call_provider, () => {
+                make_oauth_call(true);
+            });
             window.open(
                 window.location.protocol +
                     "//" +
@@ -137,46 +154,56 @@ export function generate_and_insert_audio_or_video_call_link(
                     meeting_name,
                     voice_only: is_audio_call,
                 };
-                xhr = channel.get({
-                    url: "/json/calls/bigbluebutton/create",
-                    data: request,
-                    success(response) {
-                        if (xhr && compose_call.ignored_call_xhrs.has(xhr)) {
-                            return;
-                        }
+
+                const handle_success = (response: unknown): void => {
+                    const callback = (): void => {
                         const data = call_response_schema.parse(response);
                         if (is_audio_call) {
                             insert_audio_call_url(data.url, $target_textarea);
                         } else {
                             insert_video_call_url(data.url, $target_textarea);
                         }
-                    },
+                    };
+                    compose_call_session.maybe_run_xhr_callback(xhr, callback);
+                };
+
+                xhr = channel.get({
+                    url: "/json/calls/bigbluebutton/create",
+                    data: request,
+                    success: handle_success,
                 });
 
                 break;
             }
             case available_providers.constructor_groups?.id: {
-                xhr = channel.post({
-                    url: "/json/calls/constructorgroups/create",
-                    data: {},
-                    success(response) {
-                        if (xhr && compose_call.ignored_call_xhrs.has(xhr)) {
-                            return;
-                        }
+                const handle_success = (response: unknown): void => {
+                    const callback = (): void => {
                         const data = call_response_schema.parse(response);
                         insert_video_call_url(data.url, $target_textarea);
-                    },
-                    error(_xhr, status) {
-                        if (xhr && compose_call.ignored_call_xhrs.has(xhr)) {
-                            return;
-                        }
+                    };
+                    compose_call_session.maybe_run_xhr_callback(xhr, callback);
+                };
+
+                const handle_error = (
+                    _xhr: JQuery.jqXHR<unknown>,
+                    status: JQuery.Ajax.ErrorTextStatus,
+                ): void => {
+                    const callback = (): void => {
                         if (status !== "abort") {
                             ui_report.generic_embed_error(
                                 $t_html({defaultMessage: "Failed to create video call."}),
                                 2000,
                             );
                         }
-                    },
+                    };
+                    compose_call_session.maybe_run_xhr_callback(xhr, callback);
+                };
+
+                xhr = channel.post({
+                    url: "/json/calls/constructorgroups/create",
+                    data: {},
+                    success: handle_success,
+                    error: handle_error,
                 });
                 break;
             }
@@ -184,27 +211,34 @@ export function generate_and_insert_audio_or_video_call_link(
                 const room_name = `${get_recipient_label()?.label_text ?? ""} conversation`;
                 const request = {room_name};
 
-                xhr = channel.post({
-                    url: "/json/calls/nextcloud_talk/create",
-                    data: request,
-                    success(response) {
-                        if (xhr && compose_call.ignored_call_xhrs.has(xhr)) {
-                            return;
-                        }
+                const handle_success = (response: unknown): void => {
+                    const callback = (): void => {
                         const data = call_response_schema.parse(response);
                         insert_video_call_url(data.url, $target_textarea);
-                    },
-                    error(_, status) {
-                        if (xhr && compose_call.ignored_call_xhrs.has(xhr)) {
-                            return;
-                        }
+                    };
+                    compose_call_session.maybe_run_xhr_callback(xhr, callback);
+                };
+
+                const handle_error = (
+                    _: JQuery.jqXHR<unknown>,
+                    status: JQuery.Ajax.ErrorTextStatus,
+                ): void => {
+                    const callback = (): void => {
                         if (status !== "abort") {
                             ui_report.generic_embed_error(
                                 $t_html({defaultMessage: "Failed to create video call."}),
                                 2000,
                             );
                         }
-                    },
+                    };
+                    compose_call_session.maybe_run_xhr_callback(xhr, callback);
+                };
+
+                xhr = channel.post({
+                    url: "/json/calls/nextcloud_talk/create",
+                    data: request,
+                    success: handle_success,
+                    error: handle_error,
                 });
 
                 break;
@@ -247,6 +281,6 @@ export function generate_and_insert_audio_or_video_call_link(
         }
     }
     if (xhr !== undefined) {
-        compose_call.track_xhr_for_key(key, xhr);
+        compose_call_session.append_pending_xhr(xhr);
     }
 }

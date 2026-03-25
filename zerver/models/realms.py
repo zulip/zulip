@@ -676,6 +676,10 @@ class Realm(models.Model):
             "name": "Nextcloud Talk",
             "id": 7,
         },
+        "webex": {
+            "name": "Webex",
+            "id": 8,
+        },
     }
 
     video_chat_provider = models.PositiveSmallIntegerField(
@@ -1116,6 +1120,10 @@ class Realm(models.Model):
                 settings.NEXTCLOUD_SERVER is None
                 or settings.NEXTCLOUD_TALK_USERNAME is None
                 or settings.NEXTCLOUD_TALK_PASSWORD is None
+            ):
+                continue
+            if provider == "webex" and (
+                settings.VIDEO_WEBEX_CLIENT_ID is None or settings.VIDEO_WEBEX_CLIENT_SECRET is None
             ):
                 continue
             enabled_video_chat_providers[provider] = self.VIDEO_CHAT_PROVIDERS[provider]
