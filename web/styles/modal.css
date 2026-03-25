@@ -488,6 +488,12 @@
         .dropdown-widget-button {
             max-width: 100%;
             width: var(--modal-input-width);
+
+            .dropdown_widget_value {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
         }
     }
 }
