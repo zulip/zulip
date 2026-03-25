@@ -185,6 +185,7 @@ class SendMessageRequest:
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None
     reminder_target_message_id: int | None = None
     reminder_note: str | None = None
+    then_resolve_topic: bool = False
 
 
 @dataclass
