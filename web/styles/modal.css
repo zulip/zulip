@@ -485,8 +485,7 @@
         margin-bottom: 10px;
         gap: 10px;
 
-        .dropdown-widget-button,
-        .dropdown_widget_with_label_wrapper {
+        .dropdown-widget-button {
             max-width: 100%;
             width: var(--modal-input-width);
         }
