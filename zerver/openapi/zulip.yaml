@@ -12212,6 +12212,7 @@ paths:
                   type: array
                   items:
                     type: integer
+                  example: [4, 5]
                   description: |
                     A list of IDs of the custom profile fields whose values
                     should be removed.
