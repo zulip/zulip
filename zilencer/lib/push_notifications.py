@@ -1,13 +1,16 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass
+from typing import TYPE_CHECKING
 
 from aioapns import NotificationRequest
 from django.utils.timezone import now as timezone_now
-from firebase_admin import exceptions as firebase_exceptions
-from firebase_admin import messaging as firebase_messaging
-from firebase_admin.messaging import UnregisteredError as FCMUnregisteredError
+
+if TYPE_CHECKING:
+    from firebase_admin import messaging as firebase_messaging
 
 from zerver.lib.devices import b64decode_token_id_base64, b64encode_token_id_int
 from zerver.lib.push_notifications import (
@@ -87,6 +90,12 @@ def send_e2ee_push_notification_android(
     fcm_remote_push_devices: list[RemotePushDevice],
     log_context: str,
 ) -> SentPushNotificationResult:
+    # We lazily do this import as part of optimizing Zulip's base
+    # import time.
+    from firebase_admin import exceptions as firebase_exceptions
+    from firebase_admin import messaging as firebase_messaging
+    from firebase_admin.messaging import UnregisteredError as FCMUnregisteredError
+
     successfully_sent_count = 0
     delete_token_ids_base64: list[str] = []
 
@@ -150,6 +159,7 @@ def send_e2ee_push_notifications(
     assert (realm is None) ^ (remote_realm is None)
 
     import aioapns
+    from firebase_admin import messaging as firebase_messaging
 
     token_ids_base64 = set()
     token_ids_int = set()
