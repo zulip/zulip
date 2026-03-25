@@ -127,8 +127,8 @@ _Released 2026-03-12_
 - Added a keyboard shortcut (`Shift+Y`) to open the set-status modal.
 - Added a keyboard shortcut (`L`) to copy a link to the currently
   selected message.
-- Added a compose box keyboard shortcut (`Ctrl+Shift+C`) for wrapping
-  text in an inline code span.
+- Added a compose box keyboard shortcut (`Ctrl+Shift+C`) for formatting
+  text as code.
 - Added an icon button in recipient headers to copy the topic link.
 - Added a `+` button for adding DM recipients in the compose box.
 - Added a "new topic" button in the left sidebar all topics view.
