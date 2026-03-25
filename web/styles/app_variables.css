@@ -1818,6 +1818,11 @@
         transparent,
         var(--color-markdown-pre-border)
     );
+    --color-background-search-highlight: light-dark(
+        hsl(51deg 100% 79%),
+        hsl(51deg 100% 72%)
+    );
+    --color-text-search-highlight: light-dark(currentcolor, hsl(0deg 0% 0%));
     --color-text-alert-word: light-dark(currentcolor, hsl(0deg 0% 0%));
     --color-markdown-link: light-dark(
         hsl(200deg 100% 40%),
@@ -1829,6 +1834,14 @@
         var(--color-text-generic-link-interactive)
     );
     --color-markdown-code-link-hover: var(--color-markdown-link-hover);
+    --color-markdown-link-highlight: light-dark(
+        hsl(200deg 100% 40%),
+        hsl(210deg 100% 25%)
+    );
+    --color-markdown-link-highlight-hover: light-dark(
+        hsl(200deg 100% 25%),
+        hsl(210deg 100% 18%)
+    );
     --color-markdown-link-alert-word: light-dark(
         hsl(200deg 100% 40%),
         hsl(210deg 100% 25%)

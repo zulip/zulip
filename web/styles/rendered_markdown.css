@@ -1086,7 +1086,37 @@
 
 /* Search highlight used in both topics and rendered_markdown */
 .highlight {
-    background-color: hsl(51deg 100% 79%);
+    background-color: var(--color-background-search-highlight);
+    color: var(--color-text-search-highlight);
+}
+
+.highlight a:not(.icon-button) {
+    color: var(--color-markdown-link-highlight);
+    font-weight: 500;
+
+    &:hover,
+    &:focus {
+        color: var(--color-markdown-link-highlight-hover);
+        font-weight: 500;
+    }
+}
+
+a:not(.icon-button):has(.highlight) {
+    &:hover,
+    &:focus {
+        text-decoration-color: var(--color-markdown-link-highlight-hover);
+    }
+}
+
+a:not(.icon-button) .highlight {
+    color: var(--color-markdown-link-highlight);
+    font-weight: 500;
+}
+
+a:not(.icon-button):hover .highlight,
+a:not(.icon-button):focus .highlight {
+    color: var(--color-markdown-link-highlight-hover);
+    font-weight: 500;
 }
 
 /* For elements where we want to show as much markdown content we can
