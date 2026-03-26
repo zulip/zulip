@@ -283,12 +283,12 @@ class MarkdownDirectoryView(ApiURLView):
             sidebar_html = ""
         tree = html.fragment_fromstring(sidebar_html, create_parent=True)
         if not context.get("page_is_policy_center", False):
-            home_h1 = Element("h1")
-            home_link = SubElement(home_h1, "a")
+            home_h2 = Element("h2")
+            home_link = SubElement(home_h2, "a")
             home_link.attrib["class"] = "no-underline"
             home_link.attrib["href"] = context["doc_root"]
             home_link.text = context["doc_root_title"] + " home"
-            tree.insert(0, home_h1)
+            tree.insert(0, home_h2)
         url = context["doc_root"] + article
         # Remove ID attributes from sidebar headings so they don't conflict with index page headings
         headings = sidebar_headings(tree)
