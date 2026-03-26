@@ -32,6 +32,9 @@ if ! check_version 2>/dev/null; then
     mkdir -p /srv/zulip-node
     tar -xJf "$tarball" --no-same-owner --strip-components=1 -C /srv/zulip-node
     ln -sf /srv/zulip-node/bin/{corepack,node,npm,npx} /usr/local/bin
+    if [ "${CODESPACES:-}" = "true" ]; then
+        rm -f /usr/local/bin/pnpm /usr/local/bin/yarn
+    fi
     COREPACK_DEFAULT_TO_LATEST=0 /usr/local/bin/corepack enable
 
     # Clean up after previous versions of this script

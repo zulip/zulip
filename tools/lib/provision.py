@@ -30,6 +30,7 @@ from scripts.lib.zulip_tools import (
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, "var")
 
 CONTINUOUS_INTEGRATION = "GITHUB_ACTIONS" in os.environ
+CODESPACES = os.environ.get("CODESPACES") == "true"
 
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
     print(FAIL + "Error: No Zulip Git repository present!" + ENDC)
@@ -235,6 +236,10 @@ def install_system_deps() -> None:
 
 
 def install_apt_deps(deps_to_install: list[str]) -> None:
+    if CODESPACES:
+        # Codespaces images can contain a stale Yarn apt source that fails GPG checks.
+        run_as_root(["rm", "-f", "/etc/apt/sources.list.d/yarn.list"])
+
     # setup-apt-repo does an `apt-get update` if the sources.list files changed.
     run_as_root(["./scripts/lib/setup-apt-repo"])
 
@@ -427,10 +432,23 @@ def main(options: argparse.Namespace) -> NoReturn:
 
     # Install Python environment
     run_as_root([*proxy_env, "scripts/lib/install-uv"], sudo_args=["--preserve-env=PATH"])
-    run(
-        [*proxy_env, "uv", "sync", "--frozen", "--no-managed-python"],
-        env={k: v for k, v in os.environ.items() if k not in {"PYTHONDEVMODE", "PYTHONWARNINGS"}},
-    )
+    uv_env = {k: v for k, v in os.environ.items() if k not in {"PYTHONDEVMODE", "PYTHONWARNINGS"}}
+    uv_cmd = [*proxy_env, "uv", "sync", "--frozen"]
+
+    if CODESPACES:
+        for key in [
+            "CONDA_PREFIX",
+            "CONDA_DEFAULT_ENV",
+            "CONDA_PROMPT_MODIFIER",
+            "CONDA_EXE",
+            "_CE_CONDA",
+            "_CE_M",
+        ]:
+            uv_env.pop(key, None)
+        uv_env["UV_NO_BINARY"] = "pyicu"
+        uv_cmd.append("--no-managed-python")
+
+    run(uv_cmd, env=uv_env)
     # Clean old symlinks used before uv migration
     with contextlib.suppress(FileNotFoundError):
         os.unlink("zulip-py3-venv")
@@ -443,6 +461,9 @@ def main(options: argparse.Namespace) -> NoReturn:
         run_as_root(["service", "redis-server", "start"])
         run_as_root(["service", "memcached", "start"])
         run_as_root(["service", "rabbitmq-server", "start"])
+        run_as_root(["service", "postgresql", "start"])
+    elif CODESPACES and not options.is_build_release_tarball_only:
+        run_as_root(["rabbitmq-server", "-detached"])
         run_as_root(["service", "postgresql", "start"])
     elif "fedora" in os_families():
         # These platforms don't enable and start services on
