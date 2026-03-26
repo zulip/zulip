@@ -185,9 +185,7 @@ class RedirectURLTest(ZulipTestCase):
                 "/api/incoming-webhooks-walkthrough",
             ]:
                 result = self.client_get(redirect.old_url, follow=True)
-                self.assert_in_success_response(
-                    ["Zulip homepage", "API documentation home"], result
-                )
+                self.assert_in_success_response(["API documentation home"], result)
 
             result = self.client_get(redirect.old_url)
             self.assertEqual(result.status_code, 301)

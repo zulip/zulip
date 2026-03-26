@@ -10,10 +10,6 @@
 <div class="app help terms-page inline-block{% if page_is_api_center %} api-center{% endif %}">
     <div class="sidebar">
         <div class="content">
-            {% if not page_is_policy_center %}
-            <h1><a href="https://zulip.com" class="no-underline">Zulip homepage</a></h1>
-            {% endif %}
-
             {{ sidebar_html }}
 
             {% if not page_is_policy_center %}
