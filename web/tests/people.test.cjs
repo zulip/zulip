@@ -1834,8 +1834,7 @@ run_test("fetch_users", async ({override}) => {
 
     const params = {
         realm_users: [
-            make_user(
-            {
+            make_user({
                 email: "my_email@example.com",
                 user_id: 42,
                 full_name: "Me Myself",
@@ -1843,8 +1842,7 @@ run_test("fetch_users", async ({override}) => {
         ],
         realm_non_active_users: [],
         cross_realm_bots: [
-            make_user(
-            {
+            make_user({
                 email: "bot@example.com",
                 user_id: 17,
                 full_name: "Test Bot",
