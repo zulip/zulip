@@ -46,7 +46,8 @@
     ],
     "common": ["./src/bundles/common.ts"],
     "help": [
-        "./src/bundles/legacy_portico_bundle.ts",
+        "./src/bundles/help_bundle.ts",
+        "./styles/portico/portico_variables.css",
         "simplebar/dist/simplebar.css",
         "simplebar",
         "./src/portico/help.ts"

@@ -13,6 +13,7 @@
 }
 
 body {
+    margin: 0;
     background-color: hsl(0deg 0% 98%);
     font-family: "Source Sans 3 VF", sans-serif;
     line-height: 150%;
@@ -265,6 +266,49 @@ html {
     background-color: hsl(0deg 0% 100%);
     width: calc(100vw - 300px);
     height: calc(100% - 59px);
+
+    /* Restore element styles that Bootstrap previously provided. */
+    & p {
+        margin: 0 0 10px;
+    }
+
+    & p:empty {
+        margin: 0;
+    }
+
+    & h1 {
+        margin-top: 10px;
+    }
+
+    & h4 {
+        margin: 15px 0 5px;
+    }
+
+    & hr {
+        margin: 20px 0;
+        border: 0;
+        border-top: 1px solid hsl(0deg 0% 93%);
+    }
+
+    & ul,
+    ol {
+        padding: 0;
+    }
+
+    & pre {
+        padding: 9.5px;
+        margin: 0 0 10px;
+        line-height: 20px;
+        background-color: hsl(0deg 0% 96%);
+        border: 1px solid hsl(0deg 0% 0% / 15%);
+        border-radius: 4px;
+    }
+
+    .tabbed-section .blocks pre {
+        margin: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
 
     & :target {
         scroll-margin-top: 59px;
