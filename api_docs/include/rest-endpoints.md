@@ -1,4 +1,4 @@
-#### Messages
+## Messages
 
 * [Send a message](/api/send-message)
 * [Upload a file](/api/upload-file)
@@ -22,20 +22,20 @@
 * [Check thumbnail status](/api/check-thumbnail-status)
 * [Report a message](/api/report-message)
 
-#### Scheduled messages
+## Scheduled messages
 
 * [Get scheduled messages](/api/get-scheduled-messages)
 * [Create a scheduled message](/api/create-scheduled-message)
 * [Edit a scheduled message](/api/update-scheduled-message)
 * [Delete a scheduled message](/api/delete-scheduled-message)
 
-#### Message reminders
+## Message reminders
 
 * [Create a message reminder](/api/create-message-reminder)
 * [Get reminders](/api/get-reminders)
 * [Delete a reminder](/api/delete-reminder)
 
-#### Drafts
+## Drafts
 
 * [Get drafts](/api/get-drafts)
 * [Create drafts](/api/create-drafts)
@@ -46,14 +46,14 @@
 * [Edit a saved snippet](/api/edit-saved-snippet)
 * [Delete a saved snippet](/api/delete-saved-snippet)
 
-#### Navigation views
+## Navigation views
 
 * [Get all navigation views](/api/get-navigation-views)
 * [Add a navigation view](/api/add-navigation-view)
 * [Update the navigation view](/api/edit-navigation-view)
 * [Remove a navigation view](/api/remove-navigation-view)
 
-#### Channels
+## Channels
 
 * [Get subscribed channels](/api/get-subscriptions)
 * [Subscribe to a channel](/api/subscribe)
@@ -81,7 +81,7 @@
 * [Reorder channel folders](/api/patch-channel-folders)
 * [Update a channel folder](/api/update-channel-folder)
 
-#### Users
+## Users
 
 * [Get a user](/api/get-user)
 * [Get a user by email](/api/get-user-by-email)
@@ -122,7 +122,7 @@
 * [Get a bot's API key](/api/get-bot-api-key)
 * [Regenerate a bot's API key](/api/regenerate-bot-api-key)
 
-#### Invitations
+## Invitations
 
 * [Get all invitations](/api/get-invites)
 * [Send invitations](/api/send-invites)
@@ -131,7 +131,7 @@
 * [Revoke an email invitation](/api/revoke-email-invite)
 * [Revoke a reusable invitation link](/api/revoke-invite-link)
 
-#### Server & organizations
+## Server & organizations
 
 * [Get server settings](/api/get-server-settings)
 * [Get linkifiers](/api/get-linkifiers)
@@ -153,14 +153,14 @@
 * [Get data export consent state](/api/get-realm-export-consents)
 * [Test welcome bot custom message](/api/test-welcome-bot-custom-message)
 
-#### Real-time events
+## Real-time events
 
 * [Real time events API](/api/real-time-events)
 * [Register an event queue](/api/register-queue)
 * [Get events from an event queue](/api/get-events)
 * [Delete an event queue](/api/delete-queue)
 
-#### Specialty endpoints
+## Specialty endpoints
 
 * [Fetch an API key (production)](/api/fetch-api-key)
 * [Fetch an API key (development only)](/api/dev-fetch-api-key)
