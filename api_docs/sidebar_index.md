@@ -1,5 +1,3 @@
-## REST API
-
 * [Overview](/api/rest)
 * [Installation instructions](/api/installation-instructions)
 * [API keys](/api/api-keys)
