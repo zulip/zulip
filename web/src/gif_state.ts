@@ -12,6 +12,13 @@ export function is_tenor_enabled(): boolean {
     );
 }
 
+export function is_klipy_enabled(): boolean {
+    return (
+        realm.klipy_api_key !== "" &&
+        realm.realm_gif_rating_policy !== realm.gif_rating_policy_options.disabled.id
+    );
+}
+
 export function is_giphy_enabled(): boolean {
     return (
         realm.giphy_api_key !== "" &&

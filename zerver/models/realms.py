@@ -694,6 +694,7 @@ class Realm(models.Model):
         # Source:
         # 1. https://developers.giphy.com/docs/optional-settings/#rating
         # 2. https://developers.google.com/tenor/guides/content-filtering#ContentFilter-options
+        # 3. https://docs.klipy.com/migrate-from-tenor/content-filtering
         "g": {
             "name": gettext_lazy("Allow GIFs rated G (General audience)"),
             "id": 1,
