@@ -12181,7 +12181,11 @@ paths:
                           The value for the custom profile field, or `null`
                           to unset it. For USER-type fields, pass a list of
                           user IDs instead of a string.
-                  example: [{"id": 9, "value": "some data"}, {"id": 11, "value": [1, 2]}]
+                  example:
+                    [
+                      {"id": 9, "value": "some data"},
+                      {"id": 11, "value": [1, 2]},
+                    ]
                   description: |
                     A list of objects, each containing the `id` of a custom
                     profile field and the `value` to set for it.
