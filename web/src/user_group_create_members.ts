@@ -9,6 +9,7 @@ import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
+import * as resize from "./resize.ts";
 import {current_user} from "./state_data.ts";
 import type {CombinedPillContainer} from "./typeahead_helper.ts";
 import * as user_group_components from "./user_group_components.ts";
@@ -36,6 +37,7 @@ function add_members(user_ids: number[], subgroup_ids: number[]): void {
     user_group_create_members_data.add_user_ids(user_ids);
     user_group_create_members_data.add_subgroup_ids(subgroup_ids);
     redraw_member_list();
+    resize.resize_group_creation_members_list();
 }
 
 function soft_remove_user_id(user_id: number): void {
@@ -68,6 +70,7 @@ function sync_members(user_ids: number[], subgroup_ids: number[]): void {
     user_group_create_members_data.sync_user_ids(user_ids);
     user_group_create_members_data.sync_subgroup_ids(subgroup_ids);
     redraw_member_list();
+    resize.resize_group_creation_members_list();
 }
 
 function build_pill_widget({$parent_container}: {$parent_container: JQuery}): void {
@@ -85,6 +88,7 @@ function build_pill_widget({$parent_container}: {$parent_container: JQuery}): vo
         // logic of when to remove a user and when not to depending upon
         // their channel and individual pills.
         onPillRemoveAction: sync_members,
+        onTextInputCallback: resize.resize_stream_creation_subscribers_list,
     });
 }
 
