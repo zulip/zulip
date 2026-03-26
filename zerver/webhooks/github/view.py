@@ -76,6 +76,13 @@ PAGE_BUILD_STATUS_EMOJI: dict[str, str] = {
     "building": ":working_on_it:",
 }
 
+PULL_REQUEST_REVIEW_STATE_EMOJI: dict[str, str] = {
+    "approved": ":check:",
+    "changes_requested": ":cross_mark:",
+    "commented": ":speech_balloon:",
+    "dismissed": ":no_entry:",
+}
+
 TOPIC_FOR_DISCUSSION = "{repo} discussion #{number}: {title}"
 DISCUSSION_TEMPLATES = {
     "created": "{sender} created [discussion #{discussion_number}]({url}) in {category}:\n\n{body_fence} quote\n### {title}\n{body}\n{body_fence}",
@@ -697,11 +704,14 @@ def get_pull_request_ready_for_review_body(helper: Helper) -> str:
 def get_pull_request_review_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
+    review_state = payload["review"]["state"].tame(check_string)
+    emoji = PULL_REQUEST_REVIEW_STATE_EMOJI.get(review_state, "")
+    prefix = f"{emoji} " if emoji else ""
     title = "for #{} {}".format(
         payload["pull_request"]["number"].tame(check_int),
         payload["pull_request"]["title"].tame(check_string),
     )
-    return get_pull_request_event_message(
+    body = get_pull_request_event_message(
         user_name=get_sender_name(helper),
         action="submitted",
         url=payload["review"]["html_url"].tame(check_string),
@@ -709,6 +719,7 @@ def get_pull_request_review_body(helper: Helper) -> str:
         title=title if include_title else None,
         message=payload["review"]["body"].tame(check_none_or(check_string)),
     )
+    return f"{prefix}{body}"
 
 
 def get_pull_request_review_request_removed_body(helper: Helper) -> str:
