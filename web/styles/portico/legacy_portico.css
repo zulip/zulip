@@ -58,8 +58,28 @@ html {
     z-index: 100;
 }
 
-.portico-container.help .header .top-links {
-    display: none;
+.portico-container.help .header {
+    position: sticky;
+    top: 0;
+    background-color: hsl(0deg 0% 98%);
+
+    & a {
+        text-decoration: none;
+    }
+
+    .header-main {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .top-links {
+        display: none;
+    }
+
+    #skip-navigation {
+        background-color: var(--color-link);
+    }
 }
 
 .navbar.footer .nav {
@@ -114,7 +134,7 @@ html {
 
     box-shadow: 0 -20px 50px hsl(0deg 0% 0% / 4%);
 
-    color: hsl(0deg 0% 27%);
+    color: hsl(223deg 6% 25%);
 
     .hamburger {
         display: none;
@@ -269,6 +289,10 @@ html {
     width: calc(100vw - 300px);
     height: calc(100% - 59px);
 
+    .content {
+        padding-top: 10px;
+    }
+
     /* Restore element styles that Bootstrap previously provided. */
     & p {
         margin: 0 0 10px;
@@ -279,7 +303,7 @@ html {
     }
 
     & h1 {
-        margin-top: 10px;
+        margin-top: 15px;
     }
 
     & h4 {
@@ -312,6 +336,40 @@ html {
         padding-bottom: 0;
     }
 
+    /* Match the link styling from marketing/case-study pages. */
+    & a {
+        color: var(--color-link);
+        text-decoration: underline;
+        text-decoration-color: var(--color-link-underline);
+        text-underline-offset: 0.1176em;
+        font-weight: inherit;
+
+        &:hover {
+            color: var(--color-link-hover);
+            text-decoration-color: var(--color-link-underline-hover);
+        }
+
+        & code {
+            color: var(--color-link);
+        }
+    }
+
+    & ol > li::before {
+        background-color: var(--color-link);
+    }
+
+    .copy-to-clipboard-button:focus {
+        outline-color: var(--color-link);
+    }
+
+    .tabbed-section ul.nav li.active {
+        color: var(--color-link);
+    }
+
+    .api-field-type {
+        color: hsl(210deg 50% 45%);
+    }
+
     & :target {
         scroll-margin-top: 59px;
     }
@@ -330,8 +388,8 @@ html {
         /* ...but maintain apparent top and bottom margin;
         pull left and right into the gutter. */
         margin: 20px -8px 10px;
-        /* Derive highlight color from sidebar, here with 30% alpha */
-        background-color: hsl(152deg 70% 50% / 25%);
+        /* Derive highlight color from brand link hue, here with 30% alpha */
+        background-color: hsl(210deg 70% 50% / 25%);
     }
 }
 
