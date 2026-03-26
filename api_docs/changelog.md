@@ -22,8 +22,8 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 481**
 
-* [`PATCH /users/me/profile_data`](/api/updateOwnProfileData): New endpoint to update the current user's custom profile field data.
-* [`DELETE /users/me/profile_data`](/api/removeOwnProfileData): New endpoint to remove the current user's custom profile field data.
+* [`PATCH /users/me/profile_data`](/api/update-own-profile-data): New endpoint to update the current user's custom profile field data.
+* [`DELETE /users/me/profile_data`](/api/remove-own-profile-data): New endpoint to remove the current user's custom profile field data.
 
 **Feature level 480**
 
