@@ -368,6 +368,10 @@ p.n-margin {
     box-shadow: 0 1px 0 0 var(--color-background);
 }
 
+#header-container {
+    position: relative;
+}
+
 #navbar-middle .column-middle-inner,
 .header,
 #message_view_header {
