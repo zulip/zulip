@@ -1,0 +1,46 @@
+{
+  "guild": {
+    "id": "guild001",
+    "name": "Test Server",
+    "iconUrl": "_media/server-icon.png"
+  },
+  "channel": {
+    "id": "101",
+    "type": "GuildTextChat",
+    "categoryId": "10",
+    "category": "Text",
+    "name": "random",
+    "topic": "Random stuff"
+  },
+  "dateRange": {
+    "after": null,
+    "before": null
+  },
+  "messages": [
+    {
+      "id": "msg101",
+      "type": "Default",
+      "timestamp": "2026-01-01T11:00:00+00:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "Random message here",
+      "author": {
+        "id": "user002",
+        "name": "bob",
+        "discriminator": "0",
+        "nickname": "Bob Jones",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "_media/avatar-user2.png"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": []
+    }
+  ],
+  "messageCount": 1
+}
