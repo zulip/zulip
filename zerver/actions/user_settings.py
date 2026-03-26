@@ -339,6 +339,15 @@ def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -
     event = {"type": "clear_push_device_tokens", "user_profile_id": user_profile.id}
     queue_event_on_commit("deferred_work", event)
 
+    # This payload is consumed by the Tornado server itself, causing
+    # it to purge its in-memory cache.  Clients do not receive this event.
+    payload = dict(user_id=user_profile.id, full_name=user_profile.full_name)
+    send_event_on_commit(
+        user_profile.realm,
+        dict(type="realm_user", op="api_key_changed", person=payload),
+        [user_profile.id],
+    )
+
     return new_api_key
 
 
