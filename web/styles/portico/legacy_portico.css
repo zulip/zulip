@@ -138,16 +138,16 @@ html {
         height: calc(100vh - 59px);
         top: 59px;
 
-        border-right: 1px solid hsl(219deg 10% 97%);
+        border-right: 1px solid hsl(0deg 0% 88%);
         position: sticky;
 
-        background-color: hsl(153deg 32% 55%);
-        color: hsl(0deg 0% 100%);
+        background-color: hsl(0deg 0% 96%);
+        color: hsl(223deg 6% 35%);
 
         -webkit-overflow-scrolling: touch;
 
         --help-sidebar-padding: 20px;
-        --help-sidebar-indent: 12px;
+        --help-sidebar-indent: 0px;
 
         .content {
             padding: 10px var(--help-sidebar-padding);
@@ -178,27 +178,28 @@ html {
         & h1,
         h2,
         h3 {
-            &:not(:first-of-type) {
-                margin-top: 0;
-            }
-
             & a {
                 color: inherit;
+                text-decoration: none;
                 display: block;
 
                 /* Extend to entire width of sidebar, not just link area */
                 margin-left: calc(0px - var(--help-sidebar-padding));
                 margin-right: calc(0px - var(--help-sidebar-padding));
-                padding-left: calc(var(--help-sidebar-padding));
-                padding-right: calc(var(--help-sidebar-padding));
+                padding: 6px var(--help-sidebar-padding);
             }
         }
 
         & h2 {
-            font-weight: 400;
-            font-size: 1.1em;
+            font-weight: 700;
+            font-size: 1.15em;
             line-height: 1.05;
+            margin-top: 20px;
             margin-bottom: 5px;
+
+            &:first-child {
+                margin-top: 0;
+            }
         }
 
         &.slide h2 {
@@ -218,7 +219,8 @@ html {
         }
 
         & ul {
-            margin: 5px 0 10px var(--help-sidebar-indent);
+            padding: 0;
+            margin: 0 0 3px var(--help-sidebar-indent);
         }
 
         &.slide ul {
@@ -230,30 +232,30 @@ html {
             list-style-type: none;
             font-size: 0.95em;
             font-weight: 400;
-            line-height: 1.7;
+            line-height: 1.3;
 
             cursor: pointer;
 
             & a {
                 color: inherit;
+                text-decoration: none;
                 display: block;
 
                 /* Extend to entire width of sidebar, not just link area */
-                margin-left: calc(
-                    0px - var(--help-sidebar-padding) -
-                        var(--help-sidebar-indent)
-                );
+                margin-left: calc(0px - var(--help-sidebar-padding));
                 margin-right: calc(0px - var(--help-sidebar-padding));
-                padding-left: calc(
-                    var(--help-sidebar-padding) + var(--help-sidebar-indent)
-                );
-                padding-right: calc(var(--help-sidebar-padding));
+                padding: 3px var(--help-sidebar-padding);
             }
         }
 
         & a {
+            &:hover {
+                color: hsl(223deg 6% 15%);
+            }
+
             &.highlighted {
-                background-color: hsl(152deg 40% 42%);
+                background-color: hsl(0deg 0% 100%);
+                color: hsl(223deg 6% 25%);
 
                 /* Don't show the focus outline for the highlighted page. */
                 outline: 0;
@@ -1079,7 +1081,7 @@ input#terminal:checked ~ #tab-terminal {
             position: fixed;
             top: 70px;
             right: calc(100% - 40px);
-            fill: hsl(0deg 0% 100%);
+            fill: hsl(223deg 6% 35%);
             z-index: 2;
             transition: 0.3s ease;
             transition-property:
