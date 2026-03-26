@@ -998,6 +998,7 @@ VIDEO_CALL_INTEGRATIONS: list[Integration] = [
 EMBEDDED_INTEGRATIONS: list[Integration] = [
     Integration("email", ["communication"]),
     Integration("giphy", ["misc"], display_name="GIPHY"),
+    Integration("klipy", ["misc"], display_name="KLIPY"),
     Integration("tenor", ["misc"], display_name="Tenor"),
 ]
 
@@ -1170,6 +1171,7 @@ INTEGRATIONS_WITHOUT_SCREENSHOTS = (
     | {
         # these integrations do not send messages
         "giphy",
+        "klipy",
         "nextcloud",
         "tenor",
         # the integration is planned to be removed

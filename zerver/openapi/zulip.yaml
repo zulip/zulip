@@ -19368,6 +19368,16 @@ paths:
                           [Tenor API TOS](https://developers.google.com/tenor/guides/api-terms).
 
                           **Changes**: New in Zulip 12.0 (feature level 442).
+                      klipy_api_key:
+                        type: string
+                        description: |
+                          Present if `klipy` is present in `fetch_event_types`.
+
+                          KLIPY API keys are meant to be sent to the clients, see the
+                          best practices in the [Migrate from Tenor documentation](https://docs.klipy.com/migrate-from-tenor/search#Best-practices).
+                          Please don't use our API key for an app unrelated to Zulip.
+
+                          **Changes**: New in Zulip 12.0 (feature level ZF-26d12a).
                       devices:
                         type: object
                         description: |

@@ -5,8 +5,8 @@ GIPHY or Tenor integrations to [add GIFs in your message][help-center-giphy] on
 a self-hosted Zulip server.
 
 :::{note}
-If API keys are configured for both integrations, Zulip will prioritize Tenor.
-In this case, the GIF picker will use Tenor instead of GIPHY.
+If API keys are configured for multiple integrations, Zulip will prioritize
+Tenor, followed by KLIPY, and then GIPHY.
 :::
 
 ## GIPHY
@@ -98,5 +98,47 @@ Zulip server. Your users can now use the integration as described in
 [the help center article][help-center-giphy]. (A browser reload may
 be required).
 
+## KLIPY
+
+To enable the KLIPY GIF integration, you will need to create
+a test or production API key from KLIPY.
+
+### Create a KLIPY API key
+
+1. On the KLIPY Developer page, navigate to the [API Keys section](https://partner.klipy.com/api-keys)
+
+1. Select **Add Platform** and enter the details of your Zulip server.
+
+1. In the **Create API Key** modal, enter the relevant details and select **Create**.
+
+1. You will receive a [rate-limited][klipy-api-key-rate-limit] test API key, which
+   may be sufficient for smaller Zulip servers.
+
+1. (_optional_) If the test API key rate limit is too low for your Zulip server,
+   you can click on the **three-dot button** on the right and select **Request Production**.
+   Enter the necessary details and select **Apply**.
+
+1. Store the newly generated API key.
+
+You can then configure your Zulip server to use the KLIPY API
+as follows:
+
+1. In `/etc/zulip/settings.py`, enter your KLIPY API key as
+   `KLIPY_API_KEY = "<Your API key>"`.
+
+   Just like GIPHY API keys, KLIPY API keys are not secrets -- KLIPY expects
+   every browser or other client connecting to your Zulip server will
+   receive a copy -- which is why they are configured in `settings.py` and not
+   `zulip-secrets.conf`.
+
+1. Restart the Zulip server with
+   `/home/zulip/deployments/current/scripts/restart-server`.
+
+Congratulations! You've configured the KLIPY integration for your
+Zulip server. Your users can now use the integration as described in
+[the help center article][help-center-giphy]. (A browser reload may
+be required).
+
 [help-center-giphy]: https://zulip.com/help/animated-gifs-from-giphy
 [giphy-dashboard]: https://developers.giphy.com/dashboard/
+[klipy-api-key-rate-limit]: https://partner.klipy.com/faqs#4
