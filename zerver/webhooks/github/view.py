@@ -70,6 +70,12 @@ COMMIT_STATUS_EMOJI: dict[str, str] = {
     "pending": ":working_on_it:",
 }
 
+PAGE_BUILD_STATUS_EMOJI: dict[str, str] = {
+    "built": ":check:",
+    "errored": ":cross_mark:",
+    "building": ":working_on_it:",
+}
+
 TOPIC_FOR_DISCUSSION = "{repo} discussion #{number}: {title}"
 DISCUSSION_TEMPLATES = {
     "created": "{sender} created [discussion #{discussion_number}]({url}) in {category}:\n\n{body_fence} quote\n### {title}\n{body}\n{body_fence}",
@@ -611,7 +617,10 @@ def get_page_build_body(helper: Helper) -> str:
             ),
         )
 
-    return "GitHub Pages build, triggered by {}, {}.".format(
+    emoji = PAGE_BUILD_STATUS_EMOJI.get(status, "")
+    prefix = f"{emoji} " if emoji else ""
+    return "{}GitHub Pages build, triggered by {}, {}.".format(
+        prefix,
         payload["build"]["pusher"]["login"].tame(check_string),
         action,
     )
