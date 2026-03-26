@@ -73,6 +73,23 @@ html {
         justify-content: space-between;
     }
 
+    .logo {
+        .brand-logo path {
+            fill: hsl(223deg 6% 35%);
+        }
+
+        .light {
+            font-size: 0;
+            opacity: 1;
+
+            & a {
+                font-size: 1.4rem;
+                margin-left: 10px;
+                color: hsl(223deg 6% 35%);
+            }
+        }
+    }
+
     .top-links {
         display: none;
     }
