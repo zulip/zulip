@@ -1517,8 +1517,8 @@ def _get_recent_conversations_via_direct_message_group(
     user_profile_id: int,
 ) -> list[tuple[int, int]]:
     """
-    This functions fetches the most recent conversations given that all
-    private messages of this user are through direct message groups.
+    This function fetches the most recent 1:1 conversations with this
+    user which were through direct message groups.
     """
     RECENT_CONVERSATIONS_LIMIT = 1000
 
@@ -1530,7 +1530,13 @@ def _get_recent_conversations_via_direct_message_group(
     )
 
     return list(
-        Message.objects.filter(id__in=recent_pm_message_ids)
+        # When all DMs are through direct message groups, and not
+        # personal recipients, the recipient__type limit can be
+        # removed.
+        Message.objects.filter(
+            id__in=recent_pm_message_ids,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+        )
         .values("recipient_id")
         .annotate(max_message_id=Max("id"))
         .values_list("recipient_id", "max_message_id")
