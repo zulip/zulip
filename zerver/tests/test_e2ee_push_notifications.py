@@ -11,6 +11,7 @@ from firebase_admin.messaging import UnregisteredError
 from typing_extensions import override
 
 from analytics.models import RealmCount
+from corporate.lib.stripe import BillingUserCounts
 from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.devices import b64encode_token_id_int
@@ -465,8 +466,8 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             self.mock_fcm() as mock_fcm_messaging,
             self.mock_apns() as send_notification,
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                return_value=10,
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(10, 0),
             ),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
             self.assertLogs("zilencer.lib.push_notifications", level="INFO") as zilencer_logger,
@@ -612,8 +613,8 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
 
         with (
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                return_value=100,
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(100, 0),
             ),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
         ):
@@ -900,8 +901,8 @@ class RemovePushNotificationTest(E2EEPushNotificationTestCase):
             self.mock_fcm() as mock_fcm_messaging,
             self.mock_apns() as send_notification,
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                return_value=10,
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(10, 0),
             ),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
             self.assertLogs("zilencer.lib.push_notifications", level="INFO"),
@@ -1137,8 +1138,8 @@ class SendTestPushNotificationTest(E2EEPushNotificationTestCase):
             self.mock_fcm() as mock_fcm_messaging,
             self.mock_apns() as send_notification,
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                return_value=10,
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(10, 0),
             ),
             self.assertLogs("zilencer.lib.push_notifications", level="INFO"),
             self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
@@ -1258,7 +1259,7 @@ class SendTestPushNotificationTest(E2EEPushNotificationTestCase):
         registered_device_android.delete()
 
         with mock.patch(
-            "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-            return_value=10,
+            "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+            return_value=BillingUserCounts(10, 0),
         ):
             assert_error_response("No active registered push device", 400)

@@ -22,6 +22,7 @@ from requests.exceptions import ConnectionError
 from typing_extensions import override
 
 from analytics.models import RealmCount
+from corporate.lib.stripe import BillingUserCounts
 from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_update_message_flags
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_regenerate_api_key
@@ -595,8 +596,8 @@ class PushBouncerNotificationTest(BouncerTestCase):
             mock.patch("zilencer.views.send_android_push_notification", return_value=1),
             mock.patch("zilencer.views.send_apple_push_notification", return_value=1),
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                return_value=10,
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(10, 0),
             ),
             self.assertLogs("zilencer.views", level="INFO"),
         ):
@@ -670,8 +671,8 @@ class PushBouncerNotificationTest(BouncerTestCase):
             ) as android_push,
             mock.patch("zilencer.views.send_apple_push_notification", return_value=1) as apple_push,
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                return_value=10,
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(10, 0),
             ),
             time_machine.travel(time_sent, tick=False),
             self.assertLogs("zilencer.views", level="INFO") as logger,

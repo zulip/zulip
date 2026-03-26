@@ -573,6 +573,12 @@ class EventStatusRequest:
     stripe_invoice_id: str | None
 
 
+@dataclass
+class BillingUserCounts:
+    workplace_users: int
+    non_workplace_users: int
+
+
 class SupportType(Enum):
     approve_sponsorship = 1
     update_sponsorship_status = 2
@@ -735,7 +741,9 @@ class BillingSession(ABC):
         pass
 
     @abstractmethod
-    def current_count_for_billed_licenses(self, event_time: datetime | None = None) -> int:
+    def current_counts_for_billed_users(
+        self, event_time: datetime | None = None
+    ) -> BillingUserCounts:
         pass
 
     @abstractmethod
@@ -1782,7 +1790,7 @@ class BillingSession(ABC):
         return self.create_stripe_invoice_and_charge(updated_metadata)
 
     def stale_seat_count_check(self, request_seat_count: int, tier: int) -> int:
-        current_seat_count = self.current_count_for_billed_licenses()
+        current_seat_count = self.current_counts_for_billed_users().workplace_users
         minimum_seat_count = self.min_licenses_for_plan(tier)
         if request_seat_count == minimum_seat_count and current_seat_count < minimum_seat_count:
             # Continue to use the minimum licenses for the plan tier.
@@ -2307,7 +2315,7 @@ class BillingSession(ABC):
         if plan.automanage_licenses:
             return
 
-        if self.current_count_for_billed_licenses() > renewal_license_count:
+        if self.current_counts_for_billed_users().workplace_users > renewal_license_count:
             raise BillingError(
                 f"Customer has not manually updated plan for current license count: {plan.customer!s}"
             )
@@ -2581,7 +2589,7 @@ class BillingSession(ABC):
         licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
         assert licenses_at_next_renewal is not None
         min_licenses_for_plan = self.min_licenses_for_plan(plan.tier)
-        seat_count = self.current_count_for_billed_licenses()
+        seat_count = self.current_counts_for_billed_users().workplace_users
         using_min_licenses_for_plan = (
             min_licenses_for_plan == licenses_at_next_renewal
             and licenses_at_next_renewal > seat_count
@@ -2859,7 +2867,7 @@ class BillingSession(ABC):
         if setup_payment_by_invoice:
             initial_upgrade_request.manual_license_management = True
 
-        seat_count = self.current_count_for_billed_licenses()
+        seat_count = self.current_counts_for_billed_users().workplace_users
         using_min_licenses_for_plan = min_licenses_for_plan > seat_count
         if using_min_licenses_for_plan:
             seat_count = min_licenses_for_plan
@@ -3130,7 +3138,7 @@ class BillingSession(ABC):
             validate_licenses(
                 plan.charge_automatically,
                 licenses,
-                self.current_count_for_billed_licenses(),
+                self.current_counts_for_billed_users().workplace_users,
                 plan.customer.exempt_from_license_number_check,
                 self.min_licenses_for_plan(plan.tier),
             )
@@ -3166,7 +3174,7 @@ class BillingSession(ABC):
             validate_licenses(
                 plan.charge_automatically,
                 licenses_at_next_renewal,
-                self.current_count_for_billed_licenses(),
+                self.current_counts_for_billed_users().workplace_users,
                 plan.customer.exempt_from_license_number_check,
                 self.min_licenses_for_plan(plan.tier, is_plan_free_trial_with_invoice_payment),
             )
@@ -3893,7 +3901,7 @@ class BillingSession(ABC):
     ) -> None:
         if licenses is not None:
             if not plan.customer.exempt_from_license_number_check:
-                assert self.current_count_for_billed_licenses() <= licenses
+                assert self.current_counts_for_billed_users().workplace_users <= licenses
             assert licenses > plan.licenses()
             LicenseLedger.objects.create(
                 plan=plan,
@@ -3927,7 +3935,7 @@ class BillingSession(ABC):
         if licenses is not None and customer.exempt_from_license_number_check:
             return licenses
 
-        current_licenses_count = self.current_count_for_billed_licenses(event_time)
+        current_licenses_count = self.current_counts_for_billed_users(event_time).workplace_users
         min_licenses_for_plan = self.min_licenses_for_plan(tier)
         if customer.exempt_from_license_number_check:  # nocoverage
             billed_licenses = current_licenses_count
@@ -4234,8 +4242,11 @@ class RealmBillingSession(BillingSession):
         return self.user.delivery_email
 
     @override
-    def current_count_for_billed_licenses(self, event_time: datetime | None = None) -> int:
-        return get_latest_seat_count(self.realm)
+    def current_counts_for_billed_users(
+        self, event_time: datetime | None = None
+    ) -> BillingUserCounts:
+        workplace_users = get_latest_seat_count(self.realm)
+        return BillingUserCounts(workplace_users, non_workplace_users=0)
 
     @override
     def get_audit_log_event(self, event_type: BillingSessionEventType) -> int:
@@ -4595,13 +4606,18 @@ class RemoteRealmBillingSession(BillingSession):
         return self.remote_billing_user.email
 
     @override
-    def current_count_for_billed_licenses(self, event_time: datetime | None = None) -> int:
+    def current_counts_for_billed_users(
+        self, event_time: datetime | None = None
+    ) -> BillingUserCounts:
         if has_stale_audit_log(self.remote_realm.server):
             raise MissingDataError
         remote_realm_counts = get_remote_realm_guest_and_non_guest_count(
             self.remote_realm, event_time
         )
-        return remote_realm_counts.non_guest_user_count + remote_realm_counts.guest_user_count
+        workplace_users = (
+            remote_realm_counts.non_guest_user_count + remote_realm_counts.guest_user_count
+        )
+        return BillingUserCounts(workplace_users, non_workplace_users=0)
 
     def missing_data_error_page(self, request: HttpRequest) -> HttpResponse:  # nocoverage
         # The RemoteRealm error page code path should not really be
@@ -5038,13 +5054,18 @@ class RemoteServerBillingSession(BillingSession):
         return self.remote_billing_user.email
 
     @override
-    def current_count_for_billed_licenses(self, event_time: datetime | None = None) -> int:
+    def current_counts_for_billed_users(
+        self, event_time: datetime | None = None
+    ) -> BillingUserCounts:
         if has_stale_audit_log(self.remote_server):
             raise MissingDataError
         remote_server_counts = get_remote_server_guest_and_non_guest_count(
             self.remote_server.id, event_time
         )
-        return remote_server_counts.non_guest_user_count + remote_server_counts.guest_user_count
+        workplace_users = (
+            remote_server_counts.non_guest_user_count + remote_server_counts.guest_user_count
+        )
+        return BillingUserCounts(workplace_users, non_workplace_users=0)
 
     def missing_data_error_page(self, request: HttpRequest) -> HttpResponse:  # nocoverage
         # The remedy for a RemoteZulipServer login is usually
@@ -5997,7 +6018,9 @@ def get_push_status_for_remote_request(
     user_count: int | None = None
     if current_plan is None:
         try:
-            user_count = user_count_billing_session.current_count_for_billed_licenses()
+            user_count = (
+                user_count_billing_session.current_counts_for_billed_users().workplace_users
+            )
         except MissingDataError:
             return PushNotificationsEnabledStatus(
                 can_push=False,
@@ -6030,7 +6053,7 @@ def get_push_status_for_remote_request(
         )
 
     try:
-        user_count = user_count_billing_session.current_count_for_billed_licenses()
+        user_count = user_count_billing_session.current_counts_for_billed_users().workplace_users
     except MissingDataError:
         user_count = None
 

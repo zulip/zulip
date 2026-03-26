@@ -329,7 +329,9 @@ def get_plan_data_for_support_view(
             plan_data.licenses_used = None
         elif user_count is None:
             try:
-                plan_data.licenses_used = billing_session.current_count_for_billed_licenses()
+                plan_data.licenses_used = (
+                    billing_session.current_counts_for_billed_users().workplace_users
+                )
             except MissingDataError:  # nocoverage
                 plan_data.warning += USER_DATA_STALE_WARNING
                 plan_data.licenses_used = None
