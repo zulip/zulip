@@ -199,8 +199,6 @@ export function ajaxSubscribe(
     $button_elem: JQuery | undefined,
 ): void {
     // Subscribe yourself to a single stream.
-    let true_stream_name;
-
     if ($stream_row !== undefined) {
         display_subscribe_toggle_spinner($stream_row);
     }
@@ -221,13 +219,8 @@ export function ajaxSubscribe(
                 })
                 .parse(xhr.responseJSON);
             if (Object.keys(res.already_subscribed).length > 0) {
-                // Display the canonical stream capitalization.
-                true_stream_name = res.already_subscribed[current_user.user_id]![0];
                 ui_report.success(
-                    $t_html(
-                        {defaultMessage: "Already subscribed to {channel}"},
-                        {channel: true_stream_name},
-                    ),
+                    $t_html({defaultMessage: "Already subscribed"}),
                     $(".stream_change_property_info"),
                 );
             }
@@ -248,7 +241,7 @@ export function ajaxSubscribe(
                 buttons.hide_button_loading_indicator($button_elem);
             }
             ui_report.error(
-                $t_html({defaultMessage: "Error adding subscription"}),
+                $t_html({defaultMessage: "Error subscribing"}),
                 xhr,
                 $(".stream_change_property_info"),
             );
@@ -290,7 +283,7 @@ function ajaxUnsubscribe(
                 buttons.hide_button_loading_indicator($button_elem);
             }
             ui_report.error(
-                $t_html({defaultMessage: "Error removing subscription"}),
+                $t_html({defaultMessage: "Error unsubscribing"}),
                 xhr,
                 $(".stream_change_property_info"),
             );
