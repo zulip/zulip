@@ -3,6 +3,9 @@
 </div>
 <div class="subscription_settings" data-stream-id="{{sub.stream_id}}">
     <div class="inner-box">
+        <div class="small-window-alert-notification-container">
+            <div class="stream_change_property_info alert-notification"></div>
+        </div>
         <div class="stream-creation-confirmation-banner"></div>
         <div class="stream_section" data-stream-section="general">
             {{#with sub}}
@@ -17,7 +20,6 @@
                 <div class="stream-name">
                     <span class="sub-stream-name" data-tippy-content="{{name}}">{{name}}</span>
                 </div>
-                <div class="stream_change_property_info alert-notification"></div>
                 <div class="button-group" {{#unless can_change_name_description}}style="display:none"{{/unless}}>
                     {{> ../components/icon_button
                       icon="edit"

@@ -494,6 +494,23 @@ h4.user_group_setting_subsection_title {
                 display: flex;
                 width: 100%;
 
+                /* This works in tandem with ".small-window-alert-notification-container"
+                   in the right pane body. */
+                .large-window-alert-notification-container {
+                    display: flex;
+
+                    @media (width < $sm_min) {
+                        display: none;
+                    }
+
+                    .stream_change_property_info {
+                        margin-right: 1px;
+                        font-weight: 400;
+                        font-size: var(--base-font-size-px);
+                        min-width: max-content;
+                    }
+                }
+
                 .selected-stream,
                 .selected-group {
                     overflow: hidden;
@@ -1244,11 +1261,6 @@ h4.user_group_setting_subsection_title {
                 font-size: 1.2857em; /* 18px at 14px/em */
             }
         }
-
-        .stream_change_property_info {
-            vertical-align: top;
-            margin: 0 5px 0 0;
-        }
     }
 
     .group-description-wrapper,
@@ -1299,6 +1311,21 @@ h4.user_group_setting_subsection_title {
 
         &.show {
             display: block;
+        }
+
+        /* This works in tandem with ".large-window-alert-notification-container"
+           in the right pane title. */
+        .small-window-alert-notification-container {
+            display: none;
+
+            @media (width < $sm_min) {
+                display: flex;
+                justify-content: end;
+            }
+
+            .stream_change_property_info {
+                margin-bottom: 10px;
+            }
         }
     }
 
@@ -1553,21 +1580,6 @@ h4.user_group_setting_subsection_title {
             .button-group {
                 margin-top: -5px;
             }
-        }
-
-        .stream_change_property_info {
-            /* For small widths where there is not enough space
-            to show alert beside stream name we set its display
-            to block so it is shown in new line. But to avoid
-            it covering whole screen width we set max-width
-            so that it does not losses inline-block appearance. */
-
-            /* TODO: This will probably be not required once
-            we have tabbed navigation as button group width
-            will be smaller. */
-            display: block;
-            max-width: max-content;
-            white-space: nowrap;
         }
     }
 }
