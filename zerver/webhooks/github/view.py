@@ -63,6 +63,13 @@ DEPLOYMENT_STATUS_EMOJI: dict[str, str] = {
     "waiting": ":time_ticking:",
 }
 
+COMMIT_STATUS_EMOJI: dict[str, str] = {
+    "success": ":check:",
+    "failure": ":cross_mark:",
+    "error": ":cross_mark:",
+    "pending": ":working_on_it:",
+}
+
 TOPIC_FOR_DISCUSSION = "{repo} discussion #{number}: {title}"
 DISCUSSION_TEMPLATES = {
     "created": "{sender} created [discussion #{discussion_number}]({url}) in {category}:\n\n{body_fence} quote\n### {title}\n{body}\n{body_fence}",
@@ -612,18 +619,24 @@ def get_page_build_body(helper: Helper) -> str:
 
 def get_status_body(helper: Helper) -> str:
     payload = helper.payload
+    state = payload["state"].tame(check_string)
+    emoji = COMMIT_STATUS_EMOJI.get(state, "")
+    prefix = f"{emoji} " if emoji else ""
     if payload["target_url"]:
         status = "[{}]({})".format(
-            payload["state"].tame(check_string),
+            state,
             payload["target_url"].tame(check_string),
         )
     else:
-        status = payload["state"].tame(check_string)
-    return "[{}]({}) changed its status to {}.".format(
-        get_short_sha(payload["sha"].tame(check_string)),
-        payload["commit"]["html_url"].tame(check_string),
-        status,
-    )
+        status = state
+    if payload.get("commit"):
+        sha_link = "[{}]({})".format(
+            get_short_sha(payload["sha"].tame(check_string)),
+            payload["commit"]["html_url"].tame(check_string),
+        )
+    else:
+        sha_link = get_short_sha(payload["sha"].tame(check_string))
+    return f"{prefix}{sha_link} changed its status to {status}."
 
 
 def get_locked_or_unlocked_pull_request_body(helper: Helper) -> str:
