@@ -57,6 +57,10 @@ html {
     z-index: 100;
 }
 
+.portico-container.help .header .top-links {
+    display: none;
+}
+
 .navbar.footer .nav {
     > li {
         line-height: 56px;
