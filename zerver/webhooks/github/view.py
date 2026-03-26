@@ -52,6 +52,17 @@ CHECK_RUN_CONCLUSION_EMOJI: dict[str, str] = {
     "neutral": ":grey_question:",
     "stale": ":zzz:",
 }
+
+DEPLOYMENT_STATUS_EMOJI: dict[str, str] = {
+    "success": ":check:",
+    "failure": ":cross_mark:",
+    "error": ":cross_mark:",
+    "pending": ":working_on_it:",
+    "in_progress": ":working_on_it:",
+    "queued": ":time_ticking:",
+    "waiting": ":time_ticking:",
+}
+
 TOPIC_FOR_DISCUSSION = "{repo} discussion #{number}: {title}"
 DISCUSSION_TEMPLATES = {
     "created": "{sender} created [discussion #{discussion_number}]({url}) in {category}:\n\n{body_fence} quote\n### {title}\n{body}\n{body_fence}",
@@ -269,9 +280,10 @@ def get_deployment_body(helper: Helper) -> str:
 
 def get_change_deployment_status_body(helper: Helper) -> str:
     payload = helper.payload
-    return "Deployment changed status to {}.".format(
-        payload["deployment_status"]["state"].tame(check_string),
-    )
+    state = payload["deployment_status"]["state"].tame(check_string)
+    emoji = DEPLOYMENT_STATUS_EMOJI.get(state, "")
+    prefix = f"{emoji} " if emoji else ""
+    return f"{prefix}Deployment changed status to {state}."
 
 
 def get_create_or_delete_body(action: str, helper: Helper) -> str:
