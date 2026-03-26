@@ -1,0 +1,44 @@
+{
+    "name": "Zulip",
+    "image": "mcr.microsoft.com/devcontainers/base:debian-12",
+    "features": {
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/devcontainers/features/python:1": {}
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "esbenp.prettier-vscode",
+                "dbaeumer.vscode-eslint"
+            ],
+            "settings": {
+                "python.createEnvironment": false,
+                "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+                "python.linting.enabled": false,
+                "[python]": {
+                    "editor.formatOnSave": true,
+                    "editor.defaultFormatter": "ms-python.python"
+                }
+            }
+        }
+    },
+    "postCreateCommand": "sudo sh -c 'echo \"vscode ALL=(ALL:ALL) NOPASSWD: ALL\" > /etc/sudoers.d/vscode_postgres' && sudo sh -c 'echo \"127.0.0.1 $(hostname)\" >> /etc/hosts' && bash -c 'unset VIRTUAL_ENV && unset CONDA_PREFIX && unset CONDA_DEFAULT_ENV && unset CONDA_PROMPT_MODIFIER && unset CONDA_EXE && unset _CE_CONDA && unset _CE_M && ./tools/provision'",
+    "forwardPorts": [3000, 9080, 5432],
+    "portsAttributes": {
+        "3000": {
+            "label": "Zulip Server",
+            "onAutoForward": "notify"
+        },
+        "9080": {
+            "label": "Zulip API",
+            "onAutoForward": "notify"
+        },
+        "5432": {
+            "label": "PostgreSQL",
+            "onAutoForward": "silent"
+        }
+    }
+}
