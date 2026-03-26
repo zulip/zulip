@@ -131,6 +131,7 @@ export let update_views_filtered_on_message_property = (
     //
     // is:followed is handled via update_current_view_for_topic_visibility.
     const supported_term_types = [
+        "reaction",
         "has-image",
         "has-link",
         "has-reaction",

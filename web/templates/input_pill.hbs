@@ -24,10 +24,21 @@
             {{#if is_combined_channel_topic}}
             {{sign}}#{{combined_channel_name}} &gt;<span {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}> {{topic_display_name}}</span>
             {{else}}
+            {{#if has_reaction_emoji}}
+            {{reaction_sign}}reaction:
+            {{~#if emoji_alt_code~}}
+                &#32;:{{emoji_name}}:
+                {{~else if is_realm_emoji~}}
+                &#32;<img src="{{url}}" class="emoji" alt="{{emoji_name}}" />
+                {{~else~}}
+                &#32;<span class="emoji emoji-{{emoji_code}}" role="img" aria-label="{{emoji_name}}">:{{emoji_name}}:</span>
+            {{~/if}}
+            {{else}}
             {{#if is_empty_string_topic}}
             {{sign}}topic:{{#if topic_display_name}}<span class="empty-topic-display"> {{topic_display_name}}</span>{{/if}}
             {{else}}
             {{ display_value }}
+            {{/if}}
             {{/if}}
             {{/if}}
         </span>
