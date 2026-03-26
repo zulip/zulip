@@ -324,6 +324,13 @@ def main(options: argparse.Namespace) -> int:
             destroy_leaked_test_databases,
         )
 
+        if os.environ.get("CODESPACES") == "true":
+            print("Starting background services explicitly for GitHub Codespaces...")
+            run_as_root(["service", "postgresql", "start"])
+            run_as_root(["service", "rabbitmq-server", "start"])
+            run_as_root(["service", "redis-server", "start"])
+            run_as_root(["service", "memcached", "start"])
+
         assert settings.RABBITMQ_PASSWORD is not None
         if options.is_force or need_to_run_configure_rabbitmq([settings.RABBITMQ_PASSWORD]):
             run_as_root(["scripts/setup/configure-rabbitmq"])

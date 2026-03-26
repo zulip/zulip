@@ -1,0 +1,40 @@
+{
+    // Base development container for contributing to Zulip.
+    "name": "Zulip",
+    "image": "mcr.microsoft.com/devcontainers/base:debian-12",
+    "features": {
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/devcontainers/features/python:1": {}
+    },
+    // Editor defaults and extensions to keep local/devcontainer behavior consistent.
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "esbenp.prettier-vscode",
+                "dbaeumer.vscode-eslint"
+            ],
+            "settings": {
+                "python.createEnvironment": false,
+                "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+                "[python]": {
+                    "editor.formatOnSave": true,
+                    "editor.defaultFormatter": "ms-python.python"
+                }
+            }
+        }
+    },
+    // Run Zulip's devcontainer/codespace provisioning script after container creation.
+    "postCreateCommand": "bash tools/setup/provision-codespace",
+    // Forward Zulip's internal development services and PostgreSQL.
+    "forwardPorts": [9991],
+    "portsAttributes": {
+        // Development server proxy entrypoint for the web app.
+        "9991": {
+            "label": "Development Server Proxy",
+            "onAutoForward": "notify"
+        }
+    }
+}
