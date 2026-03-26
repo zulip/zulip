@@ -12362,10 +12362,10 @@ paths:
               schema:
                 $ref: "#/components/schemas/CodedError"
               examples:
-                invalid_profile_data:
+                field_id_not_found:
                   value:
                     result: "error"
-                    msg: "Invalid profile data."
+                    msg: "Field id 9999 not found."
                     code: "BAD_REQUEST"
     delete:
       operationId: remove-profile-data
