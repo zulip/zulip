@@ -695,6 +695,7 @@
     --stream-subscriber-list-max-height: 100%;
     --new-stream-subscriber-list-max-height: 100%;
     --group-member-list-max-height: 100%;
+    --new-group-member-list-max-height: 100%;
 
     /*
       Reusable dimensions and offsets.
