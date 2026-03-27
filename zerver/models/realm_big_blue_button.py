@@ -28,7 +28,7 @@ class BigBlueButtonOptionStr(BigBlueButtonOption):
 @dataclass(kw_only=True)
 class BigBlueButtonOptionBool(BigBlueButtonOption):
     value: bool | None = None
-    default: bool |None= False
+    default: bool | None = False
 
 
 @dataclass(kw_only=True)
@@ -123,7 +123,9 @@ def parse_boolean_option(value: str) -> bool:
     return value in {"true", "True", "1"}
 
 
-def flatten_params(options: Sequence[RealmBigBlueButton | BigBlueButtonOption]) -> dict[str, str | bool]:  # FIX
+def flatten_params(
+    options: Sequence[RealmBigBlueButton | BigBlueButtonOption],
+) -> dict[str, str | bool]:  # FIX
     create_params: dict[str, str | bool] = {}
     for option in options:
         value: str | bool = ""
@@ -144,11 +146,15 @@ def flatten_params(options: Sequence[RealmBigBlueButton | BigBlueButtonOption]) 
 
 
 def get_create_params(realm_id: int) -> dict[str, str | bool]:
-    return flatten_params(merge_big_blue_button_options_defaults(realm_id=realm_id, parameter_type="create_params"))
+    return flatten_params(
+        merge_big_blue_button_options_defaults(realm_id=realm_id, parameter_type="create_params")
+    )
 
 
 def get_join_params(realm_id: int) -> dict[str, str | bool]:
-    return flatten_params(merge_big_blue_button_options_defaults(realm_id=realm_id, parameter_type="join_params"))
+    return flatten_params(
+        merge_big_blue_button_options_defaults(realm_id=realm_id, parameter_type="join_params")
+    )
 
 
 def create_model_from_option(realm_id: int, option: str) -> RealmBigBlueButton | None:
@@ -177,7 +183,9 @@ def update_big_blue_button_option(realm_id: int, option: str, value: str | bool 
     bbb_option.save()
 
 
-def merge_big_blue_button_options_defaults(realm_id: int, parameter_type: str | None = None) -> list[RealmBigBlueButton | BigBlueButtonOption]:
+def merge_big_blue_button_options_defaults(
+    realm_id: int, parameter_type: str | None = None
+) -> list[RealmBigBlueButton | BigBlueButtonOption]:
     query = None
     if parameter_type is not None:
         query = RealmBigBlueButton.objects.filter(realm_id=realm_id, parameter_type=parameter_type)
@@ -206,7 +214,9 @@ def merge_big_blue_button_options_defaults(realm_id: int, parameter_type: str | 
     return options
 
 
-def get_all_big_blue_button_options_uncached(realm_id: int) -> dict[str, BigBlueButtonOption | None]:
+def get_all_big_blue_button_options_uncached(
+    realm_id: int,
+) -> dict[str, BigBlueButtonOption | None]:
     options: dict[str, BigBlueButtonOption | None] = {}
     bbb_options = merge_big_blue_button_options_defaults(realm_id=realm_id)
 

@@ -516,7 +516,8 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
     extra_create_params = get_create_params(realm_id)
 
     create_params = urlencode(
-        extra_create_params | {
+        extra_create_params
+        | {
             "meetingID": bigbluebutton_data["meeting_id"],
             "name": bigbluebutton_data["name"],
             "lockSettingsDisableCam": bigbluebutton_data["lock_settings_disable_cam"],
@@ -553,7 +554,8 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
     extra_join_params = get_join_params(realm_id)
 
     join_params = urlencode(
-        extra_join_params | {
+        extra_join_params
+        | {
             "meetingID": bigbluebutton_data["meeting_id"],
             # We use the moderator role only for the user who created the
             # meeting, the attendee role for everyone else, so that only

@@ -673,7 +673,9 @@ def fetch_initial_state_data(
         )
 
     if want("realm_big_blue_button_options"):
-        state["realm_big_blue_button_options"] = get_all_big_blue_button_options_uncached(realm_id=realm.id)
+        state["realm_big_blue_button_options"] = get_all_big_blue_button_options_uncached(
+            realm_id=realm.id
+        )
 
     if want("realm_domains"):
         state["realm_domains"] = get_realm_domains(realm)
