@@ -438,17 +438,12 @@ def main(options: argparse.Namespace) -> NoReturn:
         run_as_root(["rm", "/srv/zulip-py3-venv"])
 
     run_as_root(["cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
+
     if CONTINUOUS_INTEGRATION and not options.is_build_release_tarball_only:
-        if "debian" in os_families():
-            run_as_root(["systemctl", "start", "redis-server"])
-            run_as_root(["systemctl", "start", "memcached"])
-            run_as_root(["systemctl", "start", "rabbitmq-server"])
-            run_as_root(["systemctl", "start", "postgresql"])
-        else:
-            run_as_root(["service", "redis-server", "start"])
-            run_as_root(["service", "memcached", "start"])
-            run_as_root(["service", "rabbitmq-server", "start"])
-            run_as_root(["service", "postgresql", "start"])
+        run_as_root(["service", "redis-server", "start"])
+        run_as_root(["service", "memcached", "start"])
+        run_as_root(["service", "rabbitmq-server", "start"])
+        run_as_root(["service", "postgresql", "start"])
     elif "fedora" in os_families():
         # These platforms don't enable and start services on
         # installing their package, so we do that here.
