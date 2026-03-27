@@ -1300,8 +1300,10 @@ function update_recent_view_folder_filter_button(): void {
 }
 
 function hard_redraw_with_scroll_to_top(): void {
+    row_focus = 0;
     assert(topics_widget !== undefined);
     topics_widget.hard_redraw();
+    window.scrollTo(0, 0);
 }
 
 function folder_filter_click_handler(
@@ -2280,7 +2282,9 @@ export function initialize({
         const filter = this.getAttribute("data-filter");
         assert(filter !== null);
         set_filter(filter);
+        row_focus = 0;
         update_filters_view();
+        window.scrollTo(0, 0);
         revive_current_focus();
     });
 
