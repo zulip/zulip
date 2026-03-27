@@ -1586,6 +1586,31 @@ export function set_prevent_next_spinner(value: boolean): void {
     prevent_next_spinner = value;
 }
 
+export function enter_preview_mode($container: JQuery): void {
+    // Disable unneeded compose_control_buttons as we don't
+    // need them in preview mode.
+    $container.addClass("preview_mode");
+    $container.find(".preview_mode_disabled .compose_control_button").attr("tabindex", -1);
+
+    $container.find(".markdown_preview").hide();
+    $container.find(".undo_markdown_preview").show();
+    $container.find(".undo_markdown_preview").trigger("focus");
+}
+
+export function exit_preview_mode($container: JQuery): void {
+    $container.find("textarea.message-textarea").trigger("focus");
+
+    // While in preview mode we disable unneeded compose_control_buttons,
+    // so here we are re-enabling those compose_control_buttons
+    $container.removeClass("preview_mode");
+    $container.find(".preview_mode_disabled .compose_control_button").attr("tabindex", 0);
+
+    $container.find(".undo_markdown_preview").hide();
+    $container.find(".preview_message_area").hide();
+    $container.find(".preview_content").empty();
+    $container.find(".markdown_preview").show();
+}
+
 export function render_and_show_preview(
     $preview_container: JQuery,
     $preview_spinner: JQuery,

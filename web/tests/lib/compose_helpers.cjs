@@ -13,6 +13,19 @@ class FakeComposeBox {
         // Simulate DOM relationships
         this.$send_message_form.set_find_results(".message-textarea", this.$content_textarea);
 
+        // These are needed by compose_ui.enter_preview_mode() and
+        // compose_ui.exit_preview_mode(), which use $container.find().
+        const $compose = $("#compose");
+        $compose.set_find_results("textarea.message-textarea", this.$content_textarea);
+        $compose.set_find_results(
+            ".preview_mode_disabled .compose_control_button",
+            $("#compose .preview_mode_disabled .compose_control_button"),
+        );
+        $compose.set_find_results(".markdown_preview", $("#compose .markdown_preview"));
+        $compose.set_find_results(".undo_markdown_preview", $("#compose .undo_markdown_preview"));
+        $compose.set_find_results(".preview_message_area", this.$preview_message_area);
+        $compose.set_find_results(".preview_content", $("#compose .preview_content"));
+
         this.$send_message_form.set_find_results(
             ".message-limit-indicator",
             $(".message-limit-indicator"),
