@@ -28,6 +28,15 @@ IGNORED_EVENTS = [
     "worklog_updated",
 ]
 
+# Whitelist of known safe shorthand aliases -> full dot-paths within issue.fields
+CUSTOM_FIELD_ALIASES: dict[str, list[str]] = {
+    "project": ["project", "name"],
+    "version": ["fixVersions", "0", "name"],
+    "type": ["issuetype", "name"],
+    "reporter": ["reporter", "displayName"],
+    "component": ["components", "0", "name"],
+}
+
 
 def guess_zulip_user_from_jira(jira_username: str, realm: Realm) -> UserProfile | None:
     try:
@@ -98,7 +107,10 @@ def convert_jira_markup(content: str, realm: Realm) -> str:
 def get_in(payload: WildValue, keys: list[str], default: str = "") -> WildValue:
     try:
         for key in keys:
-            payload = payload[key]
+            if isinstance(payload.value, list):
+                payload = payload[int(key)]  # ← handle array index
+            else:
+                payload = payload[key]
     except (AttributeError, KeyError, TypeError, ValidationError):
         return WildValue("default", default)
     return payload
@@ -272,7 +284,27 @@ def handle_updated_issue_event(payload: WildValue, user_profile: UserProfile) ->
     return content
 
 
-def handle_created_issue_event(payload: WildValue, user_profile: UserProfile) -> str:
+def get_custom_field_lines(payload: WildValue, custom_fields: str) -> str:
+    lines = []
+    for entry in custom_fields.split(","):
+        entry = entry.strip()
+        if not entry:
+            continue
+
+        if entry in CUSTOM_FIELD_ALIASES:
+            keys = ["issue", "fields"] + CUSTOM_FIELD_ALIASES[entry]
+        else:
+            keys = ["issue", "fields"] + entry.split(".")
+
+        value = get_in(payload, keys).tame(check_string)
+        if value:
+            label = entry.split(".")[0]  # use top-level key as label
+            lines.append(f"* **{label.capitalize()}**: {value}")
+
+    return "\n".join(lines)
+
+
+def handle_created_issue_event(payload, user_profile, custom_fields: str = "") -> str:
     template = """
 {author} created {issue_string}:
 
@@ -280,7 +312,7 @@ def handle_created_issue_event(payload: WildValue, user_profile: UserProfile) ->
 * **Assignee**: {assignee}
 """.strip()
 
-    return template.format(
+    template = template.format(
         author=get_issue_author(payload),
         issue_string=get_issue_string(payload, with_title=True),
         priority=get_in(payload, ["issue", "fields", "priority", "name"]).tame(check_string),
@@ -288,6 +320,13 @@ def handle_created_issue_event(payload: WildValue, user_profile: UserProfile) ->
             check_string
         ),
     )
+
+    if custom_fields:
+        extra = get_custom_field_lines(payload, custom_fields)
+        if extra:
+            template += f"\n{extra}"
+
+    return template
 
 
 def handle_deleted_issue_event(payload: WildValue, user_profile: UserProfile) -> str:
@@ -354,6 +393,7 @@ def api_jira_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
+    custom_fields: str = "",
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     event = get_event_type(payload)
@@ -370,7 +410,10 @@ def api_jira_webhook(
         raise UnsupportedWebhookEventTypeError(event)
 
     topic_name = get_issue_topic(payload)
-    content: str = content_func(payload, user_profile)
+    if event == "jira:issue_created":
+        content = handle_created_issue_event(payload, user_profile, custom_fields=custom_fields)
+    else:
+        content = content_func(payload, user_profile)
 
     check_send_webhook_message(
         request, user_profile, topic_name, content, event, unquote_url_parameters=True

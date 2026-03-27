@@ -247,3 +247,36 @@ Adding a comment. Oh, what a comment it is!
             "Unable to parse request: Did Jira generate this event?",
             e.exception.args[0],
         )
+
+    def test_created_with_custom_fields(self) -> None:
+        expected_topic_name = "BUG-15: New bug with hook"
+        expected_message = """
+    Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
+
+    * **Priority**: Major
+    * **Assignee**: no one
+    * **Project**: Zulip
+    * **Version**: R4
+    """.strip()
+        self.check_webhook(
+            "created_v1",
+            expected_topic_name,
+            expected_message,
+            url_encoded_params={"custom_fields": "project,version"},
+        )
+
+    def test_created_with_raw_dot_syntax_custom_field(self) -> None:
+        expected_topic_name = "BUG-15: New bug with hook"
+        expected_message = """
+    Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
+
+    * **Priority**: Major
+    * **Assignee**: no one
+    * **Project**: Zulip
+    """.strip()
+        self.check_webhook(
+            "created_v1",
+            expected_topic_name,
+            expected_message,
+            url_encoded_params={"custom_fields": "project.name"},
+        )

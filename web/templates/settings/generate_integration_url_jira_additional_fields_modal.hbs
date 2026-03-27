@@ -1,0 +1,21 @@
+<div class="input-group" id="integration-url-jira-additional-fields-parameter">
+    <label class="checkbox">
+        <input
+            type="checkbox"
+            id="integration-url-jira-additional-fields-checkbox"
+            class="integration-url-parameter"
+        />
+        <span class="rendered-checkbox"></span>
+    </label>
+    <label class="inline" for="integration-url-jira-additional-fields-checkbox">
+        {{t "Additional fields to include"}}
+    </label>
+</div>
+<div class="input-group hide" id="integration-url-jira-additional-fields">
+    <label for="integration-url-jira-additional-fields-text" class="modal-label-field">
+        {{t "Which additional fields should be included in issue created notifications?"}}
+    </label>
+    <div class="pill-container">
+        <div id="integration-url-jira-additional-fields-text" class="input" contenteditable="true"></div>
+    </div>
+</div>

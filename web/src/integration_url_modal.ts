@@ -6,6 +6,7 @@ import * as z from "zod/mini";
 import render_generate_integration_url_config_checkbox_modal from "../templates/settings/generate_integration_url_config_checkbox_modal.hbs";
 import render_generate_integration_url_config_text_modal from "../templates/settings/generate_integration_url_config_text_modal.hbs";
 import render_generate_integration_url_filter_branches_modal from "../templates/settings/generate_integration_url_filter_branches_modal.hbs";
+import render_generate_integration_url_jira_additional_fields_modal from "../templates/settings/generate_integration_url_jira_additional_fields_modal.hbs";
 import render_generate_integration_url_modal from "../templates/settings/generate_integration_url_modal.hbs";
 import render_integration_events from "../templates/settings/integration_events.hbs";
 
@@ -14,6 +15,7 @@ import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget, Option} from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
+import * as input_pill from "./input_pill.ts";
 import * as branch_pill from "./integration_branch_pill.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -43,7 +45,42 @@ const url_options_schema = z.array(url_option_schema);
 const PresetUrlOption = {
     BRANCHES: "branches",
     CHANNEL_MAPPING: "mapping",
+    JIRA_CUSTOM_FIELDS: "custom_fields",
 };
+
+type JiraCustomFieldPill = {
+    type: "jira_custom_field";
+    value: string;
+};
+
+const DEFAULT_JIRA_CUSTOM_FIELDS = ["assignee", "priority"];
+
+function create_item_from_jira_custom_field_name(
+    value: string,
+    current_items: JiraCustomFieldPill[],
+): JiraCustomFieldPill | undefined {
+    const trimmed_value = value.trim();
+    const normalized_value = trimmed_value.toLowerCase();
+    const existing_fields = current_items.map((item) => item.value.toLowerCase());
+    if (trimmed_value === "" || existing_fields.includes(normalized_value)) {
+        return undefined;
+    }
+    return {
+        type: "jira_custom_field",
+        value: trimmed_value,
+    };
+}
+
+function create_jira_custom_field_pills(
+    $pill_container: JQuery,
+): input_pill.InputPillContainer<JiraCustomFieldPill> {
+    return input_pill.create({
+        $container: $pill_container,
+        create_item_from_text: create_item_from_jira_custom_field_name,
+        get_text_from_item: (item) => item.value,
+        get_display_value_from_item: (item) => item.value,
+    });
+}
 
 export function show_generate_integration_url_modal(api_key: string): void {
     const default_url_message = $t_html({defaultMessage: "Integration URL will appear here."});
@@ -79,6 +116,9 @@ export function show_generate_integration_url_modal(api_key: string): void {
         let slack_topics_dropdown_widget: DropdownWidget;
         let previous_selected_integration: string | undefined;
         let branch_pill_widget: branch_pill.BranchPillWidget | undefined;
+        let jira_custom_field_pill_widget:
+            | input_pill.InputPillContainer<JiraCustomFieldPill>
+            | undefined;
 
         const slack_topics_dropdown_widget_id = "slack-topics-dropdown";
         const $override_topic = $<HTMLInputElement>("input#integration-url-override-topic");
@@ -131,6 +171,43 @@ export function show_generate_integration_url_modal(api_key: string): void {
             update_url();
         }
 
+        function show_jira_custom_fields_ui(): void {
+            const show_additional_fields = $(
+                "#integration-url-jira-additional-fields-checkbox",
+            ).prop("checked");
+            $("#integration-url-jira-additional-fields").toggleClass(
+                "hide",
+                !show_additional_fields,
+            );
+
+            const $pill_container = $("#integration-url-jira-additional-fields .pill-container");
+            if ($pill_container.length > 0 && jira_custom_field_pill_widget === undefined) {
+                jira_custom_field_pill_widget = create_jira_custom_field_pills($pill_container);
+                jira_custom_field_pill_widget.onPillCreate(() => {
+                    update_url();
+                });
+                jira_custom_field_pill_widget.onPillRemove(() => {
+                    update_url();
+                });
+
+                for (const field_name of DEFAULT_JIRA_CUSTOM_FIELDS) {
+                    jira_custom_field_pill_widget.appendValidatedData(
+                        {
+                            type: "jira_custom_field",
+                            value: field_name,
+                        },
+                        true,
+                        true,
+                    );
+                }
+            }
+
+            if (show_additional_fields) {
+                $("#integration-url-jira-additional-fields-text").trigger("focus");
+            }
+            update_url();
+        }
+
         function set_input_disabled_state($input: JQuery, disable: boolean): void {
             $input
                 .prop("disabled", disable)
@@ -162,16 +239,35 @@ export function show_generate_integration_url_modal(api_key: string): void {
             for (const option of validated_config) {
                 let $config_element: JQuery;
 
-                if (option.key === PresetUrlOption.BRANCHES) {
+                switch (option.key) {
+                case PresetUrlOption.BRANCHES: {
                     const filter_branches_html =
                         render_generate_integration_url_filter_branches_modal();
                     $config_element = $(filter_branches_html);
                     $config_element.find("#integration-url-all-branches").on("change", () => {
                         show_branch_filtering_ui();
                     });
-                } else if (option.key === PresetUrlOption.CHANNEL_MAPPING) {
+                
+                break;
+                }
+                case PresetUrlOption.JIRA_CUSTOM_FIELDS: {
+                    const jira_additional_fields_html =
+                        render_generate_integration_url_jira_additional_fields_modal();
+                    $config_element = $(jira_additional_fields_html);
+                    $config_element
+                        .find("#integration-url-jira-additional-fields-checkbox")
+                        .on("change", () => {
+                            show_jira_custom_fields_ui();
+                        });
+                
+                break;
+                }
+                case PresetUrlOption.CHANNEL_MAPPING: {
                     continue;
-                } else if (option.validator === "check_bool") {
+                
+                break;
+                }
+                default: if (option.validator === "check_bool") {
                     const config_html = render_generate_integration_url_config_checkbox_modal({
                         key: option.key,
                         label: option.label,
@@ -193,6 +289,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
                     });
                 } else {
                     continue;
+                }
                 }
                 $config_container.append($config_element);
             }
@@ -304,13 +401,17 @@ export function show_generate_integration_url_modal(api_key: string): void {
             if (url_options) {
                 for (const option of url_options) {
                     let $input_element;
-                    if (option.key === PresetUrlOption.CHANNEL_MAPPING) {
+                    switch (option.key) {
+                    case PresetUrlOption.CHANNEL_MAPPING: {
                         const stream_input = stream_input_dropdown_widget.value();
                         if (stream_input === map_channels_option?.unique_id) {
                             params.delete("stream");
                             params.set(PresetUrlOption.CHANNEL_MAPPING, "channels");
                         }
-                    } else if (option.key === PresetUrlOption.BRANCHES) {
+                    
+                    break;
+                    }
+                    case PresetUrlOption.BRANCHES: {
                         if ($("#integration-url-all-branches").prop("checked")) {
                             continue;
                         }
@@ -326,7 +427,31 @@ export function show_generate_integration_url_modal(api_key: string): void {
                                 params.set(option.key, branch_names);
                             }
                         }
-                    } else if (option.validator === "check_bool") {
+                    
+                    break;
+                    }
+                    case PresetUrlOption.JIRA_CUSTOM_FIELDS: {
+                        if (
+                            !$("#integration-url-jira-additional-fields-checkbox").prop("checked")
+                        ) {
+                            continue;
+                        }
+
+                        const custom_fields = jira_custom_field_pill_widget
+                            ?.items()
+                            .map((item) => item.value)
+                            .filter(
+                                (value) =>
+                                    !DEFAULT_JIRA_CUSTOM_FIELDS.includes(value.toLowerCase()),
+                            )
+                            .join(",");
+                        if (custom_fields) {
+                            params.set(option.key, custom_fields);
+                        }
+                    
+                    break;
+                    }
+                    default: if (option.validator === "check_bool") {
                         $input_element = $(`#integration-url-${option.key}-checkbox`);
                         if ($input_element.prop("checked")) {
                             params.set(option.key, "true");
@@ -337,6 +462,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
                         if (value) {
                             params.set(option.key, value.toString());
                         }
+                    }
                     }
                 }
             }
@@ -561,6 +687,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
             stream_input_dropdown_widget.render(direct_messages_option.unique_id);
             $config_container.empty();
             branch_pill_widget = undefined;
+            jira_custom_field_pill_widget = undefined;
         }
     }
 

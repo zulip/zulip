@@ -60,6 +60,7 @@ class PresetUrlOption(str, Enum):
     BRANCHES = "branches"
     IGNORE_PRIVATE_REPOSITORIES = "ignore_private_repositories"
     CHANNEL_MAPPING = "mapping"
+    JIRA_CUSTOM_FIELDS = "custom_fields"
 
 
 @dataclass
@@ -98,6 +99,12 @@ class WebhookUrlOption:
                     validator=check_bool,
                 )
             case PresetUrlOption.CHANNEL_MAPPING:
+                return cls(
+                    name=config.value,
+                    label="",
+                    validator=check_string,
+                )
+            case PresetUrlOption.JIRA_CUSTOM_FIELDS:
                 return cls(
                     name=config.value,
                     label="",
