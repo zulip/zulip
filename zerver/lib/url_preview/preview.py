@@ -2,7 +2,7 @@ import re
 from collections.abc import Callable
 from re import Match
 from typing import Any
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit
 
 import magic
 import requests
@@ -95,9 +95,21 @@ def get_link_embed_data(url: str, maxwidth: int = 640, maxheight: int = 480) -> 
     # as-is; if so, we use it.  Otherwise, we use it as a _base_ for
     # the other, less sophisticated techniques which we apply as
     # successive fallbacks.
+
     data = get_oembed_data(url, maxwidth=maxwidth, maxheight=maxheight)
+    parsed = urlsplit(url)
+    is_youtube = parsed.netloc in ("youtube.com", "www.youtube.com", "youtu.be")
+
     if data is not None and isinstance(data, UrlOEmbedData):
-        return data
+        # YouTube sometimes returns consent/privacy page titles via oEmbed
+        if (
+            is_youtube
+            and data.title
+            and ("privacy" in data.title.lower() or "consent" in data.title.lower())
+        ):
+            data = None  # fallback to OpenGraph/Generic parsing
+        else:
+            return data
 
     response = PreviewSession().get(mark_sanitized(url), stream=True)
     if not response.ok:
