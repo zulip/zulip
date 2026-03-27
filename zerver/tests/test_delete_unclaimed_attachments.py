@@ -445,7 +445,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
             for _ in range(3):
                 self.make_attachment("img.png")
 
-        backend = zerver.lib.upload.upload_backend
+        backend = zerver.lib.upload.get_upload_backend()
         assert isinstance(backend, S3UploadBackend)
         uploads_bucket = backend.uploads_bucket
         with (
@@ -487,7 +487,7 @@ class UnclaimedAttachmentTest(UploadSerializeMixin, ZulipTestCase):
             clean_archived_data()
 
         # Removing unclaimed attachments now cleans them all out
-        backend = zerver.lib.upload.upload_backend
+        backend = zerver.lib.upload.get_upload_backend()
         assert isinstance(backend, S3UploadBackend)
         uploads_bucket = backend.uploads_bucket
         with (

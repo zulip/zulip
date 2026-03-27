@@ -76,7 +76,7 @@ def get_all_custom_emoji_for_realm_uncached(realm_id: int) -> dict[str, EmojiInf
         file_name=None,
     )
     d = {}
-    from zerver.lib.emoji import get_emoji_url
+    from zerver.lib.upload import get_emoji_url
 
     for realm_emoji in query.all():
         author_id = realm_emoji.author_id
