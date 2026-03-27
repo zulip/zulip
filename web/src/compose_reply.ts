@@ -565,6 +565,21 @@ function quote_single_message(opts: QuoteMessageOpts): void {
     });
 }
 
+export function all_messages_have_same_channel(messages: Message[]): boolean {
+    assert(messages.length > 0);
+    const first_message = messages[0]!;
+    if (first_message.type !== "stream") {
+        return false;
+    }
+    const target_stream_id = first_message.stream_id;
+    return messages.every((msg) => msg.type === "stream" && msg.stream_id === target_stream_id);
+}
+
+export function all_messages_are_private(messages: Message[]): boolean {
+    assert(messages.length > 0);
+    return messages.every((msg) => msg.type === "private");
+}
+
 export function all_messages_have_same_recipient(messages: Message[]): boolean {
     assert(messages.length > 0);
     // When the current narrow cannot contain multiple conversations,
@@ -591,6 +606,27 @@ export function all_messages_have_same_recipient(messages: Message[]): boolean {
             msg.stream_id === target_stream_id &&
             msg.topic.toLowerCase() === target_topic,
     );
+}
+
+type MultipleMessageStatus =
+    | "SAME_CHANNEL_DIFFERENT_TOPICS"
+    | "DIFFERENT_DM_CONVERSATIONS"
+    | "NOTHING_IN_COMMON"
+    | "SAME_RECIPIENT";
+
+export function get_multi_message_quote_status(messages: Message[]): MultipleMessageStatus {
+    if (all_messages_have_same_recipient(messages)) {
+        return "SAME_RECIPIENT";
+    }
+
+    if (all_messages_have_same_channel(messages)) {
+        return "SAME_CHANNEL_DIFFERENT_TOPICS";
+    }
+
+    if (all_messages_are_private(messages)) {
+        return "DIFFERENT_DM_CONVERSATIONS";
+    }
+    return "NOTHING_IN_COMMON";
 }
 
 function extract_range_html(range: Range, preserve_ancestors = false): string {

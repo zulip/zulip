@@ -98,6 +98,109 @@ run_test("all_messages_have_same_recipient", () => {
     );
 });
 
+run_test("all_messages_have_same_channel", () => {
+    // Assertions on empty arrays
+    assert.throws(() => compose_reply.all_messages_have_same_channel([]), Error);
+
+    // Messages involving private messages
+    assert.equal(compose_reply.all_messages_have_same_channel([msg_pm_1, msg_pm_2]), false);
+
+    // Channel messages
+    assert.ok(compose_reply.all_messages_have_same_channel([msg_stream_denmark_general]));
+    assert.ok(
+        compose_reply.all_messages_have_same_channel([
+            msg_stream_denmark_general,
+            msg_stream_denmark_design,
+        ]),
+        "Returns true for same stream ID, even if topics differ",
+    );
+    assert.equal(
+        compose_reply.all_messages_have_same_channel([
+            msg_stream_denmark_general,
+            msg_stream_sweden_general,
+        ]),
+        false,
+        "Return false if stream IDs differ",
+    );
+
+    // Mixed types of messages.
+    assert.equal(
+        compose_reply.all_messages_have_same_channel([msg_stream_denmark_general, msg_pm_1]),
+        false,
+    );
+    assert.equal(
+        compose_reply.all_messages_have_same_channel([msg_pm_1, msg_stream_denmark_general]),
+        false,
+    );
+});
+
+run_test("all_messages_are_private", () => {
+    // Assertions on empty arrays
+    assert.throws(() => compose_reply.all_messages_are_private([]), Error);
+
+    // Stream messages immediately return false
+    assert.equal(compose_reply.all_messages_are_private([msg_stream_denmark_general]), false);
+    assert.equal(
+        compose_reply.all_messages_are_private([msg_stream_denmark_general, msg_pm_1]),
+        false,
+    );
+
+    // Private messages
+    assert.ok(compose_reply.all_messages_are_private([msg_pm_1]));
+    assert.ok(
+        compose_reply.all_messages_are_private([msg_pm_1, msg_pm_3]),
+        "Returns true for private messages even if recipients differ",
+    );
+
+    // Mixed types where first is private
+    assert.equal(
+        compose_reply.all_messages_are_private([msg_pm_1, msg_stream_denmark_general]),
+        false,
+    );
+});
+
+run_test("get_multi_message_quote_status", () => {
+    set_message_lists_current(true);
+
+    const channel_1_general = {type: "stream", stream_id: 10, topic: "general"};
+    const channel_1_general_2 = {type: "stream", stream_id: 10, topic: "general"};
+    const channel_1_design = {type: "stream", stream_id: 10, topic: "design"};
+    const channel_2_general = {type: "stream", stream_id: 20, topic: "general"};
+
+    const pm_1 = {type: "private", to_user_ids: "1,2"};
+    const pm_1_b = {type: "private", to_user_ids: "1,2"};
+    const pm_2 = {type: "private", to_user_ids: "3,4"};
+
+    assert.equal(
+        compose_reply.get_multi_message_quote_status([channel_1_general, channel_1_general_2]),
+        "SAME_RECIPIENT",
+    );
+    assert.equal(compose_reply.get_multi_message_quote_status([pm_1, pm_1_b]), "SAME_RECIPIENT");
+
+    assert.equal(
+        compose_reply.get_multi_message_quote_status([channel_1_general, channel_1_design]),
+        "SAME_CHANNEL_DIFFERENT_TOPICS",
+    );
+
+    assert.equal(
+        compose_reply.get_multi_message_quote_status([pm_1, pm_2]),
+        "DIFFERENT_DM_CONVERSATIONS",
+    );
+
+    // NOTHING_IN_COMMON
+    // 1. Belong to different channels.
+    assert.equal(
+        compose_reply.get_multi_message_quote_status([channel_1_general, channel_2_general]),
+        "NOTHING_IN_COMMON",
+    );
+
+    // 2. Mixed channel and private messages
+    assert.equal(
+        compose_reply.get_multi_message_quote_status([channel_1_general, pm_1]),
+        "NOTHING_IN_COMMON",
+    );
+});
+
 run_test("get_quote_context_for_message", () => {
     set_message_lists_current(true);
 
