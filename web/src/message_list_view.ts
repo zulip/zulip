@@ -383,73 +383,44 @@ export function populate_group_from_message(
         assert(message.type === "stream");
         // stream messages have string display_recipient
         assert(typeof display_recipient === "string");
-        const color = stream_data.get_color(message.stream_id);
-        const recipient_bar_color = stream_color.get_recipient_bar_color(color);
-        const stream_privacy_icon_color = stream_color.get_stream_privacy_icon_color(color);
-        const invite_only = stream_data.is_invite_only_by_stream_id(message.stream_id);
-        const is_web_public = stream_data.is_web_public(message.stream_id);
+        const stream_id = message.stream_id;
         const topic = message.topic;
-        const topic_display_name = util.get_final_topic_display_name(topic);
-        const is_empty_string_topic = topic === "";
-        const match_topic_html = util.get_match_topic(message);
-        const stream_url = hash_util.channel_url_by_user_setting(message.stream_id);
-        const is_archived = stream_data.is_stream_archived_by_id(message.stream_id);
-        const topic_url = internal_url.by_stream_topic_url(
-            message.stream_id,
-            message.topic,
-            sub_store.maybe_get_stream_name,
-            message.id,
-        );
-
-        const sub = sub_store.get(message.stream_id);
-        let stream_id;
-        if (sub === undefined) {
-            // Hack to handle unusual cases like the tutorial where
-            // the streams used don't actually exist in the subs
-            // module.  Ideally, we'd clean this up by making the
-            // tutorial populate stream_settings_ui.ts "properly".
-            stream_id = -1;
-        } else {
-            stream_id = sub.stream_id;
-        }
-
-        const is_subscribed = stream_data.is_subscribed(stream_id);
-        const topic_is_resolved = resolved_topic.is_resolved(topic);
-        const user_can_resolve_topic = stream_data.can_resolve_topics(sub);
-        const visibility_policy = user_topics.get_topic_visibility_policy(stream_id, topic);
-        // The following field is not specific to this group, but this is the
-        // easiest way we've figured out for passing the data to the template rendering.
-        const all_visibility_policies = user_topics.all_visibility_policies;
-
-        const topic_links = message.topic_links;
-
+        const sub = sub_store.get(stream_id);
+        assert(sub !== undefined);
         return {
             message_group_id,
             message_containers: [],
             is_stream,
             ...get_topic_edit_properties(message),
-            user_can_resolve_topic,
+            user_can_resolve_topic: stream_data.can_resolve_topics(sub),
             ...subscription_markers,
             date_html,
             display_recipient,
             date_unchanged,
-            topic_links,
+            topic_links: message.topic_links,
             topic,
-            topic_display_name,
-            is_empty_string_topic,
-            recipient_bar_color,
-            stream_privacy_icon_color,
-            invite_only,
-            is_web_public,
-            match_topic_html,
-            stream_url,
-            is_archived,
-            topic_url,
+            topic_display_name: util.get_final_topic_display_name(topic),
+            is_empty_string_topic: topic === "",
+            recipient_bar_color: stream_color.get_recipient_bar_color(sub.color),
+            stream_privacy_icon_color: stream_color.get_stream_privacy_icon_color(sub.color),
+            invite_only: sub.invite_only,
+            is_web_public: sub.is_web_public,
+            match_topic_html: util.get_match_topic(message),
+            stream_url: hash_util.channel_url_by_user_setting(stream_id),
+            is_archived: sub.is_archived,
+            topic_url: internal_url.by_stream_topic_url(
+                stream_id,
+                topic,
+                sub_store.maybe_get_stream_name,
+                message.id,
+            ),
             stream_id,
-            is_subscribed,
-            topic_is_resolved,
-            visibility_policy,
-            all_visibility_policies,
+            is_subscribed: sub.subscribed,
+            topic_is_resolved: resolved_topic.is_resolved(topic),
+            visibility_policy: user_topics.get_topic_visibility_policy(stream_id, topic),
+            // The following field is not specific to this group, but this is the
+            // easiest way we've figured out for passing the data to the template rendering.
+            all_visibility_policies: user_topics.all_visibility_policies,
             always_display_date,
         };
     }

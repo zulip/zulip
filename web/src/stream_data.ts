@@ -811,19 +811,13 @@ export function can_subscribe_others(sub: StreamSubscription): boolean {
     );
 }
 
-export function can_resolve_topics(sub: StreamSubscription | undefined): boolean {
-    if (sub?.is_archived) {
+export function can_resolve_topics(sub: StreamSubscription): boolean {
+    if (sub.is_archived) {
         return false;
     }
 
     if (settings_data.user_can_resolve_topic()) {
         return true;
-    }
-
-    if (sub === undefined) {
-        // If we're in a context without a channel, only the global
-        // permission is relevant.
-        return false;
     }
 
     return settings_data.user_has_permission_for_group_setting(

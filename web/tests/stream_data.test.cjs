@@ -1651,9 +1651,7 @@ test("can_resolve_topics", ({override}) => {
     };
     stream_data.add_sub_for_tests(archived_sub);
 
-    assert.equal(stream_data.can_resolve_topics(undefined), false);
     initialize_and_override_current_user(admin_user_id, override);
-    assert.equal(stream_data.can_resolve_topics(undefined), true);
     assert.equal(stream_data.can_resolve_topics(sub), true);
     initialize_and_override_current_user(moderator_user_id, override);
     assert.equal(stream_data.can_resolve_topics(sub), false);
