@@ -10,10 +10,11 @@
        space allotted by specifying `minmax(0,1fr)`, which
        sets 0 as the minimum size, not the grid default of
        `auto`. */
-    grid-template: auto auto / 2px minmax(0, 1fr);
+    grid-template: auto auto auto / 2px minmax(0, 1fr);
     grid-template-areas:
         "message_divider_unread_marker message_feed_divider_content"
-        "message_unread_marker messagebox";
+        "message_unread_marker messagebox"
+        "moved_message_divider_unread_marker moved_message_feed_divider";
 
     border-left: 1px solid var(--color-message-list-border);
     border-right: 1px solid var(--color-message-list-border);
@@ -757,6 +758,14 @@
     &.message_unread_marker {
         grid-area: message_unread_marker;
     }
+
+    &.moved_message_divider_unread_marker {
+        grid-area: moved_message_divider_unread_marker;
+
+        /* .unread-marker-fill {
+            height: 100%;
+        } */
+    }
 }
 
 .unread-marker-fill {
@@ -1147,7 +1156,8 @@
     /* See https://stackoverflow.com/questions/2717480/css-selector-for-first-element-with-class/8539107#8539107
        for details on how this works */
     .message_row.unread {
-        .message_divider_unread_marker {
+        .message_divider_unread_marker,
+        .moved_message_divider_unread_marker {
             display: none;
         }
     }
@@ -1159,11 +1169,23 @@
             display: block;
         }
     }
+
+    .message_row.unread .moved_message_divider_unread_marker {
+        display: block;
+    }
+}
+
+.moved_message_feed_divider {
+    grid-area: moved_message_feed_divider;
 }
 
 .message_feed_divider {
-    display: grid;
     grid-area: message_feed_divider_content;
+}
+
+.moved_message_feed_divider,
+.message_feed_divider {
+    display: grid;
     grid-template: auto / minmax(20px, 1fr) auto minmax(max-content, 1fr);
     grid-template-areas: "left_divider_content middle_divider_content right_divider_content";
     align-items: center;
