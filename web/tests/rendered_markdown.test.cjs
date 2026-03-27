@@ -27,6 +27,7 @@ mock_cjs("clipboard", Clipboard);
 const realm_playground = mock_esm("../src/realm_playground");
 const copied_tooltip = mock_esm("../src/copied_tooltip");
 
+const alert_words = zrequire("alert_words");
 const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
@@ -452,11 +453,88 @@ run_test("stream-links", ({mock_template}) => {
     assert.deepEqual(topic_link_context, {
         channel_id: stream.stream_id,
         channel_name: stream.name,
-        topic_display_name: "topic name > still the topic name",
+        topic_display_name_html: "topic name > still the topic name",
         is_empty_string_topic: false,
         href: `/#narrow/channel/${stream.stream_id}-random/topic/topic.20name.20.3E.20still.20the.20topic.20name`,
     });
     assert.ok(!topic_link_rendered_html.includes("empty-topic-display"));
+});
+
+run_test("stream-links alert words", ({mock_template}) => {
+    // Setup
+    const $content = get_content_element();
+    const $stream = $.create("a.stream");
+    $stream.set_find_results(".highlight", false);
+    $stream.attr("data-stream-id", stream.stream_id);
+
+    const $stream_topic = $.create("a.stream-topic");
+    $stream_topic.set_find_results(".highlight", false);
+    $stream_topic.attr(
+        "href",
+        `/#narrow/channel/${stream.stream_id}-test/topic/important.20alert.20topic`,
+    );
+
+    $stream_topic.replaceWith = noop;
+    $stream_topic.hasClass = (class_name) => class_name === "stream-topic";
+    $stream_topic.text("#test alert > important alert topic");
+
+    $content.set_find_results("a.stream", $array([$stream]));
+    $content.set_find_results("a.stream-topic, a.message-link", $array([$stream_topic]));
+
+    let topic_link_context;
+    mock_template("topic_link.hbs", true, (data, html) => {
+        topic_link_context = data;
+        return html;
+    });
+
+    const message = {alerted: true};
+    set_message_for_message_content($content, message);
+    alert_words.set_words(["alert"]);
+
+    rm.update_elements($content);
+
+    // Final asserts - alert word "alert" should only be highlighted in topic name, not stream name
+    assert.equal($stream.text(), `#${stream.name}`);
+    assert.deepEqual(topic_link_context, {
+        channel_id: stream.stream_id,
+        channel_name: stream.name,
+        topic_display_name_html: "important <span class='alert-word'>alert</span> topic",
+        is_empty_string_topic: false,
+        href: `/#narrow/channel/${stream.stream_id}-test/topic/important.20alert.20topic`,
+    });
+
+    alert_words.set_words([]);
+});
+
+run_test("message-link alert words", ({mock_template}) => {
+    const $content = get_content_element();
+    const $message_link = $.create("a.message-link(alert)");
+    $message_link.set_find_results(".highlight", false);
+    $message_link.attr("href", `/#narrow/channel/${stream.stream_id}-random/topic/alert/near/123`);
+    $message_link.hasClass = (class_name) => class_name === "message-link";
+    $message_link.replaceWith = noop;
+    $content.set_find_results("a.stream-topic, a.message-link", $array([$message_link]));
+
+    let channel_message_link_context;
+    mock_template("channel_message_link.hbs", true, (data, html) => {
+        channel_message_link_context = data;
+        return html;
+    });
+
+    const message = {alerted: true};
+    set_message_for_message_content($content, message);
+    alert_words.set_words(["alert"]);
+
+    rm.update_elements($content);
+
+    assert.deepEqual(channel_message_link_context, {
+        channel_name: stream.name,
+        topic_display_name_html: "<span class='alert-word'>alert</span>",
+        is_empty_string_topic: false,
+        href: `/#narrow/channel/${stream.stream_id}-random/topic/alert/near/123`,
+    });
+
+    alert_words.set_words([]);
 });
 
 run_test("topic-link (empty string topic)", ({mock_template}) => {
@@ -487,7 +565,7 @@ run_test("topic-link (empty string topic)", ({mock_template}) => {
     assert.deepEqual(topic_link_context, {
         channel_id: stream.stream_id,
         channel_name: stream.name,
-        topic_display_name: `translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}`,
+        topic_display_name_html: `translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}`,
         is_empty_string_topic: true,
         href: `/#narrow/channel/${stream.stream_id}-random/topic/`,
     });
@@ -526,7 +604,7 @@ run_test("message-links", ({mock_template}) => {
     // Final asserts
     assert.deepEqual(channel_message_link_context, {
         channel_name: stream.name,
-        topic_display_name: `translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}`,
+        topic_display_name_html: `translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}`,
         is_empty_string_topic: true,
         href: `/#narrow/channel/${stream.stream_id}-test/topic//near/123`,
     });
