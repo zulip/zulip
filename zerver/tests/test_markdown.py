@@ -764,6 +764,40 @@ class MarkdownLinkTest(ZulipTestCase):
             '<p>To <a href="bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa">bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</a> or not to bitcoin</p>',
         )
 
+    def test_mentions_formatted_with_link(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        self.send_stream_message(
+            sender_user_profile, "Denmark", topic_name="some topic", content="test"
+        )
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+        check_add_user_group(
+            get_realm("zulip"),
+            "support",
+            [sender_user_profile],
+            acting_user=sender_user_profile,
+        )
+        mention_fixtures = [
+            ("user_mention", "@**King Hamlet**"),
+            ("channel_mention", "@**Denmark**"),
+            ("channel_topic_mention", "@**Denmark>topic**"),
+            ("channel_topic_message_mention", "@**Denmark>topic>@123**"),
+            ("user_group_mention", "@*support*"),
+        ]
+        mention_fixtures += [("topic_wildcard", wildcard) for wildcard in topic_wildcards]
+        mention_fixtures += [("channel_wildcard", wildcard) for wildcard in stream_wildcards]
+
+        for test_name, mention_syntax in mention_fixtures:
+            with self.subTest(test_name):
+                content = f"[{mention_syntax}](https://chat.zulip.org)"
+                self.assertEqual(
+                    render_message_markdown(msg, content).rendered_content,
+                    f'<p><a href="https://chat.zulip.org">{escape(mention_syntax)}</a></p>',
+                )
+
 
 class MarkdownEmbedsTest(ZulipTestCase):
     def assert_message_content_is(
@@ -2390,7 +2424,7 @@ class MarkdownMentionTest(ZulipTestCase):
         )
         user_id = user_profile.id
 
-        valid_characters_before_mention = ["(", "{", "[", "/", "<"]
+        valid_characters_before_mention = ["(", "{", "/", "<"]
         for character in valid_characters_before_mention:
             content = f"{character}@**King Hamlet**"
             rendering_result = render_message_markdown(msg, content)

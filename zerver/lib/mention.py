@@ -23,7 +23,7 @@ from zerver.models.groups import SystemGroups
 from zerver.models.streams import Stream
 from zerver.models.users import is_cross_realm_bot_email
 
-BEFORE_MENTION_ALLOWED_REGEX = r"(?<![^\s\'\"\(\{\[\/<])"
+BEFORE_MENTION_ALLOWED_REGEX = r"(?<![^\s\'\"\(\{\/<])"
 
 # Match multi-word string between @** ** or match any one-word
 # sequences after @
