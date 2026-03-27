@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 
 import * as compose_validate from "./compose_validate.ts";
 import type {Filter} from "./filter.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import type {NarrowBannerData, SearchData} from "./narrow_error.ts";
@@ -80,8 +81,38 @@ const MUTED_TOPICS_IN_CHANNEL_EMPTY_BANNER = {
 };
 
 const NO_SEARCH_RESULTS_TITLE = $t({defaultMessage: "No search results."});
+const NO_SEARCH_RESULTS_TITLE_HTML = $t_html(
+    {
+        defaultMessage: "No search results from <z-link>your message history</z-link>.",
+    },
+    {
+        "z-link": (content_html) =>
+            `<a href="/help/search-for-messages#searching-shared-history" target="_blank" rel="noopener noreferrer">${content_html.join(
+                "",
+            )}</a>`,
+    },
+);
 
-function empty_search_query_banner(current_filter: Filter): NarrowBannerData {
+// Returns HTML title with a help link when the user's message history
+// may be incomplete, plain text title otherwise.
+function get_no_search_results_title(
+    incomplete_history: boolean,
+): {title: string} | {title_html: string} {
+    if (incomplete_history) {
+        return {
+            title_html: NO_SEARCH_RESULTS_TITLE_HTML,
+        };
+    }
+
+    return {title: NO_SEARCH_RESULTS_TITLE};
+}
+
+function empty_search_query_banner(
+    current_filter: Filter,
+    invalid_narrow: boolean,
+): NarrowBannerData {
+    const incomplete_history = current_filter.may_have_incomplete_message_history();
+    const no_search_results = get_no_search_results_title(incomplete_history && !invalid_narrow);
     const search_query = current_filter.terms_with_operator("search")[0]!.operand;
     const query_words = search_query.split(" ");
 
@@ -110,14 +141,24 @@ function empty_search_query_banner(current_filter: Filter): NarrowBannerData {
     // when there are excluded stop words.
     if (search_string_result.has_stop_word) {
         return {
-            title: NO_SEARCH_RESULTS_TITLE,
+            ...no_search_results,
+            show_action: incomplete_history && !invalid_narrow,
             search_data: search_string_result,
         };
     }
-    return {title: NO_SEARCH_RESULTS_TITLE};
+    return {...no_search_results, show_action: incomplete_history && !invalid_narrow};
 }
 
-export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerData {
+export function pick_empty_narrow_banner(
+    current_filter: Filter,
+    invalid_narrow = false,
+): NarrowBannerData {
+    // We will use incomplete_history to decide whether to show action button only for
+    // certain banners. Some filters for banner may be compatible but doesn't make sense
+    // to show action button for `search-shared-history` since the user has insufficient
+    // permissions or the view doesn't exist.
+    const incomplete_history = current_filter.may_have_incomplete_message_history();
+    const no_search_results = get_no_search_results_title(incomplete_history && !invalid_narrow);
     const default_banner = {
         title: $t({defaultMessage: "There are no messages here."}),
         // Spectators cannot start a conversation.
@@ -197,7 +238,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
 
         // For empty search queries, we display excluded stop words
         if (current_filter.terms_with_operator("search").length > 0) {
-            return empty_search_query_banner(current_filter);
+            return empty_search_query_banner(current_filter, invalid_narrow);
         }
 
         if (
@@ -251,7 +292,8 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
 
         // For other multi-operator narrows, we just use the default banner
         return {
-            title: NO_SEARCH_RESULTS_TITLE,
+            ...no_search_results,
+            show_action: incomplete_history && !invalid_narrow,
         };
     }
 
@@ -287,7 +329,19 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                     };
                 case "resolved":
                     return {
-                        title: $t({defaultMessage: "No topics are marked as resolved."}),
+                        title_html: $t_html(
+                            {
+                                defaultMessage:
+                                    "No topics in <z-link>your history</z-link> are marked as resolved.",
+                            },
+                            {
+                                "z-link": (content_html) =>
+                                    `<a href="/help/search-for-messages#searching-shared-history" target="_blank" rel="noopener noreferrer">${content_html.join(
+                                        "",
+                                    )}</a>`,
+                            },
+                        ),
+                        show_action: incomplete_history && !invalid_narrow,
                     };
                 case "followed":
                     return {
@@ -299,6 +353,11 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                         title: $t({
                             defaultMessage: "You have no messages in muted topics and channels.",
                         }),
+                    };
+                case "alerted":
+                    return {
+                        title_html: NO_SEARCH_RESULTS_TITLE_HTML,
+                        show_action: incomplete_history && !invalid_narrow,
                     };
             }
             // fallthrough to default case if no match is found
@@ -346,7 +405,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
         }
         case "search": {
             // You are narrowed to empty search results.
-            return empty_search_query_banner(current_filter);
+            return empty_search_query_banner(current_filter, invalid_narrow);
         }
         case "dm": {
             if (!people.is_valid_bulk_user_ids_for_compose(first_term.operand, true)) {
@@ -454,6 +513,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                         },
                         {person: sender.full_name},
                     ),
+                    show_action: incomplete_history && !invalid_narrow,
                 };
             }
             return {
@@ -523,14 +583,36 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 ),
             };
         }
+        case "has": {
+            return {
+                title_html: NO_SEARCH_RESULTS_TITLE_HTML,
+                show_action: incomplete_history && !invalid_narrow,
+            };
+        }
     }
     return default_banner;
 }
 
-export function show_empty_narrow_message(current_filter: Filter): void {
+export function show_empty_narrow_message(current_filter: Filter, invalid_narrow = false): void {
     $(".empty_feed_notice_main").empty();
-    const rendered_narrow_banner = narrow_error(pick_empty_narrow_banner(current_filter));
+    const rendered_narrow_banner = narrow_error(
+        pick_empty_narrow_banner(current_filter, invalid_narrow),
+    );
     $(".empty_feed_notice_main").html(rendered_narrow_banner);
+
+    // Hide any top notice if it was previously visible and
+    // removing messages from the current narrow led to a narrow banner.
+    $(".all-messages-search-caution").hide();
+    $(".combined-feed-notice").hide();
+    $(".top-messages-logo").show();
+    if (current_filter.may_have_incomplete_message_history()) {
+        $(".empty_feed_notice .empty-feed-notice-action").show();
+
+        const terms = current_filter.terms();
+        const update_hash = hash_util.search_public_streams_notice_url(terms);
+
+        $(".empty_feed_notice .search-shared-history").attr("data-url", update_hash);
+    }
 }
 
 export function hide_empty_narrow_message(): void {
