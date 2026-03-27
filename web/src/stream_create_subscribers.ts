@@ -75,6 +75,7 @@ function build_pill_widget({
         // a user and when not to depending upon their group, channel
         // and individual pills.
         onPillRemoveAction: on_pill_remove,
+        onTextInputCallback: resize.resize_stream_creation_subscribers_list,
     });
 }
 
