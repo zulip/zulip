@@ -192,6 +192,12 @@ run_test("test_parse_narrow", () => {
         {negated: false, operator: "channel", operand: "42"},
     ]);
 
+    // Regression test: huge channel IDs should not collapse to channel 1.
+    const huge_channel_id = "11234879138471092384709182374";
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "channel", huge_channel_id]), [
+        {negated: false, operator: "channel", operand: huge_channel_id},
+    ]);
+
     // Empty string as a topic name is valid.
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "99-frontend", "topic", ""]), [
         {negated: false, operator: "channel", operand: frontend.stream_id.toString()},

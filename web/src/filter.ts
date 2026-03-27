@@ -1959,9 +1959,23 @@ export class Filter {
         return JSON.stringify(
             this._terms.map((term) => {
                 if (term.operator === "channel") {
+                    // Keep non-canonical operands unchanged so server-side
+                    // validation handles them, rather than coercing them into
+                    // unrelated channel IDs.
+                    if (!/^\d+$/.test(term.operand)) {
+                        return term;
+                    }
+
+                    const channel_id = Number.parseInt(term.operand, 10);
+                    // Avoid converting huge IDs that are not safe integers;
+                    // coercing them can ultimately collapse to channel 1.
+                    if (!Number.isSafeInteger(channel_id)) {
+                        return term;
+                    }
+
                     return {
                         ...term,
-                        operand: Number.parseInt(term.operand, 10),
+                        operand: channel_id,
                     };
                 }
                 return term;
