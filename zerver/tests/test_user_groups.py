@@ -26,6 +26,7 @@ from zerver.actions.user_groups import (
     create_user_group_in_database,
     do_change_user_group_permission_setting,
     do_deactivate_user_group,
+    do_update_user_group_description,
     promote_new_full_members,
     remove_subgroups_from_user_group,
 )
@@ -167,6 +168,7 @@ class UserGroupTestCase(ZulipTestCase):
         )
         self.assertEqual(user_groups[9]["name"], "newgroup")
         self.assertEqual(user_groups[9]["description"], "")
+        self.assertEqual(user_groups[9]["rendered_description"], "")
         self.assertEqual(user_groups[9]["members"], [])
         self.assertEqual(
             user_groups[9]["can_manage_group"],
@@ -203,6 +205,7 @@ class UserGroupTestCase(ZulipTestCase):
         )
         self.assertEqual(user_groups[10]["name"], "newgroup2")
         self.assertEqual(user_groups[10]["description"], "")
+        self.assertEqual(user_groups[10]["rendered_description"], "")
         self.assertEqual(user_groups[10]["members"], [othello.id])
 
         assert not isinstance(user_groups[10]["can_manage_group"], int)
@@ -278,6 +281,27 @@ class UserGroupTestCase(ZulipTestCase):
             ),
         )
         self.assertNotIn(realm.create_multiuse_invite_group_id, anonymous_group_membership)
+
+    def test_user_group_rendered_description(self) -> None:
+        self.login("iago")
+        params = {
+            "name": "support_markdown",
+            "members": orjson.dumps([]).decode(),
+            "description": "Support **team**",
+        }
+        result = self.client_post("/json/user_groups/create", info=params)
+        self.assert_json_success(result)
+
+        user_group = NamedUserGroup.objects.get(name="support_markdown")
+        self.assertEqual(user_group.description, "Support **team**")
+        self.assertEqual(user_group.rendered_description, "<p>Support <strong>team</strong></p>")
+
+        do_update_user_group_description(
+            user_group, "Troubleshooting *team*", acting_user=self.example_user("iago")
+        )
+        user_group.refresh_from_db()
+        self.assertEqual(user_group.description, "Troubleshooting *team*")
+        self.assertEqual(user_group.rendered_description, "<p>Troubleshooting <em>team</em></p>")
 
     def test_get_direct_user_groups(self) -> None:
         othello = self.example_user("othello")
