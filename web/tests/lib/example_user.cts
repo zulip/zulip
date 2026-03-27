@@ -1,4 +1,4 @@
-"use strict";
+import type {User} from "../../src/people.ts";
 
 let last_issued_user_id = 1000;
 
@@ -13,16 +13,21 @@ const Role = Object.freeze({
     MODERATOR: 300,
     MEMBER: 400,
     GUEST: 600,
-});
+} as const);
 
 const Bot = Object.freeze({
     GENERIC: 1,
     INCOMING_WEBHOOK: 2,
     OUTGOING_WEBHOOK: 3,
     EMBEDDED: 4,
-});
+} as const);
 
-const bot_or_user_props = (opts = {}) => {
+type UserOptions = Partial<User> & {
+    bot_owner_id?: number | null;
+    bot_type?: number | null;
+};
+
+const bot_or_user_props = (opts: UserOptions) => {
     // Since other fields need `user_id`, we extract it early.
     const user_id = opts.user_id ?? get_user_id();
     const role = opts.role ?? Role.MEMBER;
@@ -32,7 +37,7 @@ const bot_or_user_props = (opts = {}) => {
         delivery_email: opts.delivery_email ?? null,
         email: `user-${user_id}@example.org`,
         full_name: `user-${user_id}-ex_name`,
-        date_joined: Date.now(),
+        date_joined: "2024-01-01T00:00:00Z",
         // Derived from role, matching people._add_user() production logic.
         is_owner: role === Role.OWNER,
         is_admin: role === Role.OWNER || role === Role.ADMINISTRATOR,
@@ -40,34 +45,43 @@ const bot_or_user_props = (opts = {}) => {
         is_moderator: role === Role.OWNER || role === Role.ADMINISTRATOR || role === Role.MODERATOR,
         timezone: "UTC",
         avatar_version: 0,
+        is_imported_stub: opts.is_imported_stub ?? false,
         role,
     };
 
     return {...common_props, ...opts};
 };
 
-const make_user = (opts = {}) => ({
+const make_user = (opts: UserOptions = {}): User => {
+    if (opts.is_bot) {
+        return make_bot(opts);
+    }
+    return {
     ...bot_or_user_props(opts),
-    is_bot: opts.is_bot ?? false,
+    is_bot: false,
+    bot_type: undefined,
     // By default an empty dictionary.
     profile_data: opts.profile_data ?? {},
-});
+    } as User;
+};
 
-const make_bot = (opts = {}) => ({
+const make_bot = (opts: UserOptions = {}): User => ({
     ...bot_or_user_props(opts),
     is_bot: true,
     // By default a generic bot.
     bot_type: opts.bot_type ?? Bot.GENERIC,
     bot_owner_id: opts.bot_owner_id ?? null,
-});
+} as User);
 
-const make_cross_realm_bot = (opts = {}) => ({
+const make_cross_realm_bot = (opts: UserOptions = {}): User => ({
     ...make_bot(opts),
     is_system_bot: true,
-});
+} as User);
 
-exports.make_bot = make_bot;
-exports.make_user = make_user;
-exports.make_cross_realm_bot = make_cross_realm_bot;
-exports.Role = Role;
-exports.Bot = Bot;
+module.exports = {
+    make_bot,
+    make_user,
+    make_cross_realm_bot,
+    Role,
+    Bot,
+};

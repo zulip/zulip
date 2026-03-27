@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const _ = require("lodash");
 
 const {make_stream} = require("./lib/example_stream.cjs");
-const {make_user} = require("./lib/example_user.cjs");
+const {make_user} = require("./lib/example_user.cts");
 const {set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 

@@ -1,6 +1,6 @@
 "use strict";
 
-const {Role} = require("./example_user.cjs");
+const {Role} = require("./example_user.cts");
 
 //  These events are not guaranteed to be perfectly
 //  representative of what the server sends.  We

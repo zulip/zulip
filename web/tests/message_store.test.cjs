@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
-const {make_user} = require("./lib/example_user.cjs");
+const {make_user} = require("./lib/example_user.cts");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");

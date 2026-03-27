@@ -11,7 +11,7 @@ const {
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
-const {make_user} = require("./lib/example_user.cjs");
+const {make_user} = require("./lib/example_user.cts");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
