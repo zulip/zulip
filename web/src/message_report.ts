@@ -97,6 +97,7 @@ function get_message_container_for_preview(message: Message): MessageContainer {
         message_edit_notices_in_left_col: false,
         modified: false,
         moved: false,
+        widget_edited: false,
         year_changed: false,
     };
     return {
