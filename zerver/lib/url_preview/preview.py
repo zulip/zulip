@@ -100,7 +100,7 @@ def get_link_embed_data(url: str, maxwidth: int = 640, maxheight: int = 480) -> 
 
     data = get_oembed_data(url, maxwidth=maxwidth, maxheight=maxheight)
     parsed = urlparse(url)
-    is_youtube = "youtube.com" in parsed.netloc or "youtu.be" in parsed.netloc
+    is_youtube = parsed.netloc in ("youtube.com", "www.youtube.com", "youtu.be")
 
     if data is not None and isinstance(data, UrlOEmbedData):
     # YouTube sometimes returns consent/privacy page titles via oEmbed
