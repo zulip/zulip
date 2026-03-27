@@ -16,6 +16,7 @@ import * as inbox_util from "./inbox_util.ts";
 import * as internal_url from "./internal_url.ts";
 import * as message_fetch_raw_content from "./message_fetch_raw_content.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_store from "./message_store.ts";
 import {type Message} from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as people from "./people.ts";
@@ -320,6 +321,39 @@ function setup_compose_to_quote_single_message(message_id: number, opts: QuoteMe
     compose_ui.insert_syntax_and_focus(quoting_placeholder, $textarea, "block");
 }
 
+// Default to channel message when we can't determine
+// a common recipient from the selected messages.
+function setup_compose_for_unknown_recipient(opts: QuoteMessageOpts): void {
+    compose_actions.start({
+        message_type: "stream",
+        keep_composebox_empty: opts.keep_composebox_empty,
+        content: quoting_placeholder,
+    });
+}
+
+function setup_compose_for_same_channel_messages(message: Message, opts: QuoteMessageOpts): void {
+    assert(message.type === "stream");
+    compose_actions.start({
+        content: quoting_placeholder,
+        message_type: "stream",
+        // Pre-fill with the first message's topic as a default;
+        // focus goes to the topic field so the user can change it.
+        topic: message.topic,
+        keep_composebox_empty: opts.keep_composebox_empty,
+        stream_id: message.stream_id,
+    });
+    $("#stream_message_recipient_topic").trigger("focus");
+}
+
+function setup_compose_for_quoting_dm_conversations(opts: QuoteMessageOpts): void {
+    compose_actions.start({
+        content: quoting_placeholder,
+        message_type: "private",
+        keep_composebox_empty: opts.keep_composebox_empty,
+    });
+    $("#private_message_recipient").trigger("focus");
+}
+
 function generate_sender_mention(sent_message: Message): string {
     return `@_**${sent_message.sender_full_name}|${sent_message.sender_id}**`;
 }
@@ -481,11 +515,12 @@ function generate_replace_content(info: ReplaceContentOpts): string {
 
 function replace_quoting_placeholder_with(info: {
     content: string;
+    should_focus_recipient: boolean;
     forward_message: boolean | undefined;
 }): void {
-    const {content, forward_message} = info;
+    const {content, should_focus_recipient, forward_message} = info;
     const $textarea = get_textarea_to_quote(forward_message);
-    compose_ui.replace_syntax(quoting_placeholder, content, $textarea, forward_message);
+    compose_ui.replace_syntax(quoting_placeholder, content, $textarea, should_focus_recipient);
     compose_ui.autosize_textarea($textarea);
 
     if (!forward_message) {
@@ -505,11 +540,14 @@ export function quote_messages(opts: QuoteMessageOpts): void {
         return;
     }
     const highlighted_message_ids = get_highlighted_message_ids();
-    if (highlighted_message_ids === undefined) {
+    if (highlighted_message_ids === undefined || highlighted_message_ids.length === 0) {
         quote_single_message(opts);
     } else if (highlighted_message_ids.length === 1) {
         opts.highlighted_message_ids = highlighted_message_ids;
         quote_single_message(opts);
+    } else {
+        opts.highlighted_message_ids = highlighted_message_ids;
+        quote_multiple_messages(opts);
     }
 }
 
@@ -528,7 +566,11 @@ function quote_single_message(opts: QuoteMessageOpts): void {
             raw_markdown: quote_content,
             forward_message: opts.forward_message,
         });
-        replace_quoting_placeholder_with({content, forward_message: opts.forward_message});
+        replace_quoting_placeholder_with({
+            content,
+            should_focus_recipient: opts.forward_message === true,
+            forward_message: opts.forward_message,
+        });
         return;
     }
 
@@ -540,7 +582,11 @@ function quote_single_message(opts: QuoteMessageOpts): void {
                 raw_markdown: raw_content,
                 forward_message: opts.forward_message,
             });
-            replace_quoting_placeholder_with({content, forward_message: opts.forward_message});
+            replace_quoting_placeholder_with({
+                content,
+                should_focus_recipient: opts.forward_message === true,
+                forward_message: opts.forward_message,
+            });
         },
         // We set a timeout here to trigger usage of the fallback markdown via the
         // error callback below, which is much better UX than waiting for 10 seconds and
@@ -560,9 +606,120 @@ function quote_single_message(opts: QuoteMessageOpts): void {
                 raw_markdown: md,
                 forward_message: opts.forward_message,
             });
-            replace_quoting_placeholder_with({content, forward_message: opts.forward_message});
+            replace_quoting_placeholder_with({
+                content,
+                should_focus_recipient: opts.forward_message === true,
+                forward_message: opts.forward_message,
+            });
         },
     });
+}
+
+type QuoteAsset = {
+    message: Message;
+    quote_content: string;
+};
+
+export function build_and_process_quote_assets_for_messages(
+    message_ids: number[],
+    callback: (quote_assets: QuoteAsset[]) => void,
+): void {
+    const messages: Message[] = [];
+    for (const id of message_ids) {
+        const message = message_store.get(id);
+        assert(message !== undefined);
+        messages.push(message);
+    }
+
+    const quote_assets: QuoteAsset[] = [];
+    message_fetch_raw_content.get_raw_content_for_messages({
+        message_ids,
+        on_success(raw_content_arr) {
+            for (const [i, message] of messages.entries()) {
+                const raw_content = raw_content_arr[i];
+                assert(raw_content !== undefined);
+                quote_assets.push({message, quote_content: raw_content});
+            }
+            callback(quote_assets);
+        },
+        on_error() {
+            for (const message of messages) {
+                const fallback_markdown_content = compose_paste.paste_handler_converter(
+                    message.content,
+                );
+                quote_assets.push({
+                    message,
+                    quote_content: message.raw_content ?? fallback_markdown_content,
+                });
+            }
+            callback(quote_assets);
+        },
+        timeout_ms: 1000,
+    });
+}
+
+function quote_multiple_messages(opts: QuoteMessageOpts): void {
+    const highlighted_message_ids = opts.highlighted_message_ids;
+    assert(highlighted_message_ids !== undefined && highlighted_message_ids.length > 1);
+    build_and_process_quote_assets_for_messages(
+        highlighted_message_ids,
+        (quote_assets: QuoteAsset[]) => {
+            const msg_for_compose_box = quote_assets[0]!.message;
+            const messages = quote_assets.map((asset) => asset.message);
+            const status = get_multi_message_quote_status(messages);
+            switch (status) {
+                case "SAME_CHANNEL_DIFFERENT_TOPICS":
+                    if (opts.forward_message) {
+                        setup_compose_to_forward_single_message(msg_for_compose_box, opts);
+                    } else {
+                        setup_compose_for_same_channel_messages(msg_for_compose_box, opts);
+                    }
+                    break;
+                case "DIFFERENT_DM_CONVERSATIONS":
+                    if (opts.forward_message) {
+                        setup_compose_for_unknown_recipient(opts);
+                    } else {
+                        setup_compose_for_quoting_dm_conversations(opts);
+                    }
+                    break;
+                case "NOTHING_IN_COMMON":
+                    setup_compose_for_unknown_recipient(opts);
+                    break;
+                case "SAME_RECIPIENT":
+                    if (opts.forward_message) {
+                        setup_compose_to_forward_single_message(msg_for_compose_box, opts);
+                    } else {
+                        setup_compose_to_quote_single_message(msg_for_compose_box.id, opts);
+                    }
+                    break;
+            }
+
+            const content_string = quote_assets
+                .map((asset, i) => {
+                    const {message, quote_content} = asset;
+                    const info: ReplaceContentOpts = {
+                        quoted_message: message,
+                        raw_markdown: quote_content,
+                        forward_message: opts.forward_message,
+                        previous_quoted_message: i > 0 ? quote_assets[i - 1]!.message : undefined,
+                        is_first_in_quote_chain: i === 0,
+                    };
+
+                    return generate_replace_content(info);
+                })
+                .join("\n\n");
+
+            const should_focus_recipient =
+                opts.forward_message === true ||
+                status === "SAME_CHANNEL_DIFFERENT_TOPICS" ||
+                status === "DIFFERENT_DM_CONVERSATIONS";
+            replace_quoting_placeholder_with({
+                content: content_string,
+                should_focus_recipient,
+                forward_message: opts.forward_message,
+            });
+        },
+    );
 }
 
 export function all_messages_have_same_channel(messages: Message[]): boolean {

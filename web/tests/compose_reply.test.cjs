@@ -6,6 +6,9 @@ const {zrequire, mock_esm} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const compose_reply = zrequire("compose_reply");
+const message_store = zrequire("message_store");
+const message_fetch_raw_content = mock_esm("../src/message_fetch_raw_content");
+const compose_paste = mock_esm("../src/compose_paste");
 const message_lists = mock_esm("../src/message_lists");
 
 const pm_user_ids_1 = "1,2";
@@ -311,5 +314,79 @@ run_test("get_quote_context_for_message", () => {
             is_first_in_quote_chain: false,
         }),
         "INCLUDE_SENDER_AND_RECIPIENT",
+    );
+});
+
+function add_messages_to_message_store(messages) {
+    message_store.clear_for_testing();
+    for (const message of messages) {
+        message_store.update_message_cache({message});
+    }
+}
+
+run_test("build_and_process_quote_assets_for_messages", ({override}) => {
+    // Case: We get back the raw_content.
+    const msg_hydrated = {id: 1, raw_content: "Raw markdown", content: "<p>Raw markdown</p>"};
+    const msg_unhydrated = {id: 2, content: "<p>unhydrated</p>"};
+
+    add_messages_to_message_store([msg_hydrated, msg_unhydrated]);
+
+    override(
+        message_fetch_raw_content,
+        "get_raw_content_for_messages",
+        ({_message_ids, on_success, _on_error}) => {
+            on_success(["Raw markdown", "hydrated"]);
+        },
+    );
+
+    let result_assets = [];
+    compose_reply.build_and_process_quote_assets_for_messages([1, 2], (assets) => {
+        result_assets = assets;
+    });
+
+    assert.equal(result_assets.length, 2);
+
+    assert.deepEqual(
+        result_assets[0],
+        {message: msg_hydrated, quote_content: "Raw markdown"},
+        "Should use raw_content from the fetched results",
+    );
+
+    assert.deepEqual(
+        result_assets[1],
+        {message: msg_unhydrated, quote_content: "hydrated"},
+        "Should use fetched raw_content",
+    );
+
+    // Case: Network error on trying to get raw_content.
+    // Here, we should use `message.raw_content` if it's available.
+    // Else we fallback to using the local paste_handler_converter.
+    override(
+        message_fetch_raw_content,
+        "get_raw_content_for_messages",
+        ({_message_ids, _on_success, on_error}) => {
+            on_error();
+        },
+    );
+
+    override(
+        compose_paste,
+        "paste_handler_converter",
+        (content) => `converted_by_turndown: ${content}`,
+    );
+
+    compose_reply.build_and_process_quote_assets_for_messages([1, 2], (assets) => {
+        result_assets = assets;
+    });
+
+    assert.deepEqual(
+        result_assets[0],
+        {message: msg_hydrated, quote_content: "Raw markdown"},
+        "Should use raw_content when available",
+    );
+    assert.deepEqual(
+        result_assets[1],
+        {message: msg_unhydrated, quote_content: "converted_by_turndown: <p>unhydrated</p>"},
+        "Fallback to using paste_handler_converter",
     );
 });
