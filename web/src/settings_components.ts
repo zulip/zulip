@@ -114,6 +114,12 @@ type RealmSetting = typeof realm;
 export const realm_setting_property_schema = z.union([
     z.keyof(realm_schema),
     z.literal("realm_org_join_restrictions"),
+    z.literal("realm_big_blue_button_options_mute_on_start"),
+    z.literal("realm_big_blue_button_options_guest_policy"),
+    z.literal("realm_big_blue_button_options_skip_check_audio_on_first_join"),
+    z.literal("realm_big_blue_button_options_auto_join_audio"),
+    z.literal("realm_big_blue_button_options_listen_only_mode"),
+    z.literal("realm_big_blue_button_options_show_session_details_on_join"),
 ]);
 type RealmSettingProperty = z.infer<typeof realm_setting_property_schema>;
 
@@ -282,6 +288,16 @@ export function is_video_chat_provider_jitsi_meet(): boolean {
     );
     const jitsi_meet_id = realm.realm_available_video_chat_providers.jitsi_meet.id;
     return video_chat_provider_id === jitsi_meet_id;
+}
+
+export function is_video_chat_provider_big_blue_button(): boolean {
+    const video_chat_provider_id = Number.parseInt(
+        $<HTMLSelectOneElement>("select:not([multiple])#id_realm_video_chat_provider").val()!,
+        10,
+    );
+
+    const big_blue_button_id = realm.realm_available_video_chat_providers.big_blue_button?.id;
+    return video_chat_provider_id === big_blue_button_id;
 }
 
 function get_jitsi_server_url_setting_value(
@@ -917,6 +933,14 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
             break;
         case "realm_default_avatar_source":
             proposed_val = get_input_element_value(elem, "radio-group");
+            break;
+        case "realm_big_blue_button_options_mute_on_start":
+        case "realm_big_blue_button_options_guest_policy":
+        case "realm_big_blue_button_options_skip_check_audio_on_first_join":
+        case "realm_big_blue_button_options_auto_join_audio":
+        case "realm_big_blue_button_options_listen_only_mode":
+        case "realm_big_blue_button_options_show_session_details_on_join":
+            proposed_val = get_input_element_value(elem, typeof current_val);
             break;
         default:
             if (current_val !== undefined) {
