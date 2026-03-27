@@ -1802,3 +1802,86 @@ test("query_matches_person matches custom profile fields when they are enabled f
     assert.equal(th.query_matches_person("alpha", a_user_item, undefined, undefined, true), true);
     assert.equal(th.query_matches_person("beta", a_user_item, undefined, undefined, true), false);
 });
+
+test("sort_recipients prioritizes exact diacritic matches", () => {
+    const aaron_item = {
+        type: "user",
+        user: {full_name: "aaron", email: "aaron@zulip.com", is_bot: false},
+    };
+
+    const aaron_pl_item = {
+        type: "user",
+        user: {full_name: "Ąaron", email: "aaron_pl@zulip.com", is_bot: false},
+    };
+
+    const users = [aaron_item, aaron_pl_item];
+
+    const result = th.sort_recipients({
+        users,
+        query: "ą",
+        groups: [],
+        max_num_items: 10,
+    });
+
+    assert.deepEqual(result, [aaron_pl_item, aaron_item]);
+});
+
+test("sort_recipients: diacritic query allows normalized ASCII fallback", () => {
+    const adam_item = {
+        type: "user",
+        user: {full_name: "adam", email: "adam@zulip.com", is_bot: false},
+    };
+    const zoe_item = {
+        type: "user",
+        user: {full_name: "zoe", email: "zoe@zulip.com", is_bot: false},
+    };
+
+    const result = th.sort_recipients({
+        users: [adam_item, zoe_item],
+        query: "ą",
+        groups: [],
+        max_num_items: 10,
+    });
+
+    assert.deepEqual(result, [adam_item, zoe_item]);
+});
+
+test("sort_recipients: plain ASCII query ranks diacritic names below matches", () => {
+    const adam_item = {
+        type: "user",
+        user: {full_name: "adam", email: "adam@zulip.com", is_bot: false},
+    };
+    const adam_pl_item = {
+        type: "user",
+        user: {full_name: "Ądam", email: "adam_pl@zulip.com", is_bot: false},
+    };
+
+    const result = th.sort_recipients({
+        users: [adam_item, adam_pl_item],
+        query: "a",
+        groups: [],
+        max_num_items: 10,
+    });
+
+    assert.deepEqual(result, [adam_item, adam_pl_item]);
+});
+
+test("sort_recipients: diacritic query matches via word boundary (normalized)", () => {
+    const john_adam_item = {
+        type: "user",
+        user: {full_name: "John adam", email: "johnadam@zulip.com", is_bot: false},
+    };
+    const zoe_item = {
+        type: "user",
+        user: {full_name: "zoe", email: "zoe@zulip.com", is_bot: false},
+    };
+
+    const result = th.sort_recipients({
+        users: [john_adam_item, zoe_item],
+        query: "ą",
+        groups: [],
+        max_num_items: 10,
+    });
+
+    assert.deepEqual(result, [john_adam_item, zoe_item]);
+});
