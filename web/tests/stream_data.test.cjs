@@ -1643,6 +1643,13 @@ test("can_resolve_topics", ({override}) => {
         can_resolve_topics_group: admins_group.id,
     };
     stream_data.add_sub_for_tests(sub);
+    const archived_sub = {
+        name: "Archived",
+        stream_id: 99,
+        is_archived: true,
+        can_resolve_topics_group: admins_group.id,
+    };
+    stream_data.add_sub_for_tests(archived_sub);
 
     assert.equal(stream_data.can_resolve_topics(undefined), false);
     initialize_and_override_current_user(admin_user_id, override);
@@ -1666,6 +1673,8 @@ test("can_resolve_topics", ({override}) => {
     assert.equal(stream_data.can_resolve_topics(sub), true);
     initialize_and_override_current_user(test_user.user_id, override);
     assert.equal(stream_data.can_resolve_topics(sub), true);
+    initialize_and_override_current_user(admin_user_id, override);
+    assert.equal(stream_data.can_resolve_topics(archived_sub), false);
 });
 
 test("can_unsubscribe_others", ({override}) => {

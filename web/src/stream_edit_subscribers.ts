@@ -4,7 +4,7 @@ import * as z from "zod/mini";
 
 import render_subscription_banner from "../templates/components/subscription_banner.hbs";
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
-import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
+import render_decorated_channel_name from "../templates/decorated_channel_name.hbs";
 import render_stream_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
 import render_stream_members_table from "../templates/stream_settings/stream_members_table.hbs";
 
@@ -402,6 +402,7 @@ function remove_subscriber({
     }
 
     function remove_user_from_private_stream(): void {
+        buttons.show_button_loading_indicator($remove_button);
         assert(sub !== undefined);
         subscriber_api.remove_user_id_from_stream(
             target_user_id,
@@ -434,7 +435,8 @@ function remove_subscriber({
             return;
         }
 
-        const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({
+        const stream_name_with_privacy_symbol_html = render_decorated_channel_name({
+            inline_with_text: true,
             stream: sub,
         });
 
@@ -470,6 +472,7 @@ function remove_subscriber({
         return;
     }
 
+    buttons.show_button_loading_indicator($remove_button);
     subscriber_api.remove_user_id_from_stream(
         target_user_id,
         sub,
@@ -567,7 +570,6 @@ export function initialize(): void {
             const target_user_id = Number.parseInt($list_entry.attr("data-subscriber-id")!, 10);
             const stream_id = current_stream_id;
             const $remove_button = $(this).closest(".remove-subscriber-button");
-            buttons.show_button_loading_indicator($remove_button);
             remove_subscriber({stream_id, target_user_id, $list_entry, $remove_button});
         },
     );

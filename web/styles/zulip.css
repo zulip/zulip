@@ -2256,12 +2256,9 @@ body:not(.spectator-view) {
     .dropdown-list .dropdown-list-item-common-styles {
         display: grid;
         grid-template:
-            "privacy-icon     item-label       " min-content
-            "item-description item-description" minmax(0, min-content) / minmax(
-                0,
-                auto
-            )
-            minmax(0, 1fr);
+            "item-label" min-content
+            "item-description" minmax(0, min-content)
+            / minmax(0, 1fr);
         color: var(--color-dropdown-item);
         padding: 3px 10px 3px 8px;
         font-weight: 400;
@@ -2271,28 +2268,29 @@ body:not(.spectator-view) {
            vertically centered properly. */
         line-height: 1.214;
 
-        .channel-privacy-type-icon,
-        .zulip-icon-deactivated-circle {
-            grid-area: privacy-icon;
-            line-height: 1.214;
-            font-size: 0.93em;
-            /* We set only the width so that flexbox
-            can do its work to properly center,
-            regardless of the height. */
-            width: 0.93em;
-            padding-right: 5px;
-            padding-left: 0;
-            /* Override the [data-tippy-root] style in
-               `tooltips.css`.
-               Because we are manually holding icon
-               alignment to the first/only line of a
-               channel, we make this adjustment here.
-               Calculated by eye to look good at 12px-20px. */
-            top: 0.05em;
+        .decorated-channel-name-wrapper,
+        .dropdown-list-item-direct-message,
+        .dropdown-list-item-setting-disabled-option,
+        .dropdown-list-item-channel-mapping {
+            grid-area: item-label;
+            display: flex;
+            gap: var(--dropdown-list-item-label-icon-gap);
+
+            .zulip-icon {
+                font-size: 0.9375em; /* 15px at 16px/1em */
+            }
         }
 
-        .decorated-channel-name {
-            grid-area: item-label;
+        .decorated-channel-name-wrapper .channel-privacy-type-icon,
+        .dropdown-list-item-icon {
+            line-height: 1.214;
+        }
+
+        .dropdown-list-item-channel-mapping .zulip-icon {
+            position: relative;
+            /* Calculated from visual inspection
+               to look good for 12px-20px font sizes. */
+            top: 0.1467em; /* 2.2px at 15px/1em */
         }
 
         .dropdown-list-item-description {

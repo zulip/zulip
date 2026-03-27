@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import timedelta
+from math import floor
 
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_ids
 from zerver.lib.test_classes import ZulipTestCase
@@ -16,14 +17,23 @@ class TestChoosePubDate(ZulipTestCase):
         being distributed across the span of several days.
         """
         tot_messages = 1000000
+        oldest_message_days = 10
         datetimes_list = [
-            choose_date_sent(i, tot_messages, 5, 1)
+            choose_date_sent(i, tot_messages, oldest_message_days, 1)
             for i in range(1, tot_messages, tot_messages // 100)
         ]
 
         # Verify there is a meaningful difference between elements.
         for i in range(1, len(datetimes_list)):
             self.assertTrue(datetimes_list[i] - datetimes_list[i - 1] > timedelta(minutes=5))
+
+        # Verify messages are split across the oldest_message_days
+        idx_for_last_message_in_old_message_days = floor(0.8 * len(datetimes_list)) - 1
+        # The first chunk should span roughly (oldest_message_days - 2) days.
+        expected_span_seconds = (oldest_message_days - 2) * 24 * 60 * 60
+        actual_span = datetimes_list[idx_for_last_message_in_old_message_days] - datetimes_list[0]
+        # Assert the span is at least, say, 90% of the intended window to account for randomness
+        self.assertGreaterEqual(actual_span.total_seconds(), expected_span_seconds * 0.9)
 
 
 class TestUserTimeZones(ZulipTestCase):

@@ -389,10 +389,6 @@ h4.user_group_setting_subsection_title {
             font-weight: normal;
             line-height: 1.5;
             display: inline;
-
-            .channel-privacy-type-icon {
-                margin-right: 4px;
-            }
         }
     }
 
@@ -899,7 +895,7 @@ h4.user_group_setting_subsection_title {
             }
 
             .loading_indicator_spinner svg path {
-                fill: hsl(178deg 100% 40%);
+                fill: var(--color-stream-group-row-plus-icon);
             }
         }
     }
@@ -909,6 +905,13 @@ h4.user_group_setting_subsection_title {
            center to make the icon color same as the web app. Do change
            the color there when changing the color here */
         color: var(--color-stream-group-row-checked-icon);
+    }
+
+    .checked .sub_unsub_status,
+    .checked .join_leave_status {
+        .loading_indicator_spinner svg path {
+            fill: var(--color-stream-group-row-checked-icon);
+        }
     }
 
     .check:not(.checked, .disabled):hover .sub-unsub-icon,

@@ -124,7 +124,7 @@ export function initialize({
             // instance.hide gets called.
             const $popper = $(instance.popper);
             $popper.one("click", ".respond_button", (e) => {
-                compose_reply.quote_message({
+                compose_reply.quote_messages({
                     trigger: "popover respond",
                     message_id,
                     quote_content,
@@ -135,7 +135,7 @@ export function initialize({
             });
 
             $popper.one("click", ".forward_button", (e) => {
-                compose_reply.quote_message({
+                compose_reply.quote_messages({
                     trigger: "popover respond",
                     message_id,
                     quote_content,

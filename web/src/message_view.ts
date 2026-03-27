@@ -48,7 +48,6 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popup_banners from "./popup_banners.ts";
-import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as resize from "./resize.ts";
@@ -323,6 +322,13 @@ function handle_post_message_list_change(
     // It is important to call this after other important updates
     // like narrow filter and compose recipients happen.
     compose_recipient.handle_middle_pane_transition();
+}
+
+function get_selected_message_top_offset(): number {
+    const navbar_height = $("#navbar-fixed-container").height()!;
+    // 30px height + 10px top margin.
+    const sticky_header_outer_height = 40;
+    return navbar_height + sticky_header_outer_height;
 }
 
 export function try_rendering_locally_for_same_narrow(
@@ -702,12 +708,8 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                 const $row = message_lists.current.get_row(opts.then_select_id);
                 if ($row.length > 0) {
                     const row_props = $row.get_offset_to_window();
-                    const navbar_height = $("#navbar-fixed-container").height()!;
-                    // 30px height + 10px top margin.
                     const compose_box_top = $("#compose").get_offset_to_window().top;
-                    const sticky_header_outer_height = 40;
-                    const min_height_for_message_top_visible =
-                        navbar_height + sticky_header_outer_height;
+                    const min_height_for_message_top_visible = get_selected_message_top_offset();
 
                     if (
                         // We want to keep the selected message in the same scroll position after the narrow changes if possible.
@@ -993,11 +995,15 @@ function navigate_to_anchor_message(opts: {
 
     function select_msg_id(msg_id: number, select_opts?: SelectIdOpts): void {
         assert(message_lists.current !== undefined);
-        message_lists.current.select_id(msg_id, {
+        const updated_select_opts = {
             then_scroll: true,
             from_scroll: false,
             ...select_opts,
-        });
+        };
+        if (anchor === "date") {
+            updated_select_opts.target_scroll_offset = get_selected_message_top_offset();
+        }
+        message_lists.current.select_id(msg_id, updated_select_opts);
     }
 
     function select_anchor_using_data(data: MessageListData): void {
@@ -1011,34 +1017,6 @@ function navigate_to_anchor_message(opts: {
     if (is_anchor_fetched(message_lists.current.data)) {
         select_msg_id(message_list_data_to_target_message_id(message_lists.current.data));
         return;
-    } else if (is_anchor_fetched(recent_view_messages_data) && anchor !== "date") {
-        // We can load messages into `msg_list_data` but we don't know
-        // the fetch status until we contact server. If we are contacting the
-        // server, it is better to just fetch the required messages instead
-        // of just fetching status.
-        //
-        // So, a cheaper check is to see if we have found the anchor in
-        // `recent_view_messages_data`, and if we have, we can say `msg_list_data`
-        // will also have the anchor (for oldest / newest anchors at least).
-        //
-        // We skip this for date anchor since message_list_data_to_target_message_id
-        // for date anchor heavily relies on has_found_oldest/newest being up-to-date.
-        // When using load_local_messages, we do not copy fetch_status over to
-        // msg_list_data, which causes error in message_list_data_to_target_message_id.
-        // See https://github.com/zulip/zulip/pull/37198#issuecomment-3858015457 for
-        // more details.
-        const msg_list_data = new MessageListData({
-            filter: message_lists.current.data.filter,
-            excludes_muted_topics: message_lists.current.data.excludes_muted_topics,
-            excludes_muted_users: message_lists.current.data.excludes_muted_users,
-        });
-        load_local_messages(msg_list_data, recent_view_messages_data);
-        // It is still possible that `recent_view_messages_data` doesn't have any messages
-        // for the current narrow, so we check for that.
-        if (!msg_list_data.visibly_empty()) {
-            select_anchor_using_data(msg_list_data);
-            return;
-        }
     }
 
     const msg_list_data = new MessageListData({

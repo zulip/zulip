@@ -659,6 +659,8 @@
     /* User profile modal */
     --user-profile-modal-height: 75dvh;
     --user-profile-modal-body-margin-bottom: 20px;
+    /* Dropdown list item */
+    --dropdown-list-item-label-icon-gap: 0.3125em; /* 5px at 16px/em */
 
     /* Height of the button for filter dropdown in stream settings UI.
     It is set equal to the height of the search input, i.e. 1.4em (input
@@ -711,6 +713,11 @@
     visually consistent with that of it's parent popover.
     */
     --popover-tippy-arrow-before-offset: -6.5px;
+
+    /* Decorated channel name related values */
+    --decorated-channel-name-privacy-icon-gap: 0.3125em; /* 5px at 16px/em */
+    --inline-decorated-channel-name-privacy-icon-gap: 0.125em; /* 2px at 16px/em */
+    --inline-decorated-channel-name-padding-left: 0.0937em; /* 1.5px at 16px/em */
 
     /* Color picker popover values */
     --size-color-swatch: 1em;

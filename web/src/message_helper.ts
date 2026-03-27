@@ -95,6 +95,10 @@ export function process_new_message(opts: NewMessage): ProcessedMessage {
         status_emoji_info = user_status.get_status_emoji(message_with_booleans.message.sender_id);
     }
 
+    if (opts.raw_message.reactions) {
+        people.add_missing_people_for_message_reactions(opts.raw_message.reactions);
+    }
+
     // TODO: Rather than adding this field to the message object, it
     // might be cleaner to create an independent map from message_id
     // => clean_reactions data for the message, with care being taken
