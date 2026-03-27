@@ -63,6 +63,7 @@ from zerver.lib.thumbnail import (
 )
 from zerver.lib.timeout import unsafe_timeout
 from zerver.lib.timezone import common_timezones
+from zerver.lib.topic_link_util import TOPIC_LINK_SYNTAX_FOR_DISPLAY
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_channel, encode_hash_component
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
@@ -1879,7 +1880,9 @@ class StreamTopicPattern(StreamTopicMessageProcessor):
             el.text = markdown.util.AtomicString(f"#{stream_name} > ")
             el.append(topic_el)
         else:
-            text = f"#{stream_name} > {topic_name}"
+            text = TOPIC_LINK_SYNTAX_FOR_DISPLAY.format(
+                channel_name=stream_name, topic_name=topic_name
+            )
             el.text = markdown.util.AtomicString(text)
 
         return el, m.start(), m.end()
