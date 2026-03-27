@@ -80,7 +80,11 @@ from zerver.actions.user_groups import (
     bulk_remove_members_from_user_groups,
     check_add_user_group_core,
 )
-from zerver.actions.user_settings import do_change_user_delivery_email, do_regenerate_api_key
+from zerver.actions.user_settings import (
+    do_change_full_name,
+    do_change_user_delivery_email,
+    do_regenerate_api_key,
+)
 from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib.avatar import avatar_url, is_avatar_new
 from zerver.lib.avatar_hash import user_avatar_content_hash
@@ -2122,7 +2126,11 @@ def process_social_auth_group_sync_info(
 
 
 def social_auth_sync_user_attributes(
-    realm: Realm, user_profile: UserProfile | None, extra_attrs: dict[str, Any], backend: Any
+    realm: Realm,
+    user_profile: UserProfile | None,
+    full_name: str | None,
+    extra_attrs: dict[str, Any],
+    backend: Any,
 ) -> SocialAuthSyncNewUserInfo | None:
     """
     Syncs user attributes based on the SOCIAL_AUTH_SYNC_ATTRS_DICT setting.
@@ -2130,7 +2138,11 @@ def social_auth_sync_user_attributes(
     1. Syncing the role. This is plumbed through to user creation, so can be
        used to immediately create new users with their role set based on an attribute
        provided by the IdP.
-    2. Syncing custom attributes. This isn't supported for user creation,
+    2. Syncing the full_name. This uses the standard name data already
+       extracted during authentication. We only have to worry about syncing
+       existing users upon login; new signups already get their name from
+       the IdP via the regular registration flow plumbing.
+    3. Syncing custom attributes. This isn't supported for user creation,
        so they'll only be synced during the user's next login, not during
        signup.
     """
@@ -2147,14 +2159,16 @@ def social_auth_sync_user_attributes(
     attrs_config = attrs_by_backend.get(backend.name, {})
 
     profile_field_name_to_attr_name = cast(
-        dict[str, str], {key: value for key, value in attrs_config.items() if key != "groups"}
+        dict[str, str],
+        {key: value for key, value in attrs_config.items() if key not in ("groups", "full_name")},
     )
 
     group_sync_config = process_social_auth_group_sync_info(
         backend, realm, user_profile, attrs_config, extra_attrs
     )
     should_sync_user_attrs = extra_attrs and profile_field_name_to_attr_name
-    if not (should_sync_user_attrs or group_sync_config is not None):
+    should_sync_full_name = (attrs_config.get("full_name", False) is True) and full_name
+    if not (should_sync_user_attrs or should_sync_full_name or group_sync_config is not None):
         return None
 
     user_id = None
@@ -2213,6 +2227,23 @@ def social_auth_sync_user_attributes(
         backend.logger.info(
             "Set role %s for user %s", UserProfile.ROLE_ID_TO_API_NAME[new_role], user_profile.id
         )
+
+    if should_sync_full_name:
+        assert full_name is not None
+        if full_name != user_profile.full_name:
+            try:
+                validated_full_name = check_full_name(
+                    full_name_raw=full_name, user_profile=user_profile, realm=user_profile.realm
+                )
+            except JsonableError as e:
+                backend.logger.warning(
+                    "Failed to sync full_name for user %s: %s", user_profile.id, e.msg
+                )
+            else:
+                do_change_full_name(
+                    user_profile, validated_full_name, acting_user=None, notify=True
+                )
+                backend.logger.info("Set new full_name for user %s", user_profile.id)
 
     try:
         sync_user_profile_custom_fields(user_profile, custom_profile_field_name_to_value)
@@ -2502,7 +2533,7 @@ def social_auth_finish(
 
     extra_attrs = return_data.get("extra_attrs", {})
     social_auth_sync_new_user_info = social_auth_sync_user_attributes(
-        realm, user_profile, extra_attrs, backend
+        realm, user_profile, full_name, extra_attrs, backend
     )
 
     if user_profile:

@@ -810,7 +810,7 @@ their metadata might feel reasonable.
 
 Specifically, Zulip supports synchronizing
 [group memberships][user-groups-help-center], the [user
-role][user-role-help-center] and [custom profile
+role][user-role-help-center], the user's full name, and [custom profile
 fields][custom-profile-fields] from the SAML provider.
 
 In order to use this functionality, configure `SOCIAL_AUTH_SYNC_ATTRS_DICT` in

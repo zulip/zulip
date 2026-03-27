@@ -3415,6 +3415,63 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.user_profile.refresh_from_db()
         self.assertEqual(self.user_profile.role, UserProfile.ROLE_REALM_OWNER)
 
+    def test_social_auth_full_name_sync(self) -> None:
+        sync_attrs_dict = {"zulip": {"saml": {"full_name": True}}}
+        new_name = "Updated Name"
+
+        with self.settings(SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_attrs_dict):
+            account_data_dict = self.get_account_data_dict(email=self.email, name=new_name)
+            with self.assertLogs(self.logger_string, level="INFO"):
+                result = self.social_auth_test(
+                    account_data_dict,
+                    subdomain="zulip",
+                )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(result.status_code, 302)
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.full_name, new_name)
+
+        # Without full_name sync configured, the name should not be updated.
+        with self.settings(SOCIAL_AUTH_SYNC_ATTRS_DICT={}):
+            account_data_dict = self.get_account_data_dict(email=self.email, name="Another Name")
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+            )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(result.status_code, 302)
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.full_name, new_name)
+
+        # Name with invalid characters should be rejected with a warning.
+        with (
+            self.settings(SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_attrs_dict),
+            self.assertLogs(self.logger_string, level="WARNING") as m,
+        ):
+            account_data_dict = self.get_account_data_dict(email=self.email, name="Invalid* Name")
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+            )
+        # Logging in succeeds.
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(result.status_code, 302)
+        self.user_profile.refresh_from_db()
+        # The name doesn't get synced however, and we log a warning.
+        self.assertEqual(self.user_profile.full_name, new_name)
+        self.assertEqual(
+            m.output,
+            [
+                self.logger_output(
+                    f"Failed to sync full_name for user {self.user_profile.id}: Invalid characters in name!",
+                    type="warning",
+                )
+            ],
+        )
+
     def test_social_auth_group_sync(self) -> None:
         realm = get_realm("zulip")
         hamlet = self.example_user("hamlet")
