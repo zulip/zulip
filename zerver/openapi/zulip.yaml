@@ -28375,7 +28375,13 @@ components:
             message (either a channel or group of users). Useful primarily
             for hashing.
 
-            **Changes**: Before Zulip 10.0 (feature level 327), `recipient_id`
+            **Changes**: In Zulip 12.0 (feature level ZF-760f36),
+            `recipient_id` in 1:1 direct messages changed to a new
+            value; it still has the semantics of "the 1:1 conversation
+            with a specific user," but the raw value changed due to
+            internal changes.
+
+            Before Zulip 10.0 (feature level 327), `recipient_id`
             was the same across all incoming 1:1 direct messages. Now, each
             incoming message uniquely shares a `recipient_id` with outgoing
             messages in the same conversation.
