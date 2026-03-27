@@ -62,6 +62,7 @@ class HomeTest(ZulipTestCase):
         "presence_history_limit_days_for_web_app",
         "promote_sponsoring_zulip",
         "realm_rendered_description",
+        "register_params",
         "request_language",
         "show_try_zulip_modal",
         "state_data",
@@ -609,6 +610,20 @@ class HomeTest(ZulipTestCase):
             result = self._get_home_page()
             # Should be successful after calling 2fa login function.
             self.check_rendered_logged_in_app(result)
+
+    def test_home_reload(self) -> None:
+        # When the client triggers a reload via ?state_data=deferred,
+        # the server should skip the expensive do_events_register()
+        # call and return state_data=None so the client fetches it
+        # via /json/register instead. See #36094.
+        self.login("hamlet")
+        result = self.client_get("/", {"state_data": "deferred"})
+        self.check_rendered_logged_in_app(result)
+
+        page_params = self._get_page_params(result)
+        self.assertIsNone(page_params["state_data"])
+        self.assertTrue(page_params["no_event_queue"])
+        self.assertFalse(page_params["is_spectator"])
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_num_queries_for_realm_admin(self) -> None:

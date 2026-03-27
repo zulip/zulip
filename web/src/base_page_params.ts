@@ -48,6 +48,18 @@ const home_params_schema = z.object({
     narrow_topic: z.optional(z.string()),
     no_event_queue: z.boolean(),
     presence_history_limit_days_for_web_app: z.number(),
+    // Parameters for /json/register, sent by the server so the client
+    // can make an identical call during reloads. Only for logged-in users.
+    register_params: z.optional(
+        z.object({
+            apply_markdown: z.boolean(),
+            client_gravatar: z.boolean(),
+            slim_presence: z.boolean(),
+            presence_history_limit_days: z.number(),
+            include_subscribers: z.string(),
+            client_capabilities: z.record(z.string(), z.boolean()),
+        }),
+    ),
     promote_sponsoring_zulip: z.boolean(),
     realm_rendered_description: z.string(),
     show_try_zulip_modal: z.boolean(),
