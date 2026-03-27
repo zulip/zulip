@@ -86,6 +86,7 @@ export function clear_preview_area(): void {
     $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", 0);
 
     compose_ui.clear_thumbnail_polling();
+    compose_ui.clear_embed_polling();
 }
 
 export function show_preview_area(): void {
