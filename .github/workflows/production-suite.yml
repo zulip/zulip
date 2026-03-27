@@ -144,7 +144,7 @@ jobs:
             os: jammy
             extra-args: ""
 
-          - docker_image: zulip/ci:noble
+          - docker_image: amanagr2/ci:noble
             name: Ubuntu 24.04 production install
             os: noble
             extra-args: ""
