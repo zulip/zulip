@@ -1287,6 +1287,7 @@ class InviteUserTest(InviteUserBase):
         Test that a new user invited to a stream receives some initial
         history but only from public streams.
         """
+        self.disable_channel_events_notifications()
         self.login("hamlet")
         user_profile = self.example_user("hamlet")
         realm = user_profile.realm
