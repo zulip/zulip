@@ -73,6 +73,10 @@
         color: hsl(0deg 0% 75%);
         padding: 0;
     }
+
+    > .tippy-arrow {
+        color: var(--color-background-dropdown-widget);
+    }
 }
 
 .tippy-box[data-theme="popover-menu"] {

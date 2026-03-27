@@ -216,10 +216,11 @@ export function setup_saved_snippets_dropdown_widget(widget_selector: string): v
         focus_target_on_hidden: false,
         prefer_top_start_placement: true,
         tippy_props: {
-            // Using -100 as x offset makes saved snippet icon be in the center
+            // Using -130 as x offset makes saved snippet icon be in the center
             // of the dropdown widget and 5 as y offset is what we use in compose
             // recipient dropdown widget.
-            offset: [-100, 5],
+            offset: [-130, 5],
+            arrow: true,
         },
     }).setup();
 }

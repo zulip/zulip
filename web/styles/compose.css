@@ -1961,7 +1961,27 @@ textarea.new_message_textarea {
 }
 
 .saved_snippets-dropdown-list-container {
-    width: 17.8571em; /* 250px at 14px/em */
+    .sticky-bottom-option-button {
+        width: 17.8571em; /* 250px at 14px/em */
+        margin: 3px;
+        border-radius: 4px;
+        border: 1px solid var(--color-border-zulip-button);
+        background-color: var(--color-background-neutral-subtle-action-button);
+
+        &:hover {
+            background-color: var(
+                --color-background-neutral-subtle-action-button-hover
+            );
+            border-color: var(--color-border-zulip-button-interactive);
+        }
+
+        &:focus,
+        &.current_selection {
+            background-color: var(
+                --color-background-neutral-subtle-action-button-hover
+            );
+        }
+    }
 
     .dropdown-list .dropdown-list-item-common-styles {
         padding: 0.3571em 0.7143em; /* 5px 10px at 14px/em */
