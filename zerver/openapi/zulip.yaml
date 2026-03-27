@@ -12139,6 +12139,88 @@ paths:
                       "server_timestamp": 1656958539.6287155,
                       "presence_last_update_id": 1000,
                     }
+  /users/me/profile_data:
+    patch:
+      operationId: update-profile-data
+      summary: Update custom profile data
+      tags: ["users"]
+      description: |
+        Update the custom profile field values for the logged-in user.
+
+        `PATCH {{ api_url }}/v1/users/me/profile_data`
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  description: |
+                    An array of objects mapping the ID of a custom profile field
+                    to its new value.
+                  type: array
+                  example:
+                    - id: 1
+                      value: "engineering"
+                  items:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      id:
+                        type: integer
+                        description: The ID of the custom profile field.
+                      value:
+                        oneOf:
+                          - type: string
+                          - type: array
+                            items:
+                              type: integer
+                        description: The new value for the custom profile field.
+                    required:
+                      - id
+                      - value
+              required:
+                - data
+            encoding:
+              data:
+                contentType: application/json
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+    delete:
+      operationId: remove-profile-data
+      summary: Remove custom profile data
+      tags: ["users"]
+      description: |
+        Remove one or more custom profile field values for the logged-in user.
+
+        `DELETE {{ api_url }}/v1/users/me/profile_data`
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                data:
+                  description: |
+                    An array of custom profile field IDs to remove.
+                  type: array
+                  example: [1]
+                  items:
+                    type: integer
+              required:
+                - data
+            encoding:
+              data:
+                contentType: application/json
+      responses:
+        "200":
+          $ref: "#/components/responses/Success"
+
   /users/me/status:
     post:
       operationId: update-status
@@ -30290,6 +30372,12 @@ components:
   # Shared responses
   ###################
   responses:
+    Success:
+      description: Success.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/JsonSuccess"
     SimpleSuccess:
       description: Success.
       content:
@@ -30345,9 +30433,29 @@ components:
               profile_data:
                 description: |
                   A dictionary containing the updated custom profile field data for the user.
+
+                  An array of objects mapping the ID of a custom profile field to its new value.
                 type: array
                 items:
                   type: object
+                  additionalProperties: false
+                  properties:
+                    id:
+                      type: integer
+                    value:
+                      oneOf:
+                        - type: string
+                          nullable: true
+                          description: |
+                            A string value, or null to clear the custom profile field.
+                        - type: array
+                          items:
+                            type: integer
+                          description: |
+                            An array of integers for multi-select custom profile fields.
+                  required:
+                    - id
+                    - value
                 example:
                   [{"id": 4, "value": "0"}, {"id": 5, "value": "1909-04-05"}]
               new_email:

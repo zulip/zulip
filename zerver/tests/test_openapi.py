@@ -225,7 +225,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         #### These personal settings endpoints have modest value to document:
         "/users/me/avatar",
         # Much more valuable would be an org admin bulk-upload feature.
-        "/users/me/profile_data",
         #### Should be documented as part of interactive bots documentation
         "/bot_storage",
         "/submessage",
