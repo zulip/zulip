@@ -1,7 +1,9 @@
 <span class="decorated-channel-name-wrapper{{#if inline_with_text}} inline-decorated-channel-name{{/if}}">
+    {{~!-- squash whitespace --~}}
     <span class="channel-privacy-type-icon{{#if show_colored_icon}} stream-privacy-original-color-{{stream.stream_id}}{{/if}}"{{#if show_colored_icon}} style="color: {{stream.color}}"{{/if}}>
         {{~> stream_privacy stream ~}}
     </span>
     {{~!-- squash whitespace --~}}
     <span class="decorated-channel-name">{{stream.name}}</span>
+    {{~!-- squash whitespace --~}}
 </span>
