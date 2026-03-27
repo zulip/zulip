@@ -2408,6 +2408,13 @@
         var(--grey-400)
     );
 
+    /* bottom fade mask for typeahead dropdowns */
+    --mask-dropdown-bottom-fade: linear-gradient(
+        to bottom,
+        hsl(0deg 0% 0%) calc(100% - 20px),
+        transparent 100%
+    );
+
     /* Shared button CSS variables */
     --color-outline-button-focus: light-dark(
         hsl(0deg 0% 0%),
