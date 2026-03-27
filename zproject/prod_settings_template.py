@@ -544,11 +544,18 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 
 ## Note: Any additional SAML attributes that'll be used here must be
 ## listed in the "extra_attrs" field in the SOCIAL_AUTH_SAML_ENABLED_IDPS
-## configuration for your IdP.
+## configuration for your IdP (except for "full_name", which uses the
+## standard SAML name attributes).
 # SOCIAL_AUTH_SYNC_ATTRS_DICT = {
 #     "example_org": {
 #         "saml": {
-#             # role is currently the only supported major attribute.
+#             # Sync the user's full name from the IdP on each login.
+#             # Unlike other attributes, this uses the standard SAML name
+#             # attributes and doesn't require an extra_attrs entry.
+#             # Therefore, rather than mapping it to a specific SAML attribute,
+#             # this is enabled/disabled with a simple boolean.
+#             "full_name": True,
+#             # role is the other supported major attribute.
 #             "role": "zulip_role",
 #             # Specify custom profile fields with a custom__ prefix for the
 #             # Zulip field name.
