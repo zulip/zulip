@@ -95,6 +95,29 @@ const admin_settings_label = {
     realm_enable_two_tier_billing: $t({
         defaultMessage: "Discounted billing for non-workplace users",
     }),
+
+    realm_big_blue_button_start_muted: $t({
+        defaultMessage: "Mute all users when the meeting starts",
+    }),
+    realm_big_blue_button_skip_check_audio_on_first_join: $t({
+        defaultMessage:
+            'User will not see the "echo test" when sharing audio for the first time in the session.',
+    }),
+    realm_big_blue_button_auto_join_audio: $t({
+        defaultMessage:
+            "The client will start the process of joining the audio bridge automatically upon loading the client",
+    }),
+    realm_big_blue_button_listen_only_mode: $t({
+        defaultMessage:
+            "The user will not be able to join the audio part of the meeting without a microphone",
+    }),
+    realm_big_blue_button_show_session_details_on_join: $t({
+        defaultMessage:
+            "The session details window will not be displayed when a user joins the session.",
+    }),
+    realm_big_blue_button_guest_policy: $t({
+        defaultMessage: "Guest Policy:",
+    }),
 };
 
 function insert_tip_box(): void {
@@ -220,6 +243,7 @@ export function build_page(): void {
         realm_topics_policy: realm.realm_topics_policy,
         realm_topics_policy_values: settings_config.get_realm_topics_policy_values(),
         empty_string_topic_display_name: util.get_final_topic_display_name(""),
+        realm_big_blue_button_options: realm.realm_big_blue_button_options,
         realm_send_welcome_emails: realm.realm_send_welcome_emails,
         realm_enable_welcome_message_custom_text:
             realm.realm_welcome_message_custom_text.length > 0,
