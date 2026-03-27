@@ -2,7 +2,7 @@
 
 This page documents code style policies that every Zulip developer
 should understand. We aim for this document to be short and focused
-only on details that cannot be easily enforced another way (e.g.,
+only on details that cannot be easily enforced in another way (e.g.,
 through linters, automated tests, or subsystem design that makes classes
 of mistakes unlikely). This approach minimizes the cognitive
 load of ensuring a consistent coding style for both contributors and
@@ -55,7 +55,7 @@ You can run all of the linters at once:
 $ ./tools/lint
 ```
 
-Note that that takes a little time. `./tools/lint` runs many
+Note that it takes a little time. `./tools/lint` runs many
 lint checks in parallel, including:
 
 - JavaScript ([ESLint](https://eslint.org/),
@@ -222,7 +222,7 @@ avoided in new code.
 ## HTML and CSS
 
 See the documentation on [HTML and CSS](../subsystems/html-css.md)
-for guidance on conventions in those language.
+for guidance on conventions in those languages.
 
 ## Dangerous constructs in Django
 
@@ -270,7 +270,7 @@ In our Django code, never do direct `UserProfile.objects.get(email=foo)`
 database queries. Instead always use `get_user_profile_by_{email,id}`.
 There are 3 reasons for this:
 
-1.  It's guaranteed to correctly do a case-inexact lookup
+1.  It's guaranteed to correctly do a case-insensitive lookup
 2.  It fetches the user object from remote cache, which is faster
 3.  It always fetches a UserProfile object which has been queried
     using `.select_related()` ([see above](#avoid-excessive-database-queries)!),
@@ -308,7 +308,7 @@ assert obj.id in set([o.id for o in some_objs])
 
 You should always pass the `update_fields` keyword argument to `.save()`
 when modifying an existing Django model object. By default, `.save()` will
-overwrite every value in the column, which results in lots of race
+overwrite every column in that row, which results in lots of race
 conditions where unrelated changes made by one thread can be
 accidentally overwritten by another thread that fetched its `UserProfile`
 object before the first thread wrote out its change.

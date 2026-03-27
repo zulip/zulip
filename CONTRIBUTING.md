@@ -81,13 +81,13 @@ excited to:
 - **Take pride in your work**. Strive to write the best
   [commits][commit discipline] you can, carefully [review][reviewing code] your
   own work, and take the time to [explain][submitting a PR] it clearly to
-  project maintainers. Do your very best to overcome any challenges you run in
-  to before asking for help.
+  project maintainers. Do your very best to overcome any challenges you run into
+  before asking for help.
 - **Learn from feedback.** Every pull request undergoes a rigorous [review
   process][review process]. We need contributors to carefully apply and respond
   to the feedback they receive, and to take advantage of the learning experience
   to avoid similar mistakes in future work.
-- **Communicate with intention.** Any piece of communication from you (a pull
+- **Communicate with intentigoon.** Any piece of communication from you (a pull
   request, a [question][great-questions] in the development community, etc.), is
   a request for time and attention from Zulip’s maintainers. Successful
   contributors put in the reasoning and writing effort required to
