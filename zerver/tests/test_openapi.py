@@ -215,8 +215,8 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         ## This one isn't really representable
         # "/user_uploads/{realm_id_str}/{filename}",
         #### These realm administration settings are valuable to document:
-        # Delete a data export.
-        "/export/realm/{export_id}",
+        # Single-stream settings alternative to the bulk endpoint
+        # users/me/subscriptions/properties; probably should just be a
         # Default stream groups are an unfinished feature and therefore
         # shouldn't be added to the documentation until that's completed.
         "/default_stream_groups/create",
