@@ -88,7 +88,7 @@ class S3Test(ZulipTestCase):
         self.assertEqual(s3_image["Body"].read(), read_test_image_file("img.png"))
         self.assertEqual(
             s3_image["Metadata"],
-            {"realm_id": str(user_profile.realm_id), "user_profile_id": str(user_profile.id)},
+            {"realm-id": str(user_profile.realm_id), "user-profile-id": str(user_profile.id)},
         )
 
         s3_thumbnail_image = bucket.Object(f"thumbnail/{path_id}/100x75.webp").get()
@@ -146,7 +146,7 @@ class S3Test(ZulipTestCase):
         path_id = re.sub(r"/user_uploads/", "", url)
         s3_obj = bucket.Object(path_id)
         s3_obj.load()
-        self.assertEqual(s3_obj.metadata["realm_id"], str(zulip_realm.id))
+        self.assertEqual(s3_obj.metadata["realm-id"], str(zulip_realm.id))
 
     @use_s3_backend
     def test_delete_message_attachment(self) -> None:
