@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {clock, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -208,16 +209,16 @@ run_test("build_display_recipient", ({override}) => {
 
     const params = {
         realm_users: [
-            {
+            make_user({
                 user_id: 123,
                 full_name: "Iago",
                 email: "iago@zulip.com",
-            },
-            {
+            }),
+            make_user({
                 email: "cordelia@zulip.com",
                 full_name: "Cordelia",
                 user_id: 21,
-            },
+            }),
         ],
     };
     const user_group_params = {
@@ -352,16 +353,16 @@ run_test("insert_local_message direct message", ({override}) => {
 
     const params = {
         realm_users: [
-            {
+            make_user({
                 user_id: 123,
                 full_name: "Iago",
                 email: "iago@zulip.com",
-            },
-            {
+            }),
+            make_user({
                 email: "cordelia@zulip.com",
                 full_name: "Cordelia",
                 user_id: 21,
-            },
+            }),
         ],
     };
     const user_group_params = {
