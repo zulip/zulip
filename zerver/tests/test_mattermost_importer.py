@@ -304,10 +304,6 @@ class MattermostImportTestBase(ZulipTestCase):
 
         importable_dms: list[dict[str, Any]] = []
         for m in mattermost_data["post"]["direct_post"]:
-            # We don't convert deleted users yet. So 1-1 direct messages sent from importable
-            # users to them also won't be converted.
-            if len(set(m["channel_members"])) < 2:  # nocoverage
-                continue
             importable_dms.append(m)
             if m["replies"] is not None:
                 importable_dms += m["replies"]
@@ -727,6 +723,7 @@ class MatterMostImporter(MattermostImportTestBase):
             {malfoy_id, pansy_id},
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_convert_direct_message_group_data(self) -> None:
         fixture_file_name = self.fixture_file_name(
             "export.json", "mattermost_fixtures/direct_channel"
@@ -1236,6 +1233,7 @@ class MatterMostImporter(MattermostImportTestBase):
 
         self.verify_emoji_code_foreign_keys()
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_do_convert_data_with_direct_messages(self) -> None:
         mattermost_data_dir = self.fixture_file_name("direct_channel", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
@@ -1464,10 +1462,10 @@ class MatterMostImporter(MattermostImportTestBase):
         group_direct_messages = messages.filter(
             recipient__type=Recipient.DIRECT_MESSAGE_GROUP
         ).order_by("date_sent")
-        self.assert_length(group_direct_messages, 7)
+        self.assert_length(group_direct_messages, 11)
 
         direct_message_group_recipients = group_direct_messages.values_list("recipient", flat=True)
-        self.assert_length(set(direct_message_group_recipients), 3)
+        self.assert_length(set(direct_message_group_recipients), 7)
 
         self.assertEqual(group_direct_messages[0].sender.email, "ron@zulip.com")
         self.assertRegex(
@@ -1487,7 +1485,7 @@ class MatterMostImporter(MattermostImportTestBase):
         personal_messages = messages.filter(recipient__type=Recipient.PERSONAL).order_by(
             "date_sent"
         )
-        self.assert_length(personal_messages, 4)
+        self.assert_length(personal_messages, 0)
 
     def test_do_convert_data_with_masking(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
@@ -1765,7 +1763,7 @@ class MattermostCombinedTeamsImportTest(MattermostImportTestBase):
                 mattermost_data=mattermost_data,
                 imported_realm=imported_realm,
                 username_to_email_map=user_map_data.username_to_email_map,
-                expected_number_of_bot_messages=24,
+                expected_number_of_bot_messages=28,
             )
 
     def test_combining_unknown_object(self) -> None:

@@ -580,9 +580,6 @@ def process_raw_message_batch(
             member_ids = {
                 user_id_mapper.get(member) for member in members if user_id_mapper.has(member)
             }
-            if len(member_ids) < 2:  # nocoverage
-                # TODO: Convert direct message from deleted user and bot user.
-                continue
             pm_members[message_id] = member_ids
             other_user_mattermost_id = (
                 members[1] if sender_user_id == user_id_mapper.get(members[0]) else members[0]
@@ -592,8 +589,7 @@ def process_raw_message_batch(
             ):
                 recipient_id = other_user_recipient_id
             else:  # nocoverage
-                # This is likely a deleted user or bot user message. We can't convert it
-                # since we don't convert those types of user yet.
+                # This is likely a deleted user. We can't convert it since we don't convert them yet.
                 logging.info(
                     "Skipped a message from %s since this user is not converted.",
                     other_user_mattermost_id,

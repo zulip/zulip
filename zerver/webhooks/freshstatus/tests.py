@@ -203,4 +203,4 @@ The following scheduled maintenance has been closed: **Scheduled Maintenance Tes
 
         msg = self.get_last_message()
         self.assertEqual(msg.content, expected_message)
-        self.assertEqual(msg.recipient.type, Recipient.PERSONAL)
+        self.assertEqual(msg.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
