@@ -1342,7 +1342,7 @@ class FetchQueriesTest(ZulipTestCase):
 
         for event_type in sorted(wanted_event_types):
             count = expected_counts[event_type]
-            with self.assert_database_query_count(count):
+            with self.subTest(event_type=event_type), self.assert_database_query_count(count):
                 if event_type == "update_message_flags":
                     event_types = ["update_message_flags", "message"]
                 else:
