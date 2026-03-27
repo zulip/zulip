@@ -171,6 +171,7 @@ export function enable_subscriber_management({
 
     $pill_container.find(".input").on("input", () => {
         $parent_container.find(".stream_subscription_request_result").empty();
+        resize.resize_stream_subscribers_list();
     });
 
     const user_can_remove_subscribers = stream_data.can_unsubscribe_others(sub);
