@@ -1,13 +1,21 @@
 {{#if is_empty_string_topic}}
 <a class="stream-topic" data-stream-id="{{channel_id}}" href="{{href}}">
     {{~!-- squash whitespace --~}}
-    #{{channel_name}} &gt; <span class="empty-topic-display">{{topic_display_name}}</span>
+    {{#if stream~}}
+    {{~> decorated_channel_name stream=stream inline_with_text=true show_colored_icon=false}}
+    {{~else~}}
+    #{{channel_name}}
+    {{~/if}} &gt; <span class="empty-topic-display">{{topic_display_name}}</span>
     {{~!-- squash whitespace --~}}
 </a>
 {{~else}}
 <a class="stream-topic" data-stream-id="{{channel_id}}" href="{{href}}">
     {{~!-- squash whitespace --~}}
-    #{{channel_name}} &gt; {{topic_display_name}}
+    {{#if stream~}}
+    {{~> decorated_channel_name stream=stream inline_with_text=true show_colored_icon=false}}
+    {{~else~}}
+    #{{channel_name}}
+    {{~/if}} &gt; {{topic_display_name}}
     {{~!-- squash whitespace --~}}
 </a>
 {{~/if}}
