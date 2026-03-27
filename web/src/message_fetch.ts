@@ -227,6 +227,14 @@ function get_messages_success(data: MessageFetchResponse, opts: MessageFetchOpti
         });
         if (opts.msg_list) {
             message_feed_top_notices.update_top_of_narrow_notices(opts.msg_list);
+            // When we've just backfilled to the oldest message in
+            // a /near/ conversation view, re-check whether reading
+            // can be resumed. This handles the old_unreads_missing
+            // case: the gate defers until has_found_oldest() is
+            // true, and this is the moment that becomes true.
+            if (current_fetch_found_oldest && opts.msg_list === message_lists.current) {
+                opts.msg_list.maybe_resume_reading_for_near_view();
+            }
         }
     }
 

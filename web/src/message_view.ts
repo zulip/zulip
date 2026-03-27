@@ -858,7 +858,8 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
         );
         if (
             id_info.first_unread_msg_id_pending_server_verification &&
-            filter.is_conversation_view()
+            filter.is_conversation_view() &&
+            !filter.is_conversation_view_with_near()
         ) {
             const params = message_fetch.get_parameters_for_message_fetch_api({
                 anchor: "first_unread",
@@ -909,9 +910,8 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                             },
                         ];
                         assert(msg_list.data.filter.is_conversation_view());
-                        // Using both /with/ and /near/ operators in a single view doesn't
-                        // make sense, and checks like is_conversation_view_with_near do not
-                        // handle that combination correctly.
+                        // We remove /with/ because using both /with/ and /near/
+                        // operators in a single view doesn't make sense.
                         terms = terms.filter((term) => term.operator !== "with");
                         // We are not navigating user to a different place but want to
                         // keep user at the same place but avoid marking messages as read.
@@ -988,9 +988,11 @@ function navigate_to_anchor_message(opts: {
     // to avoid them being used for any other purpose.
     function duplicate_current_msg_list_with_new_data(data: MessageListData): MessageList {
         assert(message_lists.current !== undefined);
-        const msg_list = new message_list.MessageList({data});
-        msg_list.reading_prevented = message_lists.current.reading_prevented;
-        return msg_list;
+        return new message_list.MessageList({
+            data,
+            reading_prevented: message_lists.current.reading_prevented,
+            near_view_reading_gate_pending: message_lists.current.near_view_reading_gate_pending,
+        });
     }
 
     function select_msg_id(msg_id: number, select_opts?: SelectIdOpts): void {
@@ -1347,6 +1349,10 @@ export function render_message_list_with_selected_message(opts: {
         message_lists.current.view.set_message_offset(select_offset);
     }
     message_lists.current.view.update_sticky_recipient_headers();
+    // For /near/ views, check whether reading can be resumed before
+    // processing visibility, so that messages are correctly marked
+    // as read on the initial render if appropriate.
+    message_lists.current.maybe_resume_reading_for_near_view();
     unread_ops.process_visible();
     narrow_history.save_narrow_state_and_flush();
 }

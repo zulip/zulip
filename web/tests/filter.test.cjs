@@ -248,7 +248,7 @@ test("basics", () => {
     filter = new Filter(terms);
 
     assert.ok(!filter.is_keyword_search());
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.can_mark_messages_read());
     assert.ok(filter.contains_no_partial_conversations());
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(!filter.allow_use_first_unread_when_narrowing());
@@ -256,7 +256,7 @@ test("basics", () => {
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.can_bucket_by("channel"));
     assert.ok(filter.can_bucket_by("channel", "topic"));
-    assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.is_conversation_view());
     assert.ok(!filter.is_channel_view());
     assert.ok(filter.is_conversation_view_with_near());
     assert.ok(!filter.may_contain_multiple_conversations());
@@ -439,12 +439,12 @@ test("basics", () => {
     filter = new Filter(terms);
     assert.ok(filter.is_search_for_specific_group_or_user());
     assert.ok(filter.contains_only_private_messages());
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.can_mark_messages_read());
     assert.ok(filter.contains_no_partial_conversations());
     assert.ok(!filter.has_operator("search"));
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
-    assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.is_conversation_view());
     assert.ok(filter.is_conversation_view_with_near());
     assert.ok(!filter.may_contain_multiple_conversations());
     assert.ok(!filter.is_channel_view());
