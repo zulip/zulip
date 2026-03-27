@@ -135,10 +135,12 @@ class ClientDescriptor:
         # Default for idle_queue_timeout is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
         if idle_queue_timeout is None:
-            idle_queue_timeout = DEFAULT_EVENT_QUEUE_TIMEOUT_SECS
+            queue_timeout_secs = DEFAULT_EVENT_QUEUE_TIMEOUT_SECS
         elif idle_queue_timeout == "mobile":
-            idle_queue_timeout = MOBILE_EVENT_QUEUE_TIMEOUT_SECS
-        self.queue_timeout = min(idle_queue_timeout, MAX_QUEUE_TIMEOUT_SECS)
+            queue_timeout_secs = MOBILE_EVENT_QUEUE_TIMEOUT_SECS
+        else:
+            queue_timeout_secs = idle_queue_timeout
+        self.queue_timeout = min(queue_timeout_secs, MAX_QUEUE_TIMEOUT_SECS)
 
     def to_dict(self) -> dict[str, Any]:
         # If you add a new key to this dict, make sure you add appropriate
