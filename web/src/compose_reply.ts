@@ -38,8 +38,8 @@ type QuoteMessageOpts = {
 };
 
 type ReplaceContentOpts = {
-    message: Message;
-    raw_content: string;
+    quoted_message: Message;
+    raw_markdown: string;
     forward_message: boolean | undefined;
 };
 
@@ -402,20 +402,20 @@ function generate_private_message_quote_context(message: Message): string {
 }
 
 function generate_replace_content(info: ReplaceContentOpts): string {
-    const {message, raw_content, forward_message} = info;
+    const {quoted_message, raw_markdown, forward_message} = info;
     let content;
 
     if (!forward_message) {
-        content = generate_sender_only_quote_context(message);
-    } else if (message.type === "stream") {
-        content = generate_channel_message_quote_context(message);
+        content = generate_sender_only_quote_context(quoted_message);
+    } else if (quoted_message.type === "stream") {
+        content = generate_channel_message_quote_context(quoted_message);
     } else {
-        content = generate_private_message_quote_context(message);
+        content = generate_private_message_quote_context(quoted_message);
     }
 
     content += "\n";
-    const fence = fenced_code.get_unused_fence(raw_content);
-    content += `${fence}quote\n${raw_content}\n${fence}`;
+    const fence = fenced_code.get_unused_fence(raw_markdown);
+    content += `${fence}quote\n${raw_markdown}\n${fence}`;
     return content;
 }
 
@@ -464,8 +464,8 @@ function quote_single_message(opts: QuoteMessageOpts): void {
 
     if (message && quote_content) {
         const content = generate_replace_content({
-            message,
-            raw_content: quote_content,
+            quoted_message: message,
+            raw_markdown: quote_content,
             forward_message: opts.forward_message,
         });
         replace_quoting_placeholder_with({content, forward_message: opts.forward_message});
@@ -476,8 +476,8 @@ function quote_single_message(opts: QuoteMessageOpts): void {
         message_id,
         on_success(raw_content) {
             const content = generate_replace_content({
-                message,
-                raw_content,
+                quoted_message: message,
+                raw_markdown: raw_content,
                 forward_message: opts.forward_message,
             });
             replace_quoting_placeholder_with({content, forward_message: opts.forward_message});
@@ -496,8 +496,8 @@ function quote_single_message(opts: QuoteMessageOpts): void {
             // it was populated during the waiting time.
             const md = message.raw_content ?? compose_paste.paste_handler_converter(message_html);
             const content = generate_replace_content({
-                message,
-                raw_content: md,
+                quoted_message: message,
+                raw_markdown: md,
                 forward_message: opts.forward_message,
             });
             replace_quoting_placeholder_with({content, forward_message: opts.forward_message});
