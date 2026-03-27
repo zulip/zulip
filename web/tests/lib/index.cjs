@@ -33,7 +33,7 @@ Object.defineProperty(global, "navigator", {
 });
 
 require("@babel/register")({
-    extensions: [".cjs", ".cts", ".js", ".mjs", ".mts", ".ts"],
+    extensions: [".cjs", ".js", ".mjs", ".mts", ".ts"],
     only: [new RegExp("^" + _.escapeRegExp(path.resolve(__dirname, "../../src") + path.sep))],
     plugins: [
         ...(process.env.USING_INSTRUMENTED_CODE ? [["istanbul", {exclude: []}]] : []),

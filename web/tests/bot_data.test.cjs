@@ -2,7 +2,7 @@
 
 const assert = require("node:assert/strict");
 
-const {make_user} = require("./lib/example_user.cjs");
+const {make_user, make_bot} = require("./lib/example_user.cts");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -26,7 +26,7 @@ const fred = make_user({
     user_id: 3,
 });
 
-const bot_0_user = make_user({
+const bot_0 = make_user({
     email: "bot0@zulip.com",
     full_name: "Bot 0",
     user_id: 42,
@@ -34,7 +34,7 @@ const bot_0_user = make_user({
     bot_type: 1, // DEFAULT_BOT
     bot_owner_id: 4,
 });
-const webhook_bot_user = make_user({
+const webhook_bot = make_user({
     email: "outgoingwebhook@zulip.com",
     full_name: "Outgoing webhook",
     user_id: 314,
@@ -42,7 +42,7 @@ const webhook_bot_user = make_user({
     bot_type: 3, // OUTGOING_WEBHOOK_BOT
     bot_owner_id: 5,
 });
-const test_bot_user = make_user({
+const test_bot = make_user({
     email: "bot1@zulip.com",
     full_name: "Bot 1",
     user_id: 43,
@@ -51,7 +51,7 @@ const test_bot_user = make_user({
     is_bot: true,
     bot_owner_id: 6,
 });
-const test_embedded_bot_user = make_user({
+const test_embedded_bot = make_user({
     email: "embedded-bot@zulip.com",
     full_name: "Embedded bot 1",
     user_id: 143,
@@ -60,7 +60,7 @@ const test_embedded_bot_user = make_user({
     bot_owner_id: 7,
 });
 
-const test_bot_1_user = make_user({
+const test_bot_1 = make_user({
     email: "bot1@zulip.com",
     full_name: "Bot 1",
     user_id: 44,
@@ -69,7 +69,7 @@ const test_bot_1_user = make_user({
     is_bot: true,
     bot_owner_id: me.user_id,
 });
-const test_bot_2_user = make_user({
+const test_bot_2 = make_user({
     email: "bot2@zulip.com",
     full_name: "Bot 1",
     user_id: 45,
@@ -78,7 +78,7 @@ const test_bot_2_user = make_user({
     is_bot: true,
     bot_owner_id: me.user_id,
 });
-const test_bot_3_user = make_user({
+const test_bot_3 = make_user({
     email: "bot3@zulip.com",
     full_name: "Bot 1",
     user_id: 46,
@@ -112,13 +112,13 @@ const bot_data_params = {
 function test(label, f) {
     run_test(label, ({override}) => {
         people.add_active_user(me);
-        people.add_active_user(bot_0_user);
-        people.add_active_user(webhook_bot_user);
-        people.add_active_user(test_bot_user);
-        people.add_active_user(test_embedded_bot_user);
-        people.add_active_user(test_bot_1_user);
-        people.add_active_user(test_bot_2_user);
-        people.add_active_user(test_bot_3_user);
+        people.add_active_user(bot_0);
+        people.add_active_user(webhook_bot);
+        people.add_active_user(test_bot);
+        people.add_active_user(test_embedded_bot);
+        people.add_active_user(test_bot_1);
+        people.add_active_user(test_bot_2);
+        people.add_active_user(test_bot_3);
         people.initialize_current_user(me.user_id);
         bot_data.initialize(bot_data_params);
         // Our startup logic should have added Bot 0 from page_params.
