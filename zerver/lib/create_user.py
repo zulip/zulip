@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 from email.headerregistry import Address
 
+import icu
 from django.contrib.auth.models import UserManager
 from django.utils.timezone import now as timezone_now
 
@@ -19,6 +20,30 @@ from zerver.models import (
     UserProfile,
 )
 from zerver.models.realms import get_fake_email_domain
+
+
+def infer_twenty_four_hour_time(time_format_locale: str) -> bool:
+    """
+    Best-effort guess of whether the locale's default time format is 24-hour.
+
+    This is used for initializing new user accounts. We use ICU because it has
+    reliable locale data for time formats.
+    """
+
+    # ICU expects locale identifiers like en_GB, while HTTP headers commonly use en-GB.
+    locale_str = time_format_locale.replace("-", "_")
+    try:
+        date_format = icu.DateFormat.createTimeInstance(icu.DateFormat.kShort, icu.Locale(locale_str))
+        if not isinstance(date_format, icu.SimpleDateFormat):
+            return False
+        pattern = date_format.toPattern()
+    except Exception:
+        return False
+
+    # 24-hour: H (0-23) or k (1-24). 12-hour: h (1-12) or K (0-11).
+    if "H" in pattern or "k" in pattern:
+        return True
+    return False
 
 
 def copy_default_settings(
@@ -174,6 +199,8 @@ def create_user(
     force_date_joined: datetime | None = None,
     enable_marketing_emails: bool | None = None,
     email_address_visibility: int | None = None,
+    twenty_four_hour_time: bool | None = None,
+    time_format_locale: str | None = None,
 ) -> UserProfile:
     realm_user_default = RealmUserDefault.objects.get(realm=realm)
     if bot_type is None:
@@ -233,6 +260,16 @@ def create_user(
     else:
         # This will be executed only for bots.
         user_profile.save()
+
+    if bot_type is None and source_profile is None:
+        inferred_twenty_four_hour_time = twenty_four_hour_time
+        if inferred_twenty_four_hour_time is None:
+            inferred_twenty_four_hour_time = infer_twenty_four_hour_time(
+                time_format_locale or default_language
+            )
+        if user_profile.twenty_four_hour_time != inferred_twenty_four_hour_time:
+            user_profile.twenty_four_hour_time = inferred_twenty_four_hour_time
+            user_profile.save(update_fields=["twenty_four_hour_time"])
 
     if bot_type is None and enable_marketing_emails is not None:
         user_profile.enable_marketing_emails = enable_marketing_emails

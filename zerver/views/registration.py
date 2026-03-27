@@ -77,6 +77,7 @@ from zerver.lib.email_validation import email_allowed_for_realm, validate_email_
 from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.i18n import (
     get_browser_language_code,
+    get_browser_locale,
     get_default_language_for_anonymous_user,
     get_default_language_for_new_user,
     get_language_name,
@@ -848,6 +849,7 @@ def registration_helper(
                     enable_marketing_emails=enable_marketing_emails,
                     email_address_visibility=email_address_visibility,
                     external_auth_id_dict=external_auth_id_dict,
+                    time_format_locale=get_browser_locale(request),
                 )
 
                 # Mark the preregistration object as used if the user was
@@ -1538,6 +1540,7 @@ def create_demo_helper(
         acting_user=None,
         default_language=user_default_language,
         default_stream_groups=[],
+        time_format_locale=get_browser_locale(request),
         # We don't require an email address when creating a demo organization;
         # the user will be able to add an email address later.
         email="",

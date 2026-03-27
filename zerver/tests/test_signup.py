@@ -1611,11 +1611,7 @@ class UserSignUpTest(ZulipTestCase):
 
         outbox.pop()
 
-    def test_default_twenty_four_hour_time(self) -> None:
-        """
-        Check if the default twenty_four_hour_time setting of new user
-        is the default twenty_four_hour_time of the realm.
-        """
+    def test_twenty_four_hour_time_is_inferred_from_locale(self) -> None:
         email = self.nonreg_email("newguy")
         password = "newpassword"
         realm = get_realm("zulip")
@@ -1637,14 +1633,40 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
 
-        result = self.submit_reg_form_for_user(email, password)
+        # Locale en-US defaults to 12-hour time. This should override the realm default.
+        result = self.submit_reg_form_for_user(email, password, HTTP_ACCEPT_LANGUAGE="en-US")
         self.assertEqual(result.status_code, 302)
 
         user_profile = self.nonreg_user("newguy")
+        self.assertFalse(user_profile.twenty_four_hour_time)
+
+    def test_twenty_four_hour_time_is_inferred_as_24_hour_for_en_gb(self) -> None:
+        email = "newguy2@zulip.com"
+        password = "newpassword"
+        realm = get_realm("zulip")
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
-        self.assertEqual(
-            user_profile.twenty_four_hour_time, realm_user_default.twenty_four_hour_time
+        do_set_realm_user_default_setting(
+            realm_user_default, "twenty_four_hour_time", False, acting_user=None
         )
+
+        result = self.client_post("/accounts/home/", {"email": email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
+        )
+        result = self.client_get(result["Location"])
+        self.assert_in_response("check your email", result)
+
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        # Locale en-GB defaults to 24-hour time. This should override the realm default.
+        result = self.submit_reg_form_for_user(email, password, HTTP_ACCEPT_LANGUAGE="en-GB,en;q=0.9")
+        self.assertEqual(result.status_code, 302)
+
+        user_profile = UserProfile.objects.get(realm=realm, delivery_email=email)
+        self.assertTrue(user_profile.twenty_four_hour_time)
 
     def test_email_address_visibility_for_new_user(self) -> None:
         email = self.nonreg_email("newguy")
