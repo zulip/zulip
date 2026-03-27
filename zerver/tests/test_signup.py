@@ -1662,7 +1662,9 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
 
         # Locale en-GB defaults to 24-hour time. This should override the realm default.
-        result = self.submit_reg_form_for_user(email, password, HTTP_ACCEPT_LANGUAGE="en-GB,en;q=0.9")
+        result = self.submit_reg_form_for_user(
+            email, password, HTTP_ACCEPT_LANGUAGE="en-GB,en;q=0.9"
+        )
         self.assertEqual(result.status_code, 302)
 
         user_profile = UserProfile.objects.get(realm=realm, delivery_email=email)

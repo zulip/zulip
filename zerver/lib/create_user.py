@@ -33,7 +33,9 @@ def infer_twenty_four_hour_time(time_format_locale: str) -> bool:
     # ICU expects locale identifiers like en_GB, while HTTP headers commonly use en-GB.
     locale_str = time_format_locale.replace("-", "_")
     try:
-        date_format = icu.DateFormat.createTimeInstance(icu.DateFormat.kShort, icu.Locale(locale_str))
+        date_format = icu.DateFormat.createTimeInstance(
+            icu.DateFormat.kShort, icu.Locale(locale_str)
+        )
         if not isinstance(date_format, icu.SimpleDateFormat):
             return False
         pattern = date_format.toPattern()
