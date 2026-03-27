@@ -48,7 +48,6 @@ let message_too_long = false;
 //  we need to track when we are validating compose box.
 let is_validating_compose_box = false;
 let disabled_send_tooltip_message_html = "";
-let posting_policy_error_message = "";
 
 export const NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE = $t({
     defaultMessage: "You do not have permission to post in this channel.",
@@ -129,17 +128,6 @@ function set_message_too_long_for_edit(status: boolean, $container: JQuery): voi
 
     $container.find(".message_edit_save").prop("disabled", save_is_disabled);
     $message_edit_save_container.toggleClass("disabled-message-edit-save", save_is_disabled);
-}
-
-export function get_posting_policy_error_message(): string {
-    // Contains errors which are shown as compose banner before user
-    // clicks on the send button.
-    // Ensure you are calling `validate` for the current compose state,
-    // before calling this function.
-    // We directly add the error banner instead of setting
-    // `posting_policy_error_message`, when the banner contains special
-    // context for the current compose state.
-    return posting_policy_error_message;
 }
 
 export function get_disabled_send_tooltip_html(): string {
@@ -914,7 +902,6 @@ function validate_permission_to_post_messages_in_stream(sub: StreamSubscription)
 
         if (is_validating_compose_box) {
             disabled_send_tooltip_message_html = NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE;
-            posting_policy_error_message = NO_PERMISSION_TO_POST_IN_CHANNEL_ERROR_MESSAGE;
         }
         return false;
     }
@@ -1003,8 +990,15 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
     return true;
 }
 
-// The function checks whether the recipients are users of the realm or cross realm users (bots
-// for now)
+function set_compose_textarea_disabled(disabled: boolean): void {
+    $("textarea#compose-textarea").prop("disabled", disabled);
+    // Also toggle keyboard navigation on compose control buttons.
+    $("#compose .disable-on-invalid-recipient .compose_control_button").prop(
+        "tabindex",
+        disabled ? -1 : 0,
+    );
+}
+
 export function validate_private_message(show_banner = true): boolean {
     const user_ids = compose_pm_pill.get_user_ids();
     const user_ids_string = util.sorted_ids(user_ids).join(",");
@@ -1028,28 +1022,24 @@ export function validate_private_message(show_banner = true): boolean {
     const direct_message_error_string = check_dm_permissions_and_get_error_string(user_ids_string);
     if (direct_message_error_string) {
         compose_banner.cannot_send_direct_message_error(direct_message_error_string);
+        set_compose_textarea_disabled(true);
         if (is_validating_compose_box) {
             disabled_send_tooltip_message_html = direct_message_error_string;
-            posting_policy_error_message = direct_message_error_string;
         }
         return false;
     }
 
-    let context = {};
-
     for (const user_id of user_ids) {
         if (!people.is_person_active(user_id)) {
-            context = {full_name: people.get_by_user_id(user_id).full_name};
-            const error_message = $t(
-                {defaultMessage: "You cannot send messages to deactivated users."},
-                context,
-            );
+            const error_message = $t({
+                defaultMessage: "You cannot send messages to deactivated users.",
+            });
             compose_banner.show_error_message(
                 error_message,
                 compose_banner.CLASSNAMES.deactivated_user,
                 $banner_container,
-                $("#private_message_recipient"),
             );
+            set_compose_textarea_disabled(true);
 
             if (is_validating_compose_box) {
                 disabled_send_tooltip_message_html = error_message;
@@ -1058,6 +1048,9 @@ export function validate_private_message(show_banner = true): boolean {
         }
     }
 
+    // Re-enable the compose textarea in case it was disabled by a
+    // previous call for an invalid recipient that has since been fixed.
+    set_compose_textarea_disabled(false);
     return true;
 }
 
@@ -1136,28 +1129,6 @@ export function check_overflow_text($container: JQuery): number {
     return text.length;
 }
 
-export let update_posting_policy_banner_post_validation = (): void => {
-    const banner_text = get_posting_policy_error_message();
-    if (banner_text === "") {
-        compose_banner.clear_errors();
-        return;
-    }
-
-    let banner_classname = compose_banner.CLASSNAMES.no_post_permissions;
-    if (compose_state.selected_recipient_id === "direct") {
-        banner_classname = compose_banner.CLASSNAMES.cannot_send_direct_message;
-        compose_banner.cannot_send_direct_message_error(banner_text);
-    } else {
-        compose_banner.show_error_message(banner_text, banner_classname, $("#compose_banners"));
-    }
-};
-
-export function rewire_update_posting_policy_banner_post_validation(
-    value: typeof update_posting_policy_banner_post_validation,
-): void {
-    update_posting_policy_banner_post_validation = value;
-}
-
 export let validate_and_update_send_button_status = function (): void {
     const is_valid = validate(false, false);
     const $send_button = $("#compose-send-button");
@@ -1169,7 +1140,6 @@ export let validate_and_update_send_button_status = function (): void {
         send_button_element._tippy.hide();
         send_button_element._tippy.show();
     }
-    update_posting_policy_banner_post_validation();
 };
 
 export function rewire_validate_and_update_send_button_status(
@@ -1216,8 +1186,13 @@ function report_validation_error(
 
 export let validate = (scheduling_message: boolean, show_banner = true): boolean => {
     is_validating_compose_box = true;
-    posting_policy_error_message = "";
     disabled_send_tooltip_message_html = "";
+    // Clear previous banners from the previous compose state; the
+    // validation checks below will re-add any that are still relevant.
+    compose_banner.clear_errors();
+    // Reset compose textarea state; validate_private_message may
+    // disable it if the recipient is invalid.
+    set_compose_textarea_disabled(false);
     const message_content = compose_state.message_content();
     // The validation checks in this function are in a specific priority order. Don't
     // change their order unless you want to change which priority they're shown in.
