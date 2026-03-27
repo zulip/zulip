@@ -30,7 +30,8 @@ export function get_jitsi_server_url(video_call_id?: string): URL | null {
     }
     const url = new URL(base_url);
     if (video_call_id !== undefined) {
-        url.pathname = `/${video_call_id}`;
+        const separator = url.pathname.endsWith("/") ? "" : "/";
+        url.pathname += `${separator}${video_call_id}`;
     }
     return url;
 }
