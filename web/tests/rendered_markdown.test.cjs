@@ -27,6 +27,7 @@ mock_cjs("clipboard", Clipboard);
 const realm_playground = mock_esm("../src/realm_playground");
 const copied_tooltip = mock_esm("../src/copied_tooltip");
 
+const alert_words = zrequire("alert_words");
 const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
@@ -457,6 +458,63 @@ run_test("stream-links", ({mock_template}) => {
         href: `/#narrow/channel/${stream.stream_id}-random/topic/topic.20name.20.3E.20still.20the.20topic.20name`,
     });
     assert.ok(!topic_link_rendered_html.includes("empty-topic-display"));
+});
+
+run_test("stream topic with alert words", ({mock_template}) => {
+    // Setup
+    const $content = get_content_element();
+    const $stream_topic = $.create("a.stream-topic");
+    $stream_topic.set_find_results(".highlight", false);
+    $stream_topic.attr(
+        "href",
+        `/#narrow/channel/${stream.stream_id}-test/topic/alert.20topic`,
+    );
+    let replaced_html;
+    $stream_topic.replaceWith = (elem) => {
+        replaced_html = elem.selector;
+    };
+    $stream_topic.hasClass = (class_name) => class_name === "stream-topic";
+    $stream_topic.text("#test > alert topic");
+
+    $content.set_find_results("a.stream-topic, a.message-link", $array([$stream_topic]));
+
+    mock_template("topic_link.hbs", true, (_data, html) => html);
+
+    const message = {alerted: true};
+    set_message_for_message_content($content, message);
+    alert_words.set_words(["alert"]);
+
+    rm.update_elements($content);
+
+    // Verify alert word "alert" is highlighted only in the topic name
+    assert.ok(replaced_html.includes("<span class='alert-word'>alert</span>"));
+
+    alert_words.set_words([]);
+});
+
+run_test("message-link alert words", ({mock_template}) => {
+    const $content = get_content_element();
+    const $message_link = $.create("a.message-link(alert)");
+    $message_link.set_find_results(".highlight", false);
+    $message_link.attr("href", `/#narrow/channel/${stream.stream_id}-random/topic/alert/near/123`);
+    $message_link.hasClass = (class_name) => class_name === "message-link";
+    let replaced_html;
+    $message_link.replaceWith = (elem) => {
+        replaced_html = elem.selector;
+    };
+    $content.set_find_results("a.stream-topic, a.message-link", $array([$message_link]));
+
+    const message = {alerted: true};
+    set_message_for_message_content($content, message);
+    alert_words.set_words(["alert"]);
+
+    mock_template("channel_message_link.hbs", true, (_data, html) => html);
+
+    rm.update_elements($content);
+
+    assert.ok(replaced_html.includes("<span class='alert-word'>alert</span>"));
+
+    alert_words.set_words([]);
 });
 
 run_test("topic-link (empty string topic)", ({mock_template}) => {
