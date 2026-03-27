@@ -9,7 +9,9 @@
                 <th class="settings-email-column" data-sort="email">{{t "Email" }}
                     <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
                 </th>
-                <th class="remove-button-column" {{#unless can_remove_members}}style="display:none"{{/unless}}></th>
+                {{#if can_remove_members}}
+                <th class="remove-button-column"></th>
+                {{/if}}
             </tr>
         </thead>
         <tbody class="member_table" data-empty="{{t 'This group has no members.' }}" data-search-results-empty="{{t 'No group members match your current filter.'}}"></tbody>
