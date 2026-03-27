@@ -34,15 +34,9 @@
             color: var(--color-message-reaction-text-reacted);
             background-color: var(--color-message-reaction-background-reacted);
             border-color: var(--color-message-reaction-border-reacted);
-            /* Make this border thicker by half a pixel,
-               to make own reactions more prominent. */
-            border-width: 1.5px;
-            /* Reduce the padding top and bottom by half
-               a pixel accordingly, to maintain the same
-               pill height. */
-            padding: 1px 4px 1px 3px;
+            box-shadow: inset 0 0 0 0.5px
+                var(--color-message-reaction-border-reacted);
             font-weight: var(--font-weight-message-reaction);
-            box-shadow: none;
         }
 
         &.disabled {
