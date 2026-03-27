@@ -1,0 +1,212 @@
+"use strict";
+
+const assert = require("node:assert/strict");
+
+const {zrequire, mock_esm} = require("./lib/namespace.cjs");
+const {run_test} = require("./lib/test.cjs");
+
+const compose_reply = zrequire("compose_reply");
+const message_lists = mock_esm("../src/message_lists");
+
+const pm_user_ids_1 = "1,2";
+const pm_user_ids_2 = "3,4";
+
+const msg_pm_1 = {type: "private", to_user_ids: pm_user_ids_1};
+const msg_pm_2 = {type: "private", to_user_ids: pm_user_ids_1};
+const msg_pm_3 = {type: "private", to_user_ids: pm_user_ids_2};
+
+const msg_stream_denmark_general = {type: "stream", stream_id: 10, topic: "general"};
+// Topic case should be ignored by all_messages_have_same_recipient
+const msg_stream_denmark_general_caps = {type: "stream", stream_id: 10, topic: "GENERAL"};
+const msg_stream_denmark_design = {type: "stream", stream_id: 10, topic: "design"};
+const msg_stream_sweden_general = {type: "stream", stream_id: 20, topic: "general"};
+
+function set_message_lists_current(may_contain_multiple) {
+    message_lists.current = {
+        data: {
+            filter: {
+                may_contain_multiple_conversations() {
+                    return may_contain_multiple;
+                },
+            },
+        },
+    };
+}
+
+run_test("all_messages_have_same_recipient", () => {
+    // When the filter is set to channel+topic or a dm
+    // conversation.
+    set_message_lists_current(false);
+    assert.equal(
+        compose_reply.all_messages_have_same_recipient([
+            msg_stream_denmark_general,
+            msg_stream_denmark_general_caps,
+        ]),
+        true,
+        "Return true if existing narrow cannot possibly have more than one recipients",
+    );
+
+    // Assertions on empty arrays
+    assert.throws(() => compose_reply.all_messages_have_same_recipient([]), Error);
+    set_message_lists_current(true);
+    // Private messages
+    assert.ok(compose_reply.all_messages_have_same_recipient([msg_pm_1]));
+    assert.ok(compose_reply.all_messages_have_same_recipient([msg_pm_1, msg_pm_2]));
+    assert.equal(
+        compose_reply.all_messages_have_same_recipient([msg_pm_1, msg_pm_2, msg_pm_3]),
+        false,
+        "Fails if private message recipients differ",
+    );
+
+    // Channel messages
+    assert.ok(compose_reply.all_messages_have_same_recipient([msg_stream_denmark_general]));
+    assert.ok(
+        compose_reply.all_messages_have_same_recipient([
+            msg_stream_denmark_general,
+            msg_stream_denmark_general_caps,
+        ]),
+        "Topic matching should be case-insensitive",
+    );
+
+    assert.equal(
+        compose_reply.all_messages_have_same_recipient([
+            msg_stream_denmark_general,
+            msg_stream_denmark_design,
+        ]),
+        false,
+        "Return false if topics differ",
+    );
+    assert.equal(
+        compose_reply.all_messages_have_same_recipient([
+            msg_stream_denmark_general,
+            msg_stream_sweden_general,
+        ]),
+        false,
+        "Return false if stream IDs differ for channel messages",
+    );
+
+    // Mixed types
+    assert.equal(
+        compose_reply.all_messages_have_same_recipient([msg_pm_1, msg_stream_denmark_general]),
+        false,
+        "Return false on mixed stream/private messages",
+    );
+    assert.equal(
+        compose_reply.all_messages_have_same_recipient([msg_stream_denmark_general, msg_pm_1]),
+        false,
+        "Return false on mixed stream/private messages",
+    );
+});
+
+run_test("get_quote_context_for_message", () => {
+    set_message_lists_current(true);
+
+    const msg_alice = {type: "stream", stream_id: 10, topic: "general", sender_id: 1};
+    const msg_alice_2 = {type: "stream", stream_id: 10, topic: "general", sender_id: 1};
+    const msg_bob = {type: "stream", stream_id: 10, topic: "general", sender_id: 2};
+    const msg_bob_design = {type: "stream", stream_id: 10, topic: "design", sender_id: 2};
+
+    const pm_alice = {type: "private", to_user_ids: "1,2", sender_id: 1};
+    const pm_alice_2 = {type: "private", to_user_ids: "1,2", sender_id: 1};
+    const pm_bob = {type: "private", to_user_ids: "1,2", sender_id: 2};
+    const pm_charlie = {type: "private", to_user_ids: "1,2,3", sender_id: 3};
+
+    // First message in a quote chain
+    assert.equal(
+        compose_reply.get_quote_context_for_message({
+            current_message: msg_alice,
+            previous_quoted_message: undefined,
+            forward_message: false,
+            is_first_in_quote_chain: true,
+        }),
+        "INCLUDE_SENDER_AND_RECIPIENT",
+    );
+
+    // Continuous channel message from the same sender
+    assert.equal(
+        compose_reply.get_quote_context_for_message({
+            current_message: msg_alice_2,
+            previous_quoted_message: msg_alice,
+            forward_message: false,
+            is_first_in_quote_chain: false,
+        }),
+        "INCLUDE_NOTHING",
+    );
+
+    // Continuous private message from the same sender
+    assert.equal(
+        compose_reply.get_quote_context_for_message({
+            current_message: pm_alice_2,
+            previous_quoted_message: pm_alice,
+            forward_message: false,
+            is_first_in_quote_chain: false,
+        }),
+        "INCLUDE_NOTHING",
+    );
+
+    // Same channel thread, but the sender changed
+    assert.equal(
+        compose_reply.get_quote_context_for_message({
+            current_message: msg_bob,
+            previous_quoted_message: msg_alice,
+            forward_message: false,
+            is_first_in_quote_chain: false,
+        }),
+        "INCLUDE_SENDER",
+    );
+
+    // Same private message thread, but the sender changed
+    assert.equal(
+        compose_reply.get_quote_context_for_message({
+            current_message: pm_bob,
+            previous_quoted_message: pm_alice,
+            forward_message: false,
+            is_first_in_quote_chain: false,
+        }),
+        "INCLUDE_SENDER",
+    );
+
+    // Channel/topic changed completely
+    assert.equal(
+        compose_reply.get_quote_context_for_message({
+            current_message: msg_bob_design,
+            previous_quoted_message: msg_alice,
+            forward_message: false,
+            is_first_in_quote_chain: false,
+        }),
+        "INCLUDE_SENDER_AND_RECIPIENT",
+    );
+
+    // Private message recipients changed completely
+    assert.equal(
+        compose_reply.get_quote_context_for_message({
+            current_message: pm_charlie,
+            previous_quoted_message: pm_alice,
+            forward_message: false,
+            is_first_in_quote_chain: false,
+        }),
+        "INCLUDE_SENDER_AND_RECIPIENT",
+    );
+
+    // Quoted individually (no previous message)
+    assert.equal(
+        compose_reply.get_quote_context_for_message({
+            current_message: msg_alice,
+            previous_quoted_message: undefined,
+            forward_message: false,
+            is_first_in_quote_chain: false,
+        }),
+        "INCLUDE_SENDER",
+    );
+
+    // Forwarded individually
+    assert.equal(
+        compose_reply.get_quote_context_for_message({
+            current_message: msg_alice,
+            previous_quoted_message: undefined,
+            forward_message: true,
+            is_first_in_quote_chain: false,
+        }),
+        "INCLUDE_SENDER_AND_RECIPIENT",
+    );
+});

@@ -41,6 +41,8 @@ type ReplaceContentOpts = {
     quoted_message: Message;
     raw_markdown: string;
     forward_message: boolean | undefined;
+    previous_quoted_message?: Message | undefined;
+    is_first_in_quote_chain?: boolean;
 };
 
 const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
@@ -401,19 +403,77 @@ function generate_private_message_quote_context(message: Message): string {
     );
 }
 
-function generate_replace_content(info: ReplaceContentOpts): string {
-    const {quoted_message, raw_markdown, forward_message} = info;
-    let content;
+type QuoteContext = "INCLUDE_SENDER" | "INCLUDE_SENDER_AND_RECIPIENT" | "INCLUDE_NOTHING";
 
-    if (!forward_message) {
-        content = generate_sender_only_quote_context(quoted_message);
-    } else if (quoted_message.type === "stream") {
-        content = generate_channel_message_quote_context(quoted_message);
-    } else {
-        content = generate_private_message_quote_context(quoted_message);
+// Returns what context the line before the quote block having the quoted message content
+// should contain.
+export function get_quote_context_for_message(info: {
+    forward_message: boolean | undefined;
+    current_message: Message;
+    previous_quoted_message: Message | undefined;
+    is_first_in_quote_chain: boolean | undefined;
+}): QuoteContext {
+    const {current_message, previous_quoted_message, forward_message, is_first_in_quote_chain} =
+        info;
+    if (is_first_in_quote_chain) {
+        return "INCLUDE_SENDER_AND_RECIPIENT";
+    }
+    if (previous_quoted_message) {
+        if (all_messages_have_same_recipient([current_message, previous_quoted_message])) {
+            // We don't include the sender or the recipient details
+            // for a message that has the same (sender, recipient) pair
+            // as the previous message.
+            if (current_message.sender_id === previous_quoted_message.sender_id) {
+                return "INCLUDE_NOTHING";
+            }
+            // We include the sender context in case only the sender
+            // differs compared to the previous message.
+            return "INCLUDE_SENDER";
+        }
+        return "INCLUDE_SENDER_AND_RECIPIENT";
     }
 
-    content += "\n";
+    // This message is quoted individually and is not part
+    // of some collection of quoted messages.
+    if (!forward_message) {
+        return "INCLUDE_SENDER";
+    }
+    return "INCLUDE_SENDER_AND_RECIPIENT";
+}
+
+function generate_replace_content(info: ReplaceContentOpts): string {
+    const {
+        quoted_message,
+        raw_markdown,
+        forward_message,
+        previous_quoted_message,
+        is_first_in_quote_chain,
+    } = info;
+    const required_quote_context = get_quote_context_for_message({
+        current_message: quoted_message,
+        forward_message,
+        previous_quoted_message,
+        is_first_in_quote_chain,
+    });
+
+    let content;
+
+    switch (required_quote_context) {
+        case "INCLUDE_SENDER":
+            content = generate_sender_only_quote_context(quoted_message) + "\n";
+            break;
+        case "INCLUDE_SENDER_AND_RECIPIENT":
+            if (quoted_message.type === "stream") {
+                content = generate_channel_message_quote_context(quoted_message) + "\n";
+            } else {
+                content = generate_private_message_quote_context(quoted_message) + "\n";
+            }
+            break;
+        case "INCLUDE_NOTHING":
+            content = "";
+            break;
+    }
+
     const fence = fenced_code.get_unused_fence(raw_markdown);
     content += `${fence}quote\n${raw_markdown}\n${fence}`;
     return content;
@@ -503,6 +563,34 @@ function quote_single_message(opts: QuoteMessageOpts): void {
             replace_quoting_placeholder_with({content, forward_message: opts.forward_message});
         },
     });
+}
+
+export function all_messages_have_same_recipient(messages: Message[]): boolean {
+    assert(messages.length > 0);
+    // When the current narrow cannot contain multiple conversations,
+    // the highlighted messages are guaranteed to share a recipient.
+    if (!message_lists.current?.data.filter.may_contain_multiple_conversations()) {
+        return true;
+    }
+    const first_message = messages[0]!;
+
+    if (first_message.type === "private") {
+        const target_user_ids = first_message.to_user_ids;
+
+        return messages.every(
+            (msg) => msg.type === "private" && msg.to_user_ids === target_user_ids,
+        );
+    }
+    // Stream messages must match both the stream ID and the topic.
+    const target_stream_id = first_message.stream_id;
+    const target_topic = first_message.topic.toLowerCase();
+
+    return messages.every(
+        (msg) =>
+            msg.type === "stream" &&
+            msg.stream_id === target_stream_id &&
+            msg.topic.toLowerCase() === target_topic,
+    );
 }
 
 function extract_range_html(range: Range, preserve_ancestors = false): string {
