@@ -304,10 +304,6 @@ class MattermostImportTestBase(ZulipTestCase):
 
         importable_dms: list[dict[str, Any]] = []
         for m in mattermost_data["post"]["direct_post"]:
-            # We don't convert deleted users yet. So 1-1 direct messages sent from importable
-            # users to them also won't be converted.
-            if len(set(m["channel_members"])) < 2:  # nocoverage
-                continue
             importable_dms.append(m)
             if m["replies"] is not None:
                 importable_dms += m["replies"]
@@ -1770,7 +1766,7 @@ class MattermostCombinedTeamsImportTest(MattermostImportTestBase):
                 mattermost_data=mattermost_data,
                 imported_realm=imported_realm,
                 username_to_email_map=user_map_data.username_to_email_map,
-                expected_number_of_bot_messages=24,
+                expected_number_of_bot_messages=28,
             )
 
     def test_combining_unknown_object(self) -> None:
