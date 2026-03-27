@@ -146,8 +146,10 @@ export function build_page(): void {
         realm_night_logo_url = realm.realm_logo_url;
     }
 
+    const gif_api_key_empty =
+        realm.giphy_api_key === "" && realm.tenor_api_key === "" && realm.klipy_api_key === "";
     let gif_help_link = "/help/animated-gifs";
-    if (realm.giphy_api_key === "" && realm.tenor_api_key === "" && realm.klipy_api_key === "") {
+    if (gif_api_key_empty) {
         gif_help_link =
             "https://zulip.readthedocs.io/en/latest/production/gif-picker-integrations.html";
     }
@@ -161,8 +163,7 @@ export function build_page(): void {
         realm_available_video_chat_providers: realm.realm_available_video_chat_providers,
         server_jitsi_server_url: realm.server_jitsi_server_url,
         gif_rating_policy_options: realm.gif_rating_policy_options,
-        gif_api_key_empty:
-            realm.giphy_api_key === "" && realm.tenor_api_key === "" && realm.klipy_api_key === "",
+        gif_api_key_empty,
         realm_description_text: realm.realm_description,
         realm_description_html: postprocess_content(page_params.realm_rendered_description),
         realm_inline_image_preview: realm.realm_inline_image_preview,
