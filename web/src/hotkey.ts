@@ -968,7 +968,6 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         if ($last_focused_compose_type_input.hasClass("message_edit_content")) {
             if ($last_focused_compose_type_input.closest(".preview_mode").length > 0) {
                 message_edit.clear_preview_area($last_focused_compose_type_input);
-                $last_focused_compose_type_input.trigger("focus");
             } else {
                 message_edit.show_preview_area($last_focused_compose_type_input);
             }
