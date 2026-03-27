@@ -25,6 +25,10 @@ from zerver.models.users import is_cross_realm_bot_email
 
 BEFORE_MENTION_ALLOWED_REGEX = r"(?<![^\s\'\"\(\{\[\/<])"
 
+# For mentions that generate a link of their own, don't match syntax
+# that is formatted with another link. e.g., "[#**channel**]({link})"
+BEFORE_LINK_PRODUCING_MENTION_ALLOWED_REGEX = r"(?<![^\s\'\"\(\{\/<])"
+
 # Match multi-word string between @** ** or match any one-word
 # sequences after @
 MENTIONS_RE = re.compile(

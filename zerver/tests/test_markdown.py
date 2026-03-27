@@ -1,5 +1,6 @@
 import os
 import re
+from dataclasses import dataclass
 from html import escape
 from textwrap import dedent
 from typing import Any
@@ -763,6 +764,54 @@ class MarkdownLinkTest(ZulipTestCase):
             converted,
             '<p>To <a href="bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa">bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</a> or not to bitcoin</p>',
         )
+
+    def test_mentions_formatted_with_link(self) -> None:
+        # Make sure the inline link processor is takes priority over the mention processors
+        # and don't double-process mentions with a link.
+        sender_user_profile = self.example_user("othello")
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+
+        @dataclass
+        class MentionFixture:
+            name: str
+            mention_syntax: str
+            expected_html_class: str
+
+        mention_fixtures = [
+            MentionFixture(
+                name="channel_mention",
+                mention_syntax="#**Denmark**",
+                expected_html_class="stream",
+            ),
+            MentionFixture(
+                name="channel_topic_mention",
+                mention_syntax="#**Denmark>topic**",
+                expected_html_class="stream-topic",
+            ),
+            MentionFixture(
+                name="channel_topic_message_mention",
+                mention_syntax="#**Denmark>topic>@123**",
+                expected_html_class="message-link",
+            ),
+        ]
+
+        for fixture in mention_fixtures:
+            with self.subTest(fixture.name):
+                # Make sure the mention syntax is valid first.
+                self.assertIn(
+                    fixture.expected_html_class,
+                    render_message_markdown(msg, fixture.mention_syntax).rendered_content,
+                )
+                link = "https://chat.zulip.org"
+                mention_with_link = f"[{fixture.mention_syntax}]({link})"
+                self.assertEqual(
+                    render_message_markdown(msg, mention_with_link).rendered_content,
+                    f'<p><a href="{link}">{escape(fixture.mention_syntax)}</a></p>',
+                )
 
 
 class MarkdownEmbedsTest(ZulipTestCase):

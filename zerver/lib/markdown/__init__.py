@@ -44,7 +44,7 @@ from zerver.lib.exceptions import MarkdownRenderingError
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.mention import (
-    BEFORE_MENTION_ALLOWED_REGEX,
+    BEFORE_LINK_PRODUCING_MENTION_ALLOWED_REGEX,
     ChannelTopicInfo,
     FullNameInfo,
     MentionBackend,
@@ -157,7 +157,7 @@ def verbose_compile(pattern: str) -> Pattern[str]:
 
 
 STREAM_LINK_REGEX = rf"""
-                     {BEFORE_MENTION_ALLOWED_REGEX} # Start after whitespace or specified chars
+                     {BEFORE_LINK_PRODUCING_MENTION_ALLOWED_REGEX} # Start after whitespace or specified chars
                      \#\*\*                         # and after hash sign followed by double asterisks
                          (?P<stream_name>[^\*]+)    # stream name can contain anything
                      \*\*                           # ends by double asterisks
@@ -178,7 +178,7 @@ def get_compiled_stream_link_regex() -> Pattern[str]:
 
 
 STREAM_TOPIC_LINK_REGEX = rf"""
-                     {BEFORE_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
+                     {BEFORE_LINK_PRODUCING_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
                      \#\*\*                          # and after hash sign followed by double asterisks
                          (?P<stream_name>[^\*>]+)    # stream name can contain anything except >
                          >                           # > acts as separator
@@ -201,7 +201,7 @@ def get_compiled_stream_topic_link_regex() -> Pattern[str]:
 
 
 STREAM_TOPIC_MESSAGE_LINK_REGEX = rf"""
-                     {BEFORE_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
+                     {BEFORE_LINK_PRODUCING_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
                      \#\*\*                          # and after hash sign followed by double asterisks
                          (?P<stream_name>[^\*>]+)    # stream name can contain anything except >
                          >                           # > acts as separator
