@@ -1268,7 +1268,7 @@ function setup_dropdown_filters_widget(): void {
     filters_dropdown_widget = new dropdown_widget.DropdownWidget({
         ...views_util.COMMON_DROPDOWN_WIDGET_PARAMS,
         widget_name: "recent-view-filter",
-        item_click_callback: filter_click_handler,
+        item_click_callback: dropdown_filter_click_handler,
         $events_container: $("#recent_view_filter_buttons"),
         default_id: dropdown_filter.value,
     });
@@ -1512,7 +1512,7 @@ function callback_after_render(): void {
     }, 0);
 }
 
-function filter_click_handler(
+function dropdown_filter_click_handler(
     event: JQuery.ClickEvent,
     dropdown: tippy.Instance,
     widget: DropdownWidget,
