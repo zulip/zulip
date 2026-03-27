@@ -293,10 +293,9 @@ def user_mention_matches_stream_wildcard(mention: str) -> bool:
     return mention in stream_wildcards
 
 
-def get_stream_wildcard_mention_policy(stream: Stream, realm: Realm) -> int:
+def get_stream_wildcard_mention_policy(stream: Stream, realm: Realm) -> int | None:
     if stream.wildcard_mention_policy is not None:
         return stream.wildcard_mention_policy
-    # Fall back to WildcardMentionPolicyEnum.EVERYONE if no stream policy set
     return None
 
 
