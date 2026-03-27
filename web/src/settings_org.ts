@@ -283,11 +283,21 @@ function set_jitsi_server_url_dropdown(): void {
     update_jitsi_server_url_custom_input(dropdown_val);
 }
 
+function set_big_blue_button_settings(): void {
+    if (!settings_components.is_video_chat_provider_big_blue_button()) {
+        $("#realm_big_blue_button_settings").hide();
+        return;
+    }
+
+    $("#realm_big_blue_button_settings").show();
+}
+
 function set_video_chat_provider_dropdown(): void {
     const chat_provider_id = realm.realm_video_chat_provider;
     $("#id_realm_video_chat_provider").val(chat_provider_id);
 
     set_jitsi_server_url_dropdown();
+    set_big_blue_button_settings();
 }
 
 function set_gif_rating_policy_dropdown(): void {
@@ -781,6 +791,14 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         case "realm_welcome_message_custom_text":
             unsaved_welcome_message_custom_text = "";
             set_welcome_message_custom_text_visibility();
+            break;
+        case "realm_big_blue_button_options_mute_on_start":
+        case "realm_big_blue_button_options_guest_policy":
+        case "realm_big_blue_button_options_skip_check_audio_on_first_join":
+        case "realm_big_blue_button_options_auto_join_audio":
+        case "realm_big_blue_button_options_listen_only_mode":
+        case "realm_big_blue_button_options_show_session_details_on_join":
+            // ignore changes
             break;
         default:
             if (property_value !== undefined) {
@@ -1735,6 +1753,7 @@ export function build_page(): void {
 
     $("#id_realm_video_chat_provider").on("change", () => {
         set_jitsi_server_url_dropdown();
+        set_big_blue_button_settings();
     });
 
     $<HTMLSelectOneElement>("select:not([multiple])#id_realm_jitsi_server_url").on(

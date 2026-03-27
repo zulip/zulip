@@ -27,6 +27,7 @@ from typing_extensions import TypedDict, override
 
 from zerver.actions.video_calls import do_set_video_call_provider_token
 from zerver.decorator import zulip_login_required
+from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.cache import (
     cache_with_key,
     flush_zoom_server_access_token_cache,
@@ -43,6 +44,7 @@ from zerver.lib.typed_endpoint import typed_endpoint, typed_endpoint_without_par
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import UserProfile
+from zerver.models.realm_big_blue_button import get_create_params, get_join_params
 from zerver.models.realms import get_realm
 
 
@@ -484,6 +486,7 @@ def get_bigbluebutton_url(
             "name": meeting_name,
             "lock_settings_disable_cam": voice_only,
             "moderator": request.user.id,
+            "realm_id": user_profile.realm_id,
         }
     )
     url = append_url_query_string("/calls/bigbluebutton/join", "bigbluebutton=" + signed)
@@ -509,8 +512,11 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
     except Exception:
         raise JsonableError(_("Invalid signature."))
 
+    realm_id = bigbluebutton_data["realm_id"]
+    extra_create_params = get_create_params(realm_id)
+
     create_params = urlencode(
-        {
+        extra_create_params | {
             "meetingID": bigbluebutton_data["meeting_id"],
             "name": bigbluebutton_data["name"],
             "lockSettingsDisableCam": bigbluebutton_data["lock_settings_disable_cam"],
@@ -544,8 +550,10 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
     if status != "SUCCESS":
         raise VideoCallServerStatusError("BigBlueButton", status=status)
 
+    extra_join_params = get_join_params(realm_id)
+
     join_params = urlencode(
-        {
+        extra_join_params | {
             "meetingID": bigbluebutton_data["meeting_id"],
             # We use the moderator role only for the user who created the
             # meeting, the attendee role for everyone else, so that only
@@ -553,6 +561,8 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
             # call to a video call.
             "role": "MODERATOR" if bigbluebutton_data["moderator"] == request.user.id else "VIEWER",
             "fullName": request.user.full_name,
+            # Pass user's Zulip avatar as URL
+            "avatarURL": absolute_avatar_url(request.user),
             # https://docs.bigbluebutton.org/dev/api.html#create
             # The createTime option is used to have the user redirected to a link
             # that is only valid for this meeting.

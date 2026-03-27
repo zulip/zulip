@@ -137,6 +137,7 @@ export function generate_and_insert_audio_or_video_call_link(
                     meeting_name,
                     voice_only: is_audio_call,
                 };
+
                 xhr = channel.get({
                     url: "/json/calls/bigbluebutton/create",
                     data: request,
