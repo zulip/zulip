@@ -1123,6 +1123,15 @@ class UserGroupAPITestCase(UserGroupTestCase):
             NamedUserGroup.objects.filter(realm_for_sharding=user_profile.realm).count(),
         )
 
+        # Bot can also get user groups.
+        bot = self.example_user("default_bot")
+        result = self.api_get(bot, "/api/v1/user_groups")
+        response_dict = self.assert_json_success(result)
+        self.assert_length(
+            response_dict["user_groups"],
+            NamedUserGroup.objects.filter(realm_for_sharding=user_profile.realm).count(),
+        )
+
     def test_user_group_update(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login("hamlet")
@@ -1791,14 +1800,24 @@ class UserGroupAPITestCase(UserGroupTestCase):
         support_group.deactivated = False
         support_group.save()
 
+        bot = self.example_user("default_bot")
         setting_group = self.create_or_update_anonymous_group_for_setting(
-            [self.example_user("shiva")], [admins_group]
+            [self.example_user("shiva"), bot], [admins_group]
         )
         do_change_user_group_permission_setting(
             support_group, "can_manage_group", setting_group, acting_user=None
         )
 
         result = self.client_post(f"/json/user_groups/{support_group.id}/deactivate")
+        self.assert_json_success(result)
+        support_group = NamedUserGroup.objects.get(name="support", realm_for_sharding=realm)
+        self.assertTrue(support_group.deactivated)
+
+        support_group.deactivated = False
+        support_group.save()
+
+        # Check that bot can also deactivate a group if it has permission.
+        result = self.api_post(bot, f"/api/v1/user_groups/{support_group.id}/deactivate")
         self.assert_json_success(result)
         support_group = NamedUserGroup.objects.get(name="support", realm_for_sharding=realm)
         self.assertTrue(support_group.deactivated)
@@ -2602,8 +2621,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         # Check if members of an anonymous group are allowed to create user groups.
         cordelia = self.example_user("cordelia")
+        bot = self.example_user("default_bot")
         anonymous_group = self.create_or_update_anonymous_group_for_setting(
-            [cordelia], [admins_group, moderators_group]
+            [cordelia, bot], [admins_group, moderators_group]
         )
         do_change_realm_permission_group_setting(
             realm,
@@ -2617,6 +2637,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_create_user_group("shiva")
         NamedUserGroup.objects.get(name="support", realm_for_sharding=realm).delete()
         check_create_user_group("iago")
+        NamedUserGroup.objects.get(name="support", realm_for_sharding=realm).delete()
+        # Bot can also create a group if it has permission.
+        check_create_user_group("default_bot")
         NamedUserGroup.objects.get(name="support", realm_for_sharding=realm).delete()
 
         # Check only members are allowed to create the user group.
@@ -2853,7 +2876,8 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
 
         setting_group = self.create_or_update_anonymous_group_for_setting(
-            [self.example_user("cordelia")], [leadership_group, owners_group]
+            [self.example_user("cordelia"), self.example_user("default_bot")],
+            [leadership_group, owners_group],
         )
         do_change_user_group_permission_setting(
             user_group, "can_manage_group", setting_group, acting_user=None
@@ -2866,6 +2890,8 @@ class UserGroupAPITestCase(UserGroupTestCase):
             "cordelia",
         )
         check_update_user_group("help", "Troubleshooting team", "desdemona")
+        # Bot can also update a group if it has permissions.
+        check_update_user_group("support", "Support team", "default_bot")
 
     def test_realm_level_setting_for_updating_members(self) -> None:
         user_group = self.create_user_group_for_test(
@@ -3141,6 +3167,15 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_adding_members_to_group("othello")
         bulk_remove_members_from_user_groups([user_group], [aaron.id], acting_user=None)
 
+        # Bot can also add members if it has permission.
+        default_bot = self.example_user("default_bot")
+        setting_group = self.create_or_update_anonymous_group_for_setting([default_bot], [])
+        do_change_user_group_permission_setting(
+            user_group, "can_add_members_group", setting_group, acting_user=None
+        )
+        check_adding_members_to_group("default_bot")
+        bulk_remove_members_from_user_groups([user_group], [aaron.id], acting_user=None)
+
     def test_group_level_setting_for_removing_members(self) -> None:
         othello = self.example_user("othello")
         aaron = self.example_user("aaron")
@@ -3245,6 +3280,15 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         check_removing_members_from_group("hamlet")
 
+        # Bot can also add members if it has permission.
+        default_bot = self.example_user("default_bot")
+        setting_group = self.create_or_update_anonymous_group_for_setting([default_bot], [])
+        do_change_user_group_permission_setting(
+            user_group, "can_remove_members_group", setting_group, acting_user=None
+        )
+        bulk_add_members_to_user_groups([user_group], [aaron.id], acting_user=None)
+        check_removing_members_from_group("default_bot")
+
     def test_adding_yourself_to_group(self) -> None:
         realm = get_realm("zulip")
         othello = self.example_user("othello")
@@ -3324,8 +3368,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         # Test with setting set to an anonymous group.
         shiva = self.example_user("shiva")
+        bot = self.example_user("default_bot")
         setting_group = self.create_or_update_anonymous_group_for_setting(
-            [shiva], [leadership_group]
+            [shiva, bot], [leadership_group]
         )
         do_change_user_group_permission_setting(
             user_group,
@@ -3337,6 +3382,8 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_adding_yourself_to_group("iago", "Insufficient permission")
         check_adding_yourself_to_group("cordelia")
         check_adding_yourself_to_group("shiva")
+        # Bot can also add themselves if it has permission.
+        check_adding_yourself_to_group("default_bot")
 
         # If user is allowed to add anyone, then they can join themselves
         # even when can_join_group setting does not allow them to do so.
@@ -3465,8 +3512,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         # Test with setting set to an anonymous group.
         shiva = self.example_user("shiva")
+        default_bot = self.example_user("default_bot")
         setting_group = self.create_or_update_anonymous_group_for_setting(
-            [shiva], [leadership_group]
+            [shiva, default_bot], [leadership_group]
         )
         do_change_user_group_permission_setting(
             user_group,
@@ -3478,6 +3526,8 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_leaving_a_group("iago", "Insufficient permission")
         check_leaving_a_group("cordelia")
         check_leaving_a_group("shiva")
+        # Bot can leave a group if it has permission.
+        check_leaving_a_group("default_bot")
 
         # If user is allowed to remove anyone, then they can leave themselves
         # even when can_leave_group setting does not allow them to do so.
@@ -3795,8 +3845,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_adding_subgroups_to_group("prospero")
 
         # Test case when setting is set to an anonymous group.
+        bot = self.example_user("default_bot")
         setting_group = self.create_or_update_anonymous_group_for_setting(
-            direct_members=[othello],
+            direct_members=[othello, bot],
             direct_subgroups=[owners_group],
         )
         do_change_user_group_permission_setting(
@@ -3809,6 +3860,8 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_adding_subgroups_to_group("iago", "Insufficient permission")
         check_adding_subgroups_to_group("desdemona")
         check_adding_subgroups_to_group("othello")
+        # Bot can add subgroups to a group if it has permission.
+        check_adding_subgroups_to_group("default_bot")
 
         # Set can_add_members_group setting to nobody, so we can test
         # managing permissions as well.
@@ -3916,8 +3969,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_remove_subgroups_from_group("prospero")
 
         # Test case when setting is set to an anonymous group.
+        bot = self.example_user("default_bot")
         setting_group = self.create_or_update_anonymous_group_for_setting(
-            direct_members=[othello],
+            direct_members=[othello, bot],
             direct_subgroups=[owners_group],
         )
         do_change_user_group_permission_setting(
@@ -3930,6 +3984,8 @@ class UserGroupAPITestCase(UserGroupTestCase):
         check_remove_subgroups_from_group("iago", "Insufficient permission")
         check_remove_subgroups_from_group("desdemona")
         check_remove_subgroups_from_group("othello")
+        # Bot can remove subgroups to a group if it has permission.
+        check_remove_subgroups_from_group("default_bot")
 
         # Set can_manage_group setting to nobody, so we can test
         # can_manage_all_groups behavior.
@@ -4047,6 +4103,13 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_get(f"/json/user_groups/{admins_group.id}/members/{iago.id}")
         self.assert_json_error(result, "User is deactivated")
 
+        # Bot can check membership status.
+        bot = self.example_user("default_bot")
+        result_dict = orjson.loads(
+            self.api_get(bot, f"/api/v1/user_groups/{admins_group.id}/members/{othello.id}").content
+        )
+        self.assertFalse(result_dict["is_user_group_member"])
+
     def test_get_user_group_members(self) -> None:
         realm = get_realm("zulip")
         iago = self.example_user("iago")
@@ -4106,6 +4169,17 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
         self.assertCountEqual(result_dict["members"], [desdemona.id, iago.id])
 
+        # Bot can also get members of a group.
+        bot = self.example_user("default_bot")
+        result_dict = orjson.loads(
+            self.api_get(
+                bot,
+                f"/api/v1/user_groups/{moderators_group.id}/members",
+                info=params,
+            ).content
+        )
+        self.assertCountEqual(result_dict["members"], [desdemona.id, iago.id])
+
     def test_get_subgroups_of_user_group(self) -> None:
         realm = get_realm("zulip")
         owners_group = NamedUserGroup.objects.get(
@@ -4155,6 +4229,15 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result_dict = orjson.loads(
             self.client_get(
                 f"/json/user_groups/{moderators_group.id}/subgroups", info=params
+            ).content
+        )
+        self.assertCountEqual(result_dict["subgroups"], [admins_group.id])
+
+        # Bot can also get subgroups of a group.
+        bot = self.example_user("default_bot")
+        result_dict = orjson.loads(
+            self.api_get(
+                bot, f"/api/v1/user_groups/{moderators_group.id}/subgroups", info=params
             ).content
         )
         self.assertCountEqual(result_dict["subgroups"], [admins_group.id])
