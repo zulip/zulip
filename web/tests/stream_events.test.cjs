@@ -307,6 +307,11 @@ test("update_property", ({override, override_rewire}) => {
         assert.equal(args.setting, "wildcard_mention_policy");
     }
 
+    // Test stream wildcard_mention_policy with null value (no-op)
+    {
+        stream_events.update_property(stream_id, "wildcard_mention_policy", null);
+    }
+
     // Test stream can_remove_subscribers_group change event
     {
         const stub = make_stub();
