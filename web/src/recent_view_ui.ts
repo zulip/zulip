@@ -1268,7 +1268,7 @@ function setup_dropdown_filters_widget(): void {
     filters_dropdown_widget = new dropdown_widget.DropdownWidget({
         ...views_util.COMMON_DROPDOWN_WIDGET_PARAMS,
         widget_name: "recent-view-filter",
-        item_click_callback: filter_click_handler,
+        item_click_callback: dropdown_filter_click_handler,
         $events_container: $("#recent_view_filter_buttons"),
         default_id: dropdown_filter.value,
     });
@@ -1299,6 +1299,13 @@ function update_recent_view_folder_filter_button(): void {
     );
 }
 
+function hard_redraw_with_scroll_to_top(): void {
+    row_focus = 0;
+    assert(topics_widget !== undefined);
+    topics_widget.hard_redraw();
+    window.scrollTo(0, 0);
+}
+
 function folder_filter_click_handler(
     event: JQuery.ClickEvent,
     dropdown: tippy.Instance,
@@ -1315,8 +1322,7 @@ function folder_filter_click_handler(
     save_filters();
     update_recent_view_folder_filter_button();
 
-    assert(topics_widget !== undefined);
-    topics_widget.hard_redraw();
+    hard_redraw_with_scroll_to_top();
 }
 
 function setup_folder_dropdown_widget(): void {
@@ -1512,7 +1518,7 @@ function callback_after_render(): void {
     }, 0);
 }
 
-function filter_click_handler(
+function dropdown_filter_click_handler(
     event: JQuery.ClickEvent,
     dropdown: tippy.Instance,
     widget: DropdownWidget,
@@ -1533,8 +1539,7 @@ function filter_click_handler(
     widget.render();
     save_filters();
 
-    assert(topics_widget !== undefined);
-    topics_widget.hard_redraw();
+    hard_redraw_with_scroll_to_top();
 }
 
 function get_list_data_for_widget(): ConversationData[] {
@@ -2277,7 +2282,9 @@ export function initialize({
         const filter = this.getAttribute("data-filter");
         assert(filter !== null);
         set_filter(filter);
+        row_focus = 0;
         update_filters_view();
+        window.scrollTo(0, 0);
         revive_current_focus();
     });
 
