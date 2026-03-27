@@ -1,8 +1,12 @@
 # Webhooks for external integrations.
+import base64
 import re
 import string
 from collections.abc import Callable
+from dataclasses import dataclass
+from urllib.parse import unquote, urlsplit, urlunsplit
 
+import requests
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
@@ -12,9 +16,16 @@ from zerver.lib.exceptions import AnomalousWebhookPayloadError, UnsupportedWebho
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_none_or, check_string
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, get_service_api_data
 from zerver.models import Realm, UserProfile
 from zerver.models.users import get_user_by_delivery_email
+
+
+@dataclass
+class JiraAuth:
+    email: str
+    api_token: str
+
 
 IGNORED_EVENTS = [
     "attachment_created",
@@ -125,6 +136,20 @@ def get_issue_string(
         return f"[{text}]({base_url.group(1)}/browse/{issue_id})"
     else:
         return text
+
+
+def get_jira_api_data(jira_api_url: str, get_param: str, auth: JiraAuth, account_id: str) -> str:
+    credentials = base64.b64encode(f"{auth.email}:{auth.api_token}".encode()).decode()
+    try:
+        response = get_service_api_data(
+            jira_api_url,
+            "jira",
+            headers={"Authorization": f"Basic {credentials}"},
+            params={"accountId": account_id},
+        )
+        return response.json()[get_param]
+    except requests.RequestException:
+        return account_id
 
 
 def get_assignee_mention(assignee_email: str, realm: Realm) -> str:
@@ -309,40 +334,66 @@ def normalize_comment(comment: str) -> str:
     return normalized_comment
 
 
-def handle_comment_created_event(payload: WildValue, user_profile: UserProfile) -> str:
+def get_comment_content(payload: WildValue, auth: JiraAuth | None = None) -> str:
+    comment = normalize_comment(payload["comment"]["body"].tame(check_string))
+    if auth is None:
+        return comment
+
+    author_url = payload["comment"]["author"]["self"].tame(check_string)
+    parsed = urlsplit(author_url)
+    jira_api_url = urlunsplit((parsed.scheme, parsed.netloc, parsed.path, "", ""))
+
+    # Replace each [~accountid:xxx] mention with the user's display name.
+    for account_id in set(re.findall(r"\[~accountid:([\w\-:]+)\]", comment)):
+        display_name = get_jira_api_data(jira_api_url, "displayName", auth, account_id)
+        comment = comment.replace(f"[~accountid:{account_id}]", f"**{display_name}**")
+    return comment
+
+
+def handle_comment_created_event(
+    payload: WildValue, user_profile: UserProfile, auth: JiraAuth | None = None
+) -> str:
     return "{author} commented on {issue_string}\
 \n``` quote\n{comment}\n```\n".format(
         author=payload["comment"]["author"]["displayName"].tame(check_string),
         issue_string=get_issue_string(payload, with_title=True),
-        comment=normalize_comment(payload["comment"]["body"].tame(check_string)),
+        comment=get_comment_content(payload, auth),
     )
 
 
-def handle_comment_updated_event(payload: WildValue, user_profile: UserProfile) -> str:
+def handle_comment_updated_event(
+    payload: WildValue, user_profile: UserProfile, auth: JiraAuth | None = None
+) -> str:
     return "{author} updated their comment on {issue_string}\
 \n``` quote\n{comment}\n```\n".format(
         author=payload["comment"]["author"]["displayName"].tame(check_string),
         issue_string=get_issue_string(payload, with_title=True),
-        comment=normalize_comment(payload["comment"]["body"].tame(check_string)),
+        comment=get_comment_content(payload, auth),
     )
 
 
-def handle_comment_deleted_event(payload: WildValue, user_profile: UserProfile) -> str:
+def handle_comment_deleted_event(
+    payload: WildValue, user_profile: UserProfile, auth: JiraAuth | None = None
+) -> str:
     return "{author} deleted their comment on {issue_string}\
 \n``` quote\n~~{comment}~~\n```\n".format(
         author=payload["comment"]["author"]["displayName"].tame(check_string),
         issue_string=get_issue_string(payload, with_title=True),
-        comment=normalize_comment(payload["comment"]["body"].tame(check_string)),
+        comment=get_comment_content(payload, auth),
     )
 
 
-JIRA_CONTENT_FUNCTION_MAPPER: dict[str, Callable[[WildValue, UserProfile], str] | None] = {
-    "jira:issue_created": handle_created_issue_event,
-    "jira:issue_deleted": handle_deleted_issue_event,
-    "jira:issue_updated": handle_updated_issue_event,
+COMMENT_EVENT_FUNCTION_MAPPER: dict[str, Callable[..., str]] = {
     "comment_created": handle_comment_created_event,
     "comment_updated": handle_comment_updated_event,
     "comment_deleted": handle_comment_deleted_event,
+}
+
+JIRA_CONTENT_FUNCTION_MAPPER: dict[str, Callable[..., str] | None] = {
+    "jira:issue_created": handle_created_issue_event,
+    "jira:issue_deleted": handle_deleted_issue_event,
+    "jira:issue_updated": handle_updated_issue_event,
+    **COMMENT_EVENT_FUNCTION_MAPPER,
 }
 
 ALL_EVENT_TYPES = list(JIRA_CONTENT_FUNCTION_MAPPER.keys())
@@ -355,6 +406,8 @@ def api_jira_webhook(
     user_profile: UserProfile,
     *,
     payload: JsonBodyPayload[WildValue],
+    email: str | None = None,
+    jira_api_token: str | None = None,
 ) -> HttpResponse:
     event = get_event_type(payload)
     if event in IGNORED_EVENTS:
@@ -363,14 +416,21 @@ def api_jira_webhook(
     if event is None:
         raise AnomalousWebhookPayloadError
 
-    if event is not None:
-        content_func = JIRA_CONTENT_FUNCTION_MAPPER.get(event)
+    content_func = JIRA_CONTENT_FUNCTION_MAPPER.get(event)
 
     if content_func is None:
         raise UnsupportedWebhookEventTypeError(event)
 
+    auth: JiraAuth | None = None
+    if email and jira_api_token:
+        auth = JiraAuth(email=unquote(email), api_token=unquote(jira_api_token))
+
     topic_name = get_issue_topic(payload)
-    content: str = content_func(payload, user_profile)
+
+    if event in COMMENT_EVENT_FUNCTION_MAPPER:
+        content = content_func(payload, user_profile, auth)
+    else:
+        content = content_func(payload, user_profile)
 
     check_send_webhook_message(
         request, user_profile, topic_name, content, event, unquote_url_parameters=True

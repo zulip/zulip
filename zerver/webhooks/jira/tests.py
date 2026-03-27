@@ -1,6 +1,8 @@
 from unittest.mock import patch
 from urllib.parse import quote, unquote
 
+import responses
+
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -223,6 +225,67 @@ Adding a comment. Oh, what a comment it is!
         self.check_webhook(
             "comment_created_no_issue_details", expected_topic_name, expected_message
         )
+
+    @responses.activate
+    def test_comment_event_comment_created_with_account_mention(self) -> None:
+        expected_topic_name = "SB-1: asdasd"
+        expected_message = """Peter commented on [SB-1: asdasd](https://peteririri.atlassian.net/browse/SB-1)\n``` quote\n**Peter** **Alice** **Alice** \n```"""
+        self.url = self.build_webhook_url(
+            email="test@example.com",
+            jira_api_token="test-token",
+        )
+        responses.add(
+            responses.GET,
+            "https://peteririri.atlassian.net/rest/api/2/user",
+            match=[
+                responses.matchers.query_param_matcher({"accountId": "619a4432ebce470067f20384"})
+            ],
+            json={"displayName": "Peter"},
+        )
+        responses.add(
+            responses.GET,
+            "https://peteririri.atlassian.net/rest/api/2/user",
+            match=[
+                responses.matchers.query_param_matcher({"accountId": "63a22fb348b367d78a14c15b"})
+            ],
+            json={"displayName": "Alice"},
+        )
+        self.check_webhook(
+            "comment_created_with_account_mention",
+            expected_topic_name,
+            expected_message,
+        )
+        self.assert_length(responses.calls, 2)
+
+    def test_comment_event_comment_created_with_account_mention_no_credentials(self) -> None:
+        expected_topic_name = "SB-1: asdasd"
+        expected_message = """Peter commented on [SB-1: asdasd](https://peteririri.atlassian.net/browse/SB-1)\n``` quote\n[~accountid:619a4432ebce470067f20384] [~accountid:63a22fb348b367d78a14c15b] [~accountid:63a22fb348b367d78a14c15b] \n```"""
+        self.check_webhook(
+            "comment_created_with_account_mention",
+            expected_topic_name,
+            expected_message,
+        )
+
+    @responses.activate
+    def test_comment_event_comment_created_with_account_mention_api_failure(self) -> None:
+        expected_topic_name = "SB-1: asdasd"
+        expected_message = """Peter commented on [SB-1: asdasd](https://peteririri.atlassian.net/browse/SB-1)\n``` quote\n**619a4432ebce470067f20384** **63a22fb348b367d78a14c15b** **63a22fb348b367d78a14c15b** \n```"""
+        self.url = self.build_webhook_url(
+            email="test@example.com",
+            jira_api_token="test-token",
+        )
+        responses.add(
+            responses.GET,
+            "https://peteririri.atlassian.net/rest/api/2/user",
+            status=401,
+        )
+        with self.assertLogs("zerver.lib.webhooks.common", level="WARNING") as cm:
+            self.check_webhook(
+                "comment_created_with_account_mention",
+                expected_topic_name,
+                expected_message,
+            )
+        self.assert_length(cm.output, 2)
 
     def test_comment_event_comment_edited(self) -> None:
         expected_topic_name = "SP-1: Add support for newer format Jira issue comment events"
