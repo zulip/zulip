@@ -2183,7 +2183,7 @@ ul.topic-list.topic-list-has-topics::after {
     /* 12px at 16px/1em */
     bottom: 0.75em;
     left: 16px;
-    width: 12px;
+    width: 4px;
     border-bottom: 1px solid var(--color-topic-indent-border);
     pointer-events: none;
 }
