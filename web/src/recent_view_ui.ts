@@ -1299,6 +1299,11 @@ function update_recent_view_folder_filter_button(): void {
     );
 }
 
+function hard_redraw_with_scroll_to_top(): void {
+    assert(topics_widget !== undefined);
+    topics_widget.hard_redraw();
+}
+
 function folder_filter_click_handler(
     event: JQuery.ClickEvent,
     dropdown: tippy.Instance,
@@ -1315,8 +1320,7 @@ function folder_filter_click_handler(
     save_filters();
     update_recent_view_folder_filter_button();
 
-    assert(topics_widget !== undefined);
-    topics_widget.hard_redraw();
+    hard_redraw_with_scroll_to_top();
 }
 
 function setup_folder_dropdown_widget(): void {
@@ -1533,8 +1537,7 @@ function dropdown_filter_click_handler(
     widget.render();
     save_filters();
 
-    assert(topics_widget !== undefined);
-    topics_widget.hard_redraw();
+    hard_redraw_with_scroll_to_top();
 }
 
 function get_list_data_for_widget(): ConversationData[] {
