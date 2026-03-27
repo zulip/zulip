@@ -14768,6 +14768,143 @@ paths:
                         description: |
                           The ID for the custom profile field.
                     example: {"result": "success", "msg": "", "id": 9}
+  /realm/profile_fields/{field_id}:
+    patch:
+      operationId: update-custom-profile-field
+      summary: Update a custom profile field
+      tags: ["server_and_organizations"]
+      description: |
+        Update a custom profile field in the user's organization.
+
+        `PATCH {{ api_url }}/v1/realm/profile_fields/{field_id}`
+
+        This endpoint can be used by organization administrators to update
+        the configuration of an existing custom profile field.
+      x-requires-administrator: true
+      parameters:
+        - in: path
+          name: field_id
+          schema:
+            type: integer
+          required: true
+          description: |
+            The ID of the custom profile field to update.
+          example: 5
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: |
+                    The name of the custom profile field.
+                  example: "Birthday"
+                hint:
+                  type: string
+                  description: |
+                    The help text to be displayed for the custom profile field.
+                  example: "Your birthday."
+                field_data:
+                  type: object
+                  description: |
+                    Additional configuration data for supported field types.
+                  example: {}
+                display_in_profile_summary:
+                  type: boolean
+                  description: |
+                    Whether clients should display this profile field in a
+                    summary section of a user's profile.
+                  example: true
+                required:
+                  type: boolean
+                  description: |
+                    Whether this custom profile field is required.
+                  example: true
+                editable_by_user:
+                  type: boolean
+                  description: |
+                    Whether regular users can edit this profile field on their
+                    own account.
+                  example: true
+                use_for_user_matching:
+                  type: boolean
+                  description: |
+                    Whether this custom profile field should be used to match
+                    users in typeahead suggestions.
+                  example: false
+            encoding:
+              field_data:
+                contentType: application/json
+              display_in_profile_summary:
+                contentType: application/json
+              required:
+                contentType: application/json
+              editable_by_user:
+                contentType: application/json
+              use_for_user_matching:
+                contentType: application/json
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CodedError"
+              examples:
+                duplicate_field_name:
+                  value:
+                    result: "error"
+                    msg: "A field with that label already exists."
+                    code: "BAD_REQUEST"
+    delete:
+      operationId: delete-custom-profile-field
+      summary: Delete a custom profile field
+      tags: ["server_and_organizations"]
+      description: |
+        Delete a custom profile field in the user's organization.
+
+        `DELETE {{ api_url }}/v1/realm/profile_fields/{field_id}`
+
+        This endpoint can be used by organization administrators to remove
+        an existing custom profile field.
+      x-requires-administrator: true
+      parameters:
+        - in: path
+          name: field_id
+          schema:
+            type: integer
+          required: true
+          description: |
+            The ID of the custom profile field to delete.
+          example: 1
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CodedError"
+              examples:
+                field_not_found:
+                  value:
+                    result: "error"
+                    msg: "Field id 9 not found."
+                    code: "BAD_REQUEST"
   /realm/user_settings_defaults:
     patch:
       operationId: update-realm-user-settings-defaults
