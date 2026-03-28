@@ -752,6 +752,71 @@ class SingleUserPresenceTests(ZulipTestCase):
         self.assertEqual(set(result_dict["presence"].keys()), {"website", "aggregated"})
         self.assertEqual(set(result_dict["presence"]["website"].keys()), {"status", "timestamp"})
 
+    def test_single_user_get_modern_format(self) -> None:
+        reset_email_visibility_to_everyone_in_zulip_realm()
+
+        # Set up test data
+        user = self.example_user("othello")
+        self.login_user(user)
+        result = self.client_post("/json/users/me/presence", {"status": "active"})
+        self.assert_json_success(result)
+
+        othello = self.example_user("othello")
+
+        # Test modern format with slim_presence=true using email
+        self.login("hamlet")
+        result = self.client_get(
+            "/json/users/othello@zulip.com/presence", {"slim_presence": "true"}
+        )
+        result_dict = self.assert_json_success(result)
+        self.assertEqual(
+            set(result_dict["presence"].keys()), {"active_timestamp", "idle_timestamp"}
+        )
+        self.assertIsInstance(result_dict["presence"]["active_timestamp"], int)
+        self.assertIsInstance(result_dict["presence"]["idle_timestamp"], int)
+
+        # Test modern format with slim_presence=true using user_id
+        result = self.client_get(f"/json/users/{othello.id}/presence", {"slim_presence": "true"})
+        result_dict = self.assert_json_success(result)
+        self.assertEqual(
+            set(result_dict["presence"].keys()), {"active_timestamp", "idle_timestamp"}
+        )
+        self.assertIsInstance(result_dict["presence"]["active_timestamp"], int)
+        self.assertIsInstance(result_dict["presence"]["idle_timestamp"], int)
+
+        # Test that slim_presence=false explicitly gives legacy format
+        result = self.client_get(
+            "/json/users/othello@zulip.com/presence", {"slim_presence": "false"}
+        )
+        result_dict = self.assert_json_success(result)
+        self.assertEqual(set(result_dict["presence"].keys()), {"website", "aggregated"})
+        self.assertEqual(set(result_dict["presence"]["website"].keys()), {"status", "timestamp"})
+
+        # Test error conditions work with modern format
+        result = self.client_get(
+            "/json/users/nonexistence@zulip.com/presence", {"slim_presence": "true"}
+        )
+        self.assert_json_error(result, "No such user")
+
+        cordelia = self.example_user("cordelia")
+        result = self.client_get(f"/json/users/{cordelia.id}/presence", {"slim_presence": "true"})
+        self.assert_json_error(result, f"No presence data for {cordelia.id}")
+
+        # Test bot error with modern format
+        result = self.client_get(
+            "/json/users/default-bot@zulip.com/presence", {"slim_presence": "true"}
+        )
+        self.assert_json_error(result, "Presence is not supported for bot users.")
+
+        # Test access restrictions work with modern format
+        self.set_up_db_for_testing_user_access()
+        self.login("polonius")
+        with self.settings(CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE=True):
+            result = self.client_get(
+                f"/json/users/{othello.id}/presence", {"slim_presence": "true"}
+            )
+        self.assert_json_error(result, "Insufficient permission")
+
     def test_ping_only(self) -> None:
         self.login("othello")
         req = dict(
