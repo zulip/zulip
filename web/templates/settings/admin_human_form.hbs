@@ -1,4 +1,8 @@
 <div id="edit-user-form" data-user-id="{{user_id}}">
+    <div class="image-upload-container">
+        {{> image_upload_widget widget="user-avatar-admin" upload_text=(t "Upload new profile picture")
+          delete_text=(t "Delete profile picture") is_editable_by_current_user=true image=image }}
+    </div>
     <form class="name-setting">
         <div id="edit-user-form-error" class="banner-wrapper"></div>
         <input type="hidden" name="is_full_name" value="true" />
