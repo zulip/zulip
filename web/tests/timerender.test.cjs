@@ -503,21 +503,21 @@ run_test("last_seen_status_from_date", () => {
         assert.equal(actual_status, expected_status);
     }
 
-    assert_same({minutes: -30}, $t({defaultMessage: "Active 30 minutes ago"}));
+    assert_same({minutes: -30}, $t({defaultMessage: "Last active 30 minutes ago"}));
 
-    assert_same({hours: -1}, $t({defaultMessage: "Active an hour ago"}));
+    assert_same({hours: -1}, $t({defaultMessage: "Last active 1 hour ago"}));
 
-    assert_same({hours: -2}, $t({defaultMessage: "Active 2 hours ago"}));
+    assert_same({hours: -2}, $t({defaultMessage: "Last active 2 hours ago"}));
 
-    assert_same({hours: -20}, $t({defaultMessage: "Active 20 hours ago"}));
+    assert_same({hours: -20}, $t({defaultMessage: "Last active 20 hours ago"}));
 
-    assert_same({hours: -24}, $t({defaultMessage: "Active yesterday"}));
+    assert_same({hours: -24}, $t({defaultMessage: "Last active yesterday"}));
 
-    assert_same({hours: -48}, $t({defaultMessage: "Active 2 days ago"}));
+    assert_same({hours: -48}, $t({defaultMessage: "Last active 2 days ago"}));
 
-    assert_same({days: -2}, $t({defaultMessage: "Active 2 days ago"}));
+    assert_same({days: -2}, $t({defaultMessage: "Last active 2 days ago"}));
 
-    assert_same({days: -61}, $t({defaultMessage: "Active 61 days ago"}));
+    assert_same({days: -61}, $t({defaultMessage: "Last active 61 days ago"}));
 
     assert_same({days: -300}, $t({defaultMessage: "Active May 6, 2015"}));
 
@@ -535,13 +535,13 @@ run_test("last_seen_status_from_date", () => {
     base_date = new Date(2016, 4, 2, 23, 30);
     clock.setSystemTime(base_date.getTime());
 
-    assert_same({hours: -1}, $t({defaultMessage: "Active an hour ago"}));
+    assert_same({hours: -1}, $t({defaultMessage: "Last active 1 hour ago"}));
 
-    assert_same({hours: -2}, $t({defaultMessage: "Active 2 hours ago"}));
+    assert_same({hours: -2}, $t({defaultMessage: "Last active 2 hours ago"}));
 
-    assert_same({hours: -12}, $t({defaultMessage: "Active 12 hours ago"}));
+    assert_same({hours: -12}, $t({defaultMessage: "Last active 12 hours ago"}));
 
-    assert_same({hours: -24}, $t({defaultMessage: "Active yesterday"}));
+    assert_same({hours: -24}, $t({defaultMessage: "Last active yesterday"}));
 
     clock.reset();
 });
