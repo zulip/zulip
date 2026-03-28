@@ -40,35 +40,25 @@ AGENT_TEMPLATE = "[{username}]({url})"
 
 INCIDENT_WITH_SERVICE_AND_ASSIGNEE = (
     "Incident [{incident_num_title}]({incident_url}) {action} by [{service_name}]"
-    "({service_url}) (assigned to {assignee_info}).\n\n{trigger_message}"
+    "({service_url}) (assigned to {assignee_info})."
 )
-
-TRIGGER_MESSAGE = "``` quote\n{message}\n```"
 
 NUM_TITLE = "{incident_title} (#{incident_num})"
 
 INCIDENT_WITH_ASSIGNEE = """
 Incident [{incident_num_title}]({incident_url}) {action} by {assignee_info}.
-
-{trigger_message}
 """.strip()
 
 INCIDENT_ASSIGNED = """
 Incident [{incident_num_title}]({incident_url}) {action} to {assignee_info}.
-
-{trigger_message}
 """.strip()
 
 INCIDENT_RESOLVED_WITH_AGENT = """
 Incident [{incident_num_title}]({incident_url}) resolved by {agent_info}.
-
-{trigger_message}
 """.strip()
 
 INCIDENT_RESOLVED = """
 Incident [{incident_num_title}]({incident_url}) resolved.
-
-{trigger_message}
 """.strip()
 
 
@@ -103,9 +93,6 @@ def build_pagerduty_formatdict_v2(message: WildValue) -> FormatDictType:
             url=last_status_change_by["html_url"].tame(check_string),
         )
 
-    # Pagerduty has deprecated incident.description for v2 events.
-    # It will have the same value as incident.title.
-    format_dict["trigger_message"] = ""
     return format_dict
 
 
@@ -139,9 +126,6 @@ def build_pagerduty_formatdict_v3(event: WildValue) -> FormatDictType:
             username=agent["summary"].tame(check_string),
             url=agent["html_url"].tame(check_string),
         )
-
-    # V3 doesn't have trigger_message
-    format_dict["trigger_message"] = ""
 
     return format_dict
 
