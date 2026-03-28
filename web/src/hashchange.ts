@@ -326,6 +326,10 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     // the new overlay.
     if (coming_from_overlay && base === old_base) {
         if (base === "channels") {
+            if (hash_parser.get_current_nth_hash_section(1) === "new") {
+                stream_settings_ui.launch("subscribed", undefined, "new");
+                return;
+            }
             if (hash_parser.get_current_nth_hash_section(1) === "folders") {
                 const folder_id = hash_parser.get_current_nth_hash_section(2);
                 stream_settings_ui.change_state(
