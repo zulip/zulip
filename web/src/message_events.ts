@@ -857,6 +857,28 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 }
             }
 
+                        if (
+                !changed_narrow &&
+                !refreshed_current_narrow &&
+                !local_cache_missing_messages &&
+                current_filter &&
+                message_lists.current !== undefined
+            ) {
+                const mismatched = event_messages.filter(
+                    (msg) =>
+                        message_lists.current!.get(msg.id) !== undefined &&
+                        !current_filter.predicate()(msg),
+                );
+                if (mismatched.length > 0) {
+                    refreshed_current_narrow = true;
+                    message_view.show(current_filter.terms(), {
+                        then_select_id: current_selected_id,
+                        trigger: "stream/topic change",
+                        force_rerender: true,
+                    });
+                }
+            }
+
             // Ensure messages that are no longer part of this
             // narrow are deleted and messages that are now part
             // of this narrow are added to the message_list.
@@ -887,6 +909,29 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                     list.remove_and_rerender(event_msg_ids);
                     // For filters that cannot be processed locally, ask server.
                     message_events_util.maybe_add_narrowed_messages(event_messages, list);
+                }
+            }
+            // NEW: If the current narrow was not changed/refreshed but still contains
+            // messages that were moved (e.g. because the frontend had stale topic state),
+            // force a rerender so topic labels and list membership reflect the new state.
+            if (
+                !changed_narrow &&
+                !refreshed_current_narrow &&
+                message_lists.current !== undefined
+            ) {
+                const current_list = message_lists.current;
+                const stale_msg_ids = event_messages
+                    .map((msg) => msg.id)
+                    .filter((id) => current_list.get(id) !== undefined);
+                if (stale_msg_ids.length > 0) {
+                    if (current_list.data.filter.can_apply_locally()) {
+                        current_list.data.remove(stale_msg_ids);
+                        current_list.data.add_messages(event_messages);
+                        current_list.rerender();
+                    } else {
+                        current_list.remove_and_rerender(stale_msg_ids);
+                        message_events_util.maybe_add_narrowed_messages(event_messages, current_list);
+                    }
                 }
             }
         }
