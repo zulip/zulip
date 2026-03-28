@@ -60,6 +60,16 @@ def get_topic_for_http_request(payload: WildValue) -> str:
 def get_body_for_http_request(payload: WildValue) -> str:
     hostname = payload["hostname"].tame(check_string)
     severity = payload["severity"].tame(check_string)
+    severity_map = {
+        "critical": "🔴",
+        "disaster": "🔴",
+        "high": "🔴",
+        "warning": "🟡",
+        "average": "🟡",
+        "ok": "🟢",
+        "information": "🟢",
+    }
+    emoji = severity_map.get(severity.lower(), "")
     status = payload["status"].tame(check_string)
     item = payload["item"].tame(check_string)
     trigger = payload["trigger"].tame(check_string)
@@ -73,4 +83,5 @@ def get_body_for_http_request(payload: WildValue) -> str:
         "trigger": trigger,
         "link": link,
     }
-    return ZABBIX_MESSAGE_TEMPLATE.format(**data)
+    message = ZABBIX_MESSAGE_TEMPLATE.format(**data)
+    return f"{emoji} {message}".strip()
