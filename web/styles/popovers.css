@@ -504,6 +504,13 @@ ul.popover-group-menu-member-list {
         margin: 4px 4px 2px;
     }
 
+    .no-results {
+        font-style: italic;
+        color: var(--color-text-default);
+        grid-column: 1 / -1;
+        text-align: center;
+    }
+
     .gif-picker-content {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));

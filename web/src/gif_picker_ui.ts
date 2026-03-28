@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import render_gif_picker_gif from "../templates/gif_picker_gif.hbs";
+import render_no_gif_results from "../templates/no_gif_results.hbs";
 
 import type {GifInfoUrl, GifNetwork} from "./abstract_gif_network.ts";
 import {ComposeIconSession} from "./compose_icon_session.ts";
@@ -118,8 +119,14 @@ function render_gifs_to_grid(urls: GifInfoUrl[], next_page: boolean): void {
     assert(popover_instance !== undefined);
     let gif_grid_html = "";
 
+    const $popper = $(popover_instance.popper);
     if (!next_page) {
         last_gif_index = -1;
+        if (urls.length === 0) {
+            const no_gif_results_html = render_no_gif_results();
+            $popper.find(".gif-picker-content").html(no_gif_results_html);
+            return;
+        }
     }
     for (const url of urls) {
         last_gif_index += 1;
@@ -129,7 +136,7 @@ function render_gifs_to_grid(urls: GifInfoUrl[], next_page: boolean): void {
             gif_index: last_gif_index,
         });
     }
-    const $popper = $(popover_instance.popper);
+
     if (next_page) {
         $popper.find(".gif-picker-content").append($(gif_grid_html));
     } else {
