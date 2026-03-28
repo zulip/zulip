@@ -11,6 +11,7 @@ from django.db import transaction
 from django.db.models import Q, QuerySet, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from pydantic_partials.sentinels import Missing, MissingType
 from zxcvbn import zxcvbn
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
@@ -321,6 +322,10 @@ class PreregistrationInviteData:
     invited_as: int
     is_multiuse: bool
     notify_referrer_on_join: bool
+    stream_ids: list[int]
+    group_ids: list[int]
+    include_realm_default_subscriptions: bool
+    welcome_message_custom_text: str | None
 
 
 @dataclass
@@ -332,6 +337,10 @@ class MultiuseInviteData:
     link_url: str
     invited_as: int
     is_multiuse: bool
+    stream_ids: list[int]
+    group_ids: list[int]
+    include_realm_default_subscriptions: bool
+    welcome_message_custom_text: str | None
 
 
 def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[str, Any]]:
@@ -353,6 +362,8 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
 
     for invitee in prereg_users:
         assert invitee.referred_by is not None
+        stream_ids = list(invitee.streams.all().values_list("id", flat=True))
+        group_ids = list(invitee.groups.all().values_list("id", flat=True))
         invites.append(
             PreregistrationInviteData(
                 email=invitee.email,
@@ -363,6 +374,10 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
                 invited_as=invitee.invited_as,
                 is_multiuse=False,
                 notify_referrer_on_join=invitee.notify_referrer_on_join,
+                stream_ids=stream_ids,
+                group_ids=group_ids,
+                include_realm_default_subscriptions=invitee.include_realm_default_subscriptions,
+                welcome_message_custom_text=invitee.welcome_message_custom_text,
             )
         )
 
@@ -404,9 +419,44 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
                 link_url=confirmation_url_for(confirmation_obj),
                 invited_as=invite.invited_as,
                 is_multiuse=True,
+                stream_ids=list(invite.streams.values_list("id", flat=True)),
+                group_ids=list(invite.groups.values_list("id", flat=True)),
+                include_realm_default_subscriptions=invite.include_realm_default_subscriptions,
+                welcome_message_custom_text=invite.welcome_message_custom_text,
             )
         )
     return [asdict(invite) for invite in invites]
+
+
+@transaction.atomic(durable=True)
+def do_edit_multiuse_invite_link(
+    multiuse_invite: MultiuseInvite,
+    *,
+    invited_as: int | None = None,
+    streams: Collection[Stream] | None = None,
+    user_groups: Collection[NamedUserGroup] | None = None,
+    include_realm_default_subscriptions: bool | None = None,
+    welcome_message_custom_text: str | None | MissingType = Missing,
+) -> None:
+    if streams is not None:
+        multiuse_invite.streams.set(streams)
+
+    if user_groups is not None:
+        multiuse_invite.groups.set(user_groups)
+
+    if invited_as is not None:
+        multiuse_invite.invited_as = invited_as
+
+    if include_realm_default_subscriptions is not None:
+        multiuse_invite.include_realm_default_subscriptions = include_realm_default_subscriptions
+
+    if not isinstance(welcome_message_custom_text, MissingType):
+        multiuse_invite.welcome_message_custom_text = welcome_message_custom_text
+
+    multiuse_invite.save()
+
+    realm = multiuse_invite.referred_by.realm
+    notify_invites_changed(realm, changed_invite_referrer=multiuse_invite.referred_by)
 
 
 @transaction.atomic(durable=True)

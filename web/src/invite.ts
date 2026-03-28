@@ -25,10 +25,13 @@ import * as invite_stream_picker_pill from "./invite_stream_picker_pill.ts";
 import * as loading from "./loading.ts";
 import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
+import type {User} from "./people.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
+import type {UserRoleValue} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
+import type {CurrentUser} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_pill from "./stream_pill.ts";
 import * as timerender from "./timerender.ts";
@@ -54,7 +57,7 @@ type CommonInvitationData = {
     invite_expires_in_minutes: string;
     invitee_emails: string;
     include_realm_default_subscriptions: string;
-    welcome_message_custom_text?: string;
+    welcome_message_custom_text?: string | null;
 };
 
 const DEV_ENV_EMAIL_ACCESS_BANNER: Banner = {
@@ -71,6 +74,37 @@ function reset_invite_modal_banners(): void {
     if (page_params.development_environment) {
         $("#dev-env-email-access-banner-container").empty();
     }
+}
+
+export function get_welcome_message_custom_text_value(): string | null {
+    const realm_welcome_message_configured = realm.realm_welcome_message_custom_text.length > 0;
+    const send_realm_default_custom_message = $(
+        "#send_default_realm_welcome_message_custom_text",
+    ).is(":checked");
+    const welcome_message_custom_text = $<HTMLTextAreaElement>(
+        "#invite_welcome_custom_message_text",
+    )
+        .val()!
+        .trim();
+
+    if (realm_welcome_message_configured) {
+        if (send_realm_default_custom_message) {
+            return null;
+        }
+
+        return welcome_message_custom_text;
+    }
+
+    const send_custom_message = $("#send_custom_welcome_message_custom_text").is(":checked");
+    if (!send_custom_message) {
+        return null;
+    }
+
+    if (welcome_message_custom_text.length === 0) {
+        return null;
+    }
+
+    return welcome_message_custom_text;
 }
 
 function get_common_invitation_data(): CommonInvitationData {
@@ -129,23 +163,8 @@ function get_common_invitation_data(): CommonInvitationData {
     }
 
     if (current_user.is_admin) {
-        const realm_welcome_message_configured = realm.realm_welcome_message_custom_text.length > 0;
-        const send_realm_default_custom_message = $(
-            "#send_default_realm_welcome_message_custom_text",
-        ).is(":checked");
-        const send_custom_message = $("#send_custom_welcome_message_custom_text").is(":checked");
-        const welcome_message_custom_text = $<HTMLTextAreaElement>(
-            "#invite_welcome_custom_message_text",
-        )
-            .val()!
-            .trim();
-
-        if (
-            (realm_welcome_message_configured && !send_realm_default_custom_message) ||
-            (!realm_welcome_message_configured &&
-                send_custom_message &&
-                welcome_message_custom_text.length > 0)
-        ) {
+        const welcome_message_custom_text = get_welcome_message_custom_text_value();
+        if (welcome_message_custom_text !== null) {
             data.welcome_message_custom_text = welcome_message_custom_text;
         }
     }
@@ -369,7 +388,7 @@ function valid_to(): string {
     return $t({defaultMessage: "Expires on {date} at {time}"}, {date, time});
 }
 
-function set_streams_to_join_list_visibility(): void {
+export function set_streams_to_join_list_visibility(): void {
     const realm_has_default_streams = stream_data.get_default_stream_ids().length > 0;
     const hide_streams_list =
         realm_has_default_streams &&
@@ -381,7 +400,7 @@ function set_streams_to_join_list_visibility(): void {
     }
 }
 
-function set_welcome_message_custom_text_visibility(): void {
+export function set_welcome_message_custom_text_visibility(): void {
     if (!current_user.is_admin) {
         return;
     }
@@ -486,6 +505,30 @@ function update_stream_list(): void {
     }
 }
 
+export function get_invite_as_options_for_invite(
+    user: CurrentUser | User,
+    current_invite_as?: number,
+): UserRoleValue[] {
+    const role_values = settings_config.user_role_values;
+
+    return Object.values(role_values).filter((option) => {
+        if (current_invite_as === option.code) {
+            return true;
+        }
+
+        if (option.code === role_values.guest.code || option.code === role_values.member.code) {
+            return true;
+        }
+        if (option.code === role_values.owner.code) {
+            if (current_user.user_id !== user.user_id) {
+                return current_user.is_owner && user.is_owner;
+            }
+            return user.is_owner;
+        }
+        return user.is_admin;
+    });
+}
+
 function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void {
     e.stopPropagation();
     e.preventDefault();
@@ -498,7 +541,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         is_owner: current_user.is_owner,
         show_group_pill_container,
         development_environment: page_params.development_environment,
-        invite_as_options: settings_config.user_role_values,
+        invite_as_options: get_invite_as_options_for_invite(current_user),
         expires_in_options: settings_config.expires_in_values,
         time_choices: settings_config.custom_time_unit_values,
         show_select_default_streams_option: stream_data.get_default_stream_ids().length > 0,
