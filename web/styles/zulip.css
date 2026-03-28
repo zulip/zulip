@@ -6,6 +6,7 @@ html {
     overflow: hidden scroll;
     overscroll-behavior-y: none;
     width: calc(100% - var(--disabled-scrollbar-width));
+    scrollbar-gutter: stable both-edges; /* NEW LINE - Prevents layout shift when scrollbar hides */
 }
 
 body,
