@@ -2937,8 +2937,7 @@ class StreamAdminTest(ZulipTestCase):
         if expect_can_subscribe:
             self.assert_json_success(result)
         else:
-            self.assert_json_error(result, "Unable to access channel (privstream).")
-
+            self.assert_json_error(result, "Permission denied.", status_code=403)
             # now grant content access
             setting_group_member_dict = UserGroupMembersData(
                 direct_members=[hamlet.id], direct_subgroups=[]
@@ -5575,8 +5574,7 @@ class InviteOnlyStreamTest(ZulipTestCase):
         # Subscribing oneself to an invite-only stream is not allowed
         self.login_user(othello)
         result = self.subscribe_via_post(othello, [stream_name], allow_fail=True)
-        self.assert_json_error(result, "Unable to access channel (Saxony).")
-
+        self.assert_json_error(result, "Permission denied.", status_code=403)
         # authorization_errors_fatal=False works
         self.login_user(othello)
         result = self.subscribe_via_post(
