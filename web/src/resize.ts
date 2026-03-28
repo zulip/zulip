@@ -284,6 +284,122 @@ export function resize_stream_creation_subscribers_list(): void {
     $(":root").css("--new-stream-subscriber-list-max-height", `${subscribers_list_height}px`);
 }
 
+export function resize_group_members_list(): void {
+    if ($("#groups_overlay_container").find(".two-pane-settings-overlay.show").length === 0) {
+        return;
+    }
+
+    if (
+        $("#user_group_settings .group_setting_section[data-group-section='members']").length ===
+            0 ||
+        $("#user_group_settings .group_setting_section[data-group-section='members']").css(
+            "display",
+        ) === "none"
+    ) {
+        return;
+    }
+
+    const $groups_info = $("#groups_overlay .two-pane-settings-container .right");
+
+    const $tab_container = $("#user_group_settings .group_settings_header");
+
+    const $membership_status = $(".member_list_settings_container .membership-status");
+
+    // These below three elements are conditionally hidden: they
+    // are not shown for role based groups.
+    const $add_members_title = $(".member_list_settings_container .add-members-heading");
+    const $members_list_settings = $(".member_list_settings_container .member_list_settings");
+    const $subscription_request_result = $(".user_group_subscription_request_result");
+
+    const $members_list_header = $(".member_list_settings_container .members-list-header");
+
+    const elements_above_members_list = [
+        $tab_container,
+        $membership_status,
+        $add_members_title,
+        $members_list_settings,
+        $subscription_request_result,
+        $members_list_header,
+    ];
+
+    let total_height_of_elements_above_members_list = 0;
+    for (const $elem of elements_above_members_list) {
+        const outer_height = $elem.outerHeight(true) ?? 0;
+        total_height_of_elements_above_members_list += outer_height;
+    }
+
+    const right_subheader_height = height_of($(".right .two-pane-settings-subheader"));
+    const group_settings_inner_box_margin = 18;
+    const groups_info_height = $groups_info.height();
+    assert(groups_info_height !== undefined);
+
+    const members_list_container_bottom_border_width = 1;
+
+    const members_list_height =
+        groups_info_height -
+        total_height_of_elements_above_members_list -
+        right_subheader_height -
+        2 * group_settings_inner_box_margin -
+        members_list_container_bottom_border_width;
+    $(":root").css("--group-member-list-max-height", `${members_list_height}px`);
+}
+
+export function resize_group_creation_members_list(): void {
+    if ($("#groups_overlay_container").find(".two-pane-settings-overlay.show").length === 0) {
+        return;
+    }
+
+    if ($("#user_group_creation_form .user_group_members_container").css("display") === "none") {
+        return;
+    }
+
+    const $group_creation_container = $(
+        "#user_group_creation_form .two-pane-settings-creation-simplebar-container",
+    );
+    const $choose_subscribers_title = $group_creation_container.find(".new-group-members-title");
+    const $user_group_creation_status = $group_creation_container.find(
+        ".user_group_creation_error",
+    );
+    const $member_list_add = $group_creation_container.find(".member_list_add");
+    const $create_members_list_header = $group_creation_container.find(
+        ".create_member_list_header",
+    );
+
+    const elements_above_members_list = [
+        $choose_subscribers_title,
+        $user_group_creation_status,
+        $member_list_add,
+        $create_members_list_header,
+    ];
+
+    let total_height_of_elements_above_members_list = 0;
+    for (const $elem of elements_above_members_list) {
+        const outer_height = $elem.outerHeight(true) ?? 0;
+        total_height_of_elements_above_members_list += outer_height;
+    }
+
+    const $group_creation_error = $group_creation_container.find(".user_group_create_info");
+    const group_creation_error_height =
+        $group_creation_error.css("display") !== "none"
+            ? $group_creation_error.outerHeight(true)!
+            : 0;
+    const groups_creation_container_height = $group_creation_container.height();
+    assert(groups_creation_container_height !== undefined);
+
+    const members_list_container_bottom_border_width = 1;
+    const group_creation_body_padding = 15;
+    const group_creation_bottom_margin = 20;
+
+    const members_list_height =
+        groups_creation_container_height -
+        total_height_of_elements_above_members_list -
+        group_creation_body_padding -
+        group_creation_bottom_margin -
+        group_creation_error_height -
+        members_list_container_bottom_border_width;
+    $(":root").css("--new-group-member-list-max-height", `${members_list_height}px`);
+}
+
 export function resize_stream_filters_container(): void {
     resize_bottom_whitespace();
     $("#left_sidebar_scroll_container").css("max-height", get_stream_filters_max_height());
@@ -426,4 +542,6 @@ export function resize_page_components(): void {
     resize_settings_creation_overlay($("#channels_overlay_container"));
     resize_stream_subscribers_list();
     resize_stream_creation_subscribers_list();
+    resize_group_members_list();
+    resize_group_creation_members_list();
 }
