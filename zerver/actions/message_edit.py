@@ -100,6 +100,7 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.groups import get_realm_system_groups_name_dict
+from zerver.models.realms import TopicResolutionMessageRequirementEnum
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream_by_id_in_realm
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
@@ -1571,6 +1572,17 @@ def check_stream_topic_edit_permissions(
             user_profile, message_edit_request.orig_stream, message_edit_request.target_stream
         ):
             raise JsonableError(_("You don't have permission to resolve topics in this channel."))
+        if (
+            message_edit_request.topic_resolved
+            and user_profile.realm.topic_resolution_message_requirement
+            == TopicResolutionMessageRequirementEnum.required.value
+        ):
+            raise JsonableError(
+                _(
+                    "Your organization requires a message when resolving topics. "
+                    "Please use the compose box to resolve this topic."
+                )
+            )
         return
 
     if not can_edit_topic(
