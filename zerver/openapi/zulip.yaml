@@ -12293,6 +12293,121 @@ paths:
                           }
                         description: |
                           An example JSON error response when the custom emoji is invalid:
+  /users/me/profile_data:
+    patch:
+      operationId: update-profile-data
+      summary: Update your profile data
+      tags: ["users"]
+      description: |
+        Update the values of the [custom profile fields](/help/custom-profile-fields)
+        for the current user.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - data
+              properties:
+                data:
+                  type: array
+                  example:
+                    - id: 1
+                      value: "Software Engineer"
+                  items:
+                    type: object
+                    required:
+                      - id
+                      - value
+                    properties:
+                      id:
+                        type: integer
+                        description: |
+                          The ID of the custom profile field to update.
+                        example: 1
+                      value:
+                        oneOf:
+                          - type: string
+                          - type: array
+                            items:
+                              type: integer
+                        description: |
+                          The value for the custom profile field.
+                          This is usually a string, but for fields with predefined choices,
+                          it can be an array of integer choice IDs.
+                        example: "Software Engineer"
+                  description: |
+                    A list of objects, each containing the `id` of the custom
+                    profile field and the new `value` for that field.
+            encoding:
+              data:
+                contentType: application/json
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CodedError"
+              examples:
+                field_id_not_found:
+                  value:
+                    result: "error"
+                    msg: "Field id 9999 not found."
+                    code: "BAD_REQUEST"
+    delete:
+      operationId: remove-profile-data
+      summary: Delete your profile data
+      tags: ["users"]
+      description: |
+        Delete the values of the [custom profile fields](/help/custom-profile-fields)
+        for the current user.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - data
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: integer
+                  description: |
+                    A list of integers, each being the ID of a custom profile
+                    field whose value should be deleted.
+                  example: [1, 2]
+            encoding:
+              data:
+                contentType: application/json
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CodedError"
+              examples:
+                invalid_profile_data:
+                  value:
+                    result: "error"
+                    msg: "Invalid profile data."
+                    code: "BAD_REQUEST"
   /users/me/{stream_id}/topics:
     get:
       operationId: get-stream-topics
