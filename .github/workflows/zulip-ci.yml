@@ -42,6 +42,7 @@ jobs:
             os: bookworm
             include_documentation_tests: true
             include_frontend_tests: false
+
           # Ubuntu 24.04 ships with Python 3.12.2.
           - docker_image: amanagr2/ci:noble
             name: Ubuntu 24.04 (Python 3.12, backend)

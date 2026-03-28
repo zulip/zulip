@@ -22,6 +22,8 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 481**
 
+* [`PATCH /users/me/profile_data`](/api/update-own-profile-data): New endpoint to update the current user's custom profile field data.
+* [`DELETE /users/me/profile_data`](/api/remove-own-profile-data): New endpoint to remove the current user's custom profile field data.
 * [`POST /register`](/api/register-queue): Added `idle_queue_timeout`
   request parameter, allowing clients to configure how long the server
   keeps the event queue alive when the client is not polling. The

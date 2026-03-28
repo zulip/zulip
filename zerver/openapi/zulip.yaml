@@ -12139,6 +12139,94 @@ paths:
                       "server_timestamp": 1656958539.6287155,
                       "presence_last_update_id": 1000,
                     }
+  /users/me/profile_data:
+    patch:
+      operationId: update-own-profile-data
+      summary: Update own profile data
+      description: |
+        Update the value of one or more custom profile fields for the
+        current user.
+      tags:
+        - users
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - data
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required:
+                      - id
+                      - value
+                    properties:
+                      id:
+                        type: integer
+                        description: The ID of the custom profile field.
+                      value:
+                        oneOf:
+                          - type: string
+                            nullable: true
+                          - type: array
+                            items:
+                              type: integer
+                        description: |
+                          The value for the custom profile field, or `null`
+                          to unset it. For USER-type fields, pass a list of
+                          user IDs instead of a string.
+                  example:
+                    [
+                      {"id": 9, "value": "some data"},
+                      {"id": 11, "value": [1, 2]},
+                    ]
+                  description: |
+                    A list of objects, each containing the `id` of a custom
+                    profile field and the `value` to set for it.
+            encoding:
+              data:
+                contentType: application/json
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+    delete:
+      operationId: remove-own-profile-data
+      summary: Remove own profile data
+      description: |
+        Remove the values of one or more custom profile fields for the
+        current user.
+      tags:
+        - users
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - data
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: integer
+                  example: [4, 5]
+                  description: |
+                    A list of IDs of the custom profile fields whose values
+                    should be removed.
+            encoding:
+              data:
+                contentType: application/json
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /users/me/status:
     post:
       operationId: update-status
@@ -30303,10 +30391,6 @@ components:
           schema:
             allOf:
               - $ref: "#/components/schemas/IgnoredParametersSuccess"
-
-  ################
-  # Shared request bodies
-  ################
   requestBodies:
     UpdateUser:
       required: false
@@ -30314,6 +30398,7 @@ components:
         application/x-www-form-urlencoded:
           schema:
             type: object
+            additionalProperties: false
             properties:
               full_name:
                 description: |
@@ -30344,10 +30429,30 @@ components:
                 example: 400
               profile_data:
                 description: |
-                  A dictionary containing the updated custom profile field data for the user.
+                  A list of objects, each with an `id` (the custom profile field ID)
+                  and a `value` to set.
                 type: array
                 items:
                   type: object
+                  additionalProperties: false
+                  required:
+                    - id
+                    - value
+                  properties:
+                    id:
+                      type: integer
+                      description: The ID of the custom profile field to update.
+                    value:
+                      oneOf:
+                        - type: string
+                          nullable: true
+                        - type: array
+                          items:
+                            type: integer
+                      description: |
+                        The value to set for this custom profile field,
+                        or `null` to unset it. For USER-type fields, pass
+                        a list of user IDs instead of a string.
                 example:
                   [{"id": 4, "value": "0"}, {"id": 5, "value": "1909-04-05"}]
               new_email:
@@ -30364,10 +30469,6 @@ components:
               contentType: application/json
             profile_data:
               contentType: application/json
-
-  ####################
-  # Shared parameters
-  ####################
   parameters:
     UserGroupId:
       name: user_group_id

@@ -39,6 +39,9 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     "create-constructor-groups-video-call",
     # Would need Nextcloud Talk server configured to test this endpoint.
     "create-nextcloud-talk-video-call",
+    # Hard to mock custom profile field IDs in curl examples.
+    "update-own-profile-data",
+    "remove-own-profile-data",
 }
 
 

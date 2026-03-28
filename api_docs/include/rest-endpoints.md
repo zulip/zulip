@@ -90,6 +90,8 @@
 * [Create a user](/api/create-user)
 * [Update a user](/api/update-user)
 * [Update a user by email](/api/update-user-by-email)
+* [Update own profile data](/api/update-own-profile-data)
+* [Remove own profile data](/api/remove-own-profile-data)
 * [Deactivate a user](/api/deactivate-user)
 * [Deactivate own user](/api/deactivate-own-user)
 * [Reactivate a user](/api/reactivate-user)
