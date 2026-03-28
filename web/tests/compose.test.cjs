@@ -41,7 +41,9 @@ const compose_fade = mock_esm("../src/compose_fade");
 const compose_notifications = mock_esm("../src/compose_notifications");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const loading = mock_esm("../src/loading");
-const markdown = mock_esm("../src/markdown");
+const markdown = mock_esm("../src/markdown", {
+    get_first_disallowed_group_mention: () => null,
+});
 const narrow_state = mock_esm("../src/narrow_state");
 const rendered_markdown = mock_esm("../src/rendered_markdown");
 const resize = mock_esm("../src/resize");
@@ -510,6 +512,9 @@ test_ui("finish", ({override, override_rewire}) => {
     })();
 
     (function test_when_compose_validation_succeed() {
+        // Reset check to pass validation
+        override(markdown, "get_first_disallowed_group_mention", () => null);
+
         // Testing successfully sending of a message.
         fake_compose_box.show_message_preview();
         fake_compose_box.set_textarea_val("default message");
