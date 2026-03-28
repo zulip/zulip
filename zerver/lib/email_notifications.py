@@ -393,13 +393,16 @@ def include_realm_name_in_missedmessage_emails_subject(user_profile: UserProfile
         user_profile.realm_name_in_email_notifications_policy
         == UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_AUTOMATIC
     ):
-        realms_count = UserProfile.objects.filter(
-            delivery_email=user_profile.delivery_email,
-            is_active=True,
-            is_bot=False,
-            realm__deactivated=False,
-        ).count()
-        return realms_count > 1
+        return (
+            UserProfile.objects.filter(
+                delivery_email=user_profile.delivery_email,
+                is_active=True,
+                is_bot=False,
+                realm__deactivated=False,
+            )
+            .exclude(id=user_profile.id)
+            .exists()
+        )
     return (
         user_profile.realm_name_in_email_notifications_policy
         == UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_ALWAYS
