@@ -33,6 +33,10 @@ export function get_playground_info_for_languages(lang: string): RealmPlayground
     return map_language_to_playground_info.get(lang);
 }
 
+export function get_aliases_for_pretty_name(pretty_name: string): string[] {
+    return map_pygments_pretty_name_to_aliases.get(pretty_name) ?? [];
+}
+
 function sort_pygments_pretty_names_by_priority(
     comparator_func: (a: string, b: string) => number,
 ): void {
