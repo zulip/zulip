@@ -217,9 +217,41 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         self.assertEqual(request_data[6][1], 123456)  # timestamp
         self.assertEqual(request_data[7][1], "U21")  # user_id
         self.assertEqual(request_data[8][1], "Sample User")  # user_name
-        self.assertEqual(request_data[9][1], "@**test**")  # text
+        # With bot mention parsing, text should be empty (mention stripped)
+        # and command should be the slash command version of the bot name
+        self.assertEqual(request_data[9][1], "")  # text (mention stripped)
         self.assertEqual(request_data[10][1], "mention")  # trigger_word
         self.assertEqual(request_data[11][1], 12)  # user_profile_id
+        self.assertEqual(request_data[12][1], f"/{self.bot_user.full_name}")  # command
+
+    def test_parse_bot_mention(self) -> None:
+        """Test the parse_bot_mention static method."""
+        bot_name = self.bot_user.full_name
+
+        # Test @**bot name** format
+        command, text = self.handler.parse_bot_mention(f"@**{bot_name}** hello world", bot_name)
+        self.assertEqual(command, f"/{bot_name}")
+        self.assertEqual(text, "hello world")
+
+        # Test @*bot name* format
+        command, text = self.handler.parse_bot_mention(f"@*{bot_name}* test message", bot_name)
+        self.assertEqual(command, f"/{bot_name}")
+        self.assertEqual(text, "test message")
+
+        # Test no mention - should return None for command
+        command, text = self.handler.parse_bot_mention("just a regular message", bot_name)
+        self.assertIsNone(command)
+        self.assertEqual(text, "just a regular message")
+
+        # Test mention not at start - should not be parsed
+        command, text = self.handler.parse_bot_mention(f"hello @**{bot_name}**", bot_name)
+        self.assertIsNone(command)
+        self.assertEqual(text, f"hello @**{bot_name}**")
+
+        # Test mention with no additional text
+        command, text = self.handler.parse_bot_mention(f"@**{bot_name}**", bot_name)
+        self.assertEqual(command, f"/{bot_name}")
+        self.assertEqual(text, "")
 
     @mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
     def test_make_request_private_message(self, mock_fail_with_message: mock.Mock) -> None:
