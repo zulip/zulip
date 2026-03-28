@@ -960,9 +960,17 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         self.assertEqual(attachment.realm, stream.realm)
         self.assertEqual(attachment.is_realm_public, True)
 
-        assert message.content.endswith(
-            f"aaaaaa\n[message truncated]\n[image.png](/user_uploads/{attachment.path_id})"
+        self.assertIn("Message content too long. See attached", message.content)
+
+        image_attachment = Attachment.objects.get(file_name="image.png", realm=stream.realm)
+        text_attachment = Attachment.objects.get(file_name="MessageText.txt", realm=stream.realm)
+
+        self.assertIn(
+            f"[MessageText.txt](/user_uploads/{text_attachment.path_id})", message.content
         )
+        self.assertIn(f"[image.png](/user_uploads/{image_attachment.path_id})", message.content)
+
+        self.assertEqual(Attachment.objects.filter(messages__id=message.id).count(), 2)
 
     def test_message_with_attachment_utf8_filename(self) -> None:
         user_profile = self.example_user("hamlet")
