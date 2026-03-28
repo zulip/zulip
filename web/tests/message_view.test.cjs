@@ -663,6 +663,16 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
             "translated: You are not allowed to view messages in this private channel.",
         ),
     );
+    current_filter = set_filter([["channels", "archived"]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: There are no messages here."),
+    );
+    current_filter = set_filter([["channels", "public"]]);
+    const public_channels_banner = narrow_banner.pick_empty_narrow_banner(current_filter);
+    assert.equal(public_channels_banner.title, "translated: There are no messages here.");
+    assert.ok(public_channels_banner.html.includes("start the conversation"));
 });
 
 run_test("show_empty_narrow_message_with_search", ({mock_template, override}) => {
