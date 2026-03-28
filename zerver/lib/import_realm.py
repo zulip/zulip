@@ -32,7 +32,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.user_settings import set_avatar_to_default
 from zerver.lib.avatar import generate_and_upload_jdenticon_avatar
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
-from zerver.lib.bulk_create import bulk_set_users_or_streams_recipient_fields
+from zerver.lib.bulk_create import bulk_set_stream_recipient_fields
 from zerver.lib.export import Field, Path, Record, TableName, date_fields_for_table
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
@@ -1558,7 +1558,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     )
     update_model_ids(Recipient, data, "recipient")
     bulk_import_model(data, Recipient)
-    bulk_set_users_or_streams_recipient_fields(Stream, Stream.objects.filter(realm=realm))
+    bulk_set_stream_recipient_fields(Stream.objects.filter(realm=realm))
 
     re_map_foreign_keys(data, "zerver_subscription", "user_profile", related_table="user_profile")
     get_direct_message_groups_from_subscription(data, "zerver_subscription")

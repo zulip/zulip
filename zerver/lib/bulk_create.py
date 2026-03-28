@@ -1,7 +1,7 @@
 from collections.abc import Collection, Iterable
 from typing import Any
 
-from django.db.models import Model, QuerySet
+from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.avatar import generate_and_upload_jdenticon_avatar
@@ -144,37 +144,24 @@ def bulk_create_users(
     )
 
 
-def bulk_set_users_or_streams_recipient_fields(
-    model: type[Model],
-    objects: Collection[UserProfile]
-    | QuerySet[UserProfile]
-    | Collection[Stream]
-    | QuerySet[Stream],
+def bulk_set_stream_recipient_fields(
+    streams: Collection[Stream] | QuerySet[Stream],
     recipients: Iterable[Recipient] | None = None,
 ) -> None:
-    assert model in [UserProfile, Stream]
-    for obj in objects:
-        assert isinstance(obj, model)
-
-    if model == UserProfile:
-        recipient_type = Recipient.PERSONAL
-    elif model == Stream:
-        recipient_type = Recipient.STREAM
-
     if recipients is None:
-        object_ids = [obj.id for obj in objects]
-        recipients = Recipient.objects.filter(type=recipient_type, type_id__in=object_ids)
+        stream_ids = [stream.id for stream in streams]
+        recipients = Recipient.objects.filter(type=Recipient.STREAM, type_id__in=stream_ids)
 
-    objects_dict = {obj.id: obj for obj in objects}
+    streams_dict = {stream.id: stream for stream in streams}
 
-    objects_to_update = set()
+    streams_to_update = set()
     for recipient in recipients:
-        assert recipient.type == recipient_type
-        result = objects_dict.get(recipient.type_id)
-        if result is not None:
-            result.recipient = recipient
-            objects_to_update.add(result)
-    model._default_manager.bulk_update(objects_to_update, ["recipient"])
+        assert recipient.type == Recipient.STREAM
+        stream = streams_dict.get(recipient.type_id)
+        if stream is not None:
+            stream.recipient = recipient
+            streams_to_update.add(stream)
+    Stream.objects.bulk_update(streams_to_update, ["recipient"])
 
 
 # This is only sed in populate_db, so doesn't really need tests
@@ -221,7 +208,7 @@ def bulk_create_streams(realm: Realm, stream_dict: dict[str, dict[str, Any]]) ->
     ]
     Recipient.objects.bulk_create(recipients_to_create)
 
-    bulk_set_users_or_streams_recipient_fields(Stream, streams_to_create, recipients_to_create)
+    bulk_set_stream_recipient_fields(streams_to_create, recipients_to_create)
 
 
 def create_users(
