@@ -58,6 +58,7 @@ from social_core.backends.gitlab import GitLabOAuth2
 from social_core.backends.google import GoogleOAuth2
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 from social_core.backends.saml import SAMLAuth, SAMLIdentityProvider
+from zerver.lib.social_auth_backends import DiscordOAuth2
 from social_core.exceptions import (
     AuthCanceled,
     AuthFailed,
@@ -2898,6 +2899,18 @@ class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):
         if email_verified:
             verified_emails.append(details["email"])
         return verified_emails
+
+
+@external_auth_method
+class DiscordAuthBackend(SocialAuthMixin, DiscordOAuth2):
+    sort_order = 50
+    name = "discord"
+    auth_backend_name = "Discord"
+
+    @classmethod
+    @override
+    def display_icon(cls) -> str:
+        return staticfiles_storage.url("images/authentication_backends/discord-icon.png")
 
 
 @external_auth_method
