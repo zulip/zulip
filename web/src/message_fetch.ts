@@ -488,8 +488,9 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
 
 export function load_messages_for_narrow(opts: {
     anchor: string | number;
+    anchor_date?: string | undefined;
     msg_list: MessageList;
-    cont: () => void;
+    cont: (data: MessageFetchResponse) => void;
     validate_filter_topic_post_fetch?: boolean | undefined;
 }): void {
     load_messages({
@@ -499,6 +500,7 @@ export function load_messages_for_narrow(opts: {
         msg_list: opts.msg_list,
         msg_list_data: opts.msg_list.data,
         cont: opts.cont,
+        anchor_date: opts.anchor_date,
         validate_filter_topic_post_fetch: opts.validate_filter_topic_post_fetch,
     });
 }

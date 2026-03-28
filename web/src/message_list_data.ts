@@ -672,8 +672,14 @@ export class MessageListData {
             return undefined;
         }
 
+        return this.get_message_near_unix_seconds(anchor_timestamp);
+    }
+
+    // Returns the first message with a timestamp greater than or equal
+    // to `unix_seconds`.
+    get_message_near_unix_seconds(unix_seconds: number): Message | undefined {
         return this.all_messages_after_mute_filtering().find(
-            (message) => message.timestamp >= anchor_timestamp,
+            (message) => message.timestamp >= unix_seconds,
         );
     }
 

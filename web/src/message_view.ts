@@ -16,6 +16,7 @@ import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as condense from "./condense.ts";
+import * as date_util from "./date_util.ts";
 import * as feedback_widget from "./feedback_widget.ts";
 import {Filter} from "./filter.ts";
 import * as hash_parser from "./hash_parser.ts";
@@ -298,6 +299,7 @@ function handle_post_message_list_change(
     select_immediately: boolean,
     select_opts: SelectIdOpts,
     then_select_offset: number | undefined,
+    anchored_for_date?: boolean,
 ): void {
     // Important: We need to consider opening the compose box
     // before calling render_message_list_with_selected_message, so that the logic in
@@ -307,12 +309,20 @@ function handle_post_message_list_change(
     compose_actions.on_narrow(opts);
 
     if (select_immediately) {
-        render_message_list_with_selected_message({
+        const opts: Parameters<typeof render_message_list_with_selected_message>[0] = {
             id_info,
             select_offset: then_select_offset,
             msg_list: message_lists.current,
             select_opts,
-        });
+        };
+
+        if (anchored_for_date) {
+            // We go through this codepath only when the message closest
+            // to the date is present locally in the current message list.
+            opts.anchor_for_date = true;
+            opts.anchored_msg_id = id_info.local_select_id!;
+        }
+        render_message_list_with_selected_message(opts);
     }
 
     handle_post_view_change(msg_list, opts);
@@ -779,6 +789,8 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
 
             {
                 let anchor;
+                let anchor_date;
+                let date_term;
 
                 // Either we're trying to center the narrow around a
                 // particular message ID (which could be max_int), or we're
@@ -787,6 +799,16 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                 switch (id_info.final_select_id) {
                     case undefined:
                         anchor = "first_unread";
+                        date_term = filter.terms().find((raw_term) => raw_term.operator === "date");
+                        if (date_term) {
+                            const unix_seconds = date_util.get_unix_seconds_for_local_midnight(
+                                date_term.operand,
+                            );
+                            if (unix_seconds !== null) {
+                                anchor = "date";
+                                anchor_date = new Date(unix_seconds * 1000).toISOString();
+                            }
+                        }
                         break;
                     case -1:
                         // This case should never happen in this code path; it's
@@ -802,9 +824,10 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                 }
                 message_fetch.load_messages_for_narrow({
                     anchor,
+                    anchor_date,
                     validate_filter_topic_post_fetch:
                         filter.requires_adjustment_for_moved_with_target,
-                    cont() {
+                    cont(data) {
                         if (message_lists.current !== msg_list) {
                             return;
                         }
@@ -838,6 +861,8 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
                                 select_offset: then_select_offset,
                                 msg_list,
                                 select_opts,
+                                anchored_msg_id: data.anchor,
+                                anchor_for_date: anchor === "date",
                             });
                         }
                     },
@@ -855,6 +880,7 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
             select_immediately,
             select_opts,
             then_select_offset,
+            filter.terms().some((term) => term.operator === "date"),
         );
         if (
             id_info.first_unread_msg_id_pending_server_verification &&
@@ -1165,6 +1191,52 @@ export function maybe_add_local_messages(opts: {
         id_info.final_select_id = LARGER_THAN_MAX_MESSAGE_ID;
     }
 
+    // For the `date` filter:
+    // If the message list data obtained after filtering the local superset
+    // datasets has messages older than the date operand, then we use the first message
+    // that was sent on or after the date operand from msg_data (The MessageListData
+    // obtained by filtering the superset MessageListData, via load_local_messages below).
+    // Otherwise, we prefer to use the "anchor" message id we get from the server
+    // as the message id closest to the searched date.
+    // More broadly, the `date` filter serves more as a slicing mechanism instead of actually
+    // filtering messages. We just need to know what message we want to select in case the message
+    // is available locally.
+    if (filter.has_operator("date")) {
+        if (!load_local_messages(msg_data, superset_data)) {
+            // We surely don't have the earliest message
+            // and should fetch messages from the server
+            // for the most accurate anchor.
+            // This is particularly applicable during a hashchange.
+            id_info.final_select_id = undefined;
+            return;
+        }
+
+        const date_str = filter.terms_with_operator("date")[0]!.operand;
+        const unix_seconds_for_date_local_midnight =
+            date_util.get_unix_seconds_for_local_midnight(date_str);
+        if (unix_seconds_for_date_local_midnight === null) {
+            return;
+        }
+        const first_message_in_filtered_data = msg_data.first();
+        assert(first_message_in_filtered_data !== undefined);
+        if (first_message_in_filtered_data.timestamp >= unix_seconds_for_date_local_midnight) {
+            // We probably don't have the earliest message
+            // and should fetch messages from the server
+            // for the most accurate anchor.
+            id_info.final_select_id = undefined;
+            return;
+        }
+
+        const message_to_select = msg_data.get_message_near_unix_seconds(
+            unix_seconds_for_date_local_midnight,
+        );
+        if (message_to_select) {
+            id_info.final_select_id = message_to_select.id;
+            id_info.local_select_id = id_info.final_select_id;
+        }
+        return;
+    }
+
     if (unread_info.flavor === "cannot_compute") {
         // Full-text search and potentially other future cases where
         // we can't check which messages match on the frontend, so it
@@ -1303,6 +1375,8 @@ export function render_message_list_with_selected_message(opts: {
     id_info: TargetMessageIdInfo;
     select_offset: number | undefined;
     select_opts: SelectIdOpts;
+    anchored_msg_id?: number;
+    anchor_for_date?: boolean;
 }): void {
     if (message_lists.current !== undefined && message_lists.current !== opts.msg_list) {
         // If we navigated away from a view while we were fetching
@@ -1320,7 +1394,13 @@ export function render_message_list_with_selected_message(opts: {
     const id_info = opts.id_info;
     const select_offset = opts.select_offset;
 
-    const msg_id = id_info.final_select_id ?? message_lists.current.first_unread_message_id();
+    let msg_id = id_info.final_select_id ?? message_lists.current.first_unread_message_id();
+    if (opts.anchor_for_date) {
+        // If the server request was made with a "date" anchor,
+        // we select the message id that the server returned.
+        msg_id = opts.anchored_msg_id!;
+    }
+
     // There should be something since it's not visibly empty.
     assert(msg_id !== undefined);
 
@@ -1347,6 +1427,16 @@ export function render_message_list_with_selected_message(opts: {
         message_lists.current.view.set_message_offset(select_offset);
     }
     message_lists.current.view.update_sticky_recipient_headers();
+    if (opts.anchor_for_date) {
+        // In some cases like rendering a new message list, the `.sticky_header` class
+        // becomes available only after running update_sticky_recipient_headers,
+        // which is important to calculate the correct `visible_top` via
+        // `message_viewport.message_viewport_info()`
+        // to place the anchored message via `date` at the top of the message pane.
+        message_lists.current.view.set_message_offset(
+            message_viewport.message_viewport_info().visible_top,
+        );
+    }
     unread_ops.process_visible();
     narrow_history.save_narrow_state_and_flush();
 }
