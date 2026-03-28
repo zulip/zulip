@@ -1,4 +1,4 @@
-<li data-user-id="{{user_id}}" data-name="{{name}}" class="user_sidebar_entry {{#if user_list_style.WITH_AVATAR}}with_avatar{{/if}} {{#if has_status_text}}with_status{{/if}} {{#if is_current_user}}user_sidebar_entry_me {{/if}} narrow-filter {{#if faded}} user-fade {{/if}}">
+<li data-user-id="{{user_id}}" data-name="{{name}}" class="user_sidebar_entry {{#if user_list_style.WITH_AVATAR}}with_avatar{{/if}} {{#if has_status_text}}with_status{{/if}} {{#if is_current_user}}user_sidebar_entry_me {{/if}} narrow-filter {{#if faded}} user-fade {{/if}}" style="display: flex; align-items: center; gap: 8px;"></li>
     <div class="selectable_sidebar_block">
         {{#if user_list_style.WITH_STATUS}}
             <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle"></span>
@@ -37,9 +37,10 @@
     {{#unless user_list_style.WITH_AVATAR}}
     <span class="sidebar-menu-icon user-list-sidebar-menu-icon"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
     {{/unless}}
+    <!-- Follow/unfollow button is only shown for other users, and is hidden on hover by default. It becomes visible when the user hovers over the row. - JP -->
     {{#unless is_current_user}}
-    <button class="btn btn-sm follow-user-btn" data-user-id="{{user_id}}" title="{{t 'Follow user' }}">
-        {{t "Follow" }}
+    <button class="btn btn-sm follow-user-btn {{#if is_following}}following{{/if}}" data-user-id="{{user_id}}" title="{{#if is_following}}{{t 'Unfollow user' }}{{else}}{{t 'Follow user' }}{{/if}}">
+        {{#if is_following}}{{t "Following" }}{{else}}{{t "Follow" }}{{/if}}
     </button>
     {{/unless}}
 </li>
