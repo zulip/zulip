@@ -2,11 +2,13 @@ import hashlib
 import json
 import logging
 import random
+import re
 from abc import ABC, abstractmethod
 from base64 import b64encode
 from typing import Any
-from urllib.parse import quote, urlencode, urljoin, urlsplit
+from urllib.parse import quote, urlencode, urljoin, urlsplit, urlunsplit
 
+import jwt
 import requests
 from defusedxml import ElementTree
 from django.conf import settings
@@ -27,6 +29,7 @@ from typing_extensions import TypedDict, override
 
 from zerver.actions.video_calls import do_set_video_call_provider_token
 from zerver.decorator import zulip_login_required
+from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import (
     cache_with_key,
     flush_zoom_server_access_token_cache,
@@ -573,6 +576,95 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
         settings.BIG_BLUE_BUTTON_URL + "api/join", join_params
     )
     return redirect(append_url_query_string(redirect_url_base, "checksum=" + checksum))
+
+
+@typed_endpoint
+def get_jitsi_url(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    meeting_name: str,
+    is_video_call: Json[bool] = True,
+) -> HttpResponse:
+    if settings.JITSI_SERVER_APP_ID is None or settings.JITSI_SERVER_APP_SECRET is None:
+        raise JsonableError(_("Jitsi JWT credentials have not been configured"))
+
+    jitsi_server_url = (
+        user_profile.realm.jitsi_server_url
+        if user_profile.realm.jitsi_server_url is not None
+        else settings.JITSI_SERVER_URL
+    )
+    if jitsi_server_url is None:
+        raise JsonableError(_("Jitsi server URL is not configured"))
+
+    # Build a room name that is human-readable (derived from the meeting
+    # name) but unique per call (random suffix)
+    slug = re.sub(r"[^a-z0-9]+", "-", meeting_name.lower()).strip("-")
+    room = f"{slug}-{random.randint(100000000000, 999999999999)}"
+
+    signed = Signer().sign_object(
+        {
+            "room": room,
+            "is_video_call": is_video_call,
+            "moderator": request.user.id,
+        }
+    )
+    url = append_url_query_string("/calls/jitsi/join", "jitsi=" + signed)
+    return json_success(request, data={"url": url})
+
+
+@zulip_login_required
+@never_cache
+@typed_endpoint
+def join_jitsi(request: HttpRequest, *, jitsi: str) -> HttpResponse:
+    assert isinstance(request.user, UserProfile)
+
+    if settings.JITSI_SERVER_APP_ID is None or settings.JITSI_SERVER_APP_SECRET is None:
+        raise JsonableError(_("Jitsi JWT credentials have not been configured"))
+
+    try:
+        jitsi_data = Signer().unsign_object(jitsi)
+    except Exception:
+        raise JsonableError(_("Invalid signature."))
+
+    jitsi_server_url = (
+        request.user.realm.jitsi_server_url
+        if request.user.realm.jitsi_server_url is not None
+        else settings.JITSI_SERVER_URL
+    )
+    if jitsi_server_url is None:
+        raise JsonableError(_("Jitsi server URL is not configured"))
+
+    room = jitsi_data["room"]
+    is_video_call = jitsi_data["is_video_call"]
+
+    payload = {
+        "iss": settings.JITSI_SERVER_APP_ID,
+        "aud": "jitsi",
+        "sub": urlsplit(jitsi_server_url).hostname,
+        "room": room,
+        "context": {
+            "user": {
+                "name": request.user.full_name,
+                "email": request.user.delivery_email,
+                "avatar": avatar_url(request.user) or "",
+                "id": str(request.user.id),
+                "affiliation": "owner" if jitsi_data["moderator"] == request.user.id else "member",
+            }
+        },
+    }
+    token = jwt.encode(payload, settings.JITSI_SERVER_APP_SECRET, algorithm="HS256")
+
+    video_muted = "false" if is_video_call else "true"
+    server_parts = urlsplit(jitsi_server_url)
+    redirect_url = urlunsplit(
+        server_parts._replace(
+            path=f"/{room}",
+            query=f"jwt={token}",
+            fragment=f"config.startWithVideoMuted={video_muted}",
+        )
+    )
+    return redirect(redirect_url)
 
 
 @typed_endpoint_without_parameters

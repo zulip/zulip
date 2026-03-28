@@ -747,6 +747,9 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## integration, set JITSI_SERVER_URL = None.
 # JITSI_SERVER_URL = "https://jitsi.example.com"
 
+## To enable JWT authentication for a self-hosted Jitsi Meet server, set
+## jitsi_server_app_id and jitsi_server_app_secret in zulip-secrets.conf.
+
 ## Controls the BigBlueButton video call integration.  You must also
 ## set big_blue_button_secret in zulip-secrets.conf.
 # BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
