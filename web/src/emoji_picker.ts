@@ -834,10 +834,12 @@ function get_default_emoji_popover_options(
             refill_section_head_offsets($popover);
             show_emoji_catalog();
             register_popover_events($popover);
-            // Don't focus filter box on mobile since it leads to window resize due
-            // to keyboard being open and scrolls the emoji popover out of view while
-            // still open in Chrome Android and can hide it based on device height in Firefox Android.
-            if (!util.is_mobile()) {
+            // Don't auto-focus the filter on touch devices, since the soft
+            // keyboard opening can resize the viewport and cause the popover
+            // to be hidden or destroyed.
+            // We use a media query rather than util.is_mobile() because some
+            // touch devices (iPadOS 13+) report a desktop User-Agent string.
+            if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
                 change_focus_to_filter();
             }
         },
