@@ -110,6 +110,17 @@ Zulip message was sent to.
   to respond to (provided by `handle_message`)
 * `response`: A string with the response message from the bot
 
+## bot\_handler.react
+
+`bot_handler.react(message, emoji_name)`: Add an emoji reaction to a
+Zulip message.
+
+### Arguments
+
+* `message`: A dictionary containing information on the Zulip message
+  that the bot is reacting to (provided by `handle_message`)
+* `emoji_name`: A string with the name of the emoji reaction to add
+
 ## bot\_handler.update\_message
 
 `bot_handler.update_message(message)`: Edit the content of a message
