@@ -35,6 +35,7 @@ class OIDCIdPConfigDict(TypedDict, total=False):
     client_id: str
     secret: str | None
     auto_signup: bool
+    enable_external_auth_id_auth: bool
     limit_to_subdomains: list[str]
 
 

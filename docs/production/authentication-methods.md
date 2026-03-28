@@ -1232,6 +1232,28 @@ If your OIDC server's HTTPS server is signed by a custom certificate
 authority, you will need to [configure Zulip to trust
 it](system-configuration.md#custom_ca_path).
 
+### Synchronizing email addresses with OIDC
+
+Zulip 12.0+ supports automatically handling changes in email address
+for OIDC-authenticated users. To enable this, set
+`"enable_external_auth_id_auth": True` in your IdP configuration dict
+in `SOCIAL_AUTH_OIDC_ENABLED_IDPS`. When this is enabled, users are
+identified by the standard OIDC `sub` claim (a permanent, unique
+identifier) together with the `iss` (issuer) rather than by email
+address, and Zulip will update user email upon login if the email
+changes.
+
+:::{note}
+
+The first time a user logs in with OIDC, the `sub` claim is linked to
+their Zulip account. After a change in their email address at the IdP,
+Zulip will update the linked account's email address the next time the
+user logs in. If another Zulip user already has the new email address,
+the email will not be updated, a warning will be logged and the
+administrator should resolve the conflict manually.
+
+:::
+
 ## JSON Web Tokens (JWT)
 
 Zulip supports using JSON Web Tokens (JWT) authentication in two ways:
