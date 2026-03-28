@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 482**
+
+* [`GET /events`](/api/get-events): Removed the deprecated `user` object
+  from `reaction` events, as all core clients have migrated to using the
+  `user_id` field. This completes the transition started in feature level 328
+  and reverts the changes made in feature level 339.
+
 **Feature level 481**
 
 * [`POST /register`](/api/register-queue): Added `idle_queue_timeout`
