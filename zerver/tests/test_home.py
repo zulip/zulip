@@ -610,7 +610,7 @@ class HomeTest(ZulipTestCase):
             # Should be successful after calling 2fa login function.
             self.check_rendered_logged_in_app(result)
 
-    @override_settings(TERMS_OF_SERVICE_VERSION=None, PREFER_DIRECT_MESSAGE_GROUP=True)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_num_queries_for_realm_admin(self) -> None:
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")

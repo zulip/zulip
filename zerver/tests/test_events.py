@@ -17,7 +17,6 @@ from unittest import mock
 import orjson
 import time_machine
 from dateutil.parser import parse as dateparser
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -651,59 +650,6 @@ class NormalActionsTest(BaseAction):
                     skip_capture_on_commit_callbacks=True,
                 )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
-    def test_pm_send_message_events_using_personal_recipients(self) -> None:
-        with self.verify_action() as events:
-            self.send_personal_message(
-                self.example_user("cordelia"),
-                self.example_user("hamlet"),
-                "hola",
-                skip_capture_on_commit_callbacks=True,
-            )
-        self.assertEqual(events[0]["message"][TOPIC_NAME], "")
-
-        # Verify direct message editing - content only edit
-        pm = Message.objects.order_by("-id")[0]
-        content = "new content"
-        rendering_result = render_message_markdown(pm, content)
-        prior_mention_user_ids: set[int] = set()
-        mention_backend = MentionBackend(self.user_profile.realm_id)
-        mention_data = MentionData(
-            mention_backend=mention_backend,
-            content=content,
-            message_sender=self.example_user("cordelia"),
-        )
-
-        message_edit_request = build_message_edit_request(
-            message=pm,
-            user_profile=self.user_profile,
-            propagate_mode="change_one",
-            stream_id=None,
-            topic_name=None,
-            content=content,
-        )
-        with self.verify_action(state_change_expected=False) as events:
-            do_update_message(
-                self.user_profile,
-                pm,
-                message_edit_request,
-                False,
-                False,
-                rendering_result,
-                prior_mention_user_ids,
-                mention_data,
-            )
-        check_update_message(
-            "events[0]",
-            events[0],
-            is_stream_message=False,
-            has_content=True,
-            has_topic=False,
-            has_new_stream_id=False,
-            is_embedded_update_only=False,
-        )
-
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_pm_send_message_events_via_direct_message_group(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
@@ -716,7 +662,6 @@ class NormalActionsTest(BaseAction):
                 skip_capture_on_commit_callbacks=True,
             )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_direct_message_group_send_message_events(self) -> None:
         direct_message_group = [
             self.example_user("hamlet"),

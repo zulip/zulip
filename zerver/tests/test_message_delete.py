@@ -4,7 +4,6 @@ from unittest import mock
 
 import orjson
 from django.db import IntegrityError
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_delete import do_delete_messages
@@ -241,7 +240,6 @@ class DeleteMessageTest(ZulipTestCase):
         self.assertCountEqual([first_msg_id, second_msg_id], events[1]["event"]["message_ids"])
         self.assertCountEqual([cordelia.id, iago.id], events[1]["users"])
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_do_delete_messages_grouping_logic(self) -> None:
         realm = get_realm("zulip")
         cordelia = self.example_user("cordelia")
@@ -281,10 +279,10 @@ class DeleteMessageTest(ZulipTestCase):
 
         # Messages are grouped by (recipient_id, topic) via a database
         # GROUP BY with no explicit ORDER BY, so the order of event
-        # groups is non-deterministic. With PREFER_DIRECT_MESSAGE_GROUP,
-        # DM recipient IDs change from PERSONAL to DIRECT_MESSAGE_GROUP
-        # type, which shifts where DM events appear relative to channel
-        # events. We verify events by category rather than by position.
+        # groups is non-deterministic. DMs use DIRECT_MESSAGE_GROUP
+        # recipients, which shifts where DM events appear relative to
+        # channel events. We verify events by category rather than by
+        # position.
 
         # Verify DM delete events (order-independent).
         dm_delete_events = [

@@ -3,7 +3,6 @@ from unittest import mock
 
 import orjson
 import time_machine
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.realm_settings import do_change_realm_permission_group_setting
@@ -351,7 +350,6 @@ class TestMessageHelpers(ZulipTestCase):
 
 
 class TestQueryCounts(ZulipTestCase):
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_capturing_queries(self) -> None:
         # It's a common pitfall in Django to accidentally perform
         # database queries in a loop, due to lazy evaluation of
@@ -367,7 +365,7 @@ class TestQueryCounts(ZulipTestCase):
         cordelia = self.example_user("cordelia")
 
         # when direct message group doesn't exist and should be created as part of the flow
-        with self.assert_database_query_count(25):
+        with self.assert_database_query_count(24):
             self.send_personal_message(
                 from_user=hamlet,
                 to_user=cordelia,
@@ -376,18 +374,6 @@ class TestQueryCounts(ZulipTestCase):
 
         # when direct message group exists
         with self.assert_database_query_count(18):
-            self.send_personal_message(
-                from_user=hamlet,
-                to_user=cordelia,
-                content="hello there!",
-            )
-
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
-    def test_capturing_queries_using_personal_recipient(self) -> None:
-        hamlet = self.example_user("hamlet")
-        cordelia = self.example_user("cordelia")
-
-        with self.assert_database_query_count(17):
             self.send_personal_message(
                 from_user=hamlet,
                 to_user=cordelia,

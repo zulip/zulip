@@ -20,9 +20,7 @@ from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.streams import do_deactivate_stream
 from zerver.actions.uploads import do_claim_attachments
 from zerver.actions.user_settings import do_change_avatar_fields, do_change_user_setting
-from zerver.actions.users import do_deactivate_user
 from zerver.lib.avatar import avatar_url
-from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.mention import MentionBackend, MentionData
@@ -57,7 +55,6 @@ from zerver.lib.test_helpers import (
     queries_captured,
 )
 from zerver.lib.topic import MATCH_TOPIC, RESOLVED_TOPIC_PREFIX, TOPIC_NAME, messages_for_topic
-from zerver.lib.types import UserDisplayRecipient
 from zerver.lib.upload import create_attachment
 from zerver.lib.url_encoding import message_link_url
 from zerver.lib.user_groups import get_recursive_membership_groups
@@ -358,7 +355,6 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="sender", operand="non-existing@zulip.com")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_and_not_the_same_user_as_operand_with_no_direct_message_group(
         self,
     ) -> None:
@@ -370,7 +366,6 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_and_not_the_same_user_as_operand(self) -> None:
         # Create a direct message group between users
         get_or_create_direct_message_group(
@@ -429,7 +424,6 @@ class NarrowBuilderTest(ZulipTestCase):
         channel_term = NarrowParameter(operator="channels", operand="public", negated=True)
         self._build_query(channel_term)
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_no_direct_message_group_and_negated(
         self,
     ) -> None:  # NEGATED
@@ -440,7 +434,6 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_not_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
@@ -458,7 +451,6 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id = %(recipient_id_3)s))",
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_the_same_user_as_operand_no_direct_message_group(
         self,
     ) -> None:
@@ -469,7 +461,6 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_the_same_user_as_operand(self) -> None:
         # Create a direct message group with the user
         get_or_create_direct_message_group(
@@ -484,7 +475,6 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND (recipient_id = %(recipient_id_1)s OR recipient_id = %(recipient_id_2)s)",
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_the_same_user_as_operand_no_direct_message_group_and_negated(
         self,
     ) -> None:  # NEGATED
@@ -495,7 +485,6 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s)",
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_the_same_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
@@ -512,7 +501,6 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND (recipient_id = %(recipient_id_1)s OR recipient_id = %(recipient_id_2)s))",
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_and_self_and_user_as_operand_no_direct_message_group(
         self,
     ) -> None:
@@ -526,7 +514,6 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s)",
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_and_self_and_user_as_operand(self) -> None:
         # Make the direct message group first
         get_or_create_direct_message_group(
@@ -553,7 +540,6 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="dm", operand=two_others)
         self._do_add_term_test(term, "WHERE false")
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_more_than_one_user_as_operand(self) -> None:
         # Make the direct message group first
         get_or_create_direct_message_group(
@@ -571,7 +557,6 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE recipient_id = %(recipient_id_1)s",
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_self_and_user_as_operand_no_group_direct_message_and_negated(
         self,
     ) -> None:  # NEGATED
@@ -585,7 +570,6 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s))",
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_self_and_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
@@ -614,7 +598,6 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE true")
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_dm_operator_more_than_one_user_as_operand_and_negated(
         self,
     ) -> None:  # NEGATED
@@ -686,14 +669,6 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(
             term,
             "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND recipient_id IN (__[POSTCOMPILE_recipient_id_1]))",
-        )
-
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
-    def test_add_term_using_dm_including_operator_with_personal_recipient(self) -> None:
-        term = NarrowParameter(operator="dm-including", operand=self.othello_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
         )
 
     def test_add_term_using_id_operator_integer(self) -> None:
@@ -840,7 +815,6 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) = %(param_1)s")
 
     # Test that "pm-with" (legacy alias for "dm") works.
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_pm_with_operator_no_direct_message_group(self) -> None:
         # During migration, query PERSONAL recipients for self-DM even without DM group
         term = NarrowParameter(operator="pm-with", operand=self.hamlet_email)
@@ -850,7 +824,6 @@ class NarrowBuilderTest(ZulipTestCase):
         )
 
     # Test that "pm-with" (legacy alias for "dm") works.
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_pm_with_operator(self) -> None:
         # Create a direct message group with the user
         get_or_create_direct_message_group([self.user_profile.id])
@@ -862,7 +835,6 @@ class NarrowBuilderTest(ZulipTestCase):
         )
 
     # Test that the underscore version of "pm-with" works.
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_add_term_using_underscore_version_of_pm_with_operator(self) -> None:
         # Create a direct message group with the user
         get_or_create_direct_message_group([self.user_profile.id])
@@ -871,15 +843,6 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(
             term,
             "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND (recipient_id = %(recipient_id_1)s OR recipient_id = %(recipient_id_2)s)",
-        )
-
-    # Test that "pm-with" (legacy alias for "dm") works.
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
-    def test_add_term_using_pm_with_operator_and_with_personal_recipient(self) -> None:
-        term = NarrowParameter(operator="pm-with", operand=self.hamlet_email)
-        self._do_add_term_test(
-            term,
-            "WHERE (flags & %(flags_1)s) != %(param_1)s AND realm_id = %(realm_id_1)s AND sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s",
         )
 
     # Test that deprecated "group-pm-with" (replaced by "dm-including" ) works.
@@ -2641,61 +2604,6 @@ class GetOldMessagesTest(ZulipTestCase):
         message = result["messages"][0]
         self.assertIn("gravatar.com", message["avatar_url"])
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
-    def test_get_messages_with_narrow_dm(self) -> None:
-        """
-        A request for old messages with a narrow by direct message only returns
-        conversations with that user.
-        """
-        me = self.example_user("hamlet")
-
-        def dr_emails(dr: list[UserDisplayRecipient]) -> str:
-            assert isinstance(dr, list)
-            return ",".join(sorted({*(r["email"] for r in dr), me.email}))
-
-        def dr_ids(dr: list[UserDisplayRecipient]) -> list[int]:
-            assert isinstance(dr, list)
-            return sorted({*(r["id"] for r in dr), self.example_user("hamlet").id})
-
-        self.send_personal_message(me, self.example_user("iago"))
-
-        self.send_group_direct_message(
-            me,
-            [self.example_user("iago"), self.example_user("cordelia")],
-        )
-
-        # Send a 1:1 and group direct message containing Aaron.
-        # Then deactivate Aaron to test "dm" narrow includes messages
-        # from deactivated users also.
-        self.send_personal_message(me, self.example_user("aaron"))
-        self.send_group_direct_message(
-            me,
-            [self.example_user("iago"), self.example_user("aaron")],
-        )
-        aaron = self.example_user("aaron")
-        do_deactivate_user(aaron, acting_user=None)
-        self.assertFalse(aaron.is_active)
-
-        personals = [
-            m for m in get_user_messages(self.example_user("hamlet")) if not m.is_channel_message
-        ]
-        for personal in personals:
-            emails = dr_emails(get_display_recipient(personal.recipient))
-            self.login_user(me)
-            narrow: list[dict[str, Any]] = [dict(operator="dm", operand=emails)]
-            result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
-
-            for message in result["messages"]:
-                self.assertEqual(dr_emails(message["display_recipient"]), emails)
-
-            # check passing user IDs is consistent with passing user emails as operand
-            ids = dr_ids(get_display_recipient(personal.recipient))
-            narrow = [dict(operator="dm", operand=ids)]
-            result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
-
-            for message in result["messages"]:
-                self.assertEqual(dr_emails(message["display_recipient"]), emails)
-
     def test_get_messages_with_nonexistent_group_dm(self) -> None:
         me = self.example_user("hamlet")
         # Direct message group which doesn't match anything gets no results
@@ -2715,7 +2623,6 @@ class GetOldMessagesTest(ZulipTestCase):
         result = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
         self.assertNotEqual(result["messages"], [])
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_get_1_to_1_messages_with_existent_group_dm(self) -> None:
         me = self.example_user("hamlet")
         other_user = self.example_user("iago")
@@ -2740,7 +2647,6 @@ class GetOldMessagesTest(ZulipTestCase):
             self.assertIn(message["id"], message_ids)
             self.assertEqual(message["recipient_id"], direct_message_group.recipient_id)
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_get_messages_to_self_with_existent_group_dm(self) -> None:
         me = self.example_user("hamlet")
 
@@ -2762,112 +2668,6 @@ class GetOldMessagesTest(ZulipTestCase):
             self.assertIn(message["id"], message_ids)
             self.assertEqual(message["sender_id"], me.id)
             self.assertEqual(message["recipient_id"], direct_message_group.recipient_id)
-
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
-    def test_dm_narrow_with_mixed_personal_and_dm_group_messages(self) -> None:
-        """
-        Test that fetching DMs between two users shows all messages,
-        regardless of whether they were sent using personal recipients
-        (legacy) or DirectMessageGroup recipients (new).
-
-        This is important for the migration from personal recipients to
-        DirectMessageGroup recipients for 1:1 DMs. Users should be able to
-        see their complete message history after the migration.
-        """
-        me = self.example_user("hamlet")
-        other_user = self.example_user("iago")
-        self.login_user(me)
-        user_ids = [me.id, other_user.id]
-        narrow = [dict(operator="dm", operand=[other_user.id], negated=False)]
-        modified_params: dict[str, str | int] = {
-            "narrow": orjson.dumps(narrow).decode(),
-            "num_before": 100,
-            "num_after": 100,
-        }
-
-        # Step 1: Send messages using personal recipients (legacy behavior)
-        # With PREFER_DIRECT_MESSAGE_GROUP=False, messages use PERSONAL recipients
-        with self.settings(PREFER_DIRECT_MESSAGE_GROUP=False):
-            personal_message_ids = [
-                self.send_personal_message(me, other_user),
-                self.send_personal_message(other_user, me),
-            ]
-
-        # Verify messages use PERSONAL recipient type
-        for msg_id in personal_message_ids:
-            msg = Message.objects.get(id=msg_id)
-            self.assertEqual(msg.recipient.type, Recipient.PERSONAL)
-
-        # Verify personal messages are visible in the conversation
-        with self.settings(PREFER_DIRECT_MESSAGE_GROUP=False):
-            result = self.get_and_check_messages(modified_params)
-            result_ids = [m["id"] for m in result["messages"]]
-            for msg_id in personal_message_ids:
-                self.assertIn(msg_id, result_ids)
-
-        # Step 2: Enable PREFER_DIRECT_MESSAGE_GROUP and send new messages
-        # This simulates what happens after the migration is enabled
-        with self.settings(PREFER_DIRECT_MESSAGE_GROUP=True):
-            dm_group_message_ids = [
-                self.send_personal_message(me, other_user),
-                self.send_personal_message(other_user, me),
-            ]
-
-        # Verify new messages use DIRECT_MESSAGE_GROUP recipient type
-        direct_message_group = get_or_create_direct_message_group(user_ids)
-        for msg_id in dm_group_message_ids:
-            msg = Message.objects.get(id=msg_id)
-            self.assertEqual(msg.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
-            self.assertEqual(msg.recipient_id, direct_message_group.recipient_id)
-
-        # Step 3: Fetch messages with dm narrow (with PREFER_DIRECT_MESSAGE_GROUP=True)
-        # This is the key test: can users see BOTH old and new messages?
-        with self.settings(PREFER_DIRECT_MESSAGE_GROUP=True):
-            result = self.get_and_check_messages(modified_params)
-            result_ids = [m["id"] for m in result["messages"]]
-
-        # IMPORTANT: This verifies backward compatibility during the migration.
-        # All messages should be visible - both old (personal) and new (DM group)
-        all_message_ids = personal_message_ids + dm_group_message_ids
-        for msg_id in all_message_ids:
-            self.assertIn(
-                msg_id,
-                result_ids,
-                f"Message {msg_id} not found in dm narrow results. "
-                f"This indicates a potential issue with the migration - "
-                f"old messages may not be visible after enabling PREFER_DIRECT_MESSAGE_GROUP.",
-            )
-
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
-    def test_dm_including_narrow_with_mixed_recipients(self) -> None:
-        """
-        Test that the dm-including: narrow shows messages sent with both
-        PERSONAL and DM group recipients.  This validates the left sidebar
-        "All DMs" view during the migration.
-        """
-        me = self.example_user("hamlet")
-        other_user = self.example_user("iago")
-        self.login_user(me)
-
-        # Send with PERSONAL recipients
-        with self.settings(PREFER_DIRECT_MESSAGE_GROUP=False):
-            personal_msg_id = self.send_personal_message(me, other_user)
-
-        # Send with DM group recipients
-        with self.settings(PREFER_DIRECT_MESSAGE_GROUP=True):
-            dm_group_msg_id = self.send_personal_message(me, other_user)
-
-        narrow = [dict(operator="dm-including", operand=other_user.id)]
-        result = self.get_and_check_messages(
-            dict(
-                narrow=orjson.dumps(narrow).decode(),
-                num_before=100,
-                num_after=100,
-            )
-        )
-        result_ids = [m["id"] for m in result["messages"]]
-        self.assertIn(personal_msg_id, result_ids)
-        self.assertIn(dm_group_msg_id, result_ids)
 
     def test_get_visible_messages_with_narrow_dm(self) -> None:
         me = self.example_user("hamlet")
@@ -3170,7 +2970,6 @@ class GetOldMessagesTest(ZulipTestCase):
             """
             )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_get_visible_messages_using_narrow_with(self) -> None:
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
@@ -4922,7 +4721,6 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertFalse(result["found_newest"])
         self.assertFalse(result["found_oldest"])
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_use_first_unread_anchor_with_some_unread_messages(self) -> None:
         user_profile = self.example_user("hamlet")
 
@@ -5056,7 +4854,6 @@ class GetOldMessagesTest(ZulipTestCase):
             self.assertNotIn("AND message_id <=", sql)
             self.assertNotIn("AND message_id >=", sql)
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_use_first_unread_anchor_with_muted_topics(self) -> None:
         """
         Test that our logic related to `use_first_unread_anchor`
@@ -5372,98 +5169,6 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
             {"anchor": 100, "num_before": 10, "num_after": 10}, sql
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
-    def test_get_messages_with_narrow_queries_using_personal_recipient(self) -> None:
-        query_ids = self.get_query_ids()
-        othello_email = self.example_user("othello").email
-        hamlet_email = self.example_user("hamlet").email
-        sql_template = """\
-SELECT anon_1.message_id, anon_1.flags \n\
-FROM (SELECT message_id, flags \n\
-FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
-FROM zerver_stream \n\
-WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
-FROM zerver_subscription \n\
-WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (flags & 2048) != 0 AND realm_id = {realm_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_personal_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_personal_recipient} OR recipient_id = {hamlet_and_othello_recipient}) AND message_id = 0) AS anon_1 ORDER BY message_id ASC\
-"""
-        sql = sql_template.format(**query_ids)
-        self.common_check_get_messages_query(
-            {
-                "anchor": 0,
-                "num_before": 0,
-                "num_after": 0,
-                "narrow": f'[["dm", "{othello_email}"]]',
-            },
-            sql,
-        )
-
-        sql_template = """\
-SELECT anon_1.message_id, anon_1.flags \n\
-FROM (SELECT message_id, flags \n\
-FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
-FROM zerver_stream \n\
-WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
-FROM zerver_subscription \n\
-WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (flags & 2048) != 0 AND realm_id = {realm_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_personal_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_personal_recipient} OR recipient_id = {hamlet_and_othello_recipient}) AND message_id = 0) AS anon_1 ORDER BY message_id ASC\
-"""
-        sql = sql_template.format(**query_ids)
-        self.common_check_get_messages_query(
-            {
-                "anchor": 0,
-                "num_before": 1,
-                "num_after": 0,
-                "narrow": f'[["dm", "{othello_email}"]]',
-            },
-            sql,
-        )
-        sql_template = """\
-SELECT anon_1.message_id, anon_1.flags \n\
-FROM (SELECT message_id, flags \n\
-FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
-FROM zerver_stream \n\
-WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
-FROM zerver_subscription \n\
-WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (flags & 2048) != 0 AND realm_id = {realm_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_personal_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_personal_recipient} OR recipient_id = {hamlet_and_othello_recipient}) ORDER BY message_id ASC \n\
- LIMIT 10) AS anon_1 ORDER BY message_id ASC\
-"""
-        sql = sql_template.format(**query_ids)
-        self.common_check_get_messages_query(
-            {
-                "anchor": 0,
-                "num_before": 0,
-                "num_after": 9,
-                "narrow": f'[["dm", "{othello_email}"]]',
-            },
-            sql,
-        )
-
-        # Narrow to direct messages with yourself
-        sql_template = """\
-SELECT anon_1.message_id, anon_1.flags \n\
-FROM (SELECT message_id, flags \n\
-FROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id JOIN zerver_recipient ON zerver_message.recipient_id = zerver_recipient.id \n\
-WHERE user_profile_id = {hamlet_id} AND (zerver_recipient.type != 2 OR (EXISTS (SELECT  \n\
-FROM zerver_stream \n\
-WHERE zerver_stream.recipient_id = zerver_recipient.id AND (NOT zerver_stream.invite_only OR zerver_stream.can_subscribe_group_id IN {hamlet_groups} OR zerver_stream.can_add_subscribers_group_id IN {hamlet_groups}))) OR (EXISTS (SELECT  \n\
-FROM zerver_subscription \n\
-WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.recipient_id = zerver_recipient.id AND zerver_subscription.active))) AND (flags & 2048) != 0 AND realm_id = {realm_id} AND sender_id = {hamlet_id} AND (recipient_id = {hamlet_personal_recipient} OR recipient_id = {hamlet_recipient}) ORDER BY message_id ASC \n\
- LIMIT 10) AS anon_1 ORDER BY message_id ASC\
-"""
-        sql = sql_template.format(**query_ids)
-        self.common_check_get_messages_query(
-            {
-                "anchor": 0,
-                "num_before": 0,
-                "num_after": 9,
-                "narrow": f'[["dm", "{hamlet_email}"]]',
-            },
-            sql,
-        )
-
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_get_messages_with_narrow_queries_using_direct_message_group(self) -> None:
         # During migration, the query includes both PERSONAL and DM group recipients
         query_ids = self.get_query_ids()
@@ -5655,7 +5360,6 @@ WHERE realm_id = 2 AND recipient_id = {scotland_recipient} AND upper(subject) = 
         )
 
         # Narrow to direct messages with yourself
-        # During migration, query includes both PERSONAL and DM group recipients for self-DM
         sql_template = """\
 SELECT anon_1.message_id, anon_1.flags \n\
 FROM (SELECT message_id, flags \n\
@@ -5830,25 +5534,6 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
             '@<span class="highlight">Othello</span>, the Moor of Venice</span>?</p>',
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
-    def test_personal_dm_recipient_id(self) -> None:
-        hamlet = self.example_user("hamlet")
-        othello = self.example_user("othello")
-        self.login_user(hamlet)
-
-        outgoing_message_id = self.send_personal_message(hamlet, othello)
-        incoming_message_id = self.send_personal_message(othello, hamlet)
-
-        result = self.get_and_check_messages(dict(anchor="newest", num_before=2))
-        self.assert_length(result["messages"], 2)
-        self.assertEqual(result["messages"][0]["id"], outgoing_message_id)
-        self.assertEqual(result["messages"][0]["sender_id"], hamlet.id)
-        self.assertEqual(result["messages"][0]["recipient_id"], othello.recipient_id)
-        self.assertEqual(result["messages"][1]["id"], incoming_message_id)
-        self.assertEqual(result["messages"][1]["sender_id"], othello.id)
-        # Incoming DMs show the recipient_id that outgoing DMs would.
-        self.assertEqual(result["messages"][1]["recipient_id"], othello.recipient_id)
-
     def test_early_return_for_no_access_private_channel(self) -> None:
         """Test that we do an early return when trying to access messages
         in a private stream the user doesn't have access to.
@@ -5934,7 +5619,6 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
         )
         self.assertGreater(len(result["messages"]), 0)
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_group_dm_recipient_id(self) -> None:
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")

@@ -3,7 +3,6 @@ from unittest import mock
 
 import orjson
 from django.db import connection
-from django.test import override_settings
 from typing_extensions import override
 
 from zerver.actions.message_flags import do_update_message_flags
@@ -19,13 +18,11 @@ from zerver.lib.message import (
     UnreadMessagesResult,
     add_message_to_unread_msgs,
     aggregate_unread_data,
-    apply_unread_message_event,
     bulk_access_messages,
     bulk_access_stream_messages_query,
     format_unread_message_details,
     get_raw_unread_data,
 )
-from zerver.lib.message_cache import MessageDict
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription
 from zerver.lib.user_message import DEFAULT_HISTORICAL_FLAGS, create_historical_user_messages
@@ -1178,29 +1175,6 @@ class GetUnreadMsgsTest(ZulipTestCase):
             dict(user_ids_string=direct_message_group_string),
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
-    def test_raw_unread_personal_using_personal_recipients(self) -> None:
-        cordelia = self.example_user("cordelia")
-        othello = self.example_user("othello")
-        hamlet = self.example_user("hamlet")
-
-        cordelia_pm_message_ids = [self.send_personal_message(cordelia, hamlet) for i in range(3)]
-        othello_pm_message_ids = [self.send_personal_message(othello, hamlet) for i in range(3)]
-
-        raw_unread_data = get_raw_unread_data(user_profile=hamlet)
-
-        pm_dict = raw_unread_data["pm_dict"]
-
-        self.assertEqual(
-            set(pm_dict.keys()),
-            set(cordelia_pm_message_ids) | set(othello_pm_message_ids),
-        )
-
-        self.assertEqual(
-            pm_dict[cordelia_pm_message_ids[0]],
-            dict(other_user_id=cordelia.id),
-        )
-
     def test_raw_unread_personal(self) -> None:
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
@@ -1226,7 +1200,6 @@ class GetUnreadMsgsTest(ZulipTestCase):
             dict(other_user_id=cordelia.id),
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_raw_unread_personal_using_direct_message_group(self) -> None:
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
@@ -1258,102 +1231,6 @@ class GetUnreadMsgsTest(ZulipTestCase):
             dict(other_user_id=othello.id),
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
-    def test_raw_unread_personal_from_self(self) -> None:
-        hamlet = self.example_user("hamlet")
-
-        def send_unread_pm(other_user: UserProfile) -> Message:
-            # It is rare to send a message from Hamlet to Othello
-            # (or any other user) and have it be unread for
-            # Hamlet himself, but that is actually normal
-            # behavior for most API clients.
-            message_id = self.send_personal_message(
-                from_user=hamlet,
-                to_user=other_user,
-                read_by_sender=False,
-            )
-            message = Message.objects.get(id=message_id)
-
-            # This message should not be read, not even by the sender (Hamlet).
-            um = UserMessage.objects.get(
-                user_profile_id=hamlet.id,
-                message_id=message_id,
-            )
-            self.assertFalse(um.flags.read)
-
-            return message
-
-        othello = self.example_user("othello")
-        othello_msg = send_unread_pm(other_user=othello)
-
-        # And now check the unread data structure...
-        raw_unread_data = get_raw_unread_data(
-            user_profile=hamlet,
-        )
-
-        pm_dict = raw_unread_data["pm_dict"]
-
-        self.assertEqual(set(pm_dict.keys()), {othello_msg.id})
-
-        self.assertEqual(
-            pm_dict[othello_msg.id],
-            dict(other_user_id=othello.id),
-        )
-
-        cordelia = self.example_user("cordelia")
-        cordelia_msg = send_unread_pm(other_user=cordelia)
-
-        apply_unread_message_event(
-            user_profile=hamlet,
-            state=raw_unread_data,
-            message=MessageDict.wide_dict(cordelia_msg),
-            flags=[],
-        )
-        self.assertEqual(
-            set(pm_dict.keys()),
-            {othello_msg.id, cordelia_msg.id},
-        )
-
-        self.assertEqual(
-            pm_dict[cordelia_msg.id],
-            dict(other_user_id=cordelia.id),
-        )
-
-        # Send a message to ourself.
-        hamlet_msg = send_unread_pm(other_user=hamlet)
-        apply_unread_message_event(
-            user_profile=hamlet,
-            state=raw_unread_data,
-            message=MessageDict.wide_dict(hamlet_msg),
-            flags=[],
-        )
-        self.assertEqual(
-            set(pm_dict.keys()),
-            {othello_msg.id, cordelia_msg.id, hamlet_msg.id},
-        )
-
-        self.assertEqual(
-            pm_dict[hamlet_msg.id],
-            dict(other_user_id=hamlet.id),
-        )
-
-        # Call get_raw_unread_data again.
-        raw_unread_data = get_raw_unread_data(
-            user_profile=hamlet,
-        )
-        pm_dict = raw_unread_data["pm_dict"]
-
-        self.assertEqual(
-            set(pm_dict.keys()),
-            {othello_msg.id, cordelia_msg.id, hamlet_msg.id},
-        )
-
-        self.assertEqual(
-            pm_dict[hamlet_msg.id],
-            dict(other_user_id=hamlet.id),
-        )
-
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_raw_unread_personal_from_self_using_direct_message_group(self) -> None:
         hamlet = self.example_user("hamlet")
 

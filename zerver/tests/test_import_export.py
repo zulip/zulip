@@ -15,7 +15,6 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import CommandError
 from django.db.models import Q, QuerySet
 from django.forms.models import model_to_dict
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -891,7 +890,6 @@ class RealmImportExportTest(ExportFile):
         exported_huddle_ids = self.get_set(realm_data["zerver_huddle"], "id")
         self.assertEqual(exported_huddle_ids, set())
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_export_realm_with_member_consent(self) -> None:
         realm = Realm.objects.get(string_id="zulip")
 
@@ -3408,51 +3406,6 @@ class SingleUserExportTest(ExportFile):
                 (bye_hamlet_message_id, "bye hamlet", hamlet.full_name),
                 (hi_myself_message_id, "hi myself", cordelia.full_name),
                 (bye_stream_message_id, "bye stream", "Denmark"),
-            ],
-        )
-
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
-    def test_message_data_using_personal_recipient(self) -> None:
-        hamlet = self.example_user("hamlet")
-        cordelia = self.example_user("cordelia")
-        othello = self.example_user("othello")
-        bot = self.create_test_bot("test-bot", hamlet)
-
-        hi_hamlet_message_id = self.send_personal_message(othello, hamlet, "hi hamlet")
-        hi_cordelia_message_id = self.send_personal_message(hamlet, cordelia, "hi cordelia")
-        bye_hamlet_message_id = self.send_personal_message(cordelia, hamlet, "bye hamlet")
-        test_bot_message_id = self.send_personal_message(hamlet, bot, "test bot message")
-        self.send_personal_message(othello, cordelia, "an irrelevant message")
-        bye_peeps_message_id = self.send_group_direct_message(
-            othello, [cordelia, hamlet], "bye peeps"
-        )
-        self_message_id = self.send_personal_message(hamlet, hamlet, "hi myself")
-
-        output_dir = make_export_output_dir()
-        hamlet = self.example_user("hamlet")
-
-        with self.assertLogs(level="INFO"):
-            do_export_user(hamlet, output_dir)
-
-        messages = read_json("messages-000001.json")
-
-        excerpt = [
-            (rec["id"], rec["content"], rec["recipient_name"])
-            for rec in messages["zerver_message"][-6:]
-        ]
-        self.assertEqual(
-            excerpt,
-            [
-                (hi_hamlet_message_id, "hi hamlet", hamlet.full_name),
-                (hi_cordelia_message_id, "hi cordelia", cordelia.full_name),
-                (bye_hamlet_message_id, "bye hamlet", hamlet.full_name),
-                (test_bot_message_id, "test bot message", bot.full_name),
-                (
-                    bye_peeps_message_id,
-                    "bye peeps",
-                    f"{cordelia.full_name}, {hamlet.full_name}, {othello.full_name}",
-                ),
-                (self_message_id, "hi myself", hamlet.full_name),
             ],
         )
 

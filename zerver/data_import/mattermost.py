@@ -343,38 +343,35 @@ def convert_direct_message_group_data(
             {username for username in group_member_usernames if user_id_mapper.has(username)}
         )
 
-        if len(direct_message_group_members) > 2 or settings.PREFER_DIRECT_MESSAGE_GROUP:
-            if subscriber_handler.get_zulip_recipient_id(direct_message_group_members):
-                logging.info("Duplicate direct message group found in the export data. Skipping.")
-                continue
-            direct_message_group_id = direct_message_group_id_mapper.get(
-                direct_message_group_members
-            )
-            direct_message_group_dict = build_direct_message_group(
-                direct_message_group_id, len(direct_message_group_members)
-            )
-            direct_message_group_user_ids = {
-                user_id_mapper.get(username) for username in direct_message_group_members
-            }
-            subscriber_handler.set_info(
-                users=direct_message_group_user_ids,
-                direct_message_group_id=direct_message_group_id,
-            )
+        if subscriber_handler.get_zulip_recipient_id(direct_message_group_members):
+            logging.info("Duplicate direct message group found in the export data. Skipping.")
+            continue
+        direct_message_group_id = direct_message_group_id_mapper.get(direct_message_group_members)
+        direct_message_group_dict = build_direct_message_group(
+            direct_message_group_id, len(direct_message_group_members)
+        )
+        direct_message_group_user_ids = {
+            user_id_mapper.get(username) for username in direct_message_group_members
+        }
+        subscriber_handler.set_info(
+            users=direct_message_group_user_ids,
+            direct_message_group_id=direct_message_group_id,
+        )
 
-            recipient_id = NEXT_ID("recipient")
-            recipient = Recipient(
-                type_id=direct_message_group_id,
-                id=recipient_id,
-                type=Recipient.DIRECT_MESSAGE_GROUP,
-            )
-            recipient_dict = model_to_dict(recipient)
-            realm["zerver_recipient"].append(recipient_dict)
+        recipient_id = NEXT_ID("recipient")
+        recipient = Recipient(
+            type_id=direct_message_group_id,
+            id=recipient_id,
+            type=Recipient.DIRECT_MESSAGE_GROUP,
+        )
+        recipient_dict = model_to_dict(recipient)
+        realm["zerver_recipient"].append(recipient_dict)
 
-            subscriber_handler.add_group_dm_key_to_zulip_recipient_id(
-                key=direct_message_group_members,
-                group_recipient_id=recipient_id,
-            )
-            zerver_direct_message_group.append(direct_message_group_dict)
+        subscriber_handler.add_group_dm_key_to_zulip_recipient_id(
+            key=direct_message_group_members,
+            group_recipient_id=recipient_id,
+        )
+        zerver_direct_message_group.append(direct_message_group_dict)
     return zerver_direct_message_group
 
 
@@ -537,8 +534,6 @@ def process_raw_message_batch(
     mention_map: dict[int, set[int]] = {}
     zerver_message = []
 
-    pm_members = {}
-
     for raw_message in raw_messages:
         message_id = NEXT_ID("message")
         mention_user_ids = get_mentioned_user_ids(raw_message, user_id_mapper)
@@ -572,27 +567,6 @@ def process_raw_message_batch(
                 logging.info(
                     "Skipped a group direct message since none of the participants got converted. Participants: %s",
                     str(raw_message["direct_message_group_members"]),
-                )
-                continue
-        elif "pm_members" in raw_message:
-            is_direct_message_type = True
-            members = raw_message["pm_members"]
-            member_ids = {
-                user_id_mapper.get(member) for member in members if user_id_mapper.has(member)
-            }
-            pm_members[message_id] = member_ids
-            other_user_mattermost_id = (
-                members[1] if sender_user_id == user_id_mapper.get(members[0]) else members[0]
-            )
-            if other_user_recipient_id := user_handler.get_zulip_recipient_id(
-                other_user_mattermost_id
-            ):
-                recipient_id = other_user_recipient_id
-            else:  # nocoverage
-                # This is likely a deleted user. We can't convert it since we don't convert them yet.
-                logging.info(
-                    "Skipped a message from %s since this user is not converted.",
-                    other_user_mattermost_id,
                 )
                 continue
         else:
@@ -732,16 +706,7 @@ def process_posts(
                 for username in post_dict["channel_members"]
                 if user_id_mapper.has(username)
             ]
-            if len(channel_members) > 2 or settings.PREFER_DIRECT_MESSAGE_GROUP:
-                message_dict["direct_message_group_members"] = frozenset(channel_members)
-            elif len(channel_members) == 2:
-                # For DM to one's self, the user's username appear twice in
-                # "channel_members".
-                message_dict["pm_members"] = channel_members
-            else:  # nocoverage
-                # DMs from unconverted users to themselves or 1-1 DM received by an
-                # unconverted user.
-                return None
+            message_dict["direct_message_group_members"] = frozenset(channel_members)
         else:
             raise AssertionError("Post without channel or channel_members key.")
 

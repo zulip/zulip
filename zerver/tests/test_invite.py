@@ -1372,7 +1372,6 @@ earl-test@zulip.com""",
             ]
         )
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_direct_notification_for_accepted_invitation(self) -> None:
         """
         New test to check if notification-bot message is sent to the referrer

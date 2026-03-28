@@ -1,7 +1,6 @@
 from typing import Any
 from unittest import mock
 
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.cache import cache_delete, to_dict_cache_key_id
@@ -142,7 +141,6 @@ class MessageDictTest(ZulipTestCase):
 
             self.assertEqual(send_message_payload, fetch_payload)
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_bulk_message_fetching(self) -> None:
         sender = self.example_user("othello")
         receiver = self.example_user("hamlet")

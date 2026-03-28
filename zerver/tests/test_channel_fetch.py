@@ -857,7 +857,6 @@ class GetSubscribersTest(ZulipTestCase):
                 self.assert_length(sub["partial_subscribers"], 3)
                 self.assertIsNone(sub.get("subscribers"))
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_gather_subscriptions(self) -> None:
         """
         gather_subscriptions returns correct results with only 3 queries
@@ -881,7 +880,7 @@ class GetSubscribersTest(ZulipTestCase):
             polonius.id,
         ]
 
-        with self.assert_database_query_count(76):
+        with self.assert_database_query_count(73):
             self.subscribe_via_post(
                 self.user_profile,
                 stream_names,

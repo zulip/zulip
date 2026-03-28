@@ -376,7 +376,6 @@ class GetEventsTest(ZulipTestCase):
         request = HostRequestMock(post_data, user_profile, tornado_handler=dummy_handler)
         return view_func(request, user_profile)
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_get_events(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.email
@@ -518,7 +517,6 @@ class GetEventsTest(ZulipTestCase):
         self.assertTrue("local_message_id" not in recipient_events[1])
         self.assertEqual(recipient_events[1]["message"]["recipient_id"], recipient.id)
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_get_events_narrow(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)

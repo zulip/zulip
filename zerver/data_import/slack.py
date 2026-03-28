@@ -16,7 +16,6 @@ from urllib.parse import urlsplit
 
 import orjson
 import requests
-from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 
@@ -563,7 +562,7 @@ def channels_to_zerver_stream(
     added_channels = {}
     added_mpims = {}
     added_dms = {}
-    dm_members = {}
+    dm_members: DMMembersT = {}
     slack_recipient_name_to_zulip_recipient_id = {}
 
     realm["zerver_stream"] = []
@@ -687,63 +686,37 @@ def channels_to_zerver_stream(
         mpims = []
     process_mpims(mpims)
 
-    # This may have duplicated zulip user_ids, since we merge multiple
-    # Slack same-email shared-channel users into one Zulip dummy user
-    if not settings.PREFER_DIRECT_MESSAGE_GROUP:
-        zulip_user_to_recipient: dict[int, int] = {}
-        for slack_user_id, zulip_user_id in slack_user_id_to_zulip_user_id.items():
-            if zulip_user_id in zulip_user_to_recipient:
-                slack_recipient_name_to_zulip_recipient_id[slack_user_id] = zulip_user_to_recipient[
-                    zulip_user_id
-                ]
-                continue
-            recipient = build_recipient(zulip_user_id, recipient_id_count, Recipient.PERSONAL)
-            slack_recipient_name_to_zulip_recipient_id[slack_user_id] = recipient_id_count
-            zulip_user_to_recipient[zulip_user_id] = recipient_id_count
-            sub = build_subscription(recipient_id_count, zulip_user_id, subscription_id_count)
-            realm["zerver_recipient"].append(recipient)
-            realm["zerver_subscription"].append(sub)
-            recipient_id_count += 1
-            subscription_id_count += 1
-
     def process_dms(dms: list[dict[str, Any]]) -> None:
         nonlocal direct_message_group_id_count, recipient_id_count, subscription_id_count
 
         for dm in dms:
-            if settings.PREFER_DIRECT_MESSAGE_GROUP:
-                # Create direct message group for 1:1 DMs when the setting is enabled
-                direct_message_group = build_direct_message_group(
-                    direct_message_group_id_count, len(set(dm["members"]))
-                )
-                realm["zerver_huddle"].append(direct_message_group)
+            direct_message_group = build_direct_message_group(
+                direct_message_group_id_count, len(set(dm["members"]))
+            )
+            realm["zerver_huddle"].append(direct_message_group)
 
-                # Use DM id as the key for mapping, similar to mpims
-                added_dms[dm["id"]] = direct_message_group_id_count
+            # Use DM id as the key for mapping, similar to mpims
+            added_dms[dm["id"]] = direct_message_group_id_count
 
-                recipient = build_recipient(
-                    direct_message_group_id_count,
-                    recipient_id_count,
-                    Recipient.DIRECT_MESSAGE_GROUP,
-                )
-                realm["zerver_recipient"].append(recipient)
-                slack_recipient_name_to_zulip_recipient_id[dm["id"]] = recipient_id_count
+            recipient = build_recipient(
+                direct_message_group_id_count,
+                recipient_id_count,
+                Recipient.DIRECT_MESSAGE_GROUP,
+            )
+            realm["zerver_recipient"].append(recipient)
+            slack_recipient_name_to_zulip_recipient_id[dm["id"]] = recipient_id_count
 
-                subscription_id_count = get_subscription(
-                    dm["members"],
-                    realm["zerver_subscription"],
-                    recipient_id_count,
-                    slack_user_id_to_zulip_user_id,
-                    subscription_id_count,
-                )
+            subscription_id_count = get_subscription(
+                dm["members"],
+                realm["zerver_subscription"],
+                recipient_id_count,
+                slack_user_id_to_zulip_user_id,
+                subscription_id_count,
+            )
 
-                direct_message_group_id_count += 1
-                recipient_id_count += 1
-                logging.info("DM %s -> created as direct message group", dm["id"])
-            else:
-                # Original behavior for personal messages
-                user_a = dm["members"][0]
-                user_b = dm["members"][1]
-                dm_members[dm["id"]] = (user_a, user_b)
+            direct_message_group_id_count += 1
+            recipient_id_count += 1
+            logging.info("DM %s -> created as direct message group", dm["id"])
 
     try:
         dms = get_data_file(slack_data_dir + "/dms.json")
@@ -1108,19 +1081,7 @@ def channel_message_to_zerver_message(
             recipient_id = slack_recipient_name_to_zulip_recipient_id[message["mpim_name"]]
         elif "pm_name" in message:
             is_direct_message_type = True
-            if settings.PREFER_DIRECT_MESSAGE_GROUP:
-                # When PREFER_DIRECT_MESSAGE_GROUP is enabled, 1:1 DMs are treated as direct message groups
-                recipient_id = slack_recipient_name_to_zulip_recipient_id[message["pm_name"]]
-            else:
-                # Original behavior: use personal recipients for 1:1 DMs
-                sender = get_message_sending_user(message)
-                members = dm_members[message["pm_name"]]
-                if sender == members[0]:
-                    recipient_id = slack_recipient_name_to_zulip_recipient_id[members[1]]
-                    sender_recipient_id = slack_recipient_name_to_zulip_recipient_id[members[0]]
-                else:
-                    recipient_id = slack_recipient_name_to_zulip_recipient_id[members[0]]
-                    sender_recipient_id = slack_recipient_name_to_zulip_recipient_id[members[1]]
+            recipient_id = slack_recipient_name_to_zulip_recipient_id[message["pm_name"]]
 
         message_id = NEXT_ID("message")
 
@@ -1213,23 +1174,6 @@ def channel_message_to_zerver_message(
         )
         total_user_messages += num_created
         total_skipped_user_messages += num_skipped
-
-        if (
-            "pm_name" in message
-            and not settings.PREFER_DIRECT_MESSAGE_GROUP
-            and recipient_id != sender_recipient_id
-        ):
-            (num_created, num_skipped) = build_usermessages(
-                zerver_usermessage=zerver_usermessage,
-                subscriber_map=subscriber_map,
-                recipient_id=sender_recipient_id,
-                mentioned_user_ids=mentioned_user_ids,
-                message_id=message_id,
-                is_private=is_direct_message_type,
-                long_term_idle=long_term_idle,
-            )
-            total_user_messages += num_created
-            total_skipped_user_messages += num_skipped
 
     logging.debug(
         "Created %s UserMessages; deferred %s due to long-term idle",

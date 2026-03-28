@@ -1513,7 +1513,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
         }
         self.assertDictEqual(payload, expected)
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_get_message_payload_apns_personal_message_using_direct_message_group(self) -> None:
         user_profile = self.example_user("othello")
 
@@ -1960,24 +1959,6 @@ class TestGetGCMPayload(PushNotificationTestCase):
                 "priority": "high",
             },
         )
-
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
-    def test_get_message_payload_personal_message_to_self(self) -> None:
-        hamlet = self.example_user("hamlet")
-
-        # Create a message to self using PERSONAL recipient type
-        message = self.get_message(
-            Recipient.PERSONAL,
-            type_id=hamlet.id,
-            realm_id=hamlet.realm_id,
-        )
-        self.assertEqual(message.sender_id, hamlet.id)
-        self.assertEqual(message.recipient.type, Recipient.PERSONAL)
-
-        payload = get_message_payload(hamlet, message, for_legacy_clients=False)
-
-        self.assertEqual(payload["recipient_type"], "direct")
-        self.assertEqual(payload["recipient_user_ids"], [hamlet.id])
 
     def test_get_message_payload_gcm_stream_message_from_inaccessible_user(self) -> None:
         self.set_up_db_for_testing_user_access()
