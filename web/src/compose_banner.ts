@@ -4,6 +4,7 @@ import render_cannot_send_direct_message_error from "../templates/compose_banner
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_long_paste_options from "../templates/compose_banner/long_paste_options.hbs";
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
+import render_topic_resolution_banner from "../templates/compose_banner/topic_resolution_banner.hbs";
 import render_topics_required_error_banner from "../templates/compose_banner/topics_required_error_banner.hbs";
 import render_unknown_zoom_user_error from "../templates/compose_banner/unknown_zoom_user_error.hbs";
 
@@ -64,6 +65,7 @@ export const CLASSNAMES = {
     invalid_recipients: "invalid_recipients",
     deactivated_user: "deactivated_user",
     topic_missing: "topic_missing",
+    topic_resolution_message: "topic_resolution_message",
     generic_compose_error: "generic_compose_error",
     user_not_subscribed: "user_not_subscribed",
     unknown_zoom_user: "unknown_zoom_user",
@@ -311,4 +313,40 @@ export function show_convert_pasted_text_to_file_banner({
     $new_row.on("click", ".main-view-banner-action-button.paste-to-compose", paste_to_compose_cb);
     update_or_append_banner($new_row, CLASSNAMES.convert_pasted_text_to_file, $banner_container);
     return $new_row;
+}
+
+export function clear_topic_resolution_banners(): void {
+    $(`#compose_banners .${CSS.escape(CLASSNAMES.topic_resolution_message)}`).remove();
+}
+
+export function show_topic_resolution_banner(
+    is_required: boolean,
+    on_cancel: () => void,
+    on_resolve_without_message?: () => void,
+): void {
+    clear_topic_resolution_banners();
+
+    const $new_row = $(
+        render_topic_resolution_banner({
+            banner_type: INFO,
+            classname: CLASSNAMES.topic_resolution_message,
+            is_required,
+        }),
+    );
+
+    if (!is_required && on_resolve_without_message) {
+        $new_row.on("click", '[data-action="resolve-without-message"]', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            on_resolve_without_message();
+        });
+    }
+
+    $new_row.on("click", '[data-action="cancel-resolution"]', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        on_cancel();
+    });
+
+    append_compose_banner_to_banner_list($new_row, $("#compose_banners"));
 }

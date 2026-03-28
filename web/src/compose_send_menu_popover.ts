@@ -215,12 +215,15 @@ export function initialize(): void {
             // If there's existing text in the composebox, show an option
             // to keep/save the current draft and start a new message.
             const show_compose_new_message = compose_state.has_savable_message_content();
+            // Hide scheduling options when in topic resolution compose mode
+            const in_resolution_mode = compose_state.has_pending_resolution();
             instance.setContent(
                 parse_html(
                     render_send_later_popover({
                         enter_sends_true: user_settings.enter_sends,
                         formatted_send_later_time,
                         show_compose_new_message,
+                        in_resolution_mode,
                     }),
                 ),
             );

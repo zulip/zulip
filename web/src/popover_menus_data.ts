@@ -23,6 +23,7 @@ import {current_user, realm, realm_billing} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
+import * as topic_resolution from "./topic_resolution.ts";
 import {num_unread_for_topic} from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
@@ -277,7 +278,8 @@ export function get_topic_popover_content_context({
     const can_rename_topic =
         stream_data.user_can_move_messages_within_channel(sub) &&
         !stream_data.is_empty_topic_only_channel(sub.stream_id);
-    const can_resolve_topic = stream_data.can_resolve_topics(sub);
+    const topic_is_resolved = resolved_topic.is_resolved(topic_name);
+    const can_resolve_topic = topic_resolution.can_toggle_topic_resolution(sub, topic_name);
 
     const visibility_policy = user_topics.get_topic_visibility_policy(sub.stream_id, topic_name);
     const all_visibility_policies = user_topics.all_visibility_policies;
@@ -297,7 +299,7 @@ export function get_topic_popover_content_context({
         can_rename_topic,
         can_resolve_topic,
         is_realm_admin: current_user.is_admin,
-        topic_is_resolved: resolved_topic.is_resolved(topic_name),
+        topic_is_resolved,
         has_starred_messages,
         has_unread_messages,
         url,

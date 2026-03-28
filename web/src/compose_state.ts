@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as compose_pm_pill from "./compose_pm_pill.ts";
+import * as markdown from "./markdown.ts";
 import * as people from "./people.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
@@ -21,6 +22,11 @@ let is_processing_forward_message = false;
 let recipient_viewed_topic_resolved_banner = false;
 let recipient_viewed_topic_moved_banner = false;
 let recipient_guest_ids_for_dm_warning: number[] = [];
+let pending_resolution: {
+    message_id: number;
+    stream_id: number;
+    topic: string;
+} | null = null;
 
 export function set_recipient_edited_manually(flag: boolean): void {
     recipient_edited_manually = flag;
@@ -301,4 +307,34 @@ export function allow_draft_restoring(): void {
 
 export function can_restore_drafts(): boolean {
     return _can_restore_drafts;
+}
+
+export function has_pending_resolution(): boolean {
+    return pending_resolution !== null;
+}
+
+export function get_pending_resolution(): typeof pending_resolution {
+    return pending_resolution;
+}
+
+export function set_pending_resolution(state: typeof pending_resolution): void {
+    pending_resolution = state;
+}
+
+export function clear_pending_resolution_state(): void {
+    pending_resolution = null;
+}
+
+export const MIN_RESOLUTION_MESSAGE_LENGTH = 5;
+
+function get_rendered_message_text(content: string): string {
+    const rendered_content = markdown.parse_non_message(content);
+    const rendered_html = new DOMParser().parseFromString(rendered_content, "text/html");
+    return rendered_html.body.textContent?.replaceAll(/\s+/g, " ").trim() ?? "";
+}
+
+export function meets_minimum_resolution_length(): boolean {
+    const content = message_content();
+    const rendered_text = get_rendered_message_text(content);
+    return [...rendered_text].length >= MIN_RESOLUTION_MESSAGE_LENGTH;
 }
