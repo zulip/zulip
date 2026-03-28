@@ -1206,17 +1206,25 @@ $("body").on("click", ".follow-user-btn", function (e: JQuery.ClickEvent) {
     e.stopPropagation();
     
     const $btn = $(this);
+    const user_id = Number($btn.attr("data-user-id"));
     const isFollowing = $btn.hasClass("following");
+    
+    const url = "/json/users/me/followed_users/" + user_id;
     
     if (isFollowing) {
         // Unfollow
+        void channel.del({
+            url,
+        });
         $btn.removeClass("following");
         $btn.text("Follow");
     } else {
         // Follow
+        void channel.post({
+            url,
+        });
         $btn.addClass("following");
         $btn.text("Following");
     }
 });
-
 export const buddy_list = new BuddyList();
