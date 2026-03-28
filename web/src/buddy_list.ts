@@ -1206,23 +1206,17 @@ $("body").on("click", ".follow-user-btn", function (e: JQuery.ClickEvent) {
     e.stopPropagation();
     
     const $btn = $(this);
-    const user_id = Number.parseInt($btn.attr("data-user-id") || "0", 10);
+    const isFollowing = $btn.hasClass("following");
     
-    void channel.post({
-        url: `/json/users/me/followed_users/${user_id}`,
-        success() {
-            $btn.text("Following");
-            $btn.addClass("following");
-            $btn.prop("disabled", true);
-        },
-        error(xhr: JQuery.jqXHR) {
-            console.error("Failed to follow user. Status:", xhr.status);
-            console.error("Full response text:", xhr.responseText);
-            if (xhr.responseJSON) {
-                console.error("Error message:", xhr.responseJSON.msg || xhr.responseJSON.detail || JSON.stringify(xhr.responseJSON));
-            }
-        },
-    });
+    if (isFollowing) {
+        // Unfollow
+        $btn.removeClass("following");
+        $btn.text("Follow");
+    } else {
+        // Follow
+        $btn.addClass("following");
+        $btn.text("Following");
+    }
 });
 
 export const buddy_list = new BuddyList();

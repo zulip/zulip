@@ -4,20 +4,6 @@
 }
 
 /* Styling for Follow Button */
-.buddy-list-section li {
-    padding: 6px 0 !important; 
-}
-
-.follow-user-btn {
-    border-radius: 999px;
-    background-color: #8988B7;
-    color: white;
-    padding: 6px 16px;
-    white-space: nowrap;
-    cursor: pointer;
-    flex-shrink: 0;
-}
-
 .user_sidebar_entry {
     display: flex;
     align-items: center;
@@ -30,6 +16,10 @@
 
     &:hover {
         cursor: pointer;
+    }
+
+    .selectable_sidebar_block {
+        flex: 1;  /* Take up remaining space */
     }
 
     .user-name-and-status-emoji {
@@ -59,6 +49,30 @@
         display: block;
         margin-left: 4px;
     }
+}
+
+.buddy-list-section li:hover .follow-user-btn {
+    display: inline-block;
+}
+
+.follow-user-btn {
+    border-radius: 999px;
+    border: 2px solid #8988B7;
+    background-color: #8988B7;
+    color: white;
+    padding: 4px 14px;  /* Thinner padding */
+    white-space: nowrap;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: none;  /* Hidden by default */
+    margin-left: auto;  /* Push to the right */
+    font-size: 14px;  /* Slightly smaller text */
+}
+
+.follow-user-btn.following {
+    background-color: transparent;
+    border-color: #8988B7;
+    color: #8988B7;
 }
 
 .right-sidebar {
