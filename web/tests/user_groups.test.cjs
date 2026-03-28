@@ -30,7 +30,270 @@ const get_test_subgroup = (id) =>
         deactivated: false,
     });
 
+run_test("is_empty_group_coverage", () => {
+    user_groups.init();
+
+    const make_group = (opts) => user_groups.add(make_user_group(opts));
+    const empty_group = make_group({
+        name: "Empty",
+        members: [],
+    });
+    const full_group = make_group({
+        name: "Full",
+        members: [10],
+    });
+
+    assert.equal(user_groups.is_empty_group(empty_group.id), true);
+    assert.equal(user_groups.is_empty_group(full_group.id), false);
+
+    blueslip.expect("error", "Could not find user group");
+    assert.equal(user_groups.is_empty_group(99999), false);
+
+    const broken_parent = make_group({
+        name: "Broken Parent",
+        members: [],
+        direct_subgroup_ids: [88888],
+    });
+
+    blueslip.expect("error", "Could not find subgroup");
+    assert.equal(user_groups.is_empty_group(broken_parent.id), false);
+
+    assert.equal(user_groups.is_setting_group_empty(empty_group.id), true);
+    assert.equal(user_groups.is_setting_group_empty(full_group.id), false);
+
+    assert.equal(
+        user_groups.is_setting_group_empty({
+            direct_members: [1],
+            direct_subgroups: [],
+        }),
+        false,
+    );
+
+    assert.equal(
+        user_groups.is_setting_group_empty({
+            direct_members: [],
+            direct_subgroups: [empty_group.id],
+        }),
+        true,
+    );
+
+    assert.equal(
+        user_groups.is_setting_group_empty({
+            direct_members: [],
+            direct_subgroups: [full_group.id],
+        }),
+        false,
+    );
+});
+
+run_test("query_helpers", () => {
+    user_groups.init();
+
+    assert.equal(user_groups.realm_has_deactivated_user_groups(), false);
+
+    const deactivated_group = user_groups.add(
+        make_user_group({
+            name: "Deactivated",
+            deactivated: true,
+        }),
+    );
+    assert.equal(user_groups.realm_has_deactivated_user_groups(), true);
+
+    const internet_group = user_groups.add(
+        make_user_group({
+            name: "role:internet",
+            is_system_group: true,
+        }),
+    );
+
+    const groups_default = user_groups.get_all_realm_user_groups();
+    assert.ok(!groups_default.some((g) => g.id === deactivated_group.id));
+    assert.ok(!groups_default.some((g) => g.id === internet_group.id));
+
+    const groups_all = user_groups.get_all_realm_user_groups(true, true);
+    assert.ok(groups_all.some((g) => g.id === deactivated_group.id));
+    assert.ok(groups_all.some((g) => g.id === internet_group.id));
+
+    const my_group = user_groups.add(
+        make_user_group({
+            name: "My Group",
+            members: [99],
+        }),
+    );
+    const other_group = user_groups.add(
+        make_user_group({
+            name: "Other Group",
+            members: [],
+        }),
+    );
+
+    assert.equal(user_groups.is_user_in_any_group([my_group.id, other_group.id], 99), true);
+    assert.equal(user_groups.is_user_in_any_group([other_group.id], 99), false);
+
+    const parent = user_groups.add(
+        make_user_group({
+            name: "Parent",
+            direct_subgroup_ids: [my_group.id],
+        }),
+    );
+
+    const supergroups = user_groups.get_supergroups_of_user_group(my_group.id);
+    assert.equal(supergroups.length, 1);
+    assert.equal(supergroups[0].id, parent.id);
+});
+
+run_test("update_permissions", () => {
+    user_groups.init();
+
+    const group = user_groups.add(
+        make_user_group({
+            can_mention_group: 1,
+            members: [1, 2],
+        }),
+    );
+
+    const event = {
+        op: "update",
+
+        data: {
+            can_manage_group: 2,
+            can_join_group: 3,
+            can_leave_group: 4,
+            can_mention_group: 5,
+            can_add_members_group: 6,
+            can_remove_members_group: 7,
+        },
+    };
+
+    user_groups.update(event, group);
+
+    const updated_group = user_groups.get_user_group_from_id(group.id);
+    assert.equal(updated_group.can_manage_group, 2);
+    assert.equal(updated_group.can_mention_group, 5);
+});
+
+run_test("is_empty_group", () => {
+    user_groups.init();
+
+    const empty_group = user_groups.add(
+        make_user_group({
+            members: [],
+            direct_subgroup_ids: [],
+        }),
+    );
+    assert.equal(user_groups.is_empty_group(empty_group.id), true);
+
+    const direct_members_group = user_groups.add(
+        make_user_group({
+            members: [1],
+        }),
+    );
+    assert.equal(user_groups.is_empty_group(direct_members_group.id), false);
+
+    const parent_of_populated = user_groups.add(
+        make_user_group({
+            direct_subgroup_ids: [direct_members_group.id],
+        }),
+    );
+    assert.equal(user_groups.is_empty_group(parent_of_populated.id), false);
+
+    const parent_of_empty = user_groups.add(
+        make_user_group({
+            direct_subgroup_ids: [empty_group.id],
+        }),
+    );
+    assert.equal(user_groups.is_empty_group(parent_of_empty.id), true);
+
+    const nobody = user_groups.add(
+        make_user_group({
+            name: "role:nobody",
+            is_system_group: true,
+        }),
+    );
+    assert.equal(user_groups.is_setting_group_set_to_nobody_group(nobody.id), true);
+});
+
+run_test("is_group_larger_than", () => {
+    user_groups.init();
+
+    const small_group = user_groups.add(
+        make_user_group({
+            members: [1, 2, 3],
+        }),
+    );
+
+    const medium_group = user_groups.add(
+        make_user_group({
+            members: [4, 5],
+        }),
+    );
+
+    const parent_group = user_groups.add(
+        make_user_group({
+            members: [6],
+            direct_subgroup_ids: [small_group.id, medium_group.id],
+        }),
+    );
+
+    assert.equal(user_groups.is_group_larger_than(small_group, 2), true);
+    assert.equal(user_groups.is_group_larger_than(small_group, 5), false);
+    assert.equal(user_groups.is_group_larger_than(parent_group, 5), true);
+});
+
+run_test("get_direct_subgroups_of_group", () => {
+    user_groups.init();
+
+    const subgroup1 = user_groups.add(
+        make_user_group({
+            name: "Subgroup 1",
+            description: "First child",
+        }),
+    );
+
+    const subgroup2 = user_groups.add(
+        make_user_group({
+            name: "Subgroup 2",
+            description: "Second child",
+        }),
+    );
+
+    const parent = user_groups.add(
+        make_user_group({
+            name: "Parent Group",
+            direct_subgroup_ids: [subgroup1.id, subgroup2.id],
+        }),
+    );
+
+    const result = user_groups.get_direct_subgroups_of_group(parent);
+
+    assert.equal(result.length, 2);
+
+    const result_ids = result.map((g) => g.id).toSorted();
+    const expected_ids = [subgroup1.id, subgroup2.id].toSorted();
+    assert.deepEqual(result_ids, expected_ids);
+});
+
+run_test("convert_name_to_display_name_for_groups", () => {
+    user_groups.init();
+
+    const group = user_groups.add(
+        make_user_group({
+            name: "My Custom Group",
+        }),
+    );
+
+    const input = [group];
+    const output = user_groups.convert_name_to_display_name_for_groups(input);
+
+    assert.equal(output.length, 1);
+    assert.equal(output[0].id, group.id);
+    assert.notEqual(output[0], group);
+    assert.equal(output[0].name, group.name);
+});
+
 run_test("user_groups", () => {
+    user_groups.init();
+
     const students = make_user_group({
         description: "Students group",
         name: "Students",
