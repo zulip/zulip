@@ -339,6 +339,11 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
 
             // e.g. #channels/29/social/subscribers
             const right_side_tab = hash_parser.get_current_nth_hash_section(3);
+            // "new" describes the right panel state, not the left panel section.
+            if (section === "new") {
+                stream_settings_ui.change_state("", undefined, "new");
+                return;
+            }
             stream_settings_ui.change_state(section, undefined, right_side_tab);
             return;
         }
@@ -433,6 +438,15 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
 
         // e.g. #channels/29/social/subscribers
         const right_side_tab = hash_parser.get_current_nth_hash_section(3);
+        // "new" describes the right panel state, not the left panel section.
+        if (section === "new") {
+            if (is_somebody_else_profile_open()) {
+                stream_settings_ui.launch("", "all-streams", "new");
+                return;
+            }
+            stream_settings_ui.launch("", undefined, "new");
+            return;
+        }
 
         if (is_somebody_else_profile_open()) {
             stream_settings_ui.launch(section, "all-streams", right_side_tab);
