@@ -39,8 +39,8 @@
     {{/unless}}
     <!-- Follow/unfollow button is only shown for other users. - JP -->
     {{#unless is_current_user}}
-    <button class="btn btn-sm follow-user-btn {{#if is_following}}following{{/if}}" data-user-id="{{user_id}}" title="{{#if is_following}}{{t 'Unfollow user' }}{{else}}{{t 'Follow user' }}{{/if}}">
-        {{#if is_following}}{{t "Following" }}{{else}}{{t "Follow" }}{{/if}}
+    <button class="btn btn-sm follow-user-btn" data-user-id="{{user_id}}">
+        Follow
     </button>
     {{/unless}}
 </li>
