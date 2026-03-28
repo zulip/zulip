@@ -50,6 +50,7 @@ export const show_user_group_settings_pane = {
             $t_html({defaultMessage: "User group settings"}),
         );
         $("#groups_overlay .deactivated-user-group-icon").hide();
+        $("#groups_overlay .user-group-settings-header-actions").hide();
         resize.resize_settings_overlay($("#groups_overlay_container"));
     },
     settings(group: UserGroup) {
@@ -76,6 +77,7 @@ export const show_user_group_settings_pane = {
         reset_active_group_id();
         $("#user-group-creation").show();
         $("#groups_overlay .deactivated-user-group-icon").hide();
+        $("#groups_overlay .user-group-settings-header-actions").hide();
         resize.resize_settings_overlay($("#groups_overlay_container"));
         resize.resize_settings_creation_overlay($("#groups_overlay_container"));
     },
