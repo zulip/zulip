@@ -216,6 +216,7 @@ export const user_schema = z.intersection(
         is_owner: z.boolean(),
         is_admin: z.boolean(),
         is_guest: z.boolean(),
+        is_deleted: z.optional(z.literal(true)),
         is_moderator: z.optional(z.boolean()),
         role: z.number(),
         timezone: z.optional(z.string()),

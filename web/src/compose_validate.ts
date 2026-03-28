@@ -1035,27 +1035,22 @@ export function validate_private_message(show_banner = true): boolean {
         return false;
     }
 
-    let context = {};
+    const non_active_user_ids = user_ids.filter((id) => !people.is_person_active(id));
+    if (non_active_user_ids.length > 0) {
+        const error_message = non_active_user_ids.some((id) => people.get_by_user_id(id).is_deleted)
+            ? $t({defaultMessage: "You cannot send messages to deleted users."})
+            : $t({defaultMessage: "You cannot send messages to deactivated users."});
+        compose_banner.show_error_message(
+            error_message,
+            compose_banner.CLASSNAMES.deactivated_user,
+            $banner_container,
+            $("#private_message_recipient"),
+        );
 
-    for (const user_id of user_ids) {
-        if (!people.is_person_active(user_id)) {
-            context = {full_name: people.get_by_user_id(user_id).full_name};
-            const error_message = $t(
-                {defaultMessage: "You cannot send messages to deactivated users."},
-                context,
-            );
-            compose_banner.show_error_message(
-                error_message,
-                compose_banner.CLASSNAMES.deactivated_user,
-                $banner_container,
-                $("#private_message_recipient"),
-            );
-
-            if (is_validating_compose_box) {
-                disabled_send_tooltip_message_html = error_message;
-            }
-            return false;
+        if (is_validating_compose_box) {
+            disabled_send_tooltip_message_html = error_message;
         }
+        return false;
     }
 
     return true;

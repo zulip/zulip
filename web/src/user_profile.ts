@@ -734,6 +734,7 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         is_imported_stub: user.is_imported_stub,
+        is_deleted: user.is_deleted,
     };
 
     if (user.is_bot) {
@@ -1273,6 +1274,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         full_name: person.full_name,
         user_role_values: settings_config.user_role_values,
         is_active,
+        is_deleted: person.is_deleted,
         hide_deactivate_button,
         user_is_only_organization_owner,
         max_user_name_length: people.MAX_USER_NAME_LENGTH,
