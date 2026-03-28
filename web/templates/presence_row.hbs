@@ -37,4 +37,9 @@
     {{#unless user_list_style.WITH_AVATAR}}
     <span class="sidebar-menu-icon user-list-sidebar-menu-icon"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
     {{/unless}}
+    {{#unless is_current_user}}
+    <button class="btn btn-sm follow-user-btn" data-user-id="{{user_id}}" title="{{t 'Follow user' }}">
+        {{t "Follow" }}
+    </button>
+    {{/unless}}
 </li>
