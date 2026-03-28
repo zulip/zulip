@@ -931,7 +931,6 @@ class ClientDescriptorsTest(ZulipTestCase):
             queue_timeout=0,
             realm_id=realm.id,
             user_profile_id=hamlet.id,
-            user_recipient_id=hamlet.recipient_id,
         )
 
         client = allocate_client_descriptor(queue_data)
@@ -986,7 +985,6 @@ class ClientDescriptorsTest(ZulipTestCase):
                 queue_timeout=0,
                 realm_id=realm.id,
                 user_profile_id=hamlet.id,
-                user_recipient_id=hamlet.recipient_id,
             )
 
             client = allocate_client_descriptor(queue_data)
@@ -1034,12 +1032,10 @@ class ClientDescriptorsTest(ZulipTestCase):
                 self,
                 *,
                 user_profile_id: int,
-                user_recipient_id: int | None,
                 apply_markdown: bool,
                 client_gravatar: bool,
             ) -> None:
                 self.user_profile_id = user_profile_id
-                self.user_recipient_id = user_recipient_id
                 self.apply_markdown = apply_markdown
                 self.client_gravatar = client_gravatar
                 self.client_type_name = "whatever"
@@ -1058,28 +1054,24 @@ class ClientDescriptorsTest(ZulipTestCase):
 
         client1 = MockClient(
             user_profile_id=hamlet.id,
-            user_recipient_id=hamlet.recipient_id,
             apply_markdown=True,
             client_gravatar=False,
         )
 
         client2 = MockClient(
             user_profile_id=hamlet.id,
-            user_recipient_id=hamlet.recipient_id,
             apply_markdown=False,
             client_gravatar=False,
         )
 
         client3 = MockClient(
             user_profile_id=hamlet.id,
-            user_recipient_id=hamlet.recipient_id,
             apply_markdown=True,
             client_gravatar=True,
         )
 
         client4 = MockClient(
             user_profile_id=hamlet.id,
-            user_recipient_id=hamlet.recipient_id,
             apply_markdown=False,
             client_gravatar=True,
         )
@@ -1117,7 +1109,6 @@ class ClientDescriptorsTest(ZulipTestCase):
                 # NOTE: Some of these fields are clutter, but some
                 #       will be useful when we let clients specify
                 #       that they can compute their own gravatar URLs.
-                sender_recipient_id=sender.recipient_id,
                 sender_email=sender.email,
                 sender_delivery_email=sender.delivery_email,
                 sender_realm_id=sender.realm_id,
@@ -1248,7 +1239,6 @@ class ReloadWebClientsTest(ZulipTestCase):
             queue_timeout=0,
             realm_id=realm.id,
             user_profile_id=hamlet.id,
-            user_recipient_id=hamlet.recipient_id,
         )
         client = allocate_client_descriptor(queue_data)
 

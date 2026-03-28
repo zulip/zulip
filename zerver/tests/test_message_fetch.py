@@ -4303,7 +4303,6 @@ class GetOldMessagesTest(ZulipTestCase):
             allow_empty_topic_name=True,
             can_access_sender=True,
             realm_host=get_realm("zulip").host,
-            is_incoming_1_to_1=False,
         )
         self.assertEqual(final_dict["content"], "<p>test content</p>")
 

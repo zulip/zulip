@@ -1930,7 +1930,6 @@ class StreamMessagesTest(ZulipTestCase):
             client_gravatar=False,
             allow_empty_topic_name=True,
             realm=user_profile.realm,
-            user_recipient_id=None,
         )
         self.assertEqual(dct["display_recipient"], "Denmark")
 

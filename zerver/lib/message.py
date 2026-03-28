@@ -366,7 +366,6 @@ def messages_for_ids(
         client_gravatar=client_gravatar,
         allow_empty_topic_name=allow_empty_topic_name,
         realm=realm,
-        user_recipient_id=None if user_profile is None else user_profile.recipient_id,
     )
 
     return message_list

@@ -84,7 +84,6 @@ class MessageDictTest(ZulipTestCase):
                 allow_empty_topic_name=True,
                 can_access_sender=True,
                 realm_host=get_realm("zulip").host,
-                is_incoming_1_to_1=False,
             )
             return narrow_dict
 
@@ -101,7 +100,6 @@ class MessageDictTest(ZulipTestCase):
                 client_gravatar=client_gravatar,
                 allow_empty_topic_name=True,
                 realm=get_realm("zulip"),
-                user_recipient_id=None,
             )
             final_dict = unhydrated_dict
             return final_dict
@@ -187,7 +185,6 @@ class MessageDictTest(ZulipTestCase):
                 client_gravatar=False,
                 allow_empty_topic_name=True,
                 realm=realm,
-                user_recipient_id=None,
             )
 
         self.assert_length(objs, num_ids)
