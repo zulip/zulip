@@ -131,7 +131,7 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
         self.user_agents = [
             (
                 (
-                    "mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)"
+                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)"
                     " Chrome/54.0.2840.59 Safari/537.36"
                 ),
                 "Chrome",
@@ -139,20 +139,20 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
             ),
             (
                 (
-                    "mozilla/5.0 (windows nt 6.1; win64; x64) "
-                    " applewebkit/537.36 (khtml, like gecko)"
-                    " chrome/56.0.2924.87 safari/537.36"
+                    "Mozilla/5.0 (Windows NT 6.1; Win64; x64) "
+                    " AppleWebKit/537.36 (KHTML, like Gecko)"
+                    " Chrome/56.0.2924.87 Safari/537.36"
                 ),
                 "Chrome",
                 "Windows",
             ),
             (
-                "mozilla/5.0 (windows nt 6.1; wow64; rv:51.0) gecko/20100101 firefox/51.0",
+                "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:51.0) Gecko/20100101 Firefox/51.0",
                 "Firefox",
                 "Windows",
             ),
             (
-                "mozilla/5.0 (windows nt 6.1; wow64; trident/7.0; rv:11.0) like gecko",
+                "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko",
                 "Internet Explorer",
                 "Windows",
             ),
@@ -223,7 +223,7 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
                     " Ubuntu/11.10 Chromium/16.0.912.77 Chrome/16.0.912.77 Safari/535.7"
                 ),
                 "Chromium",
-                "Linux",
+                "Ubuntu",
             ),
             (
                 (
@@ -250,9 +250,9 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
                     " (KHTML, like Gecko) Chrome/69.0.3497.95 Safari/537.36"
                 ),
                 "Chrome",
-                "ChromeOS",
+                "Chrome OS",
             ),
-            ("", None, None),
+            ("some-completely-made-up-browser-string", None, None),
         ]
 
     def test_get_browser_on_new_login(self) -> None:

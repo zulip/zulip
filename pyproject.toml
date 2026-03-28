@@ -215,6 +215,8 @@ prod = [
 
   # Backport datetime.fromisoformat fixes to Python < 3.11
   "backports-datetime-fromisoformat; python_version < '3.11'",
+  # Parse user agents
+  "user-agents",
 ]
 docs = [
   # Needed to build RTD docs
@@ -443,6 +445,7 @@ module = [
     "talon_core.*",
     "tlds.*",
     "two_factor.*",
+    "user_agents.*",
 ]
 ignore_missing_imports = true
 
