@@ -237,6 +237,18 @@ export function update_topics_policy_setting(
     stream_ui_updates.update_setting_element(sub, "topics_policy");
 }
 
+export function update_wildcard_mention_policy_setting(
+    sub: StreamSubscription,
+    new_value: number,
+): void {
+    stream_data.update_wildcard_mention_policy_setting(sub, new_value);
+    stream_ui_updates.update_setting_element(sub, "wildcard_mention_policy");
+}
+
+export function update_stream_ui_element(sub: StreamSubscription, setting: string): void {
+    stream_ui_updates.update_setting_element(sub, setting);
+}
+
 export function update_stream_permission_group_setting(
     setting_name: StreamPermissionGroupSetting,
     sub: StreamSubscription,
@@ -1027,6 +1039,7 @@ function setup_page(callback: () => void): void {
             stream_privacy_policy_values: settings_config.stream_privacy_policy_values,
             stream_privacy_policy,
             stream_topics_policy_values: settings_config.get_stream_topics_policy_values(),
+            wildcard_mention_policy_values: settings_config.wildcard_mention_policy_values,
             check_default_stream: false,
             history_public_to_subscribers: true,
             zulip_plan_is_not_limited: realm.zulip_plan_is_not_limited,
