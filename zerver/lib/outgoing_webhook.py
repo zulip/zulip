@@ -98,7 +98,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
             content = str(response_json["content"])
             success_data = dict(content=content)
             if "widget_content" in response_json:
-                success_data["widget_content"] = response_json["widget_content"]
+                success_data["widget_content"] = json.dumps(response_json["widget_content"])
             return success_data
 
         return None
