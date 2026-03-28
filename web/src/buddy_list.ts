@@ -13,6 +13,7 @@ import * as background_task from "./background_task.ts";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
 import type {BuddyUserInfo} from "./buddy_data.ts";
+import * as channel from "./channel.ts";
 import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
@@ -1197,5 +1198,33 @@ export class BuddyList extends BuddyListConf {
         });
     }
 }
+
+$("body").on("click", ".follow-user-btn", function (e: JQuery.ClickEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const $btn = $(this);
+    const user_id = Number.parseInt($btn.attr("data-user-id") || "0", 10);
+    
+    if ($btn.hasClass("following")) {
+        // Unfollow
+        void channel.del({
+            url: `/json/users/me/followed_users/${user_id}`,
+            success() {
+                $btn.removeClass("following");
+                $btn.text("Follow");
+            },
+        });
+    } else {
+        // Follow
+        void channel.post({
+            url: `/json/users/me/followed_users/${user_id}`,
+            success() {
+                $btn.addClass("following");
+                $btn.text("Following");
+            },
+        });
+    }
+});
 
 export const buddy_list = new BuddyList();
