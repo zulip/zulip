@@ -61,7 +61,12 @@ export const send_read = (function () {
         start();
     }
 
-    return add;
+    function remove_from_queue(message_ids: number[]): void {
+        const ids_to_remove = new Set(message_ids);
+        queue = queue.filter((msg) => !ids_to_remove.has(msg.id));
+    }
+
+    return {add, remove_from_queue};
 })();
 
 export function mark_as_read(message_ids: number[]): void {
