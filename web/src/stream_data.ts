@@ -489,6 +489,13 @@ export function update_topics_policy_setting(
     sub.topics_policy = topics_policy;
 }
 
+export function update_push_notifications_enabled(
+    sub: StreamSubscription,
+    push_notifications_enabled: boolean,
+): void {
+    sub.push_notifications_enabled = push_notifications_enabled;
+}
+
 export function update_stream_permission_group_setting(
     setting_name: StreamPermissionGroupSetting,
     sub: StreamSubscription,
