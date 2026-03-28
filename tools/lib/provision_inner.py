@@ -337,6 +337,8 @@ def main(options: argparse.Namespace) -> int:
 
         dev_template_db_status = DEV_DATABASE.template_status()
         if options.is_force or dev_template_db_status == "needs_rebuild":
+            if os.environ.get("CODESPACES") == "true":
+                run_as_root(["-v"])
             run(["tools/setup/postgresql-init-dev-db"])
             if options.skip_dev_db_build:
                 # We don't need to build the manual development
