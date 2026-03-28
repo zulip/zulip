@@ -485,6 +485,7 @@ exports.fixtures = {
             direct_message_permission_group: 3,
             plan_type: 3,
             upload_quota_mib: 50000,
+            upload_quota_used_bytes: 1024,
             max_file_upload_size_mib: 1024,
             topics_policy: "disable_empty_topic",
         },
