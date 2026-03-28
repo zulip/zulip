@@ -198,11 +198,37 @@
             font-size: 0.625em;
             bottom: -0.5px;
             right: -0.5px;
-            background-color: var(--color-background);
+
+            width: 1em;
+            height: 1em;
+            border-radius: 50%;
+
+            background-color: var(--color-background) !important;
             /* A 1.5px border provides better results than
                a 1px border, especially at smaller font sizes. */
             border: 1.5px solid var(--color-background);
-            border-radius: 50%;
+            box-sizing: content-box;
+
+            &::before {
+                content: "";
+                display: block;
+                width: 100%;
+                height: 100%;
+                border-radius: 50%;
+                background-color: currentcolor;
+            }
+
+            &.user-circle-online::before {
+                background-color: var(--color-user-status-online);
+            }
+
+            &.user-circle-busy::before {
+                background-color: var(--color-user-status-dnd);
+            }
+
+            &.user-circle-idle::before {
+                background: var(--gradient-user-circle-idle-avatar);
+            }
 
             &.user-circle-offline {
                 display: none;
