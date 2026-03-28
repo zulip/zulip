@@ -1876,6 +1876,40 @@ class UserSignUpTest(ZulipTestCase):
             )
         )
 
+    def test_realm_creation_race_condition(self) -> None:
+        """
+        If two realm creation requests race and do_create_realm raises
+        an IntegrityError (duplicate subdomain), accounts_register should
+        return a 400, not a 500.
+        """
+        email = self.nonreg_email("newguy")
+
+        # Step 1: Submit the realm creation form to get a confirmation email
+        self.submit_realm_creation_form(
+            email, realm_subdomain="custom-test", realm_name="Zulip test"
+        )
+
+        # Step 2: Follow the confirmation link
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        self.client_get(confirmation_url)
+
+        # Step 3: Simulate the race — do_create_realm raises IntegrityError
+        # because another request already created the same subdomain
+        with patch(
+            "zerver.views.registration.do_create_realm",
+            side_effect=IntegrityError,
+        ):
+            result = self.submit_reg_form_for_user(
+                email,
+                "password",
+                realm_subdomain="custom-test",
+                realm_name="Zulip test",
+            )
+
+        # Should get a 400, not a 500
+        self.assertEqual(result.status_code, 400)
+        self.assert_in_response("Organisation already exists.",result)
+
     def test_signup_with_weak_password(self) -> None:
         """
         Check if signing up with a weak password fails.
