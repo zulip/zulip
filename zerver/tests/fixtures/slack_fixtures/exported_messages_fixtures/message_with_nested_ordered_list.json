@@ -1,0 +1,124 @@
+{
+    "user": "U06NU4E26M9",
+    "type": "message",
+    "ts": "1772029460.121289",
+    "text": "ordered list with subitems:\n1. main item 1\n    ◦ nested item 1\n    ◦ nested item 2\n    ◦ nested item 3\n2. main item 2\n    a. nested item 1",
+    "team": "T06NRA6HM3P",
+    "user_team": "T06NRA6HM3P",
+    "source_team": "T06NRA6HM3P",
+    "user_profile": {
+        "avatar_hash": "112be04f818e",
+        "image_72": "https://avatars.slack-edge.com/2024-03-10/6773346635957_112be04f818e7bd093d5_72.png",
+        "first_name": "Peter",
+        "real_name": "Peter",
+        "display_name": "",
+        "team": "T06NRA6HM3P",
+        "name": "pieterceka123",
+        "is_restricted": false,
+        "is_ultra_restricted": false
+    },
+    "blocks": [
+        {
+            "type": "rich_text",
+            "block_id": "UopR3",
+            "elements": [
+                {
+                    "type": "rich_text_section",
+                    "elements": [
+                        {
+                            "type": "text",
+                            "text": "ordered list with subitems:\n"
+                        }
+                    ]
+                },
+                {
+                    "type": "rich_text_list",
+                    "elements": [
+                        {
+                            "type": "rich_text_section",
+                            "elements": [
+                                {
+                                    "type": "text",
+                                    "text": "main item 1"
+                                }
+                            ]
+                        }
+                    ],
+                    "style": "ordered",
+                    "indent": 0,
+                    "border": 0
+                },
+                {
+                    "type": "rich_text_list",
+                    "elements": [
+                        {
+                            "type": "rich_text_section",
+                            "elements": [
+                                {
+                                    "type": "text",
+                                    "text": "nested item 1"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "rich_text_section",
+                            "elements": [
+                                {
+                                    "type": "text",
+                                    "text": "nested item 2"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "rich_text_section",
+                            "elements": [
+                                {
+                                    "type": "text",
+                                    "text": "nested item 3"
+                                }
+                            ]
+                        }
+                    ],
+                    "style": "bullet",
+                    "indent": 1,
+                    "border": 0
+                },
+                {
+                    "type": "rich_text_list",
+                    "elements": [
+                        {
+                            "type": "rich_text_section",
+                            "elements": [
+                                {
+                                    "type": "text",
+                                    "text": "main item 2"
+                                }
+                            ]
+                        }
+                    ],
+                    "style": "ordered",
+                    "indent": 0,
+                    "offset": 1,
+                    "border": 0
+                },
+                {
+                    "type": "rich_text_list",
+                    "elements": [
+                        {
+                            "type": "rich_text_section",
+                            "elements": [
+                                {
+                                    "type": "text",
+                                    "text": "nested item 1"
+                                }
+                            ]
+                        }
+                    ],
+                    "style": "ordered",
+                    "indent": 1,
+                    "border": 0
+                }
+            ]
+        }
+    ]
+}

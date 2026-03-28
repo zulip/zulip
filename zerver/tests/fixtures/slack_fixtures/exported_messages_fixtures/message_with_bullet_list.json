@@ -1,0 +1,150 @@
+{
+    "user": "U06NU4E26M9",
+    "type": "message",
+    "ts": "1772029239.785859",
+    "text": "Basic bullet list with rich elements\n• item 1: :basketball:\n• item 2: *this* is _a list_ item\n• item 3: *<https://example.com/|with a link>*\n• item 4: we are near ~the end~\n• item 5: ~_*<https://chat.zulip.org/|this is the end>*_~",
+    "team": "T06NRA6HM3P",
+    "user_team": "T06NRA6HM3P",
+    "source_team": "T06NRA6HM3P",
+    "user_profile": {
+        "avatar_hash": "112be04f818e",
+        "image_72": "https://avatars.slack-edge.com/2024-03-10/6773346635957_112be04f818e7bd093d5_72.png",
+        "first_name": "Peter",
+        "real_name": "Peter",
+        "display_name": "",
+        "team": "T06NRA6HM3P",
+        "name": "pieterceka123",
+        "is_restricted": false,
+        "is_ultra_restricted": false
+    },
+    "blocks": [
+        {
+            "type": "rich_text",
+            "block_id": "t/I1F",
+            "elements": [
+                {
+                    "type": "rich_text_section",
+                    "elements": [
+                        {
+                            "type": "text",
+                            "text": "Basic bullet list with rich elements\n"
+                        }
+                    ]
+                },
+                {
+                    "type": "rich_text_list",
+                    "elements": [
+                        {
+                            "type": "rich_text_section",
+                            "elements": [
+                                {
+                                    "type": "text",
+                                    "text": "item 1: "
+                                },
+                                {
+                                    "type": "emoji",
+                                    "name": "basketball",
+                                    "unicode": "1f3c0"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "rich_text_section",
+                            "elements": [
+                                {
+                                    "type": "text",
+                                    "text": "item 2: "
+                                },
+                                {
+                                    "type": "text",
+                                    "text": "this ",
+                                    "style": {
+                                        "bold": true
+                                    }
+                                },
+                                {
+                                    "type": "text",
+                                    "text": "is "
+                                },
+                                {
+                                    "type": "text",
+                                    "text": "a list",
+                                    "style": {
+                                        "italic": true
+                                    }
+                                },
+                                {
+                                    "type": "text",
+                                    "text": " "
+                                },
+                                {
+                                    "type": "text",
+                                    "text": "item",
+                                    "style": {
+                                        "underline": true
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "rich_text_section",
+                            "elements": [
+                                {
+                                    "type": "text",
+                                    "text": "item 3: "
+                                },
+                                {
+                                    "type": "link",
+                                    "url": "https://example.com/",
+                                    "text": "with a link",
+                                    "style": {
+                                        "bold": true
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "rich_text_section",
+                            "elements": [
+                                {
+                                    "type": "text",
+                                    "text": "item 4: we are near "
+                                },
+                                {
+                                    "type": "text",
+                                    "text": "the end",
+                                    "style": {
+                                        "strike": true
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "rich_text_section",
+                            "elements": [
+                                {
+                                    "type": "text",
+                                    "text": "item 5: "
+                                },
+                                {
+                                    "type": "link",
+                                    "url": "https://chat.zulip.org/",
+                                    "text": "this is the end",
+                                    "style": {
+                                        "bold": true,
+                                        "italic": true,
+                                        "strike": true,
+                                        "underline": true
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    "style": "bullet",
+                    "indent": 0,
+                    "border": 0
+                }
+            ]
+        }
+    ]
+}
