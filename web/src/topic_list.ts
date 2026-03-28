@@ -10,6 +10,7 @@ import render_topic_list_new_topic from "../templates/topic_list_new_topic.hbs";
 import * as blueslip from "./blueslip.ts";
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
+import * as left_sidebar_filter from "./left_sidebar_filter.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {recent_view_messages_data} from "./recent_view_messages_data.ts";
@@ -393,23 +394,21 @@ export class TopicListWidget {
     }
 }
 
-function filter_topics_left_sidebar(topic_names: string[]): string[] {
+function filter_topics_left_sidebar(stream_id: number, topic_names: string[]): string[] {
     const search_term = get_left_sidebar_topic_search_term();
-    const stream_id = active_stream_id();
-    if (stream_id === undefined) {
-        return topic_names;
-    }
     return topic_list_data.filter_topics_by_search_term(
         stream_id,
         topic_names,
         search_term,
-        get_typeahead_search_pills_syntax(),
+        get_active_topic_state_filter_syntax(),
     );
 }
 
 export class LeftSidebarTopicListWidget extends TopicListWidget {
     constructor($stream_li: JQuery, my_stream_id: number, for_modal: boolean) {
-        super($stream_li, my_stream_id, for_modal, filter_topics_left_sidebar);
+        super($stream_li, my_stream_id, for_modal, (topic_names: string[]) =>
+            filter_topics_left_sidebar(my_stream_id, topic_names),
+        );
     }
 
     override build(spinner = false): void {
@@ -583,8 +582,12 @@ export function get_left_sidebar_topic_search_term(): string {
     return ui_util.get_left_sidebar_search_term();
 }
 
-export function get_typeahead_search_pills_syntax(): string {
+function get_active_topic_state_filter_syntax(): string {
     const pills = topic_filter_pill_widget?.items() ?? [];
+
+    if (!zoomed) {
+        return left_sidebar_filter.get_effective_topics_state_for_search();
+    }
 
     if (pills.length === 0) {
         return "";
