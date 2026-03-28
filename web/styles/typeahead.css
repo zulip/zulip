@@ -68,10 +68,11 @@
             }
 
             .typeahead-content {
-                display: flex;
+                display: grid;
+                grid-template-columns: max-content minmax(0, 1fr);
                 align-items: center;
-                overflow: hidden;
                 gap: 0.3571em;
+                width: 100%;
             }
 
             .typeahead-text-container {
