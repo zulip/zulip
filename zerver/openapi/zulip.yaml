@@ -8769,6 +8769,7 @@ paths:
                     For channel messages, either the name or integer ID of the channel. For
                     direct messages, either a list containing integer user IDs or a list
                     containing string Zulip API email addresses.
+                    Including your own user ID or email in this list is allowed, but it will be ignored by the server.
 
                     **Changes**: Support for using user/channel IDs was added in Zulip 2.0.0.
                   oneOf:
