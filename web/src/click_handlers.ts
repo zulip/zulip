@@ -837,10 +837,6 @@ export function initialize(): void {
         settings_toggle.toggle_org_setting_collapse();
     });
 
-    $("body").on("click", ".reload_link", () => {
-        window.location.reload();
-    });
-
     // COMPOSE
 
     $("body").on("click", ".empty_feed_compose_stream", (e) => {

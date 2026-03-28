@@ -148,6 +148,7 @@ function do_reload_app(
     send_after_reload: boolean,
     save_compose: boolean,
     reason: ReloadingReason,
+    show_reload_banner: boolean,
 ): void {
     if (reload_state.is_in_progress()) {
         blueslip.log("do_reload_app: Doing nothing since reload_in_progress");
@@ -162,7 +163,9 @@ function do_reload_app(
     }
 
     // TODO: We need a better API for showing messages.
-    popup_banners.open_reloading_application_banner(reason);
+    if (show_reload_banner) {
+        popup_banners.open_reloading_application_banner(reason);
+    }
     blueslip.log("Starting server requested page reload");
     reload_state.set_state_to_in_progress();
 
@@ -204,11 +207,13 @@ export function initiate({
     save_compose = true,
     send_after_reload = false,
     reason = "reload",
+    show_reload_banner = true,
 }: {
     immediate?: boolean;
     save_compose?: boolean;
     send_after_reload?: boolean;
     reason?: ReloadingReason;
+    show_reload_banner?: boolean;
 }): void {
     if (reload_state.is_in_progress()) {
         // If we're already attempting to reload, there's nothing to do.
@@ -223,7 +228,7 @@ export function initiate({
         // before any pending HTTP callbacks fire; channel.ts will
         // suppress those callbacks, preventing errors from processing
         // stale data.
-        do_reload_app(send_after_reload, save_compose, reason);
+        do_reload_app(send_after_reload, save_compose, reason, show_reload_banner);
         return;
     }
 
@@ -243,7 +248,7 @@ export function initiate({
         success() {
             server_reachable_check_failures = 0;
             if (immediate) {
-                do_reload_app(send_after_reload, save_compose, reason);
+                do_reload_app(send_after_reload, save_compose, reason, show_reload_banner);
                 // We don't expect do_reload_app to return, but if it
                 // does, the fallthrough logic seems fine.
             }
@@ -283,7 +288,7 @@ export function initiate({
             const basic_idle_timeout = 1000 * 60 * 1 + random_variance;
 
             function reload_from_idle(): void {
-                do_reload_app(false, save_compose, reason);
+                do_reload_app(false, save_compose, reason, show_reload_banner);
             }
 
             // Make sure we always do a reload eventually after
@@ -323,7 +328,13 @@ export function initiate({
                 server_reachable_check_failures,
             );
             setTimeout(() => {
-                initiate({immediate, save_compose, send_after_reload, reason});
+                initiate({
+                    immediate,
+                    save_compose,
+                    send_after_reload,
+                    reason,
+                    show_reload_banner,
+                });
             }, retry_delay_secs * 1000);
         },
     });
