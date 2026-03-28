@@ -7,11 +7,15 @@ source projects][rust-case-study], and thousands of other organizations use
 Zulip every day. Zulip is the only [modern team chat app][features] that is
 designed for both live and asynchronous conversations.
 
-Zulip is built by a distributed community of developers from all around the
-world, with 99+ people who have each contributed 100+ commits. With
-over 1,500 contributors merging over 500 commits a month, Zulip is the
-largest and fastest growing open source team chat project.
+Zulip is built by a distributed community of developers from around the world.
 
+- **1,500+ contributors**
+- **99+ contributors** with more than 100 commits each
+- **500+ commits merged every month**
+
+This makes Zulip one of the largest and fastest-growing open source team chat projects.
+
+## Community
 Come find us on the [development community chat](https://zulip.com/development-community/)!
 
 [![GitHub Actions build status](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml/badge.svg)](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml?query=branch%3Amain)
@@ -29,6 +33,14 @@ Come find us on the [development community chat](https://zulip.com/development-c
 [why-zulip]: https://zulip.com/why-zulip/
 [rust-case-study]: https://zulip.com/case-studies/rust/
 [features]: https://zulip.com/features/
+
+## Key features
+
+- Topic-based threaded conversations
+- Real-time and asynchronous messaging
+- Powerful search across streams and topics
+- Open-source and self-hostable platform
+- Rich integrations and developer APIs
 
 ## Getting started
 
