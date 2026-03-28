@@ -2,6 +2,7 @@ from collections.abc import Callable
 from typing import Any
 
 import orjson
+import phonenumbers
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import CASCADE, QuerySet
@@ -59,6 +60,27 @@ def check_valid_user_ids(realm_id: int, val: object, allow_deactivated: bool = F
     return user_ids
 
 
+def check_phone_number(var_name: str, val: object) -> str:
+    phone_number_str = check_short_string(var_name, val)
+
+    try:
+        # We default to 'US' for region as per CZO discussion.
+        # If the string starts with '+', phonenumbers ignores the 'US' default.
+        parsed_number = phonenumbers.parse(phone_number_str, "US")
+
+        if not phonenumbers.is_valid_number(parsed_number):
+            raise ValidationError(_("Invalid phone number."))
+
+        return phone_number_str
+    except phonenumbers.NumberParseException:
+        raise ValidationError(_("Invalid phone number format."))
+
+
+def format_phone_number(val: Any) -> str:
+    parsed_number = phonenumbers.parse(str(val), "US")
+    return phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.E164)
+
+
 class CustomProfileField(models.Model):
     """Defines a form field for the per-realm custom profile fields feature.
 
@@ -97,6 +119,7 @@ class CustomProfileField(models.Model):
     USER = 6
     EXTERNAL_ACCOUNT = 7
     PRONOUNS = 8
+    PHONE_NUMBER = 9
 
     # These are the fields whose validators require more than var_name
     # and value argument. i.e. SELECT require field_data, USER require
@@ -129,6 +152,13 @@ class CustomProfileField(models.Model):
             "EXTERNAL_ACCOUNT",
         ),
         (PRONOUNS, gettext_lazy("Pronouns"), check_short_string, str, "PRONOUNS"),
+        (
+            PHONE_NUMBER,
+            gettext_lazy("Phone number"),
+            check_phone_number,
+            format_phone_number,
+            "PHONE_NUMBER",
+        ),
     ]
 
     ALL_FIELD_TYPES = sorted(
@@ -187,7 +217,11 @@ class CustomProfileField(models.Model):
         return data_as_dict
 
     def is_renderable(self) -> bool:
-        if self.field_type in [CustomProfileField.SHORT_TEXT, CustomProfileField.LONG_TEXT]:
+        if self.field_type in [
+            CustomProfileField.SHORT_TEXT,
+            CustomProfileField.LONG_TEXT,
+            CustomProfileField.PHONE_NUMBER,
+        ]:
             return True
         return False
 

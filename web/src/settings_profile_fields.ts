@@ -10,6 +10,7 @@ import render_admin_profile_field_list from "../templates/settings/admin_profile
 import render_edit_custom_profile_field_form from "../templates/settings/edit_custom_profile_field_form.hbs";
 import render_settings_profile_field_choice from "../templates/settings/profile_field_choice.hbs";
 
+import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
@@ -123,14 +124,23 @@ export function field_type_id_to_string(type_id: number): string | undefined {
         if (field_type.id === type_id) {
             // Few necessary modifications in field-type-name for
             // table-list view of custom fields UI in org settings
-            if (field_type.name === "Date picker") {
-                return "Date";
-            } else if (field_type.name === "Person picker") {
-                return "Person";
+            switch (field_type.name) {
+                case "Date picker": {
+                    return "Date";
+                }
+                case "Person picker": {
+                    return "Person";
+                }
+                case "Phone number": {
+                    return "Phone";
+                }
+                default: {
+                    return field_type.name;
+                }
             }
-            return field_type.name;
         }
     }
+    blueslip.error(`Invalid field type: ${type_id}`);
     return undefined;
 }
 
@@ -285,6 +295,15 @@ function update_form_for_field_type_selection(): void {
             external_accounts_dropdown_widget.render();
             $("#profile_field_name").val("").prop("disabled", true);
             $("#profile_field_hint").val("").prop("disabled", true);
+            break;
+        }
+        case field_types.PHONE_NUMBER.id: {
+            const default_label = $t({defaultMessage: "Phone number"});
+            const default_hint = $t({
+                defaultMessage: "What is your phone number?",
+            });
+            $("#profile_field_name").val(default_label);
+            $("#profile_field_hint").val(default_hint);
             break;
         }
         case field_types.PRONOUNS.id: {
