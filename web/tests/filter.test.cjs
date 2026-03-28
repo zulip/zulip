@@ -647,6 +647,17 @@ test("basics", () => {
     filter = new Filter(terms);
     assert.ok(filter.is_channel_view());
 
+    terms = [{operator: "mentions", operand: joe.user_id}];
+    filter = new Filter(terms);
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(!filter.has_operator("search"));
+    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(!filter.contains_no_partial_conversations());
+    assert.ok(!filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
+    assert.ok(!filter.is_channel_view());
+
     // Throw error on invalid operator.
     assert.throws(() => get_predicate([["bogus", "33"]]), {
         name: "$ZodError",
@@ -1012,6 +1023,11 @@ test("canonicalization", () => {
     assert.equal(term.operator, "sender");
     assert.equal(term.operand, me.user_id);
 
+    // mentions:me redirects to is:mentioned
+    term = Filter.convert_suggestion_to_term({operator: "mentions", operand: "me"});
+    assert.equal(term.operator, "is");
+    assert.equal(term.operand, "mentioned");
+
     // "pm-with" was renamed to "dm"
     term = Filter.convert_suggestion_to_term({operator: "pm-with", operand: "me"});
     assert.equal(term.operator, "dm");
@@ -1053,6 +1069,10 @@ test("canonicalization", () => {
     term = Filter.canonicalize_term({operator: "has", operand: "reactions"});
     assert.equal(term.operator, "has");
     assert.equal(term.operand, "reaction");
+
+    term = Filter.canonicalize_term({operator: "mentions", operand: joe.user_id});
+    assert.equal(term.operator, "mentions");
+    assert.equal(term.operand, joe.user_id);
 });
 
 test("ensure_channel_topic_terms", () => {
@@ -1393,6 +1413,9 @@ test("predicate_basics", ({override}) => {
             '<p><audio controls preload="metadata" src="/user_uploads/randompath/test.mp3" title="zulip.mp3"></audio></p>',
     };
 
+    predicate = get_predicate([["mentions", joe.user_id]]);
+    assert.ok(predicate({}));
+
     const inline_img_msg = {
         content:
             '<p><img alt="Screenshot" class="inline-image" data-original-content-type="image/png" data-original-dimensions="1488x1130" data-original-src="/user_uploads/randompath/test.png" src="/user_uploads/thumbnail/randompath/test.png/840x560.webp"></p>',
@@ -1601,6 +1624,14 @@ test("parse", () => {
 
     string = "-sender:me";
     terms = [{operator: "sender", operand: `${me.user_id}`, negated: true}];
+    _test(true);
+
+    string = "mentions:me";
+    terms = [{operator: "is", operand: "mentioned"}];
+    _test(true);
+
+    string = "-mentions:me";
+    terms = [{operator: "is", operand: "mentioned", negated: true}];
     _test(true);
 
     string = "https://www.google.com";
@@ -1955,6 +1986,10 @@ test("describe", ({mock_template, override}) => {
     terms = [{operator: "dm-including", operand: ""}];
     string = "direct messages including";
     assert.equal(Filter.search_description_as_html(terms, true), string);
+
+    terms = [{operator: "mentions", operand: ""}];
+    string = "messages mentioning";
+    assert.equal(Filter.search_description_as_html(terms, true), string);
 });
 
 test("can_bucket_by", () => {
@@ -2184,6 +2219,10 @@ test("convert_suggestion_to_term", () => {
         ["sender:me", true],
         [`dm:${[alice.user_id, -1]}`, false],
         [`dm:${[alice.user_id, joe.user_id]}`, true],
+        [`mentions:${alice.user_id}`, true],
+        ["mentions:me", true],
+        ["mentions:-1", false],
+        ["mentions:invalid", false],
     ];
     for (const [search_term_string, expected_is_valid] of test_data) {
         assert.equal(
@@ -2981,6 +3020,9 @@ run_test("is_spectator_compatible", () => {
     // "group-pm-with:" was replaced with "dm-including:"
     assert.ok(
         !Filter.is_spectator_compatible([{operator: "group-pm-with", operand: "hamlet@zulip.com"}]),
+    );
+    assert.ok(
+        !Filter.is_spectator_compatible([{operator: "mentions", operand: "hamlet@zulip.com"}]),
     );
 });
 

@@ -203,6 +203,15 @@ run_test("test_parse_narrow", () => {
         hash_util.parse_narrow(["narrow", "stream", "99-frontend", "topic", "", "near", ""]),
         undefined,
     );
+
+    // mentions:me in URL is converted to is:mentioned.
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "mentions", "me"]), [
+        {negated: false, operator: "is", operand: "mentioned"},
+    ]);
+
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "-mentions", "me"]), [
+        {negated: true, operator: "is", operand: "mentioned"},
+    ]);
 });
 
 run_test("test_channels_settings_edit_url", () => {
