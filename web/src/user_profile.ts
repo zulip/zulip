@@ -58,7 +58,6 @@ import * as timerender from "./timerender.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
 import * as ui_util from "./ui_util.ts";
-import type {UploadWidget} from "./upload_widget.ts";
 import * as user_deactivation_ui from "./user_deactivation_ui.ts";
 import * as user_group_edit_members from "./user_group_edit_members.ts";
 import * as user_group_picker_pill from "./user_group_picker_pill.ts";
@@ -878,7 +877,6 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         realm_bot_domain: realm.realm_bot_domain,
     });
     $container.append($(modal_content_html));
-    let avatar_widget: UploadWidget;
 
     assert(bot.bot_type !== undefined && bot.bot_type !== null);
 
@@ -972,7 +970,6 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             contentType: false,
             success() {
                 $("#bot-edit-form-error").hide();
-                avatar_widget.clear();
                 hide_button_spinner($submit_button);
                 original_values = get_current_values($("#bot-edit-form"));
                 toggle_submit_button($("#bot-edit-form"));
@@ -1006,6 +1003,48 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             },
         });
     });
+
+    function upload_bot_avatar(file: File): void {
+        const formData = new FormData();
+
+        assert(csrf_token !== undefined);
+        formData.append("csrfmiddlewaretoken", csrf_token);
+        formData.append("file", file);
+        $("#bot-avatar-upload-widget-error").hide();
+        assert(bot !== undefined);
+        const url = "/json/bots/" + encodeURIComponent(bot.user_id);
+        channel.patch({
+            url,
+            data: formData,
+            processData: false,
+            contentType: false,
+            success() {
+                dialog_widget.close();
+                $("#bot-avatar-upload-widget .image-delete-button").show();
+                $("#bot-avatar-source").hide();
+                ui_report.success(
+                    $t_html({defaultMessage: "Saved"}),
+                    $("#user-profile-modal .save-success"),
+                    1200,
+                );
+            },
+            error(xhr) {
+                const error_message = channel.xhr_error_message(
+                    $t_html({defaultMessage: "Failed"}),
+                    xhr,
+                );
+                banners.open(
+                    {
+                        intent: "danger",
+                        label: error_message,
+                        buttons: [],
+                        close_button: false,
+                    },
+                    $("#bot-edit-form-error"),
+                );
+            },
+        });
+    }
 
     function edit_bot_post_render(): void {
         $("#edit_bot_modal .dialog_submit_button").prop("disabled", true);
@@ -1057,7 +1096,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                 .hide();
         }
 
-        avatar_widget = avatar.build_bot_edit_widget($("#bot-edit-form"));
+        avatar.build_bot_edit_widget(upload_bot_avatar);
 
         if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
             $("#service_data").append(
