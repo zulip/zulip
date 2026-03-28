@@ -21,11 +21,33 @@ if [[ ! -e /usr/share/doc/groonga-apt-source/copyright ]]; then
                 | cut --delimiter=: --fields=10 \
                 | head --lines=1
         )
-        os_info="$(. /etc/os-release && printf '%s\n' "$ID" "$VERSION_CODENAME")"
+        # Read distro info.
+        os_info="$(
+            . /etc/os-release
+            printf '%s\n' "$ID" "${ID_LIKE:-}" "$VERSION_CODENAME" "${UBUNTU_CODENAME:-}" "${DEBIAN_CODENAME:-}"
+        )"
         {
             read -r distribution
+            read -r distribution_like
             read -r release
+            read -r ubuntu_codename || true
+            read -r debian_codename || true
         } <<<"$os_info"
+
+        case " $distribution $distribution_like " in
+            *' ubuntu '*)
+                if [[ -n "$ubuntu_codename" ]]; then
+                    distribution=ubuntu
+                    release="$ubuntu_codename"
+                fi
+                ;;
+            *' debian '*)
+                if [[ -n "$debian_codename" ]]; then
+                    distribution=debian
+                    release="$debian_codename"
+                fi
+                ;;
+        esac
 
         groonga_apt_source_deb="groonga-apt-source-latest-$release.deb"
         groonga_apt_source_deb_sign="$groonga_apt_source_deb.asc.$pgroonga_apt_sign_key_fingerprint"
