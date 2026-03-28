@@ -473,6 +473,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     }
 
     SERVICE_BOT_TYPES = [
+        INCOMING_WEBHOOK_BOT,
+        OUTGOING_WEBHOOK_BOT,
+        EMBEDDED_BOT,
+    ]
+
+    MESSAGE_HANDLING_BOT_TYPES = [
         OUTGOING_WEBHOOK_BOT,
         EMBEDDED_BOT,
     ]

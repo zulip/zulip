@@ -159,5 +159,8 @@ class EmbeddedBotHandler:
 def do_flag_service_bots_messages_as_processed(
     bot_profile: UserProfile, message_ids: list[int]
 ) -> None:
-    assert bot_profile.is_bot is True and bot_profile.bot_type in UserProfile.SERVICE_BOT_TYPES
+    assert (
+        bot_profile.is_bot is True
+        and bot_profile.bot_type in UserProfile.MESSAGE_HANDLING_BOT_TYPES
+    )
     do_update_message_flags(bot_profile, "add", "read", message_ids)
