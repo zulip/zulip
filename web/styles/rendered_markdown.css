@@ -829,9 +829,10 @@
         }
     }
 
-    & a:not(.icon-button) {
+    & a:not(.icon-button, .media-anchor-element) {
         color: var(--color-markdown-link);
-        text-decoration: none;
+        text-decoration: underline solid var(--color-markdown-link-decoration);
+        text-underline-offset: 2px;
 
         & code {
             color: var(--color-markdown-code-link);
@@ -840,10 +841,21 @@
         &:hover,
         &:focus {
             color: var(--color-markdown-link-hover);
-            text-decoration: underline;
+            text-decoration: underline solid
+                var(--color-markdown-link-decoration-hover);
 
             & code {
                 color: var(--color-markdown-code-link-hover);
+            }
+        }
+
+        &:active {
+            color: var(--color-markdown-link-active);
+            text-decoration: underline solid
+                var(--color-markdown-link-decoration-active);
+
+            & code {
+                color: var(--color-markdown-code-link-active);
             }
         }
     }

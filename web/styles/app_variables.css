@@ -1822,15 +1822,32 @@
         var(--color-markdown-pre-border)
     );
     --color-markdown-link: light-dark(
-        hsl(200deg 100% 40%),
-        var(--color-text-generic-link)
+        hsl(200deg 100% 36%),
+        hsl(200deg 100% 50%)
+    );
+    --color-markdown-link-decoration: light-dark(
+        hsl(200deg 100% 36% / 30%),
+        hsl(200deg 100% 50% / 30%)
     );
     --color-markdown-code-link: var(--color-markdown-link);
     --color-markdown-link-hover: light-dark(
-        hsl(200deg 100% 25%),
-        var(--color-text-generic-link-interactive)
+        hsl(200deg 100% 33%),
+        hsl(200deg 100% 66%)
+    );
+    --color-markdown-link-decoration-hover: light-dark(
+        hsl(200deg 100% 33% / 70%),
+        hsl(200deg 100% 66% / 70%)
     );
     --color-markdown-code-link-hover: var(--color-markdown-link-hover);
+    --color-markdown-link-active: light-dark(
+        hsl(200deg 100% 30%),
+        hsl(200deg 100% 55%)
+    );
+    --color-markdown-link-decoration-active: light-dark(
+        hsl(200deg 100% 30%),
+        hsl(200deg 100% 50% / 70%)
+    );
+    --color-markdown-code-link-active: var(--color-markdown-link-active);
     --color-background-image-thumbnail: light-dark(
         hsl(0deg 0% 0% / 3%),
         hsl(0deg 0% 100% / 3%)
