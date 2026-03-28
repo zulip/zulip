@@ -1620,7 +1620,8 @@ def check_stream_topic_edit_permissions(
     user_profile: UserProfile,
     message: Message,
     message_edit_request: StreamMessageEditRequest,
-    edit_limit_buffer: int,
+    edit_limit_buffer: int | None = None,
+    resolution_message_already_sent: bool = False,
 ) -> None:
     if message_edit_request.topic_resolved or message_edit_request.topic_unresolved:
         if not can_resolve_topics(
@@ -1629,6 +1630,7 @@ def check_stream_topic_edit_permissions(
             raise JsonableError(_("You don't have permission to resolve topics in this channel."))
         if (
             message_edit_request.topic_resolved
+            and not resolution_message_already_sent
             and user_profile.realm.topic_resolution_message_requirement
             == TopicResolutionMessageRequirementEnum.required.value
         ):
@@ -1652,11 +1654,46 @@ def check_stream_topic_edit_permissions(
         user_profile.realm.move_messages_within_stream_limit_seconds is not None
         and not user_profile.is_moderator
     ):
+        assert edit_limit_buffer is not None
         deadline_seconds = (
             user_profile.realm.move_messages_within_stream_limit_seconds + edit_limit_buffer
         )
         if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message's topic has passed."))
+
+
+def do_resolve_topic_after_sending_resolution_message(message: Message) -> None:
+    # Only safe to call immediately after `message.sender` has sent the
+    # resolution message in the same transaction: this hardcodes the
+    # sender as the acting user and bypasses the realm-level
+    # "topic resolution message required" check via
+    # `resolution_message_already_sent=True`.
+    new_topic_name = RESOLVED_TOPIC_PREFIX + message.topic_name()
+
+    message_edit_request = build_message_edit_request(
+        message=message,
+        user_profile=message.sender,
+        propagate_mode="change_all",
+        topic_name=new_topic_name,
+    )
+    assert isinstance(message_edit_request, StreamMessageEditRequest)
+    assert message_edit_request.is_topic_edited
+    check_stream_topic_edit_permissions(
+        user_profile=message.sender,
+        message=message,
+        message_edit_request=message_edit_request,
+        resolution_message_already_sent=True,
+    )
+
+    do_update_message(
+        user_profile=message.sender,
+        target_message=message,
+        message_edit_request=message_edit_request,
+        send_notification_to_old_thread=False,
+        send_notification_to_new_thread=True,
+        rendering_result=None,
+        prior_mention_user_ids=set(),
+    )
 
 
 @transaction.atomic(durable=True)

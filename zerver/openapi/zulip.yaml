@@ -9215,6 +9215,25 @@ paths:
                     [`message` event](/api/get-events#message) that the client with the
                     above `queue_id` will receive.
                   example: "100.01"
+                then_resolve_topic:
+                  type: boolean
+                  default: false
+                  description: |
+                    Whether to atomically resolve the topic after sending the message.
+                    Only supported for channel messages.
+
+                    If `true`, the topic name will be prefixed with `✔ ` and all
+                    messages in the topic will be moved to the new resolved topic.
+                    In addition to the user's message, the standard Notification
+                    Bot message announcing the resolution is also sent to the
+                    resolved topic, as with any topic-resolution operation.
+
+                    Cannot be used together with an already-resolved topic name
+                    (a topic that already starts with `✔ `), the general chat
+                    topic (`""`), or direct messages.
+
+                    **Changes**: New in Zulip 13.0 (feature level ZF-1f0446).
+                  example: true
                 read_by_sender:
                   type: boolean
                   description: |
