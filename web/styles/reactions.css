@@ -90,6 +90,11 @@
            count/name.
            13px at 12.6/1em */
         line-height: 1.0317em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 150px;
+        display: inline-block;
     }
 
     .message_reaction:hover .message_reaction_count {
