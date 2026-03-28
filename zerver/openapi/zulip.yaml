@@ -28187,9 +28187,16 @@ components:
 
             See the help center article on [message formatting](/help/format-your-message-using-markdown) for details on Zulip-flavored Markdown.
         display_recipient:
+          description: |
+            Data on the recipient of the message. Will be one of the following:
           oneOf:
             - type: string
+              description: |
+                The name of the channel the message was received in.
             - type: array
+              description: |
+                An array of dictionaries containing basic data on the users who
+                received the message.
               items:
                 type: object
                 additionalProperties: false
@@ -28210,10 +28217,6 @@ components:
                     type: boolean
                     description: |
                       Whether the user is a mirror dummy.
-          description: |
-            Data on the recipient of the message;
-            either the name of a channel or a dictionary containing basic data on
-            the users who received the message.
         edit_history:
           type: array
           items:
