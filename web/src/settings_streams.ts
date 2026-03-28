@@ -134,6 +134,10 @@ export function build_default_stream_table(): void {
 }
 
 export function update_default_streams_table(): void {
+    if (current_user.is_guest) {
+        return;
+    }
+
     if (["organization", "settings"].includes(hash_parser.get_current_hash_category())) {
         $("#admin_default_streams_table").expectOne().find("tr.default_stream_row").remove();
         build_default_stream_table();

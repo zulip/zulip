@@ -5,6 +5,7 @@ import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as components from "./components.ts";
 import type {Toggle} from "./components.ts";
+import * as hash_parser from "./hash_parser.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as people from "./people.ts";
@@ -246,6 +247,10 @@ export class SettingsPanelMenu {
         this.current_tab = tab;
     }
 
+    get_current_tab(): string {
+        return this.current_tab;
+    }
+
     set_user_settings_tab(tab: string | undefined): void {
         this.current_user_settings_tab = tab;
     }
@@ -374,6 +379,20 @@ export function show_normal_settings(): void {
 export function show_org_settings(): void {
     normal_settings.hide();
     org_settings.show();
+}
+
+export function hide_default_streams_list_for_guest(): void {
+    $(".org-settings-list li[data-section='default-channels-list']").hide();
+
+    if (org_settings?.get_current_tab() !== "default-channels-list") {
+        return;
+    }
+
+    if (hash_parser.get_current_hash_category() === "organization") {
+        browser_history.go_to_location("#organization/organization-profile");
+    } else {
+        org_settings?.set_current_tab("organization-profile");
+    }
 }
 
 export function set_key_handlers(toggler: Toggle): void {
