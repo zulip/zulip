@@ -8732,8 +8732,14 @@ paths:
       summary: Send a message
       tags: ["messages"]
       description: |
-        Send a [channel message](/help/introduction-to-topics) or a
-        [direct message](/help/direct-messages).
+        Send a message to Zulip.
+
+        This endpoint allows you to:
+        - Send a [channel message](/help/introduction-to-topics) to a stream (public conversation)
+        - Send a [direct message](/help/direct-messages) to one or more users (private chat)
+        Note:
+        - "channel" and "stream" refer to the same concept.
+        - Use "direct" for private messages.
       requestBody:
         required: true
         content:
