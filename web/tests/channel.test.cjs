@@ -397,3 +397,30 @@ test("error in callback", () => {
         },
     });
 });
+
+const popup_banners = mock_esm("../src/popup_banners", {
+    open_rate_limit_banner() {},
+});
+
+run_test("rate_limit_banner_on_429", () => {
+    let banner_shown = false;
+    let banner_retry_secs;
+    popup_banners.open_rate_limit_banner = (retry_after_secs) => {
+        banner_shown = true;
+        banner_retry_secs = retry_after_secs;
+    };
+    test_with_mock_ajax({
+        xhr: {
+            status: 429,
+            responseJSON: {code: "RATE_LIMIT_HIT", "retry-after": 90},
+        },
+        run_code() {
+            channel.post({url: "/json/endpoint"});
+        },
+        check_ajax_options(options) {
+            options.simulate_error();
+            assert.ok(banner_shown);
+            assert.equal(banner_retry_secs, 90);
+        },
+    });
+});
