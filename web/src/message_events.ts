@@ -857,7 +857,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 }
             }
 
-                        if (
+            if (
                 !changed_narrow &&
                 !refreshed_current_narrow &&
                 !local_cache_missing_messages &&
@@ -930,7 +930,10 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                         current_list.rerender();
                     } else {
                         current_list.remove_and_rerender(stale_msg_ids);
-                        message_events_util.maybe_add_narrowed_messages(event_messages, current_list);
+                        message_events_util.maybe_add_narrowed_messages(
+                            event_messages,
+                            current_list,
+                        );
                     }
                 }
             }
