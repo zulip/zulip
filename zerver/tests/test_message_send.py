@@ -2813,14 +2813,14 @@ class PersonalMessageSendTest(ZulipTestCase):
         self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
         self.assertEqual(message.recipient_id, direct_message_group.recipient_id)
 
-    def test_personal_when_personal_recipient_is_none(self) -> None:
+    def test_1_to_1_dm_without_existing_dm_group(self) -> None:
         """
-        If you send a personal using direct_message_group, only you and the recipient see it.
+        Sending a 1:1 DM creates a DirectMessageGroup if one doesn't exist.
         """
         sender = self.example_user("hamlet")
         receiver = self.example_user("othello")
 
-        # Removing the personal recipient to ensure a new direct message group is created.
+        # Remove the existing DM group to test the creation path.
         receiver.recipient = None
         receiver.save()
 

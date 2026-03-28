@@ -2007,16 +2007,16 @@ class TestMessageNotificationEmails(ZulipTestCase):
         message_id = self.send_personal_message(aaron, hamlet)
         recipient_id = Message.objects.get(id=message_id).recipient_id
         synthetic_root_message_id = prepare_synthetic_root_message_id(
-            Recipient.PERSONAL, recipient_id, dm_sender_id=aaron.id
+            Recipient.DIRECT_MESSAGE_GROUP, recipient_id
         )
-        self.assertEqual(synthetic_root_message_id, f"<{recipient_id}.{aaron.id}@testserver>")
+        self.assertEqual(synthetic_root_message_id, f"<{recipient_id}@testserver>")
 
         message_id = self.send_personal_message(cordelia, hamlet)
         recipient_id = Message.objects.get(id=message_id).recipient_id
         synthetic_root_message_id = prepare_synthetic_root_message_id(
-            Recipient.PERSONAL, recipient_id, dm_sender_id=cordelia.id
+            Recipient.DIRECT_MESSAGE_GROUP, recipient_id
         )
-        self.assertEqual(synthetic_root_message_id, f"<{recipient_id}.{cordelia.id}@testserver>")
+        self.assertEqual(synthetic_root_message_id, f"<{recipient_id}@testserver>")
 
         # Verify different `synthetic_root_message_id` for different group-DM to hamlet.
         message_id = self.send_group_direct_message(aaron, [hamlet, cordelia], "Group DM!")

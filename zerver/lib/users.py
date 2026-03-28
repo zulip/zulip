@@ -764,30 +764,12 @@ def check_can_access_user(
         recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
     ).values_list("recipient_id", flat=True)
 
-    if Subscription.objects.filter(
+    return Subscription.objects.filter(
         recipient_id__in=subscribed_recipient_ids,
         user_profile=target_user,
         active=True,
         is_user_active=True,
-    ).exists():
-        return True
-
-    if user_profile.recipient_id is None or target_user.recipient_id is None:
-        # If either user does not have a recipient_id, they rely on
-        # direct message groups for 1:1 or self DMs.
-        return False
-
-    # Querying the "Message" table is expensive so we do this last.
-    direct_message_query = Message.objects.filter(
-        recipient__type=Recipient.PERSONAL, realm=target_user.realm
-    )
-    if direct_message_query.filter(
-        Q(sender_id=target_user.id, recipient_id=user_profile.recipient_id)
-        | Q(recipient_id=target_user.recipient_id, sender_id=user_profile.id)
-    ).exists():
-        return True
-
-    return False
+    ).exists()
 
 
 def get_inaccessible_user_ids(
@@ -824,35 +806,7 @@ def get_inaccessible_user_ids(
     )
 
     possible_inaccessible_user_ids = set(target_human_user_ids) - set(common_subscription_user_ids)
-    if not possible_inaccessible_user_ids:
-        return set()
-
-    if not acting_user.recipient_id:
-        # If the acting user does not have a recipient_id, they only rely on
-        # direct message groups for 1:1 or self DMs.
-        return possible_inaccessible_user_ids
-
-    target_user_recipient_ids = UserProfile.objects.filter(
-        id__in=possible_inaccessible_user_ids
-    ).values_list("recipient_id", flat=True)
-
-    direct_message_query = Message.objects.filter(
-        recipient__type=Recipient.PERSONAL, realm=acting_user.realm
-    )
-    direct_messages_users = direct_message_query.filter(
-        Q(sender_id__in=possible_inaccessible_user_ids, recipient_id=acting_user.recipient_id)
-        | Q(recipient_id__in=target_user_recipient_ids, sender_id=acting_user.id)
-    ).values_list("sender_id", "recipient__type_id")
-
-    user_ids_involved_in_dms = set()
-    for sender_id, recipient_user_id in direct_messages_users:
-        if sender_id == acting_user.id:
-            user_ids_involved_in_dms.add(recipient_user_id)
-        else:
-            user_ids_involved_in_dms.add(sender_id)
-
-    inaccessible_user_ids = possible_inaccessible_user_ids - user_ids_involved_in_dms
-    return inaccessible_user_ids
+    return possible_inaccessible_user_ids
 
 
 def get_user_ids_who_can_access_user(target_user: UserProfile) -> list[int]:
@@ -944,55 +898,7 @@ def get_users_involved_in_dms_with_target_users(
 ) -> dict[int, set[int]]:
     target_user_ids = [user.id for user in target_users]
 
-    direct_messages_recipient_users = (
-        Message.objects.filter(
-            sender_id__in=target_user_ids, realm=realm, recipient__type=Recipient.PERSONAL
-        )
-        .order_by("sender_id")
-        .distinct("sender_id", "recipient__type_id")
-        .values("sender_id", "recipient__type_id")
-    )
-
-    direct_messages_recipient_users_set = {
-        obj["recipient__type_id"] for obj in direct_messages_recipient_users
-    }
-    active_direct_messages_recipient_user_ids = UserProfile.objects.filter(
-        id__in=list(direct_messages_recipient_users_set), is_active=True
-    ).values_list("id", flat=True)
-
     direct_message_participants_dict: dict[int, set[int]] = defaultdict(set)
-    for sender_id, message_rows in itertools.groupby(
-        direct_messages_recipient_users, itemgetter("sender_id")
-    ):
-        recipient_user_ids = {row["recipient__type_id"] for row in message_rows}
-        if not include_deactivated_users:
-            recipient_user_ids &= set(active_direct_messages_recipient_user_ids)
-
-        direct_message_participants_dict[sender_id] = recipient_user_ids
-
-    personal_recipient_ids_for_target_users = [
-        user.recipient_id for user in target_users if user.recipient_id is not None
-    ]
-    direct_message_senders_query = Message.objects.filter(
-        realm=realm,
-        recipient_id__in=personal_recipient_ids_for_target_users,
-        recipient__type=Recipient.PERSONAL,
-    )
-
-    if not include_deactivated_users:
-        direct_message_senders_query = direct_message_senders_query.filter(sender__is_active=True)
-
-    direct_messages_senders = (
-        direct_message_senders_query.order_by("recipient__type_id")
-        .distinct("sender_id", "recipient__type_id")
-        .values("sender_id", "recipient__type_id")
-    )
-
-    for recipient_user_id, message_rows in itertools.groupby(
-        direct_messages_senders, itemgetter("recipient__type_id")
-    ):
-        sender_ids = {row["sender_id"] for row in message_rows}
-        direct_message_participants_dict[recipient_user_id] |= sender_ids
 
     # Find DM partners via 1:1 DM groups with message history.
     # Push the message-existence check into the subscription query

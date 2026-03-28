@@ -11,7 +11,6 @@ from django.db.models import Exists, F, Max, OuterRef, QuerySet, Subquery, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_cte import CTE, with_cte
-from psycopg2.sql import SQL
 
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
@@ -1015,7 +1014,6 @@ def extract_unread_data_from_um_rows(
         message_id = row["message_id"]
         msg_type = row["recipient__type"]
         recipient_id = row["recipient_id"]
-        sender_id = row["sender_id"]
 
         if msg_type == Recipient.STREAM:
             stream_id = row["recipient__type_id"]
@@ -1026,16 +1024,6 @@ def extract_unread_data_from_um_rows(
             )
             if not is_row_muted(stream_id, recipient_id, topic_name):
                 unmuted_stream_msgs.add(message_id)
-
-        elif msg_type == Recipient.PERSONAL:
-            if sender_id == user_profile.id:
-                other_user_id = row["recipient__type_id"]
-            else:
-                other_user_id = sender_id
-
-            pm_dict[message_id] = dict(
-                other_user_id=other_user_id,
-            )
 
         elif msg_type == Recipient.DIRECT_MESSAGE_GROUP:
             user_ids_string = get_direct_message_group_users(recipient_id)
@@ -1432,81 +1420,12 @@ def get_last_message_id() -> int:
     return last_id
 
 
-def _get_recent_conversations_via_legacy_personal_recipient(
-    user_profile_id: int, recipient_id: int
-) -> list[tuple[int, int]]:
-    """This function uses some carefully optimized SQL queries, designed
-    to use the UserMessage index on private_messages.  It is
-    somewhat complicated by the fact that for 1:1 direct
-    messages, we store the message against a recipient_id of whichever
-    user was the recipient, and thus for 1:1 direct messages sent
-    directly to us, we need to look up the other user from the
-    sender_id on those messages.  You'll see that pattern repeated
-    both here and also in zerver/lib/events.py.
-
-    It may be possible to write this query directly in Django, however
-    it is made much easier by using CTEs, which Django does not
-    natively support.
-    """
-    RECENT_CONVERSATIONS_LIMIT = 1000
-
-    query = SQL(
-        """
-        WITH personals AS (
-            SELECT   um.message_id AS message_id
-            FROM     zerver_usermessage um
-            WHERE    um.user_profile_id = %(user_profile_id)s
-            AND      um.flags & 2048 <> 0
-            ORDER BY message_id DESC limit %(conversation_limit)s
-        ),
-        message AS (
-            SELECT message_id,
-                   CASE
-                          WHEN m.recipient_id = %(recipient_id)s
-                          THEN m.sender_id
-                          ELSE NULL
-                   END AS sender_id,
-                   CASE
-                          WHEN m.recipient_id <> %(recipient_id)s
-                          THEN m.recipient_id
-                          ELSE NULL
-                   END AS outgoing_recipient_id
-            FROM   personals
-            JOIN   zerver_message m
-            ON     personals.message_id = m.id
-        ),
-        unified AS (
-            SELECT    message_id,
-                      COALESCE(zerver_userprofile.recipient_id, outgoing_recipient_id) AS other_recipient_id
-            FROM      message
-            LEFT JOIN zerver_userprofile
-            ON        zerver_userprofile.id = sender_id
-        )
-        SELECT   other_recipient_id,
-                 MAX(message_id)
-        FROM     unified
-        GROUP BY other_recipient_id
-    """
-    )
-
-    with connection.cursor() as cursor:
-        cursor.execute(
-            query,
-            {
-                "user_profile_id": user_profile_id,
-                "conversation_limit": RECENT_CONVERSATIONS_LIMIT,
-                "recipient_id": recipient_id,
-            },
-        )
-        return cursor.fetchall()
-
-
 def _get_recent_conversations_via_direct_message_group(
     user_profile_id: int,
 ) -> list[tuple[int, int]]:
     """
-    This function fetches the most recent 1:1 conversations with this
-    user which were through direct message groups.
+    This function fetches the most recent DM conversations for this
+    user, returning (recipient_id, max_message_id) pairs.
     """
     RECENT_CONVERSATIONS_LIMIT = 1000
 
@@ -1518,12 +1437,8 @@ def _get_recent_conversations_via_direct_message_group(
     )
 
     return list(
-        # When all DMs are through direct message groups, and not
-        # personal recipients, the recipient__type limit can be
-        # removed.
         Message.objects.filter(
             id__in=recent_pm_message_ids,
-            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
         )
         .values("recipient_id")
         .annotate(max_message_id=Max("id"))
@@ -1537,20 +1452,12 @@ def get_recent_private_conversations(user_profile: UserProfile) -> dict[frozense
     below; this structure is converted into its final form by
     post_process.
     """
-    # Step 1: Collect recent message info
-    direct_recipient_conversations = []
-    if user_profile.recipient_id is not None:
-        direct_recipient_conversations = _get_recent_conversations_via_legacy_personal_recipient(
-            user_profile.id, user_profile.recipient_id
-        )
-
     recent_conversations = _get_recent_conversations_via_direct_message_group(user_profile.id)
 
-    all_recipients = {recipient_id for recipient_id, _ in direct_recipient_conversations}
-    all_recipients.update(recipient_id for recipient_id, _ in recent_conversations)
+    all_recipients = {recipient_id for recipient_id, _ in recent_conversations}
 
     # Now we need to map all the recipient_id objects to lists of user IDs
-    recipient_map = defaultdict(list)
+    recipient_map: dict[int, list[int]] = defaultdict(list)
     subscriptions = (
         Subscription.objects.filter(recipient_id__in=all_recipients)
         .exclude(user_profile_id=user_profile.id)
@@ -1559,18 +1466,10 @@ def get_recent_private_conversations(user_profile: UserProfile) -> dict[frozense
     for recipient_id, user_profile_id in subscriptions:
         recipient_map[recipient_id].append(user_profile_id)
 
-    # Merge the two sets of conversations
-    merged_conversations: dict[frozenset[int], int] = {}
-    for recipient_id, max_message_id in direct_recipient_conversations + recent_conversations:
-        user_id_set = frozenset(recipient_map[recipient_id])
-        if user_id_set in merged_conversations:
-            merged_conversations[user_id_set] = max(
-                max_message_id, merged_conversations[user_id_set]
-            )
-        else:
-            merged_conversations[user_id_set] = max_message_id
-
-    return merged_conversations
+    return {
+        frozenset(recipient_map[recipient_id]): max_message_id
+        for recipient_id, max_message_id in recent_conversations
+    }
 
 
 def can_mention_many_users(sender: UserProfile) -> bool:
@@ -1817,9 +1716,6 @@ def is_1_to_1_message(message: Message) -> bool:
         direct_message_group = DirectMessageGroup.objects.get(id=message.recipient.type_id)
         return direct_message_group.group_size <= 2
 
-    if message.recipient.type == Recipient.PERSONAL:
-        return True
-
     return False
 
 
@@ -1828,9 +1724,6 @@ def is_message_to_self(message: Message) -> bool:
     if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         direct_message_group = DirectMessageGroup.objects.get(id=message.recipient.type_id)
         return direct_message_group.group_size == 1
-
-    if message.recipient.type == Recipient.PERSONAL:
-        return message.recipient == message.sender.recipient
 
     return False
 

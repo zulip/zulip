@@ -2011,7 +2011,7 @@ class UserProfileTest(ZulipTestCase):
         # Test case when guest cannot access all users in the realm.
         self.set_up_db_for_testing_user_access()
         cordelia = self.example_user("cordelia")
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(6):
             result = self.api_get(polonius, f"/api/v1/users/{cordelia.id}/channels")
         self.assert_json_error(result, "Insufficient permission")
 
@@ -3597,7 +3597,7 @@ class GetProfileTest(ZulipTestCase):
         self.set_up_db_for_testing_user_access()
 
         self.login("polonius")
-        with self.assert_database_query_count(11):
+        with self.assert_database_query_count(9):
             result = orjson.loads(self.client_get("/json/users").content)
         accessible_users = result["members"]
         # The user can access 3 bot users and 7 human users.
@@ -3652,7 +3652,7 @@ class GetProfileTest(ZulipTestCase):
         accessible_user_ids_subset = [hamlet.id, iago.id, aaron.id, zoe.id, webhook_bot.id]
         inaccessible_user_ids_subset = [cordelia.id, desdemona.id]
         user_ids_to_fetch = accessible_user_ids_subset + inaccessible_user_ids_subset
-        with self.assert_database_query_count(11):
+        with self.assert_database_query_count(9):
             result = orjson.loads(
                 self.client_get(
                     "/json/users", {"user_ids": orjson.dumps(user_ids_to_fetch).decode()}
@@ -3721,7 +3721,7 @@ class GetProfileTest(ZulipTestCase):
             result = self.client_get(f"/json/users/{user.id}")
             self.assert_json_error(result, "Insufficient permission")
 
-        with self.settings(PARTIAL_USERS=True), self.assert_database_query_count(11):
+        with self.settings(PARTIAL_USERS=True), self.assert_database_query_count(9):
             result = self.client_get("/json/users")
         self.assert_json_success(result)
 
