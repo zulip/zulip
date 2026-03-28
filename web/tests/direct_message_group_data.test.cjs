@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_private_message} = require("./lib/example_message.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -57,11 +58,10 @@ run_test("direct_message_group_data.process_loaded_messages", () => {
     const old_timestamp = 1382479000;
 
     const messages = [
-        {
-            type: "private",
+        make_private_message({
             display_recipient: [{id: jill.user_id}, {id: norbert.user_id}],
             timestamp: timestamp1,
-        },
+        }),
         {
             type: "stream",
         },
