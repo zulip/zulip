@@ -146,6 +146,7 @@ class ClientDescriptor:
         # loading event queues that lack that key.
         return dict(
             user_profile_id=self.user_profile_id,
+            user_recipient_id=self.user_recipient_id,
             realm_id=self.realm_id,
             event_queue=self.event_queue.to_dict(),
             queue_timeout=self.queue_timeout,
@@ -1346,6 +1347,7 @@ def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> No
         # Any old events in our queue can just be dropped,
         # since presence events are pretty ephemeral in nature.
         logging.warning("Dropping some obsolete presence events after upgrade.")
+        return
 
     # See https://zulip.com/api/get-events#presence for more context
     # on these various event formats.
