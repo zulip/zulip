@@ -431,3 +431,24 @@ export function two_tier_billing_enabled(): boolean {
     );
     return workplace_users_group.name !== "role:everyone";
 }
+
+export function can_create_new_bots(): boolean {
+    return user_has_permission_for_group_setting(
+        realm.realm_can_create_bots_group,
+        "can_create_bots_group",
+        "realm",
+    );
+}
+
+export function can_create_incoming_webhooks(): boolean {
+    // User who have the permission to create any bot can also
+    // create incoming webhooks.
+    return (
+        can_create_new_bots() ||
+        user_has_permission_for_group_setting(
+            realm.realm_can_create_write_only_bots_group,
+            "can_create_write_only_bots_group",
+            "realm",
+        )
+    );
+}
