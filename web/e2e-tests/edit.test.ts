@@ -39,7 +39,7 @@ async function test_stream_message_edit(page: Page): Promise<void> {
     await edit_stream_message(page, "test edited");
 
     const message_list_id = await common.get_current_msg_list_id(page, false);
-    await common.check_messages_sent(page, message_list_id, [["Verona > edits", ["test edited"]]]);
+    await common.check_messages_sent(page, message_list_id, [["edits", ["test edited"]]]);
 }
 
 async function test_edit_message_with_slash_me(page: Page): Promise<void> {
