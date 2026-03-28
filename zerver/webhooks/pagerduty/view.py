@@ -77,7 +77,10 @@ def build_pagerduty_formatdict_v2(message: WildValue) -> FormatDictType:
     format_dict["action"] = PAGER_DUTY_EVENT_NAMES_V2[message["event"].tame(check_string)]
 
     format_dict["incident_id"] = message["incident"]["id"].tame(check_string)
-    format_dict["incident_num_title"] = message["incident"]["incident_number"].tame(check_int)
+    format_dict["incident_num_title"] = NUM_TITLE.format(
+        incident_num=message["incident"]["incident_number"].tame(check_int),
+        incident_title=message["incident"]["title"].tame(check_string),
+    )
     format_dict["incident_url"] = message["incident"]["html_url"].tame(check_string)
 
     format_dict["service_name"] = message["incident"]["service"]["name"].tame(check_string)
@@ -100,9 +103,9 @@ def build_pagerduty_formatdict_v2(message: WildValue) -> FormatDictType:
             url=last_status_change_by["html_url"].tame(check_string),
         )
 
-    trigger_description = message["incident"].get("description").tame(check_none_or(check_string))
-    if trigger_description is not None:
-        format_dict["trigger_message"] = TRIGGER_MESSAGE.format(message=trigger_description)
+    # Pagerduty has deprecated incident.description for v2 events.
+    # It will have the same value as incident.title.
+    format_dict["trigger_message"] = ""
     return format_dict
 
 
