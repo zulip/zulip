@@ -53,6 +53,7 @@ import * as read_receipts from "./read_receipts.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
+import * as saved_snippets_ui from "./saved_snippets_ui.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as search from "./search.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
@@ -1069,7 +1070,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         if (event_name === "open_saved_snippet_dropdown") {
             const $messagebox = $(":focus").parents(".messagebox");
             if ($messagebox.length === 1) {
-                util.the($messagebox.find(".saved_snippets_widget")).click();
+                saved_snippets_ui.open_saved_snippets_dropdown_via_hotkey();
             }
         }
 

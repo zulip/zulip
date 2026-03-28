@@ -18,6 +18,24 @@ let saved_snippets_widget: dropdown_widget.DropdownWidget | undefined;
 let saved_snippets_dropdown: tippy.Instance | undefined;
 let composebox_saved_snippets_dropdown_widget = false;
 
+function get_target_textarea($target_element: JQuery<Element>): JQuery<HTMLTextAreaElement> {
+    if ($target_element.parents(".message_edit_form").length === 1) {
+        const edit_message_id = rows.id($target_element.parents(".message_row")).toString();
+        return $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
+    }
+
+    return $<HTMLTextAreaElement>("textarea#compose-textarea");
+}
+
+function get_dropdown_target_textarea(): JQuery<HTMLTextAreaElement> | undefined {
+    const reference = saved_snippets_dropdown?.reference;
+    if (reference === undefined) {
+        return undefined;
+    }
+
+    return get_target_textarea($(reference));
+}
+
 function submit_create_saved_snippet_form(): void {
     const title = $<HTMLInputElement>("#add-new-saved-snippet-modal .saved-snippet-title")
         .val()
@@ -145,6 +163,7 @@ function item_button_click_callback(event: JQuery.ClickEvent): void {
                 submit_edit_saved_snippet_form(saved_snippet.id);
             },
             on_shown: () => $("#edit-saved-snippet-title").trigger("focus"),
+            on_hidden: () => get_dropdown_target_textarea()?.trigger("focus"),
             post_render() {
                 saved_snippet_edit_modal_post_render(saved_snippet);
             },
@@ -164,15 +183,7 @@ function item_click_callback(
 
     dropdown.hide();
     // Get target textarea where the "Add saved snippet" button is clicked.
-    const $target_element = $(dropdown.reference);
-    let $target_textarea: JQuery<HTMLTextAreaElement>;
-    let edit_message_id: string | undefined;
-    if ($target_element.parents(".message_edit_form").length === 1) {
-        edit_message_id = rows.id($target_element.parents(".message_row")).toString();
-        $target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
-    } else {
-        $target_textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
-    }
+    const $target_textarea = get_target_textarea($(dropdown.reference));
     if (is_sticky_bottom_option_clicked) {
         dialog_widget.launch({
             modal_title_html: $t_html({defaultMessage: "Create a new saved snippet"}),
@@ -185,6 +196,7 @@ function item_click_callback(
             update_submit_disabled_state_on_change: true,
             on_click: submit_create_saved_snippet_form,
             on_shown: () => $("#new-saved-snippet-title").trigger("focus"),
+            on_hidden: () => $target_textarea.trigger("focus"),
             post_render: saved_snippet_modal_post_render,
         });
     } else {
@@ -198,7 +210,7 @@ function item_click_callback(
 }
 
 export function setup_saved_snippets_dropdown_widget(widget_selector: string): void {
-    new dropdown_widget.DropdownWidget({
+    saved_snippets_widget = new dropdown_widget.DropdownWidget({
         widget_name: "saved_snippets",
         widget_selector,
         get_options: saved_snippets.get_options_for_dropdown_widget,
@@ -206,13 +218,15 @@ export function setup_saved_snippets_dropdown_widget(widget_selector: string): v
         item_button_click_callback,
         $events_container: $("body"),
         unique_id_type: "number",
+        hide_search_box_focus_first_item_on_keyboard_open: true,
+        highlight_current_value: false,
         sticky_bottom_option: $t({
             defaultMessage: "Create a new saved snippet",
         }),
-        on_show_callback(dropdown: tippy.Instance, widget: dropdown_widget.DropdownWidget) {
-            saved_snippets_widget = widget;
+        on_show_callback(dropdown: tippy.Instance) {
             saved_snippets_dropdown = dropdown;
         },
+        on_exit_with_escape_callback: () => get_dropdown_target_textarea()?.trigger("focus"),
         focus_target_on_hidden: false,
         prefer_top_start_placement: true,
         tippy_props: {
@@ -221,7 +235,12 @@ export function setup_saved_snippets_dropdown_widget(widget_selector: string): v
             // recipient dropdown widget.
             offset: [-100, 5],
         },
-    }).setup();
+    });
+    saved_snippets_widget.setup();
+}
+
+export function open_saved_snippets_dropdown_via_hotkey(): void {
+    saved_snippets_widget?.open({trigger: "keyboard"});
 }
 
 export function setup_saved_snippets_dropdown_widget_if_needed(): void {
