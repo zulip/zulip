@@ -481,6 +481,7 @@ class TestConvertMattermostData(ZulipTestCase):
             masking_content=False,
             mattermost_data_dir=os.path.realpath(mm_fixtures),
             output_dir=os.path.realpath(output_dir),
+            combine_into_one_realm=False,
         )
         self.assertEqual(mock_print.mock_calls, [call("Converting data ...")])
 

@@ -86,53 +86,51 @@ class TestSendEmail(ZulipTestCase):
             self.assertEqual(backend.opened_at, timezone_now())
 
         with (
-            mock.patch.object(backend, "_open", wraps=backend._open) as _open_call,
+            mock.patch.object(backend, "open", wraps=backend.open) as open_call,
             mock.patch.object(backend, "close", wraps=backend.close) as close_call,
         ):
-            # In case of an exception when trying to do the noop
-            # operation, the connection will open and close.
-            # 1 call to _open is to check whether the connection is
-            # open and second is to actually open the connection.
+            # Noop raises an exception — validate_or_reconnect closes
+            # and reopens. open() is called twice: once from
+            # initialize_connection, once from the reconnect path.
             backend.connection = mock.MagicMock(spec=SMTP)
             backend.connection.noop.side_effect = AssertionError
             with mock.patch(
                 "django.core.mail.backends.smtp.EmailBackend.open", side_effect=[False, True]
             ):
                 initialize_connection(backend)
-            self.assertEqual(_open_call.call_count, 2)
+            self.assertEqual(open_call.call_count, 2)
             self.assertEqual(close_call.call_count, 0)
             close_call.reset_mock()
-            _open_call.reset_mock()
+            open_call.reset_mock()
 
-            # Test case: The connection already exists and noop() succeeds, so we do not reopen it.
+            # Noop succeeds — no reconnect needed.
             backend.connection = mock.MagicMock(spec=SMTP)
             backend.connection.noop.return_value = [250]
             initialize_connection(backend)
 
-            self.assertEqual(_open_call.call_count, 1)
+            self.assertEqual(open_call.call_count, 1)
             self.assertEqual(backend.connection.noop.call_count, 1)
             close_call.reset_mock()
-            _open_call.reset_mock()
+            open_call.reset_mock()
 
-            # Test the old connection case when it was closed by the server
+            # Noop returns 404 — validate_or_reconnect closes and reopens.
             backend.connection.noop.return_value = [404]
             with mock.patch(
                 "django.core.mail.backends.smtp.EmailBackend.open", side_effect=[False, True]
             ):
                 initialize_connection(backend)
 
-            # 2 calls to open and 1 call to close
-            self.assertEqual(_open_call.call_count, 2)
+            self.assertEqual(open_call.call_count, 2)
             self.assertEqual(close_call.call_count, 0)
             close_call.reset_mock()
-            _open_call.reset_mock()
+            open_call.reset_mock()
 
             # Test backoff procedure
-            _open_call.side_effect = OSError
+            open_call.side_effect = OSError
             with self.assertRaises(OSError):
                 initialize_connection(backend)
             # 3 calls to open as we try 3 times before giving up
-            self.assertEqual(_open_call.call_count, 3)
+            self.assertEqual(open_call.call_count, 3)
 
     @time_machine.travel(timezone_now(), tick=False)
     @override_settings(EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES=None)
@@ -140,7 +138,7 @@ class TestSendEmail(ZulipTestCase):
         backend = PersistentSMTPEmailBackend()
 
         with (
-            mock.patch.object(backend, "_open", wraps=backend._open) as _open_call,
+            mock.patch.object(backend, "open", wraps=backend.open) as open_call,
             mock.patch.object(backend, "close", wraps=backend.close) as close_call,
         ):
             backend.open()
@@ -148,16 +146,11 @@ class TestSendEmail(ZulipTestCase):
             backend.connection.noop.return_value = [250]
 
             self.assertEqual(close_call.call_count, 0)
-            self.assertEqual(_open_call.call_count, 1)
+            self.assertEqual(open_call.call_count, 1)
             self.assertEqual(backend.connection.noop.call_count, 0)
             self.assertEqual(backend.opened_at, timezone_now())
-            # Test that close() is a no-op and does not drop the connection.
-            connection_before = backend.connection
-            backend.close()
-            self.assertEqual(backend.connection, connection_before)
-            self.assertIsNotNone(backend.connection)
             close_call.reset_mock()
-            _open_call.reset_mock()
+            open_call.reset_mock()
 
             # Old connection is open, we will not open a new connection because max connection lifetime is None.
             with time_machine.travel(
@@ -166,13 +159,11 @@ class TestSendEmail(ZulipTestCase):
             ):
                 initialize_connection(backend)
             self.assertEqual(close_call.call_count, 0)
-            # open.call_count is 1 because we are calling connection.open()
-            # to check whether an open connection already exists. In case of actually opening
-            # a new connection, the call count will be 2.
-            self.assertEqual(_open_call.call_count, 1)
+            # open is called once from initialize_connection; no reconnect.
+            self.assertEqual(open_call.call_count, 1)
             self.assertEqual(backend.connection.noop.call_count, 1)
             close_call.reset_mock()
-            _open_call.reset_mock()
+            open_call.reset_mock()
             backend.connection.noop.reset_mock()
 
     @time_machine.travel(timezone_now(), tick=False)
@@ -181,19 +172,19 @@ class TestSendEmail(ZulipTestCase):
         backend = PersistentSMTPEmailBackend()
 
         with (
-            mock.patch.object(backend, "_open", wraps=backend._open) as _open_call,
+            mock.patch.object(backend, "open", wraps=backend.open) as open_call,
             mock.patch.object(backend, "close", wraps=backend.close) as close_call,
         ):
             backend.open()
             self.assertEqual(close_call.call_count, 0)
-            self.assertEqual(_open_call.call_count, 1)
+            self.assertEqual(open_call.call_count, 1)
             self.assertEqual(backend.opened_at, timezone_now())
             close_call.reset_mock()
-            _open_call.reset_mock()
+            open_call.reset_mock()
 
             backend.connection = mock.MagicMock(spec=SMTP)
             backend.connection.noop.return_value = [250]
-            # Old connection is open, we will not open a new connection because not enough time has elapsed.
+            # Within lifetime — noop check, no reconnect.
             with time_machine.travel(
                 timezone_now() + timedelta(minutes=3),
                 tick=False,
@@ -201,16 +192,14 @@ class TestSendEmail(ZulipTestCase):
                 initialize_connection(backend)
 
             self.assertEqual(close_call.call_count, 0)
-            # open.call_count is 1 because we are calling connection.open()
-            # to check whether an open connection already exists. In case of actually opening
-            # a new connection, the call count will be 2.
-            self.assertEqual(_open_call.call_count, 1)
+            # open is called once from initialize_connection; no reconnect.
+            self.assertEqual(open_call.call_count, 1)
             self.assertEqual(backend.connection.noop.call_count, 1)
             close_call.reset_mock()
-            _open_call.reset_mock()
+            open_call.reset_mock()
             backend.connection.noop.reset_mock()
 
-            # Old connection is open, we will open a new connection because max time has elapsed.
+            # Past lifetime — reconnects without noop.
             with time_machine.travel(
                 timezone_now() + timedelta(minutes=6),
                 tick=False,
@@ -225,8 +214,46 @@ class TestSendEmail(ZulipTestCase):
                 self.assertEqual(backend.opened_at, timezone_now())
 
             self.assertEqual(close_call.call_count, 0)
-            self.assertEqual(_open_call.call_count, 2)
+            self.assertEqual(open_call.call_count, 2)
             self.assertEqual(old_connection_mock.noop.call_count, 0)
+            close_call.reset_mock()
+            open_call.reset_mock()
+
+            # Connections older than 24 hours are properly
+            # recycled: timedelta.seconds wraps at 24 hours, but
+            # total_seconds() does not.
+            with time_machine.travel(
+                timezone_now() + timedelta(hours=25),
+                tick=False,
+            ):
+                old_connection_mock = mock.MagicMock(spec=SMTP)
+                backend.connection = old_connection_mock
+                with mock.patch(
+                    "django.core.mail.backends.smtp.EmailBackend.open", side_effect=[False, True]
+                ):
+                    initialize_connection(backend)
+                self.assertEqual(backend.opened_at, timezone_now())
+
+            # Noop should not have been attempted on the old connection.
+            self.assertEqual(old_connection_mock.noop.call_count, 0)
+            self.assertEqual(open_call.call_count, 2)
+
+    def test_open_returns_false_for_new_connection(self) -> None:
+        """open() returns False even for new connections, which
+        prevents Django's send_messages from auto-closing the
+        persistent connection."""
+        backend = PersistentSMTPEmailBackend()
+        with mock.patch.object(EmailBackend, "open", return_value=True):
+            result = backend.open()
+        self.assertIs(result, False)
+
+    def test_close_clears_connection(self) -> None:
+        """close() actually closes the connection, enabling error
+        recovery in send_immediate_email."""
+        backend = PersistentSMTPEmailBackend()
+        backend.connection = mock.MagicMock(spec=SMTP)
+        backend.close()
+        self.assertIsNone(backend.connection)
 
     def test_send_email_exceptions(self) -> None:
         hamlet = self.example_user("hamlet")

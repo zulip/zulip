@@ -404,6 +404,12 @@ export function create<Key, Item = Key>(
                 return;
             }
 
+            // When no items have been rendered yet, clear any
+            // previously shown empty-list message before appending.
+            if (meta.offset === 0) {
+                $container.empty();
+            }
+
             const slice = meta.filtered_list.slice(meta.offset, meta.offset + load_count);
 
             let html = "";
@@ -555,6 +561,11 @@ export function create<Key, Item = Key>(
             rendered_row.remove();
             // We removed a rendered row, so we need to reduce one offset.
             widget.reduce_rendered_offset();
+            // If the container is now empty, render() will display
+            // the empty-list message.
+            if (this.all_rendered()) {
+                this.render();
+            }
         },
 
         clean_redraw() {

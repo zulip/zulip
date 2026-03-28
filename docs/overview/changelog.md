@@ -52,7 +52,7 @@ _Released 2026-03-12_
   for moderators to handle reports.
 - Demo organizations allow testing Zulip without sharing an email address.
 - Improved search typeahead with topic suggestions from all subscribed
-  channels and nicer styling for channel/topic pair suggestions.-
+  channels and nicer styling for channel/topic pair suggestions.
 - Added many new default external account types for custom profile
   fields, and made URL pattern optional for external
   accounts. External accounts can now be used for matching users in
@@ -60,6 +60,11 @@ _Released 2026-03-12_
 - Added a beta data import tool for Microsoft Teams.
 - Migrated the help center to Starlight, the Astro-based static site
   generator, adding full-text search and a modernized design.
+- The Zulip Docker container has been reworked, and the new version
+  published as https://ghcr.io/zulip/zulip-server. This resolves nearly
+  all outstanding issues in the issue tracker, and adds tests and
+  substantially more documentation, for both Docker Compose and Helm
+  deployments. See the [upgrade notes](#upgrade-notes-for-120) for details.
 
 #### Full feature changelog
 
@@ -122,8 +127,8 @@ _Released 2026-03-12_
 - Added a keyboard shortcut (`Shift+Y`) to open the set-status modal.
 - Added a keyboard shortcut (`L`) to copy a link to the currently
   selected message.
-- Added a compose box keyboard shortcut (`Ctrl+Shift+C`) for wrapping
-  text in an inline code span.
+- Added a compose box keyboard shortcut (`Ctrl+Shift+C`) for formatting
+  text as code.
 - Added an icon button in recipient headers to copy the topic link.
 - Added a `+` button for adding DM recipients in the compose box.
 - Added a "new topic" button in the left sidebar all topics view.
@@ -188,11 +193,18 @@ _Released 2026-03-12_
 
 ### Upgrade notes for 12.0
 
+- The Zulip Docker container has been reworked, with greatly improved
+  documentation and fixes for essentially all issues with the previous
+  container. Upgrading a Docker installation to 12.0+ requires several
+  manual adjustments to your Docker setup that are detailed in a special
+  [upgrade guide][docker-upgrade-to-12].
 - The `LDAP_SYNCHRONIZED_GROUPS_BY_REALM` setting for LDAP group
   synchronization no longer ignores groups that are configured to be
   synced but don't exist in the Zulip organization. Starting in 12.0,
   such groups will be created automatically when syncing the groups
   for a user who should be a member of that group.
+
+[docker-upgrade-to-12]: https://zulip.readthedocs.io/projects/docker/en/latest/how-to/compose-upgrading.html#upgrading-from-zulip-docker-zulip-11-x-and-earlier
 
 ## Zulip Server 11.x series
 

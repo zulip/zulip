@@ -1747,11 +1747,14 @@ class SyncUserError(Exception):
     pass
 
 
-def sync_user_profile_custom_fields(
-    user_profile: UserProfile, custom_field_name_to_value: dict[str, Any]
-) -> None:
+def validate_custom_profile_field_data(
+    realm_id: int, custom_field_name_to_value: dict[str, Any]
+) -> list[ProfileDataElementUpdateDict]:
+    """Validate custom profile field var names and values, returning the
+    validated profile data list.  Raises SyncUserError if a var name
+    doesn't match any field or a value fails validation."""
     fields_by_var_name: dict[str, CustomProfileField] = {}
-    custom_profile_fields = custom_profile_fields_for_realm(user_profile.realm.id)
+    custom_profile_fields = custom_profile_fields_for_realm(realm_id)
     for field in custom_profile_fields:
         var_name = "_".join(field.name.lower().split(" "))
         fields_by_var_name[var_name] = field
@@ -1763,7 +1766,7 @@ def sync_user_profile_custom_fields(
         except KeyError:
             raise SyncUserError(f"Custom profile field with name {var_name} not found.")
         try:
-            validate_user_custom_profile_field(user_profile.realm.id, field, value)
+            validate_user_custom_profile_field(realm_id, field, value)
         except ValidationError as error:
             raise SyncUserError(f"Invalid data for {var_name} field: {error.message}")
         profile_data.append(
@@ -1772,6 +1775,15 @@ def sync_user_profile_custom_fields(
                 "value": value,
             }
         )
+    return profile_data
+
+
+def sync_user_profile_custom_fields(
+    user_profile: UserProfile, custom_field_name_to_value: dict[str, Any]
+) -> None:
+    profile_data = validate_custom_profile_field_data(
+        user_profile.realm_id, custom_field_name_to_value
+    )
     do_update_user_custom_profile_data_if_changed(user_profile, profile_data, None, notify=True)
 
 

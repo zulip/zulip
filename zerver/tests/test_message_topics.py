@@ -13,6 +13,7 @@ from zerver.models import Message, UserMessage, UserTopic
 from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
+from zerver.tornado.django_api import EventQueueData
 from zerver.tornado.event_queue import allocate_client_descriptor
 
 
@@ -790,7 +791,8 @@ class EmptyTopicNameTest(ZulipTestCase):
             visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
         )
 
-        with mock.patch("zerver.lib.events.request_event_queue", return_value=1):
+        queue_data = EventQueueData(queue_id="1", idle_queue_timeout_secs=600)
+        with mock.patch("zerver.lib.events.request_event_queue", return_value=queue_data):
             state_data = do_events_register(
                 iago,
                 iago.realm,
@@ -805,7 +807,7 @@ class EmptyTopicNameTest(ZulipTestCase):
         self.assertEqual(state_data["user_topics"][0]["topic_name"], "")
         self.assertEqual(state_data["user_topics"][1]["topic_name"], "")
 
-        with mock.patch("zerver.lib.events.request_event_queue", return_value=1):
+        with mock.patch("zerver.lib.events.request_event_queue", return_value=queue_data):
             state_data = do_events_register(
                 iago,
                 iago.realm,

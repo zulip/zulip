@@ -8,16 +8,20 @@ import render_draft_table_body from "../templates/draft_table_body.hbs";
 import render_drafts_list from "../templates/drafts_list.hbs";
 
 import * as browser_history from "./browser_history.ts";
+import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import type {FormattedDraft, LocalStorageDraft} from "./drafts.ts";
 import * as drafts from "./drafts.ts";
 import {$t} from "./i18n.ts";
+import * as markdown from "./markdown.ts";
+import {message_render_response_schema} from "./message_store.ts";
 import * as message_view from "./message_view.ts";
 import * as messages_overlay_ui from "./messages_overlay_ui.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
+import {postprocess_content} from "./postprocess_content.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as stream_data from "./stream_data.ts";
 import * as user_card_popover from "./user_card_popover.ts";
@@ -262,6 +266,37 @@ function get_formatted_drafts_data(): {
     return {narrow_drafts, other_drafts, narrow_drafts_header};
 }
 
+function fetch_server_rendered_drafts(formatted_drafts: FormattedDraft[]): void {
+    // compose_ui.ts does thumbnail polling to check for thumbnails for recently
+    // uploaded images. We don't want to do that here since there will always
+    // be some time delta between writing a message and seeing the draft overlay
+    // for it.
+    for (const draft of formatted_drafts) {
+        if (markdown.contains_backend_only_syntax(draft.raw_content)) {
+            void channel.post({
+                url: "/json/messages/render",
+                data: {content: draft.raw_content},
+                success(response_data) {
+                    if (!overlays.drafts_open()) {
+                        return;
+                    }
+                    const data = message_render_response_schema.parse(response_data);
+                    const $content_element = $(
+                        `[data-draft-id="${CSS.escape(draft.draft_id)}"] .message_content`,
+                    );
+                    if ($content_element.length === 0) {
+                        return;
+                    }
+                    $content_element.html(postprocess_content(data.rendered));
+                    rendered_markdown.update_elements($content_element);
+                },
+                // We don't do anything on error and keep displaying the
+                // locally rendered message.
+            });
+        }
+    }
+}
+
 function render_widgets(
     narrow_drafts: FormattedDraft[],
     other_drafts: FormattedDraft[],
@@ -297,6 +332,7 @@ function render_widgets(
     }
     update_rendered_drafts(narrow_drafts.length > 0, other_drafts.length > 0);
     update_bulk_delete_ui();
+    fetch_server_rendered_drafts([...narrow_drafts, ...other_drafts]);
 }
 
 function setup_event_handlers(): void {

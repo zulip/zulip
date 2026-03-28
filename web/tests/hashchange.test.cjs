@@ -374,6 +374,12 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [admin, "launch", ["users", "active"]],
     ]);
 
+    let fixed_url;
+    override(history, "replaceState", (_state, _title, url) => {
+        fixed_url = url;
+        window.location.hash = new URL(url).hash;
+    });
+
     window.location.hash = "#organization/user-list-admin";
 
     // Check whether `user-list-admin` is redirect to `users`, we
@@ -382,6 +388,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     // the arguments passed to `admin.launch`.
     helper.clear_events();
     $window_stub.trigger("hashchange");
+    assert.equal(fixed_url, "http://zulip.zulipdev.com/#organization/users/active");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [settings, "build_page"],

@@ -10,6 +10,7 @@ import ZulipTip from "../../components/ZulipTip.astro";
 import AutomaticallyFollowTopics from "../include/_AutomaticallyFollowTopics.mdx";
 import ConfigureNotificationsForFollowedTopics from "../include/_ConfigureNotificationsForFollowedTopics.mdx";
 import ConfigureTopicNotificationsDesktopWeb from "../include/_ConfigureTopicNotificationsDesktopWeb.mdx";
+import FilterFollowedLeftSidebar from "../include/_FilterFollowedLeftSidebar.mdx";
 import FollowedTopicWorkflows from "../include/_FollowedTopicWorkflows.mdx";
 import GoToInbox from "../include/_GoToInbox.mdx";
 import ManageConfiguredTopicsDesktopWeb from "../include/_ManageConfiguredTopicsDesktopWeb.mdx";
@@ -85,7 +86,7 @@ You can use followed topics for a variety of workflows:
 ## Search for messages in followed topics
 
 <Tabs>
-  <TabItem label="Desktop/Web">
+  <TabItem label="Search bar">
     <Steps>
       1. Click the **search** (<SearchIcon />) icon in the top bar to open the search box.
       1. Type `is:followed`, or start typing and select **Followed topics** from the
@@ -99,13 +100,17 @@ You can use followed topics for a variety of workflows:
       You can also use the <kbd>/</kbd> or <kbd>Ctrl</kbd> + <kbd>K</kbd>
       keyboard shortcut to start searching messages.
     </KeyboardTip>
+
+    <ZulipTip>
+      To get a feed of unread messages in all the topics you follow, search for
+      `is:followed is:unread`.
+    </ZulipTip>
+  </TabItem>
+
+  <TabItem label="Left sidebar">
+    <FilterFollowedLeftSidebar />
   </TabItem>
 </Tabs>
-
-<ZulipTip>
-  To get a feed of unread messages in all the topics you follow, search for
-  `is:followed is:unread`.
-</ZulipTip>
 
 ## Configure notifications for followed topics
 

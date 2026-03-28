@@ -32,6 +32,7 @@ from zerver.models import DefaultStream, Draft, Realm, UserActivity, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user
+from zerver.tornado.django_api import EventQueueData
 from zerver.worker.user_activity import UserActivityWorker
 
 if TYPE_CHECKING:
@@ -95,6 +96,7 @@ class HomeTest(ZulipTestCase):
         "tenor_api_key",
         "gif_rating_policy_options",
         "has_zoom_token",
+        "idle_queue_timeout_secs",
         "is_admin",
         "is_guest",
         "is_moderator",
@@ -653,8 +655,9 @@ class HomeTest(ZulipTestCase):
         self.assertIn("test_stream_7", html)
 
     def _get_home_page(self, **kwargs: Any) -> "TestHttpResponse":
+        queue_data = EventQueueData(queue_id="test-queue-id", idle_queue_timeout_secs=600)
         with (
-            patch("zerver.lib.events.request_event_queue", return_value=42),
+            patch("zerver.lib.events.request_event_queue", return_value=queue_data),
             patch("zerver.lib.events.get_user_events", return_value=[]),
         ):
             result = self.client_get("/", dict(**kwargs))
@@ -1351,8 +1354,9 @@ class HomeTest(ZulipTestCase):
         self.login_user(user)
         result = self._get_home_page()
         self.check_rendered_logged_in_app(result)
+        queue_data = EventQueueData(queue_id="test-queue-id", idle_queue_timeout_secs=600)
         with (
-            patch("zerver.lib.events.request_event_queue", return_value=42),
+            patch("zerver.lib.events.request_event_queue", return_value=queue_data),
             patch("zerver.lib.events.get_user_events", return_value=[]),
         ):
             result = self.client_get("/de/")

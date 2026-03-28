@@ -359,6 +359,20 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
         return true;
     }
 
+    // If the target row is beyond what's currently rendered but
+    // exists in the full list, render more rows to include it.
+    // `get_min_load_count` ensures enough rows are rendered based
+    // on `row_focus`.
+    if (
+        row >= 0 &&
+        row >= topics_widget.get_rendered_list().length &&
+        row < topics_widget.get_current_list().length &&
+        !topics_widget.all_rendered()
+    ) {
+        row_focus = row;
+        topics_widget.render();
+    }
+
     const $topic_rows = $("#recent-view-content-tbody tr");
     if ($topic_rows.length === 0 || row < 0 || row >= $topic_rows.length) {
         row_focus = 0;
@@ -487,7 +501,18 @@ export function revive_current_focus(): boolean {
                 const last_visited_topic_index = current_list.findIndex(
                     (topic) => topic.last_msg_id === topic_last_msg_id,
                 );
-                if (last_visited_topic_index !== -1) {
+                // Only restore focus to the topic if it hasn't moved
+                // too far from where the user left off. A topic can
+                // shift significantly due to new messages arriving
+                // (sorted by time), topic renames (sorted by topic),
+                // or marking as read (sorted by unread count), which
+                // would disorient the user by jumping them far from
+                // their previous scroll position.
+                const max_focus_shift = 10;
+                if (
+                    last_visited_topic_index !== -1 &&
+                    Math.abs(last_visited_topic_index - row_focus) <= max_focus_shift
+                ) {
                     row_focus = last_visited_topic_index;
                 }
             }
@@ -1210,6 +1235,10 @@ function show_selected_filters(): void {
             .addClass("button-recent-selected")
             .attr("aria-checked", "true");
     }
+
+    // Toggle class so CSS can hide the unread marker bar when
+    // every visible row is already unread.
+    $("#recent_view").toggleClass("recent-view-filtered-by-unread", filters.has("unread"));
 }
 
 function get_recent_view_filters_params(): {

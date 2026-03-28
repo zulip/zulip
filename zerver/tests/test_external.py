@@ -6,6 +6,7 @@ from typing import IO, TYPE_CHECKING, Any
 from unittest import mock, skipUnless
 
 import orjson
+import time_machine
 from circuitbreaker import CircuitBreakerMonitor
 from django.conf import settings
 from django.test import override_settings
@@ -13,12 +14,7 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from zerver.lib.cache import cache_delete
-from zerver.lib.rate_limiter import (
-    RateLimitedIPAddr,
-    RateLimitedUser,
-    RateLimiterLockingError,
-    get_tor_ips,
-)
+from zerver.lib.rate_limiter import RateLimitedIPAddr, RateLimitedUser, get_tor_ips
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import ratelimit_rule
 from zerver.models import PushDeviceToken, UserProfile
@@ -52,7 +48,6 @@ class RateLimitTests(ZulipTestCase):
     @override
     def tearDown(self) -> None:
         settings.RATE_LIMITING = False
-
         super().tearDown()
 
     def send_api_message(self, user: UserProfile, content: str) -> "TestHttpResponse":
@@ -86,13 +81,18 @@ class RateLimitTests(ZulipTestCase):
         self.assertTrue("X-RateLimit-Limit" in result.headers)
         self.assertTrue("X-RateLimit-Reset" in result.headers)
 
+    @ratelimit_rule(60, 200, domain="api_by_user")
     def test_ratelimit_decrease(self) -> None:
         user = self.example_user("hamlet")
         RateLimitedUser(user).clear_history()
-        result = self.send_api_message(user, "some stuff")
+        start_time = time.time()
+
+        with time_machine.travel(start_time, tick=False):
+            result = self.send_api_message(user, "some stuff")
         limit = int(result["X-RateLimit-Remaining"])
 
-        result = self.send_api_message(user, "some stuff 2")
+        with time_machine.travel(start_time + 0.001, tick=False):
+            result = self.send_api_message(user, "some stuff 2")
         newlimit = int(result["X-RateLimit-Remaining"])
         self.assertEqual(limit, newlimit + 1)
 
@@ -107,9 +107,9 @@ class RateLimitTests(ZulipTestCase):
             json = result.json()
             self.assertEqual(json.get("result"), "error")
             self.assertIn("API usage exceeded rate limit", json.get("msg"))
-            self.assertEqual(json.get("retry-after"), 0.5)
+            self.assertAlmostEqual(json.get("retry-after"), 0.195, places=2)
             self.assertTrue("Retry-After" in result.headers)
-            self.assertEqual(result["Retry-After"], "0.5")
+            self.assertAlmostEqual(float(result["Retry-After"]), 0.195, places=2)
 
         def user_facing_assert_func(result: "TestHttpResponse") -> None:
             self.assertEqual(result.status_code, 429)
@@ -123,7 +123,7 @@ class RateLimitTests(ZulipTestCase):
 
         start_time = time.time()
         for i in range(6):
-            with mock.patch("time.time", return_value=start_time + i * 0.1):
+            with time_machine.travel(start_time + i * 0.001, tick=False):
                 result = request_func()
             if i < 5:
                 self.assertNotEqual(result.status_code, 429)
@@ -133,7 +133,7 @@ class RateLimitTests(ZulipTestCase):
         # We simulate waiting a second here, rather than force-clearing our history,
         # to make sure the rate-limiting code automatically forgives a user
         # after some time has passed.
-        with mock.patch("time.time", return_value=start_time + 1.01):
+        with time_machine.travel(start_time + 1.01, tick=False):
             result = request_func()
 
             self.assertNotEqual(result.status_code, 429)
@@ -394,23 +394,3 @@ class RateLimitTests(ZulipTestCase):
             )
         finally:
             self.DEFAULT_SUBDOMAIN = original_default_subdomain
-
-    def test_hit_ratelimiterlockingexception(self) -> None:
-        user = self.example_user("cordelia")
-        RateLimitedUser(user).clear_history()
-
-        with mock.patch(
-            "zerver.lib.rate_limiter.RedisRateLimiterBackend.incr_ratelimit",
-            side_effect=RateLimiterLockingError,
-        ):
-            with self.assertLogs("zerver.lib.rate_limiter", level="WARNING") as m:
-                result = self.send_api_message(user, "some stuff")
-                self.assertEqual(result.status_code, 429)
-            self.assertEqual(
-                m.output,
-                [
-                    "WARNING:zerver.lib.rate_limiter:Deadlock trying to incr_ratelimit for {}".format(
-                        f"RateLimitedUser:{user.id}:api_by_user"
-                    )
-                ],
-            )

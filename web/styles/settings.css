@@ -237,12 +237,8 @@ h3,
     }
 }
 
-#playground-settings {
-    #playground_pygments_language,
-    #playground_name,
-    #playground_url_template {
-        width: calc(100% - 10em - 6em);
-    }
+#playground-settings .new-playground-form input {
+    width: calc(100% - 10em - 6em);
 }
 
 #language_selection_modal {
@@ -358,14 +354,14 @@ h3,
     padding: 0 25px 0 6px;
     color: var(--color-text-default);
     border-radius: 4px;
-    border: 1px solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid var(--color-border-legacy-input);
     cursor: pointer;
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--color-background-legacy-input);
     font-size: inherit;
 
     &:disabled {
         cursor: not-allowed;
-        background-color: hsl(0deg 0% 93%);
+        background-color: var(--color-background-disabled-settings-select);
 
         /* This is reset for other browsers to use Chrome's opacity. */
         opacity: 0.7;
@@ -533,11 +529,6 @@ input[type="checkbox"] {
            16px-square box (at 16px/1em) for the
            chevron icon. */
         max-width: calc(100% - 1em);
-        display: flex;
-        align-items: baseline;
-        /* Mimic the space from the previous inline
-           layout. */
-        gap: 0.4ch;
     }
 
     .decorated-channel-name {
@@ -656,14 +647,6 @@ input[type="checkbox"] {
                 visibility: visible;
             }
         }
-    }
-}
-
-#confirm_reset_stream_notifications_modal {
-    .channel-privacy-type-icon {
-        padding-left: 3px;
-        padding-right: 0;
-        width: auto;
     }
 }
 
@@ -1012,10 +995,9 @@ input[type="checkbox"] {
     }
 }
 
-.add-new-linkifier-box,
 .add-new-playground-box {
     & button {
-        margin-left: calc(10em + 20px) !important;
+        margin-left: calc(10em + 20px);
     }
     margin-bottom: 15px;
 
@@ -2177,15 +2159,14 @@ label.preferences-radio-choice-label {
         margin: auto;
     }
 
-    #linkifier-settings .new-linkifier-form input,
-    #playground-settings .new-playground-form input,
-    #profile-field-settings .new-profile-field-form input {
-        width: calc(100% - 20px) !important;
+    #playground-settings .new-playground-form input {
+        width: calc(
+            100% - 2 * var(--input-horizontal-padding) - 2 *
+                var(--input-border-width)
+        );
     }
 
-    #linkifier-settings .new-linkifier-form label,
-    #playground-settings .new-playground-form label,
-    #profile-field-settings .new-profile-field-form label {
+    #playground-settings .new-playground-form label {
         display: block;
         width: 120px;
         padding: 0;
@@ -2218,6 +2199,20 @@ label.preferences-radio-choice-label {
         .profile_field_hint {
             min-width: 8em;
         }
+    }
+
+    .add-new-playground-box {
+        .action-button {
+            margin-left: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    }
+
+    .tab-switcher.org-user-settings-switcher {
+        gap: 0.5em;
+        display: flex;
+        flex-wrap: wrap;
     }
 }
 
@@ -2459,6 +2454,25 @@ label.preferences-radio-choice-label {
     .topic-to-use-wrapper .dropdown-widget-button,
     .integration-url-stream-wrapper .dropdown-widget-button {
         width: 75%;
+    }
+
+    .integration-url-topic {
+        position: relative;
+    }
+
+    #integration-url-topic-placeholder {
+        position: absolute;
+        left: 8px;
+        top: 50%;
+        pointer-events: none;
+        visibility: hidden;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &.visible {
+            visibility: visible;
+        }
     }
 
     #stream-not-specified-notice {

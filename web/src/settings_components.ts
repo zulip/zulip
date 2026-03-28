@@ -18,6 +18,7 @@ import type {
 } from "./group_permission_settings.ts";
 import * as group_setting_pill from "./group_setting_pill.ts";
 import {$t, get_language_list_columns} from "./i18n.ts";
+import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import {
     realm_default_settings_schema,
@@ -1942,6 +1943,13 @@ export function get_group_assigned_realm_permissions(group: UserGroup): {
     } of settings_config.realm_group_permission_settings) {
         const assigned_permission_objects = [];
         for (const setting_name of settings) {
+            if (
+                setting_name === "workplace_users_group" &&
+                (!page_params.development_environment ||
+                    !page_params.non_workplace_pricing_eligible)
+            ) {
+                continue;
+            }
             const setting_value = realm[z.keyof(realm_schema).parse("realm_" + setting_name)];
             const can_edit = settings_config.owner_editable_realm_group_permission_settings.has(
                 setting_name,

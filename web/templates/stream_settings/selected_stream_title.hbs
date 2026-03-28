@@ -11,7 +11,7 @@
             <span class="view-channel-text">
                 {{#tr}}
                     View <z-channel-name></z-channel-name>
-                    {{#*inline "z-channel-name"}}{{> ../inline_decorated_channel_name stream=sub}}{{/inline}}
+                    {{#*inline "z-channel-name"}}{{> ../decorated_channel_name inline_with_text=true stream=sub}}{{/inline}}
                 {{/tr}}
             </span>
             {{tooltip_hotkey_hints "Shift" "V"}}
@@ -24,16 +24,18 @@
                 <span>
                     {{#tr}}
                         Cannot subscribe to private channel <z-stream></z-stream>
-                        {{#*inline "z-stream"}}{{> ../inline_decorated_channel_name stream=../sub}}{{/inline}}
+                        {{#*inline "z-stream"}}{{> ../decorated_channel_name inline_with_text=true stream=../sub}}{{/inline}}
                     {{/tr}}
                 </span>
             </template>
             <button class="action-button subscribe-button sub_unsub_button {{#if subscribed}}action-button-subtle-neutral{{else}}action-button-subtle-brand{{/if}} {{#if should_display_subscription_button}}toggle-subscription-tooltip{{/if}} {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button"  data-tooltip-template-id="toggle-subscription-tooltip-template" {{#unless should_display_subscription_button}}disabled="disabled"{{/unless}}>
-                {{#if subscribed }}
-                    {{t "Unsubscribe" }}
-                {{else}}
-                    {{t "Subscribe" }}
-                {{/if}}
+                <span class="action-button-label">
+                    {{#if subscribed }}
+                        {{t "Unsubscribe" }}
+                    {{else}}
+                        {{t "Subscribe" }}
+                    {{/if}}
+                </span>
             </button>
         </div>
         {{> ../components/action_button

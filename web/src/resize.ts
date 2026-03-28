@@ -226,6 +226,64 @@ export function resize_stream_subscribers_list(): void {
     $(":root").css("--stream-subscriber-list-max-height", `${subscribers_list_height}px`);
 }
 
+export function resize_stream_creation_subscribers_list(): void {
+    // Calculates the height of the subscribers list in stream creation form.
+    // This prevents the stream settings from overflowing the container and
+    // having a scroll bar.
+
+    if ($("#channels_overlay_container").find(".two-pane-settings-overlay.show").length === 0) {
+        // Don't run if stream settings overlay is not open.
+        return;
+    }
+
+    if ($("#stream_creation_form .subscribers_container").css("display") === "none") {
+        // Don't run if the subscribers section of the stream creation form is
+        // not open.
+        return;
+    }
+
+    const $container = $("#stream_creation_form .two-pane-settings-creation-simplebar-container");
+    const $choose_subscribers_title = $container.find(".new-stream-subscribers-title");
+    const $pill_input_container = $container.find(".subscriber_list_settings");
+    const $subscribers_list_header = $container.find(".create_stream_subscriber_list_header");
+
+    const elements_above_subscribers_list = [
+        $choose_subscribers_title,
+        $pill_input_container,
+        $subscribers_list_header,
+    ];
+
+    let total_height_of_elements_above_subscribers_list = 0;
+    for (const $elem of elements_above_subscribers_list) {
+        const outer_height = $elem.outerHeight(true) ?? 0;
+        total_height_of_elements_above_subscribers_list += outer_height;
+    }
+
+    const susbcribers_list_container_bottom_border_width = 1;
+    const stream_creation_body_padding = 15;
+    const stream_creation_section_bottom_margin = 20;
+
+    // The two elements whose height is being calculated below
+    // are error elements. If no error is shown, consider height
+    // as 0.
+    const stream_subscription_error_height = $("#stream_subscription_error").height() ?? 0;
+    const $stream_creation_error = $container.find(".stream_create_info");
+    const stream_creation_error_height =
+        $stream_creation_error.css("display") !== "none"
+            ? $stream_creation_error.outerHeight(true)!
+            : 0;
+
+    const subscribers_list_height =
+        $container.height()! -
+        total_height_of_elements_above_subscribers_list -
+        stream_creation_body_padding -
+        stream_creation_section_bottom_margin -
+        stream_subscription_error_height -
+        stream_creation_error_height -
+        susbcribers_list_container_bottom_border_width;
+    $(":root").css("--new-stream-subscriber-list-max-height", `${subscribers_list_height}px`);
+}
+
 export function resize_stream_filters_container(): void {
     resize_bottom_whitespace();
     $("#left_sidebar_scroll_container").css("max-height", get_stream_filters_max_height());
@@ -367,4 +425,5 @@ export function resize_page_components(): void {
     resize_settings_creation_overlay($("#groups_overlay_container"));
     resize_settings_creation_overlay($("#channels_overlay_container"));
     resize_stream_subscribers_list();
+    resize_stream_creation_subscribers_list();
 }
