@@ -4,17 +4,61 @@
 }
 
 /* Styling for Follow Button */
-.follow-user-btn {
-    border-radius: 25%;
-    background-color:#8988B7;
-    border-color: #8988B7;
-    color: white;
+.buddy-list-section li {
+    padding: 6px 0 !important; 
 }
 
-.user_list_align {
+.follow-user-btn {
+    border-radius: 999px;
+    background-color: #8988B7;
+    color: white;
+    padding: 6px 16px;
+    white-space: nowrap;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.user_sidebar_entry {
     display: flex;
     align-items: center;
-    padding: 5%;
+    gap: 8px;
+    margin-right: var(--width-simplebar-scroll-hover);
+
+    &:not(.with_avatar) {
+        padding-left: calc(var(--right-sidebar-toggle-width-offset) - 2px);
+    }
+
+    &:hover {
+        cursor: pointer;
+    }
+
+    .user-name-and-status-emoji {
+        display: flex;
+        flex: 1;
+    }
+
+    .status-text {
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        opacity: 0.75;
+        font-size: 90%;
+    }
+
+    & span.status-text:not(:empty) {
+        margin-top: calc((var(--line-height-sidebar-row) / 4) * -1);
+    }
+
+    .unread_count {
+        align-self: center;
+        display: none;
+    }
+
+    .unread_count:not(.hide) {
+        display: block;
+        margin-left: 4px;
+    }
 }
 
 .right-sidebar {
@@ -431,72 +475,6 @@
     .status-text {
         overflow-x: hidden;
         text-overflow: ellipsis;
-    }
-}
-
-.user_sidebar_entry {
-    display: grid;
-    /* We establish a two-row, two-column outer grid so
-       that controls remain aligned with the username,
-       even when there is a status line shown below.
-
-       The 25px column for the vdots is less than the
-       30px allotted in the left sidebar, but it holds
-       the username area constant, so that no ellipsis
-       appears on the username on hover. The 25px value
-       is necessary for correct vdots alignment with the
-       filter row's vdots. */
-    grid-template:
-        "row-content ending-anchor-element" var(--line-height-sidebar-row)
-        "row-content ." auto / minmax(0, 1fr) var(--right-sidebar-vdots-width);
-    align-content: baseline;
-    margin-right: var(--width-simplebar-scroll-hover);
-    /* When both the left circle and three dot menu are present, we want
-       the space to the left of the circle to be more similar to the space
-       to the right of the three dot menu. */
-    &:not(.with_avatar) {
-        padding-left: calc(var(--right-sidebar-toggle-width-offset) - 2px);
-    }
-
-    &:hover {
-        cursor: pointer;
-    }
-
-    .user-name-and-status-emoji {
-        display: flex;
-    }
-
-    .status-text {
-        display: block;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        opacity: 0.75;
-        font-size: 90%;
-    }
-
-    & span.status-text:not(:empty) {
-        /* Cinch up the status text by one quarter of the
-           sidebar row's line-height. */
-        margin-top: calc((var(--line-height-sidebar-row) / 4) * -1);
-    }
-
-    .unread_count {
-        grid-area: markers-and-controls;
-        align-self: center;
-        display: none;
-    }
-
-    .unread_count:not(.hide) {
-        display: block;
-        margin-left: 4px;
-
-        &:empty {
-            /* Hide otherwise empty unread count pill
-               after DMs have been read, but before the
-               count has been removed from the DOM. */
-            display: none;
-        }
     }
 }
 
