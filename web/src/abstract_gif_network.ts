@@ -5,7 +5,7 @@ export type GifInfoUrl = {
 
 export type RenderGifsCallback = (urls: GifInfoUrl[], next_page: boolean) => void;
 
-export type GifProvider = "tenor" | "giphy";
+export type GifProvider = "tenor" | "giphy" | "klipy";
 // When a user clicks on the gif icon either while composing a
 // message in the normal compose box or while editing a
 // message, the UI will need to talk to a third party

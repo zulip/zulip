@@ -10,6 +10,7 @@ import {ComposeIconSession} from "./compose_icon_session.ts";
 import * as gif_picker_popover_content from "./gif_picker_popover_content.ts";
 import * as gif_state from "./gif_state.ts";
 import * as giphy_network from "./giphy_network.ts";
+import * as klipy_network from "./klipy_network.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as tenor_network from "./tenor_network.ts";
@@ -194,12 +195,8 @@ function toggle_picker_popover(target: HTMLElement): void {
             },
             onCreate(instance) {
                 const provider = network.get_provider();
-                instance.setContent(
-                    gif_picker_popover_content.get_gif_popover_content(provider === "giphy"),
-                );
-                if (provider === "tenor") {
-                    $(instance.popper).addClass("tenor-popover");
-                } else {
+                instance.setContent(gif_picker_popover_content.get_gif_popover_content(provider));
+                if (provider === "giphy") {
                     $(instance.popper).addClass("giphy-popover");
                 }
             },
@@ -266,9 +263,11 @@ function toggle_picker_popover(target: HTMLElement): void {
 }
 
 function get_gif_network(): GifNetwork {
-    // We prefer Tenor over GIPHY.
+    // In terms of preference, Tenor > KLIPY > GIPHY.
     if (gif_state.is_tenor_enabled()) {
         return new tenor_network.TenorNetwork();
+    } else if (gif_state.is_klipy_enabled()) {
+        return new klipy_network.KlipyNetwork();
     }
     return new giphy_network.GiphyNetwork();
 }
