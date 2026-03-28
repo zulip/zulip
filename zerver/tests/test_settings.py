@@ -7,11 +7,13 @@ import orjson
 from django.http import HttpRequest
 from django.test import override_settings
 
+from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file, ratelimit_rule
 from zerver.models import Draft, NamedUserGroup, ScheduledMessageNotificationEmail, UserProfile
+from zerver.models.groups import SystemGroups
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum, get_user_profile_by_api_key
 
@@ -119,6 +121,30 @@ class ChangeSettingsTest(ZulipTestCase):
         # Now try too-short names
         json_result = self.client_patch("/json/settings", dict(full_name=""))
         self.assert_json_error(json_result, "Name must not be empty!")
+
+    def test_admin_can_change_own_name_when_disallowed_by_group(self) -> None:
+        admin = self.example_user("iago")
+        self.login_user(admin)
+
+        owners_group = NamedUserGroup.objects.get(
+            realm_for_sharding=admin.realm,
+            is_system_group=True,
+            name=SystemGroups.OWNERS,
+        )
+        do_change_realm_permission_group_setting(
+            admin.realm,
+            "can_change_own_name_group",
+            owners_group,
+            acting_user=None,
+        )
+        self.assertFalse(admin.has_permission("can_change_own_name_group"))
+
+        with self.settings(NAME_CHANGES_DISABLED=True):
+            json_result = self.client_patch("/json/settings", dict(full_name="Updated Name"))
+        self.assert_json_success(json_result)
+
+        admin.refresh_from_db()
+        self.assertEqual(admin.full_name, "Updated Name")
 
     def test_illegal_characters_in_name_changes(self) -> None:
         self.login("hamlet")

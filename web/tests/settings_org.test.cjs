@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
@@ -38,6 +39,7 @@ const settings_config = zrequire("settings_config");
 const settings_org = zrequire("settings_org");
 const {set_current_user, set_realm} = zrequire("state_data");
 const pygments_data = zrequire("pygments_data");
+const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 
 const current_user = {};
@@ -756,30 +758,51 @@ test("test combined_code_language_options", ({override}) => {
 });
 
 test("misc", ({override}) => {
-    override(current_user, "is_admin", false);
+    const admin_user_id = 1;
+    const member_user_id = 2;
+    const admins = make_user_group({
+        name: "role:administrators",
+        id: 1,
+        members: new Set([admin_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+    });
+    const members = make_user_group({
+        name: "role:members",
+        id: 2,
+        members: new Set([member_user_id]),
+        is_system_group: true,
+        direct_subgroup_ids: new Set([admins.id]),
+    });
+    const nobody = make_user_group({
+        name: "role:nobody",
+        id: 3,
+        members: new Set(),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+    });
+    user_groups.initialize({realm_user_groups: [admins, members, nobody]});
 
-    override(realm, "realm_name_changes_disabled", false);
+    override(current_user, "is_admin", false);
+    override(current_user, "is_guest", false);
+    override(current_user, "user_id", member_user_id);
+    $("#user-avatar-upload-widget").length = 1;
+    $("#user_details_section").length = 1;
+
+    override(realm, "realm_can_change_own_name_group", members.id);
     override(realm, "server_name_changes_disabled", false);
     settings_account.update_name_change_display();
     assert.ok(!$("#full_name").prop("disabled"));
     assert.ok(!$("#full_name_input_container").hasClass("disabled_setting_tooltip"));
     assert.ok(!$("label[for='full_name']").hasClass("cursor-text"));
 
-    override(realm, "realm_name_changes_disabled", true);
-    override(realm, "server_name_changes_disabled", false);
+    override(realm, "realm_can_change_own_name_group", admins.id);
     settings_account.update_name_change_display();
     assert.ok($("#full_name").prop("disabled"));
     assert.ok($("#full_name_input_container").hasClass("disabled_setting_tooltip"));
     assert.ok($("label[for='full_name']").hasClass("cursor-text"));
 
-    override(realm, "realm_name_changes_disabled", true);
-    override(realm, "server_name_changes_disabled", true);
-    settings_account.update_name_change_display();
-    assert.ok($("#full_name").prop("disabled"));
-    assert.ok($("#full_name_input_container").hasClass("disabled_setting_tooltip"));
-    assert.ok($("label[for='full_name']").hasClass("cursor-text"));
-
-    override(realm, "realm_name_changes_disabled", false);
+    override(realm, "realm_can_change_own_name_group", members.id);
     override(realm, "server_name_changes_disabled", true);
     settings_account.update_name_change_display();
     assert.ok($("#full_name").prop("disabled"));
@@ -813,8 +836,11 @@ test("misc", ({override}) => {
     settings_account.update_avatar_change_display();
     assert.ok($("#user-avatar-upload-widget .image_upload_button").hasClass("hide"));
 
-    // If organization admin, these UI elements are never disabled.
+    // If organization admin, these UI elements are not disabled.
     override(current_user, "is_admin", true);
+    override(current_user, "user_id", admin_user_id);
+    override(realm, "realm_can_change_own_name_group", admins.id);
+    override(realm, "server_name_changes_disabled", false);
     settings_account.update_name_change_display();
     assert.ok(!$("#full_name").prop("disabled"));
     assert.ok(!$("#full_name_input_container").hasClass("disabled_setting_tooltip"));
