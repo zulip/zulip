@@ -170,9 +170,12 @@ export function add_custom_emoji_post_render(): void {
     const $input_error = $("#emoji_file_input_error");
     const $clear_button = $("#emoji_image_clear_button");
     const $upload_button = $("#emoji_upload_button");
+    const $resize_by_crop_button = $("#resize-by-crop-button");
+    const $resize_by_pad_button = $("#resize-by-pad-button");
     const $preview_text = $("#emoji_preview_text");
     const $preview_image = $("#emoji_preview_image");
     const $placeholder_icon = $("#emoji_placeholder_icon");
+    const $resize_by_crop_checkbox = $("#emoji_resize_by_crop");
 
     $preview_image.hide();
 
@@ -186,9 +189,23 @@ export function add_custom_emoji_post_render(): void {
         $preview_image,
     );
 
+    function get_filetype(): string | undefined {
+        const input = get_file_input()[0];
+        if (!input?.files?.length) {
+            return undefined;
+        }
+        return input.files[0]?.type;
+    }
+
     get_file_input().on("input", () => {
         $placeholder_icon.hide();
+        $preview_image.addClass("pad");
         $preview_image.show();
+
+        const filetype = get_filetype();
+        if (filetype && filetype !== "image/gif") {
+            $resize_by_crop_button.show();
+        }
     });
 
     $preview_text.show();
@@ -198,9 +215,28 @@ export function add_custom_emoji_post_render(): void {
 
         $("#add-custom-emoji-modal .dialog_submit_button").prop("disabled", true);
 
-        $preview_image.hide();
+        $preview_image.removeClass("crop").addClass("pad").hide();
+        $resize_by_crop_button.hide();
+        $resize_by_pad_button.hide();
+        $resize_by_crop_checkbox.prop("checked", false);
         $placeholder_icon.show();
         $preview_text.show();
+    });
+
+    $resize_by_crop_button.on("click", (e) => {
+        e.preventDefault();
+        $resize_by_crop_button.hide();
+        $resize_by_pad_button.show();
+        $preview_image.removeClass("pad").addClass("crop");
+        $resize_by_crop_checkbox.prop("checked", true);
+    });
+
+    $resize_by_pad_button.on("click", (e) => {
+        e.preventDefault();
+        $resize_by_crop_button.show();
+        $resize_by_pad_button.hide();
+        $preview_image.removeClass("crop").addClass("pad");
+        $resize_by_crop_checkbox.prop("checked", false);
     });
 }
 
@@ -263,6 +299,8 @@ function show_modal(): void {
         for (const [i, file] of [...files].entries()) {
             formData.append("file-" + i, file);
         }
+        const resize_method = $("#emoji_resize_by_crop").prop("checked") ? "crop" : "fit";
+        formData.append("resize_method", resize_method);
 
         if (is_default_emoji(emoji["name"])) {
             if (!current_user.is_admin) {

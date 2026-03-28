@@ -332,6 +332,7 @@ def remove_realm_filters() -> dict[str, object]:
 def upload_custom_emoji() -> dict[str, object]:
     return {
         "filename": "zerver/tests/images/animated_img.gif",
+        "resize_method": "crop",
     }
 
 
