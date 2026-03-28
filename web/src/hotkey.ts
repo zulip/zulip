@@ -652,6 +652,9 @@ function process_enter_key(e: JQuery.KeyDownEvent): boolean {
     // This handles when pressing Enter while looking at drafts.
     // It restores draft that is focused.
     if (overlays.drafts_open()) {
+        if ($("a:focus,button:focus,input:focus").length > 0) {
+            return false;
+        }
         drafts_overlay_ui.handle_keyboard_events("enter");
         return true;
     }
