@@ -18,6 +18,7 @@ import ahocorasick
 import dateutil.parser
 import dateutil.tz
 import lxml.etree
+import lxml.html
 import markdown
 import markdown.blockprocessors
 import markdown.inlinepatterns
@@ -125,6 +126,11 @@ class MessageRenderingResult:
     user_ids_with_alert_words: set[int]
     potential_attachment_path_ids: list[str]
     thumbnail_spinners: set[str]
+
+
+def get_text_from_rendered_content(rendered_content: str) -> str:
+    fragment = lxml.html.fragment_fromstring(rendered_content, create_parent=True)
+    return " ".join(fragment.text_content().split())
 
 
 @dataclass
