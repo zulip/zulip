@@ -448,7 +448,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assert_length(subscriber_handler.get_users(stream_id=zerver_stream[6]["id"]), 0)
         self.assertFalse(zerver_stream[6]["deactivated"])
 
-    def test_convert_direct_message_group_data_without_personal_recipient(self) -> None:
+    def test_convert_direct_message_group_data(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
 
@@ -629,30 +629,23 @@ class RocketChatImporter(ZulipTestCase):
             direct_message_group_id_to_recipient_id=direct_message_group_id_to_recipient_id,
         )
 
-        # 6 for streams, 6 for users, and 2 for DM groups (1 group + 1 1:1 DM).
-        self.assert_length(zerver_recipient, 14)
+        # 6 for streams and 2 for DM groups.
+        self.assert_length(zerver_recipient, 8)
         self.assert_length(stream_id_to_recipient_id, 6)
-        self.assert_length(user_id_to_recipient_id, 6)
+        self.assert_length(user_id_to_recipient_id, 0)
         self.assert_length(direct_message_group_id_to_recipient_id, 2)
 
-        # First user recipients are built, followed by stream recipients in `build_recipients`.
+        # Stream recipients are built first by `build_recipients`.
         self.assertEqual(
-            user_id_to_recipient_id[zerver_recipient[0]["type_id"]], zerver_recipient[0]["id"]
+            stream_id_to_recipient_id[zerver_recipient[0]["type_id"]], zerver_recipient[0]["id"]
         )
         self.assertEqual(
-            user_id_to_recipient_id[zerver_recipient[1]["type_id"]], zerver_recipient[1]["id"]
-        )
-
-        self.assertEqual(
-            stream_id_to_recipient_id[zerver_recipient[6]["type_id"]], zerver_recipient[6]["id"]
-        )
-        self.assertEqual(
-            stream_id_to_recipient_id[zerver_recipient[7]["type_id"]], zerver_recipient[7]["id"]
+            stream_id_to_recipient_id[zerver_recipient[1]["type_id"]], zerver_recipient[1]["id"]
         )
 
         self.assertEqual(
-            direct_message_group_id_to_recipient_id[zerver_recipient[12]["type_id"]],
-            zerver_recipient[12]["id"],
+            direct_message_group_id_to_recipient_id[zerver_recipient[6]["type_id"]],
+            zerver_recipient[6]["id"],
         )
 
     def test_separate_channel_private_and_livechat_messages(self) -> None:

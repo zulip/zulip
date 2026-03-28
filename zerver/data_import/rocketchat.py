@@ -16,7 +16,6 @@ from zerver.data_import.import_util import (
     build_direct_message_group,
     build_direct_message_group_subscriptions,
     build_message,
-    build_personal_subscriptions,
     build_realm,
     build_realm_emoji,
     build_recipients,
@@ -890,8 +889,6 @@ def map_receiver_id_to_recipient_id(
             stream_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
         elif recipient["type"] == Recipient.DIRECT_MESSAGE_GROUP:
             direct_message_group_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
-        elif recipient["type"] == Recipient.PERSONAL:
-            user_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
 
 
 def categorize_channels_and_map_with_id(
@@ -1174,13 +1171,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         zerver_direct_message_group=zerver_direct_message_group,
     )
 
-    personal_subscriptions = build_personal_subscriptions(
-        zerver_recipient=zerver_recipient,
-    )
-
-    zerver_subscription = (
-        personal_subscriptions + stream_subscriptions + direct_message_group_subscriptions
-    )
+    zerver_subscription = stream_subscriptions + direct_message_group_subscriptions
     realm["zerver_subscription"] = zerver_subscription
 
     subscriber_map = make_subscriber_map(

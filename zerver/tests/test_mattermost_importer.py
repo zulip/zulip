@@ -722,7 +722,7 @@ class MatterMostImporter(MattermostImportTestBase):
             {malfoy_id, pansy_id},
         )
 
-    def test_convert_direct_message_group_data_without_personal_recipient(self) -> None:
+    def test_convert_direct_message_group_data(self) -> None:
         fixture_file_name = self.fixture_file_name(
             "export.json", "mattermost_fixtures/direct_channel"
         )
@@ -1129,18 +1129,18 @@ class MatterMostImporter(MattermostImportTestBase):
         self.assert_length(realm["zerver_defaultstream"], 0)
 
         exported_recipient_ids = self.get_set(realm["zerver_recipient"], "id")
-        self.assert_length(exported_recipient_ids, 10)
+        self.assert_length(exported_recipient_ids, 7)
         exported_recipient_types = self.get_set(realm["zerver_recipient"], "type")
-        self.assertEqual(exported_recipient_types, {1, 2})
+        self.assertEqual(exported_recipient_types, {Recipient.STREAM})
         exported_recipient_type_ids = self.get_set(realm["zerver_recipient"], "type_id")
         self.assert_length(exported_recipient_type_ids, 7)
 
         exported_subscription_userprofile = self.get_set(
             realm["zerver_subscription"], "user_profile"
         )
-        self.assert_length(exported_subscription_userprofile, 3)
+        self.assert_length(exported_subscription_userprofile, 2)
         exported_subscription_recipients = self.get_set(realm["zerver_subscription"], "recipient")
-        self.assert_length(exported_subscription_recipients, 6)
+        self.assert_length(exported_subscription_recipients, 3)
 
         messages = self.read_file(harry_team_output_dir, "messages-000001.json")
 
@@ -1221,21 +1221,21 @@ class MatterMostImporter(MattermostImportTestBase):
         self.assert_length(realm["zerver_defaultstream"], 0)
 
         exported_recipient_ids = self.get_set(realm["zerver_recipient"], "id")
-        self.assert_length(exported_recipient_ids, 10)
+        self.assert_length(exported_recipient_ids, 6)
         exported_recipient_types = self.get_set(realm["zerver_recipient"], "type")
         self.assertEqual(
             exported_recipient_types,
-            {Recipient.PERSONAL, Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP},
+            {Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP},
         )
         exported_recipient_type_ids = self.get_set(realm["zerver_recipient"], "type_id")
-        self.assert_length(exported_recipient_type_ids, 4)
+        self.assert_length(exported_recipient_type_ids, 3)
 
         exported_subscription_userprofile = self.get_set(
             realm["zerver_subscription"], "user_profile"
         )
         self.assert_length(exported_subscription_userprofile, 4)
         exported_subscription_recipients = self.get_set(realm["zerver_subscription"], "recipient")
-        self.assert_length(exported_subscription_recipients, 10)
+        self.assert_length(exported_subscription_recipients, 6)
 
         messages = self.read_file(harry_team_output_dir, "messages-000001.json")
 

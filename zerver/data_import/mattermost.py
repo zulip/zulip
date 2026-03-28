@@ -25,7 +25,6 @@ from zerver.data_import.import_util import (
     build_direct_message_group,
     build_direct_message_group_subscriptions,
     build_message,
-    build_personal_subscriptions,
     build_realm,
     build_realm_emoji,
     build_recipient,
@@ -163,21 +162,6 @@ def convert_user_data(
     for user_data in user_data_map.values():
         if check_user_in_team(user_data, team_name) or user_data["is_mirror_dummy"]:
             user = process_user(user_data, realm_id, team_name, user_id_mapper)
-
-            type_id = user["id"]
-            type = Recipient.PERSONAL
-            recipient_id = NEXT_ID("recipient")
-            recipient = Recipient(
-                type_id=type_id,
-                id=recipient_id,
-                type=type,
-            )
-            recipient_dict = model_to_dict(recipient)
-            realm["zerver_recipient"].append(recipient_dict)
-            user_handler.add_exported_user_id_to_zulip_recipient_id(
-                exported_user_id=user_data["username"],
-                zulip_recipient_id=recipient_id,
-            )
 
             user_handler.add_user(user)
             if user["role"] == UserProfile.ROLE_REALM_OWNER:
@@ -1200,13 +1184,7 @@ def do_convert_data(
             zerver_direct_message_group=zerver_direct_message_group,
         )
 
-        personal_subscriptions = build_personal_subscriptions(
-            zerver_recipient=realm["zerver_recipient"],
-        )
-
-        zerver_subscription = (
-            personal_subscriptions + stream_subscriptions + direct_message_group_subscriptions
-        )
+        zerver_subscription = stream_subscriptions + direct_message_group_subscriptions
         realm["zerver_subscription"] = zerver_subscription
 
         zerver_realmemoji = write_emoticon_data(
