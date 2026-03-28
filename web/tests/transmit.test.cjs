@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -134,10 +135,12 @@ run_test("topic wildcard mention not allowed", ({override}) => {
 
 run_test("reply_message_stream", ({override}) => {
     const social_stream_id = 555;
-    stream_data.add_sub_for_tests({
-        name: "social",
-        stream_id: social_stream_id,
-    });
+    stream_data.add_sub_for_tests(
+        make_stream({
+            name: "social",
+            stream_id: social_stream_id,
+        }),
+    );
 
     const stream_message = {
         type: "stream",

@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -46,7 +47,7 @@ run_test("has_full_recipient", ({override}) => {
     compose_state.topic("foo");
     assert.equal(compose_state.has_full_recipient(), false);
 
-    stream_data.add_sub_for_tests({name: "bar", stream_id: 99});
+    stream_data.add_sub_for_tests(make_stream({name: "bar", stream_id: 99}));
     compose_state.set_stream_id(99);
     assert.equal(compose_state.has_full_recipient(), true);
 
