@@ -954,7 +954,7 @@ class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True)
     def test_mailinator_signup(self) -> None:
         result = self.client_post("/new/", {"email": "hi@mailinator.com"})
-        self.assert_in_response("Please use your real email address.", result)
+        self.assert_in_response("Please use a non-disposable email address.", result)
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_subdomain_restrictions(self) -> None:
