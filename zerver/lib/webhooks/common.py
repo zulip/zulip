@@ -16,6 +16,7 @@ from django.utils.translation import gettext as _
 from pydantic import Json
 from typing_extensions import override
 
+from zerver.actions.message_edit import check_update_message
 from zerver.actions.message_send import (
     check_send_private_message,
     check_send_stream_message,
@@ -30,6 +31,7 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.validator import check_bool, check_string
 from zerver.models import Realm, UserProfile
@@ -210,6 +212,28 @@ def check_send_webhook_message(
             # non-existent stream, so we don't need to re-raise it since it
             # clutters up webhook-errors.log
             return None
+
+
+def maybe_auto_resolve_topic(
+    *,
+    user_profile: UserProfile,
+    message_id: int,
+    topic_name: str | None,
+) -> None:
+    if not topic_name:
+        return
+
+    if topic_name.startswith(RESOLVED_TOPIC_PREFIX):
+        return
+
+    check_update_message(
+        user_profile=user_profile,
+        message_id=message_id,
+        topic_name=f"{RESOLVED_TOPIC_PREFIX}{topic_name}",
+        propagate_mode="change_all",
+        send_notification_to_old_thread=False,
+        send_notification_to_new_thread=False,
+    )
 
 
 def standardize_headers(input_headers: None | dict[str, Any]) -> dict[str, str]:
