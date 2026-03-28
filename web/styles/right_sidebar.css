@@ -19,7 +19,7 @@
     }
 
     .selectable_sidebar_block {
-        flex: 1;  /* Take up remaining space */
+        flex: 1;  
     }
 
     .user-name-and-status-emoji {
@@ -60,13 +60,12 @@
     border: 2px solid #8988B7;
     background-color: #8988B7;
     color: white;
-    padding: 4px 14px;  /* Thinner padding */
+    padding: 4px 14px; 
     white-space: nowrap;
     cursor: pointer;
     flex-shrink: 0;
-    display: none;  /* Hidden by default */
-    margin-left: auto;  /* Push to the right */
-    font-size: 14px;  /* Slightly smaller text */
+    margin-left: auto;  /* Pushes to the right */
+    font-size: 14px;
 }
 
 .follow-user-btn.following {
