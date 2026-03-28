@@ -468,7 +468,15 @@ class ArchivedReaction(AbstractReaction):
 class AbstractUserMessage(models.Model):
     id = models.BigAutoField(primary_key=True)
 
-    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
+    # We disable the index on this, because we provide a unique index
+    # on (user_profile_id, message_id) whose prefix can always be used
+    # instead of this index, and which is always going to produce
+    # sorted message-id rows.  Sometimes PostgreSQL would choose this
+    # non-sorted index and then have to perform an extra sort and
+    # limit after getting _all_ of the user's rows, which is quite
+    # wasteful.
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE, db_index=False)
+
     # The order here is important!  It's the order of fields in the bitfield.
     ALL_FLAGS = [
         "read",
