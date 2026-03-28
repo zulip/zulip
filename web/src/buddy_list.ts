@@ -31,6 +31,8 @@ import {INTERACTIVE_HOVER_DELAY} from "./tippyjs.ts";
 import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
+import * as channel from "./channel.ts";
+
 
 function get_formatted_user_count(sub_count: number): string {
     if (sub_count < 1000) {
@@ -1198,5 +1200,29 @@ export class BuddyList extends BuddyListConf {
     }
 
 }
+
+$("body").on("click", ".follow-user-btn", function (e: JQuery.ClickEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const $btn = $(this);
+    const user_id = Number.parseInt($btn.attr("data-user-id") || "0", 10);
+    
+    void channel.post({
+        url: `/json/users/me/followed_users/${user_id}`,
+        success() {
+            $btn.text("Following");
+            $btn.addClass("following");
+            $btn.prop("disabled", true);
+        },
+        error(xhr: JQuery.jqXHR) {
+            console.error("Failed to follow user. Status:", xhr.status);
+            console.error("Full response text:", xhr.responseText);
+            if (xhr.responseJSON) {
+                console.error("Error message:", xhr.responseJSON.msg || xhr.responseJSON.detail || JSON.stringify(xhr.responseJSON));
+            }
+        },
+    });
+});
 
 export const buddy_list = new BuddyList();
