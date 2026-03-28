@@ -761,6 +761,51 @@ run_test("format_text - bold and italic", ({override, override_rewire}) => {
     compose_ui.format_text($textarea, "bold");
     assert.equal(get_textarea_state(), "before <abc> after");
 
+    // Bold multiline selected text
+    init_textarea_state("before <abc\ndef\nghi> after");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "before <**abc**\n**def**\n**ghi**> after");
+
+    // Bold multiline selected text with empty line preserved
+    init_textarea_state("<abc\n\ndef>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<**abc**\n\n**def**>");
+
+    // Undo bold multiline selected text
+    init_textarea_state("before <**abc**\n**def**\n**ghi**> after");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "before <abc\ndef\nghi> after");
+
+    // Bold multiline numbered list
+    init_textarea_state("<1. abc\n2. def\n3. ghi>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<1. **abc**\n2. **def**\n3. **ghi**>");
+
+    // Undo bold multiline numbered list
+    init_textarea_state("<1. **abc**\n2. **def**\n3. **ghi**>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<1. abc\n2. def\n3. ghi>");
+
+    // Bold multiline bulleted list (- style)
+    init_textarea_state("<- abc\n- def\n- ghi>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<- **abc**\n- **def**\n- **ghi**>");
+
+    // Undo bold multiline bulleted list (- style)
+    init_textarea_state("<- **abc**\n- **def**\n- **ghi**>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<- abc\n- def\n- ghi>");
+
+    // Bold multiline bulleted list (* style)
+    init_textarea_state("<* abc\n* def\n* ghi>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<* **abc**\n* **def**\n* **ghi**>");
+
+    // Bold multiline bulleted list (+ style)
+    init_textarea_state("<+ abc\n+ def\n+ ghi>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<+ **abc**\n+ **def**\n+ **ghi**>");
+
     // Italic selected text
     init_textarea_state("before <abc> after");
     compose_ui.format_text($textarea, "italic");
@@ -779,6 +824,26 @@ run_test("format_text - bold and italic", ({override, override_rewire}) => {
     init_textarea_state("before <*abc*> after");
     compose_ui.format_text($textarea, "italic");
     assert.equal(get_textarea_state(), "before <abc> after");
+
+    // Italic multiline selected text
+    init_textarea_state("before <abc\ndef\nghi> after");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "before <*abc*\n*def*\n*ghi*> after");
+
+    // Undo italic multiline selected text
+    init_textarea_state("before <*abc*\n*def*\n*ghi*> after");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "before <abc\ndef\nghi> after");
+
+    // Italic multiline numbered list
+    init_textarea_state("<1. abc\n2. def>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<1. *abc*\n2. *def*>");
+
+    // Undo italic multiline numbered list
+    init_textarea_state("<1. *abc*\n2. *def*>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<1. abc\n2. def>");
 
     // Undo bold selected text, text is both italic and bold, syntax not selected.
     init_textarea_state("before ***<abc>*** after");
@@ -904,6 +969,26 @@ run_test("format_text - strikethrough", ({override, override_rewire}) => {
     init_textarea_state("before <~~abc~~> after");
     compose_ui.format_text($textarea, "strikethrough");
     assert.equal(get_textarea_state(), "before <abc> after");
+
+    // Strikethrough multiline selected text
+    init_textarea_state("before <abc\ndef\nghi> after");
+    compose_ui.format_text($textarea, "strikethrough");
+    assert.equal(get_textarea_state(), "before <~~abc~~\n~~def~~\n~~ghi~~> after");
+
+    // Undo strikethrough multiline selected text
+    init_textarea_state("before <~~abc~~\n~~def~~\n~~ghi~~> after");
+    compose_ui.format_text($textarea, "strikethrough");
+    assert.equal(get_textarea_state(), "before <abc\ndef\nghi> after");
+
+    // Strikethrough multiline bulleted list
+    init_textarea_state("<- abc\n- def>");
+    compose_ui.format_text($textarea, "strikethrough");
+    assert.equal(get_textarea_state(), "<- ~~abc~~\n- ~~def~~>");
+
+    // Undo strikethrough multiline bulleted list
+    init_textarea_state("<- ~~abc~~\n- ~~def~~>");
+    compose_ui.format_text($textarea, "strikethrough");
+    assert.equal(get_textarea_state(), "<- abc\n- def>");
 });
 
 run_test("format_text - latex", ({override, override_rewire}) => {
