@@ -1275,9 +1275,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
             ).id
             update_id_map(table="recipient", old_id=item["recipient_id"], new_id=new_recipient_id)
         except Recipient.DoesNotExist:
-            # This can happen if the pre-import server used DirectMessageGroup
-            # for cross-realm bots exactly when the post-import server does.
-            # The personal recipients shouldn't exist in both cases.
             assert item["recipient_id"] is None
 
     # We first do a pass of updating model IDs for the cluster of
