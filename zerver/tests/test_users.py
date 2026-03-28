@@ -644,11 +644,9 @@ class PermissionTest(ZulipTestCase):
             for_admin=False,
         )
 
-    def test_access_user_by_id_when_personal_recipient_is_none(self) -> None:
+    def test_access_user_by_id_with_null_recipient(self) -> None:
         self.set_up_db_for_testing_user_access()
         polonius = self.example_user("polonius")
-
-        # Removing the personal recipient to ensure a new direct message group is used for 1:1 dms.
         polonius.recipient = None
         polonius.save()
 
@@ -1150,7 +1148,7 @@ class QueryCountTest(ZulipTestCase):
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
         with (
-            self.assert_database_query_count(102),
+            self.assert_database_query_count(99),
             self.assert_memcached_count(23),
             self.capture_send_event_calls(expected_num_events=11) as events,
         ):
@@ -1473,11 +1471,7 @@ class AdminCreateUserTest(ZulipTestCase):
         # Make sure the new user got the realm's default language
         self.assertEqual(new_user.default_language, "ja")
 
-        # Make sure the recipient field is set correctly.
-        self.assertEqual(
-            new_user.recipient,
-            Recipient.objects.get(type=Recipient.PERSONAL, type_id=new_user.id),
-        )
+        self.assertIsNone(new_user.recipient)
 
         # we can't create the same user twice.
         result = self.client_post("/json/users", valid_params)
@@ -3762,10 +3756,8 @@ class GetProfileTest(ZulipTestCase):
         )
         self.assertEqual(inaccessible_user_ids, {othello.id})
 
-    def test_get_inaccessible_user_ids_when_personal_recipient_is_none(self) -> None:
+    def test_get_inaccessible_user_ids_with_null_recipient(self) -> None:
         polonius = self.example_user("polonius")
-
-        # Removing the personal recipient to ensure we use direct message group.
         polonius.recipient = None
         polonius.save()
 

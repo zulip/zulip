@@ -18,7 +18,6 @@ from zerver.models import (
     RealmUserDefault,
     Recipient,
     Stream,
-    Subscription,
     UserGroupMembership,
     UserProfile,
 )
@@ -101,8 +100,6 @@ def bulk_create_users(
     for user_profile in profiles_to_create:
         generate_and_upload_jdenticon_avatar(user_profile, str(realm.uuid), future=False)
 
-    user_ids = {user.id for user in profiles_to_create}
-
     RealmAuditLog.objects.bulk_create(
         RealmAuditLog(
             realm=realm,
@@ -112,31 +109,6 @@ def bulk_create_users(
         )
         for profile_ in profiles_to_create
     )
-
-    recipients_to_create = [
-        Recipient(type_id=user_id, type=Recipient.PERSONAL) for user_id in user_ids
-    ]
-
-    Recipient.objects.bulk_create(recipients_to_create)
-
-    bulk_set_users_or_streams_recipient_fields(
-        UserProfile, profiles_to_create, recipients_to_create
-    )
-
-    recipients_by_user_id: dict[int, Recipient] = {}
-    for recipient in recipients_to_create:
-        recipients_by_user_id[recipient.type_id] = recipient
-
-    subscriptions_to_create = [
-        Subscription(
-            user_profile_id=user_profile.id,
-            recipient=recipients_by_user_id[user_profile.id],
-            is_user_active=user_profile.is_active,
-        )
-        for user_profile in profiles_to_create
-    ]
-
-    Subscription.objects.bulk_create(subscriptions_to_create)
 
     full_members_system_group = NamedUserGroup.objects.get(
         name=SystemGroups.FULL_MEMBERS, realm_for_sharding=realm, is_system_group=True

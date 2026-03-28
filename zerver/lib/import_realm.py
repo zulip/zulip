@@ -1562,7 +1562,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     update_model_ids(Recipient, data, "recipient")
     bulk_import_model(data, Recipient)
     bulk_set_users_or_streams_recipient_fields(Stream, Stream.objects.filter(realm=realm))
-    bulk_set_users_or_streams_recipient_fields(UserProfile, UserProfile.objects.filter(realm=realm))
 
     re_map_foreign_keys(data, "zerver_subscription", "user_profile", related_table="user_profile")
     get_direct_message_groups_from_subscription(data, "zerver_subscription")

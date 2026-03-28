@@ -70,7 +70,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.thumbnail import BadImageError
 from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.lib.upload import claim_attachment, upload_avatar_image, upload_message_attachment
-from zerver.lib.utils import assert_is_not_none, get_fk_field_name
+from zerver.lib.utils import get_fk_field_name
 from zerver.models import (
     AlertWord,
     Attachment,
@@ -653,12 +653,6 @@ class RealmImportExportTest(ExportFile):
         self.assertIn(pm_c_msg_id, exported_message_ids)
         self.assertIn(pm_d_msg_id, exported_message_ids)
 
-        personal_recipient_type_ids = (
-            r["type_id"] for r in realm_data["zerver_recipient"] if r["type"] == Recipient.PERSONAL
-        )
-        for user_profile_id in [cordelia.id, hamlet.id, iago.id, othello.id, polonius.id]:
-            self.assertIn(user_profile_id, personal_recipient_type_ids)
-
     def test_get_consented_user_ids(self) -> None:
         realm = get_realm("zulip")
         consented_user = self.example_user("iago")
@@ -1021,7 +1015,7 @@ class RealmImportExportTest(ExportFile):
 
         self.assertEqual(get_consented_user_ids(realm), consented_user_ids)
 
-        # Remove the recipient of the welcome bot to test exporting bots without personal recipients.
+        # Remove the recipient of the welcome bot to test exporting bots without it.
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         welcome_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
         welcome_bot.recipient = None
@@ -1799,12 +1793,7 @@ class RealmImportExportTest(ExportFile):
         imported_denmark_stream = Stream.objects.get(name="Denmark", realm=imported_realm)
         self.assertEqual(imported_denmark_stream.creator, imported_hamlet_user)
 
-        # Check recipient_id was generated correctly for the imported users and streams.
-        for user_profile in UserProfile.objects.filter(realm=imported_realm):
-            self.assertEqual(
-                user_profile.recipient_id,
-                Recipient.objects.get(type=Recipient.PERSONAL, type_id=user_profile.id).id,
-            )
+        # Check recipient_id was generated correctly for the imported streams.
         for stream in Stream.objects.filter(realm=imported_realm):
             self.assertEqual(
                 stream.recipient_id,
@@ -1949,7 +1938,7 @@ class RealmImportExportTest(ExportFile):
         )
 
         imported_prospero_user = get_user_by_delivery_email(prospero_email, imported_realm)
-        self.assertIsNotNone(imported_prospero_user.recipient)
+        self.assertIsNone(imported_prospero_user.recipient)
 
         # Ensure RealmExport.export_path is excluded from the export and thus None after importing.
         exported_realm_exports = read_json("realm.json")["zerver_realmexport"]
@@ -2044,16 +2033,9 @@ class RealmImportExportTest(ExportFile):
             assert recipient is not None
             return recipient
 
-        def get_recipient_user(r: Realm) -> Recipient:
-            return assert_is_not_none(UserProfile.objects.get(full_name="Iago", realm=r).recipient)
-
         @getter
         def get_stream_recipient_type(r: Realm) -> int:
             return get_recipient_stream(r).type
-
-        @getter
-        def get_user_recipient_type(r: Realm) -> int:
-            return get_recipient_user(r).type
 
         # test subscription
         def get_subscribers(recipient: Recipient) -> set[str]:
@@ -2064,10 +2046,6 @@ class RealmImportExportTest(ExportFile):
         @getter
         def get_stream_subscribers(r: Realm) -> set[str]:
             return get_subscribers(get_recipient_stream(r))
-
-        @getter
-        def get_user_subscribers(r: Realm) -> set[str]:
-            return get_subscribers(get_recipient_user(r))
 
         # test custom profile fields
         @getter
