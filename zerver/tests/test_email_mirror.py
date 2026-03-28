@@ -53,7 +53,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, most_recent_usermessage
 from zerver.models import Attachment, Recipient, Stream, UserProfile
 from zerver.models.groups import NamedUserGroup, SystemGroups
-from zerver.models.messages import Message
+from zerver.models.messages import Message, UserMessage
 from zerver.models.realms import get_realm
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import get_system_bot
@@ -1350,7 +1350,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = self.example_email("cordelia")
 
-        with self.assert_database_query_count(22):
+        with self.assert_database_query_count(23):
             process_message(incoming_valid_message)
 
         # Confirm Iago received the message.
@@ -1368,6 +1368,119 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         self.assertEqual(message.content, "TestMissedGroupDirectMessageEmailMessages body")
         self.assertEqual(message.sender, self.example_user("cordelia"))
         self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+
+    def test_receive_missed_group_dm_collapses_to_personal_when_only_two_remain(self) -> None:
+        # When a group DM has a deactivated user and only one active user remains
+        # (plus the sender), the group DM should collapse to a personal message.
+        # This tests the case: Group DM (Hamlet, Othello) -> Deactivate Othello
+        # -> Cordelia replies -> Should collapse to personal DM
+        self.login("hamlet")
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "private",
+                "content": "Initial group DM",
+                "to": orjson.dumps([othello.id, cordelia.id]).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        initial_message = self.get_last_message()
+
+        # Verify initial message is a group DM
+        self.assertEqual(initial_message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+
+        mm_address = create_missed_message_address(cordelia, initial_message)
+
+        # Deactivate one of the group members
+        do_deactivate_user(othello, acting_user=None)
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("Reply to group DM")
+
+        incoming_valid_message["Subject"] = "Reply subject"
+        incoming_valid_message["From"] = cordelia.delivery_email
+        incoming_valid_message["To"] = mm_address
+        incoming_valid_message["Reply-to"] = cordelia.delivery_email
+
+        process_message(incoming_valid_message)
+
+        new_message = self.get_last_message()
+        self.assertEqual(new_message.content, "Reply to group DM")
+        self.assertEqual(new_message.sender, cordelia)
+
+        # After deactivation, with only Hamlet and Cordelia remaining,
+        # the group DM should collapse to a personal message
+        self.assertEqual(new_message.recipient.type, Recipient.PERSONAL)
+
+    def test_receive_missed_group_dm_remains_group_with_multiple_active_users(self) -> None:
+        # When a group DM has 3+ members and one is deactivated, the remaining
+        # active members should still receive a group DM (not collapsed to personal).
+        # This tests the case: Group DM (Hamlet, Othello, Cordelia) -> Deactivate Othello
+        # -> Replica from Cordelia -> Should remain DIRECT_MESSAGE_GROUP
+        self.login("hamlet")
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "private",
+                "content": "Initial group DM with 3 people",
+                "to": orjson.dumps([othello.id, cordelia.id, iago.id]).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        initial_message = self.get_last_message()
+
+        # Verify initial message is a group DM
+        self.assertEqual(initial_message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+
+        mm_address = create_missed_message_address(cordelia, initial_message)
+
+        # Deactivate one of the group members
+        do_deactivate_user(othello, acting_user=None)
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("Reply to group DM with multiple members")
+
+        incoming_valid_message["Subject"] = "Reply subject"
+        incoming_valid_message["From"] = cordelia.delivery_email
+        incoming_valid_message["To"] = mm_address
+        incoming_valid_message["Reply-to"] = cordelia.delivery_email
+
+        process_message(incoming_valid_message)
+        new_message = self.get_last_message()
+
+        # Message properties
+        self.assertEqual(new_message.content, "Reply to group DM with multiple members")
+        self.assertEqual(new_message.sender, cordelia)
+        self.assertEqual(new_message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+
+        # Delivery verification
+        self.assertTrue(
+            UserMessage.objects.filter(
+                user_profile=self.example_user("hamlet"),
+                message=new_message,
+            ).exists()
+        )
+
+        self.assertTrue(
+            UserMessage.objects.filter(
+                user_profile=iago,
+                message=new_message,
+            ).exists()
+        )
+
+        self.assertFalse(
+            UserMessage.objects.filter(
+                user_profile=othello,
+                message=new_message,
+            ).exists()
+        )
 
     def test_receive_missed_stream_message_email_messages(self) -> None:
         # build dummy messages for message notification email reply
