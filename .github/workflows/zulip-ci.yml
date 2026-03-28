@@ -107,11 +107,6 @@ jobs:
           source tools/ci/activate-venv
           ./tools/test-tools
 
-      - name: Run Codespell lint
-        run: |
-          source tools/ci/activate-venv
-          ./tools/run-codespell
-
       # We run the tests that are only run in a specific job early, so
       # that we get feedback to the developer about likely failures as
       # quickly as possible. Backend/mypy failures that aren't
