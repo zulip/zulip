@@ -29,6 +29,49 @@ $ ls -l .git/hooks
 pre-commit -> ../../tools/pre-commit
 ```
 
+## Create a worktree
+
+`tools/create-worktree` creates a [Git
+worktree](https://git-scm.com/docs/git-worktree) that shares the main
+repository's provisioned resources (virtualenv, node_modules, etc.) so
+you can work on multiple branches at the same time without
+re-provisioning.
+
+```console
+$ ./tools/create-worktree my-feature
+Worktree ready at /home/you/zulip-my-feature
+```
+
+The first argument is the worktree name; a branch of the same name is
+created if one doesn't already exist. You can pass a second argument
+to use a different branch name:
+
+```console
+$ ./tools/create-worktree review-1234 upstream/main
+```
+
+The worktree is placed at `~/zulip-<name>` and shares the following
+with the main repository via symlinks:
+
+- `.venv`, `node_modules`, `var` (provisioned dependencies)
+- Generated static assets, webpack bundles, and locale files
+- `zproject/dev-secrets.conf`
+- Starlight help center build output
+
+## Remove a worktree
+
+`tools/remove-worktree` removes a worktree created by
+`tools/create-worktree`:
+
+```console
+$ ./tools/remove-worktree my-feature
+Removed worktree /home/you/zulip-my-feature
+```
+
+If the worktree has uncommitted changes, Git will refuse to remove it;
+pass `--force` as an additional argument if you want to remove it
+anyway.
+
 ## Configure continuous integration for your Zulip fork
 
 You might also wish to [configure continuous integration for your fork][zulip-git-guide-ci].

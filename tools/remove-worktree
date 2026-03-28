@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+this_dir=${BASH_SOURCE[0]%/*}
+main_repo=$(cd "$this_dir/.." && pwd)
+worktree_name="${1:?Usage: $0 <name>}"
+
+git -C "$main_repo" worktree remove "$HOME/zulip-$worktree_name"
+echo "Removed worktree $HOME/zulip-$worktree_name"
