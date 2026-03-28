@@ -361,6 +361,50 @@ export const update_elements = ($content: JQuery): void => {
         $codehilite.addClass("zulip-code-block");
     });
 
+    // Inject hide-preview buttons on link previews (embeds, images,
+    // videos).  Skips user uploads.  Permission and visibility are
+    // handled in click_handlers.ts and message_list_hover.ts.
+    if (get_message_for_message_content($content) !== undefined) {
+        $content
+            .find(".message_embed, .message-media-preview-image, .message-media-preview-video")
+            .each(function (): void {
+                const $preview = $(this);
+
+                // Skip user uploads, identified by data-original-dimensions
+                // on the <img> (set by the server only for uploads).
+                if ($preview.find("img").attr("data-original-dimensions") !== undefined) {
+                    return;
+                }
+
+                // Extract the preview URL from the first anchor.
+                const preview_url = $preview.find("a").attr("href");
+                if (preview_url === undefined) {
+                    return;
+                }
+
+                const title = $t({defaultMessage: "Remove preview"});
+                const overlay_text = $t({defaultMessage: "Remove link preview"});
+                const $icon = $("<i>")
+                    .addClass("zulip-icon zulip-icon-close")
+                    .attr("aria-hidden", "true");
+                const $button = $("<button>")
+                    .attr("type", "button")
+                    .addClass("hide-preview-button tippy-zulip-delayed-tooltip")
+                    .attr("data-preview-url", preview_url)
+                    .attr("data-tippy-content", title)
+                    .attr("aria-label", title)
+                    .append($icon);
+                $preview.append(
+                    $("<div>")
+                        .addClass("hide-preview-overlay")
+                        .append(
+                            $("<span>").addClass("hide-preview-overlay-text").text(overlay_text),
+                        ),
+                    $("<div>").addClass("hide-preview-container").append($button),
+                );
+            });
+    }
+
     $content.find("audio").each(function (): void {
         // We grab the audio source and title for
         // inserting into the template

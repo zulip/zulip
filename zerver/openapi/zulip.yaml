@@ -10166,6 +10166,10 @@ paths:
         In Zulip 4.0 (feature level 56), the `move_messages_between_streams_policy`
         realm setting was added.
 
+        In Zulip 12.0 (feature level ZF-39494a), the `hide_preview_url`
+        parameter was added to support hiding individual
+        [link previews](/help/allow-image-link-previews) from a message.
+
         [config-message-editing]: /help/restrict-message-editing-and-deletion
         [restrict-move-messages]: /help/restrict-moving-messages
       x-curl-examples-parameters:
@@ -10174,6 +10178,7 @@ paths:
             parameters:
               enum:
                 - stream_id
+                - hide_preview_url
       parameters:
         - $ref: "#/components/parameters/MessageId"
       requestBody:
@@ -10277,6 +10282,23 @@ paths:
                     **Changes**: New in Zulip 11.0 (feature level 379).
                   type: string
                   example: "6ae8a75555209fd6c44157c0aed8016e763ff435a19cf186f76863140143ff72" # "test content"
+                hide_preview_url:
+                  description: |
+                    A URL string whose [link preview](/help/allow-image-link-previews)
+                    should be hidden for this message. The URL must appear in the
+                    message's content.
+
+                    Hiding a link preview is idempotent; hiding an already-hidden
+                    URL has no effect. Hidden previews are suppressed for all
+                    users.
+
+                    The same [permissions that govern editing a message's
+                    content](/help/restrict-message-editing-and-deletion) are
+                    required to hide a link preview.
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-39494a).
+                  type: string
+                  example: "https://example.com/article"
                 stream_id:
                   description: |
                     The channel ID to move the message(s) to, to request moving
