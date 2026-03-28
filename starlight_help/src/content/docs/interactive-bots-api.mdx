@@ -110,6 +110,31 @@ Zulip message was sent to.
   to respond to (provided by `handle_message`)
 * `response`: A string with the response message from the bot
 
+## bot\_handler.react
+
+`bot_handler.react(message, emoji_name)`: Add an emoji reaction to a
+Zulip message.
+
+### Arguments
+
+* `message`: A dictionary containing information on the Zulip message
+  that the bot is reacting to. This is the message object for an
+  existing message that has already been sent (provided by
+  `handle_message`).
+* `emoji_name`: A string with the name of the emoji reaction to add
+
+### Example implementation
+
+From `zulip_bots/bots/helloworld/helloworld.py`:
+The helloworld bot is a standard implementation of replying and
+reacting to a message.
+
+```python
+def handle_message(self, message, bot_handler):
+  bot_handler.send_reply(message, 'beep boop')
+  bot_handler.react(message, 'robot')
+```
+
 ## bot\_handler.update\_message
 
 `bot_handler.update_message(message)`: Edit the content of a message
