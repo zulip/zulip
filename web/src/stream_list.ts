@@ -1553,7 +1553,10 @@ export function set_event_handlers({
     );
 
     function toggle_pm_header_icon(): void {
-        if (pm_list.is_private_messages_collapsed()) {
+        if (
+            pm_list.is_private_messages_collapsed() ||
+            $(".direct-messages-container").hasClass("pinned")
+        ) {
             return;
         }
 
