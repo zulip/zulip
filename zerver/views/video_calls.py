@@ -1,7 +1,9 @@
+import datetime
 import hashlib
 import json
 import logging
 import random
+import secrets
 from abc import ABC, abstractmethod
 from base64 import b64encode
 from typing import Any
@@ -41,6 +43,7 @@ from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.typed_endpoint import typed_endpoint, typed_endpoint_without_parameters
 from zerver.lib.url_encoding import append_url_query_string
+from zerver.lib.users import is_moderator_role
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import UserProfile
 from zerver.models.realms import get_realm
@@ -61,9 +64,18 @@ class InvalidVideoCallProviderTokenError(JsonableError):
 
 
 class CreateVideoCallFailedError(JsonableError):
-    def __init__(self, provider_name: str) -> None:
+    def __init__(self, provider_name: str, reason: str | None = None) -> None:
         super().__init__(
             _("Failed to create {provider_name} call").format(provider_name=provider_name)
+            + (f": {reason}" if reason else "")
+        )
+
+
+class JoinVideoCallFailedError(JsonableError):
+    def __init__(self, provider_name: str, reason: str | None = None) -> None:
+        super().__init__(
+            _("Failed to create {provider_name} invite").format(provider_name=provider_name)
+            + (f": {reason}" if reason else "")
         )
 
 
@@ -650,3 +662,198 @@ def create_nextcloud_talk_url(
 
     call_url = urljoin(settings.NEXTCLOUD_SERVER, f"/index.php/call/{token}")
     return json_success(request, data={"url": call_url})
+
+
+@typed_endpoint
+def create_galene_call(
+    request: HttpRequest, user: UserProfile, *, channel: str | None = None, topic: str | None = None
+) -> HttpResponse:
+    """
+    For a Galène (https://galene.org) instance, create a /calls/galene/join link,
+    setting up the necessary preconditions.
+
+    Naming:
+
+    - For normal topics, the call is always the same {GALENE_URL}/group/{channel}/{topic}.
+    - For "General Chat" (topic==""), it is {GALENE_URL}/group/{channel}.
+    - For DMs, every 'Add Call' makes a new call at {GALENE_URL}/group/DMs/{UUID}
+
+    Calls are ephemeral, because we use Galène's auto-subgroups feature.
+    The only creation done here is to make {GALENE_URL}/group/{channel} or {GALENE_URL}/DMs,
+    the actual call isn't stored on disk by Galène and Galène doesn't know about it
+    until someone joins it.
+
+    Permissions:
+
+    - Zulip moderators (including admins and owners) become Galène operators.
+    - Zulip members become Galène presenters (meaning they can turn on their camera)
+    - Zulip guests also become presenters.
+    """
+    if (
+        settings.GALENE_URL is None
+        or settings.GALENE_ADMIN_USERNAME is None
+        or settings.GALENE_ADMIN_PASSWORD is None
+    ):
+        raise JsonableError(_("Galène is not configured"))
+
+    if channel is not None:
+        # channel or topic in a channel
+        # create one call per topic, no matter how many times 'Add Call' is clicked
+        if topic is None:
+            # This is the "general chat" case
+            # In this case the call directly uses the parent group
+            topic = ""
+        else:
+            if topic.startswith("✔ "):
+                # HACK: resolved topics get their names changed
+                # but this shouldn't change the name of the associated call
+                topic = topic.replace("✔ ", "", 1)
+    else:
+        # DM: create one call per 'Add Call'
+        # TODO: it's unfortunate this behaves differently than topics,
+        #       but there doesn't seem to be a tidy, deterministic way to map a list of DM members to a topic string
+        channel = "DMs"
+        topic = secrets.token_urlsafe(16)
+
+    # This greatly reduces the number of calls Galène has to track on disk
+    # (one per Zulip channel instead of one per topic).
+    # https://github.com/jech/galene/blob/master/galene-api.md
+    parent_url = urljoin(settings.GALENE_URL, f"/galene-api/v0/.groups/{channel}")
+
+    username = str(settings.GALENE_ADMIN_USERNAME)
+    password = str(settings.GALENE_ADMIN_PASSWORD)
+    credentials = f"{username}:{password}".encode()
+    encoded_credentials = b64encode(credentials).decode("ascii")
+
+    headers = {
+        "Accept": "application/json",
+        "Authorization": f"Basic {encoded_credentials}",
+    }
+
+    payload = {
+        "auto-subgroups": True,
+    }
+
+    try:
+        response = VideoCallSession().put(parent_url, json=payload, headers=headers, timeout=10)
+        response.raise_for_status()
+        if response.status_code not in [201, 204]:
+            reason = f"request to {parent_url} got HTTP {response.status_code}"
+            raise CreateVideoCallFailedError("Galène", reason)
+    except requests.RequestException as e:
+        if e.response is not None:
+            reason = f"HTTP {response.status_code}: {response.text:.200}"
+        else:
+            reason = str(e)
+        reason = f"connection to {parent_url}: {reason}"
+        raise CreateVideoCallFailedError("Galène", reason)
+
+    if topic:
+        group_name = f"{channel}/{topic}"
+    else:
+        group_name = channel
+
+    signed = Signer().sign_object(
+        {
+            "n": group_name,
+        }
+    )
+    url = append_url_query_string("/calls/galene/join", "q=" + signed)
+    return json_success(request, {"url": url})
+
+
+@zulip_login_required
+@never_cache
+@typed_endpoint
+def join_galene_call(request: HttpRequest, *, q: str) -> HttpResponse:
+    if (
+        settings.GALENE_URL is None
+        or settings.GALENE_ADMIN_USERNAME is None
+        or settings.GALENE_ADMIN_PASSWORD is None
+    ):
+        raise JsonableError(_("Galène is not configured"))
+
+    assert request.user.is_authenticated
+
+    try:
+        q_data = Signer().unsign_object(q)
+    except Exception:
+        raise JsonableError(_("Invalid signature."))
+
+    group_name = q_data["n"]
+
+    # https://github.com/jech/galene/blob/b40dcd2/galene-api.md
+    # # note the trailing slash: https://github.com/jech/galene/issues/305
+    token_url = urljoin(settings.GALENE_URL, f"/galene-api/v0/.groups/{group_name}/.tokens/")
+
+    username = str(settings.GALENE_ADMIN_USERNAME)
+    password = str(settings.GALENE_ADMIN_PASSWORD)
+    credentials = f"{username}:{password}".encode()
+    encoded_credentials = b64encode(credentials).decode("ascii")
+
+    headers = {
+        "Accept": "application/json",
+        "Authorization": f"Basic {encoded_credentials}",
+    }
+
+    username = request.user.full_name or getattr(request.user, request.user.USERNAME_FIELD)
+
+    # https://github.com/jech/galene/blob/b40dcd2/galene.md#group-moderation
+    if is_moderator_role(request.user.role):
+        permission = "op"
+    # TODO: should we demote the privileges of guests?
+    # elif request.user.role == UserProfile.ROLE_GUEST:
+    #   permission = ""
+    else:
+        permission = "present"
+
+    # The API doesn't (currently) deduce full permissions; it's up to galenectl
+    # (currently) to computes the list before submitting it to the API.
+    # So we must also; without this it's possible to be able to kick people
+    # without being allowed to talk to them.
+    permissions = []
+    if permission == "op":
+        permissions = ["op", "present", "message", "caption", "token"]
+    elif permission == "present":
+        permissions = ["present", "message"]
+
+    # invite link expires in 13 minutes, since it should be used immediately (but network problems might delay)
+    # (to get a new one, the user just clicks the /calls/galene/join link again)
+    expires = (
+        (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=13))
+        .isoformat(timespec="seconds")
+        .replace("+00:00", "Z")
+    )
+
+    payload = {
+        "username": username,
+        "permissions": permissions,
+        "expires": expires,
+    }
+
+    try:
+        response = VideoCallSession().post(token_url, json=payload, headers=headers, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        if e.response is not None:
+            reason = f"HTTP {response.status_code}: {response.text:.200}"
+        else:
+            reason = str(e)
+        reason = f"connection to {token_url}: {reason}"
+        raise JoinVideoCallFailedError("Galène", reason)
+
+    try:
+        # weirdly, the token comes back in the location header instead of
+        # this feels like it will not last
+        token = response.headers["location"]
+        if not token:
+            # treat empty tokens as missing tokens
+            raise KeyError("location")
+    except (AttributeError, KeyError):
+        raise JoinVideoCallFailedError("Galène", "token not provided by API")
+
+    call_url = urljoin(settings.GALENE_URL, f"/group/{group_name}/")
+    return redirect(append_url_query_string(call_url, f"token={token}"))
+
+    # TODO: check if it's possible provide Zulip a credential for an account in e.g. /groups/zulip/
+    # can those creds also talk to the Galene API?

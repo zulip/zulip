@@ -210,6 +210,10 @@ NEXTCLOUD_SERVER = "https://nextcloud.example.com"
 NEXTCLOUD_TALK_USERNAME = "username"
 NEXTCLOUD_TALK_PASSWORD = "password"
 
+GALENE_URL = "https://galene.example.org"
+GALENE_ADMIN_USERNAME = "admin"
+GALENE_ADMIN_PASSWORD = "password"
+
 # By default two factor authentication is disabled in tests.
 # Explicitly set this to True within tests that must have this on.
 TWO_FACTOR_AUTHENTICATION_ENABLED = False

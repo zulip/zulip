@@ -39,6 +39,8 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     "create-constructor-groups-video-call",
     # Would need Nextcloud Talk server configured to test this endpoint.
     "create-nextcloud-talk-video-call",
+    # Would need Galène server configured to test this endpoint.
+    "create-galene-video-call",
 }
 
 

@@ -263,10 +263,12 @@ from zerver.views.users import (
 )
 from zerver.views.video_calls import (
     complete_zoom_user,
+    create_galene_call,
     create_nextcloud_talk_url,
     deauthorize_zoom_user,
     get_bigbluebutton_url,
     join_bigbluebutton,
+    join_galene_call,
     make_constructor_groups_video_call,
     make_zoom_video_call,
     register_zoom_user,
@@ -598,6 +600,8 @@ v1_api_and_json_patterns = [
     rest_path("calls/constructorgroups/create", POST=make_constructor_groups_video_call),
     # Used to generate a Nextcloud Talk video call URL
     rest_path("calls/nextcloud_talk/create", POST=create_nextcloud_talk_url),
+    # Used to generate a Galène video call URL
+    rest_path("calls/galene/create", POST=create_galene_call),
     # export/realm -> zerver.views.realm_export
     rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
     rest_path("export/realm/<int:export_id>", DELETE=delete_realm_export),
@@ -730,6 +734,8 @@ i18n_urls = [
     path("calls/zoom/deauthorize", deauthorize_zoom_user),
     # Used to join a BigBlueButton video call
     path("calls/bigbluebutton/join", join_bigbluebutton),
+    # Used to join a Galène video call
+    path("calls/galene/join", join_galene_call),
     # Integrations documentation
     path(
         "integrations/",
