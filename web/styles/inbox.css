@@ -152,7 +152,10 @@
                 }
 
                 .zulip-icon-chevron-down {
-                    padding: 0.3125em 0.25em; /* 5px 4px at 16px em */
+                    /* We are using very specific vertical padding here
+                     * to avoid the inbox row grid overflow. */
+                    padding: 0.125em 0.25em; /* 4px 2px at 16px em */
+                    vertical-align: top;
                     transform: rotate(180deg);
                 }
             }
