@@ -300,6 +300,13 @@
     width: max-content;
 }
 
+#read_recepients_info_container {
+    padding: 0;
+    margin-top: 4px;
+    min-height: min-content;
+}
+
+.read-receipt-container,
 .popover-group-menu-info {
     display: flex;
     flex-direction: column;
@@ -318,6 +325,10 @@
     line-height: 1.1111em;
     color: var(--color-text-full-name);
     overflow-wrap: anywhere;
+}
+
+.popover-group-menu-name-container .popover-group-menu-name {
+    padding-top: 5px;
 }
 
 .popover-group-menu-description {
@@ -1063,12 +1074,27 @@ ul.popover-group-menu-member-list {
     }
 }
 
+#read-receipts-popover,
 #message-actions-menu-dropdown {
     /* 350px at 15px/1em */
     --popover-menu-max-width: 23.3333em;
 
     .simplebar-content {
         min-width: var(--message-actions-popover-min-width);
+    }
+}
+
+#read-receipts-popover {
+    max-height: var(--read-receipts-popover-max-height);
+
+    .simplebar-content {
+        min-width: var(--read-receipts-popover-min-width);
+    }
+
+    .popover-menu-label {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
 }
 
@@ -1248,6 +1274,16 @@ ul.popover-menu-list {
     li.popover-menu-separator {
         margin: 4px 0;
         border-bottom: solid 1px var(--color-border-popover-menu-separator);
+    }
+}
+
+.read_receipts_list {
+    .popover-menu-list {
+        padding-top: 0;
+
+        .popover-menu-list-item .popover-menu-link {
+            padding-left: 0;
+        }
     }
 }
 
