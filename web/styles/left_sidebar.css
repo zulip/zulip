@@ -2194,16 +2194,17 @@ ul.topic-list:has(.show-more-topics)::after {
     width: 18px;
 }
 
-#stream_filters
-    .narrow-filter
+#stream_filters .narrow-filter,
+#more-topics-modal {
     .topic-list
-    .bottom_left_row:has(
-        a.sidebar-topic-action-heading:focus-visible,
-        a.zoomed-new-topic:focus-visible
-    ) {
-    outline: 2px solid var(--color-outline-focus);
-    outline-offset: -2px;
-    background-color: var(--color-background-hover-narrow-filter);
+        .bottom_left_row:has(
+            a.sidebar-topic-action-heading:focus-visible,
+            a.zoomed-new-topic:focus-visible
+        ) {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+        background-color: var(--color-background-hover-narrow-filter);
+    }
 }
 
 /* The grouping border should not be shown

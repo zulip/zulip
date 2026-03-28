@@ -2,11 +2,50 @@ import $ from "jquery";
 
 let start_x = 0;
 let start_y = 0;
+let last_mousedown_target: EventTarget | undefined;
+let last_mousedown_time = Number.NEGATIVE_INFINITY;
+
+// A real click can start on a child element and be handled on a parent link,
+// so treat parent/child targets as the same click target.
+function targets_match(click_target: unknown, mousedown_target: EventTarget | undefined): boolean {
+    if (click_target === undefined || mousedown_target === undefined) {
+        return false;
+    }
+
+    if (click_target === mousedown_target) {
+        return true;
+    }
+
+    if (click_target instanceof Node && mousedown_target instanceof Node) {
+        return click_target.contains(mousedown_target) || mousedown_target.contains(click_target);
+    }
+
+    return false;
+}
+
+// Pressing Enter on a focused link can create a trusted click without any
+// mouse press on that link. We only want to run is_drag on real mouse clicks,
+// so we check whether the click happened after a recent mousedown.
+function click_is_from_recent_mousedown(e: JQuery.ClickEvent): boolean {
+    if (!targets_match(e.target, last_mousedown_target)) {
+        return false;
+    }
+
+    if (typeof e.timeStamp !== "number" || Number.isNaN(e.timeStamp)) {
+        return true;
+    }
+
+    // Ignore stale mouse presses (>500ms) so an older click elsewhere on
+    // the page does not affect a later keyboard-triggered click.
+    return e.timeStamp - last_mousedown_time <= 500;
+}
 
 export function initialize(): void {
     $(document).on("mousedown", (e) => {
         start_x = e.pageX;
         start_y = e.pageY;
+        last_mousedown_target = e.target;
+        last_mousedown_time = e.timeStamp;
     });
 }
 
@@ -29,6 +68,10 @@ export function is_drag(e: JQuery.ClickEvent): boolean {
     // We want to ignore programmatically triggered events as much as possible
     // to avoid them being misclassified as drags.
     if (!e.originalEvent?.isTrusted) {
+        return false;
+    }
+
+    if (!click_is_from_recent_mousedown(e)) {
         return false;
     }
 
