@@ -116,7 +116,7 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             const settings_sub = stream_settings_data.get_sub_for_settings(sub);
             stream_ui_updates.update_add_subscriptions_elements(settings_sub);
         }
-        if (property === "can_resolve_topics_group") {
+        if (property === "can_resolve_topics_group" || property === "can_send_message_group") {
             // Technically we just need to rerender the message recipient
             // bars to update the buttons for editing or resolving a topic,
             // but because these policies are changed rarely, it's fine to

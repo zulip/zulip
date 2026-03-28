@@ -1,0 +1,15 @@
+<div
+  class="main-view-banner {{banner_type}} {{classname}}">
+    <div class="main-view-banner-elements-wrapper">
+        <div class="banner_content">{{t "Explain why you're resolving this topic."}}</div>
+        {{#unless is_required}}
+        <button
+          class="main-view-banner-action-button tippy-zulip-delayed-tooltip"
+          data-action="resolve-without-message"
+          data-tippy-content="{{t 'Resolve topic without adding a message'}}">{{t "Resolve without a message"}}</button>
+        {{/unless}}
+        <button
+          class="main-view-banner-action-button resolution-banner-cancel"
+          data-action="cancel-resolution">{{t "Cancel"}}</button>
+    </div>
+</div>

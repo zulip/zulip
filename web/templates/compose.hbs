@@ -82,6 +82,15 @@
                                 </div>
                             </div>
                         </div>
+                        {{!-- Overlay sibling that hosts the lock tooltip when
+                        the recipient row is `inert` for topic resolution.
+                        Hidden by default; topic_resolution_compose toggles it. --}}
+                        <div id="topic-resolution-recipient-tooltip"
+                          class="tippy-zulip-delayed-tooltip"
+                          data-tippy-content="{{t 'Channel and topic are locked while you\'re resolving this topic.' }}"
+                          data-tippy-placement="top"
+                          hidden>
+                        </div>
                     </div>
                     <div class="messagebox">
                         <div id="message-content-container" class="surround-formatting-buttons-row">

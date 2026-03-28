@@ -672,6 +672,9 @@
     /* Align to compose controls; that's 112px width,
        plus 4px of grid gap for 116px here. */
     margin-right: calc(var(--compose-send-controls-width) + 4px);
+    /* Containing block for the absolutely-positioned
+       #topic-resolution-recipient-tooltip overlay. */
+    position: relative;
 }
 
 #compose_close {
@@ -1028,6 +1031,12 @@
 
     .secondary-button {
         margin-left: 10px;
+    }
+
+    /* Extra margins for resolution banner cancel button */
+    .resolution-banner-cancel {
+        margin-left: 8px;
+        margin-right: 10px;
     }
 }
 
@@ -1569,6 +1578,24 @@ textarea.new_message_textarea {
     .unread_count {
         margin: 1px 0 0 6px;
     }
+}
+
+/* When locked in topic resolution mode, the entire recipient row is
+   non-interactive due to the `inert` attribute; we set the cursor
+   explicitly to keep visual feedback consistent. */
+#compose-recipient[inert],
+#compose-recipient[inert] * {
+    cursor: default;
+}
+
+/* Tooltip overlay covering the inert #compose-recipient in resolution
+   mode. The overlay catches hover (and absorbs stray clicks); `inert`
+   on the recipient subtree would otherwise block tippy from firing.
+   Sized to #compose_top, which is filled by #compose-recipient (its
+   only flex child). */
+#topic-resolution-recipient-tooltip {
+    position: absolute;
+    inset: 0;
 }
 
 #compose-recipient {

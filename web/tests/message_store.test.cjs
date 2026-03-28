@@ -411,6 +411,39 @@ test("update_property", () => {
     assert.equal(message2.display_recipient, denmark.name);
 });
 
+test("get_stream_id_for_message", () => {
+    const stream_message = message_helper.process_new_message({
+        type: "local_message",
+        raw_message: {
+            type: "stream",
+            sender_full_name: alice.full_name,
+            sender_id: alice.user_id,
+            stream_id: devel.stream_id,
+            topic: "test",
+            display_recipient: devel.name,
+            id: 200,
+            reactions: [],
+            avatar_url: `/avatar/${alice.user_id}`,
+        },
+    }).message;
+    const private_message = message_helper.process_new_message({
+        type: "local_message",
+        raw_message: {
+            type: "private",
+            sender_full_name: alice.full_name,
+            sender_id: alice.user_id,
+            display_recipient: convert_recipients([me, alice]),
+            id: 201,
+            reactions: [],
+            avatar_url: `/avatar/${alice.user_id}`,
+        },
+    }).message;
+
+    assert.equal(message_store.get_stream_id_for_message(stream_message.id), devel.stream_id);
+    assert.equal(message_store.get_stream_id_for_message(private_message.id), undefined);
+    assert.equal(message_store.get_stream_id_for_message(999_999), undefined);
+});
+
 test("remove", () => {
     const message1 = {
         type: "stream",

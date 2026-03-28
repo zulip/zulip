@@ -262,6 +262,14 @@ export function get(message_id: number): Message | undefined {
     return stored_messages.get(message_id)?.message;
 }
 
+export function get_stream_id_for_message(message_id: number): number | undefined {
+    const message = get(message_id);
+    if (message?.type === "stream") {
+        return message.stream_id;
+    }
+    return undefined;
+}
+
 export function set_messages_for_tests(messages: ProcessedMessage[]): void {
     stored_messages.clear();
     for (const message of messages) {
