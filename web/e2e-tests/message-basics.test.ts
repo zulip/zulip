@@ -301,7 +301,13 @@ async function arrow(page: Page, direction: "Up" | "Down"): Promise<void> {
 }
 
 async function test_search_venice(page: Page): Promise<void> {
-    await common.clear_and_type(page, ".left-sidebar-search-input", "vEnI"); // Must be case insensitive.
+    // Clear and type into contenteditable search input.
+    await page.click(".left-sidebar-search-input");
+    await page.evaluate(() => {
+        const el = document.querySelector<HTMLElement>(".left-sidebar-search-input")!;
+        el.textContent = "";
+    });
+    await page.type(".left-sidebar-search-input", "vEnI"); // Must be case insensitive.
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {hidden: true});
     await page.waitForSelector(await get_stream_li(page, "Verona"), {hidden: true});
     await arrow(page, "Down");
@@ -310,7 +316,11 @@ async function test_search_venice(page: Page): Promise<void> {
     });
 
     // Clearing list gives back all the streams in the list
-    await common.clear_and_type(page, ".left-sidebar-search-input", "");
+    await page.evaluate(() => {
+        const el = document.querySelector<HTMLElement>(".left-sidebar-search-input")!;
+        el.textContent = "";
+        el.dispatchEvent(new Event("input", {bubbles: true}));
+    });
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {visible: true});
     await page.waitForSelector(await get_stream_li(page, "Venice"), {visible: true});
     await page.waitForSelector(await get_stream_li(page, "Verona"), {visible: true});
@@ -371,7 +381,11 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     });
     await test_search_venice(page);
 
-    // Search for beginning of "Verona".
+    // Search for beginning of "Verona" using contenteditable input.
+    await page.evaluate(() => {
+        const el = document.querySelector<HTMLElement>(".left-sidebar-search-input")!;
+        el.textContent = "";
+    });
     await page.type(".left-sidebar-search-input", "ver");
     await page.waitForSelector(await get_stream_li(page, "core team"), {hidden: true});
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {hidden: true});
@@ -379,7 +393,7 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     await page.click(await get_stream_li(page, "Verona"));
     await expect_verona_stream_top_topic(page);
     assert.strictEqual(
-        await common.get_text_from_selector(page, ".left-sidebar-search-input"),
+        (await common.get_text_from_selector(page, ".left-sidebar-search-input")).trim(),
         "",
         "Clicking on stream didn't clear search",
     );

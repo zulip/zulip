@@ -1634,8 +1634,8 @@ export function searching(): boolean {
 
 export function clear_search(): void {
     const $filter = $(".left-sidebar-search-input").expectOne();
-    if ($filter.val() !== "") {
-        $filter.val("");
+    if ($filter.text() !== "") {
+        $filter.text("");
         $filter.trigger("input");
     }
     $filter.trigger("blur");

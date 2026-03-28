@@ -407,6 +407,21 @@
         display: none;
     }
 
+    /* Keep the left sidebar filter pill input on a single line,
+       and show an ellipsis when the input loses focus. */
+    #left-sidebar-filter-input {
+        flex-wrap: nowrap;
+
+        .pill {
+            flex-shrink: 0;
+        }
+
+        .input {
+            white-space: nowrap;
+            overflow: hidden;
+        }
+    }
+
     .channel-folders-sidebar-menu-icon {
         grid-area: channel-folders-option;
         display: grid;
