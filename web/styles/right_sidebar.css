@@ -201,12 +201,24 @@
             background-color: var(--color-background);
             /* A 1.5px border provides better results than
                a 1px border, especially at smaller font sizes. */
-            border: 1.5px solid var(--color-background);
+            /* border: 1.5px solid var(--color-background); */
+            padding: 1.5px;
             border-radius: 50%;
 
             &.user-circle-offline {
                 display: none;
             }
+        }
+
+        .user-circle-idle {
+            background: var(--color-background-dropdown-widget);
+        }
+
+        .user-circle-idle::before {
+            background: var(--gradient-user-circle-idle);
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            border-radius: 50%;
         }
     }
 
