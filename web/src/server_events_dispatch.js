@@ -962,6 +962,7 @@ export function dispatch_normal_event(event) {
                 "web_left_sidebar_unreads_count_summary",
                 "web_left_sidebar_show_channel_folders",
                 "web_inbox_show_channel_folders",
+                "web_link_previews_enabled",
             ];
 
             const original_home_view = user_settings.web_home_view;
@@ -1000,6 +1001,11 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "high_contrast_mode") {
                 $("body").toggleClass("high-contrast", event.value);
+            }
+            if (event.property === "web_link_previews_enabled") {
+                // TODO: This global CSS toggle may be refactored to integrate
+                // with per-message preview controls in the future.
+                $("body").toggleClass("web-link-previews-disabled", !event.value);
             }
             if (event.property === "demote_inactive_streams") {
                 stream_list_sort.set_filter_out_inactives();

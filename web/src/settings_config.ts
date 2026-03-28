@@ -702,6 +702,7 @@ export const preferences_settings_labels = {
     web_escape_navigates_to_home_view: $t({defaultMessage: "Escape key navigates to home view"}),
     web_font_size_px: $t({defaultMessage: "Message-area font size (px)"}),
     web_line_height_percent: $t({defaultMessage: "Message-area line height (%)"}),
+    web_link_previews_enabled: $t({defaultMessage: "Show link previews"}),
     web_navigate_to_sent_message: $t({
         defaultMessage: "Automatically go to conversation where you sent a message",
     }),
