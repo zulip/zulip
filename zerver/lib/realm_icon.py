@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
 
 from zerver.lib.avatar_hash import gravatar_hash
-from zerver.lib.upload import upload_backend
+from zerver.lib.upload import get_realm_icon_url as get_upload_realm_icon_url
 from zerver.models import Realm
 
 
@@ -12,7 +12,7 @@ def realm_icon_url(realm: Realm) -> str:
 
 def get_realm_icon_url(realm: Realm) -> str:
     if realm.icon_source == "U":
-        return upload_backend.get_realm_icon_url(realm.id, realm.icon_version)
+        return get_upload_realm_icon_url(realm.id, realm.icon_version)
     elif settings.ENABLE_GRAVATAR:
         hash_key = gravatar_hash(realm.string_id)
         return f"https://secure.gravatar.com/avatar/{hash_key}?d=identicon"

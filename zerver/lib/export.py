@@ -2397,7 +2397,7 @@ def export_avatars_from_local(
 
 def export_realm_icons(realm: Realm, local_dir: Path, output_dir: Path) -> None:
     records = []
-    dir_relative_path = zerver.lib.upload.upload_backend.realm_avatar_and_logo_path(realm)
+    dir_relative_path = zerver.lib.upload.realm_avatar_and_logo_path(realm)
     icons_wildcard = os.path.join(local_dir, dir_relative_path, "*")
     for icon_absolute_path in glob.glob(icons_wildcard):
         icon_file_name = os.path.basename(icon_absolute_path)
@@ -3095,7 +3095,7 @@ def export_realm_wrapper(
             return None
 
         print("Uploading export tarball...")
-        public_url = zerver.lib.upload.upload_backend.upload_export_tarball(
+        public_url = zerver.lib.upload.upload_export_tarball(
             export_row.realm, tarball_path, percent_callback=percent_callback
         )
         print(f"\nUploaded to {public_url}")
@@ -3148,7 +3148,7 @@ def get_realm_exports_serialized(realm: Realm) -> list[dict[str, Any]]:
 
         if export.status == RealmExport.SUCCEEDED:
             assert export_path is not None
-            export_url = zerver.lib.upload.upload_backend.get_export_tarball_url(realm, export_path)
+            export_url = zerver.lib.upload.get_export_tarball_url(realm, export_path)
 
         deleted_timestamp = (
             datetime_to_timestamp(export.date_deleted) if export.date_deleted else None
