@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from zerver.lib.mention import MentionData
+from zerver.lib.topic import messages_for_topic
 from zerver.lib.user_groups import get_user_group_member_ids
 from zerver.models import NamedUserGroup, UserProfile, UserTopic
 from zerver.models.scheduled_jobs import NotificationTriggers
@@ -404,3 +405,9 @@ def get_mentioned_user_group(
             smallest_mentioned_user_group = current_mentioned_user_group
 
     return smallest_mentioned_user_group
+
+
+def get_topic_participant_count(realm_id: int, stream_id: int, topic_name: str) -> int:
+    return (
+        messages_for_topic(realm_id, stream_id, topic_name).values("sender_id").distinct().count()
+    )

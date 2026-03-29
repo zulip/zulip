@@ -406,15 +406,17 @@ def soft_reactivate_if_personal_notification(
     user_profile: UserProfile,
     unique_triggers: set[str],
     mentioned_user_group_members_count: int | None,
+    topic_participant_count: int | None = None,
 ) -> None:
     """When we're about to send an email/push notification to a
     long_term_idle user, it's very likely that the user will try to
     return to Zulip. As a result, it makes sense to optimistically
     soft-reactivate that user, to give them a good return experience.
 
-    It's important that we do nothing for stream wildcard or large
+    It's important that we do nothing for stream wildcard, large
     group mentions (size > 'settings.MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION'),
-    because soft-reactivating an entire realm or a large group would be
+    or large topic mentions (size > 'settings.MAX_TOPIC_SIZE_FOR_MENTION_REACTIVATION')
+    because soft-reactivating an entire realm or a large group/topic would be
     very expensive. The caller is responsible for passing a
     mentioned_user_group_members_count that is None for messages that
     contain both a personal mention and a group mention.
@@ -439,11 +441,20 @@ def soft_reactivate_if_personal_notification(
             NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
         ]
     )
+
+    small_topic_mention = False
+    if (
+        topic_wildcard_mention
+        and topic_participant_count is not None
+        and topic_participant_count <= settings.MAX_TOPIC_SIZE_FOR_MENTION_REACTIVATION
+    ):
+        small_topic_mention = True
+
     if (
         not direct_message
         and not personal_mention
         and not small_group_mention
-        and not topic_wildcard_mention
+        and not small_topic_mention
     ):
         return
 

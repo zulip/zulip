@@ -47,7 +47,7 @@ from zerver.lib.message import (
     access_message_and_usermessage,
     direct_message_group_users,
 )
-from zerver.lib.notification_data import get_mentioned_user_group
+from zerver.lib.notification_data import get_mentioned_user_group, get_topic_participant_count
 from zerver.lib.remote_server import (
     PushNotificationBouncerError,
     PushNotificationBouncerRetryLaterError,
@@ -1817,9 +1817,20 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         mentioned_user_group_name = mentioned_user_group.name
         mentioned_user_group_members_count = mentioned_user_group.members_count
 
+    topic_participant_count = None
+    if message.is_channel_message and trigger in [
+        NotificationTriggers.TOPIC_WILDCARD_MENTION,
+        NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+        NotificationTriggers.STREAM_WILDCARD_MENTION,
+        NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+    ]:
+        topic_participant_count = get_topic_participant_count(
+            message.realm_id, message.recipient_id, message.topic_name()
+        )
+
     # Soft reactivate if pushing to a long_term_idle user that is personally mentioned
     soft_reactivate_if_personal_notification(
-        user_profile, {trigger}, mentioned_user_group_members_count
+        user_profile, {trigger}, mentioned_user_group_members_count, topic_participant_count
     )
 
     if message.is_channel_message:
