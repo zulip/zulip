@@ -659,7 +659,10 @@ class TestDigestEmailMessages(ZulipTestCase):
         ).update(event_time=subscription_created_date)
 
         # No 'hot_conversations'
-        with mock.patch("zerver.lib.digest.send_future_email") as mock_send_future_email:
+        with (
+            mock.patch("zerver.lib.digest.enough_traffic", return_value=True),
+            mock.patch("zerver.lib.digest.send_future_email") as mock_send_future_email,
+        ):
             bulk_handle_digest_email([aaron.id], cutoff_date.timestamp())
         self.assertEqual(mock_send_future_email.call_count, 1)
         kwargs = mock_send_future_email.call_args[1]
