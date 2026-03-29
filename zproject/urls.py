@@ -69,6 +69,7 @@ from zerver.views.invite import (
     revoke_multiuse_invite,
     revoke_user_invite,
 )
+from zerver.views.llms_txt import llms_txt
 from zerver.views.message_edit import (
     delete_message_backend,
     get_message_edit_history,
@@ -834,6 +835,12 @@ urls += [
 # We use this endpoint to just log these reports.
 urls += [
     path("report/csp_violations", report_csp_violations),
+]
+
+# This URL provides machine-readable API discovery information for LLMs,
+# following the llms.txt specification (https://llmstxt.org/).
+urls += [
+    path("llms.txt", llms_txt),
 ]
 
 # Incoming webhook URLs
