@@ -12,6 +12,15 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 APPVEYOR_TOPIC_TEMPLATE = "{project_name}"
+
+APPVEYOR_STATUS_EMOJI_MAP: dict[str, str] = {
+    "success": ":check:",
+    "completed": ":check:",
+    "failed": ":cross_mark:",
+    "cancelled": ":no_entry:",
+    "error": ":cross_mark:",
+}
+
 APPVEYOR_MESSAGE_TEMPLATE = """
 [Build {project_name} {build_version} {status}]({build_url}):
 * **Commit**: [{commit_id}: {commit_message}]({commit_url}) by {committer_name}
@@ -65,5 +74,8 @@ def get_body(payload: WildValue) -> str:
         to_snake(field): get_global_time(value) if field in ["started", "finished"] else value
         for field, value in ((field, event_data[field].tame(check_string)) for field in fields)
     }
-
-    return APPVEYOR_MESSAGE_TEMPLATE.format(**data)
+    message = APPVEYOR_MESSAGE_TEMPLATE.format(**data)
+    emoji = APPVEYOR_STATUS_EMOJI_MAP.get(data["status"], "")
+    if emoji:
+        return f"{emoji} {message}"
+    return message
