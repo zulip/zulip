@@ -221,7 +221,31 @@ export class MessageListData {
 
     valid_non_duplicated_messages(messages: Message[]): Message[] {
         const predicate = this._get_predicate();
-        return messages.filter((msg) => this.get(msg.id) === undefined && predicate(msg));
+        const seen_message_ids = new Set<number>();
+        const non_duplicated_messages: Message[] = [];
+
+        for (const msg of messages) {
+            if (seen_message_ids.has(msg.id)) {
+                continue;
+            }
+            seen_message_ids.add(msg.id);
+
+            const existing_message = this.get(msg.id);
+            if (existing_message !== undefined) {
+                // If a pending local message and server-confirmed message share an ID,
+                // update the existing message object in place instead of inserting a duplicate.
+                if (existing_message.locally_echoed && !msg.locally_echoed) {
+                    Object.assign(existing_message, msg);
+                }
+                continue;
+            }
+
+            if (predicate(msg)) {
+                non_duplicated_messages.push(msg);
+            }
+        }
+
+        return non_duplicated_messages;
     }
 
     messages_filtered_for_topic_mutes(messages: Message[]): Message[] {

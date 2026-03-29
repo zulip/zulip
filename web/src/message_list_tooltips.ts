@@ -33,6 +33,21 @@ type Config = {
 
 // We need to store all message list instances together to destroy them in case of re-rendering.
 const message_list_tippy_instances = new Set<tippy.Instance>();
+const media_image_tooltip_cleanup_callbacks = new WeakMap<tippy.Instance, () => void>();
+let active_media_image_tooltip_instance: tippy.Instance | undefined;
+
+document.addEventListener(
+    "scroll",
+    () => {
+        if (active_media_image_tooltip_instance !== undefined) {
+            popover_menus.hide_current_popover_if_visible(active_media_image_tooltip_instance);
+        }
+    },
+    {
+        capture: true,
+        passive: true,
+    },
+);
 
 // This keeps track of all the instances created and destroyed.
 const store_message_list_instances_plugin = {
@@ -379,8 +394,18 @@ export function initialize(): void {
                 $(instance.reference).parent().attr("aria-label") ??
                 $(instance.reference).parent().attr("href");
             instance.setContent(parse_html(render_message_media_preview_tooltip({title})));
+
+            media_image_tooltip_cleanup_callbacks.get(instance)?.();
+            media_image_tooltip_cleanup_callbacks.set(instance, () => {
+                if (active_media_image_tooltip_instance === instance) {
+                    active_media_image_tooltip_instance = undefined;
+                }
+            });
+            active_media_image_tooltip_instance = instance;
         },
         onHidden(instance) {
+            media_image_tooltip_cleanup_callbacks.get(instance)?.();
+            media_image_tooltip_cleanup_callbacks.delete(instance);
             instance.destroy();
         },
     });
