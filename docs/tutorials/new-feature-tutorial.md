@@ -700,7 +700,7 @@ A great next step is to write frontend tests. There are two types of
 frontend tests: [node-based unit tests](../testing/testing-with-node.md) and
 [Puppeteer end-to-end tests](../testing/testing-with-puppeteer.md).
 
-At the minimum, you'll want to update `web/tests/lib/example_realm.cjs`
+At the minimum, you'll want to update `web/tests/lib/example_realm.cts`
 for the new realm setting that you've added.
 
 Beyond that, you should add any applicable tests that verify the

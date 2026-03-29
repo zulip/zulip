@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const {addDays} = require("date-fns");
 
-const {make_realm} = require("./lib/example_realm.cjs");
+const {make_realm} = require("./lib/example_realm.cts");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
