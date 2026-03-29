@@ -273,9 +273,17 @@ test("start", ({override, override_rewire, mock_template}) => {
     assert.equal(compose_state.topic(), "");
     stream_data.clear_subscriptions();
 
-    const user1 = make_user();
+    const user1 = make_user({
+        user_id: 1,
+        email: "user1@example.com",
+        full_name: "User 1",
+    });
     people._add_user(user1);
-    const me = make_user();
+    const me = make_user({
+        user_id: 2,
+        email: "me@example.com",
+        full_name: "Me User",
+    });
     set_current_user(me);
 
     // Start direct message
