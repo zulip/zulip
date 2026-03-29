@@ -479,6 +479,17 @@ class DecoratorLoggingTestCase(ZulipTestCase):
             result, "Invalid authorization header for basic auth", status_code=401
         )
 
+        # For coverage
+        result = self.client_post("/api/v1/remotes/push/register", {})
+        self.assert_json_error(
+            result, "Missing authorization header for basic auth", status_code=401
+        )
+
+        result = self.client_post(
+            "/api/v1/remotes/push/register", {}, HTTP_AUTHORIZATION="bearer token"
+        )
+        self.assert_json_error(result, "This endpoint requires HTTP basic authentication.")
+
         result = self.client_post("/api/v1/external/zendesk", {})
         self.assert_json_error(result, "Missing authorization header", status_code=401)
 

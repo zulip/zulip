@@ -778,6 +778,20 @@ def validate_oauth_key(request: HttpRequest) -> UserProfile:
     return user_profile
 
 
+def check_and_get_authentication_scheme(request: HttpRequest) -> str:
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header == "":
+        raise UnauthorizedError(_("Missing authorization header"))
+    supported_schemes_match = re.match(r"(bearer|basic) +(\S+)", auth_header.strip(), re.IGNORECASE)
+
+    if supported_schemes_match is None:
+        raise JsonableError(
+            _("This endpoint requires HTTP basic authentication or bearer token authentication.")
+        )
+
+    return supported_schemes_match.group(1).lower()
+
+
 # A more REST-y authentication decorator, using, in particular, HTTP basic
 # and bearer authentication.
 #
@@ -804,21 +818,7 @@ def authenticated_rest_api_view(
         def _wrapped_func_arguments(
             request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
         ) -> HttpResponse:
-            auth_header = request.headers.get("Authorization", "")
-            if auth_header == "":
-                raise UnauthorizedError(_("Missing authorization header"))
-            supported_schemes_match = re.match(
-                r"(bearer|basic) +(\S+)", auth_header.strip(), re.IGNORECASE
-            )
-
-            if supported_schemes_match is None:
-                raise JsonableError(
-                    _(
-                        "This endpoint requires HTTP basic authentication or bearer token authentication."
-                    )
-                )
-
-            auth_scheme = supported_schemes_match.group(1).lower()
+            auth_scheme = check_and_get_authentication_scheme(request)
             if auth_scheme == "bearer":
                 try:
                     user_profile = validate_oauth_key(request)
