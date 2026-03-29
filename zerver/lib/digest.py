@@ -3,6 +3,7 @@ import heapq
 import logging
 from collections import defaultdict
 from collections.abc import Collection, Iterator
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Any, TypeAlias
 
@@ -48,6 +49,13 @@ MAX_HOT_TOPICS_TO_BE_INCLUDED_IN_DIGEST = 4
 TopicKey: TypeAlias = tuple[int, str]
 
 
+@dataclass
+class DigestTeaserData:
+    participants: list[str]
+    count: int
+    first_few_messages: dict[str, Any]
+
+
 class DigestTopic:
     def __init__(self, topic_key: TopicKey) -> None:
         self.topic_key = topic_key
@@ -73,18 +81,18 @@ class DigestTopic:
     def diversity(self) -> int:
         return len(self.human_senders)
 
-    def teaser_data(self, user: UserProfile, stream_id_map: dict[int, Stream]) -> dict[str, Any]:
+    def teaser_data(self, user: UserProfile, stream_id_map: dict[int, Stream]) -> DigestTeaserData:
         teaser_count = self.num_human_messages - len(self.sample_messages)
         first_few_messages = build_message_list(
             user=user,
             messages=self.sample_messages,
             stream_id_map=stream_id_map,
         )
-        return {
-            "participants": sorted(self.human_senders),
-            "count": teaser_count,
-            "first_few_messages": first_few_messages,
-        }
+        return DigestTeaserData(
+            participants=sorted(self.human_senders),
+            count=teaser_count,
+            first_few_messages=first_few_messages,
+        )
 
 
 # Digests accumulate 2 types of interesting traffic for a user:

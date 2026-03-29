@@ -75,9 +75,9 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         expected_participants = {self.example_user(sender).full_name for sender in senders}
 
-        self.assertEqual(set(hot_convo["participants"]), expected_participants)
-        self.assertEqual(hot_convo["count"], 5 - 2)  # 5 messages, but 2 shown
-        teaser_messages = hot_convo["first_few_messages"]["senders"]
+        self.assertEqual(set(hot_convo.participants), expected_participants)
+        self.assertEqual(hot_convo.count, 5 - 2)  # 5 messages, but 2 shown
+        teaser_messages = hot_convo.first_few_messages["senders"]
         self.assertIn("some content", teaser_messages[0]["content"][0]["plain"])
         self.assertIn(teaser_messages[0]["sender"], expected_participants)
 
@@ -276,9 +276,9 @@ class TestDigestEmailMessages(ZulipTestCase):
             hot_convo = hot_conversations[0]
             expected_participants = {self.example_user(sender).full_name for sender in senders}
 
-            self.assertEqual(set(hot_convo["participants"]), expected_participants)
-            self.assertEqual(hot_convo["count"], 5 - 2)  # 5 messages, but 2 shown
-            teaser_messages = hot_convo["first_few_messages"]["senders"]
+            self.assertEqual(set(hot_convo.participants), expected_participants)
+            self.assertEqual(hot_convo.count, 5 - 2)  # 5 messages, but 2 shown
+            teaser_messages = hot_convo.first_few_messages["senders"]
             self.assertIn("some content", teaser_messages[0]["content"][0]["plain"])
             self.assertIn(teaser_messages[0]["sender"], expected_participants)
 
@@ -711,11 +711,11 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         hot_convo = kwargs["context"]["hot_conversations"][0]
         # Verify the header HTML contains the general chat
-        header_html = hot_convo["first_few_messages"]["header"]["html"]
+        header_html = hot_convo.first_few_messages["header"]["html"]
         self.assertIn("<span class='empty-topic-display'>general chat</span>", header_html)
 
         # Verify the Plain header contains the general chat
-        header_plain = hot_convo["first_few_messages"]["header"]["plain"]
+        header_plain = hot_convo.first_few_messages["header"]["plain"]
         self.assertIn("general chat", header_plain)
 
 
