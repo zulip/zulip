@@ -6,7 +6,7 @@ const {
     forward_channel_message_template,
     quote_message_template,
 } = require("./lib/compose_helpers.cjs");
-const {make_realm} = require("./lib/example_realm.cjs");
+const {make_realm} = require("./lib/example_realm.cts");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {$t} = require("./lib/i18n.cjs");
