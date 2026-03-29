@@ -1024,6 +1024,7 @@ PLUGIN_INTEGRATIONS: list[Integration] = [
         ["continuous-integration"],
         [FixturelessScreenshotConfigOptions(image_name="004.png")],
     ),
+    Integration("n8n", ["meta-integration"]),
     Integration("nextcloud", ["productivity"]),
     Integration("onyx", ["productivity"], logo="images/integrations/logos/onyx.png"),
 ]
@@ -1162,7 +1163,7 @@ INTEGRATIONS_MISSING_SCREENSHOT_CONFIG = (
 # Add integrations that are not meant to have example screenshots here
 INTEGRATIONS_WITHOUT_SCREENSHOTS = (
     # Integration frameworks
-    {"ifttt", "slack_incoming", "zapier"}
+    {"ifttt", "slack_incoming", "zapier", "n8n"}
     # Outgoing integrations
     | {"email", "onyx"}
     # Video call integrations
