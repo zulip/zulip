@@ -965,7 +965,9 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             mock_send_android.assert_called_with(user_identity, android_devices, {"gcm": True}, {})
             mock_push_notifications.assert_called_once()
 
-    @override_settings(MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION=2)
+    @override_settings(
+        MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION=2, MAX_TOPIC_SIZE_FOR_MENTION_REACTIVATION=2
+    )
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
     def test_user_push_soft_reactivate_soft_deactivated_user(
         self, mock_push_notifications: mock.MagicMock
@@ -1117,6 +1119,48 @@ class HandlePushNotificationTest(PushNotificationTestCase):
 
         self.soft_deactivate_main_user()
         self.expect_to_stay_long_term_idle(self.user_profile, send_large_group_mention)
+
+        self.subscribe(cordelia, "Denmark")
+        self.subscribe(self.user_profile, "Denmark")
+
+        self.send_stream_message(othello, "Denmark", "msg", topic_name="large_topic")
+        self.send_stream_message(cordelia, "Denmark", "msg", topic_name="large_topic")
+        self.send_stream_message(self.user_profile, "Denmark", "msg", topic_name="large_topic")
+
+        self.send_stream_message(othello, "Denmark", "msg", topic_name="small_topic")
+        self.send_stream_message(self.user_profile, "Denmark", "msg", topic_name="small_topic")
+
+        def send_small_topic_mention() -> None:
+            mention = "@**topic**"
+            stream_mentioned_message_id = self.send_stream_message(
+                othello, "Denmark", mention, topic_name="small_topic"
+            )
+            handle_push_notification(
+                self.user_profile.id,
+                {
+                    "message_id": stream_mentioned_message_id,
+                    "trigger": NotificationTriggers.TOPIC_WILDCARD_MENTION,
+                },
+            )
+
+        self.soft_deactivate_main_user()
+        self.expect_soft_reactivation(self.user_profile, send_small_topic_mention)
+
+        def send_large_topic_mention() -> None:
+            mention = "@**topic**"
+            stream_mentioned_message_id = self.send_stream_message(
+                othello, "Denmark", mention, topic_name="large_topic"
+            )
+            handle_push_notification(
+                self.user_profile.id,
+                {
+                    "message_id": stream_mentioned_message_id,
+                    "trigger": NotificationTriggers.TOPIC_WILDCARD_MENTION,
+                },
+            )
+
+        self.soft_deactivate_main_user()
+        self.expect_to_stay_long_term_idle(self.user_profile, send_large_topic_mention)
 
     @mock.patch("zerver.lib.push_notifications.logger.info")
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)

@@ -30,7 +30,7 @@ from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.message import bulk_access_messages
 from zerver.lib.message_cache import MessageDict
-from zerver.lib.notification_data import get_mentioned_user_group
+from zerver.lib.notification_data import get_mentioned_user_group, get_topic_participant_count
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
@@ -639,9 +639,23 @@ def do_send_missedmessage_events_reply_in_zulip(
             show_message_content=True,
         )
 
+    topic_participant_count = None
+    if message.recipient.type == Recipient.STREAM and any(
+        t in unique_triggers
+        for t in [
+            NotificationTriggers.TOPIC_WILDCARD_MENTION,
+            NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+            NotificationTriggers.STREAM_WILDCARD_MENTION,
+            NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+        ]
+    ):
+        topic_participant_count = get_topic_participant_count(
+            message.realm_id, message.recipient_id, message.topic_name()
+        )
+
     # Soft reactivate the long_term_idle user personally mentioned
     soft_reactivate_if_personal_notification(
-        user_profile, unique_triggers, mentioned_user_group_members_count
+        user_profile, unique_triggers, mentioned_user_group_members_count, topic_participant_count
     )
 
     with override_language(user_profile.default_language):
