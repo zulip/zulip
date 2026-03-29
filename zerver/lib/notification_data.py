@@ -3,9 +3,12 @@ from collections.abc import Collection
 from dataclasses import dataclass
 from typing import Any
 
+from django.conf import settings
+
 from zerver.lib.mention import MentionData
+from zerver.lib.topic import participants_for_topic_count_capped
 from zerver.lib.user_groups import get_user_group_member_ids
-from zerver.models import NamedUserGroup, UserProfile, UserTopic
+from zerver.models import Message, NamedUserGroup, Recipient, UserProfile, UserTopic
 from zerver.models.scheduled_jobs import NotificationTriggers
 
 
@@ -404,3 +407,47 @@ def get_mentioned_user_group(
             smallest_mentioned_user_group = current_mentioned_user_group
 
     return smallest_mentioned_user_group
+
+
+def get_smallest_topic_wildcard_mention_participant_count(
+    missed_messages: list[dict[str, Any]], user_profile: UserProfile
+) -> int | None:
+    topic_wildcard_triggers = {
+        NotificationTriggers.TOPIC_WILDCARD_MENTION,
+        NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+    }
+    relevant = [m for m in missed_messages if m["trigger"] in topic_wildcard_triggers]
+    if not relevant:
+        return None
+
+    message_ids_to_fetch = [m["message_id"] for m in relevant if "message" not in m]
+    fetched: dict[int, Message] = {}
+    if message_ids_to_fetch:
+        fetched = {
+            m.id: m
+            for m in Message.objects.filter(id__in=message_ids_to_fetch).select_related("recipient")
+        }
+
+    unique_topics: set[tuple[int, str]] = set()
+    for m in relevant:
+        message = m.get("message") or fetched.get(m["message_id"])
+        if message is None:
+            continue  # nocoverage
+        if message.recipient.type == Recipient.STREAM:
+            unique_topics.add((message.recipient_id, message.topic_name()))
+
+    if not unique_topics:
+        return None
+
+    cap = settings.MAX_TOPIC_SIZE_FOR_MENTION_REACTIVATION
+    smallest: int | None = None
+    for recipient_id, topic_name in unique_topics:
+        size = participants_for_topic_count_capped(
+            user_profile.realm_id, recipient_id, topic_name, cap=cap
+        )
+        if smallest is None or size < smallest:
+            smallest = size
+        if smallest <= cap:
+            break
+
+    return smallest

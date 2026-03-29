@@ -30,7 +30,10 @@ from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.message import bulk_access_messages
 from zerver.lib.message_cache import MessageDict
-from zerver.lib.notification_data import get_mentioned_user_group
+from zerver.lib.notification_data import (
+    get_mentioned_user_group,
+    get_smallest_topic_wildcard_mention_participant_count,
+)
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
@@ -488,6 +491,10 @@ def do_send_missedmessage_events_reply_in_zulip(
         mentioned_user_group_name = mentioned_user_group.name
         mentioned_user_group_members_count = mentioned_user_group.members_count
 
+    topic_participant_count = get_smallest_topic_wildcard_mention_participant_count(
+        missed_messages, user_profile
+    )
+
     triggers = [message["trigger"] for message in missed_messages]
     unique_triggers = set(triggers)
 
@@ -643,7 +650,7 @@ def do_send_missedmessage_events_reply_in_zulip(
 
     # Soft reactivate the long_term_idle user personally mentioned
     soft_reactivate_if_personal_notification(
-        user_profile, unique_triggers, mentioned_user_group_members_count
+        user_profile, unique_triggers, mentioned_user_group_members_count, topic_participant_count
     )
 
     with override_language(user_profile.default_language):
@@ -704,13 +711,17 @@ def handle_missedmessage_emails(
     # Note: This query structure automatically filters out any
     # messages that were permanently deleted, since those would now be
     # in the ArchivedMessage table, not the Message table.
-    messages = Message.objects.filter(
-        # Uses index: zerver_message_pkey
-        usermessage__user_profile_id=user_profile,
-        id__in=message_ids,
-        usermessage__flags=~UserMessage.flags.read,
-        # Cancel missed-message emails for deleted messages
-    ).exclude(content="(deleted)")
+    messages = (
+        Message.objects.filter(
+            # Uses index: zerver_message_pkey
+            usermessage__user_profile_id=user_profile,
+            id__in=message_ids,
+            usermessage__flags=~UserMessage.flags.read,
+            # Cancel missed-message emails for deleted messages
+        )
+        .exclude(content="(deleted)")
+        .select_related("recipient")
+    )
 
     if not messages:
         return
