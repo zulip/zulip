@@ -779,7 +779,7 @@ def validate_oauth_key(request: HttpRequest) -> UserProfile:
 
 
 # A more REST-y authentication decorator, using, in particular, HTTP basic
-# authentication.
+# and bearer authentication.
 #
 # If webhook_client_name is specific, the request is a webhook view
 # with that string as the basis for the client string.
@@ -805,9 +805,21 @@ def authenticated_rest_api_view(
             request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
         ) -> HttpResponse:
             auth_header = request.headers.get("Authorization", "")
-            # RFC 6750
-            match = re.match(r"bearer +(\S+)", auth_header.strip(), re.IGNORECASE)
-            if match:
+            if auth_header == "":
+                raise UnauthorizedError(_("Missing authorization header"))
+            supported_schemes_match = re.match(
+                r"(bearer|basic) +(\S+)", auth_header.strip(), re.IGNORECASE
+            )
+
+            if supported_schemes_match is None:
+                raise JsonableError(
+                    _(
+                        "This endpoint requires HTTP basic authentication or bearer token authentication."
+                    )
+                )
+
+            auth_scheme = supported_schemes_match.group(1).lower()
+            if auth_scheme == "bearer":
                 try:
                     user_profile = validate_oauth_key(request)
                 except JsonableError as e:

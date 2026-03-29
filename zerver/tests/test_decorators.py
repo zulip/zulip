@@ -468,7 +468,10 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         credentials = f"{user_profile.email}:{api_key}"
         api_auth = "Digest " + base64.b64encode(credentials.encode()).decode()
         result = self.client_post("/api/v1/external/zendesk", {}, HTTP_AUTHORIZATION=api_auth)
-        self.assert_json_error(result, "This endpoint requires HTTP basic authentication.")
+        self.assert_json_error(
+            result,
+            "This endpoint requires HTTP basic authentication or bearer token authentication.",
+        )
 
         api_auth = "Basic " + base64.b64encode(b"foo").decode()
         result = self.client_post("/api/v1/external/zendesk", {}, HTTP_AUTHORIZATION=api_auth)
@@ -477,9 +480,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         )
 
         result = self.client_post("/api/v1/external/zendesk", {})
-        self.assert_json_error(
-            result, "Missing authorization header for basic auth", status_code=401
-        )
+        self.assert_json_error(result, "Missing authorization header", status_code=401)
 
     def test_authenticated_rest_api_view_oauth_bearer_token(self) -> None:
         @authenticated_rest_api_view()
