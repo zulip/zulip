@@ -235,7 +235,9 @@ class MattermostImportTestBase(ZulipTestCase):
             mattermost_channel_id = channel_data["name"]
             imported_channel = Stream.objects.get(realm=imported_realm, name=channel_name)
 
-            self.assertEqual(imported_channel.description, channel_data["purpose"])
+            self.assertEqual(
+                imported_channel.description, channel_data["purpose"] or channel_data["header"]
+            )
             self.assertEqual(imported_channel.invite_only, channel_data["type"] == "P")
 
             expected_subscribers = set(exported_channel_subscriber_dict[mattermost_channel_id])
