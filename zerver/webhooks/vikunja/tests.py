@@ -74,6 +74,21 @@ class VikunjaHookTests(WebhookTestCase):
         expected_message = "John Doe removed the relation of [this task](https://vikunja.example.com/tasks/675) as a related task of [task](https://vikunja.example.com/tasks/689)."
         self.check_webhook("task_relation_deleted", expected_topic_name, expected_message)
 
+    def test_vikunja_task_reminder_fired(self) -> None:
+        expected_topic_name = "Zulip Dev"
+        expected_message = "John Doe, this is a reminder for [Task 1](https://vikunja.example.com/tasks/987) in [Zulip Dev](https://vikunja.example.com/projects/69)."
+        self.check_webhook("task_reminder_fired", expected_topic_name, expected_message)
+
+    def test_vikunja_task_overdue(self) -> None:
+        expected_topic_name = "Zulip Dev"
+        expected_message = "John Doe, the task [Task 2](https://vikunja.example.com/tasks/988) in [Zulip Dev](https://vikunja.example.com/projects/69) is overdue since :alarm_clock: <time:2026-03-30T15:00:00+02:00>."
+        self.check_webhook("task_overdue", expected_topic_name, expected_message)
+
+    def test_vikunja_tasks_overdue(self) -> None:
+        expected_topic_name = ""
+        expected_message = "John Doe, the following tasks are currently marked as overdue:\n- [Task 2](https://vikunja.example.com/tasks/988), due :alarm_clock: <time:2026-03-30T15:00:00+02:00>\n- [Task 2](https://vikunja.example.com/tasks/977), due :alarm_clock: <time:2026-03-27T12:00:00+01:00>\n- [Task 1](https://vikunja.example.com/tasks/296), due :alarm_clock: <time:2024-12-04T11:16:00+01:00>"
+        self.check_webhook("tasks_overdue", expected_topic_name, expected_message)
+
     # Project event tests
     def test_vikunja_project_updated(self) -> None:
         expected_topic_name = "Test"
@@ -98,6 +113,18 @@ class VikunjaHookTests(WebhookTestCase):
         expected_topic_name = "Test"
         expected_message = "John Doe shared [Test](https://vikunja.example.com/projects/35) with team `IT (OIDC)` consisting of `2` member(s)."
         self.check_webhook("project_shared_team", expected_topic_name, expected_message)
+
+    # Event filtering tests
+    def test_vikunja_only_events_filter(self) -> None:
+        self.url = f'{self.build_webhook_url()}&host_url=https://vikunja.example.com&only_events=["task.created"]'
+
+        # Event in only_events list should be processed normally
+        expected_topic_name = "Meeting"
+        expected_message = "John Doe created [A very important task](https://vikunja.example.com/tasks/673) in [Meeting](https://vikunja.example.com/projects/26) > Agenda."
+        self.check_webhook("task_created", expected_topic_name, expected_message)
+
+        # Event not in only_events list should be ignored
+        self.check_webhook("task_deleted", expect_noop=True)
 
     # Edge case tests
     def test_vikunja_task_updated_priority_out_of_range(self) -> None:

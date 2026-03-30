@@ -27,12 +27,16 @@ SUPPORTED_TASK_EVENTS = [
     "task.attachment.deleted",
     "task.relation.created",
     "task.relation.deleted",
+    "task.reminder.fired",
+    "task.overdue",
+    "tasks.overdue",
 ]
 
 IGNORED_TASK_EVENTS: list[str] = [
     "ignored.task.event.placeholder",  # Placeholder for any task events we want to ignore in the future
 ]
 
+# Project level events
 CREATE = "task.created"
 UPDATE = "task.updated"
 DELETE = "task.deleted"
@@ -45,6 +49,11 @@ ADD_ATTACHMENT = "task.attachment.created"
 REMOVE_ATTACHMENT = "task.attachment.deleted"
 ADD_RELATION = "task.relation.created"
 REMOVE_RELATION = "task.relation.deleted"
+
+# User level events
+REMINDER_FIRED = "task.reminder.fired"
+TASK_OVERDUE = "task.overdue"
+TASKS_OVERDUE = "tasks.overdue"
 
 VIKUNJA_TASK_URL_TEMPLATE = "[{task_name}]({task_url})"
 VIKUNJA_PROJECT_URL_TEMPLATE = "[{project_name}]({project_url})"
@@ -62,6 +71,9 @@ EVENTS_TO_MESSAGE_MAPPER = {
     REMOVE_ATTACHMENT: "removed the attachment `{attachment_name}` from {task_color}{task_url_template} in {project_url_template}{task_bucket}.",
     ADD_RELATION: "set {linked_task_url_template} {relation_kind_text} {task_color}{task_url_template}.",
     REMOVE_RELATION: "removed the relation of {linked_task_url_template} {relation_kind_text} {task_color}{task_url_template}.",
+    REMINDER_FIRED: "this is a reminder for {task_color}{task_url_template} in {project_url_template}{task_bucket}.",
+    TASK_OVERDUE: "the task {task_color}{task_url_template} in {project_url_template}{task_bucket} is overdue since :alarm_clock: {task_due_date}.",
+    TASKS_OVERDUE: "the following tasks are currently marked as overdue",
 }
 
 PRIORITY_MAP = {
@@ -130,7 +142,10 @@ def get_project_id(payload: WildValue) -> int:
 
 
 def get_project_name(payload: WildValue) -> str:
-    return get_action_data(payload)["project"]["title"].tame(check_string)
+    project = get_action_data(payload).get("project")
+    if not project:
+        return ""
+    return project["title"].tame(check_string)
 
 
 def get_task_name(payload: WildValue) -> str:
@@ -169,7 +184,7 @@ def get_filled_task_url_template(host: str, payload: WildValue) -> str:
 def get_filled_project_url_template(host: str, payload: WildValue) -> str:
     project_id = get_project_id(payload)
     return VIKUNJA_PROJECT_URL_TEMPLATE.format(
-        project_name=get_project_name(payload),
+        project_name=get_project_name(payload) or "",
         project_url=f"{host}/projects/{project_id}",
     )
 
@@ -303,18 +318,22 @@ def get_relation_body(host: str, payload: WildValue, action_type: str) -> str:
     return fill_appropriate_message_content(host, payload, action_type, data)
 
 
-def get_update_body(host: str, payload: WildValue, action_type: str) -> str:
-    action_data = get_action_data(payload)
-
-    labels = action_data["task"].get("labels", [])
-
+def get_date_data(task: WildValue) -> dict[str, str | None]:
     dates: dict[str, str | None] = {"start_date": None, "end_date": None, "due_date": None}
 
     for date_field in dates:
-        date = action_data["task"].get(date_field).tame(check_none_or(check_string))
+        date = task.get(date_field).tame(check_none_or(check_string))
         if not date or date == "0001-01-01T00:00:00Z":
             continue
         dates[date_field] = date
+
+    return dates
+
+
+def get_update_body(host: str, payload: WildValue, action_type: str) -> str:
+    action_data = get_action_data(payload)
+    labels = action_data["task"].get("labels", [])
+    dates = get_date_data(action_data["task"])
 
     priority = action_data["task"].get("priority", 0).tame(check_none_or(check_int))
     if not priority:
@@ -354,12 +373,58 @@ def get_update_body(host: str, payload: WildValue, action_type: str) -> str:
     return fill_appropriate_message_content(host, payload, action_type, data)
 
 
+def get_task_overdue_body(host: str, payload: WildValue, action_type: str) -> str:
+    action_data = get_action_data(payload)
+
+    dates = get_date_data(action_data["task"])
+    data = {
+        "task_due_date": prettify_date(dates["due_date"]) if dates["due_date"] else "unknown",
+    }
+
+    return fill_appropriate_message_content(host, payload, action_type, data)
+
+
+def get_tasks_overdue_body(host: str, payload: WildValue, action_type: str) -> str:
+    action_data = get_action_data(payload)
+
+    tasks = action_data.get("tasks", [])
+
+    # Order tasks by due date, latest first
+    def get_due_date(task: WildValue) -> datetime:
+        due_date_str = get_date_data(task).get("due_date")
+        return (
+            datetime.fromisoformat(due_date_str)
+            if due_date_str
+            else datetime.max.replace(tzinfo=None)
+        )
+
+    tasks_sorted = sorted(tasks, key=get_due_date, reverse=True)
+
+    tasks_md_list = []
+    for task in tasks_sorted:
+        task_name = task.get("title").tame(check_string)
+        task_url = f"{host}/tasks/{task.get('id').tame(check_int)}"
+        due_date = get_date_data(task).get("due_date")
+        due_date_pretty = prettify_date(due_date) if due_date else "unknown"
+        tasks_md_list.append(f"- [{task_name}]({task_url}), due :alarm_clock: {due_date_pretty}")
+
+    tasks_md = "\n".join(tasks_md_list)
+    return f"{get_message_body(action_type)}:\n{tasks_md}"
+
+
 # Main entry point
 def get_body(host: str, payload: WildValue, event_name: str) -> str:
     message_body = EVENTS_TO_FILL_BODY_MAPPER[event_name](host, payload, event_name)
-    creator = get_action_data(payload)["doer"]
-    creator_name = creator.get("name").tame(check_none_or(check_string)) if creator else "unknown"
-    return f"{creator_name} {message_body}"
+    doer = get_action_data(payload).get("doer")
+
+    if doer:
+        doer_name = doer.get("name").tame(check_string)
+        return f"{doer_name} {message_body}"
+
+    # If there is no doer, we assume it's a user event/automated action (e.g. a reminder firing)
+    user = get_action_data(payload).get("user")
+    user_name = user.get("name").tame(check_string) if user else "unknown"
+    return f"{user_name}, {message_body}"
 
 
 def process_task_action(host: str, payload: WildValue, event_name: str) -> tuple[str, str] | None:
@@ -379,4 +444,7 @@ EVENTS_TO_FILL_BODY_MAPPER = {
     REMOVE_ATTACHMENT: get_attachment_body,
     ADD_RELATION: get_relation_body,
     REMOVE_RELATION: get_relation_body,
+    REMINDER_FIRED: get_body_by_action_type_without_data,
+    TASK_OVERDUE: get_task_overdue_body,
+    TASKS_OVERDUE: get_tasks_overdue_body,
 }

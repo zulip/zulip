@@ -11,8 +11,9 @@ Get Zulip notifications from your Vikunja projects and tasks!
     Make sure to set the **Vikunja Host URL** to your Vikunja instance, so that links to your projects and tasks can be constructed.
     It is usually something like `https://vikunja.example.com`.
 
-2. In Vikunja, choose a project (or parent project) you would like to connect to Zulip.
+2. In Vikunja, for project based events, choose a project (or parent project) you would like to connect to Zulip.
    In the project options dropdown select `Webhooks`.
+   Or, for user based events, go to `Settings > Webhook Notifications`.
 
 3. Set **Target URL** to your earlier generated webhook URL.
    Select all events you would like to receive updates for.
@@ -25,7 +26,9 @@ Get Zulip notifications from your Vikunja projects and tasks!
 ![](/static/images/integrations/vikunja/001.png)
 
 ### Supported Events
-This integration is built for Vikunja 1.1. All task and project events currently provided by Vikunja are supported.
+This integration is built for Vikunja 2.2. All task, project and user events currently provided by Vikunja are supported.
+
+{!event-filtering-additional-feature.md!}
 
 ### Known limitations
 - For most of the possible task interactions Vikunja triggers the `task.updated` event hook. The provided data does not contain information about the difference of values before and after the update. Therefore it is impossible to know what value has actually changed. That includes these attributes: Description, Status, Labels, Priority, Progress, Color, all dates, and the position in buckets.
@@ -40,7 +43,7 @@ Updating any of these will trigger a message containing all these pieces of info
 
 ### Related documentation
 
-- [Vikunja's webhooks documentation](https://vikunja.io/docs/webhooks/)
+- [Vikunja's webhooks documentation](https://vikunja.io/help/webhooks/)
 
 {!webhooks-url-specification.md!}
 
