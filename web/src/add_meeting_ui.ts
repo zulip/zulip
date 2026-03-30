@@ -112,12 +112,14 @@ function rsvp_meeting_modal_post_render(): void {
 
   invite_users_widget.onPillCreate(() => {
     $("#rsvp-invite-users").removeAttr("data-placeholder");
+    update_channel_warning();
   });
 
   invite_users_widget.onPillRemove(() => {
     if (user_pill.get_user_ids(invite_users_widget).length === 0) {
       $("#rsvp-invite-users").attr("data-placeholder", $t({ defaultMessage: "Add users" }));
     }
+    update_channel_warning();
   });
 
   $(document).on("click.rsvp-dropdown", (e) => {
@@ -371,5 +373,31 @@ export function setup_add_meeting_dropdown_widget_if_needed(): void {
   if (!composebox_add_meeting_dropdown_widget) {
     composebox_add_meeting_dropdown_widget = true;
     setup_add_meeting_dropdown_widget(".add-meeting-composebox-widget");
+  }
+}
+
+function update_channel_warning(): void {
+  const stream_id = narrow_state.stream_id();
+  const $warning = $("#rsvp-channel-warning");
+  const $checkbox = $<HTMLInputElement>("#rsvp-create-channel");
+
+  if (!stream_id) {
+    $warning.hide();
+    $checkbox.prop("checked", false).prop("disabled", false);
+    return;
+  }
+
+  const subscriber_ids = new Set(peer_data.get_subscriber_ids_assert_loaded(stream_id));
+  const invited_ids = user_pill.get_user_ids(invite_users_widget);
+  const has_outside_user = invited_ids.some((id) => !subscriber_ids.has(id));
+
+  if (has_outside_user) {
+    $warning.show();
+    $checkbox.prop("checked", true).prop("disabled", true);
+    $checkbox.closest("label").addClass("disabled");
+  } else {
+    $warning.hide();
+    $checkbox.prop("checked", false).prop("disabled", false);
+    $checkbox.closest("label").removeClass("disabled");
   }
 }

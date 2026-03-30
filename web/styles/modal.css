@@ -1435,3 +1435,15 @@ ul.modal-options-list {
 .flatpickr-calendar.open::after {
   display: none !important;
 }
+
+#rsvp-channel-warning {
+    font-style: italic;
+    font-size: 0.85em;
+    color: var(--color-text-light);
+}
+
+label.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
