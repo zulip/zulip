@@ -393,7 +393,7 @@ private_messages[0] = {
     sender_id: sender1,
     to_user_ids: "2,3",
     type: "private",
-    display_recipient: [{id: 1}, {id: 2}, {id: 3}],
+    display_recipient: [{id: 1, email: 'alice@zulip.com'}, {id: 2, email: 'fred@zulip.com'}, {id: 3,email:'spike@zulip.com'}],
     pm_with_url: test_url(),
 };
 private_messages[1] = {
@@ -401,7 +401,7 @@ private_messages[1] = {
     sender_id: sender1,
     to_user_ids: "2,4",
     type: "private",
-    display_recipient: [{id: 1}, {id: 2}, {id: 4}],
+    display_recipient: [{id: 1, email: 'alice@zulip.com'}, {id: 2, email:'fred@zulip.com'}, {id: 4,email: 'eren@zulip.com'}],
     pm_with_url: test_url(),
 };
 private_messages[2] = {
@@ -409,7 +409,7 @@ private_messages[2] = {
     sender_id: sender1,
     to_user_ids: "3",
     type: "private",
-    display_recipient: [{id: 1}, {id: 3}],
+    display_recipient: [{id: 1,email: 'alice@zulip.com'}, {id: 3, email: 'spike@zulip.com' }],
     pm_with_url: test_url(),
 };
 
