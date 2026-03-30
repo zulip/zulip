@@ -28,6 +28,8 @@ def upload_logo(
     [logo_file] = request.FILES.values()
     assert isinstance(logo_file, UploadedFile)
     assert logo_file.size is not None
+    if logo_file.size == 0:
+        raise JsonableError(_("Uploaded file is empty."))
     if logo_file.size > settings.MAX_LOGO_FILE_SIZE_MIB * 1024 * 1024:
         raise JsonableError(
             _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(

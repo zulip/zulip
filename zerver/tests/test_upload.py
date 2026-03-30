@@ -2095,6 +2095,16 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
             )
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
 
+    def test_logo_upload_empty_file_error(self) -> None:
+        self.login("iago")
+        from io import BytesIO
+        empty_file = BytesIO(b"")
+        empty_file.name = "empty.png"
+        result = self.client_post(
+            "/json/realm/logo", {"file": empty_file, "night": orjson.dumps(self.night).decode()}
+        )
+        self.assert_json_error(result, "Uploaded file is empty.")
+
 
 class RealmNightLogoTest(RealmLogoTest):
     # Run the same tests as for RealmLogoTest, just with dark theme enabled
