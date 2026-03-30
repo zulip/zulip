@@ -371,6 +371,53 @@ export async function warn_if_mentioning_unsubscribed_user(
     }
 }
 
+// Called on every compose input event to remove any "recipient not
+// subscribed" banners whose mention is no longer in the compose text.
+// We check for the three mention syntaxes the markdown parser accepts
+// (@**Name**, @**Name|id**, @**|id**) rather than re-parsing markdown
+// on every input event.
+export function maybe_clear_stale_recipient_not_subscribed_warnings(
+    $textarea: JQuery<HTMLTextAreaElement>,
+): void {
+    const $banner_container = compose_banner.get_compose_banner_container($textarea);
+    const $existing_banners = $banner_container.find(
+        `.${CSS.escape(compose_banner.CLASSNAMES.recipient_not_subscribed)}`,
+    );
+    if ($existing_banners.length === 0) {
+        return;
+    }
+
+    const compose_text = $textarea.val() ?? "";
+    for (const banner of $existing_banners) {
+        const user_id = Number($(banner).attr("data-user-id"));
+        if (!user_id) {
+            $(banner).remove();
+            continue;
+        }
+
+        const user = people.maybe_get_user_by_id(user_id, true);
+        if (user === undefined) {
+            $(banner).remove();
+            continue;
+        }
+
+        // get_mention_syntax produces the canonical @**Name** form (or
+        // @**Name|id** for duplicate names), matching what the typeahead
+        // inserts.
+        const mention_syntax = people.get_mention_syntax(user.full_name, user_id, false);
+        const name_and_id_syntax = `@**${user.full_name}|${user_id}**`;
+        const id_only_syntax = `@**|${user_id}**`;
+
+        if (
+            !compose_text.includes(mention_syntax) &&
+            !compose_text.includes(name_and_id_syntax) &&
+            !compose_text.includes(id_only_syntax)
+        ) {
+            $(banner).remove();
+        }
+    }
+}
+
 export async function warn_if_mentioning_unsubscribed_group(
     mentioned_group: UserGroup,
     $textarea: JQuery<HTMLTextAreaElement>,

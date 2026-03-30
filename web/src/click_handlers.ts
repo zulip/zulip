@@ -28,6 +28,7 @@ import * as navigate from "./navigate.ts";
 import {page_params} from "./page_params.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popover_menus from "./popover_menus.ts";
+import * as popover_menus_data from "./popover_menus_data.ts";
 import * as reactions from "./reactions.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as rows from "./rows.ts";
@@ -460,12 +461,6 @@ export function initialize(): void {
         );
     }
 
-    function get_start_of_day(date: Date): Date {
-        const start = new Date(date);
-        start.setHours(0, 0, 0, 0);
-        return start;
-    }
-
     function open_scroll_to_time_popover(trigger_element: HTMLElement, message_id: number): void {
         popover_menus.toggle_popover_menu(trigger_element, {
             theme: "popover-menu",
@@ -482,7 +477,10 @@ export function initialize(): void {
             },
             onShow(instance) {
                 popover_menus.on_show_prep(instance);
-                instance.setContent(parse_html(render_scroll_to_time_popover()));
+                assert(message_lists.current !== undefined);
+                const messages = message_lists.current.all_messages();
+                const suggested_dates = popover_menus_data.get_scroll_to_date_suggestions(messages);
+                instance.setContent(parse_html(render_scroll_to_time_popover({suggested_dates})));
             },
             onMount(instance) {
                 const $popper = $(instance.popper);
@@ -493,28 +491,9 @@ export function initialize(): void {
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
 
-                $popper.on("click", "#scroll_to_last_week", () => {
-                    const week_ago = get_start_of_day(new Date());
-                    week_ago.setDate(week_ago.getDate() - 7);
-                    message_view.fast_track_current_msg_list_to_anchor(
-                        "date",
-                        week_ago.toISOString(),
-                    );
-                    popover_menus.hide_current_popover_if_visible(instance);
-                });
-
-                $popper.on("click", "#scroll_to_yesterday", () => {
-                    const yesterday = get_start_of_day(new Date());
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    message_view.fast_track_current_msg_list_to_anchor(
-                        "date",
-                        yesterday.toISOString(),
-                    );
-                    popover_menus.hide_current_popover_if_visible(instance);
-                });
-
-                $popper.on("click", "#scroll_to_newest", () => {
-                    message_view.fast_track_current_msg_list_to_anchor("newest");
+                $popper.on("click", ".scroll-to-suggested-date", function (this: HTMLElement) {
+                    const iso_date = $(this).attr("data-iso-date")!;
+                    message_view.fast_track_current_msg_list_to_anchor("date", iso_date);
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
 

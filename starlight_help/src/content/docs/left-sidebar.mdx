@@ -10,6 +10,7 @@ import ZulipTip from "../../components/ZulipTip.astro";
 import ComposeAndSendMessage from "../include/_ComposeAndSendMessage.mdx";
 import ConfigureChannelLinks from "../include/_ConfigureChannelLinks.mdx";
 import FilterChannels from "../include/_FilterChannels.mdx";
+import FilterFollowedLeftSidebar from "../include/_FilterFollowedLeftSidebar.mdx";
 import FilterResolvedLeftSidebar from "../include/_FilterResolvedLeftSidebar.mdx";
 import FindDmConversationLeftSidebar from "../include/_FindDmConversationLeftSidebar.mdx";
 import SearchNoteForDmConversations from "../include/_SearchNoteForDmConversations.mdx";
@@ -120,6 +121,14 @@ information you need in the moment.
 ### Filter by whether topics are resolved
 
 <FilterResolvedLeftSidebar />
+
+### Filter by whether topics are followed
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FilterFollowedLeftSidebar />
+  </TabItem>
+</Tabs>
 
 ### Show the left sidebar
 

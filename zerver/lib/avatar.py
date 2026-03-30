@@ -207,7 +207,7 @@ def generate_avatar_jdenticon(input: str, medium: bool) -> bytes:
         stdout = subprocess.check_output(command)
         return stdout
     except subprocess.CalledProcessError as error:  # nocoverage
-        logger.exception("Jdenticon generation failed for user_id:{input}")
+        logger.exception("Jdenticon generation failed for user_id: %s", input)
         raise error
 
 

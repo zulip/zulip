@@ -72,24 +72,12 @@ function is_somebody_else_profile_open(): boolean {
     );
 }
 
-function handle_invalid_section_url(section: "bots" | "users", settings_tab: string): string {
-    const valid_tab_values = {
-        users: new Set(["active", "imported", "deactivated", "invitations"]),
-        bots: new Set(["all-bots", "your-bots"]),
-    };
-
-    if (!valid_tab_values[section].has(settings_tab)) {
-        const valid_section_url = `#organization/${section}/${[...valid_tab_values[section]][0]}`;
-        browser_history.update(valid_section_url);
-        return [...valid_tab_values[section]][0]!;
-    }
-    return settings_tab;
-}
-
 function get_settings_tab(section: string): string | undefined {
     if (section === "users" || section === "bots") {
         const current_settings_tab = hash_parser.get_current_nth_hash_section(2);
-        return handle_invalid_section_url(section, current_settings_tab);
+        // URL will be updated in hash_util.validate_settings_hash to contain
+        // the correct tab value.
+        return current_settings_tab;
     }
     return undefined;
 }
@@ -289,36 +277,20 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     }
 
     const coming_from_overlay = hash_parser.is_overlay_hash(old_hash);
-    if (section === "display-settings") {
-        // Since display-settings was deprecated and replaced with preferences
-        // #settings/display-settings is being redirected to #settings/preferences.
-        section = "preferences";
-    }
-    if (section === "bot-list-admin") {
-        // #organization/bot-list-admin is being redirected to #organization/bots.
-        section = "bots";
-        base = "organization";
-    }
-    if (section === "user-list-admin") {
-        // #settings/user-list-admin is being redirected to #settings/users after it was renamed.
-        section = "users";
-    }
-    if (section === "your-bots") {
-        // #settings/your-bots is being redirected to #organization/bots/your-bots.
-        section = "bots";
-        base = "organization";
-        window.history.replaceState(null, "", "#organization/bots/your-bots");
-    }
-    if ((base === "settings" || base === "organization") && !section) {
+    if (base === "settings" || base === "organization") {
         let settings_panel_object = settings_panel_menu.normal_settings;
         if (base === "organization") {
             settings_panel_object = settings_panel_menu.org_settings;
         }
-        window.history.replaceState(
-            null,
-            "",
-            browser_history.get_full_url(base + "/" + settings_panel_object.current_tab),
+        const valid_hash = hash_util.validate_settings_hash(
+            window.location.hash,
+            settings_panel_object,
         );
+
+        if (valid_hash !== window.location.hash) {
+            window.history.replaceState(null, "", browser_history.get_full_url(valid_hash));
+            section = hash_parser.get_hash_section(valid_hash);
+        }
     }
 
     // In 2024, stream was renamed to channel in the Zulip API and UI.

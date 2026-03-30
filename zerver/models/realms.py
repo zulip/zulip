@@ -688,7 +688,7 @@ class Realm(models.Model):
     # Please access this via get_gif_rating_policy_options.
     GIF_RATING_POLICY_OPTIONS = {
         "disabled": {
-            "name": gettext_lazy("GIF integration disabled"),
+            "name": gettext_lazy("Disabled"),
             "id": 0,
         },
         # Source:

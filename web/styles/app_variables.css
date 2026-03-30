@@ -659,6 +659,8 @@
     /* User profile modal */
     --user-profile-modal-height: 75dvh;
     --user-profile-modal-body-margin-bottom: 20px;
+    /* Dropdown list item */
+    --dropdown-list-item-label-icon-gap: 0.3125em; /* 5px at 16px/em */
 
     /* Height of the button for filter dropdown in stream settings UI.
     It is set equal to the height of the search input, i.e. 1.4em (input
@@ -693,7 +695,7 @@
     This value will be overridden when stream settings is opened.
     */
     --stream-subscriber-list-max-height: 100%;
-
+    --new-stream-subscriber-list-max-height: 100%;
     /*
       Reusable dimensions and offsets.
     */
@@ -711,6 +713,11 @@
     visually consistent with that of it's parent popover.
     */
     --popover-tippy-arrow-before-offset: -6.5px;
+
+    /* Decorated channel name related values */
+    --decorated-channel-name-privacy-icon-gap: 0.3125em; /* 5px at 16px/em */
+    --inline-decorated-channel-name-privacy-icon-gap: 0.125em; /* 2px at 16px/em */
+    --inline-decorated-channel-name-padding-left: 0.0937em; /* 1.5px at 16px/em */
 
     /* Color picker popover values */
     --size-color-swatch: 1em;
@@ -1169,21 +1176,11 @@
         color-mix(in srgb, hsl(0deg 0% 0%) 5%, hsl(0deg 0% 100%)),
         color-mix(in srgb, hsl(0deg 0% 100%) 5%, hsl(0deg 0% 11%))
     );
-    --color-background-recent-view-unread-row: light-dark(
-        color-mix(in oklch, hsl(254deg 99% 68%) 6%, hsl(0deg 0% 100%)),
-        color-mix(in oklch, hsl(246deg 96% 79%) 12%, hsl(0deg 0% 15%))
+    --color-background-recent-view-unread-row: var(
+        --color-background-recent-view-row
     );
-    --color-background-recent-view-unread-row-hover: light-dark(
-        color-mix(
-            in srgb,
-            hsl(0deg 0% 0%) 5%,
-            color-mix(in oklch, hsl(254deg 99% 68%) 6%, hsl(0deg 0% 100%))
-        ),
-        color-mix(
-            in srgb,
-            hsl(0deg 0% 100%) 5%,
-            color-mix(in oklch, hsl(246deg 96% 79%) 12%, hsl(0deg 0% 15%))
-        )
+    --color-background-recent-view-unread-row-hover: var(
+        --color-background-recent-view-row-hover
     );
     --color-recent-view-link-unread: light-dark(
         hsl(0deg 0% 5%),
@@ -1232,6 +1229,10 @@
     --color-text-recent-view-last-msg-time: light-dark(
         hsl(0deg 0% 15% / 75%),
         hsl(0deg 0% 100% / 50%)
+    );
+    --color-text-recent-view-last-msg-time-unread: light-dark(
+        hsl(0deg 0% 0% / 75%),
+        hsl(0deg 0% 100% / 58%)
     );
 
     /* Compose box colors */
@@ -2929,6 +2930,14 @@
     --color-border-legacy-input-focus: light-dark(
         hsl(206deg 80% 62% / 80%),
         hsl(0deg 0% 0% / 90%)
+    );
+    --color-background-disabled-settings-select: light-dark(
+        hsl(0deg 0% 93%),
+        hsl(0deg 0% 0% / 20%)
+    );
+    --color-background-disabled-modal-select: light-dark(
+        hsl(0deg 0% 90%),
+        hsl(0deg 0% 0% / 20%)
     );
     --color-text-input: light-dark(hsl(0deg 0% 14%), hsl(0deg 0% 95%));
     /* TODO: Light mode uses browser-default white

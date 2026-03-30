@@ -21,6 +21,7 @@ import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import {current_user, realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
@@ -496,7 +497,13 @@ export function check_and_show_muted_messages_banner(): void {
     // recent_view_messages_data is initialized with muting disabled
     // (excludes_muted_topics: false, excludes_muted_users: false).
     // Therefore, this method returns all messages, effectively ignoring muting.
-    const messages = recent_view_messages_data.all_messages_after_mute_filtering();
+    const all_messages = recent_view_messages_data.all_messages_after_mute_filtering();
+
+    // Exclude messages from channels the user is no longer subscribed to,
+    // so they don't affect the muted messages ratio calculation.
+    const messages = all_messages.filter(
+        (message) => message.type !== "stream" || stream_data.is_subscribed(message.stream_id),
+    );
 
     const muted_messages = messages.filter(
         (message) =>
@@ -506,8 +513,8 @@ export function check_and_show_muted_messages_banner(): void {
     );
 
     const percent_muted_messages = (muted_messages.length / messages.length) * 100;
-    if (muted_messages.length >= 5000 && percent_muted_messages > 50) {
-        // If more than 50% of the loaded messages are muted, and that quantity exceeds
+    if (muted_messages.length >= 5000 && percent_muted_messages > 75) {
+        // If more than 75% of the loaded messages are muted, and that quantity exceeds
         // at least 5000 messages, show the banner. We use an absolute number threshold
         // to avoid showing the banner when there are very few messages loaded to have
         // any impact on the performance.

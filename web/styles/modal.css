@@ -115,15 +115,6 @@
         padding: 0.25em; /* 4px at 16px/1em */
     }
 
-    .channel-privacy-type-icon {
-        /* This pushes back on suspect styles
-           in app_components.css. A fuller fix
-           will require tracking down other
-           instances of this class. */
-        width: auto;
-        padding-right: 0;
-    }
-
     /* help_link_widget margin for the fa-circle-o. */
     .help_link_widget {
         margin-left: 5px;
@@ -173,15 +164,6 @@
         /* Compensate the 3em reduced in modal_content so it positions
            itself correctly */
         max-width: calc(100% + 3em);
-    }
-
-    .channel-privacy-type-icon {
-        /* This pushes back on suspect styles
-           in app_components.css. A fuller fix
-           will require tracking down other
-           instances of this class. */
-        width: auto;
-        padding-right: 0;
     }
 }
 
@@ -485,10 +467,15 @@
         margin-bottom: 10px;
         gap: 10px;
 
-        .dropdown-widget-button,
-        .dropdown_widget_with_label_wrapper {
+        .dropdown-widget-button {
             max-width: 100%;
             width: var(--modal-input-width);
+
+            .dropdown_widget_value {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
         }
     }
 }
@@ -808,9 +795,9 @@
     padding: 4px 25px 4px 6px;
     color: var(--color-text-default);
     border-radius: 4px;
-    border: 1px solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid var(--color-border-legacy-input);
     cursor: pointer;
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--color-background-legacy-input);
     max-width: 100%;
     font-size: inherit;
 
@@ -819,7 +806,7 @@
 
         /* The background-color of select elements inside modal is different than the others in
         settings pages, because the background of the modal is brighter than the setting page. */
-        background-color: hsl(0deg 0% 90%);
+        background-color: var(--color-background-disabled-modal-select);
 
         /* This is reset for other browsers to use Chrome's opacity. */
         opacity: 0.7;

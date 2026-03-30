@@ -347,8 +347,8 @@ paths:
         `event_queue_longpoll_timeout_seconds` property returned by
         `POST /register` as the client-side HTTP request timeout for
         calls to this endpoint. It is guaranteed to be higher than
-        heartbeat frequency and should be respected by clients to
-        avoid breaking when heartbeat frequency increases.
+        heartbeat timeout and should be respected by clients to
+        avoid breaking when heartbeat timeout increases.
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -4401,9 +4401,9 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to all users in a Zulip organization when the set of
-                                [allowed domains for new users](/help/restrict-account-creation#configuring-email-domain-restrictions)
-                                has changed.
+                                Event sent to all users in a Zulip organization when a new domain has been
+                                added to the set of [allowed domains for account creation and email
+                                changes](/help/restrict-account-creation#configuring-email-domain-restrictions).
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -4417,7 +4417,10 @@ paths:
                                   enum:
                                     - add
                                 realm_domain:
-                                  $ref: "#/components/schemas/RealmDomain"
+                                  allOf:
+                                    - $ref: "#/components/schemas/RealmDomain"
+                                    - description: |
+                                        Object containing details of the newly added domain.
                               example:
                                 {
                                   "type": "realm_domains",
@@ -4433,7 +4436,8 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users in a Zulip organization when the set of
-                                [allowed domains for new users](/help/restrict-account-creation#configuring-email-domain-restrictions)
+                                [allowed domains for account creation and email
+                                changes](/help/restrict-account-creation#configuring-email-domain-restrictions)
                                 has changed.
                               properties:
                                 id:
@@ -4448,19 +4452,10 @@ paths:
                                   enum:
                                     - change
                                 realm_domain:
-                                  type: object
-                                  additionalProperties: false
-                                  description: |
-                                    Object containing details of the edited domain.
-                                  properties:
-                                    domain:
-                                      type: string
-                                      description: |
-                                        The domain whose settings have changed.
-                                    allow_subdomains:
-                                      type: boolean
-                                      description: |
-                                        Whether subdomains are allowed for this domain.
+                                  allOf:
+                                    - $ref: "#/components/schemas/RealmDomain"
+                                    - description: |
+                                        Object containing details of the edited domain.
                               example:
                                 {
                                   "type": "realm_domains",
@@ -4475,9 +4470,9 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to all users in a Zulip organization when the set of
-                                [allowed domains for new users](/help/restrict-account-creation#configuring-email-domain-restrictions)
-                                has changed.
+                                Event sent to all users in a Zulip organization when a domain has been
+                                removed from the set of [allowed domains for account creation and email
+                                changes](/help/restrict-account-creation#configuring-email-domain-restrictions).
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -14295,6 +14290,174 @@ paths:
                         "result": "success",
                         "server_timestamp": 1656958539.6287155,
                       }
+  /realm/domains:
+    get:
+      operationId: get-realm-domains
+      summary: Get allowed domains
+      tags: ["server_and_organizations"]
+      description: |
+        Get the set of allowed domains configured in the organization for user
+        account email addresses.
+
+        As each Zulip user account is associated with an email address, organization
+        owners can [restrict new account creation (and email
+        changes)](/help/restrict-account-creation) to email addresses with these
+        domains.
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      domains:
+                        type: array
+                        description: |
+                          A list of objects containing details of each domain allowed
+                          for user account email addresses.
+                        items:
+                          $ref: "#/components/schemas/RealmDomain"
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "domains":
+                          [
+                            {
+                              "domain": "example.com",
+                              "allow_subdomains": false,
+                            },
+                          ],
+                      }
+    post:
+      operationId: add-realm-domain
+      summary: Add an allowed domain
+      tags: ["server_and_organizations"]
+      description: |
+        Add a domain to the set of allowed domains configured in the organization
+        for [user account email addresses](/help/restrict-account-creation).
+
+        **Changes**: Prior to Zulip 6.0 (feature level 143), organization
+        administrators who were not owners could access this endpoint.
+      x-requires-owner: true
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                domain:
+                  description: |
+                    The new domain.
+
+                    **Changes**: In Zulip 4.0 (feature level 63), the unnecessary
+                    JSON-encoding of this parameter was removed.
+                  type: string
+                  example: "example.com"
+                allow_subdomains:
+                  description: |
+                    Whether subdomains are allowed for this domain.
+                  type: boolean
+                  example: false
+              required:
+                - domain
+                - allow_subdomains
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      new_domain:
+                        type: array
+                        description: |
+                          An array containing the ID of the newly added domain
+                          and the submitted domain name string.
+                        items:
+                          oneOf:
+                            - type: integer
+                            - type: string
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "new_domain": [1, "example.com"],
+                      }
+  /realm/domains/{domain}:
+    patch:
+      operationId: patch-realm-domain
+      summary: Update an allowed domain
+      tags: ["server_and_organizations"]
+      description: |
+        Update whether subdomains are allowed in [user account email
+        addresses](/help/restrict-account-creation) for the specified domain.
+
+        **Changes**: Prior to Zulip 6.0 (feature level 143), organization
+        administrators who were not owners could access this endpoint.
+      x-requires-owner: true
+      parameters:
+        - name: domain
+          in: path
+          description: |
+            The domain to update.
+          schema:
+            type: string
+            example: "example.com"
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                allow_subdomains:
+                  description: |
+                    Whether subdomains are allowed for this domain.
+                  type: boolean
+                  example: true
+              required:
+                - allow_subdomains
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+    delete:
+      operationId: delete-realm-domain
+      summary: Remove an allowed domain
+      tags: ["server_and_organizations"]
+      description: |
+        Remove the specified domain from the set of allowed domains configured in
+        the organization for [user account email addresses](/help/restrict-account-creation).
+
+        **Changes**: Prior to Zulip 6.0 (feature level 143), organization
+        administrators who were not owners could access this endpoint.
+      x-requires-owner: true
+      parameters:
+        - name: domain
+          in: path
+          description: |
+            The domain to remove.
+          schema:
+            type: string
+            example: "example.com"
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
   /realm/profile_fields:
     get:
       operationId: get-custom-profile-fields
@@ -17118,12 +17281,12 @@ paths:
         ["events" endpoint](/api/get-events) to request events from
         the Zulip server using long-polling.
 
-        The server will queue events for up to 10 minutes of inactivity.
-        After 10 minutes, your event queue will be garbage-collected. The
-        server will send `heartbeat` events every minute, which makes it easy
-        to implement a robust client that does not miss events unless the
-        client loses network connectivity with the Zulip server for 10 minutes
-        or longer.
+        The server will queue events for up to `idle_queue_timeout_secs`
+        seconds of inactivity. After that timeout, your event queue will be
+        garbage-collected. The server will send `heartbeat` events
+        every minute, which makes it easy to implement a robust client that
+        does not miss events unless the client loses network connectivity
+        with the Zulip server for longer than the configured timeout.
 
         Once the server garbage-collects your event queue, the server will
         [return an error](/api/get-events#bad_event_queue_id-errors)
@@ -17131,7 +17294,7 @@ paths:
         the event queue. Your software will need to handle that error
         condition by re-initializing itself (e.g. this is what triggers your
         browser reloading the Zulip web app when your laptop comes back online
-        after being offline for more than 10 minutes).
+        after being offline for more than `idle_queue_timeout_secs` seconds).
 
         When prototyping with this API, we recommend first calling `register`
         with no `event_types` parameter to see all the available data from all
@@ -17146,7 +17309,12 @@ paths:
         works, avoids clients needing to worry about large classes of
         potentially messy races, etc.
 
-        **Changes**: Removed `dense_mode` setting in Zulip 10.0 (feature level 364)
+        **Changes**: New in Zulip 12.0 (feature level 481),
+        the `idle_queue_timeout` request parameter and `idle_queue_timeout_secs`
+        response field were added to allow clients to configure
+        how long the server keeps an event queue alive during inactivity.
+
+        Removed `dense_mode` setting in Zulip 10.0 (feature level 364)
         as we now have `web_font_size_px` and `web_line_height_percent`
         settings for more control.
 
@@ -17410,6 +17578,28 @@ paths:
                   example: ["message"]
                 narrow:
                   $ref: "#/components/schemas/Narrow"
+                idle_queue_timeout:
+                  description: |
+                    At least how long (in seconds) the server should keep the event
+                    queue alive when the client is not polling. If the client does
+                    not poll before this timeout, the queue will eventually be
+                    garbage-collected.
+
+                    Alternatively, the string `"mobile"` can be passed to use the
+                    server's recommended timeout for mobile clients. This is
+                    currently 12 hours, but may change in the future.
+
+                    If not specified, the server uses a default of 10 minutes. The
+                    maximum allowed value is 7 days.
+
+                    **Changes**: New in Zulip 12.0 (feature level 481).
+                  oneOf:
+                    - type: integer
+                      minimum: 1
+                    - type: string
+                      enum:
+                        - "mobile"
+                  example: 3600
             encoding:
               apply_markdown:
                 contentType: application/json
@@ -17424,6 +17614,8 @@ paths:
               client_capabilities:
                 contentType: application/json
               fetch_event_types:
+                contentType: application/json
+              idle_queue_timeout:
                 contentType: application/json
               narrow:
                 contentType: application/json
@@ -17448,6 +17640,18 @@ paths:
 
                           Will be `null` only for unauthenticated access in realms that have
                           enabled the [public access option](/help/public-access-option).
+                      idle_queue_timeout_secs:
+                        type: integer
+                        description: |
+                          The effective idle queue timeout for the allocated queue,
+                          in seconds. This is the resolved value of the
+                          `idle_queue_timeout` request parameter, after applying
+                          defaults and server-side limits.
+
+                          Not present for unauthenticated access in realms that have
+                          enabled the [public access option](/help/public-access-option).
+
+                          **Changes**: New in Zulip 12.0 (feature level 481).
                       last_event_id:
                         type: integer
                         description: |
@@ -17903,8 +18107,8 @@ paths:
                         description: |
                           Present if `realm_domains` is present in `fetch_event_types`.
 
-                          An array of dictionaries where each dictionary describes a domain within
-                          which users can join the organization without and invitation.
+                          An array of dictionaries where each dictionary describes an allowed domain
+                          for [user account email addresses](/help/restrict-account-creation).
                         items:
                           $ref: "#/components/schemas/RealmDomain"
                       realm_emoji:
@@ -20830,8 +21034,8 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Recommended client-side HTTP request timeout for [`GET /events`](/api/get-events) calls.
-                          This is guaranteed to be somewhat greater than the heartbeat frequency. It is important
-                          that clients respect this parameter, so that increases in the heartbeat frequency do not
+                          This is guaranteed to be somewhat greater than the heartbeat timeout. It is important
+                          that clients respect this parameter, so that increases in the heartbeat timeout do not
                           break clients.
 
                           **Changes**: New in Zulip 5.0 (feature level 74). Previously,
@@ -21775,6 +21979,7 @@ paths:
                         "last_event_id": -1,
                         "msg": "",
                         "queue_id": "fb67bf8a-c031-47cc-84cf-ed80accacda8",
+                        "idle_queue_timeout_secs": 600,
                         "realm_emoji":
                           {
                             "1":
@@ -27009,17 +27214,18 @@ components:
     RealmDomain:
       type: object
       additionalProperties: false
-      description: |
-        Object containing details of the newly added domain.
       properties:
         domain:
           type: string
           description: |
-            The new allowed domain.
+            The allowed domain.
         allow_subdomains:
           type: boolean
           description: |
             Whether subdomains are allowed for this domain.
+      required:
+        - domain
+        - allow_subdomains
     RealmPlayground:
       type: object
       additionalProperties: false
@@ -28420,10 +28626,9 @@ components:
       properties:
         id:
           type: integer
+          readOnly: true
           description: |
-            The unique ID of the draft. It will only used whenever the drafts are
-            fetched. This field should not be specified when the draft is being
-            created or edited.
+            The unique ID of the draft.
         type:
           type: string
           description: |

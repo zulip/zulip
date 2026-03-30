@@ -385,6 +385,7 @@ export default defineConfig({
                         "view-messages-sent-by-a-user",
                         "link-to-a-message-or-conversation",
                         "search-for-messages",
+                        "scroll-to-date",
                         "printing-messages",
                         {
                             label: "View message content as Markdown",
