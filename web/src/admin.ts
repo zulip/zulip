@@ -116,7 +116,7 @@ const admin_settings_label = {
             "The session details window will not be displayed when a user joins the session.",
     }),
     realm_big_blue_button_guest_policy: $t({
-        defaultMessage: "Guest Policy:",
+        defaultMessage: "Guest policy:",
     }),
 };
 
