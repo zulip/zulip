@@ -454,7 +454,7 @@ def update_stream_backend(
         new_name = new_name.strip()
         if stream.name == new_name:
             raise JsonableError(_("Channel already has that name."))
-        if stream.name.lower() != new_name.lower():
+        if stream.name is not None and stream.name.lower() != new_name.lower():
             # Check that the stream name is available (unless we are
             # are only changing the casing of the stream name).
             check_stream_name_available(user_profile.realm, new_name)
