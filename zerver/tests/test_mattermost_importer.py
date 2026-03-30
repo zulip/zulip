@@ -1705,7 +1705,7 @@ class MattermostCombinedTeamsImportTest(MattermostImportTestBase):
         exported_bot_users = [user for user in mattermost_data["user"] if user.get("is_bot")]
         self.assert_length(exported_bot_users, len(self.BOT_EMAILS))
 
-    def test_e2e_export_data_v11_1_0(self) -> None:
+    def test_e2e_export_data_v11_6_0(self) -> None:
         # The assert functions here iterate over the exported Mattermost objects and checks
         # whether a corresponding Zulip object exists in the imported realm. So, If
         # combined_into_one_realm=True and the export fixture contains multiple teams, it
