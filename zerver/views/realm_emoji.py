@@ -45,6 +45,8 @@ def upload_emoji(
     [emoji_file] = request.FILES.values()
     assert isinstance(emoji_file, UploadedFile)
     assert emoji_file.size is not None
+    if emoji_file.size == 0:
+        raise JsonableError(_("Uploaded file is empty."))
     if emoji_file.size > settings.MAX_EMOJI_FILE_SIZE_MIB * 1024 * 1024:
         raise JsonableError(
             _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(
