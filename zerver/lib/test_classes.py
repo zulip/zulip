@@ -117,7 +117,11 @@ from zerver.models.clients import get_client
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
 from zerver.models.streams import StreamTopicsPolicyEnum, get_realm_stream, get_stream
 from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
-from zerver.openapi.openapi import validate_test_request, validate_test_response
+from zerver.openapi.openapi import (
+    normalize_wsgi_authorization_header,
+    validate_test_request,
+    validate_test_response,
+)
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 
 if settings.ZILENCER_ENABLED:
@@ -183,6 +187,7 @@ class ZulipClientHandler(ClientHandler):
                 response.status_code == 302 and response.headers["Location"].startswith("/login/")
             )
         ):
+            normalize_wsgi_authorization_header(request.META)
             openapi_request = DjangoOpenAPIRequest(request)
             openapi_response = DjangoOpenAPIResponse(response)
             response_validated = validate_test_response(openapi_request, openapi_response)
