@@ -775,6 +775,11 @@ class BillingSession(ABC):
     def org_name(self) -> str:
         pass
 
+    def get_current_billed_license_count(self, event_time: datetime | None = None) -> int:
+        # A "workplace user" translates to a "license" tracked in LicenseLedger
+        # objects for a plan.
+        return self.current_counts_for_billed_users(event_time).workplace_users
+
     def customer_plan_exists(self) -> bool:
         # Checks if the realm / server had a plan anytime in the past.
         customer = self.get_customer()
@@ -1789,14 +1794,17 @@ class BillingSession(ABC):
         )
         return self.create_stripe_invoice_and_charge(updated_metadata)
 
-    def stale_seat_count_check(self, request_seat_count: int, tier: int) -> int:
-        current_seat_count = self.current_counts_for_billed_users().workplace_users
-        minimum_seat_count = self.min_licenses_for_plan(tier)
-        if request_seat_count == minimum_seat_count and current_seat_count < minimum_seat_count:
+    def stale_license_count_check(self, request_license_count: int, tier: int) -> int:
+        current_license_count = self.get_current_billed_license_count()
+        minimum_license_count = self.min_licenses_for_plan(tier)
+        if (
+            request_license_count == minimum_license_count
+            and current_license_count < minimum_license_count
+        ):
             # Continue to use the minimum licenses for the plan tier.
-            return request_seat_count
+            return request_license_count
         # Otherwise, we want to check the current count against the minimum.
-        return max(current_seat_count, minimum_seat_count)
+        return max(current_license_count, minimum_license_count)
 
     def ensure_current_plan_is_upgradable(self, customer: Customer, new_plan_tier: int) -> None:
         # Upgrade for customers with an existing plan is only supported for remote realm / server right now.
@@ -2131,7 +2139,7 @@ class BillingSession(ABC):
         )
         # For automated license management, we check for changes to the
         # billable licenses count made after the billing portal was loaded.
-        seat_count = self.stale_seat_count_check(request_seat_count, upgrade_request.tier)
+        seat_count = self.stale_license_count_check(request_seat_count, upgrade_request.tier)
         if billing_modality == "charge_automatically" and license_management == "automatic":
             licenses = seat_count
 
@@ -2315,7 +2323,7 @@ class BillingSession(ABC):
         if plan.automanage_licenses:
             return
 
-        if self.current_counts_for_billed_users().workplace_users > renewal_license_count:
+        if self.get_current_billed_license_count() > renewal_license_count:
             raise BillingError(
                 f"Customer has not manually updated plan for current license count: {plan.customer!s}"
             )
@@ -2589,10 +2597,10 @@ class BillingSession(ABC):
         licenses_at_next_renewal = last_ledger_entry.licenses_at_next_renewal
         assert licenses_at_next_renewal is not None
         min_licenses_for_plan = self.min_licenses_for_plan(plan.tier)
-        seat_count = self.current_counts_for_billed_users().workplace_users
+        billable_license_count = self.get_current_billed_license_count()
         using_min_licenses_for_plan = (
             min_licenses_for_plan == licenses_at_next_renewal
-            and licenses_at_next_renewal > seat_count
+            and licenses_at_next_renewal > billable_license_count
         )
 
         # Should do this in JavaScript, using the user's time zone
@@ -2691,7 +2699,7 @@ class BillingSession(ABC):
             "switch_to_monthly_at_end_of_cycle": switch_to_monthly_at_end_of_cycle,
             "licenses": licenses,
             "licenses_at_next_renewal": licenses_at_next_renewal,
-            "seat_count": seat_count,
+            "seat_count": billable_license_count,
             "exempt_from_license_number_check": customer.exempt_from_license_number_check,
             "renewal_date": renewal_date,
             "renewal_amount": cents_to_dollar_string(renewal_cents) if renewal_cents != 0 else None,
@@ -2867,11 +2875,11 @@ class BillingSession(ABC):
         if setup_payment_by_invoice:
             initial_upgrade_request.manual_license_management = True
 
-        seat_count = self.current_counts_for_billed_users().workplace_users
-        using_min_licenses_for_plan = min_licenses_for_plan > seat_count
+        billable_license_count = self.get_current_billed_license_count()
+        using_min_licenses_for_plan = min_licenses_for_plan > billable_license_count
         if using_min_licenses_for_plan:
-            seat_count = min_licenses_for_plan
-        signed_seat_count, salt = sign_string(str(seat_count))
+            billable_license_count = min_licenses_for_plan
+        signed_seat_count, salt = sign_string(str(billable_license_count))
 
         free_trial_days = None
         free_trial_end_date = None
@@ -2914,7 +2922,7 @@ class BillingSession(ABC):
                 "page_type": "upgrade",
                 "annual_price": annual_price,
                 "monthly_price": monthly_price,
-                "seat_count": seat_count,
+                "seat_count": billable_license_count,
                 "billing_base_url": self.billing_base_url,
                 "tier": tier,
                 "flat_discount": flat_discount,
@@ -2932,7 +2940,7 @@ class BillingSession(ABC):
             "fixed_price_plan": fixed_price is not None,
             "pay_by_invoice_payments_page": pay_by_invoice_payments_page,
             "salt": salt,
-            "seat_count": seat_count,
+            "seat_count": billable_license_count,
             "signed_seat_count": signed_seat_count,
             "success_message": initial_upgrade_request.success_message,
             "is_sponsorship_pending": customer is not None and customer.sponsorship_pending,
@@ -3138,7 +3146,7 @@ class BillingSession(ABC):
             validate_licenses(
                 plan.charge_automatically,
                 licenses,
-                self.current_counts_for_billed_users().workplace_users,
+                self.get_current_billed_license_count(),
                 plan.customer.exempt_from_license_number_check,
                 self.min_licenses_for_plan(plan.tier),
             )
@@ -3174,7 +3182,7 @@ class BillingSession(ABC):
             validate_licenses(
                 plan.charge_automatically,
                 licenses_at_next_renewal,
-                self.current_counts_for_billed_users().workplace_users,
+                self.get_current_billed_license_count(),
                 plan.customer.exempt_from_license_number_check,
                 self.min_licenses_for_plan(plan.tier, is_plan_free_trial_with_invoice_payment),
             )
@@ -3901,7 +3909,7 @@ class BillingSession(ABC):
     ) -> None:
         if licenses is not None:
             if not plan.customer.exempt_from_license_number_check:
-                assert self.current_counts_for_billed_users().workplace_users <= licenses
+                assert self.get_current_billed_license_count() <= licenses
             assert licenses > plan.licenses()
             LicenseLedger.objects.create(
                 plan=plan,
@@ -3935,12 +3943,12 @@ class BillingSession(ABC):
         if licenses is not None and customer.exempt_from_license_number_check:
             return licenses
 
-        current_licenses_count = self.current_counts_for_billed_users(event_time).workplace_users
+        current_license_count = self.get_current_billed_license_count()
         min_licenses_for_plan = self.min_licenses_for_plan(tier)
         if customer.exempt_from_license_number_check:  # nocoverage
-            billed_licenses = current_licenses_count
+            billed_licenses = current_license_count
         else:
-            billed_licenses = max(current_licenses_count, min_licenses_for_plan)
+            billed_licenses = max(current_license_count, min_licenses_for_plan)
         return billed_licenses
 
     def update_license_ledger_for_automanaged_plan(
@@ -6018,9 +6026,7 @@ def get_push_status_for_remote_request(
     user_count: int | None = None
     if current_plan is None:
         try:
-            user_count = (
-                user_count_billing_session.current_counts_for_billed_users().workplace_users
-            )
+            user_count = user_count_billing_session.get_current_billed_license_count()
         except MissingDataError:
             return PushNotificationsEnabledStatus(
                 can_push=False,
@@ -6053,7 +6059,7 @@ def get_push_status_for_remote_request(
         )
 
     try:
-        user_count = user_count_billing_session.current_counts_for_billed_users().workplace_users
+        user_count = user_count_billing_session.get_current_billed_license_count()
     except MissingDataError:
         user_count = None
 
