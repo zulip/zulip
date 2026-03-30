@@ -486,7 +486,6 @@ def get_bigbluebutton_url(
             "name": meeting_name,
             "lock_settings_disable_cam": voice_only,
             "moderator": request.user.id,
-            "realm_id": request.user.realm.id,
         }
     )
     url = append_url_query_string("/calls/bigbluebutton/join", "bigbluebutton=" + signed)
@@ -512,7 +511,7 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
     except Exception:
         raise JsonableError(_("Invalid signature."))
 
-    realm_id = bigbluebutton_data["realm_id"]
+    realm_id = request.user.realm.id
     extra_create_params = get_create_params(realm_id)
 
     create_params = urlencode(
