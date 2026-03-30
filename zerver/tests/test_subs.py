@@ -1973,6 +1973,18 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(message.sender.email, "notification-bot@zulip.com")
         self.assertEqual(message.sender.realm, get_realm(settings.SYSTEM_BOT_REALM))
 
+    def test_notify_on_stream_rename_with_none_stream_name(self) -> None:
+        """Test that stream rename handles None stream name gracefully."""
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        
+        # Create a stream with a name that will be set to None to test the edge case
+        stream = self.make_stream("test_stream")
+        
+        # Try to rename with None stream name - should not crash
+        result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": None})
+        self.assert_json_error(result, "Invalid new channel name")
+
         # Test notification is not sent in `channel events` if `send_channel_events_messages` is `False`.
         do_set_realm_property(stream.realm, "send_channel_events_messages", False, acting_user=None)
         stream = self.make_stream("stream_without_notification")
