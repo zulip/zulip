@@ -301,6 +301,7 @@ function item_click_callback(
   dropdown.hide();
 
   const current_value = widget.current_value;
+  widget.current_value = undefined;
   assert(typeof current_value === "number");
 
   if (current_value === add_meeting.OPTION_RSVP_MEETING) {
