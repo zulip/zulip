@@ -190,6 +190,33 @@ export function is_in_focus(): boolean {
     );
 }
 
+export function is_view_obscured(): boolean {
+    return overlays.any_active() || modals.any_active_or_animating() || popovers.any_active();
+}
+
+export function find_element_at_point(
+    x: number,
+    y: number,
+    container_selector: string,
+): Element | undefined {
+    // When the view is obscured by a modal, overlay, or popover,
+    // `elementFromPoint` would return the covering element. Use
+    // `elementsFromPoint` to search through the full element stack
+    // and find the matching element beneath it.
+    if (is_view_obscured()) {
+        return document
+            .elementsFromPoint(x, y)
+            .find((el) => el.closest(container_selector) !== null);
+    }
+
+    const top_element = document.elementFromPoint(x, y);
+    if (top_element !== null && top_element.closest(container_selector) !== null) {
+        return top_element;
+    }
+
+    return undefined;
+}
+
 export function is_scroll_position_for_render(): boolean {
     const scroll_position = window.scrollY;
     const window_height = window.innerHeight;

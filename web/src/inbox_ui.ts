@@ -2349,9 +2349,13 @@ function move_focus_to_visible_area(): void {
     const compose_top = window.innerHeight - $("#compose").outerHeight(true)!;
     const inbox_center_x = (inbox_filters_props.left + inbox_filters_props.right) / 2;
     const inbox_center_y = (compose_top + inbox_filters_props.bottom) / 2;
-    const element_in_row = document.elementFromPoint(inbox_center_x, inbox_center_y);
-    if (!element_in_row) {
-        // The table is too short for there to be an topic row element
+    const element_in_row = views_util.find_element_at_point(
+        inbox_center_x,
+        inbox_center_y,
+        ".inbox-row, .inbox-header",
+    );
+    if (element_in_row === undefined) {
+        // The table is too short for there to be a row element
         // at the center of the table region; in that case, we just
         // select the last element.
         row_focus = $all_rows.length - 1;
