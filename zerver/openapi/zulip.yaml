@@ -20192,6 +20192,50 @@ paths:
                           **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
                           available as a server-level configuration, which was available via the
                           `jitsi_server_url` field.
+                      realm_big_blue_button_options:
+                        type: object
+                        description: |
+                          Options for BigBlueButton call provider
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            option:
+                              type: string
+                              description: |
+                                BigBlueButton option name for frontend
+                            real_option:
+                              type: string
+                              description: |
+                                BigBlueButton option name for backend
+                            translation:
+                              type: string
+                              description: |
+                                Translation string for fronend
+                            default:
+                              oneOf:
+                                - type: string
+                                - type: boolean
+                              description: |
+                                Default value for option
+                            value:
+                              oneOf:
+                                - type: string
+                                - type: boolean
+                              description: |
+                                The current value of the option
+                            data_type:
+                              type: string
+                              description: |
+                                The data type of the option
+                            parameter_type:
+                              type: string
+                              description: |
+                                If its a creation or join option for BigBlueButton
+                            #list:
+                            #  type: array
+                            #  items:
+                            #    type: string
                       realm_gif_rating_policy:
                         type: integer
                         description: |
