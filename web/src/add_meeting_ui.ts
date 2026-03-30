@@ -42,13 +42,12 @@ function update_rsvp_submit_button_state(): void {
   const datetime = $<HTMLInputElement>("#rsvp-meeting-datetime-value")
     .val()
     ?.trim();
+  const has_invitees = user_pill.get_user_ids(invite_users_widget).length > 0;
 
   const $submit_button = $("#add-rsvp-meeting-modal .dialog_submit_button");
+  const is_disabled = !topic || !datetime || !has_invitees;
 
-  $submit_button.prop("disabled", true);
-  if (topic && datetime) {
-    $submit_button.prop("disabled", false);
-  }
+  $submit_button.prop("disabled", is_disabled);
 }
 
 function populate_user_dropdown(): void {
@@ -113,6 +112,7 @@ function rsvp_meeting_modal_post_render(): void {
   invite_users_widget.onPillCreate(() => {
     $("#rsvp-invite-users").removeAttr("data-placeholder");
     update_channel_warning();
+    update_rsvp_submit_button_state();
   });
 
   invite_users_widget.onPillRemove(() => {
@@ -120,6 +120,7 @@ function rsvp_meeting_modal_post_render(): void {
       $("#rsvp-invite-users").attr("data-placeholder", $t({ defaultMessage: "Add users" }));
     }
     update_channel_warning();
+    update_rsvp_submit_button_state();
   });
 
   $(document).on("click.rsvp-dropdown", (e) => {
@@ -299,8 +300,14 @@ function on_add_all_users_click(): void {
     return;
   }
 
+  const already_added_ids = new Set(user_pill.get_user_ids(invite_users_widget));
   const user_ids = peer_data.get_subscriber_ids_assert_loaded(stream_id);
+
   for (const id of user_ids) {
+    if (already_added_ids.has(id)) {
+      continue;
+    }
+
     const user = people.get_by_user_id(id);
     if (user) {
       user_pill.append_user(user, invite_users_widget);
