@@ -24,6 +24,8 @@ from zerver.actions.create_realm import do_create_realm, get_email_address_visib
 from zerver.actions.create_user import do_create_user
 from zerver.actions.data_import import import_slack_data
 from zerver.data_import.import_util import (
+    DATA_IMPORT_HTTP_ROLE,
+    DATA_IMPORT_HTTP_TIMEOUT_SECONDS,
     UploadFileRequest,
     UploadRecordData,
     ZerverFieldsT,
@@ -34,6 +36,7 @@ from zerver.data_import.import_util import (
     build_zerver_realm,
     download_and_export_upload_file,
     get_emojis,
+    request_file_stream,
 )
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack import (
@@ -3116,6 +3119,26 @@ by Pieter
             logs.output,
         )
         self.assertEqual("Failed downloading file.", str(e.exception))
+
+    def test_request_file_stream_uses_hardened_outgoing_session(self) -> None:
+        mocked_response = mock.Mock(status_code=200)
+
+        with mock.patch("zerver.data_import.import_util.OutgoingSession") as outgoing_session:
+            outgoing_session.return_value.get.return_value = mocked_response
+
+            response = request_file_stream("https://files.slack.com/files-pri/ABC/DEF.png")
+
+        self.assertIs(response, mocked_response)
+        outgoing_session.assert_called_once_with(
+            role=DATA_IMPORT_HTTP_ROLE,
+            timeout=DATA_IMPORT_HTTP_TIMEOUT_SECONDS,
+        )
+        outgoing_session.return_value.get.assert_called_once_with(
+            "https://files.slack.com/files-pri/ABC/DEF.png",
+            params=None,
+            headers=None,
+            stream=True,
+        )
 
     @responses.activate
     def test_slack_get_emojis(self) -> None:

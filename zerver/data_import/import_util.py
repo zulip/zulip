@@ -23,6 +23,7 @@ from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.markdown import get_markdown_link_for_url
 from zerver.lib.message import normalize_body_for_import
 from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type, guess_type
+from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.parallel import run_parallel
 from zerver.lib.partial import partial
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS as STREAM_COLORS
@@ -67,6 +68,9 @@ DATA_IMPORT_CLIENTS = {
     # Special client key to be used for data import messages.
     "ZulipDataImport": 5,
 }
+
+DATA_IMPORT_HTTP_ROLE = "data_import"
+DATA_IMPORT_HTTP_TIMEOUT_SECONDS = 10
 
 
 @dataclass
@@ -693,7 +697,10 @@ def request_file_stream(
     if "stream" not in kwargs:
         kwargs.update(stream=True)
 
-    response = requests.get(
+    response = OutgoingSession(
+        role=DATA_IMPORT_HTTP_ROLE,
+        timeout=DATA_IMPORT_HTTP_TIMEOUT_SECONDS,
+    ).get(
         url,
         params=params,
         headers=headers,
@@ -747,7 +754,10 @@ def get_emojis(
     Raises `BadImageError` when the content-type is not guessable, or
     not in both `THUMBNAIL_ACCEPT_IMAGE_TYPES` and `INLINE_MIME_TYPES`.
     """
-    response = requests.get(emoji_url, stream=True)
+    response = OutgoingSession(
+        role=DATA_IMPORT_HTTP_ROLE,
+        timeout=DATA_IMPORT_HTTP_TIMEOUT_SECONDS,
+    ).get(emoji_url, stream=True)
     content_type_raw = response.headers.get("Content-Type")
     if content_type_raw is None:
         logging.warning(
