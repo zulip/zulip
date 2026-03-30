@@ -1599,7 +1599,7 @@ class MattermostV1110ImportTest(MattermostImportTestBase):
         self.assert_length(mattermost_data, 8)
         self.assert_length(mattermost_data["team"], 1)
         self.assertEqual(mattermost_data["team"][0]["name"], "ad-1")
-        self.assert_length(mattermost_data["channel"], 4)
+        self.assert_length(mattermost_data["channel"], 5)
         self.assert_length(mattermost_data["user"], 20)
         self.assert_length(mattermost_data["emoji"], 0)
         self.assert_length(mattermost_data["post"]["channel_post"], 50)
