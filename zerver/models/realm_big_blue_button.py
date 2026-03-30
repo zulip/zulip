@@ -11,7 +11,7 @@ from zerver.models.realms import Realm
 class BigBlueButtonOption:
     id: int = -1
     option: str
-    translation: str
+    translation: str | None = None
     value: str | bool | None = None
     default: str | bool | None = None
     parameter_type: str = "str"
@@ -115,7 +115,7 @@ class RealmBigBlueButton(models.Model):
 
     real_option = models.CharField(default="", null=False, max_length=100)
 
-    translation: str = ""
+    translation: str | None = None
     list: dict[str, str] = field(default_factory=dict)
 
 
@@ -125,17 +125,17 @@ def parse_boolean_option(value: str) -> bool:
 
 def flatten_params(
     options: Sequence[RealmBigBlueButton | BigBlueButtonOption],
-) -> dict[str, str | bool]:  # FIX
+) -> dict[str, str | bool]:
     create_params: dict[str, str | bool] = {}
     for option in options:
         value: str | bool = ""
 
         if option.data_type == "str":
-            value = str(getattr(option, "value", ""))  # FIX
+            value = str(getattr(option, "value", ""))
         elif option.data_type == "bool":
-            value = parse_boolean_option(str(getattr(option, "value", "")))  # FIX
+            value = parse_boolean_option(str(getattr(option, "value", "")))
         elif option.data_type == "list":
-            value = str(getattr(option, "value", ""))  # FIX
+            value = str(getattr(option, "value", ""))
 
         if option.real_option == "":
             create_params[option.option] = value
@@ -216,8 +216,8 @@ def merge_big_blue_button_options_defaults(
 
 def get_all_big_blue_button_options_uncached(
     realm_id: int,
-) -> dict[str, BigBlueButtonOption | None]:
-    options: dict[str, BigBlueButtonOption | None] = {}
+) -> dict[str, BigBlueButtonOption]:
+    options: dict[str, BigBlueButtonOption] = {}
     bbb_options = merge_big_blue_button_options_defaults(realm_id=realm_id)
 
     for bbb_option in bbb_options:
@@ -253,7 +253,7 @@ def get_all_big_blue_button_options_uncached(
                 real_option=bbb_option.real_option,
             )
 
-        if data_type is not None:
+        if option is not None:
             options[str(bbb_option.option)] = option
 
     return options
