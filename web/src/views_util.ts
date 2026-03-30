@@ -190,6 +190,24 @@ export function is_in_focus(): boolean {
     );
 }
 
+export function find_element_at_point(
+    x: number,
+    y: number,
+    container_selector: string,
+): Element | undefined {
+    // When the view is obscured by a modal, overlay, popover, etc.
+    // `elementFromPoint` would return the covering element. Use
+    // `elementsFromPoint` to search through the full element stack
+    // and find the matching element beneath it.
+    const elements = document.elementsFromPoint(x, y);
+    for (const element of elements) {
+        if (element.closest(container_selector) !== null) {
+            return element;
+        }
+    }
+    return undefined;
+}
+
 export function is_scroll_position_for_render(): boolean {
     const scroll_position = window.scrollY;
     const window_height = window.innerHeight;
