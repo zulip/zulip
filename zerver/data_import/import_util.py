@@ -776,33 +776,32 @@ def get_emojis(
     Raises `BadImageError` when the content-type is not guessable, or
     not in both `THUMBNAIL_ACCEPT_IMAGE_TYPES` and `INLINE_MIME_TYPES`.
     """
-    response = _data_import_session.get(emoji_url, stream=True)
-    content_type_raw = response.headers.get("Content-Type")
-    if content_type_raw is None:
-        logging.warning(
-            "Emoji %s has an unspecified content type. Guessing from the file extension of %s",
-            emoji_name,
-            emoji_url,
+    with request_file_stream(emoji_url) as response:
+        content_type_raw = response.headers.get("Content-Type")
+        if content_type_raw is None:
+            logging.warning(
+                "Emoji %s has an unspecified content type. Guessing from the file extension of %s",
+                emoji_name,
+                emoji_url,
+            )
+            type, encoding = guess_type(emoji_url)
+            if type is None or encoding is not None:
+                raise BadImageError(f"Unknown content type for: {emoji_name}")
+            content_type_raw = type
+        content_type = bare_content_type(content_type_raw)
+        if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES or content_type not in INLINE_MIME_TYPES:
+            raise BadImageError(
+                f"Emoji {emoji_name} is not an image file. Content type: {content_type}"
+            )
+        emoji_file_name = get_emoji_file_name(content_type, emoji_id)
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=realm_id, emoji_file_name=emoji_file_name
         )
-        type, encoding = guess_type(emoji_url)
-        if type is None or encoding is not None:
-            raise BadImageError(f"Unknown content type for: {emoji_name}")
-        content_type_raw = type
-    content_type = bare_content_type(content_type_raw)
-    if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES or content_type not in INLINE_MIME_TYPES:
-        raise BadImageError(
-            f"Emoji {emoji_name} is not an image file. Content type: {content_type}"
-        )
-    emoji_file_name = get_emoji_file_name(content_type, emoji_id)
-    emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
-        realm_id=realm_id, emoji_file_name=emoji_file_name
-    )
-    upload_emoji_path = os.path.join(emoji_dir, emoji_path)
+        upload_emoji_path = os.path.join(emoji_dir, emoji_path)
 
-    response = request_file_stream(emoji_url)
-    os.makedirs(os.path.dirname(upload_emoji_path), exist_ok=True)
-    with open(upload_emoji_path, "wb") as emoji_file:
-        shutil.copyfileobj(response.raw, emoji_file)
+        os.makedirs(os.path.dirname(upload_emoji_path), exist_ok=True)
+        with open(upload_emoji_path, "wb") as emoji_file:
+            shutil.copyfileobj(response.raw, emoji_file)
 
     return GetEmojiResult(path_id=emoji_path, filename=emoji_file_name)
 
