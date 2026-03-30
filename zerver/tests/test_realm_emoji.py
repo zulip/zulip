@@ -1,3 +1,4 @@
+from io import BytesIO
 from unittest import mock
 
 from zerver.actions.create_realm import do_create_realm
@@ -380,7 +381,6 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_emoji_upload_empty_file_error(self) -> None:
         self.login("iago")
-        from io import BytesIO
         empty_file = BytesIO(b"")
         empty_file.name = "empty.png"
         result = self.client_post("/json/realm/emoji/my_emoji", {"file": empty_file})
