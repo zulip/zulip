@@ -20196,10 +20196,16 @@ paths:
                         type: object
                         description: |
                           Options for BigBlueButton call provider
-                        items:
+                        additionalProperties:
                           type: object
+                          description: |
+                            Option object where keys are the option names
                           additionalProperties: false
                           properties:
+                            id:
+                              type: number
+                              description: |
+                                ID of BigBlueButton option
                             option:
                               type: string
                               description: |
@@ -20213,17 +20219,19 @@ paths:
                               description: |
                                 Translation string for frontend
                             default:
+                              description: |
+                                Default option value
                               oneOf:
                                 - type: string
                                 - type: boolean
-                              description: |
-                                Default value for option
+                              example: true
                             value:
+                              description: |
+                                Current value of option
                               oneOf:
                                 - type: string
                                 - type: boolean
-                              description: |
-                                The current value of the option
+                              example: true
                             data_type:
                               type: string
                               description: |
@@ -20232,10 +20240,13 @@ paths:
                               type: string
                               description: |
                                 If its a creation or join option for BigBlueButton
-                            #list:
-                            #  type: array
-                            #  items:
-                            #    type: string
+                            list:
+                              type: object
+                              description: |
+                                List for select fields
+                              additionalProperties:
+                                description: Values must be strings
+                                type: string
                       realm_gif_rating_policy:
                         type: integer
                         description: |

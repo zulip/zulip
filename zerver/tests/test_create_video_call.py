@@ -381,15 +381,19 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
                 "name": "a",
                 "lock_settings_disable_cam": True,
                 "moderator": self.user.id,
+                "realm_id": self.user.realm.id,
             }
         )
+
+        test_user = self.example_user("cordelia")
         # For testing viewer role (different creator / moderator from self)
         self.signed_bbb_a_object_different_creator = self.signer.sign_object(
             {
                 "meeting_id": "a",
                 "name": "a",
                 "lock_settings_disable_cam": True,
-                "moderator": self.example_user("cordelia").id,
+                "moderator": test_user.id,
+                "realm_id": test_user.realm.id,
             }
         )
 
@@ -414,6 +418,7 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
                             "name": "general > meeting",
                             "lock_settings_disable_cam": False,
                             "moderator": self.user.id,
+                            "realm_id": self.user.realm.id,
                         }
                     ),
                 ),
@@ -435,6 +440,7 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
                             "name": "general > meeting",
                             "lock_settings_disable_cam": True,
                             "moderator": self.user.id,
+                            "realm_id": self.user.realm.id,
                         }
                     ),
                 ),
@@ -444,8 +450,17 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
     def test_join_bigbluebutton_redirect(self) -> None:
         responses.add(
             responses.GET,
-            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True"
-            "&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20",
+            "https://bbb.example.com/bigbluebutton/api/create"
+            "?muteOnStart=False"
+            "&guestPolicy=None"
+            "&userdata-bbb_skip_check_audio_on_first_join=False"
+            "&userdata-bbb_auto_join_audio=False"
+            "&userdata-bbb_listen_only_mode=False"
+            "&userdata-bbb_show_session_details_on_join=False"
+            "&meetingID=a"
+            "&name=a"
+            "&lockSettingsDisableCam=True"
+            "&checksum=159273d1e880700bd3646d30fce5760ad204dc029a0fb9b7e6deb69ac3da0a95",
             "<response><returncode>SUCCESS</returncode><messageKey/><createTime>0</createTime></response>",
         )
         response = self.client_get(
@@ -455,8 +470,19 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
         self.assertEqual(isinstance(response, HttpResponseRedirect), True)
         self.assertEqual(
             response["Location"],
-            "https://bbb.example.com/bigbluebutton/api/join?meetingID=a&"
-            "role=MODERATOR&fullName=King%20Hamlet&createTime=0&checksum=54259b884a7c20ddcd7b280a1b62e59d7990568fe4f22001812bc4bcfd161a46",
+            "https://bbb.example.com/bigbluebutton/api/join"
+            "?muteOnStart=False"
+            "&guestPolicy=None"
+            "&userdata-bbb_skip_check_audio_on_first_join=False"
+            "&userdata-bbb_auto_join_audio=False"
+            "&userdata-bbb_listen_only_mode=False"
+            "&userdata-bbb_show_session_details_on_join=False"
+            "&meetingID=a"
+            "&role=MODERATOR"
+            "&fullName=King%20Hamlet"
+            "&avatarURL=http%3A%2F%2Fzulip.testserver%2Fuser_avatars%2F2%2Fe90322c1ad8b4b5a614e97e339f7758dd36137c7.png"
+            "&createTime=0"
+            "&checksum=5151f03913824c5c4e7b6d8ec7294de17204f57060925af1f97968d57fd77c8e",
         )
         # Testing for viewer role
         response = self.client_get(
@@ -467,8 +493,19 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
         self.assertEqual(isinstance(response, HttpResponseRedirect), True)
         self.assertEqual(
             response["Location"],
-            "https://bbb.example.com/bigbluebutton/api/join?meetingID=a&"
-            "role=VIEWER&fullName=King%20Hamlet&createTime=0&checksum=52efaf64109ca4ec5a20a1d295f315af53f9e6ec30b50ed3707fd2909ac6bd94",
+            "https://bbb.example.com/bigbluebutton/api/join"
+            "?muteOnStart=False"
+            "&guestPolicy=None"
+            "&userdata-bbb_skip_check_audio_on_first_join=False"
+            "&userdata-bbb_auto_join_audio=False"
+            "&userdata-bbb_listen_only_mode=False"
+            "&userdata-bbb_show_session_details_on_join=False"
+            "&meetingID=a"
+            "&role=VIEWER"
+            "&fullName=King%20Hamlet"
+            "&avatarURL=http%3A%2F%2Fzulip.testserver%2Fuser_avatars%2F2%2Fe90322c1ad8b4b5a614e97e339f7758dd36137c7.png"
+            "&createTime=0"
+            "&checksum=7f56e4013dc9cd30475af0ef843466351f8d902c620c789ce2878b87a354585e",
         )
 
     @responses.activate
@@ -488,7 +525,17 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
     def test_join_bigbluebutton_redirect_wrong_big_blue_button_checksum(self) -> None:
         responses.add(
             responses.GET,
-            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20",
+            "https://bbb.example.com/bigbluebutton/api/create"
+            "?muteOnStart=False"
+            "&guestPolicy=None"
+            "&userdata-bbb_skip_check_audio_on_first_join=False"
+            "&userdata-bbb_auto_join_audio=False"
+            "&userdata-bbb_listen_only_mode=False"
+            "&userdata-bbb_show_session_details_on_join=False"
+            "&meetingID=a"
+            "&name=a"
+            "&lockSettingsDisableCam=True"
+            "&checksum=159273d1e880700bd3646d30fce5760ad204dc029a0fb9b7e6deb69ac3da0a95",
             "<response><returncode>FAILED</returncode><messageKey>checksumError</messageKey>"
             "<message>You did not pass the checksum security check</message></response>",
         )
@@ -503,7 +550,17 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
         # Simulate bbb server error
         responses.add(
             responses.GET,
-            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20",
+            "https://bbb.example.com/bigbluebutton/api/create"
+            "?muteOnStart=False"
+            "&guestPolicy=None"
+            "&userdata-bbb_skip_check_audio_on_first_join=False"
+            "&userdata-bbb_auto_join_audio=False"
+            "&userdata-bbb_listen_only_mode=False"
+            "&userdata-bbb_show_session_details_on_join=False"
+            "&meetingID=a"
+            "&name=a"
+            "&lockSettingsDisableCam=True"
+            "&checksum=159273d1e880700bd3646d30fce5760ad204dc029a0fb9b7e6deb69ac3da0a95",
             status=500,
             body="Something went wrong",
         )
@@ -519,7 +576,17 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
     def test_join_bigbluebutton_connection_refused(self) -> None:
         responses.add(
             responses.GET,
-            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20",
+            "https://bbb.example.com/bigbluebutton/api/create"
+            "?muteOnStart=False"
+            "&guestPolicy=None"
+            "&userdata-bbb_skip_check_audio_on_first_join=False"
+            "&userdata-bbb_auto_join_audio=False"
+            "&userdata-bbb_listen_only_mode=False"
+            "&userdata-bbb_show_session_details_on_join=False"
+            "&meetingID=a"
+            "&name=a"
+            "&lockSettingsDisableCam=True"
+            "&checksum=159273d1e880700bd3646d30fce5760ad204dc029a0fb9b7e6deb69ac3da0a95",
             body=requests.exceptions.ConnectionError("Connection refused"),
         )
         response = self.client_get(
@@ -535,7 +602,17 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
         # Simulate bbb server error
         responses.add(
             responses.GET,
-            "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20",
+            "https://bbb.example.com/bigbluebutton/api/create"
+            "?muteOnStart=False"
+            "&guestPolicy=None"
+            "&userdata-bbb_skip_check_audio_on_first_join=False"
+            "&userdata-bbb_auto_join_audio=False"
+            "&userdata-bbb_listen_only_mode=False"
+            "&userdata-bbb_show_session_details_on_join=False"
+            "&meetingID=a"
+            "&name=a"
+            "&lockSettingsDisableCam=True"
+            "&checksum=159273d1e880700bd3646d30fce5760ad204dc029a0fb9b7e6deb69ac3da0a95",
             "<response><returncode>FAILURE</returncode><messageKey>otherFailure</messageKey></response>",
         )
         response = self.client_get(

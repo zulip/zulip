@@ -1,14 +1,14 @@
 from dataclasses import asdict
 from types import SimpleNamespace
-from typing import Any, cast
+from typing import cast
 
+import zerver.models.realm_big_blue_button as bbb
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models.realm_big_blue_button import (
     BigBlueButtonOption,
     BigBlueButtonOptionBool,
     BigBlueButtonOptionList,
     BigBlueButtonOptionStr,
-    KnownBigBlueButtonOptions,
     RealmBigBlueButton,
     create_model_from_option,
     flatten_params,
@@ -142,13 +142,13 @@ class TestRealmBigBlueButton(ZulipTestCase):
 
     def test_flatten_params_missing_value_defaults(self) -> None:
         options = [
-            BigBlueButtonOption(option="a", data_type="str", real_option=""),
-            BigBlueButtonOption(option="b", data_type="bool", real_option=""),
+            BigBlueButtonOptionStr(option="a", data_type="str", real_option="", value="test"),
+            BigBlueButtonOptionBool(option="b", data_type="bool", real_option="", value=False),
         ]
 
         result = flatten_params(options)
 
-        self.assertEqual(result["a"], "")
+        self.assertEqual(result["a"], "test")
         self.assertFalse(result["b"])
 
     def test_parse_boolean_option(self) -> None:
@@ -207,13 +207,9 @@ class TestRealmBigBlueButton(ZulipTestCase):
             real_option="",
         )
 
-        original_merge = merge_big_blue_button_options_defaults
+        original_options = bbb.KnownBigBlueButtonOptions
         try:
-
-            def fake_merge(realm_id: int, parameter_type: Any = None) -> list[Any]:
-                return [fake]
-
-            globals()["merge_big_blue_button_options_defaults"] = fake_merge
+            bbb.KnownBigBlueButtonOptions = [fake]
 
             result = get_all_big_blue_button_options_uncached(1)
             self.assertIn("c", result)
@@ -225,19 +221,19 @@ class TestRealmBigBlueButton(ZulipTestCase):
             self.assertEqual(option.list, {"x": "X"})
             self.assertEqual(option.value, "x")
         finally:
-            globals()["merge_big_blue_button_options_defaults"] = original_merge
+            bbb.KnownBigBlueButtonOptions = original_options
 
     def test_create_model_from_option_found_and_not_found(self) -> None:
-        fake_option = SimpleNamespace(
+        fake_option = BigBlueButtonOptionStr(
             option="opt1",
             data_type="str",
             parameter_type="create_param",
             real_option="real_opt1",
         )
 
-        original_options = list(KnownBigBlueButtonOptions)
+        original_options = bbb.KnownBigBlueButtonOptions
         try:
-            globals()["KnownBigBlueButtonOptions"] = [fake_option]
+            bbb.KnownBigBlueButtonOptions = [fake_option]
 
             model = create_model_from_option(1, "opt1")
             self.assertIsNotNone(model)
@@ -248,4 +244,4 @@ class TestRealmBigBlueButton(ZulipTestCase):
             model_none = create_model_from_option(1, "unknown")
             self.assertIsNone(model_none)
         finally:
-            globals()["KnownBigBlueButtonOptions"] = original_options
+            bbb.KnownBigBlueButtonOptions = original_options
