@@ -1,4 +1,4 @@
-<div class="popover-menu" data-simplebar data-simplebar-tab-index="-1">
+<div class="popover-menu" id="add-stream-menu-popover" data-simplebar data-simplebar-tab-index="-1">
     <ul role="menu" class="popover-menu-list">
         <li role="none" class="link-item popover-menu-list-item">
             <a href="#channels/available" role="menuitem" class="popover-menu-link navigate_and_close_popover" tabindex="0">
@@ -12,5 +12,37 @@
                 <span class="popover-menu-label">{{t "Create a channel" }}</span>
             </a>
         </li>
+        <li role="separator" class="popover-menu-separator"></li>
+        <li role="none" class="link-item">
+            <label class="popover-menu-link" role="menuitem">
+                <span class="popover-menu-label">
+                    {{t 'Show unread counts for' }}
+                </span>
+            </label>
+        </li>
+        {{#each (object_values web_stream_unreads_count_display_policy_values)}}
+            <li role="none" class="web-stream-unreads-count-display-policy-option link-item" value="{{this.code}}">
+                <label class="popover-menu-link" role="menuitem" tabindex="0">
+                    <input type="radio" class="web_stream_unreads_count_display_policy_choice" name="web_stream_unreads_count_display_policy" value="{{this.code}}"/>
+                    <span class="popover-menu-label">{{this.description}}</span>
+                </label>
+            </li>
+        {{/each}}
+        <li role="separator" class="popover-menu-separator"></li>
+        <li role="none" class="link-item">
+            <label class="popover-menu-link" role="menuitem">
+                <span class="popover-menu-label">
+                    {{t 'Channel links in the left sidebar go to' }}
+                </span>
+            </label>
+        </li>
+        {{#each (object_values web_channel_default_view_values)}}
+            <li role="none" class="web-channel-default-view-option link-item" value="{{this.code}}">
+                <label class="popover-menu-link" role="menuitem" tabindex="0">
+                    <input type="radio" class="web_channel_default_view_choice" name="web_channel_default_view" value="{{this.code}}"/>
+                    <span class="popover-menu-label">{{this.description}}</span>
+                </label>
+            </li>
+        {{/each}}
     </ul>
 </div>
