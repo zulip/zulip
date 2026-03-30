@@ -486,7 +486,7 @@ def get_bigbluebutton_url(
             "name": meeting_name,
             "lock_settings_disable_cam": voice_only,
             "moderator": request.user.id,
-            "realm_id": user_profile.realm_id,
+            "realm_id": request.user.realm.id,
         }
     )
     url = append_url_query_string("/calls/bigbluebutton/join", "bigbluebutton=" + signed)
