@@ -286,6 +286,32 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_USER)
         self.assertTrue(os.path.exists(avatar_disk_path(profile)))
 
+    def test_add_bot_with_empty_avatar_file(self) -> None:
+        self.login("hamlet")
+        self.assert_num_bots_equal(0)
+        with self.settings(MAX_AVATAR_FILE_SIZE_MIB=10):
+            empty_file = BytesIO(b"")
+            empty_file.name = "empty.png"
+            bot_info = {
+                "full_name": "The Bot of Hamlet",
+                "short_name": "hambot",
+            }
+            result = self.client_post("/json/bots", dict(bot_info, file=empty_file))
+        self.assert_json_error(result, "Uploaded file is empty.")
+        self.assert_num_bots_equal(0)
+
+    def test_add_bot_with_oversized_avatar_file(self) -> None:
+        self.login("hamlet")
+        self.assert_num_bots_equal(0)
+        with get_test_image_file("img.png") as fp, self.settings(MAX_AVATAR_FILE_SIZE_MIB=0):
+            bot_info = {
+                "full_name": "The Bot of Hamlet",
+                "short_name": "hambot",
+            }
+            result = self.client_post("/json/bots", dict(bot_info, file=fp))
+        self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
+        self.assert_num_bots_equal(0)
+
     def test_add_bot_with_too_many_files(self) -> None:
         self.login("hamlet")
         self.assert_num_bots_equal(0)

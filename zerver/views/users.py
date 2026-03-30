@@ -731,6 +731,14 @@ def add_bot_backend(
         [user_file] = request.FILES.values()
         assert isinstance(user_file, UploadedFile)
         assert user_file.size is not None
+        if user_file.size == 0:
+            raise JsonableError(_("Uploaded file is empty."))
+        if user_file.size > settings.MAX_AVATAR_FILE_SIZE_MIB * 1024 * 1024:
+            raise JsonableError(
+                _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(
+                    max_size=settings.MAX_AVATAR_FILE_SIZE_MIB,
+                )
+            )
         upload_avatar_image(
             user_file, bot_profile, content_type=user_file.content_type, future=False
         )
