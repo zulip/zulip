@@ -4,7 +4,11 @@
 # You can also read
 #   https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
 # to get a tutorial on the framework that inspired this feature.
+from datetime import timedelta
+from unittest.mock import patch
+
 from django.db.migrations.state import StateApps
+from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from zerver.lib.test_classes import MigrationsTestCase
@@ -22,45 +26,127 @@ from zerver.lib.test_classes import MigrationsTestCase
 #   "zerver_subscription" because it has pending trigger events
 
 
-class FixDeletedUserEmail(MigrationsTestCase):
-    migrate_from = "0804_backfill_user_created_audit_logs"
-    migrate_to = "0805_fix_deleteduser_email"
+class BackfillRealmEmojiCreationDates(MigrationsTestCase):
+    migrate_from = "0806_stream_default_push_notifications"
+    migrate_to = "0807_realmemoji_date_created"
+
+    @override
+    def setUp(self) -> None:
+        with patch("builtins.print") as _:
+            super().setUp()
 
     @override
     def setUpBeforeMigration(self, apps: StateApps) -> None:
+        self.apps = apps
+        Realm = apps.get_model("zerver", "Realm")
+        RealmEmoji = apps.get_model("zerver", "RealmEmoji")
+        RealmAuditLog = apps.get_model("zerver", "RealmAuditLog")
         UserProfile = apps.get_model("zerver", "UserProfile")
 
-        # Simulate a user deleted before the fix in 208c0c303405,
-        # after 0439_fix_deleteduser_email repaired delivery_email.
-        deleted_user = self.example_user("hamlet")
-        UserProfile.objects.filter(id=deleted_user.id).update(
-            is_active=False,
-            email=f"deleteduser{deleted_user.id}@https://zulip.testserver",
-            delivery_email=f"deleteduser{deleted_user.id}@zulip.testserver",
+        test_user = UserProfile.objects.first()
+
+        # Set up distinct timestamps to easily assert which fallback was used
+        self.realm_creation_time = timezone_now() - timedelta(days=30)
+        self.oldest_log_time = self.realm_creation_time + timedelta(days=5)
+        self.exact_match_log_time = self.realm_creation_time + timedelta(days=10)
+
+        EVENT_TYPE = 226
+
+        realms = list(Realm.objects.order_by("id")[:3])
+        self.realm_with_exact_match = realms[0]
+        self.realm_with_atleast_one_emoji_add_log = realms[1]
+        self.realm_with_no_emoji_add_logs = realms[2]
+
+        # Override creation dates for realms.
+        self.original_realm_dates = {}
+        for realm in [
+            self.realm_with_exact_match,
+            self.realm_with_atleast_one_emoji_add_log,
+            self.realm_with_no_emoji_add_logs,
+        ]:
+            self.original_realm_dates[realm.id] = realm.date_created
+            realm.date_created = self.realm_creation_time
+            realm.save(update_fields=["date_created"])
+
+        self.emoji_exact = RealmEmoji.objects.create(
+            realm_id=self.realm_with_exact_match.id,
+            file_name="exact",
+            name="exact",
+            author=test_user,
         )
-        self.deleted_user_id = deleted_user.id
+        log1 = RealmAuditLog.objects.create(
+            realm=self.realm_with_exact_match,
+            event_type=EVENT_TYPE,
+            event_time=self.oldest_log_time,
+            extra_data={"added_emoji": {"id": 99999}},
+        )
+        log2 = RealmAuditLog.objects.create(
+            realm=self.realm_with_exact_match,
+            event_type=EVENT_TYPE,
+            event_time=self.exact_match_log_time,
+            extra_data={"added_emoji": {"id": self.emoji_exact.id}},
+        )
 
-        # A normal active user, as a control.
-        control_user = self.example_user("cordelia")
-        self.control_user_id = control_user.id
-        self.control_user_email = control_user.email
+        self.emoji_earliest = RealmEmoji.objects.create(
+            realm_id=self.realm_with_atleast_one_emoji_add_log.id,
+            file_name="earliest",
+            name="earliest",
+            author=test_user,
+        )
+        log3 = RealmAuditLog.objects.create(
+            realm=self.realm_with_atleast_one_emoji_add_log,
+            event_type=EVENT_TYPE,
+            event_time=self.oldest_log_time,
+            extra_data={"added_emoji": {"id": 88888}},
+        )
+        log4 = RealmAuditLog.objects.create(
+            realm=self.realm_with_atleast_one_emoji_add_log,
+            event_type=EVENT_TYPE,
+            event_time=self.exact_match_log_time,
+            extra_data={"added_emoji": {"id": 77777}},
+        )
 
-        # A deactivated user with a valid email, as a control for the
-        # is_active=False part of the migration's filter.
-        deactivated_user = self.example_user("othello")
-        UserProfile.objects.filter(id=deactivated_user.id).update(is_active=False)
-        self.deactivated_user_id = deactivated_user.id
-        self.deactivated_user_email = deactivated_user.email
+        self.emoji_fallback = RealmEmoji.objects.create(
+            realm_id=self.realm_with_no_emoji_add_logs.id,
+            file_name="fallback",
+            name="fallback",
+            author=test_user,
+        )
 
-    def test_deleted_user_email_fixed(self) -> None:
-        UserProfile = self.apps.get_model("zerver", "UserProfile")
+        self.created_log_ids = [log1.id, log2.id, log3.id, log4.id]
+        self.created_emoji_ids = [
+            self.emoji_exact.id,
+            self.emoji_earliest.id,
+            self.emoji_fallback.id,
+        ]
 
-        deleted_user = UserProfile.objects.get(id=self.deleted_user_id)
-        self.assertEqual(deleted_user.email, f"deleteduser{deleted_user.id}@zulip.testserver")
-        self.assertEqual(deleted_user.email, deleted_user.delivery_email)
+    def test_backfill_emoji_creation_dates(self) -> None:
+        RealmEmoji = self.apps.get_model("zerver", "RealmEmoji")
 
-        control_user = UserProfile.objects.get(id=self.control_user_id)
-        self.assertEqual(control_user.email, self.control_user_email)
+        # Fetch the updated emojis from the database post-migration
+        emoji_exact = RealmEmoji.objects.get(id=self.emoji_exact.id)
+        emoji_earliest = RealmEmoji.objects.get(id=self.emoji_earliest.id)
+        emoji_fallback = RealmEmoji.objects.get(id=self.emoji_fallback.id)
 
-        deactivated_user = UserProfile.objects.get(id=self.deactivated_user_id)
-        self.assertEqual(deactivated_user.email, self.deactivated_user_email)
+        # Emoji having a EMOJI_ADDED_EVENT log should use the event_date.
+        self.assertEqual(emoji_exact.date_created, self.exact_match_log_time)
+
+        # Emoji not having a corresponding EMOJI_ADDED_EVENT log should fall back to
+        # using the event_date of the earliest emoji created in the realm.
+        self.assertEqual(emoji_earliest.date_created, self.oldest_log_time)
+
+        # Emoji belonging to a realm that doesn't have EMOJI_ADDED_EVENT logs
+        # should fallback to using the realm creation date for the backfill.
+        self.assertEqual(emoji_fallback.date_created, self.realm_creation_time)
+
+    @override
+    def tearDown(self) -> None:
+        Realm = self.apps.get_model("zerver", "Realm")
+        RealmEmoji = self.apps.get_model("zerver", "RealmEmoji")
+        RealmAuditLog = self.apps.get_model("zerver", "RealmAuditLog")
+
+        for realm_id, original_date in self.original_realm_dates.items():
+            Realm.objects.filter(id=realm_id).update(date_created=original_date)
+
+        RealmAuditLog.objects.filter(id__in=self.created_log_ids).delete()
+        RealmEmoji.objects.filter(id__in=self.created_emoji_ids).delete()
