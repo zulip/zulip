@@ -4917,6 +4917,34 @@ class GenericOpenIdConnectTest(SocialAuthBase):
             m.output, [self.logger_output("/login/oidc/: Missing idp param.", type="info")]
         )
 
+    def test_social_auth_oidc_require_limit_to_subdomains(self) -> None:
+        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
+        idps_dict["testoidc2"] = copy.deepcopy(idps_dict["testoidc"])
+        idps_dict["testoidc2"]["oidc_url"] = "https://example.com/idp2/api/openid"
+        idps_dict["testoidc2"]["display_name"] = "Second Test IdP"
+        idps_dict["testoidc2"]["limit_to_subdomains"] = ["zulip"]
+
+        with self.settings(
+            SOCIAL_AUTH_OIDC_ENABLED_IDPS=idps_dict, OIDC_REQUIRE_LIMIT_TO_SUBDOMAINS=True
+        ):
+            with self.assertLogs(self.logger_string, level="ERROR") as m:
+                # Initialization of the backend should validate the configured IdPs
+                # with respect to the OIDC_REQUIRE_LIMIT_TO_SUBDOMAINS setting and remove
+                # the non-compliant ones.
+                GenericOpenIdConnectBackend()
+            self.assertEqual(list(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.keys()), ["testoidc2"])
+        self.assertEqual(
+            m.output,
+            [
+                self.logger_output(
+                    "OIDC_REQUIRE_LIMIT_TO_SUBDOMAINS is enabled and the following "
+                    "IdPs don't have limit_to_subdomains specified and will be ignored: "
+                    "['testoidc']",
+                    "error",
+                )
+            ],
+        )
+
     def test_social_auth_oidc_idp_limited_to_subdomains_attempt_wrong_realm(self) -> None:
         idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
         idps_dict["testoidc"]["limit_to_subdomains"] = ["zulip"]

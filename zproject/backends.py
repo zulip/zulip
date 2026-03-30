@@ -3789,6 +3789,21 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
     full_name_validated = getattr(settings, "SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED", False)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        if settings.OIDC_REQUIRE_LIMIT_TO_SUBDOMAINS:
+            idps_without_limit_to_subdomains = [
+                idp_name
+                for idp_name, idp_dict in settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.items()
+                if "limit_to_subdomains" not in idp_dict
+            ]
+            if idps_without_limit_to_subdomains:
+                self.logger.error(
+                    "OIDC_REQUIRE_LIMIT_TO_SUBDOMAINS is enabled and the following IdPs don't have"
+                    " limit_to_subdomains specified and will be ignored: %r",
+                    idps_without_limit_to_subdomains,
+                )
+                for idp_name in idps_without_limit_to_subdomains:
+                    del settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS[idp_name]
+
         self.server_settings_dict: dict[str, OIDCIdPConfigDict] = (
             settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS
         )

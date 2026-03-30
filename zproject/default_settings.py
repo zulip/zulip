@@ -99,6 +99,7 @@ SOCIAL_AUTH_SAML_SECURITY_CONFIG: dict[str, Any] = {}
 # Set this to True to enforce that any configured IdP needs to specify
 # the limit_to_subdomains setting to be considered valid:
 SAML_REQUIRE_LIMIT_TO_SUBDOMAINS = False
+OIDC_REQUIRE_LIMIT_TO_SUBDOMAINS = False
 
 # Historical name for SOCIAL_AUTH_GITHUB_KEY; still allowed in production.
 GOOGLE_OAUTH2_CLIENT_ID: str | None = None
