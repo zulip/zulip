@@ -7,7 +7,7 @@ import render_add_rsvp_meeting_modal from "../templates/add_rsvp_meeting_modal.h
 import * as add_meeting from "./add_meeting.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
-import {$t, $t_html} from "./i18n.ts";
+import { $t, $t_html } from "./i18n.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
@@ -34,7 +34,7 @@ function submit_rsvp_meeting_form(): void {
 
   const invitee_ids = user_pill.get_user_ids(invite_users_widget);
 
-  console.log({topic, datetime, invitee_ids});
+  console.log({ topic, datetime, invitee_ids });
 }
 
 function update_rsvp_submit_button_state(): void {
@@ -52,24 +52,14 @@ function update_rsvp_submit_button_state(): void {
 }
 
 function populate_user_dropdown(): void {
-  const stream_id = narrow_state.stream_id();
   const $dropdown = $("#rsvp-user-dropdown");
 
   $dropdown.empty();
 
-  let users: people.User[] = [];
-
-  if (stream_id) {
-    const user_ids = peer_data.get_subscriber_ids_assert_loaded(stream_id);
-    for (const id of user_ids) {
-      const user = people.get_by_user_id(id);
-      if (user) {
-        users.push(user);
-      }
-    }
-  } else {
-    users = people.get_realm_users();
-  }
+  const already_added_ids = new Set(user_pill.get_user_ids(invite_users_widget));
+  const users = people.get_realm_users().filter(
+    (user) => !already_added_ids.has(user.user_id),
+  );
 
   if (users.length === 0) {
     $dropdown.append(
@@ -120,13 +110,36 @@ function rsvp_meeting_modal_post_render(): void {
     $("#rsvp-invite-users-container"),
   );
 
+  invite_users_widget.onPillCreate(() => {
+    $("#rsvp-invite-users").removeAttr("data-placeholder");
+  });
+
+  invite_users_widget.onPillRemove(() => {
+    if (user_pill.get_user_ids(invite_users_widget).length === 0) {
+      $("#rsvp-invite-users").attr("data-placeholder", $t({ defaultMessage: "Add users" }));
+    }
+  });
+
+  $(document).on("click.rsvp-dropdown", (e) => {
+    const $dropdown = $("#rsvp-user-dropdown");
+    if (
+      $dropdown.is(":visible") &&
+      !$(e.target).closest("#rsvp-user-dropdown, #rsvp-invite-users-container, #rsvp-user-dropdown-button").length
+    ) {
+      $dropdown.hide();
+    }
+  });
+
   $("#rsvp-invite-users").on("input", () => {
     const query = ($("#rsvp-invite-users").text() ?? "").toLowerCase().trim();
     const $dropdown = $("#rsvp-user-dropdown");
 
-    if (!$dropdown.is(":visible")) {
+    if (!query) {
+      $dropdown.hide();
       return;
     }
+
+    populate_user_dropdown();
 
     $dropdown.find(".rsvp-user-option").each(function () {
       const name = $(this).find(".user-name").text().toLowerCase();
@@ -139,18 +152,19 @@ function rsvp_meeting_modal_post_render(): void {
       const rect = containerEl.getBoundingClientRect();
       const dropdownEl = $dropdown[0];
       if (dropdownEl) {
+        $dropdown.show();
         const dropdownHeight = dropdownEl.offsetHeight;
-        $dropdown.css("top", rect.top - dropdownHeight - 4);
+        $dropdown.css({
+          top: rect.top - dropdownHeight - 4,
+          left: rect.left,
+          width: rect.width,
+        });
       }
     }
   });
 
-  $("#rsvp-invite-users").on("focus", () => {
-    if (!$("#rsvp-user-dropdown").is(":visible")) {
-      setTimeout(() => {
-        $("#rsvp-user-dropdown-button").trigger("click");
-      }, 0);
-    }
+  $("#rsvp-invite-users").on("click focus", () => {
+    $("#rsvp-user-dropdown").hide();
   });
 
   $("#rsvp-user-dropdown-button").on("click", () => {
@@ -277,15 +291,18 @@ function rsvp_meeting_modal_post_render(): void {
 }
 
 function on_add_all_users_click(): void {
-  // TODO: populate invite users field with all users in the current channel
-  const users = people.get_realm_users();
+  const stream_id = narrow_state.stream_id();
 
-  if (!invite_users_widget) {
+  if (!invite_users_widget || !stream_id) {
     return;
   }
 
-  for (const user of users) {
-    user_pill.append_user(user, invite_users_widget);
+  const user_ids = peer_data.get_subscriber_ids_assert_loaded(stream_id);
+  for (const id of user_ids) {
+    const user = people.get_by_user_id(id);
+    if (user) {
+      user_pill.append_user(user, invite_users_widget);
+    }
   }
 }
 
@@ -305,15 +322,19 @@ function item_click_callback(
 
   if (current_value === add_meeting.OPTION_RSVP_MEETING) {
     dialog_widget.launch({
-      modal_title_html: $t_html({defaultMessage: "Meeting RSVP"}),
+      modal_title_html: $t_html({ defaultMessage: "Meeting RSVP" }),
       modal_content_html: render_add_rsvp_meeting_modal({}),
-      modal_submit_button_text: $t({defaultMessage: "Submit"}),
+      modal_submit_button_text: $t({ defaultMessage: "Submit" }),
       id: "add-rsvp-meeting-modal",
       form_id: "rsvp-meeting-form",
       update_submit_disabled_state_on_change: true,
       on_click: submit_rsvp_meeting_form,
       on_shown: () => $("#rsvp-meeting-topic").trigger("focus"),
       post_render: rsvp_meeting_modal_post_render,
+      on_hide() {
+        $("#rsvp-user-dropdown").hide();
+        $(document).off("click.rsvp-dropdown");
+      },
     });
   } else if (current_value === add_meeting.OPTION_PROPOSE_MEETING) {
     // TODO: implement "Propose a meeting" flow
