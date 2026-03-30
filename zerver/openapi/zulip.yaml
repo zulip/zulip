@@ -20211,7 +20211,7 @@ paths:
                             translation:
                               type: string
                               description: |
-                                Translation string for fronend
+                                Translation string for frontend
                             default:
                               oneOf:
                                 - type: string
