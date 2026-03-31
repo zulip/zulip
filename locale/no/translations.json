@@ -1,5 +1,5 @@
 {
-  "%'{file}' exceeds the maximum file size for attachments ({variable} MB).": "%'{fil}' overgår maksimum lovlig filstørrelse for vedlegg ({variabel} MB).",
+  "%'{file}' exceeds the maximum file size for attachments ({variable} MB).": "%'{file}' overgår maksimum lovlig filstørrelse for vedlegg ({variable} MB).",
   "(attached file)": "",
   "(default)": "",
   "(forever)": "(for alltid)",
@@ -34,7 +34,7 @@
   "5 minutes": "5 minutter",
   "6 hours": "6 timer",
   "90 days": "",
-  "<b>Total messages</b>: {total_messages}": "<b>Totalt antall beskjeder</b>:: {antall_beskjeder}",
+  "<b>Total messages</b>: {total_messages}": "<b>Totalt antall beskjeder</b>: {total_messages}",
   "<kbd>Enter</kbd> sends when composing a message": "",
   "<p><strong>{file_name}</strong> will be removed from the messages where it was shared. This action cannot be undone.</p>": "",
   "<p>You are searching for messages that are sent by more than one person, which is not possible.</p>": "",

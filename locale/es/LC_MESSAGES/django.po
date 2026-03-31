@@ -29,17 +29,17 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-02-02 21:47+0000\n"
-"PO-Revision-Date: 2025-08-07 23:52+0000\n"
-"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
-"Language-Team: Spanish <https://hosted.weblate.org/projects/zulip/django/es/"
-">\n"
+"PO-Revision-Date: 2026-03-25 01:09+0000\n"
+"Last-Translator: zǝʇɹoɔ oɓıɹpoɹ <roicort@icloud.com>\n"
+"Language-Team: Spanish <https://hosted.weblate.org/projects/zulip/django-11-"
+"x/es/>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == "
 "0) ? 1 : 2);\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -453,6 +453,9 @@ msgid ""
 "Something went wrong. Sorry about that! We're aware of the problem and are "
 "working to fix it. Zulip will load automatically once it is working again."
 msgstr ""
+"Algo salió mal. ¡Lo sentimos por eso! Somos conscientes del problema y "
+"estamos trabajando para solucionarlo. Zulip se cargará automáticamente "
+"cuando vuelva a funcionar."
 
 #: templates/500.html:27
 #, python-format
@@ -469,22 +472,13 @@ msgid ""
 msgstr ""
 
 #: templates/500.html:42
-#, fuzzy, python-format
-#| msgid ""
-#| "\n"
-#| "                In the meantime, you can <a href=\"mailto:"
-#| "%(support_email)s\">contact\n"
-#| "                this server's administrators</a> for support.\n"
-#| "                "
+#, python-format
 msgid ""
 "<a href=\"mailto:%(support_email)s\">Contact this server's administrators</"
 "a> for support."
 msgstr ""
-"\n"
-"                Mientras tanto, puede <a href=\"mailto:"
-"%(support_email)s\">contactar\n"
-"                con el administrador del servidor</a> para recibir soporte.\n"
-"                "
+"<a href=\"mailto:%(support_email)s\"> Ponte en contacto con los "
+"administradores de este servidor </a> para obtener asistencia."
 
 #: templates/500.html:47
 #, python-format
@@ -1778,38 +1772,24 @@ msgid ""
 msgstr "Esta organización ha sido desactivada"
 
 #: templates/zerver/deactivated.html:40
-#, fuzzy, python-format
-#| msgid ""
-#| "\n"
-#| "                In the meantime, you can <a href=\"mailto:"
-#| "%(support_email)s\">contact Zulip support</a>.\n"
-#| "                "
+#, python-format
 msgid ""
 "You can <a href=\"mailto:%(support_email)s\">contact Zulip support</a> to "
 "inquire about reusing this URL for a new organization."
 msgstr ""
-"\n"
-"                Mientras tanto, puede <a href=\"mailto:"
-"%(support_email)s\">contactar con el soporte de Zulip</a>.\n"
-"                "
+"Puedes <a href=\"mailto:%(support_email)s\"> ponerte en contacto con el "
+"soporte de Zulip </a> para solicitar información sobre la reutilización de "
+"esta URL para una nueva organización."
 
 #: templates/zerver/deactivated.html:44
-#, fuzzy, python-format
-#| msgid ""
-#| "\n"
-#| "                In the meantime, you can <a href=\"mailto:"
-#| "%(support_email)s\">contact\n"
-#| "                this server's administrators</a> for support.\n"
-#| "                "
+#, python-format
 msgid ""
 "You can <a href=\"mailto:%(support_email)s\">contact this Zulip server's "
 "administrators</a> to inquire about reusing this URL for a new organization."
 msgstr ""
-"\n"
-"                Mientras tanto, puede <a href=\"mailto:"
-"%(support_email)s\">contactar\n"
-"                con el administrador del servidor</a> para recibir soporte.\n"
-"                "
+"Puedes <a href=\"mailto:%(support_email)s\"> ponerte en contacto con los "
+"administradores de este servidor Zulip </a> para solicitar información sobre "
+"la reutilización de esta URL para una nueva organización."
 
 #: templates/zerver/deactivated.html:49
 #, fuzzy
@@ -1818,39 +1798,24 @@ msgid "This organization has been deactivated."
 msgstr "Esta organización ha sido desactivada"
 
 #: templates/zerver/deactivated.html:51
-#, fuzzy, python-format
-#| msgid ""
-#| "\n"
-#| "                In the meantime, you can <a href=\"mailto:"
-#| "%(support_email)s\">contact Zulip support</a>.\n"
-#| "                "
+#, python-format
 msgid ""
 "If you are an owner of this organization, you can <a href=\"mailto:"
 "%(support_email)s\">contact Zulip support</a> to reactivate it."
 msgstr ""
-"\n"
-"                Mientras tanto, puede <a href=\"mailto:"
-"%(support_email)s\">contactar con el soporte de Zulip</a>.\n"
-"                "
+"Si eres propietario de esta organización, puedes <a href=\"mailto:%"
+"(support_email)s\"> contactar con el soporte de Zulip </a> para reactivarla."
 
 #: templates/zerver/deactivated.html:55
-#, fuzzy, python-format
-#| msgid ""
-#| "\n"
-#| "                In the meantime, you can <a href=\"mailto:"
-#| "%(support_email)s\">contact\n"
-#| "                this server's administrators</a> for support.\n"
-#| "                "
+#, python-format
 msgid ""
 "If you are an owner of this organization, you can <a href=\"mailto:"
 "%(support_email)s\">contact this Zulip server's administrators</a> to "
 "reactivate it."
 msgstr ""
-"\n"
-"                Mientras tanto, puede <a href=\"mailto:"
-"%(support_email)s\">contactar\n"
-"                con el administrador del servidor</a> para recibir soporte.\n"
-"                "
+"Si eres propietario de esta organización, puedes <a href=\"mailto:%"
+"(support_email)s\"> contactar con los administradores de este servidor Zulip "
+"</a> para reactivarlo."
 
 #: templates/zerver/desktop_login.html:5
 msgid "Finish desktop app login"
@@ -2382,38 +2347,26 @@ msgstr ""
 
 #: templates/zerver/emails/digest.txt:22
 #: templates/zerver/emails/missed_message.txt:11
-#, fuzzy, python-format
-#| msgid ""
-#| "\n"
-#| "This email does not include message content because your organization has "
-#| "disabled message content appearing in email notifications.\n"
-#| "See %(hide_content_url)s for more details.\n"
+#, python-format
 msgid ""
 "This email does not include message content because your organization hides "
 "message content in email notifications. See %(hide_content_url)s for more "
 "details."
 msgstr ""
-"\n"
 "Este correo no incluye el contenido del mensaje debido a que tu organización "
-"desactivó que se muestre su contenido en las notificaciones por correo.\n"
-"Revise %(hide_content_url)s para más detalles.\n"
+"desactivó la vista de su contenido en las notificaciones por correo. Revise %"
+"(hide_content_url)s para más detalles."
 
 #: templates/zerver/emails/digest.txt:26
 #: templates/zerver/emails/missed_message.txt:15
-#, fuzzy, python-format
-#| msgid ""
-#| "\n"
-#| "This email does not include message content because you have disabled "
-#| "message content appearing in email notifications.\n"
-#| "See %(alert_notif_url)s for more details.\n"
+#, python-format
 msgid ""
 "This email does not include message content because you have chosen to hide "
 "message content in email notifications. See %(help_url)s for more details."
 msgstr ""
-"\n"
-"Este correo no incluye el contenido del mensaje porque se desactivó que su "
-"contenido sea mostrado en las notificaciones por correo.\n"
-"Revise %(alert_notif_url)s para más detalles.\n"
+"Este correo no incluye el contenido del mensaje debido a que has desactivado "
+"la vista de su contenido en las notificaciones por correo. Revisa %(help_url)"
+"s para más detalles."
 
 #: templates/zerver/emails/digest.txt:32
 #, fuzzy, python-format
@@ -3635,7 +3588,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:102
 msgid "Mastodon"
-msgstr ""
+msgstr "Mastodon"
 
 #: templates/zerver/footer.html:103
 msgid "LinkedIn"
@@ -5513,7 +5466,7 @@ msgstr ""
 
 #: zerver/lib/external_accounts.py:73
 msgid "Invalid external account type"
-msgstr "Tipo de cuenta externa inválido"
+msgstr "Tipo de cuenta externa inválida"
 
 #: zerver/lib/integrations.py:42
 msgid "Integration frameworks"
@@ -5701,21 +5654,18 @@ msgid ""
 msgstr ""
 
 #: zerver/lib/onboarding.py:114
-#, fuzzy, python-brace-format
-#| msgid ""
-#| " Congratulations, you have created a new demo Zulip organization. Note "
-#| "that this organization will be automatically deleted in 30 days. Learn "
-#| "more about demo organizations here: %(demo_organizations_help_link)s!"
+#, python-brace-format
 msgid ""
 "\n"
 "Note that this is a [demo organization]({demo_organization_help_url}) and\n"
 "will be **automatically deleted** in 30 days, unless it's [converted into\n"
 "a permanent organization]({convert_demo_organization_help_url}).\n"
 msgstr ""
-"Felicidades, has creado una nueva organización Zulip de prueba. Ten en "
-"cuenta que esta organización será eliminada automáticamente en 30 días. "
-"Infórmate sobre las organizaciones de prueba aquí: "
-"%(demo_organizations_help_link)s"
+"\n"
+"Ten en cuenta que esta es una [organización de demostración] ("
+"{demo_organization_help_url}) y\n"
+"será eliminada **automáticamente** en 30 días, a menos que [se convierta en\n"
+"una organización permanente] ({convert_demo_organization_help_url}).\n"
 
 #: zerver/lib/onboarding.py:125
 msgid ""
@@ -7346,10 +7296,8 @@ msgid "Converting Slack data… This may take a while."
 msgstr ""
 
 #: zerver/views/registration.py:1107
-#, fuzzy
-#| msgid "Direct messages"
 msgid "Importing messages…"
-msgstr "Mensajes directos"
+msgstr "Importando mensajes…"
 
 #: zerver/views/registration.py:1110
 msgid "Importing attachment data…"

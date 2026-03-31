@@ -47,7 +47,7 @@
   "<strong>{username}</strong> has {number_of_invites_by_user, plural, one {# unexpired invitation} other {# unexpired invitations}}.": "",
   "<z-link>Learn more.</z-link>": "",
   "<z-link>Learn more</z-link> about other data export options.": "",
-  "<z-user></z-user> will have the same properties as it did prior to deactivation, including role, owner and channel subscriptions.": "",
+  "<z-user></z-user> will have the same properties as it did prior to deactivation, including role, owner and channel subscriptions.": "<z-user></z-user> θα έχει τις ίδιες ιδιότητες που είχε πριν την απενεργοποίηση, συμπεριλαμβανομένων των ρόλων, ιδιοκτησιών και συνδρομών σε κανάλια.",
   "<z-user></z-user> will have the same role, channel subscriptions, user group memberships, and other settings and permissions as they did prior to deactivation.": "",
   "@{name} (guest)": "@{name} (επισκέπτης)",
   "A channel with this name already exists.": "Ένα κανάλι με αυτό το όνομα υπάρχει ήδη.",
