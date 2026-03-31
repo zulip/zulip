@@ -10,7 +10,6 @@ const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
-const {make_stream} = require("./lib/example_stream.cjs")
 
 // TODO: Remove after we enable support for
 // web_public_streams in production.
@@ -152,7 +151,7 @@ function test(label, f) {
 }
 
 test("basics", () => {
-    const denmark = make_stream({
+    const denmark = {
         subscribed: false,
         color: "blue",
         name: "Denmark",
@@ -163,8 +162,8 @@ test("basics", () => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
         can_subscribe_group: admins_group.id,
-    });
-    const social = make_stream({
+    };
+    const social = {
         subscribed: true,
         color: "red",
         name: "social",
@@ -175,8 +174,8 @@ test("basics", () => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
         can_subscribe_group: admins_group.id,
-    });
-    const test = make_stream({
+    };
+    const test = {
         subscribed: true,
         color: "yellow",
         name: "test",
@@ -186,8 +185,8 @@ test("basics", () => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
         can_subscribe_group: admins_group.id,
-    });
-    const web_public_stream = make_stream({
+    };
+    const web_public_stream = {
         subscribed: false,
         color: "yellow",
         name: "web_public_stream",
@@ -199,7 +198,7 @@ test("basics", () => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
         can_subscribe_group: admins_group.id,
-    });
+    };
     stream_data.add_sub_for_tests(denmark);
     stream_data.add_sub_for_tests(social);
     stream_data.add_sub_for_tests(web_public_stream);
@@ -276,7 +275,7 @@ test("basics", () => {
     assert.equal(hash_util.decode_operand("channel", "25-or-6-to-4"), "25");
 
     // If this is the name of a stream, its id is returned.
-    const stream_starting_with_25 = make_stream({
+    const stream_starting_with_25 = {
         name: "25-or-6-to-4",
         stream_id: 400,
         can_add_subscribers_group: admins_group.id,
@@ -287,7 +286,7 @@ test("basics", () => {
         invite_only: false,
         history_public_to_subscribers: true,
         is_web_public: false,
-    });
+    };
     stream_data.add_sub_for_tests(stream_starting_with_25);
     assert.equal(stream_data.slug_to_stream_id("25-or-6-to-4"), 400);
     assert.equal(hash_util.decode_operand("channel", "25-or-6-to-4"), "400");
@@ -539,7 +538,7 @@ test("get_streams_for_user", async ({override}) => {
         payload.success({
             subscribed_channel_ids: [],
         });
-    const denmark = make_stream({
+    const denmark = {
         subscribed: true,
         color: "blue",
         name: "Denmark",
@@ -551,8 +550,8 @@ test("get_streams_for_user", async ({override}) => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
         can_subscribe_group: admins_group.id,
-    });
-    const social = make_stream({
+    };
+    const social = {
         color: "red",
         name: "social",
         stream_id: 2,
@@ -563,8 +562,8 @@ test("get_streams_for_user", async ({override}) => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
         can_subscribe_group: admins_group.id,
-    });
-    const test = make_stream({
+    };
+    const test = {
         color: "yellow",
         name: "test",
         stream_id: 3,
@@ -574,8 +573,8 @@ test("get_streams_for_user", async ({override}) => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
         can_subscribe_group: admins_group.id,
-    });
-    const world = make_stream({
+    };
+    const world = {
         color: "blue",
         name: "world",
         stream_id: 4,
@@ -586,8 +585,8 @@ test("get_streams_for_user", async ({override}) => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
         can_subscribe_group: admins_group.id,
-    });
-    const errors = make_stream({
+    };
+    const errors = {
         color: "green",
         name: "errors",
         stream_id: 5,
@@ -598,7 +597,7 @@ test("get_streams_for_user", async ({override}) => {
         can_add_subscribers_group: admins_group.id,
         can_administer_channel_group: admins_group.id,
         can_subscribe_group: admins_group.id,
-    });
+    };
     const subs = [denmark, social, test, world, errors];
     for (const sub of subs) {
         stream_data.add_sub_for_tests(sub);
