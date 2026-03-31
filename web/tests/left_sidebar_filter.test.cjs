@@ -133,6 +133,18 @@ run_test("get_raw_topics_state", ({override}) => {
     assert.equal(warning_message, "Multiple pills found in left sidebar filter input.");
 });
 
+run_test("effective_topics_state_for_search", ({override}) => {
+    const info = set_up({override}, {is_subscribed: false});
+    assert.equal(left_sidebar_filter.get_effective_topics_state_for_search(), "");
+
+    info.pill_items.push({syntax: "is:followed"});
+    info.state.narrowed_stream_id = 5;
+    assert.equal(left_sidebar_filter.get_effective_topics_state_for_search(), "");
+
+    info.state.is_subscribed = true;
+    assert.equal(left_sidebar_filter.get_effective_topics_state_for_search(), "is:followed");
+});
+
 run_test("clear_left_sidebar_filter", ({override}) => {
     const info = set_up({override});
     const {$input, $pill_container, state} = info;

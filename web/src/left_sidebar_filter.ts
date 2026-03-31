@@ -36,6 +36,17 @@ export function get_raw_topics_state(): string {
     return pills[0]!.syntax;
 }
 
+export function get_effective_topics_state_for_search(): string {
+    const topics_state = get_raw_topics_state();
+    if (topics_state === "" || get_narrowed_subscribed_stream_id() === undefined) {
+        return "";
+    }
+
+    // Existing topic-state pills stay active in subscribed-stream narrows,
+    // even when the current narrow is too limited to offer them in typeahead.
+    return topics_state;
+}
+
 const filter_placeholder_text = $t({defaultMessage: "Filter"});
 const default_filter_placeholder_text = $t({defaultMessage: "Filter left sidebar"});
 
