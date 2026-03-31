@@ -459,9 +459,15 @@ def process_stream_message(to: str, message: EmailMessage) -> None:
         options["include_quotes"] = is_forwarded(subject_header)
 
     subject = strip_from_subject(subject_header)
+
     # We don't want to reject email messages with disallowed characters in the Subject,
     # so we just remove them to make it a valid Zulip topic name.
     subject = "".join([char for char in subject if is_character_printable(char)])
+
+    # ✅ Added logic for GSoC issue
+    if len(subject) > 60:
+        options["subject_in_body"] = True
+
     if channel.topics_policy == StreamTopicsPolicyEnum.empty_topic_only.value:
         options["subject_in_body"] = True
         topic = ""
@@ -471,13 +477,14 @@ def process_stream_message(to: str, message: EmailMessage) -> None:
         topic = subject
 
     body = construct_zulip_body(message, subject, realm, sender=sender, **options)
+
     send_zulip(sender, channel, topic, body)
+
     logger.info(
         "Successfully processed email to %s (%s)",
         channel.name,
         realm.string_id,
     )
-
 
 def process_missed_message(to: str, message: EmailMessage) -> None:
     auto_submitted = message.get("Auto-Submitted", "")
