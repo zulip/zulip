@@ -59,7 +59,10 @@ run_test("direct_message_group_data.process_loaded_messages", () => {
     const messages = [
         {
             type: "private",
-            display_recipient: [{id: jill.user_id , email: jill.email}, {id: norbert.user_id, email: norbert.email}],
+            display_recipient: [
+                {id: jill.user_id, email: jill.email},
+                {id: norbert.user_id, email: norbert.email},
+            ],
             timestamp: timestamp1,
         },
         {
@@ -72,12 +75,18 @@ run_test("direct_message_group_data.process_loaded_messages", () => {
         },
         {
             type: "private",
-            display_recipient: [{id: alice.user_id , email: alice.email}, {id: fred.user_id , email: fred.email}],
+            display_recipient: [
+                {id: alice.user_id, email: alice.email},
+                {id: fred.user_id, email: fred.email},
+            ],
             timestamp: timestamp2,
         },
         {
             type: "private",
-            display_recipient: [{id: fred.user_id,email: fred.email}, {id: alice.user_id, email: alice.email}],
+            display_recipient: [
+                {id: fred.user_id, email: fred.email},
+                {id: alice.user_id, email: alice.email},
+            ],
             timestamp: old_timestamp,
         },
     ];
