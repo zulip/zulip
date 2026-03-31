@@ -1318,6 +1318,7 @@ def process_message_files(
                     params=None,
                     headers=None,
                     kwargs={},
+                    expected_size=fileinfo["size"],
                 ),
             )
 

@@ -3272,6 +3272,7 @@ To Do
                     params=None,
                     headers=None,
                     kwargs={},
+                    expected_size=1,
                 ),
             )
         self.assertIn(
@@ -3279,6 +3280,151 @@ To Do
             logs.output,
         )
         self.assertEqual("Failed downloading file.", str(e.exception))
+
+    def test_download_and_export_upload_file_rejects_download_larger_than_expected_size(self) -> None:
+        request_url = "https://files.slack.com/files-pri/ABC/oversized.bin"
+        expected_size = 4
+
+        mocked_response = mock.MagicMock()
+        mocked_response.__enter__.return_value = mocked_response
+        mocked_response.__exit__.return_value = False
+        mocked_response.headers = {}
+        mocked_response.raw = BytesIO(b"12345")
+
+        output_dir = tempfile.mkdtemp()
+        output_file_path = "0/ab/cd/oversized.bin"
+        try:
+            with mock.patch(
+                "zerver.data_import.import_util.request_file_stream", return_value=mocked_response
+            ):
+                with self.assertRaisesRegex(
+                    Exception,
+                    "Failed downloading file: downloaded size exceeds expected size.",
+                ):
+                    download_and_export_upload_file(
+                        output_dir,
+                        UploadFileRequest(
+                            output_file_path=output_file_path,
+                            request_url=request_url,
+                            params=None,
+                            headers=None,
+                            kwargs={},
+                            expected_size=expected_size,
+                        ),
+                    )
+
+            self.assertFalse(
+                os.path.exists(os.path.join(output_dir, "uploads", output_file_path))
+            )
+        finally:
+            remove_folder(output_dir)
+
+    @responses.activate
+    def test_download_and_export_upload_file_rejects_large_content_length(self) -> None:
+        request_url = "https://files.slack.com/files-pri/ABC/too-large-header.bin"
+        expected_size = 4
+        responses.add(
+            responses.GET,
+            request_url,
+            body=b"1234",
+            status=200,
+            headers={"Content-Length": "5"},
+        )
+
+        output_dir = tempfile.mkdtemp()
+        output_file_path = "0/ab/cd/too-large-header.bin"
+        try:
+            with self.assertRaisesRegex(
+                Exception,
+                "Failed downloading file: Content-Length exceeds expected size.",
+            ):
+                download_and_export_upload_file(
+                    output_dir,
+                    UploadFileRequest(
+                        output_file_path=output_file_path,
+                        request_url=request_url,
+                        params=None,
+                        headers=None,
+                        kwargs={},
+                        expected_size=expected_size,
+                    ),
+                )
+
+            self.assertFalse(
+                os.path.exists(os.path.join(output_dir, "uploads", output_file_path))
+            )
+        finally:
+            remove_folder(output_dir)
+
+    @responses.activate
+    def test_download_and_export_upload_file_rejects_size_mismatch(self) -> None:
+        request_url = "https://files.slack.com/files-pri/ABC/truncated.bin"
+        expected_size = 6
+        responses.add(
+            responses.GET,
+            request_url,
+            body=b"12345",
+            status=200,
+            headers={"Content-Length": "5"},
+        )
+
+        output_dir = tempfile.mkdtemp()
+        output_file_path = "0/ab/cd/truncated.bin"
+        try:
+            with self.assertRaisesRegex(
+                Exception,
+                "Failed downloading file: downloaded size does not match expected size.",
+            ):
+                download_and_export_upload_file(
+                    output_dir,
+                    UploadFileRequest(
+                        output_file_path=output_file_path,
+                        request_url=request_url,
+                        params=None,
+                        headers=None,
+                        kwargs={},
+                        expected_size=expected_size,
+                    ),
+                )
+
+            self.assertFalse(
+                os.path.exists(os.path.join(output_dir, "uploads", output_file_path))
+            )
+        finally:
+            remove_folder(output_dir)
+
+    @responses.activate
+    def test_download_and_export_upload_file_succeeds_for_matching_size(self) -> None:
+        request_url = "https://files.slack.com/files-pri/ABC/ok.bin"
+        file_body = b"12345"
+        responses.add(
+            responses.GET,
+            request_url,
+            body=file_body,
+            status=200,
+            headers={"Content-Length": str(len(file_body))},
+        )
+
+        output_dir = tempfile.mkdtemp()
+        output_file_path = "0/ab/cd/ok.bin"
+        file_path = os.path.join(output_dir, "uploads", output_file_path)
+        try:
+            download_and_export_upload_file(
+                output_dir,
+                UploadFileRequest(
+                    output_file_path=output_file_path,
+                    request_url=request_url,
+                    params=None,
+                    headers=None,
+                    kwargs={},
+                    expected_size=len(file_body),
+                ),
+            )
+
+            with open(file_path, "rb") as f:
+                self.assertEqual(f.read(), file_body)
+        finally:
+            remove_folder(output_dir)
 
     @responses.activate
     def test_slack_get_emojis(self) -> None:
