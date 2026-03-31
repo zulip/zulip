@@ -552,6 +552,11 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
 
     extra_join_params = get_join_params(realm_id)
 
+    if extra_join_params.get("avatarURL") is True:
+        extra_join_params["avatarURL"] = absolute_avatar_url(request.user)
+    else:
+        extra_join_params.pop("avatarURL", None)
+
     join_params = urlencode(
         extra_join_params
         | {
@@ -562,8 +567,6 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
             # call to a video call.
             "role": "MODERATOR" if bigbluebutton_data["moderator"] == request.user.id else "VIEWER",
             "fullName": request.user.full_name,
-            # Pass user's Zulip avatar as URL
-            "avatarURL": absolute_avatar_url(request.user),
             # https://docs.bigbluebutton.org/dev/api.html#create
             # The createTime option is used to have the user redirected to a link
             # that is only valid for this meeting.

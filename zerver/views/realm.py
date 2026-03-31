@@ -157,6 +157,7 @@ def update_realm(
     big_blue_button_options_auto_join_audio: Json[bool] | None = None,
     big_blue_button_options_listen_only_mode: Json[bool] | None = None,
     big_blue_button_options_show_session_details_on_join: Json[bool] | None = None,
+    big_blue_button_options_avatar_url: Json[bool] | None = None,
     enable_spectator_access: Json[bool] | None = None,
     gif_rating_policy: Json[int] | None = None,
     media_preview_size: Json[RealmMediaPreviewSizeEnum] | None = None,
@@ -250,6 +251,7 @@ def update_realm(
         or big_blue_button_options_listen_only_mode is not None
         or big_blue_button_options_show_session_details_on_join is not None
         or big_blue_button_options_skip_check_audio_on_first_join is not None
+        or big_blue_button_options_avatar_url is not None
     ):
         update_big_blue_button_option(
             realm_id=realm.id, option="guest_policy", value=big_blue_button_options_guest_policy
@@ -276,6 +278,11 @@ def update_realm(
             realm_id=realm.id,
             option="skip_check_audio_on_first_join",
             value=big_blue_button_options_skip_check_audio_on_first_join,
+        )
+        update_big_blue_button_option(
+            realm_id=realm.id,
+            option="avatar_url",
+            value=big_blue_button_options_avatar_url,
         )
 
     # Additional validation/error checking beyond types go here, so

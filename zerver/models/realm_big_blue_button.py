@@ -38,13 +38,18 @@ class BigBlueButtonOptionList(BigBlueButtonOption):
     list: dict[str, str] = field(default_factory=dict)
 
 
+CREATE_PARAM = "create_param"
+JOIN_PARAM = "join_param"
+
+
 KnownBigBlueButtonOptions = [
     # Source: https://docs.bigbluebutton.org/development/api/#:~:text=FFFFFF.%20(added%202.0)-,muteOnStart,-Boolean
     BigBlueButtonOptionBool(
         option="mute_on_start",
         translation="realm_big_blue_button_start_muted",
+        value=None,
         default=False,
-        parameter_type="create_param",
+        parameter_type=CREATE_PARAM,
         data_type="bool",
         real_option="muteOnStart",
     ),
@@ -52,8 +57,9 @@ KnownBigBlueButtonOptions = [
     BigBlueButtonOptionList(
         option="guest_policy",
         translation="realm_big_blue_button_guest_policy",
+        value=None,
         default="ALWAYS_ACCEPT",
-        parameter_type="create_param",
+        parameter_type=CREATE_PARAM,
         list={
             "ALWAYS_ACCEPT": "Always accept",
             "ALWAYS_DENY": "Always deny",
@@ -62,12 +68,23 @@ KnownBigBlueButtonOptions = [
         data_type="list",
         real_option="guestPolicy",
     ),
+    # Source: https://docs.bigbluebutton.org/development/api/#:~:text=this%20new%20extensions.-,avatarURL,-String
+    BigBlueButtonOptionBool(
+        option="avatar_url",
+        translation="realm_big_blue_button_pass_avatar_url",
+        value=None,
+        default=False,
+        parameter_type=JOIN_PARAM,
+        data_type="bool",
+        real_option="avatarURL",
+    ),
     # Source: https://docs.bigbluebutton.org/administration/customize/#:~:text=userdata%2Dbbb_skip_check_audio_on_first_join%3D
     BigBlueButtonOptionBool(
         option="skip_check_audio_on_first_join",
         translation="realm_big_blue_button_skip_check_audio_on_first_join",
+        value=None,
         default=False,
-        parameter_type="create_param",
+        parameter_type=JOIN_PARAM,
         data_type="bool",
         real_option="userdata-bbb_skip_check_audio_on_first_join",
     ),
@@ -75,8 +92,9 @@ KnownBigBlueButtonOptions = [
     BigBlueButtonOptionBool(
         option="auto_join_audio",
         translation="realm_big_blue_button_auto_join_audio",
+        value=None,
         default=False,
-        parameter_type="create_param",
+        parameter_type=JOIN_PARAM,
         data_type="bool",
         real_option="userdata-bbb_auto_join_audio",
     ),
@@ -84,8 +102,9 @@ KnownBigBlueButtonOptions = [
     BigBlueButtonOptionBool(
         option="listen_only_mode",
         translation="realm_big_blue_button_listen_only_mode",
+        value=None,
         default=True,
-        parameter_type="create_param",
+        parameter_type=JOIN_PARAM,
         data_type="bool",
         real_option="userdata-bbb_listen_only_mode",
     ),
@@ -93,8 +112,9 @@ KnownBigBlueButtonOptions = [
     BigBlueButtonOptionBool(
         option="show_session_details_on_join",
         translation="realm_big_blue_button_show_session_details_on_join",
-        default=None,
-        parameter_type="create_param",
+        value=None,
+        default=True,
+        parameter_type=JOIN_PARAM,
         data_type="bool",
         real_option="userdata-bbb_show_session_details_on_join",
     ),
@@ -117,6 +137,7 @@ class RealmBigBlueButton(models.Model):
 
     translation: str | None = None
     list: dict[str, str] = field(default_factory=dict)
+    default: str | bool | None = None
 
 
 def parse_boolean_option(value: str) -> bool:
@@ -147,13 +168,13 @@ def flatten_params(
 
 def get_create_params(realm_id: int) -> dict[str, str | bool]:
     return flatten_params(
-        merge_big_blue_button_options_defaults(realm_id=realm_id, parameter_type="create_params")
+        merge_big_blue_button_options_defaults(realm_id=realm_id, parameter_type=CREATE_PARAM)
     )
 
 
 def get_join_params(realm_id: int) -> dict[str, str | bool]:
     return flatten_params(
-        merge_big_blue_button_options_defaults(realm_id=realm_id, parameter_type="join_params")
+        merge_big_blue_button_options_defaults(realm_id=realm_id, parameter_type=JOIN_PARAM)
     )
 
 
@@ -186,7 +207,6 @@ def update_big_blue_button_option(realm_id: int, option: str, value: str | bool 
 def merge_big_blue_button_options_defaults(
     realm_id: int, parameter_type: str | None = None
 ) -> list[RealmBigBlueButton | BigBlueButtonOption]:
-    query = None
     if parameter_type is not None:
         query = RealmBigBlueButton.objects.filter(realm_id=realm_id, parameter_type=parameter_type)
     else:
@@ -196,6 +216,9 @@ def merge_big_blue_button_options_defaults(
     options: list[RealmBigBlueButton | BigBlueButtonOption] = []
 
     for default_option in KnownBigBlueButtonOptions:
+        if parameter_type is not None and default_option.parameter_type != parameter_type:
+            continue
+
         option = default_option.option
         found = False
 
@@ -203,12 +226,15 @@ def merge_big_blue_button_options_defaults(
             if bbb_option.option == option:
                 found = True
                 bbb_option.translation = default_option.translation
+
                 if isinstance(default_option, BigBlueButtonOptionList):
                     bbb_option.list = default_option.list
+
                 options.append(bbb_option)
                 break
 
         if not found:
+            default_option.value = default_option.default
             options.append(default_option)
 
     return options
@@ -232,6 +258,8 @@ def get_all_big_blue_button_options_uncached(
                 data_type=data_type,
                 translation=bbb_option.translation,
                 real_option=bbb_option.real_option,
+                parameter_type=bbb_option.parameter_type,
+                default=str(bbb_option.default),
             )
         elif data_type == "bool":
             option = BigBlueButtonOptionBool(
@@ -241,6 +269,8 @@ def get_all_big_blue_button_options_uncached(
                 data_type=data_type,
                 translation=bbb_option.translation,
                 real_option=bbb_option.real_option,
+                parameter_type=bbb_option.parameter_type,
+                default=bool(bbb_option.default),
             )
         elif data_type == "list":
             option = BigBlueButtonOptionList(
@@ -251,6 +281,8 @@ def get_all_big_blue_button_options_uncached(
                 translation=bbb_option.translation,
                 list=getattr(bbb_option, "list", {}),
                 real_option=bbb_option.real_option,
+                parameter_type=bbb_option.parameter_type,
+                default=str(bbb_option.default),
             )
 
         if option is not None:

@@ -642,6 +642,7 @@ export const realm_schema = z.object({
     realm_big_blue_button_options_auto_join_audio: z.optional(z.boolean()),
     realm_big_blue_button_options_listen_only_mode: z.optional(z.boolean()),
     realm_big_blue_button_options_show_session_details_on_join: z.optional(z.boolean()),
+    realm_big_blue_button_options_avatar_url: z.optional(z.boolean()),
 });
 
 export const split_state_data_schema = z.object({

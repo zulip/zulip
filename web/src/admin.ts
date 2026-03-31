@@ -118,6 +118,9 @@ const admin_settings_label = {
     realm_big_blue_button_guest_policy: $t({
         defaultMessage: "Guest policy:",
     }),
+    realm_big_blue_button_pass_avatar_url: $t({
+        defaultMessage: "Pass Zulip avatar URL",
+    }),
 };
 
 function insert_tip_box(): void {

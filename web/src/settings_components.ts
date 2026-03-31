@@ -120,6 +120,7 @@ export const realm_setting_property_schema = z.union([
     z.literal("realm_big_blue_button_options_auto_join_audio"),
     z.literal("realm_big_blue_button_options_listen_only_mode"),
     z.literal("realm_big_blue_button_options_show_session_details_on_join"),
+    z.literal("realm_big_blue_button_options_avatar_url"),
 ]);
 type RealmSettingProperty = z.infer<typeof realm_setting_property_schema>;
 
@@ -940,6 +941,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_big_blue_button_options_auto_join_audio":
         case "realm_big_blue_button_options_listen_only_mode":
         case "realm_big_blue_button_options_show_session_details_on_join":
+        case "realm_big_blue_button_options_avatar_url":
             proposed_val = get_input_element_value(elem, typeof current_val);
             break;
         default:

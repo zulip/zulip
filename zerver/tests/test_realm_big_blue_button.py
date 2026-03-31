@@ -200,7 +200,8 @@ class TestRealmBigBlueButton(ZulipTestCase):
         fake = BigBlueButtonOptionList(
             id=1,
             option="c",
-            value="x",
+            value="",
+            default="x",
             data_type="list",
             translation="C",
             list={"x": "X"},

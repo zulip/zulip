@@ -798,6 +798,7 @@ export function discard_realm_property_element_changes(elem: HTMLElement): void 
         case "realm_big_blue_button_options_auto_join_audio":
         case "realm_big_blue_button_options_listen_only_mode":
         case "realm_big_blue_button_options_show_session_details_on_join":
+        case "realm_big_blue_button_options_avatar_url":
             // ignore changes
             break;
         default:
