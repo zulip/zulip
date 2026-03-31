@@ -266,6 +266,7 @@ export function update_compose_for_message_type(opts: ComposeTriggeredOptions): 
             `<i class="zulip-icon zulip-icon-users channel-privacy-type-icon"></i>
             <span class="decorated-dm-label">${direct_message_label}</span>`,
         );
+        compose_state.set_private_message_recipient_ids(opts.private_message_recipient_ids);
     }
     compose_banner.clear_errors();
     compose_banner.clear_warnings();
