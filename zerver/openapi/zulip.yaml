@@ -8766,11 +8766,17 @@ paths:
                   example: direct
                 to:
                   description: |
-                    For channel messages, either the name or integer ID of the channel. For
-                    direct messages, either a list containing integer user IDs or a list
-                    containing string Zulip API email addresses.
+                    The channel or users receiving the message.
 
-                    **Changes**: Support for using user/channel IDs was added in Zulip 2.0.0.
+                    For channel messages, this is either the name or integer ID of the
+                    channel.
+
+                    For direct messages, this is either a list containing integer user IDs or
+                    a list containing string Zulip API email addresses. The ID or email
+                    address of the user sending the message can be included in the list, but
+                    will be ignored by the server.
+
+                    **Changes**: In Zulip 2.0.0, support for using user/channel IDs was added.
                   oneOf:
                     - type: string
                     - type: integer
