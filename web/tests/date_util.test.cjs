@@ -32,17 +32,41 @@ run_test("get_default_search_suggestions", () => {
     clock.reset();
 });
 
-run_test("get_sensible_date", () => {
-    const today = new Date(2026, 0, 15, 2, 0, 0);
+run_test("get_suggestions_via_smart_parsing", () => {
+    const today = parseISO("2026-03-31");
     clock.setSystemTime(today.getTime());
-    assert.equal(date_util.get_sensible_date("2030-01-01"), "2026-01-15");
-    assert.equal(date_util.get_sensible_date("1950-01-01"), "2026-01-15");
-    assert.equal(
-        date_util.get_sensible_date("invalid-date-strmaybe_get_parsed_iso_8601_date"),
-        "2026-01-15",
-    );
-    assert.equal(date_util.get_sensible_date("2020"), "2020-01-01");
-    clock.reset();
+    const default_suggestions = ["date:2026-03-31", "date:2026-03-30", "date:2026-03-29"];
+    // Partially matching dates must give back default suggestions
+    assert.deepEqual(date_util.get_suggestions_via_smart_parsing("20"), default_suggestions);
+
+    assert.deepEqual(date_util.get_suggestions_via_smart_parsing("2026"), default_suggestions);
+
+    assert.deepEqual(date_util.get_suggestions_via_smart_parsing("2026-03-3"), [
+        "date:2026-03-31",
+        "date:2026-03-30",
+    ]);
+
+    // Empty operand should give back all default suggestions
+    assert.deepEqual(date_util.get_suggestions_via_smart_parsing(""), default_suggestions);
+
+    // For coverage.
+    assert.deepEqual(date_util.get_suggestions_via_smart_parsing("-"), []);
+
+    assert.deepEqual(date_util.get_suggestions_via_smart_parsing("-01-01"), ["date:2026-01-01"]);
+
+    // Get suggestions for trailing hyphens/zeros
+    assert.deepEqual(date_util.get_suggestions_via_smart_parsing("2026-"), default_suggestions);
+
+    assert.deepEqual(date_util.get_suggestions_via_smart_parsing("2026-0"), default_suggestions);
+
+    // operand which doesn't match any default suggestions.
+    assert.deepEqual(date_util.get_suggestions_via_smart_parsing("2023-02"), ["date:2023-02-01"]);
+    assert.deepEqual(date_util.get_suggestions_via_smart_parsing("2023-02-0"), ["date:2023-02-01"]);
+    assert.deepEqual(date_util.get_suggestions_via_smart_parsing("2023-0-"), ["date:2023-01-01"]);
+    assert.deepEqual(date_util.get_suggestions_via_smart_parsing("2023"), ["date:2023-01-01"]);
+
+    // Gibberish shouldn't yield any suggestions
+    assert.deepEqual(date_util.get_suggestions_via_smart_parsing("lkmvlckakj"), []);
 });
 
 run_test("maybe_get_parsed_iso_8601_date", () => {

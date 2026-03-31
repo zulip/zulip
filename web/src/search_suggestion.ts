@@ -516,12 +516,7 @@ function get_date_suggestions(
     if (negated) {
         return [];
     }
-
-    if (!date_util.is_date_str_valid(last.operand)) {
-        return date_util.get_default_search_suggestions();
-    }
-
-    return ["date:" + date_util.get_sensible_date(last.operand)];
+    return date_util.get_suggestions_via_smart_parsing(last.operand);
 }
 
 function get_topic_suggestions(
