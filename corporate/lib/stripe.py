@@ -229,26 +229,6 @@ def validate_licenses(
         raise BillingError("too many licenses", message)
 
 
-def check_upgrade_parameters(
-    billing_modality: BillingModality,
-    schedule: BillingSchedule,
-    license_management: LicenseManagement | None,
-    licenses: int | None,
-    seat_count: int,
-    exempt_from_license_number_check: bool,
-    min_licenses_for_plan: int,
-) -> None:
-    if license_management is None:  # nocoverage
-        raise BillingError("unknown license_management")
-    validate_licenses(
-        billing_modality == "charge_automatically",
-        licenses,
-        seat_count,
-        exempt_from_license_number_check,
-        min_licenses_for_plan,
-    )
-
-
 # Be extremely careful changing this function. Historical billing periods
 # are not stored anywhere, and are just computed on the fly using this
 # function. Any change you make here should return the same value (or be
@@ -2112,10 +2092,17 @@ class BillingSession(ABC):
             self.ensure_current_plan_is_upgradable(customer, upgrade_request.tier)
         billing_modality = upgrade_request.billing_modality
         schedule = upgrade_request.schedule
-
         license_management = upgrade_request.license_management
+
         if billing_modality == "send_invoice":
+            # Automated license management is not supported when paying
+            # by invoice.
             license_management = "manual"
+
+        if license_management is None:
+            raise BillingError("unknown license_management")
+
+        automanage_licenses = license_management == "automatic"
 
         licenses = upgrade_request.licenses
         request_seat_count = unsign_seat_count(
@@ -2130,18 +2117,15 @@ class BillingSession(ABC):
         exempt_from_license_number_check = (
             customer is not None and customer.exempt_from_license_number_check
         )
-        check_upgrade_parameters(
-            billing_modality,
-            schedule,
-            license_management,
+        charge_automatically = billing_modality == "charge_automatically"
+        validate_licenses(
+            charge_automatically,
             licenses,
             seat_count,
             exempt_from_license_number_check,
             self.min_licenses_for_plan(upgrade_request.tier),
         )
-        assert licenses is not None and license_management is not None
-        automanage_licenses = license_management == "automatic"
-        charge_automatically = billing_modality == "charge_automatically"
+        assert licenses is not None
 
         billing_schedule = {
             "annual": CustomerPlan.BILLING_SCHEDULE_ANNUAL,

@@ -2536,16 +2536,14 @@ class StripeTest(StripeTestCase):
         )
         self.assert_length(m.output, 1)
 
-    @mock_stripe(tested_timestamp_fields=["created"])
+    @mock_stripe()
     def test_check_upgrade_parameters(self, *mocks: Mock) -> None:
-        # Tests all the error paths except 'not enough licenses'
         def check_error(
             error_message: str,
             error_description: str,
             upgrade_params: Mapping[str, Any],
             del_args: Sequence[str] = [],
         ) -> None:
-            self.add_card_to_customer_for_upgrade()
             if error_description:
                 with self.assertLogs("corporate.stripe", "WARNING"):
                     response = self.upgrade(
@@ -2560,9 +2558,17 @@ class StripeTest(StripeTestCase):
 
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
+        self.add_card_to_customer_for_upgrade()
         check_error("Invalid billing_modality", "", {"billing_modality": "invalid"})
         check_error("Invalid schedule", "", {"schedule": "invalid"})
         check_error("Invalid license_management", "", {"license_management": "invalid"})
+
+        check_error(
+            "Something went wrong. Please contact",
+            "unknown license_management",
+            {},
+            del_args=["license_management"],
+        )
 
         check_error(
             "You must purchase licenses for all active users in your organization (minimum 30).",
