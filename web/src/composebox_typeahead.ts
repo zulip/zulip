@@ -1604,7 +1604,10 @@ function set_recipient_from_typeahead(item: UserGroupPillData | UserPillData): v
             pill_widget.clear_text();
         }
     } else {
-        compose_pm_pill.set_from_typeahead(item.user);
+        const inserted_users = user_pill.get_user_ids(compose_pm_pill.widget);
+        if (!inserted_users.includes(item.user.user_id)) {
+            compose_pm_pill.set_from_typeahead(item.user);
+        }
     }
 }
 
