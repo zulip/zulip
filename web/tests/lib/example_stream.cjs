@@ -1,5 +1,5 @@
 "use strict";
-    
+
 let last_issued_stream_id = 20000;
 
 const get_stream_id = () => {
