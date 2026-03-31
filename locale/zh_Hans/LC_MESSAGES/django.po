@@ -23,7 +23,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-02 21:47+0000\n"
+"POT-Creation-Date: 2026-03-31 15:20+0000\n"
 "PO-Revision-Date: 2026-03-06 02:09+0000\n"
 "Last-Translator: Zixuan James Li <p359101898@gmail.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
@@ -4561,9 +4561,9 @@ msgstr "小部件：{error_msg}"
 msgid "A custom emoji with this name already exists."
 msgstr "自定义表情名称已经存在"
 
-#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:352
-#: zerver/lib/upload/__init__.py:415 zerver/lib/upload/__init__.py:423
-#: zerver/lib/upload/__init__.py:447
+#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:356
+#: zerver/lib/upload/__init__.py:419 zerver/lib/upload/__init__.py:427
+#: zerver/lib/upload/__init__.py:451
 msgid "Invalid image format"
 msgstr "图像格式无效"
 
@@ -5254,8 +5254,8 @@ msgstr "无法解析请求：{webhook_name} 是否生成了此事件？"
 msgid "User not authenticated"
 msgstr ""
 
-#: zerver/lib/exceptions.py:518 zerver/views/auth.py:796
-#: zerver/views/auth.py:1155 zerver/views/auth.py:1221
+#: zerver/lib/exceptions.py:518 zerver/views/auth.py:797
+#: zerver/views/auth.py:1156 zerver/views/auth.py:1222
 msgid "Invalid subdomain"
 msgstr "无效的子域名"
 
@@ -6263,7 +6263,7 @@ msgstr "{setting_name} 无效"
 msgid "Upload would exceed your organization's upload quota."
 msgstr "上传超出了您组织的允许范围"
 
-#: zerver/lib/upload/__init__.py:461 zerver/lib/upload/__init__.py:463
+#: zerver/lib/upload/__init__.py:465 zerver/lib/upload/__init__.py:467
 msgid "Image size exceeds limit"
 msgstr "图片尺寸超过限制"
 
@@ -6812,19 +6812,19 @@ msgstr ""
 msgid "No JSON web token passed in request"
 msgstr "请求中未传递JSON web token"
 
-#: zerver/views/auth.py:605
+#: zerver/views/auth.py:606
 msgid "Bad JSON web token"
 msgstr "JSON web token错误"
 
-#: zerver/views/auth.py:609
+#: zerver/views/auth.py:610
 msgid "No email specified in JSON web token claims"
 msgstr ""
 
-#: zerver/views/auth.py:1161
+#: zerver/views/auth.py:1162
 msgid "Subdomain required"
 msgstr "需要子域名"
 
-#: zerver/views/auth.py:1225
+#: zerver/views/auth.py:1226
 msgid "Password is incorrect."
 msgstr "密码不正确。"
 
@@ -7346,17 +7346,17 @@ msgid ""
 "**"
 msgstr ""
 
-#: zerver/views/streams.py:1318
+#: zerver/views/streams.py:1319
 #, python-brace-format
 msgid "{property} is not a boolean"
 msgstr ""
 
-#: zerver/views/streams.py:1321
+#: zerver/views/streams.py:1322
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr ""
 
-#: zerver/views/streams.py:1369
+#: zerver/views/streams.py:1370
 #, python-brace-format
 msgid "Not subscribed to channel ID {channel_id}"
 msgstr ""
@@ -7829,19 +7829,19 @@ msgstr ""
 msgid "Malformed audit log data"
 msgstr ""
 
-#: zproject/backends.py:560
+#: zproject/backends.py:566
 msgid "You need to reset your password."
 msgstr "您需要重设密码。"
 
-#: zproject/backends.py:2827
+#: zproject/backends.py:2841
 msgid "Missing id_token parameter"
 msgstr "缺少 id_token 参数"
 
-#: zproject/backends.py:3558
+#: zproject/backends.py:3579
 msgid "Invalid OTP"
 msgstr "无效的OTP"
 
-#: zproject/backends.py:3561
+#: zproject/backends.py:3582
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "不能同时使用 mobile_flow_otp 和 desktop_flow_otp。"
 

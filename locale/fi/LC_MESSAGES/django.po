@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-02 21:47+0000\n"
+"POT-Creation-Date: 2026-03-31 15:20+0000\n"
 "PO-Revision-Date: 2026-02-25 09:09+0000\n"
 "Last-Translator: Mitja <mitja.leino@hotmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/zulip/django-11-"
@@ -4780,9 +4780,9 @@ msgstr "Widgetit: {error_msg}"
 msgid "A custom emoji with this name already exists."
 msgstr "Samanniminen mukautettu emoji on jo olemassa."
 
-#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:352
-#: zerver/lib/upload/__init__.py:415 zerver/lib/upload/__init__.py:423
-#: zerver/lib/upload/__init__.py:447
+#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:356
+#: zerver/lib/upload/__init__.py:419 zerver/lib/upload/__init__.py:427
+#: zerver/lib/upload/__init__.py:451
 msgid "Invalid image format"
 msgstr "Viallinen kuvamuoto"
 
@@ -5506,8 +5506,8 @@ msgstr "Pyyntöä ei voi jäsentää: loiko {webhook_name} tämän tapahtuman?"
 msgid "User not authenticated"
 msgstr "Käyttäjä ei ole kirjautunut"
 
-#: zerver/lib/exceptions.py:518 zerver/views/auth.py:796
-#: zerver/views/auth.py:1155 zerver/views/auth.py:1221
+#: zerver/lib/exceptions.py:518 zerver/views/auth.py:797
+#: zerver/views/auth.py:1156 zerver/views/auth.py:1222
 msgid "Invalid subdomain"
 msgstr "Virheellinen aliverkkotunnus"
 
@@ -6651,7 +6651,7 @@ msgstr "Virheellinen {setting_name}"
 msgid "Upload would exceed your organization's upload quota."
 msgstr "Lähetys ylittäisi organisaatiosi lähetyskiintiön."
 
-#: zerver/lib/upload/__init__.py:461 zerver/lib/upload/__init__.py:463
+#: zerver/lib/upload/__init__.py:465 zerver/lib/upload/__init__.py:467
 msgid "Image size exceeds limit"
 msgstr "Liian iso kuva"
 
@@ -7202,19 +7202,19 @@ msgstr "JWT-varmennus ei ole käytössä tässä organisaatiossa"
 msgid "No JSON web token passed in request"
 msgstr "Pyyntö ei sisältänyt JSON web tokenia"
 
-#: zerver/views/auth.py:605
+#: zerver/views/auth.py:606
 msgid "Bad JSON web token"
 msgstr "Sopimaton JSON web token"
 
-#: zerver/views/auth.py:609
+#: zerver/views/auth.py:610
 msgid "No email specified in JSON web token claims"
 msgstr "Sähköpostia ei määritelty JSON web token -vaatimuksissa"
 
-#: zerver/views/auth.py:1161
+#: zerver/views/auth.py:1162
 msgid "Subdomain required"
 msgstr "Aliverkkotunnus vaaditaan"
 
-#: zerver/views/auth.py:1225
+#: zerver/views/auth.py:1226
 msgid "Password is incorrect."
 msgstr "Salasana on väärin."
 
@@ -7748,17 +7748,17 @@ msgstr ""
 "**Yksityinen (suojattu historia)** kanava, jonka on luonut {user_name}. "
 "**Kuvaus.**"
 
-#: zerver/views/streams.py:1318
+#: zerver/views/streams.py:1319
 #, python-brace-format
 msgid "{property} is not a boolean"
 msgstr "{property} ei ole boolenarvo"
 
-#: zerver/views/streams.py:1321
+#: zerver/views/streams.py:1322
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr "Tuntematon tilausominaisuus: {property}"
 
-#: zerver/views/streams.py:1369
+#: zerver/views/streams.py:1370
 #, python-brace-format
 msgid "Not subscribed to channel ID {channel_id}"
 msgstr "Ei tilattu kanavaa {channel_id}"
@@ -8243,19 +8243,19 @@ msgstr "Kaksoiskappale rekisteröinnistä havaittu."
 msgid "Malformed audit log data"
 msgstr "Viallinen auditointilokidata"
 
-#: zproject/backends.py:560
+#: zproject/backends.py:566
 msgid "You need to reset your password."
 msgstr "Salasanasi on vaihdettava."
 
-#: zproject/backends.py:2827
+#: zproject/backends.py:2841
 msgid "Missing id_token parameter"
 msgstr "id_token parametri puuttuu"
 
-#: zproject/backends.py:3558
+#: zproject/backends.py:3579
 msgid "Invalid OTP"
 msgstr "Virheellinen OTP"
 
-#: zproject/backends.py:3561
+#: zproject/backends.py:3582
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Ei voi käyttää yhtäaikaisesti mobile_flow_otp ja desktop_flow_otp."
 

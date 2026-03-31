@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-02 21:47+0000\n"
+"POT-Creation-Date: 2026-03-31 15:20+0000\n"
 "PO-Revision-Date: 2026-03-31 15:19+0000\n"
 "Last-Translator: r mhs <rmhs81vmon@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/zulip/django-11-"
@@ -133,15 +133,16 @@ msgid ""
 "({billing_page_link}) is greater than the current number of users."
 msgstr ""
 "新しいユーザー（{email}）が、組織の Zulip ライセンス不足のため参加できません"
-"でした。新しいユーザーが参加できるように、[現在および次回の請求期間の"
-"ライセンス数]({billing_page_link})が現在のユーザー数より多くなっているか確認"
-"してください。"
+"でした。新しいユーザーが参加できるように、[現在および次回の請求期間のライセン"
+"ス数]({billing_page_link})が現在のユーザー数より多くなっているか確認してくだ"
+"さい。"
 
 #: corporate/lib/registration.py:119
 msgid ""
 "Your organization does not have enough Zulip licenses. Invitations were not "
 "sent."
-msgstr "組織の Zulip ライセンスが不足しています。招待状は送信されませんでした。"
+msgstr ""
+"組織の Zulip ライセンスが不足しています。招待状は送信されませんでした。"
 
 #: corporate/lib/registration.py:133
 msgid ""
@@ -244,7 +245,8 @@ msgstr ""
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
-msgstr "現在の請求期間において、プランはすでに {licenses} ライセンスになっています。"
+msgstr ""
+"現在の請求期間において、プランはすでに {licenses} ライセンスになっています。"
 
 #: corporate/lib/stripe.py:3067
 msgid "You cannot decrease the licenses in the current billing period."
@@ -448,8 +450,8 @@ msgid ""
 "Something went wrong. Sorry about that! Zulip will load automatically once "
 "it is working again."
 msgstr ""
-"問題が発生しました。申し訳ありません！復旧次第、Zulipは自動的に読み込まれます"
-"。"
+"問題が発生しました。申し訳ありません！復旧次第、Zulipは自動的に読み込まれま"
+"す。"
 
 #: templates/500.html:42
 #, python-format
@@ -466,8 +468,8 @@ msgid ""
 "If you administer this server, you may want to check out the <a "
 "href=\"%(troubleshooting_url)s\">Zulip server troubleshooting guide</a>."
 msgstr ""
-"このサーバーの管理者の場合は、<a href=\"%(troubleshooting_url)s\">Zulip"
-"サーバーのトラブルシューティングガイド</a>を確認してください。"
+"このサーバーの管理者の場合は、<a href=\"%(troubleshooting_url)s\">Zulipサー"
+"バーのトラブルシューティングガイド</a>を確認してください。"
 
 #: templates/analytics/stats.html:6
 #, python-format
@@ -748,8 +750,8 @@ msgid ""
 "management\">log in instructions</a> to administer the plan for your Zulip "
 "server."
 msgstr ""
-"この組織ではプラン管理を利用できません。お使いのZulipサーバーには既に %"
-"(server_plan_name)s プランが適用されており、このサーバー上のすべての組織がそ"
+"この組織ではプラン管理を利用できません。お使いのZulipサーバーには既に "
+"%(server_plan_name)s プランが適用されており、このサーバー上のすべての組織がそ"
 "の対象となっているためです。サーバーのプラン管理については、<a "
 "href=\"https://zulip.com/help/self-hosted-billing#log-in-to-billing-"
 "management\">ログイン手順</a>の<b>サーバーレベルの請求</b>タブを参照してくだ"
@@ -1620,8 +1622,8 @@ msgid ""
 "Zulip lets you control which roles in the organization can view your email "
 "address."
 msgstr ""
-"Zulipでは組織内のどの役割があなたのメールアドレスを閲覧できるかを設定できます"
-"。"
+"Zulipでは組織内のどの役割があなたのメールアドレスを閲覧できるかを設定できま"
+"す。"
 
 #: templates/zerver/change_email_address_visibility_modal.html:13
 msgid ""
@@ -3766,11 +3768,11 @@ msgid ""
 "you got stuck here while trying to log in, this is most likely a server bug "
 "or misconfiguration."
 msgstr ""
-"このページには誤ってアクセスされたようです。このサイトは認証プロセスの中間"
-"ステップとして用意されており、手動でアクセスすることは想定されていません。直"
-"接このページを開かれた場合は、アドレスが間違っている可能性があります。もし"
-"ログインの途中でこの画面から進まなくなったのであれば、サーバー側のバグや設定"
-"ミスの可能性が高いです。"
+"このページには誤ってアクセスされたようです。このサイトは認証プロセスの中間ス"
+"テップとして用意されており、手動でアクセスすることは想定されていません。直接"
+"このページを開かれた場合は、アドレスが間違っている可能性があります。もしログ"
+"インの途中でこの画面から進まなくなったのであれば、サーバー側のバグや設定ミス"
+"の可能性が高いです。"
 
 #: templates/zerver/portico_error_pages/insecure_desktop_app.html:4
 #: templates/zerver/portico_error_pages/insecure_desktop_app.html:11
@@ -4570,9 +4572,9 @@ msgstr "ウィジェット：{error_msg}"
 msgid "A custom emoji with this name already exists."
 msgstr "この名前のカスタム絵文字はすでに存在します。"
 
-#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:352
-#: zerver/lib/upload/__init__.py:415 zerver/lib/upload/__init__.py:423
-#: zerver/lib/upload/__init__.py:447
+#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:356
+#: zerver/lib/upload/__init__.py:419 zerver/lib/upload/__init__.py:427
+#: zerver/lib/upload/__init__.py:451
 msgid "Invalid image format"
 msgstr "無効な画像形式"
 
@@ -5005,7 +5007,8 @@ msgstr "コンテンツを入力してください"
 #: zerver/lib/channel_folders.py:31
 #, python-brace-format
 msgid "Invalid character in channel folder name, at position {position}."
-msgstr "チャンネルフォルダ名の {position} 文字目に、無効な文字が含まれています。"
+msgstr ""
+"チャンネルフォルダ名の {position} 文字目に、無効な文字が含まれています。"
 
 #: zerver/lib/channel_folders.py:37
 msgid "Channel folder name already in use"
@@ -5289,8 +5292,8 @@ msgstr ""
 msgid "User not authenticated"
 msgstr ""
 
-#: zerver/lib/exceptions.py:518 zerver/views/auth.py:796
-#: zerver/views/auth.py:1155 zerver/views/auth.py:1221
+#: zerver/lib/exceptions.py:518 zerver/views/auth.py:797
+#: zerver/views/auth.py:1156 zerver/views/auth.py:1222
 msgid "Invalid subdomain"
 msgstr "不正なサブドメイン"
 
@@ -5643,8 +5646,8 @@ msgid ""
 "({navigation_tour_video_url}) for a quick app overview.\n"
 msgstr ""
 "\n"
-"アプリの概要をさっと確認したいときは、いつでもこちらの[Zulip紹介動画]("
-"{navigation_tour_video_url})に戻ってご覧いただけます。\n"
+"アプリの概要をさっと確認したいときは、いつでもこちらの[Zulip紹介動画]"
+"({navigation_tour_video_url})に戻ってご覧いただけます。\n"
 
 #: zerver/lib/onboarding.py:141
 #, python-brace-format
@@ -5776,11 +5779,11 @@ msgid ""
 "({move_content_another_channel_help_url}).\n"
 msgstr ""
 "\n"
-"もし間違いがあっても、[メッセージの移動]("
-"{move_content_another_topic_help_url})、[トピックの名前変更]("
-"{rename_topic_help_url})や[分割]({move_content_another_topic_help_url})、さら"
-"にはトピックごと[別のチャンネルへ移動]("
-"{move_content_another_channel_help_url})させることも簡単にできます。\n"
+"もし間違いがあっても、[メッセージの移動]"
+"({move_content_another_topic_help_url})、[トピックの名前変更]"
+"({rename_topic_help_url})や[分割]({move_content_another_topic_help_url})、さ"
+"らにはトピックごと[別のチャンネルへ移動]"
+"({move_content_another_channel_help_url})させることも簡単にできます。\n"
 
 #: zerver/lib/onboarding.py:372
 msgid ""
@@ -5808,9 +5811,9 @@ msgstr ""
 "Zulip は、より効率的にコミュニケーションが取れるように整理されています。会話"
 "には「トピック」が付けられ、その会話の内容を要約しています。\n"
 "\n"
-"例えば、左サイドバーや上部で確認できるように、このメッセージは #**"
-"{zulip_discussion_channel_name}** チャンネルの「{topic_name}」トピックに含ま"
-"れています。\n"
+"例えば、左サイドバーや上部で確認できるように、このメッセージは "
+"#**{zulip_discussion_channel_name}** チャンネルの「{topic_name}」トピックに含"
+"まれています。\n"
 
 #: zerver/lib/onboarding.py:385 zerver/lib/onboarding.py:437
 #: zerver/lib/onboarding.py:528
@@ -5867,8 +5870,8 @@ msgid ""
 "({format_message_help_url}).\n"
 msgstr ""
 "\n"
-":point_right: このトピックを使って、[Zulipのメッセージ機能]("
-"{format_message_help_url})を試してみましょう。\n"
+":point_right: このトピックを使って、[Zulipのメッセージ機能]"
+"({format_message_help_url})を試してみましょう。\n"
 
 #: zerver/lib/onboarding.py:419
 #, python-brace-format
@@ -6352,7 +6355,7 @@ msgstr "不正な{setting_name}"
 msgid "Upload would exceed your organization's upload quota."
 msgstr "アップロードが組織の上限アップロード容量を超えています。"
 
-#: zerver/lib/upload/__init__.py:461 zerver/lib/upload/__init__.py:463
+#: zerver/lib/upload/__init__.py:465 zerver/lib/upload/__init__.py:467
 msgid "Image size exceeds limit"
 msgstr ""
 
@@ -6902,19 +6905,19 @@ msgstr ""
 msgid "No JSON web token passed in request"
 msgstr "リクエストにJWT"
 
-#: zerver/views/auth.py:605
+#: zerver/views/auth.py:606
 msgid "Bad JSON web token"
 msgstr "不正なJSON Web Tokenです"
 
-#: zerver/views/auth.py:609
+#: zerver/views/auth.py:610
 msgid "No email specified in JSON web token claims"
 msgstr ""
 
-#: zerver/views/auth.py:1161
+#: zerver/views/auth.py:1162
 msgid "Subdomain required"
 msgstr "サブドメインが必要です"
 
-#: zerver/views/auth.py:1225
+#: zerver/views/auth.py:1226
 msgid "Password is incorrect."
 msgstr "正しいパスワードを入力してください"
 
@@ -7439,17 +7442,17 @@ msgid ""
 msgstr ""
 "{user_name}が**プライベート（履歴保護）**チャンネルを作成しました。 **説明:**"
 
-#: zerver/views/streams.py:1318
+#: zerver/views/streams.py:1319
 #, python-brace-format
 msgid "{property} is not a boolean"
 msgstr ""
 
-#: zerver/views/streams.py:1321
+#: zerver/views/streams.py:1322
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr ""
 
-#: zerver/views/streams.py:1369
+#: zerver/views/streams.py:1370
 #, python-brace-format
 msgid "Not subscribed to channel ID {channel_id}"
 msgstr ""
@@ -7920,19 +7923,19 @@ msgstr ""
 msgid "Malformed audit log data"
 msgstr ""
 
-#: zproject/backends.py:560
+#: zproject/backends.py:566
 msgid "You need to reset your password."
 msgstr "パスワードをリセットする必要があります"
 
-#: zproject/backends.py:2827
+#: zproject/backends.py:2841
 msgid "Missing id_token parameter"
 msgstr "id_token パラメータがありません"
 
-#: zproject/backends.py:3558
+#: zproject/backends.py:3579
 msgid "Invalid OTP"
 msgstr "不正なOTP"
 
-#: zproject/backends.py:3561
+#: zproject/backends.py:3582
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "mobile_flow_otp とdesktop_flow_otp を同時に使用できません。"
 

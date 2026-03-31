@@ -28,7 +28,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-02 21:47+0000\n"
+"POT-Creation-Date: 2026-03-31 15:20+0000\n"
 "PO-Revision-Date: 2026-03-25 01:09+0000\n"
 "Last-Translator: zǝʇɹoɔ oɓıɹpoɹ <roicort@icloud.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/zulip/django-11-"
@@ -1803,8 +1803,8 @@ msgid ""
 "If you are an owner of this organization, you can <a href=\"mailto:"
 "%(support_email)s\">contact Zulip support</a> to reactivate it."
 msgstr ""
-"Si eres propietario de esta organización, puedes <a href=\"mailto:%"
-"(support_email)s\"> contactar con el soporte de Zulip </a> para reactivarla."
+"Si eres propietario de esta organización, puedes <a href=\"mailto:"
+"%(support_email)s\"> contactar con el soporte de Zulip </a> para reactivarla."
 
 #: templates/zerver/deactivated.html:55
 #, python-format
@@ -1813,9 +1813,9 @@ msgid ""
 "%(support_email)s\">contact this Zulip server's administrators</a> to "
 "reactivate it."
 msgstr ""
-"Si eres propietario de esta organización, puedes <a href=\"mailto:%"
-"(support_email)s\"> contactar con los administradores de este servidor Zulip "
-"</a> para reactivarlo."
+"Si eres propietario de esta organización, puedes <a href=\"mailto:"
+"%(support_email)s\"> contactar con los administradores de este servidor "
+"Zulip </a> para reactivarlo."
 
 #: templates/zerver/desktop_login.html:5
 msgid "Finish desktop app login"
@@ -2354,8 +2354,8 @@ msgid ""
 "details."
 msgstr ""
 "Este correo no incluye el contenido del mensaje debido a que tu organización "
-"desactivó la vista de su contenido en las notificaciones por correo. Revise %"
-"(hide_content_url)s para más detalles."
+"desactivó la vista de su contenido en las notificaciones por correo. Revise "
+"%(hide_content_url)s para más detalles."
 
 #: templates/zerver/emails/digest.txt:26
 #: templates/zerver/emails/missed_message.txt:15
@@ -2365,8 +2365,8 @@ msgid ""
 "message content in email notifications. See %(help_url)s for more details."
 msgstr ""
 "Este correo no incluye el contenido del mensaje debido a que has desactivado "
-"la vista de su contenido en las notificaciones por correo. Revisa %(help_url)"
-"s para más detalles."
+"la vista de su contenido en las notificaciones por correo. Revisa "
+"%(help_url)s para más detalles."
 
 #: templates/zerver/emails/digest.txt:32
 #, fuzzy, python-format
@@ -4630,9 +4630,9 @@ msgstr ""
 msgid "A custom emoji with this name already exists."
 msgstr "Ya existe un emoticono personalizado con ese nombre."
 
-#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:352
-#: zerver/lib/upload/__init__.py:415 zerver/lib/upload/__init__.py:423
-#: zerver/lib/upload/__init__.py:447
+#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:356
+#: zerver/lib/upload/__init__.py:419 zerver/lib/upload/__init__.py:427
+#: zerver/lib/upload/__init__.py:451
 msgid "Invalid image format"
 msgstr ""
 
@@ -5331,8 +5331,8 @@ msgstr ""
 msgid "User not authenticated"
 msgstr "Usuario no autenticado"
 
-#: zerver/lib/exceptions.py:518 zerver/views/auth.py:796
-#: zerver/views/auth.py:1155 zerver/views/auth.py:1221
+#: zerver/lib/exceptions.py:518 zerver/views/auth.py:797
+#: zerver/views/auth.py:1156 zerver/views/auth.py:1222
 msgid "Invalid subdomain"
 msgstr "Subdominio inválido"
 
@@ -5662,8 +5662,8 @@ msgid ""
 "a permanent organization]({convert_demo_organization_help_url}).\n"
 msgstr ""
 "\n"
-"Ten en cuenta que esta es una [organización de demostración] ("
-"{demo_organization_help_url}) y\n"
+"Ten en cuenta que esta es una [organización de demostración] "
+"({demo_organization_help_url}) y\n"
 "será eliminada **automáticamente** en 30 días, a menos que [se convierta en\n"
 "una organización permanente] ({convert_demo_organization_help_url}).\n"
 
@@ -6329,7 +6329,7 @@ msgstr "Nombre de emoticono inválido."
 msgid "Upload would exceed your organization's upload quota."
 msgstr "La subida excedería el límite de subidas de tu organización."
 
-#: zerver/lib/upload/__init__.py:461 zerver/lib/upload/__init__.py:463
+#: zerver/lib/upload/__init__.py:465 zerver/lib/upload/__init__.py:467
 msgid "Image size exceeds limit"
 msgstr ""
 
@@ -6878,19 +6878,19 @@ msgstr ""
 msgid "No JSON web token passed in request"
 msgstr "Ningún token web JSON se ha pasado en la petición"
 
-#: zerver/views/auth.py:605
+#: zerver/views/auth.py:606
 msgid "Bad JSON web token"
 msgstr "Token JSON web erróneo"
 
-#: zerver/views/auth.py:609
+#: zerver/views/auth.py:610
 msgid "No email specified in JSON web token claims"
 msgstr ""
 
-#: zerver/views/auth.py:1161
+#: zerver/views/auth.py:1162
 msgid "Subdomain required"
 msgstr "Subdominio requerido"
 
-#: zerver/views/auth.py:1225
+#: zerver/views/auth.py:1226
 msgid "Password is incorrect."
 msgstr ""
 
@@ -7416,17 +7416,17 @@ msgid ""
 "**"
 msgstr ""
 
-#: zerver/views/streams.py:1318
+#: zerver/views/streams.py:1319
 #, python-brace-format
 msgid "{property} is not a boolean"
 msgstr ""
 
-#: zerver/views/streams.py:1321
+#: zerver/views/streams.py:1322
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr ""
 
-#: zerver/views/streams.py:1369
+#: zerver/views/streams.py:1370
 #, python-brace-format
 msgid "Not subscribed to channel ID {channel_id}"
 msgstr ""
@@ -7903,19 +7903,19 @@ msgstr ""
 msgid "Malformed audit log data"
 msgstr ""
 
-#: zproject/backends.py:560
+#: zproject/backends.py:566
 msgid "You need to reset your password."
 msgstr "Debes reestablecer tu contraseña."
 
-#: zproject/backends.py:2827
+#: zproject/backends.py:2841
 msgid "Missing id_token parameter"
 msgstr ""
 
-#: zproject/backends.py:3558
+#: zproject/backends.py:3579
 msgid "Invalid OTP"
 msgstr "OTP inválida"
 
-#: zproject/backends.py:3561
+#: zproject/backends.py:3582
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr ""
 
