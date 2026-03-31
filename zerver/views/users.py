@@ -42,6 +42,7 @@ from zerver.decorator import require_human_non_guest_user, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.avatar import avatar_url, get_avatar_for_inaccessible_user, get_gravatar_url
 from zerver.lib.bot_config import set_bot_config
+from zerver.lib.demo_organizations import check_demo_organization_has_set_email
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import (
     CannotDeactivateLastUserError,
@@ -646,6 +647,9 @@ def add_bot_backend(
     service_name: str | None = None,
     short_name_raw: Annotated[str, ApiParamConfig("short_name")],
 ) -> HttpResponse:
+    if user_profile.realm.demo_organization_scheduled_deletion_date is not None:
+        check_demo_organization_has_set_email(user_profile.realm)
+
     if config_data is None:
         config_data = {}
     try:

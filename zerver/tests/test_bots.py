@@ -114,6 +114,36 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_error(result, "Bad name or username")
         self.assert_num_bots_equal(0)
 
+    def test_add_bot_demo_organization_restrictions(self) -> None:
+        demo_owner_account = self.create_demo_organization_owner()
+        realm = demo_owner_account.realm
+        bot_info = {
+            "full_name": "Demo organization bot",
+            "short_name": "demobot",
+            "bot_type": "1",
+        }
+
+        # Confirm owner account has no associated bots.
+        result = self.client_get("/json/bots", subdomain=realm.subdomain)
+        response_dict = self.assert_json_success(result)
+        self.assert_length(response_dict["bots"], 0)
+
+        # Bot creation is restricted before demo organization owner email set.
+        result = self.client_post("/json/bots", bot_info, subdomain=realm.subdomain)
+        self.assert_json_error(result, "Configure owner account email address.")
+
+        # Set owner email account.
+        demo_owner_account.delivery_email = "demo-owner-test@zulip.com"
+        demo_owner_account.save()
+
+        result = self.client_post("/json/bots", bot_info, subdomain=realm.subdomain)
+        self.assert_json_success(result)
+
+        # Confirm owner account now has one associated bot.
+        result = self.client_get("/json/bots", subdomain=realm.subdomain)
+        response_dict = self.assert_json_success(result)
+        self.assert_length(response_dict["bots"], 1)
+
     @override_settings(FAKE_EMAIL_DOMAIN="invaliddomain", REALM_HOSTS={"zulip": "127.0.0.1"})
     def test_add_bot_with_invalid_fake_email_domain(self) -> None:
         self.login("hamlet")
