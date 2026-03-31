@@ -208,6 +208,41 @@ _Released 2026-03-12_
 
 ## Zulip Server 11.x series
 
+### Zulip Server 11.6
+
+_Released 2026-03-31_
+
+- CVE-2026-26058: A carefully crafted export tarball could cause the
+  importing server to copy any file the `zulip` user could read into
+  the uploads directory during import. This vulnerability was
+  reported by Garett Kopcha (@0x5t).
+- CVE-2026-25742: Even after web-public access was disabled,
+  attachments originating from web-public channels would still be
+  available without logging in. A similar vulnerability existed for
+  the topic list API. This vulnerability was reported by Sho Odagiri
+  of GMO Cybersecurity by Ierae, Inc.
+- Added imports for all LDAP object types to the new server `settings.py`
+  template.
+- Ensured that logrotate is installed, which it was not previously in Docker.
+- Improved error messages when required settings were missing.
+- Fixed `upgrade-postgresql` when extensions needed extra steps.
+- Fixed configuration section names on error pages when proxies were
+  misconfigured.
+- Fixed “generate incoming email address” to respect the user’s choice of
+  sender.
+- Added documentation for `INSTALLATION_NAME` setting when configuring outgoing
+  email.
+- Fixed a potential race condition when adding emoji.
+- Fixed an error when the client attempted to upload a file with a NULL byte in
+  its filename.
+- Fixed restore-backup when restoring with a remote PostgreSQL instance with an
+  explicit port.
+- Fixed the Zulip version in Camo’s user-agent lagging to the previous deploy’s.
+- Adjusted the default `PASSWORD_MIN_LENGTH` setting to 8, up from 6.
+- Updated Python dependencies.
+- Updated puppet dependencies.
+- Updated translations from Weblate.
+
 ### Zulip Server 11.5
 
 _Released 2026-02-05_
