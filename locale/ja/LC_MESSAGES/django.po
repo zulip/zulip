@@ -21,7 +21,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-02-02 21:47+0000\n"
-"PO-Revision-Date: 2026-01-30 19:01+0000\n"
+"PO-Revision-Date: 2026-03-31 15:19+0000\n"
 "Last-Translator: r mhs <rmhs81vmon@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/zulip/django-11-"
 "x/ja/>\n"
@@ -30,7 +30,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -59,12 +59,12 @@ msgstr "グループのダイレクトメッセージ"
 #: analytics/views/stats.py:417
 #, python-brace-format
 msgid "Missing channel for chart: {chart_name}"
-msgstr ""
+msgstr "チャートのチャンネルが見つかりません: {chart_name}"
 
 #: analytics/views/stats.py:425
 #, python-brace-format
 msgid "Unknown chart name: {chart_name}"
-msgstr ""
+msgstr "不明なチャート名: {chart_name}"
 
 #: analytics/views/stats.py:435
 #, python-brace-format
@@ -132,27 +132,33 @@ msgid ""
 "[number of licenses for the current and next billing period]"
 "({billing_page_link}) is greater than the current number of users."
 msgstr ""
+"新しいユーザー（{email}）が、組織の Zulip ライセンス不足のため参加できません"
+"でした。新しいユーザーが参加できるように、[現在および次回の請求期間の"
+"ライセンス数]({billing_page_link})が現在のユーザー数より多くなっているか確認"
+"してください。"
 
 #: corporate/lib/registration.py:119
 msgid ""
 "Your organization does not have enough Zulip licenses. Invitations were not "
 "sent."
-msgstr ""
+msgstr "組織の Zulip ライセンスが不足しています。招待状は送信されませんでした。"
 
 #: corporate/lib/registration.py:133
 msgid ""
 "Your organization does not have enough Zulip licenses to change a guest "
 "user's role."
 msgstr ""
+"組織の Zulip ライセンスが不足しているため、ゲストユーザーのロールを変更できま"
+"せん。"
 
 #: corporate/lib/remote_billing_util.py:133
 #: corporate/lib/remote_billing_util.py:169
 msgid "Registration is deactivated"
-msgstr ""
+msgstr "新規登録は無効になっています"
 
 #: corporate/lib/remote_billing_util.py:166
 msgid "Invalid remote server."
-msgstr ""
+msgstr "無効なリモートサーバーです。"
 
 #: corporate/lib/stripe.py:219
 #, python-brace-format
@@ -160,6 +166,8 @@ msgid ""
 "You must purchase licenses for all active users in your organization "
 "(minimum {min_licenses})."
 msgstr ""
+"組織内のすべてのアクティブなユーザーに対してライセンスを購入する必要がありま"
+"す（最小 {min_licenses} ライセンス）。"
 
 #: corporate/lib/stripe.py:225
 #, python-brace-format
@@ -167,10 +175,12 @@ msgid ""
 "Invoices with more than {max_licenses} licenses can't be processed from this "
 "page. To complete the upgrade, please contact {email}."
 msgstr ""
+"{max_licenses} ライセンスを超える請求書は、このページからは処理できません。"
+"アップグレードを完了するには、{email} までご連絡ください。"
 
 #: corporate/lib/stripe.py:357
 msgid "No payment method on file."
-msgstr ""
+msgstr "登録されている支払い方法がありません。"
 
 #: corporate/lib/stripe.py:365
 #, python-brace-format
@@ -197,11 +207,11 @@ msgstr "エラーが発生しました。少し待ってからもう一度試し
 
 #: corporate/lib/stripe.py:1884
 msgid "Please add a credit card before starting your free trial."
-msgstr ""
+msgstr "無料トライアルを開始する前に、クレジットカードを登録してください。"
 
 #: corporate/lib/stripe.py:1907
 msgid "Please add a credit card to schedule upgrade."
-msgstr ""
+msgstr "アップグレードを予約するために、クレジットカードを登録してください。"
 
 #: corporate/lib/stripe.py:2978
 msgid ""
@@ -219,6 +229,8 @@ msgstr "プランを更新できません。このプランは終了しました
 msgid ""
 "Cannot update licenses in the current billing period for free trial plan."
 msgstr ""
+"無料トライアルプランでは、現在の請求期間のライセンス数を更新することはできま"
+"せん。"
 
 #: corporate/lib/stripe.py:3056 corporate/lib/stripe.py:3084
 msgid ""
@@ -232,7 +244,7 @@ msgstr ""
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
-msgstr ""
+msgstr "現在の請求期間において、プランはすでに {licenses} ライセンスになっています。"
 
 #: corporate/lib/stripe.py:3067
 msgid "You cannot decrease the licenses in the current billing period."
@@ -243,6 +255,8 @@ msgid ""
 "Cannot change the licenses for next billing cycle for a plan that is being "
 "downgraded."
 msgstr ""
+"ダウングレード中のプランについては、次回の請求サイクルのライセンス数を変更す"
+"ることはできません。"
 
 #: corporate/lib/stripe.py:3099
 #, python-brace-format
@@ -250,6 +264,8 @@ msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
 msgstr ""
+"プランはすでに {licenses_at_next_renewal} ライセンスで更新されるように予約さ"
+"れています。"
 
 #: corporate/lib/stripe.py:3123
 #, python-brace-format
@@ -257,6 +273,8 @@ msgid ""
 "You’ve already purchased {licenses_at_next_renewal} licenses for the next "
 "billing period."
 msgstr ""
+"次回の請求期間向けに、すでに {licenses_at_next_renewal} ライセンスを購入済み"
+"です。"
 
 #: corporate/lib/stripe.py:3145
 msgid "Nothing to change."
@@ -264,7 +282,7 @@ msgstr "変更するものがありません"
 
 #: corporate/lib/stripe.py:3430
 msgid "No customer for this organization!"
-msgstr ""
+msgstr "この組織の顧客情報が見つかりません！"
 
 #: corporate/lib/stripe.py:3439
 msgid "Session not found"
@@ -288,11 +306,11 @@ msgstr "権限が足りません"
 
 #: corporate/lib/stripe.py:3456
 msgid "Payment intent not found"
-msgstr ""
+msgstr "支払インテントが見つかりません"
 
 #: corporate/lib/stripe.py:3459
 msgid "Pass stripe_session_id or stripe_invoice_id"
-msgstr ""
+msgstr "stripe_session_id または stripe_invoice_id を渡してください"
 
 #: corporate/lib/stripe.py:4205
 #, python-brace-format
@@ -303,18 +321,23 @@ msgid ""
 "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, "
 "we would really appreciate it!"
 msgstr ""
+"コミュニティのスポンサーホスティング申請が承認されました！ {plan_name} プラン"
+"へ無償でアップグレードされました。 {emoji}\n"
+"\n"
+"もしよろしければ、{begin_link}あなたのウェブサイトで Zulip をスポンサーとして"
+"掲載{end_link}していただけますと、大変励みになります！"
 
 #: corporate/views/billing_page.py:352
 msgid "Parameter 'confirmed' is required"
-msgstr ""
+msgstr "パラメーター 'confirmed' は必須です"
 
 #: corporate/views/remote_billing_page.py:133
 msgid "Billing access token expired."
-msgstr ""
+msgstr "支払いアクセストークンの有効期限が切れました。"
 
 #: corporate/views/remote_billing_page.py:135
 msgid "Invalid billing access token."
-msgstr ""
+msgstr "支払いアクセストークンが無効です。"
 
 #: corporate/views/remote_billing_page.py:213 zilencer/views.py:1500
 #: zilencer/views.py:1525
@@ -323,28 +346,30 @@ msgid ""
 "Couldn't reconcile billing data between server and realm. Please contact "
 "{support_email}"
 msgstr ""
+"サーバーとレルム（組織）間で支払いデータの整合性を確認できませんでした。 "
+"{support_email} までお問い合わせください"
 
 #: corporate/views/remote_billing_page.py:293
 msgid "User account doesn't exist yet."
-msgstr ""
+msgstr "ユーザーアカウントがまだ存在しません。"
 
 #: corporate/views/remote_billing_page.py:298
 #: corporate/views/remote_billing_page.py:733
 msgid "You must accept the Terms of Service to proceed."
-msgstr ""
+msgstr "進めるには、利用規約に同意する必要があります。"
 
 #: corporate/views/remote_billing_page.py:539
 msgid ""
 "This zulip_org_id is not registered with Zulip's billing management system."
-msgstr ""
+msgstr "この zulip_org_id は、Zulip の支払い管理システムに登録されていません。"
 
 #: corporate/views/remote_billing_page.py:546
 msgid "Invalid zulip_org_key for this zulip_org_id."
-msgstr ""
+msgstr "この zulip_org_id に対して、指定された zulip_org_key が無効です。"
 
 #: corporate/views/remote_billing_page.py:550
 msgid "Your server registration has been deactivated."
-msgstr ""
+msgstr "サーバーの登録が解除（無効化）されました。"
 
 #: templates/404.html:4 templates/4xx.html:4
 #: templates/zerver/portico_error_pages/remote_realm_server_mismatch_error.html:4
@@ -361,26 +386,34 @@ msgid ""
 "If this error is unexpected, you can <a href=\"mailto:"
 "%(support_email)s\">contact support</a>."
 msgstr ""
+"このエラーが予期しないものである場合は、<a href=\"mailto:%(support_email)s\">"
+"サポートにお問い合わせください</a>。"
 
 #: templates/4xx.html:11
 msgid "Access forbidden (403)"
-msgstr ""
+msgstr "アクセスが禁止されています (403)"
 
 #: templates/4xx.html:13
 msgid ""
 "Your request could not be completed because your browser did not send the "
 "credentials required to authenticate your access. To resolve this issue:"
 msgstr ""
+"ブラウザがアクセス認証に必要な資格情報を送信しなかったため、リクエストを完了"
+"できませんでした。この問題を解決するには："
 
 #: templates/4xx.html:22
 msgid "Make sure that your browser allows cookies for this site."
 msgstr ""
+"お使いのブラウザで、このサイトのクッキー（Cookie）を許可していることを確認し"
+"てください。"
 
 #: templates/4xx.html:27
 msgid ""
 "Check for any browser privacy settings or extensions that block Referer "
 "headers, and disable them for this site."
 msgstr ""
+"ブラウザのプライバシー設定や拡張機能でRefererヘッダーをブロックしていないか確"
+"認し、このサイトに対してはそれらを無効にしてください。"
 
 #: templates/4xx.html:35
 msgid "Method not allowed (405)"
@@ -396,6 +429,8 @@ msgid ""
 "Something went wrong. Sorry about that! We're aware of the problem and are "
 "working to fix it. Zulip will load automatically once it is working again."
 msgstr ""
+"問題が発生しました。申し訳ありません！現在問題を把握しており、解決に向けて取"
+"り組んでいます。復旧次第、Zulipは自動的に読み込まれます。"
 
 #: templates/500.html:27
 #, python-format
@@ -404,12 +439,17 @@ msgid ""
 "information, and <a href=\"mailto:%(support_email)s\">contact Zulip support</"
 "a> with any questions."
 msgstr ""
+"詳細は<a href=\"%(status_url)s\">Zulipクラウドのステータス</a>を確認し、ご不"
+"明な点は<a href=\"mailto:%(support_email)s\">Zulipサポートまでお問い合わせく"
+"ださい</a>。"
 
 #: templates/500.html:36
 msgid ""
 "Something went wrong. Sorry about that! Zulip will load automatically once "
 "it is working again."
 msgstr ""
+"問題が発生しました。申し訳ありません！復旧次第、Zulipは自動的に読み込まれます"
+"。"
 
 #: templates/500.html:42
 #, python-format
@@ -417,6 +457,8 @@ msgid ""
 "<a href=\"mailto:%(support_email)s\">Contact this server's administrators</"
 "a> for support."
 msgstr ""
+"サポートについては、<a href=\"mailto:%(support_email)s\">このサーバーの管理者"
+"にお問い合わせください</a>。"
 
 #: templates/500.html:47
 #, python-format
@@ -424,12 +466,13 @@ msgid ""
 "If you administer this server, you may want to check out the <a "
 "href=\"%(troubleshooting_url)s\">Zulip server troubleshooting guide</a>."
 msgstr ""
+"このサーバーの管理者の場合は、<a href=\"%(troubleshooting_url)s\">Zulip"
+"サーバーのトラブルシューティングガイド</a>を確認してください。"
 
 #: templates/analytics/stats.html:6
-#, fuzzy, python-format
-#| msgid "Zulip analytics for %(target_name)s"
+#, python-format
 msgid "Analytics for %(target_name)s | Zulip"
-msgstr "%(target_name)sのZulipアナリティクス"
+msgstr "%(target_name)s の統計情報 | Zulip"
 
 #: templates/analytics/stats.html:18
 msgid "Analytics are fully available 24 hours after organization creation."
@@ -599,10 +642,12 @@ msgid ""
 "Anyway, shoot us a line at %(support_email_html_tag)s and we'll get this "
 "resolved shortly."
 msgstr ""
+"とりあえず、%(support_email_html_tag)s までご連絡ください。すぐに解決いたしま"
+"す。"
 
 #: templates/confirmation/link_expired.html:4
 msgid "Confirmation link expired or deactivated"
-msgstr ""
+msgstr "確認リンクの期限が切れているか、無効化されています"
 
 #: templates/confirmation/link_expired.html:11
 msgid "Whoops. The confirmation link has expired or been deactivated."
@@ -614,7 +659,7 @@ msgstr "組織の管理者に問い合わせて、新しいリンクを受け取
 
 #: templates/confirmation/link_malformed.html:4
 msgid "Confirmation link malformed"
-msgstr ""
+msgstr "確認リンクの形式が正しくありません"
 
 #: templates/confirmation/link_malformed.html:11
 msgid "Whoops. The confirmation link is malformed."
@@ -651,13 +696,13 @@ msgstr "この画面を閉じる"
 #: templates/corporate/billing/billing.html:583
 #: templates/corporate/billing/billing.html:620
 msgid "Never mind"
-msgstr ""
+msgstr "気にしないで"
 
 #: templates/corporate/billing/billing.html:441
 #: templates/corporate/billing/billing.html:529
 #: templates/corporate/billing/billing.html:557
 msgid "Downgrade"
-msgstr ""
+msgstr "ダウングレード"
 
 #: templates/corporate/billing/billing.html:472
 #: templates/corporate/billing/billing.html:501
@@ -676,7 +721,7 @@ msgstr "確認"
 
 #: templates/corporate/billing/billing.html:585
 msgid "Cancel upgrade"
-msgstr ""
+msgstr "アップグレードをキャンセル"
 
 #: templates/corporate/billing/event_status.html:5
 msgid "Billing status"
@@ -684,14 +729,14 @@ msgstr "請求状況"
 
 #: templates/corporate/billing/remote_billing_server_deactivate.html:5
 msgid "Deactivate server registration?"
-msgstr ""
+msgstr "サーバーの登録を無効化しますか？"
 
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html:4
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html:11
 #: templates/corporate/billing/remote_server_login_error_for_any_realm_on_active_plan.html:4
 #: templates/corporate/billing/remote_server_login_error_for_any_realm_on_active_plan.html:11
 msgid "Plan management not available"
-msgstr ""
+msgstr "プラン管理は利用できません"
 
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html:13
 #, python-format
@@ -703,18 +748,28 @@ msgid ""
 "management\">log in instructions</a> to administer the plan for your Zulip "
 "server."
 msgstr ""
+"この組織ではプラン管理を利用できません。お使いのZulipサーバーには既に %"
+"(server_plan_name)s プランが適用されており、このサーバー上のすべての組織がそ"
+"の対象となっているためです。サーバーのプラン管理については、<a "
+"href=\"https://zulip.com/help/self-hosted-billing#log-in-to-billing-"
+"management\">ログイン手順</a>の<b>サーバーレベルの請求</b>タブを参照してくだ"
+"さい。"
 
 #: templates/corporate/billing/remote_realm_login_error_for_server_on_active_plan.html:23
 msgid ""
 "To move the plan from the server to this organization, or for other "
 "questions, <a href=\"mailto:{{ support_email }}\">contact support</a>."
 msgstr ""
+"プランをサーバーからこの組織へ移動する場合や、その他のご質問については、<a "
+"href=\"mailto:{{ support_email }}\">サポートにお問い合わせください</a>。"
 
 #: templates/corporate/billing/remote_server_login_error_for_any_realm_on_active_plan.html:13
 msgid ""
 "Plan management for this server is not available because at least one "
 "organization hosted on this server already has an active plan."
 msgstr ""
+"このサーバー上の少なくとも1つの組織で既にプランが有効なため、サーバーレベルの"
+"プラン管理は利用できません。"
 
 #: templates/corporate/billing/remote_server_login_error_for_any_realm_on_active_plan.html:19
 #, python-format
@@ -727,18 +782,18 @@ msgstr ""
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html:4
 #: templates/zerver/portico_error_pages/rate_limit_exceeded.html:4
 msgid "Rate limit exceeded"
-msgstr ""
+msgstr "レート制限を超えました"
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html:11
 #: templates/zerver/portico_error_pages/rate_limit_exceeded.html:11
 msgid "Rate limit exceeded."
-msgstr ""
+msgstr "レート制限を超えました。"
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html:13
 msgid ""
 "Your server has exceeded the limit for how often this action can be "
 "performed."
-msgstr ""
+msgstr "お使いのサーバーで、この操作の実行回数制限を超えました。"
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html:15
 #: templates/zerver/portico_error_pages/rate_limit_exceeded.html:15
@@ -752,15 +807,15 @@ msgstr "アップグレード"
 
 #: templates/corporate/billing/upgrade.html:350
 msgid "Send invoice and start free trial"
-msgstr ""
+msgstr "請求書を送付して無料トライアルを開始"
 
 #: templates/corporate/billing/upgrade.html:352
 msgid "Send invoice"
-msgstr ""
+msgstr "請求書を送付"
 
 #: templates/corporate/communities.html:28
 msgid "Open communities directory"
-msgstr ""
+msgstr "コミュニティ一覧を開く"
 
 #: templates/corporate/communities.html:39
 #: templates/zerver/integrations/index.html:47
@@ -779,7 +834,7 @@ msgstr "全て"
 
 #: templates/corporate/comparison_table_integrated.html:103
 msgid "10,000 messages"
-msgstr ""
+msgstr "10,000メッセージ"
 
 #: templates/corporate/comparison_table_integrated.html:107
 #: templates/corporate/comparison_table_integrated.html:108
@@ -817,16 +872,16 @@ msgstr ""
 #: templates/corporate/comparison_table_integrated.html:284
 #: templates/corporate/comparison_table_integrated.html:285
 msgid "Unlimited"
-msgstr ""
+msgstr "無制限"
 
 #: templates/corporate/comparison_table_integrated.html:153
 msgid "Files up to 10 MB"
-msgstr ""
+msgstr "最大10MBのファイル"
 
 #: templates/corporate/comparison_table_integrated.html:154
 #: templates/corporate/comparison_table_integrated.html:155
 msgid "Files up to 1 GB"
-msgstr ""
+msgstr "最大1GBのファイル"
 
 #: templates/corporate/comparison_table_integrated.html:211
 #: templates/corporate/comparison_table_integrated.html:212
@@ -1107,7 +1162,7 @@ msgstr ""
 #: templates/corporate/comparison_table_integrated.html:1729
 #: templates/corporate/comparison_table_integrated.html:1740
 msgid "Supported"
-msgstr ""
+msgstr "対応"
 
 #: templates/corporate/comparison_table_integrated.html:230
 #: templates/corporate/comparison_table_integrated.html:244
@@ -1250,15 +1305,15 @@ msgstr ""
 #: templates/corporate/comparison_table_integrated.html:1682
 #: templates/corporate/comparison_table_integrated.html:1683
 msgid "Self-managed"
-msgstr ""
+msgstr "セルフマネージド"
 
 #: templates/corporate/comparison_table_integrated.html:282
 msgid "For organizations with up to 10 users"
-msgstr ""
+msgstr "10名以下の組織向け"
 
 #: templates/corporate/comparison_table_integrated.html:1125
 msgid "25 users minimum"
-msgstr ""
+msgstr "最小25ユーザー"
 
 #: templates/corporate/comparison_table_integrated.html:1413
 #: templates/corporate/comparison_table_integrated.html:1645
@@ -1273,7 +1328,7 @@ msgstr ""
 #: templates/corporate/comparison_table_integrated.html:1738
 #: templates/corporate/comparison_table_integrated.html:1739
 msgid "Not available"
-msgstr ""
+msgstr "利用不可"
 
 #: templates/corporate/development-community.html:23
 msgid "The Zulip development community"
@@ -1481,7 +1536,7 @@ msgstr "%(identity_provider)sでサインアップ"
 
 #: templates/zerver/accounts_home.html:92
 msgid "Already have an account?"
-msgstr ""
+msgstr "すでにアカウントをお持ちですか？"
 
 #: templates/zerver/accounts_home.html:92
 #: templates/zerver/emails/remote_billing_legacy_server_confirm_login.html:21
@@ -1506,12 +1561,17 @@ msgid ""
 "class=\"user_email semi-bold\">%(email)s</span>) for a confirmation email "
 "from Zulip."
 msgstr ""
+"登録を完了するには、ご指定のメールアドレス（<span class=\"user_email semi-"
+"bold\">%(email)s</span>）に届いている Zulip からの確認メールをチェックしてく"
+"ださい。"
 
 #: templates/zerver/accounts_send_confirm.html:25
 msgid ""
 "If you don't see a confirmation email in your Inbox or Spam folder, we can "
 "<a href=\"#\" id=\"resend_email_link\">resend it</a>."
 msgstr ""
+"受信トレイや迷惑メールフォルダに確認メールが見つからない場合は、<a "
+"href=\"#\" id=\"resend_email_link\">再送する</a>ことができます。"
 
 #: templates/zerver/app/index.html:6
 #, python-brace-format
@@ -1545,7 +1605,7 @@ msgstr "検索に一致する会話が存在しません。"
 
 #: templates/zerver/app/index.html:240
 msgid "This view is still loading messages."
-msgstr ""
+msgstr "このビューはまだメッセージを読み込み中です。"
 
 #: templates/zerver/app/index.html:243
 msgid "Load more"
@@ -1560,6 +1620,8 @@ msgid ""
 "Zulip lets you control which roles in the organization can view your email "
 "address."
 msgstr ""
+"Zulipでは組織内のどの役割があなたのメールアドレスを閲覧できるかを設定できます"
+"。"
 
 #: templates/zerver/change_email_address_visibility_modal.html:13
 msgid ""
@@ -1657,7 +1719,7 @@ msgstr "無効化された組織"
 
 #: templates/zerver/deactivated.html:20
 msgid "Organization moved"
-msgstr ""
+msgstr "組織が移動しました"
 
 #: templates/zerver/deactivated.html:29
 #, python-format
@@ -1665,6 +1727,8 @@ msgid ""
 "This organization has moved to <a "
 "href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a>."
 msgstr ""
+"この組織は <a href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a> "
+"へ移動しました。"
 
 #: templates/zerver/deactivated.html:33
 #, python-format
@@ -2734,7 +2798,7 @@ msgstr ""
 #: templates/zerver/emails/onboarding_team_to_zulip.html:16
 #: templates/zerver/emails/onboarding_team_to_zulip.txt:6
 msgid "Use the app itself to chat about your impressions."
-msgstr ""
+msgstr "アプリそのものを使って、感想を語り合いましょう。"
 
 #: templates/zerver/emails/onboarding_team_to_zulip.html:18
 #, python-format
@@ -2887,6 +2951,9 @@ msgid ""
 "Using topics, you can read Zulip one conversation at a time. You'll see each "
 "message in context, no matter how many different discussions are going on."
 msgstr ""
+"トピックを使えば、Zulip での会話を一つずつ読み進めることができます。いくつの"
+"異なる議論が並行して進んでいても、それぞれのメッセージを文脈に沿って確認する"
+"ことが可能です。"
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:16
 msgid "Channels and topics in the Zulip app"
@@ -2900,6 +2967,10 @@ msgid ""
 "For a good topic name, think about finishing the sentence: “Hey, can we chat "
 "about…?”"
 msgstr ""
+"新しい会話を始めるには、チャンネルを選んで新しいトピックを作成してください。"
+"そうすることで、進行中の議論を妨げることなく、新しい会話のスレッドを開始でき"
+"ます。適切なトピック名を決めるコツは、「ねえ、これについて話さない？」という"
+"文章の続きをイメージすることです"
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:22
 msgid "Examples of short topics"
@@ -3263,10 +3334,12 @@ msgid ""
 "If you have also forgotten your password, you can <a href=\"/help/change-"
 "your-password\">reset it</a>."
 msgstr ""
+"パスワードもお忘れの場合は、<a href=\"/help/change-your-password\">こちらから"
+"リセット</a>できます。"
 
 #: templates/zerver/find_account.html:54
 msgid "Email address"
-msgstr "メールアドレス"
+msgstr "Eメールアドレス"
 
 #: templates/zerver/find_account.html:56 templates/zerver/footer.html:18
 msgid "Find accounts"
@@ -3298,7 +3371,7 @@ msgstr "安全性"
 
 #: templates/zerver/footer.html:14
 msgid "Integrations"
-msgstr "インテグレーション"
+msgstr "統合"
 
 #: templates/zerver/footer.html:15
 msgid "Desktop & mobile apps"
@@ -3434,7 +3507,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:102
 msgid "Mastodon"
-msgstr ""
+msgstr "Mastodon"
 
 #: templates/zerver/footer.html:103
 msgid "LinkedIn"
@@ -3645,6 +3718,8 @@ msgid ""
 "Other users in this Zulip organization will be able to see this email "
 "address."
 msgstr ""
+"この Zulip 組織内の他のユーザーが、このメールアドレスを表示できるようになりま"
+"す。"
 
 #: templates/zerver/new_user_email_address_visibility.html:18
 msgid "Change"
@@ -3691,6 +3766,11 @@ msgid ""
 "you got stuck here while trying to log in, this is most likely a server bug "
 "or misconfiguration."
 msgstr ""
+"このページには誤ってアクセスされたようです。このサイトは認証プロセスの中間"
+"ステップとして用意されており、手動でアクセスすることは想定されていません。直"
+"接このページを開かれた場合は、アドレスが間違っている可能性があります。もし"
+"ログインの途中でこの画面から進まなくなったのであれば、サーバー側のバグや設定"
+"ミスの可能性が高いです。"
 
 #: templates/zerver/portico_error_pages/insecure_desktop_app.html:4
 #: templates/zerver/portico_error_pages/insecure_desktop_app.html:11
@@ -3757,7 +3837,7 @@ msgstr ""
 #: templates/zerver/portico_error_pages/unsupported_browser.html:4
 #: templates/zerver/portico_error_pages/unsupported_browser.html:11
 msgid "Unsupported browser"
-msgstr "サポートされていないブラウザ"
+msgstr "非対応のブラウザ"
 
 #: templates/zerver/portico_error_pages/unsupported_browser.html:13
 #, fuzzy, python-format
@@ -4048,15 +4128,15 @@ msgstr "数分後にメールを確認して処理を完了させてください
 
 #: templates/zerver/slack_import.html:5 templates/zerver/slack_import.html:13
 msgid "Import from Slack"
-msgstr ""
+msgstr "Slack からインポート"
 
 #: templates/zerver/slack_import.html:22
 msgid "Import progress"
-msgstr ""
+msgstr "インポートの進捗状況"
 
 #: templates/zerver/slack_import.html:24
 msgid "Checking import status…"
-msgstr ""
+msgstr "インポートステータスを確認中…"
 
 #: templates/zerver/slack_import.html:35
 #, python-format
@@ -4084,17 +4164,19 @@ msgstr ""
 
 #: templates/zerver/slack_import.html:82
 msgid "Uploaded export file"
-msgstr ""
+msgstr "アップロードされたエクスポートファイル"
 
 #: templates/zerver/slack_import.html:87
 msgid "Start import"
-msgstr ""
+msgstr "インポートを開始"
 
 #: templates/zerver/slack_import.html:102
 msgid ""
 "Or <a href=\"#\" id=\"cancel-slack-import\">create organization</a> without "
 "importing data."
 msgstr ""
+"または、データをインポートせずに <a href=\"#\" id=\"cancel-slack-import\">組"
+"織を作成</a> します。"
 
 #: templates/zerver/social_auth_select_email.html:4
 msgid "Select account for authentication"
@@ -4168,15 +4250,15 @@ msgstr "不正な順序マッピング"
 
 #: zerver/actions/create_realm.py:307
 msgid "Questions and discussion about using Zulip."
-msgstr ""
+msgstr "Zulip の使用方法に関する質問や議論。"
 
 #: zerver/actions/create_realm.py:313
 msgid "Experiment with Zulip here. :test_tube:"
-msgstr ""
+msgstr "ここで Zulip を試してみましょう。 :test_tube:"
 
 #: zerver/actions/create_realm.py:319
 msgid "For team-wide conversations"
-msgstr ""
+msgstr "チーム全体での会話に"
 
 #: zerver/actions/create_user.py:85
 msgid "signups"
@@ -4215,7 +4297,7 @@ msgstr "フィールドID {id} が見つかりませんでした"
 #: zerver/actions/default_streams.py:18
 #, python-brace-format
 msgid "Invalid default channel group name '{group_name}'"
-msgstr ""
+msgstr "無効なデフォルトチャンネルグループ名 '{group_name}' です"
 
 #: zerver/actions/default_streams.py:22
 #, python-brace-format
@@ -4231,7 +4313,7 @@ msgstr ""
 #: zerver/actions/default_streams.py:46
 #, python-brace-format
 msgid "Invalid default channel group {group_name}"
-msgstr ""
+msgstr "無効なデフォルトチャンネルグループ {group_name} です"
 
 #: zerver/actions/default_streams.py:94 zerver/actions/default_streams.py:121
 #, python-brace-format
@@ -4690,6 +4772,8 @@ msgid ""
 "{user_name} changed the \"Allow posting to the *general chat* topic?\" "
 "setting from {old_topics_policy} to {new_topics_policy}."
 msgstr ""
+"{user_name} が「一般チャット トピックへの投稿を許可しますか？」の設定を "
+"{old_topics_policy} から {new_topics_policy} に変更しました。"
 
 #: zerver/actions/submessage.py:37
 msgid "You cannot attach a submessage to this message."
@@ -4698,7 +4782,7 @@ msgstr ""
 #: zerver/actions/typing.py:61 zerver/lib/addressee.py:36
 #, python-brace-format
 msgid "Invalid user ID {user_id}"
-msgstr ""
+msgstr "無効なユーザー ID {user_id} です"
 
 #: zerver/actions/user_groups.py:239 zerver/actions/user_groups.py:275
 #, python-brace-format
@@ -4875,7 +4959,7 @@ msgstr "Zulip組織が見つかりませんでした。"
 #: zerver/lib/addressee.py:25
 #, python-brace-format
 msgid "Invalid email '{email}'"
-msgstr ""
+msgstr "無効なメールアドレス '{email}' です"
 
 #: zerver/lib/addressee.py:64 zerver/lib/addressee.py:138
 #: zerver/views/typing.py:50
@@ -4921,7 +5005,7 @@ msgstr "コンテンツを入力してください"
 #: zerver/lib/channel_folders.py:31
 #, python-brace-format
 msgid "Invalid character in channel folder name, at position {position}."
-msgstr ""
+msgstr "チャンネルフォルダ名の {position} 文字目に、無効な文字が含まれています。"
 
 #: zerver/lib/channel_folders.py:37
 msgid "Channel folder name already in use"
@@ -5084,6 +5168,8 @@ msgid ""
 "Emoji names must contain only lowercase English letters, digits, spaces, "
 "dashes, and underscores."
 msgstr ""
+"絵文字の名前は、英小文字、数字、スペース、ハイフン、アンダースコアのみで入力"
+"してください。"
 
 #: zerver/lib/emoji.py:147
 msgid "Emoji name is missing"
@@ -5442,10 +5528,9 @@ msgid "**Message sent by {reported_user_mention}**"
 msgstr ""
 
 #: zerver/lib/message_report.py:108
-#, fuzzy, python-brace-format
-#| msgid "{full_name} mentioned you:"
+#, python-brace-format
 msgid "{fullname}'s moderation requests"
-msgstr "{full_name}があなたにメンションしました："
+msgstr "{fullname} の通報リクエスト"
 
 #: zerver/lib/narrow.py:202
 #, python-brace-format
@@ -5492,7 +5577,7 @@ msgstr "承認リンクが存在しません"
 #: zerver/lib/onboarding.py:60
 #, python-brace-format
 msgid "A note from {admin_group_syntax}:"
-msgstr ""
+msgstr "{admin_group_syntax} からのお知らせ："
 
 #: zerver/lib/onboarding.py:91
 #, python-brace-format
@@ -5501,6 +5586,9 @@ msgid ""
 "To learn more, check out our [using Zulip for a class guide]"
 "({getting_started_url})!\n"
 msgstr ""
+"\n"
+"詳細については、[チーム向けZulip利用ガイド]({getting_started_url})をご覧くだ"
+"さい！\n"
 
 #: zerver/lib/onboarding.py:95
 #, python-brace-format
@@ -5509,6 +5597,8 @@ msgid ""
 "To learn more, check out our [getting started guide]"
 "({getting_started_url})!\n"
 msgstr ""
+"\n"
+"詳細については、[Zulip利用ガイド]({getting_started_url})をご覧ください！\n"
 
 #: zerver/lib/onboarding.py:103
 #, python-brace-format
@@ -5541,6 +5631,9 @@ msgid ""
 "I've kicked off some conversations to help you get started. You can find\n"
 "them in your [Inbox](/#inbox).\n"
 msgstr ""
+"\n"
+"スムーズに使い始めていただけるよう、いくつか会話を開始しておきました。\n"
+"[受信箱](/#inbox) からご確認いただけます。\n"
 
 #: zerver/lib/onboarding.py:130
 #, python-brace-format
@@ -5549,6 +5642,9 @@ msgid ""
 "You can always come back to the [Welcome to Zulip video]"
 "({navigation_tour_video_url}) for a quick app overview.\n"
 msgstr ""
+"\n"
+"アプリの概要をさっと確認したいときは、いつでもこちらの[Zulip紹介動画]("
+"{navigation_tour_video_url})に戻ってご覧いただけます。\n"
 
 #: zerver/lib/onboarding.py:141
 #, python-brace-format
@@ -5564,6 +5660,16 @@ msgid ""
 "{demo_organization_text}\n"
 "\n"
 msgstr ""
+"\n"
+"こんにちは、Zulipへようこそ！👋 "
+"{inform_about_tracked_onboarding_messages_text}\n"
+"\n"
+"{getting_started_text} {organization_setup_text}\n"
+"\n"
+"{navigation_tour_video_text}\n"
+"\n"
+"{demo_organization_text}\n"
+"\n"
 
 #: zerver/lib/onboarding.py:211
 msgid ""
@@ -5669,12 +5775,21 @@ msgid ""
 "or even move a topic [to a different channel]"
 "({move_content_another_channel_help_url}).\n"
 msgstr ""
+"\n"
+"もし間違いがあっても、[メッセージの移動]("
+"{move_content_another_topic_help_url})、[トピックの名前変更]("
+"{rename_topic_help_url})や[分割]({move_content_another_topic_help_url})、さら"
+"にはトピックごと[別のチャンネルへ移動]("
+"{move_content_another_channel_help_url})させることも簡単にできます。\n"
 
 #: zerver/lib/onboarding.py:372
 msgid ""
 "\n"
 ":point_right: Try moving this message to another topic and back.\n"
 msgstr ""
+"\n"
+":point_right: このメッセージを別のトピックに移動してから、元に戻してみてくだ"
+"さい。\n"
 
 #: zerver/lib/onboarding.py:376
 #, python-brace-format
@@ -5689,6 +5804,13 @@ msgid ""
 "sidebar\n"
 "and above.\n"
 msgstr ""
+"\n"
+"Zulip は、より効率的にコミュニケーションが取れるように整理されています。会話"
+"には「トピック」が付けられ、その会話の内容を要約しています。\n"
+"\n"
+"例えば、左サイドバーや上部で確認できるように、このメッセージは #**"
+"{zulip_discussion_channel_name}** チャンネルの「{topic_name}」トピックに含ま"
+"れています。\n"
 
 #: zerver/lib/onboarding.py:385 zerver/lib/onboarding.py:437
 #: zerver/lib/onboarding.py:528
@@ -5709,6 +5831,9 @@ msgid ""
 ":point_right: When you're ready, check out your [Inbox](/#inbox) for other\n"
 "conversations with unread messages.\n"
 msgstr ""
+"\n"
+":point_right: 準備ができたら、[受信箱](/#inbox)を確認して、未読メッセージがあ"
+"る他の会話をチェックしましょう。\n"
 
 #: zerver/lib/onboarding.py:398
 msgid ""
@@ -5731,6 +5856,8 @@ msgid ""
 "\n"
 ":point_right: Try starting a new conversation in this channel.\n"
 msgstr ""
+"\n"
+":point_right: このチャンネルで新しい会話を始めてみましょう。\n"
 
 #: zerver/lib/onboarding.py:413
 #, python-brace-format
@@ -5739,6 +5866,9 @@ msgid ""
 ":point_right:  Use this topic to try out [Zulip's messaging features]"
 "({format_message_help_url}).\n"
 msgstr ""
+"\n"
+":point_right: このトピックを使って、[Zulipのメッセージ機能]("
+"{format_message_help_url})を試してみましょう。\n"
 
 #: zerver/lib/onboarding.py:419
 #, python-brace-format
@@ -5759,6 +5889,21 @@ msgid ""
 "\n"
 "```\n"
 msgstr ""
+"\n"
+"```スポイラー 例を見たいですか？\n"
+"\n"
+"````python\n"
+"\n"
+"print(\"code blocks\")\n"
+"\n"
+"````\n"
+"\n"
+"- bulleted\n"
+"- lists\n"
+"\n"
+"会話へのリンク: #**{zulip_discussion_channel_name}>{topic_name}**\n"
+"\n"
+"```\n"
 
 #: zerver/lib/onboarding.py:440
 msgid ""
@@ -5766,6 +5911,9 @@ msgid ""
 "This **greetings** topic is a great place to say “hi” :wave: to your "
 "teammates.\n"
 msgstr ""
+"\n"
+"この **挨拶** トピックは、チームメイトに「こんにちは」 :wave: と伝えるのに最"
+"適な場所です。\n"
 
 #: zerver/lib/onboarding.py:444
 msgid ""
@@ -5773,14 +5921,17 @@ msgid ""
 ":point_right: Click on this message to start a new message in the same "
 "conversation.\n"
 msgstr ""
+"\n"
+":point_right: このメッセージをクリックして、同じ会話内で新しいメッセージを開"
+"始しましょう。\n"
 
 #: zerver/lib/onboarding.py:464
 msgid "moving messages"
-msgstr ""
+msgstr "メッセージの移動"
 
 #: zerver/lib/onboarding.py:481
 msgid "experiments"
-msgstr ""
+msgstr "実験"
 
 #: zerver/lib/onboarding.py:496
 msgid "start a conversation"
@@ -5788,7 +5939,7 @@ msgstr ""
 
 #: zerver/lib/onboarding.py:513
 msgid "greetings"
-msgstr ""
+msgstr "挨拶"
 
 #: zerver/lib/outgoing_webhook.py:320
 msgid "Invalid JSON in response"
@@ -5850,15 +6001,15 @@ msgstr ""
 
 #: zerver/lib/push_notifications.py:1865
 msgid "Device not recognized"
-msgstr ""
+msgstr "認識されていないデバイス"
 
 #: zerver/lib/push_notifications.py:1877
 msgid "Device not recognized by the push bouncer"
-msgstr ""
+msgstr "プッシュ通知バウンサーによって認識されていないデバイス"
 
 #: zerver/lib/push_notifications.py:1928
 msgid "No active registered push device"
-msgstr ""
+msgstr "アクティブに登録されたプッシュ通知デバイスがありません"
 
 #: zerver/lib/push_notifications.py:1941
 msgid "Network error while connecting to Zulip push notification service."
@@ -5906,11 +6057,13 @@ msgid ""
 "You requested a reminder for {message_pretty_link}. Note:\n"
 " > {note}"
 msgstr ""
+"{message_pretty_link} に関するリマインダーが設定されています。メモ:\n"
+" > {note}"
 
 #: zerver/lib/reminders.py:56
 #, python-brace-format
 msgid "You requested a reminder for {message_pretty_link}."
-msgstr ""
+msgstr "{message_pretty_link} に関するリマインダーが設定されています。"
 
 #: zerver/lib/reminders.py:62
 #, python-brace-format
@@ -5918,10 +6071,12 @@ msgid ""
 "You requested a reminder for the following direct message. Note:\n"
 " > {note}"
 msgstr ""
+"以下のダイレクトメッセージに関するリマインダーが設定されています。メモ:\n"
+" > {note}"
 
 #: zerver/lib/reminders.py:67
 msgid "You requested a reminder for the following direct message."
-msgstr ""
+msgstr "以下のダイレクトメッセージに関するリマインダーが設定されています。"
 
 #: zerver/lib/reminders.py:74
 #, python-brace-format
@@ -6177,7 +6332,7 @@ msgstr ""
 
 #: zerver/lib/typed_endpoint_validators.py:58
 msgid "Not a URL"
-msgstr ""
+msgstr "URLではありません"
 
 #: zerver/lib/typed_endpoint_validators.py:79
 msgid "Not a recognized time zone"
@@ -6294,7 +6449,7 @@ msgstr ""
 #: zerver/lib/users.py:155
 #, python-brace-format
 msgid "Invalid {key} value {value} ({error})"
-msgstr ""
+msgstr "無効な {key} の値 {value} ({error})"
 
 #: zerver/lib/users.py:173
 msgid "Invalid configuration data!"
@@ -6526,7 +6681,7 @@ msgstr ""
 
 #: zerver/models/linkifiers.py:35
 msgid "Unknown regular expression error"
-msgstr ""
+msgstr "未知の正規表現エラー"
 
 #: zerver/models/linkifiers.py:43
 msgid "Invalid URL template."
@@ -6620,23 +6775,23 @@ msgstr ""
 
 #: zerver/models/realms.py:666
 msgid "Allow GIFs rated Y (Very young audience)"
-msgstr ""
+msgstr "Y指定（年少者・全年齢向け）のGIFを許可する"
 
 #: zerver/models/realms.py:670
 msgid "Allow GIFs rated G (General audience)"
-msgstr ""
+msgstr "G指定（全年齢向け）のGIFを許可する"
 
 #: zerver/models/realms.py:674
 msgid "Allow GIFs rated PG (Parental guidance)"
-msgstr ""
+msgstr "PG指定（要保護者の指導）のGIFを許可する"
 
 #: zerver/models/realms.py:678
 msgid "Allow GIFs rated PG-13 (Parental guidance - under 13)"
-msgstr ""
+msgstr "PG-13指定（13歳未満は要保護者の指導）のGIFを許可する"
 
 #: zerver/models/realms.py:682
 msgid "Allow GIFs rated R (Restricted)"
-msgstr ""
+msgstr "R指定（制限あり）のGIFを許可する"
 
 #: zerver/models/streams.py:61
 msgid "Web-public"
@@ -7231,11 +7386,9 @@ msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr "なにもしません。\"add\"か\"delete\"のうち一つ以上を指定してください。"
 
 #: zerver/views/streams.py:643
-#, fuzzy, python-brace-format
-#| msgid "{user_full_name} subscribed you to the channel {channel_name}."
+#, python-brace-format
 msgid "{user_full_name} subscribed you to {channel_name}."
-msgstr ""
-"{user_full_name} があなたを {channel_name} のチャンネル登録者に追加しました。"
+msgstr "{user_full_name} があなたを {channel_name} に追加しました。"
 
 #: zerver/views/streams.py:649
 #, python-brace-format
@@ -7385,7 +7538,7 @@ msgstr ""
 #: zerver/views/user_groups.py:309
 #, python-brace-format
 msgid "{user_full_name} removed you from the group {group_name}."
-msgstr ""
+msgstr "{user_full_name} があなたをグループ {group_name} から削除しました。"
 
 #: zerver/views/user_groups.py:367
 #, python-brace-format
@@ -7416,7 +7569,7 @@ msgstr ""
 
 #: zerver/views/user_settings.py:64
 msgid "Avatar changes are disabled in this organization."
-msgstr "この組織でアバターの変更は無効化されています"
+msgstr "この組織ではアバターの変更が無効になっています。"
 
 #: zerver/views/user_settings.py:72
 msgid "Email address changes are disabled in this organization."
@@ -7483,7 +7636,7 @@ msgstr ""
 #: zerver/views/users.py:334
 #, python-brace-format
 msgid "New email value error: {message}"
-msgstr ""
+msgstr "新しいメールアドレスの値にエラーがあります: {message}"
 
 #: zerver/views/users.py:473
 msgid "Failed to change owner, no such user"

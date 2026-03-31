@@ -1962,7 +1962,7 @@
   "You haven't received any messages sent by {person} yet.": "{person} அனுப்பிய எந்த செய்திகளையும் நீங்கள் இதுவரை பெறவில்லை.",
   "You may want to <z-link>configure</z-link> your organization's login page prior to inviting users.": "பயனர்களை அழைப்பதற்கு முன்பு உங்கள் நிறுவனத்தின் உள்நுழைவு பக்கத்தை</z-link> செய்ய நீங்கள் விரும்பலாம்.",
   "You may want to <z-link>upload a profile picture</z-link> for your organization prior to inviting users.": "பயனர்களை அழைப்பதற்கு முன்பு உங்கள் நிறுவனத்திற்காக ஒரு சுயவிவரப் படத்தை</z-link> பதிவேற்ற நீங்கள் விரும்பலாம்.",
-  "You may want to configure <z-link-1>default new user settings</z-link-1> and <z-link-2>custom profile fields</z-link-2> prior to inviting users.": "பயனர்களை அழைப்பதற்கு முன் <z-link-1>இயல்புநிலை புதிய பயனர் அமைப்புகள்<z-link-1> மற்றும் <z-link-2>தனிப்பயன் சுயவிவர புலங்கள்</z-link-2> ஆகியவற்றை நீங்கள் உள்ளமைக்க விரும்பலாம்.",
+  "You may want to configure <z-link-1>default new user settings</z-link-1> and <z-link-2>custom profile fields</z-link-2> prior to inviting users.": "பயனர்களை அழைப்பதற்கு முன் <z-link-1>இயல்புநிலை புதிய பயனர் அமைப்புகள்</z-link-1> மற்றும் <z-link-2>தனிப்பயன் சுயவிவர புலங்கள்</z-link-2> ஆகியவற்றை நீங்கள் உள்ளமைக்க விரும்பலாம்.",
   "You might be interested in <z-link>recent conversations</z-link>.": "<z-link>அண்மைக் கால உரையாடல்கள்</z-link> இல் நீங்கள் ஆர்வமாக இருக்கலாம்.",
   "You need to be running Zephyr mirroring in order to send messages!": "செய்திகளை அனுப்ப நீங்கள் செஃபிர் பிரதிபலிப்பதை இயக்க வேண்டும்!",
   "You subscribed to <z-stream-name></z-stream-name>. <channel-settings-link></channel-settings-link>": "நீங்கள் <z-stream-name></z-stream-name> க்கு குழுசேர்ந்தீர்கள். <channel-settings-link></channel-settings-link>",

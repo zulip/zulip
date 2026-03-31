@@ -24,8 +24,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-02-02 21:47+0000\n"
-"PO-Revision-Date: 2025-09-29 09:02+0000\n"
-"Last-Translator: Yidan Wang <wangyidan@westlake.edu.cn>\n"
+"PO-Revision-Date: 2026-03-06 02:09+0000\n"
+"Last-Translator: Zixuan James Li <p359101898@gmail.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/zulip/django-11-x/zh_Hans/>\n"
 "Language: zh_Hans\n"
@@ -33,7 +33,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -3338,7 +3338,7 @@ msgstr ""
 
 #: templates/zerver/find_account.html:54
 msgid "Email address"
-msgstr "电子邮箱地址"
+msgstr "电子邮件地址"
 
 #: templates/zerver/find_account.html:56 templates/zerver/footer.html:18
 msgid "Find accounts"
@@ -7478,7 +7478,7 @@ msgstr "用户组 {group_id} 不是该组的子组。"
 
 #: zerver/views/user_settings.py:64
 msgid "Avatar changes are disabled in this organization."
-msgstr "本组织禁止修改头像"
+msgstr "此组织已禁用头像更改。"
 
 #: zerver/views/user_settings.py:72
 msgid "Email address changes are disabled in this organization."

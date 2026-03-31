@@ -192,7 +192,7 @@
   "Already at default line spacing": "در حال حاضر دارای فاصله خطوط پیش‌فرض",
   "Already at maximum font size ({maximum_value})": "در حال حاضر دارای حداکثر اندازه فونت ({maximum_value})",
   "Already at maximum line spacing": "در حال حاضر دارای حداکثر فاصله خطوط",
-  "Already at minimum font size ({minimum_value})": "در حال حاضر دارای حداقل اندازه فونت ({maximum_value})",
+  "Already at minimum font size ({minimum_value})": "در حال حاضر دارای حداقل اندازه فونت ({minimum_value})",
   "Already at minimum line spacing": "در حال حاضر دارای حداقل فاصله خطوط",
   "Already below recommended minimum font size ({minimum_value})": "در حال حاضر کمتر از حداقل اندازه فونت پیشنهاد شده ({minimum_value})، است.",
   "Already below recommended minimum line spacing": "در حال حاضر فاصله خطوط کمتر از فاصله توصیه‌شده، است.",

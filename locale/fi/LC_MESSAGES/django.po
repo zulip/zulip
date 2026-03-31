@@ -18,8 +18,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-02-02 21:47+0000\n"
-"PO-Revision-Date: 2026-02-02 21:42+0000\n"
-"Last-Translator: Flammie A Pirinen <flammie@iki.fi>\n"
+"PO-Revision-Date: 2026-02-25 09:09+0000\n"
+"Last-Translator: Mitja <mitja.leino@hotmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/zulip/django-11-"
 "x/fi/>\n"
 "Language: fi\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.16.1-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -2076,7 +2076,7 @@ msgid ""
 "If you have any questions, please contact this Zulip server's administrators "
 "at %(support_email)s."
 msgstr ""
-"Jos on kysmyksiä niin kannattaa ottaa yhteyttä tämän Zulip-palvelimen "
+"Jos sinulla on kysymyksiä niin ota yhteyttä tämän Zulip-palvelimen "
 "ylläpitoon sähköpostilla %(support_email)s."
 
 #: templates/zerver/emails/confirm_demo_organization_email.html:8
@@ -2487,7 +2487,7 @@ msgid ""
 "%(referrer_name)s wants you to join them on Zulip &mdash; the team "
 "communication tool designed for productivity."
 msgstr ""
-"%(referrer_name)stoivoo, että liittyisit seuraan Zulipissa &mdash; "
+"%(referrer_name)s toivoo, että liittyisit seuraan Zulipissa &mdash; "
 "tuottavuuteen suunnitellussa viestintätyökalussa."
 
 #: templates/zerver/emails/invitation.html:15
@@ -2566,7 +2566,7 @@ msgid ""
 "If you have any questions, please contact this Zulip server's administrators "
 "at <a href=\"mailto:%(email)s\">%(email)s</a>."
 msgstr ""
-"Jos on kysmyksiä niin kannattaa ottaa yhteyttä tämän Zulip-palvelimen "
+"Jos sinulla on kysymyksiä, niin ota yhteyttä tämän Zulip-palvelimen "
 "ylläpitoon sähköpostilla <a href=\"mailto:%(email)s\">%(email)s</a>."
 
 #: templates/zerver/emails/macros.html:18
@@ -6095,7 +6095,7 @@ msgid ""
 "and above.\n"
 msgstr ""
 "\n"
-"Zulip on järjestelty tehostamaan kommunikaatiota. Keksustelut\n"
+"Zulip on järjestelty tehostamaan kommunikaatiota. Keskustelut\n"
 "on järjestelty aiheisiin, jotka kertovat mistä on kyse.\n"
 "\n"
 "Esimerkiksi aihe \"{topic_name}\"\n"
@@ -6126,7 +6126,7 @@ msgid ""
 "conversations with unread messages.\n"
 msgstr ""
 "\n"
-":point_right: Lisää keksusteluja ja lukemattomia viestejä\n"
+":point_right: Lisää keskusteluja ja lukemattomia viestejä\n"
 "löytyy [saapuneista](/#inbox).\n"
 
 #: zerver/lib/onboarding.py:398
@@ -7593,7 +7593,7 @@ msgstr "Vienti epäonnistui, ei poistettavia"
 
 #: zerver/views/realm_export.py:148
 msgid "Export still in progress"
-msgstr "Vienti vielä keksen"
+msgstr "Vienti vielä kesken"
 
 #: zerver/views/realm_icon.py:20
 msgid "You must upload exactly one icon."

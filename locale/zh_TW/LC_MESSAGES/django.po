@@ -19,8 +19,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-02-02 21:47+0000\n"
-"PO-Revision-Date: 2026-01-29 08:01+0000\n"
-"Last-Translator: Eddie Su <eddiesu.sheico@gmail.com>\n"
+"PO-Revision-Date: 2026-02-06 13:45+0000\n"
+"Last-Translator: Haowei Hsu <hwhsu1231@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/zulip/django-11-x/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -1661,7 +1661,7 @@ msgstr "新建一個 Zulip 組織"
 
 #: templates/zerver/create_realm.html:27 templates/zerver/reset.html:27
 msgid "Enter your email address"
-msgstr "輸入您的 email 地址"
+msgstr "輸入您的電子郵件地址"
 
 #: templates/zerver/create_realm.html:29
 msgid "Your email"
