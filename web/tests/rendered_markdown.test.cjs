@@ -220,9 +220,14 @@ run_test("user-mention", ({override}) => {
     assert.equal($cordelia.text(), `@${cordelia.full_name}`);
     assert.equal($polonius.text(), `translated: @${polonius.full_name} (guest)`);
 
-    // message row found
     const message = {mentioned_me_directly: true};
     set_message_for_message_content($content, message);
+    rm.update_elements($content);
+    assert.ok($iago.hasClass("user-mention-me"));
+
+    // Silent mentions should also have the `user-mention-me` class.
+    $iago.removeClass("user-mention-me");
+    message.mentioned_me_directly = false;
     rm.update_elements($content);
     assert.ok($iago.hasClass("user-mention-me"));
 });
