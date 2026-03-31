@@ -381,19 +381,16 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
                 "name": "a",
                 "lock_settings_disable_cam": True,
                 "moderator": self.user.id,
-                "realm_id": self.user.realm.id,
             }
         )
 
-        test_user = self.example_user("cordelia")
         # For testing viewer role (different creator / moderator from self)
         self.signed_bbb_a_object_different_creator = self.signer.sign_object(
             {
                 "meeting_id": "a",
                 "name": "a",
                 "lock_settings_disable_cam": True,
-                "moderator": test_user.id,
-                "realm_id": test_user.realm.id,
+                "moderator": self.example_user("cordelia").id,
             }
         )
 
