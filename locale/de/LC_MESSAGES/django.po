@@ -45,7 +45,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-02 21:47+0000\n"
+"POT-Creation-Date: 2026-03-31 15:20+0000\n"
 "PO-Revision-Date: 2026-03-06 02:09+0000\n"
 "Last-Translator: Roman Bannack <apxwn@yandex.ru>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/zulip/django-11-x/"
@@ -494,8 +494,8 @@ msgid ""
 "<a href=\"mailto:%(support_email)s\">Contact this server's administrators</"
 "a> for support."
 msgstr ""
-"In der Zwischenzeit kannst du für Unterstützung <a href=\"mailto:%"
-"(support_email)s\">den Administrator dieses Servers kontaktieren</a>."
+"In der Zwischenzeit kannst du für Unterstützung <a href=\"mailto:"
+"%(support_email)s\">den Administrator dieses Servers kontaktieren</a>."
 
 #: templates/500.html:47
 #, python-format
@@ -4917,9 +4917,9 @@ msgstr "Widgets: {error_msg}"
 msgid "A custom emoji with this name already exists."
 msgstr "Es existiert bereits ein eigenes Emoji mit diesem Namen."
 
-#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:352
-#: zerver/lib/upload/__init__.py:415 zerver/lib/upload/__init__.py:423
-#: zerver/lib/upload/__init__.py:447
+#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:356
+#: zerver/lib/upload/__init__.py:419 zerver/lib/upload/__init__.py:427
+#: zerver/lib/upload/__init__.py:451
 msgid "Invalid image format"
 msgstr "Ungültiges Bildformat"
 
@@ -5656,8 +5656,8 @@ msgstr ""
 msgid "User not authenticated"
 msgstr "Nutzer:in nicht authentifiziert"
 
-#: zerver/lib/exceptions.py:518 zerver/views/auth.py:796
-#: zerver/views/auth.py:1155 zerver/views/auth.py:1221
+#: zerver/lib/exceptions.py:518 zerver/views/auth.py:797
+#: zerver/views/auth.py:1156 zerver/views/auth.py:1222
 msgid "Invalid subdomain"
 msgstr "Ungültige Subdomain"
 
@@ -6844,7 +6844,7 @@ msgid "Upload would exceed your organization's upload quota."
 msgstr ""
 "Dieser Upload würde das Upload-Budget deiner Organisation überschreiten."
 
-#: zerver/lib/upload/__init__.py:461 zerver/lib/upload/__init__.py:463
+#: zerver/lib/upload/__init__.py:465 zerver/lib/upload/__init__.py:467
 msgid "Image size exceeds limit"
 msgstr "Bildgröße überschreitet das Limit"
 
@@ -7411,19 +7411,19 @@ msgstr "JWT-Authentifizierung ist für diese Organisation nicht aktiviert"
 msgid "No JSON web token passed in request"
 msgstr "Kein JSON Web-Token in diesem Request vorhanden"
 
-#: zerver/views/auth.py:605
+#: zerver/views/auth.py:606
 msgid "Bad JSON web token"
 msgstr "Ungültiges JSON Web-Token"
 
-#: zerver/views/auth.py:609
+#: zerver/views/auth.py:610
 msgid "No email specified in JSON web token claims"
 msgstr "In den Claims des JSON Web-Tokens wurde keine E-Mail-Adresse angegeben"
 
-#: zerver/views/auth.py:1161
+#: zerver/views/auth.py:1162
 msgid "Subdomain required"
 msgstr "Subdomain benötigt"
 
-#: zerver/views/auth.py:1225
+#: zerver/views/auth.py:1226
 msgid "Password is incorrect."
 msgstr "Das Passwort stimmt nicht."
 
@@ -7972,17 +7972,17 @@ msgstr ""
 "**Privat, geschützter Verlauf** Kanal erstellt von {user_name}. "
 "**Beschreibung:**"
 
-#: zerver/views/streams.py:1318
+#: zerver/views/streams.py:1319
 #, python-brace-format
 msgid "{property} is not a boolean"
 msgstr "{property} ist kein Boolean"
 
-#: zerver/views/streams.py:1321
+#: zerver/views/streams.py:1322
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr "Unbekannte Abonnementeigenschaft: {property}"
 
-#: zerver/views/streams.py:1369
+#: zerver/views/streams.py:1370
 #, python-brace-format
 msgid "Not subscribed to channel ID {channel_id}"
 msgstr "Kanal-ID {channel_id} nicht abonniert"
@@ -8482,19 +8482,19 @@ msgstr "Doppelte Registrierung erkannt."
 msgid "Malformed audit log data"
 msgstr "Fehlerhafte Audit-Log-Daten"
 
-#: zproject/backends.py:560
+#: zproject/backends.py:566
 msgid "You need to reset your password."
 msgstr "Du musst dein Passwort zurücksetzen."
 
-#: zproject/backends.py:2827
+#: zproject/backends.py:2841
 msgid "Missing id_token parameter"
 msgstr "Fehlende id_token Parameter"
 
-#: zproject/backends.py:3558
+#: zproject/backends.py:3579
 msgid "Invalid OTP"
 msgstr "Ungültiges OTP"
 
-#: zproject/backends.py:3561
+#: zproject/backends.py:3582
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr ""
 "Es geht nicht, gleichzeitig sowohl mobile_flow_otp als auch desktop_flow_otp "

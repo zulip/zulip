@@ -22,10 +22,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-02 21:47+0000\n"
+"POT-Creation-Date: 2026-03-31 15:20+0000\n"
 "PO-Revision-Date: 2026-03-22 19:09+0000\n"
-"Last-Translator: Hosted Weblate user 141821 "
-"<clearstripe@users.noreply.hosted.weblate.org>\n"
+"Last-Translator: Hosted Weblate user 141821 <clearstripe@users.noreply."
+"hosted.weblate.org>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/zulip/django-11-x/"
 "ko/>\n"
 "Language: ko\n"
@@ -357,9 +357,9 @@ msgid ""
 "Your request could not be completed because your browser did not send the "
 "credentials required to authenticate your access. To resolve this issue:"
 msgstr ""
-"귀하의 요청은 견인치를 견딜 수 없습니다. 브라우저가 보낸 사람 Cencenicase "
-"요청이 액세스를 인증하도록 요청하지 않았습니다.이 문제를 해결하려면 다음과 "
-"같이하십시오:"
+"귀하의 요청은 견인치를 견딜 수 없습니다. 브라우저가 보낸 사람 Cencenicase 요"
+"청이 액세스를 인증하도록 요청하지 않았습니다.이 문제를 해결하려면 다음과 같이"
+"하십시오:"
 
 #: templates/4xx.html:22
 msgid "Make sure that your browser allows cookies for this site."
@@ -387,8 +387,8 @@ msgid ""
 "Something went wrong. Sorry about that! We're aware of the problem and are "
 "working to fix it. Zulip will load automatically once it is working again."
 msgstr ""
-"뭔가 웡이 죄송합니다. 그럼에 대해 미안해! 앙드러가 해결되어 "
-"협회가되었습니다. Zulip이 다시 작업하는 경우 자동으로로드됩니다."
+"뭔가 웡이 죄송합니다. 그럼에 대해 미안해! 앙드러가 해결되어 협회가되었습니"
+"다. Zulip이 다시 작업하는 경우 자동으로로드됩니다."
 
 #: templates/500.html:27
 #, python-format
@@ -708,8 +708,8 @@ msgid ""
 "Plan management for this server is not available because at least one "
 "organization hosted on this server already has an active plan."
 msgstr ""
-"이 서버의 계획 관리 사용 가능하지 않음이 서버에 Active Plan에서 주최 된 덜 "
-"배우는 덜 배우기가 있습니다."
+"이 서버의 계획 관리 사용 가능하지 않음이 서버에 Active Plan에서 주최 된 덜 배"
+"우는 덜 배우기가 있습니다."
 
 #: templates/corporate/billing/remote_server_login_error_for_any_realm_on_active_plan.html:19
 #, python-format
@@ -1584,8 +1584,8 @@ msgid ""
 "You are trying to log in using LDAP without creating an organization first. "
 "Please use EmailAuthBackend to create your organization and then try again."
 msgstr ""
-"조직을 처음 만들지 않고 LDAP를 사용하여 로그인하려고합니다. 이메일 택시 "
-"트리를 사용하여 조직을 만들고 평화를 다시하십시오."
+"조직을 처음 만들지 않고 LDAP를 사용하여 로그인하려고합니다. 이메일 택시 트리"
+"를 사용하여 조직을 만들고 평화를 다시하십시오."
 
 #: templates/zerver/config_error/remote_billing_bouncer_not_configured.html:4
 #, python-format
@@ -1718,8 +1718,8 @@ msgid ""
 "Use your web browser to finish logging in, then come back here to paste in "
 "your login token."
 msgstr ""
-"웹 브라우저를 사용하여 로깅을 완료하고, 귀하의 로그인 토큰에 뒤에서 뒤로 "
-"오는 데 있습니다."
+"웹 브라우저를 사용하여 로깅을 완료하고, 귀하의 로그인 토큰에 뒤에서 뒤로 오"
+"는 데 있습니다."
 
 #: templates/zerver/desktop_login.html:18
 msgid "Paste token here"
@@ -2037,8 +2037,8 @@ msgid ""
 "Click the button below to create the organization and register your account. "
 "You'll be able to update the information above if you like."
 msgstr ""
-"아래의 Butone을 클릭하고 조직을 만들고 똑같이 당신의 보이스 흡입 착탈에 "
-"대해서는 Qude를 뒤에서 묻습니다."
+"아래의 Butone을 클릭하고 조직을 만들고 똑같이 당신의 보이스 흡입 착탈에 대해"
+"서는 Qude를 뒤에서 묻습니다."
 
 #: templates/zerver/emails/confirm_registration.html:23
 msgid "Click the button below to complete registration."
@@ -2686,8 +2686,8 @@ msgid ""
 "If you've already decided to use Zulip for your organization, welcome! You "
 "can use our guide for moving to Zulip to get started."
 msgstr ""
-"조리개를 위해 Zulip을 사용하기로 결정한 경우, 웰빙! 짐벌로 이동하기 위해 "
-"슈트 가이드를 사용하여 시작할 수 있습니다."
+"조리개를 위해 Zulip을 사용하기로 결정한 경우, 웰빙! 짐벌로 이동하기 위해 슈"
+"트 가이드를 사용하여 시작할 수 있습니다."
 
 #: templates/zerver/emails/onboarding_team_to_zulip.txt:3
 msgid ""
@@ -2707,16 +2707,16 @@ msgid ""
 "This is the only way to truly experience how a new chat app will help your "
 "team communicate."
 msgstr ""
-"팀과 함께 주간의 평가를 실행하지만 다른 도구를 사용하십시오. 이것은 Typwy "
-"경험을위한 유일한 방법입니다. 전화가 전화를 걸 것입니다."
+"팀과 함께 주간의 평가를 실행하지만 다른 도구를 사용하십시오. 이것은 Typwy 경"
+"험을위한 유일한 방법입니다. 전화가 전화를 걸 것입니다."
 
 #: templates/zerver/emails/onboarding_team_to_zulip.txt:10
 msgid ""
 "Zulip is designed to enable efficient communication, and we hope these tips "
 "help your team experience it in action."
 msgstr ""
-"Zulip은 휘두모 커뮤니케이션을 가능하게하기 위해 설계되었으며 짹짹 팁이 "
-"귀하의 팀이 행동을 경험할 수 있도록 희망합니다."
+"Zulip은 휘두모 커뮤니케이션을 가능하게하기 위해 설계되었으며 짹짹 팁이 귀하"
+"의 팀이 행동을 경험할 수 있도록 희망합니다."
 
 #: templates/zerver/emails/onboarding_zulip_guide.html:9
 #: templates/zerver/emails/onboarding_zulip_guide.txt:1
@@ -2726,8 +2726,8 @@ msgid ""
 "organizations like yours!"
 msgstr ""
 "Zulip으로 테스트 한 경우, 우리는 그것을 발견 할 수 있도록 피곤한 것을 피할 "
-"수 있습니다 .이 가이드를 확인 하십시오. 이 가 이드를 확인하십시오. 이 "
-"가이드를 Zipip 기능에 대한 조치를 취하십시오!"
+"수 있습니다 .이 가이드를 확인 하십시오. 이 가 이드를 확인하십시오. 이 가이드"
+"를 Zipip 기능에 대한 조치를 취하십시오!"
 
 #: templates/zerver/emails/onboarding_zulip_guide.html:13
 #: templates/zerver/emails/onboarding_zulip_guide.txt:4
@@ -2811,8 +2811,8 @@ msgid ""
 "Using topics, you can read Zulip one conversation at a time. You'll see each "
 "message in context, no matter how many different discussions are going on."
 msgstr ""
-"주제를 사용하면 한 번에 Zulip 한 전환을 읽을 수 있습니다. 여러 가지 토론이 "
-"얼마나 뛰어나지 않는 한 상황에 대한 메시지가 표시됩니다."
+"주제를 사용하면 한 번에 Zulip 한 전환을 읽을 수 있습니다. 여러 가지 토론이 얼"
+"마나 뛰어나지 않는 한 상황에 대한 메시지가 표시됩니다."
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:16
 msgid "Channels and topics in the Zulip app"
@@ -2826,10 +2826,10 @@ msgid ""
 "For a good topic name, think about finishing the sentence: “Hey, can we chat "
 "about…?”"
 msgstr ""
-"새로운 대화를 시작하려면 채널을 선택하고 새로운 주제를 시작하십시오. 이런 "
-"식으로 새로운 대화 스레드는 진행중인 토론을 방해하지 않습니다. 좋은 주제 "
-"이름을 위해, 샌프란을 끝내고 생각해보십시오. \"헤이, 캔트와 대화를 싸구음에 "
-"대해서 ...\""
+"새로운 대화를 시작하려면 채널을 선택하고 새로운 주제를 시작하십시오. 이런 식"
+"으로 새로운 대화 스레드는 진행중인 토론을 방해하지 않습니다. 좋은 주제 이름"
+"을 위해, 샌프란을 끝내고 생각해보십시오. \"헤이, 캔트와 대화를 싸구음에 대해"
+"서 ...\""
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:22
 msgid "Examples of short topics"
@@ -3136,8 +3136,8 @@ msgid ""
 "Your request for Zulip sponsorship has been approved! Your organization has "
 "been upgraded to the Zulip Community plan."
 msgstr ""
-"Zulip Sponsorip Hand 의 요청이 승인되었습니다. 조직은 Zulip Community "
-"Plan으로 업그레이드되었습니다."
+"Zulip Sponsorip Hand 의 요청이 승인되었습니다. 조직은 Zulip Community Plan으"
+"로 업그레이드되었습니다."
 
 #: templates/zerver/emails/sponsorship_approved_community_plan.txt:4
 msgid ""
@@ -3590,8 +3590,8 @@ msgid ""
 "Please contact the person who invited you and ask them to increase the "
 "number of licenses, then try again."
 msgstr ""
-"당신을 초대 한 사람에게 연락하여 루니를 늘리려고 요청하십시오. Thry는 "
-"뛰어납니다."
+"당신을 초대 한 사람에게 연락하여 루니를 늘리려고 요청하십시오. Thry는 뛰어납"
+"니다."
 
 #: templates/zerver/portico-header.html:4
 msgid "Skip to main content"
@@ -3613,10 +3613,10 @@ msgid ""
 "you got stuck here while trying to log in, this is most likely a server bug "
 "or misconfiguration."
 msgstr ""
-"사고로 끝났습니다. 이것은 인증 프로세스의 중간 단계가되는 곰입니다. 그리고 "
-"당신은 여기에 보유해야합니다. 여기에 왔을 때 주소가 넘어졌습니다. 여기에 "
-"stu를 만들어 내고 Toileing을 로그인 할 수 있습니다. 이는 서버 버그 또는 잘못 "
-"구성 할 가능성이 큽니다."
+"사고로 끝났습니다. 이것은 인증 프로세스의 중간 단계가되는 곰입니다. 그리고 당"
+"신은 여기에 보유해야합니다. 여기에 왔을 때 주소가 넘어졌습니다. 여기에 stu를 "
+"만들어 내고 Toileing을 로그인 할 수 있습니다. 이는 서버 버그 또는 잘못 구성 "
+"할 가능성이 큽니다."
 
 #: templates/zerver/portico_error_pages/insecure_desktop_app.html:4
 #: templates/zerver/portico_error_pages/insecure_desktop_app.html:11
@@ -3923,8 +3923,8 @@ msgid ""
 "Forgot your password? No problem, we'll send a link to reset your password "
 "to the email you signed up with."
 msgstr ""
-"비밀번호를 잊으셨습니까? 문제 없으면, 당신은 암호를 다시 입력하여 이메일로 "
-"다시 설정해야합니다."
+"비밀번호를 잊으셨습니까? 문제 없으면, 당신은 암호를 다시 입력하여 이메일로 다"
+"시 설정해야합니다."
 
 #: templates/zerver/reset.html:34
 msgid "Send reset link"
@@ -4186,8 +4186,8 @@ msgid ""
 "To protect users, Zulip limits the number of invitations you can send in one "
 "day. Because you have reached the limit, no invitations were sent."
 msgstr ""
-"사용자를 보호하기 위해 Zulip은 하루에 보내는 초대장의 수를 제한합니다. "
-"한계를 다시 초래 했으므로 초대장의 웨스트가 보냈습니다."
+"사용자를 보호하기 위해 Zulip은 하루에 보내는 초대장의 수를 제한합니다. 한계"
+"를 다시 초래 했으므로 초대장의 웨스트가 보냈습니다."
 
 #: zerver/actions/invites.py:227
 msgid ""
@@ -4389,9 +4389,9 @@ msgstr ""
 msgid "A custom emoji with this name already exists."
 msgstr "이 이름을 가진 사용자 정의 이모티콘이 이미 존재합니다."
 
-#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:352
-#: zerver/lib/upload/__init__.py:415 zerver/lib/upload/__init__.py:423
-#: zerver/lib/upload/__init__.py:447
+#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:356
+#: zerver/lib/upload/__init__.py:419 zerver/lib/upload/__init__.py:427
+#: zerver/lib/upload/__init__.py:451
 msgid "Invalid image format"
 msgstr ""
 
@@ -4733,8 +4733,8 @@ msgid ""
 "Your password has been disabled because it is too weak. Reset your password "
 "to create a new one."
 msgstr ""
-"비밀번호가 악영향을 겪었습니다. 이전에 toise가 뒤에 벗어났습니다. 암호를 "
-"재설정하여 새 하나를 만듭니다."
+"비밀번호가 악영향을 겪었습니다. 이전에 toise가 뒤에 벗어났습니다. 암호를 재설"
+"정하여 새 하나를 만듭니다."
 
 #: zerver/forms.py:646
 msgid "Token"
@@ -5081,8 +5081,8 @@ msgstr ""
 msgid "User not authenticated"
 msgstr ""
 
-#: zerver/lib/exceptions.py:518 zerver/views/auth.py:796
-#: zerver/views/auth.py:1155 zerver/views/auth.py:1221
+#: zerver/lib/exceptions.py:518 zerver/views/auth.py:797
+#: zerver/views/auth.py:1156 zerver/views/auth.py:1222
 msgid "Invalid subdomain"
 msgstr "유효하지 않은 하위 도메인"
 
@@ -6074,7 +6074,7 @@ msgstr "이모티콘 이름이 유효하지 않습니다."
 msgid "Upload would exceed your organization's upload quota."
 msgstr "업로드가 귀하 조직의 업로드 할당량을 초과합니다."
 
-#: zerver/lib/upload/__init__.py:461 zerver/lib/upload/__init__.py:463
+#: zerver/lib/upload/__init__.py:465 zerver/lib/upload/__init__.py:467
 msgid "Image size exceeds limit"
 msgstr ""
 
@@ -6621,19 +6621,19 @@ msgstr ""
 msgid "No JSON web token passed in request"
 msgstr "요청시 전달 된 JSON 웹 토큰이 없습니다."
 
-#: zerver/views/auth.py:605
+#: zerver/views/auth.py:606
 msgid "Bad JSON web token"
 msgstr "JSON 웹 토큰이 잘못되었습니다."
 
-#: zerver/views/auth.py:609
+#: zerver/views/auth.py:610
 msgid "No email specified in JSON web token claims"
 msgstr ""
 
-#: zerver/views/auth.py:1161
+#: zerver/views/auth.py:1162
 msgid "Subdomain required"
 msgstr "하위 도메인 필요"
 
-#: zerver/views/auth.py:1225
+#: zerver/views/auth.py:1226
 msgid "Password is incorrect."
 msgstr ""
 
@@ -7155,17 +7155,17 @@ msgid ""
 "**"
 msgstr ""
 
-#: zerver/views/streams.py:1318
+#: zerver/views/streams.py:1319
 #, python-brace-format
 msgid "{property} is not a boolean"
 msgstr ""
 
-#: zerver/views/streams.py:1321
+#: zerver/views/streams.py:1322
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr ""
 
-#: zerver/views/streams.py:1369
+#: zerver/views/streams.py:1370
 #, python-brace-format
 msgid "Not subscribed to channel ID {channel_id}"
 msgstr ""
@@ -7632,19 +7632,19 @@ msgstr ""
 msgid "Malformed audit log data"
 msgstr ""
 
-#: zproject/backends.py:560
+#: zproject/backends.py:566
 msgid "You need to reset your password."
 msgstr ""
 
-#: zproject/backends.py:2827
+#: zproject/backends.py:2841
 msgid "Missing id_token parameter"
 msgstr ""
 
-#: zproject/backends.py:3558
+#: zproject/backends.py:3579
 msgid "Invalid OTP"
 msgstr "OTP가 유효하지 않습니다."
 
-#: zproject/backends.py:3561
+#: zproject/backends.py:3582
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr ""
 

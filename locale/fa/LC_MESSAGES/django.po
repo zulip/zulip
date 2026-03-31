@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-02 21:47+0000\n"
+"POT-Creation-Date: 2026-03-31 15:20+0000\n"
 "PO-Revision-Date: 2026-01-31 20:01+0000\n"
 "Last-Translator: Goudarz Jafari <me@goudarzjafari.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/zulip/django-11-"
@@ -4830,9 +4830,9 @@ msgstr "ابزارک‌ها: {error_msg}"
 msgid "A custom emoji with this name already exists."
 msgstr "یک ایموجی سفارشی با این نام قبلا تعریف شده است."
 
-#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:352
-#: zerver/lib/upload/__init__.py:415 zerver/lib/upload/__init__.py:423
-#: zerver/lib/upload/__init__.py:447
+#: zerver/actions/realm_emoji.py:46 zerver/lib/upload/__init__.py:356
+#: zerver/lib/upload/__init__.py:419 zerver/lib/upload/__init__.py:427
+#: zerver/lib/upload/__init__.py:451
 msgid "Invalid image format"
 msgstr "فرمت تصویر نامعتبر"
 
@@ -5564,8 +5564,8 @@ msgstr ""
 msgid "User not authenticated"
 msgstr "کاربر اعبتارسنجی نشد"
 
-#: zerver/lib/exceptions.py:518 zerver/views/auth.py:796
-#: zerver/views/auth.py:1155 zerver/views/auth.py:1221
+#: zerver/lib/exceptions.py:518 zerver/views/auth.py:797
+#: zerver/views/auth.py:1156 zerver/views/auth.py:1222
 msgid "Invalid subdomain"
 msgstr "زیردامنه نامعتبر است"
 
@@ -6725,7 +6725,7 @@ msgstr "{setting_name} نامعتبر"
 msgid "Upload would exceed your organization's upload quota."
 msgstr "بارگذاری از حد تعیین شده برای سازمان بیش تر است."
 
-#: zerver/lib/upload/__init__.py:461 zerver/lib/upload/__init__.py:463
+#: zerver/lib/upload/__init__.py:465 zerver/lib/upload/__init__.py:467
 msgid "Image size exceeds limit"
 msgstr "ابعاد تصویر از حد لازم بزرگتر است"
 
@@ -7277,19 +7277,19 @@ msgstr "اعتبارسنجی JWT برای این سازمان فعال نشده 
 msgid "No JSON web token passed in request"
 msgstr "هیچ توکن وب JSON در درخواست وجود ندارد"
 
-#: zerver/views/auth.py:605
+#: zerver/views/auth.py:606
 msgid "Bad JSON web token"
 msgstr "توکن وب JSON خراب است"
 
-#: zerver/views/auth.py:609
+#: zerver/views/auth.py:610
 msgid "No email specified in JSON web token claims"
 msgstr "هیچ ایمیلی در اظهاریه توکن وب JSON مشخص نشده است"
 
-#: zerver/views/auth.py:1161
+#: zerver/views/auth.py:1162
 msgid "Subdomain required"
 msgstr "زیردامنه الزامی است"
 
-#: zerver/views/auth.py:1225
+#: zerver/views/auth.py:1226
 msgid "Password is incorrect."
 msgstr "کلمه عبور غلط است"
 
@@ -7832,17 +7832,17 @@ msgid ""
 "**"
 msgstr "**{policy}** کانال ساخته شده توسط {user_name}. **شرح:**"
 
-#: zerver/views/streams.py:1318
+#: zerver/views/streams.py:1319
 #, python-brace-format
 msgid "{property} is not a boolean"
 msgstr "{property} یک مقدار بولی نیست"
 
-#: zerver/views/streams.py:1321
+#: zerver/views/streams.py:1322
 #, python-brace-format
 msgid "Unknown subscription property: {property}"
 msgstr "ویژگی عضویت ناشناخته: {property}"
 
-#: zerver/views/streams.py:1369
+#: zerver/views/streams.py:1370
 #, python-brace-format
 msgid "Not subscribed to channel ID {channel_id}"
 msgstr "عضو کانال با شناسه {channel_id} نیست"
@@ -8330,19 +8330,19 @@ msgstr "نام‌نویسی تکراری تشخیص داده شد."
 msgid "Malformed audit log data"
 msgstr "گزارش لاگ داده‌ها نادرست است"
 
-#: zproject/backends.py:560
+#: zproject/backends.py:566
 msgid "You need to reset your password."
 msgstr "لازم است که کلمه عبور خود را جایگزین کنید."
 
-#: zproject/backends.py:2827
+#: zproject/backends.py:2841
 msgid "Missing id_token parameter"
 msgstr "پارامتر id_token گم شده"
 
-#: zproject/backends.py:3558
+#: zproject/backends.py:3579
 msgid "Invalid OTP"
 msgstr "OTP اشتباه است"
 
-#: zproject/backends.py:3561
+#: zproject/backends.py:3582
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "نمی توان از mobile_flow_otp و desktop_flow_otp با هم استفاده کرد."
 
