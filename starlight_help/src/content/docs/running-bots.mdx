@@ -2,6 +2,8 @@
 title: Running interactive bots
 ---
 
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import ZulipNote from "../../components/ZulipNote.astro";
 
@@ -11,8 +13,7 @@ existing [Zulip bot](https://github.com/zulip/python-zulip-api/tree/main/zulip_b
 
 ## Running a bot
 
-This guide will show you how to run an existing
-[Zulip bot](https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots).
+This guide will show you how to run a Zulip bot.
 
 <ZulipNote>
   Please be considerate when testing experimental bots on public servers such as chat.zulip.org.
@@ -27,36 +28,79 @@ You'll need:
   [production](https://zulip.readthedocs.io/en/latest/production/install.html) server).
 * A computer where you're running the bot from.
 
-<FlattenedSteps>
-  1. [Create a bot](/help/add-a-bot-or-integration), making sure to select
-     **Generic bot** as the **Bot type**.
+<Tabs>
+  <TabItem label="Existing bot">
+    <FlattenedSteps>
+      1. [Create a bot](/help/add-a-bot-or-integration), making sure to select
+         **Generic bot** as the **Bot type**.
 
-  1. [Download the bot's `zuliprc` file](/api/configuring-python-bindings#download-a-zuliprc-file).
+      1. [Download the bot's `zuliprc` file](/api/configuring-python-bindings#download-a-zuliprc-file).
 
-  1. Use the following command to install the
-     [`zulip_bots` Python package](https://pypi.org/project/zulip-bots/):
+      1. Use the following command to install the
+         [`zulip_bots` Python package](https://pypi.org/project/zulip-bots/):
 
-     ```
-        pip3 install zulip_bots
-     ```
+         ```
+         pip3 install zulip_bots
+         ```
 
-  1. Use the following command to start the bot process *(replacing
-     `~/path/to/zuliprc` with the path to the `zuliprc` file you downloaded above)*:
+      1. Use the following command to start the bot process *(replacing `<bot-name>`
+         with the bot's name from the
+         [Zulip bots directory](https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots)
+         and `~/path/to/zuliprc` with the path to the `zuliprc` file you downloaded above)*:
 
-     ```
-     zulip-run-bot <bot-name> --config-file ~/path/to/zuliprc
-     ```
+         ```
+         zulip-run-bot <bot-name> --config-file ~/path/to/zuliprc
+         ```
 
-  1. Check the output of the command above to make sure your bot is running.
-     It should include the following line:
+      1. Check the output of the command above to make sure your bot is running.
+         It should include the following line:
 
-     ```
-     INFO:root:starting message handling...
-     ```
+         ```
+         INFO:root:starting message handling...
+         ```
 
-  1. Test your setup by [starting a new direct message](/help/starting-a-new-direct-message)
-     with the bot or [mentioning](/help/mention-a-user-or-group) the bot on a channel.
-</FlattenedSteps>
+      1. Test your setup by [starting a new direct message](/help/starting-a-new-direct-message)
+         with the bot or [mentioning](/help/mention-a-user-or-group) the bot on a channel.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Custom bot">
+    <FlattenedSteps>
+      1. [Write your bot](/help/writing-bots) and note the path to your bot's
+         `.py` file (e.g., `~/path/to/my_bot.py`).
+
+      1. [Create a bot](/help/add-a-bot-or-integration), making sure to select
+         **Generic bot** as the **Bot type**.
+
+      1. [Download the bot's `zuliprc` file](/api/configuring-python-bindings#download-a-zuliprc-file).
+
+      1. Use the following command to install the
+         [`zulip_bots` Python package](https://pypi.org/project/zulip-bots/):
+
+         ```
+         pip3 install zulip_bots
+         ```
+
+      1. Use the following command to start the bot process *(replacing
+         `~/path/to/my_bot.py` with the path to your bot file and
+         `~/path/to/zuliprc` with the path to the `zuliprc` file you downloaded above)*:
+
+         ```
+         zulip-run-bot ~/path/to/my_bot.py --config-file ~/path/to/zuliprc
+         ```
+
+      1. Check the output of the command above to make sure your bot is running.
+         It should include the following line:
+
+         ```
+         INFO:root:starting message handling...
+         ```
+
+      1. Test your setup by [starting a new direct message](/help/starting-a-new-direct-message)
+         with the bot or [mentioning](/help/mention-a-user-or-group) the bot on a channel.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
 
 <ZulipNote>
   To use the latest development version of the `zulip_bots` package, follow
