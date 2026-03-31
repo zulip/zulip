@@ -1137,6 +1137,22 @@ test("compare_by_pms", () => {
         th.compare_by_pms(b_user_1, a_user),
         util.strcmp(b_user_1.full_name, a_user.full_name),
     );
+
+    // PM count comparison
+    people.set_recipient_count_for_testing(a_user.user_id, 10);
+    people.set_recipient_count_for_testing(b_user_1.user_id, 5);
+
+    assert.equal(th.compare_by_pms(a_user, b_user_1), -1);
+    assert.equal(th.compare_by_pms(b_user_1, a_user), 1);
+
+    // Partner priority when counts are equal
+    people.set_recipient_count_for_testing(a_user.user_id, 0);
+    people.set_recipient_count_for_testing(b_user_1.user_id, 0);
+
+    pm_conversations.set_partner(a_user.user_id);
+
+    assert.equal(th.compare_by_pms(a_user, b_user_1), -1);
+    assert.equal(th.compare_by_pms(b_user_1, a_user), 1);
 });
 
 test("sort_group_setting_options", ({override_rewire}) => {
