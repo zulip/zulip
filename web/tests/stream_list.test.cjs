@@ -25,6 +25,11 @@ let unread_unmuted_count;
 let stream_has_any_unread_mentions;
 
 const topic_list = mock_esm("../src/topic_list");
+mock_esm("../src/left_sidebar_filter", {
+    has_left_sidebar_filter_value: () =>
+        $("#left-sidebar-filter-query").text().trim() !== "" ||
+        $("#left-sidebar-filter-input .pill").length > 0,
+});
 mock_esm("../src/unread", {
     unread_count_info_for_stream: () => ({
         unmuted_count: unread_unmuted_count,
@@ -157,6 +162,9 @@ function test_ui(label, f) {
     run_test(label, (helpers) => {
         stream_data.clear_subscriptions();
         stream_list.stream_sidebar.rows.clear();
+        $("#left-sidebar-filter-query").text("");
+        $.reset_selector("#left-sidebar-filter-input .pill");
+        $.set_results("#left-sidebar-filter-input .pill", []);
         f(helpers);
     });
 }
@@ -284,6 +292,77 @@ test_ui("pinned_streams_never_inactive", ({mock_template, override_rewire}) => {
 
     row.update_whether_active();
     assert.ok(!$devel_sidebar.hasClass("inactive_stream"));
+});
+
+test_ui("clear_search", () => {
+    const scenarios = [
+        {
+            search_term: "",
+            has_topic_state_pill: false,
+            expected_filter_events: ["blur"],
+            expected_close_button_events: [],
+        },
+        {
+            search_term: "",
+            has_topic_state_pill: true,
+            expected_filter_events: [],
+            expected_close_button_events: ["click"],
+        },
+    ];
+
+    for (const scenario of scenarios) {
+        $.reset_selector("#left-sidebar-filter-query");
+        $.reset_selector("#left-sidebar-search .input-close-filter-button");
+        $.reset_selector("#left-sidebar-filter-input .pill");
+        $.set_results("#left-sidebar-filter-input .pill", []);
+        const $filter = $("#left-sidebar-filter-query");
+        $filter.text(scenario.search_term);
+        if (scenario.has_topic_state_pill) {
+            const $pill = $.create("left-sidebar-topic-state-pill");
+            $.reset_selector("#left-sidebar-filter-input .pill");
+            $.set_results("#left-sidebar-filter-input .pill", [$pill[0]]);
+        }
+
+        const filter_events = [];
+        $filter.on("blur", () => {
+            filter_events.push("blur");
+        });
+
+        const close_button_events = [];
+        const $close_button = $("#left-sidebar-search .input-close-filter-button");
+        $close_button.on("click", () => {
+            close_button_events.push("click");
+        });
+
+        stream_list.clear_search();
+
+        assert.deepEqual(filter_events, scenario.expected_filter_events);
+        assert.deepEqual(close_button_events, scenario.expected_close_button_events);
+    }
+});
+
+test_ui("searching", () => {
+    const $filter = $("#left-sidebar-filter-query");
+    $.reset_selector("#left-sidebar-filter-input .pill");
+    $.set_results("#left-sidebar-filter-input .pill", []);
+
+    assert.equal(stream_list.searching(), false);
+
+    $filter.trigger("focus");
+    assert.equal(stream_list.searching(), true);
+
+    $filter.trigger("blur");
+    assert.equal(stream_list.searching(), false);
+
+    const $pill = $.create("left-sidebar-topic-state-pill-searching");
+    $.reset_selector("#left-sidebar-filter-input .pill");
+    $.set_results("#left-sidebar-filter-input .pill", [$pill[0]]);
+
+    $pill.trigger("focus");
+    assert.equal(stream_list.searching(), true);
+
+    $pill.trigger("blur");
+    assert.equal(stream_list.searching(), false);
 });
 
 function add_row(sub) {
