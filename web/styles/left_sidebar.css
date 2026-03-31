@@ -720,6 +720,11 @@
 
             .conversation-partners-list {
                 font-weight: 650;
+                color: var(--color-text-active-narrow-filter);
+            }
+
+            .conversation-partners-icon:not(.user-circle) {
+                color: var(--color-text-active-narrow-filter);
             }
         }
     }
