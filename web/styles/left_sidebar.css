@@ -127,6 +127,39 @@
     }
 }
 
+#left-sidebar-search .left-sidebar-search-section.has-input-pills {
+    .pill-container {
+        grid-area: input-element;
+        padding-left: calc(
+            var(--input-icon-starting-offset) + var(--input-icon-width) +
+                var(--input-icon-content-gap)
+        );
+        padding-right: calc(
+            var(--input-button-content-gap) + var(--input-button-width) +
+                var(--input-button-ending-offset)
+        );
+    }
+
+    &:not(:has(.pill)):has(.input:empty) {
+        .input-element,
+        .pill-container {
+            padding-right: 0.5em;
+        }
+
+        .input-close-filter-button {
+            visibility: hidden;
+        }
+    }
+
+    &:has(.pill),
+    &:has(.input:not(:empty)) {
+        .input-element,
+        .pill-container {
+            @extend .input-active-styles;
+        }
+    }
+}
+
 #stream_filters {
     overflow: visible;
     margin-bottom: 5px;
