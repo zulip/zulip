@@ -478,6 +478,23 @@ class RealmEmoji(BaseModel):
     still_url: str | None
 
 
+class EventRealmEmojiAdd(BaseEvent):
+    type: Literal["realm_emoji"]
+    op: Literal["add"]
+    emoji: RealmEmoji
+
+
+class RealmEmojiUpdateData(BaseModel):
+    deactivated: bool | None = None
+
+
+class EventRealmEmojiUpdateOne(BaseEvent):
+    type: Literal["realm_emoji"]
+    op: Literal["update_one"]
+    emoji_id: str
+    data: RealmEmojiUpdateData
+
+
 class EventRealmEmojiUpdate(BaseEvent):
     type: Literal["realm_emoji"]
     op: Literal["update"]

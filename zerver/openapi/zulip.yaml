@@ -4336,11 +4336,119 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users in a Zulip organization when
+                                a [custom emoji](/help/custom-emoji) has been added.
+
+                                Only sent to clients that set the
+                                `individual_emoji_changes` client capability.
+
+                                **Changes**: New in Zulip 12.0 (feature level ZF-dccf1a.md),
+                                replacing half of the functionality of the
+                                `realm_emoji/update` event.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_emoji
+                                op:
+                                  type: string
+                                  enum:
+                                    - add
+                                emoji:
+                                  $ref: "#/components/schemas/RealmEmoji"
+                              example:
+                                {
+                                  "type": "realm_emoji",
+                                  "op": "add",
+                                  "emoji":
+                                    {
+                                      "id": "2",
+                                      "name": "my_emoji",
+                                      "source_url": "/user_avatars/2/emoji/images/2.png",
+                                      "still_url": null,
+                                      "deactivated": false,
+                                      "author_id": 11,
+                                    },
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to all users in a Zulip organization when
+                                a property of a [custom emoji](/help/custom-emoji) has
+                                been changed. Only the fields being updated are included
+                                in the event.
+
+                                Currently, the only property that can be updated is
+                                `deactivated`, but this may be extended in the future.
+
+                                Only sent to clients that set the
+                                `individual_emoji_changes` client capability.
+
+                                **Changes**: New in Zulip 12.0 (feature level ZF-dccf1a.md),
+                                replacing half of the functionality of the
+                                `realm_emoji/update` event.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_emoji
+                                op:
+                                  type: string
+                                  enum:
+                                    - update_one
+                                emoji_id:
+                                  type: string
+                                  description: |
+                                    The ID of the custom emoji being updated.
+                                data:
+                                  type: object
+                                  description: |
+                                    And object containing the properties that have changed.
+                                  properties:
+                                    deactivated:
+                                      type: boolean
+                                      description: |
+                                        Whether the custom emoji has been deactivated.
+                                  additionalProperties: false
+                              required:
+                                - id
+                                - type
+                                - op
+                                - emoji_id
+                                - data
+                              example:
+                                {
+                                  "type": "realm_emoji",
+                                  "op": "update_one",
+                                  "emoji_id": "2",
+                                  "data": {"deactivated": true},
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to all users in a Zulip organization when
                                 a [custom emoji](/help/custom-emoji) has been updated,
                                 typically when a new emoji has been added or an old one
                                 has been deactivated. The event contains all custom emoji
                                 configured for the organization, not just the updated
                                 custom emoji.
+
+                                This legacy event is sent to clients that do not set
+                                the `individual_emoji_changes` client capability.
+
+                                **Changes**: Before Zulip 12.0 (feature level
+                                ZF-dccf1a.md), this was the only format of
+                                `realm_emoji` event sent. Clients should set the
+                                `individual_emoji_changes` capability and handle
+                                `realm_emoji/add` and `realm_emoji/edit` events
+                                instead.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -17664,6 +17772,17 @@ paths:
                       with legacy format user presence data.
                       <br />
                       **Changes**: New in Zulip 11.0 (feature level 419).
+
+                    - `individual_emoji_changes`: Boolean for whether the client supports
+                      receiving the [`realm_emoji/add` and `realm_emoji/edit` event
+                      types](/api/get-events#realm_emoji-add). If true, the server will
+                      send individual `realm_emoji/add` events when a custom emoji is
+                      added, and `realm_emoji/edit` events when a custom emoji's
+                      properties are changed (e.g., deactivated). Otherwise, the server
+                      will send the legacy `realm_emoji/update` event containing all
+                      custom emoji for the organization.
+                      <br />
+                      **Changes**: New in Zulip 12.0 (feature level ZF-dccf1a.md).
 
                     [help-linkifiers]: /help/add-a-custom-linkifier
                     [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html

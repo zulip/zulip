@@ -20,6 +20,22 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 491**
+
+* [`GET /events`](/api/get-events): A new `individual_emoji_changes`
+  client capability has been added.  Clients advertising this
+  capability will not receive `realm_emoji/update` events with the
+  state of all emoji whenever there is a change; instead they will
+  receive more granular `realm_emoji/add` and `realm_emoji/update_one`
+  events. The `realm_emoji/add` event sends the full emoji data for
+  the newly added emoji. The `realm_emoji/update_one` event sends only
+  the `emoji_id` and the properties being changed (currently only
+  `deactivated`), rather than the full emoji data.
+
+  Clients that do not set the `individual_emoji_changes` client
+  capability will continue to receive the legacy `realm_emoji/update`
+  event containing all emoji.
+
 **Feature level 490**
 
 * [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),

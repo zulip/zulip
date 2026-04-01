@@ -31,6 +31,7 @@ from zerver.lib.channel_folders import (
 from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.devices import get_devices
+from zerver.lib.event_types import RealmEmojiUpdateData
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import get_default_external_accounts
 from zerver.lib.i18n import get_available_language_codes
@@ -1854,7 +1855,19 @@ def apply_event(
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_emoji":
-        state["realm_emoji"] = event["realm_emoji"]
+        if event["op"] == "update":
+            # Legacy whole-list event for clients without
+            # the individual_emoji_changes capability.
+            state["realm_emoji"] = event["realm_emoji"]
+        elif event["op"] == "add":
+            state["realm_emoji"][event["emoji"]["id"]] = event["emoji"]
+        elif event["op"] == "update_one":
+            emoji_id = event["emoji_id"]
+            for key in RealmEmojiUpdateData.model_fields:
+                if key in event["data"]:
+                    state["realm_emoji"][emoji_id][key] = event["data"][key]
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_export":
         # These realm export events are only available to
         # administrators, and aren't included in page_params.
@@ -2059,6 +2072,7 @@ class ClientCapabilities(TypedDict):
     archived_channels: NotRequired[bool]
     empty_topic_name: NotRequired[bool]
     simplified_presence_events: NotRequired[bool]
+    individual_emoji_changes: NotRequired[bool]
     # Deprecated and no longer has any effect
     user_settings_object: NotRequired[bool]
 
@@ -2103,6 +2117,7 @@ def do_events_register(
     archived_channels = client_capabilities.get("archived_channels", False)
     empty_topic_name = client_capabilities.get("empty_topic_name", False)
     simplified_presence_events = client_capabilities.get("simplified_presence_events", False)
+    individual_emoji_changes = client_capabilities.get("individual_emoji_changes", False)
 
     if fetch_event_types is not None:
         event_types_set: set[str] | None = set(fetch_event_types)
@@ -2174,6 +2189,7 @@ def do_events_register(
         archived_channels=archived_channels,
         empty_topic_name=empty_topic_name,
         simplified_presence_events=simplified_presence_events,
+        individual_emoji_changes=individual_emoji_changes,
     )
 
     if result is None:

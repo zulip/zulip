@@ -95,6 +95,7 @@ class ClientDescriptor:
         archived_channels: bool,
         empty_topic_name: bool,
         simplified_presence_events: bool,
+        individual_emoji_changes: bool,
     ) -> None:
         # TODO: We eventually want to upstream this code to the caller, but
         # serialization concerns make it a bit difficult.
@@ -128,6 +129,7 @@ class ClientDescriptor:
         self.archived_channels = archived_channels
         self.empty_topic_name = empty_topic_name
         self.simplified_presence_events = simplified_presence_events
+        self.individual_emoji_changes = individual_emoji_changes
         self.offline = False
 
         # Default for idle_queue_timeout is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
@@ -166,6 +168,7 @@ class ClientDescriptor:
             archived_channels=self.archived_channels,
             empty_topic_name=self.empty_topic_name,
             simplified_presence_events=self.simplified_presence_events,
+            individual_emoji_changes=self.individual_emoji_changes,
             offline=self.offline,
         )
 
@@ -206,6 +209,7 @@ class ClientDescriptor:
             archived_channels=d.get("archived_channels", False),
             empty_topic_name=d.get("empty_topic_name", False),
             simplified_presence_events=d.get("simplified_presence_events", False),
+            individual_emoji_changes=d.get("individual_emoji_changes", False),
         )
         ret.last_connection_time = d["last_connection_time"]
         ret.offline = d.get("offline", False)
@@ -1383,6 +1387,24 @@ def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> No
                     client.add_event(legacy_event)
 
 
+def process_realm_emoji_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
+    # For clients that support individual emoji changes, send the
+    # event as-is (without the legacy realm_emoji field).  For
+    # legacy clients, transform it into the old realm_emoji/update
+    # event containing the full emoji dict.
+    new_event = dict(event)
+    realm_emoji = new_event.pop("realm_emoji")
+    legacy_event = dict(type="realm_emoji", op="update", realm_emoji=realm_emoji)
+
+    for user_profile_id in users:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if client.accepts_event(event):
+                if client.individual_emoji_changes:
+                    client.add_event(new_event)
+                else:
+                    client.add_event(legacy_event)
+
+
 def process_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
     for user_profile_id in users:
         for client in get_client_descriptors_for_user(user_profile_id):
@@ -1801,6 +1823,8 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         process_stream_creation_event(event, cast(list[int], users))
     elif event["type"] == "stream" and event["op"] == "delete":
         process_stream_deletion_event(event, cast(list[int], users))
+    elif event["type"] == "realm_emoji":
+        process_realm_emoji_event(event, cast(list[int], users))
     elif event["type"] == "cleanup_queue":
         # cleanup_event_queue may generate this event to forward cleanup
         # requests to the right shard.

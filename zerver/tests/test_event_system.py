@@ -99,8 +99,15 @@ class EventsEndpointTest(ZulipTestCase):
         # We choose realm_emoji somewhat randomly--we want
         # a "boring" event type for the purpose of this test.
         event_type = "realm_emoji"
-        empty_realm_emoji_dict: dict[str, Any] = {}
-        test_event = dict(id=6, type=event_type, realm_emoji=empty_realm_emoji_dict)
+        test_realm_emoji: dict[str, Any] = {
+            "id": "1",
+            "name": "spain",
+            "source_url": "http://example.com/",
+            "still_url": None,
+            "deactivated": False,
+            "author_id": user.id,
+        }
+        test_event = dict(id=6, type=event_type, op="add", emoji=test_realm_emoji)
 
         # Test that call is made to deal with a returning soft deactivated user.
         with (
@@ -135,7 +142,7 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(result_dict["queue_id"], "15:12")
 
         # sanity check the data relevant to our event
-        self.assertEqual(result_dict["realm_emoji"], {})
+        self.assertEqual(result_dict["realm_emoji"], {"1": test_realm_emoji})
 
         # Now test with `fetch_event_types` not matching the event
         return_event_queue.queue_id = "15:13"
@@ -174,7 +181,7 @@ class EventsEndpointTest(ZulipTestCase):
 
         # Check that the realm_emoji data is in there.
         self.assertIn("realm_emoji", result_dict)
-        self.assertEqual(result_dict["realm_emoji"], {})
+        self.assertEqual(result_dict["realm_emoji"], {"1": test_realm_emoji})
         self.assertEqual(result_dict["queue_id"], "15:13")
 
     def test_idle_queue_timeout(self) -> None:

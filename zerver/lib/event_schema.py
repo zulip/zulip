@@ -58,7 +58,9 @@ from zerver.lib.event_types import (
     EventRealmDomainsAdd,
     EventRealmDomainsChange,
     EventRealmDomainsRemove,
+    EventRealmEmojiAdd,
     EventRealmEmojiUpdate,
+    EventRealmEmojiUpdateOne,
     EventRealmExport,
     EventRealmExportConsent,
     EventRealmLinkifiers,
@@ -200,6 +202,8 @@ check_realm_deactivated = make_checker(EventRealmDeactivated)
 check_realm_domains_add = make_checker(EventRealmDomainsAdd)
 check_realm_domains_change = make_checker(EventRealmDomainsChange)
 check_realm_domains_remove = make_checker(EventRealmDomainsRemove)
+check_realm_emoji_add = make_checker(EventRealmEmojiAdd)
+check_realm_emoji_update_one = make_checker(EventRealmEmojiUpdateOne)
 check_realm_export_consent = make_checker(EventRealmExportConsent)
 check_realm_linkifiers = make_checker(EventRealmLinkifiers)
 check_realm_playgrounds = make_checker(EventRealmPlaygrounds)

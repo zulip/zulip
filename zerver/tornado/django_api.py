@@ -101,6 +101,7 @@ def request_event_queue(
     archived_channels: bool = False,
     empty_topic_name: bool = False,
     simplified_presence_events: bool = False,
+    individual_emoji_changes: bool = False,
 ) -> EventQueueData | None:
     if not settings.USING_TORNADO:
         return None
@@ -131,6 +132,7 @@ def request_event_queue(
         "archived_channels": orjson.dumps(archived_channels),
         "empty_topic_name": orjson.dumps(empty_topic_name),
         "simplified_presence_events": orjson.dumps(simplified_presence_events),
+        "individual_emoji_changes": orjson.dumps(individual_emoji_changes),
     }
 
     if idle_queue_timeout is not None:
