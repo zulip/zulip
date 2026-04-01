@@ -97,6 +97,7 @@ export function initialize(): void {
                     });
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
+                popover_menus.focus_popover(instance);
             },
             onShow(instance) {
                 popovers.hide_all();
@@ -136,6 +137,7 @@ export function initialize(): void {
                     drafts.confirm_delete_all_drafts();
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
+                popover_menus.focus_popover(instance);
             },
             onShow(instance) {
                 popovers.hide_all();
@@ -175,6 +177,7 @@ export function initialize(): void {
                     {instance},
                     register_toggle_unread_message_count,
                 );
+                popover_menus.focus_popover(instance);
             },
             onShow(instance) {
                 popovers.hide_all();
@@ -222,6 +225,7 @@ export function initialize(): void {
                     {instance},
                     register_toggle_unread_message_count,
                 );
+                popover_menus.focus_popover(instance);
             },
             onShow(instance) {
                 popover_menus.popover_instances.left_sidebar_all_messages_popover = instance;
@@ -273,6 +277,7 @@ export function initialize(): void {
                     {instance},
                     register_toggle_unread_message_count,
                 );
+                popover_menus.focus_popover(instance);
             },
             onShow(instance) {
                 popover_menus.popover_instances.left_sidebar_recent_view_popover = instance;
@@ -323,6 +328,7 @@ export function initialize(): void {
                     {instance},
                     register_toggle_unread_message_count,
                 );
+                popover_menus.focus_popover(instance);
             },
             onShow(instance) {
                 const built_in_popover_condensed_views =

@@ -465,6 +465,7 @@ function show_user_card_popover(
                 load_medium_avatar(user, $popover.find(".popover-menu-user-avatar"));
                 init_email_clipboard();
                 init_email_tooltip(user);
+                $popover.find(".link-item .popover-menu-link").first().trigger("focus");
             },
         },
         {

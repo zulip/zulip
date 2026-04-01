@@ -176,6 +176,7 @@ export function initialize(): void {
                 $popper.one("click", "#folder_popover_manage_folder", () => {
                     channel_folders_ui.handle_editing_channel_folder(folder_id);
                 });
+                popover_menus.focus_popover(instance);
             },
             onShow(instance) {
                 instance.setContent(
