@@ -72,261 +72,286 @@ function register_toggle_unread_message_count(
 
 export function initialize(): void {
     // Starred messages popover
-    popover_menus.register_popover_menu(".starred-messages-sidebar-menu-icon", {
-        ...popover_menus.left_sidebar_tippy_options,
-        onMount(instance) {
-            const $popper = $(instance.popper);
-            popover_menus.popover_instances.starred_messages = instance;
-            assert(instance.reference instanceof HTMLElement);
-            ui_util.show_left_sidebar_menu_icon(instance.reference);
+    popover_menus.register_popover_menu(
+        ".starred-messages-sidebar-menu-icon",
+        {
+            ...popover_menus.left_sidebar_tippy_options,
+            onMount(instance) {
+                const $popper = $(instance.popper);
+                popover_menus.popover_instances.starred_messages = instance;
+                assert(instance.reference instanceof HTMLElement);
+                ui_util.show_left_sidebar_menu_icon(instance.reference);
 
-            $popper.one("click", "#unstar_all_messages", () => {
-                starred_messages_ui.confirm_unstar_all_messages();
-                popover_menus.hide_current_popover_if_visible(instance);
-            });
-            $popper.one("click", "#toggle_display_starred_msg_count", () => {
-                const starred_msg_counts = user_settings.starred_message_counts;
-                const data = {
-                    starred_message_counts: JSON.stringify(!starred_msg_counts),
-                };
-                void channel.patch({
-                    url: "/json/settings",
-                    data,
+                $popper.one("click", "#unstar_all_messages", () => {
+                    starred_messages_ui.confirm_unstar_all_messages();
+                    popover_menus.hide_current_popover_if_visible(instance);
                 });
-                popover_menus.hide_current_popover_if_visible(instance);
-            });
-        },
-        onShow(instance) {
-            popovers.hide_all();
-            const show_unstar_all_button = starred_messages.get_count() > 0;
+                $popper.one("click", "#toggle_display_starred_msg_count", () => {
+                    const starred_msg_counts = user_settings.starred_message_counts;
+                    const data = {
+                        starred_message_counts: JSON.stringify(!starred_msg_counts),
+                    };
+                    void channel.patch({
+                        url: "/json/settings",
+                        data,
+                    });
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+            },
+            onShow(instance) {
+                popovers.hide_all();
+                const show_unstar_all_button = starred_messages.get_count() > 0;
 
-            instance.setContent(
-                ui_util.parse_html(
-                    render_left_sidebar_starred_messages_popover({
-                        show_unstar_all_button,
-                        starred_message_counts: user_settings.starred_message_counts,
-                    }),
-                ),
-            );
+                instance.setContent(
+                    ui_util.parse_html(
+                        render_left_sidebar_starred_messages_popover({
+                            show_unstar_all_button,
+                            starred_message_counts: user_settings.starred_message_counts,
+                        }),
+                    ),
+                );
+            },
+            onHidden(instance) {
+                instance.destroy();
+                popover_menus.popover_instances.starred_messages = null;
+                ui_util.hide_left_sidebar_menu_icon();
+            },
         },
-        onHidden(instance) {
-            instance.destroy();
-            popover_menus.popover_instances.starred_messages = null;
-            ui_util.hide_left_sidebar_menu_icon();
-        },
-    });
+        true,
+    );
 
     // Drafts popover
-    popover_menus.register_popover_menu(".drafts-sidebar-menu-icon", {
-        ...popover_menus.left_sidebar_tippy_options,
-        onMount(instance) {
-            const $popper = $(instance.popper);
-            $popper.addClass("drafts-popover");
-            popover_menus.popover_instances.drafts = instance;
-            assert(instance.reference instanceof HTMLElement);
-            ui_util.show_left_sidebar_menu_icon(instance.reference);
+    popover_menus.register_popover_menu(
+        ".drafts-sidebar-menu-icon",
+        {
+            ...popover_menus.left_sidebar_tippy_options,
+            onMount(instance) {
+                const $popper = $(instance.popper);
+                $popper.addClass("drafts-popover");
+                popover_menus.popover_instances.drafts = instance;
+                assert(instance.reference instanceof HTMLElement);
+                ui_util.show_left_sidebar_menu_icon(instance.reference);
 
-            $popper.one("click", "#delete_all_drafts_sidebar", () => {
-                drafts.confirm_delete_all_drafts();
-                popover_menus.hide_current_popover_if_visible(instance);
-            });
-        },
-        onShow(instance) {
-            popovers.hide_all();
+                $popper.one("click", "#delete_all_drafts_sidebar", () => {
+                    drafts.confirm_delete_all_drafts();
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+            },
+            onShow(instance) {
+                popovers.hide_all();
 
-            instance.setContent(ui_util.parse_html(render_left_sidebar_drafts_popover({})));
+                instance.setContent(ui_util.parse_html(render_left_sidebar_drafts_popover({})));
+            },
+            onHidden(instance) {
+                instance.destroy();
+                popover_menus.popover_instances.drafts = null;
+                ui_util.hide_left_sidebar_menu_icon();
+            },
         },
-        onHidden(instance) {
-            instance.destroy();
-            popover_menus.popover_instances.drafts = null;
-            ui_util.hide_left_sidebar_menu_icon();
-        },
-    });
+        true,
+    );
 
     // Inbox popover
-    popover_menus.register_popover_menu(".inbox-sidebar-menu-icon", {
-        ...popover_menus.left_sidebar_tippy_options,
-        onMount(instance) {
-            const $popper = $(instance.popper);
-            popover_menus.popover_instances.left_sidebar_inbox_popover = instance;
-            assert(instance.reference instanceof HTMLElement);
-            ui_util.show_left_sidebar_menu_icon(instance.reference);
+    popover_menus.register_popover_menu(
+        ".inbox-sidebar-menu-icon",
+        {
+            ...popover_menus.left_sidebar_tippy_options,
+            onMount(instance) {
+                const $popper = $(instance.popper);
+                popover_menus.popover_instances.left_sidebar_inbox_popover = instance;
+                assert(instance.reference instanceof HTMLElement);
+                ui_util.show_left_sidebar_menu_icon(instance.reference);
 
-            $popper.one(
-                "click",
-                ".mark_all_messages_as_read",
-                {instance},
-                register_mark_all_read_handler,
-            );
+                $popper.one(
+                    "click",
+                    ".mark_all_messages_as_read",
+                    {instance},
+                    register_mark_all_read_handler,
+                );
 
-            $popper.one(
-                "click",
-                ".toggle_display_unread_message_count",
-                {instance},
-                register_toggle_unread_message_count,
-            );
+                $popper.one(
+                    "click",
+                    ".toggle_display_unread_message_count",
+                    {instance},
+                    register_toggle_unread_message_count,
+                );
+            },
+            onShow(instance) {
+                popovers.hide_all();
+                const view_code = settings_config.web_home_view_values.inbox.code;
+                const counts = unread.get_counts();
+                const unread_messages_present =
+                    counts.home_unread_messages + counts.muted_topic_unread_messages_count > 0;
+                instance.setContent(
+                    ui_util.parse_html(
+                        render_left_sidebar_inbox_popover({
+                            is_home_view: user_settings.web_home_view === view_code,
+                            view_code,
+                            show_unread_count: user_settings.web_left_sidebar_unreads_count_summary,
+                            unread_messages_present,
+                        }),
+                    ),
+                );
+            },
+            onHidden(instance) {
+                instance.destroy();
+                popover_menus.popover_instances.left_sidebar_inbox_popover = null;
+                ui_util.hide_left_sidebar_menu_icon();
+            },
         },
-        onShow(instance) {
-            popovers.hide_all();
-            const view_code = settings_config.web_home_view_values.inbox.code;
-            const counts = unread.get_counts();
-            const unread_messages_present =
-                counts.home_unread_messages + counts.muted_topic_unread_messages_count > 0;
-            instance.setContent(
-                ui_util.parse_html(
-                    render_left_sidebar_inbox_popover({
-                        is_home_view: user_settings.web_home_view === view_code,
-                        view_code,
-                        show_unread_count: user_settings.web_left_sidebar_unreads_count_summary,
-                        unread_messages_present,
-                    }),
-                ),
-            );
-        },
-        onHidden(instance) {
-            instance.destroy();
-            popover_menus.popover_instances.left_sidebar_inbox_popover = null;
-            ui_util.hide_left_sidebar_menu_icon();
-        },
-    });
+        true,
+    );
 
     // Combined feed popover
-    popover_menus.register_popover_menu(".all-messages-sidebar-menu-icon", {
-        ...popover_menus.left_sidebar_tippy_options,
-        onMount(instance) {
-            const $popper = $(instance.popper);
-            $popper.one(
-                "click",
-                ".mark_all_messages_as_read",
-                {instance},
-                register_mark_all_read_handler,
-            );
+    popover_menus.register_popover_menu(
+        ".all-messages-sidebar-menu-icon",
+        {
+            ...popover_menus.left_sidebar_tippy_options,
+            onMount(instance) {
+                const $popper = $(instance.popper);
+                $popper.one(
+                    "click",
+                    ".mark_all_messages_as_read",
+                    {instance},
+                    register_mark_all_read_handler,
+                );
 
-            $popper.one(
-                "click",
-                ".toggle_display_unread_message_count",
-                {instance},
-                register_toggle_unread_message_count,
-            );
-        },
-        onShow(instance) {
-            popover_menus.popover_instances.left_sidebar_all_messages_popover = instance;
-            assert(instance.reference instanceof HTMLElement);
-            ui_util.show_left_sidebar_menu_icon(instance.reference);
-            popovers.hide_all();
-            const view_code = settings_config.web_home_view_values.all_messages.code;
-            const counts = unread.get_counts();
-            const unread_messages_present =
-                counts.home_unread_messages + counts.muted_topic_unread_messages_count > 0;
+                $popper.one(
+                    "click",
+                    ".toggle_display_unread_message_count",
+                    {instance},
+                    register_toggle_unread_message_count,
+                );
+            },
+            onShow(instance) {
+                popover_menus.popover_instances.left_sidebar_all_messages_popover = instance;
+                assert(instance.reference instanceof HTMLElement);
+                ui_util.show_left_sidebar_menu_icon(instance.reference);
+                popovers.hide_all();
+                const view_code = settings_config.web_home_view_values.all_messages.code;
+                const counts = unread.get_counts();
+                const unread_messages_present =
+                    counts.home_unread_messages + counts.muted_topic_unread_messages_count > 0;
 
-            instance.setContent(
-                ui_util.parse_html(
-                    render_left_sidebar_all_messages_popover({
-                        is_home_view: user_settings.web_home_view === view_code,
-                        view_code,
-                        show_unread_count: user_settings.web_left_sidebar_unreads_count_summary,
-                        unread_messages_present,
-                    }),
-                ),
-            );
+                instance.setContent(
+                    ui_util.parse_html(
+                        render_left_sidebar_all_messages_popover({
+                            is_home_view: user_settings.web_home_view === view_code,
+                            view_code,
+                            show_unread_count: user_settings.web_left_sidebar_unreads_count_summary,
+                            unread_messages_present,
+                        }),
+                    ),
+                );
+            },
+            onHidden(instance) {
+                instance.destroy();
+                popover_menus.popover_instances.left_sidebar_all_messages_popover = null;
+                ui_util.hide_left_sidebar_menu_icon();
+            },
         },
-        onHidden(instance) {
-            instance.destroy();
-            popover_menus.popover_instances.left_sidebar_all_messages_popover = null;
-            ui_util.hide_left_sidebar_menu_icon();
-        },
-    });
+        true,
+    );
 
     // Recent view popover
-    popover_menus.register_popover_menu(".recent-view-sidebar-menu-icon", {
-        ...popover_menus.left_sidebar_tippy_options,
-        onMount(instance) {
-            const $popper = $(instance.popper);
-            $popper.one(
-                "click",
-                ".mark_all_messages_as_read",
-                {instance},
-                register_mark_all_read_handler,
-            );
+    popover_menus.register_popover_menu(
+        ".recent-view-sidebar-menu-icon",
+        {
+            ...popover_menus.left_sidebar_tippy_options,
+            onMount(instance) {
+                const $popper = $(instance.popper);
+                $popper.one(
+                    "click",
+                    ".mark_all_messages_as_read",
+                    {instance},
+                    register_mark_all_read_handler,
+                );
 
-            $popper.one(
-                "click",
-                ".toggle_display_unread_message_count",
-                {instance},
-                register_toggle_unread_message_count,
-            );
+                $popper.one(
+                    "click",
+                    ".toggle_display_unread_message_count",
+                    {instance},
+                    register_toggle_unread_message_count,
+                );
+            },
+            onShow(instance) {
+                popover_menus.popover_instances.left_sidebar_recent_view_popover = instance;
+                assert(instance.reference instanceof HTMLElement);
+                ui_util.show_left_sidebar_menu_icon(instance.reference);
+                popovers.hide_all();
+                const view_code = settings_config.web_home_view_values.recent.code;
+                const counts = unread.get_counts();
+                const unread_messages_present =
+                    counts.home_unread_messages + counts.muted_topic_unread_messages_count > 0;
+                instance.setContent(
+                    ui_util.parse_html(
+                        render_left_sidebar_recent_view_popover({
+                            is_home_view: user_settings.web_home_view === view_code,
+                            view_code,
+                            show_unread_count: user_settings.web_left_sidebar_unreads_count_summary,
+                            unread_messages_present,
+                        }),
+                    ),
+                );
+            },
+            onHidden(instance) {
+                instance.destroy();
+                popover_menus.popover_instances.left_sidebar_recent_view_popover = null;
+                ui_util.hide_left_sidebar_menu_icon();
+            },
         },
-        onShow(instance) {
-            popover_menus.popover_instances.left_sidebar_recent_view_popover = instance;
-            assert(instance.reference instanceof HTMLElement);
-            ui_util.show_left_sidebar_menu_icon(instance.reference);
-            popovers.hide_all();
-            const view_code = settings_config.web_home_view_values.recent.code;
-            const counts = unread.get_counts();
-            const unread_messages_present =
-                counts.home_unread_messages + counts.muted_topic_unread_messages_count > 0;
-            instance.setContent(
-                ui_util.parse_html(
-                    render_left_sidebar_recent_view_popover({
-                        is_home_view: user_settings.web_home_view === view_code,
-                        view_code,
-                        show_unread_count: user_settings.web_left_sidebar_unreads_count_summary,
-                        unread_messages_present,
-                    }),
-                ),
-            );
-        },
-        onHidden(instance) {
-            instance.destroy();
-            popover_menus.popover_instances.left_sidebar_recent_view_popover = null;
-            ui_util.hide_left_sidebar_menu_icon();
-        },
-    });
+        true,
+    );
 
-    popover_menus.register_popover_menu(".left-sidebar-navigation-menu-icon", {
-        ...popover_menus.left_sidebar_tippy_options,
-        onMount(instance) {
-            const $popper = $(instance.popper);
+    popover_menus.register_popover_menu(
+        ".left-sidebar-navigation-menu-icon",
+        {
+            ...popover_menus.left_sidebar_tippy_options,
+            onMount(instance) {
+                const $popper = $(instance.popper);
 
-            $popper.one(
-                "click",
-                ".mark_all_messages_as_read",
-                {instance},
-                register_mark_all_read_handler,
-            );
+                $popper.one(
+                    "click",
+                    ".mark_all_messages_as_read",
+                    {instance},
+                    register_mark_all_read_handler,
+                );
 
-            $popper.one(
-                "click",
-                ".toggle_display_unread_message_count",
-                {instance},
-                register_toggle_unread_message_count,
-            );
-        },
-        onShow(instance) {
-            const built_in_popover_condensed_views =
-                left_sidebar_navigation_area.get_built_in_popover_condensed_views();
-            const unread_count = unread.get_counts();
-            const unread_messages_present = unread_count.home_unread_messages > 0;
-            const show_unread_count = user_settings.web_left_sidebar_unreads_count_summary;
-            const is_home_view_active = window.location.hash === "#" + user_settings.web_home_view;
+                $popper.one(
+                    "click",
+                    ".toggle_display_unread_message_count",
+                    {instance},
+                    register_toggle_unread_message_count,
+                );
+            },
+            onShow(instance) {
+                const built_in_popover_condensed_views =
+                    left_sidebar_navigation_area.get_built_in_popover_condensed_views();
+                const unread_count = unread.get_counts();
+                const unread_messages_present = unread_count.home_unread_messages > 0;
+                const show_unread_count = user_settings.web_left_sidebar_unreads_count_summary;
+                const is_home_view_active =
+                    window.location.hash === "#" + user_settings.web_home_view;
 
-            popovers.hide_all();
-            instance.setContent(
-                ui_util.parse_html(
-                    render_left_sidebar_views_popover({
-                        views: built_in_popover_condensed_views,
-                        is_home_view_active,
-                        unread_messages_present,
-                        show_unread_count,
-                    }),
-                ),
-            );
+                popovers.hide_all();
+                instance.setContent(
+                    ui_util.parse_html(
+                        render_left_sidebar_views_popover({
+                            views: built_in_popover_condensed_views,
+                            is_home_view_active,
+                            unread_messages_present,
+                            show_unread_count,
+                        }),
+                    ),
+                );
+            },
+            onHidden(instance) {
+                instance.destroy();
+                popover_menus.popover_instances.top_left_sidebar = null;
+            },
         },
-        onHidden(instance) {
-            instance.destroy();
-            popover_menus.popover_instances.top_left_sidebar = null;
-        },
-    });
+        true,
+    );
 
     common_click_handlers();
 }

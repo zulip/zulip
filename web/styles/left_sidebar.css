@@ -821,7 +821,8 @@
     }
 }
 
-.stream-list-toggle-inactive-or-muted-channels.highlighted_row {
+.stream-list-toggle-inactive-or-muted-channels.highlighted_row,
+.stream-list-toggle-inactive-or-muted-channels:focus-visible {
     outline: 2px solid var(--color-outline-focus);
     outline-offset: -2px;
     background-color: var(--color-background-sidebar-action-heading-hover);
@@ -2136,6 +2137,15 @@ li.active-sub-filter {
     }
 }
 
+.bottom_left_row .sidebar-menu-icon,
+.bottom_left_row .channel-new-topic-button,
+.top_left_row .sidebar-menu-icon,
+.stream-list-section-container .sidebar-menu-icon {
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
+}
+
 /*
     When you hover over or keyboard-highlight a list
     item's menu icon, we give it a purple background.
@@ -2220,7 +2230,8 @@ ul.topic-list:has(.show-more-topics)::after {
     .bottom_left_row:has(
         a.sidebar-topic-action-heading:focus-visible,
         a.zoomed-new-topic:focus-visible
-    ) {
+    ),
+#more-topics-modal .bottom_left_row:has(a.zoomed-new-topic:focus-visible) {
     outline: 2px solid var(--color-outline-focus);
     outline-offset: -2px;
     background-color: var(--color-background-hover-narrow-filter);

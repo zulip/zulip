@@ -1311,7 +1311,7 @@ export function initialize({
     initialize_tippy_tooltips();
     set_event_handlers({show_channel_feed});
 
-    $("#stream_filters").on("click", ".show-more-topics", (e) => {
+    function on_show_more_topics(e: JQuery.ClickEvent | JQuery.KeyDownEvent): void {
         zoom_in();
         // We define the focus behavior for the topic list search box
         // outside of the `zoom_in` method, since we want the focus
@@ -1322,6 +1322,16 @@ export function initialize({
 
         e.preventDefault();
         e.stopPropagation();
+    }
+
+    $("#stream_filters").on("click", ".show-more-topics", (e) => {
+        on_show_more_topics(e);
+    });
+
+    $("#stream_filters").on("keydown", ".show-more-topics", (e) => {
+        if (keydown_util.is_enter_event(e)) {
+            on_show_more_topics(e);
+        }
     });
 
     $("body").on("click", ".zoom-in-topics .left-sidebar-modal-close-area", (e) => {
@@ -1520,7 +1530,10 @@ export function set_event_handlers({
         on_sidebar_channel_click(stream_id, e, show_channel_feed);
     });
 
-    function on_click_new_topic(element: HTMLElement, e: JQuery.ClickEvent): void {
+    function on_new_topic_press(
+        element: HTMLElement,
+        e: JQuery.ClickEvent | JQuery.KeyDownEvent,
+    ): void {
         e.stopPropagation();
         e.preventDefault();
         const stream_id = Number.parseInt(element.getAttribute("data-stream-id")!, 10);
@@ -1542,14 +1555,34 @@ export function set_event_handlers({
     }
 
     $("#stream_filters").on("click", ".channel-new-topic-button", function (this: HTMLElement, e) {
-        on_click_new_topic(this, e);
+        on_new_topic_press(this, e);
     });
+
+    $("#stream_filters").on(
+        "keydown",
+        ".channel-new-topic-button",
+        function (this: HTMLElement, e) {
+            if (keydown_util.is_enter_event(e)) {
+                on_new_topic_press(this, e);
+            }
+        },
+    );
 
     $("#left-sidebar-modal").on(
         "click",
         "#more-topics-modal .channel-new-topic-button, #more-topics-modal .zoomed-new-topic",
         function (this: HTMLElement, e) {
-            on_click_new_topic(this, e);
+            on_new_topic_press(this, e);
+        },
+    );
+
+    $("#left-sidebar-modal").on(
+        "keydown",
+        "#more-topics-modal .channel-new-topic-button, #more-topics-modal .zoomed-new-topic",
+        function (this: HTMLElement, e) {
+            if (keydown_util.is_enter_event(e)) {
+                on_new_topic_press(this, e);
+            }
         },
     );
 
@@ -1634,6 +1667,19 @@ export function set_event_handlers({
         function (this: HTMLElement, e: JQuery.ClickEvent) {
             e.stopPropagation();
             toggle_inactive_or_muted_channels($(this).closest(".stream-list-section-container"));
+        },
+    );
+
+    $("#streams_list").on(
+        "keydown",
+        ".stream-list-toggle-inactive-or-muted-channels",
+        function (this: HTMLElement, e: JQuery.KeyDownEvent) {
+            if (keydown_util.is_enter_event(e)) {
+                e.stopPropagation();
+                toggle_inactive_or_muted_channels(
+                    $(this).closest(".stream-list-section-container"),
+                );
+            }
         },
     );
 }

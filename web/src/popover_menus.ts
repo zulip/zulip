@@ -7,6 +7,7 @@ import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
 import * as blueslip from "./blueslip.ts";
+import * as keydown_util from "./keydown_util.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as modals from "./modals.ts";
 import * as overlays from "./overlays.ts";
@@ -504,7 +505,7 @@ export function toggle_popover_menu(
 
 // Main function to define a popover menu, opened via clicking on the
 // target selector.
-export function register_popover_menu(target: string, popover_props: Partial<tippy.Props>): void {
+export function register_popover_menu(target: string, popover_props: Partial<tippy.Props>, also_trigger_on_enter=false): void {
     // For some elements, such as the click target to open the message
     // actions menu, we want to avoid propagating the click event to
     // parent elements. Tippy's built-in `delegate` method does not
@@ -530,6 +531,25 @@ export function register_popover_menu(target: string, popover_props: Partial<tip
             hide_current_popover_if_visible(instance);
         });
     });
+
+    if (also_trigger_on_enter) {
+        $("body").on("keydown", target, function (this: HTMLElement, e) {
+            if (!keydown_util.is_enter_event(e)) {
+                return;
+            }
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Hide popovers when user clicks on an element which navigates user to a link.
+            // We don't explicitly handle these clicks per element and let browser handle them but in doing so,
+            // we are not able to hide the popover which we would do otherwise.
+            const instance = toggle_popover_menu(this, popover_props);
+            const $popper = $(instance.popper);
+            $popper.on("click", "a[href]", () => {
+                hide_current_popover_if_visible(instance);
+            });
+        });
+    }
 }
 
 export function initialize(): void {

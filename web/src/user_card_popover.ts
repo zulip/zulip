@@ -22,6 +22,7 @@ import * as dialog_widget from "./dialog_widget.ts";
 import {is_overlay_hash} from "./hash_parser.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
 import * as message_lists from "./message_lists.ts";
 import {user_can_send_direct_message} from "./message_util.ts";
 import * as message_view from "./message_view.ts";
@@ -916,6 +917,15 @@ function register_click_handlers(): void {
         const $target = $(e.currentTarget).closest("li");
 
         toggle_sidebar_user_card_popover($target);
+    });
+
+    $(".buddy-list-section").on("keydown", ".user-list-sidebar-menu-icon", (e) => {
+        if (keydown_util.is_enter_event(e)) {
+            e.stopPropagation();
+            const $target = $(e.currentTarget).closest("li");
+
+            toggle_sidebar_user_card_popover($target);
+        }
     });
 
     $(".buddy-list-section").on("click", ".user-profile-picture", (e) => {
