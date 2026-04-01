@@ -59,7 +59,6 @@ def check_add_realm_emoji(
         event_type=AuditLogEventType.REALM_EMOJI_ADDED,
         event_time=timezone_now(),
         extra_data={
-            "realm_emoji": dict(sorted(realm_emoji_dict.items())),
             "added_emoji": realm_emoji_dict[str(realm_emoji.id)],
         },
     )
@@ -80,7 +79,6 @@ def do_remove_realm_emoji(realm: Realm, name: str, *, acting_user: UserProfile |
         event_type=AuditLogEventType.REALM_EMOJI_REMOVED,
         event_time=timezone_now(),
         extra_data={
-            "realm_emoji": dict(sorted(realm_emoji_dict.items())),
             "deactivated_emoji": realm_emoji_dict[str(realm_emoji.id)],
         },
     )

@@ -105,7 +105,7 @@ from zerver.models import (
 from zerver.models.groups import SystemGroups
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realm_emoji import EmojiInfo, get_all_custom_emoji_for_realm
+from zerver.models.realm_emoji import EmojiInfo
 from zerver.models.realm_playgrounds import get_realm_playgrounds
 from zerver.models.realms import RealmDomainDict, get_realm, get_realm_domains
 from zerver.models.streams import get_stream
@@ -1203,7 +1203,6 @@ class TestRealmAuditLog(ZulipTestCase):
 
     def test_realm_emoji_entries(self) -> None:
         user = self.example_user("iago")
-        realm_emoji_dict = get_all_custom_emoji_for_realm(user.realm_id)
         now = timezone_now()
         with get_test_image_file("img.png") as img_file:
             # Because we want to verify the IntegrityError handling
@@ -1228,9 +1227,7 @@ class TestRealmAuditLog(ZulipTestCase):
             author_id=user.id,
             still_url=None,
         )
-        realm_emoji_dict[str(realm_emoji.id)] = added_emoji
         expected_extra_data = {
-            "realm_emoji": dict(sorted(realm_emoji_dict.items())),
             "added_emoji": added_emoji,
         }
 
@@ -1258,10 +1255,8 @@ class TestRealmAuditLog(ZulipTestCase):
             author_id=user.id,
             still_url=None,
         )
-        realm_emoji_dict[str(realm_emoji.id)] = deactivated_emoji
 
         expected_extra_data = {
-            "realm_emoji": dict(sorted(realm_emoji_dict.items())),
             "deactivated_emoji": deactivated_emoji,
         }
 
