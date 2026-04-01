@@ -67,41 +67,44 @@ class RealmEmoji(models.Model):
         return f"{self.realm.string_id}: {self.id} {self.name} {self.deactivated} {self.file_name}"
 
 
+def emoji_as_emojiinfo(realm_emoji: RealmEmoji) -> EmojiInfo:
+    from zerver.lib.emoji import get_emoji_url
+
+    author_id = realm_emoji.author_id
+    assert realm_emoji.file_name is not None
+    emoji_url = get_emoji_url(realm_emoji.file_name, realm_emoji.realm_id)
+
+    emoji_dict: EmojiInfo = dict(
+        id=str(realm_emoji.id),
+        name=realm_emoji.name,
+        source_url=emoji_url,
+        deactivated=realm_emoji.deactivated,
+        author_id=author_id,
+        still_url=None,
+    )
+
+    if realm_emoji.is_animated:
+        # For animated emoji, we include still_url with a static
+        # version of the image, so that clients can display the
+        # emoji in a less distracting (not animated) fashion when
+        # desired.
+        emoji_dict["still_url"] = get_emoji_url(
+            realm_emoji.file_name, realm_emoji.realm_id, still=True
+        )
+
+    return emoji_dict
+
+
 def get_all_custom_emoji_for_realm_uncached(realm_id: int) -> dict[str, EmojiInfo]:
     # RealmEmoji objects with file_name=None are still in the process
     # of being uploaded, and we expect to be cleaned up by a
     # try/finally block if the upload fails, so it's correct to
     # exclude them.
-    query = RealmEmoji.objects.filter(realm_id=realm_id).exclude(
-        file_name=None,
-    )
+    query = RealmEmoji.objects.filter(realm_id=realm_id).exclude(file_name=None)
+
     d = {}
-    from zerver.lib.emoji import get_emoji_url
-
-    for realm_emoji in query.all():
-        author_id = realm_emoji.author_id
-        assert realm_emoji.file_name is not None
-        emoji_url = get_emoji_url(realm_emoji.file_name, realm_emoji.realm_id)
-
-        emoji_dict: EmojiInfo = dict(
-            id=str(realm_emoji.id),
-            name=realm_emoji.name,
-            source_url=emoji_url,
-            deactivated=realm_emoji.deactivated,
-            author_id=author_id,
-            still_url=None,
-        )
-
-        if realm_emoji.is_animated:
-            # For animated emoji, we include still_url with a static
-            # version of the image, so that clients can display the
-            # emoji in a less distracting (not animated) fashion when
-            # desired.
-            emoji_dict["still_url"] = get_emoji_url(
-                realm_emoji.file_name, realm_emoji.realm_id, still=True
-            )
-
-        d[str(realm_emoji.id)] = emoji_dict
+    for realm_emoji in query.iterator():
+        d[str(realm_emoji.id)] = emoji_as_emojiinfo(realm_emoji)
 
     return d
 
