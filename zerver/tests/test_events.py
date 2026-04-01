@@ -206,7 +206,8 @@ from zerver.lib.event_schema import (
     check_realm_domains_add,
     check_realm_domains_change,
     check_realm_domains_remove,
-    check_realm_emoji_update,
+    check_realm_emoji_add,
+    check_realm_emoji_remove,
     check_realm_export,
     check_realm_export_consent,
     check_realm_linkifiers,
@@ -3345,14 +3346,13 @@ class NormalActionsTest(BaseAction):
             check_add_realm_emoji(
                 self.user_profile.realm, "my_emoji", author, img_file, "image/png"
             )
-
-        check_realm_emoji_update("events[0]", events[0])
+        check_realm_emoji_add("events[0]", events[0])
 
         with self.verify_action() as events:
             do_remove_realm_emoji(
                 self.user_profile.realm, "my_emoji", acting_user=self.user_profile
             )
-        check_realm_emoji_update("events[0]", events[0])
+        check_realm_emoji_remove("events[0]", events[0])
 
     def test_realm_filter_events(self) -> None:
         regex = "#(?P<id>[123])"

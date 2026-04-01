@@ -518,8 +518,7 @@ export function dispatch_normal_event(event) {
             break;
 
         case "realm_emoji":
-            // The authoritative data source is here.
-            emoji.update_emojis(event.realm_emoji);
+            emoji.update_emojis(event.emoji);
 
             // And then let other widgets know.
             settings_emoji.populate_emoji();

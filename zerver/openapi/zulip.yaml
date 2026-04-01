@@ -4350,11 +4350,10 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users in a Zulip organization when
-                                a [custom emoji](/help/custom-emoji) has been updated,
-                                typically when a new emoji has been added or an old one
-                                has been deactivated. The event contains all custom emoji
-                                configured for the organization, not just the updated
-                                custom emoji.
+                                a [custom emoji](/help/custom-emoji) has been added.
+
+                                **Changes**: New in Zulip 12.0 (feature level ZF-dccf1a.md),
+                                replacing half of the functionality of the removed "update" op.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -4366,35 +4365,56 @@ paths:
                                 op:
                                   type: string
                                   enum:
-                                    - update
-                                realm_emoji:
-                                  type: object
-                                  description: |
-                                    An object in which each key describes a realm emoji.
-                                  additionalProperties:
-                                    $ref: "#/components/schemas/RealmEmoji"
+                                    - add
+                                emoji:
+                                  $ref: "#/components/schemas/RealmEmoji"
                               example:
                                 {
                                   "type": "realm_emoji",
-                                  "op": "update",
-                                  "realm_emoji":
+                                  "op": "add",
+                                  "emoji":
                                     {
-                                      "2":
-                                        {
-                                          "id": "2",
-                                          "name": "my_emoji",
-                                          "source_url": "/user_avatars/2/emoji/images/2.png",
-                                          "deactivated": true,
-                                          "author_id": 11,
-                                        },
-                                      "1":
-                                        {
-                                          "id": "1",
-                                          "name": "green_tick",
-                                          "source_url": "/user_avatars/2/emoji/images/1.png",
-                                          "deactivated": false,
-                                          "author_id": 11,
-                                        },
+                                      "id": "2",
+                                      "name": "my_emoji",
+                                      "source_url": "/user_avatars/2/emoji/images/2.png",
+                                      "deactivated": false,
+                                      "author_id": 11,
+                                    },
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to all users in a Zulip organization when
+                                a [custom emoji](/help/custom-emoji) has been removed.
+
+                                **Changes**: New in Zulip 12.0 (feature level ZF-dccf1a.md),
+                                replacing half of the functionality of the removed "update" op.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_emoji
+                                op:
+                                  type: string
+                                  enum:
+                                    - remove
+                                emoji:
+                                  $ref: "#/components/schemas/RealmEmoji"
+                              example:
+                                {
+                                  "type": "realm_emoji",
+                                  "op": "remove",
+                                  "emoji":
+                                    {
+                                      "id": "2",
+                                      "name": "my_emoji",
+                                      "source_url": "/user_avatars/2/emoji/images/2.png",
+                                      "deactivated": true,
+                                      "author_id": 11,
                                     },
                                   "id": 0,
                                 }
@@ -27164,8 +27184,8 @@ components:
       type: object
       additionalProperties: false
       description: |
-        `{emoji_id}`: Object containing details about the emoji with
-        the specified ID. It has the following properties:
+        Object containing details about an emoji. It has the
+        following properties:
       properties:
         id:
           type: string

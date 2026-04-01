@@ -886,8 +886,6 @@ run_test("realm_bot update", ({override}) => {
 });
 
 run_test("realm_emoji", ({override}) => {
-    const event = event_fixtures.realm_emoji__update;
-
     const ui_func_names = [
         [settings_emoji, "populate_emoji"],
         [emoji_picker, "rebuild_catalog"],
@@ -902,9 +900,10 @@ run_test("realm_emoji", ({override}) => {
     }
 
     // Make sure we start with nothing...
-    emoji.update_emojis([]);
+    assert_same(emoji.get_server_realm_emoji_data(), {});
     assert.equal(emoji.get_realm_emoji_url("spain"), undefined);
 
+    let event = event_fixtures.realm_emoji__add;
     dispatch(event);
 
     // Now emoji.js knows about the spain emoji.
@@ -913,6 +912,14 @@ run_test("realm_emoji", ({override}) => {
     // Make sure our UI modules all got dispatched the same simple way.
     for (const stub of ui_stubs) {
         assert.equal(stub.num_calls, 1);
+        assert.equal(stub.last_call_args.length, 0);
+    }
+
+    event = event_fixtures.realm_emoji__remove;
+    dispatch(event);
+    assert.equal(emoji.get_realm_emoji_url("spain"), undefined);
+    for (const stub of ui_stubs) {
+        assert.equal(stub.num_calls, 2);
         assert.equal(stub.last_call_args.length, 0);
     }
 });
