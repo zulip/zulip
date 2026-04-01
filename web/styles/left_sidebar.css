@@ -745,6 +745,16 @@
     }
 }
 
+.stream-list-section-toggle {
+    &:focus {
+        outline: 0;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
+}
+
 .active-direct-messages-section {
     background-color: var(--color-background-active-narrow-filter);
 

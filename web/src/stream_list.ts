@@ -46,6 +46,7 @@ import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 import type {FullUnreadCountsData, StreamCountInfo} from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 let pending_stream_list_rerender = false;
 let zoomed_in = false;
@@ -1592,6 +1593,26 @@ export function set_event_handlers({
         function (this: HTMLElement, e: JQuery.ClickEvent) {
             e.stopPropagation();
             toggle_section_collapse($(this).closest(".stream-list-section-container"));
+        },
+    );
+
+    $("#streams_list").on(
+        "keydown",
+        ".stream-list-section-container .stream-list-section-toggle",
+        function (this: HTMLElement, e: JQuery.KeyDownEvent) {
+            if (keydown_util.is_enter_event(e)) {
+                e.stopPropagation();
+                toggle_section_collapse($(this).closest(".stream-list-section-container"));
+                const toggle: tippy.ReferenceElement & HTMLElement = util.the($(this));
+                const tippy_instance = toggle._tippy;
+                if (tippy_instance) {
+                    if ($(this).hasClass("rotate-icon-down")) {
+                        tippy_instance.setContent($t({defaultMessage: "Collapse folder"}));
+                    } else {
+                        tippy_instance.setContent($t({defaultMessage: "Expand folder"}));
+                    }
+                }
+            }
         },
     );
 

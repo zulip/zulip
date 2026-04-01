@@ -202,6 +202,23 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".folder-toggle-tooltip-target",
+        onShow(instance) {
+            const $toggle = $(instance.reference);
+            if ($toggle.hasClass("rotate-icon-down")) {
+                instance.setContent($t({defaultMessage: "Collapse folder"}));
+            } else {
+                instance.setContent($t({defaultMessage: "Expand folder"}));
+            }
+        },
+        delay: EXTRA_LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
         target: ".header-main .column-left .left-sidebar-toggle-button",
         delay: LONG_HOVER_DELAY,
         placement: "bottom",
