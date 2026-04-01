@@ -19,6 +19,7 @@ class EmojiInfo(TypedDict):
     deactivated: bool
     author_id: int | None
     still_url: str | None
+    date_created: int
 
 
 def get_all_custom_emoji_for_realm_cache_key(realm_id: int) -> str:
@@ -93,6 +94,7 @@ def get_all_custom_emoji_for_realm_uncached(realm_id: int) -> dict[str, EmojiInf
             deactivated=realm_emoji.deactivated,
             author_id=author_id,
             still_url=None,
+            date_created=int(realm_emoji.date_created.timestamp()),
         )
 
         if realm_emoji.is_animated:
