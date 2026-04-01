@@ -93,6 +93,7 @@ export const draft_model = (function () {
     const KEY = "drafts";
     const ls = localstorage();
     let fixed_buggy_drafts = false;
+    let fixed_private_draft_recipient_ids = false;
 
     function get(): Record<string, LocalStorageDraft> {
         let drafts = ls.get(KEY);
@@ -105,7 +106,34 @@ export const draft_model = (function () {
             drafts = ls.get(KEY);
         }
 
+        if (!fixed_private_draft_recipient_ids) {
+            fix_private_draft_recipient_ids();
+            drafts = ls.get(KEY);
+        }
+
         return drafts_schema.parse(drafts);
+    }
+
+    function fix_private_draft_recipient_ids(): void {
+        // This is needed to make sure that invalid users are removed from
+        // recipient list of DM drafts. We do not expect this to happen in
+        // production unless a UserProfile is manually deleted from
+        // the database, but this happens in development environment
+        // when the database is re-populated.
+        const drafts = drafts_schema.parse(ls.get(KEY));
+        for (const [draft_id, draft] of Object.entries(drafts)) {
+            if (draft.type !== "private") {
+                continue;
+            }
+            const valid_recipient_ids = draft.private_message_recipient_ids.filter((user_id) =>
+                people.is_valid_user_id(user_id),
+            );
+            if (valid_recipient_ids.length !== draft.private_message_recipient_ids.length) {
+                drafts[draft_id] = {...draft, private_message_recipient_ids: valid_recipient_ids};
+            }
+        }
+        ls.set(KEY, drafts);
+        fixed_private_draft_recipient_ids = true;
     }
 
     function fix_buggy_drafts(): void {
