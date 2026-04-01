@@ -63,6 +63,28 @@ function message_list_tooltip(target: string, props: Partial<tippy.Props> = {}):
                 return false;
             }
 
+            // Flip tooltip when the reference is partially clipped
+            // by a scroll container (compose preview) or the sticky
+            // recipient header (message feed).
+            if (instance.props.placement === "top") {
+                const ref_rect = instance.reference.getBoundingClientRect();
+                let clipping_top: number | undefined;
+
+                const preview_area = instance.reference.closest(".preview_message_area");
+                if (preview_area) {
+                    clipping_top = preview_area.getBoundingClientRect().top;
+                } else {
+                    const sticky_header = document.querySelector(".sticky_header");
+                    if (sticky_header) {
+                        clipping_top = sticky_header.getBoundingClientRect().bottom;
+                    }
+                }
+
+                if (clipping_top !== undefined && ref_rect.top < clipping_top) {
+                    instance.setProps({placement: "bottom"});
+                }
+            }
+
             if (onShow !== undefined && onShow(instance) === false) {
                 // Only return false if `onShow` returns false. We don't want to hide
                 // tooltip if `onShow` returns `undefined`.
