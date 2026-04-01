@@ -474,11 +474,19 @@ def prune_internal_data(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Prunes the internal_data data structures, which are not intended to
     be exposed to API clients.
     """
-    events = copy.deepcopy(events)
-    for event in events:
-        if event["type"] == "message" and "internal_data" in event:
+    # This performs the most shallow copy possible, since events may
+    # have significant data.
+    if not any(event["type"] == "message" for event in events):
+        return events
+    new_events = []
+    for orig_event in events:
+        if orig_event["type"] == "message" and "internal_data" in orig_event:
+            event = dict(orig_event)
             del event["internal_data"]
-    return events
+            new_events.append(event)
+        else:
+            new_events.append(orig_event)
+    return new_events
 
 
 # Queue-ids which still need to be sent a web_reload_client event.
