@@ -16,6 +16,24 @@ import {
 import * as unread from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
 
+// Watches the reference element's class for changes while a tooltip is
+// visible, so the content stays accurate when the element is toggled via
+// keyboard (or any other path) without hiding the tooltip first.
+const class_observers = new WeakMap<tippy.Instance, MutationObserver>();
+function observe_toggle_class(instance: tippy.Instance, update: () => void): void {
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(instance.reference, {
+        attributes: true,
+        attributeFilter: ["class"],
+    });
+    class_observers.set(instance, observer);
+}
+function disconnect_toggle_class(instance: tippy.Instance): void {
+    class_observers.get(instance)?.disconnect();
+    class_observers.delete(instance);
+}
+
 export function initialize(): void {
     tippy.delegate("body", {
         target: ".tippy-left-sidebar-tooltip",
@@ -197,6 +215,26 @@ export function initialize(): void {
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
         onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".folder-toggle-tooltip-target",
+        onShow(instance) {
+            const $toggle = $(instance.reference);
+            observe_toggle_class(instance, () => {
+                if ($toggle.hasClass("rotate-icon-down")) {
+                    instance.setContent($t({defaultMessage: "Collapse folder"}));
+                } else {
+                    instance.setContent($t({defaultMessage: "Expand folder"}));
+                }
+            });
+        },
+        delay: EXTRA_LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onHidden(instance) {
+            disconnect_toggle_class(instance);
             instance.destroy();
         },
     });
