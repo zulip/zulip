@@ -1908,7 +1908,7 @@ class UserSignUpTest(ZulipTestCase):
 
         # Should get a 400, not a 500
         self.assertEqual(result.status_code, 400)
-        self.assert_in_response("Organisation already exists.",result)
+        self.assert_in_response("Organisation already exists.", result)
 
     def test_signup_with_weak_password(self) -> None:
         """

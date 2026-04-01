@@ -688,8 +688,7 @@ def registration_helper(
                     how_realm_creator_found_zulip_extra_context=how_found_zulip_extra_context,
                 )
             except IntegrityError:
-                   raise JsonableError(_("Organization already exists."))
-            
+                raise JsonableError(_("Organization already exists."))
         assert realm is not None
 
         full_name = form.cleaned_data["full_name"]
