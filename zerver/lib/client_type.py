@@ -13,12 +13,14 @@ ClientType = Literal[
     "other",
 ]
 
-HUMAN_CLIENT_TYPES: Final[frozenset[ClientType]] = frozenset({
-    "desktop",
-    "mobile",
-    "web",
-    "terminal",
-})
+HUMAN_CLIENT_TYPES: Final[frozenset[ClientType]] = frozenset(
+    {
+        "desktop",
+        "mobile",
+        "web",
+        "terminal",
+    }
+)
 
 _BROWSER_USER_AGENTS: Final[frozenset[str]] = frozenset(
     {

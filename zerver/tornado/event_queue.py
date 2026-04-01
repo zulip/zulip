@@ -22,7 +22,7 @@ from tornado import autoreload
 from typing_extensions import override
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
-from zerver.lib.client_type import ClientType, HUMAN_CLIENT_TYPES, infer_client_type
+from zerver.lib.client_type import HUMAN_CLIENT_TYPES, ClientType, infer_client_type
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
