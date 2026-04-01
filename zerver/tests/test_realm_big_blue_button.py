@@ -1,6 +1,6 @@
 from dataclasses import asdict
-from types import SimpleNamespace
 from typing import cast
+from unittest.mock import MagicMock, patch
 
 import zerver.models.realm_big_blue_button as bbb
 from zerver.lib.test_classes import ZulipTestCase
@@ -15,7 +15,9 @@ from zerver.models.realm_big_blue_button import (
     get_all_big_blue_button_options_uncached,
     merge_big_blue_button_options_defaults,
     parse_boolean_option,
+    update_big_blue_button_option,
 )
+from zerver.models.realms import get_realm
 
 
 class TestRealmBigBlueButton(ZulipTestCase):
@@ -175,26 +177,155 @@ class TestRealmBigBlueButton(ZulipTestCase):
         self.assertEqual(result["real_d"], "x")
         self.assertNotIn("d", result)
 
-    def test_merge_defaults_adds_missing_and_merges_existing(self) -> None:
-        fake_default = SimpleNamespace(
-            option="opt1",
-            translation="Option 1",
-            data_type="str",
+    def test_merge_returns_existing_db_object(self) -> None:
+        realm = get_realm("zulip")
+
+        know_option = BigBlueButtonOption(
+            option="recording_enabled",
+            default="False",
+            translation="Record Meetings",
+            parameter_type="create_param",
+        )
+        bbb.KnownBigBlueButtonOptions.append(know_option)
+
+        RealmBigBlueButton.objects.create(
+            realm=realm,
+            option="recording_enabled",
+            value="True",
+            data_type="bool",
             parameter_type="create_param",
             real_option="",
         )
 
-        original_merge = merge_big_blue_button_options_defaults
+        results = merge_big_blue_button_options_defaults(realm.id)
 
         try:
-            globals()["merge_big_blue_button_options_defaults"] = (
-                lambda realm_id, parameter_type=None: [fake_default]
+            db_option = next(
+                (
+                    o
+                    for o in results
+                    if isinstance(o, RealmBigBlueButton) and o.option == "recording_enabled"
+                ),
+                None,
             )
-
-            options = merge_big_blue_button_options_defaults(realm_id=1)
-            self.assertIn(fake_default, options)
+            self.assertIsNotNone(db_option)
+            assert db_option is not None
+            self.assertEqual(db_option.value, "True")
+            self.assertTrue(hasattr(db_option, "translation"))
         finally:
-            globals()["merge_big_blue_button_options_defaults"] = original_merge
+            bbb.KnownBigBlueButtonOptions.remove(know_option)
+
+    def test_merge_returns_existing_db_object_list(self) -> None:
+        realm = get_realm("zulip")
+
+        know_option = BigBlueButtonOptionList(
+            option="recording_enabled",
+            default="False",
+            translation="Record Meetings",
+            parameter_type="create_param",
+            list={"a": "A"},
+        )
+        bbb.KnownBigBlueButtonOptions.append(know_option)
+
+        RealmBigBlueButton.objects.create(
+            realm=realm,
+            option="recording_enabled",
+            value="True",
+            data_type="bool",
+            parameter_type="create_param",
+            real_option="",
+        )
+
+        results = merge_big_blue_button_options_defaults(realm.id)
+
+        try:
+            db_option = next(
+                (
+                    o
+                    for o in results
+                    if isinstance(o, RealmBigBlueButton) and o.option == "recording_enabled"
+                ),
+                None,
+            )
+            self.assertIsNotNone(db_option)
+            assert db_option is not None
+            self.assertEqual(db_option.value, "True")
+            self.assertTrue(hasattr(db_option, "translation"))
+            self.assertEqual(db_option.list, {"a": "A"})
+        finally:
+            bbb.KnownBigBlueButtonOptions.remove(know_option)
+
+    def test_merge_returns_default_if_not_in_db(self) -> None:
+        realm = get_realm("zulip")
+
+        results = merge_big_blue_button_options_defaults(realm.id)
+
+        default_option = next(
+            (
+                o
+                for o in results
+                if isinstance(o, BigBlueButtonOption) and o.option == "mute_on_start"
+            ),
+            None,
+        )
+        self.assertIsNotNone(default_option)
+        assert default_option is not None
+        self.assertEqual(default_option.value, default_option.default)
+
+    def test_parameter_type_filtering(self) -> None:
+        realm = get_realm("zulip")
+
+        RealmBigBlueButton.objects.create(
+            realm=realm,
+            option="recording_enabled",
+            value="False",
+            data_type="bool",
+            parameter_type="join_param",
+            real_option="",
+        )
+
+        RealmBigBlueButton.objects.create(
+            realm=realm,
+            option="recording_enabled",
+            value="False",
+            data_type="bool",
+            parameter_type="create_param",
+            real_option="",
+        )
+
+        results1 = merge_big_blue_button_options_defaults(realm.id, parameter_type="create_param")
+        for o in results1:
+            self.assertNotEqual(o.parameter_type, "join_param")
+            self.assertEqual(o.parameter_type, "create_param")
+
+        results2 = merge_big_blue_button_options_defaults(realm.id, parameter_type="join_param")
+        for o in results2:
+            self.assertNotEqual(o.parameter_type, "create_param")
+            self.assertEqual(o.parameter_type, "join_param")
+
+    def test_option_list_handling(self) -> None:
+        realm = get_realm("zulip")
+
+        list_option = BigBlueButtonOptionList(
+            option="welcome_messages",
+            default="en",
+            list={"en": "Welcome", "de": "Willkommen"},
+            translation="Welcome Messages",
+            parameter_type="create_param",
+        )
+
+        bbb.KnownBigBlueButtonOptions.append(list_option)
+        try:
+            results = merge_big_blue_button_options_defaults(realm.id)
+            found = next(
+                (o for o in results if getattr(o, "option", None) == "welcome_messages"), None
+            )
+            self.assertIsNotNone(found)
+            assert found is not None
+            assert isinstance(found, BigBlueButtonOptionList)
+            self.assertEqual(found.list, {"en": "Welcome", "de": "Willkommen"})
+        finally:
+            bbb.KnownBigBlueButtonOptions.remove(list_option)
 
     def test_get_all_options_uncached_list(self) -> None:
         fake = BigBlueButtonOptionList(
@@ -224,6 +355,32 @@ class TestRealmBigBlueButton(ZulipTestCase):
         finally:
             bbb.KnownBigBlueButtonOptions = original_options
 
+    def test_get_all_options_uncached_str(self) -> None:
+        fake = BigBlueButtonOptionStr(
+            id=1,
+            option="d",
+            value="",
+            default="z",
+            data_type="str",
+            translation="D",
+            real_option="",
+        )
+
+        original_options = bbb.KnownBigBlueButtonOptions
+        try:
+            bbb.KnownBigBlueButtonOptions = [fake]
+
+            result = get_all_big_blue_button_options_uncached(1)
+            self.assertIn("d", result)
+
+            option = result["d"]
+            option = cast(BigBlueButtonOptionStr, option)
+
+            self.assertIsInstance(option, BigBlueButtonOptionStr)
+            self.assertEqual(option.value, "z")
+        finally:
+            bbb.KnownBigBlueButtonOptions = original_options
+
     def test_create_model_from_option_found_and_not_found(self) -> None:
         fake_option = BigBlueButtonOptionStr(
             option="opt1",
@@ -246,3 +403,49 @@ class TestRealmBigBlueButton(ZulipTestCase):
             self.assertIsNone(model_none)
         finally:
             bbb.KnownBigBlueButtonOptions = original_options
+
+    def test_update_existing_option(self) -> None:
+        realm = get_realm("zulip")
+
+        bbb_option = RealmBigBlueButton.objects.create(
+            realm=realm,
+            option="example_option",
+            value="old_value",
+            data_type="str",
+            parameter_type="create_param",
+            real_option="",
+        )
+
+        update_big_blue_button_option(realm.id, "example_option", "new_value")
+
+        bbb_option.refresh_from_db()
+        self.assertEqual(bbb_option.value, "new_value")
+
+    @patch("zerver.models.realm_big_blue_button.create_model_from_option")
+    def test_create_new_option_if_not_exists(self, mock_create: MagicMock) -> None:
+        realm = get_realm("zulip")
+
+        mock_create.return_value = RealmBigBlueButton(
+            realm=realm,
+            option="new_option",
+            value="",
+            data_type="str",
+            parameter_type="create_param",
+            real_option="",
+        )
+
+        update_big_blue_button_option(realm.id, "new_option", True)
+
+        mock_create.assert_called_once_with(realm_id=realm.id, option="new_option")
+        obj = RealmBigBlueButton.objects.get(realm=realm, option="new_option")
+        self.assertEqual(obj.value, "True")
+
+    @patch("zerver.models.realm_big_blue_button.create_model_from_option")
+    def test_raise_error_if_creation_fails(self, mock_create: MagicMock) -> None:
+        realm = get_realm("zulip")
+        mock_create.return_value = None
+
+        with self.assertRaises(ValueError) as cm:
+            update_big_blue_button_option(realm.id, "fail_option", "value")
+
+        self.assertIn("could not created", str(cm.exception))

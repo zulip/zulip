@@ -10,6 +10,8 @@ from typing_extensions import override
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.url_encoding import append_url_query_string
+from zerver.models.realm_big_blue_button import RealmBigBlueButton
+from zerver.models.realms import get_realm
 
 
 @override_settings(VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID=None)
@@ -488,6 +490,51 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
             r"&userdata-bbb_show_session_details_on_join=True"
             r"&meetingID=a"
             r"&role=VIEWER"
+            r"&fullName=King%20Hamlet"
+            r"&createTime=0"
+            r"&checksum=\w+",
+        )
+
+    @responses.activate
+    def test_join_bigbluebutton_redirect_with_avatar(self) -> None:
+        responses.add(
+            responses.GET,
+            "https://bbb.example.com/bigbluebutton/api/create"
+            "?muteOnStart=False"
+            "&guestPolicy=ALWAYS_ACCEPT"
+            "&meetingID=a"
+            "&name=a"
+            "&lockSettingsDisableCam=True"
+            "&checksum=7b7797372181f1a5add52842eb19a0caa3f97ef4cab8e81904670cddb6f6f7f6",
+            "<response><returncode>SUCCESS</returncode><messageKey/><createTime>0</createTime></response>",
+        )
+
+        realm = get_realm("zulip")
+
+        RealmBigBlueButton.objects.create(
+            realm=realm,
+            option="avatar_url",
+            value="True",
+            data_type="bool",
+            parameter_type="join_param",
+            real_option="avatarURL",
+        )
+
+        response = self.client_get(
+            "/calls/bigbluebutton/join", {"bigbluebutton": self.signed_bbb_a_object}
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(isinstance(response, HttpResponseRedirect), True)
+        self.assertRegex(
+            response["Location"],
+            r"https:\/\/bbb\.example\.com\/bigbluebutton\/api\/join"
+            r"\?avatarURL=http%3A%2F%2Fzulip\.testserver%2Fuser_avatars%2F\w+%2F\w+\.png"
+            r"&userdata-bbb_skip_check_audio_on_first_join=False"
+            r"&userdata-bbb_auto_join_audio=False"
+            r"&userdata-bbb_listen_only_mode=True"
+            r"&userdata-bbb_show_session_details_on_join=True"
+            r"&meetingID=a"
+            r"&role=MODERATOR"
             r"&fullName=King%20Hamlet"
             r"&createTime=0"
             r"&checksum=\w+",

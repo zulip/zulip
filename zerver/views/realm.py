@@ -244,46 +244,37 @@ def update_realm(
     # does not contain stale objects.
     realm = Realm.objects.get(id=user_profile.realm_id)
 
-    if (
-        big_blue_button_options_guest_policy is not None
-        or big_blue_button_options_mute_on_start is not None
-        or big_blue_button_options_auto_join_audio is not None
-        or big_blue_button_options_listen_only_mode is not None
-        or big_blue_button_options_show_session_details_on_join is not None
-        or big_blue_button_options_skip_check_audio_on_first_join is not None
-        or big_blue_button_options_avatar_url is not None
-    ):
-        update_big_blue_button_option(
-            realm_id=realm.id, option="guest_policy", value=big_blue_button_options_guest_policy
-        )
-        update_big_blue_button_option(
-            realm_id=realm.id, option="mute_on_start", value=big_blue_button_options_mute_on_start
-        )
-        update_big_blue_button_option(
-            realm_id=realm.id,
-            option="auto_join_audio",
-            value=big_blue_button_options_auto_join_audio,
-        )
-        update_big_blue_button_option(
-            realm_id=realm.id,
-            option="listen_only_mode",
-            value=big_blue_button_options_listen_only_mode,
-        )
-        update_big_blue_button_option(
-            realm_id=realm.id,
-            option="show_session_details_on_join",
-            value=big_blue_button_options_show_session_details_on_join,
-        )
-        update_big_blue_button_option(
-            realm_id=realm.id,
-            option="skip_check_audio_on_first_join",
-            value=big_blue_button_options_skip_check_audio_on_first_join,
-        )
-        update_big_blue_button_option(
-            realm_id=realm.id,
-            option="avatar_url",
-            value=big_blue_button_options_avatar_url,
-        )
+    update_big_blue_button_option(
+        realm_id=realm.id, option="guest_policy", value=big_blue_button_options_guest_policy
+    )
+    update_big_blue_button_option(
+        realm_id=realm.id, option="mute_on_start", value=big_blue_button_options_mute_on_start
+    )
+    update_big_blue_button_option(
+        realm_id=realm.id,
+        option="auto_join_audio",
+        value=big_blue_button_options_auto_join_audio,
+    )
+    update_big_blue_button_option(
+        realm_id=realm.id,
+        option="listen_only_mode",
+        value=big_blue_button_options_listen_only_mode,
+    )
+    update_big_blue_button_option(
+        realm_id=realm.id,
+        option="show_session_details_on_join",
+        value=big_blue_button_options_show_session_details_on_join,
+    )
+    update_big_blue_button_option(
+        realm_id=realm.id,
+        option="skip_check_audio_on_first_join",
+        value=big_blue_button_options_skip_check_audio_on_first_join,
+    )
+    update_big_blue_button_option(
+        realm_id=realm.id,
+        option="avatar_url",
+        value=big_blue_button_options_avatar_url,
+    )
 
     # Additional validation/error checking beyond types go here, so
     # the entire request can succeed or fail atomically.

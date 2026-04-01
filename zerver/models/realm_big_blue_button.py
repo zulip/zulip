@@ -192,6 +192,9 @@ def create_model_from_option(realm_id: int, option: str) -> RealmBigBlueButton |
 
 
 def update_big_blue_button_option(realm_id: int, option: str, value: str | bool | None) -> None:
+    if value is None:
+        return
+
     bbb_option = RealmBigBlueButton.objects.filter(realm_id=realm_id, option=option).last()
 
     if bbb_option is None:
