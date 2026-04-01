@@ -7,6 +7,7 @@ import render_message_history_overlay from "../templates/message_history_overlay
 
 import {exit_overlay} from "./browser_history.ts";
 import * as channel from "./channel.ts";
+import {by_stream_topic_url} from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as message_lists from "./message_lists.ts";
@@ -16,12 +17,13 @@ import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
+import {is_resolved} from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import * as spectators from "./spectators.ts";
 import {realm} from "./state_data.ts";
 import {get_recipient_bar_color} from "./stream_color.ts";
-import {get_color} from "./stream_data.ts";
+import {get_color, get_sub_by_id} from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
@@ -44,6 +46,9 @@ type EditHistoryEntry = {
     prev_stream: string | undefined;
     prev_stream_id: number | undefined;
     new_stream: string | undefined;
+    prev_stream_topic_url: string | undefined;
+    new_stream_topic_url: string | undefined;
+    topic_resolved_or_unresolved: "resolved" | "unresolved" | "none";
 };
 
 const server_message_history_schema = z.object({
@@ -118,6 +123,7 @@ function hide_loading_indicator(): void {
 
 function get_topic_change_fields(
     msg: ServerMessageHistoryEntry,
+    message: Message,
 ): Pick<
     EditHistoryEntry,
     | "topic_edited"
@@ -125,15 +131,59 @@ function get_topic_change_fields(
     | "new_topic_display_name"
     | "is_empty_string_prev_topic"
     | "is_empty_string_new_topic"
+    | "new_stream"
+    | "prev_stream"
+    | "prev_stream_topic_url"
+    | "new_stream_topic_url"
+    | "stream_changed"
+    | "prev_stream_id"
 > {
     assert(msg.prev_topic !== undefined);
+    assert("stream_id" in message);
+    const stream_id = message.stream_id;
 
-    return {
+    const base_params = {
         topic_edited: true,
         prev_topic_display_name: util.get_final_topic_display_name(msg.prev_topic),
         new_topic_display_name: util.get_final_topic_display_name(msg.topic),
         is_empty_string_prev_topic: msg.prev_topic === "",
         is_empty_string_new_topic: msg.topic === "",
+    };
+
+    if (msg.prev_content) {
+        const new_stream = get_sub_by_id(stream_id)?.name;
+        return {
+            ...base_params,
+            new_stream,
+            prev_stream: new_stream,
+            prev_stream_topic_url: by_stream_topic_url(stream_id, msg.prev_topic),
+            new_stream_topic_url: by_stream_topic_url(stream_id, msg.topic),
+            stream_changed: undefined,
+            prev_stream_id: undefined,
+        };
+    } else if (msg.prev_stream) {
+        const prev_stream_id = msg.prev_stream;
+        const new_stream_id = msg.stream;
+        assert(new_stream_id !== undefined);
+        return {
+            ...base_params,
+            stream_changed: true,
+            prev_stream_id,
+            prev_stream: get_display_stream_name(msg.prev_stream),
+            prev_stream_topic_url: by_stream_topic_url(prev_stream_id, msg.prev_topic),
+            new_stream: get_sub_by_id(new_stream_id)?.name,
+            new_stream_topic_url: by_stream_topic_url(new_stream_id, msg.topic),
+        };
+    }
+
+    return {
+        ...base_params,
+        stream_changed: undefined,
+        prev_stream_id: undefined,
+        prev_stream: undefined,
+        new_stream: undefined,
+        prev_stream_topic_url: undefined,
+        new_stream_topic_url: undefined,
     };
 }
 
@@ -158,24 +208,26 @@ function build_initial_entry(
 
 function build_topic_and_content_edit_entry(
     msg: ServerMessageHistoryEntry,
+    message: Message,
     full_name: string,
 ): Partial<EditHistoryEntry> {
     return {
         edited_by_notice: $t({defaultMessage: "Edited by {full_name}"}, {full_name}),
         body_to_render: msg.content_html_diff,
-        ...get_topic_change_fields(msg),
+        ...get_topic_change_fields(msg, message),
     };
 }
 
 function build_topic_and_stream_move_entry(
     msg: ServerMessageHistoryEntry,
+    message: Message,
     full_name: string,
 ): Partial<EditHistoryEntry> {
     assert(msg.prev_stream !== undefined);
 
     return {
         edited_by_notice: $t({defaultMessage: "Moved by {full_name}"}, {full_name}),
-        ...get_topic_change_fields(msg),
+        ...get_topic_change_fields(msg, message),
         stream_changed: true,
         prev_stream_id: msg.prev_stream,
         prev_stream: get_display_stream_name(msg.prev_stream),
@@ -184,11 +236,27 @@ function build_topic_and_stream_move_entry(
 
 function build_topic_move_entry(
     msg: ServerMessageHistoryEntry,
+    message: Message,
     full_name: string,
 ): Partial<EditHistoryEntry> {
+    let edited_by_notice = $t({defaultMessage: "Moved by {full_name}"}, {full_name});
+    assert(msg.prev_topic !== undefined);
+    let topic_resolved_or_unresolved: "resolved" | "unresolved" | "none" = "none";
+    const prev_topic_resolved = is_resolved(msg.prev_topic);
+    const current_topic_resolved = is_resolved(msg.topic);
+    if (prev_topic_resolved !== current_topic_resolved) {
+        if (current_topic_resolved) {
+            topic_resolved_or_unresolved = "resolved";
+            edited_by_notice = $t({defaultMessage: "Topic resolved by {full_name}"}, {full_name});
+        } else {
+            topic_resolved_or_unresolved = "unresolved";
+            edited_by_notice = $t({defaultMessage: "Topic unresolved by {full_name}"}, {full_name});
+        }
+    }
     return {
-        edited_by_notice: $t({defaultMessage: "Moved by {full_name}"}, {full_name}),
-        ...get_topic_change_fields(msg),
+        edited_by_notice,
+        topic_resolved_or_unresolved,
+        ...get_topic_change_fields(msg, message),
     };
 }
 
@@ -197,12 +265,15 @@ function build_stream_move_entry(
     full_name: string,
 ): Partial<EditHistoryEntry> {
     assert(msg.prev_stream !== undefined);
+    const new_stream_id = msg.stream;
+    assert(new_stream_id !== undefined);
 
     return {
         edited_by_notice: $t({defaultMessage: "Moved by {full_name}"}, {full_name}),
         stream_changed: true,
         prev_stream_id: msg.prev_stream,
         prev_stream: get_display_stream_name(msg.prev_stream),
+        new_stream: get_display_stream_name(new_stream_id),
     };
 }
 
@@ -239,6 +310,9 @@ function make_edit_history_entry(
         prev_stream: undefined,
         prev_stream_id: undefined,
         new_stream: undefined,
+        prev_stream_topic_url: undefined,
+        new_stream_topic_url: undefined,
+        topic_resolved_or_unresolved: "none",
         ...entry_data,
     };
 }
@@ -277,7 +351,7 @@ export function fetch_and_render_message_history(message: Message): void {
             const data = server_message_history_schema.parse(raw_data);
 
             const content_edit_history: EditHistoryEntry[] = [];
-            let prev_stream_item: EditHistoryEntry | null = null;
+
             for (const [index, msg] of data.message_history.entries()) {
                 // Format times and dates nicely for display
                 const time = new Date(msg.timestamp * 1000);
@@ -294,19 +368,13 @@ export function fetch_and_render_message_history(message: Message): void {
                 if (index === 0) {
                     entry_data = build_initial_entry(msg, full_name, move_history_only);
                 } else if (msg.prev_topic !== undefined && msg.prev_content) {
-                    entry_data = build_topic_and_content_edit_entry(msg, full_name);
+                    entry_data = build_topic_and_content_edit_entry(msg, message, full_name);
                 } else if (msg.prev_topic !== undefined && msg.prev_stream) {
-                    entry_data = build_topic_and_stream_move_entry(msg, full_name);
-                    if (prev_stream_item !== null) {
-                        prev_stream_item.new_stream = get_display_stream_name(msg.prev_stream);
-                    }
+                    entry_data = build_topic_and_stream_move_entry(msg, message, full_name);
                 } else if (msg.prev_topic !== undefined) {
-                    entry_data = build_topic_move_entry(msg, full_name);
+                    entry_data = build_topic_move_entry(msg, message, full_name);
                 } else if (msg.prev_stream) {
                     entry_data = build_stream_move_entry(msg, full_name);
-                    if (prev_stream_item !== null) {
-                        prev_stream_item.new_stream = get_display_stream_name(msg.prev_stream);
-                    }
                 } else {
                     entry_data = build_content_edit_entry(full_name, msg);
                 }
@@ -317,22 +385,15 @@ export function fetch_and_render_message_history(message: Message): void {
                     entry_data,
                 );
 
-                if (msg.prev_stream) {
-                    prev_stream_item = item;
-                }
-
                 content_edit_history.push(item);
             }
-            if (prev_stream_item !== null) {
-                assert(message.type === "stream");
-                prev_stream_item.new_stream = get_display_stream_name(message.stream_id);
-            }
 
-            // In order to correctly compute the recipient_bar_color
-            // values, it is convenient to iterate through the array of edit history
+            // In order to correctly compute the recipient_bar_color values and entries for topic
+            // only moves, it is convenient to iterate through the array of edit history
             // entries in reverse chronological order.
             if (message.is_stream) {
                 // Start with the message's current location.
+                let current_stream_id = message.stream_id;
                 let stream_display_name: string = get_display_stream_name(message.stream_id);
                 let stream_color: string = get_color(message.stream_id);
                 let recipient_bar_color: string = get_recipient_bar_color(stream_color);
@@ -349,6 +410,29 @@ export function fetch_and_render_message_history(message: Message): void {
                         );
                         stream_color = get_color(edit_history_entry.prev_stream_id);
                         recipient_bar_color = get_recipient_bar_color(stream_color);
+                        current_stream_id = edit_history_entry.prev_stream_id;
+                    }
+                    if (edit_history_entry.topic_edited && !edit_history_entry.stream_changed) {
+                        edit_history_entry.prev_stream = stream_display_name;
+                        edit_history_entry.new_stream = stream_display_name;
+                        assert(edit_history_entry.prev_topic_display_name !== undefined);
+                        assert(edit_history_entry.new_topic_display_name !== undefined);
+                        edit_history_entry.prev_stream_topic_url = by_stream_topic_url(
+                            current_stream_id,
+                            edit_history_entry.prev_topic_display_name,
+                        );
+                        edit_history_entry.new_stream_topic_url = by_stream_topic_url(
+                            current_stream_id,
+                            edit_history_entry.new_topic_display_name,
+                        );
+                    }
+                    if (edit_history_entry.stream_changed && !edit_history_entry.topic_edited) {
+                        edit_history_entry.new_topic_display_name =
+                            util.get_final_topic_display_name(message.topic);
+                        edit_history_entry.prev_topic_display_name =
+                            util.get_final_topic_display_name(message.topic);
+                        edit_history_entry.is_empty_string_new_topic = message.topic === "";
+                        edit_history_entry.is_empty_string_prev_topic = message.topic === "";
                     }
                 }
                 if (move_history_only) {
