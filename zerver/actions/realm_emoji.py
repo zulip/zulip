@@ -69,9 +69,9 @@ def check_add_realm_emoji(
 
 @transaction.atomic(durable=True)
 def do_remove_realm_emoji(realm: Realm, name: str, *, acting_user: UserProfile | None) -> None:
-    emoji = RealmEmoji.objects.get(realm=realm, name=name, deactivated=False)
-    emoji.deactivated = True
-    emoji.save(update_fields=["deactivated"])
+    realm_emoji = RealmEmoji.objects.get(realm=realm, name=name, deactivated=False)
+    realm_emoji.deactivated = True
+    realm_emoji.save(update_fields=["deactivated"])
 
     realm_emoji_dict = get_all_custom_emoji_for_realm(realm.id)
     RealmAuditLog.objects.create(
@@ -81,7 +81,7 @@ def do_remove_realm_emoji(realm: Realm, name: str, *, acting_user: UserProfile |
         event_time=timezone_now(),
         extra_data={
             "realm_emoji": dict(sorted(realm_emoji_dict.items())),
-            "deactivated_emoji": realm_emoji_dict[str(emoji.id)],
+            "deactivated_emoji": realm_emoji_dict[str(realm_emoji.id)],
         },
     )
 
