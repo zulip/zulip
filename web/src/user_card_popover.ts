@@ -487,6 +487,8 @@ function show_user_card_popover(
         {
             show_as_overlay_on_mobile: true,
             show_as_overlay_always: show_as_overlay,
+            get_focus_return_element: (reference) =>
+                the($(reference).closest(".user_sidebar_entry").find(".user-presence-link")),
         },
     );
 }

@@ -21,6 +21,7 @@ import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 function common_click_handlers(): void {
     $("body").on("click", ".set-home-view", (e) => {
@@ -118,7 +119,11 @@ export function initialize(): void {
                 ui_util.hide_left_sidebar_menu_icon();
             },
         },
-        {also_trigger_on_enter: true},
+        {
+            also_trigger_on_enter: true,
+            get_focus_return_element: (reference) =>
+                util.the($(reference).siblings(".left-sidebar-navigation-label-container")),
+        },
     );
 
     // Drafts popover
@@ -155,7 +160,11 @@ export function initialize(): void {
                 ui_util.hide_left_sidebar_menu_icon();
             },
         },
-        {also_trigger_on_enter: true},
+        {
+            also_trigger_on_enter: true,
+            get_focus_return_element: (reference) =>
+                util.the($(reference).siblings(".left-sidebar-navigation-label-container")),
+        },
     );
 
     // Inbox popover
@@ -207,7 +216,11 @@ export function initialize(): void {
                 ui_util.hide_left_sidebar_menu_icon();
             },
         },
-        {also_trigger_on_enter: true},
+        {
+            also_trigger_on_enter: true,
+            get_focus_return_element: (reference) =>
+                util.the($(reference).siblings(".left-sidebar-navigation-label-container")),
+        },
     );
 
     // Combined feed popover
@@ -259,7 +272,11 @@ export function initialize(): void {
                 ui_util.hide_left_sidebar_menu_icon();
             },
         },
-        {also_trigger_on_enter: true},
+        {
+            also_trigger_on_enter: true,
+            get_focus_return_element: (reference) =>
+                util.the($(reference).siblings(".left-sidebar-navigation-label-container")),
+        },
     );
 
     // Recent view popover
@@ -310,7 +327,11 @@ export function initialize(): void {
                 ui_util.hide_left_sidebar_menu_icon();
             },
         },
-        {also_trigger_on_enter: true},
+        {
+            also_trigger_on_enter: true,
+            get_focus_return_element: (reference) =>
+                util.the($(reference).siblings(".left-sidebar-navigation-label-container")),
+        },
     );
 
     popover_menus.register_popover_menu(
@@ -361,7 +382,11 @@ export function initialize(): void {
                 popover_menus.popover_instances.top_left_sidebar = null;
             },
         },
-        {also_trigger_on_enter: true},
+        {
+            also_trigger_on_enter: true,
+            get_focus_return_element: (reference) =>
+                util.the($(reference).siblings(".left-sidebar-navigation-label-container")),
+        },
     );
 
     common_click_handlers();

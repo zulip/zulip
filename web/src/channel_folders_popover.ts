@@ -18,6 +18,7 @@ import * as stream_list from "./stream_list.ts";
 import * as stream_settings_ui from "./stream_settings_ui.ts";
 import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 function do_change_show_channel_folders_left_sidebar(instance: tippy.Instance): void {
     const show_channel_folders = user_settings.web_left_sidebar_show_channel_folders;
@@ -171,7 +172,11 @@ export function initialize(): void {
                 popover_menus.popover_instances.show_folders_sidebar = null;
             },
         },
-        {also_trigger_on_enter: true},
+        {
+            also_trigger_on_enter: true,
+            get_focus_return_element: (reference) =>
+                util.the($(reference).siblings(".stream-list-section-toggle")),
+        },
     );
 
     popover_menus.register_popover_menu("#inbox-view .channel-folders-inbox-menu-icon", {
@@ -220,44 +225,51 @@ export function initialize(): void {
             $(element).closest(".stream-list-section-container").attr("data-section-id")!,
             10,
         );
-        popover_menus.toggle_popover_menu(element, {
-            ...popover_menus.left_sidebar_tippy_options,
-            theme: "popover-menu",
-            onMount(instance) {
-                popover_menus.popover_instances.folder_actions = instance;
-                const $popper = $(instance.popper);
-                assert(instance.reference instanceof HTMLElement);
-                ui_util.show_left_sidebar_menu_icon(instance.reference);
-                $popper.one("click", "#folder_popover_view_channels", () => {
-                    let section = "all";
-                    if (current_user.is_guest) {
-                        section = "subscribed";
-                    }
-                    stream_settings_ui.launch(section, undefined, undefined, folder_id);
-                });
-                $popper.one("click", "#folder_popover_manage_folder", () => {
-                    channel_folders_ui.handle_editing_channel_folder(folder_id);
-                });
-                popover_menus.focus_popover(instance);
-            },
-            onShow(instance) {
-                instance.setContent(
-                    ui_util.parse_html(
-                        render_left_sidebar_folder_popover({
-                            can_manage_folder: settings_data.can_user_manage_folder(),
-                        }),
-                    ),
-                );
-                popover_menus.on_show_prep(instance);
+        popover_menus.toggle_popover_menu(
+            element,
+            {
+                ...popover_menus.left_sidebar_tippy_options,
+                theme: "popover-menu",
+                onMount(instance) {
+                    popover_menus.popover_instances.folder_actions = instance;
+                    const $popper = $(instance.popper);
+                    assert(instance.reference instanceof HTMLElement);
+                    ui_util.show_left_sidebar_menu_icon(instance.reference);
+                    $popper.one("click", "#folder_popover_view_channels", () => {
+                        let section = "all";
+                        if (current_user.is_guest) {
+                            section = "subscribed";
+                        }
+                        stream_settings_ui.launch(section, undefined, undefined, folder_id);
+                    });
+                    $popper.one("click", "#folder_popover_manage_folder", () => {
+                        channel_folders_ui.handle_editing_channel_folder(folder_id);
+                    });
+                    popover_menus.focus_popover(instance);
+                },
+                onShow(instance) {
+                    instance.setContent(
+                        ui_util.parse_html(
+                            render_left_sidebar_folder_popover({
+                                can_manage_folder: settings_data.can_user_manage_folder(),
+                            }),
+                        ),
+                    );
+                    popover_menus.on_show_prep(instance);
 
-                return undefined;
+                    return undefined;
+                },
+                onHidden(instance) {
+                    ui_util.hide_left_sidebar_menu_icon();
+                    instance.destroy();
+                    popover_menus.popover_instances.folder_actions = null;
+                },
             },
-            onHidden(instance) {
-                ui_util.hide_left_sidebar_menu_icon();
-                instance.destroy();
-                popover_menus.popover_instances.folder_actions = null;
+            {
+                get_focus_return_element: (reference) =>
+                    util.the($(reference).siblings(".stream-list-section-toggle")),
             },
-        });
+        );
     }
 
     $("#streams_list").on(

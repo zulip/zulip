@@ -270,6 +270,10 @@ export function initialize(): void {
                 ui_util.hide_left_sidebar_menu_icon();
             },
         },
-        {also_trigger_on_enter: true},
+        {
+            also_trigger_on_enter: true,
+            get_focus_return_element: (reference) =>
+                util.the($(reference).closest(".topic-box, .selectable_sidebar_block")),
+        },
     );
 }
