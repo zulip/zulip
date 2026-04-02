@@ -4,12 +4,13 @@ import * as z from "zod/mini";
 import render_settings_resend_invite_modal from "../templates/confirm_dialog/confirm_resend_invite.hbs";
 import render_settings_revoke_invite_modal from "../templates/confirm_dialog/confirm_revoke_invite.hbs";
 import render_admin_invites_list from "../templates/settings/admin_invites_list.hbs";
+import render_view_invitation_modal from "../templates/settings/view_invitation_modal.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
 import * as people from "./people.ts";
@@ -323,6 +324,63 @@ export function on_load_success(
         });
 
         $(".dialog_submit_button").attr("data-invite-id", invite_id);
+    });
+
+    $(".admin_invites_table").on("click", ".view-details", function (this: HTMLElement, e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const invite_id = $(this).closest("tr").attr("data-invite-id")!;
+        const is_multiuse = $(this).closest("tr").attr("data-is-multiuse")!;
+
+        let url = "/json/invites/" + invite_id;
+        if (is_multiuse === "true") {
+            url = "/json/invites/multiuse/" + invite_id;
+        }
+
+        void channel.get({
+            url,
+            success(raw_data) {
+                const data = z
+                    .object({
+                        invite: z.object({
+                            email: z.string(),
+                            link_url: z.nullable(z.string()),
+                            invited_by_user_id: z.number(),
+                            invited_by_name: z.string(),
+                            invited: z.number(),
+                            expiry_date: z.nullable(z.number()),
+                            invited_as: z.number(),
+                            is_multiuse: z.boolean(),
+                            streams: z.array(z.object({id: z.number(), name: z.string()})),
+                            groups: z.array(z.object({id: z.number(), name: z.string()})),
+                        }),
+                    })
+                    .parse(raw_data);
+                const invite = data.invite;
+                const ctx = {
+                    email: invite.is_multiuse ? (invite.link_url ?? "") : invite.email,
+                    invited_by_name: invite.invited_by_name,
+                    invited_at: timerender.absolute_time(invite.invited * 1000),
+                    expiry_date: invite.expiry_date
+                        ? timerender.absolute_time(invite.expiry_date * 1000)
+                        : null,
+                    invited_as_text: settings_config.user_role_map.get(invite.invited_as),
+                    streams: invite.streams,
+                    groups: invite.groups,
+                };
+                const modal_content_html = render_view_invitation_modal(ctx);
+
+                dialog_widget.launch({
+                    modal_title_html: ctx.email,
+                    modal_content_html,
+                    id: "view_invitation_modal",
+                    modal_submit_button_text: $t({defaultMessage: "Close"}),
+                    single_footer_button: true,
+                    close_on_submit: true,
+                });
+            },
+        });
     });
 }
 

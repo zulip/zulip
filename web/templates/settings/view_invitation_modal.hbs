@@ -1,0 +1,48 @@
+<div class="invitation-details-modal">
+    <div class="default-field">
+        <div class="name">{{t "Email" }}</div>
+        <div class="value" id="invitation-email">{{email}}</div>
+    </div>
+    <div class="default-field">
+        <div class="name">{{t "Invited by" }}</div>
+        <div class="value" id="invitation-invited-by">{{invited_by_name}}</div>
+    </div>
+    <div class="default-field">
+        <div class="name">{{t "Invited at" }}</div>
+        <div class="value" id="invitation-invited-at">{{invited_at}}</div>
+    </div>
+    <div class="default-field">
+        <div class="name">{{t "Expires at" }}</div>
+        <div class="value" id="invitation-expires-at">
+            {{#if expiry_date}}
+                {{expiry_date}}
+            {{else}}
+                {{t "Never expires"}}
+            {{/if}}
+        </div>
+    </div>
+    <div class="default-field">
+        <div class="name">{{t "Role" }}</div>
+        <div class="value" id="invitation-role">{{invited_as_text}}</div>
+    </div>
+    {{#if streams.length}}
+    <div class="default-field">
+        <div class="name">{{t "Channels" }}</div>
+        <div class="value" id="invitation-streams">
+            {{#each streams}}
+                {{#if @index}}, {{/if}}{{this.name}}
+            {{/each}}
+        </div>
+    </div>
+    {{/if}}
+    {{#if groups.length}}
+    <div class="default-field">
+        <div class="name">{{t "User groups" }}</div>
+        <div class="value" id="invitation-groups">
+            {{#each groups}}
+                {{#if @index}}, {{/if}}{{this.name}}
+            {{/each}}
+        </div>
+    </div>
+    {{/if}}
+</div>
