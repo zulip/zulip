@@ -137,6 +137,7 @@ const zulip_emoji = {
     // server-side markdown, which doesn't want to render it into the
     // message content.
     emoji_url: "/static/generated/emoji/images/emoji/unicode/zulip.png",
+    date_created: new Date("2000-01-01").getTime() / 1000,
     still_url: null,
     is_realm_emoji: true,
     deactivated: false,
