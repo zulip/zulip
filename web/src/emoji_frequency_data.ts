@@ -174,16 +174,16 @@ export function preferred_emoji_list(): typeahead.EmojiItem[] {
 
 export function handle_reaction_addition_on_message(info: {
     message_id: number;
-    emoji_id: string;
+    local_id: string;
     emoji_code: string;
     emoji_type: string;
     is_me: boolean;
 }): void {
-    const {message_id, emoji_id, emoji_code, emoji_type, is_me} = info;
+    const {message_id, local_id, emoji_code, emoji_type, is_me} = info;
 
-    if (!reaction_data.has(emoji_id)) {
-        reaction_data.set(emoji_id, {
-            local_id: emoji_id,
+    if (!reaction_data.has(local_id)) {
+        reaction_data.set(local_id, {
+            local_id,
             emoji_code,
             emoji_type,
             message_ids: new Set(),
@@ -191,7 +191,7 @@ export function handle_reaction_addition_on_message(info: {
         });
     }
 
-    const reaction_usage = reaction_data.get(emoji_id);
+    const reaction_usage = reaction_data.get(local_id);
     assert(reaction_usage !== undefined);
 
     if (reaction_usage.message_ids.has(message_id)) {
@@ -205,13 +205,13 @@ export function handle_reaction_addition_on_message(info: {
 }
 
 export function handle_reaction_removal_on_message(info: {
-    emoji_id: string;
+    local_id: string;
     message_id: number;
     is_me: boolean;
 }): void {
-    const {emoji_id, message_id, is_me} = info;
+    const {local_id, message_id, is_me} = info;
 
-    const reaction_usage = reaction_data.get(emoji_id);
+    const reaction_usage = reaction_data.get(local_id);
     if (reaction_usage === undefined) {
         return;
     }
@@ -226,11 +226,11 @@ export function handle_reaction_removal_on_message(info: {
     }
 }
 
-export function remove_message_reactions(info: {message_id: number; emoji_ids: string[]}): void {
-    const {message_id, emoji_ids} = info;
+export function remove_message_reactions(info: {message_id: number; local_ids: string[]}): void {
+    const {message_id, local_ids} = info;
 
-    for (const emoji_id of emoji_ids) {
-        const reaction_usage = reaction_data.get(emoji_id);
+    for (const local_id of local_ids) {
+        const reaction_usage = reaction_data.get(local_id);
         if (reaction_usage === undefined) {
             // This seems like it should be a continue, but I only
             // am moving the code for now.  We may end up with a
