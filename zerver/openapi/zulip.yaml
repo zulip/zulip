@@ -26509,7 +26509,9 @@ components:
         The event's type, relevant both for client-side dispatch and server-side
         filtering by event type in [POST /register](/api/register-queue).
     Anchor:
-      type: string
+    oneOf:
+    - type: integer
+    - type: string
     Attachment:
       type: object
       description: |
