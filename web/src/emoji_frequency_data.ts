@@ -247,6 +247,16 @@ export function initialize_data(info: {
     for (const popular_emoji of popular_emojis) {
         const {emoji_code, emoji_type} = popular_emoji;
         const local_id = get_local_id_for_unicode_emoji({emoji_code, emoji_type});
+
+        // Populate reaction_data with popular emojis, even if they have no usage
+        // so that they are accounted for when preferred_emoji_list is called.
+        reaction_data.set(local_id, {
+            local_id,
+            message_ids: new Set(),
+            current_user_reacted_message_ids: new Set(),
+            emoji_code,
+            emoji_type,
+        });
         popular_emoji_map.set(local_id, popular_emoji);
     }
 
