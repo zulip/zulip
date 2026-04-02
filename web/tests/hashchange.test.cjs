@@ -18,6 +18,9 @@ const admin = mock_esm("../src/admin");
 const drafts_overlay_ui = mock_esm("../src/drafts_overlay_ui");
 const info_overlay = mock_esm("../src/info_overlay");
 const message_viewport = mock_esm("../src/message_viewport");
+const modals = mock_esm("../src/modals", {
+    close_active_if_any() {},
+});
 const overlays = mock_esm("../src/overlays");
 const popovers = mock_esm("../src/popovers");
 const recent_view_ui = mock_esm("../src/recent_view_ui");
@@ -31,6 +34,26 @@ const spectators = mock_esm("../src/spectators", {
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 const ui_util = mock_esm("../src/ui_util");
 const ui_report = mock_esm("../src/ui_report");
+const user_profile = mock_esm("../src/user_profile", {
+    change_state() {},
+    get_tab_key_for_hash_tab(tab) {
+        if (tab === "channels") {
+            return "user-profile-streams-tab";
+        }
+        if (tab === "groups") {
+            return "user-profile-groups-tab";
+        }
+        if (tab === "manage") {
+            return "manage-profile-tab";
+        }
+        return "profile-tab";
+    },
+    get_user_id_if_user_profile_modal_open() {
+        return undefined;
+    },
+    show_user_profile() {},
+    show_user_profile_access_error_modal() {},
+});
 set_global("favicon", {});
 
 const browser_history = zrequire("browser_history");
@@ -162,6 +185,9 @@ function test_helper({override, override_rewire, change_tab}) {
     stub(ui_util, "blur_active_element");
     stub(ui_report, "error");
     stub(spectators, "login_to_access");
+    stub_with_args(user_profile, "change_state");
+    stub_with_args(user_profile, "show_user_profile");
+    stub(user_profile, "show_user_profile_access_error_modal");
 
     if (change_tab) {
         override_rewire(message_view, "show", (terms) => {
@@ -400,6 +426,83 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     browser_history.exit_overlay();
 
     helper.assert_events([[ui_util, "blur_active_element"]]);
+});
+
+run_test("user_profile_tab_hash_navigation", ({override}) => {
+    $window_stub = $.create("window-stub");
+    override(user_settings, "web_home_view", "recent");
+    browser_history.clear_for_testing();
+
+    const user_one = {
+        user_id: 201,
+        email: "user-one@example.com",
+        full_name: "User One",
+    };
+    const user_two = {
+        user_id: 202,
+        email: "user-two@example.com",
+        full_name: "User Two",
+    };
+    people.add_active_user(user_one, "server_events");
+    people.add_active_user(user_two, "server_events");
+
+    let open_user_id;
+    override(user_profile, "get_user_id_if_user_profile_modal_open", () => open_user_id);
+    const show_user_profile_calls = [];
+    override(user_profile, "show_user_profile", (...args) => {
+        show_user_profile_calls.push(args);
+    });
+    const change_state_calls = [];
+    override(user_profile, "change_state", (tab_key) => {
+        change_state_calls.push(tab_key);
+    });
+    let close_active_modal_calls = 0;
+    override(modals, "close_active_if_any", () => {
+        close_active_modal_calls += 1;
+    });
+    override(popovers, "hide_all", noop);
+    override(overlays, "close_for_hash_change", noop);
+    override(recent_view_ui, "show", noop);
+
+    let replaced_hash;
+    override(history, "replaceState", (_state, _title, url) => {
+        replaced_hash = new URL(url).hash;
+        window.location.hash = replaced_hash;
+    });
+
+    window.location.hash = "#user/201";
+    hashchange.initialize();
+    assert.equal(replaced_hash, "#user/201/profile");
+    assert.equal(show_user_profile_calls.length, 1);
+    assert.equal(show_user_profile_calls[0][0].user_id, 201);
+    assert.equal(show_user_profile_calls[0][1], "profile-tab");
+    const close_active_calls_before_tab_switch = close_active_modal_calls;
+
+    open_user_id = 201;
+    assert.equal(user_profile.get_user_id_if_user_profile_modal_open(), 201);
+    window.location.hash = "#user/201/channels";
+    $window_stub.trigger("hashchange");
+    assert.equal(change_state_calls.at(-1), "user-profile-streams-tab");
+    assert.equal(close_active_modal_calls, close_active_calls_before_tab_switch);
+
+    window.location.hash = "#user/201/groups";
+    $window_stub.trigger("hashchange");
+    assert.equal(change_state_calls.at(-1), "user-profile-groups-tab");
+    assert.equal(close_active_modal_calls, close_active_calls_before_tab_switch);
+
+    replaced_hash = undefined;
+    window.location.hash = "#user/201/not-a-tab";
+    $window_stub.trigger("hashchange");
+    assert.equal(replaced_hash, "#user/201/profile");
+    assert.equal(change_state_calls.at(-1), "profile-tab");
+    assert.equal(close_active_modal_calls, close_active_calls_before_tab_switch);
+
+    window.location.hash = "#user/202/manage";
+    $window_stub.trigger("hashchange");
+    assert.equal(show_user_profile_calls.length, 2);
+    assert.equal(show_user_profile_calls[1][0].user_id, 202);
+    assert.equal(show_user_profile_calls[1][1], "manage-profile-tab");
+    assert.equal(close_active_modal_calls, close_active_calls_before_tab_switch + 1);
 });
 
 run_test("update_hash_to_match_filter", ({override, override_rewire}) => {

@@ -216,6 +216,21 @@ run_test("test_channels_settings_edit_url", () => {
     );
 });
 
+run_test("test_user_profile_url", () => {
+    assert.equal(hash_util.user_profile_url(42), "#user/42/profile");
+    assert.equal(hash_util.user_profile_url(42, "channels"), "#user/42/channels");
+});
+
+run_test("test_validate_user_profile_hash", () => {
+    assert.equal(hash_util.validate_user_profile_hash("#user/42"), "#user/42/profile");
+    assert.equal(hash_util.validate_user_profile_hash("#user/42/channels"), "#user/42/channels");
+    assert.equal(hash_util.validate_user_profile_hash("#user/42/streams"), "#user/42/profile");
+    assert.equal(
+        hash_util.validate_user_profile_hash("#user/42/profile/extra"),
+        "#user/42/profile",
+    );
+});
+
 run_test("test_by_conversation_and_time_url", () => {
     let message = {
         type: "stream",
