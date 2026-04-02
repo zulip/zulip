@@ -125,11 +125,9 @@ export function update_emoji_frequency_on_messages_deletion(message_ids: number[
 export function initialize_frequently_used_emojis(): void {
     const message_data = recent_view_messages_data.recent_view_messages_data;
     const messages = message_data.all_messages_after_mute_filtering();
-    const popular_emojis = typeahead.get_popular_emojis();
 
     emoji_frequency_data.initialize_data({
         messages,
-        popular_emojis,
     });
     update_frequently_used_emojis_list();
 }
