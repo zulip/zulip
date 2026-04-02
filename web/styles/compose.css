@@ -1996,6 +1996,11 @@ textarea.new_message_textarea {
             white-space: nowrap;
         }
     }
+
+    /* Don't show bottom border separator on the last item. */
+    .dropdown-list .list-item:last-child .dropdown-list-item-common-styles {
+        border-bottom: none;
+    }
 }
 
 #add-new-saved-snippet-modal,
