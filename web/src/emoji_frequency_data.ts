@@ -26,6 +26,19 @@ const MINIMUM_SCORE_TO_DISPLAY_ROW = 1.5 * CURRENT_USER_REACTION_WEIGHT;
 const MINIMUM_SCORE_TO_BE_PART_OF_ROW = 0.5;
 
 type ReactionUsage = {
+    // local_id is the ID reaction event handlers in emoji_frequency
+    // send us to update our reactions_data data structure.
+
+    // In case of emoji_type==="realm_emoji", it is a string
+    // which looks like "realm_emoji,<database id of realm emoji>".
+    // The reaction event object contains this as `emoji_code`.
+    // Ref: https://zulip.com/api/get-events#reaction-add
+
+    // Whereas in case of emoji_type==="unicode_emoji",
+    // it is a string that looks like:
+    // "unicode_emoji,<emoji_code>"
+
+    local_id: string;
     emoji_code: string;
     emoji_type: string;
     message_ids: Set<number>;
@@ -43,8 +56,9 @@ const popular_emoji_map = new Map<string, typeahead.EmojiItem>();
 // Exported for testing.
 export const reaction_data = new Map<string, ReactionUsage>();
 
-function get_key_for_popular_emoji_map(info: {emoji_type: string; emoji_code: string}): string {
+function get_local_id_for_unicode_emoji(info: {emoji_type: string; emoji_code: string}): string {
     const {emoji_type, emoji_code} = info;
+    assert(emoji_type === "unicode_emoji");
     return [emoji_type, emoji_code].join(",");
 }
 
@@ -102,9 +116,9 @@ function get_scored_emoji_for_usage(
     others_count_for_all_emoji: number,
 ): ScoredEmoji {
     const {emoji_code, emoji_type} = usage;
-    const emoji_id = get_key_for_popular_emoji_map({emoji_code, emoji_type});
+    const local_id = usage.local_id;
 
-    const is_popular = popular_emoji_map.has(emoji_id);
+    const is_popular = popular_emoji_map.has(local_id);
     // This counts messages where only other users reacted with this emoji.
     const others_count_for_current_emoji =
         usage.message_ids.size - usage.current_user_reacted_message_ids.size;
@@ -165,6 +179,7 @@ export function handle_reaction_addition_on_message(info: {
 
     if (!reaction_data.has(emoji_id)) {
         reaction_data.set(emoji_id, {
+            local_id: emoji_id,
             emoji_code,
             emoji_type,
             message_ids: new Set(),
@@ -231,8 +246,8 @@ export function initialize_data(info: {
 
     for (const popular_emoji of popular_emojis) {
         const {emoji_code, emoji_type} = popular_emoji;
-        const emoji_id = get_key_for_popular_emoji_map({emoji_code, emoji_type});
-        popular_emoji_map.set(emoji_id, popular_emoji);
+        const local_id = get_local_id_for_unicode_emoji({emoji_code, emoji_type});
+        popular_emoji_map.set(local_id, popular_emoji);
     }
 
     for (let i = messages.length - 1; i >= 0; i -= 1) {
@@ -240,16 +255,17 @@ export function initialize_data(info: {
         assert(message !== undefined);
         const message_reactions = message.clean_reactions.values();
         for (const emoji of message_reactions) {
-            const emoji_id = emoji.local_id;
-            if (!reaction_data.has(emoji_id)) {
-                reaction_data.set(emoji_id, {
+            const local_id = emoji.local_id;
+            if (!reaction_data.has(local_id)) {
+                reaction_data.set(emoji.local_id, {
+                    local_id: emoji.local_id,
                     emoji_code: emoji.emoji_code,
                     emoji_type: emoji.reaction_type,
                     message_ids: new Set(),
                     current_user_reacted_message_ids: new Set(),
                 });
             }
-            const reaction = reaction_data.get(emoji_id);
+            const reaction = reaction_data.get(local_id);
             assert(reaction !== undefined);
             reaction.message_ids.add(message.id);
 
