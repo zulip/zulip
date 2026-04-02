@@ -2139,7 +2139,7 @@ def social_auth_sync_user_attributes(
     # Unlike LDAP or SCIM, this hook can only do syncing during the authentication
     # flow, as that's when the data is provided and we don't have a way to query
     # for it otherwise.
-    if backend.name != "saml":
+    if backend.name not in ["saml", "oidc"]:
         assert not extra_attrs
         return None
 
