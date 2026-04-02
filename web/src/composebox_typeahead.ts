@@ -1876,6 +1876,7 @@ export function initialize({
         source: get_pm_people,
         items: max_num_items,
         dropup: true,
+        positionOffset: [0, 6],
         item_html(_query: string): (item: UserGroupPillData | UserPillData) => string {
             return (item: UserGroupPillData | UserPillData) =>
                 typeahead_helper.render_person_or_user_group(item);
