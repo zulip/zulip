@@ -495,17 +495,57 @@ export function toggle_popover_menu(
         ];
     }
 
-    return tippy.default(target, {
+    const props = {
         ...default_popover_props,
         showOnCreate: true,
         ...popover_props,
         ...mobile_popover_props,
-    });
+    };
+
+    // If the popover was opened via keyboard, restore focus to
+    // the appropriate element when the popover closes (e.g., on Escape).
+    // We check the active element rather than the target, since for some
+    // popovers (e.g., buddy list) the reference element is a parent
+    // container rather than the focused icon itself.
+    const opened_via_keyboard = document.activeElement?.matches(":focus-visible") === true;
+    if (opened_via_keyboard) {
+        const on_hidden = props.onHidden;
+        props.onHidden = (instance: tippy.Instance) => {
+            if (on_hidden) {
+                on_hidden.call(props, instance);
+            }
+            if (instance.reference instanceof HTMLElement) {
+                // Check some cases for sidebar popovers triggered by pressing the three-dot
+                // menu, where we want to return focus to the row overall and not the menu
+                // button.
+                const $ref = $(instance.reference);
+                if ($ref.closest(".selectable_sidebar_block, .topic-box").length > 0) {
+                    $ref.closest(".selectable_sidebar_block, .topic-box").trigger("focus");
+                } else if ($ref.siblings(".left-sidebar-navigation-label-container").length > 0) {
+                    $ref.siblings(".left-sidebar-navigation-label-container").trigger("focus");
+                } else if ($ref.siblings(".stream-list-section-toggle").length > 0) {
+                    $ref.siblings(".stream-list-section-toggle").trigger("focus");
+                } else if ($ref.closest(".user_sidebar_entry").length > 0) {
+                    $ref.closest(".user_sidebar_entry")
+                        .find(".user-presence-link")
+                        .trigger("focus");
+                } else {
+                    instance.reference.focus();
+                }
+            }
+        };
+    }
+
+    return tippy.default(target, props);
 }
 
 // Main function to define a popover menu, opened via clicking on the
 // target selector.
-export function register_popover_menu(target: string, popover_props: Partial<tippy.Props>, also_trigger_on_enter=false): void {
+export function register_popover_menu(
+    target: string,
+    popover_props: Partial<tippy.Props>,
+    also_trigger_on_enter = false,
+): void {
     // For some elements, such as the click target to open the message
     // actions menu, we want to avoid propagating the click event to
     // parent elements. Tippy's built-in `delegate` method does not
