@@ -229,7 +229,6 @@ export function ajaxSubscribe(
                     $t_html({defaultMessage: "Already subscribed"}),
                     $(".stream_change_property_info"),
                 );
-                resize.resize_stream_subscribers_list();
             }
             // The rest of the work is done via the subscribe event we will get
 
@@ -252,7 +251,6 @@ export function ajaxSubscribe(
                 xhr,
                 $(".stream_change_property_info"),
             );
-            resize.resize_stream_subscribers_list();
         },
     });
 }
@@ -295,7 +293,6 @@ function ajaxUnsubscribe(
                 xhr,
                 $(".stream_change_property_info"),
             );
-            resize.resize_stream_subscribers_list();
         },
     });
 }
