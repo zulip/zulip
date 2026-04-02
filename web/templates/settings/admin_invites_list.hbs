@@ -33,6 +33,13 @@
     </td>
     <td class="actions">
         {{> ../components/icon_button
+          icon="eye"
+          intent="neutral"
+          custom_classes="view-details tippy-zulip-delayed-tooltip"
+          data-tippy-content=(t "View details")
+          disabled=disable_buttons
+          }}
+        {{> ../components/icon_button
           icon="trash"
           intent="danger"
           custom_classes="revoke tippy-zulip-delayed-tooltip"

@@ -17123,6 +17123,69 @@ paths:
                           }
                         description: |
                           A typical failed JSON response for an invalid email invitation ID:
+    get:
+      operationId: get-email-invite
+      summary: Get an email invitation
+      tags: ["invites"]
+      description: |
+        Get details of a pending [email invitation](/help/invite-new-users#send-email-invitations).
+      parameters:
+        - name: invite_id
+          in: path
+          description: |
+            The ID of the email invitation to retrieve.
+          schema:
+            type: integer
+          example: 1
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      invite:
+                        $ref: "#/components/schemas/Invite"
+              example:
+                result: success
+                msg: ""
+                invite:
+                  email: "example@zulip.com"
+                  invited_by_user_id: 9
+                  invited_by_name: "Iago"
+                  invited: 1710606654
+                  expiry_date: 1711463862
+                  invited_as: 400
+                  is_multiuse: false
+                  streams:
+                    - name: Denmark
+                      id: 1
+                  groups:
+                    - name: community
+                      id: 1
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "No such invitation",
+                            "code": "BAD_REQUEST",
+                          }
+                    description: |
+                      A typical failed JSON response for an invalid email invitation ID:
   /invites/multiuse/{invite_id}:
     delete:
       operationId: revoke-invite-link
@@ -17175,6 +17238,67 @@ paths:
                         description: |
                           A typical failed JSON response for when the invitation link has already
                           been revoked:
+    get:
+      operationId: get-reusable-invite-link
+      summary: Get a reusable invitation link
+      tags: ["invites"]
+      description: |
+        Get details of a pending [reusable invitation link](/help/invite-new-users#create-a-reusable-invitation-link).
+      parameters:
+        - name: invite_id
+          in: path
+          description: |
+            The ID of the reusable invitation link to retrieve.
+          schema:
+            type: integer
+          example: 1
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      invite:
+                        $ref: "#/components/schemas/Invite"
+              example:
+                result: success
+                msg: ""
+                invite:
+                  link_url: "https://example.zulipchat.com/join/yddhtzk4jgl7rsmazc5fyyyy/"
+                  invited_by_user_id: 9
+                  invited_by_name: "Iago"
+                  invited: 1710606654
+                  expiry_date: 1711463862
+                  invited_as: 400
+                  is_multiuse: true
+                  streams:
+                    - name: Denmark
+                      id: 1
+                  groups:
+                    - name: community
+                      id: 1
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "result": "error",
+                            "msg": "No such invitation",
+                            "code": "BAD_REQUEST",
+                          }
   /invites/{invite_id}/resend:
     post:
       operationId: resend-email-invite
@@ -27567,6 +27691,12 @@ components:
             **Changes**: New in Zulip 3.0 (feature level 22), replacing the `ref`
             field which contained the Zulip display email address of the user who
             created the invitation.
+        invited_by_name:
+          type: string
+          description: |
+            The full name of the user who created the invitation.
+
+            **Changes**: New in Zulip 9.0 (feature level 267).
         invited:
           type: integer
           description: |
@@ -27619,6 +27749,34 @@ components:
           description: |
             A boolean specifying whether the [invitation](/help/invite-new-users) is a
             reusable invitation link or an email invitation.
+        streams:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              name:
+                type: string
+              id:
+                type: integer
+          description: |
+            A list of channels that the invited user will be subscribed to.
+
+            **Changes**: New in Zulip 9.0 (feature level 267).
+        groups:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              name:
+                type: string
+              id:
+                type: integer
+          description: |
+            A list of user groups that the invited user will be added to.
+
+            **Changes**: New in Zulip 9.0 (feature level 267).
     InviteExpirationParameter:
       description: |
         The number of minutes before the invitation will expire. If `null`, the
