@@ -5,7 +5,7 @@ from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import Any, TypedDict, cast
+from typing import Any, Literal, TypedDict, cast
 
 import orjson
 from django.conf import settings
@@ -339,7 +339,16 @@ def get_recipient_info(
         user_id_to_visibility_policy = stream_topic.user_id_to_visibility_policy_dict()
 
         def notification_recipients(
-            setting: str, *, channel_specific_setting_overrides_mute: bool = False
+            setting: Literal[
+                "email_notifications", "push_notifications", "wildcard_mentions_notify"
+            ],
+            user_setting: Literal[
+                "user_profile_email_notifications",
+                "user_profile_push_notifications",
+                "user_profile_wildcard_mentions_notify",
+            ],
+            *,
+            channel_specific_setting_overrides_mute: bool = False,
         ) -> set[int]:
             return {
                 row["user_profile_id"]
@@ -350,15 +359,28 @@ def get_recipient_info(
                         row["user_profile_id"], UserTopic.VisibilityPolicy.INHERIT
                     ),
                     row[setting],
-                    row["user_profile_" + setting],
+                    row[user_setting],
                     channel_specific_setting_overrides_mute,
                 )
             }
 
-        stream_push_user_ids = notification_recipients("push_notifications")
-        stream_email_user_ids = notification_recipients("email_notifications")
+        stream_push_user_ids = notification_recipients(
+            "push_notifications", "user_profile_push_notifications"
+        )
+        stream_email_user_ids = notification_recipients(
+            "email_notifications", "user_profile_email_notifications"
+        )
 
-        def followed_topic_notification_recipients(setting: str) -> set[int]:
+        def followed_topic_notification_recipients(
+            setting: Literal[
+                "email_notifications", "push_notifications", "wildcard_mentions_notify"
+            ],
+            followed_topic_setting: Literal[
+                "followed_topic_email_notifications",
+                "followed_topic_push_notifications",
+                "followed_topic_wildcard_mentions_notify",
+            ],
+        ) -> set[int]:
             return {
                 row["user_profile_id"]
                 for row in subscription_rows
@@ -366,13 +388,15 @@ def get_recipient_info(
                     row["user_profile_id"], UserTopic.VisibilityPolicy.INHERIT
                 )
                 == UserTopic.VisibilityPolicy.FOLLOWED
-                and row["followed_topic_" + setting]
+                and row[followed_topic_setting]
             }
 
         followed_topic_email_user_ids = followed_topic_notification_recipients(
-            "email_notifications"
+            "email_notifications", "followed_topic_email_notifications"
         )
-        followed_topic_push_user_ids = followed_topic_notification_recipients("push_notifications")
+        followed_topic_push_user_ids = followed_topic_notification_recipients(
+            "push_notifications", "followed_topic_push_notifications"
+        )
 
         if possible_stream_wildcard_mention or possible_topic_wildcard_mention:
             # We calculate `wildcard_mentions_notify_user_ids` and `followed_topic_wildcard_mentions_notify_user_ids`
@@ -381,10 +405,14 @@ def get_recipient_info(
             # thousands of elements to the event queue (which can happen because these settings
             # are `True` by default for new users.)
             wildcard_mentions_notify_user_ids = notification_recipients(
-                "wildcard_mentions_notify", channel_specific_setting_overrides_mute=True
+                "wildcard_mentions_notify",
+                "user_profile_wildcard_mentions_notify",
+                channel_specific_setting_overrides_mute=True,
             )
             followed_topic_wildcard_mentions_notify_user_ids = (
-                followed_topic_notification_recipients("wildcard_mentions_notify")
+                followed_topic_notification_recipients(
+                    "wildcard_mentions_notify", "followed_topic_wildcard_mentions_notify"
+                )
             )
 
         if possible_stream_wildcard_mention:
