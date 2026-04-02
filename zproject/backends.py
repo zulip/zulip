@@ -2894,9 +2894,28 @@ class DiscordAuthBackend(SocialAuthMixin, DiscordOAuth2):
         # than the default "username" field. However, the field is optional.
         # https://support.discord.com/hc/en-us/articles/12620128861463-New-Usernames-Display-Names#h_01GXPQABMYGEHGPRJJXJMPHF5C
         return {
+            "id": response.get("id"),
             "fullname": response.get("global_name") or response.get("username"),
             "email": response.get("email") or "",
         }
+
+    @override
+    def get_authenticated_user(
+        self,
+        email: str,
+        realm: Realm,
+        return_data: dict[str, Any],
+        **kwargs: Any,
+    ) -> UserProfile | None:
+        details = kwargs["details"]
+        return get_and_sync_user_profile_by_external_auth_id(
+            external_auth_method_name=self.name,
+            external_auth_id=details["id"],
+            email=email,
+            realm=realm,
+            return_data=return_data,
+            logger=self.logger,
+        )
 
 
 @external_auth_method

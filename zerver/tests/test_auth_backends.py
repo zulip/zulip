@@ -5929,8 +5929,11 @@ class DiscordAuthBackendTest(SocialAuthBase):
             self.assertTrue(discord_auth_enabled())
 
     @override
-    def get_account_data_dict(self, email: str, name: str, verified: bool = True) -> dict[str, Any]:
+    def get_account_data_dict(
+        self, email: str, name: str, id: str = "123", verified: bool = True
+    ) -> dict[str, Any]:
         return dict(
+            id=id,
             email=email,
             global_name=name,
             username=name.lower(),
@@ -5957,6 +5960,55 @@ class DiscordAuthBackendTest(SocialAuthBase):
                 )
             ],
         )
+
+    def test_auth_imported_discord_user(self) -> None:
+        # Our Discord import tool will create an ExternalAuthID with the Discord
+        # user's ID as the external_auth_id and fill the users email field with
+        # a fake email since Discord user emails are not exported.
+        # Make sure imported accounts with a fake/placeholder Discord email can
+        # be recovered via Discord OAuth.
+        realm = get_realm("zulip")
+        subdomain = "zulip"
+        discord_user_id = "123456"
+        account_data_dict = self.get_account_data_dict(
+            email="newhamletemail@zulip.com", name="Hamlet Discord", id=discord_user_id
+        )
+
+        # Simulate an imported Discord user account. It should have a fake email
+        # and an ExternalAuthId.
+        fake_email = f"{discord_user_id}@discordexport.zulip.com"
+        hamlet_discord = do_create_user(
+            fake_email,
+            None,
+            realm,
+            account_data_dict["global_name"],
+            acting_user=None,
+        )
+        self.assertEqual(ExternalAuthID.objects.filter(user=hamlet_discord).count(), 0)
+        ExternalAuthID.objects.create(
+            external_auth_method_name=DiscordAuthBackend.name,
+            external_auth_id=discord_user_id,
+            realm=realm,
+            user=hamlet_discord,
+        )
+
+        result = self.social_auth_test(
+            account_data_dict,
+            expect_choose_email_screen=False,
+            subdomain=subdomain,
+            next="/user_uploads/image",
+        )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], account_data_dict["email"])
+        self.assertEqual(data["full_name"], account_data_dict["global_name"])
+        self.assertEqual(data["subdomain"], subdomain)
+        self.assertEqual(result.status_code, 302)
+        parsed_url = urlsplit(result["Location"])
+        url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+        self.assertTrue(url.startswith("http://zulip.testserver/accounts/login/subdomain/"))
+
+        hamlet_external_auth = ExternalAuthID.objects.get(user=hamlet_discord)
+        self.assertEqual(hamlet_external_auth.user.delivery_email, account_data_dict["email"])
 
 
 class JSONFetchAPIKeyTest(ZulipTestCase):
