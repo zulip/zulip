@@ -2,7 +2,7 @@ import assert from "minimalistic-assert";
 
 import type {Message} from "./message_store.ts";
 import {current_user} from "./state_data.ts";
-import type * as typeahead from "./typeahead.ts";
+import * as typeahead from "./typeahead.ts";
 
 const EMOJI_PICKER_ROW_LENGTH = 6;
 const MAX_FREQUENTLY_USED_EMOJIS = 5 * EMOJI_PICKER_ROW_LENGTH;
@@ -238,12 +238,8 @@ export function remove_message_reactions(info: {message_id: number; local_ids: s
     }
 }
 
-export function initialize_data(info: {
-    messages: Message[];
-    popular_emojis: typeahead.EmojiItem[];
-}): void {
-    const {messages, popular_emojis} = info;
-
+function do_setup_for_popular_emojis(): void {
+    const popular_emojis = typeahead.get_popular_emojis();
     for (const popular_emoji of popular_emojis) {
         const {emoji_code, emoji_type} = popular_emoji;
         const local_id = get_local_id_for_unicode_emoji({emoji_code, emoji_type});
@@ -259,6 +255,11 @@ export function initialize_data(info: {
         });
         popular_emoji_map.set(local_id, popular_emoji);
     }
+}
+
+export function initialize_data(info: {messages: Message[]}): void {
+    const {messages} = info;
+    do_setup_for_popular_emojis();
 
     for (let i = messages.length - 1; i >= 0; i -= 1) {
         const message = messages[i];
