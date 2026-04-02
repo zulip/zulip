@@ -1292,11 +1292,6 @@ class MatterMostImporter(MattermostImportTestBase):
         )
         self.assertEqual(group_direct_messages[1].topic_name(), Message.DM_TOPIC)
 
-        personal_messages = messages.filter(recipient__type=Recipient.PERSONAL).order_by(
-            "date_sent"
-        )
-        self.assert_length(personal_messages, 0)
-
     def test_do_convert_data_with_masking(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")

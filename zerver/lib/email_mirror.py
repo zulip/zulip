@@ -136,7 +136,6 @@ def get_usable_missed_message_address(address: str) -> MissedMessageEmailAddress
             "message",
             "message__sender",
             "message__recipient",
-            "message__sender__recipient",
         ).get(email_token=token)
     except MissedMessageEmailAddress.DoesNotExist:
         raise ZulipEmailForwardError("Zulip notification reply address is invalid.")

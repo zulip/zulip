@@ -2836,6 +2836,9 @@ class PushNotificationTestCase(BouncerTestCase):
         self.sending_client = get_client("test")
         self.sender = self.example_user("hamlet")
         self.dm_recipient_user = self.example_user("othello")
+        self.dm_group = get_or_create_direct_message_group(
+            [self.sender.id, self.dm_recipient_user.id]
+        )
 
     def get_message(self, type: int, type_id: int, realm_id: int) -> Message:
         recipient, _ = Recipient.objects.get_or_create(

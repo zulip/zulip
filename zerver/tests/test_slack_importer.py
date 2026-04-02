@@ -27,8 +27,6 @@ from zerver.data_import.import_util import (
     UploadRecordData,
     ZerverFieldsT,
     build_defaultstream,
-    build_recipient,
-    build_subscription,
     build_usermessages,
     build_zerver_realm,
     download_and_export_upload_file,
@@ -68,14 +66,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import find_key_by_email, read_test_image_file
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
 from zerver.lib.topic import EXPORT_TOPIC_NAME
-from zerver.models import (
-    Message,
-    PreregistrationRealm,
-    Realm,
-    RealmAuditLog,
-    Recipient,
-    UserProfile,
-)
+from zerver.models import Message, PreregistrationRealm, Realm, RealmAuditLog, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 
@@ -953,23 +944,6 @@ class SlackImporter(ZulipTestCase):
         default_channel_general = build_defaultstream(realm_id, stream_id, 1)
         test_default_channel = {"stream": 1, "realm": 1, "id": 1}
         self.assertDictEqual(test_default_channel, default_channel_general)
-
-    def test_build_pm_recipient_sub_from_user(self) -> None:
-        zulip_user_id = 3
-        recipient_id = 5
-        subscription_id = 7
-        sub = build_subscription(recipient_id, zulip_user_id, subscription_id)
-        recipient = build_recipient(zulip_user_id, recipient_id, Recipient.PERSONAL)
-
-        self.assertEqual(recipient["id"], sub["recipient"])
-        self.assertEqual(recipient["type_id"], sub["user_profile"])
-
-        self.assertEqual(recipient["type"], Recipient.PERSONAL)
-        self.assertEqual(recipient["type_id"], 3)
-
-        self.assertEqual(sub["recipient"], 5)
-        self.assertEqual(sub["id"], 7)
-        self.assertEqual(sub["active"], True)
 
     def test_build_subscription(self) -> None:
         channel_members = ["U061A1R2R", "U061A3E0G", "U061A5N1G", "U064KUGRJ"]

@@ -2668,8 +2668,6 @@ class StreamMessagesTest(ZulipTestCase):
     def test_get_raw_unread_data_for_1_to_1_dms_using_group_direct_message(self) -> None:
         sender = self.example_user("hamlet")
         receiver = self.example_user("cordelia")
-        receiver.recipient = None
-        receiver.save()
 
         message1_id = self.send_personal_message(sender, receiver, "test content 1")
         message2_id = self.send_personal_message(sender, receiver, "test content 2")
@@ -2818,10 +2816,6 @@ class PersonalMessageSendTest(ZulipTestCase):
         """
         sender = self.example_user("hamlet")
         receiver = self.example_user("othello")
-
-        # Remove the existing DM group to test the creation path.
-        receiver.recipient = None
-        receiver.save()
 
         self.login("hamlet")
         self.assert_personal(

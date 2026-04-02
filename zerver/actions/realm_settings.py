@@ -757,7 +757,6 @@ def do_scrub_realm(realm: Realm, *, acting_user: UserProfile | None) -> None:
         Stream.objects.filter(realm=realm)
         .values_list("recipient_id", flat=True)
         .union(
-            UserProfile.objects.filter(realm=realm).values_list("recipient_id", flat=True),
             Subscription.objects.filter(
                 recipient__type=Recipient.DIRECT_MESSAGE_GROUP, user_profile__realm=realm
             ).values_list("recipient_id", flat=True),

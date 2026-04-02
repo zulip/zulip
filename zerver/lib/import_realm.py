@@ -1269,13 +1269,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         new_user_id = get_system_bot(item["email"], internal_realm.id).id
         update_id_map(table="user_profile", old_id=item["id"], new_id=new_user_id)
         crossrealm_user_ids.add(new_user_id)
-        try:
-            new_recipient_id = Recipient.objects.get(
-                type=Recipient.PERSONAL, type_id=new_user_id
-            ).id
-            update_id_map(table="recipient", old_id=item["recipient_id"], new_id=new_recipient_id)
-        except Recipient.DoesNotExist:
-            assert item["recipient_id"] is None
 
     # We first do a pass of updating model IDs for the cluster of
     # major models that have foreign keys into each other.

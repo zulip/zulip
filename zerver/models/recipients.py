@@ -21,19 +21,14 @@ class Recipient(models.Model):
     of audiences Zulip supports for a message.
 
     Recipient has just two attributes: The enum type, and a type_id,
-    which is the ID of the UserProfile/Stream/DirectMessageGroup object
-    containing all the metadata for the audience. There are 3 recipient
-    types:
+    which is the ID of the Stream/DirectMessageGroup object containing
+    all the metadata for the audience. There are 2 recipient types:
 
-    1. 1:1 direct message: The type_id is the ID of the UserProfile
-       who will receive any message to this Recipient. The sender
-       of such a message is represented separately.
-    2. Stream message: The type_id is the ID of the associated Stream.
-    3. Group direct message: In Zulip, group direct messages are
-       represented by DirectMessageGroup objects, which encode the set of
-       users in the conversation. The type_id is the ID of the associated
-       DirectMessageGroup object; the set of users is usually retrieved
-       via the Subscription table. See the DirectMessageGroup model for
+    1. Stream message: The type_id is the ID of the associated Stream.
+    2. Direct message: The type_id is the ID of the associated
+       DirectMessageGroup object, which encodes the set of users in
+       the conversation. The set of users is usually retrieved via the
+       Subscription table. See the DirectMessageGroup model for
        details.
 
     See also the Subscription model, which stores which UserProfile
@@ -43,13 +38,11 @@ class Recipient(models.Model):
     id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
     type_id = models.IntegerField(db_index=True)
     type = models.PositiveSmallIntegerField(db_index=True)
-    # Valid types are {personal, stream, direct_message_group}
+    # Valid types are {stream, direct_message_group}
 
-    # The type for 1:1 direct messages.
-    PERSONAL = 1
     # The type for stream messages.
     STREAM = 2
-    # The type group direct messages.
+    # The type for direct messages (both 1:1 and group).
     DIRECT_MESSAGE_GROUP = 3
 
     class Meta:

@@ -478,7 +478,6 @@ class MessageDict:
             "full_name",
             "delivery_email",
             "email",
-            "recipient_id",
             "realm__string_id",
             "avatar_source",
             "avatar_version",

@@ -1015,12 +1015,6 @@ class RealmImportExportTest(ExportFile):
 
         self.assertEqual(get_consented_user_ids(realm), consented_user_ids)
 
-        # Remove the recipient of the welcome bot to test exporting bots without it.
-        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
-        welcome_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
-        welcome_bot.recipient = None
-        welcome_bot.save(update_fields=["recipient"])
-
         self.export_realm_and_create_auditlog(
             realm,
             export_type=RealmExport.EXPORT_FULL_WITH_CONSENT,
@@ -1937,8 +1931,7 @@ class RealmImportExportTest(ExportFile):
             imported_message_with_thumbnail.rendered_content, expected_rendered_preview
         )
 
-        imported_prospero_user = get_user_by_delivery_email(prospero_email, imported_realm)
-        self.assertIsNone(imported_prospero_user.recipient)
+        get_user_by_delivery_email(prospero_email, imported_realm)
 
         # Ensure RealmExport.export_path is excluded from the export and thus None after importing.
         exported_realm_exports = read_json("realm.json")["zerver_realmexport"]

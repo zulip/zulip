@@ -1720,7 +1720,6 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
             "subject",
             "rendered_content",
             "date_sent",
-            "sender__recipient_id",
             "sender__realm_id",
             "sender__is_bot",
             "sender__email",

@@ -633,11 +633,6 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
 
     def test_add_term_using_dm_including_operator_with_different_user_email(self) -> None:
-        # Simulate a user with recipient=None
-        othello = self.example_user("othello")
-        othello.recipient = None
-        othello.save()
-
         # Test without any such group direct messages existing
         term = NarrowParameter(operator="dm-including", operand=self.othello_email)
         self._do_add_term_test(
@@ -659,11 +654,6 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_dm_including_operator_with_different_user_email_and_negated(
         self,
     ) -> None:  # NEGATED
-        # Simulate a user with recipient=None
-        othello = self.example_user("othello")
-        othello.recipient = None
-        othello.save()
-
         term = NarrowParameter(operator="dm-including", operand=self.othello_email, negated=True)
         self._do_add_term_test(
             term,
@@ -5163,7 +5153,7 @@ WHERE zerver_subscription.user_profile_id = {hamlet_id} AND zerver_subscription.
         )
 
     def test_get_messages_with_narrow_queries_using_direct_message_group(self) -> None:
-        # The query includes both PERSONAL and DM group recipients
+        # The query includes DM group recipients
         query_ids = self.get_query_ids()
         hamlet_email = self.example_user("hamlet").email
         othello_email = self.example_user("othello").email

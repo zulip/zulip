@@ -5381,7 +5381,7 @@ class SubscriptionAPITest(ZulipTestCase):
         notification_bot_dms = Message.objects.filter(
             realm_id=realm.id,
             sender=bot.id,
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             date_sent__gt=now,
         )
         self.assertEqual(notification_bot_dms.count(), 0)
@@ -5434,7 +5434,7 @@ class SubscriptionAPITest(ZulipTestCase):
         notification_bot_dms = Message.objects.filter(
             realm_id=realm.id,
             sender=bot.id,
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             date_sent__gt=now,
         )
         self.assertEqual(notification_bot_dms.count(), 0)
@@ -5465,7 +5465,7 @@ class SubscriptionAPITest(ZulipTestCase):
         notification_bot_dms = Message.objects.filter(
             realm_id=realm.id,
             sender=bot.id,
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             date_sent__gt=now,
         )
         self.assertEqual(notification_bot_dms.count(), 0)

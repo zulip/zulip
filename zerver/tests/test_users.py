@@ -647,8 +647,6 @@ class PermissionTest(ZulipTestCase):
     def test_access_user_by_id_with_null_recipient(self) -> None:
         self.set_up_db_for_testing_user_access()
         polonius = self.example_user("polonius")
-        polonius.recipient = None
-        polonius.save()
 
         # Restricting the "Members" system group to not allow access to all users.
         realm = get_realm("zulip")
@@ -1470,8 +1468,6 @@ class AdminCreateUserTest(ZulipTestCase):
         self.assertEqual(new_user.tos_version, UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN)
         # Make sure the new user got the realm's default language
         self.assertEqual(new_user.default_language, "ja")
-
-        self.assertIsNone(new_user.recipient)
 
         # we can't create the same user twice.
         result = self.client_post("/json/users", valid_params)
@@ -3758,8 +3754,6 @@ class GetProfileTest(ZulipTestCase):
 
     def test_get_inaccessible_user_ids_with_null_recipient(self) -> None:
         polonius = self.example_user("polonius")
-        polonius.recipient = None
-        polonius.save()
 
         bot = self.example_user("default_bot")
         hamlet = self.example_user("hamlet")
