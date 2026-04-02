@@ -54,8 +54,8 @@ export function update_emoji_frequency_on_add_reaction_event(event: reactions.Re
     if (should_ignore_reaction(message, event.user_id)) {
         return;
     }
-    const emoji_id = reactions.get_local_reaction_id(event);
-    const clean_reaction_object = message.clean_reactions.get(emoji_id);
+    const local_id = reactions.get_local_reaction_id(event);
+    const clean_reaction_object = message.clean_reactions.get(local_id);
 
     assert(clean_reaction_object !== undefined);
     const emoji_code = clean_reaction_object.emoji_code;
@@ -64,7 +64,7 @@ export function update_emoji_frequency_on_add_reaction_event(event: reactions.Re
 
     emoji_frequency_data.handle_reaction_addition_on_message({
         message_id,
-        emoji_id,
+        local_id,
         emoji_code,
         emoji_type,
         is_me,
@@ -85,11 +85,11 @@ export function update_emoji_frequency_on_remove_reaction_event(
         return;
     }
 
-    const emoji_id = reactions.get_local_reaction_id(event);
+    const local_id = reactions.get_local_reaction_id(event);
     const is_me = event.user_id === current_user.user_id;
 
     emoji_frequency_data.handle_reaction_removal_on_message({
-        emoji_id,
+        local_id,
         message_id,
         is_me,
     });
@@ -112,11 +112,11 @@ export function update_emoji_frequency_on_messages_deletion(message_ids: number[
         }
         assert(message !== undefined);
         const message_reactions = [...message.clean_reactions.values()];
-        const emoji_ids = message_reactions.map((reaction) => reaction.local_id);
+        const local_ids = message_reactions.map((reaction) => reaction.local_id);
 
         emoji_frequency_data.remove_message_reactions({
             message_id,
-            emoji_ids,
+            local_ids,
         });
     }
     update_frequently_used_emojis_list();
