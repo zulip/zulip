@@ -49,7 +49,7 @@ def events_register_backend(
     event_types: Json[list[str]] | None = None,
     fetch_event_types: Json[list[str]] | None = None,
     include_subscribers: Literal["true", "false", "partial"] = "false",
-    client_type: Json[ClientType] | None = None,
+    client_type: ClientType | None = None,
     narrow: Json[NarrowT] | None = None,
     presence_history_limit_days: Json[int] | None = None,
     idle_queue_timeout: Json[PositiveInt | Literal["mobile"]] | None = None,

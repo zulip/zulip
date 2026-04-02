@@ -17561,8 +17561,29 @@ paths:
                     [help-linkifiers]: /help/add-a-custom-linkifier
                     [rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html
                     [events-linkifiers]: /api/get-events#realm_linkifiers
+
                   type: object
                   example: {"notification_settings_null": true}
+
+                client_type:
+                  description: |
+                    A string indicating the type of the client.
+                    Used by the server to determine if the client is a human-facing app
+                    for the purpose of routing push notifications.
+
+                    **Changes**: New in Zulip 12.0 (feature level 482).
+                  type: string
+                  enum:
+                    - "desktop"
+                    - "mobile"
+                    - "web"
+                    - "terminal"
+                    - "archiver"
+                    - "content_mirror"
+                    - "bot"
+                    - "other"
+                  example: "mobile"
+
                 fetch_event_types:
                   description: |
                     Same as the `event_types` parameter except that the values in

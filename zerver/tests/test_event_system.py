@@ -55,6 +55,19 @@ class EventsEndpointTest(ZulipTestCase):
         result = self.client_post("/json/register", skip_user_agent=True)
         self.assert_json_success(result)
 
+    def test_events_register_user_agent_inference_coverage(self) -> None:
+        # Test various User-Agents to hit all inference branches (terminal, bot, archiver, other)
+        agents_to_test = [
+            "ZulipTerminal/0.8.2",
+            "Zulip Python Bot",
+            "SomeArchiver/1.0",
+            "RandomUnknownBrowser/9.9",
+            "SomeContentMirrorApp",
+        ]
+        for agent in agents_to_test:
+            result = self.client_post("/json/register", HTTP_USER_AGENT=agent)
+            self.assert_json_success(result)
+
     def test_narrows(self) -> None:
         user = self.example_user("hamlet")
         with mock.patch("zerver.lib.events.request_event_queue", return_value=None) as m:
