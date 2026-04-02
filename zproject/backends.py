@@ -3799,6 +3799,12 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
 
         super().__init__(*args, **kwargs)
 
+    @override
+    def get_user_details(self, response: dict[str, Any]) -> dict[str, Any]:
+        result = super().get_user_details(response)
+        result["extra_attrs"] = {"groups": response.get("groups", [])}
+        return result
+
     @classmethod
     @override
     def display_icon(cls) -> str | None:
