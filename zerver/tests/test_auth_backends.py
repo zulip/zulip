@@ -122,6 +122,7 @@ from zerver.signals import JUST_CREATED_THRESHOLD
 from zerver.views.auth import log_into_subdomain, maybe_send_to_registration
 from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
+    EMAIL_WITH_ENCODED_DISCORD_ID,
     AppleAuthBackend,
     AuthFuncT,
     AzureADAuthBackend,
@@ -5959,8 +5960,11 @@ class DiscordAuthBackendTest(SocialAuthBase):
             self.assertTrue(discord_auth_enabled())
 
     @override
-    def get_account_data_dict(self, email: str, name: str, verified: bool = True) -> dict[str, Any]:
+    def get_account_data_dict(
+        self, email: str, name: str, id: str = "123", verified: bool = True
+    ) -> dict[str, Any]:
         return dict(
+            id=id,
             email=email,
             global_name=name,
             username=name.lower(),
@@ -5987,6 +5991,39 @@ class DiscordAuthBackendTest(SocialAuthBase):
                 )
             ],
         )
+
+    def test_authenticate_special_emails_with_encoded_user_id(self) -> None:
+        subdomain = "zulip"
+        realm = get_realm(subdomain)
+        discord_user_id = "123456"
+
+        discord_user = do_create_user(
+            EMAIL_WITH_ENCODED_DISCORD_ID.format(discord_user_id=discord_user_id),
+            None,
+            realm,
+            "Hamlet-discord",
+            acting_user=None,
+        )
+        account_data_dict = self.get_account_data_dict(
+            email="user-discord-1@zulip.com", name=discord_user.full_name, id=discord_user_id
+        )
+
+        assert account_data_dict["email"] != discord_user.delivery_email
+
+        result = self.social_auth_test(
+            account_data_dict,
+            expect_choose_email_screen=False,
+            subdomain=subdomain,
+            next="/user_uploads/image",
+        )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], discord_user.delivery_email)
+        self.assertEqual(data["full_name"], account_data_dict["global_name"])
+        self.assertEqual(data["subdomain"], subdomain)
+        self.assertEqual(result.status_code, 302)
+        parsed_url = urlsplit(result["Location"])
+        url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+        self.assertTrue(url.startswith("http://zulip.testserver/accounts/login/subdomain/"))
 
 
 class JSONFetchAPIKeyTest(ZulipTestCase):

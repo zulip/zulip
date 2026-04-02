@@ -130,6 +130,8 @@ if TYPE_CHECKING:
 
 redis_client = get_redis_client()
 
+EMAIL_WITH_ENCODED_DISCORD_ID = "{discord_user_id}@discordexport.zulip.com"
+
 
 def all_default_backend_names() -> list[str]:
     if not settings.BILLING_ENABLED or settings.DEVELOPMENT:
@@ -2929,9 +2931,34 @@ class DiscordAuthBackend(SocialAuthMixin, DiscordOAuth2):
         # than the default "username" field. However, the field is optional.
         # https://support.discord.com/hc/en-us/articles/12620128861463-New-Usernames-Display-Names#h_01GXPQABMYGEHGPRJJXJMPHF5C
         return {
+            "id": response.get("id"),
             "fullname": response.get("global_name") or response.get("username"),
             "email": response.get("email") or "",
         }
+
+    @override
+    def get_authenticated_user(
+        self,
+        email: str,
+        realm: Realm,
+        return_data: dict[str, Any],
+        **kwargs: Any,
+    ) -> UserProfile | None:
+        details = kwargs["details"]
+        return super().get_authenticated_user(
+            email=email,
+            realm=realm,
+            return_data=return_data,
+            kwargs=kwargs,
+        ) or super().get_authenticated_user(
+            # This is primarily for exported Discord users. Since Discord user
+            # emails are not exported, our import tool encodes their Discord
+            # user ID to a special email we can try to authenticate here.
+            email=EMAIL_WITH_ENCODED_DISCORD_ID.format(discord_user_id=details["id"]),
+            realm=realm,
+            return_data=return_data,
+            kwargs=kwargs,
+        )
 
 
 @external_auth_method
