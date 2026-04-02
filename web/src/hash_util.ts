@@ -194,6 +194,33 @@ export function group_edit_url(group: UserGroup, right_side_tab: string): string
     return hash;
 }
 
+const valid_user_profile_tab_values = new Set(["profile", "channels", "groups", "manage"]);
+
+export function user_profile_url(user_id: number, tab = "profile"): string {
+    if (!valid_user_profile_tab_values.has(tab)) {
+        blueslip.warn("invalid user profile tab: " + tab);
+        return `#user/${user_id}/profile`;
+    }
+
+    return `#user/${user_id}/${tab}`;
+}
+
+export function validate_user_profile_hash(hash: string): string {
+    const hash_components = hash.slice(1).split(/\//);
+    const user_id = hash_components[1];
+
+    if (user_id === undefined || !/^\d+$/.test(user_id)) {
+        return hash;
+    }
+
+    let tab = hash_components[2];
+    if (tab === undefined || !valid_user_profile_tab_values.has(tab)) {
+        tab = "profile";
+    }
+
+    return user_profile_url(Number.parseInt(user_id, 10), tab);
+}
+
 export function search_public_streams_notice_url(terms: NarrowCanonicalTerm[]): string {
     const public_operator: NarrowCanonicalTerm = {operator: "channels", operand: "public"};
     return search_terms_to_hash([public_operator, ...terms]);
