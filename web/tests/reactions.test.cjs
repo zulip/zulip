@@ -1489,3 +1489,35 @@ test("process_reaction_click bad local id", ({override}) => {
     blueslip.expect("error", "Data integrity problem for reaction");
     reactions.process_reaction_click("some-msg-id", "bad-local-id");
 });
+
+test("update_reaction_names", ({override, override_rewire}) => {
+    const message_with_bob_reaction = sample_message_with_clean_reactions();
+    const message_without_reactions = {
+        id: 2001,
+        clean_reactions: new Map(),
+    };
+    const message_without_bob_reaction = {
+        id: 3001,
+        clean_reactions: message_with_bob_reaction.clean_reactions,
+    };
+
+    override(message_lists, "all_rendered_message_lists", () => [
+        {
+            data: {
+                all_messages_after_mute_filtering: () => [
+                    message_with_bob_reaction,
+                    message_without_reactions,
+                    message_without_bob_reaction,
+                ],
+            },
+        },
+    ]);
+
+    const stub = make_stub();
+    override_rewire(reactions, "update_vote_text_on_message", stub.f);
+
+    people.set_full_name(bob, "Robert Bob");
+    reactions.update_reaction_names(6);
+
+    assert.ok(stub.num_calls > 0);
+});
