@@ -1,6 +1,5 @@
 import autosize from "autosize";
 import $ from "jquery";
-import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
 import * as compose_state from "./compose_state.ts";
@@ -156,74 +155,6 @@ export function resize_bottom_whitespace(): void {
     if (compose_state.composing()) {
         reset_compose_message_max_height(bottom_whitespace_height);
     }
-}
-
-export function resize_stream_subscribers_list(): void {
-    // Calculates the height of the subscribers list in stream settings.
-    // This avoids the stream settings from overflowing the container and
-    // having a scroll bar.
-
-    if ($("#channels_overlay_container").find(".two-pane-settings-overlay.show").length === 0) {
-        // Don't run if stream settings overlay is not open.
-        return;
-    }
-
-    if (
-        $("#stream_settings .stream_section[data-stream-section='subscribers']").length === 0 ||
-        $("#stream_settings .stream_section[data-stream-section='subscribers']").css("display") ===
-            "none"
-    ) {
-        // Don't run if subscribers section is not opened.
-        return;
-    }
-
-    const $subscriptions_info = $("#subscription_overlay .two-pane-settings-container .right");
-
-    const $tab_container = $("#stream_settings .stream_settings_header");
-    const $add_subscribers_heading = $(
-        ".subscriber_list_settings_container .add-subscribers-heading",
-    );
-    const $add_subscribers_widget = $(
-        ".subscriber_list_settings_container .subscriber_list_settings",
-    );
-    const $notification_message_container = $(
-        ".subscriber_list_settings_container .send_notification_to_new_subscribers_container",
-    );
-    const $subscribers_list_header = $("#stream_settings .subscribers-list-header");
-
-    const elements_above_subscribers_list = [
-        $tab_container,
-        $add_subscribers_heading,
-        $add_subscribers_widget,
-        $notification_message_container,
-        $subscribers_list_header,
-    ];
-
-    let total_height_of_elements_above_subscribers_list = 0;
-    for (const $elem of elements_above_subscribers_list) {
-        const outer_height = $elem.outerHeight(true);
-        assert(outer_height !== undefined);
-        total_height_of_elements_above_subscribers_list += outer_height;
-    }
-
-    const right_subheader_height = height_of($(".right .two-pane-settings-subheader"));
-    // Margin of 18px is present at both top and bottom, so 2*18px will be
-    // subtracted to calculate maximum allowed height for subscribers list.
-    const subscription_settings_inner_box_margin = 18;
-    const subscriptions_info_height = $subscriptions_info.height();
-    assert(subscriptions_info_height !== undefined);
-
-    // Since .subscribers_list_container has box-sizing set to content-box,
-    // the max-height should not include border width.
-    const susbcribers_list_container_bottom_border_width = 1;
-
-    const subscribers_list_height =
-        subscriptions_info_height -
-        total_height_of_elements_above_subscribers_list -
-        right_subheader_height -
-        2 * subscription_settings_inner_box_margin -
-        susbcribers_list_container_bottom_border_width;
-    $(":root").css("--stream-subscriber-list-max-height", `${subscribers_list_height}px`);
 }
 
 export function resize_stream_creation_subscribers_list(): void {
@@ -424,6 +355,5 @@ export function resize_page_components(): void {
     resize_settings_overlay($("#channels_overlay_container"));
     resize_settings_creation_overlay($("#groups_overlay_container"));
     resize_settings_creation_overlay($("#channels_overlay_container"));
-    resize_stream_subscribers_list();
     resize_stream_creation_subscribers_list();
 }

@@ -1289,6 +1289,70 @@ h4.user_group_setting_subsection_title {
         }
     }
 
+    #stream_settings.subscribers-tab-active {
+        /* When the subscribers tab is active, disable simplebar on
+           #stream_settings so the panel itself is not scrollable —
+           only the subscriber list table scrolls via its own simplebar.
+           Simplebar reads the host element's computed overflow-y and
+           disables its scrollbar when it sees 'hidden'. */
+        overflow-y: hidden;
+
+        /* Propagate the container height through simplebar's wrapper
+           DOM to the actual content. :has() targets only the outer
+           simplebar-content (the one containing .subscription_settings),
+           not the nested one inside .subscriber_list_container. */
+        .simplebar-content:has(> .subscription_settings) {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+
+            .subscription_settings,
+            .inner-box {
+                flex: 1;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .stream_section[data-stream-section="subscribers"] {
+                flex: 1;
+                overflow: hidden;
+
+                .edit_subscribers_for_stream,
+                .subscriber_list_settings_container {
+                    height: 100%;
+                }
+
+                .subscriber_list_settings_container .subscriber-list-box {
+                    /* flex: 1 takes remaining space after the auto-sized siblings. */
+                    flex: 1;
+                    overflow: hidden;
+                    /* Hide borders here since they would extend to the
+                       full flex item height; they are redeclared on
+                       .subscriber_list_container instead. */
+                    border-left: none;
+                    border-right: none;
+
+                    .subscriber_list_container {
+                        box-sizing: border-box;
+                        max-height: 100%;
+                        /* overflow: clip prevents the native scrollbar that would otherwise
+                           appear because the simplebar placeholder can overflow the
+                           container. Unlike overflow: hidden, clip does not disable
+                           simplebar (simplebar only disables on overflow: hidden). */
+                        overflow: clip;
+                        border-left: 1px solid
+                            var(--color-border-table-subscriber-list);
+                        border-right: 1px solid
+                            var(--color-border-table-subscriber-list);
+                        border-top-left-radius: 4px;
+                        border-top-right-radius: 4px;
+                    }
+                }
+            }
+        }
+    }
+
     #personal-stream-settings {
         .stream_change_property_status {
             margin: 9px auto 3px 3px;
