@@ -249,6 +249,7 @@ export const server_emoji_schema = z.object({
     name: z.string(),
     source_url: z.string(),
     still_url: z.nullable(z.string()),
+    date_created: z.number(),
 
     // Added later in `settings_emoji.ts` when setting up the emoji settings.
     author: z.nullish(user_schema),

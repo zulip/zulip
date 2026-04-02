@@ -1,6 +1,8 @@
 import assert from "minimalistic-assert";
 
+import * as emoji from "./emoji.ts";
 import type {Message} from "./message_store.ts";
+import * as people from "./people.ts";
 import {current_user} from "./state_data.ts";
 import * as typeahead from "./typeahead.ts";
 
@@ -13,6 +15,8 @@ const CURRENT_USER_REACTION_WEIGHT = 1;
 const IMPORTANCE_RATIO = 1 / 5;
 const OTHER_USER_REACTION_WEIGHT = CURRENT_USER_REACTION_WEIGHT * IMPORTANCE_RATIO;
 const POPULAR_EMOJIS_BONUS_WEIGHT = 2.4 * CURRENT_USER_REACTION_WEIGHT;
+const MY_RECENT_CUSTOM_EMOJI_BONUS = CURRENT_USER_REACTION_WEIGHT * 6;
+const OTHER_USER_RECENT_CUSTOM_EMOJI_BONUS = CURRENT_USER_REACTION_WEIGHT * 2;
 
 // The maximum score contribution by others' usage of an emoji.
 const OTHERS_SCORE_CAP = 40 * CURRENT_USER_REACTION_WEIGHT;
@@ -84,7 +88,30 @@ export function show_reaction_data(): (ScoredEmoji & {
     return data_for_emojis.toSorted((a, b) => b.score - a.score);
 }
 
+// Here emoji_id denotes the id of the realm_emoji in the database.
+// Ref: https://zulip.com/api/get-events#reaction-add
+function calculate_recently_uploaded_custom_emoji_bonus(emoji_id: string): number {
+    const data = emoji.get_server_realm_emoji_data();
+    assert(data !== undefined);
+    const current_custom_emoji = data[emoji_id];
+    if (current_custom_emoji === undefined) {
+        return 0;
+    }
+
+    const date_created_timestamp_in_seconds = current_custom_emoji.date_created;
+    const seconds_till_now = Date.now() / 1000;
+    const one_week_seconds_span = 60 * 60 * 24 * 7;
+    if (seconds_till_now - date_created_timestamp_in_seconds > one_week_seconds_span) {
+        return 0;
+    }
+    if (people.is_my_user_id(current_custom_emoji.author_id)) {
+        return MY_RECENT_CUSTOM_EMOJI_BONUS;
+    }
+    return OTHER_USER_RECENT_CUSTOM_EMOJI_BONUS;
+}
+
 function compute_score(info: {
+    usage: ReactionUsage;
     is_popular: boolean;
     others_count_for_current_emoji: number;
     my_count_for_current_emoji: number;
@@ -95,8 +122,10 @@ function compute_score(info: {
         others_count_for_current_emoji,
         my_count_for_current_emoji,
         others_count_for_all_emoji,
+        usage,
     } = info;
     const popular_emoji_bonus = is_popular ? POPULAR_EMOJIS_BONUS_WEIGHT : 0;
+    const custom_emoji_bonus = calculate_recently_uploaded_custom_emoji_bonus(usage.emoji_code);
 
     // We limit the total score contribution from other users so it asymptotically
     // approaches OTHERS_SCORE_CAP. For example, if the cap is 40, a user
@@ -106,7 +135,8 @@ function compute_score(info: {
         CURRENT_USER_REACTION_WEIGHT * Math.max(my_count_for_current_emoji - 0.5, 0) +
         Math.min(OTHER_USER_REACTION_WEIGHT, OTHERS_SCORE_CAP / others_count_for_all_emoji) *
             Math.max(others_count_for_current_emoji - 0.5, 0) +
-        popular_emoji_bonus;
+        popular_emoji_bonus +
+        custom_emoji_bonus;
 
     return score;
 }
@@ -125,6 +155,7 @@ function get_scored_emoji_for_usage(
     const my_count_for_current_emoji = usage.current_user_reacted_message_ids.size;
 
     const score = compute_score({
+        usage,
         is_popular,
         my_count_for_current_emoji,
         others_count_for_current_emoji,
@@ -257,9 +288,30 @@ function do_setup_for_popular_emojis(): void {
     }
 }
 
+function do_setup_for_realm_emojis(): void {
+    const active_realm_emojis = emoji.active_realm_emojis;
+    for (const realm_emoji of active_realm_emojis.values()) {
+        const {id} = realm_emoji;
+        // Same as reactions.
+        const local_id = ["realm_emoji", id].join(",");
+        // Populate reaction_data with custom emojis, even if they have no usage
+        // so that they are accounted for when preferred_emoji_list is called.
+        reaction_data.set(local_id, {
+            local_id,
+            message_ids: new Set(),
+            current_user_reacted_message_ids: new Set(),
+            // We follow the same convention used by the
+            // reaction event response for realm emojis.
+            emoji_code: id,
+            emoji_type: "realm_emoji",
+        });
+    }
+}
+
 export function initialize_data(info: {messages: Message[]}): void {
     const {messages} = info;
     do_setup_for_popular_emojis();
+    do_setup_for_realm_emojis();
 
     for (let i = messages.length - 1; i >= 0; i -= 1) {
         const message = messages[i];
