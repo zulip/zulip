@@ -273,6 +273,8 @@ export class Typeahead<ItemType extends string | object> {
     hideOnEmptyAfterBackspace: boolean;
     // Used for adding a custom classname to the typeahead link.
     getCustomItemClassname: ((item: ItemType) => string) | undefined;
+    // Offset applied to the typeahead placement.
+    position_offset: [number, number];
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
@@ -318,6 +320,7 @@ export class Typeahead<ItemType extends string | object> {
         this.hideAfterSelect = options.hideAfterSelect ?? (() => true);
         this.hideOnEmptyAfterBackspace = options.hideOnEmptyAfterBackspace ?? false;
         this.getCustomItemClassname = options.getCustomItemClassname;
+        this.position_offset = options.position_offset ?? [0, 0];
         this.listen();
     }
 
@@ -387,6 +390,7 @@ export class Typeahead<ItemType extends string | object> {
         this.mouse_moved_since_typeahead = false;
 
         const input_element = this.input_element;
+        const position_offset = this.position_offset;
         if (!this.non_tippy_parent_element) {
             this.instance = tippy.default(the(input_element.$element), {
                 // Lets typeahead take the width needed to fit the content
@@ -438,7 +442,10 @@ export class Typeahead<ItemType extends string | object> {
                         const scrollTop = input_element.$element.scrollTop() ?? 0;
 
                         if (placement === "top-start") {
-                            return [caret.left, -caret.top + scrollTop + gap];
+                            return [
+                                caret.left + position_offset[0],
+                                -caret.top + scrollTop + gap + position_offset[1],
+                            ];
                         }
 
                         // In bottom-start, the offset is calculated from bottom of the popper reference.
@@ -446,10 +453,13 @@ export class Typeahead<ItemType extends string | object> {
                             // Height of the reference is the input_element height.
                             const field_height = reference.height;
                             const distance = field_height - caret.top + scrollTop - caret.height;
-                            return [caret.left, -distance + gap];
+                            return [
+                                caret.left + position_offset[0],
+                                -distance + gap + position_offset[1],
+                            ];
                         }
                     }
-                    return [0, gap];
+                    return [position_offset[0], gap + position_offset[1]];
                 },
                 // We have event handlers to hide the typeahead, so we
                 // don't want tippy to hide it for us.
@@ -986,4 +996,5 @@ type TypeaheadOptions<ItemType> = {
     showOnClick?: boolean;
     hideAfterSelect?: () => boolean;
     getCustomItemClassname?: (item: ItemType) => string;
+    position_offset?: [number, number];
 };

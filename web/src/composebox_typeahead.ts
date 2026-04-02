@@ -1813,6 +1813,7 @@ export function initialize({
         source: get_pm_people,
         items: max_num_items,
         dropup: true,
+        position_offset: [0, 6],
         item_html(item: UserGroupPillData | UserPillData) {
             return typeahead_helper.render_person_or_user_group(item);
         },
