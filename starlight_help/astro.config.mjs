@@ -326,6 +326,7 @@ export default defineConfig({
                         "paragraph-and-section-formatting",
                         "bulleted-lists",
                         "numbered-lists",
+                        "indent-a-list-item",
                         "tables",
                         "code-blocks",
                         "latex",
