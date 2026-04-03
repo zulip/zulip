@@ -557,7 +557,7 @@ class NarrowBuilder:
             if user_profiles == []:
                 return query.where(maybe_negate(false()))
 
-            recipient = recipient_for_user_profiles(
+            recipient, _ = recipient_for_user_profiles(
                 user_profiles=user_profiles,
                 forwarded_mirror_message=False,
                 forwarder_user_profile=None,

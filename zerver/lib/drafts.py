@@ -68,7 +68,7 @@ def further_validated_draft_dict(
     elif draft_dict.type == "private" and len(to) != 0:
         to_users = get_user_profiles_by_ids(set(to), user_profile.realm)
         try:
-            recipient_id = recipient_for_user_profiles(to_users, False, None, user_profile).id
+            recipient_id = recipient_for_user_profiles(to_users, False, None, user_profile)[0].id
         except ValidationError as e:  # nocoverage
             raise JsonableError(e.messages[0])
 
