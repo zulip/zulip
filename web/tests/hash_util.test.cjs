@@ -6,7 +6,7 @@ const message_link_test_cases = require("../../zerver/tests/fixtures/message_lin
 
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
-const {zrequire} = require("./lib/namespace.cjs");
+const {set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const hash_parser = zrequire("hash_parser");
@@ -378,4 +378,73 @@ run_test("test_is_spectator_compatible", () => {
     assert.equal(hash_parser.is_spectator_compatible("#settings/profile"), false);
     assert.equal(hash_parser.is_spectator_compatible("#drafts"), false);
     assert.equal(hash_parser.is_spectator_compatible("#channels/subscribed"), false);
+});
+
+run_test("test_decode_stream_topic_from_url", () => {
+    set_global("window", {
+        location: {
+            origin: "http://zulip.zulipdev.com",
+        },
+    });
+
+    // Message link with stream, topic, and message_id.
+    // This is the primary use case for message link tooltips.
+    let result = hash_util.decode_stream_topic_from_url(
+        "http://zulip.zulipdev.com/#narrow/channel/99-frontend/topic/testing/near/456",
+    );
+    assert.equal(result?.stream_id, 99);
+    assert.equal(result?.topic_name, "testing");
+    assert.equal(result?.message_id, "456");
+
+    // Message link with empty topic name.
+    result = hash_util.decode_stream_topic_from_url(
+        "http://zulip.zulipdev.com/#narrow/channel/1-general/topic//near/123",
+    );
+    assert.equal(result?.stream_id, 1);
+    assert.equal(result?.topic_name, "");
+    assert.equal(result?.message_id, "123");
+
+    // Channel-only link (no topic, no message_id).
+    result = hash_util.decode_stream_topic_from_url(
+        "http://zulip.zulipdev.com/#narrow/channel/42-random",
+    );
+    assert.equal(result?.stream_id, 42);
+    assert.equal(result?.topic_name, undefined);
+    assert.equal(result?.message_id, undefined);
+
+    // Channel + topic link (no message_id).
+    result = hash_util.decode_stream_topic_from_url(
+        "http://zulip.zulipdev.com/#narrow/channel/15-Development/topic/backend",
+    );
+    assert.equal(result?.stream_id, 15);
+    assert.equal(result?.topic_name, "backend");
+    assert.equal(result?.message_id, undefined);
+
+    // "with" operator discards message_id (currently not used for message links).
+    result = hash_util.decode_stream_topic_from_url(
+        "http://zulip.zulipdev.com/#narrow/channel/5-Announce/topic/updates/with/789",
+    );
+    assert.equal(result?.stream_id, 5);
+    assert.equal(result?.topic_name, "updates");
+    assert.equal(result?.message_id, undefined);
+
+    // Invalid URLs return null.
+    assert.equal(
+        hash_util.decode_stream_topic_from_url("http://evil.example.com/#narrow/channel/1"),
+        null,
+    );
+    assert.equal(
+        hash_util.decode_stream_topic_from_url("http://zulip.zulipdev.com/#settings/profile"),
+        null,
+    );
+    assert.equal(
+        hash_util.decode_stream_topic_from_url("http://zulip.zulipdev.com/#narrow/topic/1"),
+        null,
+    );
+    assert.equal(
+        hash_util.decode_stream_topic_from_url(
+            "http://zulip.zulipdev.com/#narrow/channel/invalid/topic/1",
+        ),
+        null,
+    );
 });
