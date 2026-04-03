@@ -235,7 +235,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/bots",
         "/bots/{bot_id}",
         #### These "organization settings" endpoints have low value to document:
-        "/realm/profile_fields/{field_id}",
         "/realm/icon",
         "/realm/logo",
         "/realm/deactivate",
