@@ -29184,6 +29184,37 @@ components:
               as are used for message content.
 
               See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
+    ProfileDataUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: integer
+          description: |
+            The ID of the custom profile field to update.
+        value:
+          description: |
+            The new value for the user of the specified custom profile field.
+
+            If null, then any value already set for the specified custom
+            profile field will be removed.
+          oneOf:
+            - type: string
+              nullable: true
+              description: |
+                A string value that matches the [type of the custom profile
+                field](/help/custom-profile-fields#profile-field-types), e.g., if the
+                profile field type is a link then the string must be a URL.
+
+            - type: array
+              items:
+                type: integer
+              description: |
+                An array of integer user IDs, which is for the **Users** type of
+                [custom profile field](/help/custom-profile-fields#profile-field-types).
+      required:
+        - id
+        - value
     ChannelFolder:
       type: object
       additionalProperties: false
@@ -30344,10 +30375,11 @@ components:
                 example: 400
               profile_data:
                 description: |
-                  A dictionary containing the updated custom profile field data for the user.
+                  An array of objects describing updates to the [custom profile
+                  field](/help/custom-profile-fields) data for the user.
                 type: array
                 items:
-                  type: object
+                  $ref: "#/components/schemas/ProfileDataUpdate"
                 example:
                   [{"id": 4, "value": "0"}, {"id": 5, "value": "1909-04-05"}]
               new_email:
