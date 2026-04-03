@@ -705,6 +705,11 @@ test_ui("on_events", ({override, override_rewire}) => {
             ".image-loading-placeholder",
             $.create("no-images", {elements: []}),
         );
+        $("#compose .preview_content").set_find_results("a", $.create("no-links", {elements: []}));
+        $("#compose .preview_content").set_find_results(
+            ".message_embed",
+            $.create("no-embeds", {elements: []}),
+        );
 
         function setup_mock_markdown_contains_backend_only_syntax(msg_content, return_val) {
             override(markdown, "contains_backend_only_syntax", (msg) => {
