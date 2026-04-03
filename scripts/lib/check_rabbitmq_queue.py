@@ -7,10 +7,9 @@ import time
 from collections import defaultdict
 from typing import Any
 
-ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import atomic_nagios_write, get_config, get_config_file
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 normal_queues = [
     "deferred_work",
