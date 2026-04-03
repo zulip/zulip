@@ -401,14 +401,39 @@ export function initialize_right_sidebar(): void {
         },
     );
 
+    $("#buddy-list-users-matching-view-container").on(
+        "keydown",
+        ".buddy-list-section-toggle",
+        (e) => {
+            if (keydown_util.is_enter_event(e)) {
+                e.stopPropagation();
+                buddy_list.toggle_users_matching_view_section();
+            }
+        },
+    );
+
     $("#buddy-list-participants-container").on("click", ".buddy-list-subsection-header", (e) => {
         e.stopPropagation();
         buddy_list.toggle_participants_section();
     });
 
+    $("#buddy-list-participants-container").on("keydown", ".buddy-list-section-toggle", (e) => {
+        if (keydown_util.is_enter_event(e)) {
+            e.stopPropagation();
+            buddy_list.toggle_participants_section();
+        }
+    });
+
     $("#buddy-list-other-users-container").on("click", ".buddy-list-subsection-header", (e) => {
         e.stopPropagation();
         buddy_list.toggle_other_users_section();
+    });
+
+    $("#buddy-list-other-users-container").on("keydown", ".buddy-list-section-toggle", (e) => {
+        if (keydown_util.is_enter_event(e)) {
+            e.stopPropagation();
+            buddy_list.toggle_other_users_section();
+        }
     });
 
     function close_buddy_list_popover(): void {

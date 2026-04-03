@@ -239,6 +239,28 @@ export function initialize(): void {
         },
     });
 
+    // This is actually for the right sidebar, but putting it here because it has
+    // shared logic.
+    tippy.delegate("body", {
+        target: ".section-toggle-tooltip-target",
+        onShow(instance) {
+            const $toggle = $(instance.reference);
+            observe_toggle_class(instance, () => {
+                if ($toggle.hasClass("rotate-icon-down")) {
+                    instance.setContent($t({defaultMessage: "Collapse section"}));
+                } else {
+                    instance.setContent($t({defaultMessage: "Expand section"}));
+                }
+            });
+        },
+        delay: EXTRA_LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onHidden(instance) {
+            disconnect_toggle_class(instance);
+            instance.destroy();
+        },
+    });
+
     tippy.delegate("body", {
         target: ".header-main .column-left .left-sidebar-toggle-button",
         delay: LONG_HOVER_DELAY,
