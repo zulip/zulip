@@ -409,12 +409,16 @@ class BotServicesEmbedded(BaseModel):
     config_data: dict[str, str]
 
 
+class BotServicesIncoming(BaseModel):
+    integration_name: str
+
+
 class Bot(BaseModel):
     user_id: int
     default_all_public_streams: bool
     default_events_register_stream: str | None
     default_sending_stream: str | None
-    services: list[BotServicesOutgoing | BotServicesEmbedded]
+    services: list[BotServicesOutgoing | BotServicesEmbedded | BotServicesIncoming]
 
 
 class EventRealmBotAdd(BaseEvent):
@@ -442,7 +446,7 @@ class BotTypeForUpdate(BotTypeForUpdateCore):
     default_all_public_streams: bool | None = None
     default_events_register_stream: str | None = None
     default_sending_stream: str | None = None
-    services: list[BotServicesOutgoing | BotServicesEmbedded] | None = None
+    services: list[BotServicesOutgoing | BotServicesEmbedded | BotServicesIncoming] | None = None
 
 
 class EventRealmBotUpdate(BaseEvent):
