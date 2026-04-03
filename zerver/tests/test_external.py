@@ -273,7 +273,7 @@ class RateLimitTests(ZulipTestCase):
         def selective_mock_open(*args: Any, **kwargs: Any) -> IO[Any]:
             if args[0] == settings.TOR_EXIT_NODE_FILE_PATH:
                 return tor_open(*args, **kwargs)
-            return builtin_open(*args, **kwargs)
+            return builtin_open(*args, **kwargs)  # nocoverage
 
         with mock.patch("builtins.open", selective_mock_open):
             yield tor_open
