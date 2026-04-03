@@ -598,6 +598,21 @@ paths:
                                     - type: object
                                       additionalProperties: false
                                       description: |
+                                        When the type of a bot changes.
+
+                                        **Changes**: New in Zulip 12.0 (feature level ZF-3743d8).
+                                      properties:
+                                        user_id:
+                                          type: integer
+                                          description: |
+                                            The ID of the bot whose type has changed.
+                                        bot_type:
+                                          type: integer
+                                          description: |
+                                            The new type for the bot.
+                                    - type: object
+                                      additionalProperties: false
+                                      description: |
                                         When the [role](/help/user-roles) of a user changes.
                                       properties:
                                         user_id:
