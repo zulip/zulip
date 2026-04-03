@@ -1,0 +1,101 @@
+{
+    "user": "U06NU4E26M9",
+    "type": "message",
+    "ts": "1772029188.953659",
+    "text": "<https://chat.zulip.org/|Text with a link>\n*<https://chat.zulip.org/|Text with a link>*\n_<https://chat.zulip.org/|Text with a link>_\n<https://chat.zulip.org/|Text with a link>\n~<https://chat.zulip.org/|Text with a link>~",
+    "team": "T06NRA6HM3P",
+    "user_team": "T06NRA6HM3P",
+    "source_team": "T06NRA6HM3P",
+    "user_profile": {
+        "avatar_hash": "112be04f818e",
+        "image_72": "https://avatars.slack-edge.com/2024-03-10/6773346635957_112be04f818e7bd093d5_72.png",
+        "first_name": "Peter",
+        "real_name": "Peter",
+        "display_name": "",
+        "team": "T06NRA6HM3P",
+        "name": "pieterceka123",
+        "is_restricted": false,
+        "is_ultra_restricted": false
+    },
+    "attachments": [
+        {
+            "from_url": "https://chat.zulip.org/",
+            "thumb_url": "https://chat.zulip.org/user_avatars/2/realm/icon.png?version=3",
+            "thumb_width": 100,
+            "thumb_height": 100,
+            "id": 1,
+            "original_url": "https://chat.zulip.org/",
+            "fallback": "Zulip: Public view of Zulip Community | Zulip team chat",
+            "text": "Browse the publicly accessible channels in Zulip Community without logging in.",
+            "title": "Public view of Zulip Community | Zulip team chat",
+            "title_link": "https://chat.zulip.org/",
+            "service_name": "Zulip"
+        }
+    ],
+    "blocks": [
+        {
+            "type": "rich_text",
+            "block_id": "djG5e",
+            "elements": [
+                {
+                    "type": "rich_text_section",
+                    "elements": [
+                        {
+                            "type": "link",
+                            "url": "https://chat.zulip.org/",
+                            "text": "Text with a link"
+                        },
+                        {
+                            "type": "text",
+                            "text": "\n"
+                        },
+                        {
+                            "type": "link",
+                            "url": "https://chat.zulip.org/",
+                            "text": "Text with a link",
+                            "style": {
+                                "bold": true
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": "\n"
+                        },
+                        {
+                            "type": "link",
+                            "url": "https://chat.zulip.org/",
+                            "text": "Text with a link",
+                            "style": {
+                                "italic": true
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": "\n"
+                        },
+                        {
+                            "type": "link",
+                            "url": "https://chat.zulip.org/",
+                            "text": "Text with a link",
+                            "style": {
+                                "underline": true
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": "\n"
+                        },
+                        {
+                            "type": "link",
+                            "url": "https://chat.zulip.org/",
+                            "text": "Text with a link",
+                            "style": {
+                                "strike": true
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
