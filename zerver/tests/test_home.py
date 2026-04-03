@@ -226,6 +226,7 @@ class HomeTest(ZulipTestCase):
         "realm_signup_announcements_stream_id",
         "realm_topics_policy",
         "realm_upload_quota_mib",
+        "realm_upload_quota_used_bytes",
         "realm_uri",
         "realm_url",
         "realm_user_groups",
@@ -304,7 +305,7 @@ class HomeTest(ZulipTestCase):
 
         # Verify succeeds once logged-in
         with (
-            self.assert_database_query_count(58),
+            self.assert_database_query_count(60),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page(stream="Denmark")
@@ -313,7 +314,7 @@ class HomeTest(ZulipTestCase):
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
 
-        self.assert_length(cache_mock.call_args_list, 7)
+        self.assert_length(cache_mock.call_args_list, 8)
 
         html = result.content.decode()
 
@@ -615,12 +616,12 @@ class HomeTest(ZulipTestCase):
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
         with (
-            self.assert_database_query_count(57),
+            self.assert_database_query_count(59),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page()
             self.check_rendered_logged_in_app(result)
-            self.assert_length(cache_mock.call_args_list, 8)
+            self.assert_length(cache_mock.call_args_list, 9)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user("hamlet")
@@ -647,7 +648,7 @@ class HomeTest(ZulipTestCase):
         self._get_home_page()
 
         # Then for the second page load, measure the number of queries.
-        with self.assert_database_query_count(53):
+        with self.assert_database_query_count(55):
             result = self._get_home_page()
 
         # Do a sanity check that our new streams were in the payload.
