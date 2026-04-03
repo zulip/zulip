@@ -1,11 +1,22 @@
-"use strict";
-
+import type * as z from "zod/mini";
+import type {realm_schema} from "../../src/state_data.ts";
 const {server_supported_permission_settings} = require("./example_settings.cjs");
 
-exports.make_realm = (opts = {}) => {
-    const default_realm = {
+export type Realm = z.output<typeof realm_schema>;
+
+const make_realm = (opts: Partial<Realm> = {}): Realm => {
+    const default_realm: Realm = {
         custom_profile_fields: [],
-        custom_profile_field_types: [],
+        custom_profile_field_types: {
+            SHORT_TEXT: {id: 1, name: "short_text"},
+            LONG_TEXT: {id: 2, name: "long_text"},
+            DATE: {id: 3, name: "date"},
+            SELECT: {id: 4, name: "select"},
+            URL: {id: 5, name: "url"},
+            EXTERNAL_ACCOUNT: {id: 6, name: "external_account"},
+            USER: {id: 7, name: "user"},
+            PRONOUNS: {id: 8, name: "pronouns"},
+        },
         giphy_api_key: "giphy-api-key",
         gif_rating_policy_options: {disabled: {id: 0, name: ""}},
         max_avatar_file_size_mib: 0,
@@ -31,7 +42,7 @@ exports.make_realm = (opts = {}) => {
                 unavailable_reason: "",
             },
         },
-        realm_available_video_chat_providers_default: {
+        realm_available_video_chat_providers: {
             disabled: {name: "", id: 0},
             jitsi_meet: {name: "", id: 0},
             zoom: undefined,
@@ -66,6 +77,7 @@ exports.make_realm = (opts = {}) => {
         realm_can_summarize_topics_group: 0,
         realm_create_multiuse_invite_group: 0,
         realm_date_created: 0,
+        realm_default_avatar_source: "G",
         realm_default_code_block_language: "",
         realm_default_external_accounts: {},
         realm_default_language: "",
@@ -102,6 +114,7 @@ exports.make_realm = (opts = {}) => {
         realm_message_content_delete_limit_seconds: null,
         realm_message_edit_history_visibility_policy: "all",
         realm_message_retention_days: 0,
+        realm_moderation_request_channel_id: 0,
         realm_move_messages_between_streams_limit_seconds: null,
         realm_move_messages_within_stream_limit_seconds: null,
         realm_name_changes_disabled: false,
@@ -110,6 +123,7 @@ exports.make_realm = (opts = {}) => {
         realm_night_logo_source: "",
         realm_night_logo_url: "",
         realm_org_type: 0,
+        realm_owner_full_content_access: false,
         realm_password_auth_enabled: false,
         realm_plan_type: 0,
         realm_playgrounds: [],
@@ -118,6 +132,7 @@ exports.make_realm = (opts = {}) => {
         realm_push_notifications_enabled_end_timestamp: null,
         realm_require_e2ee_push_notifications: false,
         realm_require_unique_names: false,
+        realm_send_channel_events_messages: false,
         realm_send_welcome_emails: false,
         realm_signup_announcements_stream_id: 0,
         realm_topics_policy: "allow_empty_topic",
@@ -127,6 +142,7 @@ exports.make_realm = (opts = {}) => {
         realm_waiting_period_threshold: 0,
         realm_want_advertise_in_communities_directory: false,
         realm_welcome_message_custom_text: "",
+        realm_workplace_users_group: 0,
         realm_zulip_update_announcements_stream_id: 0,
         server_avatar_changes_disabled: false,
         server_can_summarize_topics: false,
@@ -140,6 +156,7 @@ exports.make_realm = (opts = {}) => {
         server_needs_upgrade: false,
         server_presence_offline_threshold_seconds: 0,
         server_presence_ping_interval_seconds: 0,
+        server_report_message_types: [],
         server_supported_permission_settings,
         server_thumbnail_formats: [],
         server_typing_started_expiry_period_milliseconds: 0,
@@ -148,6 +165,7 @@ exports.make_realm = (opts = {}) => {
         server_web_public_streams_enabled: false,
         settings_send_digest_emails: false,
         stop_words: [],
+        tenor_api_key: "",
         upgrade_text_for_wide_organization_logo: "",
         zulip_feature_level: 0,
         zulip_merge_base: "",
@@ -159,3 +177,5 @@ exports.make_realm = (opts = {}) => {
         ...opts,
     };
 };
+
+exports.make_realm = make_realm;

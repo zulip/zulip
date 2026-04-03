@@ -6,7 +6,7 @@ const {get_final_topic_display_name} = require("../src/util.ts");
 
 const {mock_banners} = require("./lib/compose_banner.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
-const {make_realm} = require("./lib/example_realm.cjs");
+const {make_realm} = require("./lib/example_realm.cts");
 const {server_supported_permission_settings} = require("./lib/example_settings.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user, make_cross_realm_bot} = require("./lib/example_user.cjs");

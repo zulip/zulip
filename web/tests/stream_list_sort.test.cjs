@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
-const {make_realm} = require("./lib/example_realm.cjs");
+const {make_realm} = require("./lib/example_realm.cts");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {zrequire} = require("./lib/namespace.cjs");

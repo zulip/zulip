@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const events = require("./lib/events.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
-const {make_realm} = require("./lib/example_realm.cjs");
+const {make_realm} = require("./lib/example_realm.cts");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");

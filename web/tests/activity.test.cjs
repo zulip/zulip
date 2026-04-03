@@ -9,7 +9,7 @@ const {
     buddy_list_add_other_user,
     stub_buddy_list_elements,
 } = require("./lib/buddy_list.cjs");
-const {make_realm} = require("./lib/example_realm.cjs");
+const {make_realm} = require("./lib/example_realm.cts");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
