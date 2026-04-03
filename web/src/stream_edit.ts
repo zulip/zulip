@@ -462,6 +462,16 @@ export function set_up_channel_privacy_dropdown_widget(
     return channel_privacy_widget;
 }
 
+function get_push_notifications_tooltip(): string | undefined {
+    if (!realm.realm_push_notifications_enabled) {
+        return $t({defaultMessage: "Mobile push notifications are not enabled on this server."});
+    }
+    if (!current_user.is_admin) {
+        return $t({defaultMessage: "Only organization administrators can edit this setting."});
+    }
+    return undefined;
+}
+
 export function show_settings_for(node: HTMLElement): void {
     // Hide any tooltips or popovers before we rerender / change
     // currently displayed stream settings.
@@ -493,6 +503,7 @@ export function show_settings_for(node: HTMLElement): void {
         is_business_type_org:
             realm.realm_org_type === settings_config.all_org_type_values.business.code,
         is_admin: current_user.is_admin,
+        push_notifications_tooltip: get_push_notifications_tooltip(),
         org_level_message_retention_setting: get_display_text_for_realm_message_retention_setting(),
         group_setting_labels: settings_config.all_group_setting_labels.stream,
         has_billing_access: settings_data.user_has_billing_access(),
@@ -1056,8 +1067,10 @@ export function initialize(): void {
                 $subsection,
                 sub,
             );
-            if ($subsection.attr("id") === "channel-subscription-permissions") {
-                assert(sub !== undefined);
+            if (
+                $subsection.attr("id") === "channel-subscription-permissions" &&
+                sub !== undefined
+            ) {
                 stream_ui_updates.update_can_create_topic_group_on_history_public_to_subscribers_change(
                     sub,
                 );
