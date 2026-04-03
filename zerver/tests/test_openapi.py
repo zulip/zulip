@@ -1010,17 +1010,25 @@ class OpenAPIRequestValidatorTest(ZulipTestCase):
         The tests cover both cases such as catching valid requests marked
         as invalid and making sure invalid requests are marked properly
         """
+        auth_headers = {"Authorization": "Basic bW9jazptb2Nr"}
+
         # `/users/me/subscriptions` doesn't require any parameters
-        validate_request("/users/me/subscriptions", "get", {}, {}, False, "200")
+        validate_request("/users/me/subscriptions", "get", {}, auth_headers, False, "200")
         with self.assertRaises(SchemaError):
             # `/messages` POST does not work on an empty response
-            validate_request("/messages", "post", {}, {}, False, "200")
+            validate_request("/messages", "post", {}, auth_headers, False, "200")
         # 400 responses are allowed to fail validation.
-        validate_request("/messages", "post", {}, {}, False, "400")
+        validate_request("/messages", "post", {}, auth_headers, False, "400")
         # `intentionally_undocumented` allows validation errors on
         # 200 responses.
         validate_request(
-            "/dev_fetch_api_key", "post", {}, {}, False, "200", intentionally_undocumented=True
+            "/dev_fetch_api_key",
+            "post",
+            {},
+            auth_headers,
+            False,
+            "200",
+            intentionally_undocumented=True,
         )
 
 
