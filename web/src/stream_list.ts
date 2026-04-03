@@ -50,6 +50,7 @@ import {user_settings} from "./user_settings.ts";
 let pending_stream_list_rerender = false;
 let zoomed_in = false;
 let update_inbox_channel_view_callback: (channel_id: number) => void;
+let show_channel_feed_callback: (stream_id: number, trigger: string) => void;
 
 export function set_update_inbox_channel_view_callback(value: (channel_id: number) => void): void {
     update_inbox_channel_view_callback = value;
@@ -155,16 +156,17 @@ export function update_streams_sidebar_for_messages(messages: Message[]): void {
     }
 }
 
-function zoom_in(): void {
-    zoomed_in = true;
-    const stream_id = topic_list.active_stream_id();
-    assert(stream_id !== undefined);
+function zoom_in(stream_id: number): void {
+    if (narrow_state.stream_id() !== stream_id) {
+        show_channel_feed_callback(stream_id, "sidebar");
+    }
 
+    zoomed_in = true;
     $("#direct-messages-modal").toggleClass("no-display", true);
     popovers.hide_all();
     pm_list.close();
     zoom_in_topics(stream_id);
-    topic_list.zoom_in(get_stream_li(stream_id)!);
+    topic_list.zoom_in(get_stream_li(stream_id)!, stream_id);
     $("#left-sidebar").addClass("zoom-in");
     $("#left-sidebar").addClass("zoom-in-topics");
     $("#left-sidebar-modal").addClass("zoom-in-topics");
@@ -1278,7 +1280,9 @@ export function handle_narrow_activated(
 
     const $stream_li = update_stream_sidebar_for_narrow(filter);
     if ($stream_li && !change_hash && !is_zoomed_in() && show_more_topics) {
-        zoom_in();
+        const info = get_sidebar_stream_topic_info(filter);
+        assert(info.stream_id !== undefined);
+        zoom_in(info.stream_id);
     }
 
     scroll_stream_into_view();
@@ -1297,6 +1301,7 @@ export function initialize({
     update_inbox_channel_view: (channel_id: number) => void;
 }): void {
     update_inbox_channel_view_callback = update_inbox_channel_view;
+    show_channel_feed_callback = show_channel_feed;
     restore_collapsed_sections_state();
     create_initial_sidebar_rows();
 
@@ -1311,7 +1316,8 @@ export function initialize({
     set_event_handlers({show_channel_feed});
 
     $("#stream_filters").on("click", ".show-more-topics", (e) => {
-        zoom_in();
+        const stream_id = stream_id_for_elt($(e.target).parents("li.narrow-filter"));
+        zoom_in(stream_id);
         // We define the focus behavior for the topic list search box
         // outside of the `zoom_in` method, since we want the focus
         // to only happen when the user clicks on the "SHOW ALL TOPICS"
