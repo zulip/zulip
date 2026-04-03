@@ -185,3 +185,9 @@
 * [Create Constructor Groups video call](/api/create-constructor-groups-video-call)
 * [Create Nextcloud Talk video call](/api/create-nextcloud-talk-video-call)
 * [Outgoing webhook payloads](/api/outgoing-webhook-payload)
+
+#### Interactive bots
+
+* [Update bot storage](/api/update-bot-storage)
+* [Get bot storage](/api/get-bot-storage)
+* [Remove bot storage](/api/remove-bot-storage)
