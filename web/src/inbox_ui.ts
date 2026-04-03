@@ -724,7 +724,7 @@ function format_topic(
 
     return {
         ...common_context,
-        is_hidden: filter_should_hide_stream_row({stream_id, topic}),
+        is_hidden: filter_should_hide_stream_row({stream_id, topic, require_subscribed: true}),
         is_collapsed: collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id),
     };
 }
@@ -1232,7 +1232,14 @@ class InboxTopicListWidget extends topic_list.TopicListWidget {
 }
 
 function filter_topics_in_channel(channel_id: number, topics: string[]): string[] {
-    return topics.filter((topic) => !filter_should_hide_stream_row({stream_id: channel_id, topic}));
+    return topics.filter(
+        (topic) =>
+            !filter_should_hide_stream_row({
+                stream_id: channel_id,
+                topic,
+                require_subscribed: false,
+            }),
+    );
 }
 
 function render_channel_view(channel_id: number): void {
@@ -1377,12 +1384,14 @@ function filter_should_hide_dm_row({dm_key}: {dm_key: string}): boolean {
 function filter_should_hide_stream_row({
     stream_id,
     topic,
+    require_subscribed,
 }: {
     stream_id: number;
     topic: string;
+    require_subscribed: boolean;
 }): boolean {
     const sub = sub_store.get(stream_id);
-    if (!sub?.subscribed) {
+    if (!sub || (require_subscribed && !sub.subscribed)) {
         return true;
     }
 
