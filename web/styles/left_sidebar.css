@@ -2322,7 +2322,7 @@ li.topic-list-item {
     display: none;
 }
 
-#left_sidebar_scroll_container.direct-messages-hidden-by-filters,
+#left-sidebar.direct-messages-hidden-by-filters,
 .spectator-view {
     #direct-messages-section-header {
         display: none;
@@ -2362,7 +2362,9 @@ li.topic-list-item {
 }
 
 /* The two modals have different top paddings */
-#left-sidebar.zoom-in-conversations #left-sidebar-modal {
+#left-sidebar.zoom-in-conversations #left-sidebar-modal,
+#left-sidebar.direct-messages-hidden-by-filters #left-sidebar-modal,
+.spectator-view #left-sidebar-modal {
     .left-sidebar-modal-close-area {
         padding-top: var(--left-sidebar-modal-close-area-padding-top);
     }
@@ -2388,9 +2390,11 @@ li.topic-list-item {
     }
 }
 
-/* The topic menu leaves space to see the DM section by padding the sidebar
-   row height to the close section's upper padding. */
-#left-sidebar.zoom-in-topics #left-sidebar-modal {
+/* The topic menu leaves space to see the DM section (if it's visible) by
+   padding the sidebar row height to the close section's upper padding. */
+body:not(.spectator-view)
+    #left-sidebar:not(.direct-messages-hidden-by-filters).zoom-in-topics
+    #left-sidebar-modal {
     .left-sidebar-modal-close-area {
         padding-top: calc(
             var(--left-sidebar-modal-close-area-padding-top) +
@@ -2417,22 +2421,6 @@ li.topic-list-item {
             0 -0.2em 0.75em 0 var(--color-left-sidebar-inner-box-shadow),
             0 -2.5em 1em 0 var(--color-left-sidebar-middle-box-shadow-hover),
             0 -5.5em 1em 0 var(--color-left-sidebar-outer-box-shadow-hover);
-    }
-}
-
-/* For spectators, the topic menu has no DM section to leave space
-   for, so the padding-top and content height set above are adjusted. */
-.spectator-view #left-sidebar.zoom-in-topics #left-sidebar-modal {
-    .left-sidebar-modal-close-area {
-        padding-top: var(--left-sidebar-modal-close-area-padding-top);
-    }
-
-    #left-sidebar-modal-content {
-        height: calc(
-            100dvh - var(--navbar-fixed-height) -
-                var(--left-sidebar-modal-close-area-padding-top) -
-                var(--left-sidebar-modal-close-area-height)
-        );
     }
 }
 

@@ -379,11 +379,6 @@ function initialize_stream_data() {
     stream_list.build_stream_list();
 }
 
-test_ui("zoom_in_and_zoom_out", () => {
-    // TODO(evy): write new tests for this, if we want, though it would involve a lot of
-    // jquery wrangling.
-});
-
 test_ui("narrowing", ({override_rewire}) => {
     topic_list.close = noop;
     topic_list.rebuild_left_sidebar = noop;
