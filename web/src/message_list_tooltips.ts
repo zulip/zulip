@@ -439,10 +439,9 @@ export function initialize(): void {
             }
             let edited_time_string = "";
             let moved_time_string = "";
-            if (message_container.edited) {
-                // We know the message has been edited, so we either have a timestamp
-                // from the server or from a local edit.
-                assert(message_container.last_edit_timestamp !== undefined);
+            if (message_container.edited && message_container.last_edit_timestamp !== undefined) {
+                // Poll widget edits are not server-processed text edits, so
+                // there may be no timestamp when only widget edits are present.
                 edited_time_string = get_time_string(message_container.last_edit_timestamp);
             }
             if (message_container.moved) {
@@ -451,9 +450,13 @@ export function initialize(): void {
                 assert(message_container.last_moved_timestamp !== undefined);
                 moved_time_string = get_time_string(message_container.last_moved_timestamp);
             }
+            // We only show the edit history if there are server-tracked text edits or moves.
+            // Widget-only edits (which have no standard server edit history) will have
+            // `last_edit_timestamp` as undefined and `moved` as false.
             const edit_history_access =
+                (message_container.last_edit_timestamp !== undefined || message_container.moved) &&
                 realm.realm_message_edit_history_visibility_policy ===
-                message_edit_history_visibility_policy_values.always.code;
+                    message_edit_history_visibility_policy_values.always.code;
             const message_moved_and_move_history_access =
                 realm.realm_message_edit_history_visibility_policy ===
                     message_edit_history_visibility_policy_values.moves_only.code &&
@@ -463,6 +466,7 @@ export function initialize(): void {
                     render_message_edit_notice_tooltip({
                         moved: message_container.moved,
                         edited: message_container.edited,
+                        widget_edited: message_container.widget_edited,
                         edited_time_string,
                         moved_time_string,
                         edit_history_access,

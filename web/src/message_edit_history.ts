@@ -23,6 +23,7 @@ import {realm} from "./state_data.ts";
 import {get_recipient_bar_color} from "./stream_color.ts";
 import {get_color} from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
+import * as submessage from "./submessage.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
@@ -393,6 +394,18 @@ export function initialize(): void {
 
             if (page_params.is_spectator) {
                 spectators.login_to_access();
+                return;
+            }
+
+            // Poll messages can show an EDITED marker for widget edits
+            // (question changes, new options) that have no server-side
+            // edit history. Skip the overlay when the message has no
+            // text edits or moves to display.
+            if (
+                submessage.is_poll_message(message) &&
+                message.last_edit_timestamp === undefined &&
+                message.last_moved_timestamp === undefined
+            ) {
                 return;
             }
 

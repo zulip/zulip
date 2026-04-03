@@ -216,6 +216,9 @@ export type Message = (
     // Added during message rendering in message_list_view.ts. Should
     // never be accessed outside rendering, as the value may be stale.
     reminders?: TimeFormattedReminder[] | undefined;
+
+    // Cache for whether the message has widget edits (e.g. poll question changes).
+    has_widget_edits?: boolean;
 } & (
         | {
               type: "private";
