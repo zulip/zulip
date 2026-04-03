@@ -17,7 +17,6 @@ import * as blueslip from "./blueslip.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
-import * as compose_ui from "./compose_ui.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as message_store from "./message_store.ts";
@@ -752,7 +751,7 @@ function show_stream_wildcard_warnings(opts: StreamWildcardOptions): void {
         compose_banner.update_or_append_banner(
             $(stream_wildcard_html),
             classname,
-            opts.$banner_container,
+            $("#compose_banners"),
         );
     }
 
@@ -835,6 +834,26 @@ function user_can_mention_many_users(): boolean {
 }
 
 export function stream_wildcard_mention_allowed(): boolean {
+    const stream_id = compose_state.stream_id();
+
+    if (stream_id === undefined) {
+        return true;
+    }
+
+    const stream = stream_data.get_sub_by_id(stream_id);
+    const wildcard_policy = stream?.wildcard_mention_policy ?? 1;
+
+    // policy 0 → completely disable
+    if (wildcard_policy === 0) {
+        return false;
+    }
+
+    // policy 2 → allow freely
+    if (wildcard_policy === 2) {
+        return true;
+    }
+
+    // policy 1 → use existing Zulip behavior
     return !is_recipient_large_stream() || user_can_mention_many_users();
 }
 
@@ -848,12 +867,9 @@ export function set_wildcard_mention_threshold(value: number): void {
 
 export function validate_stream_message_mentions(opts: StreamWildcardOptions): boolean {
     const subscriber_count = peer_data.get_subscriber_count(opts.stream_id) || 0;
-
-    // If the user is attempting to do a wildcard mention in a large
-    // stream, check if they permission to do so. If yes, warn them
-    // if they haven't acknowledged the wildcard warning yet.
-    if (opts.stream_wildcard_mention !== null && subscriber_count > wildcard_mention_threshold) {
-        if (!user_can_mention_many_users()) {
+    // Default to EVERYONE (1) if policy not set
+    if (opts.stream_wildcard_mention) {
+        if (!stream_wildcard_mention_allowed()) {
             const new_row_html = render_wildcard_mention_not_allowed_error({
                 banner_type: compose_banner.ERROR,
                 classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
@@ -863,28 +879,18 @@ export function validate_stream_message_mentions(opts: StreamWildcardOptions): b
                 $(new_row_html),
                 opts.$banner_container,
             );
-            if (is_validating_compose_box) {
-                disabled_send_tooltip_message_html = WILDCARD_MENTION_ERROR_TOOLTIP_MESSAGE;
-            }
             return false;
         }
 
-        if (!user_acknowledged_stream_wildcard) {
+        if (subscriber_count > wildcard_mention_threshold && !user_acknowledged_stream_wildcard) {
             show_stream_wildcard_warnings(opts);
-            compose_ui.hide_compose_spinner();
-            if (is_validating_compose_box) {
-                disabled_send_tooltip_message_html =
-                    CHANNEL_WILDCARD_ACKNOWLEDGE_MISSING_ERROR_TOOLTIP_MESSAGE;
-            }
             return false;
         }
     } else {
-        // the message no longer contains @all or @everyone
         clear_stream_wildcard_warnings(opts.$banner_container);
     }
-    // at this point, the user has either acknowledged the warning or removed @all / @everyone
-    user_acknowledged_stream_wildcard = false;
 
+    user_acknowledged_stream_wildcard = false;
     return true;
 }
 
@@ -985,9 +991,15 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
         }
     }
 
-    const stream_wildcard_mention = util.find_stream_wildcard_mentions(
-        compose_state.message_content(),
-    );
+    const content = compose_state.message_content();
+
+    const stream_wildcard_mention =
+        content.includes("@**all**") ||
+        content.includes("@**everyone**") ||
+        content.includes("@**stream**") ||
+        content.includes("@**channel**")
+            ? "all"
+            : null;
 
     if (
         !validate_stream_message_mentions({

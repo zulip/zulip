@@ -65,6 +65,18 @@
         </select>
         {{> topics_already_exist_error .}}
     </div>
+    <div class="input-group">
+        <label for="{{prefix}}wildcard_mention_policy" class="settings-field-label">
+            {{t "Wildcard mention policy"}}
+        </label>
+        <select
+          id="{{prefix}}wildcard_mention_policy"
+          name="wildcard_mention_policy"
+          class="prop-element settings_select"
+          data-setting-widget-type="number">
+            {{> ../settings/dropdown_options_widget option_values=(object_values wildcard_mention_policy_values)}}
+        </select>
+    </div>
 </div>
 
 <div id="channel-moderation-permissions" class="settings-subsection-parent">

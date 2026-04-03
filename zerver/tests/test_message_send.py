@@ -77,7 +77,7 @@ from zerver.models import (
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import RealmTopicsPolicyEnum, get_realm
+from zerver.models.realms import RealmTopicsPolicyEnum, WildcardMentionPolicyEnum, get_realm
 from zerver.models.recipients import get_direct_message_group, get_or_create_direct_message_group
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import (
@@ -2345,6 +2345,31 @@ class StreamMessagesTest(ZulipTestCase):
         # Shiva is not in the anonymous user group.
         self.send_and_verify_stream_wildcard_mention_message("shiva", test_fails=True)
         self.send_and_verify_stream_wildcard_mention_message("shiva", sub_count=10)
+
+        # Test stream-level wildcard_mention_policy overrides realm setting.
+        stream = get_stream(stream_name, realm)
+
+        # Set stream wildcard_mention_policy to EVERYONE.
+        stream.wildcard_mention_policy = WildcardMentionPolicyEnum.EVERYONE
+        stream.save(update_fields=["wildcard_mention_policy"])
+        self.send_and_verify_stream_wildcard_mention_message("polonius")
+
+        # Set stream wildcard_mention_policy to ADMINS.
+        stream.wildcard_mention_policy = WildcardMentionPolicyEnum.ADMINS
+        stream.save(update_fields=["wildcard_mention_policy"])
+        self.send_and_verify_stream_wildcard_mention_message("polonius", test_fails=True)
+        self.send_and_verify_stream_wildcard_mention_message("iago")
+
+        # Set stream wildcard_mention_policy to MODERATORS.
+        stream.wildcard_mention_policy = WildcardMentionPolicyEnum.MODERATORS
+        stream.save(update_fields=["wildcard_mention_policy"])
+        self.send_and_verify_stream_wildcard_mention_message("cordelia", test_fails=True)
+        self.send_and_verify_stream_wildcard_mention_message("shiva")
+
+        # Set stream wildcard_mention_policy to NOBODY.
+        stream.wildcard_mention_policy = WildcardMentionPolicyEnum.NOBODY
+        stream.save(update_fields=["wildcard_mention_policy"])
+        self.send_and_verify_stream_wildcard_mention_message("iago", test_fails=True)
 
     def test_topic_wildcard_mentioned_flag(self) -> None:
         # For topic wildcard mentions, the 'topic_wildcard_mentioned' flag should be

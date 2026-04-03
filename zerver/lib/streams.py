@@ -1882,6 +1882,7 @@ def stream_to_dict(
         stream_weekly_traffic=stream_weekly_traffic,
         subscriber_count=stream.subscriber_count,
         topics_policy=StreamTopicsPolicyEnum(stream.topics_policy).name,
+        wildcard_mention_policy=stream.wildcard_mention_policy,
     )
 
 

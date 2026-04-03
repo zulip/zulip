@@ -489,6 +489,13 @@ export function update_topics_policy_setting(
     sub.topics_policy = topics_policy;
 }
 
+export function update_wildcard_mention_policy_setting(
+    sub: StreamSubscription,
+    wildcard_mention_policy: number,
+): void {
+    sub.wildcard_mention_policy = wildcard_mention_policy;
+}
+
 export function update_stream_permission_group_setting(
     setting_name: StreamPermissionGroupSetting,
     sub: StreamSubscription,
@@ -1171,7 +1178,6 @@ export function create_sub_from_server_data(
 
     // Omit properties not used for the sub object
     const {subscribers, subscriber_count, partial_subscribers, ...attrs} = server_attrs;
-
     assert(server_attrs.subscriber_count !== undefined);
     peer_data.set_subscriber_count(server_attrs.stream_id, server_attrs.subscriber_count);
 
@@ -1305,7 +1311,6 @@ export function initialize(params: StateData["stream_data"]): void {
         We only use it in this function to populate other
         data structures.
     */
-
     const subscriptions = params.subscriptions;
     const unsubscribed = params.unsubscribed;
     const never_subscribed = params.never_subscribed;
