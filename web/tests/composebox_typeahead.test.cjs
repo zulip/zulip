@@ -38,6 +38,18 @@ const compose_validate = mock_esm("../src/compose_validate", {
     initialize: noop,
 });
 const input_pill = mock_esm("../src/input_pill");
+const message_util = mock_esm("../src/message_util", {
+    // Override is_known_empty in tests to control the
+    // "known empty conversation" permission path.
+    is_known_empty: () => false,
+    user_can_send_direct_message(user_ids_string) {
+        return (
+            (!message_util.is_known_empty(user_ids_string) ||
+                people.user_can_initiate_direct_message_thread(user_ids_string)) &&
+            people.user_can_direct_message(user_ids_string)
+        );
+    },
+});
 const message_user_ids = mock_esm("../src/message_user_ids", {
     user_ids: () => [],
 });
@@ -569,6 +581,26 @@ const full_members = user_group_item(
     }),
 );
 
+const nobody = user_group_item(
+    make_user_group({
+        name: "role:nobody",
+        id: 8,
+        creator_id: null,
+        date_created: 1596710000,
+        description: "Nobody",
+        members: new Set(),
+        is_system_group: true,
+        direct_subgroup_ids: new Set(),
+        can_add_members_group: 2,
+        can_join_group: 2,
+        can_leave_group: 2,
+        can_manage_group: 2,
+        can_mention_group: 2,
+        can_remove_members_group: 2,
+        deactivated: false,
+    }),
+);
+
 const sweden_stream = stream_item(
     make_stream({
         name: "Sweden",
@@ -681,6 +713,7 @@ function test(label, f) {
             server_supported_permission_settings,
         );
         helpers.override(realm, "realm_can_access_all_users_group", members.id);
+        helpers.override(realm, "realm_direct_message_permission_group", members.id);
 
         people.add_active_user(ali);
         people.add_active_user(alice);
@@ -706,6 +739,7 @@ function test(label, f) {
         user_groups.add(admins);
         user_groups.add(members);
         user_groups.add(full_members);
+        user_groups.add(nobody);
 
         muted_users.set_muted_users([]);
 
@@ -1849,6 +1883,237 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     assert.ok(topic_typeahead_called);
     assert.ok(pm_recipient_typeahead_called);
     assert.ok(compose_textarea_typeahead_called);
+});
+
+test("get_person_suggestion_for_topic_typeahead excludes deactivated users", ({override}) => {
+    override(pm_conversations, "get_partners", () => []);
+
+    // Deactivated user from participants should be excluded.
+    message_lists.current = {
+        data: {
+            participants: {
+                visible: () => new Set([deactivated_user.user_id]),
+            },
+        },
+    };
+    assert.deepEqual(ct.get_person_suggestion_for_topic_typeahead("deactivated"), []);
+
+    // Deactivated user from DM partners should be excluded.
+    message_lists.current = undefined;
+    override(pm_conversations, "get_partners", () => [deactivated_user.user_id]);
+    assert.deepEqual(ct.get_person_suggestion_for_topic_typeahead("deactivated"), []);
+
+    // Active user from DM partners should be included.
+    override(pm_conversations, "get_partners", () => [lear.user_id]);
+    const results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.ok(results[0].user.user_id === lear.user_id);
+});
+
+test("get_person_suggestion_for_topic_typeahead respects DM permissions", ({override}) => {
+    $("#private_message_recipient").set_parent($.create("pm-recipient-container"));
+
+    let pill_items = [];
+
+    override(input_pill, "create", () => ({
+        clear() {
+            pill_items = [];
+        },
+        clear_text() {},
+        items: () => pill_items,
+        onPillCreate() {},
+        onPillRemove() {},
+        appendValidatedData(item) {
+            pill_items.push(item);
+        },
+    }));
+
+    compose_pm_pill.initialize({on_pill_create_or_remove: noop});
+
+    function set_visible_participants(user_ids) {
+        message_lists.current = {
+            data: {
+                participants: {
+                    visible: () => new Set(user_ids),
+                },
+            },
+        };
+    }
+    // Set message history to empty
+    override(pm_conversations, "get_partners", () => []);
+    override(message_util, "is_known_empty", () => true);
+
+    // Bot suggestion doesn't show up if there is no past conversation.
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+    override(realm, "realm_direct_message_initiator_group", nobody.id);
+    let results = ct.get_person_suggestion_for_topic_typeahead("notification");
+    assert.deepEqual(results, []);
+
+    // Don't show suggestion when sender/recipient is in direct_message_permission_group
+    // but the sender isn't in initiator group.
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [lear.user_id, hamlet.user_id],
+        direct_subgroups: [],
+    });
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.deepEqual(results, []);
+
+    set_visible_participants([lear.user_id]);
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.deepEqual(results, []);
+
+    // When no conversation history exists between the sender and recipient,
+    // we show the suggestion if the recipient is visible in the current narrow’s
+    // participants and either the sender or recipient is in the
+    // direct_message_permission_group, and the sender is also in the initiator group.
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [lear.user_id],
+        direct_subgroups: [],
+    });
+    override(realm, "realm_direct_message_initiator_group", {
+        direct_members: [hamlet.user_id],
+        direct_subgroups: [],
+    });
+    set_visible_participants([]);
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.deepEqual(results, []);
+
+    // Set current narrow participant
+    set_visible_participants([lear.user_id]);
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.equal(results[0].user.user_id, lear.user_id);
+
+    // We don't show suggestion when sender doesn't have initiator
+    // permission when past conversation doesn't exist.
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [hamlet.user_id],
+        direct_subgroups: [],
+    });
+    override(realm, "realm_direct_message_initiator_group", nobody.id);
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.deepEqual(results, []);
+
+    // We dont show suggestion if the sender doesn't have initiator permission
+    // even if recipient is in permission group
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [lear.user_id],
+        direct_subgroups: [],
+    });
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.deepEqual(results, []);
+
+    // Don't show suggestion if direct message is disabled.
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+    override(realm, "realm_direct_message_initiator_group", {
+        direct_members: [hamlet.user_id, lear.user_id],
+        direct_subgroups: [],
+    });
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.deepEqual(results, []);
+
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [cordelia.user_id],
+        direct_subgroups: [],
+    });
+
+    // Without cordelia in recipients, there is no permitted user in the
+    // conversation, so they should not appear.
+    compose_state.set_private_message_recipient_ids([]);
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.deepEqual(results, []);
+
+    // With cordelia already in the recipient list, the combined recipient set
+    // includes a permitted user, so lear should now appear.
+    compose_state.set_private_message_recipient_ids([cordelia.user_id]);
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.equal(results[0].user.user_id, lear.user_id);
+
+    override(realm, "realm_direct_message_initiator_group", nobody.id);
+
+    // Sender doesn't have initiator permission even though already added
+    // recipient is in direct_message_permission_group
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.deepEqual(results, []);
+
+    compose_state.set_private_message_recipient_ids([]);
+
+    // Set message history
+    override(pm_conversations, "get_partners", () => [notification_bot.user_id, lear.user_id]);
+    override(message_util, "is_known_empty", () => false);
+
+    // Suggestion for bot always show up even if direct message is disabled,
+    // considering past conversation exists.
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+    override(realm, "realm_direct_message_initiator_group", nobody.id);
+    results = ct.get_person_suggestion_for_topic_typeahead("notification");
+    assert.equal(results[0].user.user_id, notification_bot.user_id);
+
+    // Show suggestion when both sender and recipient has permission, and
+    // past conversation exists
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [hamlet.user_id, lear.user_id],
+        direct_subgroups: [],
+    });
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.equal(results[0].user.user_id, lear.user_id);
+
+    // Sender in initiator group, recipient in permission group, show suggestion
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [lear.user_id],
+        direct_subgroups: [],
+    });
+    override(realm, "realm_direct_message_initiator_group", {
+        direct_members: [hamlet.user_id],
+        direct_subgroups: [],
+    });
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.equal(results[0].user.user_id, lear.user_id);
+
+    // Show suggestion when sender has permission and past conversation exists
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [hamlet.user_id],
+        direct_subgroups: [],
+    });
+    override(realm, "realm_direct_message_initiator_group", nobody.id);
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.equal(results[0].user.user_id, lear.user_id);
+
+    // Show suggestion when recipient has permission and past conversation exists
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [lear.user_id],
+        direct_subgroups: [],
+    });
+    override(realm, "realm_direct_message_initiator_group", nobody.id);
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.equal(results[0].user.user_id, lear.user_id);
+
+    // No suggestion when direct message is disabled
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+    override(realm, "realm_direct_message_initiator_group", {
+        direct_members: [hamlet.user_id, lear.user_id],
+        direct_subgroups: [],
+    });
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.deepEqual(results, []);
+
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [cordelia.user_id],
+        direct_subgroups: [],
+    });
+    override(realm, "realm_direct_message_initiator_group", nobody.id);
+
+    // Without cordelia in recipients, there is no permitted user in the
+    // conversation, so they should not appear.
+    compose_state.set_private_message_recipient_ids([]);
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.deepEqual(results, []);
+
+    // With cordelia already in the recipient list, the combined recipient set
+    // includes a permitted user, so lear should now appear.
+    compose_state.set_private_message_recipient_ids([cordelia.user_id]);
+    results = ct.get_person_suggestion_for_topic_typeahead("lear");
+    assert.equal(results[0].user.user_id, lear.user_id);
+
+    compose_state.set_private_message_recipient_ids([]);
 });
 
 test("begins_typeahead", ({override, override_rewire}) => {
