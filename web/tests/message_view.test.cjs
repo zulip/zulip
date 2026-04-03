@@ -663,6 +663,15 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
             "translated: You are not allowed to view messages in this private channel.",
         ),
     );
+    const channels_operands = ["archived", "public", "web-public"];
+    for (const operand of channels_operands) {
+        current_filter = set_filter([["channels", operand]]);
+        narrow_banner.show_empty_narrow_message(current_filter);
+        assert.equal(
+            $(".empty_feed_notice_main").html(),
+            empty_narrow_html("translated: There are no messages here."),
+        );
+    }
 });
 
 run_test("show_empty_narrow_message_with_search", ({mock_template, override}) => {
