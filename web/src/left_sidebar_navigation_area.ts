@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import * as drafts from "./drafts.ts";
 import type {Filter} from "./filter.ts";
@@ -14,10 +15,13 @@ import * as settings_config from "./settings_config.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
+import {user_settings} from "./user_settings.ts";
 
 let last_mention_count = 0;
 const ls_key = "left_sidebar_views_state";
 const ls = localstorage();
+
+let views_section_pinned = true;
 
 const STATES = {
     EXPANDED: "expanded",
@@ -158,6 +162,37 @@ export function collapse_views($views_label_container: JQuery, $views_label_icon
     $views_label_icon.removeClass("rotate-icon-down");
 }
 
+export function views_section_pinned_state(): boolean {
+    return views_section_pinned;
+}
+
+export function set_views_section_pinned(pin_state: boolean): void {
+    const $left_sidebar = $("#left-sidebar-navigation-area");
+    const $views_label_icon = $("#toggle-top-left-navigation-area-icon");
+
+    views_section_pinned = pin_state;
+
+    const scroll_position =
+        $("#left_sidebar_scroll_container .simplebar-content-wrapper").scrollTop() ?? 0;
+    const filters_container_height = $(".left-sidebar-navigation-list").height() ?? 0;
+
+    if (pin_state) {
+        $left_sidebar.addClass("pinned");
+        const height = $left_sidebar.outerHeight(true);
+        assert(height !== undefined);
+        $(":root").css("--views-section-height", `${height}px`);
+        force_expand_views();
+    } else if (scroll_position > filters_container_height) {
+        $left_sidebar.removeClass("pinned");
+        $(":root").css("--views-section-height", "");
+        $views_label_icon.addClass("rotate-icon-right");
+        $views_label_icon.removeClass("rotate-icon-down");
+    } else {
+        $left_sidebar.removeClass("pinned");
+        $(":root").css("--views-section-height", "");
+    }
+}
+
 export function force_expand_views(): void {
     if (page_params.is_spectator) {
         // We don't support collapsing VIEWS for spectators, so exit early.
@@ -171,6 +206,13 @@ export function force_expand_views(): void {
         expand_views($views_label_container, $views_label_icon);
         save_state(STATES.EXPANDED);
         resize.resize_stream_filters_container();
+
+        if (views_section_pinned) {
+            const $left_sidebar = $("#left-sidebar-navigation-area");
+            const height = $left_sidebar.outerHeight(true);
+            assert(height !== undefined);
+            $(":root").css("--views-section-height", `${height}px`);
+        }
     }
 }
 
@@ -187,6 +229,13 @@ export function force_collapse_views(): void {
         collapse_views($views_label_container, $views_label_icon);
         save_state(STATES.CONDENSED);
         resize.resize_stream_filters_container();
+
+        if (views_section_pinned) {
+            const $left_sidebar = $("#left-sidebar-navigation-area");
+            const height = $left_sidebar.outerHeight(true);
+            assert(height !== undefined);
+            $(":root").css("--views-section-height", `${height}px`);
+        }
     }
 }
 
@@ -302,10 +351,19 @@ export function get_built_in_primary_condensed_views(): navigation_views.BuiltIn
     // TODO: Think about filtering out scheduled message and reminders views with UI to support less than 5 views.
 }
 
-export function get_built_in_popover_condensed_views(): navigation_views.BuiltInViewMetadata[] {
+export function get_built_in_popover_condensed_views(opts?: {
+    is_expanded?: boolean;
+}): navigation_views.BuiltInViewMetadata[] {
+    const {is_expanded = false} = opts ?? {};
     const visible_condensed_views = get_built_in_primary_condensed_views();
     const all_views = navigation_views.get_built_in_views();
     return all_views.filter((view) => {
+        if (
+            is_expanded &&
+            (view.fragment === "drafts" || view.fragment === "narrow/has/reaction/sender/me")
+        ) {
+            return false;
+        }
         if (view.fragment === "scheduled") {
             const scheduled_message_count = scheduled_messages.get_count();
             if (scheduled_message_count === 0) {
@@ -349,4 +407,13 @@ export function initialize(): void {
             toggle_condensed_navigation_area();
         },
     );
+
+    if (
+        user_settings.pin_views_section ===
+        settings_config.pin_left_sidebar_views_section_values.scroll_down.code
+    ) {
+        set_views_section_pinned(false);
+    } else {
+        set_views_section_pinned(true);
+    }
 }

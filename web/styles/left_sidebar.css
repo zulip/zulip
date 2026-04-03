@@ -386,6 +386,37 @@
         var(--left-sidebar-vdots-width);
 }
 
+.left-sidebar-navigation-area {
+    &.pinned {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background-color: var(--color-background);
+    }
+}
+
+.left-sidebar-navigation-area.pinned ~ #direct-messages-section-header {
+    top: var(--views-section-height, 0);
+}
+
+.left-sidebar-navigation-area.pinned
+    ~ #direct-messages-section-header
+    ~ .direct-message-section-bottom-divider-container {
+    top: calc(var(--views-section-height, 0) + 22.46px);
+}
+
+.left-sidebar-navigation-area.pinned
+    ~ #direct-messages-section-header
+    ~ .direct-message-section-bottom-divider-container
+    ~ #streams_list
+    .stream-list-section-container
+    .stream-list-subsection-header {
+    top: calc(
+        var(--views-section-height, 0) + 22.46px + 1.5px + 2 *
+            var(--left-sidebar-direct-messages-bottom-divider-padding)
+    );
+}
+
 .spectator-view #left-sidebar-search {
     grid-template-columns: minmax(0, 1fr);
 }
@@ -1314,6 +1345,12 @@ li.active-sub-filter {
             white-space: nowrap;
         }
     }
+
+    &.pinned {
+        position: sticky;
+        top: 22.46px;
+        background-color: var(--color-background);
+    }
 }
 
 /* Don't show unread counts on views... */
@@ -1577,6 +1614,10 @@ li.active-sub-filter {
 }
 
 #views-label-container {
+    position: sticky;
+    top: 0;
+    background-color: var(--color-background);
+    z-index: 3;
     margin-right: var(--left-sidebar-right-margin);
     grid-template-columns:
         0 var(--left-sidebar-header-icon-toggle-width) 0 minmax(0, 0.5fr)
@@ -1618,6 +1659,12 @@ li.active-sub-filter {
         grid-area: markers-and-unreads;
     }
 
+    &.showing-expanded-navigation:hover {
+        .left-sidebar-navigation-menu-icon {
+            display: flex;
+        }
+    }
+
     .left-sidebar-navigation-menu-icon {
         grid-area: ending-anchor-element;
         /* Horizontally center vdots. */
@@ -1651,8 +1698,7 @@ li.active-sub-filter {
 .left-sidebar:not(.zoom-in) #views-label-container.showing-expanded-navigation {
     /* When the expanded navigation is visible,
         hide the condensed navigation's controls. */
-    #left-sidebar-navigation-list-condensed,
-    .left-sidebar-navigation-menu-icon {
+    #left-sidebar-navigation-list-condensed {
         display: none;
     }
     /* Give the sidebar title through the end of the markers
