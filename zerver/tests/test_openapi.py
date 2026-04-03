@@ -222,8 +222,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/default_stream_groups/create",
         "/default_stream_groups/{group_id}",
         "/default_stream_groups/{group_id}/streams",
-        #### These personal settings endpoints have modest value to document:
-        "/users/me/avatar",
         # Much more valuable would be an org admin bulk-upload feature.
         "/users/me/profile_data",
         #### Should be documented as part of interactive bots documentation
