@@ -599,6 +599,7 @@ export const realm_schema = z.object({
     server_max_deactivated_realm_deletion_days: z.nullable(z.number()),
     server_min_deactivated_realm_deletion_days: z.nullable(z.number()),
     server_jitsi_server_url: z.nullable(z.string()),
+    server_jitsi_app_id: z.nullable(z.string()),
     server_name_changes_disabled: z.boolean(),
     server_needs_upgrade: z.boolean(),
     server_presence_offline_threshold_seconds: z.number(),

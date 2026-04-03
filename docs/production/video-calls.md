@@ -33,6 +33,26 @@ server [in organization
 settings](https://zulip.com/help/configure-call-provider#use-a-self-hosted-instance-of-jitsi-meet).
 No server configuration changes are required.
 
+### JWT authentication
+
+Self-hosted Jitsi Meet servers can be configured to require JWT tokens for
+authentication. When configured, Zulip generates a signed token for each user
+when they join a call. The token sets the user's `affiliation` to `owner` for
+the call creator (granting moderator privileges) and `member` for all other
+participants.
+
+To enable this, your Jitsi Meet server must first be [configured to require
+JWT tokens](https://jitsi.github.io/handbook/docs/devops-guide/devops-guide-docker/#authentication-using-jwt-tokens). Then configure your Zulip server:
+
+1. In `/etc/zulip/zulip-secrets.conf`, set `jitsi_server_app_id` to the
+   app ID configured on your Jitsi server.
+
+1. In `/etc/zulip/zulip-secrets.conf`, set `jitsi_server_app_secret` to the
+   secret configured on your Jitsi server.
+
+1. Restart the Zulip server with
+   `/home/zulip/deployments/current/scripts/restart-server`.
+
 ## Zoom
 
 To use a [Zoom](https://zoom.us) integration on a self-hosted

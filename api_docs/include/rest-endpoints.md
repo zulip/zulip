@@ -181,6 +181,7 @@
 * [Remove an APNs device token](/api/remove-apns-token)
 * [Add an FCM registration token](/api/add-fcm-token)
 * [Remove an FCM registration token](/api/remove-fcm-token)
+* [Create Jitsi Meet video call](/api/create-jitsi-video-call)
 * [Create BigBlueButton video call](/api/create-big-blue-button-video-call)
 * [Create Constructor Groups video call](/api/create-constructor-groups-video-call)
 * [Create Nextcloud Talk video call](/api/create-nextcloud-talk-video-call)
