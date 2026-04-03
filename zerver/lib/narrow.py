@@ -891,110 +891,6 @@ def can_narrow_define_conversation(narrow: list[NarrowParameter]) -> bool:
     return False
 
 
-def update_narrow_terms_containing_empty_topic_fallback_name(
-    narrow: list[NarrowParameter] | None,
-) -> list[NarrowParameter] | None:
-    if narrow is None:
-        return narrow
-
-    for term in narrow:
-        if term.operator == "topic":
-            term.operand = maybe_rename_general_chat_to_empty_topic(term.operand)
-            break
-
-    return narrow
-
-
-# This function implements the core logic of the `with` operator,
-# which is designed to support permanent links to a topic that
-# robustly function if the topic is moved.
-#
-# The with operator accepts a message ID as an operand. If the
-# message ID does not exist or is otherwise not accessible to the
-# current user, then if the remaining narrow terms can point to
-# a conversation then the narrow corresponding to it is returned.
-# If the remaining terms can not point to a particular conversation,
-# then a BadNarrowOperatorError is raised.
-#
-# Otherwise, the narrow terms are mutated to remove any
-# channel/topic/dm operators, replacing them with the appropriate
-# operators for the conversation view containing the targeted message.
-def update_narrow_terms_containing_with_operator(
-    realm: Realm,
-    maybe_user_profile: UserProfile | AnonymousUser,
-    narrow: list[NarrowParameter] | None,
-) -> list[NarrowParameter] | None:
-    if narrow is None:
-        return narrow
-
-    with_operator_terms = list(filter(lambda term: term.operator == "with", narrow))
-    can_user_access_target_message = True
-
-    if len(with_operator_terms) > 1:
-        raise InvalidOperatorCombinationError(_("Duplicate 'with' operators."))
-    elif len(with_operator_terms) == 0:
-        return narrow
-
-    with_term = with_operator_terms[0]
-    narrow.remove(with_term)
-    try:
-        message_id = int(with_term.operand)
-    except ValueError:
-        # TODO: This probably should be handled earlier.
-        raise BadNarrowOperatorError(_("Invalid 'with' operator"))
-
-    if maybe_user_profile.is_authenticated:
-        try:
-            message = access_message(maybe_user_profile, message_id, is_modifying_message=False)
-        except JsonableError:
-            can_user_access_target_message = False
-    else:
-        try:
-            message = access_web_public_message(realm, message_id)
-        except MissingAuthenticationError:
-            can_user_access_target_message = False
-
-    # If the user can not access the target message we fall back to the
-    # conversation specified by those other operators if they're enough
-    # to specify a single conversation.
-    # Else, we raise a BadNarrowOperatorError.
-    if not can_user_access_target_message:
-        if can_narrow_define_conversation(narrow):
-            return narrow
-        else:
-            raise BadNarrowOperatorError(_("Invalid 'with' operator"))
-
-    # TODO: It would be better if the legacy names here are canonicalized
-    # while building a NarrowParameter.
-    filtered_terms = [
-        term
-        for term in narrow
-        if term.operator not in ["stream", "channel", "topic", "dm", "pm-with"]
-    ]
-
-    if message.recipient.type == Recipient.STREAM:
-        channel_id = message.recipient.type_id
-        topic = message.topic_name()
-        channel_conversation_terms = [
-            NarrowParameter(operator="channel", operand=channel_id),
-            NarrowParameter(operator="topic", operand=topic),
-        ]
-        return channel_conversation_terms + filtered_terms
-
-    elif message.recipient.type == Recipient.PERSONAL:
-        dm_conversation_terms = [
-            NarrowParameter(operator="dm", operand=[message.recipient.type_id])
-        ]
-        return dm_conversation_terms + filtered_terms
-
-    elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-        huddle_user_ids = list(get_direct_message_group_user_ids(message.recipient))
-        dm_conversation_terms = [NarrowParameter(operator="dm", operand=huddle_user_ids)]
-        return dm_conversation_terms + filtered_terms
-
-    raise AssertionError("Invalid recipient type")
-
-
 def exclude_muting_conditions(
     user_profile: UserProfile, narrow: list[NarrowParameter] | None
 ) -> list[ClauseElement]:
@@ -1488,8 +1384,116 @@ def clean_narrow_for_message_fetch(
     realm: Realm,
     maybe_user_profile: UserProfile | AnonymousUser,
 ) -> list[NarrowParameter] | None:
-    narrow = update_narrow_terms_containing_empty_topic_fallback_name(narrow)
-    narrow = update_narrow_terms_containing_with_operator(realm, maybe_user_profile, narrow)
+    """Cleans narrow terms before they are used for message fetching.
+
+    All narrow cleaning helpers are defined here as nested functions
+    to ensure they are only called through this single entry point.
+    This prevents bugs where a caller forgets one of the cleaning
+    steps.
+    """
+
+    def update_empty_topic_fallback_name(
+        narrow: list[NarrowParameter] | None,
+    ) -> list[NarrowParameter] | None:
+        if narrow is None:
+            return narrow
+
+        for term in narrow:
+            if term.operator == "topic":
+                term.operand = maybe_rename_general_chat_to_empty_topic(term.operand)
+                break
+
+        return narrow
+
+    # This function implements the core logic of the `with` operator,
+    # which is designed to support permanent links to a topic that
+    # robustly function if the topic is moved.
+    #
+    # The with operator accepts a message ID as an operand. If the
+    # message ID does not exist or is otherwise not accessible to the
+    # current user, then if the remaining narrow terms can point to
+    # a conversation then the narrow corresponding to it is returned.
+    # If the remaining terms can not point to a particular conversation,
+    # then a BadNarrowOperatorError is raised.
+    #
+    # Otherwise, the narrow terms are mutated to remove any
+    # channel/topic/dm operators, replacing them with the appropriate
+    # operators for the conversation view containing the targeted message.
+    def update_with_operator(
+        narrow: list[NarrowParameter] | None,
+    ) -> list[NarrowParameter] | None:
+        if narrow is None:
+            return narrow
+
+        with_operator_terms = list(filter(lambda term: term.operator == "with", narrow))
+        can_user_access_target_message = True
+
+        if len(with_operator_terms) > 1:
+            raise InvalidOperatorCombinationError(_("Duplicate 'with' operators."))
+        elif len(with_operator_terms) == 0:
+            return narrow
+
+        with_term = with_operator_terms[0]
+        narrow.remove(with_term)
+        try:
+            message_id = int(with_term.operand)
+        except ValueError:
+            # TODO: This probably should be handled earlier.
+            raise BadNarrowOperatorError(_("Invalid 'with' operator"))
+
+        if maybe_user_profile.is_authenticated:
+            try:
+                message = access_message(maybe_user_profile, message_id, is_modifying_message=False)
+            except JsonableError:
+                can_user_access_target_message = False
+        else:
+            try:
+                message = access_web_public_message(realm, message_id)
+            except MissingAuthenticationError:
+                can_user_access_target_message = False
+
+        # If the user can not access the target message we fall back to the
+        # conversation specified by those other operators if they're enough
+        # to specify a single conversation.
+        # Else, we raise a BadNarrowOperatorError.
+        if not can_user_access_target_message:
+            if can_narrow_define_conversation(narrow):
+                return narrow
+            else:
+                raise BadNarrowOperatorError(_("Invalid 'with' operator"))
+
+        # TODO: It would be better if the legacy names here are canonicalized
+        # while building a NarrowParameter.
+        filtered_terms = [
+            term
+            for term in narrow
+            if term.operator not in ["stream", "channel", "topic", "dm", "pm-with"]
+        ]
+
+        if message.recipient.type == Recipient.STREAM:
+            channel_id = message.recipient.type_id
+            topic = message.topic_name()
+            channel_conversation_terms = [
+                NarrowParameter(operator="channel", operand=channel_id),
+                NarrowParameter(operator="topic", operand=topic),
+            ]
+            return channel_conversation_terms + filtered_terms
+
+        elif message.recipient.type == Recipient.PERSONAL:
+            dm_conversation_terms = [
+                NarrowParameter(operator="dm", operand=[message.recipient.type_id])
+            ]
+            return dm_conversation_terms + filtered_terms
+
+        elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+            huddle_user_ids = list(get_direct_message_group_user_ids(message.recipient))
+            dm_conversation_terms = [NarrowParameter(operator="dm", operand=huddle_user_ids)]
+            return dm_conversation_terms + filtered_terms
+
+        raise AssertionError("Invalid recipient type")
+
+    narrow = update_empty_topic_fallback_name(narrow)
+    narrow = update_with_operator(narrow)
     return narrow
 
 
