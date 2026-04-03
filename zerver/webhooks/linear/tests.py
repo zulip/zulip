@@ -72,10 +72,21 @@ class LinearHookTests(WebhookTestCase):
         self.check_webhook("issue_update", expected_topic_name, expected_message)
 
     def test_project_create(self) -> None:
-        payload = self.get_body("project_create")
+        expected_topic_name = "Project: This is just a sample project to test the working."
+        expected_message = "[Project](https://linear.app/webhooks/project/this-is-just-a-sample-project-to-test-the-working-3d89ec1c20d3) **This is just a sample project to test the working.** was created."
+        self.check_webhook("project_create", expected_topic_name, expected_message)
+
+    def test_project_remove(self) -> None:
+        expected_topic_name = "Project: This is just a sample project to test the working."
+        expected_message = (
+            "Project **This is just a sample project to test the working.** has been removed."
+        )
+        self.check_webhook("project_remove", expected_topic_name, expected_message)
+
+    def test_issue_label_create(self) -> None:
         result = self.client_post(
             self.url,
-            payload,
+            self.get_body("issue_label_create"),
             content_type="application/json",
         )
         self.assert_json_success(result)

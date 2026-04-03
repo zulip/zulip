@@ -1,0 +1,12 @@
+{
+    "action": "create",
+    "createdAt": "2023-04-11T19:26:16.461Z",
+    "data": {
+        "id": "521660ac-782f-4dd9-8928-95dbc9cb4c9b",
+        "name": "Bug",
+        "color": "#e01e5a"
+    },
+    "type": "IssueLabel",
+    "organizationId": "7a661544-df08-4cd1-a1e3-5ec611898806",
+    "webhookTimestamp": 1681241176588
+}
