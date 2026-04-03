@@ -53,6 +53,7 @@ from requests import HTTPError
 from social_core.backends.apple import AppleIdAuth
 from social_core.backends.azuread import AzureADOAuth2
 from social_core.backends.base import BaseAuth
+from social_core.backends.discord import DiscordOAuth2
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, GithubTeamOAuth2
 from social_core.backends.gitlab import GitLabOAuth2
 from social_core.backends.google import GoogleOAuth2
@@ -239,6 +240,12 @@ def apple_auth_enabled(
     realm: Realm | None = None, realm_authentication_methods: dict[str, bool] | None = None
 ) -> bool:
     return auth_enabled_helper(["Apple"], realm, realm_authentication_methods)
+
+
+def discord_auth_enabled(
+    realm: Realm | None = None, realm_authentication_methods: dict[str, bool] | None = None
+) -> bool:
+    return auth_enabled_helper(["Discord"], realm, realm_authentication_methods)
 
 
 def saml_auth_enabled(
@@ -2858,6 +2865,38 @@ class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
     @override
     def display_icon(cls) -> str:
         return staticfiles_storage.url("images/authentication_backends/azuread-icon.png")
+
+
+@external_auth_method
+class DiscordAuthBackend(SocialAuthMixin, DiscordOAuth2):
+    sort_order = 60
+    name = "discord"
+    auth_backend_name = "Discord"
+    # https://docs.discord.com/developers/resources/user
+    DEFAULT_SCOPE = ["identify", "email"]
+
+    @classmethod
+    @override
+    def display_icon(cls) -> str:
+        return staticfiles_storage.url("images/authentication_backends/discord-icon.png")
+
+    def get_verified_emails(self, *args: Any, **kwargs: Any) -> list[str]:
+        verified_emails: list[str] = []
+        details = kwargs["response"]
+        email_verified = details.get("verified")
+        if email_verified:
+            verified_emails.append(details["email"])
+        return verified_emails
+
+    @override
+    def get_user_details(self, response: dict[str, Any]) -> dict[str, Any]:
+        # Discord has a "global_name" field which is more apt as a display name
+        # than the default "username" field. However, the field is optional.
+        # https://support.discord.com/hc/en-us/articles/12620128861463-New-Usernames-Display-Names#h_01GXPQABMYGEHGPRJJXJMPHF5C
+        return {
+            "fullname": response.get("global_name") or response.get("username"),
+            "email": response.get("email") or "",
+        }
 
 
 @external_auth_method
