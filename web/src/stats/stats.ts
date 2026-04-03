@@ -813,22 +813,22 @@ function populate_messages_sent_by_client(raw_data: unknown): void {
     }
 
     if (data.end_times.length < 365) {
-        $("#pie_messages_sent_by_client button[data-time='year']").remove();
+        $("#messages_sent_by_client button[data-time='year']").remove();
         if (data.end_times.length < 30) {
-            $("#pie_messages_sent_by_client button[data-time='month']").remove();
+            $("#messages_sent_by_client button[data-time='month']").remove();
             if (data.end_times.length < 7) {
-                $("#pie_messages_sent_by_client button[data-time='week']").remove();
+                $("#messages_sent_by_client button[data-time='week']").remove();
             }
         }
     }
 
     function draw_plot(): void {
-        $("#id_messages_sent_by_client > div").removeClass("spinner");
+        $("#messages_sent_by_client_chart > div").removeClass("spinner");
         const data_ = plot_data[user_button][time_button];
         layout.height = layout.margin!.b! + data_.trace.x.length * 30;
         layout.xaxis = {range: [0, Math.max(...data_.trace.x) * 1.3]};
         void Plotly.newPlot(
-            "id_messages_sent_by_client",
+            "messages_sent_by_client_chart",
             [data_.trace, data_.trace_annotations],
             layout,
             {displayModeBar: false, staticPlot: true},
@@ -839,16 +839,16 @@ function populate_messages_sent_by_client(raw_data: unknown): void {
 
     // Click handlers
     function set_user_button($button: JQuery): void {
-        $("#pie_messages_sent_by_client button[data-user]").removeClass("selected");
+        $("#messages_sent_by_client button[data-user]").removeClass("selected");
         $button.addClass("selected");
     }
 
     function set_time_button($button: JQuery): void {
-        $("#pie_messages_sent_by_client button[data-time]").removeClass("selected");
+        $("#messages_sent_by_client button[data-time]").removeClass("selected");
         $button.addClass("selected");
     }
 
-    $("#pie_messages_sent_by_client button").on("click", function () {
+    $("#messages_sent_by_client button").on("click", function () {
         if ($(this).attr("data-user")) {
             set_user_button($(this));
             user_button = user_button_schema.parse($(this).attr("data-user"));
