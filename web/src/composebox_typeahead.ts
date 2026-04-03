@@ -101,6 +101,13 @@ type TimeJumpSuggestion = {
     type: "time_jump";
 };
 
+export type StreamTopicSuggestion = {
+    topic: string;
+    topic_display_name: string;
+    type: "stream_topic";
+    stream_data: StreamPillData;
+};
+
 type TopicJumpSuggestion = {
     message: string;
     type: "topic_jump";
@@ -114,6 +121,7 @@ export type TypeaheadSuggestion =
     | TimeJumpSuggestion
     | LanguageSuggestion
     | TopicSuggestion
+    | StreamTopicSuggestion
     | EmojiSuggestion
     | SlashCommandSuggestion;
 
@@ -1091,7 +1099,47 @@ export function get_candidates(
             }));
         const matcher = get_stream_matcher(token);
         const matches = candidate_list.filter((item) => matcher(item));
-        return typeahead_helper.sort_streams(matches, token);
+        const sorted_stream_matches = typeahead_helper.sort_streams(matches, token);
+
+        const topic_matcher = get_topic_matcher(token);
+        const topic_matches: StreamTopicSuggestion[] = [];
+        for (const sub of candidate_list) {
+            const topic_list = stream_topic_history.get_recent_topic_names(sub.stream_id);
+            for (const topic of topic_list) {
+                if (topic === "" || !topic_matcher(topic)) {
+                    continue;
+                }
+                topic_matches.push({
+                    topic,
+                    topic_display_name: util.get_final_topic_display_name(topic),
+                    type: "stream_topic",
+                    stream_data: sub,
+                });
+            }
+        }
+
+        const current_stream_id = compose_state.stream_id();
+        const current_stream_topic_matches = topic_matches.filter(
+            (item) => item.stream_data.stream_id === current_stream_id,
+        );
+        const other_stream_topic_matches = topic_matches.filter(
+            (item) => item.stream_data.stream_id !== current_stream_id,
+        );
+
+        const sorted_topic_matches = [
+            ...typeahead_helper.sorter(
+                token,
+                current_stream_topic_matches,
+                (x) => x.topic_display_name,
+            ),
+            ...typeahead_helper.sorter(
+                token,
+                other_stream_topic_matches,
+                (x) => x.topic_display_name,
+            ),
+        ];
+
+        return [...sorted_stream_matches, ...sorted_topic_matches];
     }
 
     if (ALLOWED_MARKDOWN_FEATURES.timestamp) {
@@ -1139,6 +1187,11 @@ export function content_item_html(item: TypeaheadSuggestion): string | undefined
             }
             return typeahead_helper.render_stream_topic(item);
         }
+        case "stream_topic":
+            return typeahead_helper.render_typeahead_item({
+                stream: item.stream_data,
+                topic: item.topic_display_name,
+            });
         case "time_jump":
             return typeahead_helper.render_typeahead_item({primary: item.message});
         default:
@@ -1361,6 +1414,15 @@ export function content_typeahead_selected(
                 timestamp,
             );
             return beginning + rest;
+        }
+        case "stream_topic": {
+            void compose_validate.warn_if_private_stream_is_linked(item.stream_data, $textbox);
+            const stream_topic_link = topic_link_util.get_stream_topic_link_syntax(
+                item.stream_data.name,
+                item.topic,
+            );
+            beginning = beginning.slice(0, -token.length - 1) + stream_topic_link + " ";
+            break;
         }
     }
     // Keep the cursor after the newly inserted text / selecting the
