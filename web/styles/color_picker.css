@@ -46,6 +46,7 @@
 }
 
 .color-picker-popover .message-header-contents {
+    grid-template-columns: 1fr auto;
     border: none;
 }
 
