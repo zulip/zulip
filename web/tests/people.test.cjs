@@ -846,6 +846,20 @@ run_test("filtered_users", () => {
     assert.equal(filtered_people.size, 1);
     assert.ok(filtered_people.has(linus.user_id));
 
+    // Test filtering by email domain.
+    filtered_people = people.filter_people_by_search_terms(users, "example.com");
+    assert.equal(filtered_people.size, 7);
+
+    filtered_people = people.filter_people_by_search_terms(users, "example");
+    assert.equal(filtered_people.size, 7);
+
+    filtered_people = people.filter_people_by_search_terms(users, "zulip.com");
+    assert.equal(filtered_people.size, 0);
+
+    // Test case-insensitive domain matching.
+    filtered_people = people.filter_people_by_search_terms(users, "EXAMPLE.COM");
+    assert.equal(filtered_people.size, 7);
+
     filtered_people = people.filter_people_by_search_terms(users, "ch di, maria");
     assert.equal(filtered_people.size, 2);
     assert.ok(filtered_people.has(charles.user_id));
