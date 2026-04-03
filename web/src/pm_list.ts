@@ -73,6 +73,21 @@ export function _build_direct_messages_list(opts: {
     conversations_to_be_shown: DisplayObject[];
     search_term: string;
 }): vdom.Tag<PMNode> {
+    if (opts.conversations_to_be_shown.length === 0) {
+        const empty_direct_messages_row: vdom.Node<PMNode> = {
+            key: "no_direct_messages_yet",
+            render: () =>
+                `<li class="dm-list-item dm-box bottom_left_row zero-dm-unreads"><span class="dm-name">${_.escape(
+                    $t({defaultMessage: "No direct messages yet"}),
+                )}</span></li>`,
+            eq: (other) =>
+                other.type === "more_items" && other.more_conversations_unread_count === -1,
+            type: "more_items",
+            more_conversations_unread_count: -1,
+        };
+        return pm_list_dom.pm_ul([empty_direct_messages_row]);
+    }
+
     const pm_list_nodes = opts.conversations_to_be_shown.map((conversation) =>
         pm_list_dom.keyed_pm_li(conversation),
     );

@@ -8,7 +8,7 @@
         {{/if}}
 
         <span class="conversation-partners">
-            <span class="conversation-partners-list">{{recipients}}
+            <span class="conversation-partners-list" title="{{recipients}}">{{recipients}}
                 {{#if is_current_user}}<span class="my_user_status">{{t '(you)'}}</span>{{/if}}
                 {{> status_emoji status_emoji_info}}
                 {{#if is_bot}}
