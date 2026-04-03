@@ -515,7 +515,14 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         internal_send_private_message(user_profile, recipient_user, body)
     elif recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         display_recipient = get_display_recipient(recipient)
-        emails = [user_dict["email"] for user_dict in display_recipient]
+        recipient_user_ids = [user_dict["id"] for user_dict in display_recipient]
+
+        emails = list(
+            UserProfile.objects.filter(
+                id__in=recipient_user_ids,
+                is_active=True,
+            ).values_list("email", flat=True)
+        )
         recipient_str = ", ".join(emails)
         internal_send_group_direct_message(user_profile.realm, user_profile, body, emails=emails)
     else:
