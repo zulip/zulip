@@ -139,6 +139,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
             list_of_topics_view_url: hash_util.by_channel_topic_list_url(stream_id),
         },
         stream_edit_hash,
+        should_display_unsubscribe_button: stream_data.can_unsubscribe(sub),
         has_unread_messages,
         show_go_to_channel_feed,
         show_go_to_list_of_topics,
