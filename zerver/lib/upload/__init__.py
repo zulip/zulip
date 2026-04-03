@@ -75,7 +75,7 @@ def maybe_add_charset(content_type: str, file_data: bytes | StreamingSourceWithS
     else:
         chunk_size = 4096
         reader = file_data.reader()
-        detector = chardet.universaldetector.UniversalDetector()
+        detector = chardet.UniversalDetector()
         total_read = 0
         while True:
             data = reader.read(chunk_size)
