@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import type * as tippy from "tippy.js";
 
 import render_left_sidebar from "../templates/left_sidebar.hbs";
 import render_buddy_list_popover from "../templates/popovers/buddy_list_popover.hbs";
@@ -392,6 +393,18 @@ export function initialize_right_sidebar(): void {
         }
     });
 
+    function update_section_toggle_tooltip(toggle: HTMLElement): void {
+        const toggle_element: tippy.ReferenceElement & HTMLElement = util.the($(toggle));
+        const tippy_instance = toggle_element._tippy;
+        if (tippy_instance) {
+            if ($(toggle).hasClass("rotate-icon-down")) {
+                tippy_instance.setContent($t({defaultMessage: "Collapse section"}));
+            } else {
+                tippy_instance.setContent($t({defaultMessage: "Expand section"}));
+            }
+        }
+    }
+
     $("#buddy-list-users-matching-view-container").on(
         "click",
         ".buddy-list-subsection-header",
@@ -401,15 +414,51 @@ export function initialize_right_sidebar(): void {
         },
     );
 
+    $("#buddy-list-users-matching-view-container").on(
+        "keydown",
+        ".buddy-list-section-toggle",
+        function (this: HTMLElement, e) {
+            if (keydown_util.is_enter_event(e)) {
+                e.stopPropagation();
+                buddy_list.toggle_users_matching_view_section();
+                update_section_toggle_tooltip(this);
+            }
+        },
+    );
+
     $("#buddy-list-participants-container").on("click", ".buddy-list-subsection-header", (e) => {
         e.stopPropagation();
         buddy_list.toggle_participants_section();
     });
 
+    $("#buddy-list-participants-container").on(
+        "keydown",
+        ".buddy-list-section-toggle",
+        function (this: HTMLElement, e) {
+            if (keydown_util.is_enter_event(e)) {
+                e.stopPropagation();
+                buddy_list.toggle_participants_section();
+                update_section_toggle_tooltip(this);
+            }
+        },
+    );
+
     $("#buddy-list-other-users-container").on("click", ".buddy-list-subsection-header", (e) => {
         e.stopPropagation();
         buddy_list.toggle_other_users_section();
     });
+
+    $("#buddy-list-other-users-container").on(
+        "keydown",
+        ".buddy-list-section-toggle",
+        function (this: HTMLElement, e) {
+            if (keydown_util.is_enter_event(e)) {
+                e.stopPropagation();
+                buddy_list.toggle_other_users_section();
+                update_section_toggle_tooltip(this);
+            }
+        },
+    );
 
     function close_buddy_list_popover(): void {
         if (popover_menus.popover_instances.buddy_list !== null) {
