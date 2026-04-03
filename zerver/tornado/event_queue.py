@@ -1768,6 +1768,13 @@ def process_mark_message_unread_event(event: Mapping[str, Any], users: Iterable[
 
 def process_notification(notice: Mapping[str, Any]) -> None:
     event: Mapping[str, Any] = notice["event"]
+    # TODO/compatibility: realm_uri is a deprecated alias for realm_url in
+    # notices from older Django processes during rolling deploys.
+    # Remove this once old Django processes can no longer publish realm_uri.
+    if "realm_url" not in event and "realm_uri" in event:
+        event = dict(event)
+        event["realm_url"] = event["realm_uri"]
+
     users: list[int] | list[Mapping[str, Any]] = notice["users"]
     start_time = time.perf_counter()
 
