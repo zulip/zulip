@@ -35,7 +35,7 @@ def stripe_event_handler_decorator(
         try:
             func(stripe_object, event.content_object)
         except BillingError as e:
-            message = (
+            billing_logger.warning(
                 "BillingError in %s event handler: %s. stripe_object_id=%s, customer_id=%s metadata=%s",
                 event.type,
                 e.error_description,
@@ -43,7 +43,6 @@ def stripe_event_handler_decorator(
                 stripe_object.customer,
                 stripe_object.metadata,
             )
-            billing_logger.warning(message)
             event.status = Event.EVENT_HANDLER_FAILED
             event.handler_error = {
                 "message": e.msg,
@@ -52,6 +51,7 @@ def stripe_event_handler_decorator(
             event.save(update_fields=["status", "handler_error"])
             if isinstance(stripe_object, stripe.Invoice):
                 # For Invoice processing errors, send email to billing support.
+                message = f"BillingError in {event.type} event handler: {e.error_description}. stripe_object_id={stripe_object.id}, customer_id={stripe_object.customer} metadata={stripe_object.metadata}"
                 send_email(
                     "zerver/emails/error_processing_invoice",
                     to_emails=[BILLING_SUPPORT_EMAIL],
