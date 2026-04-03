@@ -41,7 +41,9 @@ def stripe_event_handler_decorator(
                 e.error_description,
                 stripe_object.id,
                 stripe_object.customer,
-                stripe_object.metadata,
+                None
+                if stripe_object.metadata is None
+                else stripe_object.metadata.to_dict(for_json=True),
             )
             billing_logger.warning(message)
             event.status = Event.EVENT_HANDLER_FAILED
@@ -106,7 +108,8 @@ def handle_checkout_session_completed_event(
     assert stripe_session.metadata is not None
     stripe_setup_intent = stripe.SetupIntent.retrieve(stripe_session.setup_intent)
     billing_session = get_billing_session_for_stripe_webhook(
-        session.customer, stripe_session.metadata.get("user_id")
+        session.customer,
+        stripe_session.metadata.user_id if "user_id" in stripe_session.metadata else None,
     )
     payment_method = stripe_setup_intent.payment_method
     assert isinstance(payment_method, str | None)
@@ -156,13 +159,13 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
         # Only process upgrade required if metadata has the required keys.
         # This is a safeguard to avoid processing custom invoices.
         if (
-            metadata is None
-            or metadata.get("billing_schedule") is None
-            or metadata.get("plan_tier") is None
+            metadata is None or "billing_schedule" not in metadata or "plan_tier" not in metadata
         ):  # nocoverage
             return
 
-        billing_session = get_billing_session_for_stripe_webhook(customer, metadata.get("user_id"))
+        billing_session = get_billing_session_for_stripe_webhook(
+            customer, metadata.user_id if "user_id" in metadata else None
+        )
         complimentary_access_plan = billing_session.get_complimentary_access_plan(customer)
         billing_schedule = int(metadata["billing_schedule"])
         plan_tier = int(metadata["plan_tier"])
@@ -182,7 +185,11 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
                 stripe_invoice_paid=True,
             )
             return
-        elif metadata.get("on_free_trial") and invoice.is_created_for_free_trial_upgrade:
+        elif (
+            "on_free_trial" in metadata
+            and bool(metadata.on_free_trial)
+            and invoice.is_created_for_free_trial_upgrade
+        ):
             free_trial_plan = invoice.plan
             assert free_trial_plan is not None
             if free_trial_plan.is_free_trial():

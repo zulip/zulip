@@ -527,7 +527,7 @@ def sponsorship_org_type_key_helper(d: Any) -> int:
 
 class PriceArgs(TypedDict, total=False):
     amount: int
-    unit_amount_decimal: str
+    unit_amount_decimal: Decimal
     quantity: int
 
 
@@ -919,7 +919,7 @@ class BillingSession(ABC):
             assert price_per_license is not None
             price_args = {
                 "quantity": licenses,
-                "unit_amount_decimal": str(price_per_license),
+                "unit_amount_decimal": Decimal(price_per_license),
             }
         else:
             assert fixed_price is not None
@@ -3326,7 +3326,7 @@ class BillingSession(ABC):
             invoice_item_params["amount"] = amount_due
         else:
             assert plan.price_per_license is not None  # needed for mypy
-            invoice_item_params["unit_amount_decimal"] = str(plan.price_per_license)
+            invoice_item_params["unit_amount_decimal"] = Decimal(plan.price_per_license)
             invoice_item_params["quantity"] = ledger_entry.licenses
         invoice_item_params["description"] = f"{plan.name} - renewal"
         return invoice_item_params
@@ -3367,7 +3367,7 @@ class BillingSession(ABC):
                 billing_period_end - last_renewal
             )
             unit_amount = int(plan.price_per_license * proration_fraction + 0.5)
-        invoice_item_params["unit_amount_decimal"] = str(unit_amount)
+        invoice_item_params["unit_amount_decimal"] = Decimal(unit_amount)
         invoice_item_params["quantity"] = ledger_entry.licenses - licenses_base
         invoice_item_params["description"] = f"Additional {plan.name} license"
         return invoice_item_params
@@ -3859,7 +3859,7 @@ class BillingSession(ABC):
                 assert invoice_item.pricing.unit_amount_decimal is not None
                 price_args = {
                     "quantity": licenses,
-                    "unit_amount_decimal": str(invoice_item.pricing.unit_amount_decimal),
+                    "unit_amount_decimal": invoice_item.pricing.unit_amount_decimal,
                 }
             else:
                 price_args = {

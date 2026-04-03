@@ -322,7 +322,7 @@ def equals(expected_val: ResultT) -> Validator[ResultT]:
                     value=val,
                 )
             )
-        return cast(ResultT, val)
+        return val
 
     return f
 
