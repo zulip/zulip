@@ -481,6 +481,7 @@ def send_subscription_add_events(
                 is_web_public=stream_dict["is_web_public"],
                 message_retention_days=stream_dict["message_retention_days"],
                 name=stream_dict["name"],
+                default_push_notifications=stream_dict["default_push_notifications"],
                 rendered_description=stream_dict["rendered_description"],
                 stream_id=stream_dict["stream_id"],
                 stream_post_policy=stream_dict["stream_post_policy"],
