@@ -161,6 +161,7 @@ AUTHENTICATION_BACKENDS: tuple[str, ...] = (
     # "zproject.backends.GitHubAuthBackend",  # GitHub auth, setup below
     # "zproject.backends.GitLabAuthBackend",  # GitLab auth, setup below
     # "zproject.backends.AzureADAuthBackend",  # Microsoft Entra ID (AzureAD) auth, setup below
+    # "zproject.backends.DiscordAuthBackend",  # Discord auth, setup below
     # "zproject.backends.AppleAuthBackend",  # Apple auth, setup below
     # "zproject.backends.SAMLAuthBackend",  # SAML, setup below
     # "zproject.backends.ZulipLDAPAuthBackend",  # LDAP, setup below
@@ -396,6 +397,21 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ##   https://auth.zulip.example.com/complete/github/
 #
 # SOCIAL_AUTH_SUBDOMAIN = "auth"
+
+########
+## Discord OAuth.
+##
+## To set up Discord authentication, you'll need to do the following:
+##
+## (1) Visit https://discord.com/developers/applications and create a new application.
+## (2) Navigate to "OAuth2" > "General".
+## (3) Add a "Redirect" URL like:
+##       https://zulip.example.com/complete/discord/
+##     based on your value for EXTERNAL_HOST.
+## (4) You should get a Client ID and a Client Secret. Copy them.
+##     Use the Client ID as `SOCIAL_AUTH_DISCORD_KEY` here, and put the
+##     Client Secret in zulip-secrets.conf as `social_auth_discord_secret`.
+# SOCIAL_AUTH_DISCORD_KEY = "<your client ID from Discord>"
 
 ########
 ## Generic OpenID Connect (OIDC).  See also documentation here:
