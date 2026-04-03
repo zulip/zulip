@@ -1610,6 +1610,8 @@ function handle_post_view_change(
     scheduled_messages_feed_ui.update_schedule_message_indicator();
     typing_events.render_notifications_for_narrow();
 
+    compose_closed_ui.update_closed_compose_box_class_by_narrow(filter.is_conversation_view());
+
     if (filter.contains_only_private_messages()) {
         compose_closed_ui.update_buttons("direct");
     } else if (filter.is_conversation_view() || filter.includes_full_stream_history()) {
@@ -1617,7 +1619,7 @@ function handle_post_view_change(
     } else {
         compose_closed_ui.update_buttons();
     }
-    compose_closed_ui.update_recipient_text_for_reply_button();
+    compose_closed_ui.update_skinned_or_closed_compose_recipient_display();
 
     message_view_header.render_title_area();
 

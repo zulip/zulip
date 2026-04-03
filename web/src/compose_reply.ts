@@ -602,4 +602,25 @@ export function initialize(): void {
     $("body").on("click", ".compose_reply_button", () => {
         respond_to_message({trigger: "reply button"});
     });
+
+    // Click handlers for skinned compose box
+    $("body").on("click", "#skinned-closed-compose-box", () => {
+        respond_to_message({trigger: "skinned closed compose"});
+    });
+
+    $("#skinned-closed-compose-box").on("click", "#skinned-topic-box-new-topic-button", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
+        const topic = "";
+        const trigger = "clear topic button";
+
+        compose_actions.start({
+            message_type: "stream",
+            stream_id,
+            topic,
+            trigger,
+            keep_composebox_empty: true,
+        });
+    });
 }
