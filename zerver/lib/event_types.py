@@ -489,10 +489,16 @@ class RealmEmoji(BaseModel):
     still_url: str | None
 
 
-class EventRealmEmojiUpdate(BaseEvent):
+class EventRealmEmojiAdd(BaseEvent):
     type: Literal["realm_emoji"]
-    op: Literal["update"]
-    realm_emoji: dict[str, RealmEmoji]
+    op: Literal["add"]
+    emoji: RealmEmoji
+
+
+class EventRealmEmojiRemove(BaseEvent):
+    type: Literal["realm_emoji"]
+    op: Literal["remove"]
+    emoji: RealmEmoji
 
 
 class EventRealmExportConsent(BaseEvent):

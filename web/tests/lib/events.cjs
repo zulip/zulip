@@ -573,10 +573,30 @@ exports.fixtures = {
         domain: "ramen",
     },
 
-    realm_emoji__update: {
+    realm_emoji__add: {
         type: "realm_emoji",
-        op: "update",
-        realm_emoji: exports.test_realm_emojis,
+        op: "add",
+        emoji: {
+            id: "101",
+            name: "spain",
+            source_url: "/some/path/to/spain.gif",
+            still_url: "/some/path/to/spain.png",
+            deactivated: false,
+            author_id: test_user.user_id,
+        },
+    },
+
+    realm_emoji__remove: {
+        type: "realm_emoji",
+        op: "remove",
+        emoji: {
+            id: "101",
+            name: "spain",
+            source_url: "/some/path/to/spain.gif",
+            still_url: "/some/path/to/spain.png",
+            deactivated: true,
+            author_id: test_user.user_id,
+        },
     },
 
     realm_export: {

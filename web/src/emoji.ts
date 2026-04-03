@@ -229,18 +229,20 @@ function build_emojis_by_name({
     return map;
 }
 
-export function update_emojis(realm_emojis: RealmEmojiMap): void {
-    // The settings code still works with the
-    // server format of the data.
-    server_realm_emoji_data = realm_emojis;
+export function update_emojis(emoji: ServerEmoji): void {
+    server_realm_emoji_data[emoji.id] = emoji;
 
+    rebuild_emoji_data();
+}
+
+function rebuild_emoji_data(): void {
     // all_realm_emojis is emptied before adding the realm-specific emoji
     // to it. This makes sure that in case of deletion, the deleted realm_emojis
     // don't persist in active_realm_emojis.
     all_realm_emojis.clear();
     active_realm_emojis.clear();
 
-    for (const data of Object.values(realm_emojis)) {
+    for (const data of Object.values(server_realm_emoji_data)) {
         all_realm_emojis.set(data.id, {
             id: data.id,
             emoji_name: data.name,
@@ -379,7 +381,8 @@ export function initialize(
         get_emoji_codepoint,
     });
 
-    update_emojis(params.realm_emoji);
+    server_realm_emoji_data = params.realm_emoji;
+    rebuild_emoji_data();
 }
 
 export function get_canonical_name(emoji_name: string): string | undefined {

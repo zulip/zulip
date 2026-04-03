@@ -58,7 +58,8 @@ from zerver.lib.event_types import (
     EventRealmDomainsAdd,
     EventRealmDomainsChange,
     EventRealmDomainsRemove,
-    EventRealmEmojiUpdate,
+    EventRealmEmojiAdd,
+    EventRealmEmojiRemove,
     EventRealmExport,
     EventRealmExportConsent,
     EventRealmLinkifiers,
@@ -200,6 +201,8 @@ check_realm_deactivated = make_checker(EventRealmDeactivated)
 check_realm_domains_add = make_checker(EventRealmDomainsAdd)
 check_realm_domains_change = make_checker(EventRealmDomainsChange)
 check_realm_domains_remove = make_checker(EventRealmDomainsRemove)
+check_realm_emoji_add = make_checker(EventRealmEmojiAdd)
+check_realm_emoji_remove = make_checker(EventRealmEmojiRemove)
 check_realm_export_consent = make_checker(EventRealmExportConsent)
 check_realm_linkifiers = make_checker(EventRealmLinkifiers)
 check_realm_playgrounds = make_checker(EventRealmPlaygrounds)
@@ -258,7 +261,6 @@ _check_muted_topics = make_checker(EventMutedTopics)
 _check_realm_bot_add = make_checker(EventRealmBotAdd)
 _check_realm_bot_update = make_checker(EventRealmBotUpdate)
 _check_realm_default_update = make_checker(EventRealmUserSettingsDefaultsUpdate)
-_check_realm_emoji_update = make_checker(EventRealmEmojiUpdate)
 _check_realm_export = make_checker(EventRealmExport)
 _check_realm_update = make_checker(EventRealmUpdate)
 _check_realm_update_dict = make_checker(EventRealmUpdateDict)
@@ -407,21 +409,6 @@ def check_realm_bot_update(
 
     assert isinstance(event["bot"], dict)
     assert {"user_id", field} == set(event["bot"].keys())
-
-
-def check_realm_emoji_update(var_name: str, event: dict[str, object]) -> None:
-    """
-    The way we send realm emojis is kinda clumsy--we
-    send a dict mapping the emoji id to a sub_dict with
-    the fields (including the id).  Ideally we can streamline
-    this and just send a list of dicts.  The clients can make
-    a Map as needed.
-    """
-    _check_realm_emoji_update(var_name, event)
-
-    assert isinstance(event["realm_emoji"], dict)
-    for k, v in event["realm_emoji"].items():
-        assert v["id"] == k
 
 
 def check_realm_export(
