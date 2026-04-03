@@ -189,6 +189,8 @@ class UserBaseSettings(models.Model):
 
     web_left_sidebar_unreads_count_summary = models.BooleanField(default=True, db_default=True)
 
+    web_link_previews_enabled = models.BooleanField(default=True, db_default=True)
+
     # Setting to control whether to automatically go to the
     # conversation where message was sent.
     web_navigate_to_sent_message = models.BooleanField(default=True)
@@ -388,6 +390,7 @@ class UserBaseSettings(models.Model):
         web_left_sidebar_show_channel_folders=bool,
         web_left_sidebar_unreads_count_summary=bool,
         web_line_height_percent=int,
+        web_link_previews_enabled=bool,
         web_mark_read_on_scroll_policy=int,
         web_navigate_to_sent_message=bool,
         web_stream_unreads_count_display_policy=int,

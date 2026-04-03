@@ -1261,6 +1261,13 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.web_line_height_percent, 122);
 
+    event = event_fixtures.user_settings__web_link_previews_enabled;
+    override(user_settings, "web_link_previews_enabled", true);
+    $("body").removeClass("web-link-previews-disabled");
+    dispatch(event);
+    assert_same(user_settings.web_link_previews_enabled, false);
+    assert.ok($("body").hasClass("web-link-previews-disabled"));
+
     {
         const stub = make_stub();
         event = event_fixtures.user_settings__color_scheme_automatic;

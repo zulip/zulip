@@ -994,6 +994,11 @@
     right: 12px;
 }
 
+/* Hide link previews for users who have disabled them. */
+.web-link-previews-disabled .message_embed {
+    display: none;
+}
+
 @media (width < $sm_min) {
     .rendered_markdown .message_embed {
         height: auto;

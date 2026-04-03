@@ -332,6 +332,10 @@ export function initialize_kitchen_sink_stuff() {
         $("body").addClass("high-contrast");
     }
 
+    if (!user_settings.web_link_previews_enabled) {
+        $("body").addClass("web-link-previews-disabled");
+    }
+
     $(window).on("blur", () => {
         $(document.body).addClass("window_blurred");
     });
