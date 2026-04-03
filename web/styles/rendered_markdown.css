@@ -761,7 +761,7 @@
     .message_embed {
         display: grid;
         grid-template-columns:
-            [thumbnail-start] var(--length-message-preview-embeds)
+            [thumbnail-start] auto
             [thumbnail-end fader-start data-container-start] minmax(0, 1fr)
             [data-container-end fader-end];
         grid-template-rows:
@@ -818,10 +818,17 @@
         .message_embed_image {
             display: block;
             grid-area: thumbnail;
-            /* Keep the embed image square. */
-            max-height: var(--length-message-preview-embeds);
-            background-size: cover;
-            background-position: center;
+            height: var(--length-message-preview-embeds);
+            width: auto;
+            max-width: 250px;
+            overflow: hidden;
+        }
+
+        .message_embed_image img {
+            display: block;
+            height: 100%;
+            width: auto;
+            object-fit: cover;
         }
 
         .data-container {
