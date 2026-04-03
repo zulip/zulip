@@ -10,6 +10,7 @@ from pydantic import BaseModel, Json, PositiveInt, StringConstraints, model_vali
 from typing_extensions import ParamSpec
 
 from zerver.decorator import internal_api_view, process_client
+from zerver.lib.client_type import ClientType, infer_client_type
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.queue import get_queue_client
 from zerver.lib.request import RequestNotes
@@ -173,6 +174,10 @@ def get_events_backend(
         Json[list[str]] | None,
         ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
     ] = None,
+    client_type: Annotated[
+        Json[ClientType] | None,
+        ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
+    ] = None,
     dont_block: Json[bool] = False,
     narrow: Annotated[
         Json[list[list[str]]] | None,
@@ -235,6 +240,11 @@ def get_events_backend(
     else:
         valid_user_client_name = user_client.name
 
+    resolved_client_type = infer_client_type(
+        client_type=client_type,
+        client_name=valid_user_client_name,
+        user_agent=request.headers.get("User-Agent"),
+    )
     new_queue_data = None
     if queue_id is None:
         new_queue_data = dict(
@@ -243,6 +253,7 @@ def get_events_backend(
             realm_id=user_profile.realm_id,
             event_types=event_types,
             client_type_name=valid_user_client_name,
+            client_type=resolved_client_type,
             apply_markdown=apply_markdown,
             client_gravatar=client_gravatar,
             slim_presence=slim_presence,

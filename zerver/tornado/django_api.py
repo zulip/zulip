@@ -14,6 +14,7 @@ from requests.models import PreparedRequest, Response
 from typing_extensions import override
 from urllib3.util import Retry
 
+from zerver.lib.client_type import ClientType
 from zerver.lib.partial import partial
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.models import Client, Realm, UserProfile
@@ -101,6 +102,7 @@ def request_event_queue(
     archived_channels: bool = False,
     empty_topic_name: bool = False,
     simplified_presence_events: bool = False,
+    client_type: ClientType = "other",
 ) -> EventQueueData | None:
     if not settings.USING_TORNADO:
         return None
@@ -120,6 +122,7 @@ def request_event_queue(
         "client": "internal",
         "user_profile_id": user_profile.id,
         "user_client": user_client.name,
+        "client_type": orjson.dumps(client_type),
         "narrow": orjson.dumps(narrow),
         "secret": settings.SHARED_SECRET,
         "bulk_message_deletion": orjson.dumps(bulk_message_deletion),

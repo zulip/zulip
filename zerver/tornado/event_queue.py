@@ -22,6 +22,7 @@ from tornado import autoreload
 from typing_extensions import override
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
+from zerver.lib.client_type import HUMAN_CLIENT_TYPES, ClientType, infer_client_type
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
@@ -81,6 +82,7 @@ class ClientDescriptor:
         event_queue: "EventQueue",
         event_types: Sequence[str] | None,
         client_type_name: str,
+        client_type: ClientType,
         apply_markdown: bool,
         client_gravatar: bool,
         slim_presence: bool,
@@ -118,6 +120,7 @@ class ClientDescriptor:
         self.slim_presence = slim_presence
         self.all_public_streams = all_public_streams
         self.client_type_name = client_type_name
+        self.client_type = client_type
         self._timeout_handle: Any = None  # TODO: should be return type of ioloop.call_later
         self.narrow = narrow
         self.narrow_predicate = build_narrow_predicate(modern_narrow)
@@ -157,6 +160,7 @@ class ClientDescriptor:
             all_public_streams=self.all_public_streams,
             narrow=self.narrow,
             client_type_name=self.client_type_name,
+            client_type=self.client_type,
             bulk_message_deletion=self.bulk_message_deletion,
             stream_typing_notifications=self.stream_typing_notifications,
             pronouns_field_type_supported=self.pronouns_field_type_supported,
@@ -175,7 +179,7 @@ class ClientDescriptor:
 
     @classmethod
     def from_dict(cls, d: MutableMapping[str, Any]) -> "ClientDescriptor":
-        if "client_type" in d:
+        if "client_type_name" not in d and "client_type" in d:
             # Temporary migration for the rename of client_type to client_type_name
             d["client_type_name"] = d["client_type"]
         if "client_gravatar" not in d:
@@ -192,6 +196,11 @@ class ClientDescriptor:
             event_queue=EventQueue.from_dict(d["event_queue"]),
             event_types=d["event_types"],
             client_type_name=d["client_type_name"],
+            client_type=infer_client_type(
+                client_type=d.get("client_type"),
+                client_name=d["client_type_name"],
+                user_agent=None,
+            ),
             apply_markdown=d["apply_markdown"],
             client_gravatar=d["client_gravatar"],
             slim_presence=d["slim_presence"],
@@ -589,13 +598,25 @@ def do_gc_event_queues(
     # but email notifications are not — duplicate
     # ScheduledMessageNotificationEmail rows will be created.
     # The same issue exists in mark_clients_offline below.
+    users_with_active_human_message_queues: set[int] = set()
+    for user_id in affected_users:
+        for c in get_client_descriptors_for_user(user_id):
+            if (
+                c.accepts_messages()
+                and c.client_type in HUMAN_CLIENT_TYPES
+                and not c.offline
+                and c.event_queue.id not in to_remove
+            ):
+                users_with_active_human_message_queues.add(user_id)
+                break
+
     for id in to_remove:
         web_reload_clients.pop(id, None)
         for cb in gc_hooks:
             cb(
                 clients[id].user_profile_id,
                 clients[id],
-                clients[id].user_profile_id not in user_clients,
+                clients[id].user_profile_id not in users_with_active_human_message_queues,
             )
         del clients[id]
 
@@ -614,7 +635,12 @@ def mark_clients_offline(
     users_with_active_queues: set[int] = set()
     for user_id in affected_users:
         for c in get_client_descriptors_for_user(user_id):
-            if c.accepts_messages() and not c.offline and c.event_queue.id not in to_mark_offline:
+            if (
+                c.accepts_messages()
+                and c.client_type in HUMAN_CLIENT_TYPES
+                and not c.offline
+                and c.event_queue.id not in to_mark_offline
+            ):
                 users_with_active_queues.add(user_id)
                 break
 
@@ -1025,7 +1051,11 @@ def receiver_is_off_zulip(user_profile_id: int) -> bool:
     not_offline_message_event_queues = [
         client
         for client in all_client_descriptors
-        if client.accepts_messages() and not client.offline
+        if (
+            client.accepts_messages()
+            and client.client_type in HUMAN_CLIENT_TYPES
+            and not client.offline
+        )
     ]
     off_zulip = len(not_offline_message_event_queues) == 0
     return off_zulip

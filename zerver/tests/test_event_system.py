@@ -55,6 +55,19 @@ class EventsEndpointTest(ZulipTestCase):
         result = self.client_post("/json/register", skip_user_agent=True)
         self.assert_json_success(result)
 
+    def test_events_register_user_agent_inference_coverage(self) -> None:
+        # Test various User-Agents to hit all inference branches (terminal, bot, archiver, other)
+        agents_to_test = [
+            "ZulipTerminal/0.8.2",
+            "Zulip Python Bot",
+            "SomeArchiver/1.0",
+            "RandomUnknownBrowser/9.9",
+            "SomeContentMirrorApp",
+        ]
+        for agent in agents_to_test:
+            result = self.client_post("/json/register", HTTP_USER_AGENT=agent)
+            self.assert_json_success(result)
+
     def test_narrows(self) -> None:
         user = self.example_user("hamlet")
         with mock.patch("zerver.lib.events.request_event_queue", return_value=None) as m:
@@ -214,6 +227,28 @@ class EventsEndpointTest(ZulipTestCase):
             user, "/api/v1/register", {"idle_queue_timeout": orjson.dumps("invalid").decode()}
         )
         self.assert_json_error_contains(result, "idle_queue_timeout")
+
+    def test_client_type_parameter_is_forwarded(self) -> None:
+        user = self.example_user("hamlet")
+
+        with mock.patch("zerver.lib.events.request_event_queue", return_value=None) as m:
+            result = self.api_post(user, "/api/v1/register", {"client_type": "desktop"})
+
+        self.assert_json_error(result, "Could not allocate event queue")
+        self.assertEqual(m.call_args.kwargs["client_type"], "desktop")
+
+    def test_client_type_is_inferred_from_user_agent(self) -> None:
+        user = self.example_user("hamlet")
+
+        with mock.patch("zerver.lib.events.request_event_queue", return_value=None) as m:
+            result = self.api_post(
+                user,
+                "/api/v1/register",
+                HTTP_USER_AGENT="ZulipTerminal/0.1",
+            )
+
+        self.assert_json_error(result, "Could not allocate event queue")
+        self.assertEqual(m.call_args.kwargs["client_type"], "terminal")
 
     def test_events_register_spectators(self) -> None:
         # Verify that POST /register works for spectators, but not for

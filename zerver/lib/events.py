@@ -28,6 +28,7 @@ from zerver.lib.channel_folders import (
     get_channel_folders_for_spectators,
     get_channel_folders_in_realm,
 )
+from zerver.lib.client_type import ClientType
 from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.devices import get_devices
@@ -2089,6 +2090,7 @@ def do_events_register(
     fetch_event_types: Collection[str] | None = None,
     spectator_requested_language: str | None = None,
     pronouns_field_type_supported: bool = True,
+    client_type: ClientType = "other",
 ) -> dict[str, Any]:
     # Technically we don't need to check this here because
     # build_narrow_predicate will check it, but it's nicer from an error
@@ -2178,6 +2180,7 @@ def do_events_register(
         archived_channels=archived_channels,
         empty_topic_name=empty_topic_name,
         simplified_presence_events=simplified_presence_events,
+        client_type=client_type,
     )
 
     if result is None:
