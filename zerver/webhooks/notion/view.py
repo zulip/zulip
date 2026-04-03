@@ -11,6 +11,15 @@ from zerver.lib.validator import WildValue, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
 from zerver.models import UserProfile
 
+from .webhook import (
+    COMMENT_EVENTS,
+    DATABASE_EVENTS,
+    PAGE_EVENTS,
+    handle_comment_event,
+    handle_database_event,
+    handle_page_event,
+)
+
 NOTION_VERIFICATION_TOKEN_MESSAGE = """
 {setup_message}
 Your verification token is: `{token}`
@@ -30,6 +39,12 @@ def handle_verification_request(payload: WildValue) -> tuple[str, str]:
 EVENT_TO_FUNCTION_MAPPER: dict[str, Callable[[WildValue], tuple[str, str]]] = {
     "verification": handle_verification_request,
 }
+
+EVENT_TO_FUNCTION_MAPPER.update(dict.fromkeys(PAGE_EVENTS, handle_page_event))
+
+EVENT_TO_FUNCTION_MAPPER.update(dict.fromkeys(DATABASE_EVENTS, handle_database_event))
+
+EVENT_TO_FUNCTION_MAPPER.update(dict.fromkeys(COMMENT_EVENTS, handle_comment_event))
 
 
 def is_verification(payload: WildValue) -> bool:
