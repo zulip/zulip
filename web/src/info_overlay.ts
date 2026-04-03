@@ -2,11 +2,13 @@ import $ from "jquery";
 
 import render_keyboard_shortcut from "../templates/keyboard_shortcuts.hbs";
 import render_markdown_help from "../templates/markdown_help.hbs";
+import render_print_info_overlay from "../templates/print_info_overlay.hbs";
 import render_search_operator from "../templates/search_operators.hbs";
 import render_status_message_example from "../templates/status_message_example.hbs";
 import render_poll_widget_example from "../templates/widgets/poll_widget_example.hbs";
 import render_todo_widget_example from "../templates/widgets/todo_widget_example.hbs";
 
+import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as common from "./common.ts";
 import * as components from "./components.ts";
@@ -25,6 +27,83 @@ import {user_settings} from "./user_settings.ts";
 // Make it explicit that our toggler is undefined until
 // set_up_toggler is called.
 export let toggler: Toggle | undefined;
+
+const info_pane_titles: Record<string, () => string> = {
+    "keyboard-shortcuts": () => $t({defaultMessage: "Keyboard shortcuts"}),
+    "message-formatting": () => $t({defaultMessage: "Message formatting"}),
+    "search-operators": () => $t({defaultMessage: "Search filters"}),
+};
+
+function get_printable_overlay_html($pane: JQuery): string {
+    const $clone = $pane.clone();
+    $clone.find(".simplebar-track, .simplebar-scrollbar").remove();
+
+    const $content = $clone.find(".simplebar-content");
+    return $content.length > 0 ? ($content.html() ?? "") : ($clone.html() ?? "");
+}
+
+function get_visible_info_overlay_pane_id(): string | undefined {
+    const $visible_modal = $(".informational-overlays")
+        .find(".overlay-modal")
+        .filter((_, elem) => elem.offsetParent !== null)
+        .first();
+
+    return $visible_modal.attr("id");
+}
+
+export function print_current_pane(): void {
+    const pane_id = get_visible_info_overlay_pane_id();
+    if (pane_id === undefined) {
+        blueslip.warn("print_current_pane: no visible pane found");
+        return;
+    }
+
+    const $pane = $(`#${CSS.escape(pane_id)} .overlay-scroll-container`);
+    if ($pane.length === 0) {
+        blueslip.warn("print_current_pane: scroll container not found", {pane_id});
+        return;
+    }
+
+    const title_fn = info_pane_titles[pane_id];
+    const title = title_fn ? title_fn() : $t({defaultMessage: "Help"});
+    const body_html = get_printable_overlay_html($pane);
+
+    const html = render_print_info_overlay({title, body_html});
+    const $container = $(html).hide();
+    $("body").append($container);
+
+    const after_print = (): void => {
+        $container.remove();
+        window.removeEventListener("afterprint", after_print);
+    };
+
+    window.addEventListener("afterprint", after_print);
+    $container.show();
+
+    try {
+        window.print();
+    } catch {
+        after_print();
+    }
+}
+
+function informational_overlay_print_key_handler(e: JQuery.KeyDownEvent): void {
+    const is_print_key = (e.ctrlKey || e.metaKey) && (e.key === "p" || e.key === "P");
+
+    if (!is_print_key) {
+        return;
+    }
+
+    const $overlay = $(".informational-overlays");
+    if (!$overlay.hasClass("show")) {
+        return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    print_current_pane();
+}
 
 function format_usage_html(...keys: string[]): string {
     return $t_html(
@@ -312,6 +391,7 @@ export function show(target: string | undefined): void {
             $overlay,
             on_close() {
                 browser_history.exit_overlay();
+                $(document).off("keydown", informational_overlay_print_key_handler);
             },
         });
     }
@@ -319,6 +399,9 @@ export function show(target: string | undefined): void {
     if (!toggler) {
         set_up_toggler();
     }
+
+    $(document).off("keydown", informational_overlay_print_key_handler);
+    $(document).on("keydown", informational_overlay_print_key_handler);
 
     if (target) {
         toggler!.goto(target);
