@@ -912,10 +912,9 @@ class StripeTest(StripeTestCase):
         self.assertEqual(stripe_customer.discount, None)
         self.assertEqual(stripe_customer.email, user.delivery_email)
         assert stripe_customer.metadata is not None
-        metadata_dict = dict(stripe_customer.metadata)
-        self.assertEqual(metadata_dict["realm_str"], "zulip")
+        self.assertEqual(stripe_customer.metadata["realm_str"], "zulip")
         try:
-            int(metadata_dict["realm_id"])
+            int(stripe_customer.metadata["realm_id"])
         except ValueError:  # nocoverage
             raise AssertionError("realm_id is not a number")
 
@@ -1164,10 +1163,9 @@ class StripeTest(StripeTestCase):
         self.assertEqual(stripe_customer.discount, None)
         self.assertEqual(stripe_customer.email, user.delivery_email)
         assert stripe_customer.metadata is not None
-        metadata_dict = dict(stripe_customer.metadata)
-        self.assertEqual(metadata_dict["realm_str"], "zulip")
+        self.assertEqual(stripe_customer.metadata["realm_str"], "zulip")
         try:
-            int(metadata_dict["realm_id"])
+            int(stripe_customer.metadata["realm_id"])
         except ValueError:  # nocoverage
             raise AssertionError("realm_id is not a number")
 
@@ -1436,10 +1434,9 @@ class StripeTest(StripeTestCase):
             self.assertEqual(stripe_customer.discount, None)
             self.assertEqual(stripe_customer.email, user.delivery_email)
             assert stripe_customer.metadata is not None
-            metadata_dict = dict(stripe_customer.metadata)
-            self.assertEqual(metadata_dict["realm_str"], "zulip")
+            self.assertEqual(stripe_customer.metadata["realm_str"], "zulip")
             try:
-                int(metadata_dict["realm_id"])
+                int(stripe_customer.metadata["realm_id"])
             except ValueError:  # nocoverage
                 raise AssertionError("realm_id is not a number")
 
@@ -1649,10 +1646,9 @@ class StripeTest(StripeTestCase):
             self.assertEqual(stripe_customer.discount, None)
             self.assertEqual(stripe_customer.email, user.delivery_email)
             assert stripe_customer.metadata is not None
-            metadata_dict = dict(stripe_customer.metadata)
-            self.assertEqual(metadata_dict["realm_str"], "zulip")
+            self.assertEqual(stripe_customer.metadata["realm_str"], "zulip")
             try:
-                int(metadata_dict["realm_id"])
+                int(stripe_customer.metadata["realm_id"])
             except ValueError:  # nocoverage
                 raise AssertionError("realm_id is not a number")
 
@@ -1815,10 +1811,9 @@ class StripeTest(StripeTestCase):
             self.assertEqual(stripe_customer.discount, None)
             self.assertEqual(stripe_customer.email, user.delivery_email)
             assert stripe_customer.metadata is not None
-            metadata_dict = dict(stripe_customer.metadata)
-            self.assertEqual(metadata_dict["realm_str"], "zulip")
+            self.assertEqual(stripe_customer.metadata["realm_str"], "zulip")
             try:
-                int(metadata_dict["realm_id"])
+                int(stripe_customer.metadata["realm_id"])
             except ValueError:  # nocoverage
                 raise AssertionError("realm_id is not a number")
 
@@ -2009,10 +2004,9 @@ class StripeTest(StripeTestCase):
             self.assertEqual(stripe_customer.discount, None)
             self.assertEqual(stripe_customer.email, user.delivery_email)
             assert stripe_customer.metadata is not None
-            metadata_dict = dict(stripe_customer.metadata)
-            self.assertEqual(metadata_dict["realm_str"], "zulip")
+            self.assertEqual(stripe_customer.metadata["realm_str"], "zulip")
             try:
-                int(metadata_dict["realm_id"])
+                int(stripe_customer.metadata["realm_id"])
             except ValueError:  # nocoverage
                 raise AssertionError("realm_id is not a number")
 
