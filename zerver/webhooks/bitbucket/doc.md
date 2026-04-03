@@ -2,6 +2,17 @@
 
 Zulip supports both Git and Mercurial notifications from Bitbucket.
 
+!!! tip ""
+
+    If you also configure a [custom profile
+    field](/help/custom-profile-fields) for Atlassian Cloud account IDs (Bitbucket
+    Cloud only, not Data Center), this integration will refer to Bitbucket users using
+    [Zulip silent mentions](/help/mention-a-user-or-group#silently-mention-a-user),
+    rather than their Bitbucket display name. See [how to find Atlassian
+    account IDs][atlassian-account-id].
+
+[atlassian-account-id]: https://developer.atlassian.com/cloud/automation/resources/how-to-get-user-account-IDs/
+
 {start_tabs}
 
 1. {!create-an-incoming-webhook.md!}

@@ -5,6 +5,7 @@
    "user":{
       "self":"https://zuliptomek.atlassian.net/rest/api/2/user?username=admin",
       "name":"admin",
+      "accountId":"99:b8d8a054-2e12-4839-bd5f-5f2b7c5f5e3a",
       "key":"admin",
       "emailAddress":"kolaszek@go2.pl",
       "avatarUrls":{
@@ -93,6 +94,7 @@
          "assignee":{
             "self":"https://zuliptomek.atlassian.net/rest/api/2/user?username=admin",
             "name":"admin",
+            "accountId":"99:b8d8a054-2e12-4839-bd5f-5f2b7c5f5e3a",
             "key":"admin",
             "emailAddress":"kolaszek@go2.pl",
             "avatarUrls":{
@@ -137,6 +139,7 @@
          "creator":{
             "self":"https://zuliptomek.atlassian.net/rest/api/2/user?username=admin",
             "name":"admin",
+            "accountId":"99:b8d8a054-2e12-4839-bd5f-5f2b7c5f5e3a",
             "key":"admin",
             "emailAddress":"kolaszek@go2.pl",
             "avatarUrls":{
@@ -155,6 +158,7 @@
          "reporter":{
             "self":"https://zuliptomek.atlassian.net/rest/api/2/user?username=admin",
             "name":"admin",
+            "accountId":"99:b8d8a054-2e12-4839-bd5f-5f2b7c5f5e3a",
             "key":"admin",
             "emailAddress":"kolaszek@go2.pl",
             "avatarUrls":{
@@ -190,6 +194,7 @@
                   "author":{
                      "self":"https://zuliptomek.atlassian.net/rest/api/2/user?username=admin",
                      "name":"admin",
+                     "accountId":"99:b8d8a054-2e12-4839-bd5f-5f2b7c5f5e3a",
                      "key":"admin",
                      "emailAddress":"kolaszek@go2.pl",
                      "avatarUrls":{
@@ -206,6 +211,7 @@
                   "updateAuthor":{
                      "self":"https://zuliptomek.atlassian.net/rest/api/2/user?username=admin",
                      "name":"admin",
+                     "accountId":"99:b8d8a054-2e12-4839-bd5f-5f2b7c5f5e3a",
                      "key":"admin",
                      "emailAddress":"kolaszek@go2.pl",
                      "avatarUrls":{
