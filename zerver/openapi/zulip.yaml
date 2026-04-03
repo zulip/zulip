@@ -14458,6 +14458,51 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+          
+  /realm/subdomain/{subdomain}:
+    get:
+      operationId: check_subdomain_available
+      summary: Check subdomain availability
+      description: |
+        Check whether a subdomain is available for use by a new organization.
+      tags:
+        - server_and_organizations
+      parameters:
+        - name: subdomain
+          in: path
+          description: The subdomain to check for availability.
+          schema:
+            type: string
+          example: neworganization
+          required: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result:
+                        $ref: "#/components/schemas/NonEmptyString"
+                      msg:
+                        $ref: "#/components/schemas/NonEmptyString"
+                      data:
+                        type: object
+                        additionalProperties: false
+                        required:
+                          - msg
+                        properties:
+                          msg:
+                            type: string
+                            description: |
+                              Either `available` if the subdomain is available,
+                              or a string describing why it is unavailable.
+                            example: available
+                    required:
+                      - data
   /realm/profile_fields:
     get:
       operationId: get-custom-profile-fields

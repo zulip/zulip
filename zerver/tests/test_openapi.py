@@ -239,7 +239,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/realm/icon",
         "/realm/logo",
         "/realm/deactivate",
-        "/realm/subdomain/{subdomain}",
         # API for Zoom video calls.  Unclear if this can support other apps.
         "/calls/zoom/create",
         #### The following are fake endpoints that live in our zulip.yaml
@@ -490,13 +489,13 @@ so maybe we shouldn't include it in pending_endpoints.
             # function as defined in our urls.py:
             #
             # * method is the HTTP method, e.g. GET, POST, or PATCH
-            #
+        
             # * p.pattern.regex.pattern is the URL pattern; might require
             #   some processing to match with OpenAPI rules
             #
             # * accepted_arguments is the full set of arguments
             #   this method accepts.
-            #
+    
             # * The documented parameters for the endpoint as recorded in our
             #   OpenAPI data in zerver/openapi/zulip.yaml.
             #
