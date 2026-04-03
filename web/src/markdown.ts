@@ -7,9 +7,15 @@ import type Template from "uri-template-lite";
 import render_channel_message_link from "../templates/channel_message_link.hbs";
 import render_topic_link from "../templates/topic_link.hbs";
 import marked from "../third/marked/lib/marked.cjs";
-import type {LinkifierMatch, ParseOptions, RegExpOrStub} from "../third/marked/lib/marked.cjs";
+import type {
+    LinkifierMatch,
+    MarkedOptions,
+    ParseOptions,
+    RegExpOrStub,
+} from "../third/marked/lib/marked.cjs";
 
 import * as fenced_code from "./fenced_code.ts";
+import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
 
 // This contains zulip's frontend Markdown implementation; see
@@ -32,6 +38,25 @@ const preview_regexes = [
 
     /\S*youtube\.com\/\S*/,
 ];
+
+const common_marked_options = {
+    // Enable GitHub Flavored Markdown.
+    gfm: true,
+    // Enable GFM tables.
+    tables: true,
+    // Enable GFM line breaks.
+    breaks: true,
+    // Conform to obscure parts of markdown.pl as much as possible.
+    pedantic: false,
+    // Sanitize the output. Ignore any HTML that has been input.
+    sanitize: true,
+    // Use smarter list behavior than the original markdown.pl.
+    smartLists: true,
+    // Use "smart" typograhic punctuation for things like quotes and dashes.
+    smartypants: false,
+    // Custom Zulip extensions.
+    zulip: true,
+};
 
 function contains_preview_link(content: string): boolean {
     return preview_regexes.some((re) => re.test(content));
@@ -171,6 +196,50 @@ function content_contains_backend_only_syntax(
         contains_problematic_linkifier(content, get_linkifier_map) ||
         contains_topic_wildcard_mention(content)
     );
+}
+
+export function get_first_disallowed_group_mention(content: string): string | null {
+    // Quick check: no @*...* syntax means no group mentions possible
+    if (!/@\*[^*]+\*/.test(content)) {
+        return null;
+    }
+
+    if (!web_app_helpers) {
+        return null;
+    }
+
+    let disallowed_group_name: string | null = null;
+
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const marked_options: MarkedOptions = {
+        ...common_marked_options,
+        // The marked blockquote renderer calls silencedMentionHandler
+        // unconditionally, so we must provide a no-op implementation.
+        silencedMentionHandler: (quote: string) => quote,
+        groupMentionHandler(name: string, silently: boolean): string | undefined {
+            if (disallowed_group_name || silently) {
+                return undefined;
+            }
+            const group_stub = web_app_helpers!.get_user_group_from_name(name);
+            if (group_stub) {
+                const group = user_groups.maybe_get_user_group_from_id(group_stub.id);
+                if (
+                    group?.can_mention_group &&
+                    !user_groups.is_user_in_setting_group(
+                        group.can_mention_group,
+                        web_app_helpers!.my_user_id(),
+                    )
+                ) {
+                    disallowed_group_name = group.name;
+                }
+            }
+            return undefined;
+        },
+    } as MarkedOptions;
+
+    marked(content + "\n\n", marked_options);
+
+    return disallowed_group_name;
 }
 
 function parse_with_options(
@@ -836,14 +905,7 @@ export function parse({
         streamTopicMessageHandler,
         texHandler: handleTex,
         timestampHandler: handleTimestamp,
-        gfm: true,
-        tables: true,
-        breaks: true,
-        pedantic: false,
-        sanitize: true,
-        smartLists: true,
-        smartypants: false,
-        zulip: true,
+        ...common_marked_options,
         renderer,
         preprocessors: [preprocess_code_blocks, preprocess_translate_emoticons],
     };
