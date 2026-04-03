@@ -242,6 +242,47 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
+        target: ".outbox-selection-tooltip",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            const checked = $elem.find(".outbox-selection-checkbox").hasClass("fa-check-square");
+            instance.setContent(
+                checked
+                    ? $t({defaultMessage: "Deselect message"})
+                    : $t({defaultMessage: "Select message"}),
+            );
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".resend-selected-outbox-button-container",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            if ($elem.find(".resend-selected-outbox-button").is(":disabled")) {
+                instance.setContent($t({defaultMessage: "No messages selected"}));
+            } else {
+                instance.setContent($t({defaultMessage: "Resend all selected messages"}));
+            }
+        },
+    });
+
+    tippy.delegate("body", {
+        target: ".cancel-selected-outbox-button-container",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const $elem = $(instance.reference);
+            if ($elem.find(".cancel-selected-outbox-button").is(":disabled")) {
+                instance.setContent($t({defaultMessage: "No messages selected"}));
+            } else {
+                instance.setContent($t({defaultMessage: "Cancel all selected messages"}));
+            }
+        },
+    });
+
+    tippy.delegate("body", {
         target: "#add-poll-modal .dialog_submit_button_container",
         appendTo: () => document.body,
         onShow(instance) {
