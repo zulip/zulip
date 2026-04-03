@@ -782,12 +782,23 @@ def check_and_get_authentication_scheme(request: HttpRequest) -> str:
     auth_header = request.headers.get("Authorization", "")
     if auth_header == "":
         raise UnauthorizedError(_("Missing authorization header"))
-    supported_schemes_match = re.match(r"(bearer|basic) +(\S+)", auth_header.strip(), re.IGNORECASE)
+
+    if settings.ENABLE_ZULIP_OAUTH:
+        supported_schemes_match = re.match(
+            r"(bearer|basic) +(\S+)", auth_header.strip(), re.IGNORECASE
+        )
+    else:
+        supported_schemes_match = re.match(r"(basic) +(\S+)", auth_header.strip(), re.IGNORECASE)
 
     if supported_schemes_match is None:
-        raise JsonableError(
-            _("This endpoint requires HTTP basic authentication or bearer token authentication.")
-        )
+        if settings.ENABLE_ZULIP_OAUTH:
+            raise JsonableError(
+                _(
+                    "This endpoint requires HTTP basic authentication or bearer token authentication."
+                )
+            )
+        else:
+            raise JsonableError(_("This endpoint requires HTTP basic authentication."))
 
     return supported_schemes_match.group(1).lower()
 

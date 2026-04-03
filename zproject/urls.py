@@ -1008,9 +1008,10 @@ urls += [
 ]
 
 # Experimental oauth provider support.
-urls += [
-    path("o/", include((oauth2_endpoint_views, "oauth2_provider"))),
-]
+if settings.ENABLE_ZULIP_OAUTH:
+    urls += [
+        path("o/", include((oauth2_endpoint_views, "oauth2_provider"))),
+    ]
 
 # Healthcheck URL
 urls += [path("health", health)]

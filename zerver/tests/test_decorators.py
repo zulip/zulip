@@ -473,6 +473,13 @@ class DecoratorLoggingTestCase(ZulipTestCase):
             "This endpoint requires HTTP basic authentication or bearer token authentication.",
         )
 
+        with self.settings(ENABLE_ZULIP_OAUTH=False):
+            result = self.client_post("/api/v1/external/zendesk", {}, HTTP_AUTHORIZATION=api_auth)
+            self.assert_json_error(
+                result,
+                "This endpoint requires HTTP basic authentication.",
+            )
+
         api_auth = "Basic " + base64.b64encode(b"foo").decode()
         result = self.client_post("/api/v1/external/zendesk", {}, HTTP_AUTHORIZATION=api_auth)
         self.assert_json_error(
