@@ -12,6 +12,7 @@ import * as emoji_picker from "./emoji_picker.ts";
 import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_report from "./message_report.ts";
 import type {Message} from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -101,7 +102,12 @@ export function initialize({
             const $row = $(instance.reference).closest(".message_row");
             const message_id = rows.id($row);
             let quote_content: string | undefined;
-            if (compose_reply.selection_within_message_id() === message_id) {
+            const highlighted_message_ids = compose_reply.get_highlighted_message_ids();
+            if (
+                highlighted_message_ids &&
+                highlighted_message_ids?.length === 1 &&
+                highlighted_message_ids[0] === message_id
+            ) {
                 // If the user has selected text within this message, quote only that.
                 // We track the selection right now, before the popover option for Quote
                 // and reply is clicked, since by then the selection is lost, due to the
@@ -118,7 +124,7 @@ export function initialize({
             // instance.hide gets called.
             const $popper = $(instance.popper);
             $popper.one("click", ".respond_button", (e) => {
-                compose_reply.quote_message({
+                compose_reply.quote_messages({
                     trigger: "popover respond",
                     message_id,
                     quote_content,
@@ -129,7 +135,7 @@ export function initialize({
             });
 
             $popper.one("click", ".forward_button", (e) => {
-                compose_reply.quote_message({
+                compose_reply.quote_messages({
                     trigger: "popover respond",
                     message_id,
                     quote_content,
@@ -198,24 +204,6 @@ export function initialize({
                 popover_menus.hide_current_popover_if_visible(instance);
             });
 
-            $popper.one("click", ".rehide_muted_user_message", (e) => {
-                const message_id = Number($(e.currentTarget).attr("data-message-id"));
-                assert(message_lists.current !== undefined);
-                const $row = message_lists.current.get_row(message_id);
-                const message = message_lists.current.get(rows.id($row));
-                assert(message !== undefined);
-                const message_container = message_lists.current.view.message_containers.get(
-                    message.id,
-                );
-                assert(message_container !== undefined);
-                if ($row && !message_container.is_hidden) {
-                    message_lists.current.view.hide_revealed_message(message_id);
-                }
-                e.preventDefault();
-                e.stopPropagation();
-                popover_menus.hide_current_popover_if_visible(instance);
-            });
-
             $popper.one("click", ".view_read_receipts", (e) => {
                 const message_id = Number($(e.currentTarget).attr("data-message-id"));
                 read_receipts.show_user_list(message_id);
@@ -232,30 +220,38 @@ export function initialize({
                 popover_menus.hide_current_popover_if_visible(instance);
             });
 
-            $popper.one("click", ".reaction_button", (e) => {
+            $popper.one("click", ".popover_report_message", (e) => {
                 const message_id = Number($(e.currentTarget).attr("data-message-id"));
-                // Don't propagate the click event since `toggle_emoji_popover` opens a
-                // emoji_picker which we don't want to hide after actions popover is hidden.
-                e.stopPropagation();
+                assert(message_lists.current !== undefined);
+                const message = message_lists.current.get(message_id);
+                assert(message !== undefined);
+                message_report.show_message_report_modal(message);
                 e.preventDefault();
-                assert(instance.reference.parentElement !== null);
-                emoji_picker.toggle_emoji_popover(instance.reference.parentElement, message_id, {
-                    placement: "bottom",
-                });
+                e.stopPropagation();
                 popover_menus.hide_current_popover_if_visible(instance);
             });
 
-            $popper.on("click", ".copy_link", (e) => {
-                assert(e.currentTarget instanceof HTMLElement);
-                clipboard_handler.popover_copy_link_to_clipboard(
-                    instance,
-                    $(e.currentTarget),
-                    () => {
-                        show_copied_confirmation(
-                            the($(instance.reference).closest(".message_controls")),
-                        );
-                    },
+            $popper.one("click", ".reaction_button", (e) => {
+                const message_id = Number($(e.currentTarget).attr("data-message-id"));
+                // Don't propagate the click event since the emoji_picker code opens a
+                // popover which we don't want to hide after actions popover is hidden.
+                e.stopPropagation();
+                e.preventDefault();
+                assert(instance.reference.parentElement !== null);
+                emoji_picker.start_picker_for_message_reaction(
+                    instance.reference.parentElement,
+                    message_id,
                 );
+                popover_menus.hide_current_popover_if_visible(instance);
+            });
+
+            $popper.on("click", ".copy_link", function (this: HTMLElement) {
+                void (async () => {
+                    await clipboard_handler.popover_copy_link_to_clipboard(instance, $(this));
+                    show_copied_confirmation(
+                        the($(instance.reference).closest(".message_controls")),
+                    );
+                })();
             });
         },
         onHidden(instance) {

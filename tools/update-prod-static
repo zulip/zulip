@@ -42,6 +42,9 @@ run(["./tools/setup/build_pygments_data"])
 # Build time zone data
 run(["./tools/setup/build_timezone_values"])
 
+# Generate supported browser regex used during initial load
+run(["node", "./tools/setup/build_supported_browser_regex.ts"])
+
 # Generate landing page images of various sizes and formats if we will
 # need them.
 if settings.CORPORATE_ENABLED:

@@ -31,7 +31,11 @@ from zerver.actions.realm_settings import (
 )
 from zerver.decorator import require_post, require_realm_admin, require_realm_owner
 from zerver.forms import check_subdomain_available as check_subdomain
-from zerver.lib.demo_organizations import check_demo_organization_has_set_email
+from zerver.lib.demo_organizations import (
+    check_demo_organization_has_set_email,
+    demo_organization_owner_email_exists,
+    get_demo_organization_deadline_days_remaining,
+)
 from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.response import json_success
@@ -49,15 +53,22 @@ from zerver.lib.user_groups import (
     get_group_setting_value_for_api,
     get_system_user_group_by_name,
     parse_group_setting_value,
+    validate_can_manage_all_groups,
     validate_group_setting_value_change,
 )
 from zerver.lib.validator import check_capped_url, check_string
+from zerver.lib.workplace_users import (
+    realm_eligible_for_non_workplace_pricing,
+    realm_on_discounted_cloud_plan,
+    validate_workplace_users_group,
+)
 from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, UserProfile
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import (
     DigestWeekdayEnum,
     MessageEditHistoryVisibilityPolicyEnum,
     OrgTypeEnum,
+    RealmMediaPreviewSizeEnum,
     RealmTopicsPolicyEnum,
 )
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum
@@ -86,6 +97,9 @@ def check_jitsi_url(value: str) -> str:
         return validator(var_name, value)
     except ValidationError:
         raise JsonableError(_("{var_name} is not an allowed_type").format(var_name=var_name))
+
+
+DEFAULT_AVATAR_SOURCES = [key for key, _ in Realm.AVATAR_SOURCES]
 
 
 @require_realm_admin
@@ -119,6 +133,8 @@ def update_realm(
     can_set_topics_policy_group: Json[GroupSettingChangeRequest] | None = None,
     can_summarize_topics_group: Json[GroupSettingChangeRequest] | None = None,
     create_multiuse_invite_group: Json[GroupSettingChangeRequest] | None = None,
+    default_avatar_source: Annotated[str, check_string_in_validator(DEFAULT_AVATAR_SOURCES)]
+    | None = None,
     default_code_block_language: str | None = None,
     default_language: str | None = None,
     description: Annotated[
@@ -135,13 +151,14 @@ def update_realm(
     enable_guest_user_indicator: Json[bool] | None = None,
     enable_read_receipts: Json[bool] | None = None,
     enable_spectator_access: Json[bool] | None = None,
-    giphy_rating: Json[int] | None = None,
+    gif_rating_policy: Json[int] | None = None,
+    media_preview_size: Json[RealmMediaPreviewSizeEnum] | None = None,
     inline_image_preview: Json[bool] | None = None,
     inline_url_embed_preview: Json[bool] | None = None,
     invite_required: Json[bool] | None = None,
     jitsi_server_url_raw: Annotated[
         Json[str] | None,
-        AfterValidator(lambda val: check_jitsi_url(val)),
+        AfterValidator(check_jitsi_url),
         ApiParamConfig("jitsi_server_url"),
     ] = None,
     message_content_allowed_in_email_notifications: Json[bool] | None = None,
@@ -180,6 +197,7 @@ def update_realm(
     org_type: Json[OrgTypeEnum] | None = None,
     require_e2ee_push_notifications: Json[bool] | None = None,
     require_unique_names: Json[bool] | None = None,
+    send_channel_events_messages: Json[bool] | None = None,
     send_welcome_emails: Json[bool] | None = None,
     signup_announcements_stream_id: Json[int] | None = None,
     string_id: Annotated[
@@ -207,6 +225,7 @@ def update_realm(
             max_length=Realm.MAX_REALM_WELCOME_MESSAGE_CUSTOM_TEXT_LENGTH,
         ),
     ] = None,
+    workplace_users_group: Json[GroupSettingChangeRequest] | None = None,
 ) -> HttpResponse:
     # Realm object is being refetched here to make sure that we
     # do not use stale object from cache which can happen when a
@@ -237,11 +256,13 @@ def update_realm(
                 video_chat_provider=video_chat_provider
             )
         )
-    if giphy_rating is not None and giphy_rating not in {
-        p["id"] for p in Realm.GIPHY_RATING_OPTIONS.values()
+    if gif_rating_policy is not None and gif_rating_policy not in {
+        p["id"] for p in Realm.GIF_RATING_POLICY_OPTIONS.values()
     }:
         raise JsonableError(
-            _("Invalid giphy_rating {giphy_rating}").format(giphy_rating=giphy_rating)
+            _("Invalid gif_rating_policy {gif_rating_policy}").format(
+                gif_rating_policy=gif_rating_policy
+            )
         )
 
     message_retention_days: int | None = None
@@ -371,6 +392,22 @@ def update_realm(
 
             data["jitsi_server_url"] = jitsi_server_url
 
+    if workplace_users_group is not None:
+        # Remove this when the feature is ready for production.
+        assert settings.DEVELOPMENT
+
+        if not realm_eligible_for_non_workplace_pricing(realm):
+            raise JsonableError(
+                _("Organization is not eligible for discounted pricing for non workplace users.")
+            )
+
+        if realm_on_discounted_cloud_plan(realm):
+            raise JsonableError(
+                _(
+                    "Discounted pricing for workplace users cannot be enabled with current discounted plan."
+                )
+            )
+
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.
     #
@@ -425,6 +462,13 @@ def update_realm(
                     permission_configuration=permission_configuration,
                     current_setting_value=current_value,
                 )
+
+                if setting_name == "workplace_users_group":
+                    validate_workplace_users_group(new_setting_value, realm)
+
+                if setting_name == "can_manage_all_groups":
+                    validate_can_manage_all_groups(new_setting_value, realm)
+
                 do_change_realm_permission_group_setting(
                     realm,
                     setting_name,
@@ -544,6 +588,34 @@ def update_realm(
 def deactivate_realm(
     request: HttpRequest, user: UserProfile, *, deletion_delay_days: Json[int | None] = None
 ) -> HttpResponse:
+    realm = user.realm
+
+    # Demo organizations have different conditions for deactivation by
+    # the organization owner than permanent organizations do.
+    if realm.demo_organization_scheduled_deletion_date is not None:
+        # We require that demo organization data be deleted, and if the
+        # demo organization owner has not configured an email address,
+        # then it must be deleted immediately.
+        owner_email_configured = demo_organization_owner_email_exists(realm)
+        if deletion_delay_days is None or (not owner_email_configured and deletion_delay_days != 0):
+            raise JsonableError(_("Invalid data deletion time for demo organization."))
+
+        # If the demo organization owner has configured an email address,
+        # then the data must be deleted before the demo organization's
+        # scheduled deletion date.
+        days_before_scheduled_deletion = get_demo_organization_deadline_days_remaining(realm)
+        if days_before_scheduled_deletion < deletion_delay_days:
+            raise JsonableError(_("Invalid data deletion time for demo organization."))
+
+        do_deactivate_realm(
+            realm,
+            acting_user=user,
+            deactivation_reason="owner_request",
+            email_owners=owner_email_configured,
+            deletion_delay_days=deletion_delay_days,
+        )
+        return json_success(request)
+
     if settings.MAX_DEACTIVATED_REALM_DELETION_DAYS is not None and (
         deletion_delay_days is None
         or deletion_delay_days > settings.MAX_DEACTIVATED_REALM_DELETION_DAYS
@@ -565,7 +637,6 @@ def deactivate_realm(
             )
         )
 
-    realm = user.realm
     do_deactivate_realm(
         realm,
         acting_user=user,
@@ -729,7 +800,8 @@ def update_realm_user_settings_defaults(
     | None = None,
     web_escape_navigates_to_home_view: Json[bool] | None = None,
     web_font_size_px: Json[int] | None = None,
-    web_home_view: Literal["recent_topics", "inbox", "all_messages"] | None = None,
+    web_home_view: Literal["recent", "inbox", "all_messages"] | None = None,
+    web_inbox_show_channel_folders: Json[bool] | None = None,
     web_left_sidebar_show_channel_folders: Json[bool] | None = None,
     web_left_sidebar_unreads_count_summary: Json[bool] | None = None,
     web_line_height_percent: Json[int] | None = None,

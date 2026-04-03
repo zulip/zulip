@@ -1,4 +1,4 @@
-<form id="create_bot_form">
+<form class="modal-form" id="create_bot_form">
     <div class="new-bot-form">
         <div class="input-group">
             <label for="create_bot_type" class="modal-field-label">
@@ -52,8 +52,8 @@
         </div>
         <div id="config_inputbox">
             {{#each realm_embedded_bots}}
-                {{#each config}}
-                    {{> ../embedded_bot_config_item botname=../name key=@key value=this}}
+                {{#each (object_entries config) as |entry|}}
+                    {{> ../embedded_bot_config_item botname=../name key=entry.[0] value=entry.[1]}}
                 {{/each}}
             {{/each}}
         </div>
@@ -64,8 +64,21 @@
             <div id="add_bot_preview_text">
                 <img id="add_bot_preview_image" />
             </div>
-            <button class="button white rounded small button-danger" style="display: none;" id="bot_avatar_clear_button">{{t "Clear avatar" }}</button>
-            <button class="button white rounded" id="bot_avatar_upload_button">{{t "Choose avatar" }}</button> ({{t "Optional" }})
+            {{> ../components/action_button
+              label=(t "Clear avatar")
+              variant="subtle"
+              intent="danger"
+              id="bot_avatar_clear_button"
+              hidden=true
+              }}
+            {{> ../components/action_button
+              label=(t "Upload avatar")
+              variant="subtle"
+              intent="neutral"
+              id="bot_avatar_upload_button"
+              custom_classes="inline-block"
+              }}
+            ({{t "Optional" }})
         </div>
         <p id="bot_avatar_file_input_error" class="text-error"></p>
     </div>

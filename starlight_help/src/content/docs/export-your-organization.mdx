@@ -2,13 +2,13 @@
 title: Export your organization
 ---
 
-import {Steps} from "@astrojs/starlight/components";
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipNote from "../../components/ZulipNote.astro";
 import AdminOnly from "../include/_AdminOnly.mdx";
-import ExportWithoutConsentRequirements from "../include/_ExportWithoutConsentRequirements.mdx";
+import ExportAllPublicAndPrivateDataRequirements from "../include/_ExportAllPublicAndPrivateDataRequirements.mdx";
 import NotHumanExportFormat from "../include/_NotHumanExportFormat.mdx";
 import OwnerOnly from "../include/_OwnerOnly.mdx";
 
@@ -19,79 +19,73 @@ import OwnerOnly from "../include/_OwnerOnly.mdx";
 </ZulipNote>
 
 Zulip has high quality export tools that can be used to migrate between the
-hosted Zulip Cloud service and your own servers. Two types of data exports are
-available for all Zulip organizations:
+hosted Zulip Cloud service and your own servers. Zulip offers the following
+options for exporting data in an importable format:
 
-* [**Export of public
-  data**](#export-for-migrating-to-zulip-cloud-or-a-self-hosted-server):
+* [**Public data
+  only**](#export-data-in-an-importable-format):
   Complete data for your organization *other than* [private
   channel](/help/channel-permissions#private-channels) messages and [direct
   messages](/help/direct-messages). This export includes user settings and
   channel subscriptions.
-* [**Standard
-  export**](#export-for-migrating-to-zulip-cloud-or-a-self-hosted-server):
+* [**Public and private data (with
+  consent)**](#export-data-in-an-importable-format):
   Everything in the export of public data, plus all the [private
   channel](/help/channel-permissions#private-channels) messages and [direct
   messages](/help/direct-messages) that members who have
   [allowed](#configure-whether-administrators-can-export-your-private-data)
   administrators to export their private data can access.
+* [**All public and private data**](#export-of-all-public-and-private-data).
+  This option is only available to **corporate** [Zulip Cloud Standard][plans]
+  and [Zulip Cloud Plus][plans] customers.
 
-Two additional types of data exports are available to **corporate** [Zulip Cloud
-Standard][plans] and [Zulip Cloud Plus][plans] customers:
+In addition, [Zulip Cloud Standard][plans] and [Zulip Cloud Plus][plans]
+customers can request a compliance export:
 
-[plans]: https://zulip.com/plans/
-
-* [**Full export without member consent**](#full-export-without-member-consent):
-  All the data in the organization.
 * [**Compliance export**](#compliance-export): A targeted, human-readable export
   of messages matching some combination of criteria (e.g., sender, recipient,
   message keyword, or timestamp).
 
-## Export for migrating to Zulip Cloud or a self-hosted server
+[plans]: https://zulip.com/plans/
+
+## Export data in an importable format
 
 <AdminOnly />
 
 <NotHumanExportFormat />
 
-<FlattenedSteps>
-  <NavigationSteps target="settings/data-exports-admin" />
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/data-exports-admin" />
 
-  1. Click **Start export**.
-  1. Select the desired **Export type**.
-  1. Click **Start export** to begin the export process. After a few minutes,
-     you'll be able to download the exported data from the list of
-     data exports.
-  1. Use [Zulip's logical data import tool][import-only] to import your data into
-     a self-hosted server. For Zulip Cloud imports, contact
-     [support@zulip.com](mailto:support@zulip.com).
-</FlattenedSteps>
+      1. Click **Start export**.
+      1. Select the desired **Export type**.
+      1. Click **Start export** to begin the export process. After a few minutes,
+         you'll be able to download the exported data from the list of
+         data exports.
+      1. Use [Zulip's logical data import tool][import-only] to import your data into
+         a self-hosted server. For Zulip Cloud imports, contact
+         [support@zulip.com](mailto:support@zulip.com).
+    </FlattenedSteps>
 
-<ZulipNote>
-  Generating the export can take up to an hour for organizations
-  with a large number of messages or uploaded files.
-</ZulipNote>
+    <ZulipNote>
+      Generating the export can take up to an hour for organizations
+      with a large number of messages or uploaded files.
+    </ZulipNote>
+  </TabItem>
+</Tabs>
 
-## Full export without member consent
+### Export of all public and private data
 
 <OwnerOnly />
 
-<NotHumanExportFormat />
+<ExportAllPublicAndPrivateDataRequirements />
 
-<ExportWithoutConsentRequirements />
+Contact [support@zulip.com](mailto:support@zulip.com) to request access to this export
+type, then follow the export instructions above.
 
-<Steps>
-  1. Email [support@zulip.com](mailto:support@zulip.com) with your
-     organization's `zulipchat.com` URL, asking for a **full export without
-     member consent**. Please send the email from the same address
-     that you use to sign in to Zulip, so that Zulip Support can verify
-     that you are an owner of the organization.
-  1. Once your authority to request the export has been verified, you will receive
-     an archive in the `.tar.gz` format containing all the information for your
-     organization.
-  1. Import the tarball using [Zulip's logical data import tool][import-only].
-</Steps>
-
-If you self-host Zulip, a full export without member consent can be performed
+If you self-host Zulip, an export of all public and private data can be performed
 [by your server's administrator][export-and-import].
 
 ## Compliance export
@@ -102,7 +96,7 @@ This type of export is recommended if you plan to work with the exported data
 directly (e.g., reading messages or processing them with a script), rather than
 importing the export into a new Zulip organization.
 
-<ExportWithoutConsentRequirements />
+<ExportAllPublicAndPrivateDataRequirements />
 
 <Steps>
   1. Email [support@zulip.com](mailto:support@zulip.com) asking for a **compliance
@@ -137,6 +131,8 @@ administrator][compliance-exports-self-hosted].
 
 ## Related articles
 
+* [Move from Zulip Cloud to self-hosting](/help/cloud-to-self-hosting)
+* [Move from self-hosting to Zulip Cloud](/help/move-to-zulip-cloud)
 * [Change organization URL](/help/change-organization-url)
 * [Deactivate your organization](/help/deactivate-your-organization)
 * [Import organization into a self-hosted Zulip server][import-only]

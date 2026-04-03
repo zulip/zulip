@@ -11,8 +11,8 @@ from zerver.lib.validator import WildValue, check_bool, check_int, check_string
 from zerver.lib.webhooks.common import (
     OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
-    get_http_headers_from_filename,
-    validate_extract_webhook_http_header,
+    default_fixture_to_headers,
+    get_event_header,
 )
 from zerver.lib.webhooks.git import (
     TOPIC_WITH_BRANCH_TEMPLATE,
@@ -27,7 +27,7 @@ from zerver.lib.webhooks.git import (
 )
 from zerver.models import UserProfile
 
-fixture_to_headers = get_http_headers_from_filename("HTTP_X_GOGS_EVENT")
+fixture_to_headers = default_fixture_to_headers("HTTP_X_GOGS_EVENT")
 
 
 def get_issue_url(repo_url: str, issue_nr: int) -> str:
@@ -197,7 +197,7 @@ def gogs_webhook_main(
     user_specified_topic: str | None,
 ) -> HttpResponse:
     repo = payload["repository"]["name"].tame(check_string)
-    event = validate_extract_webhook_http_header(request, http_header_name, integration_name)
+    event = get_event_header(request, http_header_name, integration_name)
     if event == "push":
         branch = payload["ref"].tame(check_string).replace("refs/heads/", "")
         if not is_branch_name_notifiable(branch, branches):

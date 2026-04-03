@@ -53,46 +53,46 @@ class zulip::common {
   $versions = {
     # https://github.com/cactus/go-camo/releases
     'go-camo' => {
-      'version'   => '2.6.3',
-      'goversion' => '1242',
+      'version'   => '2.7.3',
+      'goversion' => '1260',
       'sha256'    => {
-        'amd64'   => '8ac2122a822366ba4c628fcd99d53e73ac0292456a4cf53548a711ca5500b6d3',
-        'aarch64' => 'a391d1686c604f7f930ac8d31fb3265a6f1841aab8b7ee426391f1bbf1617b15',
+        'amd64'   => 'd1071300b6692d194a439cb4e380ff95e1f4d894e2318bf47aaec077722370b7',
+        'aarch64' => '22afef25d43cb0cb44dac100ec5602846bd66de0d9d3a3c6fc2c98eae82e6639',
       },
     },
 
     # https://go.dev/dl/
     'golang' => {
-      'version' => '1.24.4',
+      'version' => '1.26.0',
       'sha256'  => {
-        'amd64'   => '77e5da33bb72aeaef1ba4418b6fe511bc4d041873cbf82e5aa6318740df98717',
-        'aarch64' => 'd5501ee5aca0f258d5fe9bfaed401958445014495dc115f202d43d5210b45241',
+        'amd64'   => 'aac1b08a0fb0c4e0a7c1555beb7b59180b05dfc5a3d62e40e9de90cd42f88235',
+        'aarch64' => 'bd03b743eb6eb4193ea3c3fd3956546bf0e3ca5b7076c8226334afe6b75704cd',
       },
     },
 
     # https://github.com/stripe/smokescreen/tags
     'smokescreen-src' => {
-      'version' => '1b618edf4d3dda409ab7a00cdf3f202e143b5289',
+      'version' => '464b1115f802cbd91ffee555a41e71546646d396',
       # Source code, so arch-invariant sha256
-      'sha256'  => '19ffe07eaab321b3ce33b64d893a09ffc9cb520c8672458b761d0a76147079e3',
+      'sha256'  => '800d455bbdd23df0587b72e05e9bb51ce80d0f5816bd1b7070c2c26f4340cfca',
     },
 
     # https://github.com/tus/tusd/releases
     # Keep in sync with tools/setup/install-tusd
     'tusd' => {
-      'version' => '2.8.0',
+      'version' => '2.9.1',
       'sha256'  => {
-        'amd64'   => 'e13c8adc9bed4c993a72f60140f688736058d2c3f4a18fb6e59ca26e829fb93b',
-        'aarch64' => '089eb6d144df7cc5e10ac611a18f407308aedb3f9024a78fa01cb60ba99005a9',
+        'amd64'   => '140066be543e40493abd1fda1d1e33ab7fa0e8b9a61d247130f6777e64bf28f6',
+        'aarch64' => 'c9c46eba6e46b8062f863af6a5423f6f72b5157939d967087cd9b6d7c6bd19cf',
       },
     },
 
     # https://github.com/wal-g/wal-g/releases
     'wal-g' => {
-      'version' => '3.0.7',
+      'version' => '3.0.8',
       'sha256'  => {
-        'amd64'   => '76d51ed915165d45314bc947300b9d1776adb2d875d857f580a730fd6f66900e',  # The ubuntu-22.04 version
-        'aarch64' => 'fcf25aac732f66e77e121e9d287a08d8bf867c604b81cb6fcfff2d6c692d38c9',  # The ubuntu-22.04 version
+        'amd64'   => 'b0df1b484035eb5f131db7bbd303d1a460391848fdcce34ba1e0a564cca493e9',  # wal-g-pg-22.04-amd64.tar.gz
+        'aarch64' => '048b5033c34c1487dc1fccc0572db030e323230984ccc093e80e4e4081c797d1',  # wal-g-pg-22.04-aarch64.tar.gz
       },
     },
 
@@ -100,28 +100,28 @@ class zulip::common {
 
     # https://docs.aws.amazon.com/rolesanywhere/latest/userguide/credential-helper.html
     'aws_signing_helper' => {
-      'version' => '1.7.0',
+      'version' => '1.7.3',
       'sha256'  => {
-        'amd64'   => 'e932f029b73f97523c1dea2e78e9543d9e2753c387c4c46e77be8c1d9424db0f',
-        'aarch64' => '800fc208b74cdb64b8c7270c41aa0c9d2f9bf5bba498539513acb30f8eb8f164',
+        'amd64'   => 'ef609ae021e86a2778b63dc80f4280033fcb1450bddb8b234b4ccd30f917ed21',
+        'aarch64' => '7aaf8b3a4ceac464931dec27bcfd58e4facc93fb48402381e3f96bb45de5a356',
       },
     },
 
     # https://release-registry.services.sentry.io/apps/sentry-cli/latest
     'sentry-cli' => {
-      'version' => '2.46.0',
+      'version' => '2.58.4',
       'sha256'  => {
-        'amd64'   => 'a55b96a0d5391c5206c2bc028e52dd9797dc3646556291cca09d00a19707f85e',
-        'aarch64' => '00b292f4edc9c13b079123b574abe73c012b7357426d34bbbf0bd0a5ab59a491',
+        'amd64'   => 'a4932b4315b192b3d037678a16eb2a5a8731609f671fc4008e643b85c3c74cb6',
+        'aarch64' => '672cb986b0c5d84ef724f39b3aa189be802bceb8bc7dc8c5776a0ca90fcf41bd',
       },
     },
 
     # https://grafana.com/grafana/download?edition=oss
     'grafana' => {
-      'version' => '12.0.2',
+      'version' => '12.3.3',
       'sha256'  => {
-        'amd64'   => 'c1755b4da918edfd298d5c8d5f1ffce35982ad10e1640ec356570cfb8c34b3e8',
-        'aarch64' => 'bc0b186458cc91e2f96a06ecff2b3b4033b1a6ffd2449817e2a430a0b4ae4f12',
+        'amd64'   => 'd69b850d02903bcfe27289661c5b0b1b9a67d0bf0c42d344d55d0e63e62a7bda',
+        'aarch64' => 'a2a50f6a63c89c59914b604482500de2648d12ee266d8eac8886815710482614',
       },
     },
 
@@ -136,26 +136,26 @@ class zulip::common {
 
     # https://prometheus.io/download/#node_exporter
     'node_exporter' => {
-      'version' => '1.9.1',
+      'version' => '1.10.2',
       'sha256'  => {
-        'amd64'   => 'becb950ee80daa8ae7331d77966d94a611af79ad0d3307380907e0ec08f5b4e8',
-        'aarch64' => '848f139986f63232ced83babe3cad1679efdbb26c694737edc1f4fbd27b96203',
+        'amd64'   => 'c46e5b6f53948477ff3a19d97c58307394a29fe64a01905646f026ddc32cb65b',
+        'aarch64' => 'de69ec8341c8068b7c8e4cfe3eb85065d24d984a3b33007f575d307d13eb89a6',
       },
     },
 
     # https://github.com/prometheus-community/postgres_exporter/tags
     'postgres_exporter' => {
-      'version' => '0.17.1',
+      'version' => '0.19.0',
       'sha256'  => {
-        'amd64'   => '6da7d2edafd69ecceb08addec876786fa609849f6d5f903987c0d61c3fc89506',
-        'aarch64' => '405af4e838a3d094d575e5aaeac43bd0a1818aaf2c840a3c8fc2c6fcc77218dc',
+        'amd64'   => '11033f9016d0c5a5b91742d17aa37490b170f055ec1bb0d7d69509d223952ed0',
+        'aarch64' => '8a2f55b1a00694758ea4bfd96a8bb814c1b279cf9d233a24fecd28a9e87c6280',
       },
     },
 
     # https://github.com/prometheus-community/postgres_exporter/pull/843
     'postgres_exporter-src' => {
-      'version' => 'a90028d313e914d0736c94bb896c06818afcefb1',
-      'sha256'  => 'b52909bda1fc60bcdde1dd800e4d088a7a5027ecafa152e034d30e82329dba41',
+      'version' => '86a2b77aa522f57a136d04ffa33f0e46713d1925',
+      'sha256'  => '03b3a4e794b6c01e911c3f7f4d77a2889d6946e2245f8d12d14844c29554a884',
     },
 
     # https://github.com/ncabatoff/process-exporter/releases
@@ -169,19 +169,28 @@ class zulip::common {
 
     # https://prometheus.io/download/#prometheus
     'prometheus' => {
-      'version' => '3.4.1',
+      'version' => '3.9.1',
       'sha256'  => {
-        'amd64'   => '09203151c132f36b004615de1a3dea22117ad17e6d7a59962e34f3abf328f312',
-        'aarch64' => '2a85be1dff46238c0d799674e856c8629c8526168dd26c3de2cecfbfc6f9a0a2',
+        'amd64'   => '86a6999dd6aacbd994acde93c77cfa314d4be1c8e7b7c58f444355c77b32c584',
+        'aarch64' => '4e7f291e527d8aca912a995c183128388c9e048065aff84f74f5a55c9bef3793',
+      },
+    },
+
+    # https://github.com/prometheus/pushgateway/releases
+    'pushgateway' => {
+      'version' => '1.11.2',
+      'sha256'  => {
+        'amd64'   => '2ec72315e150dda071fdeef09360780a386a67e5207ebaa53bb18f2f1a3b89cf',
+        'aarch64' => 'b3fb835dbb0a29b1d6f9cd7ae3568a5615e59b96f8787965248cea67163d4db1',
       },
     },
 
     # https://github.com/oliver006/redis_exporter/releases
     'redis_exporter' => {
-      'version' => '1.74.0',
+      'version' => '1.81.0',
       'sha256'  => {
-        'amd64'   => '481830d1a238cadfb84dacef9381012c7b2aa1d400baa9bc551995b8839f55a3',
-        'aarch64' => 'a864fed00d83c4f43257738abd0cd09343b075591eae2ee43a573e0c9693c36c',
+        'amd64'   => 'd2f4740fa81e1a274ca99677783f3fe1544f6022fed997d4cd632d01a8eff1bb',
+        'aarch64' => '038d0d2d8f044075cc97acd323c16a8c3628f08ef7d186601fedaa38b71aad8f',
       },
     },
 
@@ -196,10 +205,10 @@ class zulip::common {
 
     # https://vector.dev/download/
     'vector' => {
-      'version' => '0.47.0',
+      'version' => '0.53.0',
       'sha256'  => {
-        'amd64'   => '478c1c85a0279e9f05a4253b518c8e93b6e2154e36e8cb3d8d77c2e496316682',
-        'aarch64' => '614ff0481a901ece8634e734c94c318bf63fca34d00d0605e456dbfa3b5f80b8',
+        'amd64'   => '5460f93310eb59cc9e7ee7717a179f1bf2ff8fbc046b7e3eb625159a5e8714bb',
+        'aarch64' => '2722dec4f5c358793caeb86b4f4febd047b37a2d688af181e8264a764ecd28e5',
       },
     },
   }

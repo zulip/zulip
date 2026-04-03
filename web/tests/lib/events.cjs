@@ -1,5 +1,7 @@
 "use strict";
 
+const {Role} = require("./example_user.cjs");
+
 //  These events are not guaranteed to be perfectly
 //  representative of what the server sends.  We
 //  have a tool called check-schemas that tries
@@ -56,6 +58,7 @@ exports.test_streams = {
         stream_post_policy: 1,
         topics_policy: "inherit",
         can_administer_channel_group: 2,
+        can_create_topic_group: 2,
         can_delete_any_message_group: 2,
         can_delete_own_message_group: 2,
         can_move_messages_out_of_channel_group: 2,
@@ -82,6 +85,7 @@ exports.test_streams = {
         stream_post_policy: 1,
         topics_policy: "inherit",
         can_administer_channel_group: 2,
+        can_create_topic_group: 2,
         can_delete_any_message_group: 2,
         can_delete_own_message_group: 2,
         can_move_messages_out_of_channel_group: 2,
@@ -139,12 +143,7 @@ exports.fixtures = {
             size: 4096,
             path_id: "path_id",
             create_time: fake_now,
-            messages: [
-                {
-                    id: 1000,
-                    date_sent: fake_now,
-                },
-            ],
+            message_ids: [1000],
         },
         upload_space_used: 90000,
     },
@@ -409,6 +408,20 @@ exports.fixtures = {
         value: false,
     },
 
+    realm__update__media_preview_size: {
+        type: "realm",
+        op: "update",
+        property: "media_preview_size",
+        value: 150,
+    },
+
+    realm__update__moderation_request_channel_id: {
+        type: "realm",
+        op: "update",
+        property: "moderation_request_channel_id",
+        value: 43,
+    },
+
     realm__update__name: {
         type: "realm",
         op: "update",
@@ -511,17 +524,10 @@ exports.fixtures = {
         type: "realm_bot",
         op: "add",
         bot: {
-            email: "the-bot@example.com",
             user_id: 42,
-            avatar_url: "/avatar/42",
-            api_key: "SOME_KEY",
-            full_name: "The Bot",
-            bot_type: 1,
             default_all_public_streams: true,
             default_events_register_stream: "whatever",
             default_sending_stream: "whatever",
-            is_active: true,
-            owner_id: test_user.user_id,
             services: [],
         },
     },
@@ -539,7 +545,7 @@ exports.fixtures = {
         op: "update",
         bot: {
             user_id: 4321,
-            full_name: "The Bot Has A New Name",
+            default_sending_stream: "new-stream",
         },
     },
 
@@ -584,7 +590,7 @@ exports.fixtures = {
                 deleted_timestamp: null,
                 failed_timestamp: null,
                 pending: true,
-                export_type: 1,
+                export_type: "public",
             },
         ],
     },
@@ -628,7 +634,7 @@ exports.fixtures = {
             is_admin: false,
             is_active: true,
             is_owner: false,
-            role: 400,
+            role: Role.MEMBER,
             is_bot: false,
             is_guest: false,
             profile_data: {},
@@ -648,7 +654,7 @@ exports.fixtures = {
             is_admin: false,
             is_active: true,
             is_owner: false,
-            role: 400,
+            role: Role.MEMBER,
             is_bot: true,
             is_guest: false,
             profile_data: {},
@@ -1240,7 +1246,14 @@ exports.fixtures = {
         type: "user_settings",
         op: "update",
         property: "web_home_view",
-        value: "recent_topics",
+        value: "recent",
+    },
+
+    user_settings__web_inbox_show_channel_folders: {
+        type: "user_settings",
+        op: "update",
+        property: "web_inbox_show_channel_folders",
+        value: false,
     },
 
     user_settings__web_left_sidebar_show_channel_folders: {

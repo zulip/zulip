@@ -1,1 +1,5 @@
+{% if is_demo_organization %}
+{% trans %}Reactivate your Zulip demo organization{% endtrans %}
+{% else %}
 {% trans %}Reactivate your Zulip organization{% endtrans %}
+{% endif %}

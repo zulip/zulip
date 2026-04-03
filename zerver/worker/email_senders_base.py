@@ -1,7 +1,6 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import copy
 import logging
-import socket
 from collections.abc import Callable
 from functools import wraps
 from typing import Any
@@ -32,7 +31,7 @@ def retry_send_email_failures(
     def wrapper(worker: ConcreteQueueWorker, data: dict[str, Any]) -> None:
         try:
             func(worker, data)
-        except (socket.gaierror, TimeoutError, EmailNotDeliveredError) as e:
+        except (OSError, EmailNotDeliveredError) as e:
             error_class_name = type(e).__name__
 
             def on_failure(event: dict[str, Any]) -> None:

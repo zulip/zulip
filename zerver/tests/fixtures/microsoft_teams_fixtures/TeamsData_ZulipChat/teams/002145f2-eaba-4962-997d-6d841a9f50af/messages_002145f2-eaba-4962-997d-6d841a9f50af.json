@@ -1,0 +1,306 @@
+[
+  {
+    "Id": "1759320958611",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003Cp\u003E\u003Cspan\u003E\u003Ccustomemoji id=\u0022MC13dXMtZDEtZWMzY2I4NmY3MmM5YzBjNGJlMjE2Zjk3MTM1MDZkNTQ=\u0022 alt=\u0022notif-bot\u0022 source=\u0022https://graph.microsoft.com/v1.0/teams/002145f2-eaba-4962-997d-6d841a9f50af/channels/19:9OOyLpkB8mEaoB17Z5CJx-RDBuMCZ5IZfuZVTCV97Bg1@thread.tacv2/messages/1759320958611/hostedContents/aWQ9LHR5cGU9MSx1cmw9aHR0cHM6Ly91cy1wcm9kLmFzeW5jZ3cudGVhbXMubWljcm9zb2Z0LmNvbS92MS9vYmplY3RzLzAtd3VzLWQxLWVjM2NiODZmNzJjOWMwYzRiZTIxNmY5NzEzNTA2ZDU0L3ZpZXdzL2ltZ3QyX2FuaW0=/$value\u0022\u003E\u003C/customemoji\u003E\u003C/span\u003E\u003Cspan\u003E\u003Ccustomemoji id=\u0022MC13dXMtZDItMWNmOWZmOGQ2OTFiOGM5ZjExYzhhM2ZhMzJiMzFlMDU=\u0022 alt=\u0022zlp-logo\u0022 source=\u0022https://graph.microsoft.com/v1.0/teams/002145f2-eaba-4962-997d-6d841a9f50af/channels/19:9OOyLpkB8mEaoB17Z5CJx-RDBuMCZ5IZfuZVTCV97Bg1@thread.tacv2/messages/1759320958611/hostedContents/aWQ9LHR5cGU9MSx1cmw9aHR0cHM6Ly91cy1wcm9kLmFzeW5jZ3cudGVhbXMubWljcm9zb2Z0LmNvbS92MS9vYmplY3RzLzAtd3VzLWQyLTFjZjlmZjhkNjkxYjhjOWYxMWM4YTNmYTMyYjMxZTA1L3ZpZXdzL2ltZ3QyX2FuaW0=/$value\u0022\u003E\u003C/customemoji\u003E\u003C/span\u003E\u003C/p\u003E"
+    },
+    "CreatedDateTime": "2025-10-01T12:15:58.611+00:00",
+    "LastModifiedDateTime": "2025-10-13T06:41:52+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": "Custom emojis",
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A9OOyLpkB8mEaoB17Z5CJx-RDBuMCZ5IZfuZVTCV97Bg1%40thread.tacv2/1759320958611?groupId=002145f2-eaba-4962-997d-6d841a9f50af\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1759320958611\u0026parentMessageId=1759320958611",
+    "From": {
+      "Application": null,
+      "Device": null,
+      "User": {
+        "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+        "DisplayName": "Pieter K",
+        "UserIdentityType": "aadUser",
+        "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+      }
+    },
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [
+      {
+        "CreatedDateTime": "2025-10-13T06:41:47+00:00",
+        "ReactionType": "custom",
+        "User": {
+          "Application": null,
+          "Device": null,
+          "User": {
+            "DisplayName": "Pieter K",
+            "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+            "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940",
+            "Thumbnails": null
+          }
+        }
+      },
+      {
+        "CreatedDateTime": "2025-10-13T06:41:52+00:00",
+        "ReactionType": "custom",
+        "User": {
+          "Application": null,
+          "Device": null,
+          "User": {
+            "DisplayName": "Pieter K",
+            "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+            "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940",
+            "Thumbnails": null
+          }
+        }
+      }
+    ],
+    "MessageHistory": [
+      {
+        "ModifiedDateTime": "2025-10-13T06:41:47+00:00",
+        "Actions": "reactionAdded",
+        "Reaction": {
+          "CreatedDateTime": "2025-10-13T06:41:47+00:00",
+          "ReactionType": "custom",
+          "User": {
+            "Application": null,
+            "Device": null,
+            "User": {
+              "DisplayName": "Pieter K",
+              "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+              "TenantId": null,
+              "Thumbnails": null
+            }
+          }
+        }
+      },
+      {
+        "ModifiedDateTime": "2025-10-13T06:41:52+00:00",
+        "Actions": "reactionAdded",
+        "Reaction": {
+          "CreatedDateTime": "2025-10-13T06:41:52+00:00",
+          "ReactionType": "custom",
+          "User": {
+            "Application": null,
+            "Device": null,
+            "User": {
+              "DisplayName": "Pieter K",
+              "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+              "TenantId": null,
+              "Thumbnails": null
+            }
+          }
+        }
+      }
+    ],
+    "MessageType": "message",
+    "ChannelIdentity": {
+      "ChannelId": "19:9OOyLpkB8mEaoB17Z5CJx-RDBuMCZ5IZfuZVTCV97Bg1@thread.tacv2",
+      "TeamId": "002145f2-eaba-4962-997d-6d841a9f50af"
+    },
+    "ChatId": null,
+    "EventDetail": null
+  },
+  {
+    "Id": "1760338105757",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003Cattachment id=\u002280b1e5a8-fc12-470f-a4b5-190069bebaa8\u0022\u003E\u003C/attachment\u003E\u003Cattachment id=\u00225aface0d-d71d-4a5a-bee5-d3082edd3976\u0022\u003E\u003C/attachment\u003E\u003Cattachment id=\u00223faa6aed-2634-4ebd-9bb9-fc79836d6f08\u0022\u003E\u003C/attachment\u003E\u003Cattachment id=\u00225ea01d8e-599d-4609-9d65-8d0733db2c51\u0022\u003E\u003C/attachment\u003E\u003Cattachment id=\u0022a78c77d3-671e-4173-9e35-09c74fda550f\u0022\u003E\u003C/attachment\u003E\u003Cattachment id=\u0022839b3a3d-7943-4597-9af0-1e387cd03fad\u0022\u003E\u003C/attachment\u003E\u003Cattachment id=\u002200a9384b-94e7-43d2-807a-8f17507f6c88\u0022\u003E\u003C/attachment\u003E\u003Cattachment id=\u0022838aa8a1-23b7-4d8f-8aa0-415d127f58e7\u0022\u003E\u003C/attachment\u003E\u003Cattachment id=\u00220a65056d-3d25-47e3-bb1b-4cb3151086be\u0022\u003E\u003C/attachment\u003E"
+    },
+    "CreatedDateTime": "2025-10-13T06:48:25.757+00:00",
+    "LastModifiedDateTime": "2025-10-13T06:48:25.757+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": "File objects",
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A9OOyLpkB8mEaoB17Z5CJx-RDBuMCZ5IZfuZVTCV97Bg1%40thread.tacv2/1760338105757?groupId=002145f2-eaba-4962-997d-6d841a9f50af\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1760338105757\u0026parentMessageId=1760338105757",
+    "From": {
+      "Application": null,
+      "Device": null,
+      "User": {
+        "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+        "DisplayName": "Pieter K",
+        "UserIdentityType": "aadUser",
+        "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+      }
+    },
+    "Attachments": [
+      {
+        "Id": "80b1e5a8-fc12-470f-a4b5-190069bebaa8",
+        "ContentType": "reference",
+        "ContentUrl": "https://zulipchat.sharepoint.com/sites/Community/Shared Documents/General/wp12245700.jpg",
+        "Content": null,
+        "Name": "wp12245700.jpg",
+        "ThumbnailUrl": null,
+        "TeamsAppId": null
+      },
+      {
+        "Id": "5aface0d-d71d-4a5a-bee5-d3082edd3976",
+        "ContentType": "reference",
+        "ContentUrl": "https://zulipchat.sharepoint.com/sites/Community/Shared Documents/General/zlp_logo.png",
+        "Content": null,
+        "Name": "zlp_logo.png",
+        "ThumbnailUrl": null,
+        "TeamsAppId": null
+      },
+      {
+        "Id": "3faa6aed-2634-4ebd-9bb9-fc79836d6f08",
+        "ContentType": "reference",
+        "ContentUrl": "https://zulipchat.sharepoint.com/sites/Community/Shared Documents/General/zulip-export-j8zps83t.tar.gz",
+        "Content": null,
+        "Name": "zulip-export-j8zps83t.tar.gz",
+        "ThumbnailUrl": null,
+        "TeamsAppId": null
+      },
+      {
+        "Id": "5ea01d8e-599d-4609-9d65-8d0733db2c51",
+        "ContentType": "reference",
+        "ContentUrl": "https://zulipchat.sharepoint.com/sites/Community/Shared Documents/General/TeamsData2025-10-09.zip",
+        "Content": null,
+        "Name": "TeamsData2025-10-09.zip",
+        "ThumbnailUrl": null,
+        "TeamsAppId": null
+      },
+      {
+        "Id": "a78c77d3-671e-4173-9e35-09c74fda550f",
+        "ContentType": "reference",
+        "ContentUrl": "https://zulipchat.sharepoint.com/sites/Community/Shared Documents/General/usersList.json",
+        "Content": null,
+        "Name": "usersList.json",
+        "ThumbnailUrl": null,
+        "TeamsAppId": null
+      },
+      {
+        "Id": "839b3a3d-7943-4597-9af0-1e387cd03fad",
+        "ContentType": "reference",
+        "ContentUrl": "https://zulipchat.sharepoint.com/sites/Community/Shared Documents/General/Hashing.xlsx",
+        "Content": null,
+        "Name": "Hashing.xlsx",
+        "ThumbnailUrl": null,
+        "TeamsAppId": null
+      },
+      {
+        "Id": "00a9384b-94e7-43d2-807a-8f17507f6c88",
+        "ContentType": "reference",
+        "ContentUrl": "https://zulipchat.sharepoint.com/sites/Community/Shared Documents/General/Untitled document.txt",
+        "Content": null,
+        "Name": "Untitled document.txt",
+        "ThumbnailUrl": null,
+        "TeamsAppId": null
+      },
+      {
+        "Id": "838aa8a1-23b7-4d8f-8aa0-415d127f58e7",
+        "ContentType": "reference",
+        "ContentUrl": "https://zulipchat.sharepoint.com/sites/Community/Shared Documents/General/Untitled document.pdf",
+        "Content": null,
+        "Name": "Untitled document.pdf",
+        "ThumbnailUrl": null,
+        "TeamsAppId": null
+      },
+      {
+        "Id": "0a65056d-3d25-47e3-bb1b-4cb3151086be",
+        "ContentType": "reference",
+        "ContentUrl": "https://zulipchat.sharepoint.com/sites/Community/Shared Documents/General/Untitled document.docx",
+        "Content": null,
+        "Name": "Untitled document.docx",
+        "ThumbnailUrl": null,
+        "TeamsAppId": null
+      }
+    ],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "message",
+    "ChannelIdentity": {
+      "ChannelId": "19:9OOyLpkB8mEaoB17Z5CJx-RDBuMCZ5IZfuZVTCV97Bg1@thread.tacv2",
+      "TeamId": "002145f2-eaba-4962-997d-6d841a9f50af"
+    },
+    "ChatId": null,
+    "EventDetail": null
+  },
+  {
+    "Id": "1760954236688",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003CsystemEventMessage/\u003E"
+    },
+    "CreatedDateTime": "2025-10-20T09:57:16.688+00:00",
+    "LastModifiedDateTime": "2025-10-20T09:57:16.688+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": null,
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A9OOyLpkB8mEaoB17Z5CJx-RDBuMCZ5IZfuZVTCV97Bg1%40thread.tacv2/1760954236688?groupId=002145f2-eaba-4962-997d-6d841a9f50af\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1760954236688\u0026parentMessageId=1760954236688",
+    "From": null,
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "unknownFutureValue",
+    "ChannelIdentity": {
+      "ChannelId": "19:9OOyLpkB8mEaoB17Z5CJx-RDBuMCZ5IZfuZVTCV97Bg1@thread.tacv2",
+      "TeamId": "002145f2-eaba-4962-997d-6d841a9f50af"
+    },
+    "ChatId": null,
+    "EventDetail": {
+      "EventType": null,
+      "Initiator": {
+        "Application": null,
+        "Device": null,
+        "User": {
+          "DisplayName": null,
+          "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+          "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940",
+          "Thumbnails": null
+        },
+        "Conversation": null,
+        "ConversationIdentityType": null,
+        "Encrypted": null,
+        "OnPremises": null,
+        "Guest": null,
+        "Phone": null
+      },
+      "CallEnded": null,
+      "CallRecording": null,
+      "CallStarted": null,
+      "CallTranscript": null,
+      "ChannelAdded": null,
+      "ChannelDeleted": null,
+      "ChannelDescriptionUpdated": null,
+      "ChannelRenamed": null,
+      "ChannelSetAsFavoriteByDefault": null,
+      "ChannelUnsetAsFavoriteByDefault": null,
+      "ChatRenamed": null,
+      "ConversationMemberRoleUpdated": null,
+      "MeetingPolicyUpdated": null,
+      "MembersAdded": null,
+      "MembersDeleted": null,
+      "MembersJoined": null,
+      "MembersLeft": null,
+      "MessagePinned": null,
+      "MessageUnpinned": null,
+      "TabUpdated": null,
+      "TeamArchived": null,
+      "TeamCreated": null,
+      "TeamDescriptionUpdated": null,
+      "TeamJoiningDisabled": null,
+      "TeamJoiningEnabled": null,
+      "TeamRenamed": null,
+      "TeamsAppInstalled": null,
+      "TeamsAppRemoved": null,
+      "TeamsAppUpgraded": null,
+      "TeamUnarchived": null
+    }
+  }
+]

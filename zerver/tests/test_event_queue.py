@@ -4,6 +4,7 @@ from typing import Any
 from unittest import mock
 
 import orjson
+import time_machine
 from django.http import HttpRequest, HttpResponse
 from typing_extensions import override
 
@@ -16,15 +17,24 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.cache import cache_delete, get_muting_users_cache_key
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, dummy_handler, mock_queue_publish
-from zerver.models import PushDevice, Recipient, Subscription, UserProfile, UserTopic
+from zerver.models import Device, Recipient, Subscription, UserProfile, UserTopic
 from zerver.models.streams import get_stream
 from zerver.tornado.event_queue import (
+    DEFAULT_EVENT_QUEUE_TIMEOUT_SECS,
+    EVENT_QUEUE_OFFLINE_TIMEOUT_SECS,
+    MAX_QUEUE_TIMEOUT_SECS,
+    MOBILE_EVENT_QUEUE_TIMEOUT_SECS,
     ClientDescriptor,
     access_client_descriptor,
+    add_client_gc_hook,
     allocate_client_descriptor,
+    clients,
+    gc_event_queues,
+    mark_clients_offline,
     maybe_enqueue_notifications,
     missedmessage_hook,
     persistent_queue_filename,
+    receiver_is_off_zulip,
 )
 from zerver.tornado.views import cleanup_event_queue, get_events
 
@@ -120,7 +130,7 @@ class StreamWatchersTest(ZulipTestCase):
         missedmessage_hook(
             user_profile_id=hamlet.id,
             client=client,
-            last_for_client=True,
+            last_client_for_user=True,
         )
 
 
@@ -313,7 +323,7 @@ class MissedMessageHookTest(ZulipTestCase):
         do_change_user_setting(
             self.user_profile, "enable_offline_push_notifications", True, acting_user=None
         )
-        PushDevice.objects.all().delete()
+        Device.objects.filter(push_token_id__isnull=False).delete()
         msg_id = self.send_personal_message(self.iago, self.user_profile)
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
@@ -427,8 +437,54 @@ class MissedMessageHookTest(ZulipTestCase):
                 already_notified={"email_notified": False, "push_notified": False},
             )
 
+    def test_wildcard_mentions_notify_stream_specific_setting_in_muted_stream(self) -> None:
+        # If wildcard_mentions_notify=True for a muted channel,
+        # it overrides channel muting and notifies user.
+        self.change_subscription_properties({"is_muted": True, "wildcard_mentions_notify": True})
+        msg_id = self.send_stream_message(self.iago, "Denmark", content="@**all** what's up?")
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                stream_wildcard_mention_email_notify=True,
+                stream_wildcard_mention_push_notify=True,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                already_notified={"email_notified": True, "push_notified": True},
+            )
+
     def test_stream_wildcard_mention_in_muted_topic(self) -> None:
         # stream wildcard mentions in muted topics don't notify.
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "mutingtest",
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+        )
+        msg_id = self.send_stream_message(
+            self.iago, "Denmark", topic_name="mutingtest", content="@**all** what's up?"
+        )
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                stream_wildcard_mention_email_notify=False,
+                stream_wildcard_mention_push_notify=False,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                already_notified={"email_notified": False, "push_notified": False},
+            )
+
+    def test_wildcard_mentions_notify_stream_specific_setting_in_muted_topic(self) -> None:
+        # Even with channel-specific wildcard_mentions_notify=True,
+        # muted topics should still suppress notifications.
+        self.change_subscription_properties({"wildcard_mentions_notify": True})
         do_set_user_topic_visibility_policy(
             self.user_profile,
             get_stream("Denmark", self.user_profile.realm),
@@ -1527,3 +1583,178 @@ class EventQueueTest(ZulipTestCase):
 
         queue.prune(1)
         self.verify_to_dict_end_to_end(client)
+
+
+class OfflineEventQueueTest(ZulipTestCase):
+    """Tests for the offline marking mechanism for long-lived event queues."""
+
+    NOW = time.time()
+    LONG_LIVED_EVENT_QUEUE_TIMEOUT_SECS = EVENT_QUEUE_OFFLINE_TIMEOUT_SECS + 10 * 60 * 60
+
+    def allocate_queue(
+        self,
+        user: UserProfile,
+        queue_timeout: int | str | None,
+    ) -> ClientDescriptor:
+        queue_data: dict[str, Any] = dict(
+            all_public_streams=False,
+            apply_markdown=True,
+            client_gravatar=True,
+            client_type_name="ZulipFlutter",
+            event_types=["message"],
+            last_connection_time=time.time(),
+            queue_timeout=queue_timeout,
+            realm_id=user.realm.id,
+            user_profile_id=user.id,
+        )
+        return allocate_client_descriptor(queue_data)
+
+    @time_machine.travel(NOW, tick=False)
+    def test_should_mark_offline(self) -> None:
+        hamlet = self.example_user("hamlet")
+        client = self.allocate_queue(hamlet, queue_timeout=self.LONG_LIVED_EVENT_QUEUE_TIMEOUT_SECS)
+        now = time.time()
+
+        # A connected handler should not be marked offline.
+        client.current_handler_id = 999
+        self.assertFalse(client.should_mark_offline(now))
+        client.current_handler_id = None
+
+        # Already offline queues should not be re-marked.
+        client.offline = True
+        self.assertFalse(client.should_mark_offline(now))
+        client.offline = False
+
+        # An idle queue past the threshold should be marked offline.
+        client.last_connection_time = now - EVENT_QUEUE_OFFLINE_TIMEOUT_SECS - 1
+        self.assertTrue(client.should_mark_offline(now))
+
+        # Not idle long enough.
+        client.last_connection_time = now - EVENT_QUEUE_OFFLINE_TIMEOUT_SECS + 1
+        self.assertFalse(client.should_mark_offline(now))
+
+    def test_mark_clients_offline_fires_missedmessage_hook(self) -> None:
+        hamlet = self.example_user("hamlet")
+        client = self.allocate_queue(hamlet, queue_timeout=self.LONG_LIVED_EVENT_QUEUE_TIMEOUT_SECS)
+        self.assertFalse(client.offline)
+
+        iago = self.example_user("iago")
+        self.send_personal_message(iago, hamlet)
+
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            mark_clients_offline({client.event_queue.id}, {hamlet.id})
+            mock_enqueue.assert_called_once()
+
+        self.assertTrue(client.offline)
+
+    def test_missedmessage_hook_skips_offline_queue(self) -> None:
+        hamlet = self.example_user("hamlet")
+        client = self.allocate_queue(hamlet, queue_timeout=self.LONG_LIVED_EVENT_QUEUE_TIMEOUT_SECS)
+        client.offline = True
+
+        iago = self.example_user("iago")
+        self.send_personal_message(iago, hamlet)
+
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(hamlet.id, client, True)
+            mock_enqueue.assert_not_called()
+
+    def test_last_client_for_user_with_multiple_queues(self) -> None:
+        hamlet = self.example_user("hamlet")
+        client1 = self.allocate_queue(
+            hamlet, queue_timeout=self.LONG_LIVED_EVENT_QUEUE_TIMEOUT_SECS
+        )
+        client2 = self.allocate_queue(
+            hamlet, queue_timeout=self.LONG_LIVED_EVENT_QUEUE_TIMEOUT_SECS
+        )
+
+        iago = self.example_user("iago")
+        self.send_personal_message(iago, hamlet)
+
+        # Marking only client1 offline: client2 is still active, so
+        # last_client_for_user is False and missedmessage_hook
+        # short-circuits without sending notifications.
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            mark_clients_offline({client1.event_queue.id}, {hamlet.id})
+            mock_enqueue.assert_not_called()
+
+        self.assertTrue(client1.offline)
+        self.assertFalse(client2.offline)
+
+        # Now mark client2 offline too: no active queues remain, so
+        # last_client_for_user is True and notifications are sent.
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            mark_clients_offline({client2.event_queue.id}, {hamlet.id})
+            mock_enqueue.assert_called_once()
+
+    def test_receiver_is_off_zulip_with_offline_queue(self) -> None:
+        hamlet = self.example_user("hamlet")
+        client = self.allocate_queue(hamlet, queue_timeout=self.LONG_LIVED_EVENT_QUEUE_TIMEOUT_SECS)
+
+        # With an active queue, user is not "off Zulip".
+        self.assertFalse(receiver_is_off_zulip(hamlet.id))
+
+        # After marking offline, user should be "off Zulip".
+        client.offline = True
+        self.assertTrue(receiver_is_off_zulip(hamlet.id))
+
+    @time_machine.travel(NOW, tick=False)
+    def test_gc_event_queues(self) -> None:
+        hamlet = self.example_user("hamlet")
+        add_client_gc_hook(missedmessage_hook)
+
+        # A queue that will expire after DEFAULT_EVENT_QUEUE_TIMEOUT_SECS.
+        client = self.allocate_queue(hamlet, queue_timeout=DEFAULT_EVENT_QUEUE_TIMEOUT_SECS)
+        # A longer-lived queue that should be marked offline but not removed.
+        long_lived_client = self.allocate_queue(
+            hamlet, queue_timeout=self.LONG_LIVED_EVENT_QUEUE_TIMEOUT_SECS
+        )
+
+        iago = self.example_user("iago")
+        self.send_personal_message(iago, hamlet)
+
+        queue_id = client.event_queue.id
+        long_lived_queue_id = long_lived_client.event_queue.id
+        self.assertIn(queue_id, clients)
+        self.assertIn(long_lived_queue_id, clients)
+
+        # Set both queues idle past the EVENT_QUEUE_OFFLINE_TIMEOUT_SECS.
+        last_connection_time = time.time() - EVENT_QUEUE_OFFLINE_TIMEOUT_SECS - 1
+        client.last_connection_time = last_connection_time
+        long_lived_client.last_connection_time = last_connection_time
+
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            gc_event_queues(port=9993)
+
+            # The queue with default timeout is removed.
+            # The long-lived queue still exist but marked offline.
+            self.assertNotIn(queue_id, clients)
+            self.assertIn(long_lived_queue_id, clients)
+            self.assertTrue(long_lived_client.offline)
+
+            # missedmessage_hook is called twice: once for the
+            # expired queue (via gc_hooks) and once for the
+            # long-lived queue (via mark_clients_offline).
+            # But maybe_enqueue_notifications only fires once.
+            # For the expired queue, the long-lived queue is still active so
+            # last_client_for_user is False and it short-circuits.
+            mock_enqueue.assert_called_once()
+
+    def test_idle_queue_timeout_resolution(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        # None resolves to the default timeout.
+        client = self.allocate_queue(hamlet, queue_timeout=None)
+        self.assertEqual(client.queue_timeout, DEFAULT_EVENT_QUEUE_TIMEOUT_SECS)
+
+        # "mobile" resolves to the mobile timeout.
+        client = self.allocate_queue(hamlet, queue_timeout="mobile")
+        self.assertEqual(client.queue_timeout, MOBILE_EVENT_QUEUE_TIMEOUT_SECS)
+
+        # Explicit integer is used as-is.
+        client = self.allocate_queue(hamlet, queue_timeout=3600)
+        self.assertEqual(client.queue_timeout, 3600)
+
+        # Values above the max are capped.
+        client = self.allocate_queue(hamlet, queue_timeout=MAX_QUEUE_TIMEOUT_SECS + 1000)
+        self.assertEqual(client.queue_timeout, MAX_QUEUE_TIMEOUT_SECS)

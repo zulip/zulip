@@ -35,7 +35,6 @@ from zerver.lib.exceptions import (
     InvalidJSONError,
     JsonableError,
     OrganizationAdministratorRequiredError,
-    OrganizationMemberRequiredError,
     OrganizationOwnerRequiredError,
     RealmDeactivatedError,
     UnauthorizedError,
@@ -180,24 +179,6 @@ def check_if_user_can_manage_default_streams(
     ) -> HttpResponse:
         if not user_profile.can_manage_default_streams():
             raise OrganizationAdministratorRequiredError
-        return func(request, user_profile, *args, **kwargs)
-
-    return wrapper
-
-
-def require_organization_member(
-    func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
-) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
-    @wraps(func)
-    def wrapper(
-        request: HttpRequest,
-        user_profile: UserProfile,
-        /,
-        *args: ParamT.args,
-        **kwargs: ParamT.kwargs,
-    ) -> HttpResponse:
-        if user_profile.role > UserProfile.ROLE_MEMBER:
-            raise OrganizationMemberRequiredError
         return func(request, user_profile, *args, **kwargs)
 
     return wrapper
@@ -685,7 +666,7 @@ def require_non_guest_user(
     return _wrapped_view_func
 
 
-def require_member_or_admin(
+def require_human_non_guest_user(
     view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
     @wraps(view_func)
@@ -710,7 +691,7 @@ def require_member_or_admin(
 def require_user_group_create_permission(
     view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
-    @require_member_or_admin
+    @require_human_non_guest_user
     @wraps(view_func)
     def _wrapped_view_func(
         request: HttpRequest,

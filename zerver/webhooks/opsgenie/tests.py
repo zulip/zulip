@@ -2,10 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class OpsgenieHookTests(WebhookTestCase):
-    CHANNEL_NAME = "opsgenie"
-    URL_TEMPLATE = "/api/v1/external/opsgenie?&api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "opsgenie"
-
     def test_acknowledge_alert(self) -> None:
         expected_topic_name = "Integration1"
         expected_message = """

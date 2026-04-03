@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_bot, make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -15,7 +16,11 @@ const compose_state = zrequire("compose_state");
 const narrow_banner = zrequire("narrow_banner");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
+stream_data.set_channel_has_locally_available_topic(() => false);
 const {Filter} = zrequire("../src/filter");
+const message_fetch = mock_esm("../src/message_fetch", {
+    load_messages_around_anchor() {},
+});
 const message_view = zrequire("message_view");
 const narrow_title = zrequire("narrow_title");
 const recent_view_util = zrequire("recent_view_util");
@@ -32,7 +37,9 @@ set_realm(realm);
 initialize_user_settings({user_settings: {}});
 
 set_global("document", "document-stub");
-const message_lists = mock_esm("../src/message_lists");
+const message_lists = mock_esm("../src/message_lists", {
+    update_current_message_list() {},
+});
 function MessageListView() {
     return {
         maybe_rerender: noop,
@@ -48,10 +55,7 @@ mock_esm("../src/compose_banner", {
     clear_search_view_banner() {},
 });
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
-mock_esm("../src/settings_data", {
-    user_can_access_all_other_users: () => true,
-    user_has_permission_for_group_setting: () => true,
-});
+const settings_data = mock_esm("../src/settings_data");
 mock_esm("../src/spectators", {
     login_to_access() {},
 });
@@ -73,44 +77,43 @@ function set_filter(terms) {
     return new Filter(terms);
 }
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 5,
     full_name: "Me Myself",
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: 23,
     full_name: "Alice Smith",
-};
+});
 
-const ray = {
+const ray = make_user({
     email: "ray@example.com",
     user_id: 22,
     full_name: "Raymond",
-};
+});
 
-const bot = {
+const bot = make_bot({
     email: "bot@example.com",
     user_id: 25,
     full_name: "Example Bot",
-    is_bot: true,
-};
+});
 
 const nobody = make_user_group({
     name: "role:nobody",
     id: 1,
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 const everyone = make_user_group({
     name: "role:everyone",
     id: 2,
     members: new Set([5]),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 
 user_groups.initialize({realm_user_groups: [nobody, everyone]});
@@ -155,7 +158,7 @@ run_test("empty_narrow_html", ({mock_template}) => {
         `<div class="empty_feed_notice">
     <h4 class="empty-feed-notice-title"> This is a title </h4>
         <div class="empty-feed-notice-description">
-            Common words were excluded from your search: <br/>
+            translated: Common words were excluded from your search: <br/>
                 <del>a</del>
                 <span class="search-query-word">search</span>
         </div>
@@ -178,7 +181,7 @@ run_test("empty_narrow_html", ({mock_template}) => {
         `<div class="empty_feed_notice">
     <h4 class="empty-feed-notice-title"> This is a title </h4>
         <div class="empty-feed-notice-description">
-            Common words were excluded from your search: <br/>
+            translated: Common words were excluded from your search: <br/>
                 <del>a</del>
                 <span class="search-query-word">search</span>
                 <del>and</del>
@@ -203,9 +206,9 @@ run_test("empty_narrow_html", ({mock_template}) => {
 });
 
 run_test("urls", () => {
-    people.add_active_user(ray);
-    people.add_active_user(alice);
-    people.add_active_user(me);
+    people.add_active_user(ray, "server_events");
+    people.add_active_user(alice, "server_events");
+    people.add_active_user(me, "server_events");
     people.initialize_current_user(me.user_id);
 
     let url = hash_util.pm_with_url(ray.user_id.toString());
@@ -214,31 +217,22 @@ run_test("urls", () => {
     url = hash_util.direct_message_group_with_url("22,23");
     assert.equal(url, "#narrow/dm/22,23-group");
 
-    url = hash_util.by_sender_url(ray.email);
+    url = hash_util.by_sender_url(ray.user_id);
     assert.equal(url, "#narrow/sender/22-Raymond");
 
-    let emails = hash_util.decode_operand("dm", "22,23-group");
-    assert.equal(emails, "alice@example.com,ray@example.com");
+    let user_ids = hash_util.decode_operand("dm", "22,23-group");
+    assert.deepEqual(user_ids, [22, 23]);
 
-    emails = hash_util.decode_operand("dm", "5,22,23-group");
-    assert.equal(emails, "alice@example.com,ray@example.com");
+    user_ids = hash_util.decode_operand("dm", "5,22,23-group");
+    assert.deepEqual(user_ids, [22, 23]);
 
-    emails = hash_util.decode_operand("dm", "5-group");
-    assert.equal(emails, "me@example.com");
-
-    // Even though we renamed "pm-with" to "dm", preexisting
-    // links/URLs with "pm-with" operator are decoded correctly.
-    emails = hash_util.decode_operand("pm-with", "22,23-group");
-    assert.equal(emails, "alice@example.com,ray@example.com");
-
-    emails = hash_util.decode_operand("pm-with", "5,22,23-group");
-    assert.equal(emails, "alice@example.com,ray@example.com");
-
-    emails = hash_util.decode_operand("pm-with", "5-group");
-    assert.equal(emails, "me@example.com");
+    user_ids = hash_util.decode_operand("dm", "5-group");
+    assert.deepEqual(user_ids, [5]);
 });
 
-run_test("show_empty_narrow_message", ({mock_template, override}) => {
+run_test("show_empty_narrow_message", ({mock_template, override, override_rewire}) => {
+    settings_data.user_can_access_all_other_users = () => true;
+    settings_data.user_has_permission_for_group_setting = () => true;
     override(realm, "stop_words", []);
 
     mock_template("empty_feed_notice.hbs", true, (_data, html) => html);
@@ -250,7 +244,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: There are no messages in your combined feed.",
-            'translated HTML: Would you like to <a href="#narrow/channels/public">view messages in all public channels</a>?',
+            'translated: Would you like to <a href="#narrow/channels/public">view messages in all public channels</a>?',
         ),
     );
 
@@ -286,7 +280,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: There are no messages here.",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
+            'translated: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
 
@@ -298,7 +292,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "",
-            'translated HTML: This is not a <a target="_blank" rel="noopener noreferrer" href="/help/public-access-option">publicly accessible</a> conversation.',
+            'translated: This is not a <a target="_blank" rel="noopener noreferrer" href="/help/public-access-option">publicly accessible</a> conversation.',
         ),
     );
 
@@ -311,7 +305,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "",
-            'translated HTML: This is not a <a target="_blank" rel="noopener noreferrer" href="/help/public-access-option">publicly accessible</a> conversation.',
+            'translated: This is not a <a target="_blank" rel="noopener noreferrer" href="/help/public-access-option">publicly accessible</a> conversation.',
         ),
     );
 
@@ -339,7 +333,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have no starred messages.",
-            'translated HTML: Starring messages is a good way to keep track of important messages, such as tasks you need to go back to, or useful references. To star a message, hover over a message and click the <i class="zulip-icon zulip-icon-star" aria-hidden="true"></i>. <a target="_blank" rel="noopener noreferrer" href="/help/star-a-message">Learn more</a>',
+            'translated: Starring messages is a good way to keep track of important messages, such as tasks you need to go back to, or useful references. To star a message, hover over a message and click the <i class="zulip-icon zulip-icon-star" aria-hidden="true"></i>. <a target="_blank" rel="noopener noreferrer" href="/help/star-a-message">Learn more</a>',
         ),
     );
 
@@ -349,7 +343,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: This view will show messages where you are mentioned.",
-            'translated HTML: To call attention to a message, you can mention a user, a group, topic participants, or all subscribers to a channel. Type @ in the compose box, and choose who you\'d like to mention from the list of suggestions. <a target="_blank" rel="noopener noreferrer" href="/help/mention-a-user-or-group">Learn more</a>',
+            'translated: To call attention to a message, you can mention a user, a group, topic participants, or all subscribers to a channel. Type @ in the compose box, and choose who you\'d like to mention from the list of suggestions. <a target="_blank" rel="noopener noreferrer" href="/help/mention-a-user-or-group">Learn more</a>',
         ),
     );
 
@@ -361,7 +355,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have no direct messages yet!",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+            'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
 
@@ -396,72 +390,71 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     override(realm, "realm_direct_message_permission_group", nobody.id);
 
     // prioritize information about invalid user(s) in narrow/search
-    current_filter = set_filter([["dm", "Yo"]]);
+    current_filter = set_filter([["dm", [-1]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: This user does not exist!"),
     );
 
-    people.add_active_user(alice);
-    current_filter = set_filter([["dm", "alice@example.com,Yo"]]);
+    current_filter = set_filter([["dm", [9999, alice.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: One or more of these users do not exist!"),
     );
 
-    current_filter = set_filter([["dm", "alice@example.com"]]);
+    current_filter = set_filter([["dm", [alice.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: Direct messages are disabled in this organization.",
-            'translated HTML: <a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">Learn more.</a>',
+            'translated: <a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">Learn more.</a>',
         ),
     );
 
     // direct messages with a bot are possible even though
     // the organization has disabled sending direct messages
-    people.add_active_user(bot);
-    current_filter = set_filter([["dm", "bot@example.com"]]);
+    people.add_active_user(bot, "server_events");
+    current_filter = set_filter([["dm", [bot.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have no direct messages with Example Bot yet.",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+            'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
 
     // group direct messages with bots are not possible when
     // sending direct messages is disabled
-    current_filter = set_filter([["dm", bot.email + "," + alice.email]]);
+    current_filter = set_filter([["dm", [bot.user_id, alice.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: Direct messages are disabled in this organization.",
-            'translated HTML: <a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">Learn more.</a>',
+            'translated: <a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">Learn more.</a>',
         ),
     );
 
     // sending direct messages enabled
     override(realm, "realm_direct_message_permission_group", everyone.id);
-    current_filter = set_filter([["dm", "alice@example.com"]]);
+    current_filter = set_filter([["dm", [alice.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have no direct messages with Alice Smith yet.",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+            'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
 
     // sending direct messages to deactivated user
     override(realm, "realm_direct_message_permission_group", everyone.id);
     people.deactivate(alice);
-    current_filter = set_filter([["dm", alice.email]]);
+    current_filter = set_filter([["dm", [alice.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -471,29 +464,29 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
 
     people.add_active_user(me);
     people.initialize_current_user(me.user_id);
-    current_filter = set_filter([["dm", me.email]]);
+    current_filter = set_filter([["dm", [me.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You haven't sent yourself any notes yet!",
-            "translated HTML: Use this space for personal notes, or to test out Zulip features.",
+            "translated: Use this space for personal notes, or to test out Zulip features.",
         ),
     );
 
-    current_filter = set_filter([["dm", me.email + "," + alice.email]]);
+    current_filter = set_filter([["dm", [me.user_id, alice.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have no direct messages with these users yet.",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
+            'translated: Why not <a href="#" class="empty_feed_compose_private">start the conversation</a>?',
         ),
     );
 
     // group dm with a deactivated user
     people.deactivate(alice);
-    current_filter = set_filter([["dm", ray.email + "," + alice.email]]);
+    current_filter = set_filter([["dm", [ray.user_id, alice.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -505,26 +498,33 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     override(realm, "realm_direct_message_permission_group", nobody.id);
 
     // prioritize information about invalid user in narrow/search
-    current_filter = set_filter([["dm-including", "Yo"]]);
+    current_filter = set_filter([["dm-including", [-1]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: This user does not exist!"),
     );
 
-    current_filter = set_filter([["dm-including", "alice@example.com"]]);
+    current_filter = set_filter([["dm-including", [9999, 88888]]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: This user does not exist!"),
+    );
+
+    current_filter = set_filter([["dm-including", [alice.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: Direct messages are disabled in this organization.",
-            'translated HTML: <a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">Learn more.</a>',
+            'translated: <a target="_blank" rel="noopener noreferrer" href="/help/restrict-direct-messages">Learn more.</a>',
         ),
     );
 
     // direct messages with a bot are possible even though
     // the organization has disabled sending direct messages
-    current_filter = set_filter([["dm-including", "bot@example.com"]]);
+    current_filter = set_filter([["dm-including", [bot.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -534,28 +534,28 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     // sending direct messages enabled
     override(realm, "realm_direct_message_permission_group", everyone.id);
     override(realm, "realm_direct_message_permission_group", everyone.id);
-    current_filter = set_filter([["dm-including", "alice@example.com"]]);
+    current_filter = set_filter([["dm-including", [alice.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: You have no direct messages including Alice Smith yet."),
     );
 
-    current_filter = set_filter([["dm-including", me.email]]);
+    current_filter = set_filter([["dm-including", [me.user_id]]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: You don't have any direct message conversations yet."),
     );
 
-    current_filter = set_filter([["sender", "ray@example.com"]]);
+    current_filter = set_filter([["sender", ray.user_id]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: You haven't received any messages sent by Raymond yet."),
     );
 
-    current_filter = set_filter([["sender", "sinwar@example.com"]]);
+    current_filter = set_filter([["sender", 9999]]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
@@ -565,7 +565,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
     );
 
     current_filter = set_filter([
-        ["sender", "alice@example.com"],
+        ["sender", alice.user_id],
         ["stream", rome_id.toString()],
     ]);
     narrow_banner.show_empty_narrow_message(current_filter);
@@ -580,7 +580,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: There are no messages here.",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
+            'translated: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
 
@@ -590,6 +590,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         stream_id: my_stream_id,
     };
     stream_data.add_sub_for_tests(my_stream);
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     stream_data.subscribe_myself(my_stream);
     current_filter = set_filter([["stream", my_stream_id.toString()]]);
     const list = new MessageList({
@@ -608,7 +609,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: You have muted all the topics in this channel.",
-            'translated HTML: To view a muted topic, click <b>show all topics</b> in the left sidebar, and select one from the list. <a target="_blank" rel="noopener noreferrer" href="/help/mute-a-topic">Learn more</a>',
+            'translated: To view a muted topic, click <b>show all topics</b> in the left sidebar, and select one from the list. <a target="_blank" rel="noopener noreferrer" href="/help/mute-a-topic">Learn more</a>',
         ),
     );
     // There are no muted topics in the channel.
@@ -618,7 +619,7 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: There are no messages here.",
-            'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
+            'translated: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
     // The channel does not exist.
@@ -633,14 +634,33 @@ run_test("show_empty_narrow_message", ({mock_template, override}) => {
 
     current_filter = set_filter([
         ["has", "reaction"],
-        ["sender", "me"],
+        ["sender", me.user_id],
     ]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: None of your messages have emoji reactions yet.",
-            'translated HTML: Learn more about emoji reactions <a target="_blank" rel="noopener noreferrer" href="/help/emoji-reactions">here</a>.',
+            'translated: Learn more about emoji reactions <a target="_blank" rel="noopener noreferrer" href="/help/emoji-reactions">here</a>.',
+        ),
+    );
+
+    // The channel is private, and the user cannot subscribe (e.g., they
+    // have access to channel metadata, but don't have content access).
+    const private_sub = {
+        stream_id: 101,
+        name: "private",
+        subscribed: false,
+        invite_only: true,
+    };
+    stream_data.add_sub_for_tests(private_sub);
+    settings_data.user_has_permission_for_group_setting = () => false;
+    current_filter = set_filter([["stream", private_sub.stream_id.toString()]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You are not allowed to view messages in this private channel.",
         ),
     );
 });
@@ -724,7 +744,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: No search results.",
-            "translated HTML: <p>You are searching for messages that belong to more than one channel, which is not possible.</p>",
+            "translated: <p>You are searching for messages that belong to more than one channel, which is not possible.</p>",
         ),
     );
 
@@ -737,7 +757,7 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: No search results.",
-            "translated HTML: <p>You are searching for messages that belong to more than one topic, which is not possible.</p>",
+            "translated: <p>You are searching for messages that belong to more than one topic, which is not possible.</p>",
         ),
     );
 
@@ -745,15 +765,15 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
     people.add_active_user(alice);
 
     current_filter = set_filter([
-        ["sender", "alice@example.com"],
-        ["sender", "ray@example.com"],
+        ["sender", alice.user_id],
+        ["sender", ray.user_id],
     ]);
     narrow_banner.show_empty_narrow_message(current_filter);
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "translated: No search results.",
-            "translated HTML: <p>You are searching for messages that are sent by more than one person, which is not possible.</p>",
+            "translated: <p>You are searching for messages that are sent by more than one person, which is not possible.</p>",
         ),
     );
 });
@@ -805,7 +825,7 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
         {operator: "topic", operand: "four"},
     ]);
 
-    // Test with blank topic, with realm_topics_policy
+    // Test with blank topic, empty topic not allowed
     override(realm, "realm_topics_policy", "disable_empty_topic");
     compose_state.topic("");
     args.called = false;
@@ -813,8 +833,9 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "channel", operand: rome_id.toString()}]);
 
-    // Test with blank topic, without realm_topics_policy
+    // Test with blank topic, empty topic allowed
     override(realm, "realm_topics_policy", "allow_empty_topic");
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => true);
     compose_state.topic("");
     args.called = false;
     message_view.to_compose_target();
@@ -824,24 +845,15 @@ run_test("narrow_to_compose_target streams", ({override, override_rewire}) => {
         {operator: "topic", operand: ""},
     ]);
 
-    // Test with no topic, with realm mandatory topics
-    override(realm, "realm_topics_policy", "disable_empty_topic");
-    compose_state.topic(undefined);
+    // When empty topic is allowed by policy but user cannot create
+    // topics and no empty topic exists, narrowing with blank topic
+    // should not include the topic term.
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => false);
+    compose_state.topic("");
     args.called = false;
     message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "channel", operand: rome_id.toString()}]);
-
-    // Test with no topic, without realm mandatory topics
-    override(realm, "realm_topics_policy", "allow_empty_topic");
-    compose_state.topic(undefined);
-    args.called = false;
-    message_view.to_compose_target();
-    assert.equal(args.called, true);
-    assert.deepEqual(args.terms, [
-        {operator: "channel", operand: rome_id.toString()},
-        {operator: "topic", operand: ""},
-    ]);
 });
 
 run_test("narrow_to_compose_target direct messages", ({override, override_rewire}) => {
@@ -852,8 +864,8 @@ run_test("narrow_to_compose_target direct messages", ({override, override_rewire
         args.called = true;
     });
 
-    let emails;
-    override(compose_pm_pill, "get_emails", () => emails);
+    let user_ids;
+    override(compose_pm_pill, "get_user_ids", () => user_ids);
 
     compose_state.set_message_type("private");
     people.add_active_user(ray);
@@ -861,39 +873,178 @@ run_test("narrow_to_compose_target direct messages", ({override, override_rewire
     people.add_active_user(me);
 
     // Test with valid person
-    emails = "alice@example.com";
+    user_ids = [alice.user_id];
     args.called = false;
     message_view.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.terms, [{operator: "dm", operand: "alice@example.com"}]);
+    assert.deepEqual(args.terms, [{operator: "dm", operand: [alice.user_id]}]);
 
     // Test with valid persons
-    emails = "alice@example.com,ray@example.com";
+    user_ids = [alice.user_id, ray.user_id];
     args.called = false;
     message_view.to_compose_target();
     assert.equal(args.called, true);
-    assert.deepEqual(args.terms, [{operator: "dm", operand: "alice@example.com,ray@example.com"}]);
+    assert.deepEqual(args.terms, [{operator: "dm", operand: [alice.user_id, ray.user_id]}]);
 
     // Test with some invalid persons
-    emails = "alice@example.com,random,ray@example.com";
+    user_ids = [alice.user_id, 9999, 8888];
     args.called = false;
     message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "is", operand: "dm"}]);
 
     // Test with all invalid persons
-    emails = "alice,random,ray";
+    user_ids = [9999, 8888];
     args.called = false;
     message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "is", operand: "dm"}]);
 
     // Test with no persons
-    emails = "";
+    user_ids = [];
     args.called = false;
     message_view.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.terms, [{operator: "is", operand: "dm"}]);
+});
+
+run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
+    const list = new MessageList({
+        data: new MessageListData({
+            excludes_muted_topics: false,
+            filter: new Filter([]),
+        }),
+    });
+    list.data.add_messages(
+        [
+            {id: 101, type: "stream", topic: "test", timestamp: 100, sender_id: me.user_id},
+            {id: 102, type: "stream", topic: "test", timestamp: 200, sender_id: me.user_id},
+            {id: 103, type: "stream", topic: "test", timestamp: 300, sender_id: me.user_id},
+        ],
+        true,
+    );
+
+    let selected;
+    list.select_id = (id, opts) => {
+        selected = {id, opts};
+    };
+    message_lists.current = list;
+    $("#navbar-fixed-container").set_height(50);
+    // Date jumps should place the selected message below the sticky
+    // message header, increasing the target scroll offset by 40px.
+
+    const in_range = new Date(150 * 1000).toISOString();
+    message_view.fast_track_current_msg_list_to_anchor("date", in_range);
+    assert.deepEqual(selected, {
+        id: 102,
+        opts: {then_scroll: true, from_scroll: false, target_scroll_offset: 90},
+    });
+
+    list.data.fetch_status.finish_older_batch({
+        found_oldest: true,
+        history_limited: false,
+        update_loading_indicator: false,
+    });
+    const before_range = new Date(50 * 1000).toISOString();
+    message_view.fast_track_current_msg_list_to_anchor("date", before_range);
+    assert.deepEqual(selected, {
+        id: 101,
+        opts: {then_scroll: true, from_scroll: false, target_scroll_offset: 90},
+    });
+
+    // If we have not found the oldest message, and the anchor timestamp is
+    // at or before the first message, we should fetch from the server.
+    override(message_fetch, "load_messages_around_anchor", (anchor, callback, msg_list_data) => {
+        load_messages_calls += 1;
+        load_messages_anchor = anchor;
+        const new_message = {
+            id: 100,
+            type: "stream",
+            topic: "test",
+            timestamp: 75,
+            sender_id: me.user_id,
+        };
+        list.data.add_messages([new_message], true);
+        msg_list_data.add_messages(list.data.all_messages_after_mute_filtering(), true);
+        msg_list_data.fetch_status.finish_older_batch({
+            found_oldest: true,
+            history_limited: false,
+            update_loading_indicator: false,
+        });
+        callback();
+    });
+    list.data.fetch_status.finish_older_batch({
+        found_oldest: false,
+        history_limited: false,
+        update_loading_indicator: false,
+    });
+    let load_messages_anchor;
+    let load_messages_calls = 0;
+    message_view.fast_track_current_msg_list_to_anchor("date", before_range);
+    assert.equal(load_messages_calls, 1);
+    assert.equal(load_messages_anchor, "date");
+    assert.deepEqual(selected, {
+        id: 100,
+        opts: {
+            then_scroll: true,
+            from_scroll: false,
+            force_rerender: true,
+            target_scroll_offset: 90,
+        },
+    });
+
+    // Message 104 is not in the list so we need to fetch it from the API
+    // using load_messages_around_anchor.
+    load_messages_anchor = undefined;
+    load_messages_calls = 0;
+    override(message_fetch, "load_messages_around_anchor", (anchor, callback, msg_list_data) => {
+        load_messages_calls += 1;
+        load_messages_anchor = anchor;
+        const new_message = {
+            id: 104,
+            type: "stream",
+            topic: "test",
+            timestamp: 400,
+            sender_id: me.user_id,
+        };
+        list.data.add_messages([new_message], true);
+        msg_list_data.add_messages(list.data.all_messages_after_mute_filtering(), true);
+        callback();
+    });
+    assert.equal(list.data.get(104), undefined);
+    const after_range = new Date(400 * 1000).toISOString();
+    message_view.fast_track_current_msg_list_to_anchor("date", after_range);
+    assert.equal(load_messages_calls, 1);
+    assert.equal(load_messages_anchor, "date");
+    assert.deepEqual(selected, {
+        id: 104,
+        opts: {
+            then_scroll: true,
+            from_scroll: false,
+            force_rerender: true,
+            target_scroll_offset: 90,
+        },
+    });
+
+    // If we have found the newest message, having anchor_date in
+    // future should give you back the newest message.
+    list.data.fetch_status.finish_newer_batch([], {
+        found_newest: true,
+        update_loading_indicator: false,
+    });
+    load_messages_calls = 0;
+    const future_range = new Date(500 * 1000).toISOString();
+    message_view.fast_track_current_msg_list_to_anchor("date", future_range);
+    assert.deepEqual(selected, {
+        id: 104,
+        opts: {then_scroll: true, from_scroll: false, target_scroll_offset: 90},
+    });
+    assert.equal(load_messages_calls, 0);
+
+    selected = undefined;
+    blueslip.expect("error", "Missing required argument anchor_date");
+    message_view.fast_track_current_msg_list_to_anchor("date");
+    assert.equal(selected, undefined);
 });
 
 run_test("narrow_compute_title", () => {
@@ -918,7 +1069,7 @@ run_test("narrow_compute_title", () => {
     filter = new Filter([{operator: "search", operand: "potato"}]);
     assert.equal(narrow_title.compute_narrow_title(filter), "translated: Search results");
 
-    filter = new Filter([{operator: "sender", operand: "me"}]);
+    filter = new Filter([{operator: "sender", operand: me.user_id}]);
     assert.equal(narrow_title.compute_narrow_title(filter), "translated: Messages sent by you");
 
     // Stream narrows
@@ -942,22 +1093,19 @@ run_test("narrow_compute_title", () => {
     assert.equal(narrow_title.compute_narrow_title(filter), "translated: Unknown channel");
 
     // Direct messages with narrows
-    const joe = {
+    const joe = make_user({
         email: "joe@example.com",
         user_id: 31,
         full_name: "joe",
-    };
-    people.add_active_user(joe);
+    });
+    people.add_active_user(joe, "server_events");
 
-    filter = new Filter([{operator: "dm", operand: "joe@example.com"}]);
+    filter = new Filter([{operator: "dm", operand: [joe.user_id]}]);
     assert.equal(narrow_title.compute_narrow_title(filter), "joe");
 
-    filter = new Filter([{operator: "dm", operand: "joe@example.com,sally@doesnotexist.com"}]);
-    blueslip.expect("warn", "Unknown emails");
+    filter = new Filter([{operator: "dm", operand: [9999, joe.user_id]}]);
     assert.equal(narrow_title.compute_narrow_title(filter), "translated: Invalid users");
 
-    blueslip.reset();
-    filter = new Filter([{operator: "dm", operand: "sally@doesnotexist.com"}]);
-    blueslip.expect("warn", "Unknown emails");
+    filter = new Filter([{operator: "dm", operand: [9999]}]);
     assert.equal(narrow_title.compute_narrow_title(filter), "translated: Invalid user");
 });

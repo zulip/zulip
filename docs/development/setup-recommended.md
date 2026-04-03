@@ -44,7 +44,6 @@ the internet.)
 
 :::{tab-item} Windows
 :sync: os-windows
-:name: windows-10-or-11
 
 - Windows 64-bit (Windows 10 recommended)
 - hardware virtualization enabled (VT-x or AMD-V)
@@ -111,11 +110,14 @@ installation method described here. We require version 0.67.6+ of WSL 2.
 
 1. [Install WSL
    2](https://docs.microsoft.com/en-us/windows/wsl/setup/environment),
-   which includes installing an Ubuntu WSL distribution. Using an
-   existing distribution will probably work, but [a fresh
-   distribution](#rebuilding-the-development-environment) is
-   recommended if you previously installed other software in your WSL
-   environment that might conflict with the Zulip environment.
+   which includes installing an Ubuntu WSL distribution.
+
+1. **Create a new WSL instance for Zulip development**.
+   You can refer [this article](https://cloudbytes.dev/snippets/how-to-install-multiple-instances-of-ubuntu-in-wsl2)
+   for instructions on how to do so. Using an existing instance will
+   probably work, but a fresh distribution is recommended if you
+   previously installed other software like `node` in your WSL environment that
+   might conflict with the Zulip environment.
 
 1. It is required to enable `systemd` for WSL 2 to manage the database, cache and other services.
    To configure it, please follow [these instructions](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#systemd-support).
@@ -176,7 +178,7 @@ WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
 
 1. Install [Vagrant][vagrant-dl] (latest).
 2. Install [Docker Desktop](https://docs.docker.com/desktop/mac/install/) (latest).
-3. Open the Docker desktop app's settings panel, and choose `osxfs (legacy)` under "Choose file sharing implementation for your containers."
+3. Open the Docker desktop app's settings panel, and uncheck "Use gRPC FUSE for file sharing" to use the `osxfs (legacy)` file sharing instead.
    :::
 
 :::{tab-item} Ubuntu/Debian
@@ -329,8 +331,8 @@ other errors. The temporary fix is to open the Docker desktop app's
 settings panel, and choose `osxfs (legacy)` under "Choose file sharing
 implementation for your containers." Once Docker restarts, you should
 be able to successfully run `vagrant up --provider=docker`. Back in
-Docker, you can return to using VirtioFS for better system performance
-while developing, but you may need to revert to `osxfs (legacy)`
+Docker, you should return to using VirtioFS so that your files sync
+properly while developing, but you may need to revert to `osxfs (legacy)`
 whenever you need to re-provision.
 
 ```{include} setup/vagrant-up.md

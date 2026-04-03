@@ -1,10 +1,13 @@
+from datetime import timedelta
 from typing import TYPE_CHECKING, Any
 
 import orjson
 from django.conf import settings
 from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
+from analytics.models import StreamCount
 from zerver.actions.streams import (
     do_change_stream_group_based_setting,
     do_change_stream_permission,
@@ -436,6 +439,14 @@ class GetStreamsTest(ZulipTestCase):
         self.assertEqual(json["stream"]["name"], "private_stream")
         self.assertEqual(json["stream"]["stream_id"], private_stream.id)
 
+        # Archived stream can also be accessed.
+        do_deactivate_stream(denmark_stream, acting_user=None)
+        result = self.client_get(f"/json/streams/{denmark_stream.id}")
+        json = self.assert_json_success(result)
+        self.assertEqual(json["stream"]["name"], "Denmark")
+        self.assertEqual(json["stream"]["stream_id"], denmark_stream.id)
+        self.assertTrue(json["stream"]["is_archived"])
+
     def test_get_stream_email_address(self) -> None:
         self.login("hamlet")
         hamlet = self.example_user("hamlet")
@@ -453,6 +464,23 @@ class GetStreamsTest(ZulipTestCase):
             denmark_stream.name, email_token, show_sender=True
         )
         self.assertEqual(json["email"], hamlet_denmark_email)
+
+        # Users without permission to post cannot access the channel email.
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm_for_sharding=realm
+        )
+        do_change_stream_group_based_setting(
+            denmark_stream, "can_send_message_group", owners_group, acting_user=iago
+        )
+        result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
+        self.assert_json_error(result, "You do not have permission to post in this channel.")
+
+        everyone_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm
+        )
+        do_change_stream_group_based_setting(
+            denmark_stream, "can_send_message_group", everyone_group, acting_user=iago
+        )
 
         self.login("polonius")
         result = self.client_get(f"/json/streams/{denmark_stream.id}/email_address")
@@ -662,6 +690,19 @@ class GetSubscribersTest(ZulipTestCase):
         stream_name = gather_subscriptions(self.user_profile)[0][0]["name"]
         self.make_successful_subscriber_request(stream_name)
 
+    def test_subscriber_archived_stream(self) -> None:
+        """
+        A user can fetch subscribers of an archived stream.
+        """
+        stream_name = "Saxony"
+        self.subscribe_via_post(self.user_profile, [stream_name])
+        stream = get_stream(stream_name, self.user_profile.realm)
+        do_deactivate_stream(stream, acting_user=None)
+
+        other_user = self.example_user("othello")
+        self.login_user(other_user)
+        self.make_successful_subscriber_request(stream_name)
+
     @override_settings(MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE=5)
     def test_gather_partial_subscriptions(self) -> None:
         othello = self.example_user("othello")
@@ -839,7 +880,7 @@ class GetSubscribersTest(ZulipTestCase):
             polonius.id,
         ]
 
-        with self.assert_database_query_count(52):
+        with self.assert_database_query_count(49):
             self.subscribe_via_post(
                 self.user_profile,
                 stream_names,
@@ -1261,6 +1302,50 @@ class GetSubscribersTest(ZulipTestCase):
 
         # Guest user only get data about never subscribed web-public streams
         self.assert_length(neversubs, 1)
+
+    def test_stream_weekly_traffic(self) -> None:
+        realm = self.user_profile.realm
+
+        subscribed_stream = self.make_stream("subscribed", realm=realm)
+        unsubscribed_stream = self.make_stream("unsubscribed", realm=realm)
+        never_subscribed_stream = self.make_stream("never_subscribed", realm=realm)
+
+        self.subscribe(self.user_profile, subscribed_stream.name)
+        self.subscribe(self.user_profile, unsubscribed_stream.name)
+        self.unsubscribe(self.user_profile, unsubscribed_stream.name)
+
+        end_time = timezone_now()
+        for stream in [subscribed_stream, unsubscribed_stream, never_subscribed_stream]:
+            stream.date_created = end_time - timedelta(days=7, minutes=1)
+            stream.save(update_fields=["date_created"])
+            StreamCount.objects.create(
+                realm=realm,
+                stream=stream,
+                property="messages_in_stream:is_bot:day",
+                end_time=end_time,
+                value=999,
+            )
+
+        helper_result = gather_subscriptions_helper(self.user_profile)
+        self.verify_sub_fields(helper_result)
+
+        [subscribed_entry] = [
+            sub for sub in helper_result.subscriptions if sub["name"] == subscribed_stream.name
+        ]
+        [unsubscribed_entry] = [
+            sub for sub in helper_result.unsubscribed if sub["name"] == unsubscribed_stream.name
+        ]
+        [never_subscribed_entry] = [
+            sub
+            for sub in helper_result.never_subscribed
+            if sub["name"] == never_subscribed_stream.name
+        ]
+
+        # Stream traffic values are rounded to two significant digits
+        # in get_average_weekly_stream_traffic, so 999 is converted to 1000.
+        self.assertEqual(subscribed_entry["stream_weekly_traffic"], 1000)
+        self.assertEqual(unsubscribed_entry["stream_weekly_traffic"], 1000)
+        self.assertEqual(never_subscribed_entry["stream_weekly_traffic"], 1000)
 
     def test_api_fields_present(self) -> None:
         user = self.example_user("cordelia")

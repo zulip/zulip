@@ -6,7 +6,6 @@ const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
-const $ = require("./lib/zjquery.cjs");
 
 // These unit tests for web/src/message_list.ts emphasize the model-ish
 // aspects of the MessageList class.  We have to stub out a few functions
@@ -14,10 +13,13 @@ const $ = require("./lib/zjquery.cjs");
 
 const noop = function () {};
 
+const document_events = [];
 set_global("document", {
     to_$() {
         return {
-            trigger() {},
+            trigger(event) {
+                document_events.push(event);
+            },
         };
     },
 });
@@ -98,11 +100,11 @@ run_test("basics", ({override}) => {
 
     assert.deepEqual(list.all_messages(), messages);
 
-    override($, "Event", (ev) => {
-        assert.equal(ev, "message_selected.zulip");
-    });
+    document_events.length = 0;
     list.select_id(50);
 
+    assert.equal(document_events.length, 1);
+    assert.equal(document_events[0].type, "message_selected.zulip");
     assert.equal(list.selected_id(), 50);
     assert.equal(list.selected_idx(), 0);
 
@@ -116,6 +118,8 @@ run_test("basics", ({override}) => {
         num_renders += 1;
     };
     list.reselect_selected_id();
+    assert.equal(document_events.length, 2);
+    assert.equal(document_events[1].type, "message_selected.zulip");
     assert.equal(num_renders, 0);
     assert.equal(list.selected_id(), 60);
 
@@ -364,6 +368,7 @@ run_test("bookend", ({override}) => {
 
     override(stream_data, "is_subscribed", () => is_subscribed);
     override(stream_data, "get_sub_by_id", () => ({invite_only, name: "IceCream"}));
+    override(stream_data, "can_toggle_subscription", () => true);
 
     {
         const stub = make_stub();
@@ -470,6 +475,16 @@ run_test("bookend", ({override}) => {
         assert.equal(bookend.subscribed, false);
         assert.equal(bookend.deactivated, false);
         assert.equal(bookend.just_unsubscribed, false);
+    }
+
+    // If the user is not subscribed and cannot subscribe to the
+    // private channel, no bookend is shown.
+    override(stream_data, "can_toggle_subscription", () => false);
+    {
+        const stub = make_stub();
+        list.view.render_trailing_bookend = stub.f;
+        list.update_trailing_bookend();
+        assert.equal(stub.num_calls, 0);
     }
 });
 

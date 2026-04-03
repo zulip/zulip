@@ -1,12 +1,12 @@
 import time
 from collections.abc import Callable
-from typing import Annotated, Any, TypeVar
+from typing import Annotated, Any, Literal, TypeVar
 
 from asgiref.sync import async_to_sync
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
-from pydantic import BaseModel, Json, NonNegativeInt, StringConstraints, model_validator
+from pydantic import BaseModel, Json, PositiveInt, StringConstraints, model_validator
 from typing_extensions import ParamSpec
 
 from zerver.decorator import internal_api_view, process_client
@@ -178,19 +178,15 @@ def get_events_backend(
         Json[list[list[str]]] | None,
         ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
     ] = None,
-    lifespan_secs: Annotated[
-        Json[NonNegativeInt],
+    idle_queue_timeout: Annotated[
+        Json[PositiveInt | Literal["mobile"]] | None,
         ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
-    ] = 0,
+    ] = None,
     bulk_message_deletion: Annotated[
         Json[bool],
         ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
     ] = False,
     stream_typing_notifications: Annotated[
-        Json[bool],
-        ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
-    ] = False,
-    user_settings_object: Annotated[
         Json[bool],
         ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
     ] = False,
@@ -251,12 +247,11 @@ def get_events_backend(
             client_gravatar=client_gravatar,
             slim_presence=slim_presence,
             all_public_streams=all_public_streams,
-            queue_timeout=lifespan_secs,
+            queue_timeout=idle_queue_timeout,
             last_connection_time=time.time(),
             narrow=narrow,
             bulk_message_deletion=bulk_message_deletion,
             stream_typing_notifications=stream_typing_notifications,
-            user_settings_object=user_settings_object,
             pronouns_field_type_supported=pronouns_field_type_supported,
             linkifier_url_template=linkifier_url_template,
             user_list_incomplete=user_list_incomplete,

@@ -5,7 +5,7 @@ from unittest import mock
 import requests
 from typing_extensions import override
 
-from zerver.lib.avatar import get_gravatar_url
+from zerver.lib.avatar import avatar_url
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.outgoing_webhook import get_service_interface_class, process_success_response
@@ -73,14 +73,8 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
 
         message = Message.objects.get(id=message_id)
 
-        gravatar_url = get_gravatar_url(
-            othello.delivery_email,
-            othello.avatar_version,
-            get_realm("zulip").id,
-        )
-
-        expected_message_data = {
-            "avatar_url": gravatar_url,
+        expected_message_data: dict[str, Any] = {
+            "avatar_url": avatar_url(othello),
             "client": "test suite",
             "content": "@**test**",
             "content_type": "text/x-markdown",

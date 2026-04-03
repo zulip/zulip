@@ -13,9 +13,13 @@
 
 {% block manage_preferences %}
     {% if remote_server_email %}
-    <p>You are receiving this email to update you about important changes to Zulip's Terms of Service.</p>
-    <a href="{{ unsubscribe_link }}">Unsubscribe</a>
+        {% if released_version %}
+        <p>You are receiving this email because you opted into release notifications.</p>
+        {% else %}
+        <p>You are receiving this email to update you about important changes to Zulip's Terms of Service.</p>
+        <a href="{{ unsubscribe_link }}">Unsubscribe</a>
+        {% endif %}
     {% elif unsubscribe_link %}
-    <p><a href="{{ realm_url }}/#settings/notifications">{{ _("Manage email preferences") }}</a> | <a href="{{ unsubscribe_link }}">{{ _("Unsubscribe from marketing emails") }}</a></p>
+        <p><a href="{{ realm_url }}/#settings/notifications">{{ _("Manage email preferences") }}</a> | <a href="{{ unsubscribe_link }}">{{ _("Unsubscribe from marketing emails") }}</a></p>
     {% endif %}
 {% endblock %}

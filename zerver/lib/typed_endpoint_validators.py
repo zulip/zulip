@@ -69,7 +69,7 @@ def to_timezone_or_empty(s: str) -> str:
 
 
 def timezone_or_empty_validator() -> AfterValidator:
-    return AfterValidator(lambda s: to_timezone_or_empty(s))
+    return AfterValidator(to_timezone_or_empty)
 
 
 def check_timezone(s: str) -> str:
@@ -81,7 +81,7 @@ def check_timezone(s: str) -> str:
 
 
 def timezone_validator() -> AfterValidator:
-    return AfterValidator(lambda s: check_timezone(s))
+    return AfterValidator(check_timezone)
 
 
 def to_non_negative_int_or_none(s: str) -> NonNegativeInt | None:
@@ -98,7 +98,7 @@ def to_non_negative_int_or_none(s: str) -> NonNegativeInt | None:
 # type conversion will raise a ValueError if the string is not a valid
 # integer, and we want to return None in that case.
 def non_negative_int_or_none_validator() -> BeforeValidator:
-    return BeforeValidator(lambda s: to_non_negative_int_or_none(s))
+    return BeforeValidator(to_non_negative_int_or_none)
 
 
 def check_color(var_name: str, val: object) -> str:
@@ -122,3 +122,13 @@ def parse_enum_from_string_value(
         return enum[val]
     except KeyError:
         raise JsonableError(_("Invalid {setting_name}").format(setting_name=setting_name))
+
+
+def check_uint32(val: int) -> int:
+    if not (0 <= val <= 4294967295):
+        raise ValueError(_("Not a valid unsigned 32-bit integer"))
+    return val
+
+
+def uint32_validator() -> AfterValidator:
+    return AfterValidator(check_uint32)

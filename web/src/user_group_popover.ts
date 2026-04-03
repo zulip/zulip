@@ -8,10 +8,12 @@ import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
 import * as hash_util from "./hash_util.ts";
 import * as message_lists from "./message_lists.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as rows from "./rows.ts";
+import * as settings_data from "./settings_data.ts";
 import {current_user} from "./state_data.ts";
 import * as ui_util from "./ui_util.ts";
 import * as user_group_components from "./user_group_components.ts";
@@ -97,7 +99,7 @@ export function toggle_user_group_info_popover(
                 const subgroups = user_groups.convert_name_to_display_name_for_groups(
                     user_groups
                         .get_direct_subgroups_of_group(group)
-                        .sort(user_group_components.sort_group_member_name),
+                        .toSorted(user_group_components.sort_group_member_name),
                 );
                 const members = sort_group_members(fetch_group_members([...group.members]));
                 const all_individual_members = [...user_groups.get_recursive_group_members(group)];
@@ -105,7 +107,7 @@ export function toggle_user_group_info_popover(
                     group.is_system_group &&
                     all_individual_members.some((member_id) => {
                         const member = people.get_user_by_id_assert_valid(member_id);
-                        return people.is_active_user_for_popover(member.user_id) && member.is_bot;
+                        return people.is_active_user_or_system_bot(member.user_id) && member.is_bot;
                     });
                 const displayed_subgroups = subgroups.slice(0, MAX_ROWS_IN_POPOVER);
                 const displayed_members =
@@ -125,6 +127,8 @@ export function toggle_user_group_info_popover(
                     group_members_url: hash_util.group_edit_url(group, "members"),
                     display_all_subgroups_and_members,
                     has_bots,
+                    user_can_access_all_other_users:
+                        settings_data.user_can_access_all_other_users(),
                     displayed_subgroups,
                     displayed_members,
                 };
@@ -144,6 +148,9 @@ export function toggle_user_group_info_popover(
 export function register_click_handlers(): void {
     $("#main_div").on("click", ".user-group-mention", function (this: HTMLElement, e) {
         e.stopPropagation();
+        if (mouse_drag.is_drag(e)) {
+            return;
+        }
 
         const $elt = $(this);
         const $row = $elt.closest(".message_row");
@@ -184,6 +191,9 @@ export function register_click_handlers(): void {
     // that run before this one and call stopPropagation.
     $("body").on("click", ".messagebox .user-group-mention", function (this: HTMLElement, e) {
         e.stopPropagation();
+        if (mouse_drag.is_drag(e)) {
+            return;
+        }
         toggle_user_group_info_popover(this, undefined);
     });
 
@@ -197,11 +207,11 @@ function fetch_group_members(member_ids: number[]): PopoverGroupMember[] {
     return (
         member_ids
             .map((m: number) => people.get_user_by_id_assert_valid(m))
-            // We need to include inaccessible users here separately, since
-            // we do not include them in active_user_dict, but we want to
-            // show them in the popover as "Unknown user".
+            // Only include users that the current user is allowed to see in the popover.
+            // Inaccessible or unknown users should not appear in displayed_members.
             .filter(
-                (m: User) => people.is_active_user_for_popover(m.user_id) || m.is_inaccessible_user,
+                (m: User) =>
+                    people.is_active_user_or_system_bot(m.user_id) && !m.is_inaccessible_user,
             )
             .map((p: User) => ({
                 ...p,
@@ -212,7 +222,7 @@ function fetch_group_members(member_ids: number[]): PopoverGroupMember[] {
 }
 
 function sort_group_members(members: PopoverGroupMember[]): PopoverGroupMember[] {
-    return members.sort((a: PopoverGroupMember, b: PopoverGroupMember) =>
+    return members.toSorted((a: PopoverGroupMember, b: PopoverGroupMember) =>
         util.strcmp(a.full_name, b.full_name),
     );
 }

@@ -4,6 +4,7 @@ import orjson
 import time_machine
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.users import do_change_user_role
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_status import (
     UserInfoDict,
@@ -194,7 +195,7 @@ class UserStatusTest(ZulipTestCase):
         if num_events == 1:
             self.assertEqual(events[0]["event"], expected_event)
         else:
-            self.assertEqual(events[2]["event"], expected_event)
+            self.assertEqual(events[1]["event"], expected_event)
 
     def test_endpoints(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -260,7 +261,7 @@ class UserStatusTest(ZulipTestCase):
             expected_event=dict(
                 type="user_status", user_id=hamlet.id, away=True, status_text="on vacation"
             ),
-            num_events=4,
+            num_events=3,
         )
         self.assertEqual(
             user_status_info(hamlet),
@@ -345,7 +346,7 @@ class UserStatusTest(ZulipTestCase):
         self.update_status_and_assert_event(
             payload=dict(away=orjson.dumps(False).decode()),
             expected_event=dict(type="user_status", user_id=hamlet.id, away=False),
-            num_events=4,
+            num_events=3,
         )
         self.assertEqual(
             user_status_info(hamlet),
@@ -397,7 +398,7 @@ class UserStatusTest(ZulipTestCase):
         self.update_status_and_assert_event(
             payload=dict(away=orjson.dumps(True).decode()),
             expected_event=dict(type="user_status", user_id=hamlet.id, away=True),
-            num_events=4,
+            num_events=3,
         )
 
         # Setting away is a deprecated way of accessing a user's presence_enabled
@@ -522,36 +523,6 @@ class UserStatusTest(ZulipTestCase):
         result = self.client_post(update_status_url, dict(status_text=long_text))
         self.assert_json_error(result, "status_text is too long (limit: 60 characters)")
 
-        # Set "away" with a normal length message.
-        self.update_status_and_assert_event(
-            payload=dict(
-                away=orjson.dumps(True).decode(),
-                status_text="on vacation",
-            ),
-            url=update_status_url,
-            expected_event=dict(
-                type="user_status", user_id=hamlet.id, away=True, status_text="on vacation"
-            ),
-            num_events=3,
-        )
-        self.assertEqual(
-            user_status_info(hamlet),
-            dict(away=True, status_text="on vacation"),
-        )
-
-        result = self.client_get(f"/json/users/{hamlet.id}/status")
-        result_dict = self.assert_json_success(result)
-        self.assertEqual(
-            result_dict["status"],
-            dict(away=True, status_text="on vacation"),
-        )
-
-        # Setting away is a deprecated way of accessing a user's presence_enabled
-        # setting. Can be removed when clients migrate "away" (also referred to as
-        # "unavailable") feature to directly use the presence_enabled setting.
-        user = UserProfile.objects.get(id=hamlet.id)
-        self.assertEqual(user.presence_enabled, False)
-
         # Server should fill emoji_code and reaction_type by emoji_name.
         self.update_status_and_assert_event(
             payload=dict(
@@ -570,9 +541,36 @@ class UserStatusTest(ZulipTestCase):
             user_status_info(hamlet),
             dict(
                 away=True,
-                status_text="on vacation",
+                status_text="at the beach",
                 emoji_name="car",
                 emoji_code="1f697",
                 reaction_type=UserStatus.UNICODE_EMOJI,
             ),
         )
+
+        # Bot with admin privileges can set status for another user.
+        bot = self.create_test_bot("iago-bot", iago)
+        do_change_user_role(
+            bot, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=iago, notify=False
+        )
+
+        update_status_url = f"/api/v1/users/{hamlet.id}/status"
+
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.api_post(bot, update_status_url, {"status_text": "status by bot"})
+        self.assert_json_success(result)
+        self.assertEqual(
+            events[0]["event"],
+            dict(type="user_status", user_id=hamlet.id, status_text="status by bot"),
+        )
+        self.assertEqual(
+            user_status_info(hamlet)["status_text"],
+            "status by bot",
+        )
+
+        # Bot with non-admin privileges can't set status for another user.
+        do_change_user_role(bot, UserProfile.ROLE_MEMBER, acting_user=iago, notify=False)
+
+        with self.capture_send_event_calls(expected_num_events=0) as events:
+            result = self.api_post(bot, update_status_url, {"status_text": "new status by bot"})
+        self.assert_json_error(result, "Insufficient permission")

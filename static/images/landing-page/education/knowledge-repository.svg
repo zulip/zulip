@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Generator: Adobe Illustrator 23.0.2, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
 <svg version="1.1" id="Слой_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 1485.9 1081" style="enable-background:new 0 0 1485.9 1081;" xml:space="preserve">
+	 width="1485.9" height="1081" viewBox="0 0 1485.9 1081" style="enable-background:new 0 0 1485.9 1081;" xml:space="preserve">
 <style type="text/css">
 	.st0{fill:#E9F4FE;}
 	.st1{fill:#5584DB;}
@@ -134,11 +134,11 @@
 			c2.8-0.4,5.4,1.5,5.8,4.2l1.7,10.5C1025,631.8,1023.1,634.4,1020.3,634.9z"/>
 		<path class="st12" d="M985.2,661.5l-58.5,9.3c-11.6,1.8-23.4-3.4-31-13.7l-1.6-2.1l117-18.6v0
 			C1007.7,649.8,997.6,659.5,985.2,661.5z"/>
-		
+
 			<rect x="839.3" y="582.2" transform="matrix(0.9877 -0.1566 0.1566 0.9877 -80.23 152.5463)" class="st3" width="177.2" height="6.3"/>
-		
+
 			<rect x="847.5" y="602.9" transform="matrix(0.9877 -0.1566 0.1566 0.9877 -83.3738 154.0831)" class="st3" width="177.2" height="6.3"/>
-		
+
 			<rect x="855.7" y="623.7" transform="matrix(0.9877 -0.1566 0.1566 0.9877 -86.5178 155.6199)" class="st3" width="177.2" height="6.3"/>
 	</g>
 	<path class="st13" d="M719.7,852.4H468.1c-2.5,0,12.4-0.2,13-2.6c31.8-146.6-1-179.4-3-243.7C475.2,509.2,522,458,593.9,458h0
@@ -167,7 +167,7 @@
 		C927,369.8,922.3,366.4,917.4,367.2z"/>
 	<g>
 		<path class="st12" d="M672.3,406.5c0,0,5.8,55.6,0,68.4c-14.1,31.2-62.3,2.3-62.3,2.3l16.8-61.8L672.3,406.5z"/>
-		
+
 			<ellipse transform="matrix(0.1931 -0.9812 0.9812 0.1931 164.778 966.1804)" class="st15" cx="669.8" cy="382.9" rx="22.1" ry="18.9"/>
 		<path class="st16" d="M672.6,399.4c4.1,0.5,7.6-1.7,9.4-5.8c1.5-3.4,1.3-7-0.5-8.7c-0.8-0.8-2.7-1.7-6,0.6c-4,2.9-7.2,1.1-8.7-1.3
 			c-1.8-2.9-1.6-7.5,2.3-10.7c2.7-2.2,5.2-3,7.4-2.3c4.5,1.4,6.5,8.6,6.5,8.7l2-0.7c-0.1-0.3-2.3-8.3-7.8-10.1
@@ -222,11 +222,11 @@
 	<polygon class="st1" points="1302.5,988.2 935.4,992 890.8,858.6 1159.8,863.8 	"/>
 	<rect x="890.8" y="896" class="st7" width="337.4" height="11.7"/>
 	<rect x="908.8" y="944.6" class="st7" width="370.3" height="11.7"/>
-	
+
 		<rect x="956.7" y="844.9" transform="matrix(0.9222 -0.3867 0.3867 0.9222 -273.0619 442.1524)" class="st7" width="11.7" height="109.9"/>
-	
+
 		<rect x="1045.7" y="841.3" transform="matrix(0.8799 -0.4751 0.4751 0.8799 -312.7768 610.5063)" class="st7" width="11.7" height="165.6"/>
-	
+
 		<rect x="1135.9" y="830" transform="matrix(0.7882 -0.6154 0.6154 0.7882 -324.7162 897.6612)" class="st7" width="11.7" height="181.2"/>
 	<g>
 		<polygon class="st1" points="355.6,891.1 382.2,857.8 446.9,857.1 427.8,891.8 		"/>
@@ -251,7 +251,7 @@
 			<clipPath id="SVGID_4_">
 				<use xlink:href="#SVGID_3_"  style="overflow:visible;"/>
 			</clipPath>
-			
+
 				<rect x="7" y="736.4" transform="matrix(0.992 -0.1265 0.1265 0.992 -100.0879 18.5224)" class="st19" width="177.6" height="121.5"/>
 			<polygon class="st20" points="0,748.1 97.9,814.1 176.2,725.6 			"/>
 			<polygon class="st21" points="15.4,868.6 93.3,778.2 191.5,846.2 			"/>
@@ -265,7 +265,7 @@
 		<clipPath id="SVGID_6_">
 			<use xlink:href="#SVGID_5_"  style="overflow:visible;"/>
 		</clipPath>
-		
+
 			<rect x="1272.4" y="246.9" transform="matrix(0.9767 0.2145 -0.2145 0.9767 93.8136 -280.3164)" class="st22" width="131.9" height="90.3"/>
 		<polygon class="st23" points="1264.2,322 1341.4,278.2 1393.1,350.3 		"/>
 		<polygon class="st24" points="1283.6,233.8 1335.6,304.4 1412.4,262.1 		"/>
@@ -278,7 +278,7 @@
 		<clipPath id="SVGID_8_">
 			<use xlink:href="#SVGID_7_"  style="overflow:visible;"/>
 		</clipPath>
-		
+
 			<rect x="1021.6" y="672.6" transform="matrix(0.9325 -0.3611 0.3611 0.9325 -182.0877 432.769)" class="st25" width="90.7" height="62"/>
 		<polygon class="st26" points="1035.8,748.9 1063.4,694.5 1120.4,716.1 		"/>
 		<polygon class="st27" points="1013.4,691 1070.1,711.7 1098,658.3 		"/>

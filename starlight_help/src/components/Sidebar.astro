@@ -1,0 +1,25 @@
+---
+import DefaultSidebar from "@astrojs/starlight/components/Sidebar.astro";
+---
+
+<DefaultSidebar />
+
+<script is:inline>
+    const scrollSelectedItemIntoView = () => {
+        const sidebar = document.getElementById("starlight__sidebar");
+        const selectedItem = sidebar?.querySelector('[aria-current="page"]');
+        if (!sidebar || !(selectedItem instanceof HTMLElement)) return;
+
+        const sidebarRect = sidebar.getBoundingClientRect();
+        const selectedItemRect = selectedItem.getBoundingClientRect();
+        const isVisible =
+            selectedItemRect.top >= sidebarRect.top &&
+            selectedItemRect.bottom <= sidebarRect.bottom;
+
+        if (!isVisible) {
+            selectedItem.scrollIntoView({block: "center"});
+        }
+    };
+
+    scrollSelectedItemIntoView();
+</script>

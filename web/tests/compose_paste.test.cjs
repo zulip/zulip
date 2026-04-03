@@ -7,15 +7,36 @@ const {JSDOM} = require("jsdom");
 const katex_tests = require("../../zerver/tests/fixtures/katex_test_cases.json");
 const {parse} = require("../src/markdown.ts");
 
-const {zrequire, set_global} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
+const $ = require("./lib/zjquery.cjs");
 
 const {window} = new JSDOM();
 
+const text_field_edit = mock_esm("text-field-edit", {insertTextIntoField: noop});
+
 const compose_paste = zrequire("compose_paste");
+const compose_ui = zrequire("compose_ui");
+const linkifiers = zrequire("linkifiers");
+const markdown = zrequire("markdown");
+const markdown_config = zrequire("markdown_config");
 const stream_data = zrequire("stream_data");
+const {initialize_user_settings} = zrequire("user_settings");
 
 set_global("document", {});
+class ClipboardEvent {
+    constructor({clipboardData} = {}) {
+        this.clipboardData = clipboardData;
+    }
+}
+set_global("ClipboardEvent", ClipboardEvent);
+initialize_user_settings({
+    user_settings: {
+        translate_emoticons: false,
+    },
+});
+markdown.initialize(markdown_config.get_helpers());
+
 stream_data.add_sub_for_tests({
     stream_id: 4,
     name: "Rome",
@@ -69,7 +90,7 @@ run_test("try_stream_topic_syntax_text", () => {
         ],
         [
             "http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/100.25.20*profits",
-            "[#Rome > 100% &#42;profits](#narrow/channel/4-Rome/topic/100.25.20*profits)",
+            "[#Rome > 100% &#42;profits](#narrow/channel/4-Rome/topic/100.25.20.2Aprofits)",
         ],
         [
             "http://zulip.zulipdev.com/#narrow/stream/4-Rome/topic/.24.24 100.25.20profits",
@@ -108,6 +129,138 @@ run_test("maybe_transform_html", () => {
     paste_html = "<div><div>Hello</div><div>World!</div></div>";
     paste_text = "Hello\nWorld!";
     assert.equal(compose_paste.maybe_transform_html(paste_html, paste_text), paste_html);
+});
+
+run_test("paste_handler reverse linkify", ({override, override_rewire}) => {
+    global.document = window.document;
+    global.window = window;
+    global.Node = window.Node;
+    global.HTMLElement = window.HTMLElement;
+    global.HTMLAnchorElement = window.HTMLAnchorElement;
+    global.HTMLTextAreaElement = window.HTMLTextAreaElement;
+
+    linkifiers.update_linkifier_rules([
+        {
+            id: 1,
+            pattern: "#D(?P<id>[0-9]{2,8})",
+            url_template: "https://github.com/zulip/zulip-desktop/pull/{id}",
+            reverse_template: "#D{id}",
+            alternative_url_templates: ["https://github.com/zulip/zulip-desktop/issues/{id}"],
+        },
+    ]);
+
+    let inserted_text;
+    let undo_texts;
+
+    override_rewire(compose_ui, "insert_and_scroll_into_view", (text) => {
+        inserted_text = text;
+    });
+
+    override(text_field_edit, "insertTextIntoField", (_textarea, text) => {
+        undo_texts.push(text);
+    });
+
+    const html_with_formatting = `
+        <p>
+        <span class="katex">
+            <span class="katex-mathml">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+                <semantics>
+                <mrow>
+                    <mi>x</mi>
+                    <mo>+</mo>
+                    <mi>y</mi>
+                    <mn>2</mn>
+                </mrow>
+                <annotation encoding="application/x-tex">x + y2</annotation>
+                </semantics>
+            </math>
+            </span>
+            <span class="katex-html" aria-hidden="true">
+            <span class="base">
+                <span class="mord mathnormal">x</span>
+                <span class="mbin">+</span>
+            </span>
+            <span class="base">
+                <span class="mord mathnormal">y</span>
+                <span class="mord">2</span>
+            </span>
+            </span>
+        </span>
+        <del>test</del>
+        <a href="https://github.com/zulip/zulip-desktop/pull/1359">https://github.com/zulip/zulip-desktop/pull/1359</a>
+        </p>`;
+
+    const test_cases = [
+        {
+            // Reverse linkify should preserve formatting when pasting HTML.
+            paste_html: html_with_formatting,
+            paste_text:
+                "x\n+\ny\n2\nx + y2\nx+y2 test https://github.com/zulip/zulip-desktop/pull/1359",
+            expected: "$$x + y2$$ ~~test~~ #D1359",
+            // When paste_html is a real value, there are two undo states:
+            // first undo reverses the reverse linkify (back to formatted text),
+            // second undo reverses the formatting (back to plain text).
+            expected_undo_texts: [
+                "x\n+\ny\n2\nx + y2\nx+y2 test https://github.com/zulip/zulip-desktop/pull/1359",
+                "$$x + y2$$ ~~test~~ https://github.com/zulip/zulip-desktop/pull/1359",
+            ],
+        },
+        {
+            // Reverse linkify should work for URL only text.
+            paste_html: "",
+            paste_text: "https://github.com/zulip/zulip-desktop/pull/1359",
+            expected: "#D1359",
+            expected_undo_texts: ["https://github.com/zulip/zulip-desktop/pull/1359"],
+        },
+        {
+            // Reverse linkify should work in plain text with surrounding text.
+            paste_html: "",
+            paste_text: "https://github.com/zulip/zulip-desktop/pull/1359 dummy text.",
+            expected: "#D1359 dummy text.",
+            expected_undo_texts: ["https://github.com/zulip/zulip-desktop/pull/1359 dummy text."],
+        },
+        {
+            // Reverse linkify should work for alternative URL templates.
+            paste_html: "",
+            paste_text: "https://github.com/zulip/zulip-desktop/issues/42",
+            expected: "#D42",
+            expected_undo_texts: ["https://github.com/zulip/zulip-desktop/issues/42"],
+        },
+    ];
+
+    for (const test_case of test_cases) {
+        const $textarea = $("textarea#compose-textarea");
+        // Put the cursor at the start with no selected text.
+        // The URL paste path checks this before it reaches reverse-linkify.
+        $textarea[0] = window.document.createElement("textarea");
+        $textarea[0].value = "";
+        inserted_text = undefined;
+        undo_texts = [];
+
+        const event = {
+            originalEvent: new ClipboardEvent({
+                clipboardData: {
+                    getData(format) {
+                        if (format === "text/html") {
+                            return test_case.paste_html;
+                        }
+                        return test_case.paste_text;
+                    },
+                },
+            }),
+            preventDefault() {},
+            stopPropagation() {},
+        };
+
+        compose_paste.paste_handler.call($textarea, event, noop);
+        assert.equal(inserted_text, test_case.expected, test_case.paste_text);
+        assert.deepEqual(
+            undo_texts,
+            test_case.expected_undo_texts,
+            `undo texts for: ${test_case.paste_text}`,
+        );
+    }
 });
 
 run_test("paste_handler_converter", () => {
@@ -149,18 +302,99 @@ run_test("paste_handler_converter", () => {
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
     assert.equal(
         compose_paste.paste_handler_converter(input, {
-            caret: () => 6,
-            val: () => "e.g. `",
+            val() {
+                return "e.g. `";
+            },
+            0: {
+                selectionStart: 6,
+                value: "e.g. `",
+            },
+            length: 1,
         }),
         "single line",
     );
 
-    // Yes code formatting if the given text area has a backtick but not at the cursor position
+    // No code formatting if the given text area has a backtick at the cursor position
     input =
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
     assert.equal(
         compose_paste.paste_handler_converter(input, {
-            caret: () => 0,
+            val() {
+                return "`e.g. ` ```hi`` ``";
+            },
+            0: {
+                selectionStart: 19,
+                value: "`e.g. ` ```hi`` ``",
+            },
+            length: 1,
+        }),
+        "single line",
+    );
+
+    // No code formatting if the given text area has a opening backtick before the cursor position
+    input =
+        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input, {
+            val() {
+                return "e.g. ` ";
+            },
+            0: {
+                selectionStart: 7,
+                value: "e.g. ` ",
+            },
+            length: 1,
+        }),
+        "single line",
+    );
+
+    // Yes code formatting if the given text area does not have a backtick at the cursor position.
+    input =
+        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input, {
+            val() {
+                return "";
+            },
+            0: {
+                selectionStart: 0,
+                value: "",
+            },
+            length: 1,
+        }),
+        "`single line`",
+    );
+
+    // Yes code formatting if the given text area closes the code block before the cursor position
+    input =
+        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input, {
+            val() {
+                return "` e.g. ` ";
+            },
+            0: {
+                selectionStart: 9,
+                value: "` e.g. ` ",
+            },
+            length: 1,
+        }),
+        "`single line`",
+    );
+
+    // Yes code formatting if the given text area closes the code block before the cursor position
+    input =
+        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><pre><code>single line</code></pre>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input, {
+            val() {
+                return "``` e.g. ``` ``hi`` ";
+            },
+            0: {
+                selectionStart: 20,
+                value: "``` e.g. ``` ``hi`` ",
+            },
+            length: 1,
         }),
         "`single line`",
     );
@@ -274,11 +508,24 @@ run_test("paste_handler_converter", () => {
         '<div class="ace-line gutter-author-d-iz88z86z86za0dz67zz78zz78zz74zz68zjz80zz71z9iz90za3z66zs0z65zz65zq8z75zlaz81zcz66zj6g2mz78zz76zmz66z22z75zfcz69zz66z ace-ltr focused-line" dir="auto" id="editor-3-ace-line-41"><span>Test list:</span></div><div class="ace-line gutter-author-d-iz88z86z86za0dz67zz78zz78zz74zz68zjz80zz71z9iz90za3z66zs0z65zz65zq8z75zlaz81zcz66zj6g2mz78zz76zmz66z22z75zfcz69zz66z line-list-type-bullet ace-ltr" dir="auto" id="editor-3-ace-line-42"><ul class="listtype-bullet listindent1 list-bullet1"><li><span class="ace-line-pocket-zws" data-faketext="" data-contentcollector-ignore-space-at="end"></span><span class="ace-line-pocket" data-faketext="" contenteditable="false"></span><span class="ace-line-pocket-zws" data-faketext="" data-contentcollector-ignore-space-at="start"></span><span>Item 1</span></li></ul></div><div class="ace-line gutter-author-d-iz88z86z86za0dz67zz78zz78zz74zz68zjz80zz71z9iz90za3z66zs0z65zz65zq8z75zlaz81zcz66zj6g2mz78zz76zmz66z22z75zfcz69zz66z line-list-type-bullet ace-ltr" dir="auto" id="editor-3-ace-line-43"><ul class="listtype-bullet listindent1 list-bullet1"><li><span class="ace-line-pocket-zws" data-faketext="" data-contentcollector-ignore-space-at="end"></span><span class="ace-line-pocket" data-faketext="" contenteditable="false"></span><span class="ace-line-pocket-zws" data-faketext="" data-contentcollector-ignore-space-at="start"></span><span>Item 2</span></li></ul></div>';
     assert.equal(compose_paste.paste_handler_converter(input), "Test list:\n* Item 1\n* Item 2");
 
+    // Pasting markdown from VS Code where each line is wrapped by a <div> shouldn't insert an extra newline.
+    input = `<html>\r\n<body>\r\n<!--StartFragment--><div style="color: #cccccc;background-color: #1f1f1f;font-family: 'Fira Code Retina', Consolas, 'Courier New', monospace;font-weight: 350;font-size: 12.852px;line-height: 17px;white-space: pre;"><div><span style="color: #cccccc;">authentication-methods</span></div><div><span style="color: #cccccc;">export-and-import</span></div><div><span style="color: #cccccc;">postgresql</span></div><div><span style="color: #cccccc;">upload-backends</span></div><div><span style="color: #cccccc;">ssl-certificates</span></div><div><span style="color: #cccccc;">email</span></div></div><!--EndFragment-->\r\n</body>\r\n</html>`;
+    assert.equal(
+        compose_paste.paste_handler_converter(input),
+        "authentication-methods\nexport-and-import\npostgresql\nupload-backends\nssl-certificates\nemail",
+    );
+
     // Pasting from Google Sheets (remove <style> elements completely)
     input =
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><style type="text/css"><!--td {border: 1px solid #cccccc;}br {mso-data-placement:same-cell;}--></style><span style="font-size:10pt;font-family:Arial;font-style:normal;text-align:right;" data-sheets-value="{&quot;1&quot;:3,&quot;3&quot;:123}" data-sheets-userformat="{&quot;2&quot;:769,&quot;3&quot;:{&quot;1&quot;:0},&quot;11&quot;:3,&quot;12&quot;:0}">123</span>';
     assert.equal(compose_paste.paste_handler_converter(input), "123");
 
+    // Pasting a long, visually line-wrapped single-line message from Firefox should not insert extraneous newlines.
+    input = `<html><body>\n<!--StartFragment--><div class="message_content rendered_markdown">\n<p>At some point recently, Zulip changed such that copying a \nlong message includes hard newlines, rather than putting things all on \none line when they were on one line in the original message.</p>\n</div><!--EndFragment-->\n</body>\n</html>`;
+    assert.equal(
+        compose_paste.paste_handler_converter(input),
+        "At some point recently, Zulip changed such that copying a long message includes hard newlines, rather than putting things all on one line when they were on one line in the original message.",
+    );
     // Pasting from Excel
     input = `<html xmlns:v="urn:schemas-microsoft-com:vml"\nxmlns:o="urn:schemas-microsoft-com:office:office"\nxmlns:x="urn:schemas-microsoft-com:office:excel"\nxmlns="http://www.w3.org/TR/REC-html40">\n<head>\n<meta http-equiv=Content-Type content="text/html; charset=utf-8">\n<meta name=ProgId content=Excel.Sheet>\n<meta name=Generator content="Microsoft Excel 15">\n<link id=Main-File rel=Main-File\nhref="file:///C:/Users/ADMINI~1/AppData/Local/Temp/msohtmlclip1/01/clip.htm">\n<link rel=File-List\nhref="file:///C:/Users/ADMINI~1/AppData/Local/Temp/msohtmlclip1/01/clip_filelist.xml">\n<style>\n<!--table\n    {mso-displayed-decimal-separator:"\\.";\n    mso-displayed-thousand-separator:"\\,";}\n@page\n    {margin:.75in .7in .75in .7in;\n    mso-header-margin:.3in;\n    mso-footer-margin:.3in;}\ntr\n    {mso-height-source:auto;}\ncol\n    {mso-width-source:auto;}\nbr\n    {mso-data-placement:same-cell;}\ntd\n    {padding-top:1px;\n    padding-right:1px;\n    padding-left:1px;\n    mso-ignore:padding;\n    color:black;\n    font-size:11.0pt;\n    font-weight:400;\n    font-style:normal;\n    text-decoration:none;\n    font-family:Calibri, sans-serif;\n    mso-font-charset:0;\n    mso-number-format:General;\n    text-align:general;\n    vertical-align:bottom;\n    border:none;\n    mso-background-source:auto;\n    mso-pattern:auto;\n    mso-protection:locked visible;\n    white-space:nowrap;\n    mso-rotate:0;}\n.xl65\n    {mso-number-format:"_\\(\\0022$\\0022* \\#\\,\\#\\#0\\.00_\\)\\;_\\(\\0022$\\0022* \\\\\\(\\#\\,\\#\\#0\\.00\\\\\\)\\;_\\(\\0022$\\0022* \\0022-\\0022??_\\)\\;_\\(\\@_\\)";}\n-->\n</style>\n</head>\n<body link="#0563C1" vlink="#954F72">\n<table border=0 cellpadding=0 cellspacing=0 width=88 style='border-collapse:\n collapse;width:66pt'>\n<!--StartFragment-->\n <col width=88 style='mso-width-source:userset;mso-width-alt:3218;width:66pt'>\n <tr height=20 style='height:15.0pt'>\n  <td height=20 class=xl65 width=88 style='height:15.0pt;width:66pt;font-size:\n  11.0pt;color:black;font-weight:400;text-decoration:none;text-underline-style:\n  none;text-line-through:none;font-family:Calibri, sans-serif;border-top:.5pt solid #5B9BD5;\n  border-right:none;border-bottom:none;border-left:none'><span\n  style='mso-spacerun:yes'> </span>$<span style='mso-spacerun:yes'>\n  </span>20.00 </td>\n </tr>\n <tr height=20 style='height:15.0pt'>\n  <td height=20 class=xl65 style='height:15.0pt;font-size:11.0pt;color:black;\n  font-weight:400;text-decoration:none;text-underline-style:none;text-line-through:\n  none;font-family:Calibri, sans-serif;border-top:.5pt solid #5B9BD5;\n  border-right:none;border-bottom:none;border-left:none'><span\n  style='mso-spacerun:yes'> </span>$<span\n  style='mso-spacerun:yes'>               </span>7.00 </td>\n </tr>\n<!--EndFragment-->\n</table>\n</body>\n</html>`;
 
@@ -306,6 +553,11 @@ run_test("paste_handler_converter", () => {
     // detected as a LibreOffice Calc table.
     // See https://github.com/zulip/zulip/pull/34752/#discussion_r2113598064
     input = `<html><head><meta http-equiv="content-type" content="text/html; charset=utf-8"/><title></title><meta name="generator" content="LibreOffice 25.2.3.2 (Windows)"/><style type="text/css">@page { size: 8.5in 11in; margin: 0.79in }p { line-height: 115%; margin-bottom: 0.1in; background: transparent }</style></head><body lang="en-US" link="#000080" vlink="#800000" dir="ltr"><table width="258" cellpadding="2" cellspacing="0"><col width="83"/><col width="81"/><col width="81"/><tr valign="bottom"><td width="83" height="16" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">Melgar</font></p></td><td width="81" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">Female</font></p></td><td width="81" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">UnitedStates</font></p></td></tr><tr valign="bottom"><td width="83" height="16" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">Weiland</font></p></td><td width="81" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">Female</font></p></td><td width="81" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">UnitedStates</font></p></td></tr><tr valign="bottom"><td width="83" height="16" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">Winward</font></p></td><td width="81" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">Female</font></p></td><td width="81" style="border: none; padding: 0in"><p align="left"><font face="Arial, serif">GreatBritain</font></p></td></tr></table></body></html>`;
+    assert.ok(compose_paste.is_single_image(input));
+
+    // Copying an image and pasting it with `paste_html` containing other empty text nodes and
+    // comment nodes should still classify the `paste_html` as an image that needs to be uploaded.
+    input = `<html>\n<body>\n<!--StartFragment--><img src="http://zulip.zulipdev.com:9991/user_uploads/thumbnail/2/a0/wETeF-Yv2wmMM6289kO9VC0s/image.png/840x560.webp"/><!--EndFragment-->\n</body>\n</html>`;
     assert.ok(compose_paste.is_single_image(input));
 
     // Pasting from the mac terminal

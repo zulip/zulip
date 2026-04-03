@@ -30,5 +30,7 @@ instance of Jitsi Meet.
 ## Related documentation
 
 - [How to start a call](/help/start-a-call)
-- [Zoom integration](/integrations/doc/zoom)
-- [BigBlueButton integration](/integrations/doc/big-blue-button)
+- [Zoom integration](/integrations/zoom)
+- [BigBlueButton integration](/integrations/big-blue-button)
+- [Constructor Groups integration](/integrations/constructor-groups)
+- [Nextcloud Talk integration](/integrations/nextcloud-talk)

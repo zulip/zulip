@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_bot, make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -14,8 +15,19 @@ const settings_account = mock_esm("../src/settings_account", {
     update_email() {},
     update_full_name() {},
     update_account_settings_display() {},
+    update_role_text() {},
+    set_user_own_role_dropdown_value() {},
+    add_or_remove_owner_from_role_dropdown() {},
+    update_user_own_role_dropdown_state() {},
 });
-const settings_users = mock_esm("../src/settings_users", {
+const settings_bots = mock_esm("../src/settings_bots", {
+    redraw_your_bots_list() {},
+    toggle_bot_config_download_container() {},
+});
+mock_esm("../src/settings_panel_menu", {
+    update_imported_users_tab() {},
+});
+mock_esm("../src/settings_users", {
     update_user_data() {},
     update_view_on_deactivate() {},
     update_view_on_reactivate() {},
@@ -24,12 +36,18 @@ mock_esm("../src/user_profile", {
     update_profile_modal_ui() {},
     update_user_custom_profile_fields() {},
 });
-const stream_events = mock_esm("../src/stream_events");
 
 const buddy_list = mock_esm("../src/buddy_list", {
     BuddyList: class {
         insert_or_move = noop;
     },
+});
+
+const compose_pm_pill = mock_esm("../src/compose_pm_pill", {
+    update_user_pill_active_status() {},
+});
+const pm_list = mock_esm("../src/pm_list", {
+    update_private_messages() {},
 });
 
 const buddy_data = new buddy_list.BuddyList();
@@ -40,9 +58,6 @@ mock_esm("../src/activity_ui", {
 });
 mock_esm("../src/compose_state", {
     update_email() {},
-});
-mock_esm("../src/pm_list", {
-    update_private_messages() {},
 });
 mock_esm("../src/settings", {
     update_lock_icon_in_sidebar() {},
@@ -64,6 +79,7 @@ mock_esm("../src/settings_streams", {
     maybe_disable_widgets() {},
 });
 
+const bot_data = zrequire("bot_data");
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
 const {set_current_user, set_realm} = zrequire("state_data");
@@ -73,13 +89,12 @@ const current_user = {};
 set_current_user(current_user);
 set_realm(make_realm());
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
-    is_admin: true,
     role: settings_config.user_role_values.member.code,
-};
+});
 
 function initialize() {
     people.init();
@@ -92,12 +107,12 @@ initialize();
 run_test("updates", ({override}) => {
     let person;
 
-    const isaac = {
+    const isaac = make_user({
         email: "isaac@example.com",
         delivery_email: null,
         user_id: 32,
         full_name: "Isaac Newton",
-    };
+    });
     people.add_active_user(isaac);
 
     override(navbar_alerts, "maybe_toggle_empty_required_profile_fields_banner", noop);
@@ -258,43 +273,95 @@ run_test("updates", ({override}) => {
     assert.ok(updated);
     assert.ok(confirm_banner_hidden);
 
-    const test_bot = {
+    const test_bot = make_bot({
         email: "test-bot@example.com",
         user_id: 35,
         full_name: "Test Bot",
-        is_bot: true,
         bot_owner_id: isaac.id,
-    };
+    });
     people.add_active_user(test_bot);
+    bot_data.add({
+        default_all_public_streams: true,
+        default_events_register_stream: "register stream test",
+        default_sending_stream: "sending stream test",
+        user_id: 35,
+        services: [],
+    });
 
     user_events.update_person({user_id: test_bot.user_id, bot_owner_id: me.user_id});
     person = people.get_by_email(test_bot.email);
     assert.equal(person.bot_owner_id, me.user_id);
 
-    let user_removed_from_streams = false;
-    stream_events.remove_deactivated_user_from_all_streams = (user_id) => {
-        assert.equal(user_id, isaac.user_id);
-        user_removed_from_streams = true;
-    };
     buddy_list.BuddyList.insert_or_move = noop;
+
+    // Test that UI elements are updated when a user is deactivated/reactivated
+    let pm_list_updated = false;
+    let compose_pill_updated = false;
+    let expected_user_id = isaac.user_id;
+    let expected_is_active;
+
+    pm_list.update_private_messages = () => {
+        pm_list_updated = true;
+    };
+    compose_pm_pill.update_user_pill_active_status = (user, is_active) => {
+        compose_pill_updated = true;
+        assert.equal(user.user_id, expected_user_id);
+        assert.equal(is_active, expected_is_active);
+    };
+
+    // Deactivate a user and verify UI updates are triggered
+    expected_is_active = false;
     user_events.update_person({user_id: isaac.user_id, is_active: false});
     assert.ok(!people.is_person_active(isaac.user_id));
-    assert.ok(user_removed_from_streams);
+    assert.ok(pm_list_updated);
+    assert.ok(compose_pill_updated);
 
+    // Reset flags and test reactivation
+    pm_list_updated = false;
+    compose_pill_updated = false;
+
+    // Reactivate the user and verify UI updates are triggered again
+    expected_is_active = true;
     user_events.update_person({user_id: isaac.user_id, is_active: true});
     assert.ok(people.is_person_active(isaac.user_id));
-
-    stream_events.remove_deactivated_user_from_all_streams = noop;
+    assert.ok(pm_list_updated);
+    assert.ok(compose_pill_updated);
 
     let bot_data_updated = false;
-    settings_users.update_bot_data = (user_id) => {
+    settings_bots.update_bot_data = (user_id) => {
         assert.equal(user_id, test_bot.user_id);
         bot_data_updated = true;
     };
+
+    // Reset flags and test bot deactivation
+    pm_list_updated = false;
+    compose_pill_updated = false;
+
+    expected_is_active = false;
+    expected_user_id = test_bot.user_id;
     user_events.update_person({user_id: test_bot.user_id, is_active: false});
     assert.equal(bot_data_updated, true);
+    assert.ok(pm_list_updated);
+    assert.ok(compose_pill_updated);
 
+    // Reset flags and test bot reactivation
     bot_data_updated = false;
+    pm_list_updated = false;
+    compose_pill_updated = false;
+
+    expected_is_active = true;
     user_events.update_person({user_id: test_bot.user_id, is_active: true});
     assert.ok(bot_data_updated);
+    assert.ok(pm_list_updated);
+    assert.ok(compose_pill_updated);
+
+    const imported_user = {
+        email: "imoreted-user@example.com",
+        delivery_email: null,
+        user_id: 33,
+        full_name: "Imported user",
+        is_imported_stub: true,
+    };
+    people.add_active_user(imported_user);
+    user_events.update_person({user_id: imported_user.user_id, is_imported_stub: false});
 });

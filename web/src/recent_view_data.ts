@@ -15,7 +15,7 @@ export function process_message(msg: Message): boolean {
     // Important: This function must correctly handle processing a
     // given message more than once; this happens during the loading
     // process because of how recent_view_message_list_data duplicates
-    // all_messages_data.
+    // recent_view_messages_data.
 
     // Return whether any conversation data is updated.
     let conversation_data_updated = false;
@@ -56,7 +56,7 @@ export function process_message(msg: Message): boolean {
 function get_sorted_conversations(): Map<string | undefined, ConversationData> {
     // Sort all recent conversations by last message time.
     return new Map(
-        [...conversations.entries()].sort((a, b) => b[1].last_msg_id - a[1].last_msg_id),
+        [...conversations.entries()].toSorted((a, b) => b[1].last_msg_id - a[1].last_msg_id),
     );
 }
 

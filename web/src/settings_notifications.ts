@@ -18,6 +18,7 @@ import {page_params} from "./page_params.ts";
 import * as settings_banner from "./settings_banner.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
 import type {SettingsPanel} from "./settings_preferences.ts";
 import * as settings_ui from "./settings_ui.ts";
 import {realm} from "./state_data.ts";
@@ -50,7 +51,7 @@ const DESKTOP_NOTIFICATIONS_BANNER: banners.Banner = {
         {
             label: $t({defaultMessage: "Enable notifications"}),
             custom_classes: "desktop-notifications-request",
-            attention: "primary",
+            variant: "solid",
         },
     ],
     close_button: true,
@@ -66,7 +67,7 @@ const MOBILE_PUSH_NOTIFICATION_BANNER: banners.Banner = {
         {
             label: $t({defaultMessage: "Learn more"}),
             custom_classes: "banner-external-link",
-            attention: "quiet",
+            variant: "subtle",
         },
     ],
     custom_classes: "mobile-push-notifications-banner",
@@ -212,7 +213,11 @@ export function set_enable_digest_emails_visibility(
 export function set_enable_marketing_emails_visibility(): void {
     const $container = $("#user-notification-settings");
     if (page_params.corporate_enabled) {
-        $container.find(".enable_marketing_emails_label").parent().show();
+        if (settings_data.user_email_not_configured()) {
+            $container.find(".enable_marketing_emails_label").parent().hide();
+        } else {
+            $container.find(".enable_marketing_emails_label").parent().show();
+        }
     } else {
         $container.find(".enable_marketing_emails_label").parent().hide();
     }
@@ -313,11 +318,12 @@ function reset_stream_notifications(elem: HTMLElement): void {
     const sub = sub_store.get(stream_id);
     assert(sub !== undefined);
 
-    const html_body = render_confirm_reset_stream_notifications({sub});
+    const modal_content_html = render_confirm_reset_stream_notifications({sub});
 
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Reset to default notifications?"}),
-        html_body,
+        modal_title_html: $t_html({defaultMessage: "Reset to default notifications?"}),
+        modal_content_html,
+        is_compact: true,
         id: "confirm_reset_stream_notifications_modal",
         on_click() {
             do_reset_stream_notifications(elem, sub);
@@ -328,8 +334,6 @@ function reset_stream_notifications(elem: HTMLElement): void {
 export function set_up(settings_panel: SettingsPanel): void {
     const $container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
-    assert(settings_panel.notification_sound_elem !== null);
-    const $notification_sound_elem = $<HTMLAudioElement>(settings_panel.notification_sound_elem);
     const for_realm_settings = settings_panel.for_realm_settings;
     const $notification_sound_dropdown = $container.find<HTMLSelectElement & {type: "select-one"}>(
         "select:not([multiple]).setting_notification_sound",
@@ -337,7 +341,10 @@ export function set_up(settings_panel: SettingsPanel): void {
 
     $container.find(".play_notification_sound").on("click", () => {
         if ($notification_sound_dropdown.val()!.toLowerCase() !== "none") {
-            void ui_util.play_audio(util.the($notification_sound_elem));
+            assert(settings_panel.notification_sound_elem !== null);
+            void ui_util.play_audio(
+                util.the($<HTMLAudioElement>(settings_panel.notification_sound_elem)),
+            );
         }
     });
 
@@ -393,7 +400,8 @@ export function set_up(settings_panel: SettingsPanel): void {
         // This is only accessed via the notifications banner, so we
         // do not need to do a mobile check here--as that banner is
         // not shown in a mobile context anyway.
-        void Notification.requestPermission().then((permission) => {
+        void (async () => {
+            const permission = await Notification.requestPermission();
             if (permission === "granted") {
                 update_desktop_notification_banner();
             } else if (permission === "denied") {
@@ -403,7 +411,7 @@ export function set_up(settings_panel: SettingsPanel): void {
                     "noopener noreferrer",
                 );
             }
-        });
+        })();
     });
 
     set_enable_digest_emails_visibility($container, for_realm_settings);
@@ -496,12 +504,12 @@ export function set_up(settings_panel: SettingsPanel): void {
                 }
             }
             if (enabled_pm_mention_notifications_count === 1) {
-                const html_body = render_confirm_disable_all_notifications();
+                const modal_content_html = render_confirm_disable_all_notifications();
                 $input_elem.prop("checked", user_settings[setting_name]);
 
                 confirm_dialog.launch({
-                    html_heading: $t_html({defaultMessage: "Disable notifications?"}),
-                    html_body,
+                    modal_title_html: $t_html({defaultMessage: "Disable notifications?"}),
+                    modal_content_html,
                     on_click() {
                         change_notification_setting(
                             setting_name,

@@ -15,7 +15,7 @@
     {{ csrf_input }}
     <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
     <input type="date" name="plan_end_date" {% if current_plan.end_date %}
-      value="{{ current_plan.end_date.strftime('%Y-%m-%d') }}" {% endif %} required />
+      value="{{ current_plan.end_date.date().isoformat() }}" {% endif %} required />
     <button type="submit" class="support-submit-button">Update</button>
 </form>
 {% endif %}

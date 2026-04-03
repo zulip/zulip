@@ -642,6 +642,13 @@ class UserMessage(AbstractUserMessage):
                 ),
                 name="zerver_usermessage_active_mobile_push_notification_id",
             ),
+            models.Index(
+                "message",
+                condition=Q(
+                    flags__andnz=AbstractUserMessage.flags.active_mobile_push_notification.mask
+                ),
+                name="zerver_usermessage_message_active_mobile_push_notification_idx",
+            ),
         ]
 
     @override
@@ -661,8 +668,14 @@ class UserMessage(AbstractUserMessage):
         simultaneous duplicate API requests to mark a certain set of
         messages as read).
 
+        Note: Since we don't expect these UserMessage rows to be deleted by the
+        caller, a FOR NO KEY UPDATE lock might be sufficient here. However, we
+        don't expect the stronger FOR UPDATE lock to cause any issues,
+        so for now, we still pass no_key=False, acquiring the stronger lock.
         """
-        return UserMessage.objects.select_for_update(of=("self",)).order_by("message_id")
+        return UserMessage.objects.select_for_update(of=("self",), no_key=False).order_by(
+            "message_id"
+        )
 
     @staticmethod
     def has_any_mentions(user_profile_id: int, message_id: int) -> bool:
@@ -804,16 +817,8 @@ class Attachment(AbstractAttachment):
             "name": self.file_name,
             "path_id": self.path_id,
             "size": self.size,
-            # convert to JavaScript-style UNIX timestamp so we can take
-            # advantage of client time zones.
-            "create_time": int(time.mktime(self.create_time.timetuple()) * 1000),
-            "messages": [
-                {
-                    "id": m.id,
-                    "date_sent": int(time.mktime(m.date_sent.timetuple()) * 1000),
-                }
-                for m in self.messages.all()
-            ],
+            "create_time": int(time.mktime(self.create_time.timetuple())),
+            "message_ids": [m.id for m in self.messages.all()],
         }
 
 

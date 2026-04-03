@@ -1,7 +1,8 @@
 from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
+from dataclasses import dataclass
 from functools import lru_cache
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import urlsplit
 
 import orjson
@@ -75,19 +76,24 @@ def requests_client() -> requests.Session:
     return c
 
 
+@dataclass
+class EventQueueData:
+    queue_id: str
+    idle_queue_timeout_secs: int
+
+
 def request_event_queue(
     user_profile: UserProfile,
     user_client: Client,
     apply_markdown: bool,
     client_gravatar: bool,
     slim_presence: bool,
-    queue_lifespan_secs: int,
+    idle_queue_timeout: int | Literal["mobile"] | None,
     event_types: Sequence[str] | None = None,
     all_public_streams: bool = False,
     narrow: Iterable[Sequence[str]] = [],
     bulk_message_deletion: bool = False,
     stream_typing_notifications: bool = False,
-    user_settings_object: bool = False,
     pronouns_field_type_supported: bool = True,
     linkifier_url_template: bool = False,
     user_list_incomplete: bool = False,
@@ -95,7 +101,7 @@ def request_event_queue(
     archived_channels: bool = False,
     empty_topic_name: bool = False,
     simplified_presence_events: bool = False,
-) -> str | None:
+) -> EventQueueData | None:
     if not settings.USING_TORNADO:
         return None
 
@@ -116,10 +122,8 @@ def request_event_queue(
         "user_client": user_client.name,
         "narrow": orjson.dumps(narrow),
         "secret": settings.SHARED_SECRET,
-        "lifespan_secs": queue_lifespan_secs,
         "bulk_message_deletion": orjson.dumps(bulk_message_deletion),
         "stream_typing_notifications": orjson.dumps(stream_typing_notifications),
-        "user_settings_object": orjson.dumps(user_settings_object),
         "pronouns_field_type_supported": orjson.dumps(pronouns_field_type_supported),
         "linkifier_url_template": orjson.dumps(linkifier_url_template),
         "user_list_incomplete": orjson.dumps(user_list_incomplete),
@@ -129,11 +133,18 @@ def request_event_queue(
         "simplified_presence_events": orjson.dumps(simplified_presence_events),
     }
 
+    if idle_queue_timeout is not None:
+        req["idle_queue_timeout"] = orjson.dumps(idle_queue_timeout)
+
     if event_types is not None:
         req["event_types"] = orjson.dumps(event_types)
 
     resp = requests_client().post(tornado_url + "/api/v1/events/internal", data=req)
-    return resp.json()["queue_id"]
+    result = resp.json()
+    return EventQueueData(
+        queue_id=result["queue_id"],
+        idle_queue_timeout_secs=result["idle_queue_timeout_secs"],
+    )
 
 
 def get_user_events(

@@ -107,13 +107,14 @@ run_test("insert_server_message", ({override}) => {
         reactions: [],
         avatar_url: `/avatar/${isaac.user_id}`,
         display_recipient: "Bar",
+        submessages: [],
     };
 
     assert.equal(message_store.get(new_message.id), undefined);
 
     helper.redirect(direct_message_group_data, "process_loaded_messages");
     helper.redirect(message_notifications, "received_messages");
-    helper.redirect(stream_list, "update_streams_sidebar");
+    helper.redirect(stream_list, "update_streams_sidebar_for_messages");
     helper.redirect(unread_ui, "update_unread_counts");
     helper.redirect(activity, "set_received_new_messages");
 
@@ -131,7 +132,7 @@ run_test("insert_server_message", ({override}) => {
         [unread_ui, "update_unread_counts"],
         [activity, "set_received_new_messages"],
         [message_notifications, "received_messages"],
-        [stream_list, "update_streams_sidebar"],
+        [stream_list, "update_streams_sidebar_for_messages"],
     ]);
     assert.ok(added_message);
 
@@ -167,7 +168,7 @@ run_test("insert_local_message", ({override}) => {
 
     helper.redirect(direct_message_group_data, "process_loaded_messages");
     helper.redirect(message_notifications, "received_messages");
-    helper.redirect(stream_list, "update_streams_sidebar");
+    helper.redirect(stream_list, "update_streams_sidebar_for_messages");
     helper.redirect(activity, "set_received_new_messages");
 
     message_events.insert_new_messages({
@@ -183,7 +184,7 @@ run_test("insert_local_message", ({override}) => {
         [direct_message_group_data, "process_loaded_messages"],
         [activity, "set_received_new_messages"],
         [message_notifications, "received_messages"],
-        [stream_list, "update_streams_sidebar"],
+        [stream_list, "update_streams_sidebar_for_messages"],
     ]);
     assert.ok(added_message);
 

@@ -1,0 +1,26 @@
+import { Steps, TabItem } from "@astrojs/starlight/components";
+
+<TabItem label="Imported organizations">
+  <Steps>
+    1. [Configure allowed authentication
+       methods](/help/configure-authentication-methods). Zulip offers a
+       variety of authentication methods, including email/password, Google,
+       GitHub, GitLab, Apple, LDAP and [SAML](/help/saml-authentication).
+       Users can immediately [log in][logging-in] with any allowed
+       authentication method that does not require a password.
+    1. Share a link to your Zulip organization, which is
+       `https://your-org.zulipchat.com` on Zulip Cloud.
+    1. *(optional)* To log in with an email/password, users will need to set their
+       initial password. You can:
+       * Automatically send password reset emails to all users in your
+         organization. If you imported your organization into Zulip Cloud, simply
+         email [support@zulip.com](mailto:support@zulip.com) to request this. Server
+         administrators for self-hosted organizations should follow [these
+         instructions](/help/import-from-slack#send-password-reset-emails-to-all-users).
+       * Let users know that they can [request a password
+         reset](/help/change-your-password#if-youve-forgotten-or-never-had-a-password)
+         on your organization's login page.
+  </Steps>
+</TabItem>
+
+[logging-in]: /help/logging-in

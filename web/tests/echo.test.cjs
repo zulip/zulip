@@ -2,10 +2,8 @@
 
 const assert = require("node:assert/strict");
 
-const MockDate = require("mockdate");
-
 const {make_user_group} = require("./lib/example_group.cjs");
-const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {clock, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 
@@ -33,6 +31,10 @@ const message_store = mock_esm("../src/message_store", {
     get: () => ({failed_request: true}),
 
     update_booleans() {},
+
+    update_message_content(message, new_content) {
+        message.content = new_content;
+    },
 
     convert_raw_message_to_message_with_booleans() {},
 });
@@ -204,19 +206,20 @@ run_test("process_from_server for messages to add to narrow", ({override}) => {
 run_test("build_display_recipient", ({override}) => {
     override(current_user, "user_id", 123);
 
-    const params = {};
-    params.realm_users = [
-        {
-            user_id: 123,
-            full_name: "Iago",
-            email: "iago@zulip.com",
-        },
-        {
-            email: "cordelia@zulip.com",
-            full_name: "Cordelia",
-            user_id: 21,
-        },
-    ];
+    const params = {
+        realm_users: [
+            {
+                user_id: 123,
+                full_name: "Iago",
+                email: "iago@zulip.com",
+            },
+            {
+                email: "cordelia@zulip.com",
+                full_name: "Cordelia",
+                user_id: 21,
+            },
+        ],
+    };
     const user_group_params = {
         realm_user_groups: [
             make_user_group({
@@ -300,7 +303,7 @@ run_test("update_message_lists", () => {
 
 run_test("insert_local_message streams", ({override}) => {
     const fake_now = 555;
-    MockDate.set(new Date(fake_now * 1000));
+    clock.setSystemTime(new Date(fake_now * 1000));
 
     const local_id_float = 101.01;
 
@@ -347,19 +350,20 @@ run_test("insert_local_message direct message", ({override}) => {
 
     override(current_user, "user_id", 123);
 
-    const params = {};
-    params.realm_users = [
-        {
-            user_id: 123,
-            full_name: "Iago",
-            email: "iago@zulip.com",
-        },
-        {
-            email: "cordelia@zulip.com",
-            full_name: "Cordelia",
-            user_id: 21,
-        },
-    ];
+    const params = {
+        realm_users: [
+            {
+                user_id: 123,
+                full_name: "Iago",
+                email: "iago@zulip.com",
+            },
+            {
+                email: "cordelia@zulip.com",
+                full_name: "Cordelia",
+                user_id: 21,
+            },
+        ],
+    };
     const user_group_params = {
         realm_user_groups: [
             make_user_group({
@@ -442,8 +446,4 @@ run_test("test reify_message_id", ({override}) => {
     const history = stream_topic_history.find_or_create(general_sub.stream_id);
     assert.equal(history.max_message_id, 110);
     assert.equal(history.topics.get("test").message_id, 110);
-});
-
-run_test("reset MockDate", () => {
-    MockDate.reset();
 });

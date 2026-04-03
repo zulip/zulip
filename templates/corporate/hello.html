@@ -6,12 +6,9 @@
 {% set PAGE_DESCRIPTION = "Zulip is an organized team chat app for distributed
   teams of all sizes." %}
 
-{% block customhead %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-{% endblock %}
 
 {% block content %}
-    {% include 'zerver/landing_nav.html' %}
+    {% include 'zerver/marketing_nav.html' %}
     <div class="portico-hello-page">
         <div class='body-bg'>
             <div class='body-bg__layer'></div>
@@ -44,26 +41,26 @@
                 </picture>
                 <div class="cta-buttons">
                     <a href="{{ 'https://chat.zulip.org' if not development_environment}}/?show_try_zulip_modal">
-                        See it in use
-                        <div class="cta-desc">in an open organization</div>
+                        See how we use Zulip
+                        <div class="cta-desc">No account needed</div>
                     </a>
                     <a href="/new/">
                         Create an organization
-                        <div class="cta-desc">in 1 minute for free</div>
+                        <div class="cta-desc">Anonymously if you like</div>
                     </a>
                     <a href="/request-demo/">
-                        Get a demo
-                        <div class="cta-desc">request a call</div>
+                        Contact sales
+                        <div class="cta-desc">Talk to a helpful human</div>
                     </a>
                 </div>
             </div>
             <div class="client-logos">
                 <div class='client-logos-div client-logos__logo_pilot'></div>
+                <div class='client-logos-div client-logos__logo_linux_foundation'></div>
                 <div class='client-logos-div client-logos__logo_tum'></div>
                 <div class='client-logos-div client-logos__logo_wikimedia'></div>
                 <div class='client-logos-div client-logos__logo_rust'></div>
                 <div class='client-logos-div client-logos__logo_dr_on_demand'></div>
-                <div class='client-logos-div client-logos__logo_maria'></div>
             </div>
         </div>
         <div class="screen-2">
@@ -226,17 +223,27 @@
         <div class="screen-4">
             <div class="screen-4__container">
                 <div class="screen-4__content">
-                    <img alt="" class='switch-diagram' loading="lazy" width="400" height="358"
-                      src="{{ static('images/landing-page/hello/switch-diagram.png') }}"
+                    <img alt="" class="switch-diagram mirror-image" loading="lazy" width="300"
+                      src="{{ static('images/landing-page/education/privacy.svg') }}"
                       />
                     <div class="screen-4__desc">
-                        <h2 class="screen-4__header">Switching to Zulip isn’t hard.</h2>
+                        <h2 class="screen-4__header">You own your data</h2>
                         <p>
-                            Zulip offers a convenient cloud solution, with <a href="/features/">features</a> to make your users and IT team happy. Import your data and integrations <a href="/help/import-from-slack">from Slack</a> and other products.
+                            Escape corporate vendor lock-in. You can <a
+                            href="/self-hosting/">self-host</a> Zulip’s 100% <a
+                            href="https://github.com/zulip/zulip#readme">open-source</a>
+                            software for full data sovereignty, or start
+                            with a convenient <a href="/plans">cloud
+                            solution</a> and <a
+                            href="https://zulip.readthedocs.io/en/stable/production/export-and-import.html#import-into-a-new-zulip-server">move</a>
+                            any time.
                         </p>
-                        <h3>Your data is yours!</h3>
                         <p>
-                            For ultimate control and <a href="/help/gdpr-compliance">compliance</a>, <a href="/self-hosting/">self-host</a> Zulip’s 100% <a href="https://github.com/zulip/zulip#readme">open-source</a> software, with easy <a href="https://zulip.readthedocs.io/en/stable/production/install.html">installation</a> and <a href="https://zulip.readthedocs.io/en/stable/production/upgrade.html">upgrades</a>.
+                            We make it easy to switch from <a
+                            href="/help/moving-from-slack">Slack</a>, <a
+                            href="/help/moving-from-teams">Teams</a> and <a
+                            href="/help/migrating-from-other-chat-tools">other
+                            tools</a>.
                         </p>
                     </div>
                 </div>
@@ -246,7 +253,7 @@
                     <img alt="" src="https://brand-assets.getapp.com/badge/05c62fe0-cb84-41bf-ae2d-cd0105373a2c.svg"/>
                 </a>
                 <a class="badge-capterra" href="https://www.capterra.com/p/197945/Zulip/">
-                    <img alt="" src="https://brand-assets.capterra.com/badge/d7c03c95-8f34-466e-b964-546b102899f1.svg"/>
+                    <img alt="" src="https://brand-assets.capterra.com/badge/d5bcfca3-94a5-496d-90f2-4ffc71c51eb7.svg"/>
                 </a>
             </div>
         </div>

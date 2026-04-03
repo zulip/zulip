@@ -39,6 +39,7 @@ a.help_link_widget {
     &:hover {
         color: inherit;
         opacity: 1;
+        text-decoration: none;
     }
 }
 
@@ -95,18 +96,15 @@ h3,
     max-width: 90%;
 }
 
-#change_email_modal {
-    #change_email_form {
-        margin: 0;
-    }
-}
-
 .disabled_setting_tooltip {
     cursor: not-allowed;
 }
 
-#account-settings .deactivate_realm_button {
-    margin-left: 10px;
+#account-settings .deactivate-buttons-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    flex-wrap: wrap;
 }
 
 #change_email_button,
@@ -131,10 +129,39 @@ h3,
 
 .admin-realm-description,
 .admin-realm-welcome-message-custom-text {
-    height: 12em;
-    width: 100%;
-    max-width: 500px;
+    /* We set the minimum height of textarea to be enough for two lines
+    of text. Since box-sizing is set to "border-box", we also add
+    2 * var(--input-vertical-padding) + 2 * var(--input-border-width). */
+    min-height: calc(
+        2em * var(--base-line-height-unitless) + 2 *
+            var(--input-vertical-padding) + 2 * var(--input-border-width)
+    );
+    width: 500px;
+    max-width: 80%;
+    min-width: 500px;
     box-sizing: border-box;
+}
+
+.admin-realm-description.rendered_markdown {
+    width: fit-content;
+    /* 500px at 16px */
+    max-width: 31.25em;
+    min-width: 0;
+
+    & > p:first-child {
+        padding-top: 0;
+    }
+
+    & > p:last-child {
+        margin-bottom: 0;
+    }
+}
+/* Show yellow outline when organization description is empty,
+   matching the compose box "approaching limit" warning style. */
+.admin-realm-description.empty-description:not(:disabled) {
+    border-color: var(
+        --color-message-content-container-border-approaching-limit
+    );
 }
 
 .admin-realm-welcome-message-custom-text {
@@ -156,8 +183,12 @@ h3,
 .play_notification_sound {
     .notification-sound-icon {
         font-size: 1.5714em; /* 22px at 14px / em */
-        /* Visually center with chevron in select */
-        line-height: 1.8571em; /* 26px at 14px / em */
+        /* Visually center with chevron in select
+        by setting the line-height equal to the height
+        of select which is equal to - 1.4em + 8px (4px
+        each for top and bottom paddings) + 2px (1px each
+        for top and bottom borders). */
+        line-height: calc(1.4 * var(--base-font-size-px) + 10px);
         cursor: pointer;
     }
 }
@@ -183,6 +214,10 @@ h3,
     & table + .progressive-table-wrapper table tr.user_row td:first-of-type {
         width: 20%;
     }
+
+    /* This variable allows JavaScript to detect whether we are showing both
+    the left sidebar and settings content for the current screen width or not. */
+    --column-count: 2;
 }
 
 #uploaded_files_table > tr > td:nth-of-type(1),
@@ -202,12 +237,8 @@ h3,
     }
 }
 
-#playground-settings {
-    #playground_pygments_language,
-    #playground_name,
-    #playground_url_template {
-        width: calc(100% - 10em - 6em);
-    }
+#playground-settings .new-playground-form input {
+    width: calc(100% - 10em - 6em);
 }
 
 #language_selection_modal {
@@ -323,13 +354,14 @@ h3,
     padding: 0 25px 0 6px;
     color: var(--color-text-default);
     border-radius: 4px;
-    border: 1px solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid var(--color-border-legacy-input);
     cursor: pointer;
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--color-background-legacy-input);
+    font-size: inherit;
 
     &:disabled {
         cursor: not-allowed;
-        background-color: hsl(0deg 0% 93%);
+        background-color: var(--color-background-disabled-settings-select);
 
         /* This is reset for other browsers to use Chrome's opacity. */
         opacity: 0.7;
@@ -345,13 +377,37 @@ select.settings_select {
     background-repeat: no-repeat;
     background-position: 98%;
     background-size: 1em;
+    font-family: inherit;
 }
 
 #admin-active-users-list,
-#admin-bot-list {
+#admin-bot-list,
+#personal-bot-list {
     .table tr:first-of-type td {
         border-top: none;
     }
+
+    .tab-switcher {
+        margin-left: 0;
+        margin-top: 1em;
+    }
+}
+
+#admin-bot-list .user-status-settings,
+#personal-bot-list .user-status-settings {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.config-download-text {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.bot-list-error {
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .user_role,
@@ -382,6 +438,41 @@ select.settings_select {
 
     .message_count {
         margin: 10px 0 0;
+    }
+}
+
+.settings-checkbox-wrapper {
+    width: fit-content;
+}
+
+#bot-edit-form,
+#api-key-modal {
+    .api-key-details-container,
+    .zuliprc-container {
+        display: flex;
+        align-items: center;
+        gap: 0.25em;
+
+        .buttons-container {
+            display: flex;
+            align-items: center;
+        }
+    }
+
+    .modal_text_input {
+        margin-bottom: 0;
+    }
+}
+
+#zuliprc-section {
+    /* Normally all input-group elements have bottom margin of 1.25em.
+    But here the buttons have bottom padding of 0.375em and thus there is
+    already some extra space between this and the section below it, so we
+    reduce the bottom margin by 0.375em. */
+    margin-bottom: 0.875em;
+
+    .modal-field-label {
+        margin-bottom: 0;
     }
 }
 
@@ -438,11 +529,6 @@ input[type="checkbox"] {
            16px-square box (at 16px/1em) for the
            chevron icon. */
         max-width: calc(100% - 1em);
-        display: flex;
-        align-items: baseline;
-        /* Mimic the space from the previous inline
-           layout. */
-        gap: 0.4ch;
     }
 
     .decorated-channel-name {
@@ -463,7 +549,7 @@ input[type="checkbox"] {
 
 .admin-realm-form {
     & h3 {
-        margin: 10px 0 5px;
+        margin: calc(0.3125 * var(--base-font-size-px)) 0; /* 5px 0 at 16px font size. */
     }
 
     .subsection-header h3 {
@@ -475,7 +561,7 @@ input[type="checkbox"] {
 .notification-settings-form {
     .subsection-header h3 {
         display: inline-block;
-        margin: 10px 0 5px;
+        margin: calc(0.3125 * var(--base-font-size-px)) 0; /* 5px 0 at 16px font size. */
     }
 
     .tip {
@@ -564,14 +650,6 @@ input[type="checkbox"] {
     }
 }
 
-#confirm_reset_stream_notifications_modal {
-    .channel-privacy-type-icon {
-        padding-left: 3px;
-        padding-right: 0;
-        width: auto;
-    }
-}
-
 #customizable_stream_notifications_table .dropdown-widget-button {
     /* 225px at 16px/1em */
     width: 14.0625em;
@@ -608,6 +686,10 @@ input[type="checkbox"] {
     }
 }
 
+.channel-permissions .admin-permissions-tip {
+    margin-bottom: 1em;
+}
+
 .organization-settings-parent {
     padding-top: 5px;
 }
@@ -628,9 +710,11 @@ input[type="checkbox"] {
     margin-top: 0;
 }
 
-.language_selection_widget .language_selection_button {
-    text-decoration: none;
-    min-width: 0;
+.realm_default_language-dropdown-list-container,
+.default_language-dropdown-list-container {
+    /* This is same as saved snippets dropdown's width and
+    also makes all language names fit in the same line. */
+    width: 17.8571em;
 }
 
 #user_enter_sends_label kbd,
@@ -776,6 +860,10 @@ input[type="checkbox"] {
     border: none;
 }
 
+.user_timezone-dropdown-list-container {
+    width: calc(var(--modal-input-width));
+}
+
 #profile-settings {
     .custom-profile-fields-form .custom_user_field label,
     .full-name-change-container label,
@@ -788,7 +876,7 @@ input[type="checkbox"] {
         min-width: calc(var(--modal-input-width) - 6px);
     }
 
-    & textarea {
+    .settings-textarea {
         /* Subtract 6px of padding from side */
         width: calc(var(--modal-input-width) - 12px);
     }
@@ -813,6 +901,11 @@ input[type="checkbox"] {
     grid-template-columns: minmax(0, 1fr) 1.4285em; /* 20px at 14px em */
     align-items: center;
     width: var(--modal-input-width);
+
+    .flatpickr-wrapper {
+        grid-column: datepicker-start / close-button-end;
+        grid-row: close-button;
+    }
 }
 
 .control-label-disabled {
@@ -837,14 +930,15 @@ input[type="checkbox"] {
         display: inline-flex;
     }
 
-    .default_stream_choices_table {
-        margin-top: 2px;
-    }
-
     .choice-row {
         margin-bottom: 10px;
 
         &:last-of-type {
+            /* Remove margin-bottom for last choice row
+               to remove extra space between the modal
+               content and footer. */
+            margin-bottom: 0;
+
             .delete-choice {
                 display: none;
             }
@@ -868,10 +962,6 @@ input[type="checkbox"] {
 }
 
 #add-custom-emoji-modal {
-    & form {
-        margin: 0;
-    }
-
     & input[type="text"] {
         padding: 6px;
     }
@@ -895,10 +985,19 @@ input[type="checkbox"] {
     vertical-align: middle;
 }
 
-.add-new-linkifier-box,
+.emoji-override-warning {
+    vertical-align: middle;
+    margin-left: 3px;
+    opacity: 0.7;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
 .add-new-playground-box {
     & button {
-        margin-left: calc(10em + 20px) !important;
+        margin-left: calc(10em + 20px);
     }
     margin-bottom: 15px;
 
@@ -907,7 +1006,7 @@ input[type="checkbox"] {
     }
 }
 
-.grey-box .wrapper {
+.settings-highlight-box .wrapper {
     margin: 10px 0;
 }
 
@@ -931,9 +1030,36 @@ input[type="checkbox"] {
     }
 }
 
-#admin-linkifier-pattern-status,
-#admin-linkifier-template-status {
-    margin: 20px 0 0;
+.admin_linkifiers_table {
+    th:first-child,
+    td:first-child {
+        white-space: nowrap;
+    }
+
+    th.convert-url-heading {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    td.convert-cell {
+        text-align: center;
+    }
+}
+
+.alternative-url-template-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+
+    & input {
+        flex: 1;
+    }
+
+    &:last-child .delete-alternative-url-template {
+        visibility: hidden;
+    }
 }
 
 #organization-permissions {
@@ -948,17 +1074,14 @@ input[type="checkbox"] {
     }
 }
 
-.org-permissions-form .pill-container {
+.org-permissions-form .pill-container,
+.org-settings-form .pill-container {
     /* Subtract 2 * (2px padding) + 2 * (1px border) */
     min-width: calc(var(--modal-input-width) - 6px);
 
-    .input {
-        flex-grow: 1;
-
-        &:first-child:empty::before {
-            opacity: 0.5;
-            content: attr(data-placeholder);
-        }
+    .input:first-child:empty::before {
+        opacity: 0.5;
+        content: attr(data-placeholder);
     }
 }
 
@@ -973,157 +1096,8 @@ input[type="checkbox"] {
     max-height: calc(95vh - 280px);
 }
 
-#bot-settings {
-    .add-a-new-bot {
-        margin-bottom: 2px;
-        margin-top: 10px;
-    }
-
-    hr {
-        margin: 10px 0;
-        border-color: hsl(0deg 0% 85%);
-    }
-
-    .config-download-text {
-        margin-left: 5px;
-    }
-
-    .ind-tab {
-        width: auto;
-        min-width: 90px;
-    }
-}
-
-.bots_list {
-    list-style-type: none;
-    margin-left: 0;
-
-    .bot-card-image {
-        vertical-align: top;
-    }
-
-    .bot-card-name {
-        font-weight: 600;
-        font-size: 1.1rem;
-        margin: 7px 5px;
-
-        overflow: hidden;
-        line-height: 1.3em;
-        text-overflow: ellipsis;
-        white-space: pre;
-    }
-
-    .bot-card-regenerate-bot-api-key {
-        position: relative;
-        margin-left: 5px;
-        color: hsl(0deg 0% 67%);
-        transition: color 0.3s ease;
-
-        &:hover {
-            color: hsl(0deg 0% 27%);
-        }
-    }
-
-    .edit-bot-buttons {
-        padding-top: 5px;
-
-        & button {
-            background-color: transparent;
-        }
-
-        .bootstrap-btn {
-            padding: 4px;
-        }
-
-        .sea-green {
-            color: hsl(177deg 70% 46%);
-        }
-
-        .blue {
-            color: hsl(203deg 77% 56%);
-        }
-
-        .danger-red {
-            color: hsl(0deg 56% 73%);
-        }
-
-        .copy_zuliprc {
-            color: hsl(51deg 90% 50%);
-        }
-
-        .purple {
-            color: hsl(278deg 62% 68%);
-        }
-
-        .steel-blue {
-            color: hsl(207deg 44% 49%);
-        }
-    }
-
-    .bot-information-box {
-        position: relative;
-        display: inline-block;
-        width: calc(50% - 10px);
-        margin: 5px;
-
-        border-radius: 4px;
-        box-sizing: border-box;
-
-        overflow: auto;
-
-        .bot-card-details {
-            display: inline-block;
-            width: calc(100% - 75px);
-        }
-    }
-
-    & img.bot-card-avatar {
-        margin: 10px 5px 0 10px;
-        height: 50px;
-        width: 50px;
-        border-radius: 4px;
-        vertical-align: top;
-        box-shadow: 0 0 4px hsl(0deg 0% 0% / 10%);
-    }
-
-    .bot-card-email,
-    .bot-card-type {
-        margin-bottom: 5px;
-    }
-
-    .bot-card-email .bot-card-value,
-    .bot-card-api-key .bot-card-api-key-value-and-button {
-        display: block;
-        margin-left: 0;
-        overflow-wrap: break-word;
-        word-break: break-all;
-        white-space: normal;
-    }
-
-    .bot-card-api-key .bot-card-api-key-value-and-button {
-        font-family: "Source Code Pro", monospace;
-        font-size: 0.85em;
-        display: flex;
-    }
-
-    .bot-card-info {
-        padding: 10px;
-    }
-
-    .bot-card-field {
-        text-transform: uppercase;
-        font-weight: 600;
-        color: hsl(0deg 0% 67%);
-    }
-}
-
-#inactive_bots_list .bot_info .reactivate_bot {
-    margin-top: 5px;
-}
-
 .edit_bot_form {
     font-size: 100%;
-    margin: 0;
     padding: 0;
 
     .buttons {
@@ -1198,12 +1172,6 @@ input[type="checkbox"] {
         position: absolute;
         right: 20px;
         top: 0;
-    }
-}
-
-#change_password_modal {
-    #change_password_container {
-        margin: 0;
     }
 }
 
@@ -1344,6 +1312,35 @@ label.preferences-radio-choice-label {
     }
 }
 
+.default_avatar_source_values {
+    width: 25em; /* 400px / 16px em */
+
+    .preferences-radio-choice-label {
+        align-items: center;
+
+        .radio-choice-controls {
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="radio"] {
+            top: 0;
+            margin-right: 0.5em; /* 8px / 16px em */
+        }
+    }
+
+    .right {
+        display: flex;
+        gap: 0.5em; /* 8px / 16px em */
+    }
+
+    .avatar {
+        height: 2.625em; /* 42px / 16px em */
+        width: 2.625em; /* 42px / 16px em */
+        border-radius: 0.25em; /* 4px / 16px em */
+    }
+}
+
 .user_list_style_values {
     max-width: 25em; /* 350px / 14px em */
 
@@ -1387,6 +1384,23 @@ label.preferences-radio-choice-label {
 
 .open-user-form {
     min-width: initial !important;
+}
+
+#show_api_key {
+    .api-key-container {
+        padding-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .copy-button {
+            padding: 0;
+
+            &:focus {
+                outline: none;
+            }
+        }
+    }
 }
 
 #api_key_buttons {
@@ -1473,7 +1487,12 @@ label.preferences-radio-choice-label {
     .sidebar {
         height: calc(100% - var(--settings-overlay-header-height));
         overflow-y: auto;
-        border-right: 1px solid var(--color-border-modal);
+        border-right: 1px solid var(--color-border-modal-bar);
+
+        .your-bots-link {
+            text-decoration: none;
+            color: inherit;
+        }
 
         .header {
             height: auto;
@@ -1503,7 +1522,7 @@ label.preferences-radio-choice-label {
             transition:
                 background-color 0.2s ease,
                 border-bottom 0.2s ease;
-            border-bottom: 1px solid var(--color-border-modal);
+            border-bottom: 1px solid var(--color-border-modal-bar);
 
             &:last-of-type .text {
                 border-bottom: none;
@@ -1513,6 +1532,12 @@ label.preferences-radio-choice-label {
                 /* TODO: Check with Vlad about highlight
                    colors such as this. */
                 background-color: var(--color-active-row-modal);
+            }
+
+            &:focus-visible {
+                border-radius: 4px;
+                outline: 1px solid var(--color-outline-focus);
+                outline-offset: -2px;
             }
 
             .sidebar-item-icon {
@@ -1627,22 +1652,23 @@ label.preferences-radio-choice-label {
             overflow: auto;
 
             background-color: hsl(0deg 0% 0% / 2%);
-        }
-    }
 
-    .preferences-settings-form select {
-        width: var(--modal-input-width);
+            #channel-folder-settings .zulip-icon-preview {
+                font-size: 1.25em;
+            }
+        }
     }
 }
 
 .time-limit-custom-input,
 .realm_jitsi_server_url_custom_input {
-    padding: 4px 6px;
+    padding: var(--input-vertical-padding) var(--input-horizontal-padding);
     color: var(--color-text-default);
-    border: 1px solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid hsl(0deg 0% 80%);
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
+    font-family: inherit;
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -1668,8 +1694,12 @@ label.preferences-radio-choice-label {
     .custom_user_field {
         padding-bottom: 20px;
 
-        & textarea {
+        .settings-textarea,
+        .modal-textarea {
             height: 80px;
+            /* We set the minimum height of textarea to be enough for two lines of text. */
+            min-height: calc(2em * var(--base-line-height-unitless));
+            resize: vertical;
         }
 
         &:hover .remove_date {
@@ -1717,12 +1747,21 @@ label.preferences-radio-choice-label {
 #edit-user-form {
     .person_picker {
         /* Subtract (1px border and 2px of padding) on each side */
-        min-width: calc(var(--modal-input-width) - 6px);
+        width: calc(var(--modal-input-width) - 6px);
+        max-width: calc(100% - 6px);
     }
 
-    & textarea {
-        /* Subtract (1px border and 6px padding) on each side */
-        width: calc(var(--modal-input-width) - 14px);
+    .modal-textarea {
+        /* Subtract (2 * horizontal padding) + (2 * border width) */
+        box-sizing: content-box;
+        width: calc(
+            var(--modal-input-width) - 2 * var(--input-horizontal-padding) - 2 *
+                var(--input-border-width)
+        );
+        max-width: calc(
+            100% - 2 * var(--input-horizontal-padding) - 2 *
+                var(--input-border-width)
+        );
     }
 }
 
@@ -1734,9 +1773,14 @@ label.preferences-radio-choice-label {
         }
     }
 
+    #edit-user-form-error:has(.banner),
+    #bot-edit-form-error:has(.banner) {
+        margin-bottom: 10px;
+    }
+
     & input,
     input[type="url"],
-    & textarea,
+    .modal-textarea,
     & select {
         /* Override undesired Bootstrap default. */
         margin-bottom: 0;
@@ -1769,6 +1813,36 @@ label.preferences-radio-choice-label {
     margin-bottom: var(--margin-bottom-field-description);
     /* Avoid having the clickable area extend to the full width of the containing element */
     width: fit-content;
+}
+
+#realm-user-default-settings {
+    .settings-field-label,
+    .settings-checkbox-wrapper,
+    .info-density-controls {
+        .reset-user-setting-to-default {
+            display: inline-flex;
+            padding: 0.1875em; /* 3px at 16px */
+            margin-left: 0.1875em; /* 3px at 16px */
+
+            position: relative;
+            top: -0.0625em; /* 1px at 16px */
+
+            .zulip-icon {
+                width: 1em; /* 15px at 16px */
+                height: 1em; /* 15px at 16px */
+                font-size: 0.9375em; /* 15px at 16px */
+            }
+        }
+    }
+
+    .general_notifications .reset-user-setting-to-default {
+        font-size: 1.2em;
+        margin-top: 0.3125em; /* 6px at 16px */
+        /* This is needed to adjust the gap property used
+        for flex layout so that button is not too far from
+        the heading. */
+        margin-left: -0.5em; /* 9.6px at 16px */
+    }
 }
 
 .settings-profile-user-field-hint {
@@ -1847,10 +1921,6 @@ label.preferences-radio-choice-label {
     margin-top: 13px;
     display: block;
 
-    .upgrade-tip {
-        width: auto;
-    }
-
     .tip::before {
         content: "\f135";
         margin-right: 8px;
@@ -1861,21 +1931,26 @@ label.preferences-radio-choice-label {
     margin-bottom: 20px;
 }
 
-.settings_textarea {
+.settings-textarea,
+.modal-textarea {
     color: var(--color-text-default);
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--background-color-textarea);
     border-radius: 4px;
     vertical-align: middle;
-    border: 1px solid hsl(0deg 0% 80%);
-    padding: 4px 6px;
+    border: var(--input-border-width) solid var(--border-color-textarea);
+    padding: var(--input-vertical-padding) var(--input-horizontal-padding);
 
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
 
+    font-size: 1em;
+    line-height: var(--base-line-height-unitless);
+    font-family: inherit;
+
     &:focus {
-        border-color: hsl(206.5deg 80% 62% / 80%);
+        border-color: var(--focus-border-color-textarea);
         outline: 0;
 
         box-shadow:
@@ -1885,8 +1960,28 @@ label.preferences-radio-choice-label {
 
     &:disabled {
         cursor: not-allowed;
-        background-color: hsl(0deg 0% 93%);
     }
+}
+
+.settings-textarea:disabled {
+    background-color: var(--background-color-disabled-textarea);
+    opacity: 0.5;
+}
+
+/* This nicely displays uneditable user-generated content, such as
+   rendered realm and channel descriptions. */
+.settings-view-only-textarea {
+    margin: 0;
+    /* 5px at 16px */
+    padding: 0.3125em var(--view-only-field-horizontal-padding);
+    background-color: var(--background-color-view-only-textarea);
+    border: var(--input-border-width) solid var(--border-color-textarea);
+    border-radius: 4px;
+}
+
+.modal-textarea:disabled {
+    background-color: var(--background-color-readonly-modal-input);
+    opacity: var(--opacity-readonly-modal-input);
 }
 
 @media (width < $lg_min) {
@@ -1925,9 +2020,10 @@ label.preferences-radio-choice-label {
         }
     }
 
-    #settings_overlay_container {
-        /* this variable allows JavaScript to detect this media query */
-        --single-column: yes;
+    #settings_content {
+        /* This variable allows JavaScript to detect whether we are showing both
+        the left sidebar and settings content for the current screen width or not. */
+        --column-count: 1;
     }
 
     #settings_page {
@@ -2023,7 +2119,8 @@ label.preferences-radio-choice-label {
     }
 
     #admin-user-list,
-    #admin-bot-list {
+    #admin-bot-list,
+    #personal-bot-list {
         .user_row {
             .user_name,
             .email {
@@ -2042,7 +2139,8 @@ label.preferences-radio-choice-label {
 
 @media (width < $sm_min) {
     #admin-user-list,
-    #admin-bot-list {
+    #admin-bot-list,
+    #personal-bot-list {
         .user_row,
         .table-sticky-headers {
             .bot_type,
@@ -2061,19 +2159,17 @@ label.preferences-radio-choice-label {
         margin: auto;
     }
 
-    #linkifier-settings .new-linkifier-form input,
-    #playground-settings .new-playground-form input,
-    #profile-field-settings .new-profile-field-form input {
-        width: calc(100% - 20px) !important;
+    #playground-settings .new-playground-form input {
+        width: calc(
+            100% - 2 * var(--input-horizontal-padding) - 2 *
+                var(--input-border-width)
+        );
     }
 
-    #linkifier-settings .new-linkifier-form label,
-    #playground-settings .new-playground-form label,
-    #profile-field-settings .new-profile-field-form label {
+    #playground-settings .new-playground-form label {
         display: block;
         width: 120px;
         padding: 0;
-        padding-top: 0;
         text-align: center;
         margin: auto;
         float: none;
@@ -2104,6 +2200,20 @@ label.preferences-radio-choice-label {
             min-width: 8em;
         }
     }
+
+    .add-new-playground-box {
+        .action-button {
+            margin-left: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    }
+
+    .tab-switcher.org-user-settings-switcher {
+        gap: 0.5em;
+        display: flex;
+        flex-wrap: wrap;
+    }
 }
 
 @media (width < $ml_min) {
@@ -2111,12 +2221,6 @@ label.preferences-radio-choice-label {
     #download_zuliprc {
         flex-direction: column;
         margin-top: 5px;
-    }
-
-    #edit-user-form {
-        .custom_user_field textarea {
-            width: calc(100% - 25px);
-        }
     }
 
     .topic_date_updated {
@@ -2129,24 +2233,9 @@ label.preferences-radio-choice-label {
     }
 }
 
-@media (width < $mm_min) {
-    .deactivate_realm_button {
-        margin-top: 20px;
-    }
-}
-
-@media only screen and (width < $lg_min) {
-    /* Show bot-information-box at full width on small
-       screen sizes. Not having this media query breaks the
-       information box */
-    .bots_list .bot-information-box {
-        width: calc(100% - 10px);
-    }
-}
-
 #edit-linkifier-form {
-    #edit-linkifier-pattern,
-    #edit-linkifier-url-template {
+    #linkifier-pattern,
+    #linkifier-url-template {
         width: 400px;
     }
 
@@ -2154,8 +2243,8 @@ label.preferences-radio-choice-label {
         margin-bottom: 4px;
     }
 
-    #edit-linkifier-pattern-status,
-    #edit-linkifier-template-status {
+    #linkifier-pattern-status,
+    #linkifier-template-status {
         margin-top: 10px;
     }
 
@@ -2175,7 +2264,8 @@ label.preferences-radio-choice-label {
         display: inline-block;
     }
 
-    .user_filters {
+    .user_filters,
+    .bot-filters {
         display: flex;
         flex-wrap: wrap;
         margin-top: auto;
@@ -2230,6 +2320,7 @@ label.preferences-radio-choice-label {
             border: none;
             outline: none;
             display: grid;
+            font-size: inherit;
 
             &:hover {
                 color: var(--color-text-clear-search-button-hover);
@@ -2274,6 +2365,7 @@ label.preferences-radio-choice-label {
 }
 
 #admin_users_table .deactivated_user,
+#admin_imported_users_table .deactivated_user,
 #admin_deactivated_users_table .active-user {
     color: hsl(0deg 0% 64%);
 
@@ -2282,20 +2374,28 @@ label.preferences-radio-choice-label {
     }
 }
 
+.deactivate-user-container {
+    width: fit-content;
+}
+
 .settings_url_input,
 .settings_text_input {
-    padding: 4px 6px;
+    padding: var(--input-vertical-padding) var(--input-horizontal-padding);
     color: var(--color-text-default);
     border-radius: 4px;
-    border: 1px solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid hsl(0deg 0% 80%);
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
     margin-bottom: 10px;
 
-    /* Subtract 2 * 6px (padding) + 2 * 1px (border) */
-    width: calc(var(--modal-input-width) - 14px);
+    /* Subtract (2 * horizontal padding) + (2 * border width) */
+    width: calc(
+        var(--modal-input-width) - 2 * var(--input-horizontal-padding) - 2 *
+            var(--input-border-width)
+    );
+    font-family: inherit;
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -2312,7 +2412,8 @@ label.preferences-radio-choice-label {
 
     .settings_url_input,
     .settings_text_input,
-    .settings_textarea,
+    .settings-textarea,
+    .modal-textarea,
     .pill-container {
         margin-bottom: 0;
 
@@ -2329,6 +2430,7 @@ label.preferences-radio-choice-label {
 
     .integration-url {
         font-family: "Source Code Pro", monospace;
+        background-color: var(--color-background-integration-url);
         padding: 10px;
         font-size: 0.85rem;
         border: 1px solid hsl(0deg 0% 87%);
@@ -2341,6 +2443,7 @@ label.preferences-radio-choice-label {
         width: 50%;
     }
 
+    .topic-to-use-wrapper .dropdown_widget_value,
     .integration-url-name-wrapper .dropdown_widget_value,
     .integration-url-stream-wrapper .dropdown_widget_value {
         white-space: nowrap;
@@ -2348,8 +2451,28 @@ label.preferences-radio-choice-label {
         text-overflow: ellipsis;
     }
 
+    .topic-to-use-wrapper .dropdown-widget-button,
     .integration-url-stream-wrapper .dropdown-widget-button {
         width: 75%;
+    }
+
+    .integration-url-topic {
+        position: relative;
+    }
+
+    #integration-url-topic-placeholder {
+        position: absolute;
+        left: 8px;
+        top: 50%;
+        pointer-events: none;
+        visibility: hidden;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &.visible {
+            visibility: visible;
+        }
     }
 
     #stream-not-specified-notice {

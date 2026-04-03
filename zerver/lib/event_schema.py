@@ -30,6 +30,9 @@ from zerver.lib.event_types import (
     EventDefaultStreamGroups,
     EventDefaultStreams,
     EventDeleteMessage,
+    EventDeviceAdd,
+    EventDeviceRemove,
+    EventDeviceUpdate,
     EventDirectMessage,
     EventDraftsAdd,
     EventDraftsRemove,
@@ -46,7 +49,6 @@ from zerver.lib.event_types import (
     EventNavigationViewRemove,
     EventNavigationViewUpdate,
     EventOnboardingSteps,
-    EventPushDevice,
     EventReactionAdd,
     EventReactionRemove,
     EventRealmBotAdd,
@@ -89,8 +91,6 @@ from zerver.lib.event_types import (
     EventTypingEditMessageStop,
     EventTypingStart,
     EventTypingStop,
-    EventUpdateDisplaySettings,
-    EventUpdateGlobalNotifications,
     EventUpdateMessage,
     EventUpdateMessageFlagsAdd,
     EventUpdateMessageFlagsRemove,
@@ -113,13 +113,16 @@ from zerver.lib.event_types import (
     PersonAvatarFields,
     PersonBotOwnerId,
     PersonCustomProfileField,
+    PersonDateJoined,
     PersonDeliveryEmail,
     PersonEmail,
     PersonFullName,
     PersonIsActive,
+    PersonIsImportedStub,
     PersonRole,
     PersonTimezone,
     PlanTypeData,
+    RealmDescriptionData,
     RealmTopicsPolicyData,
 )
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
@@ -175,6 +178,9 @@ check_channel_folder_reorder = make_checker(EventChannelFolderReorder)
 check_custom_profile_fields = make_checker(EventCustomProfileFields)
 check_default_stream_groups = make_checker(EventDefaultStreamGroups)
 check_default_streams = make_checker(EventDefaultStreams)
+check_device_add = make_checker(EventDeviceAdd)
+check_device_remove = make_checker(EventDeviceRemove)
+check_device_update = make_checker(EventDeviceUpdate)
 check_direct_message = make_checker(EventDirectMessage)
 check_draft_add = make_checker(EventDraftsAdd)
 check_draft_remove = make_checker(EventDraftsRemove)
@@ -187,7 +193,6 @@ check_navigation_view_add = make_checker(EventNavigationViewAdd)
 check_navigation_view_remove = make_checker(EventNavigationViewRemove)
 check_navigation_view_update = make_checker(EventNavigationViewUpdate)
 check_onboarding_steps = make_checker(EventOnboardingSteps)
-check_push_device = make_checker(EventPushDevice)
 check_reaction_add = make_checker(EventReactionAdd)
 check_reaction_remove = make_checker(EventReactionRemove)
 check_realm_bot_delete = make_checker(EventRealmBotDelete)
@@ -260,8 +265,6 @@ _check_realm_update_dict = make_checker(EventRealmUpdateDict)
 _check_realm_user_update = make_checker(EventRealmUserUpdate)
 _check_stream_update = make_checker(EventStreamUpdate)
 _check_subscription_update = make_checker(EventSubscriptionUpdate)
-_check_update_display_settings = make_checker(EventUpdateDisplaySettings)
-_check_update_global_notifications = make_checker(EventUpdateGlobalNotifications)
 _check_update_message = make_checker(EventUpdateMessage)
 _check_user_group_update = make_checker(EventUserGroupUpdate)
 _check_user_settings_update = make_checker(EventUserSettingsUpdate)
@@ -272,12 +275,14 @@ PERSON_TYPES: dict[str, type[BaseModel]] = dict(
     avatar_fields=PersonAvatarFields,
     bot_owner_id=PersonBotOwnerId,
     custom_profile_field=PersonCustomProfileField,
+    date_joined=PersonDateJoined,
     delivery_email=PersonDeliveryEmail,
     email=PersonEmail,
     full_name=PersonFullName,
     role=PersonRole,
     timezone=PersonTimezone,
     is_active=PersonIsActive,
+    is_imported_stub=PersonIsImportedStub,
 )
 
 
@@ -371,11 +376,11 @@ def check_modern_presence(var_name: str, event: dict[str, object], user_id: int)
 def check_realm_bot_add(
     var_name: str,
     event: dict[str, object],
+    bot_type: int,
 ) -> None:
     _check_realm_bot_add(var_name, event)
 
     assert isinstance(event["bot"], dict)
-    bot_type = event["bot"]["bot_type"]
 
     services = event["bot"]["services"]
 
@@ -457,6 +462,10 @@ def check_realm_update(
     the value people actually matches the type from
     Realm.property_types that we have configured
     for the property.
+
+    For certain properties, there are extra fields.
+    For example, when property is "description", there's also
+    "rendered_description".
     """
     _check_realm_update(var_name, event)
 
@@ -525,6 +534,8 @@ def check_realm_update_dict(
             sub_type = PlanTypeData
         elif "topics_policy" in event["data"]:
             sub_type = RealmTopicsPolicyData
+        elif "description" in event["data"]:
+            sub_type = RealmDescriptionData
         else:
             raise AssertionError("unhandled fields in data")
 
@@ -628,32 +639,6 @@ def check_subscription_update(
     assert event["value"] == value
 
 
-def check_update_display_settings(
-    var_name: str,
-    event: dict[str, object],
-) -> None:
-    """
-    Display setting events have a "setting" field that
-    is more specifically typed according to the
-    UserProfile.property_types dictionary.
-    """
-    _check_update_display_settings(var_name, event)
-    setting_name = event["setting_name"]
-    setting = event["setting"]
-
-    assert isinstance(setting_name, str)
-    if setting_name == "timezone":
-        assert isinstance(setting, str)
-    else:
-        setting_type = UserProfile.property_types[setting_name]
-        assert isinstance(setting, setting_type)
-
-    if setting_name == "default_language":
-        assert "language_name" in event
-    else:
-        assert "language_name" not in event
-
-
 def check_user_settings_update(
     var_name: str,
     event: dict[str, object],
@@ -677,25 +662,6 @@ def check_user_settings_update(
         assert "language_name" in event
     else:
         assert "language_name" not in event
-
-
-def check_update_global_notifications(
-    var_name: str,
-    event: dict[str, object],
-    desired_val: bool | int | str,
-) -> None:
-    """
-    See UserProfile.notification_settings_legacy for
-    more details.
-    """
-    _check_update_global_notifications(var_name, event)
-    setting_name = event["notification_name"]
-    setting = event["setting"]
-    assert setting == desired_val
-
-    assert isinstance(setting_name, str)
-    setting_type = UserProfile.notification_settings_legacy[setting_name]
-    assert isinstance(setting, setting_type)
 
 
 def check_update_message(

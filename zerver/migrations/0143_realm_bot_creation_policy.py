@@ -12,7 +12,7 @@ def set_initial_value_for_bot_creation_policy(
     Realm = apps.get_model("zerver", "Realm")
     Realm.BOT_CREATION_EVERYONE = 1
     Realm.BOT_CREATION_LIMIT_GENERIC_BOTS = 2
-    for realm in Realm.objects.all():
+    for realm in Realm.objects.all().iterator():
         if realm.create_generic_bot_by_admins_only:
             realm.bot_creation_policy = Realm.BOT_CREATION_LIMIT_GENERIC_BOTS
         else:
@@ -23,7 +23,7 @@ def set_initial_value_for_bot_creation_policy(
 def reverse_code(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     Realm = apps.get_model("zerver", "Realm")
     Realm.BOT_CREATION_EVERYONE = 1
-    for realm in Realm.objects.all():
+    for realm in Realm.objects.all().iterator():
         if realm.bot_creation_policy == Realm.BOT_CREATION_EVERYONE:
             realm.create_generic_bot_by_admins_only = False
         else:

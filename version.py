@@ -1,8 +1,9 @@
 import os
 
-ZULIP_VERSION = "12.0-dev+git"
+ZULIP_VERSION = "12.0-beta1+git"
 
 # Add information on number of commits and commit hash to version, if available
+ZULIP_VERSION_WITHOUT_COMMIT = ZULIP_VERSION
 zulip_git_version_file = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "zulip-git-version"
 )
@@ -14,7 +15,7 @@ ZULIP_VERSION = lines.pop(0).strip()
 ZULIP_MERGE_BASE = lines.pop(0).strip()
 
 LATEST_MAJOR_VERSION = "11.0"
-LATEST_RELEASE_VERSION = "11.2"
+LATEST_RELEASE_VERSION = "11.6"
 LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.com/zulip-server-11-0"
 
 # Versions of the desktop app below DESKTOP_MINIMUM_VERSION will be
@@ -24,17 +25,15 @@ LATEST_RELEASE_ANNOUNCEMENT = "https://blog.zulip.com/zulip-server-11-0"
 DESKTOP_MINIMUM_VERSION = "5.4.3"
 DESKTOP_WARNING_VERSION = "5.9.3"
 
-# Bump the API_FEATURE_LEVEL whenever an API change is made
-# that clients might want to condition on.  If we forget at
-# the time we make the change, then bump it later as soon
-# as we notice; clients using API_FEATURE_LEVEL will just not
-# use the new feature/API until the bump.
-#
-# Changes should be accompanied by documentation explaining what the
-# new level means in api_docs/changelog.md, as well as "**Changes**"
-# entries in the endpoint's documentation in `zulip.yaml`.
+# API_FEATURE_LEVEL is bumped exclusively by tools/merge-api-changelogs, run by
+# maintainers when an API change is merged to the main branch. When writing an
+# API change, you run `tools/create-api-changelog`, which creates a special API
+# changelog file and unique random ID for you to use when documentating your API
+# change. For full process, see:
+# https://zulip.readthedocs.io/en/latest/documentation/api.html#step-by-step-guide
+# Also available at docs/documentation/api.md.
 
-API_FEATURE_LEVEL = 427
+API_FEATURE_LEVEL = 481
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
@@ -49,4 +48,4 @@ API_FEATURE_LEVEL = 427
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (351, 1)  # bumped 2025-10-02 to add PyICU
+PROVISION_VERSION = (373, 2)  # bumped 2026-03-27 to upgrade json-schema-ref-parser

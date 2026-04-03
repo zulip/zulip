@@ -10,13 +10,13 @@ mock_esm("../src/people.ts", {
     maybe_get_user_by_id: noop,
 });
 
-const all_messages_data = zrequire("../src/all_messages_data");
+const recent_view_messages_data = zrequire("../src/recent_view_messages_data");
 
 const {MessageListData} = zrequire("../src/message_list_data");
 const narrow_state = zrequire("narrow_state");
 const message_view = zrequire("message_view");
 const message_lists = zrequire("message_lists");
-const resolved_topic = zrequire("../shared/src/resolved_topic");
+const resolved_topic = zrequire("resolved_topic");
 
 function verify_fixture(fixture, override_rewire) {
     const msg_list = make_message_list(fixture.filter_terms);
@@ -45,12 +45,12 @@ function verify_fixture(fixture, override_rewire) {
         final_select_id: undefined,
     };
 
-    override_rewire(all_messages_data, "all_messages_data", {
+    override_rewire(recent_view_messages_data, "recent_view_messages_data", {
         fetch_status: {
             has_found_newest: () => fixture.has_found_newest,
         },
         visibly_empty: () => fixture.visibly_empty,
-        all_messages() {
+        all_messages_after_mute_filtering() {
             assert.notEqual(fixture.all_messages, undefined);
             return fixture.all_messages;
         },
@@ -69,12 +69,12 @@ function verify_fixture(fixture, override_rewire) {
     message_view.maybe_add_local_messages({
         id_info,
         msg_data,
-        superset_data: all_messages_data.all_messages_data,
+        superset_data: recent_view_messages_data.recent_view_messages_data,
     });
 
     assert.deepEqual(id_info, fixture.expected_id_info);
 
-    const msgs = msg_data.all_messages();
+    const msgs = msg_data.all_messages_after_mute_filtering();
     const msg_ids = msgs.map((message) => message.id);
     assert.deepEqual(msg_ids, fixture.expected_msg_ids);
 }
@@ -189,7 +189,7 @@ test_fixture("is private with no target", {
 });
 
 test_fixture("dm with target outside of range", {
-    filter_terms: [{operator: "dm", operand: "alice@example.com"}],
+    filter_terms: [{operator: "dm", operand: [1]}],
     target_id: 5,
     unread_info: {
         flavor: "not_found",
@@ -384,11 +384,11 @@ test_fixture("search, stream, not in all_messages", {
     expected_msg_ids: [],
 });
 
-test_fixture("stream/topic not in all_messages", {
+test_fixture("stream/topic not in recent_view_messages_data", {
     // This is a bit of a corner case, but you could have a scenario
     // where you've gone way back in a topic (perhaps something that
     // has been muted a long time) and find an unread message that isn't
-    // actually in all_messages_data.
+    // actually in recent_view_messages_data.
     filter_terms: [
         {operator: "stream", operand: "one"},
         {operator: "topic", operand: "whatever"},

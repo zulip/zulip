@@ -12,7 +12,7 @@ const stream_data = mock_esm("../src/stream_data");
 
 const {set_realm} = zrequire("state_data");
 const typing = zrequire("typing");
-const typing_status = zrequire("../shared/src/typing_status");
+const typing_status = zrequire("typing_status");
 const {initialize_user_settings} = zrequire("user_settings");
 
 initialize_user_settings({user_settings: {}});

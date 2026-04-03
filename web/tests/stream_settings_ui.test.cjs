@@ -57,14 +57,14 @@ const admins_group = make_user_group({
     id: 1,
     members: new Set([1]),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 const nobody_group = make_user_group({
     name: "Nobody",
     id: 2,
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 const initialize_user_groups = () => {
     user_groups.initialize({realm_user_groups: [admins_group, nobody_group]});
@@ -222,13 +222,20 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
 
     mock_template("stream_settings/browse_streams_list.hbs", false, (data) => {
         populated_subs = data.subscriptions;
+        return "<browse-streams-list-stub>";
     });
 
     const filters_dropdown_widget = {
         render: function render() {},
         value: () => "",
     };
-    stream_settings_components.set_filters_for_tests(filters_dropdown_widget);
+    stream_settings_components.set_archived_status_filters_for_tests(filters_dropdown_widget);
+
+    const folder_filter_dropdown_widget = {
+        render: function render() {},
+        value: () => -2,
+    };
+    stream_settings_components.set_folder_filter_for_tests(folder_filter_dropdown_widget);
 
     stream_settings_ui.render_left_panel_superset();
 
@@ -239,20 +246,19 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         sub_stubs.push(sub_row);
 
         $(sub_row).attr("data-stream-id", data.stream_id);
-        $(sub_row).detach = () => sub_row;
+        $(sub_row)[0].remove = () => {};
     }
 
-    $.create("#channels_overlay_container .stream-row", {children: sub_stubs});
+    $.set_results("#channels_overlay_container .stream-row", sub_stubs);
 
     const $no_streams_message = $(".no-streams-to-show");
     const $child_element = $(".subscribed_streams_tab_empty_text");
-    $no_streams_message.children = () => $child_element;
-    $child_element.hide = () => [];
+    $no_streams_message.set_children($child_element);
 
     let ui_called = false;
     scroll_util.reset_scrollbar = ($elem) => {
         ui_called = true;
-        assert.equal($elem, $("#subscription_overlay .streams-list"));
+        assert.equal($elem[0], $("#subscription_overlay .streams-list")[0]);
     };
 
     // Filtering has the side effect of setting the "active" class
@@ -262,7 +268,8 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
     assert.ok(!$denmark_row.hasClass("active"));
 
     function test_filter(params, expected_streams) {
-        $("#channels_overlay_container .stream-row:not(.notdisplayed)").length = 0;
+        $.reset_selector("#channels_overlay_container .stream-row:not(.notdisplayed)");
+        $.set_results("#channels_overlay_container .stream-row:not(.notdisplayed)", []);
         const stream_ids = stream_settings_ui.redraw_left_panel(params);
         assert.deepEqual(
             stream_ids,
@@ -362,14 +369,7 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
 
     // active stream-row is not included in results
     $(".stream-row-denmark").addClass("active");
-    $(".stream-row.active").hasClass = (cls) => {
-        assert.equal(cls, "notdisplayed");
-        return $(".stream-row-denmark").hasClass("active");
-    };
-    $(".stream-row.active").removeClass = (cls) => {
-        assert.equal(cls, "active");
-        $(".stream-row-denmark").removeClass("active");
-    };
+    $.set_results(".stream-row.active", [$(".stream-row-denmark")[0]]);
 
     test_filter({input: "d", show_subscribed: true}, [poland]);
     assert.ok($(".stream-row-denmark").hasClass("active"));

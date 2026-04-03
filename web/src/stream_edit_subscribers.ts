@@ -1,11 +1,10 @@
-import Handlebars from "handlebars/runtime.js";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import render_subscription_banner from "../templates/components/subscription_banner.hbs";
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
-import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
+import render_decorated_channel_name from "../templates/decorated_channel_name.hbs";
 import render_stream_member_list_entry from "../templates/stream_settings/stream_member_list_entry.hbs";
 import render_stream_members_table from "../templates/stream_settings/stream_members_table.hbs";
 
@@ -21,6 +20,7 @@ import * as loading from "./loading.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
+import * as resize from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -32,7 +32,6 @@ import * as subscriber_api from "./subscriber_api.ts";
 import type {CombinedPillContainer} from "./typeahead_helper.ts";
 import * as user_groups from "./user_groups.ts";
 import * as user_sort from "./user_sort.ts";
-import * as util from "./util.ts";
 
 const remove_user_id_api_response_schema = z.object({
     removed: z.array(z.string()),
@@ -70,47 +69,6 @@ function get_sub(stream_id: number): StreamSubscription | undefined {
     return sub;
 }
 
-function generate_subscribe_success_messages(
-    subscribed_users: User[],
-    already_subscribed_users: User[],
-    ignored_deactivated_users: User[],
-): {
-    subscribed_users_message_html: string;
-    already_subscribed_users_message_html: string;
-    ignored_deactivated_users_message_html: string;
-} {
-    const subscribed_user_links = subscribed_users.map(
-        (user) =>
-            `<a data-user-id="${user.user_id}" class="view_user_profile">${Handlebars.Utils.escapeExpression(user.full_name)}</a>`,
-    );
-    const already_subscribed_user_links = already_subscribed_users.map(
-        (user) =>
-            `<a data-user-id="${user.user_id}" class="view_user_profile">${Handlebars.Utils.escapeExpression(user.full_name)}</a>`,
-    );
-    const ignored_deactivated_user_links = ignored_deactivated_users.map(
-        (user) =>
-            `<a data-user-id="${user.user_id}" class="view_user_profile">${Handlebars.Utils.escapeExpression(user.full_name)}</a>`,
-    );
-
-    const subscribed_users_message_html = util.format_array_as_list_with_conjunction(
-        subscribed_user_links,
-        "long",
-    );
-    const already_subscribed_users_message_html = util.format_array_as_list_with_conjunction(
-        already_subscribed_user_links,
-        "long",
-    );
-    const ignored_deactivated_users_message_html = util.format_array_as_list_with_conjunction(
-        ignored_deactivated_user_links,
-        "long",
-    );
-    return {
-        subscribed_users_message_html,
-        already_subscribed_users_message_html,
-        ignored_deactivated_users_message_html,
-    };
-}
-
 function show_stream_subscription_request_error_result(error_message: string): void {
     const $stream_subscription_req_result_elem = $(
         ".stream_subscription_request_result",
@@ -122,6 +80,7 @@ function show_stream_subscription_request_error_result(error_message: string): v
     scroll_util
         .get_content_element($stream_subscription_req_result_elem)
         .html(rendered_error_banner);
+    resize.resize_stream_subscribers_list();
 }
 
 function show_stream_subscription_request_success_result({
@@ -144,17 +103,8 @@ function show_stream_subscription_request_success_result({
         ".stream_subscription_request_result",
     ).expectOne();
 
-    let subscribe_success_messages;
-    if (!is_total_subscriber_more_than_five) {
-        subscribe_success_messages = generate_subscribe_success_messages(
-            subscribed_users,
-            already_subscribed_users,
-            ignored_deactivated_users,
-        );
-    }
     const rendered_success_banner = render_subscription_banner({
         intent: "success",
-        subscribe_success_messages,
         subscribed_users,
         already_subscribed_users,
         subscribed_users_count,
@@ -166,6 +116,7 @@ function show_stream_subscription_request_success_result({
     scroll_util
         .get_content_element($stream_subscription_req_result_elem)
         .html(rendered_success_banner);
+    resize.resize_stream_subscribers_list();
 }
 
 function update_notification_choice_checkbox(added_user_count: number): void {
@@ -204,21 +155,23 @@ export function enable_subscriber_management({
         return peer_data.potential_subscribers(stream_id);
     }
 
-    const update_notification_choice = function (): void {
+    const pill_update_callback = function (): void {
         void stream_edit_update_notification_choice();
+        resize.resize_stream_subscribers_list();
     };
     pill_widget = add_subscribers_pill.create({
         $pill_container,
         get_potential_subscribers,
-        onPillCreateAction: update_notification_choice,
-        onPillRemoveAction: update_notification_choice,
-        add_button_pill_update_callback: update_notification_choice,
+        onPillCreateAction: pill_update_callback,
+        onPillRemoveAction: pill_update_callback,
+        add_button_pill_update_callback: pill_update_callback,
         get_user_groups: user_groups.get_all_realm_user_groups,
         with_add_button: true,
     });
 
     $pill_container.find(".input").on("input", () => {
         $parent_container.find(".stream_subscription_request_result").empty();
+        resize.resize_stream_subscribers_list();
     });
 
     const user_can_remove_subscribers = stream_data.can_unsubscribe_others(sub);
@@ -256,6 +209,7 @@ async function render_subscriber_list_widget(
     });
     loading.destroy_indicator($(".subscriber-list-settings-loading"));
     $(".subscriber_list_settings_container").toggleClass("no-display", false);
+    resize.resize_stream_subscribers_list();
 }
 
 function make_list_widget({
@@ -449,6 +403,7 @@ function remove_subscriber({
     }
 
     function remove_user_from_private_stream(): void {
+        buttons.show_button_loading_indicator($remove_button);
         assert(sub !== undefined);
         subscriber_api.remove_user_id_from_stream(
             target_user_id,
@@ -475,17 +430,18 @@ function remove_subscriber({
             stream_data.has_content_access_via_group_permissions(sub)
         ) {
             // We do not show any confirmation modal if user is unsubscribing
-            // themseleves and also has the permission to subscribe to the
+            // themselves and also has the permission to subscribe to the
             // stream again.
             remove_user_from_private_stream();
             return;
         }
 
-        const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({
+        const stream_name_with_privacy_symbol_html = render_decorated_channel_name({
+            inline_with_text: true,
             stream: sub,
         });
 
-        const html_body = render_unsubscribe_private_stream_modal({
+        const modal_content_html = render_unsubscribe_private_stream_modal({
             unsubscribing_other_user,
             organization_will_lose_content_access:
                 sub_count === 1 &&
@@ -493,9 +449,9 @@ function remove_subscriber({
                 user_groups.is_setting_group_set_to_nobody_group(sub.can_add_subscribers_group),
         });
 
-        let html_heading;
+        let modal_title_html;
         if (unsubscribing_other_user) {
-            html_heading = $t_html(
+            modal_title_html = $t_html(
                 {defaultMessage: "Unsubscribe {full_name} from <z-link></z-link>?"},
                 {
                     full_name: people.get_full_name(target_user_id),
@@ -503,20 +459,21 @@ function remove_subscriber({
                 },
             );
         } else {
-            html_heading = $t_html(
+            modal_title_html = $t_html(
                 {defaultMessage: "Unsubscribe from <z-link></z-link>?"},
                 {"z-link": () => stream_name_with_privacy_symbol_html},
             );
         }
 
         confirm_dialog.launch({
-            html_heading,
-            html_body,
+            modal_title_html,
+            modal_content_html,
             on_click: remove_user_from_private_stream,
         });
         return;
     }
 
+    buttons.show_button_loading_indicator($remove_button);
     subscriber_api.remove_user_id_from_stream(
         target_user_id,
         sub,
@@ -614,7 +571,6 @@ export function initialize(): void {
             const target_user_id = Number.parseInt($list_entry.attr("data-subscriber-id")!, 10);
             const stream_id = current_stream_id;
             const $remove_button = $(this).closest(".remove-subscriber-button");
-            buttons.show_button_loading_indicator($remove_button);
             remove_subscriber({stream_id, target_user_id, $list_entry, $remove_button});
         },
     );

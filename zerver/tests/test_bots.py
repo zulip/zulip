@@ -11,6 +11,7 @@ from zulip_bots.custom_exceptions import ConfigValidationError
 from zerver.actions.bots import do_change_bot_owner, do_change_default_sending_stream
 from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
+    do_set_realm_property,
     do_set_realm_user_default_setting,
 )
 from zerver.actions.streams import do_change_stream_permission
@@ -18,7 +19,7 @@ from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.users import do_change_can_create_users, do_change_user_role, do_deactivate_user
 from zerver.lib.bot_config import ConfigError, get_bot_config
 from zerver.lib.bot_lib import get_bot_handler
-from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration
+from zerver.lib.integrations import EMBEDDED_BOTS, IncomingWebhookIntegration
 from zerver.lib.request import RequestNotes
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
@@ -40,7 +41,7 @@ def _check_string(var_name: str, val: str) -> str | None:
 
 
 test_sample_config_options = [
-    WebhookIntegration(
+    IncomingWebhookIntegration(
         "stripe",
         ["financial"],
         display_name="Stripe",
@@ -50,7 +51,7 @@ test_sample_config_options = [
             )
         ],
     ),
-    WebhookIntegration("helloworld", ["misc"], display_name="Hello World"),
+    IncomingWebhookIntegration("helloworld", ["misc"], display_name="Hello World"),
 ]
 
 
@@ -167,7 +168,6 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_success(users_result)
 
     def test_add_bot(self) -> None:
-        hamlet = self.example_user("hamlet")
         self.login("hamlet")
         self.assert_num_bots_equal(0)
         with self.capture_send_event_calls(expected_num_events=4) as events:
@@ -185,18 +185,11 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                 type="realm_bot",
                 op="add",
                 bot=dict(
-                    email="hambot-bot@zulip.testserver",
                     user_id=bot.id,
-                    bot_type=bot.bot_type,
-                    full_name="The Bot of Hamlet",
-                    is_active=True,
-                    api_key=result["api_key"],
-                    avatar_url=result["avatar_url"],
                     default_sending_stream=None,
                     default_events_register_stream=None,
                     default_all_public_streams=False,
                     services=[],
-                    owner_id=hamlet.id,
                 ),
             ),
             event["event"],
@@ -241,6 +234,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.get_bot_user(email)
 
     def test_add_bot_with_username_in_use(self) -> None:
+        hamlet = self.example_user("hamlet")
         self.login("hamlet")
         self.assert_num_bots_equal(0)
         self.create_bot()
@@ -263,6 +257,17 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         )
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, "Name is already in use.")
+
+        # Duplicate names are not allowed for bots even when require_unique_names
+        # is false, but this test is added just for completion.
+        dup_full_name = hamlet.full_name
+        do_set_realm_property(hamlet.realm, "require_unique_names", True, acting_user=None)
+        bot_info = dict(
+            full_name=dup_full_name,
+            short_name="whatever",
+        )
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, "Unique names required in this organization.")
 
     def test_add_bot_with_user_avatar(self) -> None:
         email = "hambot-bot@zulip.testserver"
@@ -337,7 +342,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login_user(user)
         self.assert_num_bots_equal(0)
         with self.capture_send_event_calls(expected_num_events=4) as events:
-            result = self.create_bot()
+            self.create_bot()
         self.assert_num_bots_equal(1)
 
         email = "hambot-bot@zulip.testserver"
@@ -349,18 +354,11 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                 type="realm_bot",
                 op="add",
                 bot=dict(
-                    email="hambot-bot@zulip.testserver",
                     user_id=bot.id,
-                    bot_type=bot.bot_type,
-                    full_name="The Bot of Hamlet",
-                    is_active=True,
-                    api_key=result["api_key"],
-                    avatar_url=result["avatar_url"],
                     default_sending_stream=None,
                     default_events_register_stream=None,
                     default_all_public_streams=False,
                     services=[],
-                    owner_id=user.id,
                 ),
             ),
             event["event"],
@@ -448,18 +446,11 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                 type="realm_bot",
                 op="add",
                 bot=dict(
-                    email="hambot-bot@zulip.testserver",
                     user_id=profile.id,
-                    full_name="The Bot of Hamlet",
-                    bot_type=profile.bot_type,
-                    is_active=True,
-                    api_key=result["api_key"],
-                    avatar_url=result["avatar_url"],
                     default_sending_stream="Denmark",
                     default_events_register_stream=None,
                     default_all_public_streams=False,
                     services=[],
-                    owner_id=user_profile.id,
                 ),
             ),
             event["event"],
@@ -531,18 +522,11 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                 type="realm_bot",
                 op="add",
                 bot=dict(
-                    email="hambot-bot@zulip.testserver",
-                    full_name="The Bot of Hamlet",
                     user_id=bot_profile.id,
-                    bot_type=bot_profile.bot_type,
-                    is_active=True,
-                    api_key=result["api_key"],
-                    avatar_url=result["avatar_url"],
                     default_sending_stream=None,
                     default_events_register_stream="Denmark",
                     default_all_public_streams=False,
                     services=[],
-                    owner_id=user_profile.id,
                 ),
             ),
             event["event"],
@@ -1179,6 +1163,139 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_patch("/json/bots/{}".format(self.example_user("hamlet").id), bot_info)
         self.assert_json_error(result, "No such bot")
 
+    def test_patch_bot_short_name(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        email = "hambot-bot@zulip.testserver"
+        bot = self.get_bot_user(email)
+
+        # Bot owner can change short_name
+        bot_info = {
+            "short_name": "newbot",
+        }
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_success(result)
+
+        bot.refresh_from_db()
+        self.assertEqual(bot.email, "newbot-bot@zulip.testserver")
+
+    def test_patch_bot_short_name_admin(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        email = "hambot-bot@zulip.testserver"
+        bot = self.get_bot_user(email)
+
+        # Admin can change any bot's short_name
+        self.login("iago")
+        bot_info = {
+            "short_name": "adminchanged",
+        }
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_success(result)
+
+        bot.refresh_from_db()
+        self.assertEqual(bot.email, "adminchanged-bot@zulip.testserver")
+
+    def test_patch_bot_short_name_unauthorized(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+        email = "hambot-bot@zulip.testserver"
+        bot = self.get_bot_user(email)
+
+        # Non-owner, non-admin cannot change
+        self.login("cordelia")
+        bot_info = {
+            "short_name": "unauthorized",
+        }
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_error(result, "Insufficient permission")
+
+    def test_patch_bot_short_name_duplicate(self) -> None:
+        self.login("hamlet")
+        # Create first bot
+        bot_info = {
+            "full_name": "Bot 1",
+            "short_name": "bot1",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        # Create second bot
+        bot_info = {
+            "full_name": "Bot 2",
+            "short_name": "bot2",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot2 = self.get_bot_user("bot2-bot@zulip.testserver")
+
+        # Try to change bot2's short_name to bot1's
+        bot_info = {
+            "short_name": "bot1",
+        }
+        result = self.client_patch(f"/json/bots/{bot2.id}", bot_info)
+        self.assert_json_error(result, "Email address already in use")
+
+    def test_patch_bot_short_name_invalid(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+        email = "hambot-bot@zulip.testserver"
+        bot = self.get_bot_user(email)
+
+        # Empty short_name should fail
+        bot_info = {
+            "short_name": "",
+        }
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_error(result, "Bad name or username")
+
+    def test_patch_bot_short_name_no_change(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+        email = "hambot-bot@zulip.testserver"
+        bot = self.get_bot_user(email)
+
+        # Changing to the same short_name should be a no-op
+        bot_info = {
+            "short_name": "hambot",
+        }
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_success(result)
+
+        bot.refresh_from_db()
+        self.assertEqual(bot.email, "hambot-bot@zulip.testserver")
+
+    def test_patch_bot_short_name_invalid_fake_email_domain(self) -> None:
+        self.login("hamlet")
+        # Create bot first without the invalid domain setting
+        self.create_bot()
+        email = "hambot-bot@zulip.testserver"
+        bot = self.get_bot_user(email)
+
+        # Now try to change short_name with invalid FAKE_EMAIL_DOMAIN
+        with override_settings(
+            FAKE_EMAIL_DOMAIN="invaliddomain", REALM_HOSTS={"zulip": "127.0.0.1"}
+        ):
+            bot_info = {
+                "short_name": "newbot",
+            }
+            result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+            error_message = (
+                "Can't change bot email until FAKE_EMAIL_DOMAIN is correctly configured.\n"
+                "Please contact your server administrator."
+            )
+            self.assert_json_error(result, error_message)
+
     def test_patch_bot_owner(self) -> None:
         self.login("hamlet")
         othello = self.example_user("othello")
@@ -1381,6 +1498,10 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def test_patch_bot_avatar(self) -> None:
         self.login("hamlet")
+        bot_realm = get_realm("zulip")
+        do_set_realm_property(
+            bot_realm, "default_avatar_source", UserProfile.AVATAR_FROM_JDENTICON, acting_user=None
+        )
         bot_info = {
             "full_name": "The Bot of Hamlet",
             "short_name": "hambot",
@@ -1389,9 +1510,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_success(result)
 
         bot_email = "hambot-bot@zulip.testserver"
-        bot_realm = get_realm("zulip")
         profile = get_user(bot_email, bot_realm)
-        self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+        self.assertTrue(os.path.exists(avatar_disk_path(profile)))
 
         email = "hambot-bot@zulip.testserver"
         # Try error case first (too many files):
@@ -1419,6 +1540,21 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_USER)
         self.assertTrue(os.path.exists(avatar_disk_path(profile)))
+
+        # Verify Bot's avatar when realm's default avatar source is Gravatar.
+        do_set_realm_property(
+            bot_realm, "default_avatar_source", UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None
+        )
+        bot_info = {
+            "full_name": "Bot with gravatar",
+            "short_name": "gravatar",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot_email = "gravatar-bot@zulip.testserver"
+        profile = get_user(bot_email, bot_realm)
+        self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
     def test_patch_bot_to_stream(self) -> None:
         self.login("hamlet")
@@ -1489,7 +1625,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         email = "default-bot@zulip.com"
         user_profile = self.get_bot_user(email)
 
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=user_profile)
+        do_change_user_role(
+            user_profile, UserProfile.ROLE_MEMBER, acting_user=user_profile, notify=False
+        )
 
         req = dict(role=UserProfile.ROLE_GUEST)
 
@@ -1501,7 +1639,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         # Test for not allowing a non-owner user to make assign a bot an owner role
         desdemona = self.example_user("desdemona")
-        do_change_user_role(desdemona, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(desdemona, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
         req = dict(role=UserProfile.ROLE_REALM_OWNER)
 
@@ -2044,7 +2182,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assertEqual(bot_owner_user_ids(new_bot), set())
 
-    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
     def test_create_incoming_webhook_bot_with_service_name_and_with_keys(self) -> None:
         self.login("hamlet")
         bot_metadata = {
@@ -2061,7 +2199,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             config_data, {"integration_id": "stripe", "stripe_api_key": "sample-api-key"}
         )
 
-    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
     def test_create_incoming_webhook_bot_with_service_name_and_no_config_options(self) -> None:
         self.login("hamlet")
         bot_metadata = {
@@ -2075,7 +2213,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         config_data = get_bot_config(new_bot)
         self.assertEqual(config_data, {"integration_id": "helloworld"})
 
-    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
     def test_create_incoming_webhook_bot_with_service_name_incorrect_keys(self) -> None:
         self.login("hamlet")
         bot_metadata = {
@@ -2092,7 +2230,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         with self.assertRaises(UserProfile.DoesNotExist):
             UserProfile.objects.get(full_name="My Stripe Bot")
 
-    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
     def test_create_incoming_webhook_bot_with_service_name_without_keys(self) -> None:
         self.login("hamlet")
         bot_metadata = {
@@ -2108,7 +2246,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         with self.assertRaises(UserProfile.DoesNotExist):
             UserProfile.objects.get(full_name="My Stripe Bot")
 
-    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
     def test_create_incoming_webhook_bot_without_service_name(self) -> None:
         self.login("hamlet")
         bot_metadata = {
@@ -2121,7 +2259,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         with self.assertRaises(ConfigError):
             get_bot_config(new_bot)
 
-    @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
     def test_create_incoming_webhook_bot_with_incorrect_service_name(self) -> None:
         self.login("hamlet")
         bot_metadata = {
@@ -2136,3 +2274,35 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(orjson.loads(response.content)["msg"], expected_error_message)
         with self.assertRaises(UserProfile.DoesNotExist):
             UserProfile.objects.get(full_name="My Stripe Bot")
+
+    def test_get_bot_api_key(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+        bot = self.get_bot()
+        expected_api_key = bot["api_key"]
+        email = "hambot-bot@zulip.testserver"
+        bot_id = self.get_bot_user(email).id
+
+        result = self.client_get(f"/json/bots/{bot_id}/api_key")
+        api_key = self.assert_json_success(result)["api_key"]
+        self.assertEqual(api_key, expected_api_key)
+
+        # Admins can also get the bot's api key owned by others.
+        self.login("iago")
+        result = self.client_get(f"/json/bots/{bot_id}/api_key")
+        api_key = self.assert_json_success(result)["api_key"]
+        self.assertEqual(api_key, expected_api_key)
+
+        self.login("cordelia")
+        result = self.client_get(f"/json/bots/{bot_id}/api_key")
+        self.assert_json_error(result, "Insufficient permission")
+
+        # This endpoint can only be used to get a bot's api key.
+        self.login("iago")
+        invalid_bot_id = self.example_user("cordelia").id
+        result = self.client_get(f"/json/bots/{invalid_bot_id}/api_key")
+        self.assert_json_error(result, "No such bot")
+
+        invalid_bot_id = 1000
+        result = self.client_get(f"/json/bots/{invalid_bot_id}/api_key")
+        self.assert_json_error(result, "No such bot")

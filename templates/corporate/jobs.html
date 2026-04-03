@@ -1,18 +1,12 @@
-{% extends "zerver/portico.html" %}
-{% set entrypoint = "landing-page" %}
+{% extends "zerver/marketing_page.html" %}
 
 {% set PAGE_TITLE = "Jobs | Zulip" %}
 
 {% set PAGE_DESCRIPTION = "We're hiring! Learn about our openings and how to
   apply." %}
 
-{% block customhead %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-{% endblock %}
 
-{% block portico_content %}
-
-{% include 'zerver/landing_nav.html' %}
+{% block marketing_content %}
 
 <div class="portico-landing jobs why-page">
     <div class="hero bg-pycon drone">
@@ -47,7 +41,8 @@
                         with your resume and cover letter.
                     </p>
                     <p>
-                        All openings are remote, or partially in-person in our San Francisco, CA office.
+                        All openings are remote, or partially in-person in our
+                        San Francisco, CA office, unless indicated otherwise.
                     </p>
                     <hr/>
                     <h2 id="gtm">Go-to-market leader (full-time)</h2>
@@ -91,7 +86,7 @@
                         </li>
                         <li>
                             Drive a substantial increase in revenue by the end
-                            of 2025.
+                            of 2026.
                         </li>
                     </ul>
                     <h3>Essential qualifications:</h3>

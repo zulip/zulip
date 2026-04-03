@@ -2,12 +2,17 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user, Role} = require("./lib/example_user.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_cjs, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
+
+const message_store = zrequire("message_store");
 
 let clipboard_args;
 class Clipboard {
@@ -29,7 +34,6 @@ const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
 const rows = mock_esm("../src/rows");
-const message_store = mock_esm("../src/message_store");
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => false,
 });
@@ -42,24 +46,24 @@ set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
 
-const iago = {
+const iago = make_user({
     email: "iago@zulip.com",
     user_id: 30,
     full_name: "Iago",
-};
+});
 
-const cordelia = {
+const cordelia = make_user({
     email: "cordelia@zulip.com",
     user_id: 31,
     full_name: "Cordelia Lear",
-};
+});
 
-const polonius = {
+const polonius = make_user({
     email: "polonius@zulip.com",
     user_id: 32,
     full_name: "Polonius",
-    is_guest: true,
-};
+    role: Role.GUEST,
+});
 const inaccessible_user_id = 33;
 const inaccessible_user = people.add_inaccessible_user(inaccessible_user_id);
 people.init();
@@ -68,90 +72,73 @@ people.add_active_user(cordelia);
 people.add_active_user(polonius);
 people.initialize_current_user(iago.user_id);
 
-const group_me = {
+const group_me = make_user_group({
     name: "my user group",
     id: 1,
     members: [iago.user_id, cordelia.user_id],
-};
-const group_other = {
+});
+const group_other = make_user_group({
     name: "other user group",
     id: 2,
     members: [cordelia.user_id],
-};
-const group_me_via_subgroup = {
+});
+const group_me_via_subgroup = make_user_group({
     name: "I am part of this group via a subgroup",
     id: 3,
     members: [],
     direct_subgroup_ids: [group_me.id],
-};
+});
 user_groups.initialize({
     realm_user_groups: [group_me, group_other, group_me_via_subgroup],
 });
 
-const stream = {
+const stream = make_stream({
     subscribed: true,
     color: "yellow",
     name: "test",
     stream_id: 3,
     is_muted: true,
     invite_only: false,
-};
+});
 stream_data.add_sub_for_tests(stream);
-
-const $array = (array) => {
-    const each = (func) => {
-        for (const e of array) {
-            func.call(e);
-        }
-    };
-    return {each};
-};
 
 function set_message_for_message_content($content, value) {
     // no message row found
     if (value === undefined) {
-        $content.closest = (closest_opts) => {
-            assert.equal(closest_opts, ".message_row");
-            return [];
-        };
+        $content.set_closest_results(".message_row", []);
         return;
     }
     // message row found
     const $message_row = $.create(".message-row");
-    $content.closest = (closest_opts) => {
-        assert.equal(closest_opts, ".message_row");
-        return $message_row;
-    };
-    $message_row.length = 1;
-    $message_row.closest = (closest_opts) => {
-        assert.equal(closest_opts, ".overlay-message-row");
-        return [];
-    };
+    $content.set_closest_results(".message_row", $message_row);
+    $message_row.set_closest_results(".overlay-message-row", []);
     const message_id = 100;
-    rows.id = (message_row) => {
-        assert.equal(message_row, $message_row);
+    rows.id = ($message_row_) => {
+        assert.equal($message_row_[0], $message_row[0]);
         return message_id;
     };
-    message_store.get = (message_id_opt) => {
-        assert.equal(message_id_opt, message_id);
-        return value;
-    };
+    message_store.update_message_cache({
+        message: {
+            id: message_id,
+            ...value,
+        },
+    });
 }
 
 const get_content_element = () => {
     const $content = $.create("content-stub");
-    $content.set_find_results(".user-mention", $array([]));
-    $content.set_find_results(".topic-mention", $array([]));
-    $content.set_find_results(".user-group-mention", $array([]));
-    $content.set_find_results("a.stream", $array([]));
-    $content.set_find_results("a.stream-topic, a.message-link", $array([]));
-    $content.set_find_results("time", $array([]));
-    $content.set_find_results("span.timestamp-error", $array([]));
-    $content.set_find_results(".emoji", $array([]));
-    $content.set_find_results("div.spoiler-header", $array([]));
-    $content.set_find_results("div.codehilite", $array([]));
-    $content.set_find_results(".message_inline_video video", $array([]));
-    $content.set_find_results("audio", $array([]));
+    $content.set_find_results(".user-mention", []);
+    $content.set_find_results(".topic-mention", []);
+    $content.set_find_results(".user-group-mention", []);
+    $content.set_find_results("a.stream", []);
+    $content.set_find_results("a.stream-topic, a.message-link", []);
+    $content.set_find_results("time", []);
+    $content.set_find_results("span.timestamp-error", []);
+    $content.set_find_results(".emoji", []);
+    $content.set_find_results("div.spoiler-header", []);
+    $content.set_find_results("div.codehilite", []);
+    $content.set_find_results(".message_inline_video video", []);
+    $content.set_find_results("audio", []);
 
     set_message_for_message_content($content, undefined);
 
@@ -167,9 +154,10 @@ const get_content_element = () => {
             use trusted values.
         `);
     }
-    $content.html = security_violation;
-    $content.prepend = security_violation;
-    $content.append = security_violation;
+    Object.defineProperty($content[0], "innerHTML", {
+        get: security_violation,
+        set: security_violation,
+    });
     return $content;
 };
 
@@ -195,11 +183,11 @@ run_test("message_inline_video", () => {
     const $elem = $.create("message_inline_video");
 
     let load_called = false;
-    $elem.load = () => {
+    $elem[0].load = () => {
         load_called = true;
     };
 
-    $content.set_find_results(".message_inline_video video", $array([$elem]));
+    $content.set_find_results(".message_inline_video video", $elem);
     window.GestureEvent = true;
     rm.update_elements($content);
     assert.equal(load_called, true);
@@ -210,15 +198,15 @@ run_test("user-mention", ({override}) => {
     // Setup
     const $content = get_content_element();
     const $iago = $.create("user-mention(iago)");
-    $iago.set_find_results(".highlight", false);
+    $iago.set_find_results(".highlight", []);
     $iago.attr("data-user-id", iago.user_id);
     const $cordelia = $.create("user-mention(cordelia)");
-    $cordelia.set_find_results(".highlight", false);
+    $cordelia.set_find_results(".highlight", []);
     $cordelia.attr("data-user-id", cordelia.user_id);
     const $polonius = $.create("user-mention(polonius)");
-    $polonius.set_find_results(".highlight", false);
+    $polonius.set_find_results(".highlight", []);
     $polonius.attr("data-user-id", polonius.user_id);
-    $content.set_find_results(".user-mention", $array([$iago, $cordelia, $polonius]));
+    $content.set_find_results(".user-mention", [$iago[0], $cordelia[0], $polonius[0]]);
     override(realm, "realm_enable_guest_user_indicator", true);
     // Initial asserts
     assert.ok(!$iago.hasClass("user-mention-me"));
@@ -232,9 +220,14 @@ run_test("user-mention", ({override}) => {
     assert.equal($cordelia.text(), `@${cordelia.full_name}`);
     assert.equal($polonius.text(), `translated: @${polonius.full_name} (guest)`);
 
-    // message row found
     const message = {mentioned_me_directly: true};
     set_message_for_message_content($content, message);
+    rm.update_elements($content);
+    assert.ok($iago.hasClass("user-mention-me"));
+
+    // Silent mentions should also have the `user-mention-me` class.
+    $iago.removeClass("user-mention-me");
+    message.mentioned_me_directly = false;
     rm.update_elements($content);
     assert.ok($iago.hasClass("user-mention-me"));
 });
@@ -242,9 +235,9 @@ run_test("user-mention", ({override}) => {
 run_test("user-mention without guest indicator", ({override}) => {
     const $content = get_content_element();
     const $polonius = $.create("user-mention(polonius-again)");
-    $polonius.set_find_results(".highlight", false);
+    $polonius.set_find_results(".highlight", []);
     $polonius.attr("data-user-id", polonius.user_id);
-    $content.set_find_results(".user-mention", $array([$polonius]));
+    $content.set_find_results(".user-mention", $polonius);
 
     override(realm, "realm_enable_guest_user_indicator", false);
     rm.update_elements($content);
@@ -254,10 +247,10 @@ run_test("user-mention without guest indicator", ({override}) => {
 run_test("user-mention of inaccessible users", () => {
     const $content = get_content_element();
     const $othello = $.create("user-mention(othello)");
-    $othello.set_find_results(".highlight", false);
+    $othello.set_find_results(".highlight", []);
     $othello.attr("data-user-id", inaccessible_user_id);
     $othello.text("@Othello");
-    $content.set_find_results(".user-mention", $array([$othello]));
+    $content.set_find_results(".user-mention", $othello);
 
     rm.update_elements($content);
     assert.equal($othello.text(), "@Othello");
@@ -265,10 +258,10 @@ run_test("user-mention of inaccessible users", () => {
 
     // Test inaccessible user id with no user object.
     const $cordelia = $.create("user-mention(cordelia)");
-    $cordelia.set_find_results(".highlight", false);
+    $cordelia.set_find_results(".highlight", []);
     $cordelia.attr("data-user-id", 40);
     $cordelia.text("@Cordelia");
-    $content.set_find_results(".user-mention", $array([$cordelia]));
+    $content.set_find_results(".user-mention", $cordelia);
 
     rm.update_elements($content);
     assert.equal($cordelia.text(), "@Cordelia");
@@ -279,7 +272,7 @@ run_test("user-mention (stream wildcard)", () => {
     const $content = get_content_element();
     const $mention = $.create("mention");
     $mention.attr("data-user-id", "*");
-    $content.set_find_results(".user-mention", $array([$mention]));
+    $content.set_find_results(".user-mention", $mention);
     const message = {stream_wildcard_mentioned: true};
     set_message_for_message_content($content, message);
 
@@ -293,8 +286,8 @@ run_test("user-mention (email)", () => {
     const $content = get_content_element();
     const $mention = $.create("mention");
     $mention.attr("data-user-email", cordelia.email);
-    $mention.set_find_results(".highlight", false);
-    $content.set_find_results(".user-mention", $array([$mention]));
+    $mention.set_find_results(".highlight", []);
+    $content.set_find_results(".user-mention", $mention);
 
     rm.update_elements($content);
     assert.ok(!$mention.hasClass("user-mention-me"));
@@ -304,7 +297,7 @@ run_test("user-mention (email)", () => {
 run_test("user-mention (missing)", () => {
     const $content = get_content_element();
     const $mention = $.create("mention");
-    $content.set_find_results(".user-mention", $array([$mention]));
+    $content.set_find_results(".user-mention", $mention);
 
     rm.update_elements($content);
     assert.ok(!$mention.hasClass("user-mention-me"));
@@ -314,7 +307,7 @@ run_test("topic-mention", () => {
     // Setup
     const $content = get_content_element();
     const $mention = $.create("mention");
-    $content.set_find_results(".topic-mention", $array([$mention]));
+    $content.set_find_results(".topic-mention", $mention);
 
     // when no message row found
     assert.ok(!$mention.hasClass("user-mention-me"));
@@ -336,7 +329,7 @@ run_test("topic-mention not topic participant", () => {
     // Setup
     const $content = get_content_element();
     const $mention = $.create("mention");
-    $content.set_find_results(".topic-mention", $array([$mention]));
+    $content.set_find_results(".topic-mention", $mention);
 
     const message = {
         topic_wildcard_mentioned: false,
@@ -352,12 +345,12 @@ run_test("user-group-mention", () => {
     // Setup
     const $content = get_content_element();
     const $group_me = $.create("user-group-mention(me)");
-    $group_me.set_find_results(".highlight", false);
+    $group_me.set_find_results(".highlight", []);
     $group_me.attr("data-user-group-id", group_me.id);
     const $group_other = $.create("user-group-mention(other)");
-    $group_other.set_find_results(".highlight", false);
+    $group_other.set_find_results(".highlight", []);
     $group_other.attr("data-user-group-id", group_other.id);
-    $content.set_find_results(".user-group-mention", $array([$group_me, $group_other]));
+    $content.set_find_results(".user-group-mention", [$group_me[0], $group_other[0]]);
 
     // Initial asserts
     assert.ok(!$group_me.hasClass("user-mention-me"));
@@ -376,15 +369,12 @@ run_test("user-group-mention", () => {
     // Setup
     const $content = get_content_element();
     const $group_me_via_subgroup = $.create("user-group-mention(me_via_subgroup)");
-    $group_me_via_subgroup.set_find_results(".highlight", false);
+    $group_me_via_subgroup.set_find_results(".highlight", []);
     $group_me_via_subgroup.attr("data-user-group-id", group_me_via_subgroup.id);
     const $group_other = $.create("user-group-mention(other)");
-    $group_other.set_find_results(".highlight", false);
+    $group_other.set_find_results(".highlight", []);
     $group_other.attr("data-user-group-id", group_other.id);
-    $content.set_find_results(
-        ".user-group-mention",
-        $array([$group_me_via_subgroup, $group_other]),
-    );
+    $content.set_find_results(".user-group-mention", [$group_me_via_subgroup[0], $group_other[0]]);
 
     // Initial asserts
     assert.ok(!$group_me_via_subgroup.hasClass("user-mention-me"));
@@ -403,7 +393,7 @@ run_test("user-group-mention (error)", () => {
     const $content = get_content_element();
     const $group = $.create("user-group-mention(bogus)");
     $group.attr("data-user-group-id", "not-even-a-number");
-    $content.set_find_results(".user-group-mention", $array([$group]));
+    $content.set_find_results(".user-group-mention", $group);
 
     rm.update_elements($content);
 
@@ -414,21 +404,21 @@ run_test("stream-links", ({mock_template}) => {
     // Setup
     const $content = get_content_element();
     const $stream = $.create("a.stream");
-    $stream.set_find_results(".highlight", false);
+    $stream.set_find_results(".highlight", []);
     $stream.attr("data-stream-id", stream.stream_id);
 
     const $stream_topic = $.create("a.stream-topic");
-    $stream_topic.set_find_results(".highlight", false);
+    $stream_topic.set_find_results(".highlight", []);
     $stream_topic.attr(
         "href",
         `/#narrow/channel/${stream.stream_id}-random/topic/topic.20name.20.3E.20still.20the.20topic.20name`,
     );
-    $stream_topic.replaceWith = noop;
-    $stream_topic.hasClass = (class_name) => class_name === "stream-topic";
+    $stream_topic[0].replaceWith = noop;
+    $stream_topic.addClass("stream-topic");
     $stream_topic.text("#random > topic name > still the topic name");
 
-    $content.set_find_results("a.stream", $array([$stream]));
-    $content.set_find_results("a.stream-topic, a.message-link", $array([$stream_topic]));
+    $content.set_find_results("a.stream", $stream);
+    $content.set_find_results("a.stream-topic, a.message-link", $stream_topic);
 
     let topic_link_context;
     let topic_link_rendered_html;
@@ -460,12 +450,12 @@ run_test("topic-link (empty string topic)", ({mock_template}) => {
     // Setup
     const $content = get_content_element();
     const $channel_topic = $.create("a.stream-topic(empty-string-topic)");
-    $channel_topic.set_find_results(".highlight", false);
+    $channel_topic.set_find_results(".highlight", []);
     $channel_topic.attr("href", `/#narrow/channel/${stream.stream_id}-random/topic/`);
-    $channel_topic.replaceWith = noop;
-    $channel_topic.hasClass = (class_name) => class_name === "stream-topic";
+    $channel_topic[0].replaceWith = noop;
+    $channel_topic.addClass("stream-topic");
     $channel_topic.html(`#random &gt; <em>${REALM_EMPTY_TOPIC_DISPLAY_NAME}</em>`);
-    $content.set_find_results("a.stream-topic, a.message-link", $array([$channel_topic]));
+    $content.set_find_results("a.stream-topic, a.message-link", $channel_topic);
 
     let topic_link_context;
     let topic_link_rendered_html;
@@ -495,17 +485,17 @@ run_test("message-links", ({mock_template}) => {
     // Setup
     const $content = get_content_element();
     const $channel_topic_message = $.create("a.message-link");
-    $channel_topic_message.set_find_results(".highlight", false);
+    $channel_topic_message.set_find_results(".highlight", []);
     $channel_topic_message.attr(
         "href",
         `/#narrow/channel/${stream.stream_id}-${stream.name}/topic//near/123`,
     );
-    $channel_topic_message.replaceWith = noop;
-    $channel_topic_message.hasClass = (class_name) => class_name === "message-link";
+    $channel_topic_message[0].replaceWith = noop;
+    $channel_topic_message.addClass("message-link");
     $channel_topic_message.html(
         `#${stream.name} &gt; <em>${REALM_EMPTY_TOPIC_DISPLAY_NAME}</em> @ 💬`,
     );
-    $content.set_find_results("a.stream-topic, a.message-link", $array([$channel_topic_message]));
+    $content.set_find_results("a.stream-topic, a.message-link", $channel_topic_message);
 
     let channel_message_link_context;
     let channel_message_link_rendered_html;
@@ -533,7 +523,7 @@ run_test("message-links", ({mock_template}) => {
 run_test("timestamp without time", () => {
     const $content = get_content_element();
     const $timestamp = $.create("timestamp without actual time");
-    $content.set_find_results("time", $array([$timestamp]));
+    $content.set_find_results("time", $timestamp);
 
     rm.update_elements($content);
     assert.equal($timestamp.text(), "never-been-set");
@@ -545,11 +535,11 @@ run_test("audio", ({mock_template}) => {
 
     const $content = get_content_element();
     const $audio = $.create("audio");
-    $audio.replaceWith = noop;
+    $audio[0].replaceWith = noop;
     $audio.attr("src", audio_src);
     $audio.attr("title", audio_title);
 
-    $content.set_find_results("audio", $array([$audio]));
+    $content.set_find_results("audio", $audio);
 
     let audio_html;
     mock_template("markdown_audio.hbs", true, (data, html) => {
@@ -565,7 +555,7 @@ run_test("audio", ({mock_template}) => {
         '<span class="media-audio-wrapper">\n' +
             '    <audio controls="" preload="metadata" src="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp3" title="inline.mp3" class="media-audio-element"></audio>\n' +
             '    <a class="media-audio-download icon-button icon-button-square icon-button-neutral"\n' +
-            '      aria-label="Download" href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp3" download>\n' +
+            '      aria-label="translated: Download" href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.mp3" download>\n' +
             '        <i class="media-download-icon zulip-icon zulip-icon-download"></i>\n' +
             "    </a>\n" +
             "</span>",
@@ -584,7 +574,7 @@ run_test("timestamp", ({mock_template}) => {
     $timestamp.attr("datetime", "1970-01-01T00:00:01Z");
     const $timestamp_invalid = $.create("timestamp(invalid)");
     $timestamp_invalid.attr("datetime", "invalid");
-    $content.set_find_results("time", $array([$timestamp, $timestamp_invalid]));
+    $content.set_find_results("time", [$timestamp[0], $timestamp_invalid[0]]);
     blueslip.expect("error", "Could not parse datetime supplied by backend");
 
     // Initial asserts
@@ -611,7 +601,7 @@ run_test("timestamp-twenty-four-hour-time", ({mock_template, override}) => {
     const $content = get_content_element();
     const $timestamp = $.create("timestamp");
     $timestamp.attr("datetime", "2020-07-15T20:40:00Z");
-    $content.set_find_results("time", $array([$timestamp]));
+    $content.set_find_results("time", $timestamp);
 
     // We will temporarily change the 24h setting for this test.
     override(user_settings, "twenty_four_hour_time", true);
@@ -634,7 +624,7 @@ run_test("timestamp-error", () => {
     const $content = get_content_element();
     const $timestamp_error = $.create("timestamp-error");
     $timestamp_error.text("Invalid time format: the-time-format");
-    $content.set_find_results("span.timestamp-error", $array([$timestamp_error]));
+    $content.set_find_results("span.timestamp-error", $timestamp_error);
 
     // Initial assert
     assert.equal($timestamp_error.text(), "Invalid time format: the-time-format");
@@ -650,19 +640,13 @@ run_test("emoji", ({override}) => {
     const $content = get_content_element();
     const $emoji = $.create("emoji-stub");
     $emoji.attr("title", "tada");
-    let called = false;
-    $emoji.text = (f) => {
-        const text = f.call($emoji);
-        assert.equal(":tada:", text);
-        called = true;
-        return {contents: () => ({unwrap() {}})};
-    };
+    $emoji.set_contents([]);
     $content.set_find_results(".emoji", $emoji);
     override(user_settings, "emojiset", "text");
 
     rm.update_elements($content);
 
-    assert.ok(called);
+    assert.equal($emoji.text(), ":tada:");
 
     // Set page parameters back so that test run order is independent
     override(user_settings, "emojiset", "apple");
@@ -672,10 +656,10 @@ run_test("spoiler-header", () => {
     // Setup
     const $content = get_content_element();
     const $header = $.create("div.spoiler-header");
-    $content.set_find_results("div.spoiler-header", $array([$header]));
-    let $appended;
-    $header.append = ($element) => {
-        $appended = $element;
+    $content.set_find_results("div.spoiler-header", $header);
+    let appended;
+    $header[0].append = (element) => {
+        appended = element;
     };
 
     // Test that the show/hide button gets added to a spoiler header.
@@ -686,17 +670,17 @@ run_test("spoiler-header", () => {
     $header.set_find_results("p", $.create("p"));
     rm.update_elements($content);
     assert.equal(label, $header.html());
-    assert.equal($appended.selector, toggle_button_html);
+    assert.equal(appended.innerHTML, toggle_button_html);
 });
 
 run_test("spoiler-header-empty-fill", () => {
     // Setup
     const $content = get_content_element();
     const $header = $.create("div.spoiler-header");
-    $content.set_find_results("div.spoiler-header", $array([$header]));
-    const $appended = [];
-    $header.append = ($element) => {
-        $appended.push($element);
+    $content.set_find_results("div.spoiler-header", $header);
+    const appended = [];
+    $header[0].append = (element) => {
+        appended.push(element);
     };
 
     // Test that an empty header gets the default text applied (through i18n filter).
@@ -705,13 +689,13 @@ run_test("spoiler-header-empty-fill", () => {
     $header.empty();
     $header.set_find_results("p", $.create("p"));
     rm.update_elements($content);
-    assert.equal($appended[0].selector, "<p>");
-    assert.equal($appended[0].text(), $t({defaultMessage: "Spoiler"}));
-    assert.equal($appended[1].selector, toggle_button_html);
+    assert.equal(appended[0].innerHTML, "<p>");
+    assert.equal(appended[0].textContent, $t({defaultMessage: "Spoiler"}));
+    assert.equal(appended[1].innerHTML, toggle_button_html);
 });
 
 function assert_clipboard_setup() {
-    assert.equal(clipboard_args[0], "copy-code-stub");
+    assert.equal(clipboard_args[0], $("<copy-code-button-stub>")[0]);
     const text = clipboard_args[1].text({
         to_$: () => ({
             parent: () => ({
@@ -731,15 +715,13 @@ function test_code_playground(mock_template, viewing_code) {
     const $content = get_content_element();
     const $hilite = $.create("div.codehilite");
     const $pre = $.create("hilite-pre");
-    $content.set_find_results("div.codehilite", $array([$hilite]));
+    $content.set_find_results("div.codehilite", $hilite);
     $hilite.set_find_results("pre", $pre);
 
     $hilite.attr("data-code-language", "javascript");
 
-    const $code_buttons_container = $.create("code_buttons_container", {
-        children: ["copy-code-stub", "view-code-stub"],
-    });
-    const $copy_code_button = $.create("copy_code_button", {children: ["copy-code-stub"]});
+    const $code_buttons_container = $("<code-buttons-container-stub>");
+    const $copy_code_button = $("<copy-code-button-stub>");
     const $view_code_in_playground = $.create("view_code_in_playground");
 
     $code_buttons_container.set_find_results(".copy_codeblock", $copy_code_button);
@@ -750,20 +732,19 @@ function test_code_playground(mock_template, viewing_code) {
     // The args to prepend should be jQuery objects (or in
     // our case "fake" zjquery objects).
     const prepends = [];
-    $pre.prepend = (arg) => {
-        assert.ok(arg.__zjquery, "We should only prepend jQuery objects.");
+    $pre[0].prepend = (arg) => {
         prepends.push(arg);
     };
 
     if (viewing_code) {
         mock_template("code_buttons_container.hbs", true, (data) => {
             assert.equal(data.show_playground_button, true);
-            return {to_$: () => $code_buttons_container};
+            return "<code-buttons-container-stub>";
         });
     } else {
         mock_template("code_buttons_container.hbs", true, (data) => {
             assert.equal(data.show_playground_button, false);
-            return {to_$: () => $code_buttons_container};
+            return "<code-buttons-container-stub>";
         });
     }
 
@@ -786,7 +767,7 @@ run_test("code playground none", ({override, mock_template}) => {
     override(copied_tooltip, "show_copied_confirmation", noop);
 
     const {prepends, $button_container, $view_code} = test_code_playground(mock_template, false);
-    assert.deepEqual(prepends, [$button_container]);
+    assert.deepEqual(prepends, [$button_container[0]]);
     assert_clipboard_setup();
 
     assert.equal($view_code.attr("data-tippy-content"), undefined);
@@ -802,7 +783,7 @@ run_test("code playground single", ({override, mock_template}) => {
     override(copied_tooltip, "show_copied_confirmation", noop);
 
     const {prepends, $button_container, $view_code} = test_code_playground(mock_template, true);
-    assert.deepEqual(prepends, [$button_container]);
+    assert.deepEqual(prepends, [$button_container[0]]);
     assert_clipboard_setup();
 
     assert.equal(
@@ -822,7 +803,7 @@ run_test("code playground multiple", ({override, mock_template}) => {
     override(copied_tooltip, "show_copied_confirmation", noop);
 
     const {prepends, $button_container, $view_code} = test_code_playground(mock_template, true);
-    assert.deepEqual(prepends, [$button_container]);
+    assert.deepEqual(prepends, [$button_container[0]]);
     assert_clipboard_setup();
 
     assert.equal($view_code.attr("data-tippy-content"), "translated: View in playground");

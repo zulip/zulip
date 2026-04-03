@@ -31,7 +31,7 @@ class ErrorCode(Enum):
     INVALID_MARKDOWN_INCLUDE_STATEMENT = auto()
     REQUEST_CONFUSING_VAR = auto()
     INVALID_API_KEY = auto()
-    INVALID_ZOOM_TOKEN = auto()
+    INVALID_VIDEO_CALL_PROVIDER_TOKEN = auto()
     UNKNOWN_ZOOM_USER = auto()
     UNAUTHENTICATED_USER = auto()
     NONEXISTENT_SUBDOMAIN = auto()
@@ -231,6 +231,19 @@ class IncompatibleParametersError(JsonableError):
         return _("Unsupported parameter combination: {parameters}")
 
 
+class MissingDependentParameterError(JsonableError):
+    data_fields = ["required_parameter", "set_parameter"]
+
+    def __init__(self, required_parameter: str, set_parameter: str) -> None:
+        self.required_parameter = required_parameter
+        self.set_parameter = set_parameter
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("{required_parameter} is required when {set_parameter} is set.")
+
+
 class CannotDeactivateLastUserError(JsonableError):
     code = ErrorCode.CANNOT_DEACTIVATE_LAST_USER
     data_fields = ["is_last_owner", "entity"]
@@ -268,7 +281,9 @@ class RateLimitedError(JsonableError):
     @staticmethod
     @override
     def msg_format() -> str:
-        return _("API usage exceeded rate limit")
+        return _(
+            "API usage exceeded rate limit; see https://zulip.com/api/http-headers#rate-limiting-response-headers"
+        )
 
     @property
     @override
@@ -295,18 +310,6 @@ class InvalidJSONError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Malformed JSON")
-
-
-class OrganizationMemberRequiredError(JsonableError):
-    code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
-
-    def __init__(self) -> None:
-        pass
-
-    @staticmethod
-    @override
-    def msg_format() -> str:
-        return _("Must be an organization member")
 
 
 class OrganizationAdministratorRequiredError(JsonableError):

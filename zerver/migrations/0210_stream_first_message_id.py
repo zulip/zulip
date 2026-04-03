@@ -8,7 +8,7 @@ from django.db.migrations.state import StateApps
 def backfill_first_message_id(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     Stream = apps.get_model("zerver", "Stream")
     Message = apps.get_model("zerver", "Message")
-    for stream in Stream.objects.all():
+    for stream in Stream.objects.all().iterator():
         first_message = Message.objects.filter(
             recipient__type_id=stream.id, recipient__type=2
         ).first()

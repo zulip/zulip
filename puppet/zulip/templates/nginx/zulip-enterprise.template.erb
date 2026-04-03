@@ -5,9 +5,6 @@ server {
 <% else -%>
     listen 127.0.0.1:80;
 <% end -%>
-    location /local-static {
-        alias /home/zulip/local-static;
-    }
     include /etc/nginx/zulip-include/app;
     include /etc/nginx/zulip-include/localhost.d/*.conf;
 }
@@ -27,6 +24,7 @@ server {
 }
 <% end -%>
 
+include /etc/nginx/zulip-include/trusted-ip;
 include /etc/nginx/zulip-include/trusted-proto;
 include /etc/nginx/zulip-include/s3-cache;
 include /etc/nginx/zulip-include/upstreams;
@@ -44,10 +42,6 @@ server {
     ssl_certificate <%= @ssl_dir %>/certs/zulip.combined-chain.crt;
     ssl_certificate_key <%= @ssl_dir %>/private/zulip.key;
 <% end -%>
-
-    location /local-static {
-        alias /home/zulip/local-static;
-    }
 
     include /etc/nginx/zulip-include/certbot;
     include /etc/nginx/zulip-include/app;

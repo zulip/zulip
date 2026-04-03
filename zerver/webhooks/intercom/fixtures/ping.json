@@ -5,7 +5,7 @@
         "type":"notification_event_data",
         "item":{
             "type":"ping",
-            "message":"something something interzen"
+            "message":"This is a ping notification test message."
         }
     },
     "links":{

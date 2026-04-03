@@ -1,7 +1,5 @@
 import $ from "jquery";
 
-import render_confirm_delete_user_avatar from "../templates/confirm_dialog/confirm_delete_user_avatar.hbs";
-
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t_html} from "./i18n.ts";
@@ -61,7 +59,6 @@ export function build_bot_edit_widget($target: JQuery): UploadWidget {
 function display_avatar_delete_complete(): void {
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
     $("#user-avatar-upload-widget .image-upload-text").show();
-    $("#user-avatar-source").show();
 }
 
 function display_avatar_delete_started(): void {
@@ -75,8 +72,11 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
         return $<HTMLInputElement>("#user-avatar-upload-widget input.image_file_input").expectOne();
     };
 
-    if (current_user.avatar_source === "G") {
+    if (current_user.avatar_source !== "U") {
         $("#user-avatar-upload-widget .image-delete-button").hide();
+    }
+
+    if (current_user.avatar_source === "G") {
         $("#user-avatar-source").show();
     } else {
         $("#user-avatar-source").hide();
@@ -107,20 +107,23 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
                 },
             });
         }
-        const html_body = render_confirm_delete_user_avatar({});
 
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Delete profile picture"}),
-            html_body,
+            modal_title_html: $t_html({defaultMessage: "Delete profile picture"}),
+            modal_content_html: $t_html({
+                defaultMessage: "Are you sure you want to delete your profile picture?",
+            }),
+            is_compact: true,
             on_click: delete_user_avatar,
         });
     });
 
     upload_widget.build_direct_upload_widget(
         get_file_input,
-        $("#user-avatar-upload-widget .image_file_input_error").expectOne(),
+        $("#user-avatar-upload-widget-error").expectOne(),
         $("#user-avatar-upload-widget .image_upload_button").expectOne(),
         upload_function,
         realm.max_avatar_file_size_mib,
+        "user_avatar",
     );
 }

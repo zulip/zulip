@@ -4,10 +4,12 @@
     border-radius: 5px;
     box-shadow: 0 0 10px hsl(0deg 0% 0% / 10%);
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     .image-block {
-        background-size: contain;
-        height: 100%;
+        max-height: 100%;
     }
 
     .image-hover-background {
@@ -19,6 +21,7 @@
         position: absolute;
         display: none;
         cursor: pointer;
+        top: 0;
     }
 
     .image_upload_button {
@@ -46,6 +49,7 @@
         right: 10px;
         z-index: 99;
         line-height: 20px;
+        font-family: inherit;
 
         &:focus:not(:focus-visible) {
             outline: none;
@@ -59,6 +63,7 @@
         text-align: center;
         visibility: hidden;
         z-index: 99;
+        top: 0;
     }
 
     .image-delete-text,

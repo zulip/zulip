@@ -294,6 +294,31 @@ test("test_stream_has_topics", () => {
     assert.equal(stream_topic_history.stream_has_locally_available_named_topics(stream_id), true);
 });
 
+test("channel_has_locally_available_topic", () => {
+    const stream_id = 90;
+
+    // Unknown stream returns false.
+    assert.equal(
+        stream_topic_history.channel_has_locally_available_topic(stream_id, "topic1"),
+        false,
+    );
+
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 901,
+        topic_name: "topic1",
+    });
+
+    assert.equal(
+        stream_topic_history.channel_has_locally_available_topic(stream_id, "topic1"),
+        true,
+    );
+    assert.equal(
+        stream_topic_history.channel_has_locally_available_topic(stream_id, "nonexistent"),
+        false,
+    );
+});
+
 test("test_stream_has_resolved_topics", () => {
     const stream_id = 89;
 
@@ -312,6 +337,27 @@ test("test_stream_has_resolved_topics", () => {
         stream_topic_history.stream_has_locally_available_resolved_topics(stream_id),
         true,
     );
+});
+
+test("update_topic_name_case", () => {
+    const stream_id = 90;
+
+    // No history for this stream_id, should return without error.
+    stream_topic_history.update_topic_name_case(stream_id, "old topic", "new topic");
+
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 900,
+        topic_name: "known topic",
+    });
+
+    // Topic key is missing, should return without changing data.
+    stream_topic_history.update_topic_name_case(stream_id, "missing topic", "whatever");
+    assert.deepEqual(stream_topic_history.get_recent_topic_names(stream_id), ["known topic"]);
+
+    // Topic key is present, should update pretty name.
+    stream_topic_history.update_topic_name_case(stream_id, "known topic", "Known Topic");
+    assert.deepEqual(stream_topic_history.get_recent_topic_names(stream_id), ["Known Topic"]);
 });
 
 test("server_history_end_to_end", () => {
@@ -411,7 +457,7 @@ test("ask_server_for_latest_topic_data", () => {
         assert.equal(opts.url, "/json/messages");
         assert.deepEqual(opts.data, {
             anchor: "newest",
-            narrow: '[{"operator":"stream","operand":1080},{"operator":"topic","operand":"Topic1"}]',
+            narrow: '[{"operator":"channel","operand":1080},{"operator":"topic","operand":"Topic1"}]',
             num_after: 0,
             num_before: 1,
             allow_empty_topic_name: true,

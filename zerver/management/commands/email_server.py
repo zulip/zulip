@@ -20,13 +20,11 @@ class Command(BaseCommand):
         parser.add_argument(
             "--user",
             help="User to drop privileges to, if started as root.",
-            type=str,
             required=(os.geteuid() == 0),
         )
         parser.add_argument(
             "--group",
             help="Group to drop privileges to, if started as root.",
-            type=str,
             required=(os.geteuid() == 0),
         )
         tls_cert: str | None = None
@@ -44,13 +42,11 @@ class Command(BaseCommand):
         parser.add_argument(
             "--tls-cert",
             help="Path to TLS certificate chain file",
-            type=str,
             default=tls_cert,
         )
         parser.add_argument(
             "--tls-key",
             help="Path to TLS private key file",
-            type=str,
             default=tls_key,
         )
 

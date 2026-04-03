@@ -159,8 +159,6 @@ Set up authentication with Microsoft Entra ID (AzureAD) by modifying the
 `AzureADAuthBackend` configuration in `settings.py`, as well as a secret in
 `zulip-secrets.conf`. Details are documented in your `settings.py`.
 
-(ldap)=
-
 ## LDAP (including Active Directory)
 
 Zulip supports retrieving information about users via LDAP, and
@@ -386,6 +384,10 @@ groups. To configure this feature:
    `subdomain1`, user membership in the Zulip groups named `group1`
    and `group2` will match their membership in LDAP groups with those
    names.
+
+   If a group listed here does not already exist in Zulip, it will be
+   created automatically when syncing a user who should be a member of
+   that group.
 
 1. Test your configuration and restart the server into the new
    configuration as [documented above](#synchronizing-data).
@@ -684,8 +686,11 @@ other IdPs (identity providers). You can configure it as follows:
         in your IdP's interface when setting up SAML authentication
         (referred to as "Attribute Statements" with Okta, or
         "Attribute Mapping" with Google Workspace). You'll want to connect
-        these so that Zulip gets the email address (used as a unique
-        user ID) and name for the user.
+        these so that Zulip gets the email address and name for the
+        user. The `attr_user_permanent_id` field should be set to a
+        **stable unique identifier** for the user (see
+        [Synchronizing email addresses with
+        SAML](#synchronizing-email-addresses-with-saml)).
      5. The `display_name` and `display_icon` fields are used to
         display the login/registration buttons for the IdP.
      6. The `auto_signup` field determines how Zulip should handle
@@ -853,18 +858,52 @@ Your SAML IdP will need to provide the list of SAML group names in the
 `zulip_groups` attribute of the `SAMLResponse`. When a user logs in
 using SAML, groups are synced as follows:
 
-1. If a Zulip group name does not occur in the
-   `SOCIAL_AUTH_SYNC_ATTRS_DICT` groups list, that group's membership
-   is managed entirely in Zulip.
-1. Otherwise, if the group appears in `zulip_groups` in the
+1. Zulip checks `SOCIAL_AUTH_SYNC_ATTRS_DICT` for whether the group is
+   a "SAML synced group": one whose membership should be synced from
+   SAML. The special `"groups": "*",` wildcard syntax means all Zulip
+   groups are SAML synced groups. Otherwise, all groups not explicitly
+   listed in the `groups` list for the organization will have their
+   membership managed entirely in Zulip and will never be synced.
+1. If a SAML synced group appears in `zulip_groups` in the
    `SAMLResponse`, the user is added to that group (if not already a
-   member).
-1. Otherwise, the user is removed from that group (if currently a
-   member).
+   member). If the SAML synced group doesn't yet exist in Zulip, it
+   will be created automatically, with a default configuration where
+   only organization owners can manage the group.
+1. Otherwise, the user is removed from the SAML synced group (if
+   currently a member).
 
 Only direct membership of groups is synced through this protocol;
 subgroups of Zulip groups are managed entirely [inside
 Zulip](https://zulip.com/help/manage-user-groups#add-user-groups-to-a-group).
+
+### Synchronizing email addresses with SAML
+
+Zulip supports automatically handling changes in email address for
+SAML-authenticated users. This feature activates automatically when
+`attr_user_permanent_id` is set to an attribute **different from**
+`attr_email` in `SOCIAL_AUTH_SAML_ENABLED_IDPS`. When active, users
+are identified by their permanent ID rather than by email address, and
+Zulip will update their email on their next login instead of creating
+a duplicate account.
+
+For this to work correctly, `attr_user_permanent_id` must point to a
+**stable unique identifier** that does not change when the user's
+email address changes. Check your IdP's documentation for a suitable
+attribute — for example, an opaque user ID or UUID. If
+`attr_user_permanent_id` is set to the same attribute as `attr_email`
+(or left unset), email synchronization will not be active, and email
+changes at the IdP will result in duplicate accounts.
+
+:::{note}
+
+The first time a user logs in with SAML, the permanent ID is linked to
+their Zulip account. After a change in their email address at the IdP,
+Zulip will update the linked account's email address the next time the
+user logs in. If another Zulip user already has the new email address,
+the email will not be updated, a warning will be logged and the
+administrator should resolve the conflict manually.
+
+:::
 
 ### SCIM
 
@@ -938,7 +977,7 @@ integration](../production/scim.md).
 
 ### Using Authentik as a SAML IdP
 
-1. Make sure you reviewed [this article](https://goauthentik.io/integrations/services/zulip/), which
+1. Make sure you reviewed [this article](https://integrations.goauthentik.io/chat-communication-collaboration/zulip/), which
    details how to integrate Zulip with Authentik.
 1. Verify that `SOCIAL_AUTH_SAML_ENABLED_IDPS[{idp_name}]['entity_id']` and
    `SOCIAL_AUTH_SAML_ENABLED_IDPS[{idp_name}]['url']` are correct in your Zulip
@@ -1171,13 +1210,6 @@ provider. You can configure it by enabling
 `AUTHENTICATION_BACKENDS` and following the steps outlined in the
 comment documentation in `/etc/zulip/settings.py`.
 
-If your server was originally installed from a release in the
-`4.x` series or earlier, you will need to update your `settings.py`
-file. You can find instructions on how to do that in a
-[separate doc][update-inline-comments].
-
-Note that `SOCIAL_AUTH_OIDC_ENABLED_IDPS` only supports a single IdP currently.
-
 The Return URL to authorize with the provider is
 `https://yourzulipdomain.example.com/complete/oidc/`.
 
@@ -1195,6 +1227,10 @@ user the opportunity to edit it before submitting. When `True`, Zulip
 assumes the name is correct, and new users will not be presented with
 a registration form unless they need to accept Terms of Service for
 the server (i.e. `TERMS_OF_SERVICE_VERSION` is set).
+
+If your OIDC server's HTTPS server is signed by a custom certificate
+authority, you will need to [configure Zulip to trust
+it](system-configuration.md#custom_ca_path).
 
 ## JSON Web Tokens (JWT)
 

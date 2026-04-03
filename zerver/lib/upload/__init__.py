@@ -4,6 +4,7 @@ import os
 import re
 import unicodedata
 from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from datetime import datetime
 from email.message import EmailMessage
 from typing import IO, Any
@@ -18,7 +19,7 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids, user_avatar_path
 from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_type
+from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type, guess_type
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.thumbnail import (
     MAX_EMOJI_GIF_FILE_SIZE_BYTES,
@@ -30,7 +31,16 @@ from zerver.lib.thumbnail import (
     resize_emoji,
 )
 from zerver.lib.upload.base import StreamingSourceWithSize, ZulipUploadBackend
-from zerver.models import Attachment, Message, Realm, RealmEmoji, ScheduledMessage, UserProfile
+from zerver.models import (
+    ArchivedAttachment,
+    Attachment,
+    ImageAttachment,
+    Message,
+    Realm,
+    RealmEmoji,
+    ScheduledMessage,
+    UserProfile,
+)
 from zerver.models.users import is_cross_realm_bot_email
 
 
@@ -59,20 +69,35 @@ def maybe_add_charset(content_type: str, file_data: bytes | StreamingSourceWithS
     ):
         return content_type
 
+    early_abort = False
     if isinstance(file_data, bytes):
         detected = chardet.detect(file_data)
     else:
+        chunk_size = 4096
         reader = file_data.reader()
         detector = chardet.universaldetector.UniversalDetector()
+        total_read = 0
         while True:
-            data = reader.read(4096)
+            data = reader.read(chunk_size)
             detector.feed(data)
-            if detector.done or len(data) < 4096:
+            if detector.done or len(data) < chunk_size:
+                break
+            total_read += chunk_size
+            if total_read >= 32 * 1024:
+                # If there's no BOM and no high bytes, the detector
+                # never says "done" before EOF -- we bail out
+                # arbitrarily at 32k.
+                early_abort = True
                 break
         detector.close()
         reader.close()
         detected = detector.result
-    if detected["confidence"] >= 0.90 and detected["encoding"]:
+    if early_abort and detected["confidence"] == 1.0 and detected["encoding"] == "ascii":
+        # An early abort which didn't see high-byte characters is not
+        # a confident "ASCII", as they may come later in the file; we
+        # would prefer to leave off the charset rather than be wrong.
+        pass
+    elif detected["confidence"] >= 0.90 and detected["encoding"]:
         fake_msg.set_param("charset", detected["encoding"], replace=True)
     elif detected["confidence"] >= 0.73 and detected["encoding"] == "ISO-8859-1":
         # ISO-8859-1 detection maxes out at 73%, so if that's what
@@ -83,7 +108,7 @@ def maybe_add_charset(content_type: str, file_data: bytes | StreamingSourceWithS
         # so we set a much lower threshold if that's the best guess.
         # https://en.wikipedia.org/wiki/Popularity_of_text_encodings
         fake_msg.set_param("charset", detected["encoding"], replace=True)
-    return fake_msg["content-type"]
+    return str(fake_msg["content-type"])
 
 
 def create_attachment(
@@ -104,7 +129,6 @@ def create_attachment(
         file_size = file_data.size
         file_vips_data = file_data.vips_source
 
-    content_type = maybe_add_charset(content_type, file_data)
     attachment = Attachment.objects.create(
         file_name=file_name,
         path_id=path_id,
@@ -140,7 +164,7 @@ def get_file_info(user_file: UploadedFile) -> tuple[str, str]:
     if user_file.content_type_extra:
         extras = {k: v.decode() if v else None for k, v in user_file.content_type_extra.items()}
     fake_msg.add_header("content-type", content_type, **extras)
-    content_type = fake_msg["content-type"]
+    content_type = str(fake_msg["content-type"])
 
     uploaded_file_name = unquote(uploaded_file_name)
 
@@ -207,6 +231,11 @@ def upload_message_attachment(
     path_id = upload_backend.generate_message_upload_path(
         str(target_realm.id), sanitize_name(uploaded_file_name)
     )
+    content_type = maybe_add_charset(content_type, file_data)
+
+    # NULL bytes are the one thing we can't store in the original
+    # filename column, due to PostgreSQL limitations
+    uploaded_file_name = re.sub(r"\x00", "", uploaded_file_name)
 
     with transaction.atomic(durable=True):
         upload_backend.upload_message_attachment(
@@ -215,6 +244,7 @@ def upload_message_attachment(
             content_type,
             file_data,
             user_profile,
+            target_realm,
         )
         create_attachment(
             uploaded_file_name,
@@ -263,15 +293,32 @@ def attachment_source(path_id: str) -> StreamingSourceWithSize:
 
 
 def save_attachment_contents(path_id: str, filehandle: IO[bytes]) -> None:
-    return upload_backend.save_attachment_contents(path_id, filehandle)
+    upload_backend.save_attachment_contents(path_id, filehandle)
 
 
-def delete_message_attachment(path_id: str) -> bool:
-    return upload_backend.delete_message_attachment(path_id)
+def delete_message_attachment(path_id: str, *, raw_path: bool = False) -> None:
+    upload_backend.delete_message_attachment(path_id)
 
 
-def delete_message_attachments(path_ids: list[str]) -> None:
-    return upload_backend.delete_message_attachments(path_ids)
+@contextmanager
+def delete_message_attachments(
+    *,
+    raw_paths: bool = False,
+    delete_from: tuple[type[ImageAttachment | Attachment | ArchivedAttachment], ...] = (),
+) -> Iterator[Callable[[str], None]]:
+    if delete_from == ():
+        flush_path_ids: None | Callable[[list[str]], None] = None
+    else:
+
+        def delete_from_database(path_ids: list[str]) -> None:
+            for db_class in delete_from:
+                db_class._default_manager.filter(path_id__in=path_ids).delete()
+
+        flush_path_ids = delete_from_database
+    with upload_backend.delete_message_attachments(
+        raw_paths=raw_paths, flush=flush_path_ids
+    ) as delete_one:
+        yield delete_one
 
 
 def all_message_attachments(
@@ -323,6 +370,35 @@ def write_avatar_images(
     )
 
 
+def write_jdenticon_avatars(
+    file_path: str,
+    user_profile: UserProfile,
+    *,
+    image_data: bytes,
+    image_data_medium: bytes,
+    backend: ZulipUploadBackend | None = None,
+    future: bool = True,
+) -> None:
+    if backend is None:
+        backend = upload_backend
+
+    backend.upload_single_avatar_image(
+        backend.get_avatar_path(file_path, medium=False),
+        user_profile=user_profile,
+        image_data=image_data,
+        content_type="image/png",
+        future=future,
+    )
+
+    backend.upload_single_avatar_image(
+        backend.get_avatar_path(file_path, medium=True),
+        user_profile=user_profile,
+        image_data=image_data_medium,
+        content_type="image/png",
+        future=future,
+    )
+
+
 def upload_avatar_image(
     user_file: IO[bytes],
     user_profile: UserProfile,
@@ -351,7 +427,9 @@ def copy_avatar(source_profile: UserProfile, target_profile: UserProfile) -> Non
     source_file_path = user_avatar_path(source_profile, future=False)
     target_file_path = user_avatar_path(target_profile, future=True)
 
-    image_data, content_type = upload_backend.get_avatar_contents(source_file_path)
+    image_data, content_type = upload_backend.get_avatar_contents(
+        source_file_path, source_profile.avatar_source
+    )
     write_avatar_images(
         target_file_path, target_profile, image_data, content_type=content_type, future=True
     )
@@ -371,7 +449,7 @@ def ensure_avatar_image(user_profile: UserProfile, medium: bool = False) -> None
         if os.path.isfile(output_path):
             return
 
-    image_data, _ = upload_backend.get_avatar_contents(file_path)
+    image_data, _ = upload_backend.get_avatar_contents(file_path, user_profile.avatar_source)
 
     if medium:
         resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
@@ -426,6 +504,7 @@ def upload_emoji_image(
     # a format which is widespread enough that we're willing to inline
     # it.  The latter contains non-image formats, but the former
     # limits to only images.
+    content_type = bare_content_type(content_type)
     if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES or content_type not in INLINE_MIME_TYPES:
         raise BadImageError(_("Invalid image format"))
 
@@ -521,5 +600,5 @@ def upload_export_tarball(
     )
 
 
-def delete_export_tarball(export_path: str) -> str | None:
-    return upload_backend.delete_export_tarball(export_path)
+def delete_export_tarball(export_path: str) -> None:
+    upload_backend.delete_export_tarball(export_path)

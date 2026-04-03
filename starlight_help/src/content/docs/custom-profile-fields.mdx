@@ -18,10 +18,15 @@ custom profile fields to user cards and user profiles, making it easy for users
 to share information, such as their pronouns, job title, or team.
 
 Zulip supports many types of profile fields, such as dates, lists of options,
-GitHub account links, and [more](#profile-field-types). You can choose which
+account links, and [more](#profile-field-types). You can choose which
 custom profile fields to [display](#display-custom-fields-on-user-card) on user
 cards. Custom profile fields can be optional or
 [required](#make-a-custom-profile-field-required).
+
+You can [configure](#use-a-custom-profile-field-in--mention-suggestions)
+**External account** and **Short text** custom profile fields to be used for
+[@-mention](/help/mention-a-user-or-group) suggestions. For example, users could
+be mentioned by their GitHub or Mastodon usernames.
 
 Zulip supports synchronizing custom profile fields from an external
 user database such as LDAP or SAML. See the [authentication
@@ -73,7 +78,7 @@ Users will see custom profile fields in the specified order.
 Organizations may find it useful to display additional fields on the
 user card, such as pronouns, GitHub username, job title, team, etc.
 
-All field types other than "Long text" or "Person" have a checkbox option
+All field types other than "Person" have a checkbox option
 that controls whether to display a custom field on the user card.
 There's a limit to the number of custom profile fields that can be displayed
 at a time. If the maximum number of fields is already selected, all unselected
@@ -113,9 +118,21 @@ it out.
   checkboxes in the **Required** column of the **Custom profile fields** table.
 </ZulipTip>
 
-## Configure whether users can edit custom profile fields
+## Use a custom profile field in @-mention suggestions
 
-<AdminOnly />
+**External account** and **Short text** custom profile fields can be used for
+[@-mention](/help/mention-a-user-or-group) suggestions.
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/profile-field-settings" />
+
+  1. In the **Actions** column, click the **edit** (<EditIcon />)
+     icon for the profile field you want to edit.
+  1. Toggle **Use in @-mention suggestions**.
+  1. Click **Save changes**.
+</FlattenedSteps>
+
+## Configure whether users can edit custom profile fields
 
 You can configure whether users in your organization can edit custom profile
 fields for their own account. For example, you may want to restrict editing if
@@ -136,15 +153,24 @@ Choose the profile field type that's most appropriate for the requested informat
 
 * **Date**: For dates (e.g., birthdays or work anniversaries).
 * **Link**: For links to websites, including company-internal pages.
-* **External account**: For linking to an account on GitHub, X (Twitter), etc.
-* **List of options**: A dropdown with a list of predefined options (e.g.,
+* **External account**: For linking to an external account (e.g., GitHub,
+  GitLab, LinkedIn, etc.). You can
+  [configure](#use-a-custom-profile-field-in--mention-suggestions) this field to
+  be used for [@-mention](/help/mention-a-user-or-group) suggestions. Some
+  integrations ([GitHub](/integrations/github),
+  [GitLab](/integrations/gitlab)) use [silent
+  mentions](/help/mention-a-user-or-group#silently-mention-a-user) to refer to
+  users if a matching external account is configured.
+* **Dropdown**: A dropdown with a list of predefined options (e.g.,
   office location).
 * **Pronouns**: What pronouns should people use to refer to the user? Pronouns
   are displayed in [user mention](/help/mention-a-user-or-group) autocomplete
   suggestions.
-* **Text (long)**: For multiline responses (e.g., a user's intro message).
-* **Text (short)**: For one-line responses up to 50 characters (e.g., team
-  name or role in your organization).
+* **Paragraph**: For multiline responses (e.g., a user's intro message).
+* **Short text**: For one-line responses up to 50 characters (e.g., team name or
+  role in your organization). You can
+  [configure](#use-a-custom-profile-field-in--mention-suggestions) this field to
+  be used for [@-mention](/help/mention-a-user-or-group) suggestions.
 * **Users**: For selecting one or more users (e.g., manager or direct reports).
 
 ## Related articles

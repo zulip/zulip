@@ -45,6 +45,7 @@ VNU_IGNORE = [
     # Real errors that should be fixed.
     r"Attribute “markdown” not allowed on element “div” at this point\.",
     r"No “p” element in scope but a “p” end tag seen\.",
+    r"The heading “h\d” \(with computed level \d\) follows the heading “h\d” \(with computed level \d\), skipping \d heading levels?\.",
     # Opinionated informational messages.
     r"Trailing slash on void elements has no effect and interacts badly with unquoted attribute values\.",
 ]

@@ -3,8 +3,10 @@ import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import type {RawLocalMessage} from "./echo.ts";
-import type {NewMessage, ProcessedMessage} from "./message_helper.ts";
+import type {LocalMessage, NewMessage, ProcessedMessage} from "./message_helper.ts";
+import type {TimeFormattedReminder} from "./message_reminder.ts";
 import * as people from "./people.ts";
+import * as stream_data from "./stream_data.ts";
 import {topic_link_schema} from "./types.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as util from "./util.ts";
@@ -56,6 +58,19 @@ const message_reaction_schema = z.object({
 
 export type MessageReaction = z.infer<typeof message_reaction_schema>;
 
+export const single_message_content_schema = z.object({
+    message: z.object({
+        content: z.string(),
+        content_type: z.enum(["text/html", "text/x-markdown"]),
+    }),
+});
+
+export const message_render_response_schema = z.object({
+    msg: z.string(),
+    result: z.string(),
+    rendered: z.string(),
+});
+
 export const submessage_schema = z.object({
     id: z.number(),
     sender_id: z.number(),
@@ -70,7 +85,7 @@ export const raw_message_schema = z.intersection(
             avatar_url: z.nullable(z.string()),
             client: z.string(),
             content: z.string(),
-            content_type: z.literal("text/html"),
+            content_type: z.enum(["text/html", "text/x-markdown"]),
             display_recipient: display_recipient_schema,
             edit_history: z.optional(z.array(message_edit_history_entry_schema)),
             id: z.number(),
@@ -183,12 +198,24 @@ export type Message = (
     // `convert_raw_message_to_message_with_booleans`
     flags?: string[];
 
-    small_avatar_url?: string | null; // Used in `message_avatar.hbs`
-    status_emoji_info?: UserStatusEmojiInfo | undefined; // Used in `message_body.hbs`
+    // Used in `message_avatar.hbs` to render sender avatar in
+    // message list.
+    small_avatar_url?: string | null;
 
-    local_edit_timestamp?: number; // Used for edited messages
+    // Used in `message_body.hbs` to show sender status emoji alongside
+    // their name in message list.
+    status_emoji_info?: UserStatusEmojiInfo | undefined;
 
-    notification_sent?: boolean; // Used in message_notifications
+    // Used for edited messages to show their last edit time.
+    local_edit_timestamp?: number;
+
+    // Used in message_notifications to track if a notification has already
+    // been sent for this message.
+    notification_sent?: boolean;
+
+    // Added during message rendering in message_list_view.ts. Should
+    // never be accessed outside rendering, as the value may be stale.
+    reminders?: TimeFormattedReminder[] | undefined;
 } & (
         | {
               type: "private";
@@ -232,28 +259,34 @@ export function get(message_id: number): Message | undefined {
     return stored_messages.get(message_id)?.message;
 }
 
+export function set_messages_for_tests(messages: ProcessedMessage[]): void {
+    stored_messages.clear();
+    for (const message of messages) {
+        stored_messages.set(message.message.id, message);
+    }
+}
+
 export function get_pm_emails(
     message: Message | MessageWithBooleans | LocalMessageWithBooleans,
 ): string {
     const user_ids = people.pm_with_user_ids(message) ?? [];
-    const emails = user_ids
-        .map((user_id) => {
-            const person = people.maybe_get_user_by_id(user_id);
-            if (!person) {
-                blueslip.error("Unknown user id", {user_id});
-                return "?";
-            }
-            return person.email;
-        })
-        .sort();
+    const emails = user_ids.map((user_id) => {
+        const person = people.maybe_get_user_by_id(user_id);
+        if (!person) {
+            blueslip.error("Unknown user id", {user_id});
+            return "?";
+        }
+        return person.email;
+    });
+    emails.sort();
 
     return emails.join(", ");
 }
 
 export function get_pm_full_names(user_ids: number[]): string {
     user_ids = people.sorted_other_user_ids(user_ids);
-    const names = people.get_display_full_names(user_ids);
-    const sorted_names = names.sort(util.make_strcmp());
+    const sorted_names = people.get_display_full_names(user_ids);
+    sorted_names.sort(util.make_strcmp());
 
     return sorted_names.join(", ");
 }
@@ -390,11 +423,31 @@ export function update_status_emoji_info(
 export function reify_message_id({old_id, new_id}: {old_id: number; new_id: number}): void {
     const message_data = stored_messages.get(old_id);
     if (message_data !== undefined) {
-        message_data.message.id = new_id;
-        message_data.message.locally_echoed = false;
-        stored_messages.set(new_id, message_data);
+        const server_message: Message & Partial<LocalMessage> = message_data.message;
+        if (message_data.type === "local_message") {
+            // Important: Messages are managed as singletons, so
+            // MessageListData objects may already have pointers to
+            // the LocalMessage object for this message. So we must
+            // convert the LocalMessage into a Message by dropping the
+            // extra local echo/drafts fields, not by constructing a
+            // new object with the new type.
+
+            delete server_message.queue_id;
+            delete server_message.draft_id;
+            delete server_message.to;
+            if (server_message.type === "private") {
+                delete server_message.topic;
+            }
+        }
+        server_message.id = new_id;
+        server_message.locally_echoed = false;
+        stored_messages.set(new_id, {type: "server_message", message: server_message});
         stored_messages.delete(old_id);
     }
+}
+
+export function update_message_content(message: Message, new_content: string): void {
+    message.content = new_content;
 }
 
 export function remove(message_ids: number[]): void {
@@ -411,4 +464,24 @@ export function get_message_ids_in_stream(stream_id: number): number[] {
                 message_data.message.stream_id === stream_id,
         )
         .map((message_data) => message_data.message.id);
+}
+
+export function maybe_update_raw_content(id: number, raw_content: string | undefined): void {
+    const message = get(id);
+    // In case the message was deleted from the cache after receiving a delete
+    // event.
+    if (message === undefined) {
+        return;
+    }
+    // We shouldn't cache raw_content for messages we won't be receiving update events
+    // for, which in this case are messages from channels the current user isn't
+    // subscribed to.
+    if (message.type === "stream" && !stream_data.is_subscribed(message.stream_id)) {
+        // Clear any existing cached raw_content for this type of message.
+        // Not doing so poses the risk of us using a stale version of the
+        // raw_content after we manually fetch it.
+        message.raw_content = undefined;
+        return;
+    }
+    message.raw_content = raw_content;
 }

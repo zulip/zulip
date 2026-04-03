@@ -5,12 +5,13 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
+import render_decorated_channel_name from "../templates/decorated_channel_name.hbs";
 
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_fade from "./compose_fade.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_state from "./compose_state.ts";
+import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_ui from "./compose_ui.ts";
 import type {ComposeTriggeredOptions} from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -19,9 +20,14 @@ import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget, Option} from "./dropdown_widget.ts";
 import {$t} from "./i18n.ts";
 import * as narrow_state from "./narrow_state.ts";
+import * as onboarding_steps from "./onboarding_steps.ts";
+import * as pm_conversations from "./pm_conversations.ts";
 import {realm} from "./state_data.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
+import * as stream_topic_history from "./stream_topic_history.ts";
+import type {StreamSubscription} from "./sub_store.ts";
+import * as typeahead_helper from "./typeahead_helper.ts";
 import * as ui_util from "./ui_util.ts";
 import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
@@ -53,8 +59,7 @@ function composing_to_current_private_message_narrow(): boolean {
     return _.isEqual(narrow_state_recipient, compose_state_recipient);
 }
 
-export let update_recipient_row_attention_level = (): void => {
-    // We need to adjust the privacy-icon colors in the low-attention state
+export function adjust_compose_channel_privacy_icon_color(): void {
     const message_type = compose_state.get_message_type();
     if (message_type === "stream") {
         const stream_id = compose_state.stream_id();
@@ -63,6 +68,12 @@ export let update_recipient_row_attention_level = (): void => {
 
         stream_color.adjust_stream_privacy_icon_colors(stream_id, channel_picker_icon_selector);
     }
+}
+
+export let update_recipient_row_attention_level = (): void => {
+    // We need to adjust the privacy-icon colors in the low-attention state
+    adjust_compose_channel_privacy_icon_color();
+
     // If there is any text that hasn't yet been transformed into a pill,
     // we should consider that the user is not composing to the current
     // DM narrow -- even though that input is ignored when sending a DM.
@@ -73,6 +84,17 @@ export let update_recipient_row_attention_level = (): void => {
     // We also want to watch out for cases where the DM isn't valid,
     // as when trying to message deactivated users.
     const is_valid_dm = compose_validate.validate_private_message(false);
+    // It is possible that focus can remain in the recipient row while
+    // narrowing, e.g., with the `Ctrl + .` shortcut. We should account
+    // for that in the logic below, so that we don't erroneously add
+    // the `low-attention-recipient-row` class. And because focus is
+    // maintained under certain renarrows, we can't trust that a new
+    // focus event will fire after narrowing.
+    const recipient_row_focus_ids = ["private_message_recipient", "stream_message_recipient_topic"];
+    let has_recipient_row_focus = false;
+    if (document.activeElement && recipient_row_focus_ids.includes(document.activeElement?.id)) {
+        has_recipient_row_focus = true;
+    }
 
     // We're piggy-backing here, in a roundabout way, on
     // compose_ui.set_focus(). Any time the topic or DM recipient
@@ -86,7 +108,8 @@ export let update_recipient_row_attention_level = (): void => {
             (composing_to_current_private_message_narrow() &&
                 !has_unpilled_input &&
                 is_valid_dm)) &&
-        compose_state.has_full_recipient()
+        compose_state.has_full_recipient() &&
+        !has_recipient_row_focus
     ) {
         $("#compose-recipient").toggleClass("low-attention-recipient-row", true);
     } else {
@@ -106,6 +129,8 @@ export function set_high_attention_recipient_row(): void {
 
 export let update_narrow_to_recipient_visibility = (): void => {
     const message_type = compose_state.get_message_type();
+    const display_intro_go_to_conversation_tooltip =
+        onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("intro_go_to_conversation_tooltip");
     if (message_type === "stream") {
         const stream_exists = Boolean(compose_state.stream_id());
 
@@ -115,6 +140,14 @@ export let update_narrow_to_recipient_visibility = (): void => {
             compose_state.has_full_recipient()
         ) {
             $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
+            const stream_id = compose_state.stream_id()!;
+            const topic_name = compose_state.topic();
+            if (
+                display_intro_go_to_conversation_tooltip &&
+                stream_topic_history.get_recent_topic_names(stream_id).includes(topic_name)
+            ) {
+                compose_tooltips.maybe_show_intro_go_to_conversation_tooltip();
+            }
             return;
         }
     } else if (message_type === "private") {
@@ -125,9 +158,16 @@ export let update_narrow_to_recipient_visibility = (): void => {
             compose_state.has_full_recipient()
         ) {
             $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", true);
+            if (
+                display_intro_go_to_conversation_tooltip &&
+                pm_conversations.recent.has_conversation(recipients.join(","))
+            ) {
+                compose_tooltips.maybe_show_intro_go_to_conversation_tooltip();
+            }
             return;
         }
     }
+    compose_tooltips.dismiss_intro_go_to_conversation_tooltip();
     $(".conversation-arrow").toggleClass("narrow_to_compose_recipients", false);
 };
 
@@ -158,34 +198,11 @@ export function update_on_recipient_change(): void {
     update_narrow_to_recipient_visibility();
     compose_validate.warn_if_guest_in_dm_recipient();
     drafts.update_compose_draft_count();
-    check_posting_policy_for_compose_box();
     compose_validate.validate_and_update_send_button_status();
 
     // Clear the topic moved banner when the recipient
     // is changed or compose box is closed.
     compose_validate.clear_topic_moved_info();
-}
-
-export let check_posting_policy_for_compose_box = (): void => {
-    const banner_text = compose_validate.get_posting_policy_error_message();
-    if (banner_text === "") {
-        compose_banner.clear_errors();
-        return;
-    }
-
-    let banner_classname = compose_banner.CLASSNAMES.no_post_permissions;
-    if (compose_state.selected_recipient_id === "direct") {
-        banner_classname = compose_banner.CLASSNAMES.cannot_send_direct_message;
-        compose_banner.cannot_send_direct_message_error(banner_text);
-    } else {
-        compose_banner.show_error_message(banner_text, banner_classname, $("#compose_banners"));
-    }
-};
-
-export function rewire_check_posting_policy_for_compose_box(
-    value: typeof check_posting_policy_for_compose_box,
-): void {
-    check_posting_policy_for_compose_box = value;
 }
 
 function switch_message_type(message_type: MessageType): void {
@@ -214,22 +231,24 @@ function update_recipient_label(stream_id?: number): void {
         );
     } else {
         $("#compose_select_recipient_widget .dropdown_widget_value").html(
-            render_inline_decorated_channel_name({stream, show_colored_icon: true}),
+            render_decorated_channel_name({stream, show_colored_icon: true}),
         );
     }
 }
 
 export function update_compose_for_message_type(opts: ComposeTriggeredOptions): void {
     if (opts.message_type === "stream") {
+        compose_select_recipient_dropdown_widget.current_value = opts.stream_id;
         $("#compose-direct-recipient").hide();
-        $("#compose_recipient_box").show();
+        $("#compose-channel-recipient").show();
         $("#stream_toggle").addClass("active");
         $("#private_message_toggle").removeClass("active");
         $("#compose-recipient").removeClass("compose-recipient-direct-selected");
         update_recipient_label(opts.stream_id);
     } else {
+        compose_select_recipient_dropdown_widget.current_value = compose_state.DIRECT_MESSAGE_ID;
         $("#compose-direct-recipient").show();
-        $("#compose_recipient_box").hide();
+        $("#compose-channel-recipient").hide();
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
         $("#compose-recipient").addClass("compose-recipient-direct-selected");
@@ -300,13 +319,12 @@ function item_click_callback(event: JQuery.ClickEvent, dropdown: tippy.Instance)
     event.stopPropagation();
 }
 
-function get_options_for_recipient_widget(): Option[] {
-    const options: Option[] = stream_data.get_options_for_dropdown_widget();
-
+function add_direct_messages_option(options: Option[]): Option[] {
     const direct_messages_option = {
         is_direct_message: true,
         unique_id: compose_state.DIRECT_MESSAGE_ID,
         name: $t({defaultMessage: "Direct message"}),
+        aliases: [$t({defaultMessage: "DM"})],
     };
 
     if (!user_groups.is_setting_group_empty(realm.realm_direct_message_permission_group)) {
@@ -314,7 +332,12 @@ function get_options_for_recipient_widget(): Option[] {
     } else {
         options.push(direct_messages_option);
     }
+
     return options;
+}
+
+function get_options_for_recipient_widget(): Option[] {
+    return add_direct_messages_option(stream_data.get_options_for_dropdown_widget());
 }
 
 export function toggle_compose_recipient_dropdown(): void {
@@ -383,6 +406,36 @@ export function initialize(): void {
             }
             return "#private_message_recipient";
         },
+        sort_list_by_filter_value(items: Option[], filter_value: string): Option[] {
+            const non_stream_items = [];
+            const stream_items_by_stream_id = new Map<
+                number,
+                Option & {stream: StreamSubscription}
+            >();
+            for (const item of items) {
+                if (item.stream === undefined) {
+                    non_stream_items.push(item);
+                } else {
+                    stream_items_by_stream_id.set(item.stream.stream_id, {
+                        ...item,
+                        // Needed for typescript to recognize stream is defined
+                        stream: item.stream,
+                    });
+                }
+            }
+            const stream_items = [...stream_items_by_stream_id.values()].map((item) => item.stream);
+            const sorted_streams = typeahead_helper.sort_streams(stream_items, filter_value);
+            const sorted_stream_items = sorted_streams.map(
+                (stream) => stream_items_by_stream_id.get(stream.stream_id)!,
+            );
+
+            if (non_stream_items.length > 0) {
+                assert(non_stream_items.length === 1);
+                assert(util.the(non_stream_items).is_direct_message === true);
+                return add_direct_messages_option(sorted_stream_items);
+            }
+            return sorted_stream_items;
+        },
     });
     compose_select_recipient_dropdown_widget.setup();
 
@@ -424,7 +477,7 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
     $input.removeClass("empty-topic-display empty-topic-only");
     $topic_not_mandatory_placeholder.removeClass("visible");
     $topic_not_mandatory_placeholder.hide();
-    $("#compose_recipient_box").removeClass("disabled");
+    $("#compose-channel-recipient").removeClass("disabled");
 
     if (!stream_data.can_use_empty_topic(compose_state.stream_id())) {
         $input.attr("placeholder", $t({defaultMessage: "Topic"}));
@@ -440,7 +493,7 @@ export function update_topic_displayed_text(topic_name = "", has_topic_focus = f
         compose_state.topic("");
         $input.prop("disabled", true);
         $input.addClass("empty-topic-only");
-        $("#compose_recipient_box").addClass("disabled");
+        $("#compose-channel-recipient").addClass("disabled");
         $("textarea#compose-textarea").trigger("focus");
         has_topic_focus = false;
     }

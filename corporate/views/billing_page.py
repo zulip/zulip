@@ -328,10 +328,7 @@ def remote_server_deactivate_page(
     *,
     confirmed: Literal["true"] | None = None,
 ) -> HttpResponse:
-    from corporate.lib.stripe import (
-        ServerDeactivateWithExistingPlanError,
-        do_deactivate_remote_server,
-    )
+    from corporate.lib.stripe import ServerDeactivateWithExistingPlanError
 
     if request.method not in ["GET", "POST"]:  # nocoverage
         return HttpResponseNotAllowed(["GET", "POST"])
@@ -352,7 +349,7 @@ def remote_server_deactivate_page(
         raise JsonableError(_("Parameter 'confirmed' is required"))
 
     try:
-        do_deactivate_remote_server(remote_server, billing_session)
+        billing_session.do_deactivate_remote_server()
     except ServerDeactivateWithExistingPlanError:  # nocoverage
         context["show_existing_plan_error"] = "true"
         return render(

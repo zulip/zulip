@@ -182,7 +182,7 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
                 stripe_invoice_paid=True,
             )
             return
-        elif metadata.get("on_free_trial") and invoice.is_created_for_free_trial_upgrade:
+        elif metadata.get("on_free_trial") == "True" and invoice.is_created_for_free_trial_upgrade:
             free_trial_plan = invoice.plan
             assert free_trial_plan is not None
             if free_trial_plan.is_free_trial():
@@ -196,9 +196,9 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
             assert get_current_plan_by_customer(customer) is None
 
         billing_session.process_initial_upgrade(
-            plan_tier,
-            int(metadata["licenses"]),
-            metadata["license_management"] == "automatic",
+            plan_tier=plan_tier,
+            licenses=int(metadata["licenses"]),
+            automanage_licenses=metadata["license_management"] == "automatic",
             billing_schedule=billing_schedule,
             charge_automatically=charge_automatically,
             free_trial=False,

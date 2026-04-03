@@ -119,151 +119,9 @@ input::placeholder {
     @extend .placeholder;
 }
 
-/* -- base button styling -- */
-
-.button {
-    padding: 7px 14px;
-    margin: 0;
-    min-width: 130px;
-
-    font-weight: 400;
-    line-height: normal;
-    text-align: center;
-
-    background-color: var(--color-background-zulip-button);
-    color: inherit;
-    outline: none;
-    border: 1px solid var(--color-border-zulip-button);
-    border-radius: 2px;
-
-    box-shadow: none;
-
-    cursor: pointer;
-
-    /* -- button style variations -- */
-    &.no-style {
-        padding: 0;
-        background-color: transparent;
-        border: none;
-        min-width: 0;
-        width: auto;
-        outline: none;
-        box-shadow: none !important;
-    }
-
-    &.rounded {
-        border-radius: 4px;
-    }
-
-    &.green {
-        background-color: hsl(150deg 31% 53%);
-    }
-
-    &.grey {
-        background-color: hsl(0deg 0% 67%);
-    }
-
-    &.small {
-        /* 16 / 14 * 0.8 = 0.9143, from original 0.8rem */
-        font-size: 0.9143em;
-        min-width: inherit;
-        padding: 6px 10px;
-    }
-
-    &:hover,
-    &:focus,
-    &:active {
-        border-color: var(--color-border-zulip-button-interactive);
-    }
-
-    &:hover {
-        background-color: var(--color-background-zulip-button-hover);
-        /* Reset styles on a.button instances. */
-        text-decoration: none;
-        color: inherit;
-    }
-
-    &:focus {
-        /* Maintain no outline for pointer focus. */
-        outline: 0;
-    }
-
-    &:focus-visible {
-        /* Set Zulip outline style with keyboard/assistive focus. */
-        outline: 2px solid var(--color-outline-focus);
-    }
-
-    &:active {
-        color: inherit;
-        background-color: var(--color-background-zulip-button-active);
-    }
-
-    &.add-subscription-button {
-        &:focus-visible {
-            border: 1px solid;
-            border-color: var(
-                --color-border-add-subscription-button-focus
-            ) !important;
-        }
-    }
-
-    &.sea-green {
-        color: hsl(156deg 41% 40%);
-        border-color: hsl(156deg 28% 70%);
-
-        &:hover,
-        &:focus {
-            border-color: hsl(156deg 30% 50%);
-        }
-
-        &:active {
-            border-color: hsl(156deg 30% 40%);
-            color: hsl(156deg 44% 43%);
-        }
-    }
-
-    &.button-warning {
-        color: hsl(35deg 70% 56%);
-        border-color: hsl(35deg 98% 84%);
-
-        &:hover,
-        &:focus {
-            border-color: hsl(35deg 55% 70%);
-        }
-
-        &:active {
-            color: hsl(35deg 82% 40%);
-            border-color: hsl(35deg 55% 70%);
-        }
-    }
-
-    &.button-danger {
-        color: hsl(357deg 64% 72%);
-        border-color: hsl(4deg 56% 82%);
-
-        &:hover,
-        &:focus {
-            border-color: hsl(2deg 46% 68%);
-        }
-
-        &:active {
-            color: hsl(357deg 55% 63%);
-            border-color: hsl(2deg 46% 68%);
-        }
-    }
-
-    &:disabled {
-        cursor: not-allowed;
-        filter: saturate(0);
-        background-color: var(--color-background-zulip-button-disabled);
-        color: hsl(0deg 3% 52%);
-
-        &:hover {
-            background-color: var(--color-background-zulip-button-disabled);
-            color: hsl(156deg 39% 54%);
-            border-color: hsl(156deg 39% 77%);
-        }
-    }
+/* Custom resizer icon for the textarea */
+textarea::-webkit-resizer {
+    background-image: var(--svg-resize-handle);
 }
 
 /* -- tab switcher -- */
@@ -288,8 +146,9 @@ input::placeholder {
         justify-content: center;
         align-items: center;
 
-        &:focus {
-            outline: none;
+        &:focus-visible {
+            outline: 1px solid var(--color-outline-focus);
+            outline-offset: -2px;
         }
 
         &:not(.selected) {
@@ -411,6 +270,7 @@ input.settings_text_input {
     opacity: 0.4;
     display: grid;
     border: none;
+    font-size: inherit;
 
     &:hover {
         opacity: 1;
@@ -428,7 +288,7 @@ input.settings_text_input {
     }
 }
 
-.grey-box {
+.settings-highlight-box {
     margin: 0;
     padding: 5px 10px;
     background-color: var(--color-background-modal-bar);
@@ -439,7 +299,7 @@ input.settings_text_input {
 }
 
 .white-box {
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--color-background-white-box);
     border: 1px solid hsl(0deg 0% 87%);
 }
 
@@ -489,26 +349,6 @@ input.settings_text_input {
     line-height: 38px;
 }
 
-.upgrade-tip,
-.upgrade-or-sponsorship-tip {
-    width: fit-content;
-
-    &::before {
-        content: "\f135";
-        margin-right: 6px;
-    }
-}
-
-.upgrade-tip:hover {
-    color: hsl(0deg 0% 20%);
-    border: 1px solid hsl(49deg 20% 60%);
-    box-shadow: 0 0 4px hsl(199deg 79% 56% / 20%);
-
-    text-decoration: none;
-}
-
-.upgrade-tip,
-.upgrade-or-sponsorship-tip,
 .tip,
 .invite-stream-notice {
     position: relative;
@@ -530,21 +370,12 @@ input.settings_text_input {
     }
 }
 
-.upgrade-tip,
-.upgrade-or-sponsorship-tip,
 .tip {
     margin: 10px 0;
 }
 
 .demo-organization-add-email-banner {
     margin-bottom: 10px;
-}
-
-#convert-demo-organization-form,
-#invite-user-form {
-    .banner-action-buttons {
-        padding: 0.085em 0;
-    }
 }
 
 .create-group-button-container {
@@ -819,12 +650,17 @@ input.settings_text_input {
             background-color: var(
                 --color-background-table-header-sortable-hover
             );
-            transition: background-color 100ms ease-in-out;
         }
     }
 
-    tbody > tr:nth-child(odd) > td {
-        background-color: var(--color-background-modal);
+    tbody > tr:nth-child(odd) {
+        td {
+            background-color: var(--color-background-modal);
+        }
+
+        th {
+            background-color: var(--color-background-tbody-th-odd);
+        }
     }
 
     /* Force the actions column to use the minimum space necessary */
@@ -917,11 +753,40 @@ input.settings_text_input {
     }
 }
 
-.channel-privacy-type-icon {
+.decorated-channel-name-wrapper:not(.inline-decorated-channel-name) {
+    display: flex;
+    gap: var(--decorated-channel-name-privacy-icon-gap);
+    flex-wrap: nowrap;
+    align-items: baseline;
+
+    .channel-privacy-type-icon .zulip-icon {
+        /* Calculated from visual inspection
+           to look good for 12px-20px font sizes. */
+        top: 0.1467em; /* 2.2px at 15px/1em */
+        font-size: 0.9375em; /* 15px at 16px/1em */
+
+        &.zulip-icon-lock {
+            /* Calculated from visual inspection
+               to look good for 12px-20px font sizes. */
+            top: 0.08em; /* 1.2px at 15px/1em */
+        }
+    }
+}
+
+.inline-decorated-channel-name {
+    display: inline;
+    padding-left: var(--inline-decorated-channel-name-padding-left);
+
+    .decorated-channel-name {
+        margin-left: var(--inline-decorated-channel-name-privacy-icon-gap);
+    }
+}
+
+.channel-privacy-type-icon .zulip-icon {
     position: relative;
-    top: 0.06rem;
-    padding-right: 1px;
-    width: 12px;
+    /* Calculated from visual inspection
+        to look good for 12px-20px font sizes. */
+    top: 0.0688em; /* 1.1px at 16px/1em */
 
     &.zulip-icon-globe,
     &.zulip-icon-archive,
@@ -941,16 +806,6 @@ input.settings_text_input {
        uniform margin throughout the UI. */
     /* 3.5px at 16px/1em */
     margin-top: -0.2188em !important;
-}
-
-.dropdown-list-container
-    .dropdown-list
-    .dropdown-list-item-common-styles
-    .zulip-icon-lock {
-    /* We do not need to pull up lock icons in dropdowns
-       so we reset their margin-top to the original value
-       for a dropdown's .zulip-icon */
-    margin-top: 0 !important;
 }
 
 /* This includes css needed to display messages in an overlay. */
@@ -1018,6 +873,34 @@ input.settings_text_input {
             color: hsl(0deg 0% 67%);
             pointer-events: none;
         }
+    }
+}
+
+/* This is a useful grid-based mechanism to handle
+   message overlays with a header and scrollable
+   content area managed by SimpleBar. It more
+   robustly fills the height of the modal than
+   flexbox, and should be considered as an approach
+   for other modals that currently employ flexbox. */
+.overlay-messages-container.drafts-container {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+
+    .overlay-messages-list {
+        /* We unset the `overflow` value so SimpleBar
+           can manage scrolling. */
+        overflow: unset;
+        /* We don't need to set a height value; the
+           1fr grid row will occupy the available height. */
+        height: auto;
+        /* And therefore we don't need to worry about padding,
+           so that the scrollbar appears to reach all the way
+           to the bottom of the content. */
+        padding-bottom: 0;
+        /* Override the `min-width: auto` default for grid
+           items so the SimpleBar container can shrink on
+           window resize. */
+        min-width: 0;
     }
 }
 
@@ -1112,6 +995,12 @@ input.settings_text_input {
     }
 }
 
+div.overlay .flex.overlay-content > .overlay-container,
+#settings_page,
+.informational-overlays .overlay-content {
+    box-shadow: var(--box-shadow-overlay);
+}
+
 .delete-selected-drafts-button-container {
     display: flex;
 }
@@ -1127,14 +1016,22 @@ input.settings_text_input {
     outline: none;
     color: var(--color-text-default);
     width: var(--width-dropdown-widget-button);
+    font-family: inherit;
+    font-size: inherit;
 
     &:disabled {
         cursor: not-allowed;
         background-color: var(
             --color-background-disabled-dropdown-widget-button
         );
+        /* TODO: Should this be 0.5 to match the spectator block below? */
         opacity: 0.7;
     }
+}
+
+.dropdown-widget-disabled-for-spectators .dropdown-widget-button {
+    cursor: not-allowed;
+    opacity: 0.5;
 }
 
 #edit_bot_owner_widget .dropdown_widget_value {
@@ -1149,11 +1046,10 @@ input.settings_text_input {
 
 .dropdown-current-value-not-in-options,
 .setting-disabled-option {
-    color: hsl(38deg 46% 54%);
+    font-style: italic;
 
     .setting-disabled-option-icon {
-        /* Values set to match text alignment in stream dropdown. */
-        padding: 0 5px 0 1px;
+        align-self: center;
     }
 }
 
@@ -1167,14 +1063,15 @@ input.settings_text_input {
 }
 
 .filter_text_input {
-    padding: 4px 6px;
+    padding: var(--input-vertical-padding) var(--input-horizontal-padding);
     color: var(--color-text-default);
-    border: 1px solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid hsl(0deg 0% 80%);
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     border-radius: 4px;
+    font-family: inherit;
 
     &:focus {
         border-color: hsl(206deg 80% 62% / 80%);
@@ -1368,6 +1265,8 @@ input.settings_text_input {
     border-top: 1px solid var(--color-border-zulip-button);
     border-bottom-left-radius: 4px;
     border-bottom-right-radius: 4px;
+    font-family: inherit;
+    font-size: inherit;
 
     &:hover {
         color: var(--color-dropdown-item);
@@ -1390,7 +1289,7 @@ input.invalid-input {
     border-color: var(--color-invalid-input-border) !important;
 
     &:focus {
-        box-shadow: var(--color-invalid-input-box-shadow);
+        box-shadow: var(--invalid-input-box-shadow);
     }
 }
 
@@ -1449,6 +1348,7 @@ input.invalid-input {
             vertical-align: unset;
             justify-content: center;
             margin: 0;
+            font-size: inherit;
 
             &:hover:not(:disabled) {
                 background-color: var(
@@ -1468,9 +1368,72 @@ input.invalid-input {
             .zulip-icon {
                 display: flex;
                 align-items: center;
-                color: var(--color-info-denisty-button-icon);
+                color: var(--color-info-density-button-icon);
                 opacity: 0.7;
             }
         }
     }
+}
+
+#uppy-editor {
+    .modal__title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .loading-placeholder {
+        position: absolute;
+        top: calc(50% - 1.3572em);
+        left: calc(50% - 1.3572em);
+    }
+
+    .modal__content {
+        padding: 0;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    #dialog_error {
+        margin: 0 1.5em 1.5em;
+    }
+
+    .image-cropper-container {
+        height: 550px;
+    }
+
+    .uppy-Root {
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .uppy-ImageCropper-controls {
+        /* This is needed to override the top padding set for narrow
+        screens by cropperJS. */
+        padding-top: 0;
+    }
+
+    .uppy-c-btn {
+        &:focus:not(:focus-visible) {
+            background-color: unset;
+        }
+
+        &:focus-visible {
+            background-color: hsl(0deg 0% 100% / 50%);
+        }
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.zulip-icon-loader-circle {
+    animation: spin 1s linear infinite;
 }

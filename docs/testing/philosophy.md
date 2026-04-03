@@ -4,6 +4,10 @@ Zulip's automated tests are a huge part of what makes the project able
 to make progress. This page records some of the key principles behind
 how we have designed our automated test suites.
 
+Greg's talk at FlutterCon 2025,
+["Writing better tests with less work"](https://www.youtube.com/watch?v=nf_XYpfsZNg),
+is another fantastic resource, in video format.
+
 ## Effective testing allows us to move quickly
 
 Zulip's engineering strategy can be summarized as "move quickly

@@ -1,0 +1,93 @@
+diff --git a/bin/jdenticon.js b/bin/jdenticon.js
+index 752f5f6277b204928751b555216a1e2655e47289..d5e4b536b1c20c6ecf6eac1575c050cc88794467 100755
+--- a/bin/jdenticon.js
++++ b/bin/jdenticon.js
+@@ -50,6 +50,8 @@ function writeHelp() {
+     console.log("  -f, --format <svg|png>    Format of generated icon. Otherwise detected from output path. (default: png)");
+     console.log("  -b, --back-color <value>  Background color on format #rgb, #rgba, #rrggbb or #rrggbbaa. (default: transparent)");
+     console.log("  -p, --padding <value>     Padding in percent in range 0 to 0.5. (default: 0.08)");
++    console.log("  --lightness-color <min,max>      Lightness range of colored shapes in [0,1]. (default: 0.4,0.8)");
++    console.log("  --lightness-grayscale <min,max>  Lightness range of grayscale shapes in [0,1]. (default: 0.3,0.9)");
+     console.log("  -v, --version             Gets the version of Jdenticon.");
+     console.log("  -h, --help                Show this help information.");
+     console.log("");
+@@ -117,10 +119,33 @@ function parseArgs(args) {
+         format: consume(["-f", "--format"], true),
+         padding: consume(["-p", "--padding"], true),
+         backColor: consume(["-b", "--back-color"], true),
++        lightnessColor: consume(["--lightness-color"], true),
++        lightnessGrayscale: consume(["--lightness-grayscale"], true),
+         value: args
+     };
+ }
+ 
++function parseLightnessRange(value) {
++    var parts = value.split(",");
++    if (parts.length !== 2) {
++        return;
++    }
++
++    var min = Number(parts[0]);
++    var max = Number(parts[1]);
++
++    if (
++        isNaN(min) || isNaN(max) ||
++        min < 0 || min > 1 ||
++        max < 0 || max > 1 ||
++        min > max
++    ) {
++        return;
++    }
++
++    return [min, max];
++}
++
+ function validateArgs(args) {
+     if (args.value.length) {
+ 
+@@ -153,7 +178,34 @@ function validateArgs(args) {
+                 console.warn("WARN Invalid background color specified. Defaults to transparent.");
+             }
+         }
+-        
++
++        // Lightness
++        var lightnessColor;
++        if (args.lightnessColor != null) {
++            lightnessColor =  parseLightnessRange(args.lightnessColor);
++            if (!lightnessColor) {
++                lightnessColor = [0.4, 0.8];
++                console.warn("WARN Invalid lightness range of colored shapes specified. Defaults to 0.4,0.8.");
++            }
++        }
++
++        var lightnessGrayscale;
++        if (args.lightnessGrayscale != null) {
++            lightnessGrayscale = parseLightnessRange(args.lightnessGrayscale);
++            if (!lightnessGrayscale) {
++                lightnessGrayscale = [0.3, 0.9];
++                console.warn("WARN Invalid lightness range of grayscale shapes specified. Defaults to 0.3,0.9.");
++            }
++        }
++
++        var lightness;
++        if (lightnessColor || lightnessGrayscale) {
++            lightness = {
++                color: lightnessColor,
++                grayscale: lightnessGrayscale
++            };
++        }
++
+         // Format
+         var generateSvg = 
+             args.format ? /^svg$/i.test(args.format) :
+@@ -166,7 +218,8 @@ function validateArgs(args) {
+         return {
+             config: {
+                 padding: padding,
+-                backColor: backColor
++                backColor: backColor,
++                lightness: lightness
+             },
+             output: args.output,
+             size: size,

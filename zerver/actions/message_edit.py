@@ -1,6 +1,6 @@
 import itertools
 from collections import defaultdict
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from datetime import timedelta
@@ -26,6 +26,7 @@ from zerver.actions.message_send import (
 from zerver.actions.uploads import AttachmentChangeResult, check_attachment_reference_change
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
 from zerver.lib import utils
+from zerver.lib.cache import cache_delete_many, to_dict_cache_key_id
 from zerver.lib.exceptions import (
     JsonableError,
     MessageMoveError,
@@ -54,17 +55,17 @@ from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_i
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import (
     access_stream_by_id,
-    access_stream_by_id_for_message,
     can_access_stream_history,
     can_edit_topic,
     can_move_messages_out_of_channel,
     can_resolve_topics,
+    check_for_can_create_topic_group_violation,
     check_stream_access_based_on_can_send_message_group,
     get_stream_topics_policy,
     notify_stream_is_recently_active_update,
 )
 from zerver.lib.string_validation import check_stream_topic
-from zerver.lib.thumbnail import get_user_upload_previews, rewrite_thumbnailed_images
+from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import (
     ORIG_TOPIC,
@@ -82,6 +83,7 @@ from zerver.lib.topic import (
 from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.lib.types import DirectMessageEditRequest, EditHistoryEvent, StreamMessageEditRequest
 from zerver.lib.url_encoding import stream_message_url
+from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.lib.user_message import bulk_insert_all_ums
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.widget import is_widget_message
@@ -97,6 +99,7 @@ from zerver.models import (
     UserProfile,
     UserTopic,
 )
+from zerver.models.groups import get_realm_system_groups_name_dict
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream_by_id_in_realm
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
@@ -397,7 +400,9 @@ def get_mentions_for_message_updates(message: Message) -> set[int]:
         .values_list("user_profile_id", flat=True)
     )
 
-    user_ids_having_message_access = event_recipient_ids_for_action_on_messages([message])
+    user_ids_having_message_access = event_recipient_ids_for_action_on_messages(
+        [message.id], message.is_channel_message
+    )
 
     return set(mentioned_user_ids) & user_ids_having_message_access
 
@@ -451,7 +456,13 @@ def do_update_embedded_data(
         for group_id in rendered_content.mentions_user_group_ids:
             members = mention_data.get_group_members(group_id)
             rendered_content.mentions_user_ids.update(members)
-        update_user_message_flags(rendered_content, ums)
+
+        topic_participant_user_ids: set[int] = set()
+        if rendered_content.mentions_topic_wildcard and message.is_channel_message:
+            topic_participant_user_ids = participants_for_topic(
+                message.realm_id, message.recipient_id, message.topic_name()
+            )
+        update_user_message_flags(rendered_content, ums, topic_participant_user_ids)
         message.rendered_content = rendered_content.rendered_content
         message.rendered_content_version = markdown_version
         update_fields.append("rendered_content_version")
@@ -471,7 +482,9 @@ def do_update_embedded_data(
         "rendering_only": True,
     }
 
-    users_to_notify = event_recipient_ids_for_action_on_messages([message])
+    users_to_notify = event_recipient_ids_for_action_on_messages(
+        [message.id], message.is_channel_message
+    )
     filtered_ums = [um for um in ums if um.user_profile_id in users_to_notify]
 
     def user_info(um: UserMessage) -> dict[str, Any]:
@@ -853,9 +866,7 @@ def do_update_message(
     changed_messages = Message.objects.filter(id=target_message.id)
     changed_message_ids = [target_message.id]
     changed_messages_count = 1
-    save_changes_for_propagation_mode = lambda: Message.objects.filter(
-        id=target_message.id
-    ).select_related(*Message.DEFAULT_SELECT_RELATED)
+    save_changes_for_propagation_mode: Callable[[], None] = lambda: None
     if message_edit_request.propagate_mode in ["change_later", "change_all"]:
         # Other messages should only get topic/stream fields in their edit history.
         topic_only_edit_history_event: EditHistoryEvent = {
@@ -901,8 +912,12 @@ def do_update_message(
         # longer have access to these messages.  Note: This could be
         # very expensive, since it's N guest users x M messages.
         UserMessage.objects.filter(
-            user_profile__in=users_losing_usermessages,
-            message__in=changed_messages,
+            id__in=UserMessage.objects.filter(
+                user_profile__in=users_losing_usermessages, message__in=changed_messages
+            )
+            .order_by("id")
+            .select_for_update(no_key=False)
+            .values_list("id", flat=True),
         ).delete()
 
         delete_event: DeleteMessagesEvent = {
@@ -937,12 +952,18 @@ def do_update_message(
     # This does message.save(update_fields=[...])
     save_message_for_edit_use_case(message=target_message)
 
-    # This updates any later messages, if any.  It returns the
-    # freshly-fetched-from-the-database changed messages.
-    changed_messages = save_changes_for_propagation_mode()
+    # Execute the bulk UPDATE of topic/stream/edit_history fields
+    # for any propagated messages.
+    save_changes_for_propagation_mode()
 
-    realm_id = target_message.realm_id
-    event["message_ids"] = sorted(update_message_cache(changed_messages, realm_id))
+    # Invalidate the message cache for all changed messages.  They'll
+    # be lazily rebuilt from the database on next access.  We defer
+    # this to after the transaction commits so that concurrent readers
+    # don't repopulate the cache with stale pre-commit data.
+    transaction.on_commit(
+        lambda: cache_delete_many(to_dict_cache_key_id(msg_id) for msg_id in changed_message_ids)
+    )
+    event["message_ids"] = sorted(changed_message_ids)
 
     # The following blocks arranges that users who are subscribed to a
     # stream and can see history from before they subscribed get
@@ -1265,7 +1286,7 @@ def do_update_message(
             )
         )
 
-    if message_edit_request.is_message_moved:
+    if message_edit_request.is_nontrivial_move:
         # Notify users that the topic was moved.
         old_thread_notification_string = None
         if send_notification_to_old_thread:
@@ -1464,6 +1485,7 @@ def build_message_edit_request(
         )
 
     is_topic_edited = False
+    is_topic_case_only_rename = False
     topic_resolved = False
     topic_unresolved = False
     old_topic_name = message.topic_name()
@@ -1473,6 +1495,7 @@ def build_message_edit_request(
         is_topic_edited = True
         pre_truncation_target_topic_name = topic_name
         target_topic_name = truncate_topic(topic_name)
+        is_topic_case_only_rename = old_topic_name.lower() == target_topic_name.lower()
 
         resolved_prefix_len = len(RESOLVED_TOPIC_PREFIX)
         topic_resolved = (
@@ -1483,6 +1506,10 @@ def build_message_edit_request(
         topic_unresolved = (
             old_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
             and not target_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
+            # lstrip is intentional here. unresolve_name() in
+            # web/src/resolved_topic.ts strips all leading "✔"
+            # and space characters to guarantee the result never
+            # still looks resolved. This check mirrors that behavior.
             and old_topic_name.lstrip(RESOLVED_TOPIC_PREFIX) == target_topic_name
         )
 
@@ -1492,7 +1519,7 @@ def build_message_edit_request(
     is_stream_edited = False
     target_stream = orig_stream
     if stream_id is not None:
-        target_stream = access_stream_by_id_for_message(user_profile, stream_id)[0]
+        target_stream = access_stream_by_id(user_profile, stream_id)[0]
         is_stream_edited = True
 
     topics_policy = get_stream_topics_policy(message.realm, target_stream)
@@ -1514,6 +1541,7 @@ def build_message_edit_request(
         is_topic_edited=is_topic_edited,
         target_topic_name=target_topic_name,
         is_stream_edited=is_stream_edited,
+        is_nontrivial_move=is_stream_edited or (is_topic_edited and not is_topic_case_only_rename),
         topic_resolved=topic_resolved,
         topic_unresolved=topic_unresolved,
         orig_content=message.content,
@@ -1652,13 +1680,18 @@ def check_update_message(
             check_user_group_mention_allowed(user_profile, mentioned_group_ids)
 
     if isinstance(message_edit_request, StreamMessageEditRequest):
+        user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+        system_groups_name_dict = get_realm_system_groups_name_dict(user_profile.realm_id)
         if message_edit_request.is_stream_edited:
             assert message.is_channel_message
             if not can_move_messages_out_of_channel(user_profile, message_edit_request.orig_stream):
                 raise JsonableError(_("You don't have permission to move this message"))
 
             check_stream_access_based_on_can_send_message_group(
-                user_profile, message_edit_request.target_stream
+                user_profile,
+                message_edit_request.target_stream,
+                user_group_membership_details,
+                system_groups_name_dict,
             )
 
             if (
@@ -1683,6 +1716,19 @@ def check_update_message(
         ):
             check_time_limit_for_change_all_propagate_mode(
                 message, user_profile, topic_name, stream_id
+            )
+
+        if (
+            message_edit_request.is_message_moved
+            and not message_edit_request.topic_resolved
+            and not message_edit_request.topic_unresolved
+        ):
+            check_for_can_create_topic_group_violation(
+                user_profile,
+                message_edit_request.target_stream,
+                message_edit_request.target_topic_name,
+                user_group_membership_details,
+                system_groups_name_dict,
             )
 
     updated_message_result = do_update_message(
@@ -1739,9 +1785,9 @@ def check_update_message(
 def re_thumbnail(
     message_class: type[Message] | type[ArchivedMessage], message_id: int, enqueue: bool
 ) -> None:
-    message = message_class.objects.select_for_update().get(id=message_id)
+    message = message_class.objects.select_for_update(no_key=True).get(id=message_id)
     assert message.rendered_content is not None
-    image_metadata = get_user_upload_previews(
+    image_metadata = manifest_and_get_user_upload_previews(
         message.realm_id,
         message.rendered_content,
         enqueue=enqueue,

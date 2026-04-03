@@ -48,15 +48,15 @@ run_test("basics", () => {
     const $widget = $("#my-widget");
 
     $widget.attr("data-employee-id", 42);
-    assert.equal($widget.attr("data-employee-id"), 42);
+    assert.equal($widget.attr("data-employee-id"), "42");
     assert.equal($widget.data("employee-id"), 42);
 
     $widget.data("department-id", 77);
-    assert.equal($widget.attr("data-department-id"), 77);
+    assert.equal($widget.attr("data-department-id"), undefined);
     assert.equal($widget.data("department-id"), 77);
 
     $widget.data("department-name", "hr");
-    assert.equal($widget.attr("data-department-name"), "hr");
+    assert.equal($widget.attr("data-department-name"), undefined);
     assert.equal($widget.data("department-name"), "hr");
 
     $widget.html("<b>hello</b>"); // eslint-disable-line no-jquery/no-parse-html-literal
@@ -92,8 +92,8 @@ run_test("finding_related_objects", () => {
     assert.equal($emoji.attr("src"), "foo.png");
 
     // Sometimes you want to deliberately test paths that do not find an
-    // element. You can pass 'false' as the result for those cases.
-    $emoji.set_find_results(".random", false);
+    // element. You can pass [] as the result for those cases.
+    $emoji.set_find_results(".random", []);
     assert.equal($emoji.find(".random").length, 0);
     /*
     An important thing to understand is that zjquery doesn't truly

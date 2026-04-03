@@ -54,16 +54,14 @@ declare global {
     }
 }
 
-function show_all_message_view(): void {
+function show_all_message_view(narrow_opts?: message_view.ShowMessageViewOpts): void {
     // Don't export this function outside of this module since
     // `change_hash` is false here which means it is should only
     // be called after hash is updated in the URL.
-    const current_state = z.nullable(browser_history.state_data_schema).parse(window.history.state);
     message_view.show([{operator: "in", operand: "home"}], {
         trigger: "hashchange",
         change_hash: false,
-        then_select_id: current_state?.narrow_pointer,
-        then_select_offset: current_state?.narrow_offset,
+        ...narrow_opts,
     });
 }
 
@@ -74,20 +72,12 @@ function is_somebody_else_profile_open(): boolean {
     );
 }
 
-function handle_invalid_users_section_url(user_settings_tab: string): string {
-    const valid_user_settings_tab_values = new Set(["active", "deactivated", "invitations"]);
-    if (!valid_user_settings_tab_values.has(user_settings_tab)) {
-        const valid_users_section_url = "#organization/users/active";
-        browser_history.update(valid_users_section_url);
-        return "active";
-    }
-    return user_settings_tab;
-}
-
-function get_user_settings_tab(section: string): string | undefined {
-    if (section === "users") {
-        const current_user_settings_tab = hash_parser.get_current_nth_hash_section(2);
-        return handle_invalid_users_section_url(current_user_settings_tab);
+function get_settings_tab(section: string): string | undefined {
+    if (section === "users" || section === "bots") {
+        const current_settings_tab = hash_parser.get_current_nth_hash_section(2);
+        // URL will be updated in hash_util.validate_settings_hash to contain
+        // the correct tab value.
+        return current_settings_tab;
     }
     return undefined;
 }
@@ -120,20 +110,20 @@ export function set_hash_to_home_view(triggered_by_escape_key = false): void {
     hashchanged(false);
 }
 
-function show_home_view(): void {
+function show_home_view(narrow_opts?: message_view.ShowMessageViewOpts): void {
     // This function should only be called from the hashchange
     // handlers, as it does not set the hash to "".
     //
     // We only allow the primary recommended options for home views
     // rendered without a hash.
     switch (user_settings.web_home_view) {
-        case "recent_topics": {
+        case "recent": {
             recent_view_ui.show();
             break;
         }
         case "all_messages": {
             // Hides inbox/recent views internally if open.
-            show_all_message_view();
+            show_all_message_view(narrow_opts);
             break;
         }
         case "inbox": {
@@ -160,6 +150,26 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
     // Even if the URL bar says #%41%42%43%44, the value here will
     // be #ABCD.
     const hash = window.location.hash.split("/");
+
+    const narrow_opts: message_view.ShowMessageViewOpts = {
+        change_hash: false, // already set
+        trigger: "hash change",
+        show_more_topics: false,
+    };
+    if (from_reload) {
+        blueslip.debug("We are narrowing as part of a reload.");
+        if (message_fetch.initial_narrow_pointer !== undefined) {
+            narrow_opts.then_select_id = message_fetch.initial_narrow_pointer;
+            narrow_opts.then_select_offset = message_fetch.initial_narrow_offset;
+        }
+    }
+
+    const data_for_hash = z.nullable(browser_history.state_data_schema).parse(window.history.state);
+    if (restore_selected_id && data_for_hash) {
+        narrow_opts.then_select_id = data_for_hash.narrow_pointer;
+        narrow_opts.then_select_offset = data_for_hash.narrow_offset;
+        narrow_opts.show_more_topics = data_for_hash.show_more_topics ?? false;
+    }
 
     switch (hash[0]) {
         case "#topics":
@@ -195,33 +205,12 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
                 }
             }
 
-            const narrow_opts: message_view.ShowMessageViewOpts = {
-                change_hash: false, // already set
-                trigger: "hash change",
-                show_more_topics: false,
-            };
-            if (from_reload) {
-                blueslip.debug("We are narrowing as part of a reload.");
-                if (message_fetch.initial_narrow_pointer !== undefined) {
-                    narrow_opts.then_select_id = message_fetch.initial_narrow_pointer;
-                    narrow_opts.then_select_offset = message_fetch.initial_narrow_offset;
-                }
-            }
-
-            const data_for_hash = z
-                .nullable(browser_history.state_data_schema)
-                .parse(window.history.state);
-            if (restore_selected_id && data_for_hash) {
-                narrow_opts.then_select_id = data_for_hash.narrow_pointer;
-                narrow_opts.then_select_offset = data_for_hash.narrow_offset;
-                narrow_opts.show_more_topics = data_for_hash.show_more_topics ?? false;
-            }
             message_view.show(terms, narrow_opts);
             return true;
         }
         case "":
         case "#":
-            show_home_view();
+            show_home_view(narrow_opts);
             break;
         case "#recent_topics":
             // The URL for Recent Conversations was changed from
@@ -245,11 +234,11 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
             // the recent hash rename, there are likely few links that
             // would break if this compatibility code was removed, but
             // there's little cost to keeping it.
-            show_all_message_view();
+            show_all_message_view(narrow_opts);
             window.location.replace("#feed");
             break;
         case "#feed":
-            show_all_message_view();
+            show_all_message_view(narrow_opts);
             break;
         case "#keyboard-shortcuts":
         case "#message-formatting":
@@ -266,7 +255,7 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
             blueslip.error("overlay logic skipped for: " + hash[0]);
             break;
         default:
-            show_home_view();
+            show_home_view(narrow_opts);
     }
     return false;
 }
@@ -288,25 +277,20 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     }
 
     const coming_from_overlay = hash_parser.is_overlay_hash(old_hash);
-    if (section === "display-settings") {
-        // Since display-settings was deprecated and replaced with preferences
-        // #settings/display-settings is being redirected to #settings/preferences.
-        section = "preferences";
-    }
-    if (section === "user-list-admin") {
-        // #settings/user-list-admin is being redirected to #settings/users after it was renamed.
-        section = "users";
-    }
-    if ((base === "settings" || base === "organization") && !section) {
+    if (base === "settings" || base === "organization") {
         let settings_panel_object = settings_panel_menu.normal_settings;
         if (base === "organization") {
             settings_panel_object = settings_panel_menu.org_settings;
         }
-        window.history.replaceState(
-            null,
-            "",
-            browser_history.get_full_url(base + "/" + settings_panel_object.current_tab),
+        const valid_hash = hash_util.validate_settings_hash(
+            window.location.hash,
+            settings_panel_object,
         );
+
+        if (valid_hash !== window.location.hash) {
+            window.history.replaceState(null, "", browser_history.get_full_url(valid_hash));
+            section = hash_parser.get_hash_section(valid_hash);
+        }
     }
 
     // In 2024, stream was renamed to channel in the Zulip API and UI.
@@ -370,7 +354,10 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
                 // hand-typed a hash.
                 blueslip.warn("missing section for settings");
             }
-            settings_panel_menu.normal_settings.activate_section_or_default(section);
+            settings_panel_menu.normal_settings.activate_section_or_default(
+                section,
+                get_settings_tab(section),
+            );
             return;
         }
 
@@ -382,7 +369,7 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             }
             settings_panel_menu.org_settings.activate_section_or_default(
                 section,
-                get_user_settings_tab(section),
+                get_settings_tab(section),
             );
             return;
         }
@@ -402,9 +389,22 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     if (is_hashchange_internal) {
         if (base === "settings") {
             settings_panel_menu.normal_settings.set_current_tab(section);
+            if (section === "bots") {
+                settings_panel_menu.normal_settings.set_bot_settings_tab(
+                    get_settings_tab(section)!,
+                    "personal",
+                );
+            }
         } else {
             settings_panel_menu.org_settings.set_current_tab(section);
-            settings_panel_menu.org_settings.set_user_settings_tab(get_user_settings_tab(section));
+            if (section === "users") {
+                settings_panel_menu.org_settings.set_user_settings_tab(get_settings_tab(section));
+            } else if (section === "bots") {
+                settings_panel_menu.org_settings.set_bot_settings_tab(
+                    get_settings_tab(section)!,
+                    "org",
+                );
+            }
         }
         settings_toggle.goto(base);
         return;
@@ -471,14 +471,14 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     if (base === "settings") {
         settings.build_page();
         admin.build_page();
-        settings.launch(section);
+        settings.launch(section, get_settings_tab(section));
         return;
     }
 
     if (base === "organization") {
         settings.build_page();
         admin.build_page();
-        admin.launch(section, get_user_settings_tab(section));
+        admin.launch(section, get_settings_tab(section));
         return;
     }
 
@@ -559,7 +559,6 @@ function hashchanged(
         browser_history.state.changing_hash = false;
         return undefined;
     }
-
     // We are changing to a "main screen" view.
     overlays.close_for_hash_change();
     sidebar_ui.hide_all();

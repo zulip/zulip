@@ -16,6 +16,12 @@ export type MessageViewportInfo = {
 
 export const $scroll_container = $(":root");
 
+let window_resize_handler: () => void;
+
+export function register_resize_handler(handler: () => void): void {
+    window_resize_handler = handler;
+}
+
 let in_stoppable_autoscroll = false;
 
 const cached_width = new util.CachedValue({compute_value: () => $scroll_container.width() ?? 0});
@@ -215,7 +221,7 @@ const top_of_feed = new util.CachedValue({
     },
 });
 
-const bottom_of_feed = new util.CachedValue({
+export const bottom_of_feed = new util.CachedValue({
     compute_value() {
         return util.the($("#compose")).getBoundingClientRect().top;
     },
@@ -557,10 +563,7 @@ export function initialize(): void {
         cached_height.reset();
         top_of_feed.reset();
         bottom_of_feed.reset();
-    });
-
-    $(document).on("compose_started compose_canceled compose_finished", () => {
-        bottom_of_feed.reset();
+        window_resize_handler?.();
     });
 
     // We stop autoscrolling when the user is clearly in the middle of

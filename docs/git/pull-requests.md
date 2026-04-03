@@ -1,4 +1,4 @@
-# Create a pull request
+# Pull requests
 
 When you're ready for feedback, submit a pull request. Pull requests
 are a feature specific to GitHub. They provide a simple, web-based way
@@ -117,9 +117,10 @@ A pull request template will open with some information pre-filled in.
 Provide (or update) the title for your pull request and write a first comment.
 
 If your pull request makes UI changes, always include one or more still
-screenshots to demonstrate your changes. If it seems helpful, add a screen
-capture of the new functionality as well. You can find a list of tools you can
-use for this [here][screenshots-gifs].
+screenshots to demonstrate your changes. If it seems helpful, add a brief
+video of the new functionality as well. Take time to read our
+[comprehensive guide to capturing screenshots](../contributing/presenting-visual-changes.md),
+which includes [a list of screenshot tools][screenshots-gifs] you can use.
 
 See the documentation for creating [reviewable pull requests][reviewable-prs]
 for more guidance and tips when writing pull request comments. If the repository
@@ -152,11 +153,11 @@ follow-up comment in which you: a) ask for any clarifications you need, b)
 explain to the reviewer how you solved any problems they mentioned, and c) ask
 for another review.
 
-[edx-howto-rebase-pr]: https://github.com/openedx/edx-platform/wiki/How-to-Rebase-a-Pull-Request
+[edx-howto-rebase-pr]: https://web.archive.org/web/20240204225038/https://github.com/openedx/edx-platform/wiki/How-to-Rebase-a-Pull-Request
 [github-help-about-pr]: https://help.github.com/en/articles/about-pull-requests
 [github-help-create-pr-fork]: https://help.github.com/en/articles/creating-a-pull-request-from-a-fork
 [github-help-draft-pr]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests
 [keep-up-to-date]: using.md#keep-your-fork-up-to-date
 [self-push-commits]: using.md#push-your-commits-to-github
-[screenshots-gifs]: ../tutorials/screenshot-and-gif-software.md
+[screenshots-gifs]: ../contributing/presenting-visual-changes.md#screenshot-and-gif-software
 [reviewable-prs]: ../contributing/reviewable-prs.md

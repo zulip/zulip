@@ -14,10 +14,11 @@ from django_scim.adapters import SCIMGroup, SCIMUser
 from scim2_filter_parser.attr_paths import AttrPath
 
 from zerver.actions.create_user import do_create_user, do_reactivate_user
+from zerver.actions.custom_profile_fields import do_update_user_custom_profile_data_if_changed
 from zerver.actions.user_groups import (
     bulk_add_members_to_user_groups,
     bulk_remove_members_from_user_groups,
-    create_user_group_in_database,
+    check_add_user_group_core,
     do_update_user_group_name,
 )
 from zerver.actions.user_settings import check_change_full_name, do_change_user_delivery_email
@@ -30,15 +31,21 @@ from zerver.lib.subdomains import get_subdomain
 from zerver.lib.user_groups import (
     check_user_group_name,
     get_role_based_system_groups_dict,
+    get_user_group_by_id_in_realm,
     get_user_group_direct_member_ids,
 )
 from zerver.models import Realm, UserProfile
+from zerver.models.custom_profile_fields import (
+    CustomProfileFieldValue,
+    custom_profile_fields_for_realm,
+)
 from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
 )
+from zproject.backends import SyncUserError, validate_custom_profile_field_data
 
 
 class ZulipSCIMUser(SCIMUser):
@@ -74,6 +81,7 @@ class ZulipSCIMUser(SCIMUser):
         self._full_name_new_value: str | None = None
         self._role_new_value: int | None = None
         self._password_set_to: str | None = None
+        self._custom_profile_field_data: dict[str, str] | None = None
 
     def is_new_user(self) -> bool:
         return not bool(self.obj.id)
@@ -117,7 +125,7 @@ class ZulipSCIMUser(SCIMUser):
                 "familyName": last_name,
             }
 
-        return {
+        d = {
             "schemas": [scim_constants.SchemaURI.USER],
             "id": str(self.obj.id),
             "userName": self.obj.delivery_email,
@@ -132,6 +140,25 @@ class ZulipSCIMUser(SCIMUser):
             # of this value.
             "meta": self.meta,
         }
+
+        custom_profile_field_map = self.config.get("custom_profile_field_map", {})
+        if custom_profile_field_map:
+            fields = custom_profile_fields_for_realm(self.obj.realm_id)
+            field_id_to_var_name = {}
+            for field in fields:
+                var_name = "_".join(field.name.lower().split(" "))
+                if var_name in custom_profile_field_map:
+                    field_id_to_var_name[field.id] = var_name
+
+            values = CustomProfileFieldValue.objects.filter(
+                user_profile=self.obj, field_id__in=field_id_to_var_name.keys()
+            )
+            for field_value in values:
+                var_name = field_id_to_var_name[field_value.field_id]
+                scim_attr = custom_profile_field_map[var_name]
+                d[scim_attr] = field_value.value
+
+        return d
 
     def from_dict(self, d: dict[str, Any]) -> None:
         """Consume a dictionary conforming to the SCIM User Schema. The
@@ -190,6 +217,17 @@ class ZulipSCIMUser(SCIMUser):
         if role_name:
             assert isinstance(role_name, str)
             self.change_role(role_name)
+
+        custom_profile_field_map = self.config.get("custom_profile_field_map", {})
+        if custom_profile_field_map:
+            custom_field_data: dict[str, str] = {}
+            for var_name, scim_attr in custom_profile_field_map.items():
+                value = d.get(scim_attr)
+                if value is not None:
+                    assert isinstance(value, str)
+                    custom_field_data[var_name] = value
+            if custom_field_data:
+                self._custom_profile_field_data = custom_field_data
 
     def change_delivery_email(self, new_value: str) -> None:
         # Note that the email_allowed_for_realm check that usually
@@ -254,7 +292,17 @@ class ZulipSCIMUser(SCIMUser):
                 assert isinstance(val, str)
                 self.change_role(val)
             else:
-                raise scim_exceptions.NotImplementedError("Not Implemented")
+                custom_profile_field_map = self.config.get("custom_profile_field_map", {})
+                scim_attr_to_var_name = {v: k for k, v in custom_profile_field_map.items()}
+                attr_name = attr_path.first_path[0]
+                if attr_name in scim_attr_to_var_name:
+                    assert isinstance(val, str)
+                    var_name = scim_attr_to_var_name[attr_name]
+                    if self._custom_profile_field_data is None:
+                        self._custom_profile_field_data = {}
+                    self._custom_profile_field_data[var_name] = val
+                else:
+                    raise scim_exceptions.NotImplementedError("Not Implemented")
 
         self.save()
 
@@ -272,6 +320,7 @@ class ZulipSCIMUser(SCIMUser):
         full_name_new_value = getattr(self, "_full_name_new_value", None)
         role_new_value = getattr(self, "_role_new_value", None)
         password = getattr(self, "_password_set_to", None)
+        custom_profile_field_data = getattr(self, "_custom_profile_field_data", None)
 
         # Clean up the internal "pending change" state, now that we've
         # fetched the values:
@@ -280,6 +329,7 @@ class ZulipSCIMUser(SCIMUser):
         self._full_name_new_value = None
         self._password_set_to = None
         self._role_new_value = None
+        self._custom_profile_field_data = None
 
         if email_new_value is not None:
             try:
@@ -305,6 +355,18 @@ class ZulipSCIMUser(SCIMUser):
             except ValidationError as e:
                 raise ConflictError("Email address already in use: " + str(e))
 
+        # Validate custom profile field data early, before any
+        # mutations, so that errors are caught before creating or
+        # partially updating users.
+        custom_profile_data = None
+        if custom_profile_field_data:
+            try:
+                custom_profile_data = validate_custom_profile_field_data(
+                    realm.id, custom_profile_field_data
+                )
+            except SyncUserError as e:
+                raise scim_exceptions.BadRequestError(str(e))
+
         if self.is_new_user():
             assert email_new_value is not None
             assert full_name_new_value is not None
@@ -325,6 +387,10 @@ class ZulipSCIMUser(SCIMUser):
                 add_initial_stream_subscriptions=add_initial_stream_subscriptions,
                 acting_user=None,
             )
+            if custom_profile_data:
+                do_update_user_custom_profile_data_if_changed(
+                    self.obj, custom_profile_data, None, notify=True
+                )
             return
 
         # TODO: The below operations should ideally be executed in a single
@@ -340,12 +406,17 @@ class ZulipSCIMUser(SCIMUser):
             do_change_user_delivery_email(self.obj, email_new_value, acting_user=None)
 
         if role_new_value is not None:
-            do_change_user_role(self.obj, role_new_value, acting_user=None)
+            do_change_user_role(self.obj, role_new_value, acting_user=None, notify=True)
 
         if is_active_new_value is not None and is_active_new_value:
             do_reactivate_user(self.obj, acting_user=None)
         elif is_active_new_value is not None and not is_active_new_value:
             do_deactivate_user(self.obj, acting_user=None)
+
+        if custom_profile_data:
+            do_update_user_custom_profile_data_if_changed(
+                self.obj, custom_profile_data, None, notify=True
+            )
 
     def delete(self) -> None:
         """
@@ -568,19 +639,18 @@ class ZulipSCIMGroup(SCIMGroup):
                 can_manage_group=group_nobody,
             )
             assert name_new_value is not None
-            self.obj = create_user_group_in_database(
+            self.obj = check_add_user_group_core(
+                realm,
                 name_new_value,
                 members,
-                realm,
-                description="Created from SCIM",
+                "Created from SCIM",
                 group_settings_map=group_settings_map,
                 acting_user=None,
             )
             return
 
         with transaction.atomic(savepoint=False):
-            # We need to lock the group now to conduct update operations without race conditions.
-            user_group = NamedUserGroup.objects.select_for_update().get(id=self.obj.id)
+            user_group = get_user_group_by_id_in_realm(self.obj.id, realm, for_read=False)
             current_member_ids = set(get_user_group_direct_member_ids(user_group))
             if name_new_value is not None:
                 do_update_user_group_name(self.obj, name_new_value, acting_user=None)

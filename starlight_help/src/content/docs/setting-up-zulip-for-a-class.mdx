@@ -2,6 +2,8 @@
 title: Setting up Zulip for a class
 ---
 
+import {Tabs} from "@astrojs/starlight/components";
+
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipNote from "../../components/ZulipNote.astro";
@@ -11,7 +13,7 @@ import CreateChannelsIntro from "../include/_CreateChannelsIntro.mdx";
 import CustomizeSettingsForNewUsers from "../include/_CustomizeSettingsForNewUsers.mdx";
 import EditOrganizationProfile from "../include/_EditOrganizationProfile.mdx";
 import HowToCreateAUserGroup from "../include/_HowToCreateAUserGroup.mdx";
-import HowToInviteUsersToJoin from "../include/_HowToInviteUsersToJoin.mdx";
+import HowToInviteUsersToJoinNoImport from "../include/_HowToInviteUsersToJoinNoImport.mdx";
 import ReviewOrganizationSettingsInstructions from "../include/_ReviewOrganizationSettingsInstructions.mdx";
 
 Welcome to Zulip! This page will guide you through setting everything
@@ -24,68 +26,37 @@ you can proceed to the [Using Zulip for a
 class](/help/using-zulip-for-a-class) guide.
 
 If you encounter any problems as you're getting started, please drop
-by our [friendly development community](/development-community/) and let
-us know!
+by our [friendly development community](https://zulip.com/development-community/)
+and let us know!
 
 ## Trying out Zulip
 
 You can start by reading about [Zulip for Education](https://zulip.com/for/education/),
 and how Zulip can become the communication hub for your class. Zulip
-is the only [modern team chat app](/features/) that is
-[ideal](/why-zulip/) for both live and asynchronous
+is the only [modern team chat app](https://zulip.com/features/) that is
+[ideal](https://zulip.com/why-zulip/) for both live and asynchronous
 conversations. Post lecture notes and announcements, answer students’
 questions, and coordinate with teaching staff all in one place.
 
 We also highly recommend trying Zulip for yourself! You can:
 
-* [Create a Zulip Cloud organization](/new/) for free with just a few
-  clicks.
-* [Join the Zulip development community](/development-community/) to see
-  Zulip in action. Feel free to introduce yourself and ask questions!
+* [Create a Zulip Cloud organization](https://zulip.com/new/) for free
+  with just a few clicks.
+* [Join the Zulip development community](https://zulip.com/development-community/)
+  to see Zulip in action. Feel free to introduce yourself and ask questions!
 
 ## Choosing between Zulip Cloud and self-hosting
 
-Whether [signing up for Zulip Cloud](/new/) or [self-hosting
-Zulip][install-self-hosted] is the right choice for you depends on your needs.
+Follow the [guide](/help/zulip-cloud-or-self-hosting) on choosing between Zulip
+Cloud and self-hosting to pick the best option for you. If your needs change,
+you can always [move to a self-hosted installation](/help/cloud-to-self-hosting)
+or [to Zulip Cloud](/help/move-to-zulip-cloud).
 
-If you aren’t sure what you need, our high quality export and import
-tools ([cloud][export-cloud], [self-hosted][export-self-hosted])
-ensure you can always move from our hosting to yours (and back).
-
-[install-self-hosted]: https://zulip.readthedocs.io/en/stable/production/install.html
-
-[export-cloud]: /help/export-your-organization
-
-[export-self-hosted]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html
-
-### Advantages of Zulip Cloud
-
-* Simple managed solution, with no setup or maintenance
-  overhead. [Sign up](/new/) with just a few clicks.
-* Always updated to the latest version of Zulip.
-* Anyone can [start with Zulip Cloud Free](/new/), which works well for a typical class.
-* For large classes and departments, we offer [special Zulip for
-  Education pricing](https://zulip.com/for/education/#feature-pricing), with the same
-  features as Zulip Cloud Standard. You can always get started with
-  Zulip Cloud Free, and upgrade down the line if needed.
-
-### Advantages of self-hosting Zulip
-
-* Zulip is [100% open-source software](https://github.com/zulip), with
-  no "open core" catch.
-* We work hard to make it easy to [set up][install-zulip],
-  [back up][back-up-zulip], and [maintain][maintain-zulip] a self-hosted
-  Zulip installation.
-* Retain full control over your data. If cloud hosting is not an
-  option due to stringent data and privacy requirements (e.g., in the
-  European Union), self-hosting is the option for you.
-* Customize Zulip for all your needs.
-
-[install-zulip]: https://zulip.readthedocs.io/en/stable/production/install.html
-
-[back-up-zulip]: https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups
-
-[maintain-zulip]: https://zulip.readthedocs.io/en/stable/production/upgrade.html
+Anyone can [start with Zulip Cloud Free](https://zulip.com/new/), which works
+well for a typical class. For large classes and departments, we offer [special
+Zulip for Education pricing](https://zulip.com/for/education/#feature-pricing),
+with the same features as Zulip Cloud Standard. You can always get started with
+Zulip Cloud Free, and upgrade down the line if needed.
 
 ## Do I need a separate Zulip organization for each class?
 
@@ -286,7 +257,9 @@ invitations. You may choose to send invitations to course staff
 separately, so that they can immediately be subscribed to private
 channels for your class.
 
-<HowToInviteUsersToJoin />
+<Tabs>
+  <HowToInviteUsersToJoinNoImport />
+</Tabs>
 
 To get everyone off to a good start, you may wish to share the guide
 to [Getting started with Zulip][getting-started] and the guide to
@@ -321,10 +294,10 @@ user groups:
 ## Set up integrations
 
 Zulip integrates directly with dozens of products, and with hundreds
-more through [Zapier](/integrations/doc/zapier) and
-[IFTTT](/integrations/doc/ifttt).  Popular Zulip integrations include
-[GitHub](/integrations/doc/github) and
-[Twitter](/integrations/doc/twitter). The [integrations
+more through [Zapier](/integrations/zapier) and
+[IFTTT](/integrations/ifttt).  Popular Zulip integrations include
+[GitHub](/integrations/github) and
+[GitLab](/integrations/gitlab). The [integrations
 page](/integrations/) has instructions for integrating with each
 product.
 

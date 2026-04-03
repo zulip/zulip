@@ -119,6 +119,11 @@ const setting_link_mapping: Record<
         setting_name: "Users",
         setting_link: "/#organization/users/active",
     },
+    imported: {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Users",
+        setting_link: "/#organization/users/imported",
+    },
     deactivated: {
         setting_type: ORGANIZATION_SETTINGS_TYPE,
         setting_name: "Users",
@@ -129,10 +134,10 @@ const setting_link_mapping: Record<
         setting_name: "Users",
         setting_link: "/#organization/users/invitations",
     },
-    "bot-list-admin": {
+    bots: {
         setting_type: ORGANIZATION_SETTINGS_TYPE,
         setting_name: "Bots",
-        setting_link: "/#organization/bot-list-admin",
+        setting_link: "/#organization/bots",
     },
     "default-channels-list": {
         setting_type: ORGANIZATION_SETTINGS_TYPE,
@@ -268,7 +273,7 @@ const relative_link_mapping: Record<
         },
         template: `
 <ol>
-  <li>Click on the <strong>Help menu</strong> (${RawHelpIcon}) icon in the upper right corner of the app.</li>
+  <li>Click on the <strong>help menu</strong> (${RawHelpIcon}) icon in the upper right corner of the app.</li>
   <li class="navigation-step-relative-type">Select {item}.</li>
 </ol>
 `,
@@ -299,6 +304,10 @@ const relative_link_mapping: Record<
             all: {
                 label: "All groups",
                 relative_link: "/#groups/all",
+            },
+            roles: {
+                label: "Roles",
+                relative_link: "/#groups/roles",
             },
         },
         template: `

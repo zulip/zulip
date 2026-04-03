@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_stream} = require("./lib/example_stream.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -10,12 +11,12 @@ const user_topics_ui = zrequire("user_topics_ui");
 const stream_data = zrequire("stream_data");
 const sub_store = zrequire("sub_store");
 
-const design = {
+const design = make_stream({
     stream_id: 101,
     name: "design",
     subscribed: false,
     is_muted: false,
-};
+});
 
 stream_data.add_sub_for_tests(design);
 

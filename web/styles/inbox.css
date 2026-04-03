@@ -336,7 +336,7 @@
                 margin-top: 3px;
                 padding-left: 8px;
 
-                .inbox-collpased-note-span {
+                .inbox-collapsed-note-span {
                     font-size: 1em;
                 }
 
@@ -404,6 +404,7 @@
 
     .inbox-header-stream-archived {
         color: var(--color-text-message-header-archived);
+        margin-left: 0.3125em; /* 5px at 16px em */
     }
 }
 
@@ -450,6 +451,26 @@
 
     .hidden_by_filters {
         display: none !important;
+    }
+
+    .channel-folders-inbox-menu-icon {
+        display: grid;
+        /* width excluding left & right margin */
+        width: calc(var(--left-sidebar-vdots-width) - 3px);
+        cursor: pointer;
+        place-items: center center;
+        border-radius: 3px;
+        margin: 2px 2px 2px 1px;
+        color: var(--color-vdots-visible);
+
+        i.zulip-icon {
+            font-size: 1.0625em;
+        }
+
+        &:hover {
+            color: var(--color-vdots-hover);
+            background-color: var(--color-background-sidebar-action-hover);
+        }
     }
 }
 
@@ -522,12 +543,10 @@
     opacity: 0.4;
 }
 
-.dropdown-list-item-common-styles .dropdown-list-text-selected {
-    font-weight: 700;
-}
-
 .recent-view-filter-dropdown-list-container .dropdown-list-wrapper,
-.inbox-filter-dropdown-list-container .dropdown-list-wrapper {
+.inbox-filter-dropdown-list-container .dropdown-list-wrapper,
+.new_channel_privacy-dropdown-list-container .dropdown-list-wrapper,
+.channel_privacy-dropdown-list-container .dropdown-list-wrapper {
     /* We want these dropdowns to open to fit their
        contents, which differ based on the language
        in use. */
@@ -542,6 +561,12 @@
     .dropdown-list
     .dropdown-list-item-common-styles,
 .inbox-filter-dropdown-list-container
+    .dropdown-list
+    .dropdown-list-item-common-styles,
+.new_channel_privacy-dropdown-list-container
+    .dropdown-list
+    .dropdown-list-item-common-styles,
+.channel_privacy-dropdown-list-container
     .dropdown-list
     .dropdown-list-item-common-styles {
     /* Parallel to the `width: 100%` set on
@@ -563,7 +588,9 @@
 }
 
 .recent-view-filter-dropdown-list-container .dropdown-list-item-name,
-.inbox-filter-dropdown-list-container .dropdown-list-item-name {
+.inbox-filter-dropdown-list-container .dropdown-list-item-name,
+.new_channel_privacy-dropdown-list-container .dropdown-list-item-name,
+.channel_privacy-dropdown-list-container .dropdown-list-item-name {
     white-space: nowrap;
     font-weight: 500;
     padding: 0;
@@ -573,7 +600,9 @@
 }
 
 .recent-view-filter-dropdown-list-container .dropdown-list-item-description,
-.inbox-filter-dropdown-list-container .dropdown-list-item-description {
+.inbox-filter-dropdown-list-container .dropdown-list-item-description,
+.channel_privacy-dropdown-list-container .dropdown-list-item-description,
+.new_channel_privacy-dropdown-list-container .dropdown-list-item-description {
     white-space: nowrap;
     font-weight: 400;
     font-size: 0.9285em; /* 13px at 14px em */
@@ -586,14 +615,11 @@
 .inbox-container #inbox-pane .inbox-folder .unread_count {
     transition: none;
     cursor: default;
+    display: none;
 
     &:hover {
         outline: 0;
     }
-}
-
-.inbox-container #inbox-pane .inbox-folder:not(#inbox-dm-header) .unread_count {
-    display: none;
 }
 
 #inbox-pane #inbox-list .collapsible-button {
@@ -631,10 +657,7 @@
     #inbox-pane
     .inbox-folder.inbox-collapsed-state
     .unread_mention_info,
-.inbox-container
-    #inbox-pane
-    .inbox-folder.inbox-collapsed-state:not(#inbox-dm-header)
-    .unread_count {
+.inbox-container #inbox-pane .inbox-folder.inbox-collapsed-state .unread_count {
     display: inline;
 }
 
@@ -766,4 +789,8 @@
             );
         }
     }
+}
+
+#inbox-animation-extra-content-blocker {
+    background: var(--color-background-inbox);
 }

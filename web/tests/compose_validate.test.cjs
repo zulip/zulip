@@ -6,7 +6,10 @@ const {mock_banners} = require("./lib/compose_banner.cjs");
 const {FakeComposeBox} = require("./lib/compose_helpers.cjs");
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_cross_realm_bot, make_user, Role} = require("./lib/example_user.cjs");
 const {$t} = require("./lib/i18n.cjs");
+const {mock_channel_get} = require("./lib/mock_channel.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -20,7 +23,7 @@ const compose_state = zrequire("compose_state");
 const compose_validate = zrequire("compose_validate");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-const resolved_topic = zrequire("../shared/src/resolved_topic");
+const resolved_topic = zrequire("resolved_topic");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const compose_recipient = zrequire("/compose_recipient");
@@ -48,45 +51,45 @@ set_current_user(current_user);
 const user_settings = {default_language: "en"};
 initialize_user_settings({user_settings});
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
     date_joined: new Date(),
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@example.com",
     user_id: 31,
     full_name: "Alice",
-};
+});
 
-const bob = {
+const bob = make_user({
     email: "bob@example.com",
     user_id: 32,
     full_name: "Bob",
-    is_admin: true,
-};
+    role: Role.ADMINISTRATOR,
+});
 
-const guest = {
+const guest = make_user({
     email: "guest@example.com",
     user_id: 33,
     full_name: "Guest",
-    is_guest: true,
-};
+    role: Role.GUEST,
+});
 
-const moderator = {
+const moderator = make_user({
     email: "moderator@example.com",
     user_id: 34,
     full_name: "Charlie",
-    is_moderator: true,
-};
+    role: Role.MODERATOR,
+});
 
-const social_sub = {
+const social_sub = make_stream({
     stream_id: 101,
     name: "social",
     subscribed: true,
-};
+});
 stream_data.add_sub_for_tests(social_sub);
 
 people.add_active_user(me);
@@ -96,22 +99,20 @@ people.add_active_user(alice);
 people.add_active_user(bob);
 people.add_active_user(guest);
 
-const welcome_bot = {
+const welcome_bot = make_cross_realm_bot({
     email: "welcome-bot@example.com",
     user_id: 4,
     full_name: "Welcome Bot",
-    is_bot: true,
-    // cross realm bots have no owner
-};
+});
 
 people.add_cross_realm_user(welcome_bot);
 
 const nobody = make_user_group({
     name: "role:nobody",
     id: 1,
-    members: new Set([]),
+    members: new Set(),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 const everyone = make_user_group({
     name: "role:everyone",
@@ -125,7 +126,7 @@ const admin = make_user_group({
     id: 3,
     members: new Set([32]),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 const moderators = make_user_group({
     name: "role:moderators",
@@ -151,29 +152,20 @@ function test_ui(label, f) {
 }
 
 function stub_message_row($textarea) {
-    const $stub = $.create("message_row_stub");
-    $textarea.closest = (selector) => {
-        assert.equal(selector, ".message_row");
-        $stub.length = 0;
-        return $stub;
-    };
+    const $stub = $.set_results("message_row_stub", []);
+    $textarea.set_closest_results(".message_row", $stub);
 }
 
 function initialize_pm_pill(mock_template) {
     $.clear_all_elements();
 
-    $(".message_comp").css = (property) => {
-        assert.equal(property, "display");
-        return "block";
-    };
     $("#compose-send-button").trigger("focus");
     $("#compose-send-button .loader").hide();
 
     const $pm_pill_container = $.create("fake-pm-pill-container");
-    $("#private_message_recipient")[0] = {};
     $("#private_message_recipient").set_parent($pm_pill_container);
     $pm_pill_container.set_find_results(".input", $("#private_message_recipient"));
-    $("#private_message_recipient").before = noop;
+    $("#private_message_recipient")[0].before = noop;
 
     compose_pm_pill.initialize({
         on_pill_create_or_remove: compose_recipient.update_compose_area_placeholder_text,
@@ -183,46 +175,6 @@ function initialize_pm_pill(mock_template) {
 
     mock_banners();
 }
-
-test_ui("validate_stream_message_address_info", ({mock_template, override}) => {
-    // For this test we basically only use FakeComposeBox
-    // to set up the DOM environment. We don't assert about
-    // any side effects on the DOM, since the scope of this
-    // test is mostly to make sure the template gets rendered.
-    new FakeComposeBox();
-
-    override(realm, "realm_can_access_all_users_group", everyone.id);
-
-    const party_sub = {
-        stream_id: 101,
-        name: "party",
-        subscribed: true,
-        can_add_subscribers_group: nobody.id,
-        can_subscribe_group: nobody.id,
-    };
-    stream_data.add_sub_for_tests(party_sub);
-    assert.ok(compose_validate.validate_stream_message_address_info(party_sub));
-
-    party_sub.subscribed = false;
-    stream_data.add_sub_for_tests(party_sub);
-    let user_not_subscribed_rendered = false;
-    mock_template("compose_banner/compose_banner.hbs", true, (data, html) => {
-        assert.equal(data.classname, compose_banner.CLASSNAMES.user_not_subscribed);
-        user_not_subscribed_rendered = true;
-        return html;
-    });
-    assert.ok(!compose_validate.validate_stream_message_address_info(party_sub));
-    assert.ok(user_not_subscribed_rendered);
-
-    party_sub.name = "Frontend";
-    party_sub.stream_id = 102;
-    stream_data.add_sub_for_tests(party_sub);
-    user_not_subscribed_rendered = false;
-
-    assert.ok(!compose_validate.validate_stream_message_address_info(party_sub));
-
-    assert.ok(user_not_subscribed_rendered);
-});
 
 test_ui("validate", ({mock_template, override}) => {
     function add_content_to_compose_box() {
@@ -288,22 +240,19 @@ test_ui("validate", ({mock_template, override}) => {
     assert.ok(compose_validate.validate());
 
     // For this first block, we should fail due to empty compose.
-    let expected_invalid_state = true;
     initialize_pm_pill(mock_template);
     compose_state.private_message_recipient_emails("welcome-bot@example.com");
-    $("textarea#compose-textarea").toggleClass = (classname, value) => {
-        assert.equal(classname, "invalid");
-        assert.equal(value, expected_invalid_state);
-    };
+    $("textarea#compose-textarea").removeClass("invalid");
     assert.ok(!compose_validate.validate());
     assert.ok(!$("#compose-send-button .loader").visible());
-    compose_validate.validate();
+    assert.ok($("textarea#compose-textarea").hasClass("invalid"));
 
     // Now add content to compose.
     add_content_to_compose_box();
-    expected_invalid_state = false;
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
+    $("textarea#compose-textarea").addClass("invalid");
     assert.ok(compose_validate.validate());
+    assert.ok(!$("textarea#compose-textarea").hasClass("invalid"));
 
     initialize_pm_pill(mock_template);
     add_content_to_compose_box();
@@ -325,6 +274,7 @@ test_ui("validate", ({mock_template, override}) => {
     const denmark = {
         stream_id: 100,
         name: "Denmark",
+        topics_policy: "inherit",
     };
     stream_data.add_sub_for_tests(denmark);
     compose_state.set_stream_id(denmark.stream_id);
@@ -344,12 +294,18 @@ test_ui("validate", ({mock_template, override}) => {
     }
 });
 
-test_ui("test_stream_wildcard_mention_allowed", ({override, override_rewire}) => {
+test_ui("test_stream_wildcard_mention_allowed", ({override}) => {
     override(current_user, "user_id", me.user_id);
 
     // First, check for large streams (>15 subscribers) where the wildcard mention
-    // policy matters.
-    override_rewire(peer_data, "get_subscriber_count", () => 16);
+    // policy matters. Set 16 subscribers so is_recipient_large_stream() returns true.
+    const large_stream = {stream_id: 100, name: "Denmark"};
+    stream_data.add_sub_for_tests(large_stream);
+    compose_state.set_stream_id(large_stream.stream_id);
+    peer_data.set_subscribers(
+        large_stream.stream_id,
+        Array.from({length: 16}, (_, i) => i + 1),
+    );
 
     override(realm, "realm_can_mention_many_users_group", everyone.id);
     override(current_user, "user_id", guest.user_id);
@@ -382,7 +338,7 @@ test_ui("test_stream_wildcard_mention_allowed", ({override, override_rewire}) =>
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
 });
 
-test_ui("validate_stream_message", ({override, override_rewire, mock_template}) => {
+test_ui("validate_stream_message", ({override, mock_template}) => {
     // This test is in kind of continuation to test_validate but since it is
     // primarily used to get coverage over functions called from validate()
     // we are separating it up in different test. Though their relative position
@@ -397,6 +353,7 @@ test_ui("validate_stream_message", ({override, override_rewire, mock_template}) 
         subscribed: true,
         can_send_message_group: everyone.id,
         topics_policy: "inherit",
+        can_create_topic_group: everyone.id,
     };
     stream_data.add_sub_for_tests(special_sub);
 
@@ -405,12 +362,12 @@ test_ui("validate_stream_message", ({override, override_rewire, mock_template}) 
     assert.ok(compose_validate.validate());
     assert.ok(!$("#compose-all-everyone").visible());
 
-    override_rewire(peer_data, "get_subscriber_count", (stream_id) => {
-        assert.equal(stream_id, 101);
-        return 16;
-    });
+    peer_data.set_subscribers(
+        special_sub.stream_id,
+        Array.from({length: 16}, (_, i) => i + 1),
+    );
     let stream_wildcard_warning_rendered = false;
-    $("#compose_banner_area .wildcard_warning").length = 0;
+    $.set_results("#compose_banner_area .wildcard_warning", []);
     mock_template("compose_banner/stream_wildcard_warning.hbs", false, (data) => {
         stream_wildcard_warning_rendered = true;
         assert.equal(data.subscriber_count, 16);
@@ -443,11 +400,32 @@ test_ui("test_stream_posting_permission", ({mock_template, override}) => {
         name: "stream102",
         subscribed: true,
         can_send_message_group: admin.id,
+        can_create_topic_group: everyone.id,
+        can_add_subscribers_group: everyone.id,
     };
 
     stream_data.add_sub_for_tests(sub_stream_102);
     compose_state.topic("topic102");
     compose_state.set_stream_id(sub_stream_102.stream_id);
+
+    sub_stream_102.subscribed = false;
+    let user_not_subscribed_rendered = false;
+    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+        assert.equal(data.classname, compose_banner.CLASSNAMES.user_not_subscribed);
+        assert.equal(
+            data.banner_text,
+            $t({
+                defaultMessage:
+                    "You're not subscribed to this channel. You will not be notified if other users reply to your message.",
+            }),
+        );
+        user_not_subscribed_rendered = true;
+        return "<banner-stub>";
+    });
+    assert.ok(!compose_validate.validate());
+    assert.ok(user_not_subscribed_rendered);
+
+    sub_stream_102.subscribed = true;
 
     let banner_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
@@ -573,6 +551,7 @@ test_ui("needs_subscribe_warning", async () => {
 });
 
 test_ui("warn_if_private_stream_is_linked", async ({mock_template}) => {
+    mock_banners();
     const $textarea = $("<textarea>").attr("id", "compose-textarea");
     stub_message_row($textarea);
     const test_sub = {
@@ -608,10 +587,10 @@ test_ui("warn_if_private_stream_is_linked", async ({mock_template}) => {
     }
 
     compose_state.set_selected_recipient_id(undefined);
-    void test_noop_case(false);
+    await test_noop_case(false);
     // invite_only=true and current compose stream subscribers are a subset
     // of mentioned_stream subscribers.
-    void test_noop_case(true);
+    await test_noop_case(true);
 
     $("#compose_private").hide();
     compose_state.set_message_type("stream");
@@ -635,8 +614,6 @@ test_ui("warn_if_private_stream_is_linked", async ({mock_template}) => {
     // Simulate that the row was added to the DOM.
     const $warning_row = $("#compose_banners .private_stream_warning");
     $warning_row.attr("data-stream-id", "22");
-    $("#compose_banners .private_stream_warning").length = 1;
-    $("#compose_banners .private_stream_warning")[0] = $warning_row;
 
     // Now try to mention the same stream again. The template should
     // not render.
@@ -647,6 +624,7 @@ test_ui("warn_if_private_stream_is_linked", async ({mock_template}) => {
 });
 
 test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}) => {
+    mock_banners();
     const $textarea = $("<textarea>").attr("id", "compose-textarea");
     stub_message_row($textarea);
     compose_state.set_stream_id("");
@@ -719,12 +697,12 @@ test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}
     new_banner_rendered = false;
     const $banner_container = $("#compose_banners");
     $banner_container.set_find_results(".recipient_not_subscribed", []);
-    channel.get = (opts) => {
+    mock_channel_get(channel, (opts) => {
         assert.equal(opts.url, `/json/streams/${sub.stream_id}/members`);
-        return {
+        return opts.success({
             subscribers: [],
-        };
-    };
+        });
+    });
 
     await compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
     assert.ok(new_banner_rendered);
@@ -733,8 +711,6 @@ test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}
     const $warning_row = $("#compose_banners .recipient_not_subscribed");
     $warning_row.attr("data-user-id", "34");
     $warning_row.attr("data-stream-id", "111");
-    $("#compose_banners .recipient_not_subscribed").length = 1;
-    $("#compose_banners .recipient_not_subscribed")[0] = $warning_row;
 
     // Now try to mention the same person again. The template should
     // not render.
@@ -744,9 +720,121 @@ test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}
     assert.ok(!new_banner_rendered);
 });
 
+test_ui("maybe_clear_stale_recipient_not_subscribed_warnings", () => {
+    const $textarea = $("<textarea>").attr("id", "compose-textarea");
+    stub_message_row($textarea);
+    const $banner_container = $("#compose_banners");
+
+    // Using a shared factory so the removal callback has a single
+    // source location — coverage is satisfied as long as any banner
+    // is actually removed across all test cases.
+    const removed_banners = new Set();
+    function make_banner(name, user_id_str) {
+        removed_banners.delete(name);
+        const $banner = $.create(name);
+        if (user_id_str !== undefined) {
+            $banner.attr("data-user-id", user_id_str);
+        }
+        $banner[0].remove = () => {
+            removed_banners.add(name);
+        };
+        return $banner;
+    }
+
+    // No banners present: function is a no-op.
+    $banner_container.set_find_results(".recipient_not_subscribed", []);
+    $textarea.val("text without any mention");
+    compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+
+    // Banner preserved when canonical @**Name** mention is present.
+    {
+        const $banner = make_banner("canonical", String(alice.user_id));
+        const mention = people.get_mention_syntax(alice.full_name, alice.user_id, false);
+        $banner_container.set_find_results(".recipient_not_subscribed", $banner);
+        $textarea.val(`Hello ${mention} here.`);
+        compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+        assert.ok(!removed_banners.has("canonical"));
+    }
+
+    // Banner removed when mention is deleted from compose text.
+    {
+        const $banner = make_banner("deleted", String(alice.user_id));
+        $banner_container.set_find_results(".recipient_not_subscribed", $banner);
+        $textarea.val("Hello, how are you?");
+        compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+        assert.ok(removed_banners.has("deleted"));
+    }
+
+    // Banner preserved for @**|user_id** form.
+    {
+        const $banner = make_banner("id-only", String(alice.user_id));
+        $banner_container.set_find_results(".recipient_not_subscribed", $banner);
+        $textarea.val(`Hello @**|${alice.user_id}** how are you?`);
+        compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+        assert.ok(!removed_banners.has("id-only"));
+    }
+
+    // Banner preserved for @**Name|user_id** form.
+    {
+        const $banner = make_banner("name-and-id", String(alice.user_id));
+        $banner_container.set_find_results(".recipient_not_subscribed", $banner);
+        $textarea.val(`Hello @**${alice.full_name}|${alice.user_id}** how are you?`);
+        compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+        assert.ok(!removed_banners.has("name-and-id"));
+    }
+
+    // Banner removed when only a silent mention is present, since
+    // the banner is not displayed for silent mentions.
+    {
+        const silent_mention = people.get_mention_syntax(alice.full_name, alice.user_id, true);
+        const $banner = make_banner("silent-only", String(alice.user_id));
+        $banner_container.set_find_results(".recipient_not_subscribed", $banner);
+        $textarea.val(`Hello ${silent_mention} here.`);
+        compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+        assert.ok(removed_banners.has("silent-only"));
+    }
+
+    // Banner removed when compose text is empty.
+    {
+        const $banner = make_banner("empty-text", String(alice.user_id));
+        $banner_container.set_find_results(".recipient_not_subscribed", $banner);
+        $textarea.val("");
+        compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+        assert.ok(removed_banners.has("empty-text"));
+    }
+
+    // Banner removed when mention syntax is incomplete.
+    {
+        const $banner = make_banner("incomplete", String(alice.user_id));
+        $banner_container.set_find_results(".recipient_not_subscribed", $banner);
+        $textarea.val(`Hello @**${alice.full_name} here.`);
+        compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+        assert.ok(removed_banners.has("incomplete"));
+    }
+
+    // Banner removed for unknown user_id.
+    {
+        const $banner = make_banner("unknown-user", "99999");
+        $banner_container.set_find_results(".recipient_not_subscribed", $banner);
+        $textarea.val("No mention here.");
+        compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+        assert.ok(removed_banners.has("unknown-user"));
+    }
+
+    // Banner removed when data-user-id attribute is missing.
+    {
+        const $banner = make_banner("no-user-id", undefined);
+        $banner_container.set_find_results(".recipient_not_subscribed", $banner);
+        $textarea.val("Some text.");
+        compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+        assert.ok(removed_banners.has("no-user-id"));
+    }
+});
+
 test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     mock_banners();
-    $("#compose_banners .topic_resolved").length = 0;
+    $.reset_selector("#compose_banners .topic_resolved");
+    $.set_results("#compose_banners .topic_resolved", []);
     override(realm, "realm_can_resolve_topics_group", everyone.id);
 
     let error_shown = false;
@@ -843,7 +931,8 @@ test_ui("test_warn_if_guest_in_dm_recipient", ({mock_template, override}) => {
 
     // to show warning for guest emails, banner should be created
     realm.realm_enable_guest_user_dm_warning = true;
-    $banner.length = 0;
+    $.reset_selector(`#compose_banners .${CSS.escape(classname)}`);
+    $banner = $.set_results(`#compose_banners .${CSS.escape(classname)}`, []);
     compose_validate.warn_if_guest_in_dm_recipient();
     assert.ok(is_active);
     assert.deepEqual(compose_state.get_recipient_guest_ids_for_dm_warning(), [33]);
@@ -865,19 +954,14 @@ test_ui("test_warn_if_guest_in_dm_recipient", ({mock_template, override}) => {
 
     initialize_pm_pill(mock_template);
     compose_state.private_message_recipient_emails("guest@example.com, new_guest@example.com");
+    $.reset_selector(`#compose_banners .${CSS.escape(classname)}`);
     $banner = $(`#compose_banners .${CSS.escape(classname)}`);
-    $banner.length = 1;
-    let is_updated = false;
-    $banner.set_find_results(".banner_content", {
-        text(content) {
-            assert.equal(
-                content,
-                $t({defaultMessage: "Guest and New Guest are guests in this organization."}),
-            );
-            is_updated = true;
-        },
-    });
+    const $banner_content = $(`#compose_banners .${CSS.escape(classname)} .banner_content`);
+    $banner.set_find_results(".banner_content", $banner_content);
     compose_validate.warn_if_guest_in_dm_recipient();
-    assert.ok(is_updated);
+    assert.equal(
+        $banner_content.text(),
+        $t({defaultMessage: "Guest and New Guest are guests in this organization."}),
+    );
     assert.deepEqual(compose_state.get_recipient_guest_ids_for_dm_warning(), [33, 34]);
 });

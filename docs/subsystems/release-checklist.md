@@ -81,7 +81,7 @@ preparing a new release.
   - Email to [zulip-announce](https://groups.google.com/g/zulip-announce)
   - Email to [zulip-blog-announce](https://groups.google.com/a/zulip.com/g/zulip-blog-announce)
   - Message in [#announce](https://chat.zulip.org/#narrow/channel/1-announce)
-  - Tweet from [@zulip](https://twitter.com/zulip).
+  - Tweet from [@zulip](https://x.com/zulip).
   - Toot from [fosstodon.org/@zulip](https://fosstodon.org/@zulip)
 
 ### Post-release
@@ -112,6 +112,8 @@ preparing a new release.
   - Update /history page in `templates/corporate/history.md`.
   - Inspect all `TODO/compatibility` comments for whether we can
     remove any backwards-compatibility code following this release.
+  - Review possible improvements to API bindings to better match the
+    defaults and features of the new release.
 - _Minor releases only (e.g., 3.2):_
   - On the release branch, update `ZULIP_VERSION` to the present
     release with a `+git` suffix, e.g., `3.2+git`.

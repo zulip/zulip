@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -20,30 +21,29 @@ let pills = {
 };
 
 run_test("pills", ({override}) => {
-    const me = {
+    const me = make_user({
         email: "me@example.com",
         user_id: 30,
         full_name: "Me Myself",
-        date_joined: new Date(),
-    };
+    });
 
-    const othello = {
-        user_id: 1,
+    const othello = make_user({
         email: "othello@example.com",
+        user_id: 1,
         full_name: "Othello",
-    };
+    });
 
-    const iago = {
+    const iago = make_user({
         email: "iago@zulip.com",
         user_id: 2,
         full_name: "Iago",
-    };
+    });
 
-    const hamlet = {
+    const hamlet = make_user({
         email: "hamlet@example.com",
         user_id: 3,
         full_name: "Hamlet",
-    };
+    });
 
     people.initialize_current_user(me.user_id);
     people.add_active_user(me);
@@ -52,8 +52,8 @@ run_test("pills", ({override}) => {
     people.add_active_user(hamlet);
 
     const $recipient_stub = $("#private_message_recipient");
-    const pill_container_stub = "pill-container";
-    $recipient_stub.set_parent(pill_container_stub);
+    const $pill_container_stub = $.create("pill-container-stub");
+    $recipient_stub.set_parent($pill_container_stub);
     let create_item_handler;
 
     const all_pills = new Map();
@@ -111,7 +111,7 @@ run_test("pills", ({override}) => {
     }
 
     function input_pill_stub(opts) {
-        assert.equal(opts.$container, pill_container_stub);
+        assert.equal(opts.$container[0], $pill_container_stub[0]);
         create_item_handler = opts.create_item_from_text;
         assert.ok(create_item_handler);
         return pills;
@@ -152,9 +152,7 @@ run_test("pills", ({override}) => {
 
     const persons = [othello, iago, hamlet];
     const items = compose_pm_pill.filter_taken_users(persons);
-    assert.deepEqual(items, [
-        {email: "iago@zulip.com", user_id: 2, full_name: "Iago", is_moderator: false},
-    ]);
+    assert.deepEqual(items, [iago]);
 
     test_create_item(create_item_handler);
 
@@ -171,7 +169,7 @@ run_test("pills", ({override}) => {
     user_ids = compose_pm_pill.get_user_ids();
     assert.deepEqual(user_ids, [othello.user_id]);
 
-    compose_pm_pill.set_from_user_ids([hamlet.user_id]);
+    compose_pm_pill.set_from_user_ids([hamlet.user_id], true);
     user_ids = compose_pm_pill.get_user_ids();
     assert.deepEqual(user_ids, [hamlet.user_id]);
 });
@@ -196,4 +194,103 @@ run_test("has_unconverted_data", ({override}) => {
     // scenario where we might not have registered the user yet), so
     // we have some unconverted data.
     assert.equal(compose_pm_pill.has_unconverted_data(), true);
+});
+
+run_test("update_user_pill_active_status", ({override_rewire}) => {
+    const othello = make_user({
+        email: "othello@example.com",
+        user_id: 1,
+        full_name: "Othello",
+        is_active: true,
+    });
+
+    const inaccessible_user = make_user({
+        email: "iago@zulip.com",
+        user_id: 2,
+        full_name: "Iago",
+        is_active: false,
+        is_inaccessible_user: true,
+    });
+
+    // Test with uninitialized widget - should return early without error
+    override_rewire(compose_pm_pill, "widget", undefined);
+    // No assertions needed - we're just checking it doesn't throw
+    compose_pm_pill.update_user_pill_active_status(othello, false);
+
+    // Set up test data for normal widget tests
+    const pills_data = [
+        {
+            item: {user_id: othello.user_id, full_name: othello.full_name},
+            $element: {0: {id: "pill_1"}},
+        },
+        {
+            item: {user_id: inaccessible_user.user_id, full_name: inaccessible_user.full_name},
+            $element: {0: {id: "pill_2"}},
+        },
+    ];
+
+    let pill_updated = false;
+
+    const widget = {
+        getPillByPredicate(predicate) {
+            return pills_data.find((p) => predicate(p.item));
+        },
+        updatePill(element, item) {
+            const pill = pills_data.find((p) => p.$element[0] === element);
+            pill.item = item;
+            pill_updated = true;
+        },
+    };
+    override_rewire(compose_pm_pill, "widget", widget);
+
+    // Test deactivating a user - should set deactivated to true
+    compose_pm_pill.update_user_pill_active_status(othello, false);
+
+    assert.deepEqual(pills_data[0].item, {
+        user_id: othello.user_id,
+        full_name: othello.full_name,
+        deactivated: true,
+    });
+    assert.ok(pill_updated);
+
+    // Reset for next test
+    pill_updated = false;
+
+    // Test reactivating a user - should set deactivated to false
+    compose_pm_pill.update_user_pill_active_status(othello, true);
+
+    assert.deepEqual(pills_data[0].item, {
+        user_id: othello.user_id,
+        full_name: othello.full_name,
+        deactivated: false,
+    });
+    assert.ok(pill_updated);
+
+    // Reset for next test
+    pill_updated = false;
+
+    // Test deactivating an inaccessible user - should keep deactivated as false
+    // We consider inaccessible users as active to avoid falsely showing them as deactivated,
+    // since we don't have information about their activity status.
+    compose_pm_pill.update_user_pill_active_status(inaccessible_user, false);
+
+    assert.deepEqual(pills_data[1].item, {
+        user_id: inaccessible_user.user_id,
+        full_name: inaccessible_user.full_name,
+        deactivated: false,
+    });
+    assert.ok(pill_updated);
+
+    // Reset for next test
+    pill_updated = false;
+
+    // Test updating a user that doesn't have a pill - should be a no-op
+    const hamlet = make_user({
+        email: "hamlet@example.com",
+        user_id: 3,
+        full_name: "Hamlet",
+    });
+    compose_pm_pill.update_user_pill_active_status(hamlet, true);
+
+    assert.ok(!pill_updated);
 });

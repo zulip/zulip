@@ -4,9 +4,12 @@ import * as tippy from "tippy.js";
 
 import render_message_edit_notice_tooltip from "../templates/message_edit_notice_tooltip.hbs";
 import render_message_media_preview_tooltip from "../templates/message_media_preview_tooltip.hbs";
+import render_message_row_date_tooltip from "../templates/message_row_date_tooltip.hbs";
 import render_narrow_tooltip from "../templates/narrow_tooltip.hbs";
+import render_narrow_tooltip_list_of_topics from "../templates/narrow_tooltip_list_of_topics.hbs";
 
 import * as compose_validate from "./compose_validate.ts";
+import * as flatpickr from "./flatpickr.ts";
 import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -145,6 +148,19 @@ export function initialize(): void {
     message_list_tooltip(".tippy-narrow-tooltip", {
         delay: LONG_HOVER_DELAY,
         onCreate(instance) {
+            // We sniff the href, rather than looking up the user's settings
+            // so that the tooltip always matches the link.
+            if (
+                instance.reference.hasAttribute("href") &&
+                instance.reference.getAttribute("href")!.startsWith("#topics/")
+            ) {
+                instance.setContent(
+                    parse_html(
+                        render_narrow_tooltip_list_of_topics({content: instance.props.content}),
+                    ),
+                );
+                return;
+            }
             instance.setContent(
                 parse_html(render_narrow_tooltip({content: instance.props.content})),
             );
@@ -295,7 +311,19 @@ export function initialize(): void {
         },
     });
 
-    message_list_tooltip(".recipient_row_date > span", {
+    message_list_tooltip(".date_row_text", {
+        onShow(instance) {
+            if (flatpickr.is_open()) {
+                return false;
+            }
+            const $elem = $(instance.reference);
+            const formal_time_str = $elem.attr("data-tippy-content");
+            if (formal_time_str === undefined) {
+                return false;
+            }
+            instance.setContent(parse_html(render_message_row_date_tooltip({formal_time_str})));
+            return undefined;
+        },
         onHidden(instance) {
             instance.destroy();
         },
@@ -334,8 +362,7 @@ export function initialize(): void {
     });
 
     message_list_tooltip(".rendered_markdown time", {
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        content: timerender.get_markdown_time_tooltip as tippy.Content,
+        content: timerender.get_markdown_time_tooltip,
         onHidden(instance) {
             instance.destroy();
         },
@@ -452,6 +479,13 @@ export function initialize(): void {
 
     message_list_tooltip(".message_expander, .message_condenser", {
         delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const is_disabled = $(instance.reference).attr("data-enable-tooltip") === "false";
+            if (is_disabled) {
+                return false;
+            }
+            return undefined;
+        },
         onHidden(instance) {
             instance.destroy();
         },

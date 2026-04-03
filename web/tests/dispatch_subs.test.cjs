@@ -4,6 +4,8 @@ const assert = require("node:assert/strict");
 
 const events = require("./lib/events.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -13,14 +15,21 @@ const event_fixtures = events.fixtures;
 const test_user = events.test_user;
 
 const compose_recipient = mock_esm("../src/compose_recipient");
+mock_esm("../src/inbox_ui", {
+    complete_rerender: noop,
+});
 const message_events = mock_esm("../src/message_events");
 const overlays = mock_esm("../src/overlays");
+mock_esm("../src/recent_view_ui", {
+    complete_rerender: noop,
+});
 const settings_org = mock_esm("../src/settings_org");
 const settings_streams = mock_esm("../src/settings_streams");
 const stream_events = mock_esm("../src/stream_events");
 const stream_list = mock_esm("../src/stream_list");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
 const unread_ops = mock_esm("../src/unread_ops");
+const user_group_edit = mock_esm("../src/user_group_edit");
 
 const compose_state = zrequire("compose_state");
 const peer_data = zrequire("peer_data");
@@ -35,11 +44,11 @@ set_realm(realm);
 
 people.add_active_user(test_user);
 
-const me = {
+const me = make_user({
     email: "me@zulip.com",
     full_name: "Me Myself",
     user_id: 101,
-};
+});
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
@@ -58,10 +67,12 @@ test("add", ({override}) => {
     const sub = event.subscriptions[0];
     const stream_id = sub.stream_id;
 
-    stream_data.add_sub_for_tests({
-        stream_id,
-        name: sub.name,
-    });
+    stream_data.add_sub_for_tests(
+        make_stream({
+            stream_id,
+            name: sub.name,
+        }),
+    );
 
     const subscription_stub = make_stub();
     override(stream_events, "mark_subscribed", subscription_stub.f);
@@ -76,10 +87,12 @@ test("peer add/remove", ({override}) => {
     let event = event_fixtures.subscription__peer_add;
 
     const devel_stream_id = event.stream_ids[0];
-    stream_data.add_sub_for_tests({
-        name: "devel",
-        stream_id: devel_stream_id,
-    });
+    stream_data.add_sub_for_tests(
+        make_stream({
+            name: "devel",
+            stream_id: devel_stream_id,
+        }),
+    );
 
     const stream_stub = make_stub();
     override(stream_events, "process_subscriber_update", stream_stub.f);
@@ -101,10 +114,10 @@ test("remove", ({override}) => {
     const event_sub = event.subscriptions[0];
     const stream_id = event_sub.stream_id;
 
-    const sub = {
+    const sub = make_stream({
         stream_id,
         name: event_sub.name,
-    };
+    });
 
     stream_data.add_sub_for_tests(sub);
 
@@ -178,6 +191,12 @@ test("stream update", ({override}) => {
     assert.equal(args.stream_id, event.stream_id);
     assert.equal(args.property, event.property);
     assert.equal(args.value, event.value);
+
+    // Dispatch a stream update with property "name" to exercise
+    // the complete_rerender calls for inbox and recent views.
+    const name_event = {...event, property: "name", value: "new_name"};
+    dispatch(name_event);
+    assert.equal(stub.num_calls, 2);
 });
 
 test("stream create", ({override}) => {
@@ -195,23 +214,26 @@ test("stream create", ({override}) => {
     assert.deepEqual(sub_store.get(102).name, "test");
 });
 
-test("stream delete (normal)", ({override}) => {
+test("stream delete (normal)", ({override, override_rewire}) => {
     const event = event_fixtures.stream__delete;
 
-    const devel_sub = {
+    const devel_sub = make_stream({
         stream_id: event.stream_ids[0],
         name: "devel",
         is_archived: false,
-    };
+        subscribed: false,
+    });
 
-    const test_sub = {
+    const test_sub = make_stream({
         stream_id: event.stream_ids[1],
         name: "test",
         is_archived: false,
-    };
+    });
 
     stream_data.add_sub_for_tests(test_sub);
     stream_data.add_sub_for_tests(devel_sub);
+
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
 
     stream_data.subscribe_myself(devel_sub);
 
@@ -223,39 +245,35 @@ test("stream delete (normal)", ({override}) => {
         removed_stream_ids.push(stream_id);
     });
 
-    let removed_sidebar_rows = 0;
-    override(stream_list, "remove_sidebar_row", () => {
-        removed_sidebar_rows += 1;
-    });
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
 
     override(unread_ops, "process_read_messages_event", noop);
     override(message_events, "remove_messages", noop);
+    override(user_group_edit, "update_group_permissions_panel_on_losing_stream_access", noop);
     dispatch(event);
 
     assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
-
-    assert.equal(removed_sidebar_rows, 1);
 });
 
-test("stream delete (special streams)", ({override}) => {
+test("stream delete (special streams)", ({override, override_rewire}) => {
     const event = event_fixtures.stream__delete;
 
-    const devel_sub = {
+    const devel_sub = make_stream({
         stream_id: event.stream_ids[0],
         name: "devel",
         is_archived: false,
-    };
+    });
 
-    const test_sub = {
+    const test_sub = make_stream({
         stream_id: event.stream_ids[1],
         name: "test",
         is_archived: false,
-    };
+    });
 
     stream_data.add_sub_for_tests(devel_sub);
     stream_data.add_sub_for_tests(test_sub);
 
+    override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
     stream_data.subscribe_myself(devel_sub);
 
     const removed_stream_ids = [];
@@ -266,22 +284,24 @@ test("stream delete (special streams)", ({override}) => {
 
     // sanity check data
     assert.equal(event.stream_ids.length, 2);
+    override(realm, "realm_moderation_request_channel_id", event.stream_ids[0]);
     override(realm, "realm_new_stream_announcements_stream_id", event.stream_ids[0]);
     override(realm, "realm_signup_announcements_stream_id", event.stream_ids[1]);
     override(realm, "realm_zulip_update_announcements_stream_id", event.stream_ids[0]);
 
     override(settings_org, "sync_realm_settings", noop);
     override(settings_streams, "update_default_streams_table", noop);
-    override(stream_list, "remove_sidebar_row", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
 
     override(unread_ops, "process_read_messages_event", noop);
     override(message_events, "remove_messages", noop);
+    override(user_group_edit, "update_group_permissions_panel_on_losing_stream_access", noop);
 
     dispatch(event);
 
     assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
 
+    assert.equal(realm.realm_moderation_request_channel_id, event.stream_ids[0]);
     assert.equal(realm.realm_new_stream_announcements_stream_id, event.stream_ids[0]);
     assert.equal(realm.realm_signup_announcements_stream_id, event.stream_ids[1]);
     assert.equal(realm.realm_zulip_update_announcements_stream_id, event.stream_ids[0]);
@@ -292,22 +312,21 @@ test("stream delete (stream is selected in compose)", ({override}) => {
 
     const event = event_fixtures.stream__delete;
 
-    const devel_sub = {
+    const devel_sub = make_stream({
         stream_id: event.stream_ids[0],
         name: "devel",
         is_archived: false,
-    };
+    });
 
-    const test_sub = {
+    const test_sub = make_stream({
         stream_id: event.stream_ids[1],
         name: "test",
         is_archived: false,
-    };
+    });
 
     stream_data.add_sub_for_tests(devel_sub);
     stream_data.add_sub_for_tests(test_sub);
 
-    stream_data.subscribe_myself(devel_sub);
     compose_state.set_stream_id(event.stream_ids[0]);
 
     const removed_stream_ids = [];
@@ -318,20 +337,15 @@ test("stream delete (stream is selected in compose)", ({override}) => {
 
     override(settings_streams, "update_default_streams_table", noop);
 
-    let removed_sidebar_rows = 0;
-    override(stream_list, "remove_sidebar_row", () => {
-        removed_sidebar_rows += 1;
-    });
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
 
     override(unread_ops, "process_read_messages_event", noop);
     override(message_events, "remove_messages", noop);
+    override(user_group_edit, "update_group_permissions_panel_on_losing_stream_access", noop);
 
     dispatch(event);
 
     assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
 
     assert.equal(compose_state.stream_name(), "");
-
-    assert.equal(removed_sidebar_rows, 1);
 });

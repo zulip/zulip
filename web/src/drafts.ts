@@ -21,13 +21,9 @@ import * as timerender from "./timerender.ts";
 import * as ui_util from "./ui_util.ts";
 import * as util from "./util.ts";
 
-export let set_count = (count: number): void => {
+export function set_count(count: number): void {
     const $drafts_li = $(".top_left_drafts");
     ui_util.update_unread_count_in_dom($drafts_li, count);
-};
-
-export function rewire_set_count(value: typeof set_count): void {
-    set_count = value;
 }
 
 function getTimestamp(): number {
@@ -262,13 +258,9 @@ export function rewire_update_compose_draft_count(value: typeof update_compose_d
     update_compose_draft_count = value;
 }
 
-export let sync_count = (): void => {
+export function sync_count(): void {
     const drafts = draft_model.get();
     set_count(Object.keys(drafts).length);
-};
-
-export function rewire_sync_count(value: typeof sync_count): void {
-    sync_count = value;
 }
 
 export function delete_all_drafts(): void {
@@ -279,11 +271,10 @@ export function delete_all_drafts(): void {
 }
 
 export function confirm_delete_all_drafts(): void {
-    const html_body = render_confirm_delete_all_drafts();
-
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Delete all drafts"}),
-        html_body,
+        modal_title_html: $t_html({defaultMessage: "Delete all drafts"}),
+        modal_content_html: render_confirm_delete_all_drafts(),
+        is_compact: true,
         on_click: delete_all_drafts,
     });
 }
@@ -433,15 +424,23 @@ export let update_draft = (opts: UpdateDraftOptions = {}): string | undefined =>
     const old_draft = draft_id === undefined ? undefined : draft_model.getDraft(draft_id);
 
     const no_notify = opts.no_notify ?? false;
-    const force_save = opts.force_save ?? false;
+    // When message content is <= MINIMUM_MESSAGE_LENGTH_TO_SAVE_DRAFT,
+    // we usually don't save it, but if there's some content and the
+    // draft was already saved, we should save the shorter version
+    // and shouldn't delete it below.
+    const existing_draft_has_become_short =
+        draft_id !== undefined && compose_state.message_content().length > 0;
+    const force_save = opts.force_save ?? existing_draft_has_become_short;
     const draft = snapshot_message(force_save);
 
     if (draft === undefined) {
         // The user cleared the compose box, which means
-        // there is nothing to save here but delete the
-        // draft if exists.
+        // there is nothing to save here. Delete any existing draft
+        // and reset the draft id so the next attempt will create
+        // a fresh draft.
         if (draft_id) {
             draft_model.deleteDrafts([draft_id]);
+            compose_draft_id = undefined;
         }
         return undefined;
     }
@@ -569,9 +568,12 @@ export function get_last_restorable_draft_based_on_compose_state():
             id: draft_id,
         }),
     );
-    return drafts_for_compose_state
-        .sort((draft_a, draft_b) => draft_a.updatedAt - draft_b.updatedAt)
-        .findLast((draft) => !draft.is_sending_saving && draft.drafts_version >= 1);
+    return _.maxBy(
+        drafts_for_compose_state.filter(
+            (draft) => !draft.is_sending_saving && draft.drafts_version >= 1,
+        ),
+        (draft) => draft.updatedAt,
+    );
 }
 
 export type FormattedDraft =

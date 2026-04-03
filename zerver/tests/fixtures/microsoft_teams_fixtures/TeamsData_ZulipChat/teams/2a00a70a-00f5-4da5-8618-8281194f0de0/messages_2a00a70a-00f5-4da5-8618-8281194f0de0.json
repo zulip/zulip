@@ -1,0 +1,1211 @@
+[
+  {
+    "Id": "1755003819181",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003Cp\u003EHere is the magpie, the turtle-dove, the swallow, the horned owl, the buzzard, the pigeon, the falcon, the ring-dove, the cuckoo, the red-foot, the red-cap, the \u003Cstrong\u003Epurple-cap, the kestrel, the diver, the ousel, the osprey,\u003C/strong\u003E the woodpecker.\u003C/p\u003E"
+    },
+    "CreatedDateTime": "2025-08-12T13:03:39.181+00:00",
+    "LastModifiedDateTime": "2025-08-12T13:03:41+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": "Hello!",
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81%40thread.tacv2/1755003819181?groupId=2a00a70a-00f5-4da5-8618-8281194f0de0\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1755003819181\u0026parentMessageId=1755003819181",
+    "From": {
+      "Application": null,
+      "Device": null,
+      "User": {
+        "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+        "DisplayName": "Pieter K",
+        "UserIdentityType": "aadUser",
+        "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+      }
+    },
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [
+      {
+        "CreatedDateTime": "2025-08-12T13:03:41+00:00",
+        "ReactionType": "\uD83D\uDE2E",
+        "User": {
+          "Application": null,
+          "Device": null,
+          "User": {
+            "DisplayName": "Pieter K",
+            "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+            "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940",
+            "Thumbnails": null
+          }
+        }
+      }
+    ],
+    "MessageHistory": [
+      {
+        "ModifiedDateTime": "2025-08-12T13:03:41+00:00",
+        "Actions": "reactionAdded",
+        "Reaction": {
+          "CreatedDateTime": "2025-08-12T13:03:41+00:00",
+          "ReactionType": "\uD83D\uDE2E",
+          "User": {
+            "Application": null,
+            "Device": null,
+            "User": {
+              "DisplayName": "Pieter K",
+              "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+              "TenantId": null,
+              "Thumbnails": null
+            }
+          }
+        }
+      }
+    ],
+    "MessageType": "message",
+    "ChannelIdentity": {
+      "ChannelId": "19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2",
+      "TeamId": "2a00a70a-00f5-4da5-8618-8281194f0de0"
+    },
+    "ChatId": null,
+    "EventDetail": null
+  },
+  {
+    "Id": "1755003831747",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003Cp\u003EThread reply\u0026nbsp;\u003C/p\u003E"
+    },
+    "CreatedDateTime": "2025-08-12T13:03:51.747+00:00",
+    "LastModifiedDateTime": "2025-08-12T13:03:55+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": "",
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": "1755003819181",
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81%40thread.tacv2/1755003831747?groupId=2a00a70a-00f5-4da5-8618-8281194f0de0\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1755003831747\u0026parentMessageId=1755003819181",
+    "From": {
+      "Application": null,
+      "Device": null,
+      "User": {
+        "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+        "DisplayName": "Pieter K",
+        "UserIdentityType": "aadUser",
+        "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+      }
+    },
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [
+      {
+        "CreatedDateTime": "2025-08-12T13:03:55+00:00",
+        "ReactionType": "\uD83D\uDE06",
+        "User": {
+          "Application": null,
+          "Device": null,
+          "User": {
+            "DisplayName": "Pieter K",
+            "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+            "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940",
+            "Thumbnails": null
+          }
+        }
+      }
+    ],
+    "MessageHistory": [
+      {
+        "ModifiedDateTime": "2025-08-12T13:03:55+00:00",
+        "Actions": "reactionAdded",
+        "Reaction": {
+          "CreatedDateTime": "2025-08-12T13:03:55+00:00",
+          "ReactionType": "\uD83D\uDE06",
+          "User": {
+            "Application": null,
+            "Device": null,
+            "User": {
+              "DisplayName": "Pieter K",
+              "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+              "TenantId": null,
+              "Thumbnails": null
+            }
+          }
+        }
+      }
+    ],
+    "MessageType": "message",
+    "ChannelIdentity": {
+      "ChannelId": "19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2",
+      "TeamId": "2a00a70a-00f5-4da5-8618-8281194f0de0"
+    },
+    "ChatId": null,
+    "EventDetail": null
+  },
+  {
+    "Id": "1755003909325",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003Cp\u003EThis is an important message!\u003C/p\u003E\n\u003Cp\u003E\u0026nbsp;\u003C/p\u003E\n\u003Cp\u003E\u0027Tis because you are ignorant and heedless, and have never read your Aesop. \u0027Tis he who tells us that the lark was born before all other creatures, indeed before the Earth; his father died of sickness, but the Earth did not exist then; he remained unburied for five days, when the bird in its dilemma decided, for want of a better place, to entomb its father in its own head.\u003C/p\u003E"
+    },
+    "CreatedDateTime": "2025-08-12T13:05:09.325+00:00",
+    "LastModifiedDateTime": "2025-08-12T13:05:09.325+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": "Marked as important",
+    "Summary": null,
+    "Importance": "high",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81%40thread.tacv2/1755003909325?groupId=2a00a70a-00f5-4da5-8618-8281194f0de0\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1755003909325\u0026parentMessageId=1755003909325",
+    "From": {
+      "Application": null,
+      "Device": null,
+      "User": {
+        "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+        "DisplayName": "Pieter K",
+        "UserIdentityType": "aadUser",
+        "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+      }
+    },
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "message",
+    "ChannelIdentity": {
+      "ChannelId": "19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2",
+      "TeamId": "2a00a70a-00f5-4da5-8618-8281194f0de0"
+    },
+    "ChatId": null,
+    "EventDetail": null
+  },
+  {
+    "Id": "1755004004203",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003Cattachment id=\u0022announcement-card-bfe7f6dcf1984915b7a9d1dc7e93ead2\u0022\u003E\u003C/attachment\u003E\u003Cp\u003EOur focus in \u003Cstrong\u003Ethis work is not on whether the memory bus and e-business\u003C/strong\u003E can agree to accomplish this intent, but rather on exploring new efficient technology.\u003C/p\u003E\n\u003Cp\u003Eaaron: I see no messenger coming from the wall to tell us what is happening. Ah! here comes one running herself out of breath as though she were running the Olympic stadium.\u003C/p\u003E"
+    },
+    "CreatedDateTime": "2025-08-12T13:06:44.203+00:00",
+    "LastModifiedDateTime": "2025-08-12T13:06:44.203+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": "It has subheading",
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81%40thread.tacv2/1755004004203?groupId=2a00a70a-00f5-4da5-8618-8281194f0de0\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1755004004203\u0026parentMessageId=1755004004203",
+    "From": {
+      "Application": null,
+      "Device": null,
+      "User": {
+        "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+        "DisplayName": "Pieter K",
+        "UserIdentityType": "aadUser",
+        "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+      }
+    },
+    "Attachments": [
+      {
+        "Id": "announcement-card-bfe7f6dcf1984915b7a9d1dc7e93ead2",
+        "ContentType": "application/vnd.microsoft.teams.messaging-announcementBanner",
+        "ContentUrl": null,
+        "Content": "{\u0022title\u0022:\u0022This is an Announcement post!\u0022,\u0022cardImageType\u0022:\u0022colorTheme\u0022,\u0022cardImageDetails\u0022:{\u0022colorTheme\u0022:\u0022navyBlue\u0022}}",
+        "Name": null,
+        "ThumbnailUrl": null,
+        "TeamsAppId": "announcement-card"
+      }
+    ],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "message",
+    "ChannelIdentity": {
+      "ChannelId": "19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2",
+      "TeamId": "2a00a70a-00f5-4da5-8618-8281194f0de0"
+    },
+    "ChatId": null,
+    "EventDetail": null
+  },
+  {
+    "Id": "1755004009794",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003Cp\u003EThat Philocrates, the bird-seller, played us a scurvy trick, when he pretended these two guides could help us to find Tereus, the Epops, who is a bird, without being born of one. He has indeed sold us this jay, a true son of Tharelides, for an obolus, and this crow for three, but what can they do? Why, nothing whatever but bite and scratch! -- What\u0027s the matter with you then, that you keep opening your beak? Do you want us to fling ourselves headlong down these rocks? There is no road that way.\u003C/p\u003E"
+    },
+    "CreatedDateTime": "2025-08-12T13:06:49.794+00:00",
+    "LastModifiedDateTime": "2025-08-12T13:06:49.794+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": "",
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": "1755004004203",
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81%40thread.tacv2/1755004009794?groupId=2a00a70a-00f5-4da5-8618-8281194f0de0\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1755004009794\u0026parentMessageId=1755004004203",
+    "From": {
+      "Application": null,
+      "Device": null,
+      "User": {
+        "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+        "DisplayName": "Pieter K",
+        "UserIdentityType": "aadUser",
+        "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+      }
+    },
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "message",
+    "ChannelIdentity": {
+      "ChannelId": "19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2",
+      "TeamId": "2a00a70a-00f5-4da5-8618-8281194f0de0"
+    },
+    "ChatId": null,
+    "EventDetail": null
+  },
+  {
+    "Id": "1755004092843",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003Cp\u003EOnly moderators can reply to this message\u003C/p\u003E"
+    },
+    "CreatedDateTime": "2025-08-12T13:08:12.843+00:00",
+    "LastModifiedDateTime": "2025-08-12T13:08:12.843+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": "Moderator only post",
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81%40thread.tacv2/1755004092843?groupId=2a00a70a-00f5-4da5-8618-8281194f0de0\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1755004092843\u0026parentMessageId=1755004092843",
+    "From": {
+      "Application": null,
+      "Device": null,
+      "User": {
+        "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+        "DisplayName": "Pieter K",
+        "UserIdentityType": "aadUser",
+        "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+      }
+    },
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "message",
+    "ChannelIdentity": {
+      "ChannelId": "19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2",
+      "TeamId": "2a00a70a-00f5-4da5-8618-8281194f0de0"
+    },
+    "ChatId": null,
+    "EventDetail": null
+  },
+  {
+    "Id": "1755004239364",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003Cp\u003EThere\u0027s a message scheduled to be delivered on Tuesday, Aug 19\u003C/p\u003E\n\u003Cp\u003E\u003Cimg src=\u0022https://graph.microsoft.com/v1.0/teams/2a00a70a-00f5-4da5-8618-8281194f0de0/channels/19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2/messages/1755004239364/hostedContents/aWQ9eF8wLXd1cy1kMTEtYjE5ZWRlMjdkNjdkN2MxYzgyOGE2MzFhMDM3Y2M3NWMsdHlwZT0xLHVybD1odHRwczovL3VzLWFwaS5hc20uc2t5cGUuY29tL3YxL29iamVjdHMvMC13dXMtZDExLWIxOWVkZTI3ZDY3ZDdjMWM4MjhhNjMxYTAzN2NjNzVjL3ZpZXdzL2ltZ28=/$value\u0022 width=\u00221196\u0022 height=\u0022208\u0022 alt=\u0022image\u0022 itemid=\u00220-wus-d11-b19ede27d67d7c1c828a631a037cc75c\u0022\u003E\u003C/p\u003E"
+    },
+    "CreatedDateTime": "2025-08-12T13:10:39.364+00:00",
+    "LastModifiedDateTime": "2025-08-12T13:10:39.364+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": "Scheduled message note",
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81%40thread.tacv2/1755004239364?groupId=2a00a70a-00f5-4da5-8618-8281194f0de0\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1755004239364\u0026parentMessageId=1755004239364",
+    "From": {
+      "Application": null,
+      "Device": null,
+      "User": {
+        "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+        "DisplayName": "Pieter K",
+        "UserIdentityType": "aadUser",
+        "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+      }
+    },
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "message",
+    "ChannelIdentity": {
+      "ChannelId": "19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2",
+      "TeamId": "2a00a70a-00f5-4da5-8618-8281194f0de0"
+    },
+    "ChatId": null,
+    "EventDetail": null
+  },
+  {
+    "Id": "1755004269462",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003Cp\u003EThere is a draft channel message\u003C/p\u003E\n\u003Cp\u003E\u003Cimg alt=\u0022image\u0022 src=\u0022https://graph.microsoft.com/v1.0/teams/2a00a70a-00f5-4da5-8618-8281194f0de0/channels/19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2/messages/1755004269462/hostedContents/aWQ9eF8wLXd1cy1kMi1jMTVkYmE0M2ZmZDU5MTA1ODIyZDcyZTI5ZTExNmI4ZCx0eXBlPTEsdXJsPWh0dHBzOi8vdXMtYXBpLmFzbS5za3lwZS5jb20vdjEvb2JqZWN0cy8wLXd1cy1kMi1jMTVkYmE0M2ZmZDU5MTA1ODIyZDcyZTI5ZTExNmI4ZC92aWV3cy9pbWdv/$value\u0022 itemid=\u00220-wus-d2-c15dba43ffd59105822d72e29e116b8d\u0022 width=\u0022655.7377049180328\u0022 height=\u0022250\u0022\u003E\u003Cimg alt=\u0022image\u0022 src=\u0022https://graph.microsoft.com/v1.0/teams/2a00a70a-00f5-4da5-8618-8281194f0de0/channels/19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2/messages/1755004269462/hostedContents/aWQ9eF8wLXd1cy1kMy1hYTUxZGI0OWIzZDVkOGViMTNjNGVkNzMzNWNhYTk5NCx0eXBlPTEsdXJsPWh0dHBzOi8vdXMtYXBpLmFzbS5za3lwZS5jb20vdjEvb2JqZWN0cy8wLXd1cy1kMy1hYTUxZGI0OWIzZDVkOGViMTNjNGVkNzMzNWNhYTk5NC92aWV3cy9pbWdv/$value\u0022 itemid=\u00220-wus-d3-aa51db49b3d5d8eb13c4ed7335caa994\u0022 width=\u0022800\u0022 height=\u002252\u0022\u003E\u003C/p\u003E\n\u003Cp\u003EThere is a draft thread reply:\u003C/p\u003E\n\u003Cp\u003E\u003Cimg alt=\u0022image\u0022 src=\u0022https://graph.microsoft.com/v1.0/teams/2a00a70a-00f5-4da5-8618-8281194f0de0/channels/19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2/messages/1755004269462/hostedContents/aWQ9eF8wLXd1cy1kNS0xNmZmYjYwMzYzMTJlZjNhYmUxYWE3NjFjNmNkYjkwNCx0eXBlPTEsdXJsPWh0dHBzOi8vdXMtYXBpLmFzbS5za3lwZS5jb20vdjEvb2JqZWN0cy8wLXd1cy1kNS0xNmZmYjYwMzYzMTJlZjNhYmUxYWE3NjFjNmNkYjkwNC92aWV3cy9pbWdv/$value\u0022 itemid=\u00220-wus-d5-16ffb6036312ef3abe1aa761c6cdb904\u0022 width=\u0022800\u0022 height=\u0022101\u0022\u003E\u003C/p\u003E"
+    },
+    "CreatedDateTime": "2025-08-12T13:11:09.462+00:00",
+    "LastModifiedDateTime": "2025-08-12T13:14:18.991+00:00",
+    "LastEditedDateTime": "2025-08-12T13:14:18.909+00:00",
+    "DeletedDateTime": null,
+    "Subject": "Draft message note",
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81%40thread.tacv2/1755004269462?groupId=2a00a70a-00f5-4da5-8618-8281194f0de0\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1755004269462\u0026parentMessageId=1755004269462",
+    "From": {
+      "Application": null,
+      "Device": null,
+      "User": {
+        "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+        "DisplayName": "Pieter K",
+        "UserIdentityType": "aadUser",
+        "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+      }
+    },
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "message",
+    "ChannelIdentity": {
+      "ChannelId": "19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2",
+      "TeamId": "2a00a70a-00f5-4da5-8618-8281194f0de0"
+    },
+    "ChatId": null,
+    "EventDetail": null
+  },
+  {
+    "Id": "1755565200621",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003Cp\u003EThis is a scheduled message, it\u0027s scheduled to be delivered on Tuesday, Aug 19: 8:00 AM\u003C/p\u003E"
+    },
+    "CreatedDateTime": "2025-08-19T01:00:00.621+00:00",
+    "LastModifiedDateTime": "2025-08-19T01:00:00.621+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": "Scheduled message 1",
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81%40thread.tacv2/1755565200621?groupId=2a00a70a-00f5-4da5-8618-8281194f0de0\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1755565200621\u0026parentMessageId=1755565200621",
+    "From": {
+      "Application": null,
+      "Device": null,
+      "User": {
+        "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+        "DisplayName": "Pieter K",
+        "UserIdentityType": "aadUser",
+        "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+      }
+    },
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "message",
+    "ChannelIdentity": {
+      "ChannelId": "19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2",
+      "TeamId": "2a00a70a-00f5-4da5-8618-8281194f0de0"
+    },
+    "ChatId": null,
+    "EventDetail": null
+  },
+  {
+    "Id": "1754976725388",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003CsystemEventMessage/\u003E"
+    },
+    "CreatedDateTime": "2025-08-12T05:32:05.388+00:00",
+    "LastModifiedDateTime": "2025-08-12T05:32:05.388+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": null,
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81%40thread.tacv2/1754976725388?groupId=2a00a70a-00f5-4da5-8618-8281194f0de0\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1754976725388\u0026parentMessageId=1754976725388",
+    "From": null,
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "unknownFutureValue",
+    "ChannelIdentity": {
+      "ChannelId": "19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2",
+      "TeamId": "2a00a70a-00f5-4da5-8618-8281194f0de0"
+    },
+    "ChatId": null,
+    "EventDetail": {
+      "EventType": null,
+      "Initiator": {
+        "Application": null,
+        "Device": null,
+        "User": {
+          "DisplayName": null,
+          "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+          "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940",
+          "Thumbnails": null
+        },
+        "Conversation": null,
+        "ConversationIdentityType": null,
+        "Encrypted": null,
+        "OnPremises": null,
+        "Guest": null,
+        "Phone": null
+      },
+      "CallEnded": null,
+      "CallRecording": null,
+      "CallStarted": null,
+      "CallTranscript": null,
+      "ChannelAdded": null,
+      "ChannelDeleted": null,
+      "ChannelDescriptionUpdated": null,
+      "ChannelRenamed": null,
+      "ChannelSetAsFavoriteByDefault": null,
+      "ChannelUnsetAsFavoriteByDefault": null,
+      "ChatRenamed": null,
+      "ConversationMemberRoleUpdated": null,
+      "MeetingPolicyUpdated": null,
+      "MembersAdded": null,
+      "MembersDeleted": null,
+      "MembersJoined": null,
+      "MembersLeft": null,
+      "MessagePinned": null,
+      "MessageUnpinned": null,
+      "TabUpdated": null,
+      "TeamArchived": null,
+      "TeamCreated": null,
+      "TeamDescriptionUpdated": null,
+      "TeamJoiningDisabled": null,
+      "TeamJoiningEnabled": null,
+      "TeamRenamed": null,
+      "TeamsAppInstalled": null,
+      "TeamsAppRemoved": null,
+      "TeamsAppUpgraded": null,
+      "TeamUnarchived": null
+    }
+  },
+  {
+    "Id": "1754976728200",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003CsystemEventMessage/\u003E"
+    },
+    "CreatedDateTime": "2025-08-12T05:32:08.2+00:00",
+    "LastModifiedDateTime": "2025-08-12T05:32:08.2+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": null,
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81%40thread.tacv2/1754976728200?groupId=2a00a70a-00f5-4da5-8618-8281194f0de0\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1754976728200\u0026parentMessageId=1754976728200",
+    "From": null,
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "unknownFutureValue",
+    "ChannelIdentity": {
+      "ChannelId": "19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2",
+      "TeamId": "2a00a70a-00f5-4da5-8618-8281194f0de0"
+    },
+    "ChatId": null,
+    "EventDetail": {
+      "EventType": null,
+      "Initiator": {
+        "Application": {
+          "DisplayName": null,
+          "Id": "62b732f7-fc71-40bc-b27d-35efcb0509de",
+          "TenantId": null,
+          "Thumbnails": null
+        },
+        "Device": null,
+        "User": null,
+        "Conversation": null,
+        "ConversationIdentityType": null,
+        "Encrypted": null,
+        "OnPremises": null,
+        "Guest": null,
+        "Phone": null
+      },
+      "CallEnded": null,
+      "CallRecording": null,
+      "CallStarted": null,
+      "CallTranscript": null,
+      "ChannelAdded": null,
+      "ChannelDeleted": null,
+      "ChannelDescriptionUpdated": null,
+      "ChannelRenamed": null,
+      "ChannelSetAsFavoriteByDefault": null,
+      "ChannelUnsetAsFavoriteByDefault": null,
+      "ChatRenamed": null,
+      "ConversationMemberRoleUpdated": null,
+      "MeetingPolicyUpdated": null,
+      "MembersAdded": null,
+      "MembersDeleted": null,
+      "MembersJoined": null,
+      "MembersLeft": null,
+      "MessagePinned": null,
+      "MessageUnpinned": null,
+      "TabUpdated": null,
+      "TeamArchived": null,
+      "TeamCreated": null,
+      "TeamDescriptionUpdated": null,
+      "TeamJoiningDisabled": null,
+      "TeamJoiningEnabled": null,
+      "TeamRenamed": null,
+      "TeamsAppInstalled": null,
+      "TeamsAppRemoved": null,
+      "TeamsAppUpgraded": null,
+      "TeamUnarchived": null
+    }
+  },
+  {
+    "Id": "1759909519331",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003CsystemEventMessage/\u003E"
+    },
+    "CreatedDateTime": "2025-10-08T07:45:19.331+00:00",
+    "LastModifiedDateTime": "2025-10-08T07:45:19.331+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": null,
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81%40thread.tacv2/1759909519331?groupId=2a00a70a-00f5-4da5-8618-8281194f0de0\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1759909519331\u0026parentMessageId=1759909519331",
+    "From": null,
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "unknownFutureValue",
+    "ChannelIdentity": {
+      "ChannelId": "19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2",
+      "TeamId": "2a00a70a-00f5-4da5-8618-8281194f0de0"
+    },
+    "ChatId": null,
+    "EventDetail": {
+      "EventType": null,
+      "Initiator": {
+        "Application": {
+          "DisplayName": null,
+          "Id": "62b732f7-fc71-40bc-b27d-35efcb0509de",
+          "TenantId": null,
+          "Thumbnails": null
+        },
+        "Device": null,
+        "User": null,
+        "Conversation": null,
+        "ConversationIdentityType": null,
+        "Encrypted": null,
+        "OnPremises": null,
+        "Guest": null,
+        "Phone": null
+      },
+      "CallEnded": null,
+      "CallRecording": null,
+      "CallStarted": null,
+      "CallTranscript": null,
+      "ChannelAdded": null,
+      "ChannelDeleted": null,
+      "ChannelDescriptionUpdated": null,
+      "ChannelRenamed": null,
+      "ChannelSetAsFavoriteByDefault": null,
+      "ChannelUnsetAsFavoriteByDefault": null,
+      "ChatRenamed": null,
+      "ConversationMemberRoleUpdated": null,
+      "MeetingPolicyUpdated": null,
+      "MembersAdded": null,
+      "MembersDeleted": null,
+      "MembersJoined": null,
+      "MembersLeft": null,
+      "MessagePinned": null,
+      "MessageUnpinned": null,
+      "TabUpdated": null,
+      "TeamArchived": null,
+      "TeamCreated": null,
+      "TeamDescriptionUpdated": null,
+      "TeamJoiningDisabled": null,
+      "TeamJoiningEnabled": null,
+      "TeamRenamed": null,
+      "TeamsAppInstalled": null,
+      "TeamsAppRemoved": null,
+      "TeamsAppUpgraded": null,
+      "TeamUnarchived": null
+    }
+  },
+  {
+    "Id": "1759909664848",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003CsystemEventMessage/\u003E"
+    },
+    "CreatedDateTime": "2025-10-08T07:47:44.848+00:00",
+    "LastModifiedDateTime": "2025-10-08T07:47:44.848+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": null,
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81%40thread.tacv2/1759909664848?groupId=2a00a70a-00f5-4da5-8618-8281194f0de0\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1759909664848\u0026parentMessageId=1759909664848",
+    "From": null,
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "unknownFutureValue",
+    "ChannelIdentity": {
+      "ChannelId": "19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2",
+      "TeamId": "2a00a70a-00f5-4da5-8618-8281194f0de0"
+    },
+    "ChatId": null,
+    "EventDetail": {
+      "EventType": null,
+      "Initiator": {
+        "Application": {
+          "DisplayName": null,
+          "Id": "62b732f7-fc71-40bc-b27d-35efcb0509de",
+          "TenantId": null,
+          "Thumbnails": null
+        },
+        "Device": null,
+        "User": null,
+        "Conversation": null,
+        "ConversationIdentityType": null,
+        "Encrypted": null,
+        "OnPremises": null,
+        "Guest": null,
+        "Phone": null
+      },
+      "CallEnded": null,
+      "CallRecording": null,
+      "CallStarted": null,
+      "CallTranscript": null,
+      "ChannelAdded": null,
+      "ChannelDeleted": null,
+      "ChannelDescriptionUpdated": null,
+      "ChannelRenamed": null,
+      "ChannelSetAsFavoriteByDefault": null,
+      "ChannelUnsetAsFavoriteByDefault": null,
+      "ChatRenamed": null,
+      "ConversationMemberRoleUpdated": null,
+      "MeetingPolicyUpdated": null,
+      "MembersAdded": null,
+      "MembersDeleted": null,
+      "MembersJoined": null,
+      "MembersLeft": null,
+      "MessagePinned": null,
+      "MessageUnpinned": null,
+      "TabUpdated": null,
+      "TeamArchived": null,
+      "TeamCreated": null,
+      "TeamDescriptionUpdated": null,
+      "TeamJoiningDisabled": null,
+      "TeamJoiningEnabled": null,
+      "TeamRenamed": null,
+      "TeamsAppInstalled": null,
+      "TeamsAppRemoved": null,
+      "TeamsAppUpgraded": null,
+      "TeamUnarchived": null
+    }
+  },
+  {
+    "Id": "1759909767700",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003CsystemEventMessage/\u003E"
+    },
+    "CreatedDateTime": "2025-10-08T07:49:27.7+00:00",
+    "LastModifiedDateTime": "2025-10-08T07:49:27.7+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": null,
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81%40thread.tacv2/1759909767700?groupId=2a00a70a-00f5-4da5-8618-8281194f0de0\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1759909767700\u0026parentMessageId=1759909767700",
+    "From": null,
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "unknownFutureValue",
+    "ChannelIdentity": {
+      "ChannelId": "19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2",
+      "TeamId": "2a00a70a-00f5-4da5-8618-8281194f0de0"
+    },
+    "ChatId": null,
+    "EventDetail": {
+      "EventType": null,
+      "Initiator": {
+        "Application": {
+          "DisplayName": null,
+          "Id": "62b732f7-fc71-40bc-b27d-35efcb0509de",
+          "TenantId": null,
+          "Thumbnails": null
+        },
+        "Device": null,
+        "User": null,
+        "Conversation": null,
+        "ConversationIdentityType": null,
+        "Encrypted": null,
+        "OnPremises": null,
+        "Guest": null,
+        "Phone": null
+      },
+      "CallEnded": null,
+      "CallRecording": null,
+      "CallStarted": null,
+      "CallTranscript": null,
+      "ChannelAdded": null,
+      "ChannelDeleted": null,
+      "ChannelDescriptionUpdated": null,
+      "ChannelRenamed": null,
+      "ChannelSetAsFavoriteByDefault": null,
+      "ChannelUnsetAsFavoriteByDefault": null,
+      "ChatRenamed": null,
+      "ConversationMemberRoleUpdated": null,
+      "MeetingPolicyUpdated": null,
+      "MembersAdded": null,
+      "MembersDeleted": null,
+      "MembersJoined": null,
+      "MembersLeft": null,
+      "MessagePinned": null,
+      "MessageUnpinned": null,
+      "TabUpdated": null,
+      "TeamArchived": null,
+      "TeamCreated": null,
+      "TeamDescriptionUpdated": null,
+      "TeamJoiningDisabled": null,
+      "TeamJoiningEnabled": null,
+      "TeamRenamed": null,
+      "TeamsAppInstalled": null,
+      "TeamsAppRemoved": null,
+      "TeamsAppUpgraded": null,
+      "TeamUnarchived": null
+    }
+  },
+  {
+    "Id": "1759909861332",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003CsystemEventMessage/\u003E"
+    },
+    "CreatedDateTime": "2025-10-08T07:51:01.332+00:00",
+    "LastModifiedDateTime": "2025-10-08T07:51:01.332+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": null,
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81%40thread.tacv2/1759909861332?groupId=2a00a70a-00f5-4da5-8618-8281194f0de0\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1759909861332\u0026parentMessageId=1759909861332",
+    "From": null,
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "unknownFutureValue",
+    "ChannelIdentity": {
+      "ChannelId": "19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2",
+      "TeamId": "2a00a70a-00f5-4da5-8618-8281194f0de0"
+    },
+    "ChatId": null,
+    "EventDetail": {
+      "EventType": null,
+      "Initiator": {
+        "Application": {
+          "DisplayName": null,
+          "Id": "62b732f7-fc71-40bc-b27d-35efcb0509de",
+          "TenantId": null,
+          "Thumbnails": null
+        },
+        "Device": null,
+        "User": null,
+        "Conversation": null,
+        "ConversationIdentityType": null,
+        "Encrypted": null,
+        "OnPremises": null,
+        "Guest": null,
+        "Phone": null
+      },
+      "CallEnded": null,
+      "CallRecording": null,
+      "CallStarted": null,
+      "CallTranscript": null,
+      "ChannelAdded": null,
+      "ChannelDeleted": null,
+      "ChannelDescriptionUpdated": null,
+      "ChannelRenamed": null,
+      "ChannelSetAsFavoriteByDefault": null,
+      "ChannelUnsetAsFavoriteByDefault": null,
+      "ChatRenamed": null,
+      "ConversationMemberRoleUpdated": null,
+      "MeetingPolicyUpdated": null,
+      "MembersAdded": null,
+      "MembersDeleted": null,
+      "MembersJoined": null,
+      "MembersLeft": null,
+      "MessagePinned": null,
+      "MessageUnpinned": null,
+      "TabUpdated": null,
+      "TeamArchived": null,
+      "TeamCreated": null,
+      "TeamDescriptionUpdated": null,
+      "TeamJoiningDisabled": null,
+      "TeamJoiningEnabled": null,
+      "TeamRenamed": null,
+      "TeamsAppInstalled": null,
+      "TeamsAppRemoved": null,
+      "TeamsAppUpgraded": null,
+      "TeamUnarchived": null
+    }
+  },
+  {
+    "Id": "1760014846662",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003CsystemEventMessage/\u003E"
+    },
+    "CreatedDateTime": "2025-10-09T13:00:46.662+00:00",
+    "LastModifiedDateTime": "2025-10-09T13:00:46.662+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": null,
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81%40thread.tacv2/1760014846662?groupId=2a00a70a-00f5-4da5-8618-8281194f0de0\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1760014846662\u0026parentMessageId=1760014846662",
+    "From": null,
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "unknownFutureValue",
+    "ChannelIdentity": {
+      "ChannelId": "19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2",
+      "TeamId": "2a00a70a-00f5-4da5-8618-8281194f0de0"
+    },
+    "ChatId": null,
+    "EventDetail": {
+      "EventType": null,
+      "Initiator": {
+        "Application": {
+          "DisplayName": null,
+          "Id": "62b732f7-fc71-40bc-b27d-35efcb0509de",
+          "TenantId": null,
+          "Thumbnails": null
+        },
+        "Device": null,
+        "User": null,
+        "Conversation": null,
+        "ConversationIdentityType": null,
+        "Encrypted": null,
+        "OnPremises": null,
+        "Guest": null,
+        "Phone": null
+      },
+      "CallEnded": null,
+      "CallRecording": null,
+      "CallStarted": null,
+      "CallTranscript": null,
+      "ChannelAdded": null,
+      "ChannelDeleted": null,
+      "ChannelDescriptionUpdated": null,
+      "ChannelRenamed": null,
+      "ChannelSetAsFavoriteByDefault": null,
+      "ChannelUnsetAsFavoriteByDefault": null,
+      "ChatRenamed": null,
+      "ConversationMemberRoleUpdated": null,
+      "MeetingPolicyUpdated": null,
+      "MembersAdded": null,
+      "MembersDeleted": null,
+      "MembersJoined": null,
+      "MembersLeft": null,
+      "MessagePinned": null,
+      "MessageUnpinned": null,
+      "TabUpdated": null,
+      "TeamArchived": null,
+      "TeamCreated": null,
+      "TeamDescriptionUpdated": null,
+      "TeamJoiningDisabled": null,
+      "TeamJoiningEnabled": null,
+      "TeamRenamed": null,
+      "TeamsAppInstalled": null,
+      "TeamsAppRemoved": null,
+      "TeamsAppUpgraded": null,
+      "TeamUnarchived": null
+    }
+  },
+  {
+    "Id": "1760015524535",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003CsystemEventMessage/\u003E"
+    },
+    "CreatedDateTime": "2025-10-09T13:12:04.535+00:00",
+    "LastModifiedDateTime": "2025-10-09T13:12:04.535+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": null,
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81%40thread.tacv2/1760015524535?groupId=2a00a70a-00f5-4da5-8618-8281194f0de0\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1760015524535\u0026parentMessageId=1760015524535",
+    "From": null,
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "unknownFutureValue",
+    "ChannelIdentity": {
+      "ChannelId": "19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2",
+      "TeamId": "2a00a70a-00f5-4da5-8618-8281194f0de0"
+    },
+    "ChatId": null,
+    "EventDetail": {
+      "EventType": null,
+      "Initiator": {
+        "Application": {
+          "DisplayName": null,
+          "Id": "62b732f7-fc71-40bc-b27d-35efcb0509de",
+          "TenantId": null,
+          "Thumbnails": null
+        },
+        "Device": null,
+        "User": null,
+        "Conversation": null,
+        "ConversationIdentityType": null,
+        "Encrypted": null,
+        "OnPremises": null,
+        "Guest": null,
+        "Phone": null
+      },
+      "CallEnded": null,
+      "CallRecording": null,
+      "CallStarted": null,
+      "CallTranscript": null,
+      "ChannelAdded": null,
+      "ChannelDeleted": null,
+      "ChannelDescriptionUpdated": null,
+      "ChannelRenamed": null,
+      "ChannelSetAsFavoriteByDefault": null,
+      "ChannelUnsetAsFavoriteByDefault": null,
+      "ChatRenamed": null,
+      "ConversationMemberRoleUpdated": null,
+      "MeetingPolicyUpdated": null,
+      "MembersAdded": null,
+      "MembersDeleted": null,
+      "MembersJoined": null,
+      "MembersLeft": null,
+      "MessagePinned": null,
+      "MessageUnpinned": null,
+      "TabUpdated": null,
+      "TeamArchived": null,
+      "TeamCreated": null,
+      "TeamDescriptionUpdated": null,
+      "TeamJoiningDisabled": null,
+      "TeamJoiningEnabled": null,
+      "TeamRenamed": null,
+      "TeamsAppInstalled": null,
+      "TeamsAppRemoved": null,
+      "TeamsAppUpgraded": null,
+      "TeamUnarchived": null
+    }
+  },
+  {
+    "Id": "1760954035510",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003CsystemEventMessage/\u003E"
+    },
+    "CreatedDateTime": "2025-10-20T09:53:55.51+00:00",
+    "LastModifiedDateTime": "2025-10-20T09:53:55.51+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": null,
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81%40thread.tacv2/1760954035510?groupId=2a00a70a-00f5-4da5-8618-8281194f0de0\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1760954035510\u0026parentMessageId=1760954035510",
+    "From": null,
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "unknownFutureValue",
+    "ChannelIdentity": {
+      "ChannelId": "19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2",
+      "TeamId": "2a00a70a-00f5-4da5-8618-8281194f0de0"
+    },
+    "ChatId": null,
+    "EventDetail": {
+      "EventType": null,
+      "Initiator": {
+        "Application": {
+          "DisplayName": null,
+          "Id": "62b732f7-fc71-40bc-b27d-35efcb0509de",
+          "TenantId": null,
+          "Thumbnails": null
+        },
+        "Device": null,
+        "User": null,
+        "Conversation": null,
+        "ConversationIdentityType": null,
+        "Encrypted": null,
+        "OnPremises": null,
+        "Guest": null,
+        "Phone": null
+      },
+      "CallEnded": null,
+      "CallRecording": null,
+      "CallStarted": null,
+      "CallTranscript": null,
+      "ChannelAdded": null,
+      "ChannelDeleted": null,
+      "ChannelDescriptionUpdated": null,
+      "ChannelRenamed": null,
+      "ChannelSetAsFavoriteByDefault": null,
+      "ChannelUnsetAsFavoriteByDefault": null,
+      "ChatRenamed": null,
+      "ConversationMemberRoleUpdated": null,
+      "MeetingPolicyUpdated": null,
+      "MembersAdded": null,
+      "MembersDeleted": null,
+      "MembersJoined": null,
+      "MembersLeft": null,
+      "MessagePinned": null,
+      "MessageUnpinned": null,
+      "TabUpdated": null,
+      "TeamArchived": null,
+      "TeamCreated": null,
+      "TeamDescriptionUpdated": null,
+      "TeamJoiningDisabled": null,
+      "TeamJoiningEnabled": null,
+      "TeamRenamed": null,
+      "TeamsAppInstalled": null,
+      "TeamsAppRemoved": null,
+      "TeamsAppUpgraded": null,
+      "TeamUnarchived": null
+    }
+  },
+  {
+    "Id": "1760954237656",
+    "Body": {
+      "ContentType": "html",
+      "Content": "\u003CsystemEventMessage/\u003E"
+    },
+    "CreatedDateTime": "2025-10-20T09:57:17.656+00:00",
+    "LastModifiedDateTime": "2025-10-20T09:57:17.656+00:00",
+    "LastEditedDateTime": null,
+    "DeletedDateTime": null,
+    "Subject": null,
+    "Summary": null,
+    "Importance": "normal",
+    "Locale": "en-us",
+    "PolicyViolation": null,
+    "ReplyToId": null,
+    "WebUrl": "https://teams.microsoft.com/l/message/19%3A5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81%40thread.tacv2/1760954237656?groupId=2a00a70a-00f5-4da5-8618-8281194f0de0\u0026tenantId=af4acab6-6476-4c2f-bef2-ff6479dd3940\u0026createdTime=1760954237656\u0026parentMessageId=1760954237656",
+    "From": null,
+    "Attachments": [],
+    "Mentions": [],
+    "Reactions": [],
+    "MessageHistory": null,
+    "MessageType": "unknownFutureValue",
+    "ChannelIdentity": {
+      "ChannelId": "19:5XdBvtvU2IDCRqIjaamUL7C6eU3n3ZZSK4F1aOj1sq81@thread.tacv2",
+      "TeamId": "2a00a70a-00f5-4da5-8618-8281194f0de0"
+    },
+    "ChatId": null,
+    "EventDetail": {
+      "EventType": null,
+      "Initiator": {
+        "Application": null,
+        "Device": null,
+        "User": {
+          "DisplayName": null,
+          "Id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+          "TenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940",
+          "Thumbnails": null
+        },
+        "Conversation": null,
+        "ConversationIdentityType": null,
+        "Encrypted": null,
+        "OnPremises": null,
+        "Guest": null,
+        "Phone": null
+      },
+      "CallEnded": null,
+      "CallRecording": null,
+      "CallStarted": null,
+      "CallTranscript": null,
+      "ChannelAdded": null,
+      "ChannelDeleted": null,
+      "ChannelDescriptionUpdated": null,
+      "ChannelRenamed": null,
+      "ChannelSetAsFavoriteByDefault": null,
+      "ChannelUnsetAsFavoriteByDefault": null,
+      "ChatRenamed": null,
+      "ConversationMemberRoleUpdated": null,
+      "MeetingPolicyUpdated": null,
+      "MembersAdded": null,
+      "MembersDeleted": null,
+      "MembersJoined": null,
+      "MembersLeft": null,
+      "MessagePinned": null,
+      "MessageUnpinned": null,
+      "TabUpdated": null,
+      "TeamArchived": null,
+      "TeamCreated": null,
+      "TeamDescriptionUpdated": null,
+      "TeamJoiningDisabled": null,
+      "TeamJoiningEnabled": null,
+      "TeamRenamed": null,
+      "TeamsAppInstalled": null,
+      "TeamsAppRemoved": null,
+      "TeamsAppUpgraded": null,
+      "TeamUnarchived": null
+    }
+  }
+]

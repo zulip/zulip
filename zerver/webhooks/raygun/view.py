@@ -1,10 +1,11 @@
-import time
+from datetime import datetime
 
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
+from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_anything, check_int, check_list, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -285,17 +286,12 @@ def compose_activity_message(payload: WildValue) -> str:
         raise UnsupportedWebhookEventTypeError(event_type)
 
 
-def parse_time(timestamp: str) -> str:
+def parse_time(dt_str: str) -> str:
     """Parses and returns the timestamp provided
 
     :param timestamp: The timestamp provided by the payload
     :returns: A string containing the time
     """
 
-    # Raygun provides two timestamp format, one with the Z at the end,
-    # and one without the Z.
-
-    format = "%Y-%m-%dT%H:%M:%S"
-    format += "Z" if timestamp[-1:] == "Z" else ""
-    parsed_time = time.strftime("%c", time.strptime(timestamp, format))
-    return parsed_time
+    dt = datetime.fromisoformat(dt_str)
+    return datetime_to_global_time(dt)

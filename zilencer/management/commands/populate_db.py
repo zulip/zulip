@@ -31,13 +31,17 @@ from zerver.actions.custom_profile_fields import (
 from zerver.actions.message_send import build_message_send_dict, do_send_messages
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.realm_linkifiers import do_add_linkifier
-from zerver.actions.realm_settings import do_set_realm_moderation_request_channel
+from zerver.actions.realm_settings import (
+    do_set_realm_moderation_request_channel,
+    do_set_realm_property,
+)
 from zerver.actions.scheduled_messages import check_schedule_message
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_groups import create_user_group_in_database
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.bulk_create import bulk_create_streams
+from zerver.lib.digest import DIGEST_CUTOFF
 from zerver.lib.generate_test_data import create_test_data, generate_topics
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
@@ -157,6 +161,10 @@ def clear_database() -> None:
 def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, Any]]) -> None:
     subscriptions_to_add = []
     event_time = timezone_now()
+    # Backdate few channel subscriptions to support digest previews in dev.
+    # This ensures sample data appears in `/digest` by making subscriptions
+    # appear old enough to pass the cutoff check in `get_user_stream_map`.
+    event_time_for_digest = event_time - timedelta(days=DIGEST_CUTOFF)
     all_subscription_logs = []
     subscriber_count_changes: dict[int, set[int]] = defaultdict(set)
     profiles = UserProfile.objects.select_related("realm").filter(realm=realm)
@@ -181,7 +189,7 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, An
                 modified_stream=stream,
                 event_last_message_id=0,
                 event_type=AuditLogEventType.SUBSCRIPTION_CREATED,
-                event_time=event_time,
+                event_time=event_time_for_digest if i < 4 else event_time,
             )
             all_subscription_logs.append(log)
     bulk_create_stream_subscriptions(subs=subscriptions_to_add, streams=subscriber_count_changes)
@@ -193,6 +201,7 @@ def create_alert_words(realm_id: int) -> None:
         realm_id=realm_id,
         is_bot=False,
         is_active=True,
+        is_imported_stub=False,
     ).values_list("id", flat=True)
 
     alert_words = [
@@ -542,7 +551,7 @@ class Command(ZulipBaseCommand):
                 u.timezone = new_time_zone
                 u.save(update_fields=["timezone"])
 
-            # Note: Hamlet keeps default time zone of "".
+            # Note: Hamlet and Imported User keep default time zone of "".
             assign_time_zone_by_delivery_email("AARON@zulip.com", "US/Pacific")
             assign_time_zone_by_delivery_email("othello@zulip.com", "US/Pacific")
             assign_time_zone_by_delivery_email("ZOE@zulip.com", "US/Eastern")
@@ -553,7 +562,9 @@ class Command(ZulipBaseCommand):
             assign_time_zone_by_delivery_email("cordelia@zulip.com", "UTC")
 
             iago = get_user_by_delivery_email("iago@zulip.com", zulip_realm)
-            do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+            do_change_user_role(
+                iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None, notify=False
+            )
             iago.is_staff = True
             iago.save(update_fields=["is_staff"])
 
@@ -575,13 +586,25 @@ class Command(ZulipBaseCommand):
             )
 
             desdemona = get_user_by_delivery_email("desdemona@zulip.com", zulip_realm)
-            do_change_user_role(desdemona, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+            do_change_user_role(
+                desdemona, UserProfile.ROLE_REALM_OWNER, acting_user=None, notify=False
+            )
 
             shiva = get_user_by_delivery_email("shiva@zulip.com", zulip_realm)
-            do_change_user_role(shiva, UserProfile.ROLE_MODERATOR, acting_user=None)
+            do_change_user_role(shiva, UserProfile.ROLE_MODERATOR, acting_user=None, notify=False)
 
             polonius = get_user_by_delivery_email("polonius@zulip.com", zulip_realm)
-            do_change_user_role(polonius, UserProfile.ROLE_GUEST, acting_user=None)
+            do_change_user_role(polonius, UserProfile.ROLE_GUEST, acting_user=None, notify=False)
+
+            zulip_imported_users = [
+                ("Imported User", "imported-user@zulip.com"),
+            ]
+            create_users(
+                zulip_realm,
+                zulip_imported_users,
+                is_imported_stub=True,
+                tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
+            )
 
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
@@ -708,6 +731,7 @@ class Command(ZulipBaseCommand):
                         zulip_sandbox_channel_name,
                     ],
                     "shiva@zulip.com": ["Verona", "Denmark", "Scotland"],
+                    "imported-user@zulip.com": ["Denmark"],
                 }
 
                 for profile in profiles:
@@ -824,6 +848,8 @@ class Command(ZulipBaseCommand):
                     {"id": github_profile.id, "value": "zulip"},
                     {"id": pronouns.id, "value": "he/him"},
                 ],
+                None,
+                notify=False,
             )
             do_update_user_custom_profile_data_if_changed(
                 hamlet,
@@ -841,6 +867,8 @@ class Command(ZulipBaseCommand):
                     {"id": github_profile.id, "value": "zulipbot"},
                     {"id": pronouns.id, "value": "he/him"},
                 ],
+                None,
+                notify=False,
             )
             # We need to create at least one scheduled message for Iago for the api-test
             # cURL example to delete an existing scheduled message.
@@ -926,6 +954,12 @@ class Command(ZulipBaseCommand):
                     acting_user=None,
                 )
 
+            # Channel event messages are disabled by default, but we want them
+            # enabled in the development environment (so that we naturally test
+            # them when doing manual testing) and unit tests (to preserve the old behaviour).
+            do_set_realm_property(
+                zulip_realm, "send_channel_events_messages", True, acting_user=None
+            )
         # Create a test realm emoji.
         IMAGE_FILE_PATH = static_path("images/test-images/checkbox.png")
         with open(IMAGE_FILE_PATH, "rb") as fp:
@@ -936,6 +970,12 @@ class Command(ZulipBaseCommand):
         if not options["test_suite"]:
             # Populate users with some bar data
             for user in user_profiles:
+                if user.is_imported_stub:
+                    # We do not create a UserPresence object for imported stub
+                    # users with the current time as the last active time, as
+                    # it would mislead clients about the last active date for
+                    # an imported stub user who hasn't logged in yet.
+                    continue
                 date = timezone_now()
                 UserPresence.objects.get_or_create(
                     user_profile=user,
@@ -1432,14 +1472,14 @@ def choose_date_sent(
     # (2) there are some >24hr gaps between adjacent messages, and
     # (3) a decent bulk of messages in the last day so you see adjacent messages with the same date.
     # So we distribute 80% of messages starting from oldest_message_days days ago, over a period
-    # of the first min(oldest_message_days-2, 1) of those days. Then, distributes remaining messages
+    # of the first max(oldest_message_days-2, 1) of those days. Then, distributes remaining messages
     # over the past 24 hours.
     amount_in_first_chunk = int(tot_messages * 0.8)
     amount_in_second_chunk = tot_messages - amount_in_first_chunk
 
     if num_messages < amount_in_first_chunk:
         spoofed_date = timezone_now() - timedelta(days=oldest_message_days)
-        num_days_for_first_chunk = min(oldest_message_days - 2, 1)
+        num_days_for_first_chunk = max(oldest_message_days - 2, 1)
         interval_size = num_days_for_first_chunk * 24 * 60 * 60 / amount_in_first_chunk
         lower_bound = interval_size * num_messages
         upper_bound = interval_size * (num_messages + 1)

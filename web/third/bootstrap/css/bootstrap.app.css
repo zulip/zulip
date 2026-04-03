@@ -48,7 +48,7 @@ h4 {
 h1,
 h2,
 h3 {
-  line-height: 40px;
+  line-height: var(--header-line-height);
 }
 h1 {
   font-size: 38.5px;

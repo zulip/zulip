@@ -7,7 +7,11 @@
 {% block content %}
 <p>{% trans %}Dear former administrators of {{ realm_name }},{% endtrans %}</p>
 
+{% if is_demo_organization %}
+<p>{% trans realm_url=macros.link_tag(realm_url) %}One of your administrators requested reactivation of the previously deactivated Zulip demo organization hosted at {{ realm_url }}.{% endtrans %}</p>
+{% else %}
 <p>{% trans realm_url=macros.link_tag(realm_url) %}One of your administrators requested reactivation of the previously deactivated Zulip organization hosted at {{ realm_url }}.{% endtrans %}</p>
+{% endif %}
 
 <p>
     {{ _('Click the button below to reactivate your organization.') }}

@@ -1,23 +1,30 @@
-from collections.abc import Callable
+import functools
+from collections.abc import Callable, Hashable
 from typing import Any, TypeVar
 
 ReturnT = TypeVar("ReturnT")
 
-FUNCTION_NAME_TO_PER_REQUEST_RESULT: dict[str, dict[int, Any]] = {}
+FUNCTION_NAME_TO_PER_REQUEST_RESULT: dict[str, dict[Any, Any]] = {}
 
 
-def return_same_value_during_entire_request(f: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
+def cache_for_current_request(f: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
+    """Cache the return value for each distinct set of arguments
+    during the current request.  Unlike
+    @cache_for_current_request, this supports functions
+    with any hashable arguments, not just a single int key."""
     cache_key = f.__name__
 
     assert cache_key not in FUNCTION_NAME_TO_PER_REQUEST_RESULT
     FUNCTION_NAME_TO_PER_REQUEST_RESULT[cache_key] = {}
 
-    def wrapper(key: int, *args: Any) -> ReturnT:
-        if key in FUNCTION_NAME_TO_PER_REQUEST_RESULT[cache_key]:
-            return FUNCTION_NAME_TO_PER_REQUEST_RESULT[cache_key][key]
-
-        result = f(key, *args)
-        FUNCTION_NAME_TO_PER_REQUEST_RESULT[cache_key][key] = result
+    @functools.wraps(f)
+    def wrapper(*args: Hashable, **kwargs: Hashable) -> ReturnT:
+        cache = FUNCTION_NAME_TO_PER_REQUEST_RESULT[cache_key]
+        key = (args, frozenset(kwargs.items()))
+        if key in cache:
+            return cache[key]
+        result = f(*args, **kwargs)
+        cache[key] = result
         return result
 
     return wrapper

@@ -4,9 +4,8 @@ import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import KeyboardTip from "../../components/KeyboardTip.astro";
 import ComposeAndSendMessage from "../include/_ComposeAndSendMessage.mdx";
 import MobileChannels from "../include/_MobileChannels.mdx";
+import MobileTapSend from "../include/_MobileTapSend.mdx";
 import StartTopicViaLeftSidebar from "../include/_StartTopicViaLeftSidebar.mdx";
-
-import SendIcon from "~icons/zulip-icon/send";
 
 <Tabs>
   <TabItem label="Via left sidebar">
@@ -41,9 +40,8 @@ import SendIcon from "~icons/zulip-icon/send";
       1. Tap the compose box at the bottom of the app.
       1. Enter a topic name. Auto-complete will provide suggestions for previously
          used topics.
-      1. Compose your message, and tap the **send**
-         (<SendIcon />) button in the
-         bottom right corner of the app.
+
+      <MobileTapSend />
     </FlattenedSteps>
   </TabItem>
 </Tabs>

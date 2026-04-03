@@ -1,6 +1,6 @@
 # Zulip overview
 
-[Zulip](https://zulip.com) is an open-source team collaboration tool with unique
+[Zulip](https://zulip.com) is an open-source organized team chat app with unique
 [topic-based threading][why-zulip] that combines the best of email and chat to
 make remote work productive and delightful. Fortune 500 companies, [leading open
 source projects][rust-case-study], and thousands of other organizations use
@@ -8,7 +8,7 @@ Zulip every day. Zulip is the only [modern team chat app][features] that is
 designed for both live and asynchronous conversations.
 
 Zulip is built by a distributed community of developers from all around the
-world, with 97+ people who have each contributed 100+ commits. With
+world, with 99+ people who have each contributed 100+ commits. With
 over 1,500 contributors merging over 500 commits a month, Zulip is the
 largest and fastest growing open source team chat project.
 
@@ -36,21 +36,21 @@ Come find us on the [development community chat](https://zulip.com/development-c
   contributors](https://zulip.readthedocs.io/en/latest/contributing/contributing.html)
   to get started. We have invested in making Zulip’s code highly
   readable, thoughtfully tested, and easy to modify. Beyond that, we
-  have written an extraordinary 150K words of documentation for Zulip
+  have written an extraordinary 185K words of documentation for Zulip
   contributors.
 
 - **Contributing non-code**. [Report an
-  issue](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#reporting-issues),
+  issue](https://zulip.readthedocs.io/en/latest/contributing/reporting-bugs.html),
   [translate](https://zulip.readthedocs.io/en/latest/translating/translating.html)
   Zulip into your language, or [give us
   feedback](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html).
   We'd love to hear from you, whether you've been using Zulip for years, or are just
   trying it out for the first time.
 
-- **Checking Zulip out**. The best way to see Zulip in action is to drop by the
-  [Zulip community server](https://zulip.com/development-community/). We also
-  recommend reading about Zulip's [unique
-  approach](https://zulip.com/why-zulip/) to organizing conversations.
+- **Checking Zulip out**. The best way to see Zulip in action is to [drop
+  by](https://chat.zulip.org/?show_try_zulip_modal) the Zulip development
+  community (no account required). We also recommend reading about Zulip's
+  [unique approach](https://zulip.com/why-zulip/) to organizing conversations.
 
 - **Running a Zulip server**. Self-host Zulip directly on Ubuntu or Debian
   Linux, in [Docker](https://github.com/zulip/docker-zulip), or with prebuilt
@@ -59,24 +59,22 @@ Come find us on the [development community chat](https://zulip.com/development-c
   Learn more about [self-hosting Zulip](https://zulip.com/self-hosting/).
 
 - **Using Zulip without setting up a server**. Learn about [Zulip
-  Cloud](https://zulip.com/plans/) hosting options. Zulip sponsors free [Zulip
+  Cloud](https://zulip.com/zulip-cloud/) hosting options. Zulip sponsors free [Zulip
   Cloud Standard](https://zulip.com/plans/) for hundreds of worthy
   organizations, including [fellow open-source
   projects](https://zulip.com/for/open-source/).
 
 - **Participating in [outreach
   programs](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#outreach-programs)**
-  like [Google Summer of Code](https://developers.google.com/open-source/gsoc/)
-  and [Outreachy](https://www.outreachy.org/).
+  like [Google Summer of Code](https://developers.google.com/open-source/gsoc/).
 
-- **Supporting Zulip**. Advocate for your organization to use Zulip, become a
-  [sponsor](https://github.com/sponsors/zulip), write a review in the mobile app
-  stores, or [help others find
-  Zulip](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#help-others-find-zulip).
+- **Supporting Zulip**. Learn about all the ways you can [support
+  Zulip](https://zulip.com/help/support-zulip-project), including contributing
+  financially, and helping others discover it.
 
 You may also be interested in reading our [blog](https://blog.zulip.org/), and
-following us on [Twitter](https://twitter.com/zulip) and
-[LinkedIn](https://www.linkedin.com/company/zulip-project/).
+following us on [LinkedIn](https://www.linkedin.com/company/zulip-project/),
+[Mastodon](https://fosstodon.org/@zulip), and [X](https://x.com/zulip).
 
 Zulip is distributed under the
 [Apache 2.0](https://github.com/zulip/zulip/blob/main/LICENSE) license.

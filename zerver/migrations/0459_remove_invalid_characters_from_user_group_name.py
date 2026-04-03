@@ -66,7 +66,7 @@ def remove_invalid_characters_from_user_group_name(
 
         UserGroup.objects.bulk_update(groups_to_update, ["name"])
 
-    for realm in Realm.objects.all():
+    for realm in Realm.objects.all().iterator():
         update_single_realm(realm)
 
 

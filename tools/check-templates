@@ -25,7 +25,7 @@ EXCLUDED_FILES = [
     # Our parser doesn't handle the way its conditionals are layered
     "templates/zerver/emails/missed_message.html",
     # Previously unchecked and our parser doesn't like its indentation
-    "web/images/icons/template.hbs",
+    "web/icons/template.hbs",
     # Template checker recommends very hard to read indentation.
     "web/templates/bookend.hbs",
 ]

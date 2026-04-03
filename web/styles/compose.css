@@ -1,4 +1,4 @@
-#compose_buttons {
+#legacy-closed-compose-box {
     text-align: right;
     display: flex;
     column-gap: 4px;
@@ -21,6 +21,7 @@
            would likely be a better choice here.
            1.2em is 16.8px at 14px em. */
         font-size: 1.2em;
+        font-family: inherit;
         /* 1.2em is 16.8px at 14px em; this
            maintains the 20px em-equivalent compose
            line height, but at a 16.8px em. */
@@ -75,6 +76,7 @@
             /* Keep the new message button sized to match
                adjacent buttons. */
             font-size: inherit;
+            font-family: inherit;
             min-width: inherit;
             padding: 3px 10px;
             outline: none;
@@ -144,6 +146,7 @@
            adjacent buttons. */
         align-self: stretch;
         font-size: inherit;
+        font-family: inherit;
         min-width: inherit;
         line-height: var(--line-height-compose-buttons);
         padding: 3px 10px;
@@ -281,7 +284,23 @@
         flex-grow: 1;
         display: grid;
         grid-template-columns: 1fr;
+        position: relative;
         align-items: stretch;
+
+        .compose-new-recipient-button {
+            /* Takes up vertical space in pill container excluding 1px
+               container outline and 1px padding */
+            height: 1.75em;
+            width: 1.75em;
+            position: absolute;
+            right: 0.0625em;
+            top: 0.0625em;
+        }
+
+        .pill-container {
+            /* recipient button width and 1px container width */
+            padding-right: 1.8125em;
+        }
     }
 
     .message_header {
@@ -345,7 +364,7 @@
     &:has(.new_message_textarea.invalid),
     &:has(.new_message_textarea.invalid:focus) {
         border-color: var(--color-invalid-input-border);
-        box-shadow: var(--color-invalid-input-box-shadow);
+        box-shadow: var(--invalid-input-box-shadow);
     }
 }
 
@@ -400,6 +419,7 @@
             opacity 0.4s ease-in,
             color 0.1s ease-in,
             background-color 0.1s ease-in;
+        font-size: inherit;
 
         &:hover {
             background-color: var(--color-composebox-button-background-hover);
@@ -456,12 +476,6 @@
     margin-bottom: calc(
         (var(--compose-formatting-buttons-row-height) + 1px) * -1
     );
-
-    textarea {
-        /* Flatten the bottom edge of the textarea to
-           merge with the flat top edge of the buttons row */
-        border-radius: 3px 3px 0 0;
-    }
 }
 
 #preview-message-area-container {
@@ -538,6 +552,7 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s;
+    font-size: inherit;
 
     &:focus {
         outline: 0;
@@ -746,6 +761,8 @@
         font-weight: 600;
         margin-top: 4.5px;
         margin-bottom: 4.5px;
+        font-family: inherit;
+        font-size: inherit;
         /* Buttons take a minimum height for
            when their text fits on a single
            line. 2.1333em is 32px at 15px/1em. */
@@ -999,6 +1016,10 @@
             }
         }
     }
+
+    .secondary-button {
+        margin-left: 10px;
+    }
 }
 
 .upload_banner {
@@ -1058,22 +1079,21 @@ textarea.new_message_textarea {
     scrollbar-color: hsl(0deg 0% 50%) transparent;
     box-shadow: none;
 
+    font-size: 1em;
+    line-height: var(--base-line-height-unitless);
+    font-family: inherit;
+
     &:focus {
         outline: 0;
-    }
-
-    &:read-only,
-    &:disabled {
-        background-color: hsl(0deg 0% 93%);
     }
 }
 
 #message-content-container,
-#compose_recipient_box {
+#compose-channel-recipient {
     color: var(--color-text-default);
 }
 
-#compose_recipient_box {
+#compose-channel-recipient {
     display: grid;
     /* When displaying #topic-not-mandatory-placeholder,
        we let it occupy the entire topic box. Otherwise,
@@ -1101,17 +1121,6 @@ textarea.new_message_textarea {
         border-color: var(--color-compose-recipient-box-has-focus);
     }
 
-    #stream_message_recipient_topic,
-    #recipient_box_clear_topic_button {
-        background: none;
-        border: none;
-
-        &:disabled {
-            cursor: default;
-            opacity: 1;
-        }
-    }
-
     /* Styles for input in the recipient_box */
     #stream_message_recipient_topic {
         grid-area: topic;
@@ -1132,9 +1141,17 @@ textarea.new_message_textarea {
         padding: 0 6px;
         /* Reset height to let `align-items: stretch` on the grid parent handle this. */
         height: auto;
+        font-family: inherit;
 
         &.empty-topic-display::placeholder {
             color: var(--color-compose-recipient-box-text-color);
+        }
+
+        &.shake {
+            animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+            perspective: 1000px;
         }
     }
 
@@ -1155,37 +1172,16 @@ textarea.new_message_textarea {
     }
 
     /* Styles for new conversation button in the recipient_box */
-    #recipient_box_clear_topic_button {
+    .compose-new-recipient-button {
         grid-area: topic-clear-button;
-        /* Set the border radius smaller, relative to the parent */
-        border-radius: 2px;
-        padding: 6px;
-        margin: 1px;
-        color: var(--color-compose-embedded-button-text-color);
-
-        .zulip-icon {
-            display: block;
-        }
-
-        &:hover {
-            background-color: var(
-                --color-compose-embedded-button-background-hover
-            );
-            color: var(--color-compose-embedded-button-text-color-hover);
-        }
-
-        &:focus {
-            outline: 0;
-        }
     }
 
     #stream_message_recipient_topic:not(.empty-topic-display):placeholder-shown
-        ~ #recipient_box_clear_topic_button {
+        ~ .compose-new-recipient-button {
         visibility: hidden;
     }
 
-    #stream_message_recipient_topic:disabled
-        ~ #recipient_box_clear_topic_button {
+    #stream_message_recipient_topic:disabled ~ .compose-new-recipient-button {
         visibility: hidden;
     }
     /* This will reset the bootstrap margin-bottom: 10px value for the inputs */
@@ -1242,6 +1238,16 @@ textarea.new_message_textarea {
     outline-color: transparent;
 }
 
+.compose-box-open {
+    #closed-compose-controls {
+        display: none;
+    }
+
+    .message_comp {
+        display: block;
+    }
+}
+
 /* We want transitions to run only on user interactions with
    the mouse, once the compose box is open. Any keyboard
    interactions (e.g., Shift-Tabbing from the compose textarea
@@ -1252,7 +1258,7 @@ textarea.new_message_textarea {
 #compose.compose-box-open {
     .low-attention-recipient-row:not(.recently-focused, :focus-within) {
         #compose_select_recipient_widget,
-        #compose_recipient_box,
+        #compose-channel-recipient,
         #compose-direct-recipient .pill-container {
             transition: var(--compose-recipient-row-transition);
             transition-delay: var(--compose-recipient-row-transition-delay);
@@ -1265,7 +1271,7 @@ textarea.new_message_textarea {
             transition-property: color;
         }
 
-        #recipient_box_clear_topic_button {
+        .compose-new-recipient-button {
             transition: var(--compose-recipient-row-transition);
             transition-delay: var(--compose-recipient-row-transition-delay);
             transition-property: color, background-color, opacity;
@@ -1307,7 +1313,7 @@ textarea.new_message_textarea {
     }
 
     #compose_select_recipient_widget,
-    #compose_recipient_box,
+    #compose-channel-recipient,
     #compose-direct-recipient .pill-container {
         background-color: transparent;
         border-color: transparent;
@@ -1343,7 +1349,7 @@ textarea.new_message_textarea {
             }
         }
 
-        #recipient_box_clear_topic_button:hover {
+        .compose-new-recipient-button:hover {
             opacity: 1;
         }
     }
@@ -1420,13 +1426,7 @@ textarea.new_message_textarea {
        button over top of the vdots
        background */
     z-index: 1;
-
-    @media (width < $sm_min), ((width >= $sm_min) and (width < $mc_min)) {
-        /* Drop to a square button,
-           and don't flex any wider. */
-        width: 30px;
-        flex-grow: 0;
-    }
+    font-size: inherit;
 
     .zulip-icon-send {
         display: block;
@@ -1436,6 +1436,23 @@ textarea.new_message_textarea {
 
     .loader {
         display: none;
+    }
+}
+
+@media (width < $sm_min), ((width >= $sm_min) and (width < $mc_min)) {
+    #compose-send-button {
+        /* Drop to a square button,
+        and don't flex any wider. */
+        width: 30px;
+        flex-grow: 0;
+
+        /* Given the fixed-pixel width of the narrow send button,
+           don't let the send icon grow larger than a font-size
+           of 20px, which is as large as the send icon can grow
+           inside the squared off send button. */
+        .zulip-icon-send {
+            font-size: min(1.2143em, 20px);
+        }
     }
 }
 
@@ -1479,6 +1496,7 @@ textarea.new_message_textarea {
             accent-color: hsl(217deg 100% 60%);
             grid-area: radio-button;
             align-self: center;
+            font-size: inherit;
 
             &:focus {
                 outline: 1px dotted hsl(0deg 0% 20%);
@@ -1569,6 +1587,41 @@ textarea.new_message_textarea {
       themselves, where necessary. */
     min-height: var(--compose-recipient-box-min-height);
     min-width: 0;
+
+    .compose-new-recipient-button {
+        /* Set the border radius smaller, relative to the parent */
+        border-radius: 2px;
+        padding: 6px;
+        margin: 1px;
+        color: var(--color-compose-embedded-button-text-color);
+        font-size: inherit;
+
+        .zulip-icon {
+            display: block;
+        }
+
+        &:hover {
+            background-color: var(
+                --color-compose-embedded-button-background-hover
+            );
+            color: var(--color-compose-embedded-button-text-color-hover);
+        }
+
+        &:focus {
+            outline: 0;
+        }
+    }
+
+    #stream_message_recipient_topic,
+    .compose-new-recipient-button {
+        background: none;
+        border: none;
+
+        &:disabled {
+            cursor: default;
+            opacity: 1;
+        }
+    }
 }
 
 .compose-control-buttons-container {
@@ -1677,8 +1730,6 @@ textarea.new_message_textarea {
 .preview_message_area {
     padding: 5px 5px 0;
     overflow: auto;
-
-    border-radius: 3px 3px 0 0;
 }
 
 .markdown_preview_spinner {
@@ -1719,29 +1770,24 @@ textarea.new_message_textarea {
            surrounding negative space. */
         /* 7px at 20px/1em; 4px at 20px/1em. */
         grid-template:
-            "lefthand-offset privacy-icon privacy-icon-gap channel-name righthand-offset" auto / 0.35em [select-label-start] auto 0.2em minmax(
-                0,
-                1fr
+            "lefthand-offset privacy-icon privacy-icon-gap channel-name righthand-offset" auto
+            / 0.35em [select-label-start] auto var(
+                --dropdown-list-item-label-icon-gap
             )
-            [select-label-end]
-            0.35em;
+            minmax(0, 1fr) [select-label-end] 0.35em;
+
+        .decorated-channel-name-wrapper {
+            display: grid;
+            grid-area: select-label;
+            grid-template-columns: subgrid;
+            gap: 0;
+        }
 
         .channel-privacy-type-icon {
             grid-area: privacy-icon;
-            place-self: center;
-            font-size: 0.95em; /* 19px at 20px/1em */
-            margin-top: -0.0579em; /* Eyeball work; 1.1px at 19px/1em */
-            color: var(--privacy-icon-color-original);
-            /* Eliminate inherited component styles. */
-            position: static;
-            padding: 0;
-            width: 1em;
-            height: 1em;
 
-            &.zulip-icon-lock {
-                /* The lock looks better centered without
-                   a negative margin-top adjustment. */
-                margin-top: 0;
+            .zulip-icon {
+                color: var(--privacy-icon-color-original);
             }
         }
 
@@ -1808,7 +1854,7 @@ textarea.new_message_textarea {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
+    width: 38px;
     /* Allow to grow but not shrink */
     flex: 1 0 auto;
     height: var(--compose-formatting-buttons-row-height);
@@ -1819,12 +1865,13 @@ textarea.new_message_textarea {
        margin is handled on the vdots icon
        below, so as to make for a maximum
        clickable vdots area. */
-    margin-left: -4px;
+    margin-left: -2px;
     border-radius: 0 4px 4px 0;
     /* Flex items respect z-index values;
        this is needed to keep the vdots
        background beneath the send button. */
     z-index: 0;
+    font-size: inherit;
 
     &:focus-visible {
         /* Use a border, not an outline, to preserve the
@@ -1852,7 +1899,7 @@ textarea.new_message_textarea {
     }
 
     .zulip-icon {
-        padding: 5px 0 5px 4px;
+        padding: 5px 0 5px 2px;
         /* 17px at 14px/1em */
         font-size: 1.2143em;
         flex-grow: 1;
@@ -1861,6 +1908,13 @@ textarea.new_message_textarea {
             /* Keep vdots centered above the
                Send button at smallest sizes. */
             padding-left: 0;
+        }
+
+        @media (width < $sm_min), ((width >= $sm_min) and (width < $mc_min)) {
+            /* As with the send icon, we limit the vdots to 20px
+               so it doesn't appear too crowded above the send
+               button. */
+            font-size: min(1.2143em, 20px);
         }
     }
 }
@@ -1944,12 +1998,15 @@ textarea.new_message_textarea {
 #add-new-saved-snippet-modal,
 #edit-saved-snippet-modal {
     & .saved-snippet-title {
-        width: 97%;
+        /* Subtract (2 * horizontal padding) + (2 * border width) */
+        width: calc(
+            100% - 2 * var(--input-horizontal-padding) - 2 *
+                var(--input-border-width)
+        );
         margin-bottom: 20px;
     }
 
     & .saved-snippet-content {
-        width: 97%;
         resize: vertical;
     }
 }

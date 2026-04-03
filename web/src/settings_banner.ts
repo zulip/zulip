@@ -27,7 +27,7 @@ export function set_up_upgrade_banners(): void {
             {
                 label: $t({defaultMessage: "Upgrade"}),
                 custom_classes: "request-upgrade",
-                attention: "quiet",
+                variant: "subtle",
             },
         ];
 
@@ -37,7 +37,7 @@ export function set_up_upgrade_banners(): void {
                 {
                     label: $t({defaultMessage: "Request sponsorship"}),
                     custom_classes: "request-sponsorship",
-                    attention: "borderless",
+                    variant: "text",
                 },
             ];
         }

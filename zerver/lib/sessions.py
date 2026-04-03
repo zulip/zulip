@@ -49,25 +49,25 @@ def delete_session(session: Session) -> None:
 
 
 def delete_user_sessions(user_profile: UserProfile) -> None:
-    for session in Session.objects.all():
+    for session in Session.objects.all().iterator():
         if get_session_user_id(session) == user_profile.id:
             delete_session(session)
 
 
 def delete_realm_user_sessions(realm: Realm) -> None:
     realm_user_ids = set(UserProfile.objects.filter(realm=realm).values_list("id", flat=True))
-    for session in Session.objects.all():
+    for session in Session.objects.all().iterator():
         if get_session_user_id(session) in realm_user_ids:
             delete_session(session)
 
 
 def delete_all_user_sessions() -> None:
-    for session in Session.objects.all():
+    for session in Session.objects.all().iterator():
         delete_session(session)
 
 
 def delete_all_deactivated_user_sessions() -> None:
-    for session in Session.objects.all():
+    for session in Session.objects.all().iterator():
         user_profile_id = get_session_user_id(session)
         if user_profile_id is None:  # nocoverage  # TODO: Investigate why we lost coverage on this
             continue

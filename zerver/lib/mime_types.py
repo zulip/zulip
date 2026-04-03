@@ -1,4 +1,5 @@
 import sys
+from email.message import EmailMessage
 from mimetypes import add_type
 from mimetypes import guess_extension as guess_extension
 from mimetypes import guess_type as guess_type
@@ -47,3 +48,9 @@ INLINE_MIME_TYPES = [
     # as application/xhtml+xml, application/x-shockwave-flash,
     # image/svg+xml, text/html, or text/xml.
 ]
+
+
+def bare_content_type(content_type: str) -> str:
+    fake_msg = EmailMessage()
+    fake_msg["content-type"] = content_type
+    return fake_msg.get_content_type()

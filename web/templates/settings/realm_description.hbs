@@ -1,0 +1,14 @@
+<div class="input-group admin-realm">
+    <label for="id_realm_description" class="settings-field-label">
+        {{t "Organization description" }}
+    </label>
+    {{#if is_admin}}
+        <textarea id="id_realm_description" name="realm_description"
+          class="admin-realm-description setting-widget prop-element settings-textarea"
+          maxlength="1000" data-setting-widget-type="string">{{ realm_description_text }}</textarea>
+    {{else}}
+        <div class="admin-realm-description settings-view-only-textarea rendered_markdown">
+            {{rendered_markdown realm_description_html}}
+        </div>
+    {{/if}}
+</div>

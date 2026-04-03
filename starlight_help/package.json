@@ -11,7 +11,7 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.35.1",
+    "@astrojs/starlight": "^0.37.1",
     "@iconify-json/fa": "^1.2.1",
     "astro": "^5.1.2",
     "astro-compressor": "^1.1.2",
@@ -20,9 +20,9 @@
     "mdast-util-to-string": "^4.0.0",
     "remark": "^15.0.1",
     "remark-mdx": "^3.1.0",
-    "sharp": "^0.33.3",
+    "sharp": "^0.34.4",
     "unist-util-visit": "^5.0.0",
-    "unplugin-icons": "^22.1.0"
+    "unplugin-icons": "^23.0.1"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.3",
@@ -48,6 +48,7 @@
     "remark-stringify": "^11.0.0",
     "typescript": "^5.4.5",
     "unified": "^11.0.5",
-    "unified-lint-rule": "^3.0.1"
+    "unified-lint-rule": "^3.0.1",
+    "vite": "^6.3.5"
   }
 }

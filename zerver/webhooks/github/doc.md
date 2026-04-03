@@ -2,14 +2,23 @@
 
 Get GitHub notifications in Zulip!
 
+!!! tip ""
+
+    If you also configure a [custom profile
+    field](/help/custom-profile-fields) for GitHub accounts, this
+    integration will refer to GitHub users using [Zulip silent
+    mentions](/help/mention-a-user-or-group#silently-mention-a-user),
+    rather than their GitHub username.
+
 {start_tabs}
 
 1. {!create-an-incoming-webhook.md!}
 
 1. Decide where to send {{ integration_display_name }} notifications, and
    [generate the integration URL](/help/generate-integration-url). You'll be
-   able to configure which branches you'll receive notifications from, and
-   whether to exclude notifications from private repositories.
+   able to configure which branches you'll receive notifications from,
+   whether to exclude notifications from private repositories, and whether
+   to include the repository name in the notifications.
 
 1. On your repository's web page, go to **Settings**. Select **Webhooks**,
    and click **Add webhook**. GitHub may prompt you for your password.
@@ -30,7 +39,7 @@ Get GitHub notifications in Zulip!
 
 - [GitHub's webhook events documentation][github-webhook-events]
 
-- [Zulip GitHub Actions integration](/integrations/doc/github-actions)
+- [Zulip GitHub Actions integration](/integrations/github-actions)
 
 {!webhooks-url-specification.md!}
 

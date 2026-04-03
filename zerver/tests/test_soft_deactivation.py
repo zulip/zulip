@@ -87,12 +87,13 @@ class UserSoftDeactivationTests(ZulipTestCase):
             self.example_user("polonius"),
             self.example_user("desdemona"),
             self.example_user("shiva"),
+            self.example_user("imported_user"),
         ]
         client, _ = Client.objects.get_or_create(name="website")
         query = "/some/random/endpoint"
         last_visit = timezone_now()
         count = 150
-        for user_profile in UserProfile.objects.all():
+        for user_profile in UserProfile.objects.all().iterator():
             UserActivity.objects.get_or_create(
                 user_profile=user_profile,
                 client=client,
@@ -103,7 +104,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
         filter_kwargs = dict(user_profile__realm=get_realm("zulip"))
         users_to_deactivate = get_users_for_soft_deactivation(-1, filter_kwargs)
 
-        self.assert_length(users_to_deactivate, 10)
+        self.assert_length(users_to_deactivate, 11)
         for user in users_to_deactivate:
             self.assertTrue(user in users)
 
@@ -149,15 +150,16 @@ class UserSoftDeactivationTests(ZulipTestCase):
             self.example_user("polonius"),
             self.example_user("desdemona"),
             self.example_user("shiva"),
+            self.example_user("imported_user"),
         ]
-        for user_profile in UserProfile.objects.all():
+        for user_profile in UserProfile.objects.all().iterator():
             user_profile.long_term_idle = True
             user_profile.save(update_fields=["long_term_idle"])
 
         filter_kwargs = dict(realm=get_realm("zulip"))
         users_to_catch_up = get_soft_deactivated_users_for_catch_up(filter_kwargs)
 
-        self.assert_length(users_to_catch_up, 10)
+        self.assert_length(users_to_catch_up, 11)
         for user in users_to_catch_up:
             self.assertTrue(user in users)
 
@@ -188,7 +190,9 @@ class UserSoftDeactivationTests(ZulipTestCase):
         already_received = UserMessage.objects.filter(message_id=message_id).count()
 
         with self.assertLogs(logger_string, level="INFO") as m:
-            do_catch_up_soft_deactivated_users(users)
+            do_catch_up_soft_deactivated_users(
+                UserProfile.objects.filter(id__in=[user.id for user in users])
+            )
         self.assertEqual(
             m.output, [f"INFO:{logger_string}:Caught up {len(users)} soft-deactivated users"]
         )

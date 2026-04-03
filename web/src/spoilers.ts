@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as mouse_drag from "./mouse_drag.ts";
 import * as util from "./util.ts";
 
 function collapse_spoiler($spoiler: JQuery): void {
@@ -64,9 +65,9 @@ export function initialize(): void {
             return;
         }
 
-        // Allow selecting text inside a spoiler header.
-        const selection = document.getSelection();
-        if (selection && selection.type === "Range") {
+        // Don't toggle if the user is dragging to select text. This handles
+        // both dragging within the header and across the message body.
+        if (mouse_drag.is_drag(e)) {
             return;
         }
 

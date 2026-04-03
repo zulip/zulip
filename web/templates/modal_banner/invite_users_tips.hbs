@@ -1,0 +1,27 @@
+{{t "You may want to complete the following setup steps prior to inviting users:" }}
+<ul class="invite-tips-list">
+    {{#unless realm_has_description}}
+    <li>
+        {{#tr}}
+            <z-link>Configure</z-link> your organization's login page.
+            {{#*inline "z-link"}}<a class="banner-link" href="#organization/organization-profile">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    </li>
+    {{else unless realm_has_user_set_icon}}
+    <li>
+        {{#tr}}
+            <z-link>Upload a profile picture</z-link> for your organization.
+            {{#*inline "z-link"}}<a class="banner-link" href="#organization/organization-profile">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    </li>
+    {{/unless}}
+    {{#unless realm_has_custom_profile_fields}}
+    <li>
+        {{#tr}}
+            Configure <z-link-1>default new user settings</z-link-1> and <z-link-2>custom profile fields</z-link-2>.
+            {{#*inline "z-link-1"}}<a class="banner-link" href="#organization/organization-level-user-defaults">{{> @partial-block}}</a>{{/inline}}
+            {{#*inline "z-link-2"}}<a class="banner-link" href="#organization/profile-field-settings">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    </li>
+    {{/unless}}
+</ul>

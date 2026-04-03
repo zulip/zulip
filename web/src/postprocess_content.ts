@@ -12,6 +12,8 @@ export function postprocess_content(html: string): string {
     const template = inertDocument.createElement("template");
     template.innerHTML = html;
 
+    process_emoji_only_message(template.content);
+
     for (const ol of template.content.querySelectorAll("ol")) {
         const list_start = Number(ol.getAttribute("start") ?? 1);
         // We don't count the first item in the list, as it
@@ -111,8 +113,72 @@ export function postprocess_content(html: string): string {
         }
     }
 
+    // We need to quickly wrap inline images so we can pass them onto the
+    // image-processing loop below.
+    for (const inline_img_elt of template.content.querySelectorAll(".inline-image")) {
+        const original_src = inline_img_elt.getAttribute("data-original-src");
+        assert(typeof original_src === "string");
+        const alt = inline_img_elt.getAttribute("alt");
+
+        const media_wrapper = inertDocument.createElement("span");
+        media_wrapper.classList.add("message-media-inline-image");
+
+        // If one or more inline images sit in a paragraph in isolation,
+        // or are separated only by line breaks, we will include those
+        // images in a gallery via the logic further down in this file.
+        const inline_img_parent_elt = inline_img_elt.parentElement;
+        // We want to determine the length after trimming out the spaces
+        // from line breaks; this value will be precisely zero if the
+        // containing paragraph has no text content, including things
+        // that might be tucked in a link or a bold tag, etc.
+        const inline_img_parent_elt_name = inline_img_parent_elt?.tagName.toLowerCase();
+
+        if (inline_img_parent_elt_name === "p" && !is_media_run_inline_with_text(inline_img_elt)) {
+            media_wrapper.classList.add("message-media-gallery-image");
+            // Multiple images may be separated by break tags, which will
+            // be unnecessary and make trouble for correctly placing
+            // adjacent images into a single gallery, when we process them.
+            // However, in a message with deliberate line breaks elsewhere,
+            // like between lines of text, we need to be careful to preserve
+            // those and instead just remove those that precede the
+            // inline_img_elt we're working with.
+            const image_elt_prev_element_sibling = inline_img_elt.previousElementSibling;
+
+            // We remove any previous element-sibling break tags, but leave
+            // the any trailing break tags to properly detect other images
+            // that may need to be included in a gallery. Any trailing break
+            // tags are removed at the point that the gallery gets inserted
+            // into the DOM (at which point they will be trailing the gallery
+            // itself).
+            if (image_elt_prev_element_sibling?.tagName?.toLowerCase() === "br") {
+                image_elt_prev_element_sibling.remove();
+            }
+        } else if (is_media_run_inline_with_text(inline_img_elt)) {
+            // When an inline image opens a message, we use CSS to adjust
+            // the space added to the start of the image, keeping it flush
+            // with the message box.
+            const image_elt_prev_sibling_node = inline_img_elt.previousSibling;
+            if (image_elt_prev_sibling_node === null) {
+                inline_img_elt.classList.add("image-opens-message");
+            }
+        }
+
+        const media_link = inertDocument.createElement("a");
+        media_link.setAttribute("href", original_src);
+        media_link.setAttribute("target", "_blank");
+        media_link.setAttribute("rel", "noopener noreferrer");
+
+        if (alt) {
+            media_link.setAttribute("title", alt);
+        }
+
+        media_link.append(inline_img_elt.cloneNode(true));
+        media_wrapper.append(media_link);
+        inline_img_elt.parentNode?.replaceChild(media_wrapper, inline_img_elt);
+    }
+
     for (const message_media_wrapper of template.content.querySelectorAll(
-        ".message_inline_image",
+        ".message_inline_image, .message-media-inline-image",
     )) {
         const message_media_link = message_media_wrapper.querySelector("a");
         const message_media_image = message_media_wrapper.querySelector("img");
@@ -169,7 +235,9 @@ export function postprocess_content(html: string): string {
                 // If the image source URL can't be parsed, likely due to
                 // some historical bug in the Markdown processor, just
                 // drop the invalid image element.
-                message_media_image.closest(".message-media-preview-image")!.remove();
+                message_media_image
+                    .closest(".message-media-preview-image, .message-media-inline-image")!
+                    .remove();
                 continue;
             }
 
@@ -178,7 +246,6 @@ export function postprocess_content(html: string): string {
                 image_url.pathname.startsWith("/user_uploads/thumbnail/")
             ) {
                 let thumbnail_name = thumbnail.preferred_format.name;
-                // eslint-disable-next-line unicorn/prefer-dom-node-dataset
                 if (message_media_image.getAttribute("data-animated") === "true") {
                     if (
                         user_settings.web_animate_image_previews === "always" ||
@@ -193,7 +260,7 @@ export function postprocess_content(html: string): string {
                         // If we're showing a still thumbnail, show a play
                         // button so that users that it can be played.
                         message_media_image
-                            .closest(".message-media-preview-image")!
+                            .closest(".message-media-preview-image, .message-media-inline-image")!
                             .classList.add("message_inline_animated_image_still");
                     }
                 }
@@ -209,7 +276,6 @@ export function postprocess_content(html: string): string {
         // set those values as `height` and `width` attributes on the
         // image source.
         if (message_media_image?.hasAttribute("data-original-dimensions")) {
-            // eslint-disable-next-line unicorn/prefer-dom-node-dataset
             const original_dimensions_attribute = message_media_image.getAttribute(
                 "data-original-dimensions",
             );
@@ -231,8 +297,8 @@ export function postprocess_content(html: string): string {
             // use a subtler background color than on other images
             const image_min_aspect_ratio = 0.4;
             // "Dinky" images are those that are shorter than the
-            // 10em height reserved for thumbnails
-            const image_box_em = 10;
+            // height reserved for thumbnails
+            const image_box_em = thumbnail.get_media_preview_size();
             const is_dinky_image = original_height / font_size_in_use <= image_box_em;
             const has_extreme_aspect_ratio =
                 original_width / original_height <= image_min_aspect_ratio ||
@@ -275,7 +341,7 @@ export function postprocess_content(html: string): string {
     // After all other processing on images has been done, we look for
     // adjacent images and videos, and tuck them structurally into galleries.
     for (const elt of template.content.querySelectorAll(
-        ".message-media-preview-image, .message-media-preview-video",
+        ".message-media-gallery-image, .message-media-preview-image, .message-media-preview-video",
     )) {
         let gallery_element;
 
@@ -284,7 +350,7 @@ export function postprocess_content(html: string): string {
         );
 
         if (is_part_of_open_gallery) {
-            // If the the current media element's previous sibling is a gallery,
+            // If the current media element's previous sibling is a gallery,
             // it should be kept with the other media in that gallery.
             gallery_element = elt.previousElementSibling;
         } else {
@@ -292,15 +358,114 @@ export function postprocess_content(html: string): string {
             // content (or is the first in the message) and need to create a
             // gallery for it, and perhaps other adjacent sibling media elements,
             // if they exist.
-            gallery_element = inertDocument.createElement("div");
+            if (elt.classList.contains("message-media-gallery-image")) {
+                // Because inline images may be presented in galleries in the middle
+                // of a paragraph, we create those as `<span>` elements. That prevents
+                // the client-side markdown from doing a slipshod job of inserting
+                // empty `<p>` elements or leaving orphaned text nodes around a `<div>`,
+                // which isn't allowed to appear inside of a `<p>`.
+                gallery_element = inertDocument.createElement("span");
+            } else {
+                // However, for legacy galleries that always appear after a paragraph,
+                // we create a `<div>` element.
+                gallery_element = inertDocument.createElement("div");
+            }
+
+            // Regardless of what element the gallery is, we add the
+            // .message-thumbnail-gallery class, whose CSS selectors
+            // will style this as a flexbox regardless.
             gallery_element.classList.add("message-thumbnail-gallery");
-            // We insert the gallery just before the media element we've found
+
+            // We insert a new gallery just before the media element we've found
             elt.before(gallery_element);
         }
 
-        // Finally, the media element gets moved into the current gallery
+        // Move the media element into the current gallery
         gallery_element?.append(elt);
+
+        // Delete any trailing <br> tag after new gallery element; this can
+        // happen when there's an image trailed by a break and more text.
+        if (gallery_element?.nextElementSibling?.tagName.toLowerCase() === "br") {
+            gallery_element.nextElementSibling.remove();
+        }
     }
 
     return template.innerHTML;
+}
+
+// If an image is run inline with text--that is, there are non-whitespace
+// text nodes adjacent the image--we will not put it into a gallery.
+function is_media_run_inline_with_text(media_elt: Element): boolean {
+    const media_elt_previous_sibling_node = media_elt.previousSibling;
+    const media_elt_next_sibling_node = media_elt.nextSibling;
+
+    // A standalone image in its own paragraph will have no sibling nodes
+    if (media_elt_previous_sibling_node === null && media_elt_next_sibling_node === null) {
+        return false;
+    }
+
+    // For images that have text nodes, we need to consider the nodeValue;
+    // these will be `null` for element nodes. We do not want to trim these
+    // values, because that would wipe out newlines, "\n", which we are
+    // interested in detecting.
+    const previous_sibling_node_value = media_elt_previous_sibling_node?.nodeValue;
+    const next_sibling_node_value = media_elt_next_sibling_node?.nodeValue;
+
+    // For images that have adjacent element nodes, we examine the nodeName.
+    const previous_sibling_node_name = media_elt_previous_sibling_node?.nodeName?.toLowerCase();
+    const next_sibling_node_name = media_elt_next_sibling_node?.nodeName?.toLowerCase();
+
+    // Any adjacent newlines or break tags mean that this image not run
+    // inline with text.
+    if (
+        previous_sibling_node_value === "\n" ||
+        next_sibling_node_value === "\n" ||
+        previous_sibling_node_name === "br" ||
+        next_sibling_node_name === "br"
+    ) {
+        return false;
+    }
+
+    return true;
+}
+
+// Process single-paragraph messages that contain only emoji.
+function process_emoji_only_message(content: DocumentFragment): void {
+    // Exit as quickly as possible when more than one child element
+    // exists or the first child element is not a paragraph.
+    if (content.childElementCount !== 1 || content.firstElementChild?.tagName !== "P") {
+        return;
+    }
+
+    // Now we look at the collection of child nodes on the single
+    // paragraph to make sure there is no text in the paragraph's
+    // text nodes.
+    const paragraph_child_nodes = content.firstElementChild?.childNodes;
+    assert(paragraph_child_nodes !== undefined);
+    for (const node of paragraph_child_nodes) {
+        if (node.nodeName === "#text" && node.textContent?.trim() !== "") {
+            // If we find a #text node that doesn't trim down
+            // to the empty string, then the message has text
+            // content, so we should exit swiftly.
+            return;
+        }
+    }
+
+    // Having gotten this far, we check the child elements to make
+    // sure there are none other than spans for system emoji or
+    // img tags for realm emoji--both of which take the .emoji class.
+    const paragraph_child_elements = content.firstElementChild?.children;
+    assert(paragraph_child_elements !== undefined);
+    for (const element of paragraph_child_elements) {
+        if (!element.classList.contains("emoji")) {
+            // Any element without the .emoji class is obviously not
+            // emoji, so we again exit swiftly.
+            return;
+        }
+    }
+
+    // If we haven't returned by now, this is an emoji-only message,
+    // so we add .emoji-only to the paragraph element for styling
+    // the emoji in CSS.
+    content.firstElementChild?.classList.add("emoji-only");
 }

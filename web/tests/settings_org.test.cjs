@@ -48,7 +48,6 @@ initialize_user_settings({user_settings: {}});
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        $("#realm-icon-upload-widget .upload-spinner-background").css = noop;
         helpers.override(current_user, "is_admin", false);
         helpers.override(realm, "realm_domains", [
             {domain: "example.com", allow_subdomains: true},
@@ -79,7 +78,8 @@ function createSaveButtons(subsection) {
         ".subsection-failed-status p",
         $("<failed-status-stub>"),
     );
-    $stub_save_button.closest = () => $stub_save_button_header;
+    $stub_save_button.set_closest_results(".settings-subsection-parent", $stub_save_button_header);
+    $save_button_controls.set_parent($stub_save_button_header);
     $save_button_controls.set_find_results(".save-button", $stub_save_button);
     $stub_save_button.set_find_results(".action-button-label", $stub_save_button_text);
     $stub_save_button_header.set_find_results(".save-button-controls", $save_button_controls);
@@ -88,23 +88,17 @@ function createSaveButtons(subsection) {
         $stub_discard_button,
     );
     $save_button_controls.set_find_results(".discard-button", $stub_discard_button);
-    const props = {};
-    props.hidden = false;
-    $save_button_controls.fadeIn = () => {
-        props.hidden = false;
-    };
-    $save_button_controls.fadeOut = () => {
-        props.hidden = true;
-    };
 
-    $save_button_controls.closest = () => $stub_save_button_header;
+    $save_button_controls.set_closest_results(
+        ".settings-subsection-parent",
+        $stub_save_button_header,
+    );
     $stub_save_button_header.set_find_results(".time-limit-setting", []);
-    $stub_save_button_header.set_find_results(".pill-container", []);
+    $stub_save_button_header.set_find_results(".pill-container.prop-element", []);
     $stub_save_button_header.set_find_results(".subsection-changes-save button", $stub_save_button);
     $stub_save_button_header.set_find_results(".save-button", $stub_save_button);
 
     return {
-        props,
         $save_button: $stub_save_button,
         $discard_button: $stub_discard_button,
         $save_button_header: $stub_save_button_header,
@@ -151,24 +145,24 @@ function test_submit_settings_form(override, submit_form) {
     $save_button_header = stubs.$save_button_header;
     $save_button_header.attr("id", `org-${subsection}`);
 
-    const $realm_default_language_elem = $("#id_realm_default_language");
-    $realm_default_language_elem.val("en");
-    $realm_default_language_elem.attr("id", "id_realm_default_language");
+    const $realm_topics_policy_elem = $("#id_realm_topics_policy");
+    $realm_topics_policy_elem.val("disable_empty_topic");
+    $realm_topics_policy_elem.attr("id", "id_realm_topics_policy");
 
     $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
-    $subsection_elem.set_find_results(".prop-element", [$realm_default_language_elem]);
+    $subsection_elem.set_find_results(".prop-element", [$realm_topics_policy_elem]);
 
     submit_form.call({to_$: () => $(".save-button")}, ev);
     assert.ok(patched);
 
     const expected_value = {
-        default_language: "en",
+        topics_policy: "disable_empty_topic",
     };
     assert.deepEqual(data, expected_value);
 
     // Testing only once for since callback is same for all cases
     success_callback();
-    assert.equal(stubs.props.hidden, true);
+    assert.equal(stubs.$save_button_controls.visible(), false);
     assert.equal($save_button.attr("data-status"), "saved");
     assert.equal(stubs.$save_button_text.text(), "translated: Saved");
 }
@@ -180,21 +174,21 @@ function test_change_save_button_state() {
         $save_button,
         $save_button_header,
         $discard_button,
-        props,
     } = createSaveButtons("msg-editing");
     $save_button_header.attr("id", "org-msg-editing");
-    $("#org-msg-editing").closest = () => ({});
+    $save_button_header.set_matches(".subsection-header", true);
+    $save_button_header.set_closest_results(".channel-permissions", {});
 
     {
         settings_components.change_save_button_state($save_button_controls, "unsaved");
         assert.equal($save_button_text.text(), "translated: Save changes");
-        assert.equal(props.hidden, false);
+        assert.equal($save_button_controls.visible(), true);
         assert.equal($save_button.attr("data-status"), "unsaved");
         assert.equal($discard_button.visible(), true);
     }
     {
         settings_components.change_save_button_state($save_button_controls, "discarded");
-        assert.equal(props.hidden, true);
+        assert.equal($save_button_controls.visible(), false);
     }
     {
         settings_components.change_save_button_state($save_button_controls, "saving");
@@ -204,35 +198,34 @@ function test_change_save_button_state() {
     {
         // The "discarded" state should not interfere during the saving stage.
         settings_components.change_save_button_state($save_button_controls, "discarded");
-        assert.equal(props.hidden, false);
+        assert.equal($save_button_controls.visible(), true);
     }
     {
         settings_components.change_save_button_state($save_button_controls, "succeeded");
-        assert.equal(props.hidden, true);
+        assert.equal($save_button_controls.visible(), false);
         assert.equal($save_button.attr("data-status"), "saved");
         assert.equal($save_button_text.text(), "translated: Saved");
     }
     {
         settings_components.change_save_button_state($save_button_controls, "failed");
-        assert.equal(props.hidden, false);
+        assert.equal($save_button_controls.visible(), true);
         assert.equal($save_button.attr("data-status"), "failed");
         assert.equal($save_button_text.text(), "translated: Save changes");
     }
 }
 
 function test_upload_realm_icon(override, upload_realm_logo_or_icon) {
-    const file_input = [{files: ["image1.png", "image2.png"]}];
+    const file = "image1.png";
 
     let posted;
     override(channel, "post", (req) => {
         posted = true;
         assert.equal(req.url, "/json/realm/icon");
         assert.equal(req.data.get("csrfmiddlewaretoken"), "token-stub");
-        assert.equal(req.data.get("file-0"), "image1.png");
-        assert.equal(req.data.get("file-1"), "image2.png");
+        assert.deepEqual(req.data.get("file"), file);
     });
 
-    upload_realm_logo_or_icon(file_input, null, true);
+    upload_realm_logo_or_icon(file, null, true);
     assert.ok(posted);
 }
 
@@ -272,12 +265,12 @@ function test_sync_realm_settings({override}) {
         /* Test message content edit limit minutes sync */
         const $property_elem = $("#id_realm_message_content_edit_limit_minutes");
         const $property_dropdown_elem = $("#id_realm_message_content_edit_limit_seconds");
-        $property_elem.length = 1;
-        $property_dropdown_elem.length = 1;
         $property_elem.attr("id", "id_realm_message_content_edit_limit_minutes");
         $property_dropdown_elem.attr("id", "id_realm_message_content_edit_limit_seconds");
-        $property_dropdown_elem.closest = () => $subsection_stub;
-        $property_dropdown_elem[0] = "#id_realm_message_content_edit_limit_seconds";
+        $property_dropdown_elem.set_closest_results(
+            ".settings-subsection-parent",
+            $subsection_stub,
+        );
 
         override(realm, "realm_message_content_edit_limit_seconds", 120);
 
@@ -299,10 +292,8 @@ function test_sync_realm_settings({override}) {
     {
         /* Test organization joining restrictions settings sync */
         const $property_elem = $("#id_realm_org_join_restrictions");
-        $property_elem.length = 1;
         $property_elem.attr("id", "id_realm_org_join_restrictions");
-        $property_elem.closest = () => $subsection_stub;
-        $property_elem[0] = "#id_realm_org_join_restrictions";
+        $property_elem.set_closest_results(".settings-subsection-parent", $subsection_stub);
 
         override(realm, "realm_emails_restricted_to_domains", true);
         override(realm, "realm_disallow_disposable_email_addresses", false);
@@ -406,11 +397,8 @@ function test_discard_changes_button({override}, discard_changes) {
         $msg_delete_limit_setting,
     ]);
 
-    const {$discard_button, $save_button_controls, props} = createSaveButtons("msg-editing");
-    $discard_button.closest = (selector) => {
-        assert.equal(selector, ".settings-subsection-parent");
-        return $discard_button_parent;
-    };
+    const {$discard_button, $save_button_controls} = createSaveButtons("msg-editing");
+    $discard_button.set_closest_results(".settings-subsection-parent", $discard_button_parent);
 
     $discard_button_parent.set_find_results(".save-button-controls", $save_button_controls);
 
@@ -424,7 +412,7 @@ function test_discard_changes_button({override}, discard_changes) {
     assert.equal($message_content_edit_limit_minutes.val(), "60");
     assert.equal($msg_delete_limit_setting.val(), "120");
     assert.equal($message_content_delete_limit_minutes.val(), "2");
-    assert.ok(props.hidden);
+    assert.ok(!$save_button_controls.visible());
 }
 
 test("set_up", ({override, override_rewire}) => {
@@ -440,6 +428,14 @@ test("set_up", ({override, override_rewire}) => {
         big_blue_button: {
             id: 4,
             name: "BigBlueButton",
+        },
+        constructor_groups: {
+            id: 6,
+            name: "Constructor Groups",
+        },
+        nextcloud_talk: {
+            id: 7,
+            name: "Nextcloud Talk",
         },
     });
     override(realm, "realm_message_retention_days", null);
@@ -573,6 +569,9 @@ test("set_up", ({override, override_rewire}) => {
     $("#id_realm_welcome_message_custom_text").set_parent(
         $.create("<stub welcome message custom text>"),
     );
+    override_rewire(settings_components, "resize_textareas_in_subsection", noop);
+
+    override_rewire(settings_org, "set_two_tier_billing_settings_visibility", noop);
 
     // Make our plan not limited so we don't have to stub all the
     // elements involved in disabling the can_create_groups input.
@@ -729,8 +728,6 @@ test("test combined_code_language_options", ({override}) => {
             is_setting_disabled: true,
             unique_id: "",
             name: $t({defaultMessage: "No language set"}),
-            show_disabled_icon: true,
-            show_disabled_option_name: false,
         },
         ...default_options,
     ];
@@ -748,8 +745,6 @@ test("test combined_code_language_options", ({override}) => {
             is_setting_disabled: true,
             unique_id: "",
             name: $t({defaultMessage: "No language set"}),
-            show_disabled_icon: true,
-            show_disabled_option_name: false,
         },
         {unique_id: "custom_lang_1", name: "custom_lang_1"},
         {unique_id: "custom_lang_2", name: "custom_lang_2"},
@@ -762,8 +757,6 @@ test("test combined_code_language_options", ({override}) => {
 
 test("misc", ({override}) => {
     override(current_user, "is_admin", false);
-    $("#user-avatar-upload-widget").length = 1;
-    $("#user_details_section").length = 1;
 
     override(realm, "realm_name_changes_disabled", false);
     override(realm, "server_name_changes_disabled", false);

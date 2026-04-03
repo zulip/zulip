@@ -1,13 +1,15 @@
-import * as all_messages_data from "./all_messages_data.ts";
 import type {Filter} from "./filter.ts";
 import type {MessageListData} from "./message_list_data.ts";
+import * as recent_view_messages_data from "./recent_view_messages_data.ts";
 
 // LRU cache for message list data.
 //
 // While it's unlikely that user will narrow to empty filter,
-// but we will still need to update all_messages_data since it used
+// but we will still need to update recent_view_messages_data since it used
 // as super set for populating other views.
-let cache = new Map<number, MessageListData>([[0, all_messages_data.all_messages_data]]);
+let cache = new Map<number, MessageListData>([
+    [0, recent_view_messages_data.recent_view_messages_data],
+]);
 let latest_key = 0;
 
 // Maximum number of data items to cache.
@@ -55,8 +57,12 @@ export function add(message_list_data: MessageListData): void {
     if (cache.size >= CACHE_STORAGE_LIMIT) {
         // Remove the oldest item from the cache.
         for (const [key, cached_data] of cache.entries()) {
-            // We never want to remove the all_messages_data from the cache.
-            if (cached_data.filter.equals(all_messages_data.all_messages_data.filter)) {
+            // We never want to remove the recent_view_messages_data from the cache.
+            if (
+                cached_data.filter.equals(
+                    recent_view_messages_data.recent_view_messages_data.filter,
+                )
+            ) {
                 continue;
             }
             cache.delete(key);
@@ -73,7 +79,7 @@ export function all(): MessageListData[] {
 }
 
 export function clear(): void {
-    cache = new Map([[0, all_messages_data.all_messages_data]]);
+    cache = new Map([[0, recent_view_messages_data.recent_view_messages_data]]);
     latest_key = 0;
 }
 
@@ -86,7 +92,7 @@ export function get_superset_datasets(filter: Filter): MessageListData[] {
         superset_datasets.push(superset_data);
     }
 
-    return [...superset_datasets, all_messages_data.all_messages_data];
+    return [...superset_datasets, recent_view_messages_data.recent_view_messages_data];
 }
 
 export function remove(filter: Filter): void {

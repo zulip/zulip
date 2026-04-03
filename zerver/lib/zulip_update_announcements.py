@@ -517,6 +517,78 @@ feature highlights in Zulip Server 11.0, and other Zulip project updates.
             blog_post_11_0_url="https://blog.zulip.com/zulip-server-11-0",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=22,
+        message="""
+The [help center]({help_url}) has a new, modernized design, complete with
+light and dark theme. A search bar makes it easier to find the information you
+need, whether it's how to get started, specific features, best practices, or
+administrative capabilities.
+
+**Mobile updates**
+- You can now [browse]({browse_and_subscribe_url}) channels you're not
+  subscribed to, and subscribe.
+- You can now [delete messages]({delete_message_completely}), if you have
+  permission to do so.
+- Android users can now paste an image into a message, or insert a sticker from
+  the keyboard.
+""".format(
+            browse_and_subscribe_url="/help/introduction-to-channels#browse-and-subscribe-to-channels",
+            delete_message_completely="/help/delete-a-message#delete-a-message-completely",
+            help_url="/help/",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=23,
+        message="""
+**Web and desktop updates**
+- You can now [report]({report_a_message_url}) problematic messages if
+moderation requests are [enabled]({enable_moderation_requests_url}).
+- You can now [expand or collapse]({expand_or_collapse_sections_url}) all sections in the left sidebar, and
+[configure]({configure_inbox_folders_url}) whether channels are grouped by
+folder in the inbox view.
+""".format(
+            report_a_message_url="/help/report-a-message",
+            enable_moderation_requests_url="/help/enable-moderation-requests",
+            expand_or_collapse_sections_url="/help/left-sidebar#expand-or-collapse-sections",
+            configure_inbox_folders_url="/help/channel-folders#configure-whether-channels-are-grouped-by-folder-in-the-inbox-view",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=24,
+        message="""
+**Web and desktop updates**
+- The [recent conversations view]({recent_conversations_url}) has been
+redesigned, with a new option to [filter by folder]({filter_by_folder_url}).
+- [Search]({search_url}) typeahead now suggests topics across all your
+subscribed channels — no need to pick a channel first.
+
+**New organization settings**
+- [Size of image and video previews]({image_video_thumbnail_size_url}) in the message feed.
+- Configure [linkifiers]({linkifiers_url}) to also work in reverse: when you paste a URL that
+matches the linkifier, Zulip will automatically convert it to linkified text.
+- You can now create [custom profile fields]({custom_profile_fields_url}) for many types of external
+accounts, and allow them to be used for @-mention suggestions.
+- A new option for [default profile pictures for new
+users]({configure_default_profile_pictures_url}) looks great in both light and
+dark theme.
+
+Administrators can now [reset]({reset_settings_for_users_url}) any non-privacy
+user preference or notification setting to the [organization
+default]({configure_default_new_user_settings_url}), for everyone or just for
+users who haven't personally configured it.
+""".format(
+            recent_conversations_url="/help/recent-conversations",
+            filter_by_folder_url="/help/recent-conversations#filter-by-folder",
+            search_url="/help/search-for-messages",
+            image_video_thumbnail_size_url="/help/image-video-and-website-previews#configure-image-and-video-thumbnail-size",
+            linkifiers_url="/help/add-a-custom-linkifier",
+            custom_profile_fields_url="/help/custom-profile-fields",
+            configure_default_profile_pictures_url="/help/configure-default-profile-pictures",
+            reset_settings_for_users_url="/help/reset-settings-for-users",
+            configure_default_new_user_settings_url="/help/configure-default-new-user-settings",
+        ),
+    ),
 ]
 
 

@@ -1,6 +1,8 @@
 from collections.abc import Mapping
+from datetime import datetime
 
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.validator import WildValue, check_bool, check_none_or, check_string
 
 SUPPORTED_CARD_ACTIONS = [
@@ -72,7 +74,8 @@ ACTIONS_TO_MESSAGE_MAPPER = {
 
 
 def prettify_date(date_string: str) -> str:
-    return date_string.replace("T", " ").replace(".000", "").replace("Z", " UTC")
+    dt = datetime.fromisoformat(date_string)
+    return datetime_to_global_time(dt)
 
 
 def process_card_action(payload: WildValue, action_type: str) -> tuple[str, str] | None:

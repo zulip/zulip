@@ -246,7 +246,6 @@ group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument(
     "--thread",
     nargs="+",
-    type=str,
     help="Path of the file where the thread for screenshot is present",
 )
 fixture_group = parser.add_argument_group("thread")

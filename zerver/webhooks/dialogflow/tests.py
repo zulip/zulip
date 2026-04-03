@@ -3,7 +3,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class DialogflowHookTests(WebhookTestCase):
     URL_TEMPLATE = "/api/v1/external/dialogflow?api_key={api_key}&email=AARON@zulip.com"
-    WEBHOOK_DIR_NAME = "dialogflow"
 
     def test_dialogflow_default(self) -> None:
         email = self.example_user("aaron").email

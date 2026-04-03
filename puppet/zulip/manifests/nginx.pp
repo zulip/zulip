@@ -1,10 +1,7 @@
 class zulip::nginx {
-  $web_packages = [
-    # Needed to run nginx with the modules we use
-    $zulip::common::nginx,
-    'ca-certificates',
-  ]
-  package { $web_packages: ensure => installed }
+  include zulip::certbot
+  package { $zulip::common::nginx: ensure => installed }
+  package { 'ca-certificates': ensure => latest }
 
   if $facts['os']['family'] == 'RedHat' {
     file { '/etc/nginx/sites-available':
@@ -40,10 +37,11 @@ class zulip::nginx {
   }
 
   if $facts['os']['family'] == 'Debian' {
-      $ca_crt = '/etc/ssl/certs/ca-certificates.crt'
+    $ca_crt = '/etc/ssl/certs/ca-certificates.crt'
   } else {
-      $ca_crt = '/etc/pki/tls/certs/ca-bundle.crt'
+    $ca_crt = '/etc/pki/tls/certs/ca-bundle.crt'
   }
+  $worker_processes = zulipconf('application_server', 'nginx_worker_processes', 'auto')
   $worker_connections = zulipconf('application_server', 'nginx_worker_connections', 10000)
   file { '/etc/nginx/nginx.conf':
     ensure  => file,
@@ -56,7 +54,19 @@ class zulip::nginx {
   }
 
   $loadbalancers = split(zulipconf('loadbalancer', 'ips', ''), ',')
+  $raw_true_client_header = zulipconf('loadbalancer', 'true_client_header', '')
+  $true_client_header = regsubst(downcase($raw_true_client_header), '-', '_', 'G')
+  $true_client_header_from = split(zulipconf('loadbalancer', 'true_client_header_from', ''), ',')
   $lb_rejects_http_requests = zulipconf('loadbalancer', 'rejects_http_requests', false)
+  file { '/etc/nginx/zulip-include/trusted-ip':
+    ensure  => file,
+    require => Package[$zulip::common::nginx],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    notify  => Service['nginx'],
+    content => template('zulip/nginx/trusted-ip.template.erb'),
+  }
   file { '/etc/nginx/zulip-include/trusted-proto':
     ensure  => file,
     require => Package[$zulip::common::nginx],
@@ -96,9 +106,6 @@ class zulip::nginx {
     group   => 'root',
     mode    => '0644',
     content => template('zulip/logrotate/nginx.template.erb'),
-  }
-  package { 'certbot':
-    ensure => installed,
   }
   file { ['/var/lib/zulip', '/var/lib/zulip/certbot-webroot']:
     ensure => directory,

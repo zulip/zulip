@@ -8,7 +8,7 @@
 import re
 from collections.abc import Callable
 from functools import wraps
-from typing import Any
+from typing import Any, cast
 
 from django.utils.timezone import now as timezone_now
 
@@ -16,11 +16,13 @@ from zerver.actions.channel_folders import check_add_channel_folder
 from zerver.actions.create_user import do_create_user
 from zerver.actions.presence import update_user_presence
 from zerver.actions.reactions import do_add_reaction
+from zerver.actions.realm_domains import do_add_realm_domain
 from zerver.actions.realm_linkifiers import do_add_linkifier
 from zerver.actions.realm_playgrounds import check_add_realm_playground
 from zerver.lib.events import do_events_register
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import read_test_image_file
 from zerver.lib.upload import upload_message_attachment
 from zerver.models import Client, Message, NamedUserGroup, UserPresence
 from zerver.models.channel_folders import ChannelFolder
@@ -112,6 +114,7 @@ def fetch_api_key() -> dict[str, object]:
         "/messages/{message_id}/history:get",
         "/messages/{message_id}:patch",
         "/messages/{message_id}:delete",
+        "/messages/{message_id}/reactions:post",
     ]
 )
 def iago_message_id() -> dict[str, object]:
@@ -126,9 +129,9 @@ def iago_message_id() -> dict[str, object]:
 def add_emoji_to_message() -> dict[str, object]:
     user_profile = helpers.example_user("iago")
 
-    # The message ID here is hardcoded based on the corresponding value
-    # for the example message IDs we use in zulip.yaml.
-    message_id = 48
+    # Get a message ID by calling the message generator
+    message_id = cast(int, iago_message_id()["message_id"])
+
     emoji_name = "octopus"
     emoji_code = "1f419"
     reaction_type = "unicode_emoji"
@@ -136,7 +139,9 @@ def add_emoji_to_message() -> dict[str, object]:
     message = Message.objects.select_related(*Message.DEFAULT_SELECT_RELATED).get(id=message_id)
     do_add_reaction(user_profile, message, emoji_name, emoji_code, reaction_type)
 
-    return {}
+    return {
+        "message_id": message_id,
+    }
 
 
 @openapi_param_value_generator(["/messages/flags:post"])
@@ -426,3 +431,71 @@ def get_temporary_url_for_uploaded_file() -> dict[str, object]:
         realm_id = upload_path_parts[1]
         filename = upload_path_parts[2]
     return {"realm_id_str": realm_id, "filename": filename}
+
+
+@openapi_param_value_generator(["/users/me/api_key/regenerate:post"])
+def regenerate_api_key_test_user() -> dict[str, object]:
+    test_user_email = "regenerate-api-key-test@zulip.com"
+    test_user = do_create_user(
+        test_user_email,
+        "secret",
+        get_realm("zulip"),
+        "Mr. Regenerate",
+        role=200,
+        acting_user=None,
+    )
+    realm = get_realm("zulip")
+    test_user_api_key = get_user(test_user_email, realm).api_key
+    # Change authentication line to allow test_client to regenerate its own key.
+    AUTHENTICATION_LINE[0] = f"{test_user.email}:{test_user_api_key}"
+    return {}
+
+
+@openapi_param_value_generator(["/bots/{bot_id}/api_key/regenerate:post"])
+def regenerate_bot_api_key_test() -> dict[str, object]:
+    bot = UserProfile.objects.filter(is_bot=True, realm=get_realm("zulip")).first()
+    assert bot is not None
+    return {"bot_id": bot.id}
+
+
+@openapi_param_value_generator(["/thumbnail/status/{realm_id_str}/{filename}:get"])
+def check_thumbnail_status_for_uploaded_file() -> dict[str, object]:
+    realm_id = ""
+    filename = ""
+    user_profile = helpers.example_user("iago")
+    url = upload_message_attachment(
+        "img.png", "image/png", read_test_image_file("img.png"), user_profile
+    )[0]
+    upload_path_parts = re.match(r"/user_uploads/(\d+)/(.*)", url)
+    if upload_path_parts:
+        realm_id = upload_path_parts[1]
+        filename = upload_path_parts[2]
+    return {"realm_id_str": realm_id, "filename": filename}
+
+
+@openapi_param_value_generator(["/realm/domains:post"])
+def add_realm_domain_owner_auth() -> dict[str, object]:
+    # This endpoint requires organization owner permissions.
+    owner = helpers.example_user("desdemona")
+    AUTHENTICATION_LINE[0] = f"{owner.email}:{owner.api_key}"
+    return {}
+
+
+@openapi_param_value_generator(["/realm/domains/{domain}:patch"])
+def patch_realm_domain_owner_auth() -> dict[str, object]:
+    # This endpoint requires organization owner permissions.
+    owner = helpers.example_user("desdemona")
+    AUTHENTICATION_LINE[0] = f"{owner.email}:{owner.api_key}"
+
+    do_add_realm_domain(owner.realm, "patch-domain-example.com", False, acting_user=None)
+    return {"domain": "patch-domain-example.com"}
+
+
+@openapi_param_value_generator(["/realm/domains/{domain}:delete"])
+def delete_realm_domain_owner_auth() -> dict[str, object]:
+    # This endpoint requires organization owner permissions.
+    owner = helpers.example_user("desdemona")
+    AUTHENTICATION_LINE[0] = f"{owner.email}:{owner.api_key}"
+
+    do_add_realm_domain(owner.realm, "delete-domain-example.com", False, acting_user=None)
+    return {"domain": "delete-domain-example.com"}

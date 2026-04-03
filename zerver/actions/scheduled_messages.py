@@ -22,12 +22,12 @@ from zerver.lib.exceptions import (
     RealmDeactivatedError,
     UserDeactivatedError,
 )
-from zerver.lib.markdown import render_message_markdown
 from zerver.lib.message import SendMessageRequest, access_message, truncate_topic
 from zerver.lib.recipient_parsing import extract_direct_message_recipient_ids, extract_stream_id
-from zerver.lib.reminders import get_reminder_formatted_content
+from zerver.lib.reminders import get_reminder_formatted_content, notify_remove_reminder
 from zerver.lib.scheduled_messages import access_scheduled_message
 from zerver.lib.string_validation import check_stream_topic
+from zerver.lib.timestamp import datetime_to_global_time
 from zerver.models import Client, Realm, ScheduledMessage, Subscription, UserProfile
 from zerver.models.users import get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
@@ -45,7 +45,6 @@ def check_schedule_message(
     deliver_at: datetime,
     realm: Realm | None = None,
     *,
-    forwarder_user_profile: UserProfile | None = None,
     read_by_sender: bool | None = None,
     skip_events: bool = False,
 ) -> int:
@@ -56,7 +55,6 @@ def check_schedule_message(
         addressee,
         message_content,
         realm=realm,
-        forwarder_user_profile=forwarder_user_profile,
     )
     send_request.deliver_at = deliver_at
 
@@ -115,11 +113,8 @@ def do_schedule_messages(
         scheduled_message.recipient = send_request.message.recipient
         topic_name = send_request.message.topic_name()
         scheduled_message.set_topic_name(topic_name=topic_name)
-        rendering_result = render_message_markdown(
-            send_request.message, send_request.message.content, send_request.realm
-        )
         scheduled_message.content = send_request.message.content
-        scheduled_message.rendered_content = rendering_result.rendered_content
+        scheduled_message.rendered_content = send_request.rendering_result.rendered_content
         scheduled_message.sending_client = send_request.message.sending_client
         scheduled_message.stream = send_request.stream
         scheduled_message.realm = send_request.realm
@@ -193,6 +188,7 @@ def edit_scheduled_message(
         scheduled_message_object.recipient, sender.id
     )
 
+    send_request: SendMessageRequest | None = None
     # If any recipient information or message content has been updated,
     # we check the message again.
     if recipient_type_name is not None or message_to is not None or message_content is not None:
@@ -236,10 +232,10 @@ def edit_scheduled_message(
             addressee,
             updated_content,
             realm=realm,
-            forwarder_user_profile=sender,
         )
 
     if recipient_type_name is not None or message_to is not None:
+        assert send_request is not None
         # User has updated the scheduled message's recipient.
         scheduled_message_object.recipient = send_request.message.recipient
         scheduled_message_object.stream = send_request.stream
@@ -255,14 +251,12 @@ def edit_scheduled_message(
         scheduled_message_object.set_topic_name(topic_name=new_topic_name)
 
     if message_content is not None:
+        assert send_request is not None
         # User has updated the scheduled messages's content.
-        rendering_result = render_message_markdown(
-            send_request.message, send_request.message.content, send_request.realm
-        )
         scheduled_message_object.content = send_request.message.content
-        scheduled_message_object.rendered_content = rendering_result.rendered_content
+        scheduled_message_object.rendered_content = send_request.rendering_result.rendered_content
         attachment_reference_change = check_attachment_reference_change(
-            scheduled_message_object, rendering_result
+            scheduled_message_object, send_request.rendering_result
         )
         scheduled_message_object.has_attachment = attachment_reference_change.did_attachment_change
 
@@ -315,15 +309,18 @@ def send_reminder(scheduled_message: ScheduledMessage) -> None:
         # If we no longer have access to the message, we send the reminder with the
         # last known message position and content.
         content = scheduled_message.content
-    # Reminder messages are always sent from the notification bot.
+    # Reminder messages are always sent from the notification bot. We use acting_user
+    # to have appropriate permissions for the messages.
     message_id = internal_send_private_message(
         get_system_bot(settings.NOTIFICATION_BOT, scheduled_message.realm.id),
         current_user,
         content,
+        acting_user=current_user,
     )
     scheduled_message.delivered_message_id = message_id
     scheduled_message.delivered = True
     scheduled_message.save(update_fields=["delivered", "delivered_message_id"])
+    notify_remove_reminder(current_user, scheduled_message.id)
 
 
 def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
@@ -389,11 +386,10 @@ def send_failed_scheduled_message_notification(
     user_profile: UserProfile, scheduled_message_id: int
 ) -> None:
     scheduled_message = access_scheduled_message(user_profile, scheduled_message_id)
-    delivery_datetime_string = str(scheduled_message.scheduled_timestamp)
 
     with override_language(user_profile.default_language):
         error_string = scheduled_message.failure_message
-        delivery_time_markdown = f"<time:{delivery_datetime_string}> "
+        delivery_time_markdown = datetime_to_global_time(scheduled_message.scheduled_timestamp)
 
         content = "".join(
             [
@@ -430,7 +426,7 @@ def try_deliver_one_scheduled_message() -> bool:
             delivered=False,
             failed=False,
         )
-        .select_for_update()
+        .select_for_update(no_key=True)
         .first()
     )
 

@@ -60,5 +60,5 @@ Here are the top things to know:
   to the _index_ (that is _stage_) with `git add`. _Commit_ to the HEAD of the
   current branch with `git commit`.
 
-[gitbook-basics]: https://git-scm.com/book/en/v2/Getting-Started-Git-Basics
+[gitbook-basics]: https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository
 [understanding-git]: https://web.mit.edu/nelhage/Public/git-slides-2009.pdf

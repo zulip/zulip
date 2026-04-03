@@ -193,7 +193,8 @@ function load_fixture_options(integration_name: string): void {
     );
     const fixtures = loaded_fixtures.get(integration_name);
     assert(fixtures !== undefined);
-    const fixtures_names = Object.keys(fixtures).sort();
+    const fixtures_names = Object.keys(fixtures);
+    fixtures_names.sort();
 
     for (const fixture_name of fixtures_names) {
         const new_dropdown_option = document.createElement("option");

@@ -37,5 +37,7 @@ in order to use this integration.
 ## Related documentation
 
 - [How to start a call](/help/start-a-call)
-- [Jitsi Meet integration](/integrations/doc/jitsi)
-- [BigBlueButton integration](/integrations/doc/big-blue-button)
+- [Jitsi Meet integration](/integrations/jitsi)
+- [BigBlueButton integration](/integrations/big-blue-button)
+- [Constructor Groups integration](/integrations/constructor-groups)
+- [Nextcloud Talk integration](/integrations/nextcloud-talk)

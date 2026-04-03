@@ -6,6 +6,7 @@ import * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
+import render_scroll_to_time_popover from "../templates/popovers/scroll_to_time_popover.hbs";
 
 import * as activity_ui from "./activity_ui.ts";
 import * as browser_history from "./browser_history.ts";
@@ -14,6 +15,7 @@ import * as compose_actions from "./compose_actions.ts";
 import * as compose_reply from "./compose_reply.ts";
 import * as compose_state from "./compose_state.ts";
 import * as emoji_picker from "./emoji_picker.ts";
+import * as flatpickr from "./flatpickr.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
 import * as message_edit from "./message_edit.ts";
@@ -26,11 +28,12 @@ import * as navigate from "./navigate.ts";
 import {page_params} from "./page_params.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popover_menus from "./popover_menus.ts";
+import * as popover_menus_data from "./popover_menus_data.ts";
 import * as reactions from "./reactions.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as rows from "./rows.ts";
+import * as settings_config from "./settings_config.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
-import * as settings_preferences from "./settings_preferences.ts";
 import * as settings_toggle from "./settings_toggle.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spectators from "./spectators.ts";
@@ -40,6 +43,7 @@ import * as stream_popover from "./stream_popover.ts";
 import * as topic_list from "./topic_list.ts";
 import * as ui_util from "./ui_util.ts";
 import {parse_html} from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 export function initialize(): void {
@@ -161,10 +165,20 @@ export function initialize(): void {
             return true;
         }
 
+        // Reveal button for a hidden message
+        if ($target.closest(".reveal-hidden-message").length > 0) {
+            return true;
+        }
+
+        // Hide button for a revealed message sent by a muted user.
+        if ($target.closest(".rehide-muted-user-message").length > 0) {
+            return true;
+        }
+
         return false;
     }
 
-    const select_message_function = function (this: HTMLElement, e: JQuery.TriggeredEvent): void {
+    const select_message_function = function (this: HTMLElement, e: JQuery.ClickEvent): void {
         assert(e.target instanceof Element);
         if (is_clickable_message_element($(e.target))) {
             // If this click came from a hyperlink, don't trigger the
@@ -180,7 +194,14 @@ export function initialize(): void {
         }
 
         if (document.getSelection()?.type === "Range") {
-            // Drags on the message (to copy message text) shouldn't trigger a reply.
+            // Drags and double/triple clicks on the message
+            // (to copy message text) shouldn't trigger a reply.
+            return;
+        }
+
+        if (mouse_drag.is_drag(e)) {
+            // This prevents triggering a reply when you click and drag through
+            // an area that doesn't contain text.
             return;
         }
 
@@ -221,22 +242,6 @@ export function initialize(): void {
     // selection function which will open the compose box  and select the message.
     if (!util.is_mobile()) {
         $("#main_div").on("click", ".messagebox", select_message_function);
-        // on the other hand, on mobile it should be done with a long tap.
-    } else {
-        $("#main_div").on("longtap", ".messagebox", function (this: HTMLElement, e) {
-            const sel = window.getSelection();
-            // if one matches, remove the current selections.
-            // after a longtap that is valid, there should be no text selected.
-            if (sel) {
-                if (sel.removeAllRanges) {
-                    sel.removeAllRanges();
-                } else if (sel.empty) {
-                    sel.empty();
-                }
-            }
-
-            select_message_function.call(this, e);
-        });
     }
 
     $("#main_div").on("click", ".star_container", function (e) {
@@ -267,12 +272,26 @@ export function initialize(): void {
         reactions.process_reaction_click(message_id, local_id);
     });
 
-    $("body").on("click", ".reveal_hidden_message", (e) => {
+    $("body").on("click", ".reveal-hidden-message", (e) => {
         assert(message_lists.current !== undefined);
         const message_id = rows.id($(e.currentTarget).closest(".message_row"));
         message_lists.current.view.reveal_hidden_message(message_id);
         e.stopPropagation();
         e.preventDefault();
+    });
+
+    $("#main_div").on("click", ".rehide-muted-user-message", (e) => {
+        const message_id = Number($(e.currentTarget).attr("data-message-id"));
+        assert(message_lists.current !== undefined);
+        const $row = message_lists.current.get_row(message_id);
+        const message = message_lists.current.get(rows.id($row));
+        assert(message !== undefined);
+        const message_container = message_lists.current.view.message_containers.get(message.id);
+        assert(message_container !== undefined);
+        assert(!message_container.is_hidden);
+        message_lists.current.view.hide_revealed_message(message_id);
+        e.preventDefault();
+        e.stopPropagation();
     });
 
     $("#main_div").on("click", "a.stream", function (this: HTMLAnchorElement, e) {
@@ -285,6 +304,22 @@ export function initialize(): void {
             return;
         }
         window.location.href = this.href;
+    });
+
+    $("body").on("click", ".not-subscribed-banner .load-newer-messages-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const filter = narrow_state.filter();
+        if (filter === undefined) {
+            return;
+        }
+
+        message_view.show(filter.terms(), {
+            then_select_id: message_lists.current?.selected_id(),
+            then_select_offset: browser_history.current_scroll_offset(),
+            force_rerender: true,
+            trigger: "bookend load updates",
+        });
     });
 
     $("body").on("click", "#scroll-to-bottom-button-clickable-area", (e) => {
@@ -397,6 +432,98 @@ export function initialize(): void {
         }
     });
 
+    function open_date_picker(trigger_element: HTMLElement, message_id: number): void {
+        assert(message_lists.current !== undefined);
+        const message = message_lists.current.get(message_id)!;
+
+        // Set maxDate to end of the month.
+        const endOfMonth = new Date();
+        endOfMonth.setMonth(endOfMonth.getMonth() + 1, 0);
+        endOfMonth.setHours(23, 59, 59, 999);
+
+        flatpickr.show_flatpickr(
+            trigger_element,
+            (time) => {
+                message_view.fast_track_current_msg_list_to_anchor(
+                    "date",
+                    new Date(time).toISOString(),
+                );
+            },
+            new Date(message.timestamp * 1000),
+            {
+                enableTime: false,
+                // Set to the end of the month so that we don't see too many
+                // disabled rows in the flatpickr calendar which looks visually
+                // unappealing.
+                maxDate: endOfMonth,
+            },
+            true,
+        );
+    }
+
+    function open_scroll_to_time_popover(trigger_element: HTMLElement, message_id: number): void {
+        popover_menus.toggle_popover_menu(trigger_element, {
+            theme: "popover-menu",
+            placement: "bottom",
+            popperOptions: {
+                modifiers: [
+                    {
+                        name: "flip",
+                        options: {
+                            fallbackPlacements: ["top"],
+                        },
+                    },
+                ],
+            },
+            onShow(instance) {
+                popover_menus.on_show_prep(instance);
+                assert(message_lists.current !== undefined);
+                const messages = message_lists.current.all_messages();
+                const suggested_dates = popover_menus_data.get_scroll_to_date_suggestions(messages);
+                instance.setContent(parse_html(render_scroll_to_time_popover({suggested_dates})));
+            },
+            onMount(instance) {
+                const $popper = $(instance.popper);
+                popover_menus.popover_instances.scroll_to_time = instance;
+
+                $popper.on("click", "#scroll_to_oldest", () => {
+                    message_view.fast_track_current_msg_list_to_anchor("oldest");
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+
+                $popper.on("click", ".scroll-to-suggested-date", function (this: HTMLElement) {
+                    const iso_date = $(this).attr("data-iso-date")!;
+                    message_view.fast_track_current_msg_list_to_anchor("date", iso_date);
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+
+                $popper.on("click", "#scroll_to_custom", () => {
+                    popover_menus.hide_current_popover_if_visible(instance);
+                    open_date_picker(trigger_element, message_id);
+                });
+            },
+            onHidden(instance) {
+                instance.destroy();
+                popover_menus.popover_instances.scroll_to_time = null;
+            },
+        });
+    }
+
+    $("#message_feed_container").on("click", ".scroll-to-time", function (this: HTMLElement, e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        assert(message_lists.current !== undefined);
+        if ($(this).hasClass("recipient_row_date")) {
+            const $recipient_row = $(this).closest(".recipient_row");
+            const message_id = rows.id_for_recipient_row($recipient_row);
+            open_scroll_to_time_popover(this, message_id);
+            return;
+        }
+        const message_id = rows.id($(this).closest(".message_row"));
+        open_scroll_to_time_popover(this, message_id);
+    });
+
     // RESOLVED TOPICS
     $("body").on("click", ".message_header .on_hover_topic_resolve", (e) => {
         e.stopPropagation();
@@ -421,30 +548,12 @@ export function initialize(): void {
         return nearest.id;
     }
 
-    $("#message_feed_container").on(
-        "click",
-        ".narrows_by_recipient",
-        function (this: HTMLElement, e) {
-            if (e.metaKey || e.ctrlKey || e.shiftKey) {
-                return;
-            }
-            e.preventDefault();
-            if (document.getSelection()?.type === "Range") {
-                return;
-            }
-            const row_id = get_row_id_for_narrowing(this);
-            // TODO: Navigate user according to `web_channel_default_view` setting.
-            // Also, update the tooltip hotkey in recipient bar.
-            message_view.narrow_by_recipient(row_id, {trigger: "message header"});
-        },
-    );
-
     $("#message_feed_container").on("click", ".narrows_by_topic", function (this: HTMLElement, e) {
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
         e.preventDefault();
-        if (document.getSelection()?.type === "Range") {
+        if (mouse_drag.is_drag(e)) {
             return;
         }
         const row_id = get_row_id_for_narrowing(this);
@@ -452,7 +561,7 @@ export function initialize(): void {
     });
 
     // SIDEBARS
-    $("body").on("click", "#compose-new-direct-message", (e) => {
+    $("body").on("click", ".compose-new-direct-message", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -470,7 +579,7 @@ export function initialize(): void {
         if ($(e.target).parents(".user-profile-picture").length === 1) {
             return;
         }
-        if (document.getSelection()?.type === "Range") {
+        if (mouse_drag.is_drag(e)) {
             // To avoid the click behavior if a user name or status text is
             // selected.
             e.preventDefault();
@@ -564,8 +673,15 @@ export function initialize(): void {
             e.stopPropagation();
             const $elem = $(this);
 
+            const is_compact_mode =
+                user_settings.user_list_style ===
+                settings_config.user_list_style_values.compact.code;
+            const status_el = is_compact_mode ? null : util.the($elem.find(".status-text"));
+            const is_truncated = status_el ? status_el.scrollWidth > status_el.clientWidth : false;
+            const should_show_status = is_compact_mode || is_truncated;
+
             const user_id_string = $elem.attr("data-user-id")!;
-            const title_data = buddy_data.get_title_data(user_id_string, false);
+            const title_data = buddy_data.get_title_data(user_id_string, false, should_show_status);
 
             // `target_node` is the `ul` element since it stays in DOM even after updates.
             function get_target_node(): HTMLElement {
@@ -624,7 +740,7 @@ export function initialize(): void {
         // This converts from 'true' in the DOM to true.
         const is_group = z.boolean().parse(JSON.parse($elem.attr("data-is-group")!));
 
-        const title_data = buddy_data.get_title_data(user_ids_string, is_group);
+        const title_data = buddy_data.get_title_data(user_ids_string, is_group, true);
 
         // Since anything inside `#left_sidebar_scroll_container` can be replaced, it is our target node here.
         function get_target_node(): HTMLElement {
@@ -677,13 +793,13 @@ export function initialize(): void {
     // Recent conversations direct messages (Not displayed on small widths)
     $("body").on(
         "mouseenter",
-        ".recent_topic_stream .pm_status_icon",
+        ".recent_topic_name .pm_status_icon",
         function (this: HTMLElement, e) {
             e.stopPropagation();
             const $elem = $(this);
             const user_ids_string = $elem.attr("data-user-ids-string");
             // Don't show tooltip for group direct messages.
-            if (!user_ids_string || user_ids_string.split(",").length !== 1) {
+            if (user_ids_string?.split(",").length !== 1) {
                 return;
             }
             const title_data = recent_view_ui.get_pm_tooltip_data(user_ids_string);
@@ -798,7 +914,14 @@ export function initialize(): void {
     function handle_compose_click(e: JQuery.ClickEvent): void {
         const $target = $(e.target);
         // Emoji clicks should be handled by their own click handler in emoji_picker.js
-        if ($target.is(".emoji_map, img.emoji, .drag, .compose_gif_icon")) {
+        if ($target.is(".emoji_map, img.emoji, .drag")) {
+            return;
+        }
+
+        // GIF icon clicks should be handled by the click handlers defined in their
+        // modules.
+        if ($target.is(".compose-gif-icon-giphy, .compose-gif-icon-tenor")) {
+            e.stopPropagation();
             return;
         }
 
@@ -844,8 +967,8 @@ export function initialize(): void {
         topic_list.clear_topic_search,
     );
 
-    $("body").on("click", "#direct-messages-section-header.zoom-out", (e) => {
-        if ($(e.target).closest("#show-all-direct-messages").length === 1) {
+    $("body").on("click", "#direct-messages-section-header", (e) => {
+        if ($(e.target).closest(".show-all-direct-messages").length === 1) {
             // Let the browser handle the "direct message feed" widget.
             return;
         }
@@ -874,7 +997,7 @@ export function initialize(): void {
     /* The DIRECT MESSAGES label's click behavior is complicated;
      * only when zoomed in does it have a navigation effect, so we need
      * this click handler rather than just a link. */
-    $("body").on("click", "#direct-messages-section-header.zoom-in", (e) => {
+    $("body").on("click", "#direct-messages-modal-section-header", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -884,7 +1007,7 @@ export function initialize(): void {
     $("body").on("click", ".direct-messages-search-section", (e) => {
         // We don't want clicking on the filter to trigger the DM
         // narrow defined on click for
-        // `#direct-messages-section-header.zoom-in`.
+        // `#direct-messages-modal-section-header`.
         e.stopPropagation();
     });
 
@@ -911,12 +1034,6 @@ export function initialize(): void {
     // Don't focus links on context menu.
     $("body").on("contextmenu", "a", function (this: HTMLElement) {
         this.blur();
-    });
-
-    $("body").on("click", ".language_selection_widget button", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        settings_preferences.launch_default_language_setting_modal();
     });
 
     $("body").on("click", "#header-container .brand", (e) => {

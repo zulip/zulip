@@ -1,13 +1,18 @@
 import datetime
 import time
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 import time_machine
+from django.test.utils import override_settings
 
 from zerver.actions.scheduled_messages import try_deliver_one_scheduled_message
+from zerver.lib.message import get_user_mentions_for_display
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Message, ScheduledMessage
+from zerver.models.recipients import Recipient, get_or_create_direct_message_group
+from zerver.models.users import UserProfile
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -56,16 +61,19 @@ class RemindersTest(ZulipTestCase):
             self.example_user("hamlet"), self.example_user("othello"), content
         )
 
-    def get_dm_reminder_content(self, msg_content: str, msg_id: int) -> str:
+    def get_dm_reminder_content(
+        self, msg_content: str, msg_id: int, dm_recipients: Sequence[UserProfile]
+    ) -> str:
+        recipient_mentions = get_user_mentions_for_display(list(dm_recipients))
         return (
             "You requested a reminder for the following direct message.\n\n"
-            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/dm/10,12/near/{msg_id}):\n```quote\n{msg_content}\n```"
+            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/dm/10,12/near/{msg_id}) to {recipient_mentions}:\n```quote\n{msg_content}\n```"
         )
 
     def get_channel_message_reminder_content(self, msg_content: str, msg_id: int) -> str:
         return (
-            f"You requested a reminder for #**Verona>test@{msg_id}**.\n\n"
-            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/test/near/{msg_id}):\n```quote\n{msg_content}\n```"
+            f"You requested a reminder for the following message.\n\n"
+            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/test/near/{msg_id}) in [#Verona > test](#narrow/channel/3-Verona/topic/test/with/{msg_id}):\n```quote\n{msg_content}\n```"
         )
 
     def test_schedule_reminder(self) -> None:
@@ -96,13 +104,14 @@ class RemindersTest(ZulipTestCase):
         self.assertEqual(scheduled_message.topic_name(), Message.DM_TOPIC)
 
         # Scheduling a direct message with user IDs is successful.
-        self.example_user("othello")
+        othello = self.example_user("othello")
         message_id = self.send_dm_from_hamlet_to_othello(content)
         result = self.do_schedule_reminder(message_id, scheduled_delivery_timestamp)
         self.assert_json_success(result)
         scheduled_message = self.last_scheduled_reminder()
         self.assertEqual(
-            scheduled_message.content, self.get_dm_reminder_content(content, message_id)
+            scheduled_message.content,
+            self.get_dm_reminder_content(content, message_id, [othello]),
         )
         self.assertEqual(scheduled_message.recipient.type_id, self.example_user("hamlet").id)
         self.assertEqual(scheduled_message.sender, self.example_user("hamlet"))
@@ -115,6 +124,41 @@ class RemindersTest(ZulipTestCase):
             message_id,
         )
         self.assertEqual(scheduled_message.topic_name(), Message.DM_TOPIC)
+
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
+    def test_schedule_reminder_using_direct_message_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        self.login("hamlet")
+        content = "Test message"
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+
+        # Create a direct message group between hamlet and othello.
+        get_or_create_direct_message_group(id_list=[hamlet.id, othello.id])
+
+        # Create a direct message group for hamlet's self messages.
+        hamlet_self_direct_message_group = get_or_create_direct_message_group(id_list=[hamlet.id])
+
+        # Scheduling a direct message with user IDs is successful.
+        message_id = self.send_dm_from_hamlet_to_othello(content)
+        result = self.do_schedule_reminder(message_id, scheduled_delivery_timestamp)
+        self.assert_json_success(result)
+        scheduled_message = self.last_scheduled_reminder()
+        self.assertEqual(
+            scheduled_message.content, self.get_dm_reminder_content(content, message_id, [othello])
+        )
+        self.assertEqual(scheduled_message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+        self.assertEqual(scheduled_message.recipient.type_id, hamlet_self_direct_message_group.id)
+        self.assertEqual(scheduled_message.sender, hamlet)
+        self.assertEqual(
+            scheduled_message.scheduled_timestamp,
+            timestamp_to_datetime(scheduled_delivery_timestamp),
+        )
+        self.assertEqual(
+            scheduled_message.reminder_target_message_id,
+            message_id,
+        )
 
     def test_schedule_reminder_with_bad_timestamp(self) -> None:
         self.login("hamlet")
@@ -165,7 +209,9 @@ class RemindersTest(ZulipTestCase):
             assert isinstance(reminder.reminder_target_message_id, int)
             self.assertEqual(
                 delivered_message.content,
-                self.get_dm_reminder_content(content, reminder.reminder_target_message_id),
+                self.get_dm_reminder_content(
+                    content, reminder.reminder_target_message_id, [self.example_user("othello")]
+                ),
             )
             self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
 
@@ -240,9 +286,12 @@ class RemindersTest(ZulipTestCase):
             delivered_message = Message.objects.get(id=reminder.delivered_message_id)
             # The reminder message is truncated to 10,000 characters if it exceeds the limit.
             assert isinstance(reminder.reminder_target_message_id, int)
+            othello = self.example_user("othello")
             length_of_reminder_content_wrapper = len(
                 self.get_dm_reminder_content(
-                    "\n[message truncated]", reminder.reminder_target_message_id
+                    "\n[message truncated]",
+                    reminder.reminder_target_message_id,
+                    [othello],
                 )
             )
             self.assertEqual(
@@ -250,6 +299,7 @@ class RemindersTest(ZulipTestCase):
                 self.get_dm_reminder_content(
                     content[:-length_of_reminder_content_wrapper] + "\n[message truncated]",
                     reminder.reminder_target_message_id,
+                    [othello],
                 ),
             )
             self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
@@ -289,7 +339,9 @@ class RemindersTest(ZulipTestCase):
             delivered_message = Message.objects.get(id=reminder.delivered_message_id)
             self.assertEqual(
                 delivered_message.content,
-                self.get_dm_reminder_content(content, reminder.reminder_target_message_id),
+                self.get_dm_reminder_content(
+                    content, reminder.reminder_target_message_id, [self.example_user("othello")]
+                ),
             )
             self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
 
@@ -375,11 +427,12 @@ class RemindersTest(ZulipTestCase):
             assert isinstance(reminder.delivered_message_id, int)
             delivered_message = Message.objects.get(id=reminder.delivered_message_id)
             assert isinstance(reminder.reminder_target_message_id, int)
+            recipient_mentions = get_user_mentions_for_display([self.example_user("othello")])
             self.assertEqual(
                 delivered_message.content,
                 "You requested a reminder for the following direct message."
                 "\n\n"
-                f"@_**King Hamlet|10** [sent](http://zulip.testserver/#narrow/dm/10,12/near/{reminder.reminder_target_message_id}) a poll.",
+                f"@_**King Hamlet|10** [sent](http://zulip.testserver/#narrow/dm/10,12/near/{reminder.reminder_target_message_id}) a poll to {recipient_mentions}.",
             )
             self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
 
@@ -410,11 +463,12 @@ class RemindersTest(ZulipTestCase):
             assert isinstance(reminder.delivered_message_id, int)
             delivered_message = Message.objects.get(id=reminder.delivered_message_id)
             assert isinstance(reminder.reminder_target_message_id, int)
+            recipient_mentions = get_user_mentions_for_display([self.example_user("othello")])
             self.assertEqual(
                 delivered_message.content,
                 "You requested a reminder for the following direct message."
                 "\n\n"
-                f"@_**King Hamlet|10** [sent](http://zulip.testserver/#narrow/dm/10,12/near/{reminder.reminder_target_message_id}) a todo list.",
+                f"@_**King Hamlet|10** [sent](http://zulip.testserver/#narrow/dm/10,12/near/{reminder.reminder_target_message_id}) a todo list to {recipient_mentions}.",
             )
             self.assertEqual(delivered_message.date_sent, more_than_scheduled_delivery_datetime)
 
@@ -422,6 +476,7 @@ class RemindersTest(ZulipTestCase):
         content = "Test message with notes"
         note = "This is a note for the reminder."
         scheduled_delivery_timestamp = int(time.time() + 86400)
+        recipient_mentions = get_user_mentions_for_display([self.example_user("othello")])
 
         message_id = self.send_channel_message_for_hamlet(content)
         result = self.do_schedule_reminder(message_id, scheduled_delivery_timestamp, note)
@@ -429,8 +484,8 @@ class RemindersTest(ZulipTestCase):
         scheduled_message = self.last_scheduled_reminder()
         self.assertEqual(
             scheduled_message.content,
-            f"You requested a reminder for #**Verona>test@{message_id}**. Note:\n > {note}\n\n"
-            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/test/near/{message_id}):\n```quote\n{content}\n```",
+            f"You requested a reminder for the following message. Note:\n > {note}\n\n"
+            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/test/near/{message_id}) in [#Verona > test](#narrow/channel/3-Verona/topic/test/with/{message_id}):\n```quote\n{content}\n```",
         )
 
         message_id = self.send_dm_from_hamlet_to_othello(content)
@@ -440,7 +495,7 @@ class RemindersTest(ZulipTestCase):
         self.assertEqual(
             scheduled_message.content,
             f"You requested a reminder for the following direct message. Note:\n > {note}\n\n"
-            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/dm/10,12/near/{message_id}):\n```quote\n{content}\n```",
+            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/dm/10,12/near/{message_id}) to {recipient_mentions}:\n```quote\n{content}\n```",
         )
 
         # Test with no note
@@ -450,8 +505,7 @@ class RemindersTest(ZulipTestCase):
         scheduled_message = self.last_scheduled_reminder()
         self.assertEqual(
             scheduled_message.content,
-            f"You requested a reminder for the following direct message.\n\n"
-            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/dm/10,12/near/{message_id}):\n```quote\n{content}\n```",
+            self.get_dm_reminder_content(content, message_id, [self.example_user("othello")]),
         )
 
         # Test with note exceeding maximum length
@@ -475,8 +529,61 @@ class RemindersTest(ZulipTestCase):
         scheduled_message = self.last_scheduled_reminder()
         self.assertEqual(
             scheduled_message.content,
-            "You requested a reminder for #**Verona>{789}@"
-            + str(message_id)
-            + "**. Note:\n > {123}\n\n"
-            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/.7B789.7D/near/{message_id}):\n```quote\n{content}\n```",
+            "You requested a reminder for the following message. Note:\n > {123}\n\n"
+            f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/.7B789.7D/near/{message_id})"
+            " in [#Verona > {789}](#narrow/channel/3-Verona/topic/.7B789.7D/with/"
+            f"{message_id}):\n"
+            f"```quote\n{content}\n```",
+        )
+
+    def test_schedule_reminder_ones_own_message(self) -> None:
+        content = "Test message"
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+        hamlet = self.example_user("hamlet")
+
+        message_id = self.send_personal_message(hamlet, hamlet, content)
+        result = self.do_schedule_reminder(message_id, scheduled_delivery_timestamp)
+        self.assert_json_success(result)
+        scheduled_message = self.last_scheduled_reminder()
+
+        self.assertEqual(
+            scheduled_message.content,
+            (
+                "You requested a reminder for the following direct message.\n\n"
+                f"You [sent](http://zulip.testserver/#narrow/dm/10/near/{message_id}) a note to yourself:\n```quote\n{content}\n```"
+            ),
+        )
+
+        content = "/todo Test todo list"
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+        hamlet = self.example_user("hamlet")
+
+        message_id = self.send_personal_message(hamlet, hamlet, content)
+        result = self.do_schedule_reminder(message_id, scheduled_delivery_timestamp)
+        self.assert_json_success(result)
+        scheduled_message = self.last_scheduled_reminder()
+
+        self.assertEqual(
+            scheduled_message.content,
+            (
+                "You requested a reminder for the following direct message.\n\n"
+                f"You [sent](http://zulip.testserver/#narrow/dm/10/near/{message_id}) yourself a todo list."
+            ),
+        )
+
+        content = "/poll Test poll"
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+        hamlet = self.example_user("hamlet")
+
+        message_id = self.send_personal_message(hamlet, hamlet, content)
+        result = self.do_schedule_reminder(message_id, scheduled_delivery_timestamp)
+        self.assert_json_success(result)
+        scheduled_message = self.last_scheduled_reminder()
+
+        self.assertEqual(
+            scheduled_message.content,
+            (
+                "You requested a reminder for the following direct message.\n\n"
+                f"You [sent](http://zulip.testserver/#narrow/dm/10/near/{message_id}) yourself a poll."
+            ),
         )

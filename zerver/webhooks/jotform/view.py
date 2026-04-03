@@ -98,12 +98,12 @@ def get_pretty_fields(pretty: str, values: list[str]) -> list[tuple[str, str]]:
             # 3 characters for colon, comma and space.
             pair_starting_index += 2 * value_length + 3
         else:
-            value_occurence_index = pretty.find(value, pair_starting_index)
-            value_ending_index = value_occurence_index + value_length
+            value_occurrence_index = pretty.find(value, pair_starting_index)
+            value_ending_index = value_occurrence_index + value_length
 
             # -1 for colon, separating key and value
-            key = pretty[pair_starting_index : value_occurence_index - 1]
-            val = pretty[value_occurence_index:value_ending_index]
+            key = pretty[pair_starting_index : value_occurrence_index - 1]
+            val = pretty[value_occurrence_index:value_ending_index]
 
             # 2 characters for comma and space, which separate the fields
             pair_starting_index = value_ending_index + 2

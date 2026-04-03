@@ -4,7 +4,9 @@ const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
-const example_settings = require("./lib/example_settings.cjs");
+const {server_supported_permission_settings} = require("./lib/example_settings.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -20,44 +22,44 @@ const realm = make_realm();
 set_current_user(current_user);
 set_realm(realm);
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 5,
     full_name: "Me Myself",
-};
+});
 
 const me_group = make_user_group({
     name: "me_group",
     id: 1,
     members: new Set([me.user_id]),
     is_system_group: false,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 const nobody_group = make_user_group({
     name: "nobody_group",
     id: 2,
-    members: new Set([]),
+    members: new Set(),
     is_system_group: false,
-    direct_subgroup_ids: new Set([]),
+    direct_subgroup_ids: new Set(),
 });
 
-const denmark = {
+const denmark = make_stream({
     stream_id: 101,
     name: "Denmark",
     subscribed: true,
     can_administer_channel_group: nobody_group.id,
     can_add_subscribers_group: nobody_group.id,
     can_subscribe_group: nobody_group.id,
-};
-const sweden = {
+});
+const sweden = make_stream({
     stream_id: 102,
     name: "Sweden",
     subscribed: false,
     can_administer_channel_group: nobody_group.id,
     can_add_subscribers_group: nobody_group.id,
     can_subscribe_group: nobody_group.id,
-};
-const germany = {
+});
+const germany = make_stream({
     stream_id: 103,
     name: "Germany",
     subscribed: false,
@@ -65,7 +67,7 @@ const germany = {
     can_administer_channel_group: nobody_group.id,
     can_add_subscribers_group: nobody_group.id,
     can_subscribe_group: nobody_group.id,
-};
+});
 
 const denmark_pill = {
     type: "stream",
@@ -94,11 +96,7 @@ user_groups.initialize({realm_user_groups: [me_group, nobody_group]});
 run_test("create_item", ({override}) => {
     override(current_user, "user_id", me.user_id);
     override(current_user, "is_admin", true);
-    override(
-        realm,
-        "server_supported_permission_settings",
-        example_settings.server_supported_permission_settings,
-    );
+    override(realm, "server_supported_permission_settings", server_supported_permission_settings);
     override(realm, "realm_can_add_subscribers_group", me_group.id);
     function test_create_item(
         stream_name,
@@ -156,7 +154,7 @@ run_test("generate_pill_html", () => {
         "<div class='pill 'data-stream-id=\"101\" tabindex=0>\n" +
             '    <span class="pill-label">\n' +
             '        <span class="pill-value">\n' +
-            '<i class="zulip-icon zulip-icon-hashtag channel-privacy-type-icon" aria-hidden="true"></i>            Denmark\n' +
+            '                <span class="decorated-channel-name-wrapper"><span class="channel-privacy-type-icon"><i class="zulip-icon zulip-icon-hashtag" aria-hidden="true"></i></span><span class="decorated-channel-name">Denmark</span></span>\n' +
             "        </span></span>\n" +
             '    <div class="exit">\n' +
             '        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n' +

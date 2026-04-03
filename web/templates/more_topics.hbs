@@ -1,5 +1,5 @@
 <li class="topic-list-item show-more-topics bottom_left_row
-  {{#unless more_topics_unreads}}zero-topic-unreads{{/unless}}
+  {{#if (eq more_topics_unreads 0)}}zero-topic-unreads{{/if}}
   {{#if more_topics_unread_count_muted}}more_topic_unreads_muted_only{{/if}}">
     <div class="topic-box">
         <a href="" class="sidebar-topic-action-heading" tabindex="0">{{t "Show all topics" }}</a>
@@ -9,7 +9,7 @@
                     @
                 </span>
             {{/if}}
-            <span class="unread_count normal-count {{#unless more_topics_unreads}}zero_count{{/unless}}">
+            <span class="unread_count normal-count {{#if (eq more_topics_unreads 0)}}zero_count{{/if}}">
                 {{more_topics_unreads}}
             </span>
         </div>

@@ -4,8 +4,10 @@ import * as z from "zod/mini";
 
 import {$t} from "./i18n.ts";
 import * as resize from "./resize.ts";
+import * as stream_data from "./stream_data.ts";
 import {stringify_time} from "./timerender.ts";
 import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 // These are all relative-unit values for Source Sans Pro VF,
 // as opened and inspected in FontForge.
@@ -113,7 +115,7 @@ export function set_base_typography_css_variables(): void {
     const markdown_interelement_space_fraction = 0.3;
     const markdown_interelement_space_px = line_height_px * markdown_interelement_space_fraction;
 
-    $(":root").css("--base-line-height-unitless", line_height_unitless);
+    $(":root").css("--base-line-height-unitless", `${line_height_unitless}`);
     $(":root").css("--base-font-size-px", `${font_size_px}px`);
     $(":root").css("--markdown-interelement-space-px", `${markdown_interelement_space_px}px`);
     $(":root").css(
@@ -123,46 +125,20 @@ export function set_base_typography_css_variables(): void {
 
     set_vertical_alignment_values(line_height_unitless);
     resize.resize_page_components();
+    void stream_data.set_max_channel_width_css_variable();
 }
 
 export function calculate_timestamp_widths(): void {
-    const base_font_size_px = user_settings.web_font_size_px;
-    const $temp_time_div = $("<div>");
-    $temp_time_div.attr("id", "calculated-timestamp-widths");
-    // Size the div to the width of the largest timestamp,
-    // but the div out of the document flow with absolute
-    // positioning.
-    // We set the base font-size ordinarily on body so that
-    // the correct em-size timestamps can be calculated along
-    // with all the other information density values.
-    $temp_time_div.css({
-        "font-size": base_font_size_px,
-        width: "max-content",
-        visibility: "hidden",
-        position: "absolute",
-        top: "-100vh",
-    });
     // We should get a reasonable max-width by looking only at
-    // the first and last minutes of AM and PM
+    // the first and last minutes of AM and PM.
     const candidate_times = ["00:00", "11:59", "12:00", "23:59"];
-
-    for (const time of candidate_times) {
-        const $temp_time_element = $("<a>");
-        $temp_time_element.attr("class", "message-time");
+    const candidate_strings = candidate_times.map((time) =>
         // stringify_time only returns the time, so the date here is
-        // arbitrary and only required for creating a Date object
-        const candidate_timestamp = stringify_time(Date.parse(`1999-07-01T${time}`));
-        $temp_time_element.text(candidate_timestamp);
-        $temp_time_div.append($temp_time_element);
-    }
-
-    // Append the <div> element to calculate the maximum rendered width
-    $("body").append($temp_time_div);
-    const max_timestamp_width = $temp_time_div.width();
-    // Set the width as a CSS variable
+        // arbitrary and only required for creating a Date object.
+        stringify_time(Date.parse(`1999-07-01T${time}`)),
+    );
+    const max_timestamp_width = util.max_text_content_width(candidate_strings, "message-time");
     $(":root").css("--message-box-timestamp-column-width", `${max_timestamp_width}px`);
-    // Clean up by removing the temporary <div> element
-    $temp_time_div.remove();
 }
 
 function determine_container_query_support(): void {

@@ -9,11 +9,12 @@ from typing_extensions import override
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.send_email import send_custom_email, send_custom_server_email
+from zerver.lib.send_email import custom_email_sender, send_custom_email, send_custom_server_email
 from zerver.models import Realm, UserProfile
 
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import RemoteZulipServer
+    from corporate.lib.stripe import BILLING_SUPPORT_EMAIL
+    from zilencer.models import RemoteRealmBillingUser, RemoteServerBillingUser, RemoteZulipServer
 
 
 class Command(ZulipBaseCommand):
@@ -40,6 +41,11 @@ class Command(ZulipBaseCommand):
             "--remote-servers",
             action="store_true",
             help="Send to registered contact email addresses for remote Zulip servers.",
+        )
+        targets.add_argument(
+            "--announce-release",
+            metavar="VERSION",
+            help="Announce a major or minor release to remote servers.",
         )
         targets.add_argument(
             "--all-sponsored-org-admins",
@@ -132,6 +138,45 @@ class Command(ZulipBaseCommand):
                 print("Would send the above email to:")
                 for server in servers:
                     print(f"  {server.contact_email} ({server.hostname})")
+            return
+        elif options["announce_release"]:
+            server_users = RemoteServerBillingUser.objects.filter(
+                is_active=True,
+                remote_server__deactivated=False,
+            )
+            realm_users = RemoteRealmBillingUser.objects.filter(
+                is_active=True,
+                remote_realm__server__deactivated=False,
+                remote_realm__is_system_bot_realm=False,
+                remote_realm__registration_deactivated=False,
+                remote_realm__realm_deactivated=False,
+                remote_realm__realm_locally_deleted=False,
+            )
+            if options["announce_release"].endswith(".0"):
+                server_users = server_users.filter(enable_major_release_emails=True)
+                realm_users = realm_users.filter(enable_major_release_emails=True)
+            else:
+                server_users = server_users.filter(enable_maintenance_release_emails=True)
+                realm_users = realm_users.filter(enable_maintenance_release_emails=True)
+            # This does an implicit "distinct"
+            all_emails = server_users.union(realm_users).values_list("email", flat=True)
+            del options["from_address"]
+            email_sender, _ = custom_email_sender(
+                dry_run=dry_run, from_address=BILLING_SUPPORT_EMAIL, **options
+            )
+
+            for email in all_emails:
+                email_sender(
+                    to_email=email,
+                    context={
+                        "remote_server_email": True,
+                        "released_version": options["announce_release"],
+                    },
+                )
+            if dry_run:
+                print("Would send the above email to:")
+                for email in all_emails:
+                    print(f"  {email}")
             return
 
         if options["entire_server"]:

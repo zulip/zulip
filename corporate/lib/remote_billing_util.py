@@ -1,5 +1,5 @@
 import logging
-from typing import Literal, TypedDict, cast
+from typing import Literal, TypedDict, overload
 
 from django.http import HttpRequest
 from django.utils.timezone import now as timezone_now
@@ -62,6 +62,20 @@ class RemoteBillingIdentityExpiredError(Exception):
         self.uri_scheme = uri_scheme
 
 
+@overload
+def get_identity_dict_from_session(
+    request: HttpRequest,
+    *,
+    realm_uuid: str | None,
+    server_uuid: None,
+) -> RemoteBillingIdentityDict | None: ...
+@overload
+def get_identity_dict_from_session(
+    request: HttpRequest,
+    *,
+    realm_uuid: None,
+    server_uuid: str | None,
+) -> LegacyServerIdentityDict | None: ...
 def get_identity_dict_from_session(
     request: HttpRequest,
     *,
@@ -103,11 +117,8 @@ def get_remote_realm_and_user_from_session(
     request: HttpRequest,
     realm_uuid: str | None,
 ) -> tuple[RemoteRealm, RemoteRealmBillingUser]:
-    # Cannot use isinstance with TypedDicts, to make mypy know
-    # which of the TypedDicts in the Union this is - so just cast it.
-    identity_dict = cast(
-        RemoteBillingIdentityDict | None,
-        get_identity_dict_from_session(request, realm_uuid=realm_uuid, server_uuid=None),
+    identity_dict: RemoteBillingIdentityDict | None = get_identity_dict_from_session(
+        request, realm_uuid=realm_uuid, server_uuid=None
     )
 
     if identity_dict is None:

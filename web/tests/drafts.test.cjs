@@ -6,13 +6,14 @@ const {mock_banners} = require("./lib/compose_banner.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
-const {mock_esm, mock_cjs, set_global, zrequire} = require("./lib/namespace.cjs");
+const {clock, mock_esm, mock_cjs, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
-const user_pill = mock_esm("../src/user_pill");
+const user_pill = mock_esm("../src/user_pill", {get_user_ids: () => []});
 const settings_data = mock_esm("../src/settings_data");
 const messages_overlay_ui = mock_esm("../src/messages_overlay_ui");
+const channel = mock_esm("../src/channel");
 
 const people = zrequire("people");
 const compose_state = zrequire("compose_state");
@@ -88,11 +89,15 @@ set_global("setTimeout", (f, delay) => {
     assert.equal(delay, setTimeout_delay);
     f();
 });
-mock_esm("../src/markdown", {
+const markdown = mock_esm("../src/markdown", {
     render: noop,
+    contains_backend_only_syntax: () => false,
 });
-mock_esm("../src/overlays", {
+const overlays = mock_esm("../src/overlays", {
     open_overlay: noop,
+});
+mock_esm("../src/rendered_markdown", {
+    update_elements: noop,
 });
 
 const tippy_sel = ".top_left_drafts .unread_count";
@@ -120,7 +125,7 @@ mock_esm("tippy.js", {
 const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");
 const drafts_overlay_ui = zrequire("drafts_overlay_ui");
-const timerender = zrequire("timerender");
+zrequire("timerender");
 
 const mock_current_timestamp = 1234;
 const stream_id = 30;
@@ -155,7 +160,11 @@ const short_msg = {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        $("#draft_overlay").css = noop;
+        $(".top_left_drafts").set_find_results(".unread_count", $("<unread-count-stub>"));
+        $(".compose-drafts-count-container").set_find_results(
+            ".compose-drafts-count",
+            $("<compose-drafts-count-stub>"),
+        );
         window.localStorage.clear();
         f(helpers);
     });
@@ -168,9 +177,7 @@ function test(label, f) {
 //
 // This test must run before others, so that
 // fixed_buggy_drafts is false.
-test("fix buggy drafts", ({override_rewire}) => {
-    override_rewire(drafts, "set_count", noop);
-
+test("fix buggy drafts", () => {
     const buggy_draft = {
         stream_id: stream_B.stream_id,
         topic: undefined,
@@ -209,27 +216,19 @@ test("fix buggy drafts", ({override_rewire}) => {
     assert.deepEqual(fixed_draft.private_message_recipient_ids, [iago.user_id, zoe.user_id]);
 });
 
-test("draft_model add", ({override_rewire}) => {
+test("draft_model add", () => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
-
-    const $unread_count = $("<unread-count-stub>");
-    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
-    override_rewire(drafts, "update_compose_draft_count", noop);
 
     const id = draft_model.addDraft(draft_1);
     assert.deepEqual(draft_model.getDraft(id), draft_1);
 });
 
-test("draft_model edit", ({override_rewire}) => {
+test("draft_model edit", () => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
-
-    const $unread_count = $("<unread-count-stub>");
-    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
-    override_rewire(drafts, "update_compose_draft_count", noop);
 
     const id = draft_model.addDraft(draft_1);
     assert.deepEqual(draft_model.getDraft(id), draft_1);
@@ -238,14 +237,10 @@ test("draft_model edit", ({override_rewire}) => {
     assert.deepEqual(draft_model.getDraft(id), draft_2);
 });
 
-test("draft_model delete", ({override_rewire}) => {
+test("draft_model delete", () => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
-
-    const $unread_count = $("<unread-count-stub>");
-    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
-    override_rewire(drafts, "update_compose_draft_count", noop);
 
     const id = draft_model.addDraft(draft_1);
     assert.deepEqual(draft_model.getDraft(id), draft_1);
@@ -257,8 +252,6 @@ test("draft_model delete", ({override_rewire}) => {
 test("snapshot_message", ({override}) => {
     override(user_pill, "get_user_ids", () => [aaron.user_id]);
     mock_banners();
-
-    $(".narrow_to_compose_recipients").toggleClass = noop;
 
     let curr_draft;
 
@@ -306,15 +299,12 @@ test("initialize", ({override_rewire}) => {
         assert.ok(called);
     };
 
-    const $unread_count = $("<unread-count-stub>");
-    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
-
     drafts.initialize();
     drafts.initialize_ui();
     drafts_overlay_ui.initialize();
 });
 
-test("update_draft", ({override, override_rewire}) => {
+test("update_draft", ({override}) => {
     compose_state.set_message_type(undefined);
     let draft_id = drafts.update_draft();
     assert.equal(draft_id, undefined);
@@ -322,11 +312,6 @@ test("update_draft", ({override, override_rewire}) => {
     override(user_pill, "get_user_ids", () => [aaron.user_id]);
     compose_state.set_message_type("private");
     compose_state.message_content("dummy content");
-
-    const $container = $(".top_left_drafts");
-    const $child = $(".unread_count");
-    $container.set_find_results(".unread_count", $child);
-    override_rewire(drafts, "update_compose_draft_count", noop);
 
     tippy_args = {
         content: "translated: Saved as draft",
@@ -374,10 +359,7 @@ test("update_draft", ({override, override_rewire}) => {
     assert.ok(!tippy_destroy_called);
 });
 
-test("rename_stream_recipient", ({override_rewire}) => {
-    override_rewire(drafts, "set_count", noop);
-    override_rewire(drafts, "update_compose_draft_count", noop);
-
+test("rename_stream_recipient", () => {
     const draft_1 = {
         stream_id: stream_A.stream_id,
         topic: "a",
@@ -446,22 +428,18 @@ test("rename_stream_recipient", ({override_rewire}) => {
     assert_draft("id4", stream_B.stream_id, "e");
 });
 
-test("delete_all_drafts", ({override_rewire}) => {
+test("delete_all_drafts", () => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     const data = {draft_1, draft_2, short_msg};
     ls.set("drafts", data);
     assert.deepEqual(draft_model.get(), data);
 
-    const $unread_count = $("<unread-count-stub>");
-    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
-    override_rewire(drafts, "update_compose_draft_count", noop);
-
     drafts.delete_all_drafts();
     assert.deepEqual(draft_model.get(), {});
 });
 
-test("format_drafts", ({override, override_rewire, mock_template}) => {
+test("format_drafts", ({override, mock_template}) => {
     override(settings_data, "using_dark_theme", () => false);
 
     function feb12() {
@@ -616,8 +594,6 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         },
     ];
 
-    $("#drafts_table").append = noop;
-
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     const data = {
@@ -637,10 +613,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
     expected[5].is_empty_string_topic = true;
     assert.deepEqual(draft_model.get(), data);
 
-    const stub_render_now = timerender.render_now;
-    override_rewire(timerender, "render_now", (time) =>
-        stub_render_now(time, new Date(1549958107000)),
-    );
+    clock.setSystemTime(1549958107000);
 
     override(user_pill, "get_user_ids", () => []);
     compose_state.set_message_type("private");
@@ -654,17 +627,15 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
     });
 
     override(messages_overlay_ui, "set_initial_element", noop);
+    override(messages_overlay_ui, "get_and_clear_pending_restore_element_id", () => undefined);
 
-    const $unread_count = $("<unread-count-stub>");
-    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
-
-    $.create(".drafts-list", {children: []});
-    $.create("#drafts_table .overlay-message-row", {children: []});
-    $(".draft-selection-checkbox").filter = () => [];
+    $.set_results(".drafts-list", []);
+    $.set_results("#drafts_table .overlay-message-row", []);
+    $.set_results(".draft-selection-checkbox", []);
     drafts_overlay_ui.launch();
 });
 
-test("filter_drafts", ({override, override_rewire, mock_template}) => {
+test("filter_drafts", ({override, mock_template}) => {
     override(settings_data, "using_dark_theme", () => true);
     function feb12() {
         return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
@@ -781,8 +752,6 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
         },
     ];
 
-    $("#drafts_table").append = noop;
-
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     const data = {
@@ -795,10 +764,7 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
     ls.set("drafts", data);
     assert.deepEqual(draft_model.get(), data);
 
-    const stub_render_now = timerender.render_now;
-    override_rewire(timerender, "render_now", (time) =>
-        stub_render_now(time, new Date(1549958107000)),
-    );
+    clock.setSystemTime(1549958107000);
 
     mock_template("draft_table_body.hbs", false, (data) => {
         // Tests splitting up drafts by current narrow.
@@ -808,15 +774,87 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
     });
 
     override(messages_overlay_ui, "set_initial_element", noop);
-
-    const $unread_count = $("<unread-count-stub>");
-    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
+    override(messages_overlay_ui, "get_and_clear_pending_restore_element_id", () => undefined);
 
     override(user_pill, "get_user_ids", () => [aaron.user_id]);
     compose_state.set_message_type("private");
 
-    $.create(".drafts-list", {children: []});
-    $.create("#drafts_table .overlay-message-row", {children: []});
-    $(".draft-selection-checkbox").filter = () => [];
+    $.set_results(".drafts-list", []);
+    $.set_results("#drafts_table .overlay-message-row", []);
+    $.set_results(".draft-selection-checkbox", []);
     drafts_overlay_ui.launch();
+});
+
+test("server_rendering_for_backend_only_syntax", ({override, mock_template}) => {
+    override(settings_data, "using_dark_theme", () => false);
+
+    const now = Date.now();
+    const draft_with_image = {
+        topic: "topic",
+        type: "stream",
+        content: "Look at this screenshot: https://user-uploads.zulipdev.org/upload/image.png",
+        stream_id: 30,
+        updatedAt: now,
+        is_sending_saving: false,
+        drafts_version: 1,
+    };
+    const draft_without_image = {
+        topic: "topic",
+        type: "stream",
+        content: "This is a plain text draft",
+        stream_id: 30,
+        updatedAt: now - 1000,
+        is_sending_saving: false,
+        drafts_version: 1,
+    };
+
+    const draft_model = drafts.draft_model;
+    const ls = localstorage();
+    ls.set("drafts", {id1: draft_with_image, id2: draft_without_image});
+    assert.deepEqual(draft_model.get(), {id1: draft_with_image, id2: draft_without_image});
+
+    override(
+        markdown,
+        "contains_backend_only_syntax",
+        (content) => content === draft_with_image.content,
+    );
+
+    const locally_rendered_content =
+        '<p>Look at this screenshot: <a href="https://user-uploads.zulipdev.org/upload/image.png">https://user-uploads.zulipdev.org/upload/image.png</a></p>';
+    const server_rendered_content =
+        '<p>Look at this screenshot: <a href="https://user-uploads.zulipdev.org/upload/image.png" target="_blank" rel="noopener noreferrer" title="https://user-uploads.zulipdev.org/upload/image.png"><img src="/thumbnail?url=user_uploads%2Fimage.png&amp;size=thumbnail"></a></p>';
+
+    let post_calls = 0;
+    const $content_element = $.create('[data-draft-id="id1"] .message_content');
+    $content_element.html(locally_rendered_content);
+    override(overlays, "drafts_open", () => true);
+
+    mock_template("draft_table_body.hbs", false, () => "<draft table stub>");
+    override(messages_overlay_ui, "set_initial_element", noop);
+    override(messages_overlay_ui, "get_and_clear_pending_restore_element_id", () => undefined);
+
+    // These selectors are accessed during render_widgets() and
+    // update_bulk_delete_ui() inside launch().
+    $.set_results(".drafts-list", []);
+    $.set_results("#drafts_table .overlay-message-row", []);
+    $.set_results(".draft-selection-checkbox", []);
+
+    override(channel, "post", (payload) => {
+        post_calls += 1;
+        assert.equal(payload.url, "/json/messages/render");
+        assert.equal(payload.data.content, draft_with_image.content);
+
+        const resp = {
+            msg: "",
+            result: "success",
+            rendered: server_rendered_content,
+        };
+        payload.success(resp);
+        assert.equal($content_element.html(), server_rendered_content);
+    });
+    drafts_overlay_ui.launch();
+
+    // Only the draft with the image triggered a server render request;
+    // the plain text draft did not.
+    assert.equal(post_calls, 1);
 });

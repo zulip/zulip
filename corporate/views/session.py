@@ -8,7 +8,7 @@ from corporate.lib.decorator import (
     authenticated_remote_realm_management_endpoint,
     authenticated_remote_server_management_endpoint,
 )
-from zerver.decorator import require_billing_access, require_organization_member
+from zerver.decorator import require_billing_access
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.models import UserProfile
@@ -53,7 +53,7 @@ def start_card_update_stripe_session_for_remote_server(
     )
 
 
-@require_organization_member
+@require_billing_access
 @typed_endpoint
 def start_card_update_stripe_session_for_realm_upgrade(
     request: HttpRequest,

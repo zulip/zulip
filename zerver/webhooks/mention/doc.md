@@ -21,7 +21,7 @@ Get Mention notifications within Zulip via Zapier!
    Select your Mention **Account ID** and **Alert** when prompted.
 
 1. Follow the on-screen steps to set up **Webhooks by Zapier POST**.
-   When prompted, set **URL** to the URL constructed above, and set
+   When prompted, set **URL** to the URL generated above, and set
    **Payload Type** to **JSON**. After **Test this Step**, click
    **Finish**.
 

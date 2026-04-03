@@ -544,7 +544,7 @@ Store, but the following additional terms also apply to the Application:
    Zulip only, and not with Apple, and that Apple is not responsible for the
    Application or the Content;
 * (b) The Application is licensed to you on a limited, non-exclusive,
-   non-transferrable, non-sublicensable basis, solely to be used in connection
+   non-transferable, non-sublicensable basis, solely to be used in connection
    with the Services for your private, internal, personal use, subject to all
    the terms and conditions of these Terms as they are applicable to the
    Services;

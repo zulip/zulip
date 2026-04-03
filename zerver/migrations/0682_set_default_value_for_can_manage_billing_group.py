@@ -13,7 +13,7 @@ def set_default_value_for_can_manage_billing_group(
 
     OWNERS_GROUP_NAME = "role:owners"
 
-    for realm in Realm.objects.all():
+    for realm in Realm.objects.all().iterator():
         if realm.can_manage_billing_group is not None:
             continue
 

@@ -36,11 +36,16 @@ async function submit_announcements_stream_settings(page: Page): Promise<void> {
 }
 
 async function test_change_new_stream_announcements_stream(page: Page): Promise<void> {
+    await page.waitForSelector(
+        "#realm_new_stream_announcements_stream_id_widget.dropdown-widget-button",
+        {visible: true},
+    );
     await page.click("#realm_new_stream_announcements_stream_id_widget.dropdown-widget-button");
     await page.waitForSelector(".dropdown-list-container", {
         visible: true,
     });
 
+    await page.waitForSelector(".dropdown-list-search-input", {visible: true});
     await page.type(".dropdown-list-search-input", "rome");
 
     const rome_in_dropdown = await page.waitForSelector(
@@ -54,11 +59,16 @@ async function test_change_new_stream_announcements_stream(page: Page): Promise<
 }
 
 async function test_change_signup_announcements_stream(page: Page): Promise<void> {
+    await page.waitForSelector(
+        "#realm_signup_announcements_stream_id_widget.dropdown-widget-button",
+        {visible: true},
+    );
     await page.click("#realm_signup_announcements_stream_id_widget.dropdown-widget-button");
     await page.waitForSelector(".dropdown-list-container", {
         visible: true,
     });
 
+    await page.waitForSelector(".dropdown-list-search-input", {visible: true});
     await page.type(".dropdown-list-search-input", "rome");
 
     const rome_in_dropdown = await page.waitForSelector(
@@ -72,11 +82,16 @@ async function test_change_signup_announcements_stream(page: Page): Promise<void
 }
 
 async function test_change_zulip_update_announcements_stream(page: Page): Promise<void> {
+    await page.waitForSelector(
+        "#realm_zulip_update_announcements_stream_id_widget.dropdown-widget-button",
+        {visible: true},
+    );
     await page.click("#realm_zulip_update_announcements_stream_id_widget.dropdown-widget-button");
     await page.waitForSelector(".dropdown-list-container", {
         visible: true,
     });
 
+    await page.waitForSelector(".dropdown-list-search-input", {visible: true});
     await page.type(".dropdown-list-search-input", "rome");
 
     const rome_in_dropdown = await page.waitForSelector(
@@ -180,12 +195,9 @@ async function test_upload_realm_icon_image(page: Page): Promise<void> {
     assert.ok(upload_handle);
     await upload_handle.uploadFile("static/images/logo/zulip-icon-128x128.png");
 
-    await page.waitForSelector("#realm-icon-upload-widget .upload-spinner-background", {
-        visible: true,
-    });
-    await page.waitForSelector("#realm-icon-upload-widget .upload-spinner-background", {
-        hidden: true,
-    });
+    await common.wait_for_micromodal_to_open(page);
+    await page.click("#uppy-editor .dialog_submit_button");
+    await common.wait_for_micromodal_to_close(page);
     await page.waitForSelector(
         '#realm-icon-upload-widget .image-block[src^="/user_avatars/2/realm/icon.png?version=2"]',
         {visible: true},
@@ -261,4 +273,4 @@ async function admin_test(page: Page): Promise<void> {
     await test_authentication_methods(page);
 }
 
-common.run_test(admin_test);
+await common.run_test(admin_test);

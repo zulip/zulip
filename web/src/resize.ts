@@ -9,8 +9,41 @@ import {media_breakpoints_num} from "./css_variables.ts";
 import * as message_viewport from "./message_viewport.ts";
 import {user_settings} from "./user_settings.ts";
 
+let recent_view_participants_rerender: (() => void) | null = null;
+let recent_view_participants_column_class_update: (() => void) | null = null;
+
+export function set_recent_view_participants_rerender(rerender_func: (() => void) | null): void {
+    recent_view_participants_rerender = rerender_func;
+}
+
+export function set_recent_view_participants_column_class_update(
+    update_func: (() => void) | null,
+): void {
+    recent_view_participants_column_class_update = update_func;
+}
+
 function get_bottom_whitespace_height(): number {
     return message_viewport.height() * 0.4;
+}
+
+export function get_stream_filters_max_height(): number {
+    const viewport_height = message_viewport.height();
+    // Add some gap for bottom element to be properly visible.
+    const GAP = 15;
+
+    const $left_sidebar_search = $("#left-sidebar-search");
+    const is_search_visible = $left_sidebar_search.css("display") !== "none";
+
+    let stream_filters_max_height =
+        viewport_height -
+        Number.parseInt($("#left-sidebar").css("paddingTop"), 10) -
+        (is_search_visible ? ($left_sidebar_search.outerHeight(true) ?? 0) : 0) -
+        ($("#left-sidebar-navigation-area").not(".hidden-by-filters").outerHeight(true) ?? 0) -
+        GAP;
+
+    // Don't let us crush the stream sidebar completely out of view
+    stream_filters_max_height = Math.max(80, stream_filters_max_height);
+    return stream_filters_max_height;
 }
 
 function get_new_heights(): {
@@ -18,21 +51,6 @@ function get_new_heights(): {
     buddy_list_wrapper_max_height: number;
 } {
     const viewport_height = message_viewport.height();
-    // Add some gap for bottom element to be properly visible.
-    const GAP = 15;
-
-    let stream_filters_max_height =
-        viewport_height -
-        Number.parseInt($("#left-sidebar").css("paddingTop"), 10) -
-        ($("#left-sidebar-navigation-area").not(".hidden-by-filters").outerHeight(true) ?? 0) -
-        ($("#direct-messages-section-header").not(".hidden-by-filters").outerHeight(true) ?? 0) -
-        GAP;
-
-    // Don't let us crush the stream sidebar completely out of view
-    stream_filters_max_height = Math.max(80, stream_filters_max_height);
-
-    // RIGHT SIDEBAR
-
     const usable_height =
         viewport_height -
         Number.parseInt($("#right-sidebar").css("paddingTop"), 10) -
@@ -41,7 +59,7 @@ function get_new_heights(): {
     const buddy_list_wrapper_max_height = Math.max(80, usable_height);
 
     return {
-        stream_filters_max_height,
+        stream_filters_max_height: get_stream_filters_max_height(),
         buddy_list_wrapper_max_height,
     };
 }
@@ -57,7 +75,10 @@ export function watch_manual_resize(element: string): (() => void)[] | undefined
     return watch_manual_resize_for_element(box);
 }
 
-export function watch_manual_resize_for_element(box: Element): (() => void)[] {
+export function watch_manual_resize_for_element(
+    box: Element,
+    resize_callback?: (height: number) => void,
+): (() => void)[] {
     let height: number;
     let mousedown = false;
 
@@ -76,6 +97,9 @@ export function watch_manual_resize_for_element(box: Element): (() => void)[] {
             if (height !== box.clientHeight) {
                 height = box.clientHeight;
                 autosize.destroy($(box)).height(height + "px");
+                if (resize_callback) {
+                    resize_callback(height);
+                }
             }
         }
     };
@@ -86,10 +110,6 @@ export function watch_manual_resize_for_element(box: Element): (() => void)[] {
 
 function height_of($element: JQuery): number {
     return $element.get(0)!.getBoundingClientRect().height;
-}
-
-function width_of($element: JQuery): number {
-    return $element.get(0)!.getBoundingClientRect().width;
 }
 
 export function reset_compose_message_max_height(bottom_whitespace_height?: number): void {
@@ -143,44 +163,130 @@ export function resize_stream_subscribers_list(): void {
     // This avoids the stream settings from overflowing the container and
     // having a scroll bar.
 
-    if ($("#stream_settings").length === 0) {
-        // Don't run if stream settings (like $subscriptions_info below) is not open.
+    if ($("#channels_overlay_container").find(".two-pane-settings-overlay.show").length === 0) {
+        // Don't run if stream settings overlay is not open.
+        return;
+    }
+
+    if (
+        $("#stream_settings .stream_section[data-stream-section='subscribers']").length === 0 ||
+        $("#stream_settings .stream_section[data-stream-section='subscribers']").css("display") ===
+            "none"
+    ) {
+        // Don't run if subscribers section is not opened.
         return;
     }
 
     const $subscriptions_info = $("#subscription_overlay .two-pane-settings-container .right");
-    const classes_above_subscribers_list = [
-        ".display-type", // = stream_settings_title
-        ".subscriber_list_settings_container .stream_settings_header",
-        ".subscription_settings .stream_setting_subsection_title",
-        ".subscription_settings .subscriber_list_settings",
-        ".subscription_settings .stream_setting_subsection_title",
-    ];
-    const $classes_above_subscribers_list = $subscriptions_info.find(
-        classes_above_subscribers_list.join(", "),
+
+    const $tab_container = $("#stream_settings .stream_settings_header");
+    const $add_subscribers_heading = $(
+        ".subscriber_list_settings_container .add-subscribers-heading",
     );
-    let total_height_of_classes_above_subscribers_list = 0;
-    $classes_above_subscribers_list.each(function () {
-        const outer_height = $(this).outerHeight(true);
+    const $add_subscribers_widget = $(
+        ".subscriber_list_settings_container .subscriber_list_settings",
+    );
+    const $notification_message_container = $(
+        ".subscriber_list_settings_container .send_notification_to_new_subscribers_container",
+    );
+    const $subscribers_list_header = $("#stream_settings .subscribers-list-header");
+
+    const elements_above_subscribers_list = [
+        $tab_container,
+        $add_subscribers_heading,
+        $add_subscribers_widget,
+        $notification_message_container,
+        $subscribers_list_header,
+    ];
+
+    let total_height_of_elements_above_subscribers_list = 0;
+    for (const $elem of elements_above_subscribers_list) {
+        const outer_height = $elem.outerHeight(true);
         assert(outer_height !== undefined);
-        total_height_of_classes_above_subscribers_list += outer_height;
-    });
-    const subscribers_list_header_height = 30;
-    const margin_between_tab_switcher_and_add_subscribers_title = 20;
+        total_height_of_elements_above_subscribers_list += outer_height;
+    }
+
+    const right_subheader_height = height_of($(".right .two-pane-settings-subheader"));
+    // Margin of 18px is present at both top and bottom, so 2*18px will be
+    // subtracted to calculate maximum allowed height for subscribers list.
+    const subscription_settings_inner_box_margin = 18;
     const subscriptions_info_height = $subscriptions_info.height();
     assert(subscriptions_info_height !== undefined);
+
+    // Since .subscribers_list_container has box-sizing set to content-box,
+    // the max-height should not include border width.
+    const susbcribers_list_container_bottom_border_width = 1;
+
     const subscribers_list_height =
         subscriptions_info_height -
-        total_height_of_classes_above_subscribers_list -
-        subscribers_list_header_height -
-        margin_between_tab_switcher_and_add_subscribers_title;
+        total_height_of_elements_above_subscribers_list -
+        right_subheader_height -
+        2 * subscription_settings_inner_box_margin -
+        susbcribers_list_container_bottom_border_width;
     $(":root").css("--stream-subscriber-list-max-height", `${subscribers_list_height}px`);
 }
 
+export function resize_stream_creation_subscribers_list(): void {
+    // Calculates the height of the subscribers list in stream creation form.
+    // This prevents the stream settings from overflowing the container and
+    // having a scroll bar.
+
+    if ($("#channels_overlay_container").find(".two-pane-settings-overlay.show").length === 0) {
+        // Don't run if stream settings overlay is not open.
+        return;
+    }
+
+    if ($("#stream_creation_form .subscribers_container").css("display") === "none") {
+        // Don't run if the subscribers section of the stream creation form is
+        // not open.
+        return;
+    }
+
+    const $container = $("#stream_creation_form .two-pane-settings-creation-simplebar-container");
+    const $choose_subscribers_title = $container.find(".new-stream-subscribers-title");
+    const $pill_input_container = $container.find(".subscriber_list_settings");
+    const $subscribers_list_header = $container.find(".create_stream_subscriber_list_header");
+
+    const elements_above_subscribers_list = [
+        $choose_subscribers_title,
+        $pill_input_container,
+        $subscribers_list_header,
+    ];
+
+    let total_height_of_elements_above_subscribers_list = 0;
+    for (const $elem of elements_above_subscribers_list) {
+        const outer_height = $elem.outerHeight(true) ?? 0;
+        total_height_of_elements_above_subscribers_list += outer_height;
+    }
+
+    const susbcribers_list_container_bottom_border_width = 1;
+    const stream_creation_body_padding = 15;
+    const stream_creation_section_bottom_margin = 20;
+
+    // The two elements whose height is being calculated below
+    // are error elements. If no error is shown, consider height
+    // as 0.
+    const stream_subscription_error_height = $("#stream_subscription_error").height() ?? 0;
+    const $stream_creation_error = $container.find(".stream_create_info");
+    const stream_creation_error_height =
+        $stream_creation_error.css("display") !== "none"
+            ? $stream_creation_error.outerHeight(true)!
+            : 0;
+
+    const subscribers_list_height =
+        $container.height()! -
+        total_height_of_elements_above_subscribers_list -
+        stream_creation_body_padding -
+        stream_creation_section_bottom_margin -
+        stream_subscription_error_height -
+        stream_creation_error_height -
+        susbcribers_list_container_bottom_border_width;
+    $(":root").css("--new-stream-subscriber-list-max-height", `${subscribers_list_height}px`);
+}
+
 export function resize_stream_filters_container(): void {
-    const h = get_new_heights();
     resize_bottom_whitespace();
-    $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
+    $("#left_sidebar_scroll_container").css("max-height", get_stream_filters_max_height());
 }
 
 export function resize_sidebars(): void {
@@ -189,21 +295,37 @@ export function resize_sidebars(): void {
     $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
 }
 
-export function update_recent_view(): void {
-    const $recent_view_filter_container = $("#recent_view_filter_buttons");
+export function update_recent_view(rerender_view_if_needed = false): void {
+    const $middle_column = $(".app .column-middle");
 
     // Update max avatars to prevent participant avatars from overflowing.
     // These numbers are just based on speculation.
-    const recent_view_filters_width = $recent_view_filter_container.outerWidth(true) ?? 0;
-    if (!recent_view_filters_width) {
+    const middle_column_width = $middle_column.outerWidth() ?? 0;
+    if (!middle_column_width) {
         return;
     }
-    const num_avatars_narrow_window = 2;
-    const num_avatars_max = 4;
-    if (recent_view_filters_width < media_breakpoints_num.md) {
-        $(":root").css("--recent-view-max-avatars", num_avatars_narrow_window);
-    } else {
-        $(":root").css("--recent-view-max-avatars", num_avatars_max);
+    const prev_num_avatars_max = Number($(":root").css("--recent-view-max-avatars"));
+    let num_avatars_max = 4;
+    const max_width_before_topic_ellipsis_overflows = 600;
+    if (
+        middle_column_width <
+        (max_width_before_topic_ellipsis_overflows * user_settings.web_font_size_px) / 16
+    ) {
+        num_avatars_max = 0;
+    } else if (
+        middle_column_width <
+        (media_breakpoints_num.md * user_settings.web_font_size_px) / 16
+    ) {
+        num_avatars_max = 2;
+    }
+
+    if (prev_num_avatars_max !== num_avatars_max) {
+        $(":root").css("--recent-view-max-avatars", `${num_avatars_max}`);
+        recent_view_participants_column_class_update?.();
+
+        if (rerender_view_if_needed) {
+            recent_view_participants_rerender?.();
+        }
     }
 }
 
@@ -221,25 +343,20 @@ function resize_navbar_alerts(): void {
     }
 }
 
-// On narrow screens, the `right` panel is absolutely positioned, so its
-// height doesn't change the height of `left` and vice versa. Here we
-// first let subheaders on both sides attain their natural height as
+// We need to make the height of subheaders on both sides same. This is not
+// easy to achieve using only CSS because we cannot set a fixed height — the
+// right subheader contains the stream name, which can sometimes be long
+// enough to wrap the text into multiple lines. Text wrapping may also be
+// required for smaller window sizes.
+//
+// Here we first let subheaders on both sides attain their natural height as
 // per the content and then make both of them equal by setting the
 // height of subheader which is smaller to the height of subheader that
 // has larger height.
 // This feels a bit hacky and a cleaner solution would be nice to find.
-export function resize_settings_overlay_subheader_for_narrow_screens($container: JQuery): void {
-    const breakpoint_em =
-        (media_breakpoints_num.settings_overlay_sidebar_collapse_breakpoint / 14) *
-        user_settings.web_font_size_px;
-
-    const $left_subheader = $container.find(".two-pane-settings-subheader .left");
-    const $right_subheader = $container.find(".two-pane-settings-subheader .right");
-    if (width_of($container.find(".two-pane-settings-overlay")) > breakpoint_em) {
-        $left_subheader.css("height", "");
-        $right_subheader.css("height", "");
-        return;
-    }
+export function resize_settings_overlay_subheader($container: JQuery): void {
+    const $left_subheader = $container.find(".left .two-pane-settings-subheader");
+    const $right_subheader = $container.find(".right .two-pane-settings-subheader");
 
     $left_subheader.css("height", "");
     $right_subheader.css("height", "");
@@ -247,10 +364,12 @@ export function resize_settings_overlay_subheader_for_narrow_screens($container:
     const left_subheader_height = height_of($left_subheader);
     const right_subheader_height = height_of($right_subheader);
 
+    // Since height_of returns height including border width, we will
+    // subtract 1px, which is the bottom border width.
     if (left_subheader_height < right_subheader_height) {
-        $left_subheader.css("height", right_subheader_height);
+        $left_subheader.css("height", right_subheader_height - 1);
     } else {
-        $right_subheader.css("height", left_subheader_height);
+        $right_subheader.css("height", left_subheader_height - 1);
     }
 }
 
@@ -259,7 +378,7 @@ export function resize_settings_overlay($container: JQuery): void {
         return;
     }
 
-    resize_settings_overlay_subheader_for_narrow_screens($container);
+    resize_settings_overlay_subheader($container);
 
     $container
         .find(".two-pane-settings-left-simplebar-container")
@@ -301,9 +420,10 @@ export function resize_page_components(): void {
     resize_navbar_alerts();
     resize_sidebars();
     resize_bottom_whitespace();
-    resize_stream_subscribers_list();
     resize_settings_overlay($("#groups_overlay_container"));
     resize_settings_overlay($("#channels_overlay_container"));
     resize_settings_creation_overlay($("#groups_overlay_container"));
     resize_settings_creation_overlay($("#channels_overlay_container"));
+    resize_stream_subscribers_list();
+    resize_stream_creation_subscribers_list();
 }

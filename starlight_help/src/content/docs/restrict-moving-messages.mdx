@@ -6,10 +6,17 @@ import {TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
 import AdminOnly from "../include/_AdminOnly.mdx";
+import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
 import SaveChanges from "../include/_SaveChanges.mdx";
-import SelectChannelViewGeneralAdvanced from "../include/_SelectChannelViewGeneralAdvanced.mdx";
+import SelectChannelViewPermissions from "../include/_SelectChannelViewPermissions.mdx";
+
+<ZulipNote>
+  Organization admins can always edit message topics and move topics between
+  channels via the API.
+</ZulipNote>
 
 Zulip lets you configure who can edit message topics and move topics between
 channels. These permissions can be granted to any combination of
@@ -54,13 +61,15 @@ Permissions for moving messages between channels can be configured separately.
 
       1. Select a channel.
 
-      <SelectChannelViewGeneralAdvanced />
+      <SelectChannelViewPermissions />
 
       1. Under **Moderation permissions**, configure **Who can move messages inside this
          channel**.
 
       <SaveChanges />
     </FlattenedSteps>
+
+    <ChannelSettingsNavbarTip />
   </TabItem>
 </Tabs>
 
@@ -99,7 +108,7 @@ Permissions for moving messages between channels can be configured separately.
 
       1. Select a channel.
 
-      <SelectChannelViewGeneralAdvanced />
+      <SelectChannelViewPermissions />
 
       1. Under **Moderation permissions**, configure **Who can move messages out of this
          channel**.

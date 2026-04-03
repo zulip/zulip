@@ -1,0 +1,14 @@
+<div class="message-reminders">
+    {{#each this/msg/reminders}}
+        <p class="message-reminder">
+            {{#tr}}
+                <z-link>Reminder</z-link> scheduled for {formatted_delivery_time}.
+                {{#*inline "z-link"~}}
+                    <a href="#reminders" class="message-reminder-overlay-link" data-reminder-id="{{ this/reminder_id }}">
+                        {{> @partial-block}}
+                    </a>
+                {{~/inline}}
+            {{/tr}}
+        </p>
+    {{/each}}
+</div>

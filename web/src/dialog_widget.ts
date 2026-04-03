@@ -6,7 +6,7 @@ import render_dialog_widget from "../templates/dialog_widget.hbs";
 
 import type {AjaxRequestHandler} from "./channel.ts";
 import * as custom_profile_fields_ui from "./custom_profile_fields_ui.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as loading from "./loading.ts";
 import * as modals from "./modals.ts";
 import * as ui_report from "./ui_report.ts";
@@ -61,12 +61,16 @@ function current_dialog_widget_selector(): string {
  */
 
 export type DialogWidgetConfig = {
-    html_heading?: string;
-    text_heading?: string;
-    html_body: string;
-    on_click: (e: JQuery.ClickEvent) => void;
-    html_submit_button?: string;
-    html_exit_button?: string;
+    modal_title_html?: string;
+    modal_title_text?: string;
+    modal_content_html: string;
+    modal_subtitle_html?: string;
+    is_compact?: boolean;
+    has_tab_switcher?: boolean;
+    on_click?: (e: JQuery.ClickEvent) => void;
+    hide_footer?: boolean;
+    modal_submit_button_text?: string;
+    modal_exit_button_text?: string;
     close_on_submit?: boolean;
     focus_submit_on_open?: boolean;
     help_link?: string;
@@ -161,16 +165,24 @@ export function get_current_values($inputs: JQuery): Record<string, unknown> {
 
 export function launch(conf: DialogWidgetConfig): string {
     // Mandatory fields:
-    // * html_heading | text_heading
-    // * html_body
-    // * on_click
-    // The html_ fields should be safe HTML. If callers
+    // * modal_title_html | modal_title_text
+    // * modal_content_html
+    // The _html fields should be safe HTML. If callers
     // interpolate user data into strings, they should use
     // templates.
 
     // Optional parameters:
-    // * html_submit_button: Submit button text.
-    // * html_exit_button: Exit button text.
+    // * modal_subtitle_html: Provides additional context
+    //   below the modal title.
+    // * is_compact: If true, enables the compact version where the modal
+    //   content area is not rendered, and the modal_content_html is
+    //   passed to the modal_subtitle_html to be displayed as the subtitle.
+    // * has_tab_switcher: If true, adds a container in the modal header
+    //   for implementing a tab switcher.
+    // * on_click: Callback to run when submit button is clicked and footer is enabled.
+    // * hide_footer: Whether to disable footer and hide its associated buttons.
+    // * modal_submit_button_text: Submit button text.
+    // * modal_exit_button_text: Exit button text.
     // * close_on_submit: Whether to close modal on clicking submit.
     // * focus_submit_on_open: Whether to focus submit button on open.
     // * help_link: A help link in the heading area.
@@ -194,21 +206,29 @@ export function launch(conf: DialogWidgetConfig): string {
 
     widget_id_counter += 1;
     const modal_unique_id = current_dialog_widget_id();
-    const submit_button_html = conf.html_submit_button ?? $t_html({defaultMessage: "Save changes"});
-    const exit_button_html = conf.html_exit_button ?? $t_html({defaultMessage: "Cancel"});
+    const modal_submit_button_text =
+        conf.modal_submit_button_text ?? $t({defaultMessage: "Save changes"});
+    const modal_exit_button_text = conf.modal_exit_button_text ?? $t({defaultMessage: "Cancel"});
+    if (conf.is_compact) {
+        conf.modal_subtitle_html = conf.modal_content_html;
+    }
     const html = render_dialog_widget({
         modal_unique_id,
-        heading_html: conf.html_heading,
-        text_heading: conf.text_heading,
+        modal_title_html: conf.modal_title_html,
+        modal_title_text: conf.modal_title_text,
+        modal_subtitle_html: conf.modal_subtitle_html,
+        is_compact: conf.is_compact,
+        has_tab_switcher: conf.has_tab_switcher,
         link: conf.help_link,
-        submit_button_html,
-        exit_button_html,
-        body_html: conf.html_body,
+        modal_submit_button_text,
+        modal_exit_button_text,
+        modal_content_html: conf.modal_content_html,
         id: conf.id,
         single_footer_button: conf.single_footer_button,
         always_visible_scrollbar: conf.always_visible_scrollbar,
         footer_minor_text: conf.footer_minor_text,
         close_on_overlay_click: conf.close_on_overlay_click ?? true,
+        hide_footer: conf.hide_footer,
     });
     const $dialog = $(html);
     $("body").append($dialog);
@@ -218,6 +238,21 @@ export function launch(conf: DialogWidgetConfig): string {
             conf.post_render(modal_unique_id);
         }
     }, 0);
+
+    if (conf.hide_footer) {
+        modals.open(modal_unique_id, {
+            autoremove: true,
+            on_show() {
+                if (conf.on_show) {
+                    conf.on_show();
+                }
+            },
+            on_hide: conf?.on_hide,
+            on_shown: conf?.on_shown,
+            on_hidden: conf?.on_hidden,
+        });
+        return modal_unique_id;
+    }
 
     const $submit_button = $dialog.find(".dialog_submit_button");
 
@@ -249,6 +284,7 @@ export function launch(conf: DialogWidgetConfig): string {
     // Set up handlers.
     $submit_button.on("click", (e: JQuery.ClickEvent) => {
         e.preventDefault();
+        assert(conf.on_click !== undefined);
 
         if (conf.validate_input && !conf.validate_input(e)) {
             return;

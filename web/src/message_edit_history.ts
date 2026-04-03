@@ -297,6 +297,23 @@ export function fetch_and_render_message_history(message: Message): void {
                 .each(function () {
                     rendered_markdown.update_elements($(this));
                 });
+
+            // When an image is deleted before thumbnailing is completed, we can
+            // end up with the loading spinner HTML syntax stuck in message edit
+            // history indefinitely. Mask this by replacing thumbnailing loading
+            // spinners in edit history with the deleted image placeholder.
+            $("#message-history-overlay")
+                .find("img.image-loading-placeholder")
+                .each(function () {
+                    const $img = $(this);
+                    $img.attr("src", "/static/images/errors/image-not-exist.png");
+                    $img.attr(
+                        "alt",
+                        $t({defaultMessage: "This file does not exist or has been deleted."}),
+                    );
+                    $img.removeClass("image-loading-placeholder");
+                });
+
             const first_element_id = content_edit_history[0]!.timestamp;
             messages_overlay_ui.set_initial_element(
                 String(first_element_id),
@@ -334,27 +351,35 @@ export function handle_keyboard_events(event_key: string): void {
 }
 
 export function initialize(): void {
-    $("body").on("mouseenter", ".message_edit_notice, .edit-notifications", (e) => {
-        if (
-            realm.realm_message_edit_history_visibility_policy !==
-            message_edit_history_visibility_policy_values.never.code
-        ) {
-            $(e.currentTarget).addClass("message_edit_notice_hover");
-        }
-    });
+    $("body").on(
+        "mouseenter",
+        ".message_edit_notice, .edit-notifications.has-edit-history",
+        (e) => {
+            if (
+                realm.realm_message_edit_history_visibility_policy !==
+                message_edit_history_visibility_policy_values.never.code
+            ) {
+                $(e.currentTarget).addClass("message_edit_notice_hover");
+            }
+        },
+    );
 
-    $("body").on("mouseleave", ".message_edit_notice, .edit-notifications", (e) => {
-        if (
-            realm.realm_message_edit_history_visibility_policy !==
-            message_edit_history_visibility_policy_values.never.code
-        ) {
-            $(e.currentTarget).removeClass("message_edit_notice_hover");
-        }
-    });
+    $("body").on(
+        "mouseleave",
+        ".message_edit_notice, .edit-notifications.has-edit-history",
+        (e) => {
+            if (
+                realm.realm_message_edit_history_visibility_policy !==
+                message_edit_history_visibility_policy_values.never.code
+            ) {
+                $(e.currentTarget).removeClass("message_edit_notice_hover");
+            }
+        },
+    );
 
     $("body").on(
         "click",
-        ".message_edit_notice, .edit-notifications",
+        ".message_edit_notice, .edit-notifications.has-edit-history",
         function (this: HTMLElement, e) {
             e.stopPropagation();
             e.preventDefault();
@@ -391,4 +416,8 @@ export function initialize(): void {
             messages_overlay_ui.activate_element(this, keyboard_handling_context);
         },
     );
+
+    $("body").on("click", "#message-history-overlay .message_edit_history_content", (e) => {
+        messages_overlay_ui.handle_overlay_media_click(e, "message_edit_history");
+    });
 }

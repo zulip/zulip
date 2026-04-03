@@ -1,0 +1,35 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#directoryObjects",
+  "value": [
+    {
+      "@odata.type": "#microsoft.graph.user",
+      "id": "3c6ee395-529d-4681-b5f7-582c707570f6",
+      "businessPhones": [
+        "16508158245"
+      ],
+      "displayName": "Alya Abbott",
+      "givenName": "Alya",
+      "jobTitle": null,
+      "mail": "alya@ZulipChat.onmicrosoft.com",
+      "mobilePhone": null,
+      "officeLocation": null,
+      "preferredLanguage": "en",
+      "surname": "Abbott",
+      "userPrincipalName": "alya@ZulipChat.onmicrosoft.com"
+    },
+    {
+      "@odata.type": "#microsoft.graph.user",
+      "id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+      "businessPhones": [],
+      "displayName": "Pieter K",
+      "givenName": "Pieter",
+      "jobTitle": null,
+      "mail": "pieterk@ZulipChat.onmicrosoft.com",
+      "mobilePhone": null,
+      "officeLocation": null,
+      "preferredLanguage": null,
+      "surname": "K",
+      "userPrincipalName": "pieterk@ZulipChat.onmicrosoft.com"
+    }
+  ]
+}

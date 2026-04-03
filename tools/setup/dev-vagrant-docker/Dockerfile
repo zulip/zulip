@@ -30,10 +30,13 @@ RUN \
     # to make services we install like PostgreSQL, Redis, etc. normally
     # managed by systemd start within Docker, which breaks normal
     # operation of systemd.
-    dpkg-divert --add --rename /bin/systemctl \
-    && curl -fLsS --retry 3 -o /bin/systemctl 'https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/v1.5.9063/files/docker/systemctl3.py' \
-    && echo '1744aa7281159668d51fc97e57d834b6f116da10796f7f3352de48ad0cbba5b2  /bin/systemctl' | sha256sum -c \
-    && chmod +x /bin/systemctl \
+    curl -fLsS --retry 3 --output-dir /bin -O 'https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/v1.7.1097/files/docker/systemctl3.py' -O 'https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/v1.7.1097/files/docker/journalctl3.py' \
+    && printf '5f5a47f321c7a8881dfd01f774106dc4012d664bee238eada86a7112674fea93  /bin/systemctl3.py\n16a52fe484d7c0fca464c82a56de58980440362942482c0d1fbc424e69f8f833  /bin/journalctl3.py\n' | sha256sum -c \
+    && chmod +x /bin/systemctl3.py /bin/journalctl3.py \
+    && dpkg-divert --add --rename /bin/systemctl \
+    && ln -s systemctl3.py /bin/systemctl \
+    && dpkg-divert --add --rename /bin/journalctl \
+    && ln -s journalctl3.py /bin/journalctl \
     && ln -nsf /bin/true /usr/sbin/policy-rc.d \
     && mkdir -p /run/sshd \
     # docker-systemctl-replacement doesn’t work with template units yet:
@@ -42,7 +45,8 @@ RUN \
     # Set up the vagrant user and its SSH key (globally public)
     && useradd -ms /bin/bash -u "$VAGRANT_UID" vagrant \
     && mkdir -m 700 ~vagrant/.ssh \
-    && curl -fLsS --retry 3 -o ~vagrant/.ssh/authorized_keys 'https://raw.githubusercontent.com/hashicorp/vagrant/be7876d83644aa6bdf7f951592fdc681506bcbe6/keys/vagrant.pub' \
+    && curl -fLsS --retry 3 -o ~vagrant/.ssh/authorized_keys 'https://raw.githubusercontent.com/hashicorp/vagrant/v2.4.0/keys/vagrant.pub' \
+    && echo '55009a554ba2d409565018498f1ad5946854bf90fa8d13fd3fdc2faa102c1122  /home/vagrant/.ssh/authorized_keys' | sha256sum -c \
     && chown -R vagrant: ~vagrant/.ssh \
     && echo 'vagrant ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/vagrant
 

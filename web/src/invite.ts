@@ -1,19 +1,20 @@
 import ClipboardJS from "clipboard";
 import {add} from "date-fns";
+import Handlebars from "handlebars/runtime.js";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
-import render_copy_invite_link from "../templates/copy_invite_link.hbs";
 import render_invitation_failed_error from "../templates/invitation_failed_error.hbs";
 import render_invite_user_modal from "../templates/invite_user_modal.hbs";
-import render_invite_tips_banner from "../templates/modal_banner/invite_tips_banner.hbs";
+import render_invite_users_tips from "../templates/modal_banner/invite_users_tips.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
+import * as banners from "./banners.ts";
+import type {Banner} from "./banners.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
 import * as components from "./components.ts";
-import * as compose_banner from "./compose_banner.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import {csrf_token} from "./csrf.ts";
 import * as demo_organizations_ui from "./demo_organizations_ui.ts";
@@ -56,11 +57,19 @@ type CommonInvitationData = {
     welcome_message_custom_text?: string;
 };
 
-function reset_error_messages(): void {
+const DEV_ENV_EMAIL_ACCESS_BANNER: Banner = {
+    intent: "info",
+    label: new Handlebars.SafeString(render_settings_dev_env_email_access()),
+    buttons: [],
+    close_button: false,
+};
+
+function reset_invite_modal_banners(): void {
     $("#dialog_error").hide().text("").removeClass(common.status_classes);
+    $("#invite-success-banner-container").empty();
 
     if (page_params.development_environment) {
-        $("#dev_env_msg").hide().text("").removeClass(common.status_classes);
+        $("#dev-env-email-access-banner-container").empty();
     }
 }
 
@@ -145,7 +154,7 @@ function get_common_invitation_data(): CommonInvitationData {
 }
 
 function beforeSend(): void {
-    reset_error_messages();
+    reset_invite_modal_banners();
     // TODO: You could alternatively parse the emails here, and return errors to
     // the user if they don't match certain constraints (i.e. not real email addresses,
     // aren't in the right domain, etc.)
@@ -168,21 +177,31 @@ function submit_invitation_form(): void {
         beforeSend,
         success() {
             const number_of_invites_sent = email_pill_widget.items().length;
-            ui_report.success(
-                $t_html(
-                    {
-                        defaultMessage:
-                            "{N, plural, one {User invited successfully.} other {Users invited successfully.}}",
-                    },
-                    {N: number_of_invites_sent},
-                ),
-                $invite_status,
+            banners.open(
+                {
+                    intent: "success",
+                    label: new Handlebars.SafeString(
+                        $t_html(
+                            {
+                                defaultMessage:
+                                    "{N, plural, one {User invited successfully.} other {Users invited successfully.}}",
+                            },
+                            {N: number_of_invites_sent},
+                        ),
+                    ),
+                    buttons: [],
+                    close_button: false,
+                    custom_classes: "invite-user-modal-banner",
+                },
+                $("#invite-success-banner-container"),
             );
             email_pill_widget.clear();
 
             if (page_params.development_environment) {
-                const rendered_email_msg = render_settings_dev_env_email_access();
-                $("#dev_env_msg").html(rendered_email_msg).addClass("alert-info").show();
+                banners.open(
+                    DEV_ENV_EMAIL_ACCESS_BANNER,
+                    $("#dev-env-email-access-banner-container"),
+                );
             }
 
             if ($expires_in.val() === "custom") {
@@ -215,7 +234,7 @@ function submit_invitation_form(): void {
                 .safeParse(xhr.responseJSON);
             if (!parsed.success) {
                 // There was a fatal error, no partial processing occurred.
-                ui_report.error("", xhr, $invite_status);
+                ui_report.error($t({defaultMessage: "Failed"}), xhr, $invite_status);
             } else {
                 // Some users were not invited.
                 const invitee_emails_errored = [];
@@ -256,6 +275,29 @@ function submit_invitation_form(): void {
     });
 }
 
+const copy_invite_link_banner = (invite_link: string): Banner => ({
+    intent: "success",
+    label: new Handlebars.SafeString(
+        $t_html(
+            {defaultMessage: "Link: <z-link></z-link>"},
+            {
+                "z-link": () =>
+                    `<a href='${invite_link}' id='multiuse_invite_link' class='banner-link'>${invite_link}</a>`,
+            },
+        ),
+    ),
+    buttons: [
+        {
+            variant: "solid",
+            icon: "copy",
+            label: $t({defaultMessage: "Copy link"}),
+            id: "copy_generated_invite_link",
+        },
+    ],
+    close_button: false,
+    custom_classes: "copy-invite-link-banner",
+});
+
 function generate_multiuse_invite(): void {
     const $invite_status = $("#dialog_error");
     const data = get_common_invitation_data();
@@ -263,10 +305,17 @@ function generate_multiuse_invite(): void {
         url: "/json/invites/multiuse",
         data,
         beforeSend,
-        success(data) {
-            const copy_link_html = render_copy_invite_link(data);
-            ui_report.success(copy_link_html, $invite_status);
-            const clipboard = new ClipboardJS("#copy_generated_invite_link");
+        success(raw_data) {
+            const data = z.object({invite_link: z.string()}).parse(raw_data);
+            banners.open(
+                copy_invite_link_banner(data.invite_link),
+                $("#invite-success-banner-container"),
+            );
+            util.the($(".copy-invite-link-banner")).scrollIntoView();
+
+            const clipboard = new ClipboardJS("#copy_generated_invite_link", {
+                text: () => data.invite_link,
+            });
 
             clipboard.on("success", () => {
                 const tippy_timeout_in_ms = 800;
@@ -277,7 +326,7 @@ function generate_multiuse_invite(): void {
             });
         },
         error(xhr) {
-            ui_report.error("", xhr, $invite_status);
+            ui_report.error($t({defaultMessage: "Failed"}), xhr, $invite_status);
         },
         complete() {
             $("#invite-user-modal .dialog_submit_button").text($t({defaultMessage: "Create link"}));
@@ -289,6 +338,8 @@ function generate_multiuse_invite(): void {
 }
 
 function valid_to(): string {
+    const $custom_expiration_time_elm = $<HTMLInputElement>("input#custom-expiration-time-input");
+    $custom_expiration_time_elm.removeClass("invalid-input");
     const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
     const time_input_value = $expires_in.val()!;
 
@@ -299,7 +350,8 @@ function valid_to(): string {
     let time_in_minutes: number;
     if (time_input_value === "custom") {
         if (!util.validate_custom_time_input(custom_expiration_time_input, false)) {
-            return $t({defaultMessage: "Invalid custom time"});
+            $custom_expiration_time_elm.addClass("invalid-input");
+            return "";
         }
         time_in_minutes = util.get_custom_time_in_minutes(
             custom_expiration_time_unit,
@@ -380,7 +432,11 @@ async function update_guest_visible_users_count_and_stream_ids(): Promise<void> 
     loading.destroy_indicator($(".guest_visible_users_loading"));
 }
 
-function generate_invite_tips_data(): Record<string, boolean> {
+function generate_invite_tips_data(): {
+    realm_has_description: boolean;
+    realm_has_user_set_icon: boolean;
+    realm_has_custom_profile_fields: boolean;
+} {
     const {realm_description, realm_icon_source, custom_profile_fields} = realm;
 
     return {
@@ -391,6 +447,17 @@ function generate_invite_tips_data(): Record<string, boolean> {
         realm_has_custom_profile_fields: custom_profile_fields.length > 0,
     };
 }
+
+const invite_tips_banner = (): Banner => {
+    const invite_tips_banner_data = generate_invite_tips_data();
+    return {
+        intent: "info",
+        label: new Handlebars.SafeString(render_invite_users_tips(invite_tips_banner_data)),
+        buttons: [],
+        close_button: false,
+        custom_classes: "invite-tips-banner",
+    };
+};
 
 function update_stream_list(): void {
     const invite_as = Number.parseInt(
@@ -426,7 +493,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     const show_group_pill_container =
         user_group_picker_pill.get_user_groups_allowed_to_add_members().length > 0;
 
-    const html_body = render_invite_user_modal({
+    const modal_content_html = render_invite_user_modal({
         is_admin: current_user.is_admin,
         is_owner: current_user.is_owner,
         show_group_pill_container,
@@ -477,7 +544,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             void update_guest_visible_users_count_and_stream_ids();
         });
 
-        $("#invite-user-modal").on("click", ".setup-tips-container .banner_content a", () => {
+        $("#invite-user-modal").on("click", ".invite-setup-tips-container .banner-link", () => {
             dialog_widget.close();
         });
 
@@ -585,12 +652,17 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             current_user.is_admin
         ) {
             const invite_tips_data = generate_invite_tips_data();
-            const context = {
-                banner_type: compose_banner.INFO,
-                classname: "setup_tips_banner",
-                ...invite_tips_data,
-            };
-            $("#invite-user-form .setup-tips-container").html(render_invite_tips_banner(context));
+            const should_show_invite_tips_banner = !(
+                invite_tips_data.realm_has_description &&
+                invite_tips_data.realm_has_user_set_icon &&
+                invite_tips_data.realm_has_custom_profile_fields
+            );
+            if (should_show_invite_tips_banner) {
+                banners.open(
+                    invite_tips_banner(),
+                    $("#invite-user-modal .invite-setup-tips-container"),
+                );
+            }
         }
 
         const toggler = components.toggle({
@@ -613,10 +685,10 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                         break;
                 }
                 toggle_invite_submit_button(key);
-                reset_error_messages();
+                reset_invite_modal_banners();
             },
         });
-        const $container = $("#invite_users_option_tabs_container");
+        const $tab_switcher_container = $("#invite-user-modal .modal__tab-switcher-container");
         if (!settings_data.user_can_invite_users_by_email()) {
             toggler.disable_tab("invite-email-tab");
             toggler.goto("invite-link-tab");
@@ -625,7 +697,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             toggler.disable_tab("invite-link-tab");
         }
         const $elem = toggler.get();
-        $container.append($elem);
+        $tab_switcher_container.append($elem);
         setTimeout(() => {
             $(".invite_users_option_tabs .ind-tab.selected").trigger("focus");
         }, 0);
@@ -643,9 +715,10 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Invite users to organization"}),
-        html_body,
-        html_submit_button: $t_html({defaultMessage: "Invite"}),
+        modal_title_html: $t_html({defaultMessage: "Invite users to organization"}),
+        modal_content_html,
+        modal_submit_button_text: $t({defaultMessage: "Invite"}),
+        has_tab_switcher: true,
         id: "invite-user-modal",
         loading_spinner: true,
         on_click: invite_users,

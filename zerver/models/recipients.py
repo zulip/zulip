@@ -55,13 +55,6 @@ class Recipient(models.Model):
     class Meta:
         unique_together = ("type", "type_id")
 
-    # N.B. If we used Django's choice=... we would get this for free (kinda)
-    _type_names = {
-        PERSONAL: "personal",
-        STREAM: "stream",
-        DIRECT_MESSAGE_GROUP: "direct_message_group",
-    }
-
     @override
     def __str__(self) -> str:
         return f"{self.label()} ({self.type_id}, {self.type})"
@@ -73,10 +66,6 @@ class Recipient(models.Model):
             return Stream.objects.get(id=self.type_id).name
         else:
             return str(get_display_recipient(self))
-
-    def type_name(self) -> str:
-        # Raises KeyError if invalid
-        return self._type_names[self.type]
 
 
 def get_direct_message_group_user_ids(recipient: Recipient) -> QuerySet["Subscription", int]:
@@ -164,6 +153,7 @@ def get_or_create_direct_message_group(id_list: list[int]) -> DirectMessageGroup
     """
     from zerver.models import Subscription, UserProfile
 
+    assert len(id_list) == len(set(id_list))
     direct_message_group_hash = get_direct_message_group_hash(id_list)
     with transaction.atomic(savepoint=False):
         (direct_message_group, created) = DirectMessageGroup.objects.get_or_create(

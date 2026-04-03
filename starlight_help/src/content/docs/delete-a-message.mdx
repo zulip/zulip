@@ -6,6 +6,7 @@ import {TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
+import DependsOnPermissions from "../include/_DependsOnPermissions.mdx";
 import MessageActions from "../include/_MessageActions.mdx";
 import MessageActionsMenu from "../include/_MessageActionsMenu.mdx";
 import MessageLongPressMenu from "../include/_MessageLongPressMenu.mdx";
@@ -30,14 +31,14 @@ Zulip's [edit history](/help/view-a-messages-edit-history) feature.  This can be
 the best option for avoiding confusion if other users have already responded to
 your message.
 
+<DependsOnPermissions />
+
 <Tabs>
   <TabItem label="Desktop/Web">
     <FlattenedSteps>
       <MessageActions />
 
-      1. Click the **pencil** (<EditIcon />) icon. If you do not see
-         the **pencil** (<EditIcon />) icon, you do not have
-         permission to delete the content of this message.
+      1. Click the **pencil** (<EditIcon />) icon.
       1. Delete the content of the message.
       1. Click **Save**.
     </FlattenedSteps>
@@ -47,8 +48,7 @@ your message.
     <FlattenedSteps>
       <MessageLongPressMenu />
 
-      1. Tap **Edit message**. If you do not see the **Edit message** option,
-         you do not have permission to change the content of this message.
+      1. Tap **Edit message**.
       1. Delete the content of the message.
       1. Tap **Save**.
     </FlattenedSteps>
@@ -73,13 +73,14 @@ accidentally shared secret information that you can change, like a
 password, you may want to change that password regardless of whether
 you also delete the message.
 
+<DependsOnPermissions />
+
 <Tabs>
   <TabItem label="Desktop/Web">
     <FlattenedSteps>
       <MessageActionsMenu />
 
-      1. Select **Delete message**. If you do not see the **Delete message** option,
-         you do not have permission to delete this message completely.
+      1. Select **Delete message**.
       1. Approve by clicking **Confirm**.
     </FlattenedSteps>
   </TabItem>
@@ -88,8 +89,7 @@ you also delete the message.
     <FlattenedSteps>
       <MessageLongPressMenu />
 
-      1. Tap **Delete message**. If you do not see the **Delete message** option,
-         you do not have permission to delete this message completely.
+      1. Tap **Delete message**.
       1. Approve by tapping **Delete**.
     </FlattenedSteps>
   </TabItem>
@@ -112,10 +112,11 @@ the `ARCHIVED_DATA_VACUUMING_DELAY_DAYS` setting.
 
 ## Message notifications
 
-If you delete a message soon after sending it, any [pending email
+When a message is deleted, any [pending email
 notifications](/help/email-notifications#configure-delay-for-message-notification-emails)
 for that message will be canceled, and
-[visual desktop notifications](/help/desktop-notifications) will be removed,
+[mobile](/help/mobile-notifications) and
+[desktop](/help/desktop-notifications) notifications will be removed,
 including [mentions and alerts](/help/dm-mention-alert-notifications).
 
 ## Related articles

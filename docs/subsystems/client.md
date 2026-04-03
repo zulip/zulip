@@ -35,4 +35,4 @@ object via `zerver.lib.request.get_request_notes(request)`.
 In most integrations, `request_notes.client` is then passed to
 `check_send_webhook_message`, where it is used to keep track of which client
 sent the message (which in turn is used by analytics). For more
-information, see [the incoming webhook walkthrough](https://zulip.com/api/incoming-webhooks-walkthrough).
+information, see [the incoming webhook walkthrough](../webhooks/incoming-webhooks-walkthrough.md).

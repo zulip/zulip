@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -41,7 +41,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": 1000000000,
           "effective_at": 1000000000,
@@ -179,78 +179,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-04-30.basil",
-      "created": 1000000000,
-      "data": {
-        "object": {
-          "amount": 1476000,
-          "amount_capturable": 0,
-          "amount_details": {
-            "tip": {}
-          },
-          "amount_received": 0,
-          "application": null,
-          "application_fee_amount": null,
-          "automatic_payment_methods": null,
-          "canceled_at": 1000000000,
-          "cancellation_reason": "requested_by_customer",
-          "capture_method": "automatic",
-          "client_secret": "NORMALIZED",
-          "confirmation_method": "automatic",
-          "created": 1000000000,
-          "currency": "usd",
-          "customer": "upgrade_by_invoice_to_plus_plan--Customer.create.1.json",
-          "description": "Payment for Invoice",
-          "id": "upgrade_by_invoice_to_plus_plan--Event.list.2.json",
-          "last_payment_error": null,
-          "latest_charge": null,
-          "livemode": false,
-          "metadata": {},
-          "next_action": null,
-          "object": "payment_intent",
-          "on_behalf_of": null,
-          "payment_method": null,
-          "payment_method_configuration_details": null,
-          "payment_method_options": {
-            "card": {
-              "installments": null,
-              "mandate_options": null,
-              "network": null,
-              "request_three_d_secure": "automatic"
-            },
-            "link": {
-              "persistent_token": null
-            }
-          },
-          "payment_method_types": [
-            "card",
-            "link"
-          ],
-          "processing": null,
-          "receipt_email": "hamlet@zulip.com",
-          "review": null,
-          "setup_future_usage": null,
-          "shipping": null,
-          "source": null,
-          "statement_descriptor": "Zulip Cloud Plus",
-          "statement_descriptor_suffix": null,
-          "status": "canceled",
-          "transfer_data": null,
-          "transfer_group": null
-        }
-      },
-      "id": "upgrade_by_invoice_to_plus_plan--Event.list.2.json",
-      "livemode": false,
-      "object": "event",
-      "pending_webhooks": 0,
-      "request": {
-        "id": "upgrade_by_invoice_to_plus_plan--Event.list.2.json",
-        "idempotency_key": "00000000-0000-0000-0000-000000000000"
-      },
-      "type": "payment_intent.canceled"
-    },
-    {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -290,7 +219,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": 1000000000,
           "effective_at": 1000000000,
@@ -419,7 +348,7 @@
       "type": "invoice.finalized"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -459,7 +388,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": 1000000000,
           "effective_at": 1000000000,
@@ -605,7 +534,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -627,6 +556,7 @@
           "currency": "usd",
           "customer": "upgrade_by_invoice_to_plus_plan--Customer.create.1.json",
           "description": "Payment for Invoice",
+          "excluded_payment_method_types": null,
           "id": "upgrade_by_invoice_to_plus_plan--Event.list.2.json",
           "last_payment_error": null,
           "latest_charge": null,
@@ -676,7 +606,7 @@
       "type": "payment_intent.created"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -716,7 +646,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": 1000000000,
           "effective_at": null,
@@ -857,7 +787,7 @@
       "type": "invoice.updated"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -872,6 +802,7 @@
           "invoice": "upgrade_by_invoice_to_plus_plan--Event.list.2.json",
           "livemode": false,
           "metadata": {},
+          "net_amount": 1476000,
           "object": "invoiceitem",
           "parent": null,
           "period": {
@@ -903,7 +834,7 @@
       "type": "invoiceitem.created"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -943,7 +874,7 @@
           "default_payment_method": null,
           "default_source": null,
           "default_tax_rates": [],
-          "description": null,
+          "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
           "discounts": [],
           "due_date": 1000000000,
           "effective_at": null,
@@ -1031,7 +962,7 @@
       "type": "invoice.created"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {
@@ -1081,7 +1012,42 @@
       "type": "customer.updated"
     },
     {
-      "api_version": "2025-04-30.basil",
+      "api_version": "2025-11-17.clover",
+      "created": 1000000000,
+      "data": {
+        "object": {
+          "amount_paid": 40000,
+          "amount_requested": 40000,
+          "created": 1000000000,
+          "currency": "usd",
+          "id": "upgrade_by_invoice_to_plus_plan--Event.list.2.json",
+          "invoice": "in_NORMALIZED",
+          "is_default": true,
+          "livemode": false,
+          "object": "invoice_payment",
+          "payment": {
+            "payment_intent": "pi_NORMALIZED",
+            "type": "payment_intent"
+          },
+          "status": "paid",
+          "status_transitions": {
+            "canceled_at": null,
+            "paid_at": 1000000000
+          }
+        }
+      },
+      "id": "upgrade_by_invoice_to_plus_plan--Event.list.2.json",
+      "livemode": false,
+      "object": "event",
+      "pending_webhooks": 0,
+      "request": {
+        "id": null,
+        "idempotency_key": null
+      },
+      "type": "invoice_payment.paid"
+    },
+    {
+      "api_version": "2025-11-17.clover",
       "created": 1000000000,
       "data": {
         "object": {

@@ -19,6 +19,7 @@
 * [Mark messages in a topic as read](/api/mark-topic-as-read)
 * [Get a message's read receipts](/api/get-read-receipts)
 * [Get temporary URL for an uploaded file](/api/get-file-temporary-url)
+* [Check thumbnail status](/api/check-thumbnail-status)
 * [Report a message](/api/report-message)
 
 #### Scheduled messages
@@ -59,7 +60,9 @@
 * [Unsubscribe from a channel](/api/unsubscribe)
 * [Get subscription status](/api/get-subscription-status)
 * [Get channel subscribers](/api/get-subscribers)
-* [Update subscription settings](/api/update-subscription-settings)
+* [Get a user's subscribed channels](/api/get-user-channels)
+* [Update a subscription setting](/api/update-subscription-property)
+* [Bulk update subscription settings](/api/update-subscription-settings)
 * [Get all channels](/api/get-streams)
 * [Get a channel by ID](/api/get-stream-by-id)
 * [Get channel ID](/api/get-stream-id)
@@ -115,6 +118,9 @@
 * [Get all alert words](/api/get-alert-words)
 * [Add alert words](/api/add-alert-words)
 * [Remove alert words](/api/remove-alert-words)
+* [Regenerate your API key](/api/regenerate-api-key)
+* [Get a bot's API key](/api/get-bot-api-key)
+* [Regenerate a bot's API key](/api/regenerate-bot-api-key)
 
 #### Invitations
 
@@ -142,6 +148,10 @@
 * [Reorder custom profile fields](/api/reorder-custom-profile-fields)
 * [Create a custom profile field](/api/create-custom-profile-field)
 * [Update realm-level defaults of user settings](/api/update-realm-user-settings-defaults)
+* [Get allowed domains](/api/get-realm-domains)
+* [Add an allowed domain](/api/add-realm-domain)
+* [Update an allowed domain](/api/patch-realm-domain)
+* [Remove an allowed domain](/api/delete-realm-domain)
 * [Get all data exports](/api/get-realm-exports)
 * [Create a data export](/api/export-realm)
 * [Get data export consent state](/api/get-realm-export-consents)
@@ -158,6 +168,10 @@
 
 * [Fetch an API key (production)](/api/fetch-api-key)
 * [Fetch an API key (development only)](/api/dev-fetch-api-key)
+* [Fetch an API key (JWT)](/api/jwt-fetch-api-key)
+* [List users (development only)](/api/dev-list-users)
+* [Register a logged-in device](/api/register-client-device)
+* [Remove a registered device](/api/remove-client-device)
 * [Send an E2EE test notification to mobile device(s)](/api/e2ee-test-notify)
 * [Register E2EE push device](/api/register-push-device)
 * [Register E2EE push device to bouncer](/api/register-remote-push-device)
@@ -168,3 +182,6 @@
 * [Add an FCM registration token](/api/add-fcm-token)
 * [Remove an FCM registration token](/api/remove-fcm-token)
 * [Create BigBlueButton video call](/api/create-big-blue-button-video-call)
+* [Create Constructor Groups video call](/api/create-constructor-groups-video-call)
+* [Create Nextcloud Talk video call](/api/create-nextcloud-talk-video-call)
+* [Outgoing webhook payloads](/api/outgoing-webhook-payload)

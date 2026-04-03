@@ -69,7 +69,7 @@ class TestBasicUserStuff(ZulipTestCase):
         # functions, like do_change_user_role. Modifying Django
         # objects and then using .save() can be buggy, as doing so can
         # fail to update caches, RealmAuditLog, or related tables properly.
-        do_change_user_role(hamlet, UserProfile.ROLE_REALM_OWNER, acting_user=iago)
+        do_change_user_role(hamlet, UserProfile.ROLE_REALM_OWNER, acting_user=iago, notify=False)
         self.assertTrue(is_administrator_role(hamlet.role))
 
         # After we promote Hamlet, we also demote him.  Testing state
@@ -82,7 +82,7 @@ class TestBasicUserStuff(ZulipTestCase):
         # There are a few exceptions, where tests interact with the
         # filesystem (E.g. uploading files), which is generally
         # handled by the setUp/tearDown methods for the test class.
-        do_change_user_role(hamlet, UserProfile.ROLE_MODERATOR, acting_user=iago)
+        do_change_user_role(hamlet, UserProfile.ROLE_MODERATOR, acting_user=iago, notify=False)
         self.assertFalse(is_administrator_role(hamlet.role))
 
 
@@ -137,6 +137,7 @@ class TestFullStack(ZulipTestCase):
                 role=UserProfile.ROLE_MEMBER,
                 timezone="Etc/UTC",
                 user_id=cordelia.id,
+                is_imported_stub=False,
             ),
         )
 
@@ -363,7 +364,7 @@ class TestQueryCounts(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
 
-        with self.assert_database_query_count(17):
+        with self.assert_database_query_count(16):
             self.send_personal_message(
                 from_user=hamlet,
                 to_user=cordelia,

@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.mime_types import INLINE_MIME_TYPES
+from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
 from zerver.lib.upload import upload_emoji_image
 from zerver.models import Realm, RealmAuditLog, RealmEmoji, UserProfile
@@ -27,6 +27,7 @@ def notify_realm_emoji(realm: Realm, realm_emoji: dict[str, EmojiInfo]) -> None:
 def check_add_realm_emoji(
     realm: Realm, name: str, author: UserProfile, image_file: IO[bytes], content_type: str
 ) -> RealmEmoji:
+    content_type = bare_content_type(content_type)
     try:
         realm_emoji = RealmEmoji(realm=realm, name=name, author=author)
         realm_emoji.full_clean()

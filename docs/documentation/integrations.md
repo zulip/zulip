@@ -29,13 +29,14 @@ Typically, the documentation process involves the following steps:
   See [Markdown macros](#markdown-macros) for further details.
 
 - Make sure you've added your integration to `zerver/lib/integrations.py` in
-  both the `WEBHOOK_INTEGRATIONS` section (or `INTEGRATIONS` if not a
-  webhook), and the `DOC_SCREENSHOT_CONFIG` sections.
+  the relevant `*_INTEGRATIONS` list, such as the
+  `INCOMING_WEBHOOK_INTEGRATIONS` list for incoming webhook integrations.
 
-  These registries configure your integration to appear on the
-  `/integrations` page, and make it possible to automatically generate the
-  screenshot of an example message, which is important for the screenshots
-  to be updated as Zulip's design changes.
+  These lists get aggregated into the `INTEGRATIONS` registry which
+  configures your integration to appear on the `/integrations` page, and
+  makes it possible to automatically generate the screenshot of an example
+  message, which is important so that these screenshots can be easily
+  updated as Zulip's design changes.
 
 - You'll need to add an SVG graphic of your integration's logo under the
   `static/images/integrations/logos/<name>.svg`, where `<name>` is the
@@ -54,13 +55,14 @@ Typically, the documentation process involves the following steps:
   generate a screenshot of the message to provide an example message in the
   integration's documentation.
 
-  If your new integration is not a webhook and does not have fixtures, add a
+  If your new integration is not an incoming webhook and does not have fixtures, add a
   message template and topic to `zerver/webhooks/fixtureless_integrations.py`.
   Then, add your integration's name to `FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS`
-  in `zerver/lib/integrations.py`.
+  in `zerver/lib/integrations.py`. See [this commit][example-commit] for an
+  example.
 
-  Otherwise, you should have already added your integration to
-  `WEBHOOK_SCREENSHOT_CONFIG`.
+  Otherwise, you should have already added your integration along with its
+  screenshot config to `INCOMING_WEBHOOK_INTEGRATIONS`.
 
   Generate the screenshot using `tools/screenshots/generate-integration-docs-screenshot`,
   where `integrationname` is the name of the integration:
@@ -75,6 +77,8 @@ Typically, the documentation process involves the following steps:
   name like "GitHub Bot", use the project's logo as the bot's avatar, and take
   the screenshot showing the channel/topic bar for the message, not just the
   message body.
+
+[example-commit]: https://github.com/zulip/zulip/commit/f6e847d026013097ecdc484ec6675680ce76aa84
 
 ## Markdown macros
 
@@ -111,7 +115,7 @@ Here are a few common macros used to document Zulip's integrations:
 
 - `{!generate-integration-url.md!}` - Instructs user how to get the URL for a
   bot for a given integration. An example URL is generated automatically for
-  every incoming webhook by using attributes in the `WebhookIntegration` class
+  every incoming webhook by using attributes in the `IncomingWebhookIntegration` class
   in [zerver/lib/integrations.py][integrations-file].
 
   **Note:** If special configuration is required to set up the URL and you can't
@@ -154,15 +158,15 @@ Here are a few common macros used to document Zulip's integrations:
   ```
 
   For an example rendering, see
-  [Zulip's Beanstalk integration](https://zulip.com/integrations/doc/beanstalk).
+  [Zulip's Beanstalk integration](https://zulip.com/integrations/beanstalk).
 
-[github-integration]: https://zulip.com/integrations/doc/github
-[zendesk]: https://zulip.com/integrations/doc/zendesk
-[matrix]: https://zulip.com/integrations/doc/matrix#configure-the-bridge
-[codebase]: https://zulip.com/integrations/doc/codebase
-[beanstalk]: https://zulip.com/integrations/doc/beanstalk
-[front]: https://zulip.com/integrations/doc/front
-[gitlab]: https://zulip.com/integrations/doc/gitlab
+[github-integration]: https://zulip.com/integrations/github
+[zendesk]: https://zulip.com/integrations/zendesk
+[matrix]: https://zulip.com/integrations/matrix#configure-the-bridge
+[codebase]: https://zulip.com/integrations/codebase
+[beanstalk]: https://zulip.com/integrations/beanstalk
+[front]: https://zulip.com/integrations/front
+[gitlab]: https://zulip.com/integrations/gitlab
 [integrations-file]: https://github.com/zulip/zulip/blob/main/zerver/lib/integrations.py
 
 ## Writing guidelines
@@ -170,7 +174,7 @@ Here are a few common macros used to document Zulip's integrations:
 For the vast majority of integrations, you should just copy the docs for a
 similar integration and edit it. [Basecamp][basecamp] is a good one to copy.
 
-[basecamp]: https://zulip.com/integrations/doc/basecamp
+[basecamp]: https://zulip.com/integrations/basecamp
 
 ### General writing guidelines
 

@@ -9,11 +9,7 @@ from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from zerver.actions.realm_settings import do_deactivate_realm
-from zerver.lib.export import (
-    check_export_with_consent_is_usable,
-    check_public_export_is_usable,
-    export_realm_wrapper,
-)
+from zerver.lib.export import export_realm_wrapper
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import RealmExport
 
@@ -72,8 +68,8 @@ class Command(ZulipBaseCommand):
     make sure you have the procedure right and minimize downtime.
 
     Performance: In one test, the tool exported a realm with hundreds
-    of users and ~1M messages of history with --threads=1 in about 3
-    hours of serial runtime (goes down to ~50m with --threads=6 on a
+    of users and ~1M messages of history with --parallel=1 in about 3
+    hours of serial runtime (goes down to ~50m with --parallel=6 on a
     machine with 8 CPUs).  Importing that same data set took about 30
     minutes.  But this will vary a lot depending on the average number
     of recipients of messages in the realm, hardware, etc."""
@@ -84,9 +80,9 @@ class Command(ZulipBaseCommand):
             "--output", dest="output_dir", help="Directory to write exported data to."
         )
         parser.add_argument(
-            "--threads",
+            "--parallel",
             default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
-            help="Threads to use in exporting UserMessage objects in parallel",
+            help="Processes to use in exporting UserMessage objects in parallel",
         )
         parser.add_argument(
             "--public-only",
@@ -107,11 +103,6 @@ class Command(ZulipBaseCommand):
             help="Whether to export private data of users who consented",
         )
         parser.add_argument(
-            "--force",
-            action="store_true",
-            help="Skip checks for whether the generated export will be a usable realm.",
-        )
-        parser.add_argument(
             "--upload",
             action="store_true",
             help="Whether to upload resulting tarball to s3 or LOCAL_UPLOADS_DIR",
@@ -130,9 +121,9 @@ class Command(ZulipBaseCommand):
 
         print(f"\033[94mExporting realm\033[0m: {realm.string_id}")
 
-        num_threads = int(options["threads"])
-        if num_threads < 1:
-            raise CommandError("You must have at least one thread.")
+        processes = int(options["parallel"])
+        if processes < 1:
+            raise CommandError("You must have at least one process.")
 
         if public_only and export_full_with_consent:
             raise CommandError("Please pass either --public-only or --export-full-with-consennt")
@@ -159,15 +150,6 @@ class Command(ZulipBaseCommand):
         except FileExistsError:
             raise CommandError(
                 f"Refusing to overwrite existing tarball: {tarball_path}. Aborting..."
-            )
-
-        if (not options["force"]) and (
-            (export_full_with_consent and not check_export_with_consent_is_usable(realm))
-            or (public_only and not check_public_export_is_usable(realm))
-        ):
-            raise CommandError(
-                "The generated export will not be a usable organization! "
-                "You can pass --force to skip this check."
             )
 
         if options["deactivate_realm"]:
@@ -201,7 +183,7 @@ class Command(ZulipBaseCommand):
         export_realm_wrapper(
             export_row=export_row,
             output_dir=output_dir,
-            threads=num_threads,
+            processes=processes,
             upload=options["upload"],
             percent_callback=percent_callback,
             export_as_active=True if options["deactivate_realm"] else None,

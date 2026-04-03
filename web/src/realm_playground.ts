@@ -1,10 +1,9 @@
 import type * as z from "zod/mini";
 
-import * as typeahead from "../shared/src/typeahead.ts";
-
 import {$t} from "./i18n.ts";
 import * as pygments_data from "./pygments_data.ts";
 import type {realm_playground_schema} from "./state_data.ts";
+import * as typeahead from "./typeahead.ts";
 import * as util from "./util.ts";
 
 export type RealmPlayground = z.output<typeof realm_playground_schema>;
@@ -37,9 +36,8 @@ export function get_playground_info_for_languages(lang: string): RealmPlayground
 function sort_pygments_pretty_names_by_priority(
     comparator_func: (a: string, b: string) => number,
 ): void {
-    const priority_sorted_pygments_data = Object.entries(pygments_data.langs).sort(([a], [b]) =>
-        comparator_func(a, b),
-    );
+    const priority_sorted_pygments_data = Object.entries(pygments_data.langs);
+    priority_sorted_pygments_data.sort(([a], [b]) => comparator_func(a, b));
     for (const [alias, data] of priority_sorted_pygments_data) {
         const pretty_name = data.pretty_name;
         // JS Map remembers the original order of insertion of keys.
