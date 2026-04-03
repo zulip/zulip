@@ -1,0 +1,50 @@
+{
+    "schemaId": "azureMonitorCommonAlertSchema",
+    "data": {
+        "essentials": {
+            "alertId": "/subscriptions/11111111-1111-1111-1111-111111111111/providers/Microsoft.AlertsManagement/alerts/12345678-1234-1234-1234-1234567890ab",
+            "alertRule": "test-activityLogAlertRule",
+            "severity": "Sev4",
+            "signalType": "Activity Log",
+            "monitorCondition": "Fired",
+            "monitoringService": "Activity Log - Administrative",
+            "alertTargetIDs": [
+                "/subscriptions/11111111-1111-1111-1111-111111111111/resourcegroups/test-RG/providers/microsoft.compute/virtualmachines/test-VM"
+            ],
+            "configurationItems": [
+                "test-VM"
+            ],
+            "originAlertId": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb_123456789012345678901234567890ab",
+            "firedDateTime": "2021-11-16T08:29:01.2932462Z",
+            "description": "Alert rule description",
+            "essentialsVersion": "1.0",
+            "alertContextVersion": "1.0"
+        },
+        "alertContext": {
+            "authorization": {
+                "action": "Microsoft.Compute/virtualMachines/restart/action",
+                "scope": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/test-RG/providers/Microsoft.Compute/virtualMachines/test-VM"
+            },
+            "channels": "Operation",
+            "claims": "{}",
+            "caller": "user-email@domain.com",
+            "correlationId": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            "eventSource": "Administrative",
+            "eventTimestamp": "2021-11-16T08:27:36.1836909+00:00",
+            "eventDataId": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+            "level": "Informational",
+            "operationName": "Microsoft.Compute/virtualMachines/restart/action",
+            "operationId": "cccccccc-cccc-cccc-cccc-cccccccccccc",
+            "properties": {
+                "eventCategory": "Administrative",
+                "entity": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/test-RG/providers/Microsoft.Compute/virtualMachines/test-VM",
+                "message": "Microsoft.Compute/virtualMachines/restart/action",
+                "hierarchy": "22222222-2222-2222-2222-222222222222/CnAIOrchestrationServicePublicCorpprod/33333333-3333-3333-3333-3333333333333/44444444-4444-4444-4444-444444444444/55555555-5555-5555-5555-555555555555/11111111-1111-1111-1111-111111111111"
+            },
+            "status": "Succeeded",
+            "subStatus": "",
+            "submissionTimestamp": "2021-11-16T08:29:00.141807+00:00",
+            "Activity Log Event Description": ""
+        }
+    }
+}

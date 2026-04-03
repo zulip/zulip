@@ -1,0 +1,38 @@
+{
+    "schemaId": "azureMonitorCommonAlertSchema",
+    "data": {
+        "essentials": {
+            "alertId": "/subscriptions/11111111-1111-1111-1111-111111111111/providers/Microsoft.AlertsManagement/alerts/12345678-1234-1234-1234-1234567890ab",
+            "alertRule": "test-logAlertRule-v1-metricMeasurement",
+            "severity": "Sev3",
+            "signalType": "Log",
+            "monitorCondition": "Fired",
+            "monitoringService": "Log Analytics",
+            "alertTargetIDs": [
+                "/subscriptions/11111111-1111-1111-1111-111111111111/resourcegroups/test-RG/providers/microsoft.operationalinsights/workspaces/test-logAnalyticsWorkspace"
+            ],
+            "configurationItems": [],
+            "originAlertId": "12345678-4444-4444-4444-1234567890ab",
+            "firedDateTime": "2021-11-16T15:17:21.9232467Z",
+            "description": "Alert rule description",
+            "essentialsVersion": "1.0",
+            "alertContextVersion": "1.1"
+        },
+        "alertContext": {
+            "SearchQuery": "Heartbeat | summarize AggregatedValue=count() by bin(TimeGenerated, 5m)",
+            "SearchIntervalStartTimeUtc": "2021-11-15T15:16:49Z",
+            "SearchIntervalEndtimeUtc": "2021-11-16T15:16:49Z",
+            "ResultCount": 2,
+            "LinkToSearchResults": "https://portal.azure.com#@aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/blade/Microsoft_Azure_Monitoring_Logs/LogsBlade/source/Alerts.EmailLinks/...",
+            "SeverityDescription": "Informational",
+            "WorkspaceId": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+            "SearchIntervalDurationMin": "1440",
+            "AffectedConfigurationItems": [],
+            "AlertType": "Metric measurement",
+            "IncludeSearchResults": false,
+            "SearchIntervalInMinutes": "1440",
+            "Threshold": 0,
+            "Operator": "Greater Than"
+        }
+    }
+}
