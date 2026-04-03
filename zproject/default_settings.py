@@ -712,6 +712,10 @@ MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS = 100
 # be soft-reactivated in the case of user group mention.
 MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION = 11
 
+# The maximum number of topic participants up to which members should
+# be soft-reactivated in the case of a topic wildcard mention.
+MAX_TOPIC_SIZE_FOR_MENTION_REACTIVATION = 11
+
 # The maximum number of newly subscribed users for which the server
 # will consider sending DMs to each new subscriber.
 MAX_BULK_NEW_SUBSCRIPTION_MESSAGES = 100

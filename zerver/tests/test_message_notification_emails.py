@@ -1800,7 +1800,9 @@ class TestMessageNotificationEmails(ZulipTestCase):
         email_subject = "DMs with Othello, the Moor of Venice"
         self._test_cases(msg_id, verify_body_include, email_subject, verify_html_body=True)
 
-    @override_settings(MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION=2)
+    @override_settings(
+        MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION=2, MAX_TOPIC_SIZE_FOR_MENTION_REACTIVATION=2
+    )
     def test_long_term_idle_user_missed_message(self) -> None:
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")
@@ -1958,6 +1960,48 @@ class TestMessageNotificationEmails(ZulipTestCase):
 
         reset_hamlet_as_soft_deactivated_user()
         self.expect_to_stay_long_term_idle(hamlet, send_large_group_mention)
+
+        self.subscribe(cordelia, "Denmark")
+        self.send_stream_message(othello, "Denmark", "msg", topic_name="large_topic")
+        self.send_stream_message(cordelia, "Denmark", "msg", topic_name="large_topic")
+        self.send_stream_message(hamlet, "Denmark", "msg", topic_name="large_topic")
+
+        self.send_stream_message(othello, "Denmark", "msg", topic_name="small_topic")
+        self.send_stream_message(hamlet, "Denmark", "msg", topic_name="small_topic")
+
+        def send_small_topic_mention() -> None:
+            mention = "@**topic**"
+            stream_mentioned_message_id = self.send_stream_message(
+                othello, "Denmark", mention, topic_name="small_topic"
+            )
+            self.handle_missedmessage_emails(
+                hamlet.id,
+                {
+                    stream_mentioned_message_id: MissedMessageData(
+                        trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION,
+                    ),
+                },
+            )
+
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_soft_reactivation(hamlet, send_small_topic_mention)
+
+        def send_large_topic_mention() -> None:
+            mention = "@**topic**"
+            stream_mentioned_message_id = self.send_stream_message(
+                othello, "Denmark", mention, topic_name="large_topic"
+            )
+            self.handle_missedmessage_emails(
+                hamlet.id,
+                {
+                    stream_mentioned_message_id: MissedMessageData(
+                        trigger=NotificationTriggers.TOPIC_WILDCARD_MENTION,
+                    ),
+                },
+            )
+
+        reset_hamlet_as_soft_deactivated_user()
+        self.expect_to_stay_long_term_idle(hamlet, send_large_topic_mention)
 
     def test_followed_topic_missed_message(self) -> None:
         hamlet = self.example_user("hamlet")
