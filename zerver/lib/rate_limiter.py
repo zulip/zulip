@@ -8,12 +8,12 @@ from typing import Optional
 
 import orjson
 import redis.commands.core
-from circuitbreaker import CircuitBreakerError, circuit
 from django.conf import settings
 from django.http import HttpRequest
 from django.utils.timesince import timeuntil
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ngettext
+from pybreaker import CircuitBreaker, CircuitBreakerError
 from typing_extensions import override
 
 from zerver.lib import redis_utils
@@ -339,8 +339,11 @@ def is_local_addr(addr: str) -> bool:
     return addr in ("127.0.0.1", "::1")
 
 
+get_tor_ips_breaker = CircuitBreaker(fail_max=2, reset_timeout=60 * 10)
+
+
 @cache_with_key(lambda: "tor_ip_addresses:", timeout=60 * 60)
-@circuit(failure_threshold=2, recovery_timeout=60 * 10)
+@get_tor_ips_breaker
 def get_tor_ips() -> set[str]:
     if not settings.RATE_LIMIT_TOR_TOGETHER:
         return set()

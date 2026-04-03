@@ -2395,7 +2395,7 @@ def social_associate_user_helper(
     return user_profile
 
 
-@partial
+@partial  # type: ignore[untyped-decorator] # upstream annotation missing
 def social_auth_associate_user(
     backend: BaseAuth, *args: Any, **kwargs: Any
 ) -> HttpResponse | dict[str, Any]:

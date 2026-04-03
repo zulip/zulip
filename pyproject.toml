@@ -174,7 +174,7 @@ prod = [
   "django-scim2",
 
   # Circuit-breaking for outgoing services
-  "circuitbreaker",
+  "pybreaker",
 
   # Runtime monkeypatching of django-stubs generics
   "django-stubs-ext",
@@ -383,7 +383,6 @@ cache_dir = "$MYPY_CONFIG_FILE_DIR/var/mypy-cache"
 strict = true
 disallow_subclassing_any = false
 disallow_untyped_calls = false
-disallow_untyped_decorators = false
 warn_return_any = false
 
 # Enable optional errors.
@@ -420,7 +419,6 @@ module = [
     "backports.datetime_fromisoformat.*",
     "bitfield.*",
     "bmemcached.*",
-    "circuitbreaker.*",
     "digitalocean.*",
     "django_auth_ldap.*",
     "django_bmemcached.*",
