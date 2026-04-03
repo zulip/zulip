@@ -598,6 +598,7 @@ class APIUserDict(TypedDict):
     is_system_bot: NotRequired[bool]
     max_message_id: NotRequired[int]
     is_imported_stub: bool
+    is_deleted: NotRequired[bool]
 
 
 def format_user_row(
@@ -644,6 +645,9 @@ def format_user_row(
         delivery_email=delivery_email,
         is_imported_stub=row["is_imported_stub"],
     )
+
+    if row["is_deleted"]:
+        result["is_deleted"] = True
 
     if acting_user is None:
         # Remove data about other users which are not useful to spectators
@@ -1014,6 +1018,7 @@ def user_profile_to_user_row(user_profile: UserProfile) -> RawUserDict:
         long_term_idle=user_profile.long_term_idle,
         email_address_visibility=user_profile.email_address_visibility,
         is_imported_stub=user_profile.is_imported_stub,
+        is_deleted=user_profile.is_deleted,
     )
 
 
