@@ -60,9 +60,10 @@ mock_esm("../src/spectators", {
     login_to_access() {},
 });
 
-function empty_narrow_html(title, notice_html, search_data) {
+function empty_narrow_html(title, notice_html, search_data, title_html) {
     const opts = {
         title,
+        title_html,
         notice_html,
         search_data,
     };
@@ -572,6 +573,25 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html("translated: No search results."),
+    );
+
+    current_filter = set_filter([["mentions", alice.user_id]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: No messages in your message history mention Alice Smith yet.",
+            undefined,
+            undefined,
+            'translated: No messages in <a href="/help/search-for-messages#search-shared-history" target="_blank" rel="noopener noreferrer">your message history</a> mention Alice Smith yet.',
+        ),
+    );
+
+    current_filter = set_filter([["mentions", -1]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: This user does not exist!"),
     );
 
     current_filter = set_filter([["is", "invalid"]]);
