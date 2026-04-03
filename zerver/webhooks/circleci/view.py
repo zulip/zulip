@@ -25,6 +25,14 @@ outcome_to_formatted_status_map = {
     "error": "had an error",
 }
 
+OUTCOME_EMOJI_MAP: dict[str, str] = {
+    "success": ":check:",
+    "failed": ":cross_mark:",
+    "canceled": ":no_entry:",
+    "unauthorized": ":warning:",
+    "error": ":cross_mark:",
+}
+
 GITHUB_COMMIT_LINK = "{target_repository_url}/commit/{commit_sha}"
 
 BITBUCKET_COMMIT_LINK = "{target_repository_url}/commits/{commit_sha}"
@@ -44,12 +52,12 @@ Triggered on the latest tag on [{commit_sha}]({commit_link}).
 """
 
 WORKFLOW_BODY_TEMPLATE = """
-Workflow [`{workflow_name}`]({workflow_url}) within Pipeline #{pipeline_number} {formatted_status}.
+{emoji} Workflow [`{workflow_name}`]({workflow_url}) within Pipeline #{pipeline_number} {formatted_status}.
 {commit_details}
 """
 
 JOB_BODY_TEMPLATE = """
-Job `{job_name}` within Pipeline #{pipeline_number} {formatted_status}.
+{emoji} Job `{job_name}` within Pipeline #{pipeline_number} {formatted_status}.
 {commit_details}
 """
 
@@ -175,7 +183,9 @@ def get_body(payload: WildValue) -> str:
         job_name = payload["job"]["name"].tame(check_string)
         status = payload["job"]["status"].tame(check_string)
         formatted_status = outcome_to_formatted_status_map.get(status)
+        emoji = OUTCOME_EMOJI_MAP.get(status, "")
         return JOB_BODY_TEMPLATE.format(
+            emoji=emoji,
             job_name=job_name,
             pipeline_number=pipeline_number,
             formatted_status=formatted_status,
@@ -187,7 +197,9 @@ def get_body(payload: WildValue) -> str:
         workflow_url = payload["workflow"]["url"].tame(check_url)
         status = payload["workflow"]["status"].tame(check_string)
         formatted_status = outcome_to_formatted_status_map.get(status)
+        emoji = OUTCOME_EMOJI_MAP.get(status, "")
         return WORKFLOW_BODY_TEMPLATE.format(
+            emoji=emoji,
             workflow_name=workflow_name,
             workflow_url=workflow_url,
             pipeline_number=pipeline_number,
