@@ -892,6 +892,15 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_update_profile_data_successfully(self) -> None:
         self.login("iago")
         realm = get_realm("zulip")
+        field_data = orjson.dumps(
+            {"0": {"text": "Python", "order": "1"}, "1": {"text": "Java", "order": "2"}}
+        ).decode()
+        CustomProfileField.objects.create(
+            realm=realm,
+            name="Programming Languages",
+            field_type=CustomProfileField.SELECT_MULTIPLE,
+            field_data=field_data,
+        )
         fields: list[tuple[str, str | list[int]]] = [
             ("Phone number", "*short* text data"),
             ("Biography", "~~short~~ **long** text data"),
@@ -902,6 +911,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             ("Mentor", [self.example_user("cordelia").id]),
             ("GitHub username", "zulip-mobile"),
             ("Pronouns", "he/him"),
+            ("Programming Languages", [0, 1]),
         ]
 
         data: list[ProfileDataElementUpdateDict] = []
@@ -1052,6 +1062,55 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertTrue(
             CustomProfileFieldValue.objects.filter(field_id=field.id, value="1").exists()
         )
+
+    def test_remove_select_multiple_field_options(self) -> None:
+        user = self.example_user("iago")
+        self.login_user(user)
+        realm = user.realm
+
+        field_data = orjson.dumps(
+            {
+                "0": {"text": "Python", "order": "1"},
+                "1": {"text": "Java", "order": "2"},
+                "2": {"text": "Rust", "order": "3"},
+            }
+        ).decode()
+        field = CustomProfileField.objects.create(
+            realm=realm,
+            name="Programming Languages",
+            field_type=CustomProfileField.SELECT_MULTIPLE,
+            field_data=field_data,
+        )
+
+        hamlet = self.example_user("hamlet")
+        CustomProfileFieldValue.objects.create(
+            user_profile=hamlet, field=field, value=orjson.dumps([0, 1]).decode()
+        )
+
+        cordelia = self.example_user("cordelia")
+        CustomProfileFieldValue.objects.create(
+            user_profile=cordelia, field=field, value=orjson.dumps([1]).decode()
+        )
+
+        new_field_data = {
+            "0": {"text": "Python", "order": "1"},
+            "2": {"text": "Rust", "order": "3"},
+        }
+
+        payload = {
+            "name": "Programming Languages",
+            "field_data": orjson.dumps(new_field_data).decode(),
+        }
+
+        result = self.client_patch(f"/json/realm/profile_fields/{field.id}", payload)
+        self.assert_json_success(result)
+
+        self.assertFalse(
+            CustomProfileFieldValue.objects.filter(user_profile=cordelia, field=field).exists()
+        )
+
+        hamlet_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=field)
+        self.assertEqual(orjson.loads(hamlet_value.value), [0])
 
     def test_default_external_account_type_field(self) -> None:
         self.login("iago")

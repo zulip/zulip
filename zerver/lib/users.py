@@ -532,6 +532,10 @@ def validate_user_custom_profile_field(
         # Put an assertion so that mypy doesn't complain.
         assert field_data is not None
         return choice_field_validator(var_name, field_data, value)
+    elif field_type == CustomProfileField.SELECT_MULTIPLE:
+        multiselect_validator = CustomProfileField.SELECT_MULTIPLE_FIELD_VALIDATORS[field_type]
+        multiselect_validator(var_name, field.field_data, value)
+        return value
     elif field_type == CustomProfileField.USER:
         user_field_validator = CustomProfileField.USER_FIELD_VALIDATORS[field_type]
         return user_field_validator(realm_id, value, False)
