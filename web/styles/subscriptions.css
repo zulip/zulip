@@ -1586,7 +1586,8 @@ h4.stream_setting_subsection_title {
 }
 
 #subscription_overlay .default-stream,
-#subscription_overlay .history-public-to-subscribers {
+#subscription_overlay .history-public-to-subscribers,
+#subscription_overlay .default-push-notifications {
     width: fit-content;
 
     .inline {
