@@ -28,6 +28,12 @@ ZABBIX_MESSAGE_TEMPLATE = """
 * {item}
 """.strip()
 
+ZABBIX_STATUS_EMOJI = {
+    "PROBLEM": "❌",
+    "OK": "✅",
+    "WARNING": "⚠️",
+}
+
 
 @webhook_view("Zabbix")
 @typed_endpoint
@@ -64,6 +70,10 @@ def get_body_for_http_request(payload: WildValue) -> str:
     item = payload["item"].tame(check_string)
     trigger = payload["trigger"].tame(check_string)
     link = payload["link"].tame(check_string)
+
+    status_emoji = ZABBIX_STATUS_EMOJI.get(status)
+    if status_emoji is not None:
+        status = f"{status_emoji} {status}"
 
     data = {
         "hostname": hostname,
