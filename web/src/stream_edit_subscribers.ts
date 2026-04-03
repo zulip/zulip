@@ -133,8 +133,12 @@ function update_notification_choice_checkbox(added_user_count: number): void {
 }
 
 async function stream_edit_update_notification_choice(): Promise<void> {
+    loading.make_indicator($(".add-subscriber-loading-spinner"), {
+        height: 56, // 4em at 14px / 1em
+    });
     const pill_count = (await add_subscribers_pill.get_pill_user_ids(pill_widget)).length;
     update_notification_choice_checkbox(pill_count);
+    loading.destroy_indicator($(".add-subscriber-loading-spinner"));
 }
 
 export function enable_subscriber_management({
