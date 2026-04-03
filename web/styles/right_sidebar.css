@@ -276,6 +276,17 @@
         .buddy-list-heading {
             opacity: var(--opacity-sidebar-heading-hover);
         }
+
+        /* Combine hover border with drop shadow since CSS box-shadow doesn't stack. */
+        &.sidebar-header-drop-shadow {
+            box-shadow:
+                inset 0 0 0 1px var(--color-shadow-sidebar-row-hover),
+                0 4px 4px -2px var(--color-shadow-sidebar-row-hover);
+        }
+    }
+
+    &.sidebar-header-drop-shadow {
+        box-shadow: 0 4px 4px -2px var(--color-shadow-sidebar-row-hover);
     }
 }
 

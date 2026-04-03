@@ -175,6 +175,9 @@ class FakeElement extends RejectMissing {
         fake_element_state.set(this, new FakeElementState());
     }
     append() {}
+    getBoundingClientRect() {
+        return {top: 0, bottom: 0, left: 0, right: 0, width: 0, height: 0};
+    }
     closest(selector) {
         const state = fake_element_state.get(this);
         if (!state.closest_results.has(selector)) {
@@ -706,6 +709,16 @@ exports.FakeJQuery = class extends RejectMissing {
     replaceWith(...args) {
         assert.equal(this.length, 1);
         this[0].replaceWith(...dom_args(args));
+        return this;
+    }
+    scrollTop(...args) {
+        if (args.length === 0) {
+            return 0 in this ? this[0].scrollTop : undefined;
+        }
+        const [value] = args;
+        for (const element of this) {
+            element.scrollTop = value;
+        }
         return this;
     }
     set_children(elements) {
