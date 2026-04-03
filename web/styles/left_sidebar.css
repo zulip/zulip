@@ -2379,12 +2379,21 @@ li.topic-list-item {
             0 -4em 1em 0 var(--color-left-sidebar-outer-box-shadow);
     }
 
-    .left-sidebar-modal-close-area:focus-visible + #left-sidebar-modal-content,
-    .left-sidebar-modal-close-area:hover + #left-sidebar-modal-content {
+    .left-sidebar-modal-close-area:focus-visible + #left-sidebar-modal-content {
         box-shadow:
             0 -0.2em 0.75em 0 var(--color-left-sidebar-inner-box-shadow),
             0 -2.5em 1em 0 var(--color-left-sidebar-middle-box-shadow-hover),
             0 -4em 1em 0 var(--color-left-sidebar-outer-box-shadow-hover);
+    }
+
+    /* Don't show hover style on touch screens */
+    @media (hover: hover) and (pointer: fine) {
+        .left-sidebar-modal-close-area:hover + #left-sidebar-modal-content {
+            box-shadow:
+                0 -0.2em 0.75em 0 var(--color-left-sidebar-inner-box-shadow),
+                0 -2.5em 1em 0 var(--color-left-sidebar-middle-box-shadow-hover),
+                0 -4em 1em 0 var(--color-left-sidebar-outer-box-shadow-hover);
+        }
     }
 }
 
@@ -2411,12 +2420,21 @@ li.topic-list-item {
             0 -5.5em 1em 0 var(--color-left-sidebar-outer-box-shadow);
     }
 
-    .left-sidebar-modal-close-area:focus-visible + #left-sidebar-modal-content,
-    .left-sidebar-modal-close-area:hover + #left-sidebar-modal-content {
+    .left-sidebar-modal-close-area:focus-visible + #left-sidebar-modal-content {
         box-shadow:
             0 -0.2em 0.75em 0 var(--color-left-sidebar-inner-box-shadow),
             0 -2.5em 1em 0 var(--color-left-sidebar-middle-box-shadow-hover),
             0 -5.5em 1em 0 var(--color-left-sidebar-outer-box-shadow-hover);
+    }
+
+    /* Don't show hover style on touch screens */
+    @media (hover: hover) and (pointer: fine) {
+        .left-sidebar-modal-close-area:hover + #left-sidebar-modal-content {
+            box-shadow:
+                0 -0.2em 0.75em 0 var(--color-left-sidebar-inner-box-shadow),
+                0 -2.5em 1em 0 var(--color-left-sidebar-middle-box-shadow-hover),
+                0 -5.5em 1em 0 var(--color-left-sidebar-outer-box-shadow-hover);
+        }
     }
 }
 
