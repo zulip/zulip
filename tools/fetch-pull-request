@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
 this_dir=${BASH_SOURCE[0]%/*}
 # shellcheck source=lib/git-tools.bash
