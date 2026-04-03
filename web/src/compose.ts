@@ -73,31 +73,13 @@ export function clear_private_stream_alert(): void {
 }
 
 export function clear_preview_area(): void {
-    $("textarea#compose-textarea").trigger("focus");
-    $("#compose .undo_markdown_preview").hide();
-    $("#compose .preview_message_area").hide();
-    $("#compose .preview_content").empty();
-    $("#compose .markdown_preview").show();
+    compose_ui.exit_preview_mode($("#compose"));
     autosize.update($("textarea#compose-textarea"));
-
-    // While in preview mode we disable unneeded compose_control_buttons,
-    // so here we are re-enabling those compose_control_buttons
-    $("#compose").removeClass("preview_mode");
-    $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", 0);
-
     compose_ui.clear_thumbnail_polling();
 }
 
 export function show_preview_area(): void {
-    // Disable unneeded compose_control_buttons as we don't
-    // need them in preview mode.
-    $("#compose").addClass("preview_mode");
-    $("#compose .preview_mode_disabled .compose_control_button").attr("tabindex", -1);
-
-    $("#compose .markdown_preview").hide();
-    $("#compose .undo_markdown_preview").show();
-    $("#compose .undo_markdown_preview").trigger("focus");
-
+    compose_ui.enter_preview_mode($("#compose"));
     render_preview_area();
 }
 
