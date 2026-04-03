@@ -163,6 +163,10 @@ h4.user_group_setting_subsection_title {
 .subscriber-list-settings-loading {
     display: flex;
     align-items: center;
+    /* Override the inline width set by loading.make_indicator(),
+       which is miscalculated when the element is inside a hidden
+       parent (display:none makes $text_elem.width() return 0). */
+    width: fit-content !important;
     margin: auto;
 
     &:not(:empty) {
