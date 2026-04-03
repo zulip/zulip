@@ -59,6 +59,7 @@ export const stream_schema = z.object({
     is_web_public: z.boolean(),
     message_retention_days: z.nullable(z.number()),
     name: z.string(),
+    push_notifications_enabled: z.boolean(),
     rendered_description: z.string(),
     stream_id: z.number(),
     stream_post_policy: z.enum(StreamPostPolicy),

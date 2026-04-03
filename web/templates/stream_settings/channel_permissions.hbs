@@ -36,6 +36,21 @@
       setting_name="can_remove_subscribers_group"
       label=group_setting_labels.can_remove_subscribers_group
       prefix=prefix }}
+
+    {{#unless is_stream_edit}}
+        {{#if is_admin}}
+        <div class="push-notifications-enabled">
+            {{> ../settings/settings_checkbox
+              prefix=prefix
+              setting_name="push_notifications_enabled"
+              is_checked=false
+              is_disabled=disable_push_notifications
+              label=(t "Mobile push notifications enabled by default")
+              tooltip_message=push_notifications_tooltip
+              }}
+        </div>
+        {{/if}}
+    {{/unless}}
 </div>
 
 <div id="channel-messaging-permissions" class="settings-subsection-parent">
