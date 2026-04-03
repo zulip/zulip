@@ -135,6 +135,10 @@ export function update_private_messages(): void {
     const conversations = pm_list_data.get_conversations(search_term);
     const pm_list_info = pm_list_data.get_list_info(zoomed, search_term);
     const conversations_to_be_shown = pm_list_info.conversations_to_be_shown;
+    const filtered_conversations_to_be_shown =
+        pm_list_info.conversations_to_be_shown.filter(
+            (conv) => conv.max_message_id !== undefined && conv.max_message_id !== null,
+        );
 
     const all_conversations_shown = conversations_to_be_shown.length === conversations.length;
     const is_header_visible =
@@ -172,7 +176,7 @@ export function update_private_messages(): void {
     } else {
         const new_dom = _build_direct_messages_list({
             all_conversations_shown,
-            conversations_to_be_shown,
+            conversations_to_be_shown: filtered_conversations_to_be_shown,
             search_term,
         });
         set_dom_to(new_dom, zoomed);
