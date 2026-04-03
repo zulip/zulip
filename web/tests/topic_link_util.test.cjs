@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_stream} = require("./lib/example_stream.cjs");
 const {zrequire, mock_esm} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -17,37 +18,37 @@ mock_esm("../src/state_data", {
     realm: {realm_empty_topic_display_name: "general chat"},
 });
 
-const sweden_stream = {
+const sweden_stream = make_stream({
     name: "Sweden",
     description: "Cold, mountains and home decor.",
     stream_id: 1,
     subscribed: true,
     type: "stream",
-};
+});
 
-const denmark_stream = {
+const denmark_stream = make_stream({
     name: "Denmark",
     description: "Vikings and boats, in a serene and cold weather.",
     stream_id: 2,
     subscribed: true,
     type: "stream",
-};
+});
 
-const dollar_stream = {
+const dollar_stream = make_stream({
     name: "$$MONEY$$",
     description: "Money money money",
     stream_id: 6,
     subscribed: true,
     type: "stream",
-};
+});
 
-const markdown_stream = {
+const markdown_stream = make_stream({
     name: "Markdown [md]",
     description: "markdown",
     stream_id: 7,
     subscribed: true,
     type: "stream",
-};
+});
 
 stream_data.add_sub_for_tests(sweden_stream);
 stream_data.add_sub_for_tests(denmark_stream);

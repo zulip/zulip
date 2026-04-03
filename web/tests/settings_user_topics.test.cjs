@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_stream} = require("./lib/example_stream.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -15,10 +16,10 @@ const {initialize_user_settings} = zrequire("user_settings");
 
 initialize_user_settings({user_settings: {}});
 
-const frontend = {
+const frontend = make_stream({
     stream_id: 101,
     name: "frontend",
-};
+});
 stream_data.add_sub_for_tests(frontend);
 
 run_test("settings", ({override, override_rewire}) => {
