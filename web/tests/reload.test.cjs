@@ -7,7 +7,7 @@ const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
 
 const channel = mock_esm("../src/channel");
-mock_esm("../src/popup_banners", {
+const popup_banners = mock_esm("../src/popup_banners", {
     open_reloading_application_banner: noop,
 });
 
@@ -53,6 +53,8 @@ run_test("old_token_is_stale ", () => {
 });
 
 run_test("reload", () => {
+    reload_state.clear_for_testing();
+
     channel.get = (opts) => {
         assert.equal(opts.url, "/compatibility");
         opts.success();
@@ -87,4 +89,57 @@ run_test("immediate_reload_skips_compatibility_check", () => {
     reload.initiate({immediate: true, save_compose: true});
 
     assert.ok(reload_state.is_in_progress());
+});
+
+run_test("immediate_reload_shows_banner_by_default", () => {
+    reload_state.clear_for_testing();
+
+    let banner_reason;
+    let reload_calls = 0;
+
+    popup_banners.open_reloading_application_banner = (reason) => {
+        banner_reason = reason;
+    };
+    window.location.reload = () => {
+        reload_calls += 1;
+    };
+
+    channel.get = undefined;
+
+    reload.initiate({immediate: true});
+
+    assert.equal(banner_reason, "reload");
+    assert.equal(reload_calls, 1);
+});
+
+run_test("immediate_reload_can_skip_banner", () => {
+    reload_state.clear_for_testing();
+
+    let reload_calls = 0;
+
+    popup_banners.open_reloading_application_banner = assert.fail;
+    window.location.reload = () => {
+        reload_calls += 1;
+    };
+
+    channel.get = undefined;
+
+    reload.initiate({immediate: true, show_reload_banner: false});
+
+    assert.equal(reload_calls, 1);
+});
+
+run_test("delayed_reload_can_skip_banner", () => {
+    reload_state.clear_for_testing();
+
+    popup_banners.open_reloading_application_banner = assert.fail;
+
+    channel.get = (opts) => {
+        assert.equal(opts.url, "/compatibility");
+        opts.success();
+    };
+
+    reload.initiate({immediate: false, show_reload_banner: false});
+
+    assert.equal(reload_state.is_pending(), true);
 });
