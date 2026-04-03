@@ -245,6 +245,8 @@ export class Typeahead<ItemType extends string | object> {
     query = "";
     mouse_moved_since_typeahead = false;
     shown = false;
+    // Tracks which keys had a keydown event fire on this element.
+    keydown_set = new Set<string>();
     // To trigger updater when Esc is pressed only during the stream topic typeahead in composebox.
     select_on_escape_condition: () => boolean;
     // Used to clear tooltip instances attached to typeahead container.
@@ -253,6 +255,7 @@ export class Typeahead<ItemType extends string | object> {
     closeInputFieldOnHide: (() => void) | undefined;
     helpOnEmptyStrings: boolean;
     tabIsEnter: boolean;
+    shiftTabIsEnter: boolean;
     stopAdvance: boolean;
     advanceKeys: string[];
     non_tippy_parent_element: string | undefined;
@@ -273,6 +276,8 @@ export class Typeahead<ItemType extends string | object> {
     hideOnEmptyAfterBackspace: boolean;
     // Used for adding a custom classname to the typeahead link.
     getCustomItemClassname: ((item: ItemType) => string) | undefined;
+    // Offset applied to the typeahead placement.
+    position_offset: [number, number];
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
@@ -308,6 +313,7 @@ export class Typeahead<ItemType extends string | object> {
         this.openInputFieldOnKeyUp = options.openInputFieldOnKeyUp;
         this.closeInputFieldOnHide = options.closeInputFieldOnHide;
         this.tabIsEnter = options.tabIsEnter ?? true;
+        this.shiftTabIsEnter = options.shiftTabIsEnter ?? true;
         this.helpOnEmptyStrings = options.helpOnEmptyStrings ?? false;
         this.non_tippy_parent_element = options.non_tippy_parent_element;
         this.values = new WeakMap();
@@ -318,6 +324,7 @@ export class Typeahead<ItemType extends string | object> {
         this.hideAfterSelect = options.hideAfterSelect ?? (() => true);
         this.hideOnEmptyAfterBackspace = options.hideOnEmptyAfterBackspace ?? false;
         this.getCustomItemClassname = options.getCustomItemClassname;
+        this.position_offset = options.position_offset ?? [0, 0];
         this.listen();
     }
 
@@ -387,6 +394,7 @@ export class Typeahead<ItemType extends string | object> {
         this.mouse_moved_since_typeahead = false;
 
         const input_element = this.input_element;
+        const position_offset = this.position_offset;
         if (!this.non_tippy_parent_element) {
             this.instance = tippy.default(the(input_element.$element), {
                 // Lets typeahead take the width needed to fit the content
@@ -438,7 +446,10 @@ export class Typeahead<ItemType extends string | object> {
                         const scrollTop = input_element.$element.scrollTop() ?? 0;
 
                         if (placement === "top-start") {
-                            return [caret.left, -caret.top + scrollTop + gap];
+                            return [
+                                caret.left + position_offset[0],
+                                -caret.top + scrollTop + gap + position_offset[1],
+                            ];
                         }
 
                         // In bottom-start, the offset is calculated from bottom of the popper reference.
@@ -446,10 +457,13 @@ export class Typeahead<ItemType extends string | object> {
                             // Height of the reference is the input_element height.
                             const field_height = reference.height;
                             const distance = field_height - caret.top + scrollTop - caret.height;
-                            return [caret.left, -distance + gap];
+                            return [
+                                caret.left + position_offset[0],
+                                -distance + gap + position_offset[1],
+                            ];
                         }
                     }
-                    return [0, gap];
+                    return [position_offset[0], gap + position_offset[1]];
                 },
                 // We have event handlers to hide the typeahead, so we
                 // don't want tippy to hide it for us.
@@ -727,7 +741,7 @@ export class Typeahead<ItemType extends string | object> {
 
         switch (e.key) {
             case "Tab":
-                if (!this.tabIsEnter) {
+                if (!this.tabIsEnter || (e.shiftKey && !this.shiftTabIsEnter)) {
                     return;
                 }
                 e.preventDefault();
@@ -762,6 +776,7 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     keydown(e: JQuery.KeyDownEvent): void {
+        this.keydown_set.add(e.key);
         if (this.trigger_selection(e)) {
             if (!this.shown) {
                 return;
@@ -785,6 +800,15 @@ export class Typeahead<ItemType extends string | object> {
 
     keyup(e: JQuery.KeyUpEvent): void {
         this.mouse_moved_since_typeahead = false;
+        // Ignore keyup events for keys that had no corresponding keydown on
+        // this element. This happens when the keydown event occurred on a
+        // different element and the keyup is triggered in the typeahead
+        // (eg, during keyboard navigation when focus moves to the typeahead
+        // between keydown and keyup).
+        if (!this.keydown_set.has(e.key)) {
+            return;
+        }
+        this.keydown_set.delete(e.key);
         // NOTE: Ideally we can ignore meta keyup calls here but
         // it's better to just trigger the lookup call to update the list in case
         // it did modify the query. For example, `Command + delete` on Mac
@@ -796,8 +820,9 @@ export class Typeahead<ItemType extends string | object> {
                 break;
 
             case "Tab":
-                // If the typeahead is not shown or tabIsEnter option is not set, do nothing and return
-                if (!this.tabIsEnter || !this.shown) {
+                // If the typeahead is not shown, tabIsEnter option is not set,
+                // or Shift+Tab is pressed and shiftTabIsEnter is not set, do nothing.
+                if (!this.tabIsEnter || !this.shown || (e.shiftKey && !this.shiftTabIsEnter)) {
                     return;
                 }
 
@@ -834,14 +859,6 @@ export class Typeahead<ItemType extends string | object> {
                 break;
 
             default:
-                // to stop typeahead from showing up momentarily
-                // when shift + tabbing to the topic field
-                if (
-                    e.key === "Shift" &&
-                    the(this.input_element.$element).id === "stream_message_recipient_topic"
-                ) {
-                    return;
-                }
                 if (this.openInputFieldOnKeyUp !== undefined && !this.shown) {
                     // If the typeahead isn't shown yet, the `lookup` call will open it.
                     // Here we make a callback to the input field before we open the
@@ -862,6 +879,7 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     blur(e: JQuery.BlurEvent): void {
+        this.keydown_set.clear();
         // Blurs that move focus to elsewhere within the parent element shouldn't
         // hide the typeahead.
         if (
@@ -972,6 +990,7 @@ type TypeaheadOptions<ItemType> = {
     sorter: (items: ItemType[], query: string) => ItemType[];
     stopAdvance?: boolean;
     tabIsEnter?: boolean;
+    shiftTabIsEnter?: boolean;
     select_on_escape_condition?: () => boolean;
     trigger_selection?: (event: JQuery.KeyDownEvent) => boolean;
     updater?: (
@@ -986,4 +1005,5 @@ type TypeaheadOptions<ItemType> = {
     showOnClick?: boolean;
     hideAfterSelect?: () => boolean;
     getCustomItemClassname?: (item: ItemType) => string;
+    position_offset?: [number, number];
 };

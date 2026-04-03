@@ -1813,6 +1813,7 @@ export function initialize({
         source: get_pm_people,
         items: max_num_items,
         dropup: true,
+        position_offset: [0, 6],
         item_html(item: UserGroupPillData | UserPillData) {
             return typeahead_helper.render_person_or_user_group(item);
         },
@@ -1826,6 +1827,37 @@ export function initialize({
             set_recipient_from_typeahead(item);
         },
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter
+        shiftTabIsEnter: false,
+    });
+
+    // Track whether focus arrived via a click so the focus handler can skip it.
+    let recipient_focused_via_click = false;
+
+    $("#compose-direct-recipient").on("mousedown", "#private_message_recipient", () => {
+        recipient_focused_via_click = true;
+    });
+
+    // Open DM typeahead when recipient input receives focus and is empty. We skip for
+    // focus from click events which we handle separately.
+    $("#compose-direct-recipient").on("focus", "#private_message_recipient", () => {
+        if (
+            !recipient_focused_via_click &&
+            compose_state.private_message_recipient_ids().length === 0
+        ) {
+            private_message_recipient_typeahead.lookup(false, true);
+        }
+        recipient_focused_via_click = false;
+    });
+
+    // element_click() updates or hides the typeahead, which can cause the DM
+    // typeahead to close when the recipient field is empty. To avoid this,
+    // we skip triggering lookup on focus when the focus comes from a click
+    // (since it would be immediately closed by element_click()), and instead
+    // call lookup() here after element_click has finished executing.
+    $("#compose-direct-recipient").on("click", "#private_message_recipient", () => {
+        if (compose_state.private_message_recipient_ids().length === 0) {
+            private_message_recipient_typeahead.lookup(false, true);
+        }
     });
 
     initialize_compose_typeahead($("textarea#compose-textarea"));

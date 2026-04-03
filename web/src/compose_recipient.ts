@@ -205,7 +205,7 @@ export function update_on_recipient_change(): void {
     compose_validate.clear_topic_moved_info();
 }
 
-function switch_message_type(message_type: MessageType): void {
+function switch_message_type(message_type: MessageType, defer_focus = false): void {
     $("#compose-content .alert").hide();
 
     compose_state.set_message_type(message_type);
@@ -219,7 +219,9 @@ function switch_message_type(message_type: MessageType): void {
     };
     update_compose_for_message_type(opts);
     update_compose_area_placeholder_text();
-    compose_ui.set_focus(opts);
+    if (!defer_focus) {
+        compose_ui.set_focus(opts);
+    }
 }
 
 function update_recipient_label(stream_id?: number): void {
@@ -268,7 +270,7 @@ export function update_compose_for_message_type(opts: ComposeTriggeredOptions): 
     update_recipient_row_attention_level();
 }
 
-export let on_compose_select_recipient_update = (): void => {
+export let on_compose_select_recipient_update = (defer_focus = false): void => {
     const prev_message_type = compose_state.get_message_type();
 
     let curr_message_type: MessageType = "stream";
@@ -277,7 +279,7 @@ export let on_compose_select_recipient_update = (): void => {
     }
 
     if (prev_message_type !== curr_message_type) {
-        switch_message_type(curr_message_type);
+        switch_message_type(curr_message_type, defer_focus);
     }
 
     if (curr_message_type === "stream") {

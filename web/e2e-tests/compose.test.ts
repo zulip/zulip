@@ -19,6 +19,13 @@ async function close_compose_box(page: Page): Promise<void> {
         await page.keyboard.press("Escape");
         await page.waitForSelector(".dropdown-list-container", {hidden: true});
     }
+
+    const dm_typeahead_visible = (await page.$("[data-tippy-root] .typeahead")) !== null;
+    if (dm_typeahead_visible) {
+        await page.keyboard.press("Escape");
+        await page.waitForSelector("[data-tippy-root] .typeahead", {hidden: true});
+    }
+
     await page.keyboard.press("Escape");
     await page.waitForSelector("#compose-textarea", {hidden: true});
 }
@@ -54,6 +61,7 @@ async function test_stream_compose_keyboard_shortcut(page: Page): Promise<void> 
 async function test_private_message_compose_shortcut(page: Page): Promise<void> {
     await page.keyboard.press("KeyX");
     await page.waitForSelector("#private_message_recipient", {visible: true});
+    await page.waitForSelector("[data-tippy-root] .typeahead", {visible: true});
     await common.pm_recipient.expect(page, "");
     await close_compose_box(page);
 }

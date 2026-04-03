@@ -550,12 +550,16 @@ exports.FakeJQuery = class extends RejectMissing {
                 state.event_handlers.delete(event_type);
             }
         } else {
-            // In the Zulip codebase we never use this form of
-            // .off in code that we test: $(...).off('click', child_sel);
-            //
-            // So we don't support this for now.
-            /* istanbul ignore next */
-            throw new Error("zjquery does not support this call sequence");
+            assert.equal(args.length, 1, "wrong number of arguments passed in");
+            const [sel] = args;
+            assert.equal(typeof sel, "string", "String selector expected here.");
+            for (const element of this) {
+                const state = fake_element_state.get(element);
+                const child_on = state.delegated_event_handlers.get(sel);
+                if (child_on !== undefined) {
+                    child_on.delete(event_type);
+                }
+            }
         }
         return this;
     }

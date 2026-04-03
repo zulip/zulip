@@ -387,14 +387,16 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
         clear_box();
     }
 
+    compose_state.set_private_message_recipient_ids(opts.private_message_recipient_ids);
+
     if (opts.message_type === "private") {
         compose_state.set_compose_recipient_id(compose_state.DIRECT_MESSAGE_ID);
-        compose_recipient.on_compose_select_recipient_update();
+        compose_recipient.on_compose_select_recipient_update(opts.defer_focus);
     } else if (opts.stream_id && opts.topic) {
         const stream = stream_data.get_sub_by_id(opts.stream_id);
         compose_state.topic(opts.topic);
         compose_state.set_stream_id(opts.stream_id);
-        compose_recipient.on_compose_select_recipient_update();
+        compose_recipient.on_compose_select_recipient_update(opts.defer_focus);
         if (!(stream && stream_data.can_post_messages_in_stream(stream))) {
             hide_compose_box_and_maybe_display_missing_permissions_toast(opts.trigger);
             return;
@@ -403,7 +405,7 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
         const stream = stream_data.get_sub_by_id(opts.stream_id);
         if (stream && stream_data.can_post_messages_in_stream(stream)) {
             compose_state.set_stream_id(opts.stream_id);
-            compose_recipient.on_compose_select_recipient_update();
+            compose_recipient.on_compose_select_recipient_update(opts.defer_focus);
         } else {
             opts.stream_id = undefined;
             compose_state.set_stream_id("");
@@ -425,8 +427,6 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
         compose_recipient.toggle_compose_recipient_dropdown();
     }
     compose_recipient.update_topic_displayed_text(opts.topic);
-
-    compose_state.set_private_message_recipient_ids(opts.private_message_recipient_ids);
 
     // If we're not explicitly opening a different draft, restore the last
     // saved draft (if it exists).
