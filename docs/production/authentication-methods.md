@@ -6,8 +6,8 @@ Zulip supports a wide variety of authentication methods:
 - [Social authentication](#social-authentication) with Google, GitHub,
   and GitLab, which is easy to set up with a few lines of configuration.
   Authentication with Apple additionally requires registering with Apple.
-- [Microsoft Entra ID](#microsoft-entra-id) (AzureAD), which is similarly easy to
-  configure.
+- [Microsoft Entra ID](#microsoft-entra-id) (AzureAD) via OpenID Connect,
+  supporting authentication restricted to a specific Entra ID tenant.
 - [LDAP (including Active Directory)](#ldap-including-active-directory). Zulip
   supports retrieving information about users via LDAP, and optionally using LDAP
   as an authentication mechanism.
@@ -152,12 +152,6 @@ self-hosted servers. To do so, you'll need to do the following:
 [apple-create-private-key]: https://help.apple.com/developer-account/?lang=en#/dev77c875b7e
 [apple-get-started]: https://developer.apple.com/sign-in-with-apple/get-started/
 [outgoing-email]: email.md
-
-## Microsoft Entra ID
-
-Set up authentication with Microsoft Entra ID (AzureAD) by modifying the
-`AzureADAuthBackend` configuration in `settings.py`, as well as a secret in
-`zulip-secrets.conf`. Details are documented in your `settings.py`.
 
 ## LDAP (including Active Directory)
 
@@ -1232,6 +1226,12 @@ If your OIDC server's HTTPS server is signed by a custom certificate
 authority, you will need to [configure Zulip to trust
 it](system-configuration.md#custom_ca_path).
 
+### Microsoft Entra ID (OIDC)
+
+Microsoft Entra ID (AzureAD) can be configured as an OIDC provider.
+See the [Microsoft Entra ID](#microsoft-entra-id) section for complete
+setup instructions.
+
 ## JSON Web Tokens (JWT)
 
 Zulip supports using JSON Web Tokens (JWT) authentication in two ways:
@@ -1254,6 +1254,88 @@ In order to use JWT authentication with Zulip, one must first
 configure the JWT secret and algorithm via `JWT_AUTH_KEYS` in
 `/etc/zulip/settings.py`; see the inline comment documentation in that
 file for details.
+
+## Microsoft Entra ID
+
+The recommended approach for Microsoft Entra ID (formerly AzureAD) SSO
+on self-hosted Zulip servers is to use Zulip's [OpenID
+Connect](#openid-connect) integration. This allows you to restrict
+authentication to a specific Entra ID tenant.
+
+To set this up:
+
+1. Sign in to the [Microsoft Entra admin center][entra-admin-center].
+   Browse to **Entra ID > App registrations** and select **New
+   registration**.
+
+1. Under **Supported account types**, select **Single tenant only** to restrict
+   authentication to your tenant.
+
+1. In the **Redirect URI** section, select **Web** as the platform and
+   enter `https://zulip.example.com/complete/oidc/` as the redirect
+   URI, based on your values of `EXTERNAL_HOST` and
+   `SOCIAL_AUTH_SUBDOMAIN`.
+
+1. Select **Register**. From the app's **Overview** page, note the
+   **Application (client) ID** and **Directory (tenant) ID**.
+
+1. Select **Certificates & secrets > Client secrets > New client
+   secret**. Add a description and select an expiration, then select
+   **Add**. Record the generated **Value** (it is only shown once).
+
+1. In `/etc/zulip/settings.py`, enable the `zproject.backends.GenericOpenIdConnectBackend`
+   backend in `AUTHENTICATION_BACKENDS`.
+
+1. Configure `SOCIAL_AUTH_OIDC_ENABLED_IDPS`, replacing `YOUR_TENANT_ID` with
+   the **Directory (tenant) ID** and `YOUR_APPLICATION_ID` with the
+   **Application (client) ID** from step 4:
+
+   ```python
+   SOCIAL_AUTH_OIDC_ENABLED_IDPS = {
+       "entra": {
+           "oidc_url": "https://login.microsoftonline.com/YOUR_TENANT_ID/v2.0",
+           "display_name": "Microsoft",
+           "display_icon": "/static/images/authentication_backends/azuread-icon.png",
+           "client_id": "YOUR_APPLICATION_ID",
+           "secret": get_secret("social_auth_oidc_secret"),
+           ## Set to True to automatically create accounts on first login.
+           ## When False, users are prompted to confirm account creation.
+           "auto_signup": True,
+       }
+   }
+   ```
+
+1. Add the client secret from step 5 to
+   `/etc/zulip/zulip-secrets.conf`:
+
+   ```ini
+   social_auth_oidc_secret = your_client_secret_value
+   ```
+
+1. (Optional) If you want Zulip to trust the full name provided by
+   Entra ID rather than prompting new users to confirm it, set the
+   following in `/etc/zulip/settings.py`:
+
+   ```python
+   SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED = True
+   ```
+
+1. Restart the Zulip server:
+
+   ```bash
+   /home/zulip/deployments/current/scripts/restart-server
+   ```
+
+[entra-admin-center]: https://entra.microsoft.com
+
+:::{note}
+Zulip also includes an `AzureADAuthBackend` that uses OAuth2 with
+the Microsoft `common` tenant endpoint. This allows authentication
+with any Microsoft account but does not restrict logins to a
+specific Entra ID tenant. If that meets your needs, you can
+configure it via the settings documented in `/etc/zulip/settings.py`.
+For tenant-specific authentication, use the OIDC approach above.
+:::
 
 ## Custom authentication backends
 
