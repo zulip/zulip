@@ -362,6 +362,52 @@ def date_fields_for_table(table: TableName) -> list[Field]:
     return _date_fields_by_table().get(table, [])
 
 
+# This data structure lists all the Django DateTimeField fields in the
+# data model.  These are converted to floats during the export process
+# via floatify_datetime_fields, and back during the import process.
+#
+# TODO: This data structure could likely eventually be replaced by
+# inspecting the corresponding Django models
+DATE_FIELDS: dict[TableName, list[Field]] = {
+    "analytics_installationcount": ["end_time"],
+    "analytics_realmcount": ["end_time"],
+    "analytics_streamcount": ["end_time"],
+    "analytics_usercount": ["end_time"],
+    "zerver_attachment": ["create_time"],
+    "zerver_channelfolder": ["date_created"],
+    "zerver_externalauthid": ["date_created"],
+    "zerver_message": ["last_edit_time", "date_sent"],
+    "zerver_submessage": ["timestamp"],
+    "zerver_muteduser": ["date_muted"],
+    "zerver_realmauditlog": ["event_time"],
+    "zerver_realm": [
+        "date_created",
+        "demo_organization_scheduled_deletion_date",
+        "push_notifications_enabled_end_timestamp",
+        "scheduled_deletion_date",
+    ],
+    "zerver_realmexport": [
+        "date_requested",
+        "date_started",
+        "date_succeeded",
+        "date_failed",
+        "date_deleted",
+    ],
+    "zerver_savedsnippet": ["date_created"],
+    "zerver_scheduledmessage": ["scheduled_timestamp", "request_timestamp"],
+    "zerver_stream": ["date_created"],
+    "zerver_namedusergroup": ["date_created"],
+    "zerver_useractivityinterval": ["start", "end"],
+    "zerver_useractivity": ["last_visit"],
+    "zerver_onboardingstep": ["timestamp"],
+    "zerver_userpresence": ["last_active_time", "last_connected_time"],
+    "zerver_userprofile": ["date_joined", "last_login", "last_reminder"],
+    "zerver_userprofile_mirrordummy": ["date_joined", "last_login", "last_reminder"],
+    "zerver_userstatus": ["timestamp"],
+    "zerver_usertopic": ["last_updated"],
+}
+
+
 def sanity_check_output(data: TableData) -> None:
     # First, we verify that the export tool has a declared
     # configuration for every table declared in the `models` modules.
@@ -1518,7 +1564,9 @@ def fetch_client_data(response: TableData, client_ids: set[int]) -> None:
 
 def fetch_submessage_data(response: TableData, message_ids: set[int]) -> None:
     query = SubMessage.objects.filter(message_id__in=list(message_ids)).order_by("id")
-    response["zerver_submessage"] = make_raw(query.iterator())
+    rows = make_raw(query.iterator())
+    floatified_rows = [floatify_datetime_fields(row, "zerver_submessage") for row in rows]
+    response["zerver_submessage"] = list(floatified_rows)
 
 
 def custom_fetch_direct_message_groups(response: TableData, context: Context) -> None:

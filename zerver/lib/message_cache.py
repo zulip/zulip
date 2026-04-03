@@ -46,6 +46,14 @@ def sew_messages_and_reactions(
     return list(converted_messages.values())
 
 
+def finalize_submessage_timestamp(submessages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    for submessage in submessages:
+        timestamp = submessage.get("timestamp")
+        if timestamp is not None:
+            submessage["timestamp"] = datetime_to_timestamp(timestamp)
+    return submessages
+
+
 def sew_messages_and_submessages(
     messages: list[dict[str, Any]], submessages: list[dict[str, Any]]
 ) -> None:
@@ -474,7 +482,7 @@ class MessageDict:
         obj["reactions"] = [
             ReactionDict.build_dict_from_raw_db_row(reaction) for reaction in reactions
         ]
-        obj["submessages"] = submessages
+        obj["submessages"] = finalize_submessage_timestamp(submessages)
         return obj
 
     @staticmethod
