@@ -18001,7 +18001,7 @@ paths:
 
                           **Changes**: New in Zulip 11.0 (feature level 399).
                         items:
-                          $ref: "#/components/schemas/ScheduledMessage"
+                          $ref: "#/components/schemas/Reminder"
 
                       muted_topics:
                         type: array
