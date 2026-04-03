@@ -1,5 +1,4 @@
 import $ from "jquery";
-import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import * as blueslip from "./blueslip.ts";
@@ -338,16 +337,11 @@ export function enable_element_and_remove_tooltip($element: JQuery): void {
 }
 
 export function get_left_sidebar_search_term(): string {
-    const $search_box = $<HTMLInputElement>("input.left-sidebar-search-input").expectOne();
-    const search_term = $search_box.val();
-    assert(search_term !== undefined);
-    return search_term.trim();
+    return $("#left-sidebar-filter-query").expectOne().text().trim();
 }
 
 export function disable_left_sidebar_search(): void {
-    if ($<HTMLInputElement>("#left-sidebar-search input").val()) {
-        // Triggle click on the close button to clear the search term and
-        // update the left sidebar.
+    if (get_left_sidebar_search_term() !== "" || $("#left-sidebar-filter-input .pill").length > 0) {
         $("#left-sidebar-search .input-close-filter-button").trigger("click");
     }
     $("#left-sidebar-search").toggleClass("no-display", true);
