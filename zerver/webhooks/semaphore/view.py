@@ -11,6 +11,13 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.webhooks.git import get_short_sha
 from zerver.models import UserProfile
 
+SEMAPHORE_STATUS_EMOJI_MAP: dict[str, str] = {
+    "passed": ":check:",
+    "failed": ":cross_mark:",
+    "stopped": ":no_entry:",
+    "canceled": ":no_entry:",
+}
+
 # Semaphore Classic templates
 
 BUILD_TEMPLATE = """
@@ -157,6 +164,9 @@ def semaphore_classic(payload: WildValue) -> tuple[str, str, str, str]:
     else:  # should never get here
         content = f"{event}: {result}"
 
+    emoji = SEMAPHORE_STATUS_EMOJI_MAP.get(result, "")
+    if emoji:
+        content = f"{emoji} {content}"
     return content, project_name, branch_name, event
 
 
@@ -219,6 +229,11 @@ def semaphore_2(payload: WildValue) -> tuple[str, str, str | None, str]:
         branch_name = ""
         context.update(event_name=event)
         content = DEFAULT_TEMPLATE.format(**context)
+
+    pipeline_result = context["pipeline_result"]
+    emoji = SEMAPHORE_STATUS_EMOJI_MAP.get(pipeline_result, "")
+    if emoji:
+        content = f"{emoji} {content}"
     return content, project_name, branch_name, event
 
 
