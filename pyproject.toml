@@ -174,7 +174,7 @@ prod = [
   "django-scim2",
 
   # Circuit-breaking for outgoing services
-  "circuitbreaker",
+  "pybreaker",
 
   # Runtime monkeypatching of django-stubs generics
   "django-stubs-ext",
@@ -420,7 +420,6 @@ module = [
     "backports.datetime_fromisoformat.*",
     "bitfield.*",
     "bmemcached.*",
-    "circuitbreaker.*",
     "digitalocean.*",
     "django_auth_ldap.*",
     "django_bmemcached.*",

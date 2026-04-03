@@ -7,14 +7,13 @@ from unittest import mock, skipUnless
 
 import orjson
 import time_machine
-from circuitbreaker import CircuitBreakerMonitor
 from django.conf import settings
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from zerver.lib.cache import cache_delete
-from zerver.lib.rate_limiter import RateLimitedIPAddr, RateLimitedUser, get_tor_ips
+from zerver.lib.rate_limiter import RateLimitedIPAddr, RateLimitedUser, get_tor_ips_breaker
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import ratelimit_rule
 from zerver.models import PushDeviceToken, UserProfile
@@ -248,20 +247,8 @@ class RateLimitTests(ZulipTestCase):
         side_effect: Exception | None = None,
         read_data: Sequence[str] = ["1.2.3.4", "5.6.7.8"],
     ) -> Iterator[mock.Mock]:
-        # We need to reset the circuitbreaker before starting.  We
-        # patch the .opened property to be false, then call the
-        # function, so it resets to closed.
-        with (
-            mock.patch("builtins.open", mock.mock_open(read_data=orjson.dumps(["1.2.3.4"]))),
-            mock.patch(
-                "circuitbreaker.CircuitBreaker.opened", new_callable=mock.PropertyMock
-            ) as mock_opened,
-        ):
-            mock_opened.return_value = False
-            get_tor_ips()
-
-        # Having closed it, it's now cached.  Clear the cache.
-        assert CircuitBreakerMonitor.get("get_tor_ips").closed
+        # Reset the circuitbreaker and clear the cache before starting.
+        get_tor_ips_breaker.close()
         cache_delete("tor_ip_addresses:")
 
         builtin_open = open
@@ -349,19 +336,16 @@ class RateLimitTests(ZulipTestCase):
             ]
         )
 
-        self.assert_length(log_mock.output, 8)
         self.assertEqual(
-            log_mock.output[0:2],
+            log_mock.output,
             [
-                "WARNING:zerver.lib.rate_limiter:Failed to fetch TOR exit node list: {}".format(
-                    "File not found"
-                )
+                "WARNING:zerver.lib.rate_limiter:Failed to fetch TOR exit node list: File not found",
+                "WARNING:zerver.lib.rate_limiter:Failed to fetch TOR exit node list: Failures threshold reached, circuit breaker opened",
             ]
-            * 2,
-        )
-        self.assertIn(
-            'Failed to fetch TOR exit node list: Circuit "get_tor_ips" OPEN',
-            log_mock.output[3],
+            + 6
+            * [
+                "WARNING:zerver.lib.rate_limiter:Failed to fetch TOR exit node list: Timeout not elapsed yet, circuit breaker still open"
+            ],
         )
 
     @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
