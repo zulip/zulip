@@ -21,6 +21,7 @@ import responses
 import stripe
 import time_machine
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.core import signing
 from django.urls.resolvers import get_resolver
 from django.utils.crypto import get_random_string
@@ -5409,6 +5410,56 @@ class StripeWebhookEndpointTest(ZulipTestCase):
         self.assert_length(Event.objects.filter(stripe_event_id=stripe_event_id), 1)
         self.assertEqual(result.status_code, 200)
         m.assert_not_called()
+
+    def test_stripe_event_handler_billing_error_logging(self) -> None:
+        customer = Customer.objects.create(realm=get_realm("zulip"))
+        stripe_invoice_id = "stripe_invoice_id"
+        invoice = Invoice.objects.create(
+            stripe_invoice_id=stripe_invoice_id,
+            customer=customer,
+            status=Invoice.SENT,
+        )
+        content_type = ContentType.objects.get_for_model(Invoice)
+        event = Event.objects.create(
+            stripe_event_id="stripe_event_id",
+            type="invoice.paid",
+            content_type=content_type,
+            object_id=invoice.id,
+        )
+
+        stripe_invoice = stripe.Invoice.construct_from(
+            {
+                "id": stripe_invoice_id,
+                "object": "invoice",
+                "customer": "cus_test123",
+                "metadata": {"plan_tier": "1", "billing_schedule": "1"},
+            },
+            stripe.api_key,
+        )
+
+        from corporate.lib.stripe_event_handler import stripe_event_handler_decorator
+
+        @stripe_event_handler_decorator
+        def raise_billing_error(stripe_object: stripe.Invoice, invoice: Invoice) -> None:
+            raise BillingError("test error", "test error description")
+
+        with self.assertLogs("corporate.stripe", "WARNING") as warning_log:
+            raise_billing_error(stripe_invoice, event)
+
+        self.assert_length(warning_log.output, 1)
+        self.assertIn(
+            "BillingError in invoice.paid event handler: test error."
+            f" stripe_object_id={stripe_invoice_id},"
+            " customer_id=cus_test123 metadata=",
+            warning_log.output[0],
+        )
+
+        event.refresh_from_db()
+        self.assertEqual(event.status, Event.EVENT_HANDLER_FAILED)
+        self.assertEqual(
+            event.handler_error,
+            {"message": "test error description", "description": "test error"},
+        )
 
 
 class EventStatusTest(StripeTestCase):
