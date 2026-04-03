@@ -1,4 +1,5 @@
 import logging
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 from urllib.parse import urljoin
@@ -12,6 +13,26 @@ from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
+
+
+@dataclass(slots=True)
+class SentryActorData:
+    name: str
+
+
+@dataclass(slots=True)
+class SentryAssigneeData:
+    type: str
+    name: str
+
+
+@dataclass(slots=True)
+class SentryIssueData:
+    title: str
+    level: str
+    last_seen: str
+    assigned_to: SentryAssigneeData | None
+
 
 LOG_ENTRY_MESSAGE_TEMPLATE = """
 {severity_emoji} **New message event:** [{title}]({web_link})
@@ -194,17 +215,17 @@ def handle_exception_or_log_entry_payloads(event: dict[str, Any]) -> tuple[str, 
 
 
 def handle_issue_payload(
-    action: str, issue: dict[str, Any], actor: dict[str, Any]
+    action: str, issue: SentryIssueData, actor: SentryActorData
 ) -> tuple[str, str]:
-    topic_name = issue["title"]
-    global_time = get_global_time(issue["lastSeen"])
-    severity_emoji = severity_emoji_map.get(issue["level"], "")
+    topic_name = issue.title
+    global_time = get_global_time(issue.last_seen)
+    severity_emoji = severity_emoji_map.get(issue.level, "")
 
-    if issue["assignedTo"]:
-        if issue["assignedTo"]["type"] == "team":
-            assignee = "team {}".format(issue["assignedTo"]["name"])
+    if issue.assigned_to:
+        if issue.assigned_to.type == "team":
+            assignee = f"team {issue.assigned_to.name}"
         else:
-            assignee = issue["assignedTo"]["name"]
+            assignee = issue.assigned_to.name
     else:
         assignee = "No one"
 
@@ -212,7 +233,7 @@ def handle_issue_payload(
         context = {
             "title": topic_name,
             "severity_emoji": severity_emoji,
-            "level": issue["level"],
+            "level": issue.level,
             "global_time": global_time,
             "assignee": assignee,
         }
@@ -221,7 +242,7 @@ def handle_issue_payload(
     elif action == "resolved":
         context = {
             "title": topic_name,
-            "actor": actor["name"],
+            "actor": actor.name,
         }
         body = ISSUE_RESOLVED_MESSAGE_TEMPLATE.format(**context)
 
@@ -229,14 +250,14 @@ def handle_issue_payload(
         context = {
             "title": topic_name,
             "assignee": assignee,
-            "actor": actor["name"],
+            "actor": actor.name,
         }
         body = ISSUE_ASSIGNED_MESSAGE_TEMPLATE.format(**context)
 
     elif action == "ignored":
         context = {
             "title": topic_name,
-            "actor": actor["name"],
+            "actor": actor.name,
         }
         body = ISSUE_IGNORED_MESSAGE_TEMPLATE.format(**context)
 
@@ -284,7 +305,23 @@ def api_sentry_webhook(
     match data:
         case {"issue": issue_data}:
             event_type = "issue"
-            topic_name, body = handle_issue_payload(payload["action"], issue_data, payload["actor"])
+
+            raw_assignee = issue_data.get("assignedTo")
+            assignee_data = (
+                SentryAssigneeData(type=raw_assignee["type"], name=raw_assignee["name"])
+                if raw_assignee
+                else None
+            )
+
+            issue = SentryIssueData(
+                title=issue_data["title"],
+                level=issue_data["level"],
+                last_seen=issue_data["lastSeen"],
+                assigned_to=assignee_data,
+            )
+            actor = SentryActorData(name=payload["actor"]["name"])
+
+            topic_name, body = handle_issue_payload(payload["action"], issue, actor)
         case {"event": event_data}:
             event_type = "event_alert"
             topic_name, body = handle_exception_or_log_entry_payloads(event_data)
