@@ -104,10 +104,6 @@ class Command(ZulipBaseCommand):
                 if settings.CUSTOM_DEVELOPMENT_SETTINGS:
                     print("Using custom settings from zproject/custom_dev_settings.py.")
 
-                # We pass display_num_errors=False, since Django will
-                # likely display similar output anyway.
-                if not options["skip_checks"]:
-                    self.check(display_num_errors=False)
                 print(f"Tornado server (re)started on port {port}")
 
                 if settings.USING_RABBITMQ:

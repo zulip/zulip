@@ -1243,7 +1243,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         # First we test error handling in case of issues with the bouncer:
         with (
             mock.patch(
-                "zerver.worker.deferred_work.clear_push_device_tokens",
+                "zerver.lib.push_notifications.clear_push_device_tokens",
                 side_effect=PushNotificationBouncerRetryLaterError("test"),
             ),
             mock.patch("zerver.worker.deferred_work.retry_event") as mock_retry,
@@ -2384,7 +2384,7 @@ class GCMParseOptionsTest(ZulipTestCase):
 
 
 @mock.patch("zerver.lib.push_notifications.fcm_app")
-@mock.patch("zerver.lib.push_notifications.firebase_messaging")
+@mock.patch("firebase_admin.messaging")
 class FCMSendTest(PushNotificationTestCase):
     @override
     def setUp(self) -> None:
