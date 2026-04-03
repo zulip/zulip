@@ -1588,6 +1588,10 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
     @override
     def run(self, lines: list[str]) -> list[str]:
         """Insert a newline between a paragraph and ulist if missing"""
+
+        # Fix for nested bullet lists using tabs
+        lines = [line.replace("\t", "    ") for line in lines]
+
         inserts = 0
         in_code_fence: bool = False
         open_fences: list[Fence] = []
