@@ -192,6 +192,12 @@ def run() -> None:
         description="Reformats Python code",
         check_arg=["--check"],
     )
+    linter_config.external_linter(
+        "codespell",
+        ["codespell", "--ignore-words=.codespellignore"],
+        [ext for ext in by_lang.keys() if ext != "svg"],
+        description="Checks for common misspellings in text files (config: .codespellignore)",
+    )
 
     semgrep_command = [
         "semgrep",
