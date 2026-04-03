@@ -1906,7 +1906,18 @@ class BillingSession(ABC):
                 "billing_schedule": billing_schedule,
                 "tier": plan_tier,
             }
-
+# Ensure the realm plan type is updated at the end of a successful upgrade.
+        # This triggers the WebSocket event that hides the "Upgrade" button in the UI.
+        if isinstance(self, RealmBillingSession) and self.realm is not None:
+            from zerver.lib.actions import do_change_realm_plan_type
+            from zerver.models import Realm
+            
+            new_plan_type = Realm.PLAN_TYPE_STANDARD
+            if plan_tier == CustomerPlan.TIER_CLOUD_PLUS:
+                new_plan_type = Realm.PLAN_TYPE_PLUS
+            
+            if self.realm.plan_type != new_plan_type:
+                do_change_realm_plan_type(self.realm, new_plan_type, acting_user=None)
             if free_trial:
                 plan_params["status"] = CustomerPlan.FREE_TRIAL
                 if charge_automatically:
