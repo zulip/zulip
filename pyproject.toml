@@ -215,6 +215,9 @@ prod = [
 
   # Backport datetime.fromisoformat fixes to Python < 3.11
   "backports-datetime-fromisoformat; python_version < '3.11'",
+
+  # Needed to make Zulip server act as OAuth2 Provider
+  "django-oauth-toolkit"
 ]
 docs = [
   # Needed to build RTD docs
@@ -443,6 +446,7 @@ module = [
     "talon_core.*",
     "tlds.*",
     "two_factor.*",
+    "oauth2_provider.*"
 ]
 ignore_missing_imports = true
 

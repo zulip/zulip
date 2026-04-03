@@ -12,7 +12,12 @@ from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_pascal
 
 from confirmation.models import Confirmation, ConfirmationKeyError, get_object_from_key
-from zerver.decorator import get_basic_credentials, validate_api_key
+from zerver.decorator import (
+    check_and_get_authentication_scheme,
+    get_basic_credentials,
+    validate_api_key,
+    validate_oauth_key,
+)
 from zerver.lib.exceptions import AccessDeniedError, JsonableError
 from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type, guess_type
 from zerver.lib.rate_limiter import is_local_addr
@@ -241,17 +246,20 @@ def handle_upload_pre_terminate_hook(
 def authenticate_user(request: HttpRequest) -> UserProfile | AnonymousUser:
     # This acts like the authenticated_rest_api_view wrapper, while
     # allowing fallback to session-based request.user
-    if "Authorization" in request.headers:
-        try:
-            role, api_key = get_basic_credentials(request)
-            return validate_api_key(
-                request,
-                role,
-                api_key,
-            )
+    try:
+        auth_scheme = check_and_get_authentication_scheme(request)
+        if auth_scheme == "bearer":
+            return validate_oauth_key(request)
 
-        except JsonableError:
-            pass
+        role, api_key = get_basic_credentials(request)
+        return validate_api_key(
+            request,
+            role,
+            api_key,
+        )
+
+    except JsonableError:
+        pass
 
     # If that failed, fall back to session auth
     return request.user

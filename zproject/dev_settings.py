@@ -249,3 +249,6 @@ RATE_LIMITING_RULES = {
         (86400, 1000),
     ],
 }
+
+# Experimental OAuth setting to make Zulip an OAuth provider.
+ENABLE_ZULIP_OAUTH = True

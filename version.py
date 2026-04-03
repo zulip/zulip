@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 481
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (373, 2)  # bumped 2026-03-27 to upgrade json-schema-ref-parser
+PROVISION_VERSION = (373, 3)  # bumped 2026-03-22 to add django-oauth-toolkit

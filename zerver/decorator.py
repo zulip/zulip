@@ -1,5 +1,6 @@
 import base64
 import logging
+import re
 from collections.abc import Callable, Sequence
 from datetime import datetime
 from functools import wraps
@@ -23,6 +24,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django_otp import user_has_device
+from oauth2_provider.oauth2_backends import get_oauthlib_core
 from two_factor.utils import default_device
 from typing_extensions import ParamSpec
 
@@ -57,7 +59,7 @@ from zerver.lib.webhooks.common import (
 )
 from zerver.models import UserProfile
 from zerver.models.clients import get_client
-from zerver.models.users import get_user_profile_by_api_key
+from zerver.models.users import get_user_profile_by_api_key, get_user_profile_by_id
 
 if TYPE_CHECKING:
     from django.http.request import _ImmutableQueryDict
@@ -757,8 +759,52 @@ def get_basic_credentials(
     return role, api_key
 
 
+def validate_oauth_key(request: HttpRequest) -> UserProfile:
+    (ok, req) = get_oauthlib_core().verify_request(request, [])
+    if not ok:
+        raise JsonableError(_("OAuth token verification failed"))
+
+    user_profile = get_user_profile_by_id(user_profile_id=req.user.id)
+    request.user = user_profile
+
+    validate_account_and_subdomain(request, user_profile)
+
+    # Using oauth for webhooks might make sense some day, but we punt for now.
+    if user_profile.is_incoming_webhook:
+        raise JsonableError(_("This API is not available to incoming webhook bots"))
+
+    client_name = "beta oauth"
+    process_client(request, user_profile, client_name=client_name)
+    return user_profile
+
+
+def check_and_get_authentication_scheme(request: HttpRequest) -> str:
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header == "":
+        raise UnauthorizedError(_("Missing authorization header"))
+
+    if settings.ENABLE_ZULIP_OAUTH:
+        supported_schemes_match = re.match(
+            r"(bearer|basic) +(\S+)", auth_header.strip(), re.IGNORECASE
+        )
+    else:
+        supported_schemes_match = re.match(r"(basic) +(\S+)", auth_header.strip(), re.IGNORECASE)
+
+    if supported_schemes_match is None:
+        if settings.ENABLE_ZULIP_OAUTH:
+            raise JsonableError(
+                _(
+                    "This endpoint requires HTTP basic authentication or bearer token authentication."
+                )
+            )
+        else:
+            raise JsonableError(_("This endpoint requires HTTP basic authentication."))
+
+    return supported_schemes_match.group(1).lower()
+
+
 # A more REST-y authentication decorator, using, in particular, HTTP basic
-# authentication.
+# and bearer authentication.
 #
 # If webhook_client_name is specific, the request is a webhook view
 # with that string as the basis for the client string.
@@ -783,26 +829,33 @@ def authenticated_rest_api_view(
         def _wrapped_func_arguments(
             request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
         ) -> HttpResponse:
-            role, api_key = get_basic_credentials(
-                request, beanstalk_email_decode=beanstalk_email_decode
-            )
-
-            # Now we try to do authentication or die
-            try:
-                user_profile = validate_api_key(
-                    request,
-                    role,
-                    api_key,
-                    allow_webhook_access=allow_webhook_access,
-                    client_name=full_webhook_client_name(webhook_client_name),
+            auth_scheme = check_and_get_authentication_scheme(request)
+            if auth_scheme == "bearer":
+                try:
+                    user_profile = validate_oauth_key(request)
+                except JsonableError as e:
+                    raise UnauthorizedError(e.msg)
+            else:
+                role, api_key = get_basic_credentials(
+                    request, beanstalk_email_decode=beanstalk_email_decode
                 )
 
-                if webhook_client_name is not None:
-                    request_notes = RequestNotes.get_notes(request)
-                    request_notes.is_webhook_view = True
+                # Now we try to do authentication or die
+                try:
+                    user_profile = validate_api_key(
+                        request,
+                        role,
+                        api_key,
+                        allow_webhook_access=allow_webhook_access,
+                        client_name=full_webhook_client_name(webhook_client_name),
+                    )
 
-            except JsonableError as e:
-                raise UnauthorizedError(e.msg)
+                    if webhook_client_name is not None:
+                        request_notes = RequestNotes.get_notes(request)
+                        request_notes.is_webhook_view = True
+
+                except JsonableError as e:
+                    raise UnauthorizedError(e.msg)
             try:
                 if not skip_rate_limiting:
                     rate_limit_user(request, user_profile, domain="api_by_user")
