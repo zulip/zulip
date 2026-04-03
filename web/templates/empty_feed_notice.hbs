@@ -1,5 +1,5 @@
 <div class="empty_feed_notice">
-    <h4 class="empty-feed-notice-title"> {{ title }} </h4>
+    <h4 class="empty-feed-notice-title"> {{#if title_html}}{{{ title_html }}}{{else}}{{ title }}{{/if}} </h4>
     {{#if search_data}}
         {{#if search_data.has_stop_word}}
         <div class="empty-feed-notice-description">
@@ -17,5 +17,14 @@
         <div class="empty-feed-notice-description">
             {{{ notice_html }}}
         </div>
+    {{/if}}
+    {{#if show_action}}
+    <div class="empty-feed-notice-action">
+        <button
+          class="search-shared-history hidden-for-spectators action-button action-button-subtle-neutral"
+          type="button">
+            {{t 'Search all public channels'}}
+        </button>
+    </div>
     {{/if}}
 </div>

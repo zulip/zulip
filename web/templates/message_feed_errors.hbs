@@ -9,29 +9,40 @@
         {{/tr}}
     </p>
 </div>
-<div class="all-messages-search-caution hidden-for-spectators" hidden>
-    <p>
-        <i class="all-messages-search-caution-icon fa fa-exclamation-circle" aria-hidden="true"></i>
-        {{#tr}}
-        End of results from your
-        <z-link>history</z-link>.
-        {{#*inline "z-link"}}<a href="/help/search-for-messages#search-shared-history"
-          target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
-        {{/tr}}
-        &nbsp;
-        <span>
-            {{#if is_guest}}
-                {{#tr}}
-                    Consider <z-link>searching all public channels that you can view</z-link>.
-                    {{#*inline "z-link"}}<a class="search-shared-history" href="">{{> @partial-block}}</a>{{/inline}}
-                {{/tr}}
-            {{else}}
-                {{#tr}}
-                    Consider <z-link>searching all public channels</z-link>.
-                    {{#*inline "z-link"}}<a class="search-shared-history" href="">{{> @partial-block}}</a>{{/inline}}
-                {{/tr}}
-            {{/if}}
-        </span>
-    </p>
+<div class="all-messages-search-caution hidden-for-spectators">
+    <div class="all-messages-search-caution-info">
+        <p>
+            {{#tr}}
+            End of results from
+            <z-link>your message history</z-link>. Include messages in public channels
+            sent when you weren't subscribed?
+            {{#*inline "z-link"}}<a href="/help/search-for-messages#search-shared-history"
+            target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+            {{/tr}}
+        </p>
+        <button
+          class="search-shared-history action-button action-button-subtle-neutral"
+          type="button">
+            {{t 'Expand search'}}
+        </button>
+    </div>
+</div>
+<div class="combined-feed-notice hidden-for-spectators">
+    <div class="combined-feed-notice-info">
+        <p>
+            {{#tr}}
+            End of messages in your
+            <z-link>combined feed</z-link>.
+            {{#*inline "z-link"}}<a href="/help/combined-feed"
+            target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+            {{/tr}}
+        </p>
+        <button
+          class="search-shared-history action-button action-button-subtle-neutral"
+          type="button"
+          data-url="#narrow/channels/public">
+            {{t 'View all messages in public channels'}}
+        </button>
+    </div>
 </div>
 <div class="empty_feed_notice_main"></div>

@@ -11,7 +11,6 @@ import * as blueslip from "./blueslip.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
 import {$t} from "./i18n.ts";
-import {pick_empty_narrow_banner} from "./narrow_banner.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -165,9 +164,11 @@ export function initialize(): void {
             const button_type = $elem.attr("data-reply-button-type");
             switch (button_type) {
                 case "direct_disabled": {
-                    const narrow_filter = narrow_state.filter();
-                    assert(narrow_filter !== undefined);
-                    instance.setContent(pick_empty_narrow_banner(narrow_filter).title);
+                    const user_ids_string = $elem.attr("data-user-ids-string");
+                    assert(user_ids_string !== undefined);
+                    instance.setContent(
+                        compose_validate.check_dm_permissions_and_get_error_string(user_ids_string),
+                    );
                     return;
                 }
                 case "stream_disabled": {

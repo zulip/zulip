@@ -524,6 +524,15 @@ export function initialize(): void {
         open_scroll_to_time_popover(this, message_id);
     });
 
+    $("body").on("click", ".search-shared-history", function (this: HTMLElement, e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const url = $(this).attr("data-url");
+        if (url) {
+            browser_history.go_to_location(url);
+        }
+    });
+
     // RESOLVED TOPICS
     $("body").on("click", ".message_header .on_hover_topic_resolve", (e) => {
         e.stopPropagation();

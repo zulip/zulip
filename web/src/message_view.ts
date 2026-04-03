@@ -1617,7 +1617,6 @@ function handle_post_view_change(
     } else {
         compose_closed_ui.update_buttons();
     }
-    compose_closed_ui.update_recipient_text_for_reply_button();
 
     message_view_header.render_title_area();
 
