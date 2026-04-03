@@ -388,6 +388,14 @@ function create_stream(): void {
         ...group_setting_values,
     };
 
+    // Only present for admins, so guard against it being absent.
+    const $default_push_notifications = $<HTMLInputElement>("#id_new_default_push_notifications");
+    if ($default_push_notifications.length > 0) {
+        data["default_push_notifications"] = JSON.stringify(
+            $default_push_notifications.prop("checked"),
+        );
+    }
+
     assert(folder_widget !== undefined);
     const folder_id = folder_widget.value();
     if (folder_id !== settings_config.no_folder_selected) {
