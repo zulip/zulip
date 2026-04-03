@@ -12,9 +12,9 @@ from zerver.actions.message_flags import (
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.narrow import (
     NarrowParameter,
+    clean_narrow_for_message_fetch,
     fetch_messages,
     parse_anchor_value,
-    update_narrow_terms_containing_empty_topic_fallback_name,
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
@@ -99,7 +99,7 @@ def update_message_flags_for_narrow(
     )
     num_after = min(num_after, MAX_MESSAGES_PER_UPDATE - num_before)
 
-    narrow = update_narrow_terms_containing_empty_topic_fallback_name(narrow)
+    narrow = clean_narrow_for_message_fetch(narrow, user_profile.realm, user_profile)
 
     query_info = fetch_messages(
         narrow=narrow,
