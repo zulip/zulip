@@ -42,6 +42,47 @@ from zerver.models import UserProfile
 
 fixture_to_headers = default_fixture_to_headers("HTTP_X_GITHUB_EVENT")
 
+CHECK_RUN_CONCLUSION_EMOJI: dict[str, str] = {
+    "success": ":check:",
+    "failure": ":cross_mark:",
+    "cancelled": ":no_entry:",
+    "skipped": ":fast_forward:",
+    "timed_out": ":alarm_clock:",
+    "action_required": ":warning:",
+    "neutral": ":grey_question:",
+    "stale": ":zzz:",
+}
+
+DEPLOYMENT_STATUS_EMOJI: dict[str, str] = {
+    "success": ":check:",
+    "failure": ":cross_mark:",
+    "error": ":cross_mark:",
+    "pending": ":working_on_it:",
+    "in_progress": ":working_on_it:",
+    "queued": ":time_ticking:",
+    "waiting": ":time_ticking:",
+}
+
+COMMIT_STATUS_EMOJI: dict[str, str] = {
+    "success": ":check:",
+    "failure": ":cross_mark:",
+    "error": ":cross_mark:",
+    "pending": ":working_on_it:",
+}
+
+PAGE_BUILD_STATUS_EMOJI: dict[str, str] = {
+    "built": ":check:",
+    "errored": ":cross_mark:",
+    "building": ":working_on_it:",
+}
+
+PULL_REQUEST_REVIEW_STATE_EMOJI: dict[str, str] = {
+    "approved": ":check:",
+    "changes_requested": ":cross_mark:",
+    "commented": ":speech_balloon:",
+    "dismissed": ":no_entry:",
+}
+
 TOPIC_FOR_DISCUSSION = "{repo} discussion #{number}: {title}"
 DISCUSSION_TEMPLATES = {
     "created": "{sender} created [discussion #{discussion_number}]({url}) in {category}:\n\n{body_fence} quote\n### {title}\n{body}\n{body_fence}",
@@ -259,9 +300,10 @@ def get_deployment_body(helper: Helper) -> str:
 
 def get_change_deployment_status_body(helper: Helper) -> str:
     payload = helper.payload
-    return "Deployment changed status to {}.".format(
-        payload["deployment_status"]["state"].tame(check_string),
-    )
+    state = payload["deployment_status"]["state"].tame(check_string)
+    emoji = DEPLOYMENT_STATUS_EMOJI.get(state, "")
+    prefix = f"{emoji} " if emoji else ""
+    return f"{prefix}Deployment changed status to {state}."
 
 
 def get_create_or_delete_body(action: str, helper: Helper) -> str:
@@ -582,7 +624,10 @@ def get_page_build_body(helper: Helper) -> str:
             ),
         )
 
-    return "GitHub Pages build, triggered by {}, {}.".format(
+    emoji = PAGE_BUILD_STATUS_EMOJI.get(status, "")
+    prefix = f"{emoji} " if emoji else ""
+    return "{}GitHub Pages build, triggered by {}, {}.".format(
+        prefix,
         payload["build"]["pusher"]["login"].tame(check_string),
         action,
     )
@@ -590,18 +635,24 @@ def get_page_build_body(helper: Helper) -> str:
 
 def get_status_body(helper: Helper) -> str:
     payload = helper.payload
+    state = payload["state"].tame(check_string)
+    emoji = COMMIT_STATUS_EMOJI.get(state, "")
+    prefix = f"{emoji} " if emoji else ""
     if payload["target_url"]:
         status = "[{}]({})".format(
-            payload["state"].tame(check_string),
+            state,
             payload["target_url"].tame(check_string),
         )
     else:
-        status = payload["state"].tame(check_string)
-    return "[{}]({}) changed its status to {}.".format(
-        get_short_sha(payload["sha"].tame(check_string)),
-        payload["commit"]["html_url"].tame(check_string),
-        status,
-    )
+        status = state
+    if payload.get("commit"):
+        sha_link = "[{}]({})".format(
+            get_short_sha(payload["sha"].tame(check_string)),
+            payload["commit"]["html_url"].tame(check_string),
+        )
+    else:
+        sha_link = get_short_sha(payload["sha"].tame(check_string))
+    return f"{prefix}{sha_link} changed its status to {status}."
 
 
 def get_locked_or_unlocked_pull_request_body(helper: Helper) -> str:
@@ -653,11 +704,14 @@ def get_pull_request_ready_for_review_body(helper: Helper) -> str:
 def get_pull_request_review_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
+    review_state = payload["review"]["state"].tame(check_string)
+    emoji = PULL_REQUEST_REVIEW_STATE_EMOJI.get(review_state, "")
+    prefix = f"{emoji} " if emoji else ""
     title = "for #{} {}".format(
         payload["pull_request"]["number"].tame(check_int),
         payload["pull_request"]["title"].tame(check_string),
     )
-    return get_pull_request_event_message(
+    body = get_pull_request_event_message(
         user_name=get_sender_name(helper),
         action="submitted",
         url=payload["review"]["html_url"].tame(check_string),
@@ -665,6 +719,7 @@ def get_pull_request_review_body(helper: Helper) -> str:
         title=title if include_title else None,
         message=payload["review"]["body"].tame(check_none_or(check_string)),
     )
+    return f"{prefix}{body}"
 
 
 def get_pull_request_review_request_removed_body(helper: Helper) -> str:
@@ -798,7 +853,7 @@ def get_pull_request_review_requested_body(helper: Helper) -> str:
 def get_check_run_body(helper: Helper) -> str:
     payload = helper.payload
     template = """
-Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}))
+{emoji} Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}))
 """.strip()
 
     kwargs = {
@@ -811,6 +866,9 @@ Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}
             payload["check_run"]["head_sha"].tame(check_string),
         ),
         "conclusion": payload["check_run"]["conclusion"].tame(check_string),
+        "emoji": CHECK_RUN_CONCLUSION_EMOJI.get(
+            payload["check_run"]["conclusion"].tame(check_string), ""
+        ),
     }
 
     return template.format(**kwargs)
