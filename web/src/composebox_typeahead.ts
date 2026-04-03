@@ -686,6 +686,7 @@ function filter_persons<T>(
 }
 
 export function get_person_suggestion_for_topic_typeahead(query: string): UserPillData[] {
+    const raw_query = query;
     query = typeahead.clean_query_lowercase(query);
 
     const filterer = (person_items: UserPillData[]): UserPillData[] => {
@@ -731,7 +732,7 @@ export function get_person_suggestion_for_topic_typeahead(query: string): UserPi
 
     const sorted_recipients = typeahead_helper.sort_recipients({
         users: filtered_persons,
-        query,
+        query: raw_query,
         current_stream_id: compose_state.stream_id(),
         current_topic: compose_state.topic(),
         max_num_items: 3,
@@ -751,6 +752,7 @@ export function get_person_suggestions(
     opts: PersonSuggestionOpts,
     exclude_non_welcome_bots = false,
 ): (UserOrMentionPillData | UserGroupPillData)[] {
+    const raw_query = query;
     query = typeahead.clean_query_lowercase(query);
 
     let groups: UserGroup[];
@@ -805,7 +807,7 @@ export function get_person_suggestions(
         // We have found an exact user match for the query and return early
         return typeahead_helper.sort_recipients({
             users: person,
-            query,
+            query: raw_query,
             current_stream_id: opts.stream_id,
             current_topic: opts.topic,
             groups: filtered_groups,
@@ -888,7 +890,7 @@ export function get_person_suggestions(
 
     return typeahead_helper.sort_recipients({
         users: filtered_persons,
-        query,
+        query: raw_query,
         current_stream_id: opts.stream_id,
         current_topic: opts.topic,
         groups: filtered_groups,
