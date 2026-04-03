@@ -1,10 +1,11 @@
+import datetime
 import hashlib
 import json
 import logging
 import random
 from abc import ABC, abstractmethod
 from base64 import b64encode
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import quote, urlencode, urljoin, urlsplit
 
 import requests
@@ -15,6 +16,7 @@ from django.http import HttpRequest, HttpResponse
 from django.middleware import csrf
 from django.shortcuts import redirect, render
 from django.utils.crypto import constant_time_compare, salted_hmac
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
@@ -304,6 +306,54 @@ class OAuthVideoCallProvider(ABC):
         return self.get_meeting_details(request, response)
 
 
+class WebexOAuthProvider(OAuthVideoCallProvider):
+    provider_name = "Webex"
+    token_key_name = "webex"
+
+    def __init__(self) -> None:
+        self.client_id = settings.VIDEO_WEBEX_CLIENT_ID
+        self.client_secret = settings.VIDEO_WEBEX_CLIENT_SECRET
+        self.authorization_url = urljoin(settings.VIDEO_WEBEX_API_URL, "authorize")
+        self.token_url = urljoin(settings.VIDEO_WEBEX_API_URL, "access_token")
+        self.auto_refresh_url = urljoin(settings.VIDEO_WEBEX_API_URL, "access_token")
+        self.create_meeting_url = urljoin(settings.VIDEO_WEBEX_API_URL, "meetings")
+        self.create_room_url = urljoin(settings.VIDEO_WEBEX_API_URL, "rooms")
+        # We need spark:all to create meetings with an associated roomId, which are
+        # ad-hoc meetings in our case: https://developer.webex.com/meeting/docs/meetings.
+        self.authorization_scope = "meeting:schedules_read meeting:schedules_write spark:all"
+
+    @override
+    def get_meeting_details(self, request: HttpRequest, response: Response) -> HttpResponse:
+        return json_success(request, data={"url": response.json()["webLink"]})
+
+    # For ad-hoc meetings, we need to create a public room as a prerequisite,
+    # where a public room is a room that lets anyone in the Webex organization
+    # join meetings associated with it. Note that the public room feature is
+    # restricted to paid Webex organizations.
+    def maybe_generate_public_room_id(self, user: UserProfile) -> str | None:
+        create_room_payload = {
+            "title": "Webex Zulip Meeting",
+            "isPublic": True,
+            "description": "A Webex meeting created via the Zulip client.",
+        }
+        response = self.oauth_post(user, self.create_room_url, json=create_room_payload)
+
+        # This is probably a free organization, because the Webex API sends a 403
+        # response when trying to create a public room with user credentials that
+        # belong to a free organization with the message: "Spaces belonging to a
+        # free org cannot be made public". For details, see error docs at
+        # https://developer.webex.com/messaging/docs/api/v1/rooms/create-a-room.
+        if response.status_code == 403:
+            return None
+        elif not response.ok:
+            raise JsonableError(
+                _("Failed to create {provider_name} public room.").format(
+                    provider_name=self.provider_name
+                )
+            )
+        return response.json()["id"]
+
+
 class ZoomGeneralOAuthProvider(OAuthVideoCallProvider):
     provider_name = "Zoom"
     authorization_scope = None
@@ -328,6 +378,12 @@ def register_zoom_user(request: HttpRequest) -> HttpResponse:
     return ZoomGeneralOAuthProvider().register_user(request=request)
 
 
+@zulip_login_required
+@never_cache
+def register_webex_user(request: HttpRequest) -> HttpResponse:
+    return WebexOAuthProvider().register_user(request=request)
+
+
 class StateDictRealm(TypedDict):
     realm: str
     sid: str
@@ -347,6 +403,19 @@ class ZoomPayload(TypedDict):
     default_password: bool
 
 
+class WebexPersonalRoomMeetingPayload(TypedDict):
+    title: str
+    start: str
+    end: str
+    scheduledType: Literal["personalRoomMeeting"]
+
+
+class WebexAdhocMeetingPayload(TypedDict):
+    title: str
+    adhoc: Literal[True]
+    roomId: str
+
+
 @never_cache
 @zulip_login_required
 @typed_endpoint
@@ -359,6 +428,20 @@ def complete_zoom_user(
     if get_subdomain(request) != state["realm"]:
         return redirect(urljoin(get_realm(state["realm"]).url, request.get_full_path()))
     return ZoomGeneralOAuthProvider().complete_user(request, code=code, sid=state["sid"])
+
+
+@never_cache
+@zulip_login_required
+@typed_endpoint
+def complete_webex_user(
+    request: HttpRequest,
+    *,
+    code: str,
+    state: Json[StateDictRealm],
+) -> HttpResponse:
+    if get_subdomain(request) != state["realm"]:
+        return redirect(urljoin(get_realm(state["realm"]).url, request.get_full_path()))
+    return WebexOAuthProvider().complete_user(request, code=code, sid=state["sid"])
 
 
 @cache_with_key(zoom_server_access_token_cache_key, timeout=3600 - 240)
@@ -454,6 +537,36 @@ def make_zoom_video_call(
     if settings.VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID is not None:
         return make_server_authenticated_zoom_video_call(request, user, payload=payload)
     return ZoomGeneralOAuthProvider().make_video_call(request=request, user=user, payload=payload)
+
+
+@typed_endpoint_without_parameters
+def make_webex_video_call(request: HttpRequest, user: UserProfile) -> HttpResponse:
+    room_id = WebexOAuthProvider().maybe_generate_public_room_id(user)
+    payload: WebexAdhocMeetingPayload | WebexPersonalRoomMeetingPayload
+
+    # Quoting from https://developer.webex.com/meeting/docs/api/v1/meetings/create-a-meeting:
+    # An ad-hoc meeting is a non-recurring instant meeting for the target room
+    # which is supposed to be started immediately after being created for a
+    # quick collaboration.
+
+    # Public room IDs can only be generated if the user belongs to a paid Webex
+    # organization. They are necessary to generate ad-hoc Webex meetings which
+    # can be joined by anyone in the Webex organization. We fall back to
+    # generating a personal room meeting link if the user belongs to a free
+    # Webex organization.
+    if room_id is not None:
+        payload = WebexAdhocMeetingPayload(adhoc=True, roomId=room_id, title="Webex Ad-hoc meeting")
+    else:
+        start_time = timezone_now()
+        end_time = start_time + datetime.timedelta(minutes=40)
+        payload = WebexPersonalRoomMeetingPayload(
+            scheduledType="personalRoomMeeting",
+            start=start_time.isoformat(timespec="seconds"),
+            end=end_time.isoformat(timespec="seconds"),
+            title="Webex Personal Room Meeting",
+        )
+
+    return WebexOAuthProvider().make_video_call(request, user, payload=payload)
 
 
 @csrf_exempt
