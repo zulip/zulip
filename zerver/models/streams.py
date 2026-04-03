@@ -118,6 +118,10 @@ class Stream(models.Model):
     }
     message_retention_days = models.IntegerField(null=True, default=None)
 
+    # When True, new subscriptions default to push_notifications=True instead of
+    # inheriting from the user's account-level default.
+    push_notifications_enabled = models.BooleanField(default=False)
+
     # on_delete field for group value settings is set to RESTRICT
     # because we don't want to allow deleting a user group in case it
     # is referenced by the respective setting. We are not using PROTECT
@@ -276,6 +280,7 @@ class Stream(models.Model):
         "is_web_public",
         "message_retention_days",
         "name",
+        "push_notifications_enabled",
         "rendered_description",
         "subscriber_count",
         "can_add_subscribers_group_id",
