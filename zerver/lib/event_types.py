@@ -971,6 +971,7 @@ class SingleSubscription(BaseModel):
     can_send_message_group: int | UserGroupMembersDict
     creator_id: int | None
     date_created: int
+    default_push_notifications: bool
     description: str
     first_message_id: int | None
     is_recently_active: bool

@@ -13197,6 +13197,8 @@ paths:
                   $ref: "#/components/schemas/HistoryPublicToSubscribers"
                 message_retention_days:
                   $ref: "#/components/schemas/MessageRetentionDays"
+                default_push_notifications:
+                  $ref: "#/components/schemas/DefaultPushNotifications"
                 topics_policy:
                   $ref: "#/components/schemas/TopicsPolicy"
                 can_add_subscribers_group:
@@ -13249,6 +13251,8 @@ paths:
               is_default_stream:
                 contentType: application/json
               history_public_to_subscribers:
+                contentType: application/json
+              default_push_notifications:
                 contentType: application/json
               topics_policy:
                 contentType: application/json
@@ -24562,6 +24566,8 @@ paths:
                   example: false
                 message_retention_days:
                   $ref: "#/components/schemas/MessageRetentionDays"
+                default_push_notifications:
+                  $ref: "#/components/schemas/DefaultPushNotifications"
                 is_archived:
                   description: |
                     A boolean indicating whether the channel is
@@ -25488,11 +25494,15 @@ paths:
                   $ref: "#/components/schemas/CanSubscribeGroup"
                 can_resolve_topics_group:
                   $ref: "#/components/schemas/CanResolveTopicsGroup"
+                default_push_notifications:
+                  $ref: "#/components/schemas/DefaultPushNotifications"
               required:
                 - name
                 - subscribers
             encoding:
               announce:
+                contentType: application/json
+              default_push_notifications:
                 contentType: application/json
               can_add_subscribers_group:
                 contentType: application/json
