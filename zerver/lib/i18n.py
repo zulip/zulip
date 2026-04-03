@@ -89,6 +89,24 @@ def get_browser_language_code(request: HttpRequest) -> str | None:
     return None
 
 
+def get_browser_locale(request: HttpRequest) -> str | None:
+    """
+    Return the browser's preferred locale (e.g. "en-GB"), if available.
+
+    This differs from get_browser_language_code by not restricting to Zulip's
+    translated languages; it is intended for heuristics like time format.
+    """
+    accept_lang_header = request.headers.get("Accept-Language")
+    if accept_lang_header is None:
+        return None
+
+    for accept_lang, priority in parse_accept_lang_header(accept_lang_header):
+        if accept_lang == "*":
+            continue
+        return accept_lang
+    return None
+
+
 def get_default_language_for_new_user(realm: Realm, *, request: HttpRequest | None) -> str:
     if request is None:
         # Users created via the API or LDAP will not have a
