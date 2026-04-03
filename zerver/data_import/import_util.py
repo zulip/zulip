@@ -93,6 +93,7 @@ class UploadFileRequest:
     params: dict[str, Any] | None
     headers: dict[str, Any] | None
     kwargs: dict[str, Any]
+    expected_size: int
 
 
 GroupDMKey = TypeVar("GroupDMKey", bound=Hashable)
@@ -739,17 +740,54 @@ def download_and_export_upload_file(
     output_dir: str, upload_file_request: UploadFileRequest
 ) -> None:
     file_output_path = os.path.join(output_dir, "uploads", upload_file_request.output_file_path)
+    temporary_file_output_path = f"{file_output_path}.part"
 
-    response = request_file_stream(
-        upload_file_request.request_url,
-        upload_file_request.params,
-        upload_file_request.headers,
-        **upload_file_request.kwargs,
-    )
+    if upload_file_request.expected_size < 0:
+        raise Exception("Failed downloading file: expected size must be non-negative.")
 
     os.makedirs(os.path.dirname(file_output_path), exist_ok=True)
-    with open(file_output_path, "wb") as upload_file:
-        shutil.copyfileobj(response.raw, upload_file)
+    try:
+        with (
+            request_file_stream(
+                upload_file_request.request_url,
+                upload_file_request.params,
+                upload_file_request.headers,
+                **upload_file_request.kwargs,
+            ) as response,
+            open(temporary_file_output_path, "wb") as upload_file,
+        ):
+            content_length = response.headers.get("Content-Length")
+            if content_length is not None:
+                try:
+                    content_length_value = int(content_length)
+                except ValueError:
+                    raise Exception("Failed downloading file: invalid Content-Length header.")
+
+                if content_length_value > upload_file_request.expected_size:
+                    raise Exception(
+                        "Failed downloading file: Content-Length exceeds expected size."
+                    )
+
+            bytes_downloaded = 0
+            while True:
+                chunk = response.raw.read(64 * 1024)
+                if not chunk:
+                    break
+
+                bytes_downloaded += len(chunk)
+                if bytes_downloaded > upload_file_request.expected_size:
+                    raise Exception("Failed downloading file: downloaded size exceeds expected size.")
+
+                upload_file.write(chunk)
+
+            if bytes_downloaded != upload_file_request.expected_size:
+                raise Exception("Failed downloading file: downloaded size does not match expected size.")
+
+        os.replace(temporary_file_output_path, file_output_path)
+    except Exception:
+        if os.path.exists(temporary_file_output_path):
+            os.remove(temporary_file_output_path)
+        raise
 
 
 def build_realm_emoji(realm_id: int, name: str, id: int, file_name: str) -> ZerverFieldsT:
