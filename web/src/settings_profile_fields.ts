@@ -234,6 +234,15 @@ function initialize_form_to_defaults(): void {
     external_accounts_dropdown_widget.render();
 }
 
+function should_check_user_matching_for_external_account(
+    account_type: string | number | undefined,
+): boolean {
+    const unchecked_account_types = new Set(["atlassian", "mastodon"]);
+    const should_uncheck_checkbox =
+        typeof account_type === "string" && unchecked_account_types.has(account_type);
+    return !should_uncheck_checkbox;
+}
+
 function external_account_item_click_callback(
     event: JQuery.ClickEvent,
     dropdown: tippy.Instance,
@@ -260,6 +269,10 @@ function external_account_item_click_callback(
     assert(external_account !== undefined);
     $("#profile_field_name").val(external_account.name).prop("disabled", true);
     $("#profile_field_hint").val(external_account.hint).prop("disabled", true);
+    $("#profile_field_use_for_user_matching").prop(
+        "checked",
+        should_check_user_matching_for_external_account(external_account.text.toLowerCase()),
+    );
     widget.render();
 }
 
@@ -318,7 +331,11 @@ function update_form_for_field_type_selection(): void {
 
     if (is_valid_to_use_for_user_matching(profile_field_type)) {
         $("#profile_field_use_for_user_matching").closest(".input-group").show();
-        const check_use_for_user_mentions = profile_field_type === field_types.EXTERNAL_ACCOUNT.id;
+        const check_use_for_user_mentions =
+            profile_field_type === field_types.EXTERNAL_ACCOUNT.id &&
+            should_check_user_matching_for_external_account(
+                external_accounts_dropdown_widget.value(),
+            );
         $("#profile_field_use_for_user_matching").prop("checked", check_use_for_user_mentions);
     } else {
         $("#profile_field_use_for_user_matching").closest(".input-group").hide();
