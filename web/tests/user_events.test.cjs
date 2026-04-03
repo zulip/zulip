@@ -25,6 +25,7 @@ const settings_bots = mock_esm("../src/settings_bots", {
     toggle_bot_config_download_container() {},
 });
 mock_esm("../src/settings_panel_menu", {
+    hide_default_streams_list_for_guest() {},
     update_imported_users_tab() {},
 });
 mock_esm("../src/settings_users", {
@@ -184,8 +185,15 @@ run_test("updates", ({override}) => {
 
     user_events.update_person({
         user_id: me.user_id,
+        role: settings_config.user_role_values.guest.code,
+    });
+    assert.ok(current_user.is_guest);
+
+    user_events.update_person({
+        user_id: me.user_id,
         role: settings_config.user_role_values.member.code,
     });
+    assert.ok(!current_user.is_guest);
     assert.ok(!current_user.is_admin);
 
     user_events.update_person({user_id: me.user_id, full_name: "Me V2"});
