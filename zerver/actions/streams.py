@@ -918,6 +918,42 @@ def bulk_add_subscriptions(
         subscriber_peer_info=subscriber_peer_info,
     )
 
+    # Send channel event notifications for users being subscribed to private streams.
+    # Note: This is intentionally outside the `if not from_user_creation` block.
+    # Since private streams cannot be realm defaults, from_user_creation=True only
+    # overlaps with private streams when a user accepts an explicit email invitation
+    # to that channel, in which case existing members should see the join notification.
+    if realm.send_channel_events_messages:
+        # Lazily fetch the notification bot to avoid repeated DB queries
+        # when processing multiple private stream subscriptions in a batch.
+        sender: UserProfile | None = None
+        for sub_info in subs_to_add + subs_to_activate:
+            stream = sub_info.stream
+            target_user = sub_info.user
+
+            if stream.invite_only:
+                if sender is None:
+                    sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+                with override_language(realm.default_language):
+                    target_user_mention = silent_mention_syntax_for_user(target_user)
+                    if acting_user and acting_user.id != target_user.id:
+                        content = _(
+                            "{acting_user} subscribed {target_user} to this channel."
+                        ).format(
+                            acting_user=silent_mention_syntax_for_user(acting_user),
+                            target_user=target_user_mention,
+                        )
+                    else:
+                        content = _("{target_user} subscribed to this channel.").format(
+                            target_user=target_user_mention,
+                        )
+                    maybe_send_channel_events_notice(
+                        sender,
+                        stream,
+                        content,
+                        acting_user=acting_user,
+                    )
+
     return (
         subs_to_add + subs_to_activate,
         already_subscribed,
@@ -1169,6 +1205,35 @@ def bulk_remove_subscriptions(
         for user, stream in removed_sub_tuples:
             altered_user_dict[user].add(stream.id)
         send_user_remove_events_on_removing_subscriptions(realm, altered_user_dict)
+
+    # Send channel event notifications for users being removed from private streams.
+    if realm.send_channel_events_messages:
+        # Lazily fetch the notification bot to avoid repeated DB queries
+        # when processing multiple private stream subscriptions in a batch.
+        sender: UserProfile | None = None
+        for user_profile, stream in removed_sub_tuples:
+            if stream.invite_only:
+                if sender is None:
+                    sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+                with override_language(realm.default_language):
+                    target_user_mention = silent_mention_syntax_for_user(user_profile)
+                    if acting_user and acting_user.id != user_profile.id:
+                        content = _(
+                            "{acting_user} unsubscribed {target_user} from this channel."
+                        ).format(
+                            acting_user=silent_mention_syntax_for_user(acting_user),
+                            target_user=target_user_mention,
+                        )
+                    else:
+                        content = _("{target_user} unsubscribed from this channel.").format(
+                            target_user=target_user_mention,
+                        )
+                    maybe_send_channel_events_notice(
+                        sender,
+                        stream,
+                        content,
+                        acting_user=acting_user,
+                    )
 
     return (
         removed_sub_tuples,
