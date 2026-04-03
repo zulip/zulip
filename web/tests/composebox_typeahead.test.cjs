@@ -1840,6 +1840,9 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     $("form#send_message_form").off("keydown");
     $("form#send_message_form").off("keyup");
     $("#private_message_recipient").off("blur");
+    $("#compose-direct-recipient").off("mousedown", "#private_message_recipient");
+    $("#compose-direct-recipient").off("focus", "#private_message_recipient");
+    $("#compose-direct-recipient").off("click", "#private_message_recipient");
     ct.initialize({
         on_enter_send: finish,
     });
