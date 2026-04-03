@@ -6,12 +6,18 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class TravisHookTests(WebhookTestCase):
-    TOPIC_NAME = "builds"
-    EXPECTED_MESSAGE = """
-Author: josh_mandel
-Build status: Passed :thumbs_up:
-Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6c457d366a31), [build log](https://travis-ci.org/hl7-fhir/fhir-svn/builds/92495257)
-""".strip()
+    PUSH_TOPIC = "travis-test / main"
+    PR_TOPIC = "travis-test / PR #1 Add hello header to xyz.txt"
+
+    EXPECTED_PUSH_MESSAGE = (
+        "**Build [#1](https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277712204)** "
+        "is **being built** :time_ticking: for commit: [Add Projects model.](https://github.com/sathwikshetty33/travis-test/commit/193da1b72346) by sathwikshetty33."
+    )
+
+    EXPECTED_PULL_REQUEST_MESSAGE = (
+        "**Build [#3](https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277712246)** "
+        "is **being built** :time_ticking: for commit: [Add hello header to xyz.txt](https://github.com/sathwikshetty33/travis-test/pull/1) by Sathwik Shetty."
+    )
 
     def test_travis_message(self) -> None:
         """
@@ -22,9 +28,33 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         """
 
         self.check_webhook(
-            "build",
-            self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            "push",
+            self.PUSH_TOPIC,
+            self.EXPECTED_PUSH_MESSAGE,
+            content_type="application/x-www-form-urlencoded",
+        )
+
+    def test_travis_api(self) -> None:
+        expected_message = (
+            "**Build [#5](https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277713381)** "
+            "is **being built** :time_ticking: for commit: [update ci url](https://github.com/sathwikshetty33/travis-test/compare/193da1b723460e185115a27554dfddab7ae0ec6e...2eab9aaa002563c4b8db90a77eac9a1ba4e24643) by sathwikshetty33 (triggered by api)."
+        )
+        self.check_webhook(
+            "api",
+            self.PUSH_TOPIC,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
+
+    def test_travis_cron(self) -> None:
+        expected_message = (
+            "**Build [#11](https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277713426)** "
+            "is **being built** :time_ticking: for commit: [update ci url](https://github.com/sathwikshetty33/travis-test/compare/193da1b723460e185115a27554dfddab7ae0ec6e...2eab9aaa002563c4b8db90a77eac9a1ba4e24643) by sathwikshetty33 (triggered by cron)."
+        )
+        self.check_webhook(
+            "cron",
+            self.PUSH_TOPIC,
+            expected_message,
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -33,13 +63,13 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
 
         self.check_webhook(
             "pull_request",
-            self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            self.PR_TOPIC,
+            self.EXPECTED_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
         self.check_webhook(
-            "build",
+            "push",
             content_type="application/x-www-form-urlencoded",
             expect_noop=True,
         )
@@ -54,9 +84,9 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         )
 
         self.check_webhook(
-            "build",
-            self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            "push",
+            self.PUSH_TOPIC,
+            self.EXPECTED_PUSH_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -64,9 +94,9 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         self.url = f'{self.build_webhook_url()}&only_events=["push"]'
 
         self.check_webhook(
-            "build",
-            self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            "push",
+            self.PUSH_TOPIC,
+            self.EXPECTED_PUSH_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -80,15 +110,15 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         self.url = f'{self.build_webhook_url()}&exclude_events=["push"]'
 
         self.check_webhook(
-            "build",
+            "push",
             content_type="application/x-www-form-urlencoded",
             expect_noop=True,
         )
 
         self.check_webhook(
             "pull_request",
-            self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            self.PR_TOPIC,
+            self.EXPECTED_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -97,15 +127,15 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
 
         self.check_webhook(
             "pull_request",
-            self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            self.PR_TOPIC,
+            self.EXPECTED_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
         self.check_webhook(
-            "build",
-            self.TOPIC_NAME,
-            self.EXPECTED_MESSAGE,
+            "push",
+            self.PUSH_TOPIC,
+            self.EXPECTED_PUSH_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -119,7 +149,7 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
         )
 
         self.check_webhook(
-            "build",
+            "push",
             content_type="application/x-www-form-urlencoded",
             expect_noop=True,
         )
@@ -133,7 +163,7 @@ one or more new messages.
 
         with self.assertRaises(Exception) as exc:
             self.check_webhook(
-                "build", content_type="application/x-www-form-urlencoded", expect_noop=True
+                "push", content_type="application/x-www-form-urlencoded", expect_noop=True
             )
         self.assertEqual(str(exc.exception), expected_error_message)
 

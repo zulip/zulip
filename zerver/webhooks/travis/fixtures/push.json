@@ -1,0 +1,83 @@
+{
+  "id": 277712204,
+  "number": "1",
+  "config": {
+    "language": "ruby",
+    "os": [
+      "linux"
+    ],
+    "dist": "focal",
+    "notifications": {
+      "webhooks": [
+        {
+          "urls": [
+            "https://338d-49-37-250-23.ngrok-free.app/api/v1/external/travis?api_key=qgbRyggtXVwFxCWeEwRS2sCeyfMleyFZ&stream=12"
+          ],
+          "on_success": "always",
+          "on_failure": "always",
+          "on_start": "always"
+        }
+      ]
+    }
+  },
+  "type": "push",
+  "state": "started",
+  "status": null,
+  "result": null,
+  "status_message": "Pending",
+  "result_message": "Pending",
+  "started_at": "2026-03-18T08:16:56Z",
+  "finished_at": null,
+  "duration": null,
+  "build_url": "https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277712204",
+  "commit_id": 1277737906,
+  "commit": "193da1b723460e185115a27554dfddab7ae0ec6e",
+  "base_commit": null,
+  "head_commit": null,
+  "branch": "main",
+  "message": "Add Projects model.",
+  "compare_url": "https://github.com/sathwikshetty33/travis-test/commit/193da1b72346",
+  "committed_at": "2026-03-18T08:16:12Z",
+  "author_name": "sathwikshetty33",
+  "author_email": "sathwikshetty2005@gmail.com",
+  "committer_name": "sathwikshetty33",
+  "committer_email": "sathwikshetty2005@gmail.com",
+  "pull_request": false,
+  "pull_request_number": null,
+  "pull_request_title": null,
+  "tag": null,
+  "repository": {
+    "id": 29853331,
+    "name": "travis-test",
+    "owner_name": "sathwikshetty33",
+    "url": null
+  },
+  "matrix": [
+    {
+      "id": 638473449,
+      "repository_id": 29853331,
+      "parent_id": 277712204,
+      "number": "1.1",
+      "state": "started",
+      "config": {
+        "os": "linux",
+        "language": "ruby",
+        "dist": "focal"
+      },
+      "status": null,
+      "result": null,
+      "commit": "193da1b723460e185115a27554dfddab7ae0ec6e",
+      "branch": "main",
+      "message": "Add Projects model.",
+      "compare_url": "https://github.com/sathwikshetty33/travis-test/commit/193da1b72346",
+      "started_at": "2026-03-18T08:16:56Z",
+      "finished_at": null,
+      "committed_at": "2026-03-18T08:16:12Z",
+      "author_name": "sathwikshetty33",
+      "author_email": "sathwikshetty2005@gmail.com",
+      "committer_name": "sathwikshetty33",
+      "committer_email": "sathwikshetty2005@gmail.com",
+      "allow_failure": null
+    }
+  ]
+}
