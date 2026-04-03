@@ -335,11 +335,11 @@ def send_immediate_email(
             stack_info=True,
         )
         connection.close()
-        raise EmailNotDeliveredError
+        raise EmailNotDeliveredError from e
     except (smtplib.SMTPException, OSError) as e:
         logger.exception("Error sending %s email to %s: %s", template, mail.to, e, stack_info=True)
         connection.close()
-        raise EmailNotDeliveredError
+        raise EmailNotDeliveredError from e
 
 
 def send_email(
