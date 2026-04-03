@@ -1,5 +1,6 @@
 import filecmp
 import os
+from io import BytesIO
 from typing import Any, Optional
 from unittest.mock import MagicMock, patch
 
@@ -1524,6 +1525,22 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         profile = get_user(bot_email, bot_realm)
         self.assertEqual(profile.avatar_version, 1)
+
+        # Test empty file validation
+        with self.settings(MAX_AVATAR_FILE_SIZE_MIB=10):
+            empty_file = BytesIO(b"")
+            empty_file.name = "empty.png"
+            result = self.client_patch_multipart(
+                f"/json/bots/{self.get_bot_user(email).id}", dict(file=empty_file)
+            )
+        self.assert_json_error(result, "Uploaded file is empty.")
+
+        # Test file size validation
+        with get_test_image_file("img.png") as fp, self.settings(MAX_AVATAR_FILE_SIZE_MIB=0):
+            result = self.client_patch_multipart(
+                f"/json/bots/{self.get_bot_user(email).id}", dict(file=fp)
+            )
+        self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
 
         # HAPPY PATH
         with get_test_image_file("img.png") as fp:
