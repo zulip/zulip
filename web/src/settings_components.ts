@@ -2111,7 +2111,7 @@ export let resize_textareas_in_subsection = ($subsection: JQuery): void => {
     }
 
     $textareas.each(function () {
-        const $el = $<HTMLTextAreaElement>(this);
+        const $el = $(this);
 
         const min_rows = 2;
         const max_rows = 5;
