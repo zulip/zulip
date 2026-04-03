@@ -126,7 +126,7 @@ def email_is_not_disposable(email: str) -> None:
     try:
         validate_is_not_disposable(email)
     except DisposableEmailError:
-        raise ValidationError(_("Please use your real email address."))
+        raise ValidationError(_("Please use a non-disposable email address."))
 
 
 class RealmDetailsForm(forms.Form):
