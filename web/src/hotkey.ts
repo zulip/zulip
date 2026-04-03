@@ -483,7 +483,6 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         // will zoom out, handled below.
         if (stream_list.is_zoomed_in() && $("#topic_filter_query").is(":focus")) {
             topic_list.clear_topic_search(e);
-            $("#topic_filter_query").trigger("blur");
             return true;
         }
 
