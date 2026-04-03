@@ -167,6 +167,15 @@
         line-height: 1;
         /* ...which is approximately 8px at 15px/1em in Vlad's design. */
         font-size: 0.5333em;
+        position: relative;
+    }
+
+    .user-circle::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background-color: currentColor;
     }
 
     .user_sidebar_entry.with_avatar {
@@ -203,10 +212,18 @@
                a 1px border, especially at smaller font sizes. */
             border: 1.5px solid var(--color-background);
             border-radius: 50%;
+        }
 
-            &.user-circle-offline {
-                display: none;
-            }
+        .user-circle::before {
+            background-color: currentColor;
+        }
+
+        .user-circle.user-circle-offline::before {
+            display: none;
+        }
+
+        .user-circle.user-circle-offline {
+            display: none;
         }
     }
 
