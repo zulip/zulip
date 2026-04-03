@@ -31,7 +31,7 @@ def retry_send_email_failures(
     def wrapper(worker: ConcreteQueueWorker, data: dict[str, Any]) -> None:
         try:
             func(worker, data)
-        except (OSError, EmailNotDeliveredError) as e:
+        except EmailNotDeliveredError as e:
             error_class_name = type(e).__name__
 
             def on_failure(event: dict[str, Any]) -> None:
