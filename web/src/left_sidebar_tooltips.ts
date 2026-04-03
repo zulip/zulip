@@ -178,15 +178,16 @@ export function initialize(): void {
     tippy.delegate("body", {
         target: ".views-tooltip-target",
         onShow(instance) {
-            if ($("#toggle-top-left-navigation-area-icon").hasClass("rotate-icon-down")) {
-                instance.setContent(
-                    $t({
-                        defaultMessage: "Collapse views",
-                    }),
-                );
-            } else {
-                instance.setContent($t({defaultMessage: "Expand views"}));
-            }
+            observe_toggle_class(instance, () => {
+                if ($("#toggle-top-left-navigation-area-icon").hasClass("rotate-icon-down")) {
+                    instance.setContent($t({defaultMessage: "Collapse views"}));
+                } else {
+                    instance.setContent($t({defaultMessage: "Expand views"}));
+                }
+            });
+        },
+        onHidden(instance) {
+            disconnect_toggle_class(instance);
         },
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
@@ -201,20 +202,19 @@ export function initialize(): void {
                 return false;
             }
 
-            if ($("#toggle-direct-messages-section-icon").hasClass("rotate-icon-down")) {
-                instance.setContent(
-                    $t({
-                        defaultMessage: "Collapse direct messages",
-                    }),
-                );
-            } else {
-                instance.setContent($t({defaultMessage: "Expand direct messages"}));
-            }
+            observe_toggle_class(instance, () => {
+                if ($("#toggle-direct-messages-section-icon").hasClass("rotate-icon-down")) {
+                    instance.setContent($t({defaultMessage: "Collapse direct messages"}));
+                } else {
+                    instance.setContent($t({defaultMessage: "Expand direct messages"}));
+                }
+            });
             return undefined;
         },
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
         onHidden(instance) {
+            disconnect_toggle_class(instance);
             instance.destroy();
         },
     });
