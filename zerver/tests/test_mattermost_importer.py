@@ -235,7 +235,9 @@ class MattermostImportTestBase(ZulipTestCase):
             mattermost_channel_id = channel_data["name"]
             imported_channel = Stream.objects.get(realm=imported_realm, name=channel_name)
 
-            self.assertEqual(imported_channel.description, channel_data["purpose"])
+            self.assertEqual(
+                imported_channel.description, channel_data["purpose"] or channel_data["header"]
+            )
             self.assertEqual(imported_channel.invite_only, channel_data["type"] == "P")
 
             expected_subscribers = set(exported_channel_subscriber_dict[mattermost_channel_id])
@@ -1602,7 +1604,7 @@ class MattermostV1110ImportTest(MattermostImportTestBase):
         self.assert_length(mattermost_data, 8)
         self.assert_length(mattermost_data["team"], 1)
         self.assertEqual(mattermost_data["team"][0]["name"], "ad-1")
-        self.assert_length(mattermost_data["channel"], 4)
+        self.assert_length(mattermost_data["channel"], 5)
         self.assert_length(mattermost_data["user"], 20)
         self.assert_length(mattermost_data["emoji"], 0)
         self.assert_length(mattermost_data["post"]["channel_post"], 50)
@@ -1710,7 +1712,7 @@ class MattermostCombinedTeamsImportTest(MattermostImportTestBase):
         exported_bot_users = [user for user in mattermost_data["user"] if user.get("is_bot")]
         self.assert_length(exported_bot_users, len(self.BOT_EMAILS))
 
-    def test_e2e_export_data_v11_1_0(self) -> None:
+    def test_e2e_export_data_v11_6_0(self) -> None:
         # The assert functions here iterate over the exported Mattermost objects and checks
         # whether a corresponding Zulip object exists in the imported realm. So, If
         # combined_into_one_realm=True and the export fixture contains multiple teams, it
