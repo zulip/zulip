@@ -12,7 +12,7 @@ const {
     stub_buddy_list_elements,
 } = require("./lib/buddy_list.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
-const {make_user} = require("./lib/example_user.cjs");
+const {make_user} = require("./lib/example_user.cts");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
