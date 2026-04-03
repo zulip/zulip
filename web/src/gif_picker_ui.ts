@@ -6,6 +6,7 @@ import type * as tippy from "tippy.js";
 import render_gif_picker_gif from "../templates/gif_picker_gif.hbs";
 
 import type {GifInfoUrl, GifNetwork} from "./abstract_gif_network.ts";
+import {make_resizable} from "./box_resize.ts";
 import {ComposeIconSession} from "./compose_icon_session.ts";
 import * as gif_picker_popover_content from "./gif_picker_popover_content.ts";
 import * as gif_state from "./gif_state.ts";
@@ -21,6 +22,7 @@ let current_search_term: undefined | string;
 // Stores the index of the last GIF that is part of the grid.
 let last_gif_index = -1;
 let network: GifNetwork;
+let resizable_grid_cleanup: () => void;
 
 function is_editing_existing_message(): boolean {
     if (compose_icon_session === undefined) {
@@ -60,10 +62,39 @@ function focus_gif_at_index(index: number): void {
     $target_gif.trigger("focus");
 }
 
+function get_gifs_per_row(): number {
+    const gif_elements = document.querySelectorAll(".gif-picker-gif");
+    if (gif_elements.length === 0) {
+        return 0;
+    }
+    const first_gif_element = gif_elements[0];
+    if (first_gif_element === undefined) {
+        return 0;
+    }
+
+    // By definition, all elements are in the same row if they have the same Y offset.
+    // So we count GIFs until the offset changes.
+    // Note that the column size changes dynamically due to CSS rules.
+    // We can assume that the caller will immediately use our calculated count
+    // before resizing takes place.
+    const desired_y_offset = first_gif_element.getBoundingClientRect().y;
+    let count = 0;
+    for (const gif_element of gif_elements) {
+        const current_y_offset = gif_element.getBoundingClientRect().y;
+        if (current_y_offset !== desired_y_offset) {
+            break;
+        }
+        count += 1;
+    }
+    return count;
+}
+
 function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
     e.stopPropagation();
     assert(e.currentTarget instanceof HTMLElement);
     const key = e.key;
+    const gifs_per_row = get_gifs_per_row();
+
     const is_alpha_numeric = /^[a-zA-Z0-9]$/i.test(key);
     if (is_alpha_numeric) {
         // This implies that the user is focused on some GIF
@@ -91,11 +122,11 @@ function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
             break;
         }
         case "ArrowUp": {
-            focus_gif_at_index(curr_gif_index - 2);
+            focus_gif_at_index(curr_gif_index - gifs_per_row);
             break;
         }
         case "ArrowDown": {
-            focus_gif_at_index(curr_gif_index + 2);
+            focus_gif_at_index(curr_gif_index + gifs_per_row);
             break;
         }
     }
@@ -182,12 +213,12 @@ function toggle_picker_popover(target: HTMLElement): void {
                 modifiers: [
                     {
                         // The placement is set to top by default, and we use
-                        // bottom and left configurations as fallback, which is
+                        // other configurations as fallback, which is
                         // useful for scenarios when opening the picker while editing
                         // messages near the top of the viewport.
                         name: "flip",
                         options: {
-                            fallbackPlacements: ["bottom", "left"],
+                            fallbackPlacements: ["bottom", "left", "right"],
                         },
                     },
                 ],
@@ -229,6 +260,23 @@ function toggle_picker_popover(target: HTMLElement): void {
                 $popper.on("keydown", ".gif-picker-gif", handle_keyboard_navigation_on_gif);
             },
             onMount(instance) {
+                resizable_grid_cleanup = make_resizable(
+                    {
+                        directions: [
+                            "right",
+                            "top_right",
+                            "top",
+                            "left",
+                            "bottom_right",
+                            "bottom_left",
+                            "bottom",
+                            "top_left",
+                        ],
+                        disable_on_mobile: true,
+                    },
+                    instance.popper.querySelector(".gif-grid-in-popover")!,
+                    instance,
+                );
                 render_featured_gifs(false);
                 const $popper = $(instance.popper);
                 $popper.find("#gif-search-query").trigger("focus");
@@ -253,14 +301,40 @@ function toggle_picker_popover(target: HTMLElement): void {
                         update_grid_with_search_term(current_search_term, true);
                     }
                 });
+
+                const d = document.createElement("div");
+                d.style.background = "pink";
+                d.style.width = "200px";
+                d.style.height = "200px";
+                d.style.position = "absolute";
+                d.style.top = "300px";
+                d.style.left = "300px";
+                make_resizable(
+                    {
+                        directions: [
+                            "top",
+                            "bottom",
+                            "left",
+                            "right",
+                            "top_right",
+                            "bottom_right",
+                            "bottom_left",
+                            "top_left",
+                        ],
+                        handle_size: 10,
+                    },
+                    d,
+                );
+                document.body.append(d);
             },
             onHidden() {
                 hide_picker_popover();
+                resizable_grid_cleanup();
             },
         },
         {
             show_as_overlay_on_mobile: true,
-            show_as_overlay_always: false,
+            show_as_overlay_always: true,
         },
     );
 }
