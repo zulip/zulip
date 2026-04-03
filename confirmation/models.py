@@ -48,15 +48,26 @@ class ConfirmationKeyError(Exception):
         super().__init__()
         self.error_type = error_type
 
-
 def render_confirmation_key_error(
-    request: HttpRequest, exception: ConfirmationKeyError
+    request: HttpRequest, 
+    exception: ConfirmationKeyError, 
+    key: str | None = None  # Add the key as an optional argument
 ) -> HttpResponse:
+    context = {"key": key}
+    
     if exception.error_type == ConfirmationKeyError.WRONG_LENGTH:
-        return TemplateResponse(request, "confirmation/link_malformed.html", status=404)
+        return TemplateResponse(request, "confirmation/link_malformed.html", context, status=404)
+    
     if exception.error_type == ConfirmationKeyError.EXPIRED:
-        return TemplateResponse(request, "confirmation/link_expired.html", status=404)
-    return TemplateResponse(request, "confirmation/link_does_not_exist.html", status=404)
+        # Check if we can find the expired object to provide a better UX
+        conf = Confirmation.objects.filter(confirmation_key=key).first()
+        if conf:
+            context["confirmation_type"] = conf.type
+            context["can_resend"] = True
+            # For privacy, don't pass the full object, just the necessary flags
+        return TemplateResponse(request, "confirmation/link_expired.html", context, status=404)
+        
+    return TemplateResponse(request, "confirmation/link_does_not_exist.html", context, status=404)
 
 
 def generate_key() -> str:
