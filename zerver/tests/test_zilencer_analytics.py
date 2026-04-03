@@ -218,7 +218,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         # Send any existing data over, so that we can start the test with a "clean" slate
         remote_server = self.server
         assert remote_server is not None
-        assert remote_server.last_version is None
+        self.assertIsNone(remote_server.last_version)
 
         send_server_data_to_push_bouncer()
         self.assertTrue(responses.assert_call_count(ANALYTICS_STATUS_URL, 1))
@@ -228,7 +228,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
         audit_log_max_id = audit_log.id
 
         remote_server.refresh_from_db()
-        assert remote_server.last_version == ZULIP_VERSION
+        self.assertEqual(remote_server.last_version, ZULIP_VERSION)
 
         remote_audit_log_count = RemoteRealmAuditLog.objects.count()
 

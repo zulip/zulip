@@ -123,6 +123,7 @@ def clear_database() -> None:
     # and; we only need to flush memcached if we're populating a
     # database that would be used with it (i.e. zproject.dev_settings).
     if default_cache["BACKEND"] == "zerver.lib.singleton_bmemcached.SingletonBMemcached":
+        assert isinstance(default_cache["OPTIONS"], dict)
         memcached_client = bmemcached.Client(
             (default_cache["LOCATION"],),
             **default_cache["OPTIONS"],
