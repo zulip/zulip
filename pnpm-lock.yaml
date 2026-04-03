@@ -13,6 +13,9 @@ patchedDependencies:
   autosize:
     hash: f08807ede2459b743c2cbdf5c266a685abe39d73930ccc4e469a9cb67cd2560b
     path: patches/autosize.patch
+  email-addresses:
+    hash: 8f663764e3280cf6b463b4d3571f0c89fa63a4a776506b7c7cdec0c72973a013
+    path: patches/email-addresses.patch
   handlebars:
     hash: 53ad8d748fa2ca3a7a0502c46f2ed1236eef8162efec84c06849dc83ad9e28e9
     path: patches/handlebars.patch
@@ -143,7 +146,7 @@ importers:
         version: 4.1.0
       email-addresses:
         specifier: ^5.0.0
-        version: 5.0.0
+        version: 5.0.0(patch_hash=8f663764e3280cf6b463b4d3571f0c89fa63a4a776506b7c7cdec0c72973a013)
       emoji-datasource-google:
         specifier: ^16.0.0
         version: 16.0.0
@@ -14820,7 +14823,7 @@ snapshots:
     dependencies:
       strongly-connected-components: 1.0.1
 
-  email-addresses@5.0.0: {}
+  email-addresses@5.0.0(patch_hash=8f663764e3280cf6b463b4d3571f0c89fa63a4a776506b7c7cdec0c72973a013): {}
 
   emmet@2.4.11:
     dependencies:

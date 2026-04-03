@@ -183,6 +183,7 @@
       "source-map@^0.6": "npm:source-map-js@^1.2.1"
     },
     "patchedDependencies": {
+      "email-addresses": "patches/email-addresses.patch",
       "handlebars": "patches/handlebars.patch",
       "jquery-caret-plugin": "patches/jquery-caret-plugin.patch",
       "simplebar": "patches/simplebar.patch",
