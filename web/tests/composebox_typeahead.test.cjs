@@ -944,7 +944,11 @@ test("content_typeahead_selected", ({override}) => {
     ct.get_or_set_completing_for_tests("stream");
     let warned_for_stream_link = false;
     override(compose_validate, "warn_if_private_stream_is_linked", (linked_stream) => {
-        assert.ok(linked_stream === sweden_stream || linked_stream === broken_link_stream);
+        assert.ok(
+            linked_stream === sweden_stream ||
+                linked_stream === broken_link_stream ||
+                linked_stream.stream_id === sweden_stream.stream_id,
+        );
         warned_for_stream_link = true;
     });
 
@@ -976,6 +980,25 @@ test("content_typeahead_selected", ({override}) => {
     ct.get_or_set_token_for_testing("#");
     actual_value = ct.content_typeahead_selected(broken_link_stream, query, input_element);
     expected_value = "[#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm)>";
+    assert.equal(actual_value, expected_value);
+
+    ct.get_or_set_completing_for_tests("stream_topic");
+    query = "#more";
+    ct.get_or_set_token_for_testing("more");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "more ice",
+            topic_display_name: "more ice",
+            type: "stream_topic",
+            stream_data: {
+                ...sweden_stream,
+                rendered_description: "",
+            },
+        },
+        query,
+        input_element,
+    );
+    expected_value = "#**Sweden>more ice** ";
     assert.equal(actual_value, expected_value);
 
     // topic_list
@@ -1261,8 +1284,15 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     };
     override(pm_conversations, "get_partners", () => [100]);
     override(bootstrap_typeahead, "Typeahead", (input_element, options) => {
-        switch (input_element.$element[0]) {
-            case $("input#stream_message_recipient_topic")[0]: {
+        switch (input_element.$element) {
+            case $("input#stream_message_recipient_topic"): {
+                override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
+                    if (stream_id === sweden_stream.stream_id) {
+                        return sweden_topics_to_show;
+                    }
+                    return [];
+                });
+
                 compose_state.set_stream_id(sweden_stream.stream_id);
                 const lear_user_data = [
                     {
@@ -1552,7 +1582,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                     return 7;
                 };
                 let actual_value = options.source("test #s", input_element);
-                assert.deepEqual(sorted_names_from(actual_value), ["Sweden", "The Netherlands"]);
+                const stream_matches = actual_value.filter((item) => item.type === "stream");
+                assert.deepEqual(sorted_names_from(stream_matches), ["Sweden", "The Netherlands"]);
                 assert.ok(caret_called);
 
                 othello.delivery_email = "othello@zulip.com";
@@ -1852,6 +1883,12 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 });
 
 test("begins_typeahead", ({override, override_rewire}) => {
+    override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
+        if (stream_id === sweden_stream.stream_id) {
+            return sweden_topics_to_show;
+        }
+        return [];
+    });
     override(stream_topic_history_util, "get_server_history", noop);
 
     const input_element = {
