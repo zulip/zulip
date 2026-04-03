@@ -30,6 +30,7 @@ import type {User} from "./people.ts";
 import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
 import {postprocess_content} from "./postprocess_content.ts";
+import {resize_stream_subscribers_list} from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
@@ -547,6 +548,7 @@ export function archive_stream(stream_id: number, $alert_element: JQuery): void 
         error(xhr) {
             ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $alert_element);
             dialog_widget.hide_dialog_spinner();
+            resize_stream_subscribers_list();
         },
     });
 }
@@ -738,6 +740,16 @@ export function initialize(): void {
             open_stream_edit_modal(stream_id);
         },
     );
+
+    $("body").on("click", "#channel_title_open_channel_info_modal", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const $target = $(e.currentTarget).parents(".stream-title-buttons");
+        const stream_id = Number.parseInt($target.attr("data-stream-id")!, 10);
+
+        dialog_widget.close();
+        open_stream_edit_modal(stream_id);
+    });
 
     $("body").on("click", "#change_stream_info_modal #archived_stream_rename", (e) => {
         e.preventDefault();
@@ -938,6 +950,7 @@ export function initialize(): void {
                         $(".stream_change_property_info"),
                     );
                     dialog_widget.hide_dialog_spinner();
+                    resize_stream_subscribers_list();
                 },
             });
         }

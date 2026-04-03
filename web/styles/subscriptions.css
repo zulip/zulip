@@ -487,17 +487,47 @@ h4.user_group_setting_subsection_title {
                 width: unset;
             }
 
+            /* The right pane header/title for user group and channel setting menu has
+               two major components, The group/channel name section and the button groups. */
             .selected-group-title,
             .selected-stream-title {
                 display: flex;
                 width: 100%;
-                justify-content: space-between;
+
+                /* This works in tandem with ".small-window-alert-notification-container"
+                   in the right pane body. */
+                .large-window-alert-notification-container {
+                    display: flex;
+
+                    @media (width < $sm_min) {
+                        display: none;
+                    }
+
+                    .stream_change_property_info {
+                        margin-right: 1px;
+                        font-weight: 400;
+                        font-size: var(--base-font-size-px);
+                        min-width: max-content;
+                    }
+                }
 
                 .selected-stream,
                 .selected-group {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
+                }
+
+                /* These contain two button groups, the left group should stick to the
+                   right side of the group/channel title name, and the right group that
+                   should stick to the rightmost side of the right pane header. */
+                .selected-group-buttons,
+                .stream-title-buttons {
+                    display: flex;
+                    justify-content: space-between;
+                    /* Make the button groups stretch and take the rest of the right pane
+                       header */
+                    flex-grow: 1;
                 }
 
                 .button-group {
@@ -1185,63 +1215,33 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .group-header,
-    .stream-header {
-        white-space: nowrap;
-        padding-top: 5px;
+    .group-description-field,
+    .channel-description-field {
         display: flex;
-        align-items: center;
+        flex-wrap: wrap;
+        /* 10px at 16px */
+        margin: 0 0 0.625em;
 
-        .group-name-wrapper,
-        .stream-name {
-            position: relative;
-            font-size: 1.5em;
-            font-weight: 600;
-            white-space: nowrap;
-            max-width: 90%;
-            flex: auto;
-            min-width: 0;
-            overflow-x: clip;
-            text-overflow: ellipsis;
-
-            .group-name,
-            .sub-stream-name {
-                display: block;
-                width: 100%;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
+        /* Subtract the total horizontal padding and border width from the input width
+           so that this matches other setting elements using box-sizing: border-box. */
+        .settings-view-only-textarea {
+            width: calc(
+                var(--modal-input-width) - 2 *
+                    var(--view-only-field-horizontal-padding) - 2 *
+                    var(--input-border-width)
+            );
         }
 
-        .button-group {
-            margin-left: auto;
-        }
-
-        .large-icon {
-            display: flex;
-            margin-right: 5px;
-
-            &.hash::after {
-                top: -1px;
-                font-size: 1.09em;
-                font-weight: 700;
-            }
-
-            .zulip-icon {
-                font-size: 1.2857em; /* 18px at 14px/em */
-            }
-        }
-
-        .stream_change_property_info {
-            vertical-align: top;
-            margin: 0 5px 0 0;
+        .icon-button {
+            align-items: baseline;
         }
     }
 
-    .group-description-wrapper,
+    .user-group-description,
     .stream-description {
         hyphens: auto;
-        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
 
         .no-description {
             font-style: italic;
@@ -1286,6 +1286,21 @@ h4.user_group_setting_subsection_title {
 
         &.show {
             display: block;
+        }
+
+        /* This works in tandem with ".large-window-alert-notification-container"
+           in the right pane title. */
+        .small-window-alert-notification-container {
+            display: none;
+
+            @media (width < $sm_min) {
+                display: flex;
+                justify-content: end;
+            }
+
+            .stream_change_property_info {
+                margin-bottom: 10px;
+            }
         }
     }
 
@@ -1533,28 +1548,6 @@ h4.user_group_setting_subsection_title {
             display: block;
             float: right;
             margin-top: 10px;
-        }
-
-        .group-header,
-        .stream-header {
-            .button-group {
-                margin-top: -5px;
-            }
-        }
-
-        .stream_change_property_info {
-            /* For small widths where there is not enough space
-            to show alert beside stream name we set its display
-            to block so it is shown in new line. But to avoid
-            it covering whole screen width we set max-width
-            so that it does not losses inline-block appearance. */
-
-            /* TODO: This will probably be not required once
-            we have tabbed navigation as button group width
-            will be smaller. */
-            display: block;
-            max-width: max-content;
-            white-space: nowrap;
         }
     }
 }

@@ -11,6 +11,7 @@ import render_browse_user_groups_list_item from "../templates/user_group_setting
 import render_cannot_deactivate_group_banner from "../templates/user_group_settings/cannot_deactivate_group_banner.hbs";
 import render_change_user_group_info_modal from "../templates/user_group_settings/change_user_group_info_modal.hbs";
 import render_stream_group_permission_settings from "../templates/user_group_settings/stream_group_permission_settings.hbs";
+import rendered_user_group_description from "../templates/user_group_settings/user_group_description.hbs";
 import render_user_group_membership_status from "../templates/user_group_settings/user_group_membership_status.hbs";
 import render_user_group_permission_settings from "../templates/user_group_settings/user_group_permission_settings.hbs";
 import render_user_group_settings from "../templates/user_group_settings/user_group_settings.hbs";
@@ -241,7 +242,7 @@ function show_general_settings(group: UserGroup): void {
     update_general_panel_ui(group);
 }
 
-function update_deactivate_and_reactivate_buttons(group: UserGroup): void {
+function update_user_group_title_buttons(group: UserGroup): void {
     if (!settings_data.can_manage_user_group(group.id)) {
         $(
             `.selected-group-buttons[data-group-id='${CSS.escape(group.id.toString())}'] .reactivate`,
@@ -249,8 +250,14 @@ function update_deactivate_and_reactivate_buttons(group: UserGroup): void {
         $(
             `.selected-group-buttons[data-group-id='${CSS.escape(group.id.toString())}'] .deactivate`,
         ).hide();
+        $(
+            `.selected-group-buttons[data-group-id='${CSS.escape(group.id.toString())}'] #open_group_info_modal`,
+        ).hide();
         return;
     }
+    $(
+        `.selected-group-buttons[data-group-id='${CSS.escape(group.id.toString())}'] #open_group_info_modal`,
+    ).show();
 
     if (group.deactivated) {
         $(
@@ -273,11 +280,11 @@ function update_general_panel_ui(group: UserGroup): void {
     const $edit_container = get_edit_container(group.id);
 
     if (settings_data.can_manage_user_group(group.id)) {
-        $edit_container.find(".group-header .button-group").show();
+        $edit_container.find(".group-description-field .button-group").show();
     } else {
-        $edit_container.find(".group-header .button-group").hide();
+        $edit_container.find(".group-description-field .button-group").hide();
     }
-    update_deactivate_and_reactivate_buttons(group);
+    update_user_group_title_buttons(group);
     update_group_permission_settings_elements(group);
     update_group_membership_button(group.id);
 }
@@ -564,7 +571,9 @@ export function handle_member_edit_event(group_id: number, user_ids: number[]): 
 export function update_group_details(group: UserGroup): void {
     const $edit_container = get_edit_container(group.id);
     $edit_container.find(".group-name").text(user_groups.get_display_group_name(group.name));
-    $edit_container.find(".group-description").text(group.description);
+    $edit_container
+        .find(".user-group-description")
+        .html(rendered_user_group_description({rendered_description: group.description}));
 }
 
 function update_toggler_for_group_setting(group: UserGroup): void {
@@ -1344,7 +1353,7 @@ export function handle_deleted_group(group_id: number): void {
         $("#groups_overlay .deactivated-user-group-icon").show();
 
         update_group_deactivated_banner(user_group);
-        update_deactivate_and_reactivate_buttons(user_group);
+        update_user_group_title_buttons(user_group);
         update_toggler_for_group_setting(user_group);
         update_members_panel_ui(user_group);
         update_group_membership_button(user_group.id);
@@ -1362,7 +1371,7 @@ export function handle_reactivated_group(group_id: number): void {
         $("#groups_overlay .deactivated-user-group-icon").hide();
 
         update_group_deactivated_banner(user_group);
-        update_deactivate_and_reactivate_buttons(user_group);
+        update_user_group_title_buttons(user_group);
         update_toggler_for_group_setting(user_group);
         update_members_panel_ui(user_group);
         update_group_membership_button(user_group.id);
@@ -1570,7 +1579,7 @@ export function update_group(event: UserGroupUpdateEvent, group: UserGroup): voi
             user_group_components.set_right_panel_title(group);
             // We call this to make sure that correct button is shown
             // after re-rendering of the title template.
-            update_deactivate_and_reactivate_buttons(group);
+            update_user_group_title_buttons(group);
         }
 
         if (changed_group_settings.length > 0) {

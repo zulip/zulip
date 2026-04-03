@@ -190,6 +190,9 @@ export function resize_stream_subscribers_list(): void {
         ".subscriber_list_settings_container .send_notification_to_new_subscribers_container",
     );
     const $subscribers_list_header = $("#stream_settings .subscribers-list-header");
+    const $small_window_alert_notification_container = $(
+        ".subscription_settings .small-window-alert-notification-container",
+    );
 
     const elements_above_subscribers_list = [
         $tab_container,
@@ -197,6 +200,7 @@ export function resize_stream_subscribers_list(): void {
         $add_subscribers_widget,
         $notification_message_container,
         $subscribers_list_header,
+        $small_window_alert_notification_container,
     ];
 
     let total_height_of_elements_above_subscribers_list = 0;
