@@ -158,4 +158,7 @@ export function set_up_pill_typeahead({
         pill_widget,
         opts,
     );
+    pill_widget.setSetupTypeahead(($edit) => {
+        pill_typeahead.set_up_group_setting_typeahead($edit, pill_widget, opts);
+    });
 }
