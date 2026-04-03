@@ -11,6 +11,7 @@ import render_topics_not_allowed_error from "../templates/topics_not_allowed_err
 
 import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
+import {build_emoji_tooltip_content} from "./emoji_tooltip.ts";
 import {$t} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as people from "./people.ts";
@@ -639,7 +640,7 @@ export function initialize(): void {
     tippy.delegate("body", {
         target: ".status-emoji-name:not(.typeahead-item .status-emoji-name)",
         placement: "top",
-        delay: INSTANT_HOVER_DELAY,
+        delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
 
         /*
@@ -650,6 +651,15 @@ export function initialize(): void {
             those regions.
         */
 
+        onShow(instance) {
+            const tippy_content = instance.reference.getAttribute("data-tippy-content") ?? "";
+            const emoji_name = tippy_content.slice(1, -1);
+            if (!emoji_name) {
+                return false;
+            }
+            instance.setContent(build_emoji_tooltip_content(instance.reference, emoji_name));
+            return undefined;
+        },
         onHidden(instance) {
             instance.destroy();
         },
@@ -658,7 +668,7 @@ export function initialize(): void {
     tippy.delegate("body", {
         target: ".typeahead-item .status-emoji-name",
         placement: "top",
-        delay: INSTANT_HOVER_DELAY,
+        delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
 
         /*
@@ -668,10 +678,39 @@ export function initialize(): void {
 
         onShow(instance) {
             typeahead_status_emoji_tooltip = instance;
+            const tippy_content = instance.reference.getAttribute("data-tippy-content") ?? "";
+            const emoji_name = tippy_content.slice(1, -1);
+            if (!emoji_name) {
+                return false;
+            }
+            instance.setContent(build_emoji_tooltip_content(instance.reference, emoji_name));
+            return undefined;
         },
         onHidden(instance) {
             instance.destroy();
             typeahead_status_emoji_tooltip = undefined;
+        },
+    });
+
+    // Enlarged emoji tooltip for compose and edit previews.
+    tippy.delegate("body", {
+        target: ".preview_content .emoji",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onShow(instance) {
+            const emoji_name =
+                instance.reference.getAttribute("title") ??
+                instance.reference.getAttribute("aria-label") ??
+                "";
+            instance.reference.removeAttribute("title");
+            if (!emoji_name) {
+                return false;
+            }
+            instance.setContent(build_emoji_tooltip_content(instance.reference, emoji_name));
+            return undefined;
+        },
+        onHidden(instance) {
+            instance.destroy();
         },
     });
 
