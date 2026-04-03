@@ -51,9 +51,12 @@ const zoe = make_user({
 });
 set_current_user(aaron);
 people.add_active_user(aaron);
+people.add_valid_user_id(aaron.user_id);
 people.initialize_current_user(aaron.user_id);
 people.add_active_user(iago);
+people.add_valid_user_id(iago.user_id);
 people.add_active_user(zoe);
+people.add_valid_user_id(zoe.user_id);
 
 const stream_A = make_stream({
     subscribed: false,
@@ -176,7 +179,7 @@ function test(label, f) {
 // when we get to delete drafts.fix_drafts_with_undefined_topics.
 //
 // This test must run before others, so that
-// fixed_buggy_drafts is false.
+// fixed_buggy_drafts and fixed_private_draft_recipient_ids are false.
 test("fix buggy drafts", () => {
     const buggy_draft = {
         stream_id: stream_B.stream_id,
@@ -192,10 +195,31 @@ test("fix buggy drafts", () => {
         content: "Test direct message",
         updatedAt: Date.now(),
     };
+    // 999 is an invalid user ID not present in the people store.
+    const draft_with_invalid_recipient = {
+        private_message_recipient_ids: [iago.user_id, 999],
+        reply_to: "iago@zulip.com, invalid-user@zulip.com",
+        type: "private",
+        content: "Test direct message 2",
+        updatedAt: Date.now(),
+        is_sending_saving: false,
+        drafts_version: 1,
+    };
+    const draft_with_only_invalid_recipients = {
+        private_message_recipient_ids: [999],
+        reply_to: "invalid-user@zulip.com",
+        type: "private",
+        content: "Test direct message 3",
+        updatedAt: Date.now(),
+        is_sending_saving: false,
+        drafts_version: 1,
+    };
     const ls = localstorage();
     ls.set("drafts", {
         id1: buggy_draft,
         id2: draft_with_pm_emails,
+        id3: draft_with_invalid_recipient,
+        id4: draft_with_only_invalid_recipients,
     });
     const draft_model = drafts.draft_model;
 
@@ -214,6 +238,13 @@ test("fix buggy drafts", () => {
     const fixed_draft = draft_model.getDraft("id2");
     assert.equal(fixed_draft.private_message_recipient, undefined);
     assert.deepEqual(fixed_draft.private_message_recipient_ids, [iago.user_id, zoe.user_id]);
+
+    // fix_private_draft_recipient_ids removes invalid user IDs.
+    const fixed_invalid_recipient_draft = draft_model.getDraft("id3");
+    assert.deepEqual(fixed_invalid_recipient_draft.private_message_recipient_ids, [iago.user_id]);
+
+    const fixed_only_invalid_recipients_draft = draft_model.getDraft("id4");
+    assert.deepEqual(fixed_only_invalid_recipients_draft.private_message_recipient_ids, []);
 });
 
 test("draft_model add", () => {
