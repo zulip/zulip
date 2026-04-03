@@ -691,7 +691,7 @@ def require_human_non_guest_user(
 def require_user_group_create_permission(
     view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
 ) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
-    @require_human_non_guest_user
+    @require_non_guest_user
     @wraps(view_func)
     def _wrapped_view_func(
         request: HttpRequest,

@@ -24784,6 +24784,9 @@ paths:
       tags: ["users"]
       description: |
         Create a new [user group](/help/user-groups).
+
+        **Changes**: Prior to Zulip 12.0 (feature level ZF-534222),
+        bots could not access this endpoint.
       requestBody:
         required: true
         content:
@@ -24982,7 +24985,10 @@ paths:
         Update the members of a [user group](/help/user-groups). The
         user IDs must correspond to non-deactivated users.
 
-        **Changes**: Prior to Zulip 11.0 (feature level 391), members
+        **Changes**: Prior to Zulip 12.0 (feature level ZF-534222),
+        bots could not access this endpoint.
+
+        Prior to Zulip 11.0 (feature level 391), members
         could not be added or removed from a deactivated group.
 
         **Changes**: Prior to Zulip 10.0 (feature level 303), group memberships of
@@ -25053,7 +25059,10 @@ paths:
       description: |
         Get the members of a [user group](/help/user-groups).
 
-        **Changes**: New in Zulip 6.0 (feature level 127).
+        **Changes**: Prior to Zulip 12.0 (feature level ZF-534222),
+        bots could not access this endpoint.
+
+        New in Zulip 6.0 (feature level 127).
       parameters:
         - $ref: "#/components/parameters/UserGroupId"
         - $ref: "#/components/parameters/DirectMemberOnly"
@@ -25095,7 +25104,10 @@ paths:
         membership, the deactivated group itself cannot be mentioned
         or used in the value of any permission without first being reactivated.
 
-        **Changes**: Starting with Zulip 11.0 (feature level 386), this
+        **Changes**: Prior to Zulip 12.0 (feature level ZF-534222),
+        bots could not access this endpoint.
+
+        Starting with Zulip 11.0 (feature level 386), this
         endpoint can be used to reactivate a user group.
 
         Prior to Zulip 10.0 (feature level 340), only the name field
@@ -25303,6 +25315,9 @@ paths:
       tags: ["users"]
       description: |
         Fetches all of the user groups in the organization.
+
+        **Changes**: Prior to Zulip 12.0 (feature level ZF-534222),
+        bots could not access this endpoint.
 
         !!! warn ""
 
@@ -25578,8 +25593,11 @@ paths:
       description: |
         Update the subgroups of a [user group](/help/user-groups).
 
-        **Changes**: Prior to Zulip 11.0 (feature level 391), subgroups
-        could not be added or removed from a deactivated group.
+        **Changes**: Prior to Zulip 12.0 (feature level ZF-534222),
+        bots could not access this endpoint.
+
+        Prior to Zulip 11.0 (feature level 391), subgroups could
+        not be added or removed from a deactivated group.
 
         **Changes**: New in Zulip 6.0 (feature level 127).
       x-curl-examples-parameters:
@@ -25626,7 +25644,10 @@ paths:
       description: |
         Get the subgroups of a [user group](/help/user-groups).
 
-        **Changes**: New in Zulip 6.0 (feature level 127).
+        **Changes**: Prior to Zulip 12.0 (feature level ZF-534222),
+        bots could not access this endpoint.
+
+        New in Zulip 6.0 (feature level 127).
       parameters:
         - $ref: "#/components/parameters/UserGroupId"
         - name: direct_subgroup_only
@@ -25668,7 +25689,10 @@ paths:
       description: |
         Check whether a user is member of user group.
 
-        **Changes**: Prior to Zulip 12.0 (feature level 458), this endpoint
+        **Changes**: Prior to Zulip 12.0 (feature level ZF-534222),
+        bots could not access this endpoint.
+
+        Prior to Zulip 12.0 (feature level 458), this endpoint
         did not support querying group membership of bot users.
 
         Prior to Zulip 10.0 (feature level 303),
