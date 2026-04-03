@@ -639,6 +639,12 @@ export function filter_and_sort_mentions(
 }
 
 export function get_pm_people(query: string): (UserGroupPillData | UserPillData)[] {
+    // If we already have a user pill added to the recipient field then we
+    // don't want to show typeahead for empty query.
+    if (query === "" && compose_state.private_message_recipient_ids().length > 0) {
+        return [];
+    }
+
     const opts = {
         want_broadcast: false,
         filter_pills: true,
@@ -1891,6 +1897,10 @@ export function initialize({
             set_recipient_from_typeahead(item);
         },
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter
+        // show suggested recipients as soon as the field is focused with no query,
+        // but not when a pill is already present
+        showOnFocus: true,
+        helpOnEmptyStrings: true,
     });
 
     initialize_compose_typeahead($("textarea#compose-textarea"));
