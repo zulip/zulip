@@ -35,6 +35,7 @@ from analytics.models import (
     UserCount,
     installation_epoch,
 )
+from corporate.lib.stripe import BillingUserCounts
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import (
     do_activate_mirror_dummy_user,
@@ -1473,8 +1474,8 @@ class TestLoggingCountStats(AnalyticsTestCase):
             mock.patch("zilencer.views.send_android_push_notification", return_value=1),
             mock.patch("zilencer.views.send_apple_push_notification", return_value=1),
             mock.patch(
-                "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
-                return_value=10,
+                "corporate.lib.stripe.RemoteServerBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(10, 0),
             ),
             self.assertLogs("zilencer.views", level="INFO"),
         ):
@@ -1536,8 +1537,8 @@ class TestLoggingCountStats(AnalyticsTestCase):
             mock.patch("zilencer.views.send_android_push_notification", return_value=1),
             mock.patch("zilencer.views.send_apple_push_notification", return_value=1),
             mock.patch(
-                "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
-                return_value=10,
+                "corporate.lib.stripe.RemoteServerBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(10, 0),
             ),
             self.assertLogs("zilencer.views", level="INFO"),
         ):
@@ -1598,8 +1599,8 @@ class TestLoggingCountStats(AnalyticsTestCase):
             mock.patch("zilencer.views.send_android_push_notification", return_value=1),
             mock.patch("zilencer.views.send_apple_push_notification", return_value=1),
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                return_value=10,
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(10, 0),
             ),
             self.assertLogs("zilencer.views", level="INFO"),
         ):

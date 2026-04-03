@@ -35,6 +35,7 @@ from corporate.lib.stripe import (
     BillingError,
     BillingSessionAuditLogEventError,
     BillingSessionEventType,
+    BillingUserCounts,
     InitialUpgradeRequest,
     InvalidBillingScheduleError,
     InvalidTierError,
@@ -2230,7 +2231,7 @@ class StripeTest(StripeTestCase):
         # Change the seat count in upgrade flow: after do_upgrade, during process_initial_upgrade
         with (
             patch(
-                "corporate.lib.stripe.BillingSession.stale_seat_count_check",
+                "corporate.lib.stripe.BillingSession.stale_license_count_check",
                 return_value=self.seat_count,
             ),
             patch("corporate.lib.stripe.get_latest_seat_count", return_value=new_seat_count),
@@ -2282,7 +2283,7 @@ class StripeTest(StripeTestCase):
         # Change the seat count in upgrade flow: after do_upgrade, during process_initial_upgrade
         with (
             patch(
-                "corporate.lib.stripe.BillingSession.stale_seat_count_check",
+                "corporate.lib.stripe.BillingSession.stale_license_count_check",
                 return_value=self.seat_count,
             ),
             patch("corporate.lib.stripe.get_latest_seat_count", return_value=new_seat_count),
@@ -6128,8 +6129,8 @@ class BillingHelpersTest(ZulipTestCase):
         billing_session.configure_fixed_price_plan(1200, None)
         self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED)
         with mock.patch(
-            "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-            return_value=60,
+            "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+            return_value=BillingUserCounts(60, 0),
         ):
             billing_session.initialize_prepaid_fixed_price_plan(
                 plan_tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
@@ -6211,8 +6212,8 @@ class BillingHelpersTest(ZulipTestCase):
         billing_session.configure_fixed_price_plan(1200, None)
         self.assertEqual(remote_server.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED)
         with mock.patch(
-            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
-            return_value=60,
+            "corporate.lib.stripe.RemoteServerBillingSession.current_counts_for_billed_users",
+            return_value=BillingUserCounts(60, 0),
         ):
             billing_session.initialize_prepaid_fixed_price_plan(
                 plan_tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
@@ -7037,7 +7038,7 @@ class TestRealmBillingSession(StripeTestCase):
 
 
 class TestRemoteRealmBillingSession(StripeTestCase):
-    def test_current_count_for_billed_licenses(self) -> None:
+    def test_current_counts_for_billed_users(self) -> None:
         server_uuid = str(uuid.uuid4())
         remote_server = RemoteZulipServer.objects.create(
             uuid=server_uuid,
@@ -7057,13 +7058,13 @@ class TestRemoteRealmBillingSession(StripeTestCase):
 
         # remote server never uploaded statistics. 'last_audit_log_update' is None.
         with self.assertRaises(MissingDataError):
-            billing_session.current_count_for_billed_licenses()
+            billing_session.current_counts_for_billed_users()
 
         # Available statistics is stale.
         remote_server.last_audit_log_update = timezone_now() - timedelta(days=5)
         remote_server.save()
         with self.assertRaises(MissingDataError):
-            billing_session.current_count_for_billed_licenses()
+            billing_session.current_counts_for_billed_users()
 
         # Available statistics is not stale.
         event_time = timezone_now() - timedelta(days=1)
@@ -7107,7 +7108,9 @@ class TestRemoteRealmBillingSession(StripeTestCase):
         remote_server.last_audit_log_update = timezone_now() - timedelta(days=1)
         remote_server.save()
 
-        self.assertEqual(billing_session.current_count_for_billed_licenses(), 70)
+        current_billed_user_counts = billing_session.current_counts_for_billed_users()
+        self.assertEqual(current_billed_user_counts.workplace_users, 70)
+        self.assertEqual(current_billed_user_counts.non_workplace_users, 0)
 
 
 class TestRemoteServerBillingSession(StripeTestCase):
