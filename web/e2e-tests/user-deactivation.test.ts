@@ -14,8 +14,8 @@ async function navigate_to_user_list(page: Page): Promise<void> {
     await page.click(organization_settings);
 
     await page.waitForSelector("#settings_overlay_container.show", {visible: true});
-    await page.waitForSelector("li[data-section='users']", {visible: true});
-    await page.click("li[data-section='users']");
+    await page.waitForSelector(".org-settings-list li[data-section='users']", {visible: true});
+    await page.click(".org-settings-list li[data-section='users']");
     await page.waitForSelector("#admin-user-list.show", {visible: true});
 }
 
