@@ -99,7 +99,20 @@ export function decode_operand(
     operand = internal_url.decodeHashComponent(operand);
 
     if (operator === "channel") {
-        return stream_data.slug_to_stream_id(operand)?.toString() ?? "";
+        const stream_id = stream_data.slug_to_stream_id(operand);
+        if (stream_id === undefined) {
+            return "";
+        }
+
+        const modern_slug_match = /^(\d+)(?:-.*)?$/.exec(operand);
+        if (modern_slug_match !== null && !stream_data.get_sub_by_id(stream_id)) {
+            // Preserve the exact integer from the URL for unknown/inaccessible
+            // channels. This avoids the issue where huge IDs can round-trip
+            // through scientific notation and then collapse to channel 1.
+            return modern_slug_match[1]!;
+        }
+
+        return stream_id.toString();
     }
 
     return operand;
