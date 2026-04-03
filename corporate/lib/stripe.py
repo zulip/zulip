@@ -535,7 +535,7 @@ class PriceArgs(TypedDict, total=False):
 class StripeCustomerData:
     description: str
     email: str
-    metadata: dict[str, Any]
+    metadata: dict[str, str]
 
 
 @dataclass
@@ -4293,8 +4293,8 @@ class RealmBillingSession(BillingSession):
         # Support requests do not set any stripe billing information.
         assert self.support_session is False
         assert self.user is not None
-        metadata: dict[str, Any] = {}
-        metadata["realm_id"] = self.realm.id
+        metadata: dict[str, str] = {}
+        metadata["realm_id"] = str(self.realm.id)
         metadata["realm_str"] = self.realm.string_id
         realm_stripe_customer_data = StripeCustomerData(
             description=f"{self.realm.string_id} ({self.realm.name})",
@@ -4692,9 +4692,9 @@ class RemoteRealmBillingSession(BillingSession):
     def get_data_for_stripe_customer(self) -> StripeCustomerData:
         # Support requests do not set any stripe billing information.
         assert self.support_session is False
-        metadata: dict[str, Any] = {}
-        metadata["remote_realm_uuid"] = self.remote_realm.uuid
-        metadata["remote_realm_host"] = str(self.remote_realm.host)
+        metadata: dict[str, str] = {}
+        metadata["remote_realm_uuid"] = str(self.remote_realm.uuid)
+        metadata["remote_realm_host"] = self.remote_realm.host
         realm_stripe_customer_data = StripeCustomerData(
             description=str(self.remote_realm),
             email=self.get_email(),
@@ -5127,8 +5127,8 @@ class RemoteServerBillingSession(BillingSession):
     def get_data_for_stripe_customer(self) -> StripeCustomerData:
         # Support requests do not set any stripe billing information.
         assert self.support_session is False
-        metadata: dict[str, Any] = {}
-        metadata["remote_server_uuid"] = self.remote_server.uuid
+        metadata: dict[str, str] = {}
+        metadata["remote_server_uuid"] = str(self.remote_server.uuid)
         metadata["remote_server_str"] = str(self.remote_server)
         realm_stripe_customer_data = StripeCustomerData(
             description=str(self.remote_server),
