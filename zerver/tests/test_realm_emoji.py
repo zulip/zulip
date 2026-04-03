@@ -1,3 +1,4 @@
+from io import BytesIO
 from unittest import mock
 
 from zerver.actions.create_realm import do_create_realm
@@ -377,6 +378,13 @@ class RealmEmojiTest(ZulipTestCase):
         with get_test_image_file("img.tif") as fp:
             result = self.client_post("/json/realm/emoji/my_emoji", {"file": fp})
         self.assert_json_error(result, "Invalid image format")
+
+    def test_emoji_upload_empty_file_error(self) -> None:
+        self.login("iago")
+        empty_file = BytesIO(b"")
+        empty_file.name = "empty.png"
+        result = self.client_post("/json/realm/emoji/my_emoji", {"file": empty_file})
+        self.assert_json_error(result, "Uploaded file is empty.")
 
     def test_upload_already_existed_emoji(self) -> None:
         self.login("iago")
