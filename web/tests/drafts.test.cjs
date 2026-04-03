@@ -270,6 +270,14 @@ test("snapshot_message", ({override}) => {
 
     override(Date, "now", () => mock_current_timestamp);
 
+    const $stub_textarea = $("textarea#compose-textarea");
+    const $stub_reply = $("#message-content-container");
+    $stub_textarea.set_closest_results(
+        "#message-content-container, .edit-content-container",
+        $stub_reply,
+    );
+    $stub_reply.set_find_results(".reply", []);
+
     curr_draft = draft_1;
     set_compose_state();
     assert.deepEqual(drafts.snapshot_message(), draft_1);
@@ -323,6 +331,12 @@ test("update_draft", ({override}) => {
 
     override(Date, "now", () => 5);
     override(Math, "random", () => 2);
+    $("textarea#compose-textarea").set_closest_results(
+        "#message-content-container, .edit-content-container",
+        $("#message-content-container"),
+    );
+
+    $("#message-content-container").set_find_results(".reply", []);
     draft_id = drafts.update_draft();
     assert.equal(draft_id, "5-2");
     assert.ok(tippy_show_called);
