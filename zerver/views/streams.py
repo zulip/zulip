@@ -311,6 +311,7 @@ def update_stream_backend(
     is_web_public: Json[bool] | None = None,
     message_retention_days: Json[str] | Json[int] | None = None,
     new_name: str | None = None,
+    push_notifications_enabled: Json[bool] | None = None,
     stream_id: PathOnly[int],
     topics_policy: TopicsPolicy = None,
 ) -> HttpResponse:
@@ -438,6 +439,13 @@ def update_stream_backend(
         )
         do_change_stream_message_retention_days(
             stream, user_profile, new_message_retention_days_value
+        )
+
+    if push_notifications_enabled is not None:
+        if not user_profile.is_realm_admin:
+            raise JsonableError(_("Insufficient permission"))
+        do_set_stream_property(
+            stream, "push_notifications_enabled", push_notifications_enabled, user_profile
         )
 
     if is_archived is not None and not is_archived:
@@ -699,6 +707,7 @@ def create_channel(
     is_default_stream: Json[bool] = False,
     message_retention_days: Json[str] | Json[int] = RETENTION_DEFAULT,
     name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)],
+    push_notifications_enabled: Json[bool] = False,
     subscribers: Json[list[int]],
     topics_policy: Json[TopicsPolicy] = None,
 ) -> HttpResponse:
@@ -744,6 +753,9 @@ def create_channel(
         )
     )
 
+    if push_notifications_enabled and not user_profile.is_realm_admin:
+        raise JsonableError(_("Insufficient permission"))
+
     group_settings_map = stream_group_settings_map[name]
     new_channel, created = create_stream_if_needed(
         realm,
@@ -753,6 +765,7 @@ def create_channel(
         history_public_to_subscribers=history_public_to_subscribers,
         is_web_public=is_web_public,
         message_retention_days=parsed_message_retention_days,
+        push_notifications_enabled=push_notifications_enabled,
         anonymous_group_membership=anonymous_group_membership,
         acting_user=user_profile,
         can_add_subscribers_group=group_settings_map["can_add_subscribers_group"],
@@ -831,6 +844,7 @@ def add_subscriptions_backend(
     is_web_public: Json[bool] = False,
     message_retention_days: Json[str] | Json[int] = RETENTION_DEFAULT,
     principals: Json[list[str] | list[int]] | None = None,
+    push_notifications_enabled: Json[bool] = False,
     send_new_subscription_messages: Json[bool] = True,
     streams_raw: Annotated[Json[list[AddSubscriptionData]], ApiParamConfig("subscriptions")],
     topics_policy: Json[TopicsPolicy] = None,
@@ -847,6 +861,9 @@ def add_subscriptions_backend(
     folder: ChannelFolder | None = None
     if folder_id is not None:
         folder = get_channel_folder_by_id(folder_id, realm)
+
+    if push_notifications_enabled and not user_profile.is_realm_admin:
+        raise JsonableError(_("Insufficient permission"))
 
     for stream_obj in streams_raw:
         # 'color' field is optional
@@ -870,6 +887,7 @@ def add_subscriptions_backend(
         if validated_topics_policy is not None:
             stream_dict_copy["topics_policy"] = validated_topics_policy.value
         stream_dict_copy["folder"] = folder
+        stream_dict_copy["push_notifications_enabled"] = push_notifications_enabled
 
         stream_dicts.append(stream_dict_copy)
 

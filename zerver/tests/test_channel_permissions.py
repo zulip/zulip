@@ -18,10 +18,19 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription
 from zerver.lib.types import UserGroupMembersData
 from zerver.lib.user_groups import get_group_setting_value_for_api
-from zerver.models import NamedUserGroup, Recipient, Stream, Subscription, UserProfile
+from zerver.models import (
+    NamedUserGroup,
+    RealmAuditLog,
+    Recipient,
+    Stream,
+    Subscription,
+    UserProfile,
+)
 from zerver.models.groups import SystemGroups
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
+from zerver.models.users import active_non_guest_user_ids
 
 
 class ChannelSubscriptionPermissionTest(ZulipTestCase):
@@ -1474,3 +1483,74 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
             },
         )
         self.assert_json_success(result)
+
+    def test_update_stream_push_notifications_enabled(self) -> None:
+        """Only admins can change push_notifications_enabled; the update
+        fires a stream event and persists the value."""
+        admin = self.example_user("iago")
+        non_admin = self.example_user("hamlet")
+        self.login_user(admin)
+        stream = self.subscribe(admin, "test_push_stream")
+        self.subscribe(non_admin, "test_push_stream")
+        realm = admin.realm
+
+        # Non-admin without channel-admin rights fails the channel-admin check first.
+        self.login_user(non_admin)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"push_notifications_enabled": orjson.dumps(True).decode()},
+        )
+        self.assert_json_error(result, "You do not have permission to administer this channel.")
+
+        # Channel admin passes the channel-admin check but not the realm-admin check.
+        do_change_stream_group_based_setting(
+            stream,
+            "can_administer_channel_group",
+            UserGroupMembersData(direct_members=[non_admin.id], direct_subgroups=[]),
+            acting_user=admin,
+        )
+        self.login_user(non_admin)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"push_notifications_enabled": orjson.dumps(True).decode()},
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        self.login_user(admin)
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.client_patch(
+                f"/json/streams/{stream.id}",
+                {"push_notifications_enabled": orjson.dumps(True).decode()},
+            )
+        self.assert_json_success(result)
+        stream = get_stream("test_push_stream", realm)
+        self.assertTrue(stream.push_notifications_enabled)
+
+        event = events[0]["event"]
+        self.assertEqual(
+            event,
+            dict(
+                op="update",
+                type="stream",
+                property="push_notifications_enabled",
+                value=True,
+                stream_id=stream.id,
+                name="test_push_stream",
+            ),
+        )
+        notified_user_ids = set(events[0]["users"])
+        self.assertEqual(notified_user_ids, set(active_non_guest_user_ids(realm.id)))
+
+        audit_log = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
+            modified_stream=stream,
+        ).last()
+        assert audit_log is not None
+        self.assertEqual(
+            audit_log.extra_data,
+            {
+                RealmAuditLog.OLD_VALUE: False,
+                RealmAuditLog.NEW_VALUE: True,
+                "property": "push_notifications_enabled",
+            },
+        )
