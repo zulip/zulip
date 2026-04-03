@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 from collections.abc import Callable, Collection, Iterable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
+from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Union, cast
 from unittest import TestResult, mock, skipUnless
 from urllib.parse import parse_qs, quote, urlencode
@@ -1001,6 +1002,36 @@ Output:
             "/new/demo/",
             payload,
         )
+
+    def create_demo_organization_owner(self) -> UserProfile:
+        assert settings.DEMO_ORG_DEADLINE_DAYS is not None
+
+        # Create a demo organization
+        result = self.submit_demo_creation_form()
+        realm = Realm.objects.filter(
+            demo_organization_scheduled_deletion_date__isnull=False
+        ).latest("date_created")
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(
+            result["Location"].startswith(
+                f"http://{realm.string_id}.testserver/accounts/login/subdomain"
+            )
+        )
+        expected_deletion_date = realm.date_created + timedelta(
+            days=settings.DEMO_ORG_DEADLINE_DAYS
+        )
+        self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
+        result = self.client_get(result["Location"], subdomain=realm.string_id)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"http://{realm.string_id}.testserver")
+
+        # Get demo organization owner account
+        user_profile = realm.get_first_human_user()
+        assert user_profile is not None
+        self.assert_logged_in_user_id(user_profile.id)
+        self.assertEqual(user_profile.delivery_email, "")
+
+        return user_profile
 
     def get_confirmation_url_from_outbox(
         self,

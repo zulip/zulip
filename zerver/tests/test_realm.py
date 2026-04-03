@@ -313,27 +313,9 @@ class RealmTest(ZulipTestCase):
         self.assert_json_error(result, "Must be a demo organization.")
 
     def test_realm_convert_demo_organization_success(self) -> None:
-        result = self.submit_demo_creation_form()
-        realm = Realm.objects.filter(
-            demo_organization_scheduled_deletion_date__isnull=False
-        ).latest("date_created")
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(
-            result["Location"].startswith(
-                f"http://{realm.string_id}.testserver/accounts/login/subdomain"
-            )
-        )
-        self.assertIsNotNone(realm.demo_organization_scheduled_deletion_date)
-
-        result = self.client_get(result["Location"], subdomain=realm.string_id)
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], f"http://{realm.string_id}.testserver")
-
+        demo_owner_account = self.create_demo_organization_owner()
+        realm = demo_owner_account.realm
         demo_string_id = realm.string_id
-        demo_owner_account = realm.get_first_human_user()
-        assert demo_owner_account is not None
-        self.assert_logged_in_user_id(demo_owner_account.id)
-        self.assertEqual(demo_owner_account.delivery_email, "")
 
         # Confirm there is a scheduled message reminder about automated
         # demo organization deletion.
@@ -675,30 +657,8 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(confirmation.realm, realm)
 
     def test_realm_deactivation_demo_organization_owner_email_not_configured(self) -> None:
-        result = self.submit_demo_creation_form()
-        realm = Realm.objects.filter(
-            demo_organization_scheduled_deletion_date__isnull=False
-        ).latest("date_created")
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(
-            result["Location"].startswith(
-                f"http://{realm.string_id}.testserver/accounts/login/subdomain"
-            )
-        )
-        assert settings.DEMO_ORG_DEADLINE_DAYS is not None
-        expected_deletion_date = realm.date_created + timedelta(
-            days=settings.DEMO_ORG_DEADLINE_DAYS
-        )
-        self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
-
-        result = self.client_get(result["Location"], subdomain=realm.string_id)
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], f"http://{realm.string_id}.testserver")
-
-        demo_owner_account = realm.get_first_human_user()
-        assert demo_owner_account is not None
-        self.assert_logged_in_user_id(demo_owner_account.id)
-        self.assertEqual(demo_owner_account.delivery_email, "")
+        demo_owner_account = self.create_demo_organization_owner()
+        realm = demo_owner_account.realm
 
         # There must be a value set for deletion_delay_days.
         result = self.client_post("/json/realm/deactivate", subdomain=realm.subdomain)
@@ -721,30 +681,8 @@ class RealmTest(ZulipTestCase):
         self.assert_logged_in_user_id(None)
 
     def test_realm_deactivation_demo_organization_owner_email_configured(self) -> None:
-        result = self.submit_demo_creation_form()
-        realm = Realm.objects.filter(
-            demo_organization_scheduled_deletion_date__isnull=False
-        ).latest("date_created")
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(
-            result["Location"].startswith(
-                f"http://{realm.string_id}.testserver/accounts/login/subdomain"
-            )
-        )
-        assert settings.DEMO_ORG_DEADLINE_DAYS is not None
-        expected_deletion_date = realm.date_created + timedelta(
-            days=settings.DEMO_ORG_DEADLINE_DAYS
-        )
-        self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
-
-        result = self.client_get(result["Location"], subdomain=realm.string_id)
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], f"http://{realm.string_id}.testserver")
-
-        demo_owner_account = realm.get_first_human_user()
-        assert demo_owner_account is not None
-        self.assert_logged_in_user_id(demo_owner_account.id)
-        self.assertEqual(demo_owner_account.delivery_email, "")
+        demo_owner_account = self.create_demo_organization_owner()
+        realm = demo_owner_account.realm
 
         # Set an email for the demo organization owner's account.
         demo_owner_account.delivery_email = "demo-owner@example.com"
