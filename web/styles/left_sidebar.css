@@ -711,6 +711,22 @@
                 margin-top: 2px;
             }
         }
+
+        & li.dm-list-item.active-sub-filter {
+            /* Keep active DMs visually stronger than hover-only rows. */
+            box-shadow:
+                inset 0 0 0 1px var(--color-shadow-sidebar-row-hover),
+                inset 3px 0 0 0 var(--color-text-active-narrow-filter);
+
+            .conversation-partners-list {
+                font-weight: 650;
+                color: var(--color-text-active-narrow-filter);
+            }
+
+            .conversation-partners-icon:not(.user-circle) {
+                color: var(--color-text-active-narrow-filter);
+            }
+        }
     }
 }
 
