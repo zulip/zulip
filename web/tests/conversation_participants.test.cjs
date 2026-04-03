@@ -11,8 +11,17 @@ const {run_test} = require("./lib/test.cjs");
 const people = zrequire("people");
 const {ConversationParticipants} = zrequire("../src/conversation_participants.ts");
 
-const user1 = make_user();
-const user2 = make_user();
+const user1 = make_user({
+    user_id: 1,
+    full_name: "User 1",
+    email: "user1@example.com",
+});
+
+const user2 = make_user({
+    user_id: 2,
+    full_name: "User 2",
+    email: "user2@example.com",
+});
 const bot1 = make_bot();
 const bot2 = make_bot();
 
