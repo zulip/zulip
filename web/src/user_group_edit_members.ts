@@ -18,6 +18,7 @@ import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
+import * as resize from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user} from "./state_data.ts";
@@ -144,6 +145,10 @@ export function enable_member_management({
     // current_group_id and pill_widget are module-level variables
     current_group_id = group_id;
 
+    const pill_update_callback = function (): void {
+        resize.resize_group_members_list();
+    };
+
     if (!group.is_system_group) {
         const $pill_container = $parent_container.find(".pill-container");
         pill_widget = add_group_members_pill.create({
@@ -151,9 +156,13 @@ export function enable_member_management({
             get_potential_members,
             get_potential_groups: get_potential_subgroups,
             with_add_button: true,
+            onPillCreateAction: pill_update_callback,
+            onPillRemoveAction: pill_update_callback,
+            add_button_pill_update_callback: pill_update_callback,
         });
         $pill_container.find(".input").on("input", () => {
             $parent_container.find(".user_group_subscription_request_result").empty();
+            resize.resize_group_members_list();
         });
     }
 
@@ -238,6 +247,7 @@ function show_user_group_membership_request_error_result(error_message: string):
     scroll_util
         .get_content_element($user_group_subscription_req_result_elem)
         .html(rendered_error_message);
+    resize.resize_group_members_list();
 }
 
 function show_user_group_membership_request_success_result({
@@ -307,6 +317,7 @@ function show_user_group_membership_request_success_result({
     scroll_util
         .get_content_element($user_group_subscription_req_result_elem)
         .html(rendered_success_banner);
+    resize.resize_group_members_list();
 }
 
 export function edit_user_group_membership({

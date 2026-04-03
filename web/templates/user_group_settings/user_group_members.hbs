@@ -3,7 +3,7 @@
         {{> user_group_membership_status .}}
     </div>
     {{#unless group.is_system_group}}
-        <h4 class="user_group_setting_subsection_title">
+        <h4 class="user_group_setting_subsection_title add-members-heading">
             {{t "Add members" }}
         </h4>
         <div class="user_group_subscription_request_result banner-wrapper"></div>
@@ -14,7 +14,7 @@
             <div class="clear-float"></div>
         </div>
     {{/unless}}
-    <div>
+    <div class="members-list-header">
         <h4 class="inline-block user_group_setting_subsection_title">{{t "Members"}}</h4>
         <span class="member-search float-right">
             <input type="text" class="search filter_text_input" placeholder="{{t 'Filter' }}" />

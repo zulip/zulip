@@ -9,6 +9,7 @@ import * as group_permission_settings from "./group_permission_settings.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
+import * as resize from "./resize.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_data from "./settings_data.ts";
 import {realm} from "./state_data.ts";
@@ -178,6 +179,7 @@ function clear_error_display(): void {
     user_group_name_error.clear_errors();
     $(".user_group_create_info").hide();
     user_group_membership_error.clear_errors();
+    resize.resize_group_creation_members_list();
 }
 
 export function show_new_user_group_modal(): void {
@@ -202,6 +204,7 @@ function create_user_group(): void {
             $t_html({defaultMessage: "The group description cannot contain newline characters."}),
             $(".user_group_create_info"),
         );
+        resize.resize_group_creation_members_list();
         return;
     }
     const user_ids = user_group_create_members.get_principals();
@@ -244,6 +247,7 @@ function create_user_group(): void {
             );
             reset_name();
             loading.destroy_indicator($("#user_group_creating_indicator"));
+            resize.resize_group_creation_members_list();
         },
     });
 }
