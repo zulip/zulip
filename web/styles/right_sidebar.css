@@ -160,13 +160,30 @@
         }
     }
 
-    .user-circle {
+    /* Status circles for user sidebar entries without avatars */
+    .user_sidebar_entry:not(.with_avatar) .selectable_sidebar_block::before {
+        content: "";
         grid-area: starting-anchor-element;
         place-self: center center;
-        /* Tighten the line-height to match the icon's size... */
-        line-height: 1;
-        /* ...which is approximately 8px at 15px/1em in Vlad's design. */
-        font-size: 0.5333em;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .user_sidebar_entry:not(.with_avatar).user-circle-active .selectable_sidebar_block::before {
+        background-color: var(--color-user-circle-active);
+    }
+
+    .user_sidebar_entry:not(.with_avatar).user-circle-idle .selectable_sidebar_block::before {
+        background: var(--gradient-user-circle-idle);
+    }
+
+    .user_sidebar_entry:not(.with_avatar).user-circle-offline .selectable_sidebar_block::before {
+        background-color: var(--color-user-circle-offline);
+    }
+
+    .user_sidebar_entry:not(.with_avatar).user-circle-deactivated .selectable_sidebar_block::before {
+        background-color: var(--color-user-circle-deactivated);
     }
 
     .user_sidebar_entry.with_avatar {
@@ -176,13 +193,13 @@
             /* TODO: Express this as part of the grid on
                .selectable_sidebar_block. */
             margin-right: var(--right-sidebar-avatar-right-margin);
+        }
 
-            &:not(:has(.user-circle-offline)) .user-profile-picture {
-                /* The over-avatar user circle width is 15.5px at 20px/1em;
-                   we adjust the border radius here to avoid any pixels
-                   from the avatar bleeding through. */
-                border-bottom-right-radius: 0.3875em; /* 7.75px at 20px/1em */
-            }
+        &:not(.user-circle-offline) .user-profile-picture-container .user-profile-picture {
+            /* The over-avatar user circle width is 15.5px at 20px/1em;
+               we adjust the border radius here to avoid any pixels
+               from the avatar bleeding through. */
+            border-bottom-right-radius: 0.3875em; /* 7.75px at 20px/1em */
         }
 
         .user-profile-picture {
@@ -192,21 +209,32 @@
             margin-right: 0;
         }
 
-        .user-circle {
+        .user-profile-picture-container::after {
+            content: "";
             position: absolute;
-            /* 10px at 16px/1em */
-            font-size: 0.625em;
             bottom: -0.5px;
             right: -0.5px;
-            background-color: var(--color-background);
-            /* A 1.5px border provides better results than
-               a 1px border, especially at smaller font sizes. */
-            border: 1.5px solid var(--color-background);
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
+            border: 1.5px solid var(--color-background);
+            background-color: var(--color-background); /* Default fallback */
+        }
 
-            &.user-circle-offline {
-                display: none;
-            }
+        &.user-circle-active .user-profile-picture-container::after {
+            background-color: var(--color-user-circle-active);
+        }
+
+        &.user-circle-idle .user-profile-picture-container::after {
+            background: var(--gradient-user-circle-idle-avatar);
+        }
+
+        &.user-circle-offline .user-profile-picture-container::after {
+            display: none;
+        }
+
+        &.user-circle-deactivated .user-profile-picture-container::after {
+            background-color: var(--color-user-circle-deactivated);
         }
     }
 
