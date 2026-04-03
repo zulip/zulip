@@ -192,6 +192,7 @@ class RawStreamDict(TypedDict):
     is_web_public: bool
     message_retention_days: int | None
     name: str
+    push_notifications_enabled: bool
     rendered_description: str
     stream_post_policy: int
     subscriber_count: int
@@ -254,6 +255,7 @@ class SubscriptionStreamDict(TypedDict):
     name: str
     pin_to_top: bool
     push_notifications: bool | None
+    push_notifications_enabled: bool
     rendered_description: str
     stream_id: int
     stream_post_policy: int
@@ -290,6 +292,7 @@ class NeverSubscribedStreamDict(TypedDict):
     is_web_public: bool
     message_retention_days: int | None
     name: str
+    push_notifications_enabled: bool
     rendered_description: str
     stream_id: int
     stream_post_policy: int
@@ -329,6 +332,7 @@ class DefaultStreamDict(TypedDict):
     is_web_public: bool
     message_retention_days: int | None
     name: str
+    push_notifications_enabled: bool
     rendered_description: str
     stream_id: int  # `stream_id` represents `id` of the `Stream` object in `API_FIELDS`
     stream_post_policy: int

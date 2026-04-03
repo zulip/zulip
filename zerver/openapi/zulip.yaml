@@ -1595,6 +1595,7 @@ paths:
                                         "folder_id": 1,
                                         "is_recently_active": true,
                                         "message_retention_days": null,
+                                        "push_notifications_enabled": false,
                                         "is_announcement_only": false,
                                         "can_add_subscribers_group": 2,
                                         "can_remove_subscribers_group": 2,
@@ -19000,6 +19001,7 @@ paths:
                                 stream_post_policy: {}
                                 message_retention_days:
                                   nullable: true
+                                push_notifications_enabled: {}
                                 history_public_to_subscribers: {}
                                 topics_policy: {}
                                 first_message_id:
@@ -24055,6 +24057,7 @@ paths:
                                 stream_post_policy: {}
                                 message_retention_days:
                                   nullable: true
+                                push_notifications_enabled: {}
                                 history_public_to_subscribers: {}
                                 topics_policy: {}
                                 first_message_id:
@@ -24112,6 +24115,7 @@ paths:
                                 - is_web_public
                                 - stream_post_policy
                                 - message_retention_days
+                                - push_notifications_enabled
                                 - history_public_to_subscribers
                                 - first_message_id
                                 - folder_id
@@ -24144,6 +24148,7 @@ paths:
                               "is_default": false,
                               "is_web_public": false,
                               "message_retention_days": null,
+                              "push_notifications_enabled": false,
                               "name": "management",
                               "rendered_description": "<p>A private channel</p>",
                               "stream_id": 2,
@@ -24168,6 +24173,7 @@ paths:
                               "is_default": true,
                               "is_web_public": false,
                               "message_retention_days": null,
+                              "push_notifications_enabled": false,
                               "name": "welcome",
                               "rendered_description": "<p>A default public channel</p>",
                               "stream_id": 1,
@@ -24224,6 +24230,7 @@ paths:
                             "is_archived": false,
                             "is_web_public": false,
                             "message_retention_days": null,
+                            "push_notifications_enabled": false,
                             "name": "Denmark",
                             "rendered_description": "<p>A Scandinavian country</p>",
                             "stream_id": 7,
@@ -27249,6 +27256,7 @@ components:
             stream_post_policy: {}
             message_retention_days:
               nullable: true
+            push_notifications_enabled: {}
             history_public_to_subscribers: {}
             topics_policy: {}
             first_message_id:
@@ -27297,6 +27305,7 @@ components:
             - stream_post_policy
             - subscriber_count
             - message_retention_days
+            - push_notifications_enabled
             - history_public_to_subscribers
             - first_message_id
             - folder_id
@@ -27414,6 +27423,8 @@ components:
             - `-1` encodes retaining messages in this channel forever.
 
             **Changes**: New in Zulip 3.0 (feature level 17).
+        push_notifications_enabled:
+          $ref: "#/components/schemas/PushNotificationsEnabled"
         history_public_to_subscribers:
           type: boolean
           description: |
@@ -28565,6 +28576,8 @@ components:
             - `-1` encodes retaining messages in this channel forever.
 
             **Changes**: New in Zulip 3.0 (feature level 17).
+        push_notifications_enabled:
+          $ref: "#/components/schemas/PushNotificationsEnabled"
         history_public_to_subscribers:
           type: boolean
           description: |
@@ -30623,6 +30636,17 @@ components:
         - type: string
         - type: integer
       example: "20"
+    PushNotificationsEnabled:
+      type: boolean
+      description: |
+        Whether mobile push notifications are enabled by default for new
+        subscribers of this channel. When `true`, new subscriptions will
+        have mobile push notifications enabled by default, overriding the
+        subscriber's account-level default.
+
+        Only organization administrators can set this to `true`.
+
+        **Changes**: New in Zulip 13.0 (feature level ZF-a71492).
     TopicsPolicy:
       type: string
       enum:

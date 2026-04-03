@@ -108,6 +108,7 @@ def get_web_public_subs(
         invite_only = stream.invite_only
         is_web_public = stream.is_web_public
         message_retention_days = stream.message_retention_days
+        push_notifications_enabled = stream.push_notifications_enabled
         name = stream.name
         rendered_description = stream.rendered_description
         stream_id = stream.id
@@ -165,6 +166,7 @@ def get_web_public_subs(
             name=name,
             pin_to_top=pin_to_top,
             push_notifications=push_notifications,
+            push_notifications_enabled=push_notifications_enabled,
             rendered_description=rendered_description,
             stream_id=stream_id,
             stream_post_policy=stream_post_policy,
@@ -265,6 +267,7 @@ def build_stream_api_dict(
         is_web_public=raw_stream_dict["is_web_public"],
         message_retention_days=raw_stream_dict["message_retention_days"],
         name=raw_stream_dict["name"],
+        push_notifications_enabled=raw_stream_dict["push_notifications_enabled"],
         rendered_description=raw_stream_dict["rendered_description"],
         stream_id=raw_stream_dict["id"],
         stream_post_policy=raw_stream_dict["stream_post_policy"],
@@ -303,6 +306,7 @@ def build_stream_dict_for_sub(
     invite_only = stream_dict["invite_only"]
     is_web_public = stream_dict["is_web_public"]
     message_retention_days = stream_dict["message_retention_days"]
+    push_notifications_enabled = stream_dict["push_notifications_enabled"]
     name = stream_dict["name"]
     rendered_description = stream_dict["rendered_description"]
     stream_id = stream_dict["stream_id"]
@@ -361,6 +365,7 @@ def build_stream_dict_for_sub(
         name=name,
         pin_to_top=pin_to_top,
         push_notifications=push_notifications,
+        push_notifications_enabled=push_notifications_enabled,
         rendered_description=rendered_description,
         stream_id=stream_id,
         stream_post_policy=stream_post_policy,
@@ -387,6 +392,7 @@ def build_stream_dict_for_never_sub(
     invite_only = raw_stream_dict["invite_only"]
     is_web_public = raw_stream_dict["is_web_public"]
     message_retention_days = raw_stream_dict["message_retention_days"]
+    push_notifications_enabled = raw_stream_dict["push_notifications_enabled"]
     name = raw_stream_dict["name"]
     rendered_description = raw_stream_dict["rendered_description"]
     stream_id = raw_stream_dict["id"]
@@ -463,6 +469,7 @@ def build_stream_dict_for_never_sub(
         is_announcement_only=is_announcement_only,
         is_web_public=is_web_public,
         message_retention_days=message_retention_days,
+        push_notifications_enabled=push_notifications_enabled,
         name=name,
         rendered_description=rendered_description,
         stream_id=stream_id,
