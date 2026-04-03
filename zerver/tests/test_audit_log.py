@@ -1227,6 +1227,7 @@ class TestRealmAuditLog(ZulipTestCase):
             deactivated=False,
             author_id=user.id,
             still_url=None,
+            date_created=int(realm_emoji.date_created.timestamp()),
         )
         realm_emoji_dict[str(realm_emoji.id)] = added_emoji
         expected_extra_data = {
@@ -1257,6 +1258,7 @@ class TestRealmAuditLog(ZulipTestCase):
             deactivated=True,
             author_id=user.id,
             still_url=None,
+            date_created=int(realm_emoji.date_created.timestamp()),
         )
         realm_emoji_dict[str(realm_emoji.id)] = deactivated_emoji
 

@@ -27211,6 +27211,11 @@ components:
 
             **Changes**: New in Zulip 3.0 (feature level 7). Previously
             was accessible via an `author` object with an `id` field.
+        date_created:
+          type: integer
+          description: |
+            The UNIX timestamp for when the emoji was created, in UTC seconds.
+
     RealmDomain:
       type: object
       additionalProperties: false
