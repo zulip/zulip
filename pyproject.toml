@@ -383,7 +383,6 @@ cache_dir = "$MYPY_CONFIG_FILE_DIR/var/mypy-cache"
 strict = true
 disallow_subclassing_any = false
 disallow_untyped_calls = false
-disallow_untyped_decorators = false
 warn_return_any = false
 
 # Enable optional errors.
