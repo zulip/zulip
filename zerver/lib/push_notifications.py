@@ -1366,18 +1366,6 @@ def send_push_notifications_legacy(
     android_devices: list[PushDeviceToken],
 ) -> None:
     assert len(android_devices) + len(apple_devices) != 0
-    # While sending push notifications for new messages to older clients
-    # (which don't support E2EE), if `require_e2ee_push_notifications`
-    # realm setting is set to `true`, we redact the content.
-    if user_profile.realm.require_e2ee_push_notifications:
-        # Make deep copies so redaction doesn't affect the original dicts
-        placeholder_content = _("New message")
-        if gcm_payload and gcm_payload.get("event") != "remove":
-            gcm_payload = copy.deepcopy(gcm_payload)
-            gcm_payload["content"] = placeholder_content
-        if apns_payload and apns_payload["custom"]["zulip"].get("event") != "remove":
-            apns_payload = copy.deepcopy(apns_payload)
-            apns_payload["alert"]["body"] = placeholder_content
 
     if uses_notification_bouncer():
         send_notifications_to_bouncer(
@@ -1659,28 +1647,29 @@ def prepare_payload_and_send_push_notifications(
     ],
     get_payload_to_encrypt: Callable[[], dict[str, Any]],
 ) -> None:
-    # Send legacy/non-E2EE push notifications.
-    push_device_tokens = PushDeviceToken.objects.filter(user=user_profile).order_by("id")
-    if push_device_tokens:
-        apple_devices, android_devices = [], []
+    if not user_profile.realm.require_e2ee_push_notifications:
+        # Send legacy/non-E2EE push notifications.
+        push_device_tokens = PushDeviceToken.objects.filter(user=user_profile).order_by("id")
+        if push_device_tokens:
+            apple_devices, android_devices = [], []
 
-        for push_device_token in push_device_tokens:
-            if push_device_token.kind == PushDeviceToken.APNS:
-                apple_devices.append(push_device_token)
-            else:
-                android_devices.append(push_device_token)
+            for push_device_token in push_device_tokens:
+                if push_device_token.kind == PushDeviceToken.APNS:
+                    apple_devices.append(push_device_token)
+                else:
+                    android_devices.append(push_device_token)
 
-        apns_payload, gcm_payload, gcm_options = get_payload_legacy(
-            bool(apple_devices), bool(android_devices)
-        )
-        send_push_notifications_legacy(
-            user_profile, apns_payload, gcm_payload, gcm_options, apple_devices, android_devices
-        )
-    else:
-        logger.info(
-            "Skipping legacy push notifications for user %s because there are no registered devices",
-            user_profile.id,
-        )
+            apns_payload, gcm_payload, gcm_options = get_payload_legacy(
+                bool(apple_devices), bool(android_devices)
+            )
+            send_push_notifications_legacy(
+                user_profile, apns_payload, gcm_payload, gcm_options, apple_devices, android_devices
+            )
+        else:
+            logger.info(
+                "Skipping legacy push notifications for user %s because there are no registered devices",
+                user_profile.id,
+            )
 
     # Send E2EE push notifications.
     # Uses 'zerver_device_user_push_token_id_idx' index.
