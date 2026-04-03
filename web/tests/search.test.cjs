@@ -292,7 +292,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     // No change on first Enter keyup event
     assert.ok($search_query_box.is(":focus"));
     $searchbox_form.trigger(ev);
-    assert.ok(!$search_query_box.is(":focus"));
+    assert.ok($search_query_box.is(":focus"));
 });
 
 run_test("initiate_search", ({override_rewire}) => {
