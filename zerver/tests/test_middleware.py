@@ -1,8 +1,10 @@
 import time
-from unittest.mock import patch
+from typing import cast
+from unittest.mock import Mock, patch
 
 from bs4 import BeautifulSoup
 from django.http import HttpResponse
+from django.test import override_settings
 
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.lib.realm_icon import get_realm_icon_url
@@ -10,7 +12,7 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.utils import assert_is_not_none
-from zerver.middleware import LogRequests, is_slow_query, write_log_line
+from zerver.middleware import JsonErrorHandler, LogRequests, is_slow_query, write_log_line
 from zerver.models.realms import get_realm
 from zilencer.models import RemoteZulipServer
 
@@ -214,3 +216,22 @@ class LogRequestsTest(ZulipTestCase):
         with self.assertLogs("zulip.requests", level="INFO") as m:
             LogRequests(lambda _: HttpResponse())(request)
             self.assertIn(expected_requester, m.output[0])
+
+
+class JsonErrorHandlerTest(ZulipTestCase):
+    @override_settings(TEST_SUITE=False)
+    @patch("zerver.middleware.signals.got_request_exception.send")
+    @patch("zerver.middleware.log_response")
+    def test_json_endpoint_exception_returns_json_error(
+        self,
+        mock_log_response: Mock,
+        mock_send: Mock,
+    ) -> None:
+        request = HostRequestMock(path="/json/messages")
+        handler = JsonErrorHandler(lambda _: HttpResponse())
+
+        response = handler.process_exception(request, Exception("Server error"))
+
+        self.assertIsNotNone(response)
+        response = cast(HttpResponse, response)
+        self.assert_json_error(response, "Internal server error", status_code=500)
