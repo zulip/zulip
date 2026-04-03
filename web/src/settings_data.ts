@@ -313,8 +313,7 @@ export function using_dark_theme(): boolean {
 
     if (
         user_settings.color_scheme === settings_config.color_scheme_values.automatic.code &&
-        window.matchMedia &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches
+        window.matchMedia?.("(prefers-color-scheme: dark)").matches
     ) {
         return true;
     }

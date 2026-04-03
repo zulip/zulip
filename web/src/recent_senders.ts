@@ -190,7 +190,7 @@ export function process_topic_edit(opts: {
 export function update_topics_of_deleted_message_ids(message_ids: number[]): void {
     for (const message_id of message_ids) {
         const message = message_store.get(message_id);
-        if (!message || message.type !== "stream") {
+        if (message?.type !== "stream") {
             continue;
         }
 
