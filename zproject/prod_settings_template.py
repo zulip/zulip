@@ -761,6 +761,11 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## zulip-secrets.conf.
 # NEXTCLOUD_SERVER = "https://nextcloud.example.com"
 
+## Controls the Galène video call integration. You must also
+## set galene_admin_username and galene_admin_password in
+## zulip-secrets.conf.
+# GALENE_URL = "https://galene.example.org"
+
 ################
 ## AI Features
 ##

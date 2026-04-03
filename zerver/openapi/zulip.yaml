@@ -5874,11 +5874,15 @@ paths:
                                         - 5 = Zoom (Server to Server OAuth integration)
                                         - 6 = Constructor Groups
                                         - 7 = Nextcloud Talk
+                                        - 8 = Galène
 
                                         Note that only one of the [Zoom integrations][zoom-video-calls] can
                                         be configured on a Zulip server.
 
-                                        **Changes**: In Zulip 12.0 (feature level 465), added the
+                                        **Changes**: In Zulip 12.0 (feature level ZF-0c332d),
+                                        added the Galène option.
+
+                                        In Zulip 12.0 (feature level 465), added the
                                         Constructor Groups option.
 
                                         In Zulip 12.0 (feature level 460), added the
@@ -20158,11 +20162,15 @@ paths:
                           - 5 = Zoom (Server to Server OAuth integration)
                           - 6 = Constructor Groups
                           - 7 = Nextcloud Talk
+                          - 8 = Galène
 
                           Note that only one of the [Zoom integrations][zoom-video-calls] can
                           be configured on a Zulip server.
 
-                          **Changes**: In Zulip 12.0 (feature level 465), added the
+                          **Changes**: In Zulip 12.0 (feature level ZF-0c332d)
+                          added the Galène option.
+
+                          In Zulip 12.0 (feature level 465), added the
                           Nextcloud Talk option.
 
                           In Zulip 12.0 (feature level 460), added the
@@ -26473,6 +26481,59 @@ paths:
                         "msg": "",
                         "result": "success",
                         "url": "https://example.constructor.app/groups/room/room-123",
+                      }
+
+  /calls/galene/create:
+    post:
+      tags: ["channels"]
+      operationId: create-galene-video-call
+      summary: Create Galène video call
+      description: |
+        Create a video call URL for a Galène video call. Requires
+        [Galène](/integrations/galene) to be configured on the
+        Zulip server.
+
+        **Changes**: New in Zulip 12.0 (feature level ZF-0c332d)
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                channel:
+                  type: string
+                  description: |
+                    Channel (aka stream) name for the associated Zulip chat.
+                  example: "devel"
+                topic:
+                  type: string
+                  description: |
+                    Topic name for the associated Zulip chat.
+                  example: "weekly-check-in"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      url:
+                        description: |
+                          The URL for the Galène conversation.
+                        type: string
+                        example: "/calls/galene/join?q=eyJuIjoiZGV2ZWwvdGVhbS1jaGVjay1pbiJ9:z_mQK9dQk8jSiQuHml1hyst5_4XAjVGPjRFMTUZcCAw"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "url": "/calls/galene/join?q=eyJuIjoiZGV2ZWwvdGVhbS1jaGVjay1pbiJ9:z_mQK9dQk8jSiQuHml1hyst5_4XAjVGPjRFMTUZcCAw",
                       }
 
 components:
