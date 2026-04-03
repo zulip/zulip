@@ -389,6 +389,14 @@ function create_stream(): void {
         ...group_setting_values,
     };
 
+    // Only present for admins, so guard against it being absent.
+    const $push_notifications_enabled = $<HTMLInputElement>("#id_new_push_notifications_enabled");
+    if ($push_notifications_enabled.length > 0) {
+        data["push_notifications_enabled"] = JSON.stringify(
+            $push_notifications_enabled.prop("checked"),
+        );
+    }
+
     assert(folder_widget !== undefined);
     const folder_id = folder_widget.value();
     if (folder_id !== settings_config.no_folder_selected) {

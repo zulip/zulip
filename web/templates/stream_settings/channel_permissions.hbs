@@ -146,4 +146,14 @@
             </div>
         </div>
     {{/if}}
+    <div class="push-notifications-enabled">
+        {{> ../settings/settings_checkbox
+          prefix=prefix
+          setting_name="push_notifications_enabled"
+          is_checked=(lookup sub "push_notifications_enabled")
+          is_disabled=disable_push_notifications
+          label=(t "Mobile push notifications enabled by default")
+          tooltip_message=push_notifications_tooltip
+          }}
+    </div>
 </div>

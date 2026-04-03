@@ -30,6 +30,7 @@ from zerver.actions.streams import (
     deactivated_streams_by_old_name,
     do_change_stream_group_based_setting,
     do_change_stream_permission,
+    do_change_subscription_property,
     do_deactivate_stream,
     do_set_stream_property,
     do_unarchive_stream,
@@ -2466,6 +2467,223 @@ class StreamAdminTest(ZulipTestCase):
             f"/json/streams/{stream.id}", {"message_retention_days": orjson.dumps(0).decode()}
         )
         self.assert_json_error(result, "Bad value for 'message_retention_days': 0")
+
+    def test_stream_push_notifications_enabled_default_value(self) -> None:
+        """New streams default to push_notifications_enabled=False."""
+        user_profile = self.example_user("iago")
+        self.login_user(user_profile)
+        stream = self.subscribe(user_profile, "test_push_default")
+        self.assertFalse(stream.push_notifications_enabled)
+
+    def test_update_stream_push_notifications_enabled(self) -> None:
+        """Only admins can change push_notifications_enabled; the update
+        fires a stream event and persists the value."""
+        admin = self.example_user("iago")
+        non_admin = self.example_user("hamlet")
+        self.login_user(admin)
+        stream = self.subscribe(admin, "test_push_stream")
+        self.subscribe(non_admin, "test_push_stream")
+        realm = admin.realm
+
+        # Non-admin without channel-admin rights fails the channel-admin check first.
+        self.login_user(non_admin)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"push_notifications_enabled": orjson.dumps(True).decode()},
+        )
+        self.assert_json_error(result, "You do not have permission to administer this channel.")
+
+        # Channel admin passes the channel-admin check but not the realm-admin check.
+        do_change_stream_group_based_setting(
+            stream,
+            "can_administer_channel_group",
+            UserGroupMembersData(direct_members=[non_admin.id], direct_subgroups=[]),
+            acting_user=admin,
+        )
+        self.login_user(non_admin)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"push_notifications_enabled": orjson.dumps(True).decode()},
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        self.login_user(admin)
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.client_patch(
+                f"/json/streams/{stream.id}",
+                {"push_notifications_enabled": orjson.dumps(True).decode()},
+            )
+        self.assert_json_success(result)
+        stream = get_stream("test_push_stream", realm)
+        self.assertTrue(stream.push_notifications_enabled)
+
+        event = events[0]["event"]
+        self.assertEqual(
+            event,
+            dict(
+                op="update",
+                type="stream",
+                property="push_notifications_enabled",
+                value=True,
+                stream_id=stream.id,
+                name="test_push_stream",
+            ),
+        )
+        notified_user_ids = set(events[0]["users"])
+        self.assertEqual(notified_user_ids, set(active_non_guest_user_ids(realm.id)))
+
+        audit_log = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
+            modified_stream=stream,
+        ).last()
+        assert audit_log is not None
+        self.assertEqual(
+            audit_log.extra_data,
+            {
+                RealmAuditLog.OLD_VALUE: False,
+                RealmAuditLog.NEW_VALUE: True,
+                "property": "push_notifications_enabled",
+            },
+        )
+
+    def test_new_subscription_gets_push_notifications_from_stream(self) -> None:
+        """When a stream has push_notifications_enabled=True, brand-new
+        subscriptions get push_notifications=True, overriding the user default."""
+        admin = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        self.login_user(admin)
+
+        stream = self.subscribe(admin, "push_default_stream")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"push_notifications_enabled": orjson.dumps(True).decode()},
+        )
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertTrue(stream.push_notifications_enabled)
+
+        # hamlet's account default is off, so push_notifications=True below
+        # must come from the stream override.
+        self.assertFalse(hamlet.enable_stream_push_notifications)
+
+        self.login_user(hamlet)
+        result = self.client_post(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps([{"name": "push_default_stream"}]).decode()},
+        )
+        self.assert_json_success(result)
+        sub = Subscription.objects.get(
+            user_profile=hamlet,
+            recipient=stream.recipient,
+        )
+        self.assertTrue(sub.push_notifications)
+
+    def test_resubscription_preserves_push_notifications_preference(self) -> None:
+        """Re-subscribing a previously unsubscribed user does not overwrite
+        the stored push_notifications preference they had before."""
+        admin = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        self.login_user(admin)
+
+        stream = self.subscribe(admin, "resubscribe_stream")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"push_notifications_enabled": orjson.dumps(True).decode()},
+        )
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+
+        self.login_user(hamlet)
+        result = self.client_post(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps([{"name": "resubscribe_stream"}]).decode()},
+        )
+        self.assert_json_success(result)
+        sub = Subscription.objects.get(user_profile=hamlet, recipient=stream.recipient)
+        self.assertTrue(sub.push_notifications)
+
+        # Turn off push notifications for this subscription.
+        do_change_subscription_property(
+            hamlet, sub, stream, "push_notifications", False, acting_user=hamlet
+        )
+        sub.refresh_from_db()
+        self.assertFalse(sub.push_notifications)
+
+        # Unsubscribe and re-subscribe; stored preference must survive the round-trip.
+        self.client_delete(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps(["resubscribe_stream"]).decode()},
+        )
+        sub.refresh_from_db()
+        self.assertFalse(sub.active)
+
+        result = self.client_post(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps([{"name": "resubscribe_stream"}]).decode()},
+        )
+        self.assert_json_success(result)
+        sub.refresh_from_db()
+        self.assertTrue(sub.active)
+        # push_notifications should remain False, not be reset to True.
+        self.assertFalse(sub.push_notifications)
+
+    def test_create_stream_with_push_notifications_enabled(self) -> None:
+        """An admin can set push_notifications_enabled=True when creating a stream.
+        A non-admin cannot."""
+        admin = self.example_user("iago")
+        non_admin = self.example_user("hamlet")
+        realm = admin.realm
+
+        # add_subscriptions_backend uses @transaction.atomic(savepoint=False), so
+        # wrap the expected-failure call in a savepoint to avoid aborting the
+        # test transaction.
+        self.login_user(non_admin)
+        with self.artificial_transaction_savepoint():
+            result = self.client_post(
+                "/json/users/me/subscriptions",
+                {
+                    "subscriptions": orjson.dumps([{"name": "push_create_nonadmin"}]).decode(),
+                    "push_notifications_enabled": orjson.dumps(True).decode(),
+                },
+            )
+        self.assert_json_error(result, "Insufficient permission")
+
+        # Same guard on /channels/create.
+        with self.artificial_transaction_savepoint():
+            result = self.client_post(
+                "/json/channels/create",
+                {
+                    "name": "push_create_nonadmin_v2",
+                    "subscribers": orjson.dumps([]).decode(),
+                    "push_notifications_enabled": orjson.dumps(True).decode(),
+                },
+            )
+        self.assert_json_error(result, "Insufficient permission")
+
+        self.login_user(admin)
+        result = self.client_post(
+            "/json/users/me/subscriptions",
+            {
+                "subscriptions": orjson.dumps([{"name": "push_create_admin"}]).decode(),
+                "push_notifications_enabled": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        stream = get_stream("push_create_admin", realm)
+        self.assertTrue(stream.push_notifications_enabled)
+
+        # Verify the /channels/create endpoint also persists the field for admins.
+        result = self.client_post(
+            "/json/channels/create",
+            {
+                "name": "push_create_via_channels_api",
+                "subscribers": orjson.dumps([]).decode(),
+                "push_notifications_enabled": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        stream = get_stream("push_create_via_channels_api", realm)
+        self.assertTrue(stream.push_notifications_enabled)
 
     def do_test_change_stream_permission_setting(self, setting_name: str) -> None:
         user_profile = self.example_user("iago")

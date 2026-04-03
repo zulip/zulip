@@ -481,6 +481,7 @@ def send_subscription_add_events(
                 is_web_public=stream_dict["is_web_public"],
                 message_retention_days=stream_dict["message_retention_days"],
                 name=stream_dict["name"],
+                push_notifications_enabled=stream_dict["push_notifications_enabled"],
                 rendered_description=stream_dict["rendered_description"],
                 stream_id=stream_dict["stream_id"],
                 stream_post_policy=stream_dict["stream_post_policy"],
@@ -831,6 +832,9 @@ def bulk_add_subscriptions(
                 color=color,
                 recipient_id=recipient_id,
             )
+            # Only applies to new subs; subs_to_activate preserve their stored preference.
+            if stream.push_notifications_enabled:
+                sub.push_notifications = True
             sub_info = SubInfo(user_profile, sub, stream)
             subs_to_add.append(sub_info)
 
@@ -1748,6 +1752,9 @@ def do_set_stream_property(stream: Stream, name: str, value: Any, acting_user: U
         event["value"] = StreamTopicsPolicyEnum(value).name
 
     send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
+
+    if name != "topics_policy":
+        return
 
     sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
 
