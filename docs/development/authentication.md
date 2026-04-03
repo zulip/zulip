@@ -105,6 +105,17 @@ details worth understanding:
 - Put the private key file you got from apple at the path
   `zproject/dev_apple.key`.
 
+### Discord
+
+- Register an OAuth application with Discord at
+  <https://discord.com/developers/applications>.
+  Specify `http://auth.zulipdev.com:9991/complete/discord/` as the callback URL.
+
+- You should get a page containing the Client ID and Secret for
+  your new application. In `dev-secrets.conf`, enter the Client
+  ID as `social_auth_discord_key` and the Secret as
+  `social_auth_discord_secret`.
+
 ### SAML
 
 - Sign up for a [developer Okta account](https://developer.okta.com/).
