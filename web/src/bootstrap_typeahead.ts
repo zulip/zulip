@@ -99,9 +99,9 @@
  *   Since it's in the right part of the DOM, we don't need to do
  *   the manual positioning in the show() function.
  *
- * 11. Add `openInputFieldOnKeyUp` option:
+ * 11. Add `openInputFieldOnInput` option:
  *
- *   If the typeahead isn't shown yet, the `lookup` call in the keyup
+ *   If the typeahead isn't shown yet, the `lookup` call in the input
  *   handler will open it. Here we make a callback to the input field
  *   before we open the lookahead in case it needs to make UI changes first
  *   (e.g. widening the search bar).
@@ -249,7 +249,7 @@ export class Typeahead<ItemType extends string | object> {
     select_on_escape_condition: () => boolean;
     // Used to clear tooltip instances attached to typeahead container.
     clear_typeahead_tooltip: (() => void) | undefined;
-    openInputFieldOnKeyUp: (() => void) | undefined;
+    openInputFieldOnInput: (() => void) | undefined;
     closeInputFieldOnHide: (() => void) | undefined;
     helpOnEmptyStrings: boolean;
     tabIsEnter: boolean;
@@ -310,7 +310,7 @@ export class Typeahead<ItemType extends string | object> {
         this.stopAdvance = options.stopAdvance ?? false;
         this.select_on_escape_condition = options.select_on_escape_condition ?? (() => false);
         this.advanceKeys = options.advanceKeys ?? [];
-        this.openInputFieldOnKeyUp = options.openInputFieldOnKeyUp;
+        this.openInputFieldOnInput = options.openInputFieldOnInput;
         this.closeInputFieldOnHide = options.closeInputFieldOnHide;
         this.tabIsEnter = options.tabIsEnter ?? true;
         this.helpOnEmptyStrings = options.helpOnEmptyStrings ?? false;
@@ -693,6 +693,7 @@ export class Typeahead<ItemType extends string | object> {
             .on("blur", this.blur.bind(this))
             .on("keypress", this.keypress.bind(this))
             .on("keyup", this.keyup.bind(this))
+            .on("input", this.input.bind(this))
             .on("click", this.element_click.bind(this))
             .on("focus", this.element_focus.bind(this))
             .on("keydown", this.keydown.bind(this))
@@ -717,7 +718,7 @@ export class Typeahead<ItemType extends string | object> {
     unlisten(): void {
         this.hide();
         this.$container.remove();
-        const events = ["blur", "keydown", "keyup", "keypress", "click", "focus"];
+        const events = ["blur", "keydown", "keyup", "keypress", "click", "focus", "input"];
         for (const event of events) {
             $(this.input_element.$element).off(event);
         }
@@ -780,6 +781,10 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     keydown(e: JQuery.KeyDownEvent): void {
+        // Any key interaction should give keyboard priority over the
+        // mouse for selecting the currently highlighted typeahead item.
+        this.mouse_moved_since_typeahead = false;
+
         if (this.trigger_selection(e)) {
             if (!this.shown) {
                 return;
@@ -802,17 +807,14 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     keyup(e: JQuery.KeyUpEvent): void {
-        this.mouse_moved_since_typeahead = false;
-        // NOTE: Ideally we can ignore meta keyup calls here but
-        // it's better to just trigger the lookup call to update the list in case
-        // it did modify the query. For example, `Command + delete` on Mac
-        // doesn't trigger a keyup event but when `Command` is released, it
-        // triggers a keyup event which correctly updates the list.
+        // This handler only deals with navigation/selection keys. Query
+        // updates from typing are driven by the `input` event handler
+        // below, which fires only when the input's value actually
+        // changes -- so it naturally ignores stray keyups from keys
+        // whose keydown fired on a different element (e.g., the Tab or
+        // Shift keyup that lands here when focus moves into a typeahead
+        // input via keyboard navigation).
         switch (e.key) {
-            case "ArrowDown":
-            case "ArrowUp":
-                break;
-
             case "Tab":
                 // If the typeahead is not shown or tabIsEnter option is not set, do nothing and return
                 if (!this.tabIsEnter || !this.shown) {
@@ -852,31 +854,26 @@ export class Typeahead<ItemType extends string | object> {
                 break;
 
             default:
-                // to stop typeahead from showing up momentarily
-                // when shift + tabbing to the topic field
-                if (
-                    e.key === "Shift" &&
-                    the(this.input_element.$element).id === "stream_message_recipient_topic"
-                ) {
-                    return;
-                }
-                if (this.openInputFieldOnKeyUp !== undefined && !this.shown) {
-                    // If the typeahead isn't shown yet, the `lookup` call will open it.
-                    // Here we make a callback to the input field before we open the
-                    // lookahead in case it needs to make UI changes first (e.g. widening
-                    // the search bar).
-                    this.openInputFieldOnKeyUp();
-                }
-                if (e.key === "Backspace") {
-                    this.lookup(this.hideOnEmptyAfterBackspace);
-                    return;
-                }
-                this.lookup(false);
+                return;
         }
 
         this.maybeStopAdvance(e);
 
         e.preventDefault();
+    }
+
+    input(e: JQuery.TriggeredEvent): void {
+        if (this.openInputFieldOnInput !== undefined && !this.shown) {
+            // If the typeahead isn't shown yet, the `lookup` call will open it.
+            // Here we make a callback to the input field before we open the
+            // lookahead in case it needs to make UI changes first (e.g. widening
+            // the search bar).
+            this.openInputFieldOnInput();
+        }
+        const input_event = e.originalEvent;
+        const is_backspace =
+            input_event instanceof InputEvent && input_event.inputType === "deleteContentBackward";
+        this.lookup(is_backspace ? this.hideOnEmptyAfterBackspace : false);
     }
 
     blur(e: JQuery.BlurEvent): void {
@@ -994,7 +991,7 @@ type TypeaheadOptions<ItemType> = {
     matcher?: (query: string) => (item: ItemType) => boolean;
     on_escape?: () => void;
     clear_typeahead_tooltip?: () => void;
-    openInputFieldOnKeyUp?: () => void;
+    openInputFieldOnInput?: () => void;
     option_label?: (matching_items: ItemType[], item: ItemType) => string | false;
     non_tippy_parent_element?: string;
     sorter: (items: ItemType[], query: string) => ItemType[];
