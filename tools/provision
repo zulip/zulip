@@ -48,6 +48,14 @@ PARENT_PATH=$(
     pwd -P
 )
 cd "$PARENT_PATH"
+
+if [ -L .venv ]; then
+    echo "Error: This appears to be a worktree with a symlinked .venv." >&2
+    echo "Running provision here would modify the main repo's virtualenv." >&2
+    echo "Run provision in the main repo instead." >&2
+    exit 1
+fi
+
 mkdir -p var/log
 LOG_PATH="var/log/provision.log"
 

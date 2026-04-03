@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+this_dir=${BASH_SOURCE[0]%/*}
+main_repo=$(cd "$this_dir/.." && pwd)
+worktree_name="${1:?Usage: $0 <name> [branch]}"
+branch="${2:-$worktree_name}"
+worktree_path="$HOME/zulip-$worktree_name"
+
+# Create worktree, trying to create a new branch first, falling back
+# to checking out an existing one.
+git -C "$main_repo" worktree add "$worktree_path" -b "$branch" 2>/dev/null \
+    || git -C "$main_repo" worktree add "$worktree_path" "$branch"
+
+# Symlink shared provisioned resources so the worktree works without
+# running provision again.
+ln -s "$main_repo/.venv" "$worktree_path/.venv"
+ln -s "$main_repo/node_modules" "$worktree_path/node_modules"
+ln -s "$main_repo/var" "$worktree_path/var"
+
+# Symlink dev secrets
+ln -s "$main_repo/zproject/dev-secrets.conf" "$worktree_path/zproject/dev-secrets.conf"
+
+# Symlink Claude Code local settings
+ln -sf "$main_repo/.claude/settings.local.json" "$worktree_path/.claude/settings.local.json"
+
+# Symlink gitignored contents inside tracked "generated" directories
+for gen_dir in static/generated web/generated; do
+    for item in "$main_repo/$gen_dir"/*; do
+        name=$(basename "$item")
+        [ "$name" = "README.md" ] && continue
+        # Webpack needs emoji assets as real files, not symlinks
+        # (see tools/setup/emoji/build_emoji)
+        if [ "$gen_dir" = "web/generated" ] && { [ "$name" = "emoji" ] || [ "$name" = "emoji-styles" ]; }; then
+            cp -r "$item" "$worktree_path/$gen_dir/$name"
+        else
+            ln -s "$item" "$worktree_path/$gen_dir/$name"
+        fi
+    done
+done
+
+# Symlink webpack bundles (entire dir is gitignored)
+ln -s "$main_repo/static/webpack-bundles" "$worktree_path/static/webpack-bundles" 2>/dev/null || true
+
+# Symlink landing page generated images
+mkdir -p "$worktree_path/static/images/landing-page/hello"
+ln -s "$main_repo/static/images/landing-page/hello/generated" \
+    "$worktree_path/static/images/landing-page/hello/generated" 2>/dev/null || true
+
+# Symlink compiled locale .mo files and gitignored locale dirs
+for mo in "$main_repo"/locale/*/LC_MESSAGES/django.mo; do
+    [ -f "$mo" ] || continue
+    target="${mo#"$main_repo"/}"
+    target_dir=$(dirname "$worktree_path/$target")
+    mkdir -p "$target_dir"
+    ln -sf "$mo" "$worktree_path/$target"
+done
+# Symlink gitignored locale JSON files
+for json in "$main_repo"/locale/*.json; do
+    [ -f "$json" ] || continue
+    ln -sf "$json" "$worktree_path/locale/$(basename "$json")"
+done
+# Symlink entirely gitignored locale dirs (e.g., locale/en)
+for dir in "$main_repo"/locale/*/; do
+    name=$(basename "$dir")
+    [ -d "$worktree_path/locale/$name" ] && continue
+    ln -s "$dir" "$worktree_path/locale/$name"
+done
+
+# Symlink Starlight help center build output
+ln -s "$main_repo/starlight_help/dist" "$worktree_path/starlight_help/dist" 2>/dev/null || true
+
+# Symlink test fixtures
+ln -sf "$main_repo/zerver/tests/fixtures/messages.json" \
+    "$worktree_path/zerver/tests/fixtures/messages.json" 2>/dev/null || true
+
+# Symlink TypeScript build info
+ln -sf "$main_repo/tsconfig.tsbuildinfo" "$worktree_path/tsconfig.tsbuildinfo" 2>/dev/null || true
+echo "Worktree ready at $worktree_path"
