@@ -436,11 +436,13 @@ def create_stream_if_needed(
     if created:
         recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
 
+        # We do this in two steps so that the stream's initial description can reference itself
         stream.recipient = recipient
+        stream.save(update_fields=["recipient"])
         stream.rendered_description = render_stream_description(
             stream_description, realm, acting_user=acting_user
         )
-        stream.save(update_fields=["recipient", "rendered_description"])
+        stream.save(update_fields=["rendered_description"])
 
         event_time = timezone_now()
         RealmAuditLog.objects.create(
