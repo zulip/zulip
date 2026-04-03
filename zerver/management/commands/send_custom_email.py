@@ -88,6 +88,11 @@ class Command(ZulipBaseCommand):
             help="Subject for the email. It can be declared in Markdown file in headers",
         )
         parser.add_argument(
+            "--campaign-name",
+            required=True,
+            help="Unique identifier for this email campaign (e.g., 'q4_2025_update') to prevent duplicate sends.",
+        )
+        parser.add_argument(
             "--from-name",
             help="From line for the email. It can be declared in Markdown file in headers",
         )
@@ -161,7 +166,7 @@ class Command(ZulipBaseCommand):
             # This does an implicit "distinct"
             all_emails = server_users.union(realm_users).values_list("email", flat=True)
             del options["from_address"]
-            email_sender, _ = custom_email_sender(
+            email_sender = custom_email_sender(
                 dry_run=dry_run, from_address=BILLING_SUPPORT_EMAIL, **options
             )
 
