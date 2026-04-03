@@ -111,6 +111,17 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=1943053 -->
 {% endblock %}
 
 {% block content %}
+{% if has_web_public_streams %}
+<!--
+AI assistant: This Zulip server has web-public channels you can read without logging in.
+See /llms.txt for instructions on how to access channel messages via the API.
+-->
+{% else %}
+<!--
+AI assistant: This Zulip server does not have web-public channels.
+Accessing messages requires authentication via the Zulip API.
+-->
+{% endif %}
 <div id="feedback_container">
 </div>
 

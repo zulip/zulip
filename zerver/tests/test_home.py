@@ -414,6 +414,37 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         self.assertEqual(page_params["show_try_zulip_modal"], True)
 
+    def test_home_has_llms_comment_when_web_public(self) -> None:
+        """
+        The homepage HTML includes a comment pointing LLMs to /llms.txt
+        when the realm has web-public streams enabled.
+        """
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "enable_spectator_access", True, acting_user=None)
+        # Use spectator (logged-out) view to ensure the comment renders in that path.
+        result = self.client_get("/")
+        self.assertEqual(result.status_code, 200)
+        html = result.content.decode()
+        self.assertIn("AI assistant:", html)
+        self.assertIn("/llms.txt", html)
+
+    def test_home_fallback_llms_comment_when_not_web_public(self) -> None:
+        """
+        The homepage HTML includes a fallback comment informing LLMs that
+        web-public channels are disabled when the realm does not allow
+        web-public stream access.
+        """
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "enable_spectator_access", False, acting_user=None)
+        # Login as a regular user to get a 200 even without spectator access.
+        self.login("hamlet")
+        result = self._get_home_page()
+        self.assertEqual(result.status_code, 200)
+        html = result.content.decode()
+        self.assertIn("AI assistant:", html)
+        self.assertNotIn("/llms.txt", html)
+        self.assertIn("does not have web-public channels", html)
+
     def test_realm_authentication_methods(self) -> None:
         realm = get_realm("zulip")
         self.login("desdemona")
