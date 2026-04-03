@@ -495,6 +495,55 @@ class UnreadCountTests(ZulipTestCase):
             message_ids,
         )
 
+    def test_update_flags_for_narrow_with_operator(self) -> None:
+        """Test that the with operator in a narrow is correctly handled
+        by the update_message_flags_for_narrow endpoint."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        message_ids = [
+            self.send_stream_message(
+                self.example_user("cordelia"), "Verona", topic_name="test topic"
+            )
+            for i in range(5)
+        ]
+
+        # First mark all messages as read.
+        self.assert_json_success(
+            self.client_post(
+                "/json/messages/flags",
+                {
+                    "messages": orjson.dumps(message_ids).decode(),
+                    "op": "add",
+                    "flag": "read",
+                },
+            )
+        )
+
+        # Mark messages as unread using a narrow that includes a
+        # "with" operator, as the web app sends for topic views
+        # accessed via permalink URLs.
+        response = self.assert_json_success(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": message_ids[0],
+                    "num_before": 0,
+                    "num_after": 999,
+                    "narrow": orjson.dumps(
+                        [
+                            {"operator": "channel", "operand": get_stream("Verona", user.realm).id},
+                            {"operator": "topic", "operand": "test topic"},
+                            {"operator": "with", "operand": str(message_ids[2])},
+                        ]
+                    ).decode(),
+                    "op": "remove",
+                    "flag": "read",
+                },
+            )
+        )
+        self.assertEqual(response["processed_count"], 5)
+        self.assertEqual(response["updated_count"], 5)
+
     def test_update_flags_for_narrow_misuse(self) -> None:
         self.login("hamlet")
 
