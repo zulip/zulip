@@ -1,4 +1,7 @@
-<div class="dropdown-list-container {{widget_name}}-dropdown-list-container">
+{{! We set tabindex to -1 so the element can receive focus via JS without entering the Tab order.
+We focus on the list container so that we can setup a listener on the container and capture
+events for keyboard navigation. }}
+<div class="dropdown-list-container {{widget_name}}-dropdown-list-container" tabindex="-1">
     <div class="dropdown-list-search popover-filter-input-wrapper">
         <input class="dropdown-list-search-input popover-filter-input filter_text_input{{#if hide_search_box}} hide{{/if}}" type="text" placeholder="{{t 'Filter' }}" autofocus/>
     </div>
