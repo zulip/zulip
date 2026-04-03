@@ -470,6 +470,10 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: dict[str, Any] = {
         "attr_user_permanent_id": "email",
         "attr_first_name": "first_name",
         "attr_last_name": "last_name",
+        ## If your IdP doesn't split the name into the first and last name, and instead sends
+        ## the full name in a single attribute, you can remove the above attr_*_name lines
+        ## and instead configure attr_full_name below.
+        # "attr_full_name": "fullname",
         "attr_username": "email",
         "attr_email": "email",
         ## List of additional attributes to fetch from the SAMLResponse.

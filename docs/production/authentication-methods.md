@@ -991,8 +991,7 @@ integration](../production/scim.md).
 
    ```
    "attr_user_permanent_id": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
-   "attr_first_name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
-   "attr_last_name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+   "attr_full_name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
    "attr_username": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
    "attr_email": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
    ```
