@@ -19,7 +19,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.url_encoding import message_link_url
 from zerver.lib.users import add_service
-from zerver.models import Recipient, Service, UserProfile
+from zerver.models import Recipient, Service, SubMessage, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 
@@ -307,9 +307,8 @@ I'm a generic exception :(
         mock_event = self.mock_event(bot_user)
         service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
 
-        # The "widget_content" key is required to be a string which is
-        # itself JSON-encoded; passing arbitrary text data in it will
-        # cause the hook to fail.
+        # The "widget_content" value must be a valid widget_content
+        # dict; passing a plain string will cause validation to fail.
         response = {"content": "whatever", "widget_content": "test"}
         expect_logging_info = self.assertLogs(level="INFO")
         expect_fail = mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
@@ -326,7 +325,7 @@ I'm a generic exception :(
                 bot_owner_notification.content,
                 """[A message](http://zulip.testserver/#narrow/channel/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
 The outgoing webhook server attempted to send a message in Zulip, but that request resulted in the following error:
-> Widgets: API programmer sent invalid JSON content\nThe response contains the following payload:\n```\n'{"content": "whatever", "widget_content": "test"}'\n```""",
+> Widgets: widget_content is not a dict\nThe response contains the following payload:\n```\n'{"content": "whatever", "widget_content": "test"}'\n```""",
             )
         assert bot_user.bot_owner is not None
         self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
@@ -563,6 +562,44 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         self.assertEqual(last_message.sender_id, bot.id)
         self.assertEqual(last_message.topic_name(), "bar")
         self.assert_message_stream_name(last_message, "Denmark")
+
+    @responses.activate
+    def test_stream_message_to_outgoing_webhook_bot_with_widget(self) -> None:
+        bot_owner = self.example_user("othello")
+        bot = self.create_outgoing_bot(bot_owner)
+
+        widget_content = {
+            "widget_type": "zform",
+            "extra_data": {
+                "type": "choices",
+                "heading": "Pick a color",
+                "choices": [
+                    {"short_name": "r", "long_name": "Red", "reply": "red"},
+                    {"short_name": "b", "long_name": "Blue", "reply": "blue"},
+                ],
+            },
+        }
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json={"content": "Choose a color", "widget_content": widget_content},
+        )
+
+        with self.assertLogs(level="INFO") as logs:
+            self.send_stream_message(
+                bot_owner, "Denmark", content=f"@**{bot.full_name}** foo", topic_name="bar"
+            )
+
+        self.assert_length(responses.calls, 1)
+        self.assert_length(logs.output, 1)
+
+        last_message = self.get_last_message()
+        self.assertEqual(last_message.content, "Choose a color")
+        self.assertEqual(last_message.sender_id, bot.id)
+
+        submessage = SubMessage.objects.get(message_id=last_message.id)
+        self.assertEqual(submessage.msg_type, "widget")
+        self.assertEqual(orjson.loads(submessage.content), widget_content)
 
     @responses.activate
     def test_stream_message_failure_to_outgoing_webhook_bot(self) -> None:
