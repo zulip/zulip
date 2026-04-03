@@ -61,6 +61,16 @@ class Command(sendtestemail.Command):
                 print("Full SMTP log follows:")
                 print(f.getvalue())
                 raise CommandError("Email sending failed!")
+            except OSError as e:
+                print(f"Failed to send mails: {e}")
+                print()
+                print("Full SMTP log follows:")
+                print(f.getvalue())
+                print()
+                print(
+                    "This usually means that your host or firewall is blocking outgoing SMTP traffic."
+                )
+                raise CommandError("Email sending failed!")
         print()
         print("Successfully sent 2 emails to {}!".format(", ".join(kwargs["email"])))
 
