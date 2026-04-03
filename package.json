@@ -140,7 +140,6 @@
     "css.escape": "^1.5.1",
     "diff": "^8.0.2",
     "difflib": "^0.2.4",
-    "enhanced-resolve": "^5.8.2",
     "es-check": "^9.1.2",
     "eslint": "^9.15.0",
     "eslint-config-prettier": "^10.0.1",
