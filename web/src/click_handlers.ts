@@ -18,6 +18,7 @@ import * as emoji_picker from "./emoji_picker.ts";
 import * as flatpickr from "./flatpickr.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
+import {$t} from "./i18n.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
@@ -992,6 +993,17 @@ export function initialize(): void {
             pm_list.toggle_private_messages_section();
         }
         $left_sidebar_scrollbar.scrollTop(0);
+
+        const $icon = $("#toggle-direct-messages-section-icon");
+        const toggle: tippy.ReferenceElement & HTMLElement = util.the($icon);
+        const tippy_instance = toggle._tippy;
+        if (tippy_instance) {
+            if ($icon.hasClass("rotate-icon-down")) {
+                tippy_instance.setContent($t({defaultMessage: "Collapse direct messages"}));
+            } else {
+                tippy_instance.setContent($t({defaultMessage: "Expand direct messages"}));
+            }
+        }
     });
 
     /* The DIRECT MESSAGES label's click behavior is complicated;
