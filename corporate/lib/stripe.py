@@ -896,7 +896,7 @@ class BillingSession(ABC):
         }
 
         if hasattr(self, "user"):
-            metadata["user_id"] = self.user.id
+            metadata["user_id"] = str(self.user.id)
 
         # We only need to email customer about open invoice for manual billing.
         # If automatic charge fails, we simply void the invoice.
