@@ -21,7 +21,7 @@ def fix_emoji_metadata(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor)
         region_name=settings.S3_REGION,
         endpoint_url=settings.S3_ENDPOINT_URL,
         config=Config(
-            signature_version=None,
+            signature_version=settings.S3_SIGNATURE_VERSION,
             s3={"addressing_style": settings.S3_ADDRESSING_STYLE},
         ),
     ).Bucket(settings.S3_AVATAR_BUCKET)

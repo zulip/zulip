@@ -47,7 +47,9 @@ backend. To enable this backend, you need to do the following:
 
 1. If you are using a non-AWS block storage provider,
    you need to set the `S3_ENDPOINT_URL` setting to your
-   endpoint url (e.g., `"https://s3.eu-central-1.amazonaws.com"`).
+   endpoint url (e.g., `"https://s3.eu-central-1.amazonaws.com"`). You may also
+   need to set the `S3_SIGNATURE_VERSION` to one of the values recognized by
+   the `boto` library (e.g., `"s3v4"`).
 
    For certain AWS regions, you may need to set the `S3_REGION`
    setting to your default AWS region's code (e.g., `"eu-central-1"`).
