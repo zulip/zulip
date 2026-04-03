@@ -273,7 +273,6 @@ export class Typeahead<ItemType extends string | object> {
     hideOnEmptyAfterBackspace: boolean;
     // Used for adding a custom classname to the typeahead link.
     getCustomItemClassname: ((item: ItemType) => string) | undefined;
-
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
         if (this.input_element.type === "contenteditable") {
@@ -630,6 +629,7 @@ export class Typeahead<ItemType extends string | object> {
         }
         // Getting scroll element ensures simplebar has processed the element
         // before we render it.
+
         scroll_util.get_scroll_element(this.$menu);
         scroll_util.get_content_element(this.$menu).empty().append($items);
         return this;
