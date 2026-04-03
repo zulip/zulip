@@ -1,8 +1,10 @@
 import $ from "jquery";
 import _ from "lodash";
+import type * as tippy from "tippy.js";
 
 import * as drafts from "./drafts.ts";
 import type {Filter} from "./filter.ts";
+import {$t} from "./i18n.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_reminder from "./message_reminder.ts";
 import * as navigation_views from "./navigation_views.ts";
@@ -14,6 +16,7 @@ import * as settings_config from "./settings_config.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
+import * as util from "./util.ts";
 
 let last_mention_count = 0;
 const ls_key = "left_sidebar_views_state";
@@ -202,6 +205,17 @@ function toggle_condensed_navigation_area(): void {
         force_collapse_views();
     } else {
         force_expand_views();
+    }
+
+    const $icon = $("#toggle-top-left-navigation-area-icon");
+    const toggle: tippy.ReferenceElement & HTMLElement = util.the($icon);
+    const tippy_instance = toggle._tippy;
+    if (tippy_instance) {
+        if ($icon.hasClass("rotate-icon-down")) {
+            tippy_instance.setContent($t({defaultMessage: "Collapse views"}));
+        } else {
+            tippy_instance.setContent($t({defaultMessage: "Expand views"}));
+        }
     }
 }
 

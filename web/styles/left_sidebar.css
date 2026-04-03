@@ -745,6 +745,16 @@
     }
 }
 
+.stream-list-section-toggle {
+    &:focus {
+        outline: 0;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
+}
+
 .active-direct-messages-section {
     background-color: var(--color-background-active-narrow-filter);
 
@@ -811,7 +821,8 @@
     }
 }
 
-.stream-list-toggle-inactive-or-muted-channels.highlighted_row {
+.stream-list-toggle-inactive-or-muted-channels.highlighted_row,
+.stream-list-toggle-inactive-or-muted-channels:focus-visible {
     outline: 2px solid var(--color-outline-focus);
     outline-offset: -2px;
     background-color: var(--color-background-sidebar-action-heading-hover);
@@ -2126,18 +2137,37 @@ li.active-sub-filter {
     }
 }
 
+.bottom_left_row .sidebar-menu-icon,
+.bottom_left_row .channel-new-topic-button,
+.top_left_row .sidebar-menu-icon,
+.stream-list-section-container .sidebar-menu-icon {
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
+}
+
 /*
-    When you hover over list items, we hover
-    the vdots in light gray.
+    When you hover over or keyboard-highlight a list
+    item's menu icon, we give it a purple background.
 
     The stream icon should always display when
-    any topic is hovered, which is why it gets
-    a more specific selector here.
+    any topic is hovered/highlighted, which is why
+    it gets a more specific selector here.
 */
 #stream_filters li:hover .stream-sidebar-menu-icon,
+#stream_filters li:focus-within .stream-sidebar-menu-icon,
+#stream_filters li:has(.highlighted_row) .stream-sidebar-menu-icon,
 .top_left_row:hover .sidebar-menu-icon,
+.top_left_row:focus-within .sidebar-menu-icon,
+.top_left_row.highlighted_row .sidebar-menu-icon,
 .bottom_left_row:hover .sidebar-menu-icon,
+.bottom_left_row:focus-within .sidebar-menu-icon,
+.bottom_left_row.highlighted_row .sidebar-menu-icon,
 #stream_filters .stream-list-subsection-header:hover .sidebar-menu-icon,
+#stream_filters .stream-list-subsection-header:focus-within .sidebar-menu-icon,
+#stream_filters
+    .stream-list-subsection-header.highlighted_row
+    .sidebar-menu-icon,
 .app-main .column-left .left-sidebar .left_sidebar_menu_icon_visible {
     /* We push against `display: none` with
        `display: flex` because the sidebar vdots
@@ -2200,7 +2230,8 @@ ul.topic-list:has(.show-more-topics)::after {
     .bottom_left_row:has(
         a.sidebar-topic-action-heading:focus-visible,
         a.zoomed-new-topic:focus-visible
-    ) {
+    ),
+#more-topics-modal .bottom_left_row:has(a.zoomed-new-topic:focus-visible) {
     outline: 2px solid var(--color-outline-focus);
     outline-offset: -2px;
     background-color: var(--color-background-hover-narrow-filter);

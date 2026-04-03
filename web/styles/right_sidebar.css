@@ -46,6 +46,14 @@
     justify-self: center;
     color: var(--color-text-sidebar-heading);
     opacity: var(--opacity-sidebar-heading-icon);
+
+    &:focus {
+        outline: 0;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
 }
 
 .buddy-list-section-container {
@@ -87,6 +95,10 @@
             font-size: 1.0625em;
         }
 
+        &:focus-visible {
+            outline: 2px solid var(--color-outline-focus);
+        }
+
         /*
         Hover does not work for touch-based devices like mobile phones.
         Hence the icons does not appear, making the user unaware of its
@@ -125,7 +137,9 @@
         visibility: hidden;
     }
 
-    li:hover {
+    li:hover,
+    li:focus-within,
+    li.highlighted_user {
         .user-list-sidebar-menu-icon {
             visibility: visible;
         }
@@ -140,6 +154,7 @@
         padding: 0;
 
         &:hover,
+        &:focus-within,
         &.narrow-filter:has(a.user-presence-link:focus-visible),
         &.highlighted_user {
             background-color: var(--color-buddy-list-highlighted-user);

@@ -270,5 +270,6 @@ export function initialize(): void {
                 ui_util.hide_left_sidebar_menu_icon();
             },
         },
+        true,
     );
 }
