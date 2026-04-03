@@ -181,8 +181,18 @@ export function handle_event(submsg: Submessage): void {
 
 export function make_server_callback(
     message_id: number,
-): (opts: {msg_type: string; data: WidgetOutboundData}) => void {
-    return function (opts: {msg_type: string; data: WidgetOutboundData}) {
+): (opts: {
+    msg_type: string;
+    data: WidgetOutboundData;
+    on_success?: () => void;
+    on_error?: () => void;
+}) => void {
+    return function (opts: {
+        msg_type: string;
+        data: WidgetOutboundData;
+        on_success?: () => void;
+        on_error?: () => void;
+    }) {
         const url = "/json/submessage";
 
         void channel.post({
@@ -191,6 +201,12 @@ export function make_server_callback(
                 message_id,
                 msg_type: opts.msg_type,
                 content: JSON.stringify(opts.data),
+            },
+            success() {
+                opts.on_success?.();
+            },
+            error() {
+                opts.on_error?.();
             },
         });
     };

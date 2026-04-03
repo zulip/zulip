@@ -62,25 +62,40 @@ run_test("make_server_callback", () => {
     const message_id = 444;
     const callback = submessage.make_server_callback(message_id);
     let was_posted;
+    let post_success;
+    let post_error;
 
     channel.post = (opts) => {
         was_posted = true;
-        assert.deepEqual(opts, {
-            url: "/json/submessage",
-            data: {
-                message_id,
-                msg_type: "whatever",
-                content: '{"foo":32}',
-            },
+        assert.equal(opts.url, "/json/submessage");
+        assert.deepEqual(opts.data, {
+            message_id,
+            msg_type: "whatever",
+            content: '{"foo":32}',
         });
+        post_success = opts.success;
+        post_error = opts.error;
     };
+
+    let on_success_called = false;
+    let on_error_called = false;
 
     callback({
         msg_type: "whatever",
         data: {foo: 32},
+        on_success() {
+            on_success_called = true;
+        },
+        on_error() {
+            on_error_called = true;
+        },
     });
 
     assert.ok(was_posted);
+    post_success();
+    assert.ok(on_success_called);
+    post_error();
+    assert.ok(on_error_called);
 });
 
 run_test("check sender", () => {
