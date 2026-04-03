@@ -12643,6 +12643,19 @@ paths:
                   $ref: "#/components/schemas/HistoryPublicToSubscribers"
                 message_retention_days:
                   $ref: "#/components/schemas/MessageRetentionDays"
+                push_notifications_enabled:
+                  description: |
+                    Whether mobile push notifications should be enabled by default
+                    for new subscribers of the newly created channel. When `true`,
+                    new subscriptions will have mobile push notifications enabled
+                    by default, overriding the subscriber's account-level default.
+
+                    Only organization administrators can set or modify this value.
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-a71492).
+                  type: boolean
+                  default: false
+                  example: false
                 topics_policy:
                   $ref: "#/components/schemas/TopicsPolicy"
                 can_add_subscribers_group:
@@ -12695,6 +12708,8 @@ paths:
               is_default_stream:
                 contentType: application/json
               history_public_to_subscribers:
+                contentType: application/json
+              push_notifications_enabled:
                 contentType: application/json
               topics_policy:
                 contentType: application/json
@@ -23572,6 +23587,18 @@ paths:
                   example: false
                 message_retention_days:
                   $ref: "#/components/schemas/MessageRetentionDays"
+                push_notifications_enabled:
+                  description: |
+                    Whether mobile push notifications should be enabled by default
+                    for new subscribers of this channel. When `true`, new
+                    subscriptions will have mobile push notifications enabled by
+                    default, overriding the subscriber's account-level default.
+
+                    Only organization administrators can set this to `true`.
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-a71492).
+                  type: boolean
+                  example: false
                 is_archived:
                   description: |
                     A boolean indicating whether the channel is
@@ -24498,11 +24525,31 @@ paths:
                   $ref: "#/components/schemas/CanSubscribeGroup"
                 can_resolve_topics_group:
                   $ref: "#/components/schemas/CanResolveTopicsGroup"
+                push_notifications_enabled:
+                  description: |
+                    Whether mobile push notifications should be enabled by default
+                    for new subscribers of the newly created channel. When `true`,
+                    new subscriptions will have mobile push notifications enabled
+                    by default, overriding the subscriber's account-level default.
+                    Ignored if the server has not enabled
+                    [push notifications][mobile-push].
+
+                    Requires the user to be a [realm administrator][roles].
+
+                    [mobile-push]: https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html
+                    [roles]: /help/user-roles
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-a71492).
+                  type: boolean
+                  default: false
+                  example: true
               required:
                 - name
                 - subscribers
             encoding:
               announce:
+                contentType: application/json
+              push_notifications_enabled:
                 contentType: application/json
               can_add_subscribers_group:
                 contentType: application/json

@@ -627,6 +627,9 @@ def check_stream_update(
     elif prop == "folder_id":
         assert extra_keys == set()
         assert value is None or isinstance(value, int)
+    elif prop == "push_notifications_enabled":
+        assert extra_keys == set()
+        assert isinstance(value, bool)
     else:
         raise AssertionError(f"Unknown property: {prop}")
 
