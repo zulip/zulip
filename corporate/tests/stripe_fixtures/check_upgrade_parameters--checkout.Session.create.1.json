@@ -49,6 +49,7 @@
     "terms_of_service_acceptance": null
   },
   "customer": "cus_NORMALIZED",
+  "customer_account": null,
   "customer_creation": null,
   "customer_details": {
     "address": null,
@@ -64,6 +65,7 @@
   "discounts": null,
   "expires_at": 1000000000,
   "id": "check_upgrade_parameters--checkout.Session.create.1.json",
+  "integration_identifier": null,
   "invoice": null,
   "invoice_creation": null,
   "livemode": false,
