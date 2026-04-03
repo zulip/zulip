@@ -746,7 +746,7 @@ export class Typeahead<ItemType extends string | object> {
 
         switch (e.key) {
             case "Tab":
-                if (!this.tabIsEnter) {
+                if (!this.tabIsEnter || e.shiftKey) {
                     return;
                 }
                 e.preventDefault();
@@ -817,7 +817,7 @@ export class Typeahead<ItemType extends string | object> {
         switch (e.key) {
             case "Tab":
                 // If the typeahead is not shown or tabIsEnter option is not set, do nothing and return
-                if (!this.tabIsEnter || !this.shown) {
+                if (!this.tabIsEnter || !this.shown || e.shiftKey) {
                     return;
                 }
 
