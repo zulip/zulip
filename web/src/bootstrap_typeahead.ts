@@ -245,6 +245,8 @@ export class Typeahead<ItemType extends string | object> {
     query = "";
     mouse_moved_since_typeahead = false;
     shown = false;
+    // Tracks which keys had a keydown event fire on this element.
+    keydown_set = new Set<string>();
     // To trigger updater when Esc is pressed only during the stream topic typeahead in composebox.
     select_on_escape_condition: () => boolean;
     // Used to clear tooltip instances attached to typeahead container.
@@ -772,6 +774,7 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     keydown(e: JQuery.KeyDownEvent): void {
+        this.keydown_set.add(e.key);
         if (this.trigger_selection(e)) {
             if (!this.shown) {
                 return;
@@ -795,6 +798,15 @@ export class Typeahead<ItemType extends string | object> {
 
     keyup(e: JQuery.KeyUpEvent): void {
         this.mouse_moved_since_typeahead = false;
+        // Ignore keyup events for keys that had no corresponding keydown on
+        // this element. This happens when the keydown event occurred on a
+        // different element and the keyup is triggered in the typeahead
+        // (eg, during keyboard navigation when focus moves to the typeahead
+        // between keydown and keyup).
+        if (!this.keydown_set.has(e.key)) {
+            return;
+        }
+        this.keydown_set.delete(e.key);
         // NOTE: Ideally we can ignore meta keyup calls here but
         // it's better to just trigger the lookup call to update the list in case
         // it did modify the query. For example, `Command + delete` on Mac
@@ -844,14 +856,6 @@ export class Typeahead<ItemType extends string | object> {
                 break;
 
             default:
-                // to stop typeahead from showing up momentarily
-                // when shift + tabbing to the topic field
-                if (
-                    e.key === "Shift" &&
-                    the(this.input_element.$element).id === "stream_message_recipient_topic"
-                ) {
-                    return;
-                }
                 if (this.openInputFieldOnKeyUp !== undefined && !this.shown) {
                     // If the typeahead isn't shown yet, the `lookup` call will open it.
                     // Here we make a callback to the input field before we open the
@@ -872,6 +876,7 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     blur(e: JQuery.BlurEvent): void {
+        this.keydown_set.clear();
         // Blurs that move focus to elsewhere within the parent element shouldn't
         // hide the typeahead.
         if (
