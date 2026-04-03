@@ -3779,6 +3779,7 @@ paths:
                                       "creator_id": 9,
                                       "date_created": 1717484476,
                                       "description": "Backend team",
+                                      "rendered_description": "<p>Backend team</p>",
                                       "id": 2,
                                       "is_system_group": false,
                                       "can_add_members_group": 16,
@@ -3841,6 +3842,13 @@ paths:
                                       description: |
                                         The new description of the group. Only present if the description
                                         changed.
+                                    rendered_description:
+                                      type: string
+                                      description: |
+                                        The new description of the group rendered as HTML. Only present
+                                        if the description changed.
+
+                                        **Changes**: New in Zulip 12.0 (feature level ZF-72c9ad).
                                     can_add_members_group:
                                       allOf:
                                         - $ref: "#/components/schemas/GroupSettingValue"
@@ -3947,6 +3955,7 @@ paths:
                                   "data":
                                     {
                                       "description": "Mention this group to get the security team's attention.",
+                                      "rendered_description": "<p>Mention this group to get the security team's attention.</p>",
                                     },
                                   "id": 0,
                                 }
@@ -25355,6 +25364,19 @@ paths:
                               type: string
                               description: |
                                 The human-readable description of the user group.
+                            rendered_description:
+                              type: string
+                              description: |
+                                The description of the user group rendered as HTML, intended
+                                to be used when displaying the user group description in a UI.
+
+                                One should use the standard Zulip rendered_markdown CSS when
+                                displaying this content so that emoji, LaTeX, and other syntax
+                                work correctly. And any client-side security logic for
+                                user-generated message content should be applied when displaying
+                                this HTML as though it were the body of a Zulip message.
+
+                                **Changes**: New in Zulip 12.0 (feature level ZF-72c9ad).
                             id:
                               type: integer
                               description: |
@@ -25522,6 +25544,7 @@ paths:
                           [
                             {
                               "description": "Owners of this organization",
+                              "rendered_description": "<p>Owners of this organization</p>",
                               "id": 1,
                               "creator_id": null,
                               "date_created": null,
@@ -25538,6 +25561,7 @@ paths:
                             },
                             {
                               "description": "Administrators of this organization, including owners",
+                              "rendered_description": "<p>Administrators of this organization, including owners</p>",
                               "id": 2,
                               "creator_id": null,
                               "date_created": null,
@@ -25554,6 +25578,7 @@ paths:
                             },
                             {
                               "description": "Characters of Hamlet",
+                              "rendered_description": "<p>Characters of Hamlet</p>",
                               "id": 3,
                               "creator_id": null,
                               "date_created": 1717484476,
@@ -27374,6 +27399,19 @@ components:
           type: string
           description: |
             The description of the user group.
+        rendered_description:
+          type: string
+          description: |
+            The description of the user group rendered as HTML, intended to
+            be used when displaying the user group description in a UI.
+
+            One should use the standard Zulip rendered_markdown CSS when
+            displaying this content so that emoji, LaTeX, and other syntax
+            work correctly. And any client-side security logic for
+            user-generated message content should be applied when displaying
+            this HTML as though it were the body of a Zulip message.
+
+            **Changes**: New in Zulip 12.0 (feature level ZF-72c9ad).
         members:
           type: array
           items:

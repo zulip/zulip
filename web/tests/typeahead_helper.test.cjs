@@ -995,6 +995,24 @@ test("render_stream", ({mock_template}) => {
     assert.ok(rendered);
 });
 
+test("render_user_group", ({mock_template}) => {
+    let rendered = false;
+    const user_group = {
+        name: "testers",
+        rendered_description: "Developers <strong>and</strong> testers",
+    };
+
+    mock_template("typeahead_list_item.hbs", false, (args) => {
+        assert.equal(args.primary, user_group.name);
+        assert.equal(args.secondary_html, user_group.rendered_description);
+        rendered = true;
+        return "typeahead-item-stub";
+    });
+
+    assert.equal(th.render_user_group(user_group), "typeahead-item-stub");
+    assert.ok(rendered);
+});
+
 test("render_stream_topic", ({mock_template}) => {
     let rendered = false;
     const streamData = {
