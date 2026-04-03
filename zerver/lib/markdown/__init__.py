@@ -258,8 +258,9 @@ def get_web_link_regex() -> Pattern[str]:
     nested_paren_chunk %= (inner_paren_contents,)
 
     file_links = r"| (?:file://(/[^/ ]*)+/?)" if settings.ENABLE_FILE_LINKS else r""
+
     REGEX = rf"""
-        (?<![^\s'"\(,:<])    # Start after whitespace or specified chars
+        (?<![^\s'"\(,:<\u0080-\U0010FFFF])    # Start after whitespace, specified chars, or multibyte chars
                              # (Double-negative lookbehind to allow start-of-string)
         (?P<url>             # Main group
             (?:(?:           # Domain part
