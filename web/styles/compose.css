@@ -1970,6 +1970,9 @@ textarea.new_message_textarea {
         /* Make content appear more distinct from
            the snippet name. */
         border-bottom: solid 1px var(--color-border-popover-menu-separator);
+        /* Override the general dropdown border radius so that
+           the bottom border does not look curved. */
+        border-radius: 0;
 
         .dropdown-list-item-name {
             line-height: 1.2em;
@@ -1992,6 +1995,11 @@ textarea.new_message_textarea {
             overflow: hidden;
             white-space: nowrap;
         }
+    }
+
+    /* Don't show bottom border separator on the last item. */
+    .dropdown-list .list-item:last-child .dropdown-list-item-common-styles {
+        border-bottom: none;
     }
 }
 
