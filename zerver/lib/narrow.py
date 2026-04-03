@@ -758,10 +758,18 @@ class NarrowBuilder:
         query_extract_keywords = func.pgroonga_query_extract_keywords
         operand_escaped = func.escape_html(operand, type_=Text)
         keywords = query_extract_keywords(operand_escaped)
+        # Strip Pygments <span> tags so match positions align with the
+        # span-stripped content indexed in search_pgroonga.
+        # see process_fts_updates
+        stripped_content = func.regexp_replace(
+            column("rendered_content", Text),
+            literal('<span class="[a-z]{1,3}">([^<]*)</span>'),
+            literal(r"\1"),
+            literal("g"),
+            type_=Text,
+        )
         query = query.add_columns(
-            match_positions_character(column("rendered_content", Text), keywords).label(
-                "content_matches"
-            ),
+            match_positions_character(stripped_content, keywords).label("content_matches"),
             match_positions_character(
                 func.escape_html(topic_column_sa(), type_=Text), keywords
             ).label("topic_matches"),
@@ -773,9 +781,19 @@ class NarrowBuilder:
         self, query: Select, operand: str, maybe_negate: ConditionTransform
     ) -> Select:
         tsquery = func.plainto_tsquery(literal("zulip.english_us_search"), literal(operand))
+        # Strip Pygments <span> tags before passing content to ts_headline.
+        # The search_tsvector is built from span-stripped content, see process_fts_updates
+        # so, ts_headline must operate on the same text
+        stripped_content = func.regexp_replace(
+            column("rendered_content", Text),
+            literal('<span class="[a-z]{1,3}">([^<]*)</span>'),
+            literal(r"\1"),
+            literal("g"),
+            type_=Text,
+        )
         query = query.add_columns(
             ts_locs_array(
-                literal("zulip.english_us_search", Text), column("rendered_content", Text), tsquery
+                literal("zulip.english_us_search", Text), stripped_content, tsquery
             ).label("content_matches"),
             # We HTML-escape the topic in PostgreSQL to avoid doing a server round-trip
             ts_locs_array(
