@@ -195,13 +195,24 @@ def construct_zulip_body(
     if postamble != "":
         postamble = "\n" + postamble
 
-    # Truncate the content ourselves, to ensure that the attachments
-    # all make it into the body-as-posted
-    body = truncate_content(
-        body,
-        settings.MAX_MESSAGE_LENGTH - len(preamble) - len(postamble),
-        "\n[message truncated]",
-    )
+    limit = settings.MAX_MESSAGE_LENGTH - len(preamble) - len(postamble)
+
+    if len(body) > limit:
+        # Upload as text file to prevent truncation (see #17669)
+        content_bytes = body.encode("utf-8")
+        uri, _path_id = upload_message_attachment(
+            "MessageText.txt",
+            "text/plain",
+            content_bytes,
+            sender,
+            target_realm=realm,
+        )
+        body = _("Message content too long. See attached: {link}").format(
+            link=f"[MessageText.txt]({uri})"
+        )
+    else:
+        body = truncate_content(body, limit, "\n[message truncated]")
+
     return preamble + body + postamble
 
 
