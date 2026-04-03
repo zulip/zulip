@@ -113,6 +113,7 @@ from zerver.models import (
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
 from zerver.models.linkifiers import linkifiers_for_realm
+from zerver.models.realm_big_blue_button import get_all_big_blue_button_options_uncached
 from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
 from zerver.models.realms import (
@@ -669,6 +670,11 @@ def fetch_initial_state_data(
             ResolvedTopicNoticeAutoReadPolicyEnum(
                 realm_user_default.resolved_topic_notice_auto_read_policy
             ).name
+        )
+
+    if want("realm_big_blue_button_options"):
+        state["realm_big_blue_button_options"] = get_all_big_blue_button_options_uncached(
+            realm_id=realm.id
         )
 
     if want("realm_domains"):

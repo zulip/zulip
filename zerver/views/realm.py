@@ -64,6 +64,7 @@ from zerver.lib.workplace_users import (
 )
 from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, UserProfile
 from zerver.models.groups import SystemGroups
+from zerver.models.realm_big_blue_button import update_big_blue_button_option
 from zerver.models.realms import (
     DigestWeekdayEnum,
     MessageEditHistoryVisibilityPolicyEnum,
@@ -150,6 +151,13 @@ def update_realm(
     enable_guest_user_dm_warning: Json[bool] | None = None,
     enable_guest_user_indicator: Json[bool] | None = None,
     enable_read_receipts: Json[bool] | None = None,
+    big_blue_button_options_guest_policy: str | None = None,
+    big_blue_button_options_mute_on_start: Json[bool] | None = None,
+    big_blue_button_options_skip_check_audio_on_first_join: Json[bool] | None = None,
+    big_blue_button_options_auto_join_audio: Json[bool] | None = None,
+    big_blue_button_options_listen_only_mode: Json[bool] | None = None,
+    big_blue_button_options_show_session_details_on_join: Json[bool] | None = None,
+    big_blue_button_options_avatar_url: Json[bool] | None = None,
     enable_spectator_access: Json[bool] | None = None,
     gif_rating_policy: Json[int] | None = None,
     media_preview_size: Json[RealmMediaPreviewSizeEnum] | None = None,
@@ -235,6 +243,38 @@ def update_realm(
     # TODO: Change the cache flushing strategy to make sure cache
     # does not contain stale objects.
     realm = Realm.objects.get(id=user_profile.realm_id)
+
+    update_big_blue_button_option(
+        realm_id=realm.id, option="guest_policy", value=big_blue_button_options_guest_policy
+    )
+    update_big_blue_button_option(
+        realm_id=realm.id, option="mute_on_start", value=big_blue_button_options_mute_on_start
+    )
+    update_big_blue_button_option(
+        realm_id=realm.id,
+        option="auto_join_audio",
+        value=big_blue_button_options_auto_join_audio,
+    )
+    update_big_blue_button_option(
+        realm_id=realm.id,
+        option="listen_only_mode",
+        value=big_blue_button_options_listen_only_mode,
+    )
+    update_big_blue_button_option(
+        realm_id=realm.id,
+        option="show_session_details_on_join",
+        value=big_blue_button_options_show_session_details_on_join,
+    )
+    update_big_blue_button_option(
+        realm_id=realm.id,
+        option="skip_check_audio_on_first_join",
+        value=big_blue_button_options_skip_check_audio_on_first_join,
+    )
+    update_big_blue_button_option(
+        realm_id=realm.id,
+        option="avatar_url",
+        value=big_blue_button_options_avatar_url,
+    )
 
     # Additional validation/error checking beyond types go here, so
     # the entire request can succeed or fail atomically.

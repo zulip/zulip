@@ -419,6 +419,19 @@ export const realm_report_message_types = z.object({
     name: z.string(),
 });
 
+export const realm_big_blue_button_option_schema = z.record(
+    z.string(),
+    z.object({
+        option: z.string(),
+        value: z.any(),
+        translation: z.string(),
+        data_type: z.string(),
+        parameter_type: z.string(),
+        real_option: z.string(),
+        list: z.optional(z.record(z.string(), z.string())),
+    }),
+);
+
 // Sync this with zerver.lib.events.do_events_register.
 export const realm_schema = z.object({
     custom_profile_fields: z.array(custom_profile_field_schema),
@@ -429,6 +442,7 @@ export const realm_schema = z.object({
         z.record(z.string(), z.object({id: z.number(), name: z.string()})),
         z.object({disabled: z.object({id: z.number(), name: z.string()})}),
     ),
+    realm_big_blue_button_options: realm_big_blue_button_option_schema,
     max_avatar_file_size_mib: z.number(),
     max_channel_folder_description_length: z.number(),
     max_channel_folder_name_length: z.number(),
@@ -622,6 +636,13 @@ export const realm_schema = z.object({
     zulip_merge_base: z.string(),
     zulip_plan_is_not_limited: z.boolean(),
     zulip_version: z.string(),
+    realm_big_blue_button_options_mute_on_start: z.optional(z.boolean()),
+    realm_big_blue_button_options_guest_policy: z.optional(z.string()),
+    realm_big_blue_button_options_skip_check_audio_on_first_join: z.optional(z.boolean()),
+    realm_big_blue_button_options_auto_join_audio: z.optional(z.boolean()),
+    realm_big_blue_button_options_listen_only_mode: z.optional(z.boolean()),
+    realm_big_blue_button_options_show_session_details_on_join: z.optional(z.boolean()),
+    realm_big_blue_button_options_avatar_url: z.optional(z.boolean()),
 });
 
 export const split_state_data_schema = z.object({

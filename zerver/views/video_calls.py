@@ -27,6 +27,7 @@ from typing_extensions import TypedDict, override
 
 from zerver.actions.video_calls import do_set_video_call_provider_token
 from zerver.decorator import zulip_login_required
+from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.cache import (
     cache_with_key,
     flush_zoom_server_access_token_cache,
@@ -43,6 +44,7 @@ from zerver.lib.typed_endpoint import typed_endpoint, typed_endpoint_without_par
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import UserProfile
+from zerver.models.realm_big_blue_button import get_create_params, get_join_params
 from zerver.models.realms import get_realm
 
 
@@ -509,8 +511,12 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
     except Exception:
         raise JsonableError(_("Invalid signature."))
 
+    realm_id = request.user.realm.id
+    extra_create_params = get_create_params(realm_id)
+
     create_params = urlencode(
-        {
+        extra_create_params
+        | {
             "meetingID": bigbluebutton_data["meeting_id"],
             "name": bigbluebutton_data["name"],
             "lockSettingsDisableCam": bigbluebutton_data["lock_settings_disable_cam"],
@@ -544,8 +550,16 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
     if status != "SUCCESS":
         raise VideoCallServerStatusError("BigBlueButton", status=status)
 
+    extra_join_params = get_join_params(realm_id)
+
+    if extra_join_params.get("avatarURL") is True:
+        extra_join_params["avatarURL"] = absolute_avatar_url(request.user)
+    else:
+        extra_join_params.pop("avatarURL", None)
+
     join_params = urlencode(
-        {
+        extra_join_params
+        | {
             "meetingID": bigbluebutton_data["meeting_id"],
             # We use the moderator role only for the user who created the
             # meeting, the attendee role for everyone else, so that only

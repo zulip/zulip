@@ -209,7 +209,7 @@ importers:
         version: 3.1.2
       lodash:
         specifier: ^4.17.19
-        version: 4.17.23
+        version: 4.17.21
       micromodal:
         specifier: ^0.6.1
         version: 0.6.1
@@ -3405,11 +3405,12 @@ packages:
   '@xmldom/xmldom@0.7.13':
     resolution: {integrity: sha512-lm2GW5PkosIzccsaZIz7tp8cPADSIlIHWDFTR1N0SzfinhhYgeIQjFMz4rYzanCScr3DqQLeomUDArp6MWKm+g==}
     engines: {node: '>=10.0.0'}
-    deprecated: this version is no longer supported, please update to at least 0.8.*
+    deprecated: this version has critical issues, please update to the latest version
 
   '@xmldom/xmldom@0.8.11':
     resolution: {integrity: sha512-cQzWCtO6C8TQiYl1ruKNn2U6Ao4o4WBBcbL61yJl84x+j5sOWWFU9X7DpND8XZG3daDppSsigMdfAIl2upQBRw==}
     engines: {node: '>=10.0.0'}
+    deprecated: this version has critical issues, please update to the latest version
 
   '@xtuc/ieee754@1.2.0':
     resolution: {integrity: sha512-DX8nKgqcGwsc0eJSqYt5lwP4DH5FlHnmuWWBRy7X0NcaGR0ZtuyeESgMwTYVEtxmsNGY+qit4QYT/MIYTOTPeA==}
@@ -13101,7 +13102,7 @@ snapshots:
       '@transloadit/prettier-bytes': 0.3.5
       '@uppy/store-default': 5.0.0
       '@uppy/utils': 7.1.5
-      lodash: 4.17.23
+      lodash: 4.17.21
       mime-match: 1.0.2
       namespace-emitter: 2.0.1
       nanoid: 5.1.6
@@ -13132,7 +13133,7 @@ snapshots:
       '@uppy/core': 5.2.0
       '@uppy/utils': 7.1.5
       classnames: 2.5.1
-      lodash: 4.17.23
+      lodash: 4.17.21
       nanoid: 5.1.6
       p-queue: 8.1.1
       preact: 10.29.0
@@ -13154,7 +13155,7 @@ snapshots:
 
   '@uppy/utils@7.1.5':
     dependencies:
-      lodash: 4.17.23
+      lodash: 4.17.21
       preact: 10.29.0
 
   '@volar/kit@2.4.28(typescript@5.9.3)':
@@ -15120,7 +15121,7 @@ snapshots:
       interpret: 1.4.0
       is-core-module: 2.16.1
       is-regex: 1.2.1
-      lodash: 4.17.23
+      lodash: 4.17.21
       resolve: 2.0.0-next.6
       semver: 5.7.2
       webpack: 5.105.4(jiti@2.6.1)(webpack-cli@6.0.1)
@@ -15655,7 +15656,7 @@ snapshots:
       is-otf: 0.1.2
       is-svg: 4.4.0
       is-ttf: 0.2.2
-      lodash: 4.17.23
+      lodash: 4.17.21
       meow: 10.1.5
       pako: 2.1.0
       replace-ext: 2.0.0
@@ -16349,7 +16350,7 @@ snapshots:
     dependencies:
       '@types/html-minifier-terser': 6.1.0
       html-minifier-terser: 6.1.0
-      lodash: 4.17.23
+      lodash: 4.17.21
       pretty-error: 4.0.0
       tapable: 2.3.0
     optionalDependencies:
@@ -19042,7 +19043,7 @@ snapshots:
 
   pretty-error@4.0.0:
     dependencies:
-      lodash: 4.17.23
+      lodash: 4.17.21
       renderkid: 3.0.0
 
   prismjs@1.30.0: {}
@@ -20089,7 +20090,7 @@ snapshots:
       css-select: 4.3.0
       dom-converter: 0.2.0
       htmlparser2: 6.1.0
-      lodash: 4.17.23
+      lodash: 4.17.21
       strip-ansi: 6.0.1
 
   replace-ext@0.0.1: {}
@@ -20452,7 +20453,7 @@ snapshots:
 
   simplebar-core@1.3.2:
     dependencies:
-      lodash: 4.17.23
+      lodash: 4.17.21
       lodash-es: 4.17.23
 
   simplebar@6.3.3(patch_hash=b02691a06d37a4991c993e8b03c1860e01f2edef7c18ad0b958d9b222ba9be9b):
@@ -20855,7 +20856,7 @@ snapshots:
       '@xmldom/xmldom': 0.7.13
       argparse: 2.0.1
       cubic2quad: 1.2.1
-      lodash: 4.17.23
+      lodash: 4.17.21
       microbuffer: 1.0.0
       svgpath: 2.6.0
 
