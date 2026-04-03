@@ -1134,6 +1134,13 @@ export function change_state(
         return;
     }
 
+    if (right_side_tab === "new") {
+        toggler.goto("subscribed");
+        do_open_create_stream(folder_id);
+        show_right_section();
+        return;
+    }
+
     if (section === "all") {
         if (folder_id !== undefined) {
             stream_settings_components.set_folder_filter_dropdown_value(folder_id);
