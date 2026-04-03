@@ -82,6 +82,53 @@ function get_settings_tab(section: string): string | undefined {
     return undefined;
 }
 
+function show_user_profile_from_hash(section: string): void {
+    const user_id = Number.parseInt(section, 10);
+    const tab = hash_parser.get_current_nth_hash_section(2);
+    const default_tab_key = user_profile.get_tab_key_for_hash_tab(tab);
+
+    if (!people.is_known_user_id(user_id)) {
+        user_profile.show_user_profile_access_error_modal();
+        return;
+    }
+
+    const user = people.get_by_user_id(user_id);
+    const current_user_id = user_profile.get_user_id_if_user_profile_modal_open();
+    if (current_user_id === user_id) {
+        user_profile.change_state(default_tab_key);
+    } else {
+        user_profile.show_user_profile(user, default_tab_key);
+    }
+}
+
+function should_preserve_user_profile_modal_on_hashchange(
+    current_hash: string,
+    old_hash: string | undefined,
+): boolean {
+    if (old_hash === undefined) {
+        return false;
+    }
+
+    if (
+        hash_parser.get_hash_category(current_hash) !== "user" ||
+        hash_parser.get_hash_category(old_hash) !== "user"
+    ) {
+        return false;
+    }
+
+    const current_user_id = hash_parser.get_hash_section(current_hash);
+    const old_user_id = hash_parser.get_hash_section(old_hash);
+
+    if (!/^\d+$/.test(current_user_id) || current_user_id !== old_user_id) {
+        return false;
+    }
+
+    return (
+        user_profile.get_user_id_if_user_profile_modal_open() ===
+        Number.parseInt(current_user_id, 10)
+    );
+}
+
 export function set_hash_to_home_view(triggered_by_escape_key = false): void {
     if (browser_history.is_current_hash_home_view()) {
         return;
@@ -319,6 +366,14 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
         }
     }
 
+    if (base === "user") {
+        const valid_hash = hash_util.validate_user_profile_hash(window.location.hash);
+        if (valid_hash !== window.location.hash) {
+            window.history.replaceState(null, "", browser_history.get_full_url(valid_hash));
+            section = hash_parser.get_current_hash_section();
+        }
+    }
+
     // Start by handling the specific case of going from
     // something like "#channels/all" to "#channels/subscribed".
     //
@@ -346,6 +401,11 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
         if (base === "groups") {
             const right_side_tab = hash_parser.get_current_nth_hash_section(3);
             user_group_edit.change_state(section, undefined, right_side_tab);
+        }
+
+        if (base === "user") {
+            show_user_profile_from_hash(section);
+            return;
         }
 
         if (base === "settings") {
@@ -513,13 +573,7 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     }
 
     if (base === "user") {
-        const user_id = Number.parseInt(hash_parser.get_current_hash_section(), 10);
-        if (!people.is_known_user_id(user_id)) {
-            user_profile.show_user_profile_access_error_modal();
-        } else {
-            const user = people.get_by_user_id(user_id);
-            user_profile.show_user_profile(user);
-        }
+        show_user_profile_from_hash(hash_parser.get_current_hash_section());
         return;
     }
 }
@@ -531,6 +585,7 @@ function hashchanged(
 ): boolean | undefined {
     const current_hash = window.location.hash;
     const old_hash = e && ("oldURL" in e ? new URL(e.oldURL).hash : browser_history.old_hash());
+    const old_hash_for_modal_logic = old_hash ?? browser_history.old_hash();
     const is_hash_web_public_compatible = browser_history.update_web_public_hash(current_hash);
 
     const was_internal_change = browser_history.save_old_hash();
@@ -554,7 +609,14 @@ function hashchanged(
 
     if (hash_parser.is_overlay_hash(current_hash)) {
         browser_history.state.changing_hash = true;
-        modals.close_active_if_any();
+        if (
+            !should_preserve_user_profile_modal_on_hashchange(
+                current_hash,
+                old_hash_for_modal_logic,
+            )
+        ) {
+            modals.close_active_if_any();
+        }
         do_hashchange_overlay(old_hash);
         browser_history.state.changing_hash = false;
         return undefined;

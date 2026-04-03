@@ -32,7 +32,7 @@ import * as custom_profile_fields_ui from "./custom_profile_fields_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import type {DropdownWidget, DropdownWidgetOptions} from "./dropdown_widget.ts";
-import {get_current_hash_category} from "./hash_parser.ts";
+import {get_current_hash_category, get_current_hash_section} from "./hash_parser.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import type {InputPillContainer} from "./input_pill.ts";
@@ -96,6 +96,63 @@ let original_values: (Record<string, unknown> & {user_id?: string | undefined}) 
 const INCOMING_WEBHOOK_BOT_TYPE = 2;
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const EMBEDDED_BOT_TYPE = "4";
+
+type UserProfileTabKey =
+    | "profile-tab"
+    | "user-profile-streams-tab"
+    | "user-profile-groups-tab"
+    | "manage-profile-tab";
+
+const user_profile_tab_key_by_hash_tab = new Map<string, UserProfileTabKey>([
+    ["profile", "profile-tab"],
+    ["channels", "user-profile-streams-tab"],
+    ["groups", "user-profile-groups-tab"],
+    ["manage", "manage-profile-tab"],
+]);
+
+const user_profile_hash_tab_by_tab_key = new Map<UserProfileTabKey, string>([
+    ["profile-tab", "profile"],
+    ["user-profile-streams-tab", "channels"],
+    ["user-profile-groups-tab", "groups"],
+    ["manage-profile-tab", "manage"],
+]);
+
+export function get_tab_key_for_hash_tab(tab: string): UserProfileTabKey {
+    return user_profile_tab_key_by_hash_tab.get(tab) ?? "profile-tab";
+}
+
+function get_hash_tab_for_tab_key(tab_key: UserProfileTabKey): string {
+    return user_profile_hash_tab_by_tab_key.get(tab_key) ?? "profile";
+}
+
+function is_user_profile_tab_key(key: string): key is UserProfileTabKey {
+    switch (key) {
+        case "profile-tab":
+        case "user-profile-streams-tab":
+        case "user-profile-groups-tab":
+        case "manage-profile-tab":
+            return true;
+        default:
+            return false;
+    }
+}
+
+function should_update_hash_for_user_profile_tab(user_id: number): boolean {
+    return (
+        get_current_hash_category() === "user" && get_current_hash_section() === user_id.toString()
+    );
+}
+
+function maybe_update_hash_for_user_profile_tab(user_id: number, tab_key: UserProfileTabKey): void {
+    if (!should_update_hash_for_user_profile_tab(user_id)) {
+        return;
+    }
+
+    const new_hash = hash_util.user_profile_url(user_id, get_hash_tab_for_tab_key(tab_key));
+    if (window.location.hash !== new_hash) {
+        browser_history.go_to_location(new_hash);
+    }
+}
 
 export function show_button_spinner($button: JQuery): void {
     const $spinner = $button.find(".modal__spinner");
@@ -577,8 +634,22 @@ function on_user_profile_hide(): void {
     }
 }
 
-function show_manage_user_tab(target: string): void {
+export function change_state(target: UserProfileTabKey): void {
+    if (!(modals.any_active() && modals.active_modal() === "#user-profile-modal")) {
+        return;
+    }
+
+    const $tab = $(`#user-profile-modal .ind-tab[data-tab-key="${CSS.escape(target)}"]`);
+    if ($tab.length === 0) {
+        toggler.goto("profile-tab");
+        return;
+    }
+
     toggler.goto(target);
+}
+
+function show_manage_user_tab(target: UserProfileTabKey): void {
+    change_state(target);
 }
 
 function initialize_user_type_fields(user: User): void {
@@ -692,7 +763,10 @@ function add_user_to_groups(group_ids: number[], user_id: number, $alert_box: JQ
     add_user_to_next_group();
 }
 
-export function show_user_profile(user: User, default_tab_key = "profile-tab"): void {
+export function show_user_profile(
+    user: User,
+    default_tab_key: UserProfileTabKey = "profile-tab",
+): void {
     // Reset these widgets so that they are created again for the opened modal.
     user_streams_list_widget = undefined;
     user_groups_list_widget = undefined;
@@ -753,23 +827,35 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
     $(".tabcontent").hide();
     $("#user-profile-modal .dialog_submit_button").prop("disabled", true);
 
-    let default_tab = 0;
+    const tab_values: ({label: string; key: UserProfileTabKey} & {label_html?: never})[] = [
+        {label: $t({defaultMessage: "Profile"}), key: "profile-tab"},
+        {label: $t({defaultMessage: "Channels"}), key: "user-profile-streams-tab"},
+        {label: $t({defaultMessage: "User groups"}), key: "user-profile-groups-tab"},
+    ];
 
-    if (default_tab_key === "user-profile-streams-tab") {
-        default_tab = 1;
-    } else if (default_tab_key === "manage-profile-tab") {
-        default_tab = 3;
+    if (can_manage_profile) {
+        const manage_profile_label = user.is_bot
+            ? $t({defaultMessage: "Manage bot"})
+            : people.is_my_user_id(user.user_id)
+              ? $t({defaultMessage: "Edit profile"})
+              : $t({defaultMessage: "Manage user"});
+        tab_values.push({
+            label: manage_profile_label,
+            key: "manage-profile-tab",
+        });
     }
+
+    if (!tab_values.some((tab) => tab.key === default_tab_key)) {
+        default_tab_key = "profile-tab";
+    }
+
+    const default_tab = tab_values.findIndex((tab) => tab.key === default_tab_key);
 
     let has_initialized_user_type_fields = false;
     const opts = {
         selected: default_tab,
         child_wants_focus: true,
-        values: [
-            {label: $t({defaultMessage: "Profile"}), key: "profile-tab"},
-            {label: $t({defaultMessage: "Channels"}), key: "user-profile-streams-tab"},
-            {label: $t({defaultMessage: "User groups"}), key: "user-profile-groups-tab"},
-        ],
+        values: tab_values,
         callback(_name: string | undefined, key: string) {
             $(".tabcontent").hide();
             $(`#${CSS.escape(key)}`).show();
@@ -802,21 +888,12 @@ export function show_user_profile(user: User, default_tab_key = "profile-tab"): 
                 $(".modal__container .ind-tab").attr("tabindex", "-1");
                 $(".modal__container .ind-tab.selected").attr("tabindex", "0");
             }, 0);
+
+            if (is_user_profile_tab_key(key)) {
+                maybe_update_hash_for_user_profile_tab(user.user_id, key);
+            }
         },
     };
-
-    if (can_manage_profile) {
-        const manage_profile_label = user.is_bot
-            ? $t({defaultMessage: "Manage bot"})
-            : people.is_my_user_id(user.user_id)
-              ? $t({defaultMessage: "Edit profile"})
-              : $t({defaultMessage: "Manage user"});
-        const manage_profile_tab = {
-            label: manage_profile_label,
-            key: "manage-profile-tab",
-        };
-        opts.values.push(manage_profile_tab);
-    }
 
     toggler = components.toggle(opts);
     const $elem = toggler.get();
