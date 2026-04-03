@@ -30,6 +30,7 @@ from zerver.actions.streams import (
     deactivated_streams_by_old_name,
     do_change_stream_group_based_setting,
     do_change_stream_permission,
+    do_change_subscription_property,
     do_deactivate_stream,
     do_set_stream_property,
     do_unarchive_stream,
@@ -2466,6 +2467,94 @@ class StreamAdminTest(ZulipTestCase):
             f"/json/streams/{stream.id}", {"message_retention_days": orjson.dumps(0).decode()}
         )
         self.assert_json_error(result, "Bad value for 'message_retention_days': 0")
+
+    def test_stream_default_push_notifications_default_value(self) -> None:
+        """New streams default to default_push_notifications=False."""
+        user_profile = self.example_user("iago")
+        self.login_user(user_profile)
+        stream = self.subscribe(user_profile, "test_push_default")
+        self.assertFalse(stream.default_push_notifications)
+
+    def test_new_subscription_gets_push_notifications_from_stream(self) -> None:
+        """When a stream has default_push_notifications=True, brand-new
+        subscriptions get push_notifications=True, overriding the user default."""
+        admin = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        self.login_user(admin)
+
+        stream = self.subscribe(admin, "push_default_stream")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"default_push_notifications": orjson.dumps(True).decode()},
+        )
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertTrue(stream.default_push_notifications)
+
+        # hamlet's account default is off, so push_notifications=True below
+        # must come from the stream override.
+        self.assertFalse(hamlet.enable_stream_push_notifications)
+
+        self.login_user(hamlet)
+        result = self.client_post(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps([{"name": "push_default_stream"}]).decode()},
+        )
+        self.assert_json_success(result)
+        sub = Subscription.objects.get(
+            user_profile=hamlet,
+            recipient=stream.recipient,
+        )
+        self.assertTrue(sub.push_notifications)
+
+    def test_resubscription_preserves_push_notifications_preference(self) -> None:
+        """Re-subscribing a previously unsubscribed user does not overwrite
+        the stored push_notifications preference they had before."""
+        admin = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        self.login_user(admin)
+
+        stream = self.subscribe(admin, "resubscribe_stream")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"default_push_notifications": orjson.dumps(True).decode()},
+        )
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+
+        self.login_user(hamlet)
+        result = self.client_post(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps([{"name": "resubscribe_stream"}]).decode()},
+        )
+        self.assert_json_success(result)
+        sub = Subscription.objects.get(user_profile=hamlet, recipient=stream.recipient)
+        self.assertTrue(sub.push_notifications)
+
+        # Turn off push notifications for this subscription.
+        do_change_subscription_property(
+            hamlet, sub, stream, "push_notifications", False, acting_user=hamlet
+        )
+        sub.refresh_from_db()
+        self.assertFalse(sub.push_notifications)
+
+        # Unsubscribe and re-subscribe; stored preference must survive the round-trip.
+        self.client_delete(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps(["resubscribe_stream"]).decode()},
+        )
+        sub.refresh_from_db()
+        self.assertFalse(sub.active)
+
+        result = self.client_post(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps([{"name": "resubscribe_stream"}]).decode()},
+        )
+        self.assert_json_success(result)
+        sub.refresh_from_db()
+        self.assertTrue(sub.active)
+        # push_notifications should remain False, not be reset to True.
+        self.assertFalse(sub.push_notifications)
 
     def do_test_change_stream_permission_setting(self, setting_name: str) -> None:
         user_profile = self.example_user("iago")
