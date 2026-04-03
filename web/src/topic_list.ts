@@ -515,14 +515,7 @@ export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
             direct_message_divider_height +
             channel_folder_header_height;
 
-        const $channel_section = $selected_topic.closest(".stream-expanded");
-        const channel_section_height = $channel_section.outerHeight(true) ?? 0;
-        const available_topic_height = ($scroll_container.height() ?? 0) - sticky_header_height;
-
-        let $scroll_target = $selected_topic;
-        if (channel_section_height <= available_topic_height) {
-            $scroll_target = $channel_section;
-        }
+        const $scroll_target = $selected_topic;
         scroll_util.scroll_element_into_container(
             $scroll_target,
             $scroll_container,
