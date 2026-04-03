@@ -741,3 +741,33 @@ export function rewire_update_vote_text_on_message(
 ): void {
     update_vote_text_on_message = value;
 }
+
+export function update_reaction_names(user_id: number): void {
+    // When a user's full name changes, we need to update all reaction pills
+    // that display this user's name. This function finds all messages with
+    // reactions and updates their vote text if they display user names instead
+    // of just counts.
+    const message_lists_to_check = message_lists.all_rendered_message_lists();
+    for (const msg_list of message_lists_to_check) {
+        const messages = msg_list.data.all_messages_after_mute_filtering();
+        for (const message of messages) {
+            if (message.clean_reactions.size === 0) {
+                continue;
+            }
+
+            let message_has_user = false;
+            for (const clean_reaction of message.clean_reactions.values()) {
+                if (clean_reaction.user_ids.includes(user_id)) {
+                    message_has_user = true;
+                    break;
+                }
+            }
+
+            if (message_has_user) {
+                // Update all reactions in this message since the display mode
+                // and vote text might change based on total reactions
+                update_vote_text_on_message(message);
+            }
+        }
+    }
+}
