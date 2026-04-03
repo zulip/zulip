@@ -4,14 +4,13 @@
 
 import path from "node:path";
 
-import type {ResolveRequest} from "enhanced-resolve";
 import webpack from "webpack";
 
 export default class DebugRequirePlugin implements webpack.WebpackPluginInstance {
     apply(compiler: webpack.Compiler): void {
         const resolved = new Map<string, Set<string>>();
         const nameSymbol = Symbol("DebugRequirePluginName");
-        type NamedRequest = ResolveRequest & {
+        type NamedRequest = {
             [nameSymbol]?: string | undefined;
         };
         let debugRequirePath: string | false = false;
@@ -38,21 +37,19 @@ export default class DebugRequirePlugin implements webpack.WebpackPluginInstance
                     return undefined!;
                 });
 
-                resolver
-                    .getHook("beforeResolved")
-                    .tap("DebugRequirePlugin", (req: ResolveRequest) => {
-                        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-                        const name = (req as NamedRequest)[nameSymbol];
-                        if (name !== undefined && req.path !== false) {
-                            const names = resolved.get(req.path);
-                            if (names) {
-                                names.add(name);
-                            } else {
-                                resolved.set(req.path, new Set([name]));
-                            }
+                resolver.getHook("beforeResolved").tap("DebugRequirePlugin", (req) => {
+                    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+                    const name = (req as NamedRequest)[nameSymbol];
+                    if (name !== undefined && req.path !== false) {
+                        const names = resolved.get(req.path);
+                        if (names) {
+                            names.add(name);
+                        } else {
+                            resolved.set(req.path, new Set([name]));
                         }
-                        return undefined!;
-                    });
+                    }
+                    return undefined!;
+                });
             });
 
         compiler.hooks.beforeCompile.tapPromise(
