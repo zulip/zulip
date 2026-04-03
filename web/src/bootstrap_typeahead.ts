@@ -255,6 +255,7 @@ export class Typeahead<ItemType extends string | object> {
     closeInputFieldOnHide: (() => void) | undefined;
     helpOnEmptyStrings: boolean;
     tabIsEnter: boolean;
+    shiftTabIsEnter: boolean;
     stopAdvance: boolean;
     advanceKeys: string[];
     non_tippy_parent_element: string | undefined;
@@ -312,6 +313,7 @@ export class Typeahead<ItemType extends string | object> {
         this.openInputFieldOnKeyUp = options.openInputFieldOnKeyUp;
         this.closeInputFieldOnHide = options.closeInputFieldOnHide;
         this.tabIsEnter = options.tabIsEnter ?? true;
+        this.shiftTabIsEnter = options.shiftTabIsEnter ?? true;
         this.helpOnEmptyStrings = options.helpOnEmptyStrings ?? false;
         this.non_tippy_parent_element = options.non_tippy_parent_element;
         this.values = new WeakMap();
@@ -739,7 +741,7 @@ export class Typeahead<ItemType extends string | object> {
 
         switch (e.key) {
             case "Tab":
-                if (!this.tabIsEnter) {
+                if (!this.tabIsEnter || (e.shiftKey && !this.shiftTabIsEnter)) {
                     return;
                 }
                 e.preventDefault();
@@ -818,8 +820,9 @@ export class Typeahead<ItemType extends string | object> {
                 break;
 
             case "Tab":
-                // If the typeahead is not shown or tabIsEnter option is not set, do nothing and return
-                if (!this.tabIsEnter || !this.shown) {
+                // If the typeahead is not shown, tabIsEnter option is not set,
+                // or Shift+Tab is pressed and shiftTabIsEnter is not set, do nothing.
+                if (!this.tabIsEnter || !this.shown || (e.shiftKey && !this.shiftTabIsEnter)) {
                     return;
                 }
 
@@ -987,6 +990,7 @@ type TypeaheadOptions<ItemType> = {
     sorter: (items: ItemType[], query: string) => ItemType[];
     stopAdvance?: boolean;
     tabIsEnter?: boolean;
+    shiftTabIsEnter?: boolean;
     select_on_escape_condition?: () => boolean;
     trigger_selection?: (event: JQuery.KeyDownEvent) => boolean;
     updater?: (

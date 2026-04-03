@@ -1827,6 +1827,7 @@ export function initialize({
             set_recipient_from_typeahead(item);
         },
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter
+        shiftTabIsEnter: false,
     });
 
     initialize_compose_typeahead($("textarea#compose-textarea"));
