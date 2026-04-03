@@ -257,6 +257,29 @@ function retry_connection_click_handler(e: JQuery.ClickEvent, on_retry_callback:
     on_retry_callback();
 }
 
+export function open_rate_limit_banner(retry_after_secs: number): void {
+    if ($("#popup_banners_wrapper").find(".rate-limit-banner").length > 0) {
+        return;
+    }
+    const minutes = Math.floor(retry_after_secs / 60);
+    const seconds = Math.round(retry_after_secs % 60);
+    banners.append(
+        {
+            intent: "danger",
+            label: $t(
+                {
+                    defaultMessage:
+                        "You've exceeded Zulip's usage limits. Please close any extra Zulip tabs, and try again after {minutes, plural, =0 {} one {# minute } other {# minutes }}{seconds, plural, =0 {} one {# second} other {# seconds}}.",
+                },
+                {minutes, seconds},
+            ),
+            buttons: [],
+            close_button: true,
+            custom_classes: "rate-limit-banner popup-banner",
+        },
+        $("#popup_banners_wrapper"),
+    );
+}
 export function open_connection_error_popup_banner(opts: {
     caller: "server_events" | "message_fetch";
     retry_delay_secs: number;
