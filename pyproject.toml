@@ -416,7 +416,7 @@ plugins = [
 
 [[tool.mypy.overrides]]
 module = [
-    "ahocorasick.*",
+    "ahocorasick.*", # https://github.com/WojciechMula/pyahocorasick/issues/214
     "backports.datetime_fromisoformat.*",
     "bitfield.*",
     "bmemcached.*",
