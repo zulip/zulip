@@ -79,6 +79,7 @@ export type MessageContainer = {
     timestr: string;
     topic_url?: string;
     want_date_divider: boolean;
+    want_moved_message_divider: boolean;
     want_subscription_status_divider: boolean;
 };
 
@@ -189,13 +190,34 @@ function clear_message_divider(message_container: MessageContainer): void {
     // see update_message_divider for how
     // these get set
     message_container.want_date_divider = false;
+    message_container.want_moved_message_divider = false;
     message_container.want_subscription_status_divider = false;
     message_container.date_divider_html = undefined;
+}
+
+function get_original_stream_id_if_moved(message: Message): number | undefined {
+    if (message.is_private) {
+        return undefined;
+    }
+
+    // Walk the edit history to find the oldest stream
+    // move entry, whose prev_stream is the stream the message was
+    // originally sent to.
+    const stream_moves = message.edit_history?.filter((entry) => entry.prev_stream !== undefined);
+    if (!stream_moves || stream_moves.length === 0) {
+        return undefined;
+    }
+    const original_stream_id = stream_moves.at(-1)!.prev_stream!;
+    if (original_stream_id === message.stream_id) {
+        return undefined;
+    }
+    return original_stream_id;
 }
 
 function update_message_divider(opts: {
     prev_msg_container: MessageContainer | undefined;
     curr_msg_container: MessageContainer;
+    last_non_moved_message_historical: boolean | undefined;
 }): void {
     Object.assign(
         opts.curr_msg_container,
@@ -203,6 +225,7 @@ function update_message_divider(opts: {
             prev_message: opts.prev_msg_container?.msg,
             curr_message: opts.curr_msg_container.msg,
             display_year: !same_year(opts.curr_msg_container.msg, opts.prev_msg_container?.msg),
+            last_non_moved_message_historical: opts.last_non_moved_message_historical,
         }),
     );
 }
@@ -211,6 +234,7 @@ function get_message_divider_data(opts: {
     prev_message: Message | undefined;
     curr_message: Message;
     display_year: boolean;
+    last_non_moved_message_historical?: boolean | undefined;
 }): {
     want_date_divider: boolean;
     want_subscription_status_divider: boolean;
@@ -221,8 +245,15 @@ function get_message_divider_data(opts: {
     const display_year = opts.display_year;
     let want_subscription_status_divider = false;
 
-    if (prev_message) {
-        want_subscription_status_divider = prev_message?.historical !== curr_message.historical;
+    // Messages moved between streams carry the `historical` flag from
+    // their original stream, not the current one, so we skip them when
+    // computing whether the subscription status changed.
+    if (
+        opts.last_non_moved_message_historical !== undefined &&
+        get_original_stream_id_if_moved(curr_message) === undefined
+    ) {
+        want_subscription_status_divider =
+            opts.last_non_moved_message_historical !== curr_message.historical;
     }
 
     if (!prev_message || same_day(curr_message, prev_message)) {
@@ -506,6 +537,13 @@ export class MessageListView {
     message_containers: Map<number, MessageContainer>;
     _message_groups: MessageGroup[];
 
+    // Track the boundary non moved message containers across the full rendered
+    // range so that merge_message_groups can look up the correct
+    // `historical` flag for subscription status divider decisions
+    // without being confused by messages moved between streams.
+    _first_non_moved_message_container: MessageContainer | undefined;
+    _last_non_moved_message_container: MessageContainer | undefined;
+
     // For performance reasons, this module renders at most
     // _RENDER_WINDOW_SIZE messages into the DOM at a time, and
     // will transparently adjust which messages are rendered
@@ -700,17 +738,20 @@ export class MessageListView {
 
     maybe_add_subscription_marker_to_group(
         group: MessageGroup,
-        last_message: Message | undefined,
+        last_non_moved_message_historical: boolean | undefined,
         first_message: Message,
     ): void {
-        const markers = this.get_possible_group_subscription_markers(last_message, first_message);
+        const markers = this.get_possible_group_subscription_markers(
+            last_non_moved_message_historical,
+            first_message,
+        );
         if (markers) {
             Object.assign(group, markers);
         }
     }
 
     get_possible_group_subscription_markers(
-        last_message: Message | undefined,
+        last_non_moved_message_historical: boolean | undefined,
         first_message: Message,
     ): SubscriptionMarkers | undefined {
         // The `historical` flag is present on messages which were
@@ -724,11 +765,14 @@ export class MessageListView {
         if (!this.list.data.filter.has_operator("channel")) {
             return undefined;
         }
-        if (last_message === undefined) {
+        if (
+            last_non_moved_message_historical === undefined ||
+            get_original_stream_id_if_moved(first_message) !== undefined
+        ) {
             return undefined;
         }
 
-        const last_subscribed = !last_message.historical;
+        const last_subscribed = !last_non_moved_message_historical;
         const first_subscribed = !first_message.historical;
         assert(first_message.type === "stream");
         const stream_id = first_message.stream_id;
@@ -753,13 +797,20 @@ export class MessageListView {
         return undefined;
     }
 
-    build_message_groups(messages: Message[]): MessageGroup[] {
+    build_message_groups(messages: Message[]): {
+        new_message_groups: MessageGroup[];
+        first_non_moved_message_container: MessageContainer | undefined;
+        last_non_moved_message_container: MessageContainer | undefined;
+    } {
         const new_message_groups: MessageGroup[] = [];
 
         let current_group: MessageGroup;
         let current_group_message_containers: MessageContainer[] = [];
 
         let prev_message_container: MessageContainer | undefined;
+        let last_non_moved_message_historical: boolean | undefined;
+        let first_non_moved_message_container: MessageContainer | undefined;
+        let last_non_moved_message_container: MessageContainer | undefined;
 
         const add_message_container_to_group = (message_container: MessageContainer): void => {
             current_group_message_containers.push(message_container);
@@ -773,7 +824,10 @@ export class MessageListView {
                 message_for_next_group,
                 same_day(message_for_next_group, prev_message),
                 !same_year(message_for_next_group, prev_message),
-                this.get_possible_group_subscription_markers(prev_message, message_for_next_group),
+                this.get_possible_group_subscription_markers(
+                    last_non_moved_message_historical,
+                    message_for_next_group,
+                ),
             );
         };
 
@@ -799,6 +853,9 @@ export class MessageListView {
             let want_date_divider;
             let date_divider_html;
             let want_subscription_status_divider = false;
+            const original_stream_id = get_original_stream_id_if_moved(message);
+            const want_moved_message_divider =
+                original_stream_id !== undefined && !stream_data.is_subscribed(original_stream_id);
             const year_changed = !same_year(message, prev_message_container?.msg);
 
             if (
@@ -810,6 +867,7 @@ export class MessageListView {
                     prev_message: prev_message_container.msg,
                     curr_message: message,
                     display_year: year_changed,
+                    last_non_moved_message_historical,
                 });
                 want_date_divider = divider_data.want_date_divider;
                 want_subscription_status_divider = divider_data.want_subscription_status_divider;
@@ -852,6 +910,7 @@ export class MessageListView {
                 ...(topic_url && {topic_url}),
                 ...(pm_with_url && {pm_with_url}),
                 want_date_divider,
+                want_moved_message_divider,
                 want_subscription_status_divider,
                 date_divider_html,
                 year_changed,
@@ -865,16 +924,27 @@ export class MessageListView {
             add_message_container_to_group(message_container);
 
             prev_message_container = message_container;
+
+            if (get_original_stream_id_if_moved(message) === undefined) {
+                first_non_moved_message_container ??= message_container;
+                last_non_moved_message_historical = message.historical;
+                last_non_moved_message_container = message_container;
+            }
         }
 
         finish_group();
 
-        return new_message_groups;
+        return {
+            new_message_groups,
+            first_non_moved_message_container,
+            last_non_moved_message_container,
+        };
     }
 
     join_message_groups(
         first_group: MessageGroup | undefined,
         second_group: MessageGroup | undefined,
+        last_non_moved_message_historical: boolean | undefined,
     ): boolean {
         // join_message_groups will combine groups if they have the
         // same_recipient and the view supports collapsing, otherwise
@@ -909,14 +979,19 @@ export class MessageListView {
         // We may need to add a subscription marker after merging the groups.
         this.maybe_add_subscription_marker_to_group(
             second_group,
-            last_msg_container?.msg,
+            last_non_moved_message_historical,
             first_msg_container.msg,
         );
 
         return false;
     }
 
-    merge_message_groups(new_message_groups: MessageGroup[], where: string): RenderingPlan {
+    merge_message_groups(
+        new_message_groups: MessageGroup[],
+        where: string,
+        incoming_first_non_moved_msg_container: MessageContainer | undefined,
+        incoming_last_non_moved_msg_container: MessageContainer | undefined,
+    ): RenderingPlan {
         // merge_message_groups takes a list of new messages groups to add to
         // this._message_groups and a location where to merge them currently
         // top or bottom. It returns an object of changes which needed to be
@@ -936,14 +1011,34 @@ export class MessageListView {
         };
         let first_group;
         let second_group;
+        // The last non moved container before the insertion boundary, and
+        // the first non moved container after it.  Used to decide whether
+        // a subscription status divider is needed across the boundary.
+        let prev_non_moved_msg_container: MessageContainer | undefined;
+        let next_non_moved_msg_container: MessageContainer | undefined;
 
         if (where === "top") {
             first_group = new_message_groups.at(-1);
+            prev_non_moved_msg_container = incoming_last_non_moved_msg_container;
+            next_non_moved_msg_container = this._first_non_moved_message_container;
+            this._first_non_moved_message_container =
+                incoming_first_non_moved_msg_container ?? this._first_non_moved_message_container;
             second_group = this._message_groups[0];
         } else {
             first_group = this._message_groups.at(-1);
+            // Set the `_first_non_moved_message_container` when message list is rendered
+            // for the first time.
+            if (first_group === undefined) {
+                this._first_non_moved_message_container = incoming_first_non_moved_msg_container;
+            }
+            prev_non_moved_msg_container = this._last_non_moved_message_container;
+            next_non_moved_msg_container = incoming_first_non_moved_msg_container;
+            this._last_non_moved_message_container =
+                incoming_last_non_moved_msg_container ?? this._last_non_moved_message_container;
             second_group = new_message_groups[0];
         }
+
+        const prev_non_moved_message_historical = prev_non_moved_msg_container?.msg.historical;
 
         let prev_msg_container;
         if (first_group) {
@@ -954,12 +1049,26 @@ export class MessageListView {
         const curr_msg_container = second_group.message_containers[0];
         assert(curr_msg_container !== undefined);
 
-        const was_joined = this.join_message_groups(first_group, second_group);
+        const was_joined = this.join_message_groups(
+            first_group,
+            second_group,
+            prev_non_moved_message_historical,
+        );
         if (was_joined) {
             update_message_divider({
                 prev_msg_container,
                 curr_msg_container,
+                last_non_moved_message_historical: prev_non_moved_message_historical,
             });
+            // When the first message at the boundary is a moved message,
+            // update_message_divider skips the subscription divider for
+            // it. Propagate the divider to the first non moved message
+            // after the boundary instead.
+            if (next_non_moved_msg_container && prev_non_moved_msg_container) {
+                next_non_moved_msg_container.want_subscription_status_divider =
+                    prev_non_moved_msg_container.msg.historical !==
+                    next_non_moved_msg_container.msg.historical;
+            }
         } else {
             clear_message_divider(curr_msg_container);
         }
@@ -1191,9 +1300,18 @@ export class MessageListView {
             }
         };
 
-        const new_message_groups = this.build_message_groups(messages);
+        const {
+            new_message_groups,
+            first_non_moved_message_container,
+            last_non_moved_message_container,
+        } = this.build_message_groups(messages);
         const message_containers = new_message_groups.flatMap((group) => group.message_containers);
-        const message_actions = this.merge_message_groups(new_message_groups, where);
+        const message_actions = this.merge_message_groups(
+            new_message_groups,
+            where,
+            first_non_moved_message_container,
+            last_non_moved_message_container,
+        );
         const new_dom_elements = [];
         let $rendered_groups;
         let $dom_messages;
@@ -1872,6 +1990,8 @@ export class MessageListView {
         this._rows.clear();
         this._message_groups = [];
         this.message_containers.clear();
+        this._first_non_moved_message_container = undefined;
+        this._last_non_moved_message_container = undefined;
     }
 
     last_rendered_message(): Message | undefined {
