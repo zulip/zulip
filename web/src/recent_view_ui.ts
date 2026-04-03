@@ -1481,12 +1481,13 @@ function recenter_focus_if_off_screen(): void {
         const topic_center_x = (thead_props.left + thead_props.right) / 2;
         const topic_center_y = (thead_props.bottom + compose_top) / 2;
 
-        const topic_element = document.elementFromPoint(topic_center_x, topic_center_y);
-        if (
-            topic_element === null ||
-            $(topic_element).parents("#recent-view-content-tbody").length === 0
-        ) {
-            // The table is too short for there to be an topic row element
+        const topic_element = views_util.find_element_at_point(
+            topic_center_x,
+            topic_center_y,
+            "#recent-view-content-tbody",
+        );
+        if (topic_element === undefined) {
+            // The table is too short for there to be a topic row element
             // at the center of the table region; in that case, we just
             // select the last element.
             row_focus = $topic_rows.length - 1;
