@@ -13,6 +13,7 @@ import * as bot_helper from "./bot_helper.ts";
 import * as buttons from "./buttons.ts";
 import * as channel from "./channel.ts";
 import {csrf_token} from "./csrf.ts";
+import * as demo_organizations_ui from "./demo_organizations_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
@@ -271,10 +272,12 @@ function bot_owner_full_name(owner_id: number | null): string | undefined {
 }
 
 export function add_a_new_bot(): void {
+    const user_has_email_set = !settings_data.user_email_not_configured();
     const modal_content_html = render_add_new_bot_form({
         bot_types: get_allowed_bot_types(),
         realm_embedded_bots: realm.realm_embedded_bots,
         realm_bot_domain: realm.realm_bot_domain,
+        user_has_email_set,
     });
 
     let create_avatar_widget: UploadWidget;
@@ -350,6 +353,11 @@ export function add_a_new_bot(): void {
         $(`[name*='${CSS.escape(selected_embedded_bot)}']`).show();
 
         create_avatar_widget = avatar.build_bot_create_widget();
+
+        if (!user_has_email_set) {
+            $(util.the($<HTMLFormElement>("form#create_bot_form")).elements).prop("disabled", true);
+            demo_organizations_ui.show_configure_email_banner();
+        }
 
         $("#create_bot_type").on("change", () => {
             const bot_type = $("#create_bot_type").val();
