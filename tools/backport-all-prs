@@ -87,7 +87,7 @@ def main(
     console = Console(stderr=True, log_path=False)
 
     latest_tag = subprocess.check_output(
-        ["git", "tag", "-l", "--sort=-committerdate"],
+        ["git", "tag", "-l", "--sort=-committerdate", "--no-merged", "upstream/main"],
         text=True,
     ).splitlines()[0]
     target_branch = latest_tag.split(".")[0] + ".x"
