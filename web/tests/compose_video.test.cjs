@@ -153,6 +153,15 @@ test("videos", ({override}) => {
             /\[translated: Join video call\.]\(https:\/\/realm.example.com\/\d{15}#config.startWithVideoMuted=false\)/;
         assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
+
+        // Scenario where the URL has a path segment (like an auth token)
+        override(realm, "realm_jitsi_server_url", "https://jitsi.example.com/custom-token");
+        handler.call($textarea, ev);
+
+        video_link_regex =
+            /\[translated: Join video call\.\]\(https:\/\/jitsi\.example\.com\/custom-token\/\d{15}#config\.startWithVideoMuted=false\)/;
+
+        assert.match(syntax_to_insert, video_link_regex);
     })();
 
     (function test_zoom_video_and_audio_links_compose_clicked() {
