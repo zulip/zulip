@@ -1291,6 +1291,7 @@ class FetchQueriesTest(ZulipTestCase):
             device=1,
             drafts=1,
             giphy=0,
+            klipy=0,
             tenor=0,
             message=1,
             muted_topics=1,

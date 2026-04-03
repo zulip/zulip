@@ -729,6 +729,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## https://zulip.readthedocs.io/en/latest/production/gif-picker-integrations.html
 # GIPHY_API_KEY = "<Your API key from GIPHY>"
 # TENOR_API_KEY = "<Your API key from Tenor>"
+# KLIPY_API_KEY = "<Your API key from KLIPY>"
 
 ################
 ## Video call integrations.
