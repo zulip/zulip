@@ -338,26 +338,6 @@ def build_direct_message_group_subscriptions(
     return subscriptions
 
 
-def build_personal_subscriptions(zerver_recipient: list[ZerverFieldsT]) -> list[ZerverFieldsT]:
-    subscriptions: list[ZerverFieldsT] = []
-
-    personal_recipients = [
-        recipient for recipient in zerver_recipient if recipient["type"] == Recipient.PERSONAL
-    ]
-
-    for recipient in personal_recipients:
-        recipient_id = recipient["id"]
-        user_id = recipient["type_id"]
-        subscription = build_subscription(
-            recipient_id=recipient_id,
-            user_id=user_id,
-            subscription_id=NEXT_ID("subscription"),
-        )
-        subscriptions.append(subscription)
-
-    return subscriptions
-
-
 def build_recipient(type_id: int, recipient_id: int, type: int) -> ZerverFieldsT:
     recipient = Recipient(
         type_id=type_id,  # stream id
@@ -380,17 +360,6 @@ def build_recipients(
     """
 
     recipients = []
-
-    for user in zerver_userprofile:
-        type_id = user["id"]
-        type = Recipient.PERSONAL
-        recipient = Recipient(
-            type_id=type_id,
-            id=NEXT_ID("recipient"),
-            type=type,
-        )
-        recipient_dict = model_to_dict(recipient)
-        recipients.append(recipient_dict)
 
     for stream in zerver_stream:
         type_id = stream["id"]

@@ -115,6 +115,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import StreamTopicsPolicyEnum, get_realm_stream, get_stream
 from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
 from zerver.openapi.openapi import validate_test_request, validate_test_response
@@ -2386,6 +2387,13 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
         """
         do_change_user_role(user, role, acting_user=None, notify=False)
 
+    def get_dm_group_recipient(self, sender: UserProfile, *other_users: UserProfile) -> Recipient:
+        direct_group_message = get_or_create_direct_message_group(
+            id_list=[sender.id] + [user.id for user in other_users],
+        )
+        assert direct_group_message.recipient is not None
+        return direct_group_message.recipient
+
     def set_user_setting(self, user: UserProfile, setting_name: str, value: bool) -> None:
         with self.captureOnCommitCallbacks(execute=True):
             do_change_user_setting(user, setting_name, value, acting_user=None)
@@ -2827,7 +2835,10 @@ class PushNotificationTestCase(BouncerTestCase):
         self.user_profile = self.example_user("hamlet")
         self.sending_client = get_client("test")
         self.sender = self.example_user("hamlet")
-        self.personal_recipient_user = self.example_user("othello")
+        self.dm_recipient_user = self.example_user("othello")
+        self.dm_group = get_or_create_direct_message_group(
+            [self.sender.id, self.dm_recipient_user.id]
+        )
 
     def get_message(self, type: int, type_id: int, realm_id: int) -> Message:
         recipient, _ = Recipient.objects.get_or_create(

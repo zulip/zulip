@@ -5392,16 +5392,10 @@ class SubscriptionAPITest(ZulipTestCase):
         notification_bot_dms = Message.objects.filter(
             realm_id=realm.id,
             sender=bot.id,
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             date_sent__gt=now,
         )
         self.assert_length(notification_bot_dms, 5)
-        notif_bot_dm_recipients = [
-            dm["recipient__type_id"] for dm in notification_bot_dms.values("recipient__type_id")
-        ]
-        self.assertSetEqual(
-            {id for id in user_ids if id != desdemona.id}, set(notif_bot_dm_recipients)
-        )
 
         announcement_channel_message = Message.objects.filter(
             realm_id=realm.id,
@@ -5427,7 +5421,7 @@ class SubscriptionAPITest(ZulipTestCase):
         notification_bot_dms = Message.objects.filter(
             realm_id=realm.id,
             sender=bot.id,
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             date_sent__gt=now,
         )
         self.assertEqual(notification_bot_dms.count(), 0)
@@ -5480,7 +5474,7 @@ class SubscriptionAPITest(ZulipTestCase):
         notification_bot_dms = Message.objects.filter(
             realm_id=realm.id,
             sender=bot.id,
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             date_sent__gt=now,
         )
         self.assertEqual(notification_bot_dms.count(), 0)
@@ -5511,7 +5505,7 @@ class SubscriptionAPITest(ZulipTestCase):
         notification_bot_dms = Message.objects.filter(
             realm_id=realm.id,
             sender=bot.id,
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             date_sent__gt=now,
         )
         self.assertEqual(notification_bot_dms.count(), 0)

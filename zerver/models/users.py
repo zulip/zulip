@@ -510,8 +510,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     email = models.EmailField(blank=False, db_index=True)
 
     realm = models.ForeignKey("zerver.Realm", on_delete=CASCADE)
-    # Foreign key to the Recipient object for PERSONAL type messages to this user.
-    recipient = models.ForeignKey("zerver.Recipient", null=True, on_delete=models.SET_NULL)
 
     INACCESSIBLE_USER_NAME = gettext_lazy("Unknown user")
     # The user's name.  We prefer the model of a full_name
@@ -1013,7 +1011,6 @@ def base_get_user_narrow_queryset() -> QuerySet[UserProfile]:
         "presence_enabled",
         "rate_limits",
         "role",
-        "recipient_id",
         "realm__string_id",
         "realm__deactivated",
     )

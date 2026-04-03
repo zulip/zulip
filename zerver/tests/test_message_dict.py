@@ -84,7 +84,6 @@ class MessageDictTest(ZulipTestCase):
                 allow_empty_topic_name=True,
                 can_access_sender=True,
                 realm_host=get_realm("zulip").host,
-                is_incoming_1_to_1=False,
             )
             return narrow_dict
 
@@ -101,7 +100,6 @@ class MessageDictTest(ZulipTestCase):
                 client_gravatar=client_gravatar,
                 allow_empty_topic_name=True,
                 realm=get_realm("zulip"),
-                user_recipient_id=None,
             )
             final_dict = unhydrated_dict
             return final_dict
@@ -145,7 +143,9 @@ class MessageDictTest(ZulipTestCase):
         sender = self.example_user("othello")
         receiver = self.example_user("hamlet")
         realm = get_realm("zulip")
-        pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
+        pm_recipient = get_or_create_direct_message_group(
+            id_list=[sender.id, receiver.id]
+        ).recipient
         stream_name = "Çiğdem"
         stream = self.make_stream(stream_name)
         stream_recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
@@ -177,7 +177,7 @@ class MessageDictTest(ZulipTestCase):
         num_ids = len(ids)
         self.assertTrue(num_ids >= 600)
 
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(8):
             objs = MessageDict.ids_to_dict(ids)
             MessageDict.post_process_dicts(
                 objs,
@@ -185,7 +185,6 @@ class MessageDictTest(ZulipTestCase):
                 client_gravatar=False,
                 allow_empty_topic_name=True,
                 realm=realm,
-                user_recipient_id=None,
             )
 
         self.assert_length(objs, num_ids)
@@ -193,11 +192,13 @@ class MessageDictTest(ZulipTestCase):
     def test_applying_markdown(self) -> None:
         sender = self.example_user("othello")
         receiver = self.example_user("hamlet")
-        recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
+        direct_message_group = get_or_create_direct_message_group(
+            id_list=[sender.id, receiver.id],
+        )
         sending_client = make_client(name="test suite")
         message = Message(
             sender=sender,
-            recipient=recipient,
+            recipient=direct_message_group.recipient,
             realm=receiver.realm,
             content="hello **world**",
             date_sent=timezone_now(),
@@ -223,11 +224,13 @@ class MessageDictTest(ZulipTestCase):
         convert_mock.return_value = None
         sender = self.example_user("othello")
         receiver = self.example_user("hamlet")
-        recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
+        direct_message_group = get_or_create_direct_message_group(
+            id_list=[sender.id, receiver.id],
+        )
         sending_client = make_client(name="test suite")
         message = Message(
             sender=sender,
-            recipient=recipient,
+            recipient=direct_message_group.recipient,
             realm=receiver.realm,
             content="hello **world**",
             date_sent=timezone_now(),
@@ -288,7 +291,7 @@ class MessageDictTest(ZulipTestCase):
     def test_reaction(self) -> None:
         sender = self.example_user("othello")
         receiver = self.example_user("hamlet")
-        recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
+        recipient = get_or_create_direct_message_group(id_list=[sender.id, receiver.id]).recipient
         sending_client = make_client(name="test suite")
         message = Message(
             sender=sender,
@@ -367,7 +370,7 @@ class MessageHydrationTest(ZulipTestCase):
         ]
 
         obj = dict(
-            recipient_type=Recipient.PERSONAL,
+            recipient_type=Recipient.DIRECT_MESSAGE_GROUP,
             recipient_type_id=None,
             sender_is_mirror_dummy=False,
             sender_email=cordelia.email,
@@ -495,10 +498,8 @@ class MessageHydrationTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         message_id = self.send_personal_message(hamlet, cordelia, "test")
 
-        cordelia_recipient = cordelia.recipient
         # Cause the display_recipient to get cached:
-        assert cordelia_recipient is not None
-        get_display_recipient(cordelia_recipient)
+        get_display_recipient(self.get_dm_group_recipient(hamlet, cordelia))
 
         # Change cordelia's email:
         cordelia_new_email = "new-cordelia@zulip.com"
@@ -760,7 +761,9 @@ class SewMessageAndReactionTest(ZulipTestCase):
         sender = self.example_user("othello")
         receiver = self.example_user("hamlet")
         realm = get_realm("zulip")
-        pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
+        pm_recipient = get_or_create_direct_message_group(
+            id_list=[sender.id, receiver.id]
+        ).recipient
         stream_name = "Çiğdem"
         stream = self.make_stream(stream_name)
         stream_recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)

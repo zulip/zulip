@@ -1079,26 +1079,6 @@ def get_realm_config() -> Config:
     # Some of these tables are intermediate "tables" that we
     # create only for the export.  Think of them as similar to views.
 
-    user_subscription_config = Config(
-        table="_user_subscription",
-        model=Subscription,
-        normal_parent=user_profile_config,
-        filter_args={"recipient__type": Recipient.PERSONAL},
-        include_rows="user_profile_id__in",
-        # This is merely for fetching Subscriptions to users' own PERSONAL Recipient.
-        # It is just "glue" data for internal data model consistency purposes
-        # with no user-specific information.
-        limit_to_consenting_users=False,
-        use_iterator=False,
-    )
-
-    Config(
-        table="_user_recipient",
-        model=Recipient,
-        virtual_parent=user_subscription_config,
-        id_source=("_user_subscription", "recipient"),
-    )
-
     stream_config = Config(
         table="zerver_stream",
         model=Stream,
@@ -1141,7 +1121,6 @@ def get_realm_config() -> Config:
         table="zerver_recipient",
         virtual_parent=realm_config,
         concat_and_destroy=[
-            "_user_recipient",
             "_stream_recipient",
             "_huddle_recipient",
         ],
@@ -1152,7 +1131,6 @@ def get_realm_config() -> Config:
         table="zerver_subscription",
         virtual_parent=realm_config,
         concat_and_destroy=[
-            "_user_subscription",
             "_stream_subscription",
             "_huddle_subscription",
         ],
@@ -1445,16 +1423,11 @@ def custom_fetch_user_profile_cross_realm(response: TableData, context: Context)
         bot_default_email = bot_name_to_default_email[bot_name]
         bot_user_id = get_system_bot(bot_email, internal_realm.id).id
 
-        try:
-            recipient_id = Recipient.objects.get(type_id=bot_user_id, type=Recipient.PERSONAL).id
-        except Recipient.DoesNotExist:
-            recipient_id = None
-
         crossrealm_bots.append(
             dict(
                 email=bot_default_email,
                 id=bot_user_id,
-                recipient_id=recipient_id,
+                recipient_id=None,
             ),
         )
     response["zerver_userprofile_crossrealm"] = crossrealm_bots
@@ -1895,30 +1868,6 @@ def export_partial_message_files(
             )
 
             message_queries.append(messages_we_received_in_protected_history_streams)
-
-        # The above query is missing some messages that consenting
-        # users have access to, namely, direct messages sent by one
-        # of the users in our export to another user (since the only
-        # subscriber to a Recipient object for Recipient.PERSONAL is
-        # the recipient, not the sender). The `consented_user_ids`
-        # list has precisely those users whose Recipient.PERSONAL
-        # recipient ID was already present in recipient_ids_for_us
-        # above.
-        ids_of_non_exported_possible_recipients = ids_of_our_possible_senders - consented_user_ids
-
-        recipients_for_them = Recipient.objects.filter(
-            type=Recipient.PERSONAL, type_id__in=ids_of_non_exported_possible_recipients
-        ).values("id")
-        recipient_ids_for_them = get_ids(recipients_for_them)
-
-        messages_we_sent_to_them = Message.objects.filter(
-            # Uses index: zerver_message_realm_sender_recipient
-            realm_id=realm.id,
-            sender__in=consented_user_ids,
-            recipient__in=recipient_ids_for_them,
-        )
-
-        message_queries.append(messages_we_sent_to_them)
 
     all_message_ids: set[int] = set()
 
@@ -2880,7 +2829,7 @@ def export_messages_single_user(
 
     my_subscriptions = Subscription.objects.filter(
         user_profile=user_profile,
-        recipient__type__in=[Recipient.PERSONAL, Recipient.DIRECT_MESSAGE_GROUP],
+        recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
     )
     my_recipient_ids = [sub.recipient_id for sub in my_subscriptions]
     messages_to_me = Message.objects.filter(

@@ -4,7 +4,6 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 import time_machine
-from django.test.utils import override_settings
 
 from zerver.actions.scheduled_messages import try_deliver_one_scheduled_message
 from zerver.lib.message import get_user_mentions_for_display
@@ -76,56 +75,6 @@ class RemindersTest(ZulipTestCase):
             f"@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/test/near/{msg_id}) in [#Verona > test](#narrow/channel/3-Verona/topic/test/with/{msg_id}):\n```quote\n{msg_content}\n```"
         )
 
-    def test_schedule_reminder(self) -> None:
-        self.login("hamlet")
-        content = "Test message"
-        scheduled_delivery_timestamp = int(time.time() + 86400)
-
-        # Scheduling a reminder to a channel you are subscribed is successful.
-        message_id = self.send_channel_message_for_hamlet(content)
-        result = self.do_schedule_reminder(message_id, scheduled_delivery_timestamp)
-        self.assert_json_success(result)
-        scheduled_message = self.last_scheduled_reminder()
-        self.assertEqual(
-            scheduled_message.content,
-            self.get_channel_message_reminder_content(content, message_id),
-        )
-        # Recipient and sender are the same for reminders.
-        self.assertEqual(scheduled_message.recipient.type_id, self.example_user("hamlet").id)
-        self.assertEqual(scheduled_message.sender, self.example_user("hamlet"))
-        self.assertEqual(
-            scheduled_message.scheduled_timestamp,
-            timestamp_to_datetime(scheduled_delivery_timestamp),
-        )
-        self.assertEqual(
-            scheduled_message.reminder_target_message_id,
-            message_id,
-        )
-        self.assertEqual(scheduled_message.topic_name(), Message.DM_TOPIC)
-
-        # Scheduling a direct message with user IDs is successful.
-        othello = self.example_user("othello")
-        message_id = self.send_dm_from_hamlet_to_othello(content)
-        result = self.do_schedule_reminder(message_id, scheduled_delivery_timestamp)
-        self.assert_json_success(result)
-        scheduled_message = self.last_scheduled_reminder()
-        self.assertEqual(
-            scheduled_message.content,
-            self.get_dm_reminder_content(content, message_id, [othello]),
-        )
-        self.assertEqual(scheduled_message.recipient.type_id, self.example_user("hamlet").id)
-        self.assertEqual(scheduled_message.sender, self.example_user("hamlet"))
-        self.assertEqual(
-            scheduled_message.scheduled_timestamp,
-            timestamp_to_datetime(scheduled_delivery_timestamp),
-        )
-        self.assertEqual(
-            scheduled_message.reminder_target_message_id,
-            message_id,
-        )
-        self.assertEqual(scheduled_message.topic_name(), Message.DM_TOPIC)
-
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_schedule_reminder_using_direct_message_group(self) -> None:
         hamlet = self.example_user("hamlet")
         othello = self.example_user("othello")

@@ -45,7 +45,6 @@ from zerver.lib.message import (
     apply_unread_message_event,
     extract_unread_data_from_um_rows,
     get_raw_unread_data,
-    get_recent_conversations_recipient_id,
     get_recent_private_conversations,
     get_starred_message_ids,
     remove_message_id_from_unread_mgs,
@@ -821,9 +820,9 @@ def fetch_initial_state_data(
         # to self).
         #
         # Note that raw_recent_private_conversations is an
-        # intermediate form as a dictionary keyed by recipient_id,
-        # which is more efficient to update, and is rewritten to the
-        # final format in post_process_state.
+        # intermediate form as a dictionary keyed by frozenset of
+        # other-user-ids, which is more efficient to update, and is
+        # rewritten to the final format in post_process_state.
         state["raw_recent_private_conversations"] = (
             {} if user_profile is None else get_recent_private_conversations(user_profile)
         )
@@ -1034,19 +1033,13 @@ def apply_event(
             if "raw_recent_private_conversations" in state:
                 # Handle maintaining the recent_private_conversations data structure.
                 conversations = state["raw_recent_private_conversations"]
-                recipient_id = get_recent_conversations_recipient_id(
-                    user_profile, event["message"]["recipient_id"], event["message"]["sender_id"]
+                userset = frozenset(
+                    user_dict["id"]
+                    for user_dict in event["message"]["display_recipient"]
+                    if user_dict["id"] != user_profile.id
                 )
 
-                if recipient_id not in conversations:
-                    conversations[recipient_id] = dict(
-                        user_ids=sorted(
-                            user_dict["id"]
-                            for user_dict in event["message"]["display_recipient"]
-                            if user_dict["id"] != user_profile.id
-                        ),
-                    )
-                conversations[recipient_id]["max_message_id"] = event["message"]["id"]
+                conversations[userset] = event["message"]["id"]
             return
 
         # Below, we handle maintaining first_message_id.
@@ -2282,10 +2275,8 @@ def post_process_state(
         # Reformat recent_private_conversations to be a list of dictionaries, rather than a dict.
         ret["recent_private_conversations"] = sorted(
             (
-                dict(
-                    **value,
-                )
-                for (recipient_id, value) in ret["raw_recent_private_conversations"].items()
+                {"user_ids": sorted(user_id_set), "max_message_id": value}
+                for (user_id_set, value) in ret["raw_recent_private_conversations"].items()
             ),
             key=lambda x: -x["max_message_id"],
         )

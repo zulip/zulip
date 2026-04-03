@@ -735,6 +735,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
     def test_send_notification_endpoint_on_free_plans(self) -> None:
         hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        recipient = get_or_create_direct_message_group(id_list=[hamlet.id, othello.id]).recipient
+
         remote_server = self.server
         RemotePushDeviceToken.objects.create(
             kind=RemotePushDeviceToken.FCM,
@@ -746,7 +749,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         current_time = now()
         message = Message(
             sender=hamlet,
-            recipient=self.example_user("othello").recipient,
+            recipient=recipient,
             realm_id=hamlet.realm_id,
             content="This is test content",
             rendered_content="This is test content",
@@ -776,12 +779,12 @@ class PushBouncerNotificationTest(BouncerTestCase):
                     "realm_id": hamlet.realm.id,
                     "realm_uri": hamlet.realm.url,
                     "realm_url": hamlet.realm.url,
-                    "user_id": self.example_user("othello").id,
+                    "user_id": othello.id,
                 }
             },
         }
         old_gcm_payload = {
-            "user_id": self.example_user("othello").id,
+            "user_id": othello.id,
             "event": "message",
             "alert": "New private message from King Hamlet",
             "zulip_message_id": message.id,
@@ -1510,7 +1513,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
         }
         self.assertDictEqual(payload, expected)
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_get_message_payload_apns_personal_message_using_direct_message_group(self) -> None:
         user_profile = self.example_user("othello")
 
@@ -1924,12 +1926,13 @@ class TestGetGCMPayload(PushNotificationTestCase):
         self._test_get_message_payload_gcm_stream_message(empty_string_topic=True)
 
     def test_get_message_payload_gcm_direct_message(self) -> None:
-        message = self.get_message(
-            Recipient.PERSONAL,
-            type_id=self.personal_recipient_user.id,
-            realm_id=self.personal_recipient_user.realm_id,
-        )
         hamlet = self.example_user("hamlet")
+        dm_group = get_or_create_direct_message_group([hamlet.id, self.dm_recipient_user.id])
+        message = self.get_message(
+            Recipient.DIRECT_MESSAGE_GROUP,
+            type_id=dm_group.id,
+            realm_id=self.dm_recipient_user.realm_id,
+        )
         payload, gcm_options = self._get_message_payload_gcm(hamlet, message)
         self.assertDictEqual(
             payload,

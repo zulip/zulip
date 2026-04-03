@@ -16,7 +16,6 @@ from urllib.parse import urlsplit
 
 import orjson
 import requests
-from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 
@@ -80,7 +79,6 @@ SlackToZulipUserIDT: TypeAlias = dict[str, int]
 AddedChannelsT: TypeAlias = dict[str, tuple[str, int]]
 AddedMPIMsT: TypeAlias = dict[str, tuple[str, int]]
 AddedDMsT: TypeAlias = dict[str, int]
-DMMembersT: TypeAlias = dict[str, tuple[str, str]]
 SlackToZulipRecipientT: TypeAlias = dict[str, int]
 
 
@@ -149,7 +147,6 @@ def slack_workspace_to_realm(
     AddedChannelsT,
     AddedMPIMsT,
     AddedDMsT,
-    DMMembersT,
     list[ZerverFieldsT],
     ZerverFieldsT,
 ]:
@@ -161,9 +158,8 @@ def slack_workspace_to_realm(
        name(channel names, mpim names, usernames, etc) to Zulip recipient id
     4. added_channels, which is a dictionary to map from channel name to channel id, Zulip stream_id
     5. added_mpims, which is a dictionary to map from MPIM name to MPIM id, Zulip direct_message_group_id
-    6. dm_members, which is a dictionary to map from DM id to tuple of DM participants.
-    7. avatars, which is list to map avatars to Zulip avatar records.json
-    8. emoji_url_map, which is maps emoji name to its Slack URL
+    6. avatars, which is list to map avatars to Zulip avatar records.json
+    7. emoji_url_map, which is maps emoji name to its Slack URL
     """
     NOW = float(timezone_now().timestamp())
 
@@ -182,7 +178,6 @@ def slack_workspace_to_realm(
         added_channels,
         added_mpims,
         added_dms,
-        dm_members,
         slack_recipient_name_to_zulip_recipient_id,
     ) = channels_to_zerver_stream(
         slack_data_dir, realm_id, realm, slack_user_id_to_zulip_user_id, zerver_userprofile
@@ -205,7 +200,6 @@ def slack_workspace_to_realm(
         added_channels,
         added_mpims,
         added_dms,
-        dm_members,
         avatars,
         emoji_url_map,
     )
@@ -543,7 +537,6 @@ def channels_to_zerver_stream(
     AddedChannelsT,
     AddedMPIMsT,
     AddedDMsT,
-    DMMembersT,
     SlackToZulipRecipientT,
 ]:
     """
@@ -552,8 +545,7 @@ def channels_to_zerver_stream(
     2. added_channels, which is a dictionary to map from channel name to channel id, Zulip stream_id
     3. added_mpims, which is a dictionary to map from MPIM(multiparty IM) name to MPIM id, Zulip
        direct_message_group_id
-    4. dm_members, which is a dictionary to map from DM id to tuple of DM participants.
-    5. slack_recipient_name_to_zulip_recipient_id, which is a dictionary to map from Slack recipient
+    4. slack_recipient_name_to_zulip_recipient_id, which is a dictionary to map from Slack recipient
        name(channel names, mpim names, usernames etc) to Zulip recipient_id
     """
     logging.info("######### IMPORTING CHANNELS STARTED #########\n")
@@ -563,7 +555,6 @@ def channels_to_zerver_stream(
     added_channels = {}
     added_mpims = {}
     added_dms = {}
-    dm_members = {}
     slack_recipient_name_to_zulip_recipient_id = {}
 
     realm["zerver_stream"] = []
@@ -687,63 +678,37 @@ def channels_to_zerver_stream(
         mpims = []
     process_mpims(mpims)
 
-    # This may have duplicated zulip user_ids, since we merge multiple
-    # Slack same-email shared-channel users into one Zulip dummy user
-    if not settings.PREFER_DIRECT_MESSAGE_GROUP:
-        zulip_user_to_recipient: dict[int, int] = {}
-        for slack_user_id, zulip_user_id in slack_user_id_to_zulip_user_id.items():
-            if zulip_user_id in zulip_user_to_recipient:
-                slack_recipient_name_to_zulip_recipient_id[slack_user_id] = zulip_user_to_recipient[
-                    zulip_user_id
-                ]
-                continue
-            recipient = build_recipient(zulip_user_id, recipient_id_count, Recipient.PERSONAL)
-            slack_recipient_name_to_zulip_recipient_id[slack_user_id] = recipient_id_count
-            zulip_user_to_recipient[zulip_user_id] = recipient_id_count
-            sub = build_subscription(recipient_id_count, zulip_user_id, subscription_id_count)
-            realm["zerver_recipient"].append(recipient)
-            realm["zerver_subscription"].append(sub)
-            recipient_id_count += 1
-            subscription_id_count += 1
-
     def process_dms(dms: list[dict[str, Any]]) -> None:
         nonlocal direct_message_group_id_count, recipient_id_count, subscription_id_count
 
         for dm in dms:
-            if settings.PREFER_DIRECT_MESSAGE_GROUP:
-                # Create direct message group for 1:1 DMs when the setting is enabled
-                direct_message_group = build_direct_message_group(
-                    direct_message_group_id_count, len(set(dm["members"]))
-                )
-                realm["zerver_huddle"].append(direct_message_group)
+            direct_message_group = build_direct_message_group(
+                direct_message_group_id_count, len(set(dm["members"]))
+            )
+            realm["zerver_huddle"].append(direct_message_group)
 
-                # Use DM id as the key for mapping, similar to mpims
-                added_dms[dm["id"]] = direct_message_group_id_count
+            # Use DM id as the key for mapping, similar to mpims
+            added_dms[dm["id"]] = direct_message_group_id_count
 
-                recipient = build_recipient(
-                    direct_message_group_id_count,
-                    recipient_id_count,
-                    Recipient.DIRECT_MESSAGE_GROUP,
-                )
-                realm["zerver_recipient"].append(recipient)
-                slack_recipient_name_to_zulip_recipient_id[dm["id"]] = recipient_id_count
+            recipient = build_recipient(
+                direct_message_group_id_count,
+                recipient_id_count,
+                Recipient.DIRECT_MESSAGE_GROUP,
+            )
+            realm["zerver_recipient"].append(recipient)
+            slack_recipient_name_to_zulip_recipient_id[dm["id"]] = recipient_id_count
 
-                subscription_id_count = get_subscription(
-                    dm["members"],
-                    realm["zerver_subscription"],
-                    recipient_id_count,
-                    slack_user_id_to_zulip_user_id,
-                    subscription_id_count,
-                )
+            subscription_id_count = get_subscription(
+                dm["members"],
+                realm["zerver_subscription"],
+                recipient_id_count,
+                slack_user_id_to_zulip_user_id,
+                subscription_id_count,
+            )
 
-                direct_message_group_id_count += 1
-                recipient_id_count += 1
-                logging.info("DM %s -> created as direct message group", dm["id"])
-            else:
-                # Original behavior for personal messages
-                user_a = dm["members"][0]
-                user_b = dm["members"][1]
-                dm_members[dm["id"]] = (user_a, user_b)
+            direct_message_group_id_count += 1
+            recipient_id_count += 1
+            logging.info("DM %s -> created as direct message group", dm["id"])
 
     try:
         dms = get_data_file(slack_data_dir + "/dms.json")
@@ -757,7 +722,6 @@ def channels_to_zerver_stream(
         added_channels,
         added_mpims,
         added_dms,
-        dm_members,
         slack_recipient_name_to_zulip_recipient_id,
     )
 
@@ -793,11 +757,10 @@ def process_long_term_idle_users(
     added_channels: AddedChannelsT,
     added_mpims: AddedMPIMsT,
     added_dms: AddedDMsT,
-    dm_members: DMMembersT,
     zerver_userprofile: list[ZerverFieldsT],
 ) -> set[int]:
     return long_term_idle_helper(
-        get_messages_iterator(slack_data_dir, added_channels, added_mpims, added_dms, dm_members),
+        get_messages_iterator(slack_data_dir, added_channels, added_mpims, added_dms),
         get_message_sending_user,
         get_timestamp_from_message,
         lambda id: slack_user_id_to_zulip_user_id[id],
@@ -815,7 +778,6 @@ def convert_slack_workspace_messages(
     added_channels: AddedChannelsT,
     added_mpims: AddedMPIMsT,
     added_dms: AddedDMsT,
-    dm_members: DMMembersT,
     realm: ZerverFieldsT,
     zerver_userprofile: list[ZerverFieldsT],
     zerver_realmemoji: list[ZerverFieldsT],
@@ -839,13 +801,10 @@ def convert_slack_workspace_messages(
         added_channels,
         added_mpims,
         added_dms,
-        dm_members,
         zerver_userprofile,
     )
 
-    all_messages = get_messages_iterator(
-        slack_data_dir, added_channels, added_mpims, added_dms, dm_members
-    )
+    all_messages = get_messages_iterator(slack_data_dir, added_channels, added_mpims, added_dms)
     logging.info("######### IMPORTING MESSAGES STARTED #########\n")
 
     total_reactions: list[ZerverFieldsT] = []
@@ -868,7 +827,6 @@ def convert_slack_workspace_messages(
             zerver_realmemoji,
             subscriber_map,
             added_channels,
-            dm_members,
             domain_name,
             long_term_idle,
             convert_slack_threads,
@@ -899,14 +857,13 @@ def get_messages_iterator(
     added_channels: dict[str, Any],
     added_mpims: AddedMPIMsT,
     added_dms: AddedDMsT,
-    dm_members: DMMembersT,
 ) -> Iterator[ZerverFieldsT]:
     """This function is an iterator that returns all the messages across
     all Slack channels, in order by timestamp.  It's important to
     not read all the messages into memory at once, because for
     large imports that can OOM kill."""
 
-    dir_names = [*added_channels, *added_mpims, *added_dms, *dm_members]
+    dir_names = [*added_channels, *added_mpims, *added_dms]
     all_json_names: dict[str, list[str]] = defaultdict(list)
     for dir_name in dir_names:
         dir_path = os.path.join(slack_data_dir, dir_name)
@@ -940,7 +897,7 @@ def get_messages_iterator(
                     message["channel_name"] = dir_name
                 elif dir_name in added_mpims:
                     message["mpim_name"] = dir_name
-                elif dir_name in dm_members or dir_name in added_dms:
+                elif dir_name in added_dms:
                     message["pm_name"] = dir_name
                 messages.append(message)
             messages_for_one_day += messages
@@ -1051,7 +1008,6 @@ def channel_message_to_zerver_message(
     zerver_realmemoji: list[ZerverFieldsT],
     subscriber_map: dict[int, set[int]],
     added_channels: AddedChannelsT,
-    dm_members: DMMembersT,
     domain_name: str,
     long_term_idle: set[int],
     convert_slack_threads: bool,
@@ -1108,19 +1064,7 @@ def channel_message_to_zerver_message(
             recipient_id = slack_recipient_name_to_zulip_recipient_id[message["mpim_name"]]
         elif "pm_name" in message:
             is_direct_message_type = True
-            if settings.PREFER_DIRECT_MESSAGE_GROUP:
-                # When PREFER_DIRECT_MESSAGE_GROUP is enabled, 1:1 DMs are treated as direct message groups
-                recipient_id = slack_recipient_name_to_zulip_recipient_id[message["pm_name"]]
-            else:
-                # Original behavior: use personal recipients for 1:1 DMs
-                sender = get_message_sending_user(message)
-                members = dm_members[message["pm_name"]]
-                if sender == members[0]:
-                    recipient_id = slack_recipient_name_to_zulip_recipient_id[members[1]]
-                    sender_recipient_id = slack_recipient_name_to_zulip_recipient_id[members[0]]
-                else:
-                    recipient_id = slack_recipient_name_to_zulip_recipient_id[members[0]]
-                    sender_recipient_id = slack_recipient_name_to_zulip_recipient_id[members[1]]
+            recipient_id = slack_recipient_name_to_zulip_recipient_id[message["pm_name"]]
 
         message_id = NEXT_ID("message")
 
@@ -1213,23 +1157,6 @@ def channel_message_to_zerver_message(
         )
         total_user_messages += num_created
         total_skipped_user_messages += num_skipped
-
-        if (
-            "pm_name" in message
-            and not settings.PREFER_DIRECT_MESSAGE_GROUP
-            and recipient_id != sender_recipient_id
-        ):
-            (num_created, num_skipped) = build_usermessages(
-                zerver_usermessage=zerver_usermessage,
-                subscriber_map=subscriber_map,
-                recipient_id=sender_recipient_id,
-                mentioned_user_ids=mentioned_user_ids,
-                message_id=message_id,
-                is_private=is_direct_message_type,
-                long_term_idle=long_term_idle,
-            )
-            total_user_messages += num_created
-            total_skipped_user_messages += num_skipped
 
     logging.debug(
         "Created %s UserMessages; deferred %s due to long-term idle",
@@ -1518,7 +1445,7 @@ def fetch_shared_channel_users(
                 if user_id not in normal_user_ids:
                     mirror_dummy_user_ids.add(user_id)
 
-    all_messages = get_messages_iterator(slack_data_dir, added_channels, {}, {}, {})
+    all_messages = get_messages_iterator(slack_data_dir, added_channels, {}, {})
     for message in all_messages:
         if is_integration_bot_message(message):
             # This message is likely from an integration bot. Since Slack's integration
@@ -1729,7 +1656,6 @@ def do_convert_directory(
         added_channels,
         added_mpims,
         added_dms,
-        dm_members,
         avatar_list,
         emoji_url_map,
     ) = slack_workspace_to_realm(
@@ -1752,7 +1678,6 @@ def do_convert_directory(
             added_channels,
             added_mpims,
             added_dms,
-            dm_members,
             realm,
             realm["zerver_userprofile"],
             realm["zerver_realmemoji"],

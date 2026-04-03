@@ -78,7 +78,7 @@ from zerver.models import (
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import RealmTopicsPolicyEnum, get_realm
-from zerver.models.recipients import get_direct_message_group, get_or_create_direct_message_group
+from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import (
     get_system_bot,
@@ -873,9 +873,10 @@ class MessagePOSTTest(ZulipTestCase):
         message_id = orjson.loads(result.content)["id"]
 
         recent_conversations = get_recent_private_conversations(user_profile)
-        [(recipient_id, recent_conversation)] = recent_conversations.items()
-        self.assertEqual(set(recent_conversation["user_ids"]), {othello.id})
-        self.assertEqual(recent_conversation["max_message_id"], message_id)
+        self.assert_length(recent_conversations, 1)
+        user_id_set = next(iter(recent_conversations))
+        self.assertEqual(user_id_set, {othello.id})
+        self.assertEqual(recent_conversations[user_id_set], message_id)
 
         # Now send a message to yourself and see how that interacts with the data structure
         result = self.client_post(
@@ -891,21 +892,19 @@ class MessagePOSTTest(ZulipTestCase):
 
         recent_conversations = get_recent_private_conversations(user_profile)
         self.assert_length(recent_conversations, 2)
-        recent_conversation = recent_conversations[recipient_id]
-        self.assertEqual(set(recent_conversation["user_ids"]), {othello.id})
-        self.assertEqual(recent_conversation["max_message_id"], message_id)
+        self.assertEqual(recent_conversations[frozenset([othello.id])], message_id)
 
         # Now verify we have the appropriate self-pm data structure
-        del recent_conversations[recipient_id]
-        [(recipient_id, recent_conversation)] = recent_conversations.items()
-        self.assertEqual(set(recent_conversation["user_ids"]), set())
-        self.assertEqual(recent_conversation["max_message_id"], self_message_id)
+        self.assertEqual(recent_conversations[frozenset()], self_message_id)
 
     def test_personal_message_by_id(self) -> None:
         """
         Sending a personal message to a valid user ID is successful
         for both valid strings for `type` parameter.
         """
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
         self.login("hamlet")
         recipient_type_name = ["direct", "private"]
 
@@ -915,14 +914,14 @@ class MessagePOSTTest(ZulipTestCase):
                 {
                     "type": type,
                     "content": "Test message",
-                    "to": orjson.dumps([self.example_user("othello").id]).decode(),
+                    "to": orjson.dumps([othello.id]).decode(),
                 },
             )
             self.assert_json_success(result)
 
             msg = self.get_last_message()
             self.assertEqual("Test message", msg.content)
-            self.assertEqual(msg.recipient_id, self.example_user("othello").recipient_id)
+            self.assertEqual(msg.recipient_id, self.get_dm_group_recipient(hamlet, othello).id)
 
     def test_group_personal_message_by_id(self) -> None:
         """
@@ -974,8 +973,8 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         msg = self.get_last_message()
-        # Verify that we're not actually on the "recipient list"
-        self.assertNotIn("Hamlet", str(msg.recipient))
+        # Verify that we're actually on the "recipient list"
+        self.assertEqual(msg.recipient, self.get_dm_group_recipient(hamlet, othello))
 
     def test_personal_message_to_nonexistent_user(self) -> None:
         """
@@ -1931,7 +1930,6 @@ class StreamMessagesTest(ZulipTestCase):
             client_gravatar=False,
             allow_empty_topic_name=True,
             realm=user_profile.realm,
-            user_recipient_id=None,
         )
         self.assertEqual(dct["display_recipient"], "Denmark")
 
@@ -2664,17 +2662,12 @@ class StreamMessagesTest(ZulipTestCase):
         self.assert_length(msg_data["huddle_dict"].keys(), 2)
 
         recent_conversations = get_recent_private_conversations(users[1])
-        [recent_conversation] = recent_conversations.values()
-        self.assertEqual(
-            set(recent_conversation["user_ids"]), {user.id for user in users if user != users[1]}
-        )
-        self.assertEqual(recent_conversation["max_message_id"], message2_id)
+        user_set = frozenset(user.id for user in users if user != users[1])
+        self.assertEqual(recent_conversations[user_set], message2_id)
 
     def test_get_raw_unread_data_for_1_to_1_dms_using_group_direct_message(self) -> None:
         sender = self.example_user("hamlet")
         receiver = self.example_user("cordelia")
-        receiver.recipient = None
-        receiver.save()
 
         message1_id = self.send_personal_message(sender, receiver, "test content 1")
         message2_id = self.send_personal_message(sender, receiver, "test content 2")
@@ -2688,9 +2681,7 @@ class StreamMessagesTest(ZulipTestCase):
         self.assertIn(message2_id, msg_data["pm_dict"].keys())
 
         recent_conversations = get_recent_private_conversations(receiver)
-        [recent_conversation] = recent_conversations.values()
-        self.assertEqual(set(recent_conversation["user_ids"]), {sender.id})
-        self.assertEqual(recent_conversation["max_message_id"], message2_id)
+        self.assertEqual(recent_conversations[frozenset([sender.id])], message2_id)
 
     def test_stream_becomes_active_on_message_send(self) -> None:
         # Mark a stream as inactive
@@ -2721,27 +2712,6 @@ class StreamMessagesTest(ZulipTestCase):
 
 
 class PersonalMessageSendTest(ZulipTestCase):
-    def test_personal_to_self(self) -> None:
-        """
-        If you send a personal to yourself, only you see it.
-        """
-        old_user_profiles = list(UserProfile.objects.all())
-        test_email = self.nonreg_email("test1")
-        self.register(test_email, "test1")
-
-        old_messages = list(map(message_stream_count, old_user_profiles))
-
-        user_profile = self.nonreg_user("test1")
-        self.send_personal_message(user_profile, user_profile)
-
-        new_messages = list(map(message_stream_count, old_user_profiles))
-        self.assertEqual(old_messages, new_messages)
-
-        user_profile = self.nonreg_user("test1")
-        recipient = Recipient.objects.get(type_id=user_profile.id, type=Recipient.PERSONAL)
-        self.assertEqual(most_recent_message(user_profile).recipient, recipient)
-
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_personal_to_self_using_direct_message_group(self) -> None:
         """
         If you send a personal to yourself using direct_message_group, only you see it.
@@ -2762,6 +2732,21 @@ class PersonalMessageSendTest(ZulipTestCase):
         self.assertEqual(
             most_recent_message(user_profile).recipient, direct_message_group.recipient
         )
+
+    def test_personal_to_self_ratchets_to_existing_direct_message_group(self) -> None:
+        """
+        Self-DMs use the existing DM group when one already exists.
+        """
+        user_profile = self.example_user("hamlet")
+
+        direct_message_group = get_or_create_direct_message_group([user_profile.id])
+
+        self.login("hamlet")
+        self.send_personal_message(user_profile, user_profile)
+
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+        self.assertEqual(message.recipient_id, direct_message_group.recipient_id)
 
     def assert_personal(
         self, sender: UserProfile, receiver: UserProfile, content: str = "testcontent"
@@ -2786,31 +2771,13 @@ class PersonalMessageSendTest(ZulipTestCase):
         self.assertEqual(message_stream_count(sender), sender_messages + 1)
         self.assertEqual(message_stream_count(receiver), receiver_messages + 1)
 
-        direct_message_group = get_direct_message_group([sender.id, receiver.id])
-        has_none_recipient = receiver.recipient is None or sender.recipient is None
-        if has_none_recipient:
-            recipient = get_or_create_direct_message_group([sender.id, receiver.id]).recipient
-        elif settings.PREFER_DIRECT_MESSAGE_GROUP and direct_message_group:
-            recipient = direct_message_group.recipient
-        else:
-            recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
+        recipient = get_or_create_direct_message_group([sender.id, receiver.id]).recipient
 
         self.assertEqual(most_recent_message(sender).recipient, recipient)
         self.assertEqual(most_recent_message(receiver).recipient, recipient)
         self.assertEqual(most_recent_message(sender).topic_name(), Message.DM_TOPIC)
         self.assertEqual(most_recent_message(receiver).topic_name(), Message.DM_TOPIC)
 
-    def test_personal(self) -> None:
-        """
-        If you send a personal, only you and the recipient see it.
-        """
-        self.login("hamlet")
-        self.assert_personal(
-            sender=self.example_user("hamlet"),
-            receiver=self.example_user("othello"),
-        )
-
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_personal_using_direct_message_group(self) -> None:
         """
         If you send a personal using direct_message_group, only you and the recipient see it.
@@ -2826,16 +2793,29 @@ class PersonalMessageSendTest(ZulipTestCase):
             receiver=receiver,
         )
 
-    def test_personal_when_personal_recipient_is_none(self) -> None:
+    def test_personal_ratchets_to_existing_direct_message_group(self) -> None:
         """
-        If you send a personal using direct_message_group, only you and the recipient see it.
+        When a DM group already exists, it is used for the message.
         """
         sender = self.example_user("hamlet")
         receiver = self.example_user("othello")
 
-        # Removing the personal recipient to ensure a new direct message group is created.
-        receiver.recipient = None
-        receiver.save()
+        # Simulate a PREFER=True process having created the DM group
+        direct_message_group = get_or_create_direct_message_group([sender.id, receiver.id])
+
+        self.login("hamlet")
+        self.send_personal_message(sender, receiver)
+
+        message = most_recent_message(sender)
+        self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+        self.assertEqual(message.recipient_id, direct_message_group.recipient_id)
+
+    def test_1_to_1_dm_without_existing_dm_group(self) -> None:
+        """
+        Sending a 1:1 DM creates a DirectMessageGroup if one doesn't exist.
+        """
+        sender = self.example_user("hamlet")
+        receiver = self.example_user("othello")
 
         self.login("hamlet")
         self.assert_personal(
@@ -2846,7 +2826,14 @@ class PersonalMessageSendTest(ZulipTestCase):
         message = most_recent_message(sender)
         self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
-    def test_direct_message_initiator_group_setting(self) -> None:
+    def test_personal_message_using_direct_message_group(self) -> None:
+        user_profile = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        with self.assert_database_query_count(24):
+            self.send_personal_message(user_profile, cordelia)
+
+    def test_direct_message_initiator_group_setting_using_direct_message_group(self) -> None:
         """
         Tests that direct_message_initiator_group_setting works correctly.
         """
@@ -2886,7 +2873,7 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         # Have the administrator send a message, and verify that allows the user to reply.
         self.send_personal_message(admin, user_profile)
-        with self.assert_database_query_count(16):
+        with self.assert_database_query_count(19):
             self.send_personal_message(user_profile, admin)
 
         # Tests that user cannot initiate direct message thread in groups.
@@ -2922,7 +2909,7 @@ class PersonalMessageSendTest(ZulipTestCase):
             user_group,
             acting_user=None,
         )
-        with self.assert_database_query_count(16):
+        with self.assert_database_query_count(19):
             self.send_personal_message(user_profile, cordelia)
 
         # Test that query count decreases if setting is set to a system group.
@@ -2936,7 +2923,7 @@ class PersonalMessageSendTest(ZulipTestCase):
             acting_user=None,
         )
         othello = self.example_user("othello")
-        with self.assert_database_query_count(15):
+        with self.assert_database_query_count(23):
             self.send_personal_message(user_profile, othello)
 
     def test_direct_message_permission_group_setting(self) -> None:
@@ -2964,7 +2951,7 @@ class PersonalMessageSendTest(ZulipTestCase):
             acting_user=None,
         )
         # Tests if the user is allowed to send to administrators.
-        with self.assert_database_query_count(16):
+        with self.assert_database_query_count(24):
             self.send_personal_message(user_profile, admin)
         self.send_personal_message(admin, user_profile)
         # Tests if we can send messages to self irrespective of the value of the setting.
@@ -3014,7 +3001,7 @@ class PersonalMessageSendTest(ZulipTestCase):
         with self.assertRaises(DirectMessagePermissionError):
             self.send_personal_message(cordelia, polonius)
 
-        with self.assert_database_query_count(16):
+        with self.assert_database_query_count(19):
             self.send_personal_message(user_profile, cordelia)
 
         # Test that query count decreases if setting is set to a system group.
@@ -3027,7 +3014,7 @@ class PersonalMessageSendTest(ZulipTestCase):
             members_group,
             acting_user=None,
         )
-        with self.assert_database_query_count(15):
+        with self.assert_database_query_count(18):
             self.send_personal_message(user_profile, cordelia)
 
         do_change_realm_permission_group_setting(

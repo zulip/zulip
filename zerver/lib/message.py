@@ -1,4 +1,5 @@
 import re
+from collections import defaultdict
 from collections.abc import Callable, Collection, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -10,12 +11,11 @@ from django.db.models import Exists, F, Max, OuterRef, QuerySet, Subquery, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django_cte import CTE, with_cte
-from psycopg2.sql import SQL
 
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
 from zerver.lib.cache import generic_bulk_cached_fetch, to_dict_cache_key_id
-from zerver.lib.display_recipient import get_display_recipient, get_display_recipient_by_id
+from zerver.lib.display_recipient import get_display_recipient_by_id
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.markdown import MessageRenderingResult
 from zerver.lib.mention import MentionData, sender_can_mention_group, silent_mention_syntax_for_user
@@ -366,7 +366,6 @@ def messages_for_ids(
         client_gravatar=client_gravatar,
         allow_empty_topic_name=allow_empty_topic_name,
         realm=realm,
-        user_recipient_id=None if user_profile is None else user_profile.recipient_id,
     )
 
     return message_list
@@ -1014,7 +1013,6 @@ def extract_unread_data_from_um_rows(
         message_id = row["message_id"]
         msg_type = row["recipient__type"]
         recipient_id = row["recipient_id"]
-        sender_id = row["sender_id"]
 
         if msg_type == Recipient.STREAM:
             stream_id = row["recipient__type_id"]
@@ -1025,16 +1023,6 @@ def extract_unread_data_from_um_rows(
             )
             if not is_row_muted(stream_id, recipient_id, topic_name):
                 unmuted_stream_msgs.add(message_id)
-
-        elif msg_type == Recipient.PERSONAL:
-            if sender_id == user_profile.id:
-                other_user_id = row["recipient__type_id"]
-            else:
-                other_user_id = sender_id
-
-            pm_dict[message_id] = dict(
-                other_user_id=other_user_id,
-            )
 
         elif msg_type == Recipient.DIRECT_MESSAGE_GROUP:
             user_ids_string = get_direct_message_group_users(recipient_id)
@@ -1431,94 +1419,12 @@ def get_last_message_id() -> int:
     return last_id
 
 
-def get_recent_conversations_recipient_id(
-    user_profile: UserProfile, recipient_id: int, sender_id: int
-) -> int:
-    """Helper for doing lookups of the recipient_id that
-    get_recent_private_conversations would have used to record that
-    message in its data structure.
-    """
-    my_recipient_id = user_profile.recipient_id
-    if recipient_id == my_recipient_id:
-        return UserProfile.objects.values_list("recipient_id", flat=True).get(id=sender_id)
-    return recipient_id
-
-
-def _get_recent_conversations_via_legacy_personal_recipient(
-    user_profile_id: int, recipient_id: int
-) -> list[tuple[int, int]]:
-    """This function uses some carefully optimized SQL queries, designed
-    to use the UserMessage index on private_messages.  It is
-    somewhat complicated by the fact that for 1:1 direct
-    messages, we store the message against a recipient_id of whichever
-    user was the recipient, and thus for 1:1 direct messages sent
-    directly to us, we need to look up the other user from the
-    sender_id on those messages.  You'll see that pattern repeated
-    both here and also in zerver/lib/events.py.
-
-    It may be possible to write this query directly in Django, however
-    it is made much easier by using CTEs, which Django does not
-    natively support.
-    """
-    RECENT_CONVERSATIONS_LIMIT = 1000
-
-    query = SQL(
-        """
-        WITH personals AS (
-            SELECT   um.message_id AS message_id
-            FROM     zerver_usermessage um
-            WHERE    um.user_profile_id = %(user_profile_id)s
-            AND      um.flags & 2048 <> 0
-            ORDER BY message_id DESC limit %(conversation_limit)s
-        ),
-        message AS (
-            SELECT message_id,
-                   CASE
-                          WHEN m.recipient_id = %(recipient_id)s
-                          THEN m.sender_id
-                          ELSE NULL
-                   END AS sender_id,
-                   CASE
-                          WHEN m.recipient_id <> %(recipient_id)s
-                          THEN m.recipient_id
-                          ELSE NULL
-                   END AS outgoing_recipient_id
-            FROM   personals
-            JOIN   zerver_message m
-            ON     personals.message_id = m.id
-        ),
-        unified AS (
-            SELECT    message_id,
-                      COALESCE(zerver_userprofile.recipient_id, outgoing_recipient_id) AS other_recipient_id
-            FROM      message
-            LEFT JOIN zerver_userprofile
-            ON        zerver_userprofile.id = sender_id
-        )
-        SELECT   other_recipient_id,
-                 MAX(message_id)
-        FROM     unified
-        GROUP BY other_recipient_id
-    """
-    )
-
-    with connection.cursor() as cursor:
-        cursor.execute(
-            query,
-            {
-                "user_profile_id": user_profile_id,
-                "conversation_limit": RECENT_CONVERSATIONS_LIMIT,
-                "recipient_id": recipient_id,
-            },
-        )
-        return cursor.fetchall()
-
-
 def _get_recent_conversations_via_direct_message_group(
     user_profile_id: int,
 ) -> list[tuple[int, int]]:
     """
-    This functions fetches the most recent conversations given that all
-    private messages of this user are through direct message groups.
+    This function fetches the most recent DM conversations for this
+    user, returning (recipient_id, max_message_id) pairs.
     """
     RECENT_CONVERSATIONS_LIMIT = 1000
 
@@ -1530,46 +1436,39 @@ def _get_recent_conversations_via_direct_message_group(
     )
 
     return list(
-        Message.objects.filter(id__in=recent_pm_message_ids)
+        Message.objects.filter(
+            id__in=recent_pm_message_ids,
+        )
         .values("recipient_id")
         .annotate(max_message_id=Max("id"))
         .values_list("recipient_id", "max_message_id")
     )
 
 
-def get_recent_private_conversations(user_profile: UserProfile) -> dict[int, dict[str, Any]]:
+def get_recent_private_conversations(user_profile: UserProfile) -> dict[frozenset[int], int]:
     """
     We return a dictionary structure for convenient modification
     below; this structure is converted into its final form by
     post_process.
     """
-    # Step 1: Collect recent message info
-    if user_profile.recipient_id is not None:
-        recent_conversations = _get_recent_conversations_via_legacy_personal_recipient(
-            user_profile.id, user_profile.recipient_id
-        )
-    else:
-        recent_conversations = _get_recent_conversations_via_direct_message_group(user_profile.id)
+    recent_conversations = _get_recent_conversations_via_direct_message_group(user_profile.id)
 
-    recipient_map: dict[int, dict[str, Any]] = {
-        recipient_id: {"max_message_id": max_message_id, "user_ids": []}
-        for recipient_id, max_message_id in recent_conversations
-    }
+    all_recipients = {recipient_id for recipient_id, _ in recent_conversations}
 
     # Now we need to map all the recipient_id objects to lists of user IDs
+    recipient_map: dict[int, list[int]] = defaultdict(list)
     subscriptions = (
-        Subscription.objects.filter(recipient_id__in=recipient_map.keys())
+        Subscription.objects.filter(recipient_id__in=all_recipients)
         .exclude(user_profile_id=user_profile.id)
         .values_list("recipient_id", "user_profile_id")
     )
     for recipient_id, user_profile_id in subscriptions:
-        recipient_map[recipient_id]["user_ids"].append(user_profile_id)
+        recipient_map[recipient_id].append(user_profile_id)
 
-    # Sort to prevent test flakes and client bugs.
-    for rec in recipient_map.values():
-        rec["user_ids"].sort()
-
-    return recipient_map
+    return {
+        frozenset(recipient_map[recipient_id]): max_message_id
+        for recipient_id, max_message_id in recent_conversations
+    }
 
 
 def can_mention_many_users(sender: UserProfile) -> bool:
@@ -1816,19 +1715,14 @@ def is_1_to_1_message(message: Message) -> bool:
         direct_message_group = DirectMessageGroup.objects.get(id=message.recipient.type_id)
         return direct_message_group.group_size <= 2
 
-    if message.recipient.type == Recipient.PERSONAL:
-        return True
-
     return False
 
 
 def is_message_to_self(message: Message) -> bool:
+    """Using the same approach as is_1_to_1_message"""
     if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-        group_members = get_display_recipient(message.recipient)
-        return len(group_members) == 1 and group_members[0]["id"] == message.sender.id
-
-    if message.recipient.type == Recipient.PERSONAL:
-        return message.recipient == message.sender.recipient
+        direct_message_group = DirectMessageGroup.objects.get(id=message.recipient.type_id)
+        return direct_message_group.group_size == 1
 
     return False
 
