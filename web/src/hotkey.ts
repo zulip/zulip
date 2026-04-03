@@ -853,43 +853,19 @@ export function process_shift_tab_key(): boolean {
 function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
     const event_name = hotkey.name;
 
-    // This block needs to be before the `Tab` handler.
-    switch (event_name) {
-        case "up_arrow":
-        case "down_arrow":
-        case "left_arrow":
-        case "right_arrow":
-        case "page_down":
-        case "page_up":
-        case "vim_up":
-        case "vim_down":
-        case "vim_left":
-        case "vim_right":
-        case "tab":
-        case "shift_tab":
-        case "open_recent_view":
-            if (recent_view_ui.is_in_focus()) {
-                assert(e.target instanceof HTMLElement);
-                return recent_view_ui.change_focused_element($(e.target), event_name);
-            }
+    // Delegate navigation to the focused view's handler. Each handler
+    // returns false for keys it doesn't handle, allowing the browser
+    // or later hotkey logic to process them. This avoids maintaining
+    // a fragile allowlist of specific key names for each view.
+    if (recent_view_ui.is_in_focus()) {
+        assert(e.target instanceof HTMLElement);
+        if (recent_view_ui.change_focused_element($(e.target), event_name)) {
+            return true;
+        }
     }
 
-    switch (event_name) {
-        case "up_arrow":
-        case "down_arrow":
-        case "left_arrow":
-        case "right_arrow":
-        case "tab":
-        case "shift_tab":
-        case "vim_up":
-        case "vim_down":
-        case "vim_left":
-        case "vim_right":
-        case "page_up":
-        case "page_down":
-            if (inbox_ui.is_in_focus()) {
-                return inbox_ui.change_focused_element(event_name);
-            }
+    if (inbox_ui.is_in_focus() && inbox_ui.change_focused_element(event_name)) {
+        return true;
     }
 
     // We handle the most complex keys in their own functions.
