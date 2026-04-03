@@ -296,6 +296,17 @@ test("update_property", ({override, override_rewire}) => {
         assert.equal(args.val, "allow_topics_policy");
     }
 
+    // Test stream push_notifications_enabled change event
+    {
+        const stub = make_stub();
+        override(stream_settings_ui, "update_push_notifications_enabled_setting", stub.f);
+        stream_events.update_property(stream_id, "push_notifications_enabled", false);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("sub", "val");
+        assert.equal(args.sub.stream_id, stream_id);
+        assert.equal(args.val, false);
+    }
+
     // Test stream can_remove_subscribers_group change event
     {
         const stub = make_stub();
@@ -510,7 +521,7 @@ test("marked_subscribed (normal)", ({override, override_rewire}) => {
 
     $.set_results("#channels_overlay_container .stream-row:not(.notdisplayed)", []);
     override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
-    stream_events.mark_subscribed(sub, [], "blue");
+    stream_events.mark_subscribed(sub, [], "blue", true);
 
     const args = stream_list_stub.get_args("sub");
     assert.equal(args.sub.stream_id, sub.stream_id);
@@ -525,6 +536,7 @@ test("marked_subscribed (normal)", ({override, override_rewire}) => {
     assert.equal(show_args.opts.trigger, "subscription confirmed refresh");
 
     assert.equal(sub.color, "blue");
+    assert.equal(sub.push_notifications, true);
     message_lists.current = undefined;
 });
 
@@ -554,7 +566,7 @@ test("marked_subscribed (color)", ({override, override_rewire}) => {
         const stub = make_stub();
         override(stream_settings_api, "set_color", stub.f);
         blueslip.expect("warn", "Frontend needed to pick a color in mark_subscribed");
-        stream_events.mark_subscribed(sub, [], undefined);
+        stream_events.mark_subscribed(sub, [], undefined, null);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("id", "color");
         assert.equal(args.id, sub.stream_id);
@@ -584,7 +596,7 @@ test("marked_subscribed (emails)", ({override, override_rewire}) => {
     assert.ok(!stream_data.is_subscribed(sub.stream_id));
 
     const user_ids = [15, 20, 25, me.user_id];
-    stream_events.mark_subscribed(sub, user_ids, "");
+    stream_events.mark_subscribed(sub, user_ids, "", null);
     assert.deepEqual(
         new Set(peer_data.get_subscriber_ids_assert_loaded(sub.stream_id)),
         new Set(user_ids),
@@ -714,7 +726,7 @@ test("marked_subscribed (new channel creation)", ({override, override_rewire}) =
     const dialog_widget_stub = make_stub();
     override(dialog_widget, "launch", dialog_widget_stub.f);
 
-    stream_events.mark_subscribed(sub, [], "yellow");
+    stream_events.mark_subscribed(sub, [], "yellow", null);
 
     // Verify that the creator is redirected to channel view
     // and the first_stream_created modal is displayed.

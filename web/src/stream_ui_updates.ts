@@ -393,6 +393,17 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         settings_components.disable_group_permission_setting($("#id_can_delete_any_message_group"));
         settings_components.disable_group_permission_setting($("#id_can_delete_own_message_group"));
     }
+
+    const $push_notifications_enabled_setting = $stream_settings
+        .find("input[name='push_notifications_enabled']")
+        .closest(".settings-checkbox-wrapper");
+    if (!realm.realm_push_notifications_enabled) {
+        $push_notifications_enabled_setting.addClass("control-label-disabled");
+        $push_notifications_enabled_setting.find("input").prop("disabled", true);
+    } else {
+        $push_notifications_enabled_setting.removeClass("control-label-disabled");
+        $push_notifications_enabled_setting.find("input").prop("disabled", false);
+    }
 }
 
 export function update_announce_stream_option(): void {

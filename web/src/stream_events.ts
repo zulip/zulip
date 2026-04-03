@@ -195,6 +195,10 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         message_retention_days(value) {
             stream_settings_ui.update_message_retention_setting(sub, value);
         },
+        push_notifications_enabled(value) {
+            sub.push_notifications_enabled = value;
+            stream_settings_ui.update_push_notifications_enabled_setting(sub, value);
+        },
         topics_policy(value) {
             stream_settings_ui.update_topics_policy_setting(sub, value);
             compose_recipient.update_topic_inputbox_on_topics_policy_change();
@@ -270,10 +274,14 @@ export function mark_subscribed(
     sub: StreamSubscription,
     subscribers: number[],
     color: string | undefined,
+    push_notifications: boolean | null,
 ): void {
     if (sub.subscribed) {
         return;
     }
+
+    sub.push_notifications = push_notifications;
+    update_property(sub.stream_id, "push_notifications", sub.push_notifications);
 
     // If the backend sent us a color, use that
     if (color !== undefined && sub.color !== color) {

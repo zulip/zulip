@@ -1375,7 +1375,8 @@ h4.user_group_setting_subsection_title {
 }
 
 #subscription_overlay .default-stream,
-#subscription_overlay .history-public-to-subscribers {
+#subscription_overlay .history-public-to-subscribers,
+#subscription_overlay .push-notifications-enabled {
     width: fit-content;
 
     .inline {
