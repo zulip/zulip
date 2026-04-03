@@ -13287,9 +13287,22 @@ paths:
         - **Rotate push key**: Provide only the push key fields.
         - **Rotate token**: Provide only the token fields.
 
-        **Changes**: In Zulip 12.0 (feature level 468), the endpoint
-        was significantly redesigned to support rotation of `push_key` and
-        token provided by FCM/APNs.
+        On a successful registration, the server automatically removes
+        any legacy push device registration with a matching token for
+        the user. For self-hosted servers, if removing the legacy
+        registration from the push notification bouncer fails (e.g.,
+        due to a network error), legacy notifications to that token
+        will continue until all of the user's legacy registrations
+        have been removed from the local server, at which point the
+        server will stop sending legacy notification requests to the
+        bouncer entirely.
+
+        **Changes**: In Zulip 12.0 (feature level ZF-273cd7),
+        the server began automatically removing legacy registrations
+        with a matching token on successful E2EE registration.
+
+        In Zulip 12.0 (feature level 468), the endpoint was significantly
+        redesigned to support rotation of `push_key` and token provided by FCM/APNs.
 
         New in Zulip 11.0 (feature level 406).
       requestBody:
