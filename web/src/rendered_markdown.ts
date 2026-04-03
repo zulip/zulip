@@ -10,6 +10,7 @@ import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import render_mention_content_wrapper from "../templates/mention_content_wrapper.hbs";
 import render_topic_link from "../templates/topic_link.hbs";
 
+import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as hash_util from "./hash_util.ts";
@@ -245,12 +246,16 @@ export const update_elements = ($content: JQuery): void => {
             const topic_name = channel_topic.topic_name;
             assert(topic_name !== undefined);
             const topic_display_name = util.get_final_topic_display_name(topic_name);
+            const message = get_message_for_message_content($content);
             const context = {
                 channel_name,
-                topic_display_name,
+                topic_display_name_html: topic_display_name,
                 is_empty_string_topic: topic_name === "",
                 href: narrow_url,
             };
+            if (message?.alerted) {
+                context.topic_display_name_html = alert_words.highlight_alert_words(topic_display_name);
+            }
             if ($(this).hasClass("stream-topic")) {
                 const topic_link_html = render_topic_link({
                     channel_id: channel_topic.stream_id,
