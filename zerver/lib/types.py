@@ -118,6 +118,7 @@ class EditHistoryEvent(TypedDict, total=False):
     prev_content: str
     prev_rendered_content: str | None
     prev_rendered_content_version: int | None
+    history_deleted_by: int
 
 
 class FormattedEditHistoryEvent(TypedDict, total=False):
@@ -137,6 +138,7 @@ class FormattedEditHistoryEvent(TypedDict, total=False):
     prev_rendered_content: str | None
     rendered_content: str | None
     content_html_diff: str
+    history_deleted_by: int
 
 
 class UserTopicDict(TypedDict, total=False):

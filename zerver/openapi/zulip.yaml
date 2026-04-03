@@ -9102,6 +9102,11 @@ paths:
                               type: integer
                               description: |
                                 The UNIX timestamp for this edit.
+                            history_deleted_by:
+                              type: integer
+                              description: |
+                                Only present if the message edit history was deleted.
+                                The ID of the admin user who deleted the edit history.
                         description: |
                           A chronologically sorted, oldest to newest, array
                           of `snapshot` objects, each one with the values of
@@ -9141,6 +9146,38 @@ paths:
                   - $ref: "#/components/schemas/InvalidMessageError"
                   - description: |
                       An example JSON response for when the specified message does not exist:
+    delete:
+      operationId: delete-message-history
+      summary: Delete a message's edit history
+      tags: ["messages"]
+      description: |
+        Delete the edit history of a message, removing the previous versions
+        of the message content. A record that the edit history was deleted
+        will be kept, including who deleted it.
+        Users who have permission to [delete a message](/help/delete-a-message)
+        also have permission to delete its edit history.
+      parameters:
+        - $ref: "#/components/parameters/MessageId"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonSuccess"
+              examples:
+                response:
+                  value: {"msg": "", "result": "success"}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/InvalidMessageError"
+                  - description: |
+                      An example error response if the message has no
+                      content edits to delete.
   /messages/flags:
     post:
       operationId: update-message-flags
