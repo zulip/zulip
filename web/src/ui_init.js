@@ -802,44 +802,83 @@ function show_try_zulip_modal() {
 $(() => {
     update_page_loading_indicator_notice();
 
-    // Remove '?show_try_zulip_modal', if present.
+    // Remove transient query parameters.
     const url = new URL(window.location.href);
+    let needs_url_cleanup = false;
     if (url.searchParams.has("show_try_zulip_modal")) {
         url.searchParams.delete("show_try_zulip_modal");
+        needs_url_cleanup = true;
+    }
+    if (url.searchParams.has("state_data")) {
+        url.searchParams.delete("state_data");
+        needs_url_cleanup = true;
+    }
+    if (needs_url_cleanup) {
         window.history.replaceState(window.history.state, "", url.toString());
     }
 
-    if (page_params.is_spectator) {
-        const data = {
-            apply_markdown: true,
-            client_capabilities: JSON.stringify({
-                notification_settings_null: true,
-                bulk_message_deletion: true,
-                user_avatar_url_field_optional: true,
-                // Set this to true when stream typing notifications are implemented.
-                stream_typing_notifications: false,
-                user_settings_object: true,
-                empty_topic_name: true,
-            }),
-            client_gravatar: false,
-        };
-        channel.post({
-            url: "/json/register",
-            data,
-            success(response_data) {
-                const state_data = state_data_schema.parse(response_data);
-                initialize_everything(state_data);
-                if (page_params.show_try_zulip_modal) {
-                    show_try_zulip_modal();
-                }
-            },
-            error() {
-                $("#app-loading-middle-content").hide();
-                $("#app-loading-bottom-content").hide();
-                $(".app").hide();
-                $("#app-loading-error").css({visibility: "visible"});
-            },
-        });
+    if (page_params.no_event_queue) {
+        // For spectators and client-triggered reloads, fetch
+        // state_data via the API rather than reading it from the
+        // (potentially very large) HTML response. For reloads, this
+        // avoids partial-transfer failures that leave users stuck on
+        // the loading screen. See #36094.
+        let data;
+        if (page_params.is_spectator) {
+            data = {
+                apply_markdown: true,
+                client_capabilities: JSON.stringify({
+                    notification_settings_null: true,
+                    bulk_message_deletion: true,
+                    user_avatar_url_field_optional: true,
+                    // Set this to true when stream typing notifications are implemented.
+                    stream_typing_notifications: false,
+                    user_settings_object: true,
+                    empty_topic_name: true,
+                }),
+                client_gravatar: false,
+            };
+        } else {
+            // Logged-in reload: use the register_params sent by the
+            // server, which are the same parameters it uses for the
+            // server-side do_events_register call during initial load.
+            assert(page_params.register_params !== undefined);
+            const {client_capabilities, ...rest} = page_params.register_params;
+            data = {
+                ...rest,
+                client_capabilities: JSON.stringify(client_capabilities),
+            };
+        }
+        let register_failures = 0;
+        function fetch_state_data() {
+            channel.post({
+                url: "/json/register",
+                data,
+                success(response_data) {
+                    const state_data = state_data_schema.parse(response_data);
+                    initialize_everything(state_data);
+                    if (page_params.show_try_zulip_modal) {
+                        show_try_zulip_modal();
+                    }
+                },
+                error(xhr) {
+                    register_failures += 1;
+                    if (register_failures <= 5) {
+                        const retry_delay_secs = util.get_retry_backoff_seconds(
+                            xhr,
+                            register_failures,
+                        );
+                        setTimeout(fetch_state_data, retry_delay_secs * 1000);
+                        return;
+                    }
+                    $("#app-loading-middle-content").hide();
+                    $("#app-loading-bottom-content").hide();
+                    $(".app").hide();
+                    $("#app-loading-error").css({visibility: "visible"});
+                },
+            });
+        }
+        fetch_state_data();
     } else {
         const state_data = page_params.state_data;
         assert(state_data !== null);
