@@ -204,6 +204,7 @@ class RocketChatImporter(ZulipTestCase):
         expected_error_message = f"['Invalid email format, please fix the following email(s) and try again: {bad_email1}, {bad_email2}']"
         self.assertEqual(error_message, expected_error_message)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_categorize_channels_and_map_with_id(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
@@ -450,6 +451,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assert_length(subscriber_handler.get_users(stream_id=zerver_stream[6]["id"]), 0)
         self.assertFalse(zerver_stream[6]["deactivated"])
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_convert_direct_message_group_data(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
@@ -639,6 +641,7 @@ class RocketChatImporter(ZulipTestCase):
         # Verify the filename was sanitized to remove path separators.
         self.assertEqual(zerver_realmemoji[0]["file_name"], "......etcmalicious.png")
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_map_receiver_id_to_recipient_id(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
@@ -741,6 +744,7 @@ class RocketChatImporter(ZulipTestCase):
             zerver_recipient[12]["id"],
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_separate_channel_private_and_livechat_messages(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
@@ -998,7 +1002,8 @@ class RocketChatImporter(ZulipTestCase):
         with open(full_path, "rb") as f:
             return orjson.loads(f.read())
 
-    def test_do_convert_data(self) -> None:
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_do_convert_data_using_personal_recipient(self) -> None:
         rocketchat_data_dir = self.fixture_file_name("", "rocketchat_fixtures")
         output_dir = self.make_import_output_dir("rocketchat")
 

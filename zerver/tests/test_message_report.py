@@ -377,8 +377,9 @@ class ReportMessageTest(ZulipTestCase):
         assert report is not None
         self.assertIn(expected_message_link_syntax, report.content)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     @time_machine.travel(MOCKED_DATE_SENT, tick=False)
-    def test_dm_report(self) -> None:
+    def test_dm_report_using_personal_recipients(self) -> None:
         # Send a DM to be reported
         dm_recipient = self.hamlet
         reported_dm_id = self.send_personal_message(
@@ -471,8 +472,8 @@ class ReportMessageTest(ZulipTestCase):
             submitted_report=reports.last(),
         )
 
-    @time_machine.travel(MOCKED_DATE_SENT, tick=False)
     @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
+    @time_machine.travel(MOCKED_DATE_SENT, tick=False)
     def test_personal_message_report_using_direct_message_group(self) -> None:
         dm_recipient = self.hamlet
         direct_message_group = get_or_create_direct_message_group(

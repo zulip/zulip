@@ -28,6 +28,7 @@ from zerver.lib.user_groups import user_has_permission_for_group_setting
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
+    DirectMessageGroup,
     Message,
     Realm,
     Recipient,
@@ -992,6 +993,36 @@ def get_users_involved_in_dms_with_target_users(
     ):
         sender_ids = {row["sender_id"] for row in message_rows}
         direct_message_participants_dict[recipient_user_id] |= sender_ids
+
+    # Find DM partners via 1:1 DM groups with message history.
+    # Push the message-existence check into the subscription query
+    # as a subquery, so we only fetch DMGs that actually have messages.
+    target_dmg_subs = Subscription.objects.filter(
+        user_profile_id__in=target_user_ids,
+        recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+        recipient__type_id__in=DirectMessageGroup.objects.filter(
+            group_size__lte=2,
+        ),
+        recipient_id__in=Message.objects.filter(realm=realm).values("recipient_id"),
+    ).values_list("user_profile_id", "recipient_id")
+
+    dmg_to_targets: dict[int, set[int]] = defaultdict(set)
+    dmg_recipient_ids: set[int] = set()
+    for target_id, recipient_id in target_dmg_subs:
+        dmg_to_targets[recipient_id].add(target_id)
+        dmg_recipient_ids.add(recipient_id)
+
+    if dmg_recipient_ids:
+        partner_query = Subscription.objects.filter(
+            recipient_id__in=dmg_recipient_ids,
+        )
+        if not include_deactivated_users:
+            partner_query = partner_query.filter(is_user_active=True)
+
+        for recipient_id, user_id in partner_query.values_list("recipient_id", "user_profile_id"):
+            for target_id in dmg_to_targets.get(recipient_id, set()):
+                if user_id != target_id:
+                    direct_message_participants_dict[target_id].add(user_id)
 
     return direct_message_participants_dict
 
