@@ -2711,6 +2711,19 @@ wheels = [
 ]
 
 [[package]]
+name = "markdownify"
+version = "1.2.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "beautifulsoup4" },
+    { name = "six" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3f/bc/c8c8eea5335341306b0fa7e1cb33c5e1c8d24ef70ddd684da65f41c49c92/markdownify-1.2.2.tar.gz", hash = "sha256:b274f1b5943180b031b699b199cbaeb1e2ac938b75851849a31fd0c3d6603d09", size = 18816, upload-time = "2025-11-16T19:21:18.565Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/43/ce/f1e3e9d959db134cedf06825fae8d5b294bd368aacdd0831a3975b7c4d55/markdownify-1.2.2-py3-none-any.whl", hash = "sha256:3f02d3cc52714084d6e589f70397b6fc9f2f3a8531481bf35e8cc39f975e186a", size = 15724, upload-time = "2025-11-16T19:21:17.622Z" },
+]
+
+[[package]]
 name = "markupsafe"
 version = "3.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -6400,7 +6413,6 @@ dev = [
     { name = "google-re2" },
     { name = "google-re2-stubs" },
     { name = "greenlet" },
-    { name = "html2text" },
     { name = "ipython" },
     { name = "jinja2" },
     { name = "jsonref" },
@@ -6411,6 +6423,7 @@ dev = [
     { name = "lxml-stubs" },
     { name = "markdown" },
     { name = "markdown-it-py" },
+    { name = "markdownify" },
     { name = "moto", extra = ["s3"] },
     { name = "mypy", extra = ["faster-cache"] },
     { name = "mypy-boto3-s3" },
@@ -6538,7 +6551,6 @@ prod = [
     { name = "firebase-admin" },
     { name = "google-re2" },
     { name = "greenlet" },
-    { name = "html2text" },
     { name = "ipython" },
     { name = "jinja2" },
     { name = "jsonref" },
@@ -6546,6 +6558,7 @@ prod = [
     { name = "litellm" },
     { name = "lxml" },
     { name = "markdown" },
+    { name = "markdownify" },
     { name = "mypy-boto3-s3" },
     { name = "mypy-boto3-ses" },
     { name = "mypy-boto3-sns" },
@@ -6640,7 +6653,6 @@ dev = [
     { name = "google-re2" },
     { name = "google-re2-stubs" },
     { name = "greenlet" },
-    { name = "html2text" },
     { name = "ipython", specifier = "<9" },
     { name = "jinja2" },
     { name = "jsonref" },
@@ -6651,6 +6663,7 @@ dev = [
     { name = "lxml-stubs" },
     { name = "markdown" },
     { name = "markdown-it-py", specifier = "<4" },
+    { name = "markdownify" },
     { name = "moto", extras = ["s3"] },
     { name = "mypy", extras = ["faster-cache"] },
     { name = "mypy-boto3-s3" },
@@ -6780,7 +6793,6 @@ prod = [
     { name = "firebase-admin" },
     { name = "google-re2" },
     { name = "greenlet" },
-    { name = "html2text" },
     { name = "ipython", specifier = "<9" },
     { name = "jinja2" },
     { name = "jsonref" },
@@ -6788,6 +6800,7 @@ prod = [
     { name = "litellm" },
     { name = "lxml" },
     { name = "markdown" },
+    { name = "markdownify" },
     { name = "mypy-boto3-s3" },
     { name = "mypy-boto3-ses" },
     { name = "mypy-boto3-sns" },

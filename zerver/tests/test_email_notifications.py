@@ -10,7 +10,6 @@ from django.test import override_settings
 from django_auth_ldap.config import LDAPSearch
 
 from zerver.lib.email_notifications import (
-    convert_html_to_markdown,
     enqueue_welcome_emails,
     get_onboarding_email_schedule,
     send_account_registered_email,
@@ -627,10 +626,3 @@ class TestCustomWelcomeEmailSender(ZulipTestCase):
             email_data = orjson.loads(scheduled_emails[0].data)
             self.assertEqual(email_data["from_name"], name)
             self.assertEqual(email_data["from_address"], email)
-
-
-class TestHtmlToMarkdown(ZulipTestCase):
-    def test_html_to_markdown_unicode(self) -> None:
-        self.assertEqual(
-            convert_html_to_markdown("a rose is not a ros&eacute;"), "a rose is not a rosé"
-        )

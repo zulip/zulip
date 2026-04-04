@@ -33,7 +33,6 @@ from zerver.data_import.import_util import (
     build_stream_subscriptions,
     build_user_profile,
     build_zerver_realm,
-    convert_html_to_text,
     create_converted_data_files,
     get_attachment_path_and_content,
     get_domain_name_for_import,
@@ -46,6 +45,7 @@ from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.export import do_common_export_processes
 from zerver.lib.import_realm import validate_and_resolve_relative_path
 from zerver.lib.markdown import IMAGE_EXTENSIONS
+from zerver.lib.markdown.from_html import convert_html_to_markdown
 from zerver.lib.message import truncate_content
 from zerver.lib.upload import sanitize_name
 from zerver.lib.utils import process_list_in_batches
@@ -558,7 +558,7 @@ def process_raw_message_batch(
         )
 
         try:
-            content = convert_html_to_text(content)
+            content = convert_html_to_markdown(content)
         except Exception:  # nocoverage
             logging.warning("Error converting HTML to text for message: '%s'; continuing", content)
             logging.warning(str(raw_message))
@@ -632,6 +632,8 @@ def process_raw_message_batch(
                 output_dir=output_dir,
             )
 
+            if content and attachment_markdown:
+                content += "\n\n"
             content += attachment_markdown
 
         topic_name = "imported from mattermost"
