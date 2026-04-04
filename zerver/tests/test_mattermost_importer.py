@@ -1211,7 +1211,7 @@ class MatterMostImporter(MattermostImportTestBase):
         exported_messages_id = self.get_set(messages["zerver_message"], "id")
         self.assertIn(messages["zerver_message"][0]["sender"], exported_user_ids)
         self.assertIn(messages["zerver_message"][0]["recipient"], exported_recipient_ids)
-        self.assertIn(messages["zerver_message"][0]["content"], "harry joined the channel.\n\n")
+        self.assertIn(messages["zerver_message"][0]["content"], "harry joined the channel.")
 
         exported_usermessage_userprofiles = self.get_set(
             messages["zerver_usermessage"], "user_profile"
@@ -1310,7 +1310,7 @@ class MatterMostImporter(MattermostImportTestBase):
         exported_messages_id = self.get_set(messages["zerver_message"], "id")
         self.assertIn(messages["zerver_message"][0]["sender"], exported_user_ids)
         self.assertIn(messages["zerver_message"][0]["recipient"], exported_recipient_ids)
-        self.assertIn(messages["zerver_message"][0]["content"], "ron joined the channel.\n\n")
+        self.assertIn(messages["zerver_message"][0]["content"], "ron joined the channel.")
 
         exported_usermessage_userprofiles = self.get_set(
             messages["zerver_usermessage"], "user_profile"
@@ -1337,7 +1337,7 @@ class MatterMostImporter(MattermostImportTestBase):
         self.assert_length(stream_messages, 13)
         self.assert_length(set(stream_recipients), 2)
         self.assertEqual(stream_messages[0].sender.email, "ron@zulip.com")
-        self.assertEqual(stream_messages[0].content, "ron joined the channel.\n\n")
+        self.assertEqual(stream_messages[0].content, "ron joined the channel.")
 
         self.assertEqual(stream_messages[3].sender.email, "harry@zulip.com")
         self.assertRegex(
@@ -1356,7 +1356,7 @@ class MatterMostImporter(MattermostImportTestBase):
         self.assert_length(set(direct_message_group_recipients), 1)
         self.assertEqual(group_direct_messages[0].sender.email, "ginny@zulip.com")
         self.assertEqual(
-            group_direct_messages[0].content, "Who is going to Hogsmeade this weekend?\n\n"
+            group_direct_messages[0].content, "Who is going to Hogsmeade this weekend?"
         )
         self.assertEqual(group_direct_messages[0].topic_name(), Message.DM_TOPIC)
 
@@ -1439,7 +1439,7 @@ class MatterMostImporter(MattermostImportTestBase):
         exported_messages_id = self.get_set(messages["zerver_message"], "id")
         self.assertIn(messages["zerver_message"][0]["sender"], exported_user_ids)
         self.assertIn(messages["zerver_message"][0]["recipient"], exported_recipient_ids)
-        self.assertIn(messages["zerver_message"][0]["content"], "ron joined the channel.\n\n")
+        self.assertIn(messages["zerver_message"][0]["content"], "ron joined the channel.")
 
         exported_usermessage_userprofiles = self.get_set(
             messages["zerver_usermessage"], "user_profile"
@@ -1485,7 +1485,7 @@ class MatterMostImporter(MattermostImportTestBase):
 
         self.assertEqual(group_direct_messages[1].sender.email, "ginny@zulip.com")
         self.assertEqual(
-            group_direct_messages[1].content, "Who is going to Hogsmeade this weekend?\n\n"
+            group_direct_messages[1].content, "Who is going to Hogsmeade this weekend?"
         )
         self.assertEqual(group_direct_messages[1].topic_name(), Message.DM_TOPIC)
 
@@ -1524,7 +1524,7 @@ class MatterMostImporter(MattermostImportTestBase):
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
         messages = self.read_file(harry_team_output_dir, "messages-000001.json")
 
-        self.assertIn(messages["zerver_message"][0]["content"], "xxxxx xxxxxx xxx xxxxxxx.\n\n")
+        self.assertIn(messages["zerver_message"][0]["content"], "xxxxx xxxxxx xxx xxxxxxx.")
 
     def test_import_data_to_existing_database(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
