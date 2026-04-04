@@ -15,6 +15,7 @@ import * as compose_fade from "./compose_fade.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_send_menu_popover from "./compose_send_menu_popover.ts";
+import * as compose_split_messages from "./compose_split_messages.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_ui from "./compose_ui.ts";
@@ -86,6 +87,10 @@ export function initialize(): void {
         );
     });
 
+    const debounced_update_split_message_banner = _.debounce(() => {
+        compose_banner.update_split_messages_info_banner();
+    }, 300);
+
     $("textarea#compose-textarea").on(
         "input",
         _.throttle(() => {
@@ -117,16 +122,18 @@ export function initialize(): void {
                     "compose_close_tooltip_template",
                 );
             }
-
             // The poll widget requires an empty compose box.
             $(".needs-empty-compose").toggleClass("disabled-on-hover", compose_text_length > 0);
 
             if (compose_state.get_is_content_unedited_restored_draft()) {
                 compose_state.set_is_content_unedited_restored_draft(false);
             }
+            // update banner if splitting messages is enabled
+            if (compose_split_messages.is_split_messages_enabled()) {
+                debounced_update_split_message_banner();
+            }
         }, 25),
     );
-
     $("#compose form").on("submit", (e) => {
         e.preventDefault();
         compose.finish();
@@ -247,6 +254,15 @@ export function initialize(): void {
                 }
                 compose_validate.clear_topic_resolved_warning();
             });
+        },
+    );
+
+    $("body").on(
+        "click",
+        `.${CSS.escape(compose_banner.CLASSNAMES.split_messages)} .main-view-banner-action-button`,
+        (event) => {
+            event.preventDefault();
+            compose.toggle_split_messages();
         },
     );
 
