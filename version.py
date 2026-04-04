@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 507
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (384, 1)  # bumped 2026-07-07 to add markdownify dependency
+PROVISION_VERSION = (385, 0)  # bumped 2026-07-07 to remove html2text dependency
