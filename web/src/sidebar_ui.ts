@@ -5,6 +5,8 @@ import render_left_sidebar from "../templates/left_sidebar.hbs";
 import render_buddy_list_popover from "../templates/popovers/buddy_list_popover.hbs";
 import render_right_sidebar from "../templates/right_sidebar.hbs";
 
+import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
+import {Typeahead} from "./bootstrap_typeahead.ts";
 import {buddy_list} from "./buddy_list.ts";
 import * as channel from "./channel.ts";
 import * as compose_ui from "./compose_ui.ts";
@@ -29,6 +31,10 @@ import * as settings_preferences from "./settings_preferences.ts";
 import * as spectators from "./spectators.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_list from "./stream_list.ts";
+import * as topic_filter_pill from "./topic_filter_pill.ts";
+import type {TopicFilterPill, TopicFilterPillWidget} from "./topic_filter_pill.ts";
+import * as topic_list from "./topic_list.ts";
+import * as typeahead_helper from "./typeahead_helper.ts";
 import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
@@ -36,6 +42,69 @@ import * as util from "./util.ts";
 const LEFT_SIDEBAR_NAVIGATION_AREA_TITLE = $t({defaultMessage: "VIEWS"});
 
 export let left_sidebar_cursor: ListCursor<JQuery>;
+
+// Pill widget for topic-state filtering (e.g., is:followed)
+// in the left sidebar search bar. This enables users to filter
+// the topic list across all channels by followed state, using
+// the same pill infrastructure as the zoomed topic filter.
+let left_sidebar_pill_widget: TopicFilterPillWidget | null = null;
+
+// Flag to suppress onPillRemove callbacks during the updater's
+// clear+appendValue swap, preventing a flash of unfiltered state.
+let suppress_pill_callbacks = false;
+
+// The full placeholder text shown when no filter pill is active.
+const LEFT_SIDEBAR_FILTER_PLACEHOLDER = $t({defaultMessage: "Filter left sidebar"});
+// Shortened placeholder shown when a filter pill is active,
+// so the pill + placeholder fit on a single line.
+const LEFT_SIDEBAR_FILTER_PLACEHOLDER_SHORT = $t({defaultMessage: "Filter"});
+
+/**
+ * Sync the current pill state to ui_util so that topic_list.ts
+ * can read it without importing sidebar_ui (which would create
+ * a dependency cycle). Must be called whenever pills are added
+ * or removed from the left sidebar filter.
+ */
+function sync_left_sidebar_pill_state(): void {
+    if (left_sidebar_pill_widget === null) {
+        ui_util.set_left_sidebar_filter_pill_syntax("");
+        return;
+    }
+
+    const pills = left_sidebar_pill_widget.items();
+    if (pills.length === 0) {
+        ui_util.set_left_sidebar_filter_pill_syntax("");
+        return;
+    }
+
+    // Currently we support a single topic-state filter pill at a time.
+    ui_util.set_left_sidebar_filter_pill_syntax(pills[0]!.syntax);
+}
+
+function clear_left_sidebar_pills(): void {
+    if (left_sidebar_pill_widget !== null) {
+        left_sidebar_pill_widget.clear(true);
+    }
+    update_left_sidebar_filter_placeholder();
+}
+
+/**
+ * Update the placeholder text in the left sidebar search input.
+ * When a filter pill is active, we shorten the placeholder to
+ * just "Filter" so the pill and placeholder fit on one line.
+ */
+function update_left_sidebar_filter_placeholder(): void {
+    const $input = $("#left-sidebar-filter-query");
+    if ($input.length === 0) {
+        return;
+    }
+    const has_pills =
+        left_sidebar_pill_widget !== null && left_sidebar_pill_widget.items().length > 0;
+    $input.attr(
+        "data-placeholder",
+        has_pills ? LEFT_SIDEBAR_FILTER_PLACEHOLDER_SHORT : LEFT_SIDEBAR_FILTER_PLACEHOLDER,
+    );
+}
 
 function save_sidebar_toggle_status(): void {
     const ls = localstorage();
@@ -579,8 +648,14 @@ export function initialize_left_sidebar_cursor(): void {
 }
 
 function actually_update_left_sidebar_for_search(): void {
+    // Sync pill state to ui_util so topic_list.ts can read it
+    // without importing sidebar_ui (avoiding a dependency cycle).
+    sync_left_sidebar_pill_state();
     const search_value = ui_util.get_left_sidebar_search_term();
-    const is_left_sidebar_search_active = search_value !== "";
+    const has_filter_pill = ui_util.get_left_sidebar_filter_pill_syntax() !== "";
+    // Consider the search active if either text is typed or a
+    // topic-state filter pill (e.g., is:followed) is active.
+    const is_left_sidebar_search_active = search_value !== "" || has_filter_pill;
     left_sidebar_cursor.set_is_highlight_visible(is_left_sidebar_search_active);
 
     // Update left sidebar navigation area.
@@ -601,6 +676,12 @@ function actually_update_left_sidebar_for_search(): void {
 
     // Update left sidebar channel list.
     stream_list.update_streams_sidebar();
+
+    // Rebuild active topic list widgets so they pick up the
+    // current pill filter state (e.g., is:followed).  This is
+    // necessary because build_stream_list may skip rebuilding
+    // when the stream order hasn't changed.
+    topic_list.update();
 
     resize.resize_page_components();
     left_sidebar_cursor.reset();
@@ -651,7 +732,129 @@ export function focus_pm_search_filter(): void {
     $filter.trigger("focus");
 }
 
+/**
+ * Set up the typeahead and pill widget for the left sidebar
+ * search input, enabling topic-state filters like is:followed.
+ *
+ * This reuses the same topic_filter_pill infrastructure from the
+ * zoomed-in "all topics" filter (topic_list.ts), but scoped to
+ * the top-level left sidebar search bar. Only followed/unfollowed
+ * options are shown per issue #36878; resolved/unresolved filters
+ * are tracked separately in issue #36877.
+ */
+function setup_left_sidebar_typeahead(): void {
+    const $input = $("#left-sidebar-filter-query");
+    const $pill_container = $("#left-sidebar-filter-input");
+
+    if ($input.length === 0 || $pill_container.length === 0) {
+        return;
+    }
+
+    left_sidebar_pill_widget = topic_filter_pill.create_pills($pill_container);
+
+    const typeahead_input: TypeaheadInputElement = {
+        $element: $input,
+        type: "contenteditable",
+    };
+
+    const options = {
+        source() {
+            const pills = left_sidebar_pill_widget!.items();
+            const current_syntaxes = new Set(pills.map((pill) => pill.syntax));
+            const query = $input.text().trim();
+            // Only show followed/unfollowed options; resolved/unresolved
+            // are excluded per issue #36878 scope (see #36877 for those).
+            return topic_filter_pill.filter_options.filter((option) => {
+                if (option.syntax.endsWith("resolved")) {
+                    return false;
+                }
+                // Don't show pills that are already active.
+                if (current_syntaxes.has(option.syntax)) {
+                    return false;
+                }
+                // Some pills (e.g., -is:followed) require a specific
+                // prefix before they appear in the typeahead, to avoid
+                // cluttering the suggestions for common use cases.
+                if (
+                    option.match_prefix_required &&
+                    !query.startsWith(option.match_prefix_required)
+                ) {
+                    return false;
+                }
+                return true;
+            });
+        },
+        item_html(item: TopicFilterPill) {
+            return typeahead_helper.render_topic_state(item.label);
+        },
+        matcher(item: TopicFilterPill, query: string) {
+            // Only show the typeahead dropdown when the query contains
+            // a colon, matching the pattern "is:" or "-is:".
+            return (
+                query.includes(":") &&
+                (item.syntax.toLowerCase().startsWith(query.toLowerCase()) ||
+                    (item.syntax.startsWith("-") &&
+                        item.syntax.slice(1).toLowerCase().startsWith(query.toLowerCase())))
+            );
+        },
+        sorter(items: TopicFilterPill[]) {
+            return items;
+        },
+        updater(item: TopicFilterPill) {
+            // Replace any existing pill with the newly selected one,
+            // since we only support one topic-state filter at a time.
+            //
+            // Suppress the onPillRemove callback during this swap so
+            // the sidebar doesn't flash with an unfiltered state
+            // between the clear() and appendValue() calls.
+            suppress_pill_callbacks = true;
+            left_sidebar_pill_widget!.clear(true);
+            left_sidebar_pill_widget!.appendValue(item.syntax);
+            suppress_pill_callbacks = false;
+            $input.text("");
+            $input.trigger("focus");
+            // Update placeholder to the shorter text so pill + placeholder
+            // fit on one line.
+            update_left_sidebar_filter_placeholder();
+            // Re-render the sidebar to apply the topic-state filter.
+            actually_update_left_sidebar_for_search();
+            return "";
+        },
+        stopAdvance: true,
+        // Use dropup to match compose typeahead direction.
+        dropup: true,
+    };
+
+    new Typeahead(typeahead_input, options);
+
+    // Prevent Enter from submitting while typing filter text,
+    // and let comma pass through for potential future use.
+    $input.on("keydown", (e: JQuery.KeyDownEvent) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+        } else if (e.key === ",") {
+            e.stopPropagation();
+            return;
+        }
+    });
+
+    // When a pill is removed (e.g., via backspace or clicking X),
+    // re-render the sidebar and restore the full placeholder text.
+    left_sidebar_pill_widget.onPillRemove(() => {
+        if (suppress_pill_callbacks) {
+            return;
+        }
+        update_left_sidebar_filter_placeholder();
+        actually_update_left_sidebar_for_search();
+    });
+}
+
 export function set_event_handlers(): void {
+    // The left sidebar search input is now a contenteditable div
+    // inside a pill container. We attach events to the contenteditable
+    // element for keyboard handling, and to the pill container for
+    // input events (which fire on the container for contenteditable).
     const $search_input = $(".left-sidebar-search-input").expectOne();
 
     function keydown_enter_key(): void {
@@ -677,7 +880,7 @@ export function set_event_handlers(): void {
         }
         // Clear search input so that there is no confusion
         // about which search input is active.
-        $search_input.val("");
+        $search_input.text("");
         const $nearest_link = $row.find("a").first();
         if ($nearest_link.length > 0) {
             // If the row has a link, we click it.
@@ -716,6 +919,17 @@ export function set_event_handlers(): void {
         left_sidebar_cursor.clear();
     });
     $search_input.on("input", update_left_sidebar_for_search);
+
+    // Set up the typeahead and pill widget for topic-state
+    // filtering (e.g., is:followed) in the left sidebar.
+    setup_left_sidebar_typeahead();
+
+    // When the close button is clicked, clear pills too.
+    $("#left-sidebar-search .input-close-filter-button").on("click", () => {
+        clear_left_sidebar_pills();
+        $search_input.text("");
+        actually_update_left_sidebar_for_search();
+    });
 }
 
 export function initiate_search(): void {

@@ -399,11 +399,18 @@ function filter_topics_left_sidebar(topic_names: string[]): string[] {
     if (stream_id === undefined) {
         return topic_names;
     }
+    // When zoomed in, use the zoomed topic filter pill state.
+    // When not zoomed in, check the left sidebar filter's pill state
+    // for topic-state filters like is:followed. We use || (not ??)
+    // because the function returns "" (not null) when no pill is active.
+    const topics_state = zoomed
+        ? get_typeahead_search_pills_syntax()
+        : ui_util.get_left_sidebar_filter_pill_syntax() || get_typeahead_search_pills_syntax();
     return topic_list_data.filter_topics_by_search_term(
         stream_id,
         topic_names,
         search_term,
-        get_typeahead_search_pills_syntax(),
+        topics_state,
     );
 }
 
