@@ -1090,6 +1090,12 @@
       "name": "RFC2392 mid links with part ID (markdown syntax)",
       "input": "[message](mid:960830.1639@XIson.com/partA.960830.1639@XIson.com)",
       "expected_output": "<p><a href=\"mid:960830.1639@XIson.com/partA.960830.1639@XIson.com\">message</a></p>"
+    },
+    {
+      "name": "explicit_link_with_quote_and_parentheses",
+      "input": "Hello [a link](https://example.com/as'd/23-(23-23)-23/aa) and some more text",
+      "expected_output": "<p>Hello <a href=\"https://example.com/as'd/23-(23-23)-23/aa\">a link</a> and some more text</p>",
+      "marked_expected_output": "<p>Hello <a href=\"https://example.com/as'd/23-(23-23\">a link</a>-23/aa) and some more text</p>"
     }
   ],
   "linkify_tests": [
