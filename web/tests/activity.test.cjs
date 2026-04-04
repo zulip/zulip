@@ -18,12 +18,20 @@ const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const $ = require("./lib/zjquery.cjs");
 
+const $window_stub = $.create("window-stub");
+$window_stub.off = () => $window_stub;
+set_global("to_$", () => $window_stub);
+
 const _document = {
     hasFocus() {
         return true;
     },
+    to_$() {
+        return $("document-stub");
+    },
 };
 
+const browser_idle_detection = mock_esm("../src/browser_idle_detection");
 const buddy_list_presence = mock_esm("../src/buddy_list_presence");
 const keydown_util = mock_esm("../src/keydown_util", {handle() {}});
 const padded_widget = mock_esm("../src/padded_widget");
@@ -656,4 +664,37 @@ test("check_should_redraw_new_user", ({override}) => {
     override(realm, "realm_presence_disabled", false);
     // A new user that didn't have presence info should not be redrawn.
     assert.equal(activity_ui.check_should_redraw_new_user(99999), false);
+});
+
+test("browser_idle_detection", async ({override}) => {
+    // Browser APIs `IdleDetector` and `navigator` handle much of the logic
+    // around switching to browser IdleDetector, so there's very little to
+    // test.
+    override(browser_idle_detection, "supported", () => false);
+    activity.setup_idle_handler();
+    blueslip.expect("log", "Browser idle detector not supported");
+
+    override(browser_idle_detection, "supported", () => true);
+
+    let init_result;
+    override(browser_idle_detection, "init", async () => init_result);
+    override(browser_idle_detection, "on_permission_change", (cb) => cb());
+
+    init_result = "started";
+    blueslip.expect("info", "Browser IdleDetector started");
+    activity.setup_idle_handler();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    init_result = {name: "NotAllowedError"};
+    activity.setup_idle_handler();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    init_result = {name: "SomeOtherError", message: "error message"};
+    blueslip.expect("error", "Browser IdleDetector failed to start: error message");
+    activity.setup_idle_handler();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    override(browser_idle_detection, "request_permission", noop);
+    $(document).trigger("keypress click");
+    await new Promise((resolve) => setTimeout(resolve, 0));
 });
