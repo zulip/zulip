@@ -24,9 +24,15 @@ class TodoData:
     task_list_title: str
     tasks: list[TodoTaskData]
 
+@dataclass
+class RsvpData:
+    topic: str
+    datetime: str
+    invitees: list[int]
+
 
 def get_widget_data(content: str) -> tuple[str | None, Any]:
-    valid_widget_types = ["poll", "todo"]
+    valid_widget_types = ["poll", "todo", "rsvp"]
     tokens = re.split(r"\s+|\n+", content)
 
     # tokens[0] will always exist
@@ -85,6 +91,8 @@ def parse_todo_extra_data(content: str) -> TodoData:
 def get_extra_data_from_widget_type(content: str, widget_type: str | None) -> PollData | TodoData:
     if widget_type == "poll":
         return parse_poll_extra_data(content)
+    elif widget_type == "rsvp":
+        return RsvpData(topic="", datetime="", invitees=[])
     else:
         return parse_todo_extra_data(content)
 

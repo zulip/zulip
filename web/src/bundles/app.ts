@@ -60,6 +60,7 @@ import "../../styles/print.css";
 import "../../styles/inbox.css";
 import "../../styles/color_picker.css";
 import "../../styles/animate.css";
+import "../../styles/rsvp_widget.css";
 import "@uppy/core/css/style.min.css";
 import "@uppy/image-editor/css/style.min.css";
 

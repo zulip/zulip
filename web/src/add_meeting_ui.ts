@@ -5,9 +5,13 @@ import type * as tippy from "tippy.js";
 import render_add_rsvp_meeting_modal from "../templates/add_rsvp_meeting_modal.hbs";
 
 import * as add_meeting from "./add_meeting.ts";
+import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import { $t, $t_html } from "./i18n.ts";
+import * as modals from "./modals.ts";
+import * as hash_util from "./hash_util.ts";
+import * as browser_history from "./browser_history.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
@@ -23,18 +27,37 @@ let composebox_add_meeting_dropdown_widget = false;
 
 function submit_rsvp_meeting_form(): void {
   const topic = $<HTMLInputElement>("#rsvp-meeting-topic").val()?.trim();
-  const datetime = $<HTMLInputElement>("#rsvp-meeting-datetime-value")
-    .val()
-    ?.trim();
-
+  const datetime = $<HTMLInputElement>("#rsvp-meeting-datetime-value").val()?.trim();
   assert(topic && datetime);
 
-  // TODO: submit the RSVP meeting via API
-  // dialog_widget.submit_api_request(channel.post, "/json/meetings/rsvp", {topic, datetime});
-
   const invitee_ids = user_pill.get_user_ids(invite_users_widget);
+  const stream_id = narrow_state.stream_id();
+  assert(stream_id !== undefined);
 
-  console.log({ topic, datetime, invitee_ids });
+  const extra_data = {
+    widget_type: "rsvp",
+    extra_data: {
+      topic,
+      datetime,
+      invitees: invitee_ids,
+    },
+  };
+
+  void channel.post({
+    url: "/json/messages",
+    data: {
+      type: "stream",
+      to: stream_id,
+      topic: topic,
+      content: "/rsvp",
+      widget_content: JSON.stringify(extra_data),
+    },
+    success() {
+      modals.close("add-rsvp-meeting-modal");
+      const url = hash_util.by_stream_topic_url(stream_id, topic);
+      browser_history.go_to_location(url);
+    },
+  });
 }
 
 function update_rsvp_submit_button_state(): void {

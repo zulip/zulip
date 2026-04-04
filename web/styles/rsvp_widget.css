@@ -1,0 +1,86 @@
+.rsvp-widget {
+    padding: 8px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+ 
+.rsvp-topic {
+    font-weight: 700;
+    font-size: 1.05em;
+    line-height: 1.3;
+}
+ 
+.rsvp-datetime {
+    font-size: 0.95em;
+    color: var(--color-text-default);
+    margin-bottom: 10px;
+}
+ 
+.rsvp-time {
+    color: hsl(145deg 60% 40%);
+    font-weight: 600;
+}
+ 
+.rsvp-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+ 
+.rsvp-option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    min-width: 90px;
+}
+ 
+.rsvp-vote-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    /* color: var(--color-text-default); */
+    font-size: 0.9em;
+    font-family: inherit;
+    transition: background 0.1s;
+    background-color: transparent;
+}
+ 
+.rsvp-vote-btn .zulip-icon {
+    font-size: 1.1em;
+}
+ 
+.rsvp-vote-btn:hover {
+    background: var(--color-background-hover-popover-menu);
+}
+ 
+.rsvp-active .rsvp-vote-btn {
+    background: var(--color-background-modal-bar);
+    border-color: hsl(145deg 60% 40%);
+    font-weight: 600;
+}
+ 
+.rsvp-count {
+    background: var(--color-background-modal-bar);
+    border-radius: 10px;
+    padding: 0 6px;
+    font-size: 0.85em;
+    font-weight: 600;
+    min-width: 18px;
+    text-align: center;
+}
+ 
+.rsvp-names {
+    font-size: 0.8em;
+    color: var(--color-text-default);
+    opacity: 0.75;
+    padding-left: 4px;
+    max-width: 160px;
+    overflow-wrap: break-word;
+}
