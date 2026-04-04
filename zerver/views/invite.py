@@ -1,5 +1,5 @@
 import email.utils
-from typing import Annotated
+from typing import Annotated, Any
 
 from django.conf import settings
 from django.db import transaction
@@ -9,6 +9,7 @@ from django.utils.translation import gettext as _
 from pydantic import Json, StringConstraints
 
 from confirmation import settings as confirmation_settings
+from confirmation.models import Confirmation, confirmation_url_for
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_get_invites_controlled_by_user,
@@ -21,6 +22,7 @@ from zerver.decorator import require_human_non_guest_user
 from zerver.lib.exceptions import InvitationError, JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id, get_streams_to_which_user_cannot_add_subscribers
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_int_in_validator
 from zerver.lib.user_groups import UserGroupMembershipDetails, access_user_group_for_update
@@ -303,3 +305,74 @@ def generate_multiuse_invite_backend(
         welcome_message_custom_text,
     )
     return json_success(request, data={"invite_link": invite_link})
+
+
+def get_invite_details_common(
+    prereg_user: PreregistrationUser,
+    user_profile: UserProfile,
+) -> dict[str, Any]:
+    assert prereg_user.referred_by is not None
+    streams = prereg_user.streams.all()
+    groups = prereg_user.groups.all()
+    confirmation_obj = prereg_user.confirmation.all().first()
+
+    return {
+        "email": prereg_user.email,
+        "invited_by_user_id": prereg_user.referred_by.id,
+        "invited_by_name": prereg_user.referred_by.full_name,
+        "invited": datetime_to_timestamp(prereg_user.invited_at),
+        "expiry_date": datetime_to_timestamp(confirmation_obj.expiry_date)
+        if confirmation_obj
+        else None,
+        "invited_as": prereg_user.invited_as,
+        "is_multiuse": False,
+        "streams": [{"name": stream.name, "id": stream.id} for stream in streams],
+        "groups": [{"name": group.name, "id": group.id} for group in groups],
+    }
+
+
+@require_human_non_guest_user
+@typed_endpoint
+def get_invite_details(
+    request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
+) -> HttpResponse:
+    prereg_user = access_invite_by_id(user_profile, invite_id)
+    invite_details = get_invite_details_common(prereg_user, user_profile)
+    return json_success(request, data={"invite": invite_details})
+
+
+def get_multiuse_invite_details_common(
+    invite: MultiuseInvite,
+    user_profile: UserProfile,
+) -> dict[str, Any]:
+    assert invite.referred_by is not None
+    confirmation_obj = Confirmation.objects.filter(
+        type=Confirmation.MULTIUSE_INVITE, object_id=invite.id
+    ).first()
+
+    streams = invite.streams.all()
+    groups = invite.groups.all()
+
+    return {
+        "link_url": confirmation_url_for(confirmation_obj) if confirmation_obj else None,
+        "invited_by_user_id": invite.referred_by.id,
+        "invited_by_name": invite.referred_by.full_name,
+        "invited": datetime_to_timestamp(confirmation_obj.date_sent) if confirmation_obj else None,
+        "expiry_date": datetime_to_timestamp(confirmation_obj.expiry_date)
+        if confirmation_obj
+        else None,
+        "invited_as": invite.invited_as,
+        "is_multiuse": True,
+        "streams": [{"name": stream.name, "id": stream.id} for stream in streams],
+        "groups": [{"name": group.name, "id": group.id} for group in groups],
+    }
+
+
+@require_human_non_guest_user
+@typed_endpoint
+def get_multiuse_invite_details(
+    request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
+) -> HttpResponse:
+    invite = access_multiuse_invite_by_id(user_profile, invite_id)
+    invite_details = get_multiuse_invite_details_common(invite, user_profile)
+    return json_success(request, data={"invite": invite_details})

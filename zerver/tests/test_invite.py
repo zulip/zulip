@@ -2768,6 +2768,80 @@ class InvitationsTestCase(InviteUserBase):
         error_result = self.client_delete(f"/json/invites/multiuse/{non_existent_id}")
         self.assert_json_error(error_result, "No such invitation")
 
+    def test_get_invite_details(self) -> None:
+        """
+        A GET call to /json/invites/{invite_id} should return invite details.
+        """
+        iago = self.example_user("iago")
+        self.login("iago")
+
+        stream = get_stream("Denmark", iago.realm)
+        self.assert_json_success(self.invite("test@example.com", ["Denmark"]))
+
+        prereg_user = PreregistrationUser.objects.get(email="test@example.com")
+        prereg_user.streams.add(stream)
+
+        result = self.api_get(iago, f"/api/v1/invites/{prereg_user.id}")
+        self.assert_json_success(result)
+
+        invite_data = result.json()["invite"]
+        self.assertEqual(invite_data["email"], "test@example.com")
+        self.assertEqual(invite_data["invited_by_user_id"], iago.id)
+        self.assertEqual(invite_data["invited_by_name"], iago.full_name)
+        self.assertEqual(invite_data["is_multiuse"], False)
+        self.assertEqual(invite_data["invited_as"], PreregistrationUser.INVITE_AS["MEMBER"])
+        self.assert_length(invite_data["streams"], 1)
+        self.assertEqual(invite_data["streams"][0]["name"], "Denmark")
+
+    def test_get_invite_details_not_found(self) -> None:
+        """
+        A GET call to /json/invites/{invalid_id} should return 404.
+        """
+        iago = self.example_user("iago")
+        self.login("iago")
+
+        result = self.api_get(iago, "/api/v1/invites/99999")
+        self.assert_json_error(result, "No such invitation")
+
+    def test_get_multiuse_invite_details(self) -> None:
+        """
+        A GET call to /json/invites/multiuse/{invite_id} should return multi-use invite details.
+        """
+        self.login("iago")
+
+        zulip_realm = get_realm("zulip")
+        stream = get_stream("Denmark", zulip_realm)
+        multiuse_invite = MultiuseInvite.objects.create(
+            referred_by=self.example_user("hamlet"),
+            realm=zulip_realm,
+            invited_as=PreregistrationUser.INVITE_AS["MEMBER"],
+        )
+        multiuse_invite.streams.add(stream)
+        validity_in_minutes = 2 * 24 * 60
+        create_confirmation_link(
+            multiuse_invite, Confirmation.MULTIUSE_INVITE, validity_in_minutes=validity_in_minutes
+        )
+
+        result = self.client_get(f"/json/invites/multiuse/{multiuse_invite.id}")
+        self.assert_json_success(result)
+
+        invite_data = result.json()["invite"]
+        self.assertEqual(invite_data["invited_by_user_id"], self.example_user("hamlet").id)
+        self.assertEqual(invite_data["is_multiuse"], True)
+        self.assertEqual(invite_data["invited_as"], PreregistrationUser.INVITE_AS["MEMBER"])
+        self.assert_length(invite_data["streams"], 1)
+        self.assertEqual(invite_data["streams"][0]["name"], "Denmark")
+        self.assertIsNotNone(invite_data["link_url"])
+
+    def test_get_multiuse_invite_details_not_found(self) -> None:
+        """
+        A GET call to /json/invites/multiuse/{invalid_id} should return 404.
+        """
+        self.login("iago")
+
+        result = self.client_get("/json/invites/multiuse/99999")
+        self.assert_json_error(result, "No such invitation")
+
     def test_successful_resend_invitation(self) -> None:
         """
         A POST call to /json/invites/<ID>/resend should send an invitation reminder email
