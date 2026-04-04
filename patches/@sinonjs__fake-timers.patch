@@ -1,0 +1,9 @@
+diff --git a/types/fake-timers-src.d.ts b/types/fake-timers-src.d.ts
+index e0c29be8781d2ee2a6b3d63a787d2aa93b673518..a2df73a423432276bfaa63d29932e8250e700f53 100644
+--- a/types/fake-timers-src.d.ts
++++ b/types/fake-timers-src.d.ts
+@@ -559,4 +559,3 @@ declare function withGlobal(_global: any): FakeTimers;
+ export declare var timers: Timers;
+ export declare var createClock: CreateClockCallback;
+ export declare var install: InstallCallback;
+-export declare var withGlobal: typeof withGlobal;
