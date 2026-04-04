@@ -5,9 +5,13 @@ import type * as tippy from "tippy.js";
 import render_add_rsvp_meeting_modal from "../templates/add_rsvp_meeting_modal.hbs";
 
 import * as add_meeting from "./add_meeting.ts";
+import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
-import { $t, $t_html } from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as modals from "./modals.ts";
+import * as hash_util from "./hash_util.ts";
+import * as browser_history from "./browser_history.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
@@ -26,15 +30,79 @@ function submit_rsvp_meeting_form(): void {
   const datetime = $<HTMLInputElement>("#rsvp-meeting-datetime-value")
     .val()
     ?.trim();
-
   assert(topic && datetime);
 
-  // TODO: submit the RSVP meeting via API
-  // dialog_widget.submit_api_request(channel.post, "/json/meetings/rsvp", {topic, datetime});
-
   const invitee_ids = user_pill.get_user_ids(invite_users_widget);
+  const stream_id = narrow_state.stream_id();
+  assert(stream_id !== undefined);
 
-  console.log({ topic, datetime, invitee_ids });
+  const create_new_channel = $<HTMLInputElement>("#rsvp-create-channel").prop(
+    "checked",
+  ) as boolean;
+
+  const extra_data = {
+    widget_type: "rsvp",
+    extra_data: {
+      topic,
+      datetime,
+      invitees: invitee_ids,
+    },
+  };
+
+  const send_message = (target_stream_id: number): void => {
+    void channel.post({
+      url: "/json/messages",
+      data: {
+        type: "stream",
+        to: target_stream_id,
+        topic,
+        content: "/rsvp",
+        widget_content: JSON.stringify(extra_data),
+      },
+      success() {
+        modals.close_if_open("add-rsvp-meeting-modal");
+        const url = hash_util.by_stream_topic_url(target_stream_id, topic);
+        browser_history.go_to_location(url);
+      },
+    });
+  };
+
+  if (create_new_channel) {
+    // Step 1: Create the new stream, then post the message to it
+    void channel.post({
+      url: "/json/users/me/subscriptions",
+      data: {
+        subscriptions: JSON.stringify([{name: topic}]),
+        principals: JSON.stringify([
+          people.my_current_user_id(),
+          ...invitee_ids,
+        ]),
+        announce: false,
+      },
+      success(data) {
+        const result = data as {
+          subscribed: Record<string, number[]>;
+          already_subscribed: Record<string, number[]>;
+        };
+        // Find the new stream id by looking it up by name
+        void channel.get({
+          url: "/json/streams",
+          data: {include_subscribed: true},
+          success(streams_data) {
+            const streams = (
+              streams_data as {streams: {stream_id: number; name: string}[]}
+            ).streams;
+            const new_stream = streams.find((s) => s.name === topic);
+            if (new_stream) {
+              send_message(new_stream.stream_id);
+            }
+          },
+        });
+      },
+    });
+  } else {
+    send_message(stream_id);
+  }
 }
 
 function update_rsvp_submit_button_state(): void {
@@ -55,10 +123,12 @@ function populate_user_dropdown(): void {
 
   $dropdown.empty();
 
-  const already_added_ids = new Set(user_pill.get_user_ids(invite_users_widget));
-  const users = people.get_realm_users().filter(
-    (user) => !already_added_ids.has(user.user_id),
+  const already_added_ids = new Set(
+    user_pill.get_user_ids(invite_users_widget),
   );
+  const users = people
+    .get_realm_users()
+    .filter((user) => !already_added_ids.has(user.user_id));
 
   if (users.length === 0) {
     $dropdown.append(
@@ -117,7 +187,10 @@ function rsvp_meeting_modal_post_render(): void {
 
   invite_users_widget.onPillRemove(() => {
     if (user_pill.get_user_ids(invite_users_widget).length === 0) {
-      $("#rsvp-invite-users").attr("data-placeholder", $t({ defaultMessage: "Add users" }));
+      $("#rsvp-invite-users").attr(
+        "data-placeholder",
+        $t({defaultMessage: "Add users"}),
+      );
     }
     update_channel_warning();
     update_rsvp_submit_button_state();
@@ -127,7 +200,9 @@ function rsvp_meeting_modal_post_render(): void {
     const $dropdown = $("#rsvp-user-dropdown");
     if (
       $dropdown.is(":visible") &&
-      !$(e.target).closest("#rsvp-user-dropdown, #rsvp-invite-users-container, #rsvp-user-dropdown-button").length
+      !$(e.target).closest(
+        "#rsvp-user-dropdown, #rsvp-invite-users-container, #rsvp-user-dropdown-button",
+      ).length
     ) {
       $dropdown.hide();
     }
@@ -300,7 +375,9 @@ function on_add_all_users_click(): void {
     return;
   }
 
-  const already_added_ids = new Set(user_pill.get_user_ids(invite_users_widget));
+  const already_added_ids = new Set(
+    user_pill.get_user_ids(invite_users_widget),
+  );
   const user_ids = peer_data.get_subscriber_ids_assert_loaded(stream_id);
 
   for (const id of user_ids) {
@@ -332,9 +409,9 @@ function item_click_callback(
 
   if (current_value === add_meeting.OPTION_RSVP_MEETING) {
     dialog_widget.launch({
-      modal_title_html: $t_html({ defaultMessage: "Meeting RSVP" }),
+      modal_title_html: $t_html({defaultMessage: "Meeting RSVP"}),
       modal_content_html: render_add_rsvp_meeting_modal({}),
-      modal_submit_button_text: $t({ defaultMessage: "Submit" }),
+      modal_submit_button_text: $t({defaultMessage: "Submit"}),
       id: "add-rsvp-meeting-modal",
       form_id: "rsvp-meeting-form",
       update_submit_disabled_state_on_change: true,
@@ -394,7 +471,9 @@ function update_channel_warning(): void {
     return;
   }
 
-  const subscriber_ids = new Set(peer_data.get_subscriber_ids_assert_loaded(stream_id));
+  const subscriber_ids = new Set(
+    peer_data.get_subscriber_ids_assert_loaded(stream_id),
+  );
   const invited_ids = user_pill.get_user_ids(invite_users_widget);
   const has_outside_user = invited_ids.some((id) => !subscriber_ids.has(id));
 
