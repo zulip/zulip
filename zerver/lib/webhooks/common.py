@@ -2,12 +2,14 @@ import fnmatch
 import hashlib
 import hmac
 import importlib
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 from typing import Annotated, Any, TypeAlias
 from urllib.parse import unquote
 
+import requests
 from django.conf import settings
 from django.http import HttpRequest
 from django.utils.crypto import constant_time_compare
@@ -16,6 +18,7 @@ from django.utils.translation import gettext as _
 from pydantic import Json
 from typing_extensions import override
 
+from version import ZULIP_VERSION
 from zerver.actions.message_send import (
     check_send_private_message,
     check_send_stream_message,
@@ -28,12 +31,15 @@ from zerver.lib.exceptions import (
     JsonableError,
     StreamDoesNotExistError,
 )
+from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.validator import check_bool, check_string
 from zerver.models import Realm, UserProfile
 from zerver.models.custom_profile_fields import CustomProfileField, CustomProfileFieldValue
+
+logger = logging.getLogger(__name__)
 
 MISSING_EVENT_HEADER_MESSAGE = """\
 Hi there!  Your bot {bot_name} just sent an HTTP request to {request_path} that
@@ -378,3 +384,39 @@ def guess_zulip_user_from_external_account(
         return matching_user.user_profile
     except (CustomProfileFieldValue.DoesNotExist, CustomProfileFieldValue.MultipleObjectsReturned):
         return None
+
+
+def get_service_api_data(
+    url: str,
+    integration_name: str,
+    headers: dict[str, str] | None = None,
+    params: dict[str, Any] | None = None,
+    method: str = "GET",
+    timeout: float = settings.OUTGOING_WEBHOOK_TIMEOUT_SECONDS,
+    max_retries: int = 3,
+) -> requests.Response:
+    session = OutgoingSession(
+        role="webhook_fetch",
+        headers={
+            "User-Agent": f"ZulipWebhookFetch/{ZULIP_VERSION}",
+            **(headers or {}),
+        },
+        timeout=timeout,
+        max_retries=max_retries,
+    )
+    try:
+        response = session.request(
+            method=method.upper(),
+            url=url,
+            json=params if method.upper() == "POST" else None,
+            params=params if method.upper() == "GET" else None,
+        )
+
+        response.raise_for_status()
+        return response
+
+    except requests.RequestException as e:
+        logger.warning(
+            "Failed to fetch data from %s for %s integration: %s", url, integration_name, e
+        )
+        raise
