@@ -2012,6 +2012,58 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         super().__init__(pattern, zmd)
         self.zmd = zmd
 
+    @override
+    def getLink(self, data: str, index: int) -> tuple[str, str | None, int, bool]:
+        """
+        Zulip override: Python-Markdown's default getLink crashes if a URL contains
+        both parentheses and a single/double quote (e.g., [text](https://example.com/a'b(c)d)).
+        We temporarily URL-encode quotes that are clearly part of the URL (before any space)
+        so the upstream parser doesn't mistake them for the start of a title string.
+        """
+        m = self.RE_LINK.match(data, pos=index)
+
+        if m and not m.group(1):
+            # Manual scan to find the matching closing parenthesis
+            bracket_count = 0
+            end_index = -1
+            for i in range(index, len(data)):
+                if data[i] == "(":
+                    bracket_count += 1
+                elif data[i] == ")":
+                    bracket_count -= 1
+                    if bracket_count == 0:
+                        end_index = i
+                        break
+
+            if end_index != -1:
+                url_content = data[index + 1 : end_index]
+
+                space_idx = url_content.find(" ")
+                if space_idx == -1:
+                    url_part = url_content
+                    title_part = ""
+                else:
+                    url_part = url_content[:space_idx]
+                    title_part = url_content[space_idx:]
+
+                if "'" in url_part or '"' in url_part:
+                    safe_url_part = url_part.replace("'", "%27").replace('"', "%22")
+                    safe_url_content = safe_url_part + title_part
+                    safe_data = data[: index + 1] + safe_url_content + data[end_index:]
+
+                    href, title, new_index, handled = super().getLink(safe_data, index)
+                    if handled and href:
+                        href = href.replace("%27", "'").replace("%22", '"')
+
+                        # Fix the index shift! Subtract the extra characters we added
+                        # so we don't accidentally eat the text that follows the link.
+                        length_diff = len(safe_data) - len(data)
+                        new_index -= length_diff
+
+                    return href, title, new_index, handled
+
+        return super().getLink(data, index)
+
     def zulip_specific_link_changes(self, el: Element) -> None | Element:
         href = el.get("href")
         assert href is not None
