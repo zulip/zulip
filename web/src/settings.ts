@@ -168,6 +168,7 @@ export function build_page(): void {
         private_data_export_is_checked:
             user_settings.allow_private_data_export || is_export_without_consent_enabled,
         private_data_export_is_disabled: is_export_without_consent_enabled,
+        dm_section_collapse_policy_values: settings_config.dm_section_collapse_policy_values,
         private_data_export_tooltip_text,
         all_bots_list_dropdown_widget_name:
             settings_bots.personal_all_bots_list_dropdown_widget_name,

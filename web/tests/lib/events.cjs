@@ -1130,6 +1130,13 @@ exports.fixtures = {
         value: "ding",
     },
 
+    user_settings__pin_dm_section: {
+        type: "user_settings",
+        op: "update",
+        property: "web_dm_collapse_policy",
+        value: 2,
+    },
+
     user_settings__presence_disabled: {
         type: "user_settings",
         op: "update",
@@ -1177,6 +1184,13 @@ exports.fixtures = {
         op: "update",
         property: "twenty_four_hour_time",
         value: true,
+    },
+
+    user_settings__unpin_dm_section: {
+        type: "user_settings",
+        op: "update",
+        property: "web_dm_collapse_policy",
+        value: 1,
     },
 
     user_settings__user_list_style: {
