@@ -93,6 +93,7 @@ import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import * as submessage from "./submessage.ts";
 import * as theme from "./theme.ts";
+import * as topic_resolution_compose from "./topic_resolution_compose.ts";
 import {group_setting_value_schema} from "./types.ts";
 import * as typing_events from "./typing_events.ts";
 import * as unread_ops from "./unread_ops.ts";
@@ -334,6 +335,10 @@ export function dispatch_normal_event(event) {
                 require_unique_names: noop,
                 send_welcome_emails: noop,
                 topics_policy: noop,
+                topic_resolution_message_requirement() {
+                    topic_resolution_compose.update_banner_if_needed();
+                    message_live_update.rerender_messages_view();
+                },
                 require_e2ee_push_notifications: noop,
                 message_content_allowed_in_email_notifications: noop,
                 enable_spectator_access: noop,

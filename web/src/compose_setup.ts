@@ -41,6 +41,7 @@ import * as stream_settings_components from "./stream_settings_components.ts";
 import * as sub_store from "./sub_store.ts";
 import * as subscriber_api from "./subscriber_api.ts";
 import {get_timestamp_for_flatpickr} from "./timerender.ts";
+import * as topic_resolution_compose from "./topic_resolution_compose.ts";
 import * as ui_report from "./ui_report.ts";
 import * as upload from "./upload.ts";
 import * as user_topics from "./user_topics.ts";
@@ -60,6 +61,8 @@ function setup_compose_actions_hooks(): void {
     compose_actions.register_compose_cancel_hook(() => {
         compose_call.abandon_all_callbacks_for_key("");
     });
+    // Clear pending topic resolution state when compose is cancelled
+    compose_actions.register_compose_cancel_hook(topic_resolution_compose.clear_pending_resolution);
 }
 
 export function initialize(): void {
@@ -123,6 +126,12 @@ export function initialize(): void {
 
             if (compose_state.get_is_content_unedited_restored_draft()) {
                 compose_state.set_is_content_unedited_restored_draft(false);
+            }
+
+            // When in topic resolution mode, we need to update the send button
+            // state on every input to reflect whether minimum character count is met.
+            if (topic_resolution_compose.has_pending_resolution()) {
+                compose_validate.validate_and_update_send_button_status();
             }
         }, 25),
     );
@@ -243,7 +252,13 @@ export function initialize(): void {
                         );
                     }
                 } else {
-                    message_edit.toggle_resolve_topic(message_id, topic_name, true);
+                    message_edit.toggle_resolve_topic(
+                        message_id,
+                        topic_name,
+                        true,
+                        undefined,
+                        stream_id,
+                    );
                 }
                 compose_validate.clear_topic_resolved_warning();
             });
@@ -643,6 +658,11 @@ export function initialize(): void {
     );
 
     $("#compose-channel-recipient").on("click", "#recipient_box_clear_topic_button", () => {
+        // In topic resolution mode the recipient area is inert, but as a
+        // defence-in-depth guard we also no-op here explicitly.
+        if (topic_resolution_compose.has_pending_resolution()) {
+            return;
+        }
         const $input = $("input#stream_message_recipient_topic");
         // This should work similar to just manually deleting the
         // topic

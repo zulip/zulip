@@ -77,7 +77,11 @@ from zerver.models import (
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.groups import SystemGroups
-from zerver.models.realms import RealmTopicsPolicyEnum, get_realm
+from zerver.models.realms import (
+    RealmTopicsPolicyEnum,
+    TopicResolutionMessageRequirementEnum,
+    get_realm,
+)
 from zerver.models.recipients import get_direct_message_group, get_or_create_direct_message_group
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import (
@@ -153,6 +157,285 @@ class MessagePOSTTest(ZulipTestCase):
                 },
             )
             self.assert_json_success(result)
+
+    def test_send_message_and_resolve_topic(self) -> None:
+        """
+        Test that sending a message with then_resolve_topic resolves the topic atomically.
+        """
+        user = self.example_user("hamlet")
+        topic_name = "test topic to resolve"
+        # First send a message to ensure the topic exists.
+        self.send_stream_message(user, "Verona", topic_name=topic_name)
+
+        result = self.api_post(
+            user,
+            "/api/v1/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps("Verona").decode(),
+                "content": "Resolving this topic.",
+                "topic": topic_name,
+                "then_resolve_topic": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        # Verify the message was sent to the original topic, but the topic is now resolved
+        # Actually, our implementation in do_send_messages sends the message to the OLD topic
+        # and THEN resolves the topic (moving ALL messages, including the new one, to the new topic).
+        message = self.get_second_to_last_message()
+        self.assertEqual(message.content, "Resolving this topic.")
+        self.assertEqual(message.topic_name(), "✔ " + topic_name)
+
+        # Verify the notification message was created
+        notification = self.get_last_message()
+        self.assertEqual(notification.topic_name(), "✔ " + topic_name)
+        self.assertIn("has marked this topic as resolved.", notification.content)
+
+    def test_send_message_and_resolve_topic_error_for_direct_message(self) -> None:
+        user = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        result = self.api_post(
+            user,
+            "/api/v1/messages",
+            {
+                "type": "direct",
+                "to": orjson.dumps([cordelia.email]).decode(),
+                "content": "Test message",
+                "then_resolve_topic": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_error(result, "then_resolve_topic is only supported for channel messages")
+
+    def test_send_message_and_resolve_topic_with_requirement(self) -> None:
+        """
+        Test that sending a message with then_resolve_topic works even if the realm
+        requires a message for topic resolution.
+        """
+        user = self.example_user("hamlet")
+        topic_name = "test topic with requirement"
+        self.send_stream_message(user, "Verona", topic_name=topic_name)
+
+        do_set_realm_property(
+            user.realm,
+            "topic_resolution_message_requirement",
+            TopicResolutionMessageRequirementEnum.required,
+            acting_user=None,
+        )
+
+        # This should succeed because we are providing a message (the current one)
+        result = self.api_post(
+            user,
+            "/api/v1/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps("Verona").decode(),
+                "content": "Resolving with requirement.",
+                "topic": topic_name,
+                "then_resolve_topic": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        message = self.get_second_to_last_message()
+        self.assertEqual(message.topic_name(), "✔ " + topic_name)
+        self.assertEqual(message.content, "Resolving with requirement.")
+
+    def test_send_message_and_resolve_topic_with_requirement_length_validation(self) -> None:
+        """
+        Test that sending a message with then_resolve_topic enforces the 5-character
+        minimum length when the realm requires a message for topic resolution.
+        """
+        user = self.example_user("hamlet")
+        topic_name = "test topic with requirement and length validation"
+        self.send_stream_message(user, "Verona", topic_name=topic_name)
+
+        do_set_realm_property(
+            user.realm,
+            "topic_resolution_message_requirement",
+            TopicResolutionMessageRequirementEnum.required,
+            acting_user=None,
+        )
+
+        # This should fail because the message content is too short (5 characters minimum)
+        result = self.api_post(
+            user,
+            "/api/v1/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps("Verona").decode(),
+                "content": "test",  # 4 chars
+                "topic": topic_name,
+                "then_resolve_topic": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_error(result, "Topic resolution messages must be at least 5 characters.")
+
+    def test_send_message_and_resolve_topic_with_optional_requirement(self) -> None:
+        user = self.example_user("hamlet")
+        topic_name = "test topic with optional requirement"
+        self.send_stream_message(user, "Verona", topic_name=topic_name)
+
+        do_set_realm_property(
+            user.realm,
+            "topic_resolution_message_requirement",
+            TopicResolutionMessageRequirementEnum.optional,
+            acting_user=None,
+        )
+
+        result = self.api_post(
+            user,
+            "/api/v1/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps("Verona").decode(),
+                "content": "Optional-mode resolution message.",
+                "topic": topic_name,
+                "then_resolve_topic": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        message = self.get_second_to_last_message()
+        self.assertEqual(message.topic_name(), "✔ " + topic_name)
+
+    def test_send_message_and_resolve_topic_with_requirement_markdown_only_content(self) -> None:
+        user = self.example_user("hamlet")
+        topic_name = "test topic with markdown-only content"
+        self.send_stream_message(user, "Verona", topic_name=topic_name)
+
+        do_set_realm_property(
+            user.realm,
+            "topic_resolution_message_requirement",
+            TopicResolutionMessageRequirementEnum.required,
+            acting_user=None,
+        )
+
+        result = self.api_post(
+            user,
+            "/api/v1/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps("Verona").decode(),
+                "content": "* * *",
+                "topic": topic_name,
+                "then_resolve_topic": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_error(result, "Topic resolution messages must be at least 5 characters.")
+
+    def test_send_message_and_resolve_topic_with_requirement_short_rendered_text(self) -> None:
+        user = self.example_user("hamlet")
+        topic_name = "test topic with short rendered text"
+        self.send_stream_message(user, "Verona", topic_name=topic_name)
+
+        do_set_realm_property(
+            user.realm,
+            "topic_resolution_message_requirement",
+            TopicResolutionMessageRequirementEnum.required,
+            acting_user=None,
+        )
+
+        result = self.api_post(
+            user,
+            "/api/v1/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps("Verona").decode(),
+                "content": "**test**",
+                "topic": topic_name,
+                "then_resolve_topic": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_error(result, "Topic resolution messages must be at least 5 characters.")
+
+    def test_send_message_and_resolve_already_resolved_topic(self) -> None:
+        user = self.example_user("hamlet")
+        # Topic name starting with resolved prefix
+        topic_name = "✔ resolved topic"
+
+        result = self.api_post(
+            user,
+            "/api/v1/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps("Verona").decode(),
+                "content": "Trying to resolve already resolved topic.",
+                "topic": topic_name,
+                "then_resolve_topic": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_error(result, "Topic is already resolved")
+
+    def test_send_message_and_resolve_topic_without_permission(self) -> None:
+        user = self.example_user("polonius")
+        topic_name = "topic to resolve without permission"
+        self.send_stream_message(self.example_user("hamlet"), "Verona", topic_name=topic_name)
+        self.subscribe(user, "Verona")
+
+        realm = user.realm
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
+        )
+
+        # Set realm-level permission to NOBODY
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_resolve_topics_group",
+            nobody_group,
+            acting_user=None,
+        )
+
+        # Set stream-level permission to NOBODY
+        stream = get_stream("Verona", realm)
+        do_change_stream_group_based_setting(
+            stream,
+            "can_resolve_topics_group",
+            nobody_group,
+            acting_user=self.example_user("desdemona"),
+        )
+
+        result = self.api_post(
+            user,
+            "/api/v1/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps("Verona").decode(),
+                "content": "Trying to resolve without permission.",
+                "topic": topic_name,
+                "then_resolve_topic": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_error(
+            result, "You don't have permission to resolve topics in this channel."
+        )
+
+    def test_send_message_and_resolve_topic_without_send_permission(self) -> None:
+        user = self.example_user("hamlet")
+        stream = get_stream("Verona", user.realm)
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=user.realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream,
+            "can_send_message_group",
+            nobody_group,
+            acting_user=self.example_user("iago"),
+        )
+
+        result = self.api_post(
+            user,
+            "/api/v1/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps("Verona").decode(),
+                "content": "Trying to resolve without send permission.",
+                "topic": "topic without send permission",
+                "then_resolve_topic": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_error(result, "You do not have permission to post in this channel.")
 
     def test_message_to_stream_with_nonexistent_id(self) -> None:
         cordelia = self.example_user("cordelia")

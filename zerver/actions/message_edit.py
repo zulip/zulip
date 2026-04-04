@@ -100,6 +100,7 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.groups import get_realm_system_groups_name_dict
+from zerver.models.realms import TopicResolutionMessageRequirementEnum
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream_by_id_in_realm
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
@@ -1553,6 +1554,53 @@ def build_message_edit_request(
     )
 
 
+def check_stream_topic_edit_permissions(
+    *,
+    user_profile: UserProfile,
+    message: Message,
+    message_edit_request: StreamMessageEditRequest,
+    edit_limit_buffer: int | None = None,
+    resolution_message_already_sent: bool = False,
+) -> None:
+    if message_edit_request.topic_resolved or message_edit_request.topic_unresolved:
+        if not can_resolve_topics(
+            user_profile, message_edit_request.orig_stream, message_edit_request.target_stream
+        ):
+            raise JsonableError(_("You don't have permission to resolve topics in this channel."))
+        if (
+            message_edit_request.topic_resolved
+            and not resolution_message_already_sent
+            and user_profile.realm.topic_resolution_message_requirement
+            == TopicResolutionMessageRequirementEnum.required.value
+        ):
+            raise JsonableError(
+                _(
+                    "Your organization requires a message when resolving topics. "
+                    "Please use the compose box to resolve this topic."
+                )
+            )
+        return
+
+    if not can_edit_topic(
+        user_profile, message_edit_request.orig_stream, message_edit_request.target_stream
+    ):
+        raise JsonableError(_("You don't have permission to edit this message"))
+
+    # If there is a change to the topic, check that the user is allowed to
+    # edit it and that it has not been too long. If user is not admin or moderator,
+    # and the time limit for editing topics is passed, raise an error.
+    if (
+        user_profile.realm.move_messages_within_stream_limit_seconds is not None
+        and not user_profile.is_moderator
+    ):
+        assert edit_limit_buffer is not None
+        deadline_seconds = (
+            user_profile.realm.move_messages_within_stream_limit_seconds + edit_limit_buffer
+        )
+        if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
+            raise JsonableError(_("The time limit for editing this message's topic has passed."))
+
+
 @transaction.atomic(durable=True)
 def check_update_message(
     user_profile: UserProfile,
@@ -1608,33 +1656,12 @@ def check_update_message(
         isinstance(message_edit_request, StreamMessageEditRequest)
         and message_edit_request.is_topic_edited
     ):
-        if message_edit_request.topic_resolved or message_edit_request.topic_unresolved:
-            if not can_resolve_topics(
-                user_profile, message_edit_request.orig_stream, message_edit_request.target_stream
-            ):
-                raise JsonableError(
-                    _("You don't have permission to resolve topics in this channel.")
-                )
-        else:
-            if not can_edit_topic(
-                user_profile, message_edit_request.orig_stream, message_edit_request.target_stream
-            ):
-                raise JsonableError(_("You don't have permission to edit this message"))
-
-            # If there is a change to the topic, check that the user is allowed to
-            # edit it and that it has not been too long. If user is not admin or moderator,
-            # and the time limit for editing topics is passed, raise an error.
-            if (
-                user_profile.realm.move_messages_within_stream_limit_seconds is not None
-                and not user_profile.is_moderator
-            ):
-                deadline_seconds = (
-                    user_profile.realm.move_messages_within_stream_limit_seconds + edit_limit_buffer
-                )
-                if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
-                    raise JsonableError(
-                        _("The time limit for editing this message's topic has passed.")
-                    )
+        check_stream_topic_edit_permissions(
+            user_profile=user_profile,
+            message=message,
+            message_edit_request=message_edit_request,
+            edit_limit_buffer=edit_limit_buffer,
+        )
 
     rendering_result = None
     links_for_embed: set[str] = set()
