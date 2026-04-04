@@ -683,6 +683,8 @@ run_test("test_compose_height_changes", ({override, override_rewire}) => {
     assert.ok(autosize_destroyed);
     assert.ok(compose_box_top_set);
 
+    $("textarea#compose-textarea").set_height(100);
+    $("#compose .preview_message_area").set_height(100);
     compose_ui.make_compose_box_original_size();
     assert.ok(!$("#compose").hasClass("compose-fullscreen"));
     assert.ok(!compose_ui.is_expanded());

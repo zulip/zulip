@@ -551,9 +551,17 @@ export function make_compose_box_original_size(): void {
 
     // Again initialise the compose textarea as it was destroyed
     // when compose box was made full screen
-    autosize($("textarea#compose-textarea"));
+    const $compose_textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
+    autosize($compose_textarea);
 
-    $("textarea#compose-textarea").trigger("focus");
+    // If the preview area is open, reset the min-height for it to
+    // ensure a smooth back-and-forth for toggling preview mode.
+    const $preview_message_area = $("#compose .preview_message_area");
+    if ($preview_message_area.length > 0) {
+        const edit_height = $compose_textarea.height();
+        $preview_message_area.css({"min-height": edit_height + "px"});
+    }
+    $compose_textarea.trigger("focus");
 }
 
 export function handle_scrolling_formatting_buttons(event: JQuery.ScrollEvent): void {
