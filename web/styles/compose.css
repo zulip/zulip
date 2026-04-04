@@ -2110,3 +2110,7 @@ textarea.new_message_textarea {
         overflow: hidden !important;
     }
 }
+
+.preview_message_area.preview-collapsed {
+    min-height: 40px;
+}
