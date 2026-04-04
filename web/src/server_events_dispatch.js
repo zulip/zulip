@@ -549,42 +549,41 @@ export function dispatch_normal_event(event) {
             settings_playgrounds.populate_playgrounds(realm.realm_playgrounds);
             break;
 
-        case "realm_domains":
-            {
-                let i;
-                switch (event.op) {
-                    case "add":
-                        realm.realm_domains.push(event.realm_domain);
-                        settings_org.populate_realm_domains_label(realm.realm_domains);
-                        settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
-                        break;
-                    case "change":
-                        for (i = 0; i < realm.realm_domains.length; i += 1) {
-                            if (realm.realm_domains[i].domain === event.realm_domain.domain) {
-                                realm.realm_domains[i].allow_subdomains =
-                                    event.realm_domain.allow_subdomains;
-                                break;
-                            }
+        case "realm_domains": {
+            let i;
+            switch (event.op) {
+                case "add":
+                    realm.realm_domains.push(event.realm_domain);
+                    settings_org.populate_realm_domains_label(realm.realm_domains);
+                    settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
+                    break;
+                case "change":
+                    for (i = 0; i < realm.realm_domains.length; i += 1) {
+                        if (realm.realm_domains[i].domain === event.realm_domain.domain) {
+                            realm.realm_domains[i].allow_subdomains =
+                                event.realm_domain.allow_subdomains;
+                            break;
                         }
-                        settings_org.populate_realm_domains_label(realm.realm_domains);
-                        settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
-                        break;
-                    case "remove":
-                        for (i = 0; i < realm.realm_domains.length; i += 1) {
-                            if (realm.realm_domains[i].domain === event.domain) {
-                                realm.realm_domains.splice(i, 1);
-                                break;
-                            }
+                    }
+                    settings_org.populate_realm_domains_label(realm.realm_domains);
+                    settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
+                    break;
+                case "remove":
+                    for (i = 0; i < realm.realm_domains.length; i += 1) {
+                        if (realm.realm_domains[i].domain === event.domain) {
+                            realm.realm_domains.splice(i, 1);
+                            break;
                         }
-                        settings_org.populate_realm_domains_label(realm.realm_domains);
-                        settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
-                        break;
-                    default:
-                        blueslip.error("Unexpected event type realm_domains/" + event.op);
-                        break;
-                }
+                    }
+                    settings_org.populate_realm_domains_label(realm.realm_domains);
+                    settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
+                    break;
+                default:
+                    blueslip.error("Unexpected event type realm_domains/" + event.op);
+                    break;
             }
             break;
+        }
 
         case "realm_user_settings_defaults": {
             realm_user_settings_defaults[event.property] = event.value;

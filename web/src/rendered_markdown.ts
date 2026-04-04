@@ -143,7 +143,7 @@ export const update_elements = ($content: JQuery): void => {
             user_id !== undefined && user_id !== "*" && people.is_valid_bot_user(user_id);
         // We give special highlights to the mention buttons
         // that refer to the current user.
-        if (user_id === "*" && message && message.stream_wildcard_mentioned) {
+        if (user_id === "*" && message?.stream_wildcard_mentioned) {
             $(this).addClass("user-mention-me");
         }
         if (user_id !== undefined && user_id !== "*" && people.is_my_user_id(user_id) && message) {
@@ -181,7 +181,7 @@ export const update_elements = ($content: JQuery): void => {
     $content.find(".topic-mention").each(function (): void {
         const message = get_message_for_message_content($content);
 
-        if (message && message.topic_wildcard_mentioned) {
+        if (message?.topic_wildcard_mentioned) {
             $(this).addClass("user-mention-me");
         }
 

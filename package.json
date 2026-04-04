@@ -1,6 +1,6 @@
 {
   "private": true,
-  "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be",
+  "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319",
   "type": "module",
   "dependencies": {
     "@babel/core": "^7.5.5",
@@ -92,7 +92,7 @@
     "webfonts-loader": "^8.0.0",
     "webpack": "^5.61.0",
     "webpack-bundle-tracker": "^3.0.1",
-    "webpack-cli": "^6.0.1",
+    "webpack-cli": "^7.0.2",
     "zod": "^4.1.5"
   },
   "devDependencies": {
@@ -140,7 +140,6 @@
     "css.escape": "^1.5.1",
     "diff": "^8.0.2",
     "difflib": "^0.2.4",
-    "enhanced-resolve": "^5.8.2",
     "es-check": "^9.1.2",
     "eslint": "^9.15.0",
     "eslint-config-prettier": "^10.0.1",
@@ -151,11 +150,11 @@
     "eslint-plugin-mdx": "^3.6.2",
     "eslint-plugin-no-jquery": "^3.0.2",
     "eslint-plugin-promise": "^7.2.1",
-    "eslint-plugin-unicorn": "^63.0.0",
+    "eslint-plugin-unicorn": "^64.0.0",
     "globals": "^17.0.0",
-    "jsdom": "^28.0.0",
+    "jsdom": "^29.0.1",
     "nyc": "^18.0.0",
-    "openapi-examples-validator": "^6.0.1",
+    "openapi-examples-validator": "^7.0.0",
     "postcss-load-config": "^6.0.1",
     "preact": "^10.24.3",
     "prettier": "~3.5.3",
@@ -167,7 +166,7 @@
     "stylelint-config-standard": "^40.0.0",
     "stylelint-high-performance-animation": "^2.0.0",
     "svgo": "^4.0.0",
-    "typescript": "^5.0.2",
+    "typescript": "^6.0.2",
     "typescript-eslint": "^8.13.0",
     "vnu-jar": "^26.1.11",
     "webpack-dev-server": "^5.0.2",
@@ -176,12 +175,15 @@
     "zulip-js": "^2.0.8"
   },
   "pnpm": {
+    "minimumReleaseAge": 1440,
     "overrides": {
       "@types/eslint": "npm:eslint@^9.10.0",
       "openapi-examples-validator>json-schema-ref-parser@^9": "npm:@apidevtools/json-schema-ref-parser@^15.3.3",
       "source-map@^0.6": "npm:source-map-js@^1.2.1"
     },
     "patchedDependencies": {
+      "@sinonjs/fake-timers": "patches/@sinonjs__fake-timers.patch",
+      "email-addresses": "patches/email-addresses.patch",
       "handlebars": "patches/handlebars.patch",
       "jquery-caret-plugin": "patches/jquery-caret-plugin.patch",
       "simplebar": "patches/simplebar.patch",
