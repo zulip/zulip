@@ -51,7 +51,6 @@ prod = [
   "firebase-admin",
 
   # Needed for the email mirror
-  "html2text",
   "markdownify",
   "talon-core",
 
