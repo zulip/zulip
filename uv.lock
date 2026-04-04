@@ -10,7 +10,7 @@ resolution-markers = [
 ]
 
 [options]
-exclude-newer = "0001-01-01T00:00:00Z" # This has no effect and is included for backwards compatibility when using relative exclude-newer values.
+exclude-newer = "2026-06-09T13:27:49.746035219Z"
 exclude-newer-span = "PT24H"
 
 [[package]]
@@ -6366,7 +6366,6 @@ dev = [
     { name = "gitlint-core" },
     { name = "google-re2" },
     { name = "google-re2-stubs" },
-    { name = "html2text" },
     { name = "idna" },
     { name = "ipython" },
     { name = "jinja2" },
@@ -6504,7 +6503,6 @@ prod = [
     { name = "dnspython" },
     { name = "firebase-admin" },
     { name = "google-re2" },
-    { name = "html2text" },
     { name = "idna" },
     { name = "ipython" },
     { name = "jinja2" },
@@ -6607,7 +6605,6 @@ dev = [
     { name = "gitlint-core" },
     { name = "google-re2" },
     { name = "google-re2-stubs" },
-    { name = "html2text" },
     { name = "idna" },
     { name = "ipython", specifier = "<9" },
     { name = "jinja2" },
@@ -6746,7 +6743,6 @@ prod = [
     { name = "dnspython" },
     { name = "firebase-admin" },
     { name = "google-re2" },
-    { name = "html2text" },
     { name = "idna" },
     { name = "ipython", specifier = "<9" },
     { name = "jinja2" },
