@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 484**
+
+* [`GET /invites/{invite_id}`](/api/get-email-invite): Added new endpoint
+  to retrieve details of a pending email invitation.
+* [`GET /invites/multiuse/{invite_id}`](/api/get-reusable-invite-link): Added
+  new endpoint to retrieve details of a reusable invitation link.
+
 **Feature level 483**
 
 * [`POST /mobile_push/register`](/api/register-push-device): On a
@@ -35,6 +42,11 @@ format used by the Zulip server that they are interacting with.
   messages changed to a new value; it still has the semantics of "the
   1:1 conversation with a specific user," but the raw value changed
   due to internal changes.
+
+* [`GET /invites/{invite_id}`](/api/get-email-invite): Added new endpoint
+  to retrieve details of a pending email invitation.
+* [`GET /invites/multiuse/{invite_id}`](/api/get-reusable-invite-link): Added
+  new endpoint to retrieve details of a reusable invitation link.
 
 **Feature level 481**
 
