@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 482**
+
+* [`GET /invites/{invite_id}`](/api/get-email-invite): Added new endpoint
+  to retrieve details of a pending email invitation.
+* [`GET /invites/multiuse/{invite_id}`](/api/get-reusable-invite-link): Added
+  new endpoint to retrieve details of a reusable invitation link.
+
 **Feature level 481**
 
 * [`POST /register`](/api/register-queue): Added `idle_queue_timeout`

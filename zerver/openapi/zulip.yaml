@@ -17153,23 +17153,23 @@ paths:
                       ignored_parameters_unsupported: {}
                       invite:
                         $ref: "#/components/schemas/Invite"
-              example:
-                result: success
-                msg: ""
-                invite:
-                  email: "example@zulip.com"
-                  invited_by_user_id: 9
-                  invited_by_name: "Iago"
-                  invited: 1710606654
-                  expiry_date: 1711463862
-                  invited_as: 400
-                  is_multiuse: false
-                  streams:
-                    - name: Denmark
-                      id: 1
-                  groups:
-                    - name: community
-                      id: 1
+                    example:
+                      result: success
+                      msg: ""
+                      invite:
+                        email: "example@zulip.com"
+                        invited_by_user_id: 9
+                        invited_by_name: "Iago"
+                        invited: 1710606654
+                        expiry_date: 1711463862
+                        invited_as: 400
+                        is_multiuse: false
+                        streams:
+                          - name: Denmark
+                            id: 1
+                        groups:
+                          - name: community
+                            id: 1
         "400":
           description: Bad request.
           content:
@@ -17268,23 +17268,23 @@ paths:
                       ignored_parameters_unsupported: {}
                       invite:
                         $ref: "#/components/schemas/Invite"
-              example:
-                result: success
-                msg: ""
-                invite:
-                  link_url: "https://example.zulipchat.com/join/yddhtzk4jgl7rsmazc5fyyyy/"
-                  invited_by_user_id: 9
-                  invited_by_name: "Iago"
-                  invited: 1710606654
-                  expiry_date: 1711463862
-                  invited_as: 400
-                  is_multiuse: true
-                  streams:
-                    - name: Denmark
-                      id: 1
-                  groups:
-                    - name: community
-                      id: 1
+                    example:
+                      result: success
+                      msg: ""
+                      invite:
+                        link_url: "https://example.zulipchat.com/join/yddhtzk4jgl7rsmazc5fyyyy/"
+                        invited_by_user_id: 9
+                        invited_by_name: "Iago"
+                        invited: 1710606654
+                        expiry_date: 1711463862
+                        invited_as: 400
+                        is_multiuse: true
+                        streams:
+                          - name: Denmark
+                            id: 1
+                        groups:
+                          - name: community
+                            id: 1
         "400":
           description: Bad request.
           content:
