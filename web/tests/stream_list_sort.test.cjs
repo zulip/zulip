@@ -17,6 +17,7 @@ const settings_config = zrequire("settings_config");
 const stream_topic_history = zrequire("stream_topic_history");
 const message_lists = zrequire("message_lists");
 const channel_folders = zrequire("channel_folders");
+const ui_util = zrequire("ui_util");
 const {initialize_user_settings} = zrequire("user_settings");
 
 state_data.set_realm(
@@ -483,7 +484,7 @@ test("current_section_id_for_stream", ({override}) => {
     ]);
 });
 
-test("left_sidebar_search", ({override}) => {
+test("left_sidebar_search", ({override, override_rewire}) => {
     // If a topic in the current channel matches the search query,
     // the channel should appear in its corresponding section in the result.
     add_all_subs();
@@ -518,9 +519,27 @@ test("left_sidebar_search", ({override}) => {
     assert.deepEqual(sorted_sections.length, 3);
     assert.deepEqual(sorted_sections[1].folder_id, fast_tortoise.folder_id);
     assert.deepEqual(sorted_sections[1].default_visible_streams, [fast_tortoise.stream_id]);
-    // Topic match on "import", even though that isn't the current narrow stream.
-    assert.deepEqual(sorted_sections[0].default_visible_streams, [scalene.stream_id]);
+    // No topic match on "import", since it isn't the current narrow stream.
+    assert.deepEqual(sorted_sections[0].default_visible_streams, []);
     assert.deepEqual(sorted_sections[2].default_visible_streams, []);
+
+    // If the current channel already matches by name, the topic check
+    // skips it (it's already included).
+    const history = stream_topic_history.find_or_create(scalene.stream_id);
+    history.add_or_update("scalene topic", 1);
+    message_lists.set_current(
+        make_message_list([{operator: "stream", operand: scalene.stream_id.toString()}]),
+    );
+    sorted_sections = stream_list_sort.sort_groups(
+        stream_data.subscribed_stream_ids(),
+        "scalene",
+    ).sections;
+    assert.deepEqual(sorted_sections[0].default_visible_streams, [scalene.stream_id]);
+
+    // If the search string starts with topic: then we do include it
+    override_rewire(ui_util, "get_left_sidebar_search_term", () => "topic:import");
+    sorted_sections = setup_search_around_stream(fast_tortoise);
+    assert.deepEqual(sorted_sections[0].default_visible_streams, [scalene.stream_id]);
 });
 
 test("filter inactives", ({override}) => {

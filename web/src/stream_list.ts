@@ -433,10 +433,9 @@ export function build_stream_list(force_rerender: boolean): void {
     //
     // The main logic to build the list is in stream_list_sort.ts
     const streams = stream_data.subscribed_stream_ids();
-    const stream_groups = stream_list_sort.sort_groups(
-        streams,
-        ui_util.get_left_sidebar_search_term(),
-    );
+    const search_term =
+        ui_util.get_left_sidebar_topic_search_term() ?? ui_util.get_left_sidebar_search_term();
+    const stream_groups = stream_list_sort.sort_groups(streams, search_term);
 
     if (stream_groups.same_as_before && !force_rerender) {
         return;
@@ -942,7 +941,7 @@ export let update_streams_sidebar = (force_rerender = false): void => {
 
     const filter = narrow_state.filter();
     if (!filter) {
-        if (ui_util.get_left_sidebar_search_term() !== "") {
+        if (ui_util.is_topic_search()) {
             update_stream_sidebar_topics_for_search();
         }
         return;
@@ -1229,10 +1228,11 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
 
     const stream_id = info.stream_id;
 
-    // If we're currently searching, show all topic lists, each filtered
+    // If we're currently searching for topics across all channels
+    // (via the "topic:" prefix), show all topic lists, each filtered
     // by the search term. Otherwise we'll only show the topic list for
     // the current narrow.
-    const rerender_topics_for_search = ui_util.get_left_sidebar_search_term() !== "";
+    const rerender_topics_for_search = ui_util.is_topic_search();
     if (rerender_topics_for_search) {
         update_stream_sidebar_topics_for_search();
     }

@@ -394,7 +394,13 @@ export class TopicListWidget {
 }
 
 function filter_topics_left_sidebar(topic_names: string[], stream_id: number): string[] {
-    const search_term = get_left_sidebar_topic_search_term();
+    let search_term;
+    if (zoomed) {
+        search_term = get_zoomed_topic_search_term();
+    } else {
+        search_term =
+            ui_util.get_left_sidebar_topic_search_term() ?? ui_util.get_left_sidebar_search_term();
+    }
     return topic_list_data.filter_topics_by_search_term(
         stream_id,
         topic_names,

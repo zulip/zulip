@@ -9,6 +9,7 @@ import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as topic_list_data from "./topic_list_data.ts";
 import * as typeahead from "./typeahead.ts";
+import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
@@ -166,7 +167,15 @@ export function sort_groups(
 
     const current_channel_id = narrow_state.stream_id(narrow_state.filter(), true);
     const current_topic_name = narrow_state.topic()?.toLowerCase();
-    for (const stream_id of all_subscribed_stream_ids) {
+
+    let channels_to_check_topic_matches: number[] = [];
+    if (ui_util.is_topic_search()) {
+        channels_to_check_topic_matches = all_subscribed_stream_ids;
+    } else if (current_channel_id !== undefined && stream_data.is_subscribed(current_channel_id)) {
+        channels_to_check_topic_matches = [current_channel_id];
+    }
+
+    for (const stream_id of channels_to_check_topic_matches) {
         if (matching_stream_ids.includes(stream_id)) {
             continue;
         }
