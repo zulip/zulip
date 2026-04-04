@@ -50,6 +50,7 @@ import {user_settings} from "./user_settings.ts";
 let pending_stream_list_rerender = false;
 let zoomed_in = false;
 let update_inbox_channel_view_callback: (channel_id: number) => void;
+let show_channel_feed_callback: (stream_id: number, trigger: string) => void;
 
 export function set_update_inbox_channel_view_callback(value: (channel_id: number) => void): void {
     update_inbox_channel_view_callback = value;
@@ -155,16 +156,17 @@ export function update_streams_sidebar_for_messages(messages: Message[]): void {
     }
 }
 
-function zoom_in(): void {
-    zoomed_in = true;
-    const stream_id = topic_list.active_stream_id();
-    assert(stream_id !== undefined);
+function zoom_in(stream_id: number): void {
+    if (narrow_state.stream_id() !== stream_id) {
+        show_channel_feed_callback(stream_id, "sidebar");
+    }
 
+    zoomed_in = true;
     $("#direct-messages-modal").toggleClass("no-display", true);
     popovers.hide_all();
     pm_list.close();
     zoom_in_topics(stream_id);
-    topic_list.zoom_in(get_stream_li(stream_id)!);
+    topic_list.zoom_in(get_stream_li(stream_id)!, stream_id);
     $("#left-sidebar").addClass("zoom-in");
     $("#left-sidebar").addClass("zoom-in-topics");
     $("#left-sidebar-modal").addClass("zoom-in-topics");
@@ -431,10 +433,9 @@ export function build_stream_list(force_rerender: boolean): void {
     //
     // The main logic to build the list is in stream_list_sort.ts
     const streams = stream_data.subscribed_stream_ids();
-    const stream_groups = stream_list_sort.sort_groups(
-        streams,
-        ui_util.get_left_sidebar_search_term(),
-    );
+    const search_term =
+        ui_util.get_left_sidebar_topic_search_term() ?? ui_util.get_left_sidebar_search_term();
+    const stream_groups = stream_list_sort.sort_groups(streams, search_term);
 
     if (stream_groups.same_as_before && !force_rerender) {
         return;
@@ -940,6 +941,9 @@ export let update_streams_sidebar = (force_rerender = false): void => {
 
     const filter = narrow_state.filter();
     if (!filter) {
+        if (ui_util.is_topic_search()) {
+            update_stream_sidebar_topics_for_search();
+        }
         return;
     }
 
@@ -1207,6 +1211,16 @@ function deselect_stream_items(): void {
     $("ul#stream_filters li").removeClass("active-filter stream-expanded");
 }
 
+export function update_stream_sidebar_topics_for_search(): void {
+    for (const subscribed_stream_id of stream_data.subscribed_stream_ids()) {
+        const row = stream_sidebar.get_row(subscribed_stream_id);
+        if (!row) {
+            continue;
+        }
+        topic_list.rebuild_left_sidebar(row.get_li(), subscribed_stream_id, true);
+    }
+}
+
 export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undefined {
     const info = get_sidebar_stream_topic_info(filter);
 
@@ -1214,8 +1228,19 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
 
     const stream_id = info.stream_id;
 
+    // If we're currently searching for topics across all channels
+    // (via the "topic:" prefix), show all topic lists, each filtered
+    // by the search term. Otherwise we'll only show the topic list for
+    // the current narrow.
+    const rerender_topics_for_search = ui_util.is_topic_search();
+    if (rerender_topics_for_search) {
+        update_stream_sidebar_topics_for_search();
+    }
+
     if (!stream_id) {
-        clear_topics();
+        if (!rerender_topics_for_search) {
+            clear_topics();
+        }
         return undefined;
     }
 
@@ -1224,7 +1249,9 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     if (!$stream_li) {
         // When zoomed into a channel's topic list, only the
         // zoomed-in channel has a row in the sidebar.
-        clear_topics();
+        if (!rerender_topics_for_search) {
+            clear_topics();
+        }
         return undefined;
     }
 
@@ -1237,14 +1264,16 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     // masked unread counts.
     $stream_li.addClass("stream-expanded");
 
-    if (stream_id !== topic_list.active_stream_id()) {
+    if (stream_id !== topic_list.active_stream_id() && !rerender_topics_for_search) {
         clear_topics();
     }
 
     // We want to update channel view for inbox for the same reasons
     // we want to the topics list here.
     update_inbox_channel_view_callback(stream_id);
-    topic_list.rebuild_left_sidebar($stream_li, stream_id);
+    if (!rerender_topics_for_search) {
+        topic_list.rebuild_left_sidebar($stream_li, stream_id);
+    }
     topic_list.topic_state_typeahead?.lookup(true);
 
     // If we're updating a view for a highlighted stream, it's possible
@@ -1278,7 +1307,9 @@ export function handle_narrow_activated(
 
     const $stream_li = update_stream_sidebar_for_narrow(filter);
     if ($stream_li && !change_hash && !is_zoomed_in() && show_more_topics) {
-        zoom_in();
+        const info = get_sidebar_stream_topic_info(filter);
+        assert(info.stream_id !== undefined);
+        zoom_in(info.stream_id);
     }
 
     scroll_stream_into_view();
@@ -1297,6 +1328,7 @@ export function initialize({
     update_inbox_channel_view: (channel_id: number) => void;
 }): void {
     update_inbox_channel_view_callback = update_inbox_channel_view;
+    show_channel_feed_callback = show_channel_feed;
     restore_collapsed_sections_state();
     create_initial_sidebar_rows();
 
@@ -1311,7 +1343,8 @@ export function initialize({
     set_event_handlers({show_channel_feed});
 
     $("#stream_filters").on("click", ".show-more-topics", (e) => {
-        zoom_in();
+        const stream_id = stream_id_for_elt($(e.target).parents("li.narrow-filter"));
+        zoom_in(stream_id);
         // We define the focus behavior for the topic list search box
         // outside of the `zoom_in` method, since we want the focus
         // to only happen when the user clicks on the "SHOW ALL TOPICS"
