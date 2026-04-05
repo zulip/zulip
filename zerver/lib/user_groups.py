@@ -1277,6 +1277,9 @@ def check_user_has_permission_by_role(
     if system_group_name == SystemGroups.NOBODY:
         return False
 
+    if system_group_name == SystemGroups.EVERYONE_ON_INTERNET:
+        return True
+
     if system_group_name == SystemGroups.EVERYONE:
         return True
 
