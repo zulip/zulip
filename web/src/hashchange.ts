@@ -517,8 +517,7 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
         if (!people.is_known_user_id(user_id)) {
             user_profile.show_user_profile_access_error_modal();
         } else {
-            const user = people.get_by_user_id(user_id);
-            user_profile.show_user_profile(user);
+            user_profile.show_user_profile(user_id);
         }
         return;
     }

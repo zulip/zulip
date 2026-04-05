@@ -53,10 +53,7 @@ export function get_user_id_for_mention_button(elem: HTMLElement): "*" | number 
 
     if (email) {
         // Will return undefined if there's no match
-        const user = people.get_by_email(email);
-        if (user) {
-            return user.user_id;
-        }
+        return people.maybe_get_user_id_by_email(email);
     }
     return undefined;
 }
