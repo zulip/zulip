@@ -496,7 +496,7 @@ function format_dm(
     if (recipient_ids.length === 1 && recipient_ids[0] !== undefined) {
         const user_id = recipient_ids[0];
         const is_deactivated = !people.is_active_user_or_system_bot(user_id);
-        is_bot = people.get_by_user_id(user_id).is_bot;
+        is_bot = people.is_valid_bot_user(user_id);
         user_circle_class = is_bot
             ? false
             : buddy_data.get_user_circle_class(recipient_ids[0], is_deactivated);
