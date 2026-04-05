@@ -58,39 +58,54 @@ people.add_active_user(alice);
 people.add_active_user(bob);
 
 function make_textbox(s) {
-    // Simulate a jQuery textbox for testing purposes.
-    const $widget = {s, length: 1, [0]: "textarea", focused: false};
-
-    $widget.caret = function (arg) {
-        if (typeof arg === "number") {
-            $widget.pos = arg;
-            return this;
-        }
-
-        // Not used right now, but could be in future.
-        // if (arg) {
-        //     $widget.insert_pos = $widget.pos;
-        //     $widget.insert_text = arg;
-        //     const before = $widget.s.slice(0, $widget.pos);
-        //     const after = $widget.s.slice($widget.pos);
-        //     $widget.s = before + arg + after;
-        //     $widget.pos += arg.length;
-        //     return this;
-        // }
-
-        return $widget.pos;
+    const textarea = {
+        value: s,
+        selectionStart: 0,
+        selectionEnd: 0,
+        scrollTop: 0,
+        scrollLeft: 0,
+        setSelectionRange(start, end) {
+            this.selectionStart = start;
+            this.selectionEnd = end;
+        },
+        setRangeText(replacement, start, end, selectionMode = "preserve") {
+            this.value = this.value.slice(0, start) + replacement + this.value.slice(end);
+            const replacement_end = start + replacement.length;
+            if (selectionMode === "start") {
+                this.setSelectionRange(start, start);
+            } else if (selectionMode === "select") {
+                this.setSelectionRange(start, replacement_end);
+            } else {
+                this.setSelectionRange(replacement_end, replacement_end);
+            }
+        },
+        dispatchEvent() {
+            return true;
+        },
     };
 
-    $widget.val = function (new_val) {
-        /* istanbul ignore if */
-        if (new_val) {
-            $widget.s = new_val;
-            return this;
-        }
-        return $widget.s;
+    const $widget = {
+        s,
+        length: 1,
+        [0]: textarea,
+        focused: false,
+        caret(arg) {
+            if (typeof arg === "number") {
+                textarea.setSelectionRange(arg, arg);
+                return this;
+            }
+            return textarea.selectionStart;
+        },
+        val(new_val) {
+            /* istanbul ignore if */
+            if (new_val !== undefined) {
+                textarea.value = new_val;
+                return this;
+            }
+            return textarea.value;
+        },
+        trigger: noop,
     };
-
-    $widget.trigger = noop;
 
     return $widget;
 }
@@ -110,86 +125,68 @@ run_test("autosize_textarea", ({override}) => {
     assert.ok(textarea_autosized.autosized);
 });
 
-run_test("insert_syntax_and_focus", ({override}) => {
-    $("textarea#compose-textarea").val("xyz ");
-    $("textarea#compose-textarea").caret(4);
-    // Since we are using a third party library, we just
-    // need to ensure it is being called with the right params.
-    override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-        assert.equal(elt, $("textarea#compose-textarea")[0]);
-        assert.equal(syntax, ":octopus: ");
-    });
-    compose_ui.insert_syntax_and_focus(":octopus:");
+run_test("insert_syntax_and_focus", () => {
+    const $textbox = make_textbox("xyz ");
+    $textbox.caret(4);
+
+    compose_ui.insert_syntax_and_focus(":octopus:", $textbox);
+    assert.equal($textbox.val(), "xyz :octopus: ");
+    assert.equal($textbox.caret(), "xyz :octopus: ".length);
 });
 
-run_test("smart_insert", ({override}) => {
+run_test("smart_insert", () => {
     let $textbox = make_textbox("abc");
     $textbox.caret(4);
-    function override_with_expected_syntax(expected_syntax) {
-        override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-            assert.equal(elt, "textarea");
-            assert.equal(syntax, expected_syntax);
-        });
-    }
-    override_with_expected_syntax(" :smile: ");
     compose_ui.smart_insert_inline($textbox, ":smile:");
+    assert.equal($textbox.val(), "abc :smile: ");
 
-    override_with_expected_syntax(" :airplane: ");
     compose_ui.smart_insert_inline($textbox, ":airplane:");
+    assert.equal($textbox.val(), "abc :smile: :airplane: ");
 
     $textbox.caret(0);
-    override_with_expected_syntax(":octopus: ");
     compose_ui.smart_insert_inline($textbox, ":octopus:");
+    assert.equal($textbox.val(), ":octopus: abc :smile: :airplane: ");
 
     $textbox.caret($textbox.val().length);
-    override_with_expected_syntax(" :heart: ");
     compose_ui.smart_insert_inline($textbox, ":heart:");
+    assert.equal($textbox.val(), ":octopus: abc :smile: :airplane: :heart: ");
 
     // Test handling of spaces for ```quote
     $textbox = make_textbox("");
     $textbox.caret(0);
-    override_with_expected_syntax("```quote\nquoted message\n```\n\n");
     compose_ui.smart_insert_block($textbox, "```quote\nquoted message\n```");
+    assert.equal($textbox.val(), "```quote\nquoted message\n```\n\n");
 
     $textbox = make_textbox("");
     $textbox.caret(0);
-    override_with_expected_syntax("translated: [Quoting…]\n\n");
     compose_ui.smart_insert_block($textbox, "translated: [Quoting…]");
+    assert.equal($textbox.val(), "translated: [Quoting…]\n\n");
 
     $textbox = make_textbox("abc");
     $textbox.caret(3);
-    override_with_expected_syntax("\n\n test with space\n\n");
     compose_ui.smart_insert_block($textbox, " test with space");
+    assert.equal($textbox.val(), "abc\n\n test with space\n\n");
 
     // Note that we don't have any special logic for strings that are
     // already surrounded by spaces, since we are usually inserting things
     // like emojis and file links.
 });
 
-run_test("replace_syntax", ({override}) => {
+run_test("replace_syntax", () => {
     const $textbox = make_textbox("aBca$$");
     $textbox.caret(2);
-    override(text_field_edit, "replaceFieldText", (elt, old_syntax, new_syntax) => {
-        assert.equal(elt, "textarea");
-        assert.equal(old_syntax, "a");
-        assert.equal(new_syntax(), "A");
-    });
     let prev_caret = $textbox.caret();
-    compose_ui.replace_syntax("a", "A", $textbox);
+    assert.equal(compose_ui.replace_syntax("a", "A", $textbox), true);
+    assert.equal($textbox.val(), "ABca$$");
     assert.equal(prev_caret, $textbox.caret());
-
-    override(text_field_edit, "replaceFieldText", (elt, old_syntax, new_syntax) => {
-        assert.equal(elt, "textarea");
-        assert.equal(old_syntax, "Bca");
-        assert.equal(new_syntax(), "$$\\pi$$");
-    });
 
     // Verify we correctly handle `$`s in the replacement syntax
     // and that on replacing with a different length string, the
     // cursor is shifted accordingly as expected
     $textbox.caret(5);
     prev_caret = $textbox.caret();
-    compose_ui.replace_syntax("Bca", "$$\\pi$$", $textbox);
+    assert.equal(compose_ui.replace_syntax("Bca", "$$\\pi$$", $textbox), true);
+    assert.equal($textbox.val(), "A$$\\pi$$$$");
     assert.equal(prev_caret + "$$\\pi$$".length - "Bca".length, $textbox.caret());
 });
 
@@ -500,9 +497,9 @@ run_test("quote_message", ({override, override_rewire}) => {
     }
 
     $("textarea#compose-textarea").attr("id", "compose-textarea");
-    override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-        assert.equal(elt, $("textarea#compose-textarea")[0]);
-        assert.equal(syntax, "\n\ntranslated: [Quoting…]\n\n");
+    override_rewire(compose_ui, "insert_syntax_and_focus", (syntax, $textarea) => {
+        assert.equal($textarea[0], $("textarea#compose-textarea")[0]);
+        assert.equal(syntax, "translated: [Quoting…]");
     });
 
     function set_compose_content_with_caret(content) {
@@ -524,11 +521,11 @@ run_test("quote_message", ({override, override_rewire}) => {
     }
 
     function override_with_quote_text(quote_text) {
-        override(text_field_edit, "replaceFieldText", (elt, old_syntax, new_syntax) => {
-            assert.equal(elt, $("textarea#compose-textarea")[0]);
+        override_rewire(compose_ui, "replace_syntax", (old_syntax, new_syntax, $textarea) => {
+            assert.equal($textarea[0], $("textarea#compose-textarea")[0]);
             assert.equal(old_syntax, "translated: [Quoting…]");
             assert.equal(
-                new_syntax(),
+                new_syntax,
                 quote_message_template({
                     channel_object: devel_stream,
                     selected_message,
@@ -536,14 +533,15 @@ run_test("quote_message", ({override, override_rewire}) => {
                     content: quote_text,
                 }),
             );
+            return true;
         });
     }
     function override_with_forward_text(quote_text) {
-        override(text_field_edit, "replaceFieldText", (elt, old_syntax, new_syntax) => {
-            assert.equal(elt, $("textarea#compose-textarea")[0]);
+        override_rewire(compose_ui, "replace_syntax", (old_syntax, new_syntax, $textarea) => {
+            assert.equal($textarea[0], $("textarea#compose-textarea")[0]);
             assert.equal(old_syntax, "translated: [Quoting…]");
             assert.equal(
-                new_syntax(),
+                new_syntax,
                 forward_channel_message_template({
                     channel_object: devel_stream,
                     selected_message,
@@ -551,6 +549,7 @@ run_test("quote_message", ({override, override_rewire}) => {
                     content: quote_text,
                 }),
             );
+            return true;
         });
     }
     let quote_text = "Testing caret position";
@@ -563,9 +562,9 @@ run_test("quote_message", ({override, override_rewire}) => {
 
     // If the caret is initially positioned at 0, it should not
     // add newlines before the quoted message.
-    override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-        assert.equal(elt, $("textarea#compose-textarea")[0]);
-        assert.equal(syntax, "translated: [Quoting…]\n\n");
+    override_rewire(compose_ui, "insert_syntax_and_focus", (syntax, $textarea) => {
+        assert.equal($textarea[0], $("textarea#compose-textarea")[0]);
+        assert.equal(syntax, "translated: [Quoting…]");
     });
     set_compose_content_with_caret("%hello there");
     compose_reply.quote_messages({message_id: 100});
@@ -629,9 +628,9 @@ run_test("quote_message", ({override, override_rewire}) => {
 
     // When there is already 1 newline before and after the caret,
     // only 1 newline is added before and after the quoted message.
-    override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-        assert.equal(elt, $("textarea#compose-textarea")[0]);
-        assert.equal(syntax, "\ntranslated: [Quoting…]\n");
+    override_rewire(compose_ui, "insert_syntax_and_focus", (syntax, $textarea) => {
+        assert.equal($textarea[0], $("textarea#compose-textarea")[0]);
+        assert.equal(syntax, "translated: [Quoting…]");
     });
     set_compose_content_with_caret("1st line\n%\n2nd line");
     compose_reply.quote_messages({});
@@ -644,8 +643,8 @@ run_test("quote_message", ({override, override_rewire}) => {
 
     // When there are many (>=2) newlines before and after the caret,
     // no newline is added before or after the quoted message.
-    override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
-        assert.equal(elt, $("textarea#compose-textarea")[0]);
+    override_rewire(compose_ui, "insert_syntax_and_focus", (syntax, $textarea) => {
+        assert.equal($textarea[0], $("textarea#compose-textarea")[0]);
         assert.equal(syntax, "translated: [Quoting…]");
     });
     set_compose_content_with_caret("lots of\n\n\n\n%\n\n\nnewlines");
@@ -1448,4 +1447,30 @@ run_test("get_focus_area", ({override, override_rewire}) => {
         get_focus_area({message_type: "stream", stream_name: "fun", stream_id: 4}),
         "input#stream_message_recipient_topic",
     );
+});
+
+run_test("make_textbox setRangeText selection modes", () => {
+    const $textbox = make_textbox("abcd");
+    const textarea = $textbox[0];
+
+    textarea.setRangeText("X", 1, 3, "start");
+    assert.equal(textarea.value, "aXd");
+    assert.equal(textarea.selectionStart, 1);
+    assert.equal(textarea.selectionEnd, 1);
+
+    textarea.value = "abcd";
+    textarea.selectionStart = 1;
+    textarea.selectionEnd = 3;
+    textarea.setRangeText("Q", 1, 3, "select");
+    assert.equal(textarea.value, "aQd");
+    assert.equal(textarea.selectionStart, 1);
+    assert.equal(textarea.selectionEnd, 2);
+
+    textarea.value = "abcd";
+    textarea.selectionStart = 1;
+    textarea.selectionEnd = 3;
+    textarea.setRangeText("YZ", 1, 3);
+    assert.equal(textarea.value, "aYZd");
+    assert.equal(textarea.selectionStart, 3);
+    assert.equal(textarea.selectionEnd, 3);
 });

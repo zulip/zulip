@@ -5,12 +5,7 @@ import autosize from "autosize";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import {
-    insertTextIntoField,
-    replaceFieldText,
-    setFieldText,
-    wrapFieldSelection,
-} from "text-field-edit";
+import {wrapFieldSelection} from "text-field-edit";
 import type Template from "uri-template-lite";
 import * as z from "zod/mini";
 
@@ -118,6 +113,62 @@ export function rewire_autosize_textarea(value: typeof autosize_textarea): void 
     autosize_textarea = value;
 }
 
+function get_textarea_value($textarea: JQuery<HTMLTextAreaElement>): string {
+    const value = $textarea.val();
+    assert(typeof value === "string");
+    return value;
+}
+
+function get_caret_position($textarea: JQuery<HTMLTextAreaElement>): number {
+    return util.the($textarea).selectionStart;
+}
+
+function set_caret_position($textarea: JQuery<HTMLTextAreaElement>, pos: number): void {
+    const textarea = util.the($textarea);
+    textarea.setSelectionRange(pos, pos);
+}
+
+function replace_textarea_range(
+    textarea: HTMLTextAreaElement,
+    replacement_text: string,
+    start: number,
+    end: number,
+    selection_mode: SelectionMode = "end",
+): void {
+    // Preserve scroll position to avoid jump-to-top behavior in some browsers.
+    const previous_scroll_top = textarea.scrollTop;
+    const previous_scroll_left = textarea.scrollLeft;
+
+    textarea.setRangeText(replacement_text, start, end, selection_mode);
+    textarea.scrollTop = previous_scroll_top;
+    textarea.scrollLeft = previous_scroll_left;
+
+    // Keep compose listeners in sync with keyboard insertion behavior.
+    const input_event =
+        typeof InputEvent === "function"
+            ? new InputEvent("input", {
+                  bubbles: true,
+                  cancelable: false,
+                  data: replacement_text,
+                  inputType: "insertText",
+              })
+            : new Event("input", {bubbles: true, cancelable: false});
+    textarea.dispatchEvent(input_event);
+}
+
+export function insert_text_into_textarea(
+    textarea: HTMLTextAreaElement,
+    text_to_insert: string,
+): void {
+    replace_textarea_range(
+        textarea,
+        text_to_insert,
+        textarea.selectionStart,
+        textarea.selectionEnd,
+        "end",
+    );
+}
+
 export let insert_and_scroll_into_view = (
     content: string,
     $textarea: JQuery<HTMLTextAreaElement>,
@@ -131,9 +182,10 @@ export let insert_and_scroll_into_view = (
         // to support `undo`, we can use a faster method.
         $textarea.val(content);
     } else if (replace_all) {
-        setFieldText(util.the($textarea), content);
+        const textarea = util.the($textarea);
+        replace_textarea_range(textarea, content, 0, textarea.value.length, "end");
     } else {
-        insertTextIntoField(util.the($textarea), content);
+        insert_text_into_textarea(util.the($textarea), content);
     }
     // Blurring and refocusing ensures the cursor / selection is in view
     // in chromium browsers.
@@ -243,9 +295,10 @@ export let smart_insert_inline = ($textarea: JQuery<HTMLTextAreaElement>, syntax
         return c === " " || c === "\t" || c === "\n";
     }
 
-    const pos = $textarea.caret();
-    const before_str = $textarea.val()!.slice(0, pos);
-    const after_str = $textarea.val()!.slice(pos);
+    const pos = get_caret_position($textarea);
+    const current_text = get_textarea_value($textarea);
+    const before_str = current_text.slice(0, pos);
+    const after_str = current_text.slice(pos);
 
     if (
         pos > 0 &&
@@ -281,9 +334,10 @@ export function smart_insert_block(
     syntax: string,
     padding_newlines = 2,
 ): void {
-    const pos = $textarea.caret();
-    const before_str = $textarea.val()!.slice(0, pos);
-    const after_str = $textarea.val()!.slice(pos);
+    const pos = get_caret_position($textarea);
+    const current_text = get_textarea_value($textarea);
+    const before_str = current_text.slice(0, pos);
+    const after_str = current_text.slice(pos);
 
     if (pos > 0) {
         // Insert newline/s before the content block if there is
@@ -365,8 +419,10 @@ export let replace_syntax = (
 ): boolean => {
     // The following couple lines are needed to later restore the initial
     // logical position of the cursor after the replacement
-    const prev_caret = $textarea.caret();
-    const replacement_offset = $textarea.val()!.indexOf(old_syntax);
+    const textarea = util.the($textarea);
+    const prev_caret = textarea.selectionStart;
+    const old_text = textarea.value;
+    const replacement_offset = old_text.indexOf(old_syntax);
 
     // Replaces `old_syntax` with `new_syntax` text in the compose box. Due to
     // the way that JavaScript handles string replacements, if `old_syntax` is
@@ -378,10 +434,18 @@ export let replace_syntax = (
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#Description
     // for details.
 
-    const old_text = $textarea.val();
-    replaceFieldText(util.the($textarea), old_syntax, () => new_syntax, "after-replacement");
-    const new_text = $textarea.val();
-    const has_changed = old_text !== new_text;
+    if (replacement_offset === -1) {
+        return false;
+    }
+
+    replace_textarea_range(
+        textarea,
+        new_syntax,
+        replacement_offset,
+        replacement_offset + old_syntax.length,
+        "end",
+    );
+    const has_changed = old_text !== textarea.value;
 
     // If the caller wants to ignore the caret position, we return early.
     // This is useful e.g. when we are replacing content without affecting
@@ -396,15 +460,15 @@ export let replace_syntax = (
     // we need to move the cursor forward by the increase in the
     // length of the content after the replacement.
     if (prev_caret >= replacement_offset + old_syntax.length) {
-        $textarea.caret(prev_caret + new_syntax.length - old_syntax.length);
+        set_caret_position($textarea, prev_caret + new_syntax.length - old_syntax.length);
     } else if (prev_caret > replacement_offset) {
         // In the rare case that our cursor was inside the
         // placeholder, we treat that as though the cursor was
         // just after the placeholder.
-        $textarea.caret(replacement_offset + new_syntax.length + 1);
+        set_caret_position($textarea, replacement_offset + new_syntax.length + 1);
     } else {
         // Otherwise we simply restore it to it's original position
-        $textarea.caret(prev_caret);
+        set_caret_position($textarea, prev_caret);
     }
 
     // Return if anything was actually replaced.
@@ -663,8 +727,8 @@ export function cursor_inside_inline_code_span($textarea: JQuery<HTMLTextAreaEle
 export function cursor_inside_code_block($textarea: JQuery<HTMLTextAreaElement>): boolean {
     // Returns whether the cursor is at a point that would be inside
     // a code block on rendering the textarea content as markdown.
-    const cursor_position = $textarea.caret();
-    const current_content = $textarea.val()!;
+    const cursor_position = get_caret_position($textarea);
+    const current_content = get_textarea_value($textarea);
 
     return position_inside_code_block(current_content, cursor_position);
 }
@@ -807,8 +871,23 @@ export let format_text = (
     let is_selected_text_italic = false;
     let is_inner_text_italic = false;
     const field = $textarea.get(0)!;
-    let range = $textarea.range();
-    let text = $textarea.val()!;
+    let text = get_textarea_value($textarea);
+    const get_selection_range = (): {
+        start: number;
+        end: number;
+        length: number;
+        text: string;
+    } => {
+        const start = field.selectionStart;
+        const end = field.selectionEnd;
+        return {
+            start,
+            end,
+            length: end - start,
+            text: text.slice(start, end),
+        };
+    };
+    let range = get_selection_range();
     // Remove new line and space around selected text, except list formatting,
     // where we want to especially preserve any selected new line character
     // before the selected text, as it is conventionally depicted with a highlight
@@ -823,7 +902,7 @@ export let format_text = (
     }
     const end_trim_length = range.text.length - range.text.trimEnd().length;
     field.setSelectionRange(range.start + start_trim_length, range.end - end_trim_length);
-    range = $textarea.range();
+    range = get_selection_range();
     const selected_text = range.text;
 
     // Check if the selection is already surrounded by syntax
@@ -1347,7 +1426,7 @@ export let format_text = (
                 break;
             }
 
-            wrapFieldSelection(field, italic_syntax);
+            wrapFieldSelection(field, italic_syntax, italic_syntax);
             break;
         case "bulleted":
         case "numbered":
@@ -1401,7 +1480,7 @@ export let format_text = (
             wrapFieldSelection(field, "[", `](${inserted_content})`);
             // Put the cursor at the end of the selection range
             // and all wrapped material
-            $textarea.caret(range.end + `[](${inserted_content})`.length);
+            set_caret_position($textarea, range.end + `[](${inserted_content})`.length);
             break;
         }
         case "quote": {
