@@ -443,9 +443,7 @@ function bot_info(bot_user_id: number): BotInfo {
             ? {
                   bot_owner_id: owner_id,
                   is_bot_owner_active: people.is_person_active(owner_id),
-                  owner_img_src: people.small_avatar_url_for_person(
-                      people.get_by_user_id(owner_id),
-                  ),
+                  owner_img_src: people.small_avatar_url_for_user_id(owner_id),
               }
             : {
                   bot_owner_id: null,

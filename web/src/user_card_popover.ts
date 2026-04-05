@@ -832,7 +832,7 @@ function register_click_handlers(): void {
             });
         }
         const user_id = elem_to_user_id($(this).parents("ul"));
-        const name = people.get_by_user_id(user_id).full_name;
+        const name = people.get_full_name(user_id);
         const mention = people.get_mention_syntax(name, user_id);
         compose_ui.insert_syntax_and_focus(mention);
         user_sidebar.hide();
@@ -849,7 +849,7 @@ function register_click_handlers(): void {
             });
         }
         const user_id = elem_to_user_id($(this).parents("ul"));
-        const name = people.get_by_user_id(user_id).full_name;
+        const name = people.get_full_name(user_id);
         const is_active = people.is_active_user_or_system_bot(user_id);
         const mention = people.get_mention_syntax(name, user_id, !is_active);
         compose_ui.insert_syntax_and_focus(mention);

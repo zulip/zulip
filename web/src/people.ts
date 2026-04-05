@@ -905,6 +905,10 @@ export function small_avatar_url_for_person(person: User | CurrentUser): string 
     return `/avatar/${person.user_id}`;
 }
 
+export function small_avatar_url_for_user_id(user_id: number): string {
+    return small_avatar_url_for_person(get_by_user_id(user_id));
+}
+
 export function medium_avatar_url_for_person(person: User): string {
     /* Unlike the small avatar URL case, we don't generally have a
      * medium avatar URL included in person objects. So only have the

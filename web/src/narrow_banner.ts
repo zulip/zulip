@@ -379,9 +379,8 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 };
             }
             if (user_ids.length === 1) {
-                const recipient_user = people.get_by_user_id(user_ids[0]);
                 // You have no direct messages with this person
-                if (people.is_my_user_id(recipient_user.user_id)) {
+                if (people.is_my_user_id(user_ids[0])) {
                     return {
                         title: $t({
                             defaultMessage: "You haven't sent yourself any notes yet!",
@@ -393,13 +392,13 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                     };
                 }
                 // If the recipient is deactivated, we cannot start the conversation.
-                if (!people.is_person_active(recipient_user.user_id)) {
+                if (!people.is_person_active(user_ids[0])) {
                     return {
                         title: $t(
                             {
                                 defaultMessage: "You have no direct messages with {person}.",
                             },
-                            {person: recipient_user.full_name},
+                            {person: people.get_full_name(user_ids[0])},
                         ),
                     };
                 }
@@ -408,7 +407,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                         {
                             defaultMessage: "You have no direct messages with {person} yet.",
                         },
-                        {person: recipient_user.full_name},
+                        {person: people.get_full_name(user_ids[0])},
                     ),
                     html: $t_html(
                         {

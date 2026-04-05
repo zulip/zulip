@@ -148,7 +148,7 @@ export function confirm_reactivation(
     if (user.is_bot) {
         if (user.bot_owner_id !== null && !people.is_person_active(user.bot_owner_id)) {
             opts.original_owner_deactivated = true;
-            opts.owner_name = people.get_by_user_id(user.bot_owner_id).full_name;
+            opts.owner_name = people.get_full_name(user.bot_owner_id);
         } else {
             opts.original_owner_deactivated = false;
         }
