@@ -1583,8 +1583,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 expected_value =
                     '<div class="typeahead-content">\n' +
                     '        <i class="typeahead-image zulip-icon zulip-icon-user-group" aria-hidden="true"></i>\n' +
-                    '        <div class="typeahead-text-container">\n' +
-                    '        <strong class="typeahead-strong-section">hamletcharacters</strong>        <span class="autocomplete_secondary">Characters of Hamlet</span>' +
+                    '        <div class="typeahead-text-container has_secondary_html">\n' +
+                    '        <strong class="typeahead-strong-section">hamletcharacters</strong>        <span class="autocomplete_secondary rendered_markdown single-line-rendered-markdown">Characters of Hamlet</span>' +
                     "    </div>\n" +
                     "</div>\n";
                 assert.equal(actual_value, expected_value);

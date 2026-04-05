@@ -9,9 +9,12 @@ const get_group_id = () => {
 
 exports.make_user_group = (opts = {}) => {
     const id = opts.id ?? get_group_id();
+    const description = opts.description ?? "Dummy user group";
+    const rendered_description = opts.rendered_description ?? description;
 
     return {
-        description: "Dummy user group",
+        description,
+        rendered_description,
         id,
         creator_id: 1,
         date_created: null,

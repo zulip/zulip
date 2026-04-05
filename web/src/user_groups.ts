@@ -38,10 +38,17 @@ init();
 // `realm.max_stream_description_length` for streams.
 export const max_user_group_name_length = 100;
 
+export function clean_up_description(user_group: UserGroup): void {
+    user_group.rendered_description = user_group.rendered_description
+        .replace("<p>", "")
+        .replace("</p>", "");
+}
+
 export function add(user_group_raw: UserGroupRaw): UserGroup {
     // Reformat the user group members structure to be a set.
     const user_group = {
         description: user_group_raw.description,
+        rendered_description: user_group_raw.rendered_description,
         id: user_group_raw.id,
         name: user_group_raw.name,
         creator_id: user_group_raw.creator_id,
@@ -57,6 +64,8 @@ export function add(user_group_raw: UserGroupRaw): UserGroup {
         can_remove_members_group: user_group_raw.can_remove_members_group,
         deactivated: user_group_raw.deactivated,
     };
+
+    clean_up_description(user_group);
 
     user_group_name_dict.set(user_group.name, user_group);
     user_group_by_id_dict.set(user_group.id, user_group);
@@ -88,6 +97,9 @@ export function update(event: UserGroupUpdateEvent, group: UserGroup): void {
     }
     if (event.data.description !== undefined) {
         group.description = event.data.description;
+        assert(event.data.rendered_description !== undefined);
+        group.rendered_description = event.data.rendered_description;
+        clean_up_description(group);
         user_group_name_dict.delete(group.name);
         user_group_name_dict.set(group.name, group);
     }

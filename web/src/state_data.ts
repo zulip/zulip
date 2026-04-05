@@ -260,6 +260,7 @@ export type GroupSettingValue = z.infer<typeof group_setting_value_schema>;
 
 export const raw_user_group_schema = z.object({
     description: z.string(),
+    rendered_description: z.string(),
     id: z.number(),
     creator_id: z.nullable(z.number()),
     date_created: z.nullable(z.number()),

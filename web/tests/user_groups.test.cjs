@@ -126,10 +126,12 @@ run_test("user_groups", () => {
         group_id: admins.id,
         data: {
             description: "administer",
+            rendered_description: "<p>administer</p>",
         },
     };
     user_groups.update(update_des_event, admins_group);
     assert.equal(user_groups.get_user_group_from_id(admins.id).description, "administer");
+    assert.equal(user_groups.get_user_group_from_id(admins.id).rendered_description, "administer");
 
     assert.throws(() => user_groups.get_user_group_from_id(all.id), {
         name: "Error",

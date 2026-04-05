@@ -979,6 +979,7 @@ exports.fixtures = {
             creator_id: null,
             date_created: fake_now,
             description: "mobile folks",
+            rendered_description: "<p>mobile folks</p>",
             members: [1],
             is_system_group: false,
             direct_subgroup_ids: [2],
@@ -1027,6 +1028,7 @@ exports.fixtures = {
         data: {
             name: "Frontend",
             description: "All Frontend people",
+            rendered_description: "<p>All <strong>Frontend</strong> people</p>",
             can_manage_group: 2,
         },
     },
