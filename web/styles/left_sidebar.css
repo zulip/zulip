@@ -2523,3 +2523,24 @@ li.topic-list-item {
         color: var(--color-vdots-visible);
     }
 }
+
+#left-sidebar-menu-popover {
+    /* No hover effect on the label */
+    .display-style-selector-header:hover {
+        background: inherit;
+        cursor: default;
+    }
+
+    .popover-menu-link:not(.display-style-selector-header) {
+        display: grid;
+        grid-template: "left-icon row-content" auto / 1.125em minmax(
+                max-content,
+                1fr
+            );
+        align-items: center;
+
+        .popover-menu-label {
+            grid-area: row-content;
+        }
+    }
+}
