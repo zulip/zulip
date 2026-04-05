@@ -463,7 +463,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                 }),
             };
         }
-        case "dm-including": {
+        case "dm-with": {
             const people_in_dms = first_term.operand.map((user_id) =>
                 people.maybe_get_user_by_id(user_id, true),
             );
