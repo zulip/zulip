@@ -723,9 +723,9 @@ function register_click_handlers(): void {
         if (id_string) {
             user_id = Number.parseInt(id_string, 10);
         } else {
-            const user = email === undefined ? undefined : people.get_by_email(email);
-            if (user === undefined) {
-                // There can be a case when user is undefined if
+            user_id = email === undefined ? undefined : people.maybe_get_user_id_by_email(email);
+            if (user_id === undefined) {
+                // There can be a case when user_id is undefined if
                 // the user is an inaccessible user as we do not
                 // create the fake user objects for it because
                 // we do not have user ID. It is fine to not
@@ -733,7 +733,6 @@ function register_click_handlers(): void {
                 // without user ID are rare and old.
                 return;
             }
-            user_id = user.user_id;
         }
         toggle_user_card_popover_for_message(this, user_id, message.sender_id, true);
     });
