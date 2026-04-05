@@ -226,7 +226,6 @@ export function info_for(user_id: number, direct_message_recipients: Set<number>
     const is_dm = direct_message_recipients.has(user_id);
 
     const user_circle_class = get_user_circle_class(user_id, is_deactivated && is_dm);
-    const person = people.get_by_user_id(user_id);
 
     const status_emoji_info = user_status.get_status_emoji(user_id);
     const status_text = user_status.get_status_text(user_id);
@@ -238,11 +237,11 @@ export function info_for(user_id: number, direct_message_recipients: Set<number>
     };
 
     return {
-        href: hash_util.pm_with_url(person.user_id.toString()),
-        name: person.full_name,
+        href: hash_util.pm_with_url(user_id.toString()),
+        name: people.get_full_name(user_id),
         user_id,
         status_emoji_info,
-        profile_picture: people.small_avatar_url_for_person(person),
+        profile_picture: people.small_avatar_url_for_user_id(user_id),
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
         user_circle_class,
