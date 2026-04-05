@@ -347,6 +347,12 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
             const right_side_tab = hash_parser.get_current_nth_hash_section(3);
             user_group_edit.change_state(section, undefined, right_side_tab);
         }
+        if (base === "user") {
+            const tab_segment = hash_parser.get_current_nth_hash_section(2);
+            const tab_key = hash_util.user_profile_tab_key_from_url(tab_segment);
+            user_profile.update_user_profile_tab(tab_key);
+            return;
+        }
 
         if (base === "settings") {
             if (!section) {
@@ -513,12 +519,18 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
     }
 
     if (base === "user") {
-        const user_id = Number.parseInt(hash_parser.get_current_hash_section(), 10);
+        const user_id = Number.parseInt(hash_parser.get_current_hash_section() ?? "", 10);
         if (!people.is_known_user_id(user_id)) {
             user_profile.show_user_profile_access_error_modal();
         } else {
             const user = people.get_by_user_id(user_id);
-            user_profile.show_user_profile(user);
+            const tab_segment = hash_parser.get_current_nth_hash_section(2);
+            const tab_key = hash_util.user_profile_tab_key_from_url(tab_segment);
+            if (user_profile.get_user_id_if_user_profile_modal_open() === user_id) {
+                user_profile.update_user_profile_tab(tab_key);
+            } else {
+                user_profile.show_user_profile(user, tab_key);
+            }
         }
         return;
     }
@@ -554,7 +566,11 @@ function hashchanged(
 
     if (hash_parser.is_overlay_hash(current_hash)) {
         browser_history.state.changing_hash = true;
-        modals.close_active_if_any();
+        const new_base = hash_parser.get_current_hash_category();
+        const old_base = hash_parser.get_hash_category(old_hash ?? "");
+        if (new_base !== old_base) {
+            modals.close_active_if_any();
+        }
         do_hashchange_overlay(old_hash);
         browser_history.state.changing_hash = false;
         return undefined;
