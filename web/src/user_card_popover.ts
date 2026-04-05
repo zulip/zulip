@@ -819,8 +819,7 @@ function register_click_handlers(): void {
         // If any overlay is already open, we want the user profile to behave
         // as a modal rather than an overlay.
         if (is_overlay_hash(current_hash)) {
-            const user = people.get_by_user_id(user_id);
-            user_profile.show_user_profile(user);
+            user_profile.show_user_profile(user_id);
         } else {
             browser_history.go_to_location(`user/${user_id}`);
         }
@@ -969,8 +968,7 @@ function register_click_handlers(): void {
     $("body").on("click", ".sidebar-popover-manage-user", function () {
         hide_all();
         const user_id = elem_to_user_id($(this).parents("ul"));
-        const user = people.get_by_user_id(user_id);
-        user_profile.show_user_profile(user, "manage-profile-tab");
+        user_profile.show_user_profile(user_id, "manage-profile-tab");
     });
 
     $("body").on("click", ".edit-your-profile", () => {
