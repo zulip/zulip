@@ -832,8 +832,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         if (!is_group) {
             const user_id = Number.parseInt(last_msg.to_user_ids, 10);
             const is_deactivated = !people.is_active_user_or_system_bot(user_id);
-            const user = people.get_by_user_id(user_id);
-            if (user.is_bot) {
+            if (people.is_valid_bot_user(user_id)) {
                 // We display the bot icon rather than a user circle for bots.
                 is_bot = true;
             } else {
