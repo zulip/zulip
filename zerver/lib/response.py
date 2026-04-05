@@ -52,7 +52,9 @@ class MutableJsonResponse(HttpResponse):
             # helps us avoid relying on the particular serialization used by orjson.
             self.content = orjson.dumps(
                 self._data,
-                option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_PASSTHROUGH_DATETIME,
+                option=orjson.OPT_APPEND_NEWLINE
+                | orjson.OPT_PASSTHROUGH_DATETIME
+                | orjson.OPT_SORT_KEYS,
             )
         return super().content
 
@@ -89,7 +91,8 @@ def json_unauthorized(
 def json_method_not_allowed(methods: list[str]) -> HttpResponseNotAllowed:
     resp = HttpResponseNotAllowed(methods)
     resp.content = orjson.dumps(
-        {"result": "error", "msg": "Method Not Allowed", "allowed_methods": methods}
+        {"result": "error", "msg": "Method Not Allowed", "allowed_methods": methods},
+        option=orjson.OPT_SORT_KEYS,
     )
     return resp
 
