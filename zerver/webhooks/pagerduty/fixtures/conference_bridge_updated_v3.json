@@ -1,0 +1,28 @@
+{
+    "event": {
+        "id": "01GI0KX5GCRKLDQFLNMGZ30JV2",
+        "event_type": "incident.conference_bridge.updated",
+        "resource_type": "incident",
+        "occurred_at": "2026-04-01T02:20:15.274Z",
+        "agent": {
+            "id": "PXRUEF2",
+            "type": "user_reference",
+            "self": "https://api.pagerduty.com/users/PXRUEF2",
+            "html_url": "https://harsh0303.pagerduty.com/users/PXRUEF2",
+            "summary": "Harsh Santwani"
+        },
+        "client": null,
+        "data": {
+            "incident": {
+                "id": "Q3B15VLMF3ASBD",
+                "type": "incident_reference",
+                "self": "https://api.pagerduty.com/incidents/Q3B15VLMF3ASBD",
+                "html_url": "https://harsh0303.pagerduty.com/incidents/Q3B15VLMF3ASBD",
+                "summary": "Critical: Checkout API High Latency"
+            },
+            "conference_numbers": null,
+            "conference_url": "https://example.com/123-456-789",
+            "type": "incident_conference_bridge"
+        }
+    }
+}

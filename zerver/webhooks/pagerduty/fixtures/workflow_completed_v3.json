@@ -1,0 +1,43 @@
+{
+    "event": {
+        "id": "32743191412443541367815146404898342710",
+        "event_type": "incident.workflow.completed",
+        "resource_type": "incident",
+        "occurred_at": "2026-04-01T02:52:43.174Z",
+        "agent": null,
+        "client": null,
+        "data": {
+            "id": "PU3WKIK",
+            "type": "incident_workflow_instance",
+            "summary": "Manually Started",
+            "incident_workflow": {
+                "id": "POWB54R",
+                "type": "incident_workflow_reference",
+                "self": "https://api.pagerduty.com/incident_workflows/POWB54R",
+                "html_url": "https://harsh0303.pagerduty.com/incident-workflows/workflows/POWB54R",
+                "summary": "Incident WorkFlow"
+            },
+            "workflow_trigger": {
+                "id": "79fa2676-dc6b-4055-bc7f-b4ff47a30e93",
+                "type": "workflow_trigger_reference",
+                "self": "https://api.pagerduty.com/incident_workflows/triggers/79fa2676-dc6b-4055-bc7f-b4ff47a30e93",
+                "html_url": null,
+                "summary": "Incident Completion Trigger"
+            },
+            "incident": {
+                "id": "Q3B15VLMF3ASBD",
+                "type": "incident_reference",
+                "self": "https://api.pagerduty.com/incidents/Q3B15VLMF3ASBD",
+                "html_url": "https://harsh0303.pagerduty.com/incidents/Q3B15VLMF3ASBD",
+                "summary": "Critical: Checkout API High Latency"
+            },
+            "service": {
+                "id": "P844A2S",
+                "type": "service_reference",
+                "self": "https://api.pagerduty.com/services/P844A2S",
+                "html_url": "https://harsh0303.pagerduty.com/services/P844A2S",
+                "summary": "APIs"
+            }
+        }
+    }
+}

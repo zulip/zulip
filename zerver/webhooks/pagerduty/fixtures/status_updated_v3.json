@@ -1,0 +1,29 @@
+{
+    "event": {
+        "id": "01GI0KPHX6I892N2PFKDLH25XK",
+        "event_type": "incident.status_update_published",
+        "resource_type": "incident",
+        "occurred_at": "2026-04-01T02:17:41.211Z",
+        "agent": {
+            "id": "PXRUEF2",
+            "type": "user_reference",
+            "self": "https://api.pagerduty.com/users/PXRUEF2",
+            "html_url": "https://harsh0303.pagerduty.com/users/PXRUEF2",
+            "summary": "Harsh Santwani"
+        },
+        "client": null,
+        "data": {
+            "incident": {
+                "id": "Q3B15VLMF3ASBD",
+                "type": "incident_reference",
+                "self": "https://api.pagerduty.com/incidents/Q3B15VLMF3ASBD",
+                "html_url": "https://harsh0303.pagerduty.com/incidents/Q3B15VLMF3ASBD",
+                "summary": "Critical: Checkout API High Latency"
+            },
+            "id": "PE8VDWS",
+            "message": "Investigating a P1 incident with the Checkout API in us-east-1. Customers may see 504 errors or delays during purchase. We've identified a database lock and are working on a fix. Expected remediation within 30 minutes; next update at 08:15 UTC.",
+            "trimmed": false,
+            "type": "incident_status_update"
+        }
+    }
+}
