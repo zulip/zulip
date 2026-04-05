@@ -533,19 +533,20 @@ function load_medium_avatar(user: User, $elt: JQuery): void {
 // Functions related to message user card popover.
 
 // element is the target element to pop off of.
-// user is the user whose profile to show.
+// user_id is the user whose profile to show.
 // sender_id is the user id of the sender for the message we are
 // showing the popover from.
 export function toggle_user_card_popover_for_message(
     element: HTMLElement,
-    user: User,
+    user_id: number,
     sender_id: number,
     has_message_context: boolean,
     on_mount?: (instance: tippy.Instance) => void,
 ): void {
     const $elt = $(element);
+    const user = people.get_by_user_id(user_id);
 
-    const is_sender_popover = sender_id === user.user_id;
+    const is_sender_popover = sender_id === user_id;
     show_user_card_popover(
         user,
         $elt,
@@ -579,9 +580,8 @@ export function unsaved_message_user_mention_event_handler(
     }
 
     const user_id = Number.parseInt(id_string, 10);
-    const user = people.get_by_user_id(user_id);
 
-    toggle_user_card_popover_for_message(this, user, current_user.user_id, false);
+    toggle_user_card_popover_for_message(this, user_id, current_user.user_id, false);
 }
 
 // This function serves as the entry point for toggling
@@ -614,12 +614,17 @@ export function toggle_sender_info(): void {
     assert(message_lists.current !== undefined);
     const message = message_lists.current.get(rows.id($message));
     assert(message !== undefined);
-    const user = people.get_by_user_id(message.sender_id);
-    toggle_user_card_popover_for_message(the($sender), user, message.sender_id, true, () => {
-        if (!page_params.is_spectator) {
-            focus_user_card_popover_item();
-        }
-    });
+    toggle_user_card_popover_for_message(
+        the($sender),
+        message.sender_id,
+        message.sender_id,
+        true,
+        () => {
+            if (!page_params.is_spectator) {
+                focus_user_card_popover_item();
+            }
+        },
+    );
 }
 
 function focus_user_card_popover_item(): void {
@@ -694,8 +699,7 @@ function register_click_handlers(): void {
             assert(message_lists.current !== undefined);
             const message = message_lists.current.get(rows.id($row));
             assert(message !== undefined);
-            const user = people.get_by_user_id(message.sender_id);
-            toggle_user_card_popover_for_message(this, user, message.sender_id, true);
+            toggle_user_card_popover_for_message(this, message.sender_id, message.sender_id, true);
         },
     );
 
@@ -715,12 +719,11 @@ function register_click_handlers(): void {
         assert(message_lists.current !== undefined);
         const message = message_lists.current.get(rows.id($row));
         assert(message !== undefined);
-        let user;
+        let user_id;
         if (id_string) {
-            const user_id = Number.parseInt(id_string, 10);
-            user = people.get_by_user_id(user_id);
+            user_id = Number.parseInt(id_string, 10);
         } else {
-            user = email === undefined ? undefined : people.get_by_email(email);
+            const user = email === undefined ? undefined : people.get_by_email(email);
             if (user === undefined) {
                 // There can be a case when user is undefined if
                 // the user is an inaccessible user as we do not
@@ -730,8 +733,9 @@ function register_click_handlers(): void {
                 // without user ID are rare and old.
                 return;
             }
+            user_id = user.user_id;
         }
-        toggle_user_card_popover_for_message(this, user, message.sender_id, true);
+        toggle_user_card_popover_for_message(this, user_id, message.sender_id, true);
     });
 
     // Note: Message feeds and drafts have their own direct event listeners
