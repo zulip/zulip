@@ -495,7 +495,7 @@ class NarrowBuilder:
         else:
             raise BadNarrowOperatorError("unknown channels operand " + operand)
 
-        recipient_ids = recipient_queryset.values_list("recipient_id", flat=True).order_by("id")
+        recipient_ids = recipient_queryset.values_list("recipient_id", flat=True)
         cond = column("recipient_id", Integer).in_(recipient_ids)
         return query.where(maybe_negate(cond))
 
@@ -619,22 +619,19 @@ class NarrowBuilder:
         return query.where(maybe_negate(cond))
 
     def _get_direct_message_group_recipients(self, other_user: UserProfile) -> set[int]:
-        self_recipient_ids = [
-            recipient_tuple["recipient_id"]
-            for recipient_tuple in Subscription.objects.filter(
+        self_recipient_ids = set(
+            Subscription.objects.filter(
                 user_profile=self.user_profile,
                 recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
-            ).values("recipient_id")
-        ]
-        narrow_recipient_ids = [
-            recipient_tuple["recipient_id"]
-            for recipient_tuple in Subscription.objects.filter(
+            ).values_list("recipient_id", flat=True)
+        )
+        narrow_recipient_ids = set(
+            Subscription.objects.filter(
                 user_profile=other_user,
                 recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
-            ).values("recipient_id")
-        ]
-
-        return set(self_recipient_ids) & set(narrow_recipient_ids)
+            ).values_list("recipient_id", flat=True)
+        )
+        return self_recipient_ids & narrow_recipient_ids
 
     def by_dm_including(
         self, query: Select, operand: str | int, maybe_negate: ConditionTransform
@@ -927,7 +924,7 @@ def update_narrow_terms_containing_with_operator(
     if narrow is None:
         return narrow
 
-    with_operator_terms = list(filter(lambda term: term.operator == "with", narrow))
+    with_operator_terms = [term for term in narrow if term.operator == "with"]
     can_user_access_target_message = True
 
     if len(with_operator_terms) > 1:
@@ -1440,15 +1437,25 @@ def post_process_limited_query(
 
     rows_limited = len(visible_rows) != len(rows)
 
+    before_rows: list[MessageRowT]
+    anchor_rows: list[MessageRowT]
+    after_rows: list[MessageRowT]
     if anchored_to_right:
         num_after = 0
-        before_rows = visible_rows[:]
+        before_rows = list(visible_rows)
         anchor_rows = []
         after_rows = []
     else:
-        before_rows = [r for r in visible_rows if r[0] < anchor]
-        anchor_rows = [r for r in visible_rows if r[0] == anchor]
-        after_rows = [r for r in visible_rows if r[0] > anchor]
+        before_rows = []
+        anchor_rows = []
+        after_rows = []
+        for r in visible_rows:
+            if r[0] < anchor:
+                before_rows.append(r)
+            elif r[0] == anchor:
+                anchor_rows.append(r)
+            else:
+                after_rows.append(r)
 
     if num_before:
         before_rows = before_rows[-1 * num_before :]
