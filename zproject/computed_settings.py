@@ -648,15 +648,6 @@ else:
 # TEMPLATES SETTINGS
 ########################################################################
 
-# List of callables that know how to import templates from various sources.
-LOADERS: list[str | tuple[object, ...]] = [
-    "django.template.loaders.filesystem.Loader",
-    "django.template.loaders.app_directories.Loader",
-]
-if PRODUCTION:
-    # Template caching is a significant performance win in production.
-    LOADERS = [("django.template.loaders.cached.Loader", LOADERS)]
-
 base_template_engine_settings: dict[str, Any] = {
     "BACKEND": "django.template.backends.jinja2.Jinja2",
     "OPTIONS": {
@@ -711,7 +702,12 @@ non_html_template_engine_settings["OPTIONS"].update(
 two_factor_template_options = deepcopy(default_template_engine_settings["OPTIONS"])
 del two_factor_template_options["environment"]
 del two_factor_template_options["extensions"]
-two_factor_template_options["loaders"] = ["zproject.template_loaders.TwoFactorLoader"]
+two_factor_template_options["loaders"] = [
+    (
+        "django.template.loaders.cached.Loader",
+        ["zproject.template_loaders.TwoFactorLoader"],
+    )
+]
 
 two_factor_template_engine_settings = {
     "NAME": "Two_Factor",
