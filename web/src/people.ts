@@ -285,6 +285,10 @@ export function get_user_id(email: string): number | undefined {
     return user_id;
 }
 
+export function maybe_get_user_id_by_email(email: string): number | undefined {
+    return get_by_email(email)?.user_id;
+}
+
 export function is_known_user_id(user_id: number): boolean {
     /*
     We may get a user_id from mention syntax that we don't
