@@ -1043,6 +1043,9 @@ run_test("message_methods", () => {
         maria.avatar_url,
         "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon",
     );
+    // small_avatar_url_for_user_id delegates to small_avatar_url_for_person.
+    assert.equal(people.small_avatar_url_for_user_id(maria.user_id), maria.avatar_url);
+
     // This will use the cached gravatar url
     assert.equal(
         people.medium_avatar_url_for_person(maria),
