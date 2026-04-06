@@ -280,9 +280,9 @@ function update_general_panel_ui(group: UserGroup): void {
     const $edit_container = get_edit_container(group.id);
 
     if (settings_data.can_manage_user_group(group.id)) {
-        $edit_container.find(".group-description-field .button-group").show();
+        $edit_container.find(".group-description-field #open_group_info_modal").show();
     } else {
-        $edit_container.find(".group-description-field .button-group").hide();
+        $edit_container.find(".group-description-field #open_group_info_modal").hide();
     }
     update_user_group_title_buttons(group);
     update_group_permission_settings_elements(group);
