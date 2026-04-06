@@ -238,60 +238,55 @@ def resize_logo(image_data: bytes) -> bytes:
 def resize_emoji(
     image_data: bytes, emoji_file_name: str, size: int = DEFAULT_EMOJI_SIZE
 ) -> tuple[bytes, bytes | None]:
-    # Square brackets are used for providing options to libvips' save
-    # operation; the extension on the filename comes from reversing
-    # the content-type, which removes most of the attacker control of
-    # this string, but assert it has no bracketed pieces for safety.
     write_file_ext = os.path.splitext(emoji_file_name)[1]
     assert "[" not in write_file_ext
 
-    # This function returns two values:
-    # 1) Emoji image data.
-    # 2) If it is animated, the still image data i.e. first frame of gif.
     with libvips_check_image(image_data) as source_image:
-        if source_image.get_n_pages() == 1:
-            # This will crop the image to fit exactly within size x size pixels,
-            # using center cropping to preserve the most important part of the image.
-            # Unlike animated images below, static images are cropped rather
-            # than padded to achieve square dimensions.
-            return (
-                pyvips.Image.thumbnail_buffer(
-                    image_data,
-                    size,
-                    height=size,
-                    crop=pyvips.Interesting.CENTRE,
-                ).write_to_buffer(write_file_ext),
-                None,
+        # HELPER: No Cropping. Adds pure transparent padding to make it a perfect square.
+        def add_transparent_padding(img: pyvips.Image) -> pyvips.Image:
+            if not img.hasalpha():
+                img = img.addalpha()
+            return img.gravity(
+                pyvips.CompassDirection.CENTRE,
+                size,
+                size,
+                extend=pyvips.Extend.BACKGROUND,
+                background=[
+                    255,
+                    255,
+                    255,
+                    0,
+                ],  # Transparent White avoids the black/dark artifact bleeding
             )
 
+        # 1. STILL IMAGES (Bina animation wali)
+        if source_image.get_n_pages() == 1:
+            # Removed crop=pyvips.Interesting.CENTRE
+            still = pyvips.Image.thumbnail_buffer(image_data, size, height=size)
+            if still.width != size or still.height != size:
+                still = add_transparent_padding(still)
+            return (still.write_to_buffer(write_file_ext), None)
+
+        # 2. ANIMATED FIRST FRAME (Static Preview)
+        first_still = pyvips.Image.thumbnail_buffer(image_data, size, height=size)
+        if first_still.width != size or first_still.height != size:
+            first_still = add_transparent_padding(first_still)
+        padded_first_still = first_still.write_to_buffer(".png")
+
+        # 3. FULL ANIMATED GIF
         animated = pyvips.Image.thumbnail_buffer(
             image_data,
             size,
             height=size,
-            # This is passed to the loader, and means "load all
-            # frames", instead of the default of just the first
             option_string="n=-1",
         )
         if animated.width != animated.get("page-height"):
-            # If the image is non-square, we have to iterate the
-            # frames to add padding to make it so
             if not animated.hasalpha():
                 animated = animated.addalpha()
-            frames = [
-                frame.gravity(
-                    pyvips.CompassDirection.CENTRE,
-                    size,
-                    size,
-                    extend=pyvips.Extend.BACKGROUND,
-                    background=[0, 0, 0, 0],
-                )
-                for frame in animated.pagesplit()
-            ]
+            frames = [add_transparent_padding(frame) for frame in animated.pagesplit()]
             animated = frames[0].pagejoin(frames[1:])
-            first_still = frames[0].write_to_buffer(".png")
-        else:
-            first_still = animated.pagesplit()[0].write_to_buffer(".png")
-        return (animated.write_to_buffer(write_file_ext), first_still)
+
+        return (animated.write_to_buffer(write_file_ext), padded_first_still)
 
 
 def missing_thumbnails(
