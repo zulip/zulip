@@ -168,7 +168,7 @@ export function create({
         pill_widget.onPillCreate(() => {
             void (async () => {
                 loading.make_indicator($(".add-subscriber-loading-spinner"), {
-                    height: 56, // 4em at 14px / 1em
+                    height: 28, // 2em at 14px / 1em
                 });
                 const user_ids = await get_pill_user_ids(pill_widget);
                 onPillCreateAction(user_ids);
@@ -288,7 +288,7 @@ export function set_up_handlers({
         const pill_widget = get_pill_widget();
         void (async () => {
             loading.make_indicator($(".add-subscriber-loading-spinner"), {
-                height: 56, // 4em at 14px / 1em
+                height: 28, // 2em at 14px / 1em
             });
             const pill_user_ids = await get_pill_user_ids(pill_widget);
             // If we're no longer in the same view after fetching

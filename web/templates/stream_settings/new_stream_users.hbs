@@ -6,12 +6,13 @@
 </div>
 
 <div class="create_stream_subscriber_list_header">
-    <h4 class="stream_setting_subsection_title">{{t 'Subscribers preview' }}</h4>
+    <div class="subscribers-heading">
+        <h4 class="stream_setting_subsection_title">{{t 'Subscribers preview' }}</h4>
+        <div class="add-subscriber-loading-spinner"></div>
+    </div>
     <input class="add-user-list-filter filter_text_input" name="user_list_filter" type="text"
       autocomplete="off" placeholder="{{t 'Filter' }}" />
 </div>
-
-<div class="add-subscriber-loading-spinner"></div>
 
 <div class="subscriber-list-box">
     <div class="subscriber_list_container" data-simplebar data-simplebar-tab-index="-1">

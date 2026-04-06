@@ -186,8 +186,24 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-.add-group-member-loading-spinner,
-.add-subscriber-loading-spinner {
+.subscribers-list-header,
+.create_stream_subscriber_list_header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    .subscribers-heading {
+        display: flex;
+        align-items: center;
+
+        .loading_indicator_spinner {
+            width: 100%;
+            height: 100%;
+        }
+    }
+}
+
+.add-group-member-loading-spinner {
     align-self: center;
 }
 
