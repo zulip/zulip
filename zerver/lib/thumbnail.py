@@ -383,7 +383,7 @@ def maybe_thumbnail(
                 # enqueued during message rendering; thumbnailing them
                 # before/during message rendering can cause race
                 # conditions.
-                queue_event_on_commit("thumbnail", {"id": image_row.id})
+                queue_event_on_commit("thumbnail", {"id": image_row.id, "path_id": path_id})
             return image_row
     except BadImageError:
         return None
@@ -463,7 +463,9 @@ def manifest_and_get_user_upload_previews(
             # the worker if all of the currently-configured thumbnail
             # formats have already been generated.
             if enqueue:
-                queue_event_on_commit("thumbnail", {"id": image_attachment.id})
+                queue_event_on_commit(
+                    "thumbnail", {"id": image_attachment.id, "path_id": image_attachment.path_id}
+                )
         else:
             url, is_animated = get_default_thumbnail_url(image_attachment)
             image_metadata[image_attachment.path_id] = MarkdownImageMetadata(
