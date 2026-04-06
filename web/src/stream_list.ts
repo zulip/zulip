@@ -1270,6 +1270,8 @@ export function handle_narrow_activated(
     change_hash: boolean,
     show_more_topics: boolean,
 ): void {
+    const previously_expanded_stream_id = topic_list.active_stream_id();
+
     // Zoom out, if needed, so that get_stream_li returns the correct
     // value when calling update_stream_sidebar_for_narrow.
     if (!change_hash && is_zoomed_in() && !show_more_topics) {
@@ -1281,7 +1283,11 @@ export function handle_narrow_activated(
         zoom_in();
     }
 
-    scroll_stream_into_view();
+    // Do not auto scroll when switching topics in an already expanded channel.
+    const info = get_sidebar_stream_topic_info(filter);
+    if (info.stream_id !== previously_expanded_stream_id) {
+        scroll_stream_into_view();
+    }
 }
 
 export function handle_message_view_deactivated(): void {
