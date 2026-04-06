@@ -2101,6 +2101,78 @@ run_test("get_by_user_id", () => {
     );
 });
 
+run_test("is_valid_bot_user", () => {
+    initialize();
+    people.add_active_user(bot_botson);
+    people.add_active_user(isaac);
+
+    assert.equal(people.is_valid_bot_user(bot_botson.user_id), true);
+    assert.equal(people.is_valid_bot_user(isaac.user_id), false);
+    assert.equal(people.is_valid_bot_user(me.user_id), false);
+    // Unknown user_id returns false without error (uses ignore_missing).
+    assert.equal(people.is_valid_bot_user(9999), false);
+});
+
+run_test("maybe_get_user_by_id", () => {
+    initialize();
+    people.add_active_user(isaac);
+
+    const user = people.maybe_get_user_by_id(isaac.user_id);
+    assert.equal(user.full_name, "Isaac Newton");
+
+    // With ignore_missing=true, returns undefined without error.
+    assert.equal(people.maybe_get_user_by_id(9999, true), undefined);
+
+    // Without ignore_missing, logs an error and returns undefined.
+    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
+    assert.equal(people.maybe_get_user_by_id(9999), undefined);
+});
+
+run_test("small_avatar_url_for_person", () => {
+    initialize();
+    people.add_active_user(charles);
+    people.add_active_user(maria);
+
+    // User with an explicit avatar_url returns it directly.
+    assert.equal(people.small_avatar_url_for_person(charles), "http://charles.com/foo.png");
+
+    // Current user (me) has no avatar_url set, so falls back to /avatar/{user_id}.
+    assert.equal(people.small_avatar_url_for_person(me), `/avatar/${me.user_id}`);
+
+    // User with avatar_url=null computes a gravatar URL from email.
+    assert.equal(
+        people.small_avatar_url_for_person(maria),
+        "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon",
+    );
+    // Verify the gravatar URL was cached on the person object.
+    assert.equal(
+        maria.avatar_url,
+        "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon",
+    );
+});
+
+run_test("sender_is_bot", () => {
+    initialize();
+    people.add_active_user(bot_botson);
+    people.add_active_user(isaac);
+
+    assert.equal(people.sender_is_bot({sender_id: bot_botson.user_id}), true);
+    assert.equal(people.sender_is_bot({sender_id: isaac.user_id}), false);
+    assert.equal(people.sender_is_bot({sender_id: me.user_id}), false);
+    assert.equal(people.sender_is_bot({sender_id: undefined}), false);
+});
+
+run_test("sender_is_guest", () => {
+    initialize();
+    people.add_active_user(guest);
+    people.add_active_user(isaac);
+
+    assert.equal(people.sender_is_guest({sender_id: guest.user_id}), true);
+    assert.equal(people.sender_is_guest({sender_id: isaac.user_id}), false);
+    assert.equal(people.sender_is_guest({sender_id: me.user_id}), false);
+    assert.equal(people.sender_is_guest({sender_id: undefined}), false);
+});
+
 run_test("get_user_mentions_for_display", () => {
     people.add_active_user(stephen1);
     people.add_active_user(stephen2);
