@@ -57,6 +57,18 @@ html {
     z-index: 100;
 }
 
+/* Hide the login and registration links on /api
+   and /policies... */
+.portico-container.help .top-links {
+    visibility: hidden;
+}
+
+/* ...but continue to show the logged-in pill when
+   a user is authenticated. */
+.portico-container.help .top-links:has(.portico-header-dropdown) {
+    visibility: visible;
+}
+
 .navbar.footer .nav {
     > li {
         line-height: 56px;
