@@ -339,18 +339,12 @@ class HomeTest(ZulipTestCase):
         self.assertCountEqual(page_params["state_data"]["realm_bots"][0], realm_bots_expected_keys)
 
     def test_home_demo_organization(self) -> None:
-        realm = get_realm("zulip")
-
-        # We construct a scheduled deletion date that's definitely in
-        # the future, regardless of how long ago the Zulip realm was
-        # created.
-        realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=1)
-        realm.save()
-        self.login("hamlet")
+        demo_organization_owner = self.create_demo_organization_owner()
+        realm = demo_organization_owner.realm
 
         # Verify succeeds once logged-in
         with queries_captured(), patch("zerver.lib.cache.cache_set"):
-            result = self._get_home_page(stream="Denmark")
+            result = self._get_home_page(subdomain=realm.subdomain, stream="Zulip")
             self.check_rendered_logged_in_app(result)
 
         page_params = self._get_page_params(result)
@@ -654,14 +648,15 @@ class HomeTest(ZulipTestCase):
         html = result.content.decode()
         self.assertIn("test_stream_7", html)
 
-    def _get_home_page(self, **kwargs: Any) -> "TestHttpResponse":
+    def _get_home_page(self, subdomain: str | None = None, **kwargs: Any) -> "TestHttpResponse":
         queue_data = EventQueueData(queue_id="test-queue-id", idle_queue_timeout_secs=600)
         with (
             patch("zerver.lib.events.request_event_queue", return_value=queue_data),
             patch("zerver.lib.events.get_user_events", return_value=[]),
         ):
-            result = self.client_get("/", dict(**kwargs))
-        return result
+            if subdomain:
+                return self.client_get("/", dict(**kwargs), subdomain=subdomain)
+            return self.client_get("/", dict(**kwargs))
 
     def _sanity_check(self, result: "TestHttpResponse") -> None:
         """

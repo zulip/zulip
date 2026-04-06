@@ -2,7 +2,6 @@ import base64
 import random
 import re
 from collections.abc import Sequence
-from datetime import timedelta
 from email.headerregistry import Address
 from unittest import mock
 from unittest.mock import patch
@@ -13,7 +12,6 @@ from django.conf import settings
 from django.core import mail
 from django.core.mail.message import EmailMultiAlternatives
 from django.test import override_settings
-from django.utils.timezone import now as timezone_now
 from django_stubs_ext import StrPromise
 
 from zerver.actions.create_user import do_create_user
@@ -96,19 +94,13 @@ class TestMessageNotificationEmails(ZulipTestCase):
         m.assert_not_called()
 
     def test_demo_organization_owner_email_not_set(self) -> None:
-        realm = get_realm("zulip")
-        realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=30)
-        realm.save()
-
-        # Demo organization owner's don't have an email address set initially
-        desdemona = self.example_user("desdemona")
-        desdemona.delivery_email = ""
-        desdemona.save()
+        demo_organization_owner = self.create_demo_organization_owner()
+        realm = demo_organization_owner.realm
 
         notification_bot = self.notification_bot(realm)
         internal_send_private_message(
             sender=notification_bot,
-            recipient_user=desdemona,
+            recipient_user=demo_organization_owner,
             content="Notification bot message",
         )
         message = self.get_last_message()
@@ -119,7 +111,7 @@ class TestMessageNotificationEmails(ZulipTestCase):
             "zerver.lib.email_notifications.do_send_missedmessage_events_reply_in_zulip"
         ) as m:
             handle_missedmessage_emails(
-                desdemona.id,
+                demo_organization_owner.id,
                 {message.id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)},
             )
         m.assert_not_called()
