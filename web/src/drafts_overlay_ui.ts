@@ -192,7 +192,7 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
         if (focused_draft_id !== undefined) {
             restore_draft(focused_draft_id);
         } else {
-            const first_draft = draft_id_arrow.at(-1);
+            const first_draft = draft_id_arrow.at(0);
             assert(first_draft !== undefined);
             restore_draft(first_draft);
         }
