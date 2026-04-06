@@ -1,11 +1,16 @@
 import ZulipNote from "../../components/ZulipNote.astro";
+import FollowUnmuteOptions from "../include/_FollowUnmuteOptions.mdx";
+
+import MuteIcon from "~icons/zulip-icon/mute"
 
 Zulip lets you mute topics and channels to avoid receiving notifications for messages
 you are not interested in. Muting a channel effectively mutes all topics in
 that channel. You can also manually **mute** a topic in an unmuted channel, or
 **unmute** a topic in a muted channel.
 
-Muting has the following effects:
+In unmuted channels, muted topics are marked with <MuteIcon /> in the [left
+sidebar](/help/left-sidebar), [inbox](/help/inbox), and elsewhere. Muting has
+the following effects:
 
 * Messages in muted topics do not generate notifications (including [alert
   word](/help/dm-mention-alert-notifications#alert-words) notifications), unless
@@ -20,6 +25,12 @@ Muting has the following effects:
 * In the desktop/web app, muted topics are sorted to the bottom of their
   channel, and muted channels appear in a collapsible section at the bottom of
   their channel folder in the left sidebar.
+
+To avoid missing messages you care about, you can choose which topics you'd like
+to [unmute
+automatically](/help/mute-a-topic#automatically-unmute-topics-in-muted-channels):
+
+<FollowUnmuteOptions />
 
 You can search muted messages using the `is:muted` [search
 filter](/help/search-for-messages#search-by-message-status), or exclude them

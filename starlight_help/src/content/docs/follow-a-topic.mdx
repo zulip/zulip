@@ -4,6 +4,7 @@ title: Follow a topic
 
 import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 
+import FlattenedList from "../../components/FlattenedList.astro";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import KeyboardTip from "../../components/KeyboardTip.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
@@ -11,31 +12,40 @@ import AutomaticallyFollowTopics from "../include/_AutomaticallyFollowTopics.mdx
 import ConfigureNotificationsForFollowedTopics from "../include/_ConfigureNotificationsForFollowedTopics.mdx";
 import ConfigureTopicNotificationsDesktopWeb from "../include/_ConfigureTopicNotificationsDesktopWeb.mdx";
 import FilterFollowedLeftSidebar from "../include/_FilterFollowedLeftSidebar.mdx";
+import FollowUnmuteOptions from "../include/_FollowUnmuteOptions.mdx";
 import FollowedTopicWorkflows from "../include/_FollowedTopicWorkflows.mdx";
 import GoToInbox from "../include/_GoToInbox.mdx";
 import ManageConfiguredTopicsDesktopWeb from "../include/_ManageConfiguredTopicsDesktopWeb.mdx";
 import ManageConfiguredTopicsMobile from "../include/_ManageConfiguredTopicsMobile.mdx";
 import TopicLongPressMenu from "../include/_TopicLongPressMenu.mdx";
 
+import FollowIcon from "~icons/zulip-icon/follow"
 import SearchIcon from "~icons/zulip-icon/search";
 
-Zulip lets you follow topics you are interested in. You can follow or unfollow
-any topic. You can also configure Zulip to automatically follow topics you start
-or participate in. Participating in a topic means sending a message,
-[reacting](/help/emoji-reactions) with an emoji, or participating in a
-[poll](/help/create-a-poll). You can also automatically follow topics where you
-are [mentioned](/help/mention-a-user-or-group).
+Zulip lets you follow topics you are interested in, which helps you see when you
+have unread messages you care about. You can [follow or
+unfollow](#follow-or-unfollow-a-topic) any topic, and choose which topics you'd
+like to follow automatically:
 
-It's easy to prioritize catching up on followed topics. You can:
+<FlattenedList>
+  <FollowUnmuteOptions />
+
+  * Topics where you are [mentioned](/help/mention-a-user-or-group).
+</FlattenedList>
+
+Followed topics are marked with <FollowIcon /> in the [left
+sidebar](/help/left-sidebar), [inbox](/help/inbox), and elsewhere. It's easy to
+prioritize catching up on followed topics. You can:
 
 * [Configure](/help/follow-a-topic#configure-notifications-for-followed-topics)
   how you get notified about new messages for topics you follow.
 * Use the <kbd>Shift</kbd> + <kbd>N</kbd> [keyboard
   shortcut](/help/keyboard-shortcuts) to go to the next unread followed topic.
-* Filter the [**Inbox**](/help/inbox) and [**Recent
-  conversations**](/help/recent-conversations) views to only show followed
-  topics.
-* See which topics you are following in the **left sidebar**.
+* Filter to view only followed topics in the [inbox](/help/inbox), [recent
+  conversations](/help/recent-conversations), and [list of topics in a
+  channel](/help/list-of-topics).
+* Filter to view only followed topics when [viewing all topics in a
+  channel](/help/left-sidebar#show-all-topics-in-a-channel) in the left sidebar.
 
 You can use followed topics for a variety of workflows:
 
