@@ -990,7 +990,10 @@ VIDEO_CALL_INTEGRATIONS: list[Integration] = [
     ),
     Integration("jitsi", ["video-calling", "communication"], display_name="Jitsi Meet"),
     Integration(
-        "nextcloud-talk", ["video-calling", "communication"], display_name="Nextcloud Talk"
+        "nextcloud-talk",
+        ["video-calling", "communication"],
+        display_name="Nextcloud Talk",
+        logo="images/integrations/logos/nextcloud.svg",
     ),
     Integration("zoom", ["video-calling", "communication"]),
 ]
