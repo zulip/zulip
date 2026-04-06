@@ -41,7 +41,7 @@ def api_canarytoken_webhook(
         f"[Manage this canarytoken]({message['manage_url'].tame(check_string)})"
     )
 
-    if user_specified_topic:
+    if user_specified_topic is not None:
         topic_name = user_specified_topic
 
     check_send_webhook_message(request, user_profile, topic_name, body)

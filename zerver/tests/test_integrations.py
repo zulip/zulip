@@ -86,7 +86,7 @@ class IntegrationsTestCase(ZulipTestCase):
         integrations_with_screenshot_configs = {
             integration_name
             for integration_name, integration in INTEGRATIONS.items()
-            if integration.screenshot_configs
+            if integration.is_enabled_in_catalog() and integration.screenshot_configs
         }
 
         missing_integration_screenshots = (

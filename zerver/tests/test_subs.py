@@ -11,6 +11,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import HttpResponse
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -1086,6 +1087,46 @@ class StreamAdminTest(ZulipTestCase):
         stream.refresh_from_db()
         self.assertEqual(stream.history_public_to_subscribers, False)
         self.assertEqual(stream.can_create_topic_group.id, everyone_system_group.id)
+
+    def test_attachment_in_web_public_stream(self) -> None:
+        self.login("desdemona")
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        url = self.assert_json_success(result)["url"]
+
+        owner = self.example_user("desdemona")
+        realm = owner.realm
+        self.make_stream("test_stream", realm=realm, is_web_public=True)
+        self.subscribe(owner, "test_stream")
+        body = f"First message ...[zulip.txt](http://{realm.host}" + url + ")"
+        msg_id = self.send_stream_message(owner, "test_stream", body, "test")
+        attachment = Attachment.objects.get(messages__id=msg_id)
+        self.assertTrue(attachment.is_web_public)
+
+        self.assertTrue(validate_attachment_request_for_spectator_access(realm, attachment))
+
+        do_set_realm_property(realm, "enable_spectator_access", False, acting_user=None)
+        attachment = Attachment.objects.get(messages__id=msg_id)
+        self.assertIsNone(attachment.is_web_public)
+
+        self.assertFalse(validate_attachment_request_for_spectator_access(realm, attachment))
+        attachment = Attachment.objects.get(messages__id=msg_id)
+        self.assertIsNone(attachment.is_web_public)
+
+        # Check that is_web_public is set as False when uploading a file in
+        # web-public stream with spectator access disabled for realm.
+        fp = StringIO("zulip!")
+        fp.name = "zulip1.txt"
+
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        url = self.assert_json_success(result)["url"]
+
+        body = f"Second message ...[zulip1.txt](http://{realm.host}" + url + ")"
+        msg_id = self.send_stream_message(owner, "test_stream", body, "test")
+        attachment = Attachment.objects.get(messages__id=msg_id)
+        self.assertEqual(attachment.is_web_public, False)
 
     def test_stream_permission_changes_updates_updates_attachments(self) -> None:
         self.login("desdemona")
@@ -5318,6 +5359,7 @@ class SubscriptionAPITest(ZulipTestCase):
             expected_difference=0,
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_notification_bot_dm_on_subscription(self) -> None:
         desdemona = self.example_user("desdemona")
         realm = desdemona.realm

@@ -96,6 +96,12 @@ def do_set_realm_property(
     else:
         realm.save(update_fields=[name])
 
+    if name == "enable_spectator_access":
+        Attachment.objects.filter(realm=realm).update(is_web_public=None)
+        # We need to do the same for ArchivedAttachment to avoid
+        # bugs if deleted attachments are later restored.
+        ArchivedAttachment.objects.filter(realm=realm).update(is_web_public=None)
+
     event = dict(
         type="realm",
         op="update",

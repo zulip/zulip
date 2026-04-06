@@ -4,7 +4,8 @@ from unittest import mock
 import orjson
 from django.utils.timezone import now as timezone_now
 
-from zerver.actions.streams import do_change_stream_permission
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.streams import do_change_stream_permission, do_deactivate_stream
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.events import ClientCapabilities, do_events_register
 from zerver.lib.test_classes import ZulipTestCase
@@ -13,6 +14,7 @@ from zerver.models import Message, UserMessage, UserTopic
 from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
+from zerver.tornado.django_api import EventQueueData
 from zerver.tornado.event_queue import allocate_client_descriptor
 
 
@@ -186,6 +188,12 @@ class TopicHistoryTest(ZulipTestCase):
                 "topic1",
                 "topic0",
             ],
+        )
+
+        do_set_realm_property(iago.realm, "enable_spectator_access", False, acting_user=None)
+        result = self.client_get(endpoint)
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", status_code=401
         )
 
     def test_get_topics_non_web_public_stream_web_public_request(self) -> None:
@@ -790,7 +798,8 @@ class EmptyTopicNameTest(ZulipTestCase):
             visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
         )
 
-        with mock.patch("zerver.lib.events.request_event_queue", return_value=1):
+        queue_data = EventQueueData(queue_id="1", idle_queue_timeout_secs=600)
+        with mock.patch("zerver.lib.events.request_event_queue", return_value=queue_data):
             state_data = do_events_register(
                 iago,
                 iago.realm,
@@ -805,7 +814,7 @@ class EmptyTopicNameTest(ZulipTestCase):
         self.assertEqual(state_data["user_topics"][0]["topic_name"], "")
         self.assertEqual(state_data["user_topics"][1]["topic_name"], "")
 
-        with mock.patch("zerver.lib.events.request_event_queue", return_value=1):
+        with mock.patch("zerver.lib.events.request_event_queue", return_value=queue_data):
             state_data = do_events_register(
                 iago,
                 iago.realm,
@@ -852,3 +861,9 @@ class EmptyTopicNameTest(ZulipTestCase):
             result = self.client_get(f"/json/users/me/{channel_id}/topics", params)
             data = self.assert_json_success(result)
             self.assertEqual(data["topics"][0]["name"], "")
+
+        do_deactivate_stream(channel_one, acting_user=None)
+        result = self.client_get(f"/json/users/me/{channel_one.id}/topics")
+        data = self.assert_json_success(result)
+        self.assertEqual(data["topics"][0]["name"], "channel events")
+        self.assertEqual(data["topics"][1]["name"], Message.EMPTY_TOPIC_FALLBACK_NAME)

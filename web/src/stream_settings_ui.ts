@@ -508,7 +508,8 @@ export function update_settings_for_unsubscribed(slim_sub: StreamSubscription): 
     if (!stream_data.can_toggle_subscription(sub)) {
         stream_ui_updates.update_add_subscriptions_elements(sub);
     }
-    if (current_user.is_guest) {
+
+    if (current_user.is_guest && hash_parser.is_editing_stream(sub.stream_id)) {
         stream_edit.open_edit_panel_empty();
     }
 
@@ -703,6 +704,12 @@ function update_folder_filter_button(left_panel_params: LeftPanelParams): void {
     }
 }
 
+function empty_right_panel_if_active_channel_hidden(): void {
+    if ($(".stream-row.active").hasClass("notdisplayed")) {
+        stream_edit.open_edit_panel_empty();
+    }
+}
+
 // LeftPanelParams { input: String, show_subscribed: Boolean, sort_order: String }
 export function redraw_left_panel(left_panel_params = get_left_panel_params()): number[] {
     // We only get left_panel_params passed in from tests.  Real
@@ -877,6 +884,7 @@ function filter_click_handler(
     const filter_id = $(event.currentTarget).attr("data-unique-id");
     assert(filter_id !== undefined);
     redraw_left_panel();
+    empty_right_panel_if_active_channel_hidden();
     dropdown.hide();
     widget.render();
 }
@@ -1048,10 +1056,13 @@ function setup_page(callback: () => void): void {
 
         stream_ui_updates.set_folder_dropdown_visibility($("#stream-creation"));
 
-        const throttled_redraw_left_panel = _.throttle(redraw_left_panel, 50);
+        const throttled_redraw_left_and_clear_right_panels = _.throttle(() => {
+            redraw_left_panel();
+            empty_right_panel_if_active_channel_hidden();
+        }, 50);
         $("#stream_filter input[type='text']").on("input", () => {
             // Debounce filtering in case a user is typing quickly
-            throttled_redraw_left_panel();
+            throttled_redraw_left_and_clear_right_panels();
         });
 
         settings_banner.set_up_banner(

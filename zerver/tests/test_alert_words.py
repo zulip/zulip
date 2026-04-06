@@ -78,15 +78,25 @@ class AlertWordTests(ZulipTestCase):
         for multi-word and non-ascii words.
         """
         user = self.get_user()
-
         expected_remaining_alerts = set(self.interesting_alert_word_list)
         do_add_alert_words(user, self.interesting_alert_word_list)
-
         for alert_word in self.interesting_alert_word_list:
             do_remove_alert_words(user, [alert_word])
             expected_remaining_alerts.remove(alert_word)
             actual_remaining_alerts = user_alert_words(user)
             self.assertEqual(set(actual_remaining_alerts), expected_remaining_alerts)
+
+    def test_remove_words_bulk_case_insensitive(self) -> None:
+        """
+        Removing multiple alert words in one call works correctly,
+        including case-insensitive matching.
+        """
+        user = self.get_user()
+        do_add_alert_words(user, ["hello", "world", "python"])
+        # Delete using different casing — should still match
+        do_remove_alert_words(user, ["HELLO", "World"])
+        remaining = user_alert_words(user)
+        self.assertEqual(set(remaining), {"python"})
 
     def test_realm_words(self) -> None:
         """

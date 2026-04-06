@@ -16,6 +16,7 @@ from zerver.actions.channel_folders import check_add_channel_folder
 from zerver.actions.create_user import do_create_user
 from zerver.actions.presence import update_user_presence
 from zerver.actions.reactions import do_add_reaction
+from zerver.actions.realm_domains import do_add_realm_domain
 from zerver.actions.realm_linkifiers import do_add_linkifier
 from zerver.actions.realm_playgrounds import check_add_realm_playground
 from zerver.lib.events import do_events_register
@@ -470,3 +471,31 @@ def check_thumbnail_status_for_uploaded_file() -> dict[str, object]:
         realm_id = upload_path_parts[1]
         filename = upload_path_parts[2]
     return {"realm_id_str": realm_id, "filename": filename}
+
+
+@openapi_param_value_generator(["/realm/domains:post"])
+def add_realm_domain_owner_auth() -> dict[str, object]:
+    # This endpoint requires organization owner permissions.
+    owner = helpers.example_user("desdemona")
+    AUTHENTICATION_LINE[0] = f"{owner.email}:{owner.api_key}"
+    return {}
+
+
+@openapi_param_value_generator(["/realm/domains/{domain}:patch"])
+def patch_realm_domain_owner_auth() -> dict[str, object]:
+    # This endpoint requires organization owner permissions.
+    owner = helpers.example_user("desdemona")
+    AUTHENTICATION_LINE[0] = f"{owner.email}:{owner.api_key}"
+
+    do_add_realm_domain(owner.realm, "patch-domain-example.com", False, acting_user=None)
+    return {"domain": "patch-domain-example.com"}
+
+
+@openapi_param_value_generator(["/realm/domains/{domain}:delete"])
+def delete_realm_domain_owner_auth() -> dict[str, object]:
+    # This endpoint requires organization owner permissions.
+    owner = helpers.example_user("desdemona")
+    AUTHENTICATION_LINE[0] = f"{owner.email}:{owner.api_key}"
+
+    do_add_realm_domain(owner.realm, "delete-domain-example.com", False, acting_user=None)
+    return {"domain": "delete-domain-example.com"}

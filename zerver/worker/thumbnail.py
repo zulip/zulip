@@ -33,6 +33,7 @@ class ThumbnailWorker(QueueProcessingWorker):
     def consume(self, event: dict[str, Any]) -> None:
         start_time = time.perf_counter()
         with transaction.atomic(savepoint=False):
+            logger.info("Starting thumbnailing for %s", event.get("path_id", f"id: {event['id']}"))
             try:
                 # This lock prevents us from racing with the on-demand
                 # rendering that can be triggered if a request is made
@@ -53,7 +54,6 @@ class ThumbnailWorker(QueueProcessingWorker):
                 )
                 return
             lock_time = time.perf_counter() - start_time
-            logger.info("Starting thumbnailing for %s", row.path_id)
             result = ensure_thumbnails(row)
             commit_time = time.perf_counter()
         end_time = time.perf_counter()

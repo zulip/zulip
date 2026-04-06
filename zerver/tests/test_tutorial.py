@@ -131,9 +131,17 @@ class TutorialTests(ZulipTestCase):
             )
             self.assertEqual(most_recent_message(user).content, expected_response)
 
-    def test_response_to_pm_for_help(self) -> None:
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_response_to_pm_for_help_using_personal_recipient(self) -> None:
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
+
+        # We delete the DM group because @override_settings does not
+        # include the setUp phase, which will have pre-created the DM
+        # group already; and we always use the DM group if it exists.
+        direct_group_message = get_or_create_direct_message_group(id_list=[user.id, bot.id])
+        direct_group_message.delete()
+
         messages = ["help", "Help", "?"]
         self.login_user(user)
         for content in messages:
@@ -183,7 +191,8 @@ class TutorialTests(ZulipTestCase):
             self.assertEqual(message.content, content)
             self.assertEqual(message.sender, user)
 
-    def test_response_to_pm_for_undefined(self) -> None:
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_response_to_pm_for_undefined_using_personal_recipient(self) -> None:
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
         messages = ["Hello", "HAHAHA", "OKOK", "LalulaLapas"]

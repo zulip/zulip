@@ -283,6 +283,7 @@ export function render_lightbox_media_list(): void {
             $lightbox_media_list.append($node);
         }
     }
+    update_arrow_visibility();
 }
 
 function display_image(payload: Media): void {
@@ -635,6 +636,20 @@ export function next(): void {
     $(".image-list .image.selected").next().trigger("click");
 }
 
+function update_arrow_visibility(): void {
+    const $selected = $(".image-list .image.selected");
+    const has_prev = $selected.prev(".image").length > 0;
+    const has_next = $selected.next(".image").length > 0;
+    $("#lightbox_overlay .center .arrow[data-direction='prev']").toggleClass(
+        "invisible",
+        !has_prev,
+    );
+    $("#lightbox_overlay .center .arrow[data-direction='next']").toggleClass(
+        "invisible",
+        !has_next,
+    );
+}
+
 function remove_video_players(): void {
     // Remove video players from the DOM. Used when closing lightbox
     // so that videos doesn't keep playing in the background.
@@ -768,6 +783,7 @@ export function initialize(): void {
 
         $(".image-list .image.selected").removeClass("selected");
         $(this).addClass("selected");
+        update_arrow_visibility();
 
         const parentOffset = this.parentElement!.clientWidth + this.parentElement!.scrollLeft;
         // this is the left and right of the image compared to its parent.

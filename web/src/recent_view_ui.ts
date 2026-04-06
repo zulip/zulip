@@ -359,6 +359,20 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
         return true;
     }
 
+    // If the target row is beyond what's currently rendered but
+    // exists in the full list, render more rows to include it.
+    // `get_min_load_count` ensures enough rows are rendered based
+    // on `row_focus`.
+    if (
+        row >= 0 &&
+        row >= topics_widget.get_rendered_list().length &&
+        row < topics_widget.get_current_list().length &&
+        !topics_widget.all_rendered()
+    ) {
+        row_focus = row;
+        topics_widget.render();
+    }
+
     const $topic_rows = $("#recent-view-content-tbody tr");
     if ($topic_rows.length === 0 || row < 0 || row >= $topic_rows.length) {
         row_focus = 0;
@@ -487,7 +501,18 @@ export function revive_current_focus(): boolean {
                 const last_visited_topic_index = current_list.findIndex(
                     (topic) => topic.last_msg_id === topic_last_msg_id,
                 );
-                if (last_visited_topic_index !== -1) {
+                // Only restore focus to the topic if it hasn't moved
+                // too far from where the user left off. A topic can
+                // shift significantly due to new messages arriving
+                // (sorted by time), topic renames (sorted by topic),
+                // or marking as read (sorted by unread count), which
+                // would disorient the user by jumping them far from
+                // their previous scroll position.
+                const max_focus_shift = 10;
+                if (
+                    last_visited_topic_index !== -1 &&
+                    Math.abs(last_visited_topic_index - row_focus) <= max_focus_shift
+                ) {
                     row_focus = last_visited_topic_index;
                 }
             }
@@ -807,8 +832,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         if (!is_group) {
             const user_id = Number.parseInt(last_msg.to_user_ids, 10);
             const is_deactivated = !people.is_active_user_or_system_bot(user_id);
-            const user = people.get_by_user_id(user_id);
-            if (user.is_bot) {
+            if (people.is_valid_bot_user(user_id)) {
                 // We display the bot icon rather than a user circle for bots.
                 is_bot = true;
             } else {
@@ -1210,6 +1234,10 @@ function show_selected_filters(): void {
             .addClass("button-recent-selected")
             .attr("aria-checked", "true");
     }
+
+    // Toggle class so CSS can hide the unread marker bar when
+    // every visible row is already unread.
+    $("#recent_view").toggleClass("recent-view-filtered-by-unread", filters.has("unread"));
 }
 
 function get_recent_view_filters_params(): {
@@ -1239,7 +1267,7 @@ function setup_dropdown_filters_widget(): void {
     filters_dropdown_widget = new dropdown_widget.DropdownWidget({
         ...views_util.COMMON_DROPDOWN_WIDGET_PARAMS,
         widget_name: "recent-view-filter",
-        item_click_callback: filter_click_handler,
+        item_click_callback: dropdown_filter_click_handler,
         $events_container: $("#recent_view_filter_buttons"),
         default_id: dropdown_filter.value,
     });
@@ -1270,6 +1298,13 @@ function update_recent_view_folder_filter_button(): void {
     );
 }
 
+function hard_redraw_with_scroll_to_top(): void {
+    row_focus = 0;
+    assert(topics_widget !== undefined);
+    topics_widget.hard_redraw();
+    window.scrollTo(0, 0);
+}
+
 function folder_filter_click_handler(
     event: JQuery.ClickEvent,
     dropdown: tippy.Instance,
@@ -1286,8 +1321,7 @@ function folder_filter_click_handler(
     save_filters();
     update_recent_view_folder_filter_button();
 
-    assert(topics_widget !== undefined);
-    topics_widget.hard_redraw();
+    hard_redraw_with_scroll_to_top();
 }
 
 function setup_folder_dropdown_widget(): void {
@@ -1483,7 +1517,7 @@ function callback_after_render(): void {
     }, 0);
 }
 
-function filter_click_handler(
+function dropdown_filter_click_handler(
     event: JQuery.ClickEvent,
     dropdown: tippy.Instance,
     widget: DropdownWidget,
@@ -1504,8 +1538,7 @@ function filter_click_handler(
     widget.render();
     save_filters();
 
-    assert(topics_widget !== undefined);
-    topics_widget.hard_redraw();
+    hard_redraw_with_scroll_to_top();
 }
 
 function get_list_data_for_widget(): ConversationData[] {
@@ -2248,7 +2281,9 @@ export function initialize({
         const filter = this.getAttribute("data-filter");
         assert(filter !== null);
         set_filter(filter);
+        row_focus = 0;
         update_filters_view();
+        window.scrollTo(0, 0);
         revive_current_focus();
     });
 

@@ -606,7 +606,7 @@ export async function initialize_everything(state_data) {
             message_view.show(
                 [
                     {
-                        operator: "stream",
+                        operator: "channel",
                         operand: sub.stream_id.toString(),
                     },
                 ],

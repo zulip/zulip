@@ -5,6 +5,7 @@ title: Rename a topic
 import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import DependsOnPermissions from "../include/_DependsOnPermissions.mdx";
 import TopicActions from "../include/_TopicActions.mdx";
 
 import CheckIcon from "~icons/zulip-icon/check";
@@ -27,13 +28,12 @@ is allowed to rename topics.
 
 ## Rename a topic
 
+<DependsOnPermissions />
+
 <Tabs>
   <TabItem label="Via message recipient bar">
     <Steps>
-      1. Click the **edit topic** (<PencilIcon />) icon in
-         the message recipient bar. If you do not see the
-         **edit topic** (<PencilIcon />) icon, you do not
-         have permission to rename this topic.
+      1. Click the **edit topic** (<PencilIcon />) icon in the message recipient bar.
       1. Edit the topic name.
       1. Click the **save** (<CheckIcon />) icon
          to save your changes.
@@ -44,8 +44,7 @@ is allowed to rename topics.
     <FlattenedSteps>
       <TopicActions />
 
-      1. Select **Move topic** or **Rename topic**. If you do not see either option,
-         you do not have permission to rename this topic.
+      1. Select **Move topic** or **Rename topic**.
       1. Edit the topic name.
       1. *(optional)*  If using the **Move topic** menu, select the destination channel
          for the topic from the channels dropdown list.

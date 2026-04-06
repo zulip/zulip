@@ -1,7 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
 import render_message_view_header from "../templates/message_view_header.hbs";
 
 import type {Filter} from "./filter.ts";
@@ -94,7 +93,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
     const description = filter.get_description()?.description;
     const link = filter.get_description()?.link;
     assert(title !== undefined);
-    let context = filter.add_icon_data({
+    const context = filter.add_icon_data({
         title,
         description,
         link,
@@ -113,21 +112,6 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
                 rendered_narrow_description: $t({
                     defaultMessage: "This channel does not exist or is private.",
                 }),
-            };
-        }
-
-        if (inbox_util.is_visible() && inbox_util.is_channel_view()) {
-            const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({
-                stream: current_stream,
-                show_colored_icon: true,
-            });
-            context = {
-                ...context,
-                title: undefined,
-                title_html: stream_name_with_privacy_symbol_html,
-                // We don't want to show an initial icon here.
-                icon: undefined,
-                zulip_icon: undefined,
             };
         }
 
@@ -153,8 +137,7 @@ export function colorize_message_view_header(): void {
     if (!current_sub) {
         return;
     }
-    // selecting i instead of .fa because web public streams have custom icon.
-    $("#message_view_header a.stream i").css("color", current_sub.color);
+    $("#message_view_header .navbar-icon").css("color", current_sub.color);
 }
 
 function append_and_display_title_area(context: MessageViewHeaderContext): void {

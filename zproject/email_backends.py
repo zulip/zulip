@@ -115,22 +115,20 @@ class EmailLogBackEnd(EmailBackend):
 
 
 class PersistentSMTPEmailBackend(EmailBackend):
-    def _open(self, **kwargs: Any) -> bool | None:
-        is_opened = super().open(**kwargs)
-        if is_opened:
-            self.opened_at = timezone_now()
-            return True
-
-        return is_opened
-
     @override
-    def open(self, **kwargs: Any) -> bool | None:
-        is_opened = self._open(**kwargs)
-        if is_opened:
-            return True
+    def open(self, **kwargs: Any) -> bool:
+        if super().open(**kwargs):
+            self.opened_at = timezone_now()
+        # Always return False so that Django's send_messages does not
+        # auto-close the connection after sending.
+        return False
 
+    def validate_or_reconnect(self) -> None:
+        """Validate that the existing SMTP connection is still alive,
+        reconnecting if necessary. Called from initialize_connection
+        with backoff protection, not from open()."""
         status = None
-        time_elapsed = (timezone_now() - self.opened_at).seconds / 60
+        time_elapsed = (timezone_now() - self.opened_at).total_seconds() / 60
         if (
             settings.EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES is None
             or time_elapsed <= settings.EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES
@@ -145,16 +143,4 @@ class PersistentSMTPEmailBackend(EmailBackend):
         if status is None or status != 250:
             # Close and connect again.
             super().close()
-            self._open()
-            # We return false here as Django will then have
-            # to leave the connection alive for next entries.
-            return False
-
-        # The connection was already open, the noop succeeded.
-        return False
-
-    @override
-    def close(self) -> None:
-        # We override close to a no-op so that Django's send_messages
-        # does not close the connection after sending a batch of emails.
-        pass
+            self.open()

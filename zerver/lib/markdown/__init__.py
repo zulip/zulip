@@ -44,7 +44,7 @@ from zerver.lib.exceptions import MarkdownRenderingError
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.mention import (
-    BEFORE_MENTION_ALLOWED_REGEX,
+    BEFORE_LINK_PRODUCING_MENTION_ALLOWED_REGEX,
     ChannelTopicInfo,
     FullNameInfo,
     MentionBackend,
@@ -63,6 +63,7 @@ from zerver.lib.thumbnail import (
 )
 from zerver.lib.timeout import unsafe_timeout
 from zerver.lib.timezone import common_timezones
+from zerver.lib.topic_link_util import TOPIC_LINK_SYNTAX_FOR_DISPLAY
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_channel, encode_hash_component
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
@@ -157,7 +158,7 @@ def verbose_compile(pattern: str) -> Pattern[str]:
 
 
 STREAM_LINK_REGEX = rf"""
-                     {BEFORE_MENTION_ALLOWED_REGEX} # Start after whitespace or specified chars
+                     {BEFORE_LINK_PRODUCING_MENTION_ALLOWED_REGEX} # Start after whitespace or specified chars
                      \#\*\*                         # and after hash sign followed by double asterisks
                          (?P<stream_name>[^\*]+)    # stream name can contain anything
                      \*\*                           # ends by double asterisks
@@ -178,7 +179,7 @@ def get_compiled_stream_link_regex() -> Pattern[str]:
 
 
 STREAM_TOPIC_LINK_REGEX = rf"""
-                     {BEFORE_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
+                     {BEFORE_LINK_PRODUCING_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
                      \#\*\*                          # and after hash sign followed by double asterisks
                          (?P<stream_name>[^\*>]+)    # stream name can contain anything except >
                          >                           # > acts as separator
@@ -201,7 +202,7 @@ def get_compiled_stream_topic_link_regex() -> Pattern[str]:
 
 
 STREAM_TOPIC_MESSAGE_LINK_REGEX = rf"""
-                     {BEFORE_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
+                     {BEFORE_LINK_PRODUCING_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
                      \#\*\*                          # and after hash sign followed by double asterisks
                          (?P<stream_name>[^\*>]+)    # stream name can contain anything except >
                          >                           # > acts as separator
@@ -1879,7 +1880,9 @@ class StreamTopicPattern(StreamTopicMessageProcessor):
             el.text = markdown.util.AtomicString(f"#{stream_name} > ")
             el.append(topic_el)
         else:
-            text = f"#{stream_name} > {topic_name}"
+            text = TOPIC_LINK_SYNTAX_FOR_DISPLAY.format(
+                channel_name=stream_name, topic_name=topic_name
+            )
             el.text = markdown.util.AtomicString(text)
 
         return el, m.start(), m.end()

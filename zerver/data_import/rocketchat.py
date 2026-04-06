@@ -296,7 +296,7 @@ def build_custom_emoji(
         emoji_file_data[object_id_to_filename.get(file_id, file_id)].append(emoji_chunk["data"])
 
     for rc_emoji in custom_emoji_data["emoji"]:
-        emoji_filename = f"{rc_emoji['name']}.{rc_emoji['extension']}"
+        emoji_filename = sanitize_name(f"{rc_emoji['name']}.{rc_emoji['extension']}")
         emoji_data = b"".join(emoji_file_data[emoji_filename])
 
         target_sub_path = RealmEmoji.PATH_ID_TEMPLATE.format(

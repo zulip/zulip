@@ -86,6 +86,28 @@ class RealmFilterTest(ZulipTestCase):
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_error(result, "Example text does not match auto-conversion field.")
 
+        # Example input does not contain the optional group.
+        data = {
+            "pattern": r"(?P<prefix>[a-z]+-)?ZUL-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/{prefix}ZUL-{id}",
+            "example_input": "ZUL-15",
+            "reverse_template": "{prefix}ZUL-{id}",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data["pattern"], "ZUL-15"))
+
+        # Similar pattern, but with the optional group present in the example.
+        data = {
+            "pattern": r"(?P<prefix>[a-z]+-)?ZUL-NEW-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/{prefix}ZUL-NEW-{id}",
+            "example_input": "abc-ZUL-NEW-15",
+            "reverse_template": "{prefix}ZUL-NEW-{id}",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data["pattern"], "abc-ZUL-NEW-15"))
+
         data = {
             "pattern": r"ZUL-(?P<id>\d+)",
             "url_template": "https://realm.com/my_realm_filter/{id}",

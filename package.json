@@ -178,6 +178,7 @@
   "pnpm": {
     "overrides": {
       "@types/eslint": "npm:eslint@^9.10.0",
+      "openapi-examples-validator>json-schema-ref-parser@^9": "npm:@apidevtools/json-schema-ref-parser@^15.3.3",
       "source-map@^0.6": "npm:source-map-js@^1.2.1"
     },
     "patchedDependencies": {

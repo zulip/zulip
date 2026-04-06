@@ -495,6 +495,55 @@ class UnreadCountTests(ZulipTestCase):
             message_ids,
         )
 
+    def test_update_flags_for_narrow_with_operator(self) -> None:
+        """Test that the with operator in a narrow is correctly handled
+        by the update_message_flags_for_narrow endpoint."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        message_ids = [
+            self.send_stream_message(
+                self.example_user("cordelia"), "Verona", topic_name="test topic"
+            )
+            for i in range(5)
+        ]
+
+        # First mark all messages as read.
+        self.assert_json_success(
+            self.client_post(
+                "/json/messages/flags",
+                {
+                    "messages": orjson.dumps(message_ids).decode(),
+                    "op": "add",
+                    "flag": "read",
+                },
+            )
+        )
+
+        # Mark messages as unread using a narrow that includes a
+        # "with" operator, as the web app sends for topic views
+        # accessed via permalink URLs.
+        response = self.assert_json_success(
+            self.client_post(
+                "/json/messages/flags/narrow",
+                {
+                    "anchor": message_ids[0],
+                    "num_before": 0,
+                    "num_after": 999,
+                    "narrow": orjson.dumps(
+                        [
+                            {"operator": "channel", "operand": get_stream("Verona", user.realm).id},
+                            {"operator": "topic", "operand": "test topic"},
+                            {"operator": "with", "operand": str(message_ids[2])},
+                        ]
+                    ).decode(),
+                    "op": "remove",
+                    "flag": "read",
+                },
+            )
+        )
+        self.assertEqual(response["processed_count"], 5)
+        self.assertEqual(response["updated_count"], 5)
+
     def test_update_flags_for_narrow_misuse(self) -> None:
         self.login("hamlet")
 
@@ -1178,6 +1227,29 @@ class GetUnreadMsgsTest(ZulipTestCase):
             dict(user_ids_string=direct_message_group_string),
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
+    def test_raw_unread_personal_using_personal_recipients(self) -> None:
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+
+        cordelia_pm_message_ids = [self.send_personal_message(cordelia, hamlet) for i in range(3)]
+        othello_pm_message_ids = [self.send_personal_message(othello, hamlet) for i in range(3)]
+
+        raw_unread_data = get_raw_unread_data(user_profile=hamlet)
+
+        pm_dict = raw_unread_data["pm_dict"]
+
+        self.assertEqual(
+            set(pm_dict.keys()),
+            set(cordelia_pm_message_ids) | set(othello_pm_message_ids),
+        )
+
+        self.assertEqual(
+            pm_dict[cordelia_pm_message_ids[0]],
+            dict(other_user_id=cordelia.id),
+        )
+
     def test_raw_unread_personal(self) -> None:
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
@@ -1235,6 +1307,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
             dict(other_user_id=othello.id),
         )
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_raw_unread_personal_from_self(self) -> None:
         hamlet = self.example_user("hamlet")
 

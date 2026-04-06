@@ -477,6 +477,17 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         EMBEDDED_BOT,
     ]
 
+    # Certain fields can imply an unusually elevated level of permissions
+    # for the user in some way. Such privileges generally should not be
+    # carried over to a new server at import time.
+    SPECIAL_PERMISSIONS_TO_RESET_AT_IMPORT = [
+        "is_staff",
+        "can_forge_sender",
+        "can_create_users",
+        "can_change_user_emails",
+        "rate_limits",
+    ]
+
     id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
 
     # For historical reasons, Zulip has two email fields.  The

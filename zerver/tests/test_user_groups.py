@@ -718,6 +718,15 @@ class UserGroupTestCase(ZulipTestCase):
             check_user_has_permission_by_role(polonius, everyone_group.id, system_groups_name_dict)
         )
 
+        internet_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE_ON_INTERNET,
+            realm_for_sharding=realm,
+            is_system_group=True,
+        )
+        self.assertTrue(
+            check_user_has_permission_by_role(polonius, internet_group.id, system_groups_name_dict)
+        )
+
     def test_user_group_ids_to_user_groups(self) -> None:
         realm = get_realm("zulip")
         hamletcharacters_group = NamedUserGroup.objects.get(

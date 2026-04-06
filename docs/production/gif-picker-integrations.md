@@ -11,8 +11,8 @@ In this case, the GIF picker will use Tenor instead of GIPHY.
 
 ## GIPHY
 
-To enable the GIPHY integration, you need to get a production API key from
-[GIPHY](https://developers.giphy.com/).
+To enable the GIPHY integration, you need to get a beta or production API key
+from [GIPHY](https://developers.giphy.com/).
 
 ### Apply for API key
 
@@ -26,12 +26,15 @@ To enable the GIPHY integration, you need to get a production API key from
 1. Enter a name and a description for your app and click on **Create
    New App**. The hostname for your Zulip server is a fine name.
 
-1. You will receive a beta API key.
+1. You will receive a [rate-limited][giphy-beta-api] beta API key, which
+   may be sufficient for smaller Zulip servers.
 
-1. Apply for a production API key by following the steps mentioned by
-   GIPHY on the same page. Note that when submitting a screenshot to
-   request a production API key, GIPHY expects the screenshot to show
-   the full page (including URL).
+1. (_optional_) If the beta API key rate limit is too low for your
+   organization, apply for a production API key by following the
+   instructions provided by GIPHY when you receive your beta API key.
+   Note that when submitting a screenshot to request a production API
+   key, GIPHY expects the screenshot to show the full page (including
+   the URL).
 
 You can then configure your Zulip server to use GIPHY API as
 follows:
@@ -100,3 +103,4 @@ be required).
 
 [help-center-giphy]: https://zulip.com/help/animated-gifs-from-giphy
 [giphy-dashboard]: https://developers.giphy.com/dashboard/
+[giphy-beta-api]: https://support.giphy.com/hc/en-us/articles/360035340511

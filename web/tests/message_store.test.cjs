@@ -531,6 +531,7 @@ test("get_message_ids_in_stream", () => {
 
 test("maybe_update_raw_content", () => {
     const message1 = {
+        id: 1,
         raw_content: undefined,
         type: "stream",
         stream: devel.name,
@@ -538,6 +539,7 @@ test("maybe_update_raw_content", () => {
     };
 
     const message2 = {
+        id: 2,
         raw_content: undefined,
         type: "stream",
         stream: denmark.name,
@@ -545,15 +547,18 @@ test("maybe_update_raw_content", () => {
     };
 
     const message3 = {
+        id: 3,
         raw_content: "should be reset",
         type: "stream",
         stream: denmark.name,
         stream_id: denmark.stream_id,
     };
-
-    message_store.maybe_update_raw_content(message1, "hello world");
-    message_store.maybe_update_raw_content(message2, "hello world");
-    message_store.maybe_update_raw_content(message3, "hello world");
+    for (const message of [message1, message2, message3]) {
+        message_store.update_message_cache({message});
+    }
+    message_store.maybe_update_raw_content(message1.id, "hello world");
+    message_store.maybe_update_raw_content(message2.id, "hello world");
+    message_store.maybe_update_raw_content(message3.id, "hello world");
     // It is safe to update raw_content of messages
     // we will be receiving events for.
     assert.equal(message1.raw_content, "hello world");
@@ -563,4 +568,11 @@ test("maybe_update_raw_content", () => {
     // We should reset accidentally cached raw_content for messages
     // we don't receive update events for.
     assert.equal(message3.raw_content, undefined);
+
+    // Deleting a message from the message store, should
+    // no longer update the raw_content of the message
+    // object.
+    message_store.remove([1]);
+    message_store.maybe_update_raw_content(message1.id, "bye world");
+    assert.equal(message1.raw_content, "hello world");
 });

@@ -34,7 +34,10 @@ from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
+from zerver.tornado.django_api import EventQueueData
 from zerver.tornado.event_queue import (
+    DEFAULT_EVENT_QUEUE_TIMEOUT_SECS,
+    MOBILE_EVENT_QUEUE_TIMEOUT_SECS,
     allocate_client_descriptor,
     clear_client_event_queues_for_testing,
     get_client_info_for_message_event,
@@ -90,7 +93,7 @@ class EventsEndpointTest(ZulipTestCase):
             result = self.api_post(user, "/api/v1/register")
         self.assert_json_error(result, "Could not allocate event queue")
 
-        return_event_queue = "15:11"
+        return_event_queue = EventQueueData(queue_id="15:11", idle_queue_timeout_secs=600)
         return_user_events: list[dict[str, Any]] = []
 
         # We choose realm_emoji somewhat randomly--we want
@@ -119,7 +122,7 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(result_dict["queue_id"], "15:11")
 
         # Now start simulating returning actual data
-        return_event_queue = "15:12"
+        return_event_queue.queue_id = "15:12"
         return_user_events = [test_event]
 
         with stub_event_queue_user_events(return_event_queue, return_user_events):
@@ -135,7 +138,7 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(result_dict["realm_emoji"], {})
 
         # Now test with `fetch_event_types` not matching the event
-        return_event_queue = "15:13"
+        return_event_queue.queue_id = "15:13"
         with stub_event_queue_user_events(return_event_queue, return_user_events):
             result = self.api_post(
                 user,
@@ -173,6 +176,44 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertIn("realm_emoji", result_dict)
         self.assertEqual(result_dict["realm_emoji"], {})
         self.assertEqual(result_dict["queue_id"], "15:13")
+
+    def test_idle_queue_timeout(self) -> None:
+        user = self.example_user("hamlet")
+
+        # Verify response includes idle_queue_timeout_secs.
+        queue_data = EventQueueData(
+            queue_id="1", idle_queue_timeout_secs=DEFAULT_EVENT_QUEUE_TIMEOUT_SECS
+        )
+        with stub_event_queue_user_events(queue_data, []):
+            result = self.api_post(user, "/api/v1/register")
+        result_dict = self.assert_json_success(result)
+        self.assertEqual(result_dict["idle_queue_timeout_secs"], DEFAULT_EVENT_QUEUE_TIMEOUT_SECS)
+
+        # "mobile" is accepted.
+        queue_data = EventQueueData(
+            queue_id="2", idle_queue_timeout_secs=MOBILE_EVENT_QUEUE_TIMEOUT_SECS
+        )
+        with stub_event_queue_user_events(queue_data, []):
+            result = self.api_post(
+                user,
+                "/api/v1/register",
+                {"idle_queue_timeout": orjson.dumps("mobile").decode()},
+            )
+        result_dict = self.assert_json_success(result)
+        self.assertEqual(result_dict["idle_queue_timeout_secs"], MOBILE_EVENT_QUEUE_TIMEOUT_SECS)
+
+        # Explicit integer value is accepted.
+        queue_data = EventQueueData(queue_id="3", idle_queue_timeout_secs=3600)
+        with stub_event_queue_user_events(queue_data, []):
+            result = self.api_post(user, "/api/v1/register", {"idle_queue_timeout": 3600})
+        result_dict = self.assert_json_success(result)
+        self.assertEqual(result_dict["idle_queue_timeout_secs"], 3600)
+
+        # Invalid string value is rejected.
+        result = self.api_post(
+            user, "/api/v1/register", {"idle_queue_timeout": orjson.dumps("invalid").decode()}
+        )
+        self.assert_json_error_contains(result, "idle_queue_timeout")
 
     def test_events_register_spectators(self) -> None:
         # Verify that POST /register works for spectators, but not for
@@ -335,11 +376,13 @@ class GetEventsTest(ZulipTestCase):
         request = HostRequestMock(post_data, user_profile, tornado_handler=dummy_handler)
         return view_func(request, user_profile)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_get_events(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.email
         recipient_user_profile = self.example_user("othello")
         recipient_email = recipient_user_profile.email
+        recipient = self.get_dm_group_recipient(user_profile, recipient_user_profile)
         self.login_user(user_profile)
 
         result = self.tornado_call(
@@ -415,7 +458,7 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(events[0]["local_message_id"], local_id)
         self.assertEqual(events[0]["message"]["display_recipient"][0]["is_mirror_dummy"], False)
         self.assertEqual(events[0]["message"]["display_recipient"][1]["is_mirror_dummy"], False)
-        self.assertEqual(events[0]["message"]["recipient_id"], recipient_user_profile.recipient_id)
+        self.assertEqual(events[0]["message"]["recipient_id"], recipient.id)
 
         last_event_id = events[0]["id"]
         local_id = "10.02"
@@ -448,7 +491,7 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["sender_email"], email)
         self.assertEqual(events[0]["local_message_id"], local_id)
-        self.assertEqual(events[0]["message"]["recipient_id"], recipient_user_profile.recipient_id)
+        self.assertEqual(events[0]["message"]["recipient_id"], recipient.id)
 
         # Test that the received message in the receiver's event queue
         # exists and does not contain a local id
@@ -469,12 +512,13 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(recipient_events[0]["message"]["sender_email"], email)
         self.assertTrue("local_message_id" not in recipient_events[0])
         # Incoming DMs show the recipient_id that outgoing DMs would.
-        self.assertEqual(recipient_events[0]["message"]["recipient_id"], user_profile.recipient_id)
+        self.assertEqual(events[0]["message"]["recipient_id"], recipient.id)
         self.assertEqual(recipient_events[1]["type"], "message")
         self.assertEqual(recipient_events[1]["message"]["sender_email"], email)
         self.assertTrue("local_message_id" not in recipient_events[1])
-        self.assertEqual(recipient_events[1]["message"]["recipient_id"], user_profile.recipient_id)
+        self.assertEqual(recipient_events[1]["message"]["recipient_id"], recipient.id)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_get_events_narrow(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
@@ -1236,7 +1280,7 @@ class FetchQueriesTest(ZulipTestCase):
         self.login_user(user)
 
         with (
-            self.assert_database_query_count(48),
+            self.assert_database_query_count(49),
             mock.patch("zerver.lib.events.always_want") as want_mock,
         ):
             fetch_initial_state_data(user, realm=user.realm)
@@ -1274,7 +1318,7 @@ class FetchQueriesTest(ZulipTestCase):
             realm_user=4,
             realm_user_groups=2,
             realm_user_settings_defaults=1,
-            recent_private_conversations=1,
+            recent_private_conversations=2,
             reminders=1,
             saved_snippets=1,
             scheduled_messages=1,
@@ -1299,7 +1343,7 @@ class FetchQueriesTest(ZulipTestCase):
 
         for event_type in sorted(wanted_event_types):
             count = expected_counts[event_type]
-            with self.assert_database_query_count(count):
+            with self.subTest(event_type=event_type), self.assert_database_query_count(count):
                 if event_type == "update_message_flags":
                     event_types = ["update_message_flags", "message"]
                 else:

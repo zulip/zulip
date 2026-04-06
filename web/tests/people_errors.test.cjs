@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -13,6 +14,9 @@ const reload_state = mock_esm("../src/reload_state", {
 const settings_data = mock_esm("../src/settings_data");
 
 const people = zrequire("people");
+const {set_realm} = zrequire("state_data");
+
+set_realm(make_realm());
 
 const me = make_user({
     email: "me@example.com",
@@ -38,6 +42,22 @@ run_test("report_late_add", ({override}) => {
     override(reload_state, "is_in_progress", () => false);
     blueslip.expect("log", "Message was sent by an inaccessible user");
     people.report_late_add(55, "foo@example.com");
+});
+
+run_test("add_missing_people_for_message_reactions", ({override}) => {
+    override(settings_data, "user_can_access_all_other_users", () => true);
+
+    const unknown_user_id = 8888;
+    assert.ok(!people.is_known_user_id(unknown_user_id));
+
+    blueslip.expect("error", "Added user late");
+    people.add_missing_people_for_message_reactions([
+        {user_id: me.user_id},
+        {user_id: unknown_user_id},
+    ]);
+
+    // Known user (me) is unchanged; unknown user is now in the store.
+    assert.ok(people.is_known_user_id(unknown_user_id));
 });
 
 run_test("blueslip", () => {

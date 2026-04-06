@@ -506,7 +506,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 any_message_content_edited = true;
 
                 // Update raw_content, so that editing a few times in a row is fast.
-                message_store.maybe_update_raw_content(anchor_message, event.content);
+                message_store.maybe_update_raw_content(anchor_message.id, event.content);
 
                 // Editing a message may change the titles for linked
                 // media, so we must invalidate the asset map.

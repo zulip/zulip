@@ -1,9 +1,9 @@
 {{#if rendered_description}}
-<span class="sub-stream-description rendered_markdown">
+<div class="sub-stream-description settings-view-only-textarea rendered_markdown">
     {{rendered_markdown rendered_description}}
-</span>
+</div>
 {{else}}
 <span class="sub-stream-description no-description">
-    {{t "This channel does not yet have a description." }}
+    {{t "No description." }}
 </span>
 {{/if}}

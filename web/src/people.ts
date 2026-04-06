@@ -285,6 +285,10 @@ export function get_user_id(email: string): number | undefined {
     return user_id;
 }
 
+export function maybe_get_user_id_by_email(email: string): number | undefined {
+    return get_by_email(email)?.user_id;
+}
+
 export function is_known_user_id(user_id: number): boolean {
     /*
     We may get a user_id from mention syntax that we don't
@@ -903,6 +907,10 @@ export function small_avatar_url_for_person(person: User | CurrentUser): string 
     }
 
     return `/avatar/${person.user_id}`;
+}
+
+export function small_avatar_url_for_user_id(user_id: number): string {
+    return small_avatar_url_for_person(get_by_user_id(user_id));
 }
 
 export function medium_avatar_url_for_person(person: User): string {
@@ -1805,6 +1813,22 @@ export function extract_people_from_message(message: MessageWithBooleans): void 
         report_late_add(user_id, person.email);
 
         _add_user(make_user(user_id, person.email, person.full_name));
+    }
+}
+
+export function add_missing_people_for_message_reactions(reactions: {user_id: number}[]): void {
+    // Ensure all users referenced in reactions exist in the people
+    // store, creating placeholder users for any that are missing.
+    // This mirrors extract_people_from_message above and prevents
+    // assert failures in reactions processing.
+    for (const reaction of reactions) {
+        if (people_by_user_id_dict.has(reaction.user_id)) {
+            continue;
+        }
+
+        const email = "user" + reaction.user_id + "@" + realm.realm_bot_domain;
+        report_late_add(reaction.user_id, email);
+        _add_user(make_user(reaction.user_id, email, INACCESSIBLE_USER_NAME));
     }
 }
 

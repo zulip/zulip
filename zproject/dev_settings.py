@@ -237,6 +237,8 @@ INPUT_COST_PER_GIGATOKEN = 790
 MAX_PER_USER_MONTHLY_AI_COST = 1
 MAX_WEB_DATA_IMPORT_SIZE_MB = 1024
 
+PREFER_DIRECT_MESSAGE_GROUP = True
+
 # We override some rate limiting rules in development, when they prove
 # excessively limiting for development and testing purposes.
 RATE_LIMITING_RULES = {

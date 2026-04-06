@@ -86,6 +86,12 @@ FIXTURELESS_INTEGRATIONS_WITH_SCREENSHOTS: list[str] = [
     "rss",
     "svn",
     "trac",
+    "errbot",
+    "github_detail",
+    "hubot",
+    "irc",
+    "matrix",
+    "xkcd",
 ]
 FIXTURELESS_SCREENSHOT_CONTENT: dict[str, list[fixtureless_integrations.ScreenshotContent]] = {
     key: [getattr(fixtureless_integrations, key.upper().replace("-", "_"))]
@@ -120,7 +126,7 @@ class FixturelessScreenshotConfigOptions:
 
 @dataclass
 class FixturelessScreenshotConfig:
-    message: str
+    message: str | list[fixtureless_integrations.MessageThread]
     topic: str
     channel: str | None = None
     image_name: str = "001.png"
@@ -1018,6 +1024,7 @@ PLUGIN_INTEGRATIONS: list[Integration] = [
         ["continuous-integration"],
         [FixturelessScreenshotConfigOptions(image_name="004.png")],
     ),
+    Integration("n8n", ["meta-integration"], display_name="n8n"),
     Integration("nextcloud", ["productivity"]),
     Integration("onyx", ["productivity"], logo="images/integrations/logos/onyx.png"),
 ]
@@ -1150,23 +1157,13 @@ INTEGRATIONS_MISSING_SCREENSHOT_CONFIG = (
     | {"intercom", "notion"}
     # Integrations that call external API endpoints.
     | {"slack"}
-    # Integrations that require screenshots of message threads - support is yet to be added
-    | {
-        "errbot",
-        "github_detail",
-        "hubot",
-        "irc",
-        # Also requires a screenshot on the Matrix side of the bridge
-        "matrix",
-        "xkcd",
-    }
     | hubot_integration_names
 )
 
 # Add integrations that are not meant to have example screenshots here
 INTEGRATIONS_WITHOUT_SCREENSHOTS = (
     # Integration frameworks
-    {"ifttt", "slack_incoming", "zapier"}
+    {"ifttt", "n8n", "slack_incoming", "zapier"}
     # Outgoing integrations
     | {"email", "onyx"}
     # Video call integrations

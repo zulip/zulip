@@ -12,6 +12,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
+import * as resize from "./resize.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -295,6 +296,7 @@ function create_stream(): void {
             $t_html({defaultMessage: "The channel description cannot contain newline characters."}),
             $(".stream_create_info"),
         );
+        resize.resize_stream_creation_subscribers_list();
         return;
     }
     const subscriptions = JSON.stringify([{name: stream_name, description}]);
@@ -434,6 +436,7 @@ function create_stream(): void {
                     xhr,
                     $(".stream_create_info"),
                 );
+                resize.resize_stream_creation_subscribers_list();
             }
             loading.destroy_indicator($("#stream_creating_indicator"));
         },
@@ -463,6 +466,7 @@ function clear_error_display(): void {
     stream_name_error.clear_errors();
     $(".stream_create_info").hide();
     stream_subscription_error.clear_errors();
+    resize.resize_stream_creation_subscribers_list();
 }
 
 export function show_new_stream_modal(): void {

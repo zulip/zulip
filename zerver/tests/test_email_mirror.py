@@ -28,6 +28,7 @@ from zerver.lib.email_mirror import (
     create_missed_message_address,
     filter_footer,
     generate_missed_message_token,
+    get_message_part_by_type,
     get_missed_message_token_from_address,
     is_forwarded,
     is_missed_message_address,
@@ -1273,6 +1274,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
 
 
 class TestMissedMessageEmailMessages(ZulipTestCase):
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=False)
     def test_receive_missed_personal_message_email_messages(self) -> None:
         # Build dummy messages for message notification email reply.
         # Have Hamlet send Othello a direct message. Othello will
@@ -1304,7 +1306,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
 
-        with self.assert_database_query_count(17):
+        with self.assert_database_query_count(18):
             process_message(incoming_valid_message)
 
         # confirm that Hamlet got the message
@@ -1872,6 +1874,21 @@ class TestContentTypeInvalidCharset(ZulipTestCase):
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, "Email fixture 1.txt body")
+
+    def test_israel_encoding_alias(self) -> None:
+        # in hebrew: shalom (שלום)
+        hebrew_text_bytes = b"\xf9\xec\xe5\xed"
+
+        message = EmailMessage()
+        message.set_payload(hebrew_text_bytes)
+
+        # testing exact string
+        message["Content-Type"] = 'text/plain; charset="iso-8859-8-i"'
+
+        # return the decoded string
+        decoded_body = get_message_part_by_type(message, "text/plain")
+
+        self.assertEqual(decoded_body, "שלום")
 
 
 class TestEmailMirrorProcessMessageNoValidRecipient(ZulipTestCase):

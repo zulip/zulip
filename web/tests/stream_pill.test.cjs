@@ -154,7 +154,7 @@ run_test("generate_pill_html", () => {
         "<div class='pill 'data-stream-id=\"101\" tabindex=0>\n" +
             '    <span class="pill-label">\n' +
             '        <span class="pill-value">\n' +
-            '<i class="zulip-icon zulip-icon-hashtag channel-privacy-type-icon" aria-hidden="true"></i>            Denmark\n' +
+            '                <span class="decorated-channel-name-wrapper"><span class="channel-privacy-type-icon"><i class="zulip-icon zulip-icon-hashtag" aria-hidden="true"></i></span><span class="decorated-channel-name">Denmark</span></span>\n' +
             "        </span></span>\n" +
             '    <div class="exit">\n' +
             '        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n' +

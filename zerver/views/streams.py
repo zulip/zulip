@@ -1124,6 +1124,7 @@ def get_subscribers_backend(
     (stream, _sub) = access_stream_by_id(
         user_profile,
         stream_id,
+        require_active_channel=False,
         require_content_access=False,
     )
     subscribers = get_subscriber_ids(stream, user_profile)
@@ -1171,7 +1172,9 @@ def get_stream_backend(
     *,
     stream_id: PathOnly[int],
 ) -> HttpResponse:
-    (stream, _sub) = access_stream_by_id(user_profile, stream_id, require_content_access=False)
+    (stream, _sub) = access_stream_by_id(
+        user_profile, stream_id, require_active_channel=False, require_content_access=False
+    )
 
     recent_traffic = get_streams_traffic(user_profile.realm, {stream.id})
     anonymous_group_membership = get_anonymous_group_membership_dict_for_streams([stream])
@@ -1210,7 +1213,7 @@ def get_topics_backend(
     else:
         assert user_profile is not None
 
-        (stream, _sub) = access_stream_by_id(user_profile, stream_id)
+        (stream, _sub) = access_stream_by_id(user_profile, stream_id, require_active_channel=False)
 
         assert stream.recipient_id is not None
         result = get_topic_history_for_stream(

@@ -3,11 +3,11 @@ from contextlib import suppress
 from urllib.parse import urlsplit
 
 import orjson
-from circuitbreaker import CircuitBreakerError, circuit
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
+from pybreaker import CircuitBreaker, CircuitBreakerError
 from requests.exceptions import HTTPError, ProxyError, RequestException, Timeout
 from sentry_sdk.integrations.logging import ignore_logger
 
@@ -99,8 +99,8 @@ def sentry_tunnel(
 # Smokescreen as a CONNECT proxy, so failures from Smokescreen
 # failing to connect at the TCP level will report as
 # ProxyErrors.
-def open_circuit_for(exc_type: type[Exception], exc_value: Exception) -> bool:
-    if issubclass(exc_type, ProxyError | Timeout):
+def open_circuit_for(exc_value: Exception) -> bool:
+    if isinstance(exc_value, ProxyError | Timeout):
         return True
     if isinstance(exc_value, HTTPError):
         response = exc_value.response
@@ -110,11 +110,11 @@ def open_circuit_for(exc_type: type[Exception], exc_value: Exception) -> bool:
 
 
 # Open the circuit after 2 failures, and leave it open for 30s.
-@circuit(
-    failure_threshold=2,
-    recovery_timeout=30,
+@CircuitBreaker(
+    fail_max=2,
+    reset_timeout=30,
     name="Sentry tunnel",
-    expected_exception=open_circuit_for,
+    exclude=(open_circuit_for,),
 )
 def sentry_request(url: str, data: bytes) -> None:
     SentryTunnelSession().post(

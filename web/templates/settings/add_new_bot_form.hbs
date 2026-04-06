@@ -1,4 +1,7 @@
 <form class="modal-form" id="create_bot_form">
+    {{#unless user_has_email_set}}
+    <div class="demo-organization-add-email-banner banner-wrapper"></div>
+    {{/unless}}
     <div class="new-bot-form">
         <div class="input-group">
             <label for="create_bot_type" class="modal-field-label">

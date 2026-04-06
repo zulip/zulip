@@ -755,15 +755,6 @@ wheels = [
 ]
 
 [[package]]
-name = "circuitbreaker"
-version = "2.1.3"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/df/ac/de7a92c4ed39cba31fe5ad9203b76a25ca67c530797f6bb420fff5f65ccb/circuitbreaker-2.1.3.tar.gz", hash = "sha256:1a4baee510f7bea3c91b194dcce7c07805fe96c4423ed5594b75af438531d084", size = 10787, upload-time = "2025-03-31T08:12:08.963Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ae/34/15f08edd4628f65217de1fc3c1a27c82e46fe357d60c217fc9881e12ebcc/circuitbreaker-2.1.3-py3-none-any.whl", hash = "sha256:87ba6a3ed03fdc7032bc175561c2b04d52ade9d5faf94ca2b035fbdc5e6b1dd1", size = 7737, upload-time = "2025-03-31T08:12:07.802Z" },
-]
-
-[[package]]
 name = "click"
 version = "8.3.1"
 source = { registry = "https://pypi.org/simple" }
@@ -3746,6 +3737,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pybreaker"
+version = "1.4.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f2/89/fbf98e383f1ec6d117af2cd983efdb3eb7018b63834c427025764194cac2/pybreaker-1.4.1.tar.gz", hash = "sha256:8df2d245c73ba40c8242c56ffb4f12138fbadc23e296224740c2028ea9dc1178", size = 15555, upload-time = "2025-09-21T15:12:04.499Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/44/75/e64d3d40a741e2be21d69154f4e5c43a66f0c603c5ef11f49e01429a5932/pybreaker-1.4.1-py3-none-any.whl", hash = "sha256:b4dab4a05195b7f2a64a6c1a6c4ba7a96534ef56ea7210e6bcb59f28897160e0", size = 12915, upload-time = "2025-09-21T15:12:02.284Z" },
+]
+
+[[package]]
 name = "pycparser"
 version = "3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -6376,7 +6376,6 @@ dev = [
     { name = "boto3" },
     { name = "boto3-stubs", extra = ["s3", "ses", "sns", "sqs"] },
     { name = "chardet" },
-    { name = "circuitbreaker" },
     { name = "codespell" },
     { name = "coverage" },
     { name = "cryptography" },
@@ -6427,6 +6426,7 @@ dev = [
     { name = "psycopg2" },
     { name = "pyahocorasick" },
     { name = "pyasyncore" },
+    { name = "pybreaker" },
     { name = "pydantic" },
     { name = "pydantic-partials" },
     { name = "pygithub" },
@@ -6520,7 +6520,6 @@ prod = [
     { name = "beautifulsoup4" },
     { name = "boto3" },
     { name = "chardet" },
-    { name = "circuitbreaker" },
     { name = "cryptography" },
     { name = "css-inline" },
     { name = "decorator" },
@@ -6557,6 +6556,7 @@ prod = [
     { name = "prometheus-client" },
     { name = "psycopg2" },
     { name = "pyahocorasick" },
+    { name = "pybreaker" },
     { name = "pydantic" },
     { name = "pydantic-partials" },
     { name = "pygments" },
@@ -6616,7 +6616,6 @@ dev = [
     { name = "boto3" },
     { name = "boto3-stubs", extras = ["s3", "ses", "sns", "sqs"] },
     { name = "chardet", specifier = "<6" },
-    { name = "circuitbreaker" },
     { name = "codespell" },
     { name = "coverage" },
     { name = "cryptography" },
@@ -6667,6 +6666,7 @@ dev = [
     { name = "psycopg2" },
     { name = "pyahocorasick" },
     { name = "pyasyncore" },
+    { name = "pybreaker" },
     { name = "pydantic" },
     { name = "pydantic-partials" },
     { name = "pygithub" },
@@ -6762,7 +6762,6 @@ prod = [
     { name = "beautifulsoup4" },
     { name = "boto3" },
     { name = "chardet", specifier = "<6" },
-    { name = "circuitbreaker" },
     { name = "cryptography" },
     { name = "css-inline" },
     { name = "decorator" },
@@ -6799,6 +6798,7 @@ prod = [
     { name = "prometheus-client" },
     { name = "psycopg2" },
     { name = "pyahocorasick" },
+    { name = "pybreaker" },
     { name = "pydantic" },
     { name = "pydantic-partials" },
     { name = "pygments" },

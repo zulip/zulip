@@ -215,7 +215,19 @@ export function initiate({
         return;
     }
 
-    if (reload_state.is_pending() && !immediate) {
+    if (immediate) {
+        // For immediate reloads (e.g., expired event queue), skip the
+        // /compatibility check — the caller just received a server
+        // response confirming reachability. Calling do_reload_app
+        // synchronously ensures reload_state.is_in_progress() is set
+        // before any pending HTTP callbacks fire; channel.ts will
+        // suppress those callbacks, preventing errors from processing
+        // stale data.
+        do_reload_app(send_after_reload, save_compose, reason);
+        return;
+    }
+
+    if (reload_state.is_pending()) {
         // If we're already pending and the caller is not requesting
         // an immediate reload, there's nothing to do.
         return;

@@ -433,7 +433,7 @@ def prepare_synthetic_root_message_id(
         # ref:
         # - https://datatracker.ietf.org/doc/html/rfc5322#section-3.6.4
         # - https://datatracker.ietf.org/doc/html/rfc5322#section-3.2.3
-        topic_name_base64 = base64.b64encode(topic_name.encode("utf-8")).decode("utf-8")
+        topic_name_base64 = base64.b64encode(topic_name.lower().encode("utf-8")).decode("utf-8")
         id_left = f"{recipient_id}.{topic_name_base64}"
 
     return f"<{id_left}@{settings.EXTERNAL_HOST_WITHOUT_PORT}>"
@@ -462,6 +462,8 @@ def do_send_missedmessage_events_reply_in_zulip(
         message = missed_message["message"]
         if message.recipient.type == Recipient.PERSONAL:
             recipients.add((message.recipient_id, message.sender_id))
+        elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+            recipients.add((message.recipient_id, ""))
         else:
             recipients.add((message.recipient_id, message.topic_name().lower()))
     assert len(recipients) == 1, f"Unexpectedly multiple recipients: {recipients!r}"
@@ -610,7 +612,7 @@ def do_send_missedmessage_events_reply_in_zulip(
             topic_resolved=topic_resolved,
         )
         synthetic_root_message_id = prepare_synthetic_root_message_id(
-            Recipient.STREAM, message.recipient_id, topic_name=display_topic_name.lower()
+            Recipient.STREAM, message.recipient_id, topic_name=display_topic_name
         )
     else:
         raise AssertionError("Invalid messages!")

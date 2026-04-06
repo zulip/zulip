@@ -21,7 +21,9 @@ import responses
 import stripe
 import time_machine
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.core import signing
+from django.test import override_settings
 from django.urls.resolvers import get_resolver
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now as timezone_now
@@ -35,6 +37,7 @@ from corporate.lib.stripe import (
     BillingError,
     BillingSessionAuditLogEventError,
     BillingSessionEventType,
+    BillingUserCounts,
     InitialUpgradeRequest,
     InvalidBillingScheduleError,
     InvalidTierError,
@@ -2230,7 +2233,7 @@ class StripeTest(StripeTestCase):
         # Change the seat count in upgrade flow: after do_upgrade, during process_initial_upgrade
         with (
             patch(
-                "corporate.lib.stripe.BillingSession.stale_seat_count_check",
+                "corporate.lib.stripe.BillingSession.stale_license_count_check",
                 return_value=self.seat_count,
             ),
             patch("corporate.lib.stripe.get_latest_seat_count", return_value=new_seat_count),
@@ -2282,7 +2285,7 @@ class StripeTest(StripeTestCase):
         # Change the seat count in upgrade flow: after do_upgrade, during process_initial_upgrade
         with (
             patch(
-                "corporate.lib.stripe.BillingSession.stale_seat_count_check",
+                "corporate.lib.stripe.BillingSession.stale_license_count_check",
                 return_value=self.seat_count,
             ),
             patch("corporate.lib.stripe.get_latest_seat_count", return_value=new_seat_count),
@@ -2536,16 +2539,14 @@ class StripeTest(StripeTestCase):
         )
         self.assert_length(m.output, 1)
 
-    @mock_stripe(tested_timestamp_fields=["created"])
+    @mock_stripe()
     def test_check_upgrade_parameters(self, *mocks: Mock) -> None:
-        # Tests all the error paths except 'not enough licenses'
         def check_error(
             error_message: str,
             error_description: str,
             upgrade_params: Mapping[str, Any],
             del_args: Sequence[str] = [],
         ) -> None:
-            self.add_card_to_customer_for_upgrade()
             if error_description:
                 with self.assertLogs("corporate.stripe", "WARNING"):
                     response = self.upgrade(
@@ -2560,9 +2561,17 @@ class StripeTest(StripeTestCase):
 
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
+        self.add_card_to_customer_for_upgrade()
         check_error("Invalid billing_modality", "", {"billing_modality": "invalid"})
         check_error("Invalid schedule", "", {"schedule": "invalid"})
         check_error("Invalid license_management", "", {"license_management": "invalid"})
+
+        check_error(
+            "Something went wrong. Please contact",
+            "unknown license_management",
+            {},
+            del_args=["license_management"],
+        )
 
         check_error(
             "You must purchase licenses for all active users in your organization (minimum 30).",
@@ -5410,6 +5419,56 @@ class StripeWebhookEndpointTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         m.assert_not_called()
 
+    def test_stripe_event_handler_billing_error_logging(self) -> None:
+        customer = Customer.objects.create(realm=get_realm("zulip"))
+        stripe_invoice_id = "stripe_invoice_id"
+        invoice = Invoice.objects.create(
+            stripe_invoice_id=stripe_invoice_id,
+            customer=customer,
+            status=Invoice.SENT,
+        )
+        content_type = ContentType.objects.get_for_model(Invoice)
+        event = Event.objects.create(
+            stripe_event_id="stripe_event_id",
+            type="invoice.paid",
+            content_type=content_type,
+            object_id=invoice.id,
+        )
+
+        stripe_invoice = stripe.Invoice.construct_from(
+            {
+                "id": stripe_invoice_id,
+                "object": "invoice",
+                "customer": "cus_test123",
+                "metadata": {"plan_tier": "1", "billing_schedule": "1"},
+            },
+            stripe.api_key,
+        )
+
+        from corporate.lib.stripe_event_handler import stripe_event_handler_decorator
+
+        @stripe_event_handler_decorator
+        def raise_billing_error(stripe_object: stripe.Invoice, invoice: Invoice) -> None:
+            raise BillingError("test error", "test error description")
+
+        with self.assertLogs("corporate.stripe", "WARNING") as warning_log:
+            raise_billing_error(stripe_invoice, event)
+
+        self.assert_length(warning_log.output, 1)
+        self.assertIn(
+            "BillingError in invoice.paid event handler: test error."
+            f" stripe_object_id={stripe_invoice_id},"
+            " customer_id=cus_test123 metadata=",
+            warning_log.output[0],
+        )
+
+        event.refresh_from_db()
+        self.assertEqual(event.status, Event.EVENT_HANDLER_FAILED)
+        self.assertEqual(
+            event.handler_error,
+            {"message": "test error description", "description": "test error"},
+        )
+
 
 class EventStatusTest(StripeTestCase):
     def test_event_status_json_endpoint_errors(self) -> None:
@@ -6128,8 +6187,8 @@ class BillingHelpersTest(ZulipTestCase):
         billing_session.configure_fixed_price_plan(1200, None)
         self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED)
         with mock.patch(
-            "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-            return_value=60,
+            "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+            return_value=BillingUserCounts(60, 0),
         ):
             billing_session.initialize_prepaid_fixed_price_plan(
                 plan_tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
@@ -6211,8 +6270,8 @@ class BillingHelpersTest(ZulipTestCase):
         billing_session.configure_fixed_price_plan(1200, None)
         self.assertEqual(remote_server.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED)
         with mock.patch(
-            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
-            return_value=60,
+            "corporate.lib.stripe.RemoteServerBillingSession.current_counts_for_billed_users",
+            return_value=BillingUserCounts(60, 0),
         ):
             billing_session.initialize_prepaid_fixed_price_plan(
                 plan_tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
@@ -7037,7 +7096,7 @@ class TestRealmBillingSession(StripeTestCase):
 
 
 class TestRemoteRealmBillingSession(StripeTestCase):
-    def test_current_count_for_billed_licenses(self) -> None:
+    def test_current_counts_for_billed_users(self) -> None:
         server_uuid = str(uuid.uuid4())
         remote_server = RemoteZulipServer.objects.create(
             uuid=server_uuid,
@@ -7057,13 +7116,13 @@ class TestRemoteRealmBillingSession(StripeTestCase):
 
         # remote server never uploaded statistics. 'last_audit_log_update' is None.
         with self.assertRaises(MissingDataError):
-            billing_session.current_count_for_billed_licenses()
+            billing_session.current_counts_for_billed_users()
 
         # Available statistics is stale.
         remote_server.last_audit_log_update = timezone_now() - timedelta(days=5)
         remote_server.save()
         with self.assertRaises(MissingDataError):
-            billing_session.current_count_for_billed_licenses()
+            billing_session.current_counts_for_billed_users()
 
         # Available statistics is not stale.
         event_time = timezone_now() - timedelta(days=1)
@@ -7107,7 +7166,9 @@ class TestRemoteRealmBillingSession(StripeTestCase):
         remote_server.last_audit_log_update = timezone_now() - timedelta(days=1)
         remote_server.save()
 
-        self.assertEqual(billing_session.current_count_for_billed_licenses(), 70)
+        current_billed_user_counts = billing_session.current_counts_for_billed_users()
+        self.assertEqual(current_billed_user_counts.workplace_users, 70)
+        self.assertEqual(current_billed_user_counts.non_workplace_users, 0)
 
 
 class TestRemoteServerBillingSession(StripeTestCase):
@@ -7433,6 +7494,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         }
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_approve_realm_sponsorship(self) -> None:
         realm = get_realm("zulip")
         self.assertNotEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD_FREE)
@@ -7449,22 +7511,24 @@ class TestSupportBillingHelpers(StripeTestCase):
         sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
 
         # Organization owners get the notification bot message
-        desdemona_recipient = self.example_user("desdemona").recipient
+        bot_and_desdemona_recipient = self.get_dm_group_recipient(
+            sender, self.example_user("desdemona")
+        )
         message_to_owner = Message.objects.filter(
-            realm_id=realm.id, sender=sender.id, recipient=desdemona_recipient
+            realm_id=realm.id, sender=sender.id, recipient=bot_and_desdemona_recipient
         ).first()
         assert message_to_owner is not None
         self.assertEqual(message_to_owner.content, expected_message)
-        self.assertEqual(message_to_owner.recipient.type, Recipient.PERSONAL)
+        self.assertEqual(message_to_owner.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
         # Hamlet is in `can_manage_billing_group` so should get the notification bot message
-        hamlet_recipient = self.example_user("hamlet").recipient
+        bot_and_hamlet_recipient = self.get_dm_group_recipient(sender, self.example_user("hamlet"))
         message_to_hamlet = Message.objects.filter(
-            realm_id=realm.id, sender=sender.id, recipient=hamlet_recipient
+            realm_id=realm.id, sender=sender.id, recipient=bot_and_hamlet_recipient
         ).last()
         assert message_to_hamlet is not None
         self.assertEqual(message_to_hamlet.content, expected_message)
-        self.assertEqual(message_to_hamlet.recipient.type, Recipient.PERSONAL)
+        self.assertEqual(message_to_hamlet.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
     def test_update_realm_sponsorship_status(self) -> None:
         lear = get_realm("lear")

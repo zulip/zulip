@@ -50,8 +50,7 @@ function register_message_preview_click_handlers(
         ".sender_name, .inline-profile-picture-wrapper",
         function (this: HTMLElement, e) {
             e.stopPropagation();
-            const user = people.get_by_user_id(sender_id);
-            toggle_user_card_popover_for_message(this, user, sender_id, true);
+            toggle_user_card_popover_for_message(this, sender_id, sender_id, true);
         },
     );
 }

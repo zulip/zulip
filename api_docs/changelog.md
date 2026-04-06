@@ -20,6 +20,40 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 483**
+
+* [`POST /mobile_push/register`](/api/register-push-device): On a
+  successful E2EE push device registration, the server now
+  automatically removes any legacy push device registration with
+  a matching token for the user.
+
+**Feature level 482**
+
+* [`GET /messages`](/api/get-messages), [`GET
+  /messages/{message_id}`](/api/get-message), [`GET
+  /events`](/api/get-events): The `recipient_id` in 1:1 direct
+  messages changed to a new value; it still has the semantics of "the
+  1:1 conversation with a specific user," but the raw value changed
+  due to internal changes.
+
+**Feature level 481**
+
+* [`POST /register`](/api/register-queue): Added `idle_queue_timeout`
+  request parameter, allowing clients to configure how long the server
+  keeps the event queue alive when the client is not polling. The
+  string `"mobile"` can be passed to use the server's recommended
+  timeout for mobile clients. The response now includes
+  `idle_queue_timeout_secs` with the effective timeout in seconds.
+
+**Feature level 480**
+
+* [`GET /streams/{stream_id}`](/api/get-stream-by-id): Details of
+  archived channels can now be fetched.
+* [`GET /streams/{stream_id}/members`](/api/get-subscribers):
+  Subscribers of archived channels can now be fetched.
+* [`GET /users/me/{stream_id}/topics`](/api/get-stream-topics):
+  Topics in archived channels can now be fetched.
+
 **Feature level 479**
 
 * [`GET /thumbnail/status/{realm_id_str}/{filename}`](/api/check-thumbnail-status): Added
@@ -3181,9 +3215,11 @@ user's profile.
   `emails_restricted_to_domains`, `invite_required`, and
   `waiting_period_threshold` settings can no longer be changed by
   organization administrators who are not owners.
-* `PATCH /realm/domains`, `POST /realm/domains`, `DELETE
-  /realm/domains`: Organization administrators who are not owners can
-  no longer access these endpoints.
+* [`POST /realm/domains`](/api/add-realm-domain),
+  [`PATCH /realm/domains/{domain}`](/api/patch-realm-domain),
+  [`DELETE /realm/domains/{domain}`](/api/delete-realm-domain):
+  Organization administrators who are not owners can no longer access
+  these endpoints.
 
 **Feature level 142**
 
@@ -3800,8 +3836,8 @@ No changes; feature level used for Zulip 4.0 release.
   parameter `default_language`.
 * `POST /users/me/tutorial_status`: Removed unnecessary JSON-encoding of string
   parameter `status`.
-* `POST /realm/domains`: Removed unnecessary JSON-encoding of string
-  parameter `domain`.
+* [`POST /realm/domains`](/api/add-realm-domain): Removed unnecessary
+  JSON-encoding of string parameter `domain`.
 * `PATCH /default_stream_groups/{user_id}`: Removed unnecessary JSON-encoding of string
   parameters `new_group_name` and `new_description`.
 * `POST /users/me/hotspots`: Removed unnecessary JSON-encoding of string

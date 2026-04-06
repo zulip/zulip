@@ -2183,7 +2183,7 @@ ul.topic-list.topic-list-has-topics::after {
     /* 12px at 16px/1em */
     bottom: 0.75em;
     left: 16px;
-    width: 12px;
+    width: 4px;
     border-bottom: 1px solid var(--color-topic-indent-border);
     pointer-events: none;
 }
@@ -2194,16 +2194,17 @@ ul.topic-list:has(.show-more-topics)::after {
     width: 18px;
 }
 
-#stream_filters
-    .narrow-filter
+#stream_filters .narrow-filter,
+#more-topics-modal {
     .topic-list
-    .bottom_left_row:has(
-        a.sidebar-topic-action-heading:focus-visible,
-        a.zoomed-new-topic:focus-visible
-    ) {
-    outline: 2px solid var(--color-outline-focus);
-    outline-offset: -2px;
-    background-color: var(--color-background-hover-narrow-filter);
+        .bottom_left_row:has(
+            a.sidebar-topic-action-heading:focus-visible,
+            a.zoomed-new-topic:focus-visible
+        ) {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+        background-color: var(--color-background-hover-narrow-filter);
+    }
 }
 
 /* The grouping border should not be shown
@@ -2322,7 +2323,7 @@ li.topic-list-item {
     display: none;
 }
 
-#left_sidebar_scroll_container.direct-messages-hidden-by-filters,
+#left-sidebar.direct-messages-hidden-by-filters,
 .spectator-view {
     #direct-messages-section-header {
         display: none;
@@ -2362,7 +2363,9 @@ li.topic-list-item {
 }
 
 /* The two modals have different top paddings */
-#left-sidebar.zoom-in-conversations #left-sidebar-modal {
+#left-sidebar.zoom-in-conversations #left-sidebar-modal,
+#left-sidebar.direct-messages-hidden-by-filters #left-sidebar-modal,
+.spectator-view #left-sidebar-modal {
     .left-sidebar-modal-close-area {
         padding-top: var(--left-sidebar-modal-close-area-padding-top);
     }
@@ -2388,9 +2391,11 @@ li.topic-list-item {
     }
 }
 
-/* The topic menu leaves space to see the DM section by padding the sidebar
-   row height to the close section's upper padding. */
-#left-sidebar.zoom-in-topics #left-sidebar-modal {
+/* The topic menu leaves space to see the DM section (if it's visible) by
+   padding the sidebar row height to the close section's upper padding. */
+body:not(.spectator-view)
+    #left-sidebar:not(.direct-messages-hidden-by-filters).zoom-in-topics
+    #left-sidebar-modal {
     .left-sidebar-modal-close-area {
         padding-top: calc(
             var(--left-sidebar-modal-close-area-padding-top) +

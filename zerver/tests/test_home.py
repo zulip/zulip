@@ -32,6 +32,7 @@ from zerver.models import DefaultStream, Draft, Realm, UserActivity, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user
+from zerver.tornado.django_api import EventQueueData
 from zerver.worker.user_activity import UserActivityWorker
 
 if TYPE_CHECKING:
@@ -95,6 +96,7 @@ class HomeTest(ZulipTestCase):
         "tenor_api_key",
         "gif_rating_policy_options",
         "has_zoom_token",
+        "idle_queue_timeout_secs",
         "is_admin",
         "is_guest",
         "is_moderator",
@@ -302,7 +304,7 @@ class HomeTest(ZulipTestCase):
 
         # Verify succeeds once logged-in
         with (
-            self.assert_database_query_count(58),
+            self.assert_database_query_count(59),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page(stream="Denmark")
@@ -608,17 +610,17 @@ class HomeTest(ZulipTestCase):
             # Should be successful after calling 2fa login function.
             self.check_rendered_logged_in_app(result)
 
-    @override_settings(TERMS_OF_SERVICE_VERSION=None)
+    @override_settings(TERMS_OF_SERVICE_VERSION=None, PREFER_DIRECT_MESSAGE_GROUP=True)
     def test_num_queries_for_realm_admin(self) -> None:
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
         with (
-            self.assert_database_query_count(57),
+            self.assert_database_query_count(59),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page()
             self.check_rendered_logged_in_app(result)
-            self.assert_length(cache_mock.call_args_list, 8)
+            self.assert_length(cache_mock.call_args_list, 9)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user("hamlet")
@@ -645,7 +647,7 @@ class HomeTest(ZulipTestCase):
         self._get_home_page()
 
         # Then for the second page load, measure the number of queries.
-        with self.assert_database_query_count(53):
+        with self.assert_database_query_count(54):
             result = self._get_home_page()
 
         # Do a sanity check that our new streams were in the payload.
@@ -653,8 +655,9 @@ class HomeTest(ZulipTestCase):
         self.assertIn("test_stream_7", html)
 
     def _get_home_page(self, **kwargs: Any) -> "TestHttpResponse":
+        queue_data = EventQueueData(queue_id="test-queue-id", idle_queue_timeout_secs=600)
         with (
-            patch("zerver.lib.events.request_event_queue", return_value=42),
+            patch("zerver.lib.events.request_event_queue", return_value=queue_data),
             patch("zerver.lib.events.get_user_events", return_value=[]),
         ):
             result = self.client_get("/", dict(**kwargs))
@@ -1351,8 +1354,9 @@ class HomeTest(ZulipTestCase):
         self.login_user(user)
         result = self._get_home_page()
         self.check_rendered_logged_in_app(result)
+        queue_data = EventQueueData(queue_id="test-queue-id", idle_queue_timeout_secs=600)
         with (
-            patch("zerver.lib.events.request_event_queue", return_value=42),
+            patch("zerver.lib.events.request_event_queue", return_value=queue_data),
             patch("zerver.lib.events.get_user_events", return_value=[]),
         ):
             result = self.client_get("/de/")

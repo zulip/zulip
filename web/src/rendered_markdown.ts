@@ -53,10 +53,7 @@ export function get_user_id_for_mention_button(elem: HTMLElement): "*" | number 
 
     if (email) {
         // Will return undefined if there's no match
-        const user = people.get_by_email(email);
-        if (user) {
-            return user.user_id;
-        }
+        return people.maybe_get_user_id_by_email(email);
     }
     return undefined;
 }
@@ -146,13 +143,7 @@ export const update_elements = ($content: JQuery): void => {
         if (user_id === "*" && message && message.stream_wildcard_mentioned) {
             $(this).addClass("user-mention-me");
         }
-        if (
-            user_id !== undefined &&
-            user_id !== "*" &&
-            people.is_my_user_id(user_id) &&
-            message &&
-            message.mentioned_me_directly
-        ) {
+        if (user_id !== undefined && user_id !== "*" && people.is_my_user_id(user_id) && message) {
             $(this).addClass("user-mention-me");
         }
 

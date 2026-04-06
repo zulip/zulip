@@ -28,7 +28,7 @@ Otherwise, to authenticate an API request:
 
 - A bot's credentials can be obtained through the web and desktop apps'
   [bot management UI](/help/manage-a-bot) or by [downloading the bot's
-  zuliprc file](/api/configuring-python-bindings#download-a-zuliprc-file).
+  `zuliprc` file](/api/api-keys#download-a-zuliprc-file).
 
 - See [fetch an API key (production)](/api/fetch-api-key) for the
   password-based authentication flow for getting a user's credentials.

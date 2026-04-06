@@ -111,6 +111,12 @@ class UpdateMessageResult:
     detached_uploads: list[dict[str, Any]]
 
 
+# Allow a small server-side buffer for borderline edits, since the web app
+# already lets users keep editing near the deadline via
+# `min_seconds_to_edit + seconds_left_buffer` in `message_edit.ts`.
+MESSAGE_EDIT_TIME_LIMIT_BUFFER_SECONDS = 20
+
+
 def subscriber_info(user_id: int) -> dict[str, Any]:
     return {"id": user_id, "flags": ["read"]}
 
@@ -1372,14 +1378,13 @@ def check_time_limit_for_change_all_propagate_mode(
     stream_id: int | None = None,
 ) -> None:
     realm = user_profile.realm
-    message_move_limit_buffer = 20
 
     topic_edit_deadline_seconds = None
     if topic_name is not None and realm.move_messages_within_stream_limit_seconds is not None:
         # We set topic_edit_deadline_seconds only if topic is actually
         # changed and there is some time limit to edit topic.
         topic_edit_deadline_seconds = (
-            realm.move_messages_within_stream_limit_seconds + message_move_limit_buffer
+            realm.move_messages_within_stream_limit_seconds + MESSAGE_EDIT_TIME_LIMIT_BUFFER_SECONDS
         )
 
     stream_edit_deadline_seconds = None
@@ -1388,7 +1393,8 @@ def check_time_limit_for_change_all_propagate_mode(
         # actually changed and there is some time limit to edit
         # stream.
         stream_edit_deadline_seconds = (
-            realm.move_messages_between_streams_limit_seconds + message_move_limit_buffer
+            realm.move_messages_between_streams_limit_seconds
+            + MESSAGE_EDIT_TIME_LIMIT_BUFFER_SECONDS
         )
 
     # Calculate whichever of the applicable topic and stream moving
@@ -1553,6 +1559,39 @@ def build_message_edit_request(
     )
 
 
+def check_stream_topic_edit_permissions(
+    *,
+    user_profile: UserProfile,
+    message: Message,
+    message_edit_request: StreamMessageEditRequest,
+    edit_limit_buffer: int,
+) -> None:
+    if message_edit_request.topic_resolved or message_edit_request.topic_unresolved:
+        if not can_resolve_topics(
+            user_profile, message_edit_request.orig_stream, message_edit_request.target_stream
+        ):
+            raise JsonableError(_("You don't have permission to resolve topics in this channel."))
+        return
+
+    if not can_edit_topic(
+        user_profile, message_edit_request.orig_stream, message_edit_request.target_stream
+    ):
+        raise JsonableError(_("You don't have permission to edit this message"))
+
+    # If there is a change to the topic, check that the user is allowed to
+    # edit it and that it has not been too long. If user is not admin or moderator,
+    # and the time limit for editing topics is passed, raise an error.
+    if (
+        user_profile.realm.move_messages_within_stream_limit_seconds is not None
+        and not user_profile.is_moderator
+    ):
+        deadline_seconds = (
+            user_profile.realm.move_messages_within_stream_limit_seconds + edit_limit_buffer
+        )
+        if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
+            raise JsonableError(_("The time limit for editing this message's topic has passed."))
+
+
 @transaction.atomic(durable=True)
 def check_update_message(
     user_profile: UserProfile,
@@ -1573,11 +1612,8 @@ def check_update_message(
     message = access_message(user_profile, message_id, lock_message=True, is_modifying_message=True)
 
     # If there is a change to the content, check that it hasn't been too long
-    # Allow an extra 20 seconds since we potentially allow editing 15 seconds
-    # past the limit, and in case there are network issues, etc. The 15 comes
-    # from (min_seconds_to_edit + seconds_left_buffer) in message_edit.ts; if
-    # you change this value also change those two parameters in message_edit.ts.
-    edit_limit_buffer = 20
+    # This buffer stays in sync with the client-side editing grace period.
+    edit_limit_buffer = MESSAGE_EDIT_TIME_LIMIT_BUFFER_SECONDS
     if content is not None:
         validate_user_can_edit_message(user_profile, message, edit_limit_buffer)
 
@@ -1608,33 +1644,12 @@ def check_update_message(
         isinstance(message_edit_request, StreamMessageEditRequest)
         and message_edit_request.is_topic_edited
     ):
-        if message_edit_request.topic_resolved or message_edit_request.topic_unresolved:
-            if not can_resolve_topics(
-                user_profile, message_edit_request.orig_stream, message_edit_request.target_stream
-            ):
-                raise JsonableError(
-                    _("You don't have permission to resolve topics in this channel.")
-                )
-        else:
-            if not can_edit_topic(
-                user_profile, message_edit_request.orig_stream, message_edit_request.target_stream
-            ):
-                raise JsonableError(_("You don't have permission to edit this message"))
-
-            # If there is a change to the topic, check that the user is allowed to
-            # edit it and that it has not been too long. If user is not admin or moderator,
-            # and the time limit for editing topics is passed, raise an error.
-            if (
-                user_profile.realm.move_messages_within_stream_limit_seconds is not None
-                and not user_profile.is_moderator
-            ):
-                deadline_seconds = (
-                    user_profile.realm.move_messages_within_stream_limit_seconds + edit_limit_buffer
-                )
-                if (timezone_now() - message.date_sent) > timedelta(seconds=deadline_seconds):
-                    raise JsonableError(
-                        _("The time limit for editing this message's topic has passed.")
-                    )
+        check_stream_topic_edit_permissions(
+            user_profile=user_profile,
+            message=message,
+            message_edit_request=message_edit_request,
+            edit_limit_buffer=edit_limit_buffer,
+        )
 
     rendering_result = None
     links_for_embed: set[str] = set()

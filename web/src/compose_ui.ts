@@ -24,6 +24,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as linkifiers from "./linkifiers.ts";
 import * as loading from "./loading.ts";
 import * as markdown from "./markdown.ts";
+import {message_render_response_schema} from "./message_store.ts";
 import * as people from "./people.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
@@ -66,12 +67,6 @@ type SelectedLinesSections = {
     separating_new_line_after: boolean;
     after_lines: string;
 };
-
-const message_render_response_schema = z.object({
-    msg: z.string(),
-    result: z.string(),
-    rendered: z.string(),
-});
 
 export let compose_spinner_visible = false;
 
@@ -1589,6 +1584,31 @@ let prevent_next_spinner = false;
 
 export function set_prevent_next_spinner(value: boolean): void {
     prevent_next_spinner = value;
+}
+
+export function enter_preview_mode($container: JQuery): void {
+    // Disable unneeded compose_control_buttons as we don't
+    // need them in preview mode.
+    $container.addClass("preview_mode");
+    $container.find(".preview_mode_disabled .compose_control_button").attr("tabindex", -1);
+
+    $container.find(".markdown_preview").hide();
+    $container.find(".undo_markdown_preview").show();
+    $container.find(".undo_markdown_preview").trigger("focus");
+}
+
+export function exit_preview_mode($container: JQuery): void {
+    $container.find("textarea.message-textarea").trigger("focus");
+
+    // While in preview mode we disable unneeded compose_control_buttons,
+    // so here we are re-enabling those compose_control_buttons
+    $container.removeClass("preview_mode");
+    $container.find(".preview_mode_disabled .compose_control_button").attr("tabindex", 0);
+
+    $container.find(".undo_markdown_preview").hide();
+    $container.find(".preview_message_area").hide();
+    $container.find(".preview_content").empty();
+    $container.find(".markdown_preview").show();
 }
 
 export function render_and_show_preview(
