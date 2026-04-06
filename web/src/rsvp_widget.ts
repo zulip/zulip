@@ -2,11 +2,11 @@ import $ from "jquery";
 import assert from "minimalistic-assert";
 
 import * as people from "./people.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
 import { RsvpData, vote_schema, type RsvpResponse } from "./rsvp_data.ts";
 import { ZulipWidgetContext } from "./widget_context.ts";
 import type { AnyWidgetData, WidgetData } from "./widget_schema.ts";
 import type { Event } from "./widget_data.ts";
-import * as timerender from "./timerender.ts";
 
 export function activate({
     any_data,
@@ -40,6 +40,22 @@ export function activate({
     return { inbound_events_handler: handle_events, widget_data };
 }
 
+function getOrdinal(day: number): string {
+    if (day >= 11 && day <= 13) {
+        return `${day}th`;
+    }
+    switch (day % 10) {
+        case 1:
+            return `${day}st`;
+        case 2:
+            return `${day}nd`;
+        case 3:
+            return `${day}rd`;
+        default:
+            return `${day}th`;
+    }
+}
+
 function format_datetime(iso: string): string {
     const dt = new Date(iso);
     if (Number.isNaN(dt.getTime())) {
@@ -47,9 +63,17 @@ function format_datetime(iso: string): string {
     }
     const day_of_week = dt.toLocaleDateString("en-US", { weekday: "long" });
     const month = dt.toLocaleDateString("en-US", { month: "long" });
-    const day = dt.getDate();
+    const day = getOrdinal(dt.getDate());
     const time = dt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-    return `${day_of_week}, ${month} ${day} @<span class="rsvp-time">${time}</span>`;
+    return `${day_of_week}, ${month} ${day} <span class="rsvp-time">@${time}</span>`;
+}
+
+function render_mention(user_id: number): string {
+    const user = people.get_by_user_id(user_id);
+    if (!user) {
+        return "";
+    }
+    return `<span class="user-mention" data-user-id="${user_id}">@${user.full_name}</span>`;
 }
 
 export function render({
@@ -65,32 +89,39 @@ export function render({
 }): void {
     assert(widget_data.widget_type === "rsvp");
     const rsvp_data = widget_data.data as RsvpData;
-    const { topic, datetime, buckets, my_response } = rsvp_data.get_widget_data();
+    const { topic, datetime, invitees, buckets, my_response } = rsvp_data.get_widget_data();
 
     function names(ids: number[]): string {
-        return ids.map((id) => people.get_by_user_id(id)?.full_name ?? "").filter(Boolean).join(", ");
+        return ids
+            .map((id) => people.get_by_user_id(id)?.full_name ?? "")
+            .filter(Boolean)
+            .join(", ");
     }
 
-    const buttons: {status: RsvpResponse; icon: string; label: string}[] = [
-        {status: "accept",    icon: "message-circle-check",           label: "Accept"},
-        {status: "tentative", icon: "message-circle-question-mark",   label: "Tentative"},
-        {status: "decline",   icon: "message-circle-x",               label: "Decline"},
+    const invitees_html = invitees.length > 0
+        ? invitees.map((id) => render_mention(id)).join(" ")
+        : `<span class="rsvp-invitee-empty">No users invited</span>`;
+
+    const buttons: { status: RsvpResponse; icon: string; label: string }[] = [
+        { status: "accept", icon: "message-circle-check", label: "Accept" },
+        { status: "tentative", icon: "message-circle-question-mark", label: "Tentative" },
+        { status: "decline", icon: "message-circle-x", label: "Decline" },
     ];
 
     const buttons_html = buttons
-        .map(({status, icon, label}) => {
+        .map(({ status, icon, label }) => {
             const is_active = my_response === status ? "rsvp-active" : "";
             const count = buckets[status].length;
             const responders = names(buckets[status]);
             return `
-            <div class="rsvp-option ${is_active}" data-status="${status}">
-                <button class="rsvp-vote-btn" data-status="${status}">
-                    <i class="zulip-icon zulip-icon-${icon}" aria-hidden="true"></i>
-                    <span class="rsvp-label">${label}</span>
-                    ${count > 0 ? `<span class="rsvp-count">${count}</span>` : ""}
-                </button>
-                ${responders ? `<div class="rsvp-names">${responders}</div>` : ""}
-            </div>`;
+                <div class="rsvp-option ${is_active}" data-status="${status}">
+                    <button class="rsvp-vote-btn" data-status="${status}">
+                        <i class="zulip-icon zulip-icon-${icon}" aria-hidden="true"></i>
+                        <span class="rsvp-label">${label}</span>
+                        ${count > 0 ? `<span class="rsvp-count">${count}</span>` : ""}
+                    </button>
+                    ${responders ? `<span class="rsvp-names">${responders}</span>` : ""}
+                </div>`;
         })
         .join("");
 
@@ -98,16 +129,24 @@ export function render({
         <div class="rsvp-widget">
             <div class="rsvp-topic">${topic}</div>
             <div class="rsvp-datetime">${format_datetime(datetime)}</div>
+            <div class="rsvp-invitees">
+                <span class="rsvp-invitees-label">Invited Users</span>
+                <span class="rsvp-invitees-list">${invitees_html}</span>
+            </div>
             <div class="rsvp-actions">${buttons_html}</div>
         </div>`;
- 
+
     $elem.html(html);
- 
+
+    rendered_markdown.update_elements($elem.find(".rsvp-invitees-list"));
+    const my_user_id = people.my_current_user_id();
+    $elem.find(`.user-mention[data-user-id="${my_user_id}"]`).addClass("user-mention-me");
+
     $elem.find(".rsvp-vote-btn").on("click", function () {
         const status = $(this).attr("data-status") as RsvpResponse;
         const event = rsvp_data.vote_event(status);
         rsvp_data.handle_vote_event(rsvp_data.me, event);
         callback(event);
-        render({$elem, callback, widget_data, message: null, rerender: true});
+        render({ $elem, callback, widget_data, message: null, rerender: true });
     });
 }
