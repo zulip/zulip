@@ -548,17 +548,24 @@ export function initialize(): void {
         return nearest.id;
     }
 
-    $("#message_feed_container").on("click", ".narrows_by_topic", function (this: HTMLElement, e) {
-        if (e.metaKey || e.ctrlKey || e.shiftKey) {
-            return;
-        }
-        e.preventDefault();
-        if (mouse_drag.is_drag(e)) {
-            return;
-        }
-        const row_id = get_row_id_for_narrowing(this);
-        message_view.narrow_by_topic(row_id, {trigger: "message header"});
-    });
+    $("#message_feed_container").on(
+        "click",
+        ".narrows_by_topic, .narrows_by_recipient",
+        function (this: HTMLElement, e) {
+            if (e.metaKey || e.ctrlKey || e.shiftKey) {
+                return;
+            }
+            if (mouse_drag.is_drag(e)) {
+                e.preventDefault();
+                return;
+            }
+            if ($(this).hasClass("narrows_by_topic")) {
+                e.preventDefault();
+                const row_id = get_row_id_for_narrowing(this);
+                message_view.narrow_by_topic(row_id, {trigger: "message header"});
+            }
+        },
+    );
 
     // SIDEBARS
     $("body").on("click", ".compose-new-direct-message", (e) => {
