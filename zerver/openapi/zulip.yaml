@@ -14610,8 +14610,6 @@ paths:
       description: |
         Update a custom profile field in the user's organization.
 
-        `PATCH {{ api_url }}/v1/realm/profile_fields/{field_id}`
-
         This endpoint can be used by organization administrators to update
         the configuration of an existing custom profile field.
       x-requires-administrator: true
@@ -14705,8 +14703,6 @@ paths:
       tags: ["server_and_organizations"]
       description: |
         Delete a custom profile field in the user's organization.
-
-        `DELETE {{ api_url }}/v1/realm/profile_fields/{field_id}`
 
         This endpoint can be used by organization administrators to remove
         an existing custom profile field.
