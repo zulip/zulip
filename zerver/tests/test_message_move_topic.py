@@ -12,14 +12,16 @@ from zerver.actions.message_edit import (
     build_message_edit_request,
     check_update_message,
     do_update_message,
+    get_participant_user_ids_in_moved_messages,
     maybe_send_resolve_topic_notifications,
 )
-from zerver.actions.reactions import do_add_reaction
+from zerver.actions.reactions import check_add_reaction, do_add_reaction
 from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
 )
 from zerver.actions.streams import do_change_stream_group_based_setting, do_set_stream_property
+from zerver.actions.submessage import do_add_submessage
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -28,6 +30,7 @@ from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
 from zerver.lib.types import StreamMessageEditRequest, UserGroupMembersData
+from zerver.lib.user_message import create_historical_user_messages
 from zerver.lib.user_topics import (
     get_users_with_user_topic_visibility_policy,
     set_topic_visibility_policy,
@@ -267,6 +270,71 @@ class MessageMoveTopicTest(ZulipTestCase):
             },
         )
         self.assert_json_error(result, "Invalid character in topic, at position 1!")
+
+    def test_get_participant_user_ids_in_moved_messages(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
+        aaron = self.example_user("aaron")
+        shiva = self.example_user("shiva")
+        stream = self.make_stream("new_stream")
+
+        for user in [hamlet, cordelia, desdemona, iago, othello, aaron]:
+            self.subscribe(user, stream.name)
+
+        original_topic = "original"
+
+        first_message_id = self.send_stream_message(
+            sender=hamlet,
+            stream_name=stream.name,
+            topic_name=original_topic,
+            content=f"Hello @**{cordelia.full_name}**",
+        )
+
+        second_message_id = self.send_stream_message(
+            sender=desdemona,
+            stream_name=stream.name,
+            topic_name=original_topic,
+            content="Hello again",
+        )
+
+        check_add_reaction(
+            user_profile=iago,
+            message_id=first_message_id,
+            emoji_name="smile",
+            emoji_code=None,
+            reaction_type=None,
+        )
+
+        do_add_submessage(
+            realm=hamlet.realm,
+            sender_id=othello.id,
+            message_id=second_message_id,
+            msg_type="whatever",
+            content="submessage",
+        )
+
+        # shiva has a historical UserMessage with a mention flag — should be excluded
+        # since they have not been subscribed to the stream when mention happened and so
+        # they are not a real participant of the moved message.
+        create_historical_user_messages(
+            user_id=shiva.id,
+            message_ids=[second_message_id],
+            flagattr=UserMessage.flags.mentioned,
+            flag_target=UserMessage.flags.mentioned,
+        )
+
+        # hamlet (sender, msg1), desdemona (sender, msg2), cordelia (mentioned, msg1),
+        # iago (reaction, msg1), othello (submessage (poll/todo participation), msg2)
+        # — all these are included since they are participants of moved messages.
+        # aaron (plain subscriber) and shiva (historically mentioned)
+        # — both excluded.
+        self.assertEqual(
+            get_participant_user_ids_in_moved_messages([first_message_id, second_message_id]),
+            {hamlet.id, cordelia.id, desdemona.id, iago.id, othello.id},
+        )
 
     @mock.patch("zerver.actions.message_edit.send_event_on_commit")
     def test_edit_topic_public_history_stream(self, mock_send_event: mock.MagicMock) -> None:

@@ -92,8 +92,10 @@ from zerver.models import (
     ArchivedMessage,
     Attachment,
     Message,
+    Reaction,
     Recipient,
     Stream,
+    SubMessage,
     Subscription,
     UserMessage,
     UserProfile,
@@ -761,6 +763,37 @@ def update_user_topic_visibility_policies_on_move(
             )
 
     return orig_topic_user_profile_to_visibility_policy
+
+
+def get_participant_user_ids_in_moved_messages(
+    moved_message_ids: list[int],
+) -> set[int]:
+    user_ids = set(
+        Message.objects.filter(id__in=moved_message_ids).values_list("sender_id", flat=True)
+    )
+
+    user_ids.update(
+        UserMessage.objects.filter(
+            message_id__in=moved_message_ids,
+            flags=~UserMessage.flags.historical,
+        )
+        .filter(Q(flags__andnz=UserMessage.flags.mentioned))
+        .values_list("user_profile_id", flat=True)
+    )
+
+    user_ids.update(
+        Reaction.objects.filter(message_id__in=moved_message_ids).values_list(
+            "user_profile_id", flat=True
+        )
+    )
+
+    user_ids.update(
+        SubMessage.objects.filter(message_id__in=moved_message_ids).values_list(
+            "sender_id", flat=True
+        )
+    )
+
+    return user_ids
 
 
 def apply_automatic_unmute_follow_topics_policy(
