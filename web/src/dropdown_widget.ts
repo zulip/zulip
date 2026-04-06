@@ -661,11 +661,11 @@ export class DropdownWidget {
                     }
                 });
 
-                // We want to prevent focus from moving to the list item
-                // when it is clicked with a mouse. This is necessary because
-                // it was reported that the blue focus outline briefly appears
-                // when items are clicked, before the dropdown closes.
-                $popper.on("mousedown", ".list-item", (event) => {
+                // We want to prevent focus from moving to the list item or the
+                // sticky bottom when it is clicked with a mouse. This is necessary
+                // because it was reported that the blue focus outline briefly
+                // appears when items are clicked, before the dropdown closes.
+                $popper.on("mousedown", ".list-item, .sticky-bottom-option-button", (event) => {
                     event.preventDefault();
                 });
 
