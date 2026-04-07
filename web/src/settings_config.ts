@@ -709,6 +709,9 @@ export const preferences_settings_labels = {
     web_navigate_to_sent_message: $t({
         defaultMessage: "Automatically go to conversation where you sent a message",
     }),
+    web_right_click_opens_message_actions_menu: $t({
+        defaultMessage: "Right-click on a message opens the message actions menu",
+    }),
 };
 
 export const notification_settings_labels = {
