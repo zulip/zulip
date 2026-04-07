@@ -171,23 +171,6 @@ def get_issue_topic(payload: WildValue) -> str:
     return f"{get_issue_id(payload)}: {get_issue_title(payload)}"
 
 
-def get_sub_event_for_update_issue(payload: WildValue) -> str:
-    sub_event = payload.get("issue_event_type_name", "").tame(check_string)
-    if sub_event == "":
-        if payload.get("comment"):
-            return "issue_commented"
-        elif payload.get("transition"):
-            return "issue_transited"
-    return sub_event
-
-
-def get_event_type(payload: WildValue) -> str | None:
-    event = payload.get("webhookEvent").tame(check_none_or(check_string))
-    if event is None and payload.get("transition"):
-        event = "jira:issue_updated"
-    return event
-
-
 def add_change_info(
     content: str, field: str | None, from_field: str | None, to_field: str | None
 ) -> str:
@@ -216,7 +199,7 @@ def handle_updated_issue_event(payload: WildValue, user_profile: UserProfile) ->
     else:
         assignee_blurb = ""
 
-    sub_event = get_sub_event_for_update_issue(payload)
+    sub_event = payload.get("issue_event_type_name").tame(check_string)
     if "comment" in sub_event:
         if sub_event == "issue_commented":
             verb = "commented on"
@@ -260,14 +243,6 @@ def handle_updated_issue_event(payload: WildValue, user_profile: UserProfile) ->
                     content = add_change_info(
                         content, field, from_field_string, target_field_string
                     )
-
-        elif sub_event == "issue_transited":
-            from_field_string = get_in(payload, ["transition", "from_status"]).tame(check_string)
-            target_field_string = "**{}**".format(
-                get_in(payload, ["transition", "to_status"]).tame(check_string)
-            )
-            if target_field_string or from_field_string:
-                content = add_change_info(content, "status", from_field_string, target_field_string)
 
     return content
 
@@ -356,7 +331,7 @@ def api_jira_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-    event = get_event_type(payload)
+    event = payload.get("webhookEvent").tame(check_none_or(check_string))
     if event in IGNORED_EVENTS:
         return json_success(request)
 

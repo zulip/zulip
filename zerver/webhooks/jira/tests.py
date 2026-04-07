@@ -1,5 +1,4 @@
 from unittest.mock import patch
-from urllib.parse import quote, unquote
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -36,7 +35,6 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
 * **Priority**: Major
 * **Assignee**: no one
 """.strip()
-        self.check_webhook("created_v1", expected_topic_name, expected_message)
         self.check_webhook("created_v2", expected_topic_name, expected_message)
 
     def test_ignored_events(self) -> None:
@@ -59,59 +57,6 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
             self.assertFalse(m.called)
             self.assert_json_success(result)
 
-    def test_created_with_channel_with_spaces_escaped(self) -> None:
-        self.channel_name = quote("jira alerts")
-        self.url = self.build_webhook_url()
-        self.subscribe(self.test_user, unquote(self.channel_name))
-
-        payload = self.get_body("created_v1")
-        result = self.client_post(self.url, payload, content_type="application/json")
-
-        self.assert_json_success(result)
-
-        expected_topic_name = "BUG-15: New bug with hook"
-        expected_message = """
-Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
-
-* **Priority**: Major
-* **Assignee**: no one
-""".strip()
-        msg = self.get_last_message()
-        self.assertEqual(msg.content, expected_message)
-        self.assertEqual(msg.topic_name(), expected_topic_name)
-
-    def test_created_with_channel_with_spaces_double_escaped(self) -> None:
-        self.channel_name = quote(quote("jira alerts"))
-        self.url = self.build_webhook_url()
-        self.subscribe(self.test_user, unquote(unquote(self.channel_name)))
-
-        payload = self.get_body("created_v1")
-        result = self.client_post(self.url, payload, content_type="application/json")
-
-        self.assert_json_success(result)
-
-        expected_topic_name = "BUG-15: New bug with hook"
-        expected_message = """
-Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
-
-* **Priority**: Major
-* **Assignee**: no one
-""".strip()
-        msg = self.get_last_message()
-        self.assertEqual(msg.content, expected_message)
-        self.assertEqual(msg.topic_name(), expected_topic_name)
-
-    def test_created_with_topic_with_spaces_double_escaped(self) -> None:
-        self.url = self.build_webhook_url(topic=quote(quote("alerts test")))
-        expected_topic_name = "alerts test"
-        expected_message = """
-Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
-
-* **Priority**: Major
-* **Assignee**: no one
-""".strip()
-        self.check_webhook("created_v1", expected_topic_name, expected_message)
-
     def test_created_with_unicode(self) -> None:
         expected_topic_name = "BUG-15: New bug with à hook"
         expected_message = """
@@ -120,7 +65,6 @@ Leo Franchià created [BUG-15: New bug with à hook](http://lfranchi.com:8080/br
 * **Priority**: Major
 * **Assignee**: no one
 """.strip()
-        self.check_webhook("created_with_unicode_v1", expected_topic_name, expected_message)
         self.check_webhook("created_with_unicode_v2", expected_topic_name, expected_message)
 
     def test_created_assignee(self) -> None:
@@ -131,7 +75,6 @@ Leonardo Franchi [Administrator] created [TEST-4: Test Created Assignee](https:/
 * **Priority**: Major
 * **Assignee**: Leonardo Franchi [Administrator]
 """.strip()
-        self.check_webhook("created_assignee_v1", expected_topic_name, expected_message)
         self.check_webhook("created_assignee_v2", expected_topic_name, expected_message)
 
     def test_commented(self) -> None:
@@ -143,7 +86,6 @@ Leo Franchi commented on [BUG-15: New bug with hook](http://lfranchi.com:8080/br
 Adding a comment. Oh, what a comment it is!
 ```
 """.strip()
-        self.check_webhook("commented_v1", expected_topic_name, expected_message)
         self.check_webhook("commented_v2", expected_topic_name, expected_message)
 
     def test_commented_with_two_full_links(self) -> None:
@@ -179,13 +121,11 @@ Adding a comment. Oh, what a comment it is!
         expected_topic_name = "TEST-7: Testing of rich text"
         expected_message = """Leonardo Franchi [Administrator] commented on [TEST-7: Testing of rich text](https://zulipp.atlassian.net/browse/TEST-7):\n\n``` quote\nThis is a comment that likes to **exercise** a lot of _different_ `conventions` that `jira uses`.\r\n\r\n~~~\n\r\nthis code is not highlighted, but monospaced\r\n\n~~~\r\n\r\n~~~\n\r\ndef python():\r\n    print "likes to be formatted"\r\n\n~~~\r\n\r\n[http://www.google.com](http://www.google.com) is a bare link, and [Google](http://www.google.com) is given a title.\r\n\r\nThanks!\r\n\r\n~~~ quote\n\r\nSomeone said somewhere\r\n\n~~~\n```"""
 
-        self.check_webhook("commented_markup_v1", expected_topic_name, expected_message)
         self.check_webhook("commented_markup_v2", expected_topic_name, expected_message)
 
     def test_deleted(self) -> None:
         expected_topic_name = "BUG-15: New bug with hook"
         expected_message = "Leo Franchi deleted [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15)."
-        self.check_webhook("deleted_v1", expected_topic_name, expected_message)
         self.check_webhook("deleted_v2", expected_topic_name, expected_message)
 
     def test_reassigned(self) -> None:
@@ -193,7 +133,6 @@ Adding a comment. Oh, what a comment it is!
         expected_message = """Leo Franchi updated [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
 
 * Changed assignee to **Othello, the Moor of Venice**"""
-        self.check_webhook("reassigned_v1", expected_topic_name, expected_message)
         self.check_webhook("reassigned_v2", expected_topic_name, expected_message)
 
     def test_priority_updated(self) -> None:
@@ -201,7 +140,6 @@ Adding a comment. Oh, what a comment it is!
         expected_message = """Leonardo Franchi [Administrator] updated [TEST-1: Fix That](https://zulipp.atlassian.net/browse/TEST-1) (assigned to **leo@zulip.com**):
 
 * Changed priority from **Critical** to **Major**"""
-        self.check_webhook("updated_priority_v1", expected_topic_name, expected_message)
         self.check_webhook("updated_priority_v2", expected_topic_name, expected_message)
 
     def test_status_changed(self) -> None:
@@ -209,7 +147,6 @@ Adding a comment. Oh, what a comment it is!
         expected_message = """Leonardo Franchi [Administrator] updated [TEST-1: Fix That](https://zulipp.atlassian.net/browse/TEST-1):
 
 * Changed status from **To Do** to **In Progress**"""
-        self.check_webhook("change_status_v1", expected_topic_name, expected_message)
         self.check_webhook("change_status_v2", expected_topic_name, expected_message)
 
     def test_comment_event_comment_created(self) -> None:
