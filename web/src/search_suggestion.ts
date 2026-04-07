@@ -94,9 +94,10 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
         {operator: "dm"},
         {operator: "pm-with"},
         {operator: "channel"},
+        {operator: "channels"},
         {operator: "is", operand: "resolved"},
     ],
-    "dm-including": [{operator: "channel"}, {operator: "stream"}],
+    "dm-including": [{operator: "channel"}, {operator: "stream"}, {operator: "channels"}],
     "is:resolved": [
         {operator: "is", operand: "resolved"},
         {operator: "is", operand: "dm"},
@@ -116,6 +117,7 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
         {operator: "dm"},
         {operator: "in"},
         {operator: "topic"},
+        {operator: "channels"},
     ],
     sender: [{operator: "sender"}, {operator: "from"}],
     "is:starred": [{operator: "is", operand: "starred"}],
@@ -763,8 +765,10 @@ function get_is_filter_suggestions(
     }
     const special_filtered_suggestions = get_special_filter_suggestions(last, suggestions);
     // Suggest "is:dm" to anyone with "is:private" in their muscle memory
+    // if it is compatible with the other terms.
     const other_suggestions = [];
     if (
+        suggestions.includes("is:dm") &&
         last.operator === "is" &&
         common.phrase_match(last.operand, "private") &&
         !page_params.is_spectator
