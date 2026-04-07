@@ -268,7 +268,15 @@ export const default_popover_props: Partial<tippy.Props> = {
                         return;
                     }
 
-                    const $reference = $(state.elements.reference);
+                    // Popovers positioned with `getReferenceClientRect`, like
+                    // those opened at the mouse position, have a virtual
+                    // reference whose contextElement is the element they
+                    // were opened from.
+                    const reference = state.elements.reference;
+                    const reference_element =
+                        reference instanceof Element ? reference : reference.contextElement;
+                    assert(reference_element !== undefined);
+                    const $reference = $(reference_element);
                     // Hide popover if the reference element is below another element.
                     //
                     // We only care about the reference element if it is inside the message feed since
@@ -283,7 +291,7 @@ export const default_popover_props: Partial<tippy.Props> = {
                         return;
                     }
 
-                    const reference_rect = util.the($reference).getBoundingClientRect();
+                    const reference_rect = reference.getBoundingClientRect();
                     // This is the logic we want but since it is too expensive to run
                     // on every scroll, we run a cheaper version of this to just check if
                     // compose, sticky header or navbar are not obscuring the reference
@@ -429,6 +437,47 @@ function get_props_for_popover_centering(
     };
 }
 
+function get_props_for_popover_at_mouse_position(
+    reference: tippy.ReferenceElement,
+    mouse_position: {x: number; y: number},
+): Partial<tippy.Props> {
+    // Anchor the popover at the mouse position's offset from the
+    // reference, so that it moves with the reference when the page
+    // scrolls.
+    const reference_rect = reference.getBoundingClientRect();
+    const offset_x = mouse_position.x - reference_rect.left;
+    const offset_y = mouse_position.y - reference_rect.top;
+    return {
+        getReferenceClientRect() {
+            const rect = reference.getBoundingClientRect();
+            return new DOMRect(rect.left + offset_x, rect.top + offset_y, 0, 0);
+        },
+        // Like a browser's context menu, open below and to the right of
+        // the mouse, try the other corners if that doesn't fit, and
+        // slide into view if none of them do.
+        placement: "bottom-start",
+        popperOptions: {
+            modifiers: [
+                // These replace the caller's popperOptions, so include
+                // the defaults.
+                ...default_popover_props.popperOptions!.modifiers!,
+                {
+                    name: "flip",
+                    options: {
+                        fallbackPlacements: ["top-start", "bottom-end", "top-end"],
+                    },
+                },
+                {
+                    name: "preventOverflow",
+                    options: {
+                        altAxis: true,
+                    },
+                },
+            ],
+        },
+    };
+}
+
 // Returns the element to focus when a keyboard-opened popover closes,
 // given the popover's reference element. Return undefined to fall back
 // to focusing the reference itself.
@@ -445,6 +494,8 @@ export function toggle_popover_menu(
         // Only works for elements which are in message feed.
         message_feed_overlay_detection?: boolean;
         get_focus_return_element?: GetFocusReturnElement;
+        // Opens the popover at this position, like a context menu.
+        mouse_position?: {x: number; y: number};
     },
 ): tippy.Instance {
     const instance = target._tippy;
@@ -506,11 +557,17 @@ export function toggle_popover_menu(
                   },
               };
 
+    const mouse_position_props =
+        options?.mouse_position === undefined
+            ? {}
+            : get_props_for_popover_at_mouse_position(target, options.mouse_position);
+
     const props = {
         ...default_popover_props,
         showOnCreate: true,
         ...popover_props_with_default_modifiers,
         ...mobile_popover_props,
+        ...mouse_position_props,
     };
 
     // If the popover was opened via keyboard, restore focus to
