@@ -3927,7 +3927,7 @@ class BillingSession(ABC):
         if licenses is not None and customer.exempt_from_license_number_check:
             return licenses
 
-        current_license_count = self.get_current_billed_license_count()
+        current_license_count = self.get_current_billed_license_count(event_time)
         min_licenses_for_plan = self.min_licenses_for_plan(tier)
         if customer.exempt_from_license_number_check:  # nocoverage
             billed_licenses = current_license_count
