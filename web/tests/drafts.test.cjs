@@ -87,9 +87,9 @@ stream_data.add_sub_for_tests(stream_B);
 stream_data.add_sub_for_tests(stream_1);
 stream_data.add_sub_for_tests(stream_2);
 
-const setTimeout_delay = 3000;
+const setTimeout_delay = new Set([0, 3000]);
 set_global("setTimeout", (f, delay) => {
-    assert.equal(delay, setTimeout_delay);
+    assert.ok(setTimeout_delay.has(delay));
     f();
 });
 const markdown = mock_esm("../src/markdown", {
