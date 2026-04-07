@@ -189,8 +189,8 @@ function forward_channel_message_template(opts) {
     const {sender_full_name, sender_id, id, topic} = selected_message;
     const near_url = `http://zulip.zulipdev.com/#narrow/channel/${stream_id}-${channel_name}/topic/${topic}/near/${id}`;
     const with_url = `#narrow/channel/${stream_id}-${channel_name}/topic/${topic}/with/${id}`;
-    const topic_link_syntax = `[#**${channel_name}>${topic}**](${with_url})`;
-    return `translated: @_**${sender_full_name}|${sender_id}** [said](${near_url}) in ${topic_link_syntax}:
+    const topic_link = `[#${channel_name} > ${topic}](${with_url})`;
+    return `translated: @_**${sender_full_name}|${sender_id}** [said](${near_url}) in ${topic_link}:
 ${fence}quote
 ${content}
 ${fence}`;

@@ -341,32 +341,32 @@ function generate_sender_only_quote_context(message: Message): string {
 function generate_channel_message_quote_context(message: Message): string {
     assert(message.type === "stream");
     const sender_mention = generate_sender_mention(message);
-    const link = internal_url.by_stream_topic_url(
+    const topic_url = internal_url.by_stream_topic_url(
         message.stream_id,
         message.topic,
         sub_store.maybe_get_stream_name,
         message.id,
     );
     const channel_name = sub_store.maybe_get_stream_name(message.stream_id)!;
-    const topic_link_syntax = topic_link_util.get_stream_topic_link_syntax(
+    const topic_link_text = topic_link_util.get_stream_topic_link_syntax(
         channel_name,
         message.topic,
         true,
     );
     // Final message looks like:
-    //     @_**Iago|5** [said](link to message) in [#channel > topic](link to topic):
+    //     @_**Iago|5** [said](link to message) in [#channel > topic](topic URL):
     //     ```quote
     //     message content
     //     ```
     // Keep syntax in sync with channel message reminder format in zerver/lib/reminders.py
     return $t(
         {
-            defaultMessage: "{username} [said]({link_to_message}) in {topic_link_syntax}:",
+            defaultMessage: "{username} [said]({link_to_message}) in {topic_link}:",
         },
         {
             username: sender_mention,
             link_to_message: hash_util.by_conversation_and_time_url(message),
-            topic_link_syntax: topic_link_util.as_markdown_link_syntax(topic_link_syntax, link),
+            topic_link: topic_link_util.as_markdown_link_syntax(topic_link_text, topic_url),
         },
     );
 }
