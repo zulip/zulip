@@ -44,6 +44,7 @@ def guess_zulip_user_from_jira(jira_username: str, realm: Realm) -> UserProfile 
         return None
 
 
+# https://jira.atlassian.com/secure/WikiRendererHelpAction.jspa?section=all
 def convert_jira_markup(content: str, realm: Realm) -> str:
     # Attempt to do some simplistic conversion of Jira
     # formatting to Markdown, for consumption in Zulip
@@ -276,7 +277,9 @@ def handle_deleted_issue_event(payload: WildValue, user_profile: UserProfile) ->
     )
 
 
-def normalize_comment(comment: str) -> str:
+def normalize_comment(comment: str, realm: Realm) -> str:
+    comment = convert_jira_markup(comment, realm)
+
     # Here's how Jira escapes special characters in their payload:
     # ,.?\\!\n\"'\n\\[]\\{}()\n@#$%^&*\n~`|/\\\\
     # for some reason, as of writing this, ! has two '\' before it.
@@ -289,7 +292,9 @@ def handle_comment_created_event(payload: WildValue, user_profile: UserProfile) 
 \n``` quote\n{comment}\n```\n".format(
         author=payload["comment"]["author"]["displayName"].tame(check_string),
         issue_string=get_issue_string(payload, with_title=True),
-        comment=normalize_comment(payload["comment"]["body"].tame(check_string)),
+        comment=normalize_comment(
+            payload["comment"]["body"].tame(check_string), user_profile.realm
+        ),
     )
 
 
@@ -298,7 +303,9 @@ def handle_comment_updated_event(payload: WildValue, user_profile: UserProfile) 
 \n``` quote\n{comment}\n```\n".format(
         author=payload["comment"]["author"]["displayName"].tame(check_string),
         issue_string=get_issue_string(payload, with_title=True),
-        comment=normalize_comment(payload["comment"]["body"].tame(check_string)),
+        comment=normalize_comment(
+            payload["comment"]["body"].tame(check_string), user_profile.realm
+        ),
     )
 
 
@@ -307,7 +314,9 @@ def handle_comment_deleted_event(payload: WildValue, user_profile: UserProfile) 
 \n``` quote\n~~{comment}~~\n```\n".format(
         author=payload["comment"]["author"]["displayName"].tame(check_string),
         issue_string=get_issue_string(payload, with_title=True),
-        comment=normalize_comment(payload["comment"]["body"].tame(check_string)),
+        comment=normalize_comment(
+            payload["comment"]["body"].tame(check_string), user_profile.realm
+        ),
     )
 
 

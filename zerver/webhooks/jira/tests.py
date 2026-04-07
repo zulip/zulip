@@ -151,7 +151,7 @@ Adding a comment. Oh, what a comment it is!
 
     def test_comment_event_comment_created(self) -> None:
         expected_topic_name = "SP-1: Add support for newer format Jira issue comment events"
-        expected_message = """Hemanth V. Alluri commented on [SP-1: Add support for newer format Jira issue comment events](https://f20171170.atlassian.net/browse/SP-1)\n``` quote\nSounds like it’s pretty important. I’ll get this fixed ASAP!\n```"""
+        expected_message = """Hemanth V. Alluri commented on [SP-1: Add support for newer format Jira issue comment events](https://f20171170.atlassian.net/browse/SP-1)\n``` quote\nThis is a comment that likes to **exercise** a lot of _different_ `conventions` that `jira uses`.\r\n\r\n~~~\n\r\nthis code is not highlighted, but monospaced\r\n\n~~~\r\n\r\n~~~\n\r\ndef python():\r\n    print "likes to be formatted"\r\n\n~~~\r\n\r\n[http://www.google.com](http://www.google.com) is a bare link, and [Google](http://www.google.com) is given a title.\r\n\r\nThanks!\r\n\r\n~~~ quote\n\r\nSomeone said somewhere\r\n\n~~~!\n```"""
         self.check_webhook("comment_created", expected_topic_name, expected_message)
 
     def test_comment_event_comment_created_no_issue_details(self) -> None:
