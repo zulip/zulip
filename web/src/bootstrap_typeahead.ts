@@ -726,45 +726,45 @@ export class Typeahead<ItemType extends string | object> {
         }
 
         switch (e.key) {
-    case "Tab":
-        if (!this.tabIsEnter) {
-            return;
+            case "Tab":
+                if (!this.tabIsEnter) {
+                    return;
+                }
+                e.preventDefault();
+                break;
+
+            case "Enter":
+            case "Escape":
+                e.preventDefault();
+                break;
+
+            case "ArrowUp":
+                e.preventDefault();
+                this.prev();
+                break;
+
+            case "ArrowDown":
+                e.preventDefault();
+                this.next();
+                break;
+
+            // ✅ YE ADD KAR
+            case "n":
+            case "N":
+                if (e.ctrlKey) {
+                    e.preventDefault();
+                    this.next();
+                }
+                break;
+
+            case "p":
+            case "P":
+                if (e.ctrlKey) {
+                    e.preventDefault();
+                    this.prev();
+                }
+                break;
         }
-        e.preventDefault();
-        break;
-
-    case "Enter":
-    case "Escape":
-        e.preventDefault();
-        break;
-
-    case "ArrowUp":
-        e.preventDefault();
-        this.prev();
-        break;
-
-    case "ArrowDown":
-        e.preventDefault();
-        this.next();
-        break;
-
-    // ✅ YE ADD KAR
-    case "n":
-    case "N":
-        if (e.ctrlKey) {
-            e.preventDefault();
-            this.next();
-        }
-        break;
-
-    case "p":
-    case "P":
-        if (e.ctrlKey) {
-            e.preventDefault();
-            this.prev();
-        }
-        break;
-}
 
         this.maybeStopAdvance(e);
     }
