@@ -157,6 +157,7 @@ export function set_name_in_mention_element(
 }
 
 export const update_elements = ($content: JQuery): void => {
+    let message: Message | undefined;
     // Set the rtl class if the text has an rtl direction
     if (rtl.get_direction($content.text()) === "rtl") {
         $content.addClass("rtl");
@@ -182,7 +183,7 @@ export const update_elements = ($content: JQuery): void => {
     // personal and stream wildcard mentions
     $content.find(".user-mention").each(function (): void {
         const user_id = get_user_id_for_mention_button(this);
-        const message = get_message_for_message_content($content);
+        message ??= get_message_for_message_content($content);
         const user_is_bot =
             user_id !== undefined && user_id !== "*" && people.is_valid_bot_user(user_id);
         // We give special highlights to the mention buttons
@@ -223,7 +224,7 @@ export const update_elements = ($content: JQuery): void => {
     });
 
     $content.find(".topic-mention").each(function (): void {
-        const message = get_message_for_message_content($content);
+        message ??= get_message_for_message_content($content);
 
         if (message?.topic_wildcard_mentioned) {
             $(this).addClass("user-mention-me");
