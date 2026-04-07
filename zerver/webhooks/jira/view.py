@@ -262,13 +262,17 @@ def handle_created_issue_event(payload: WildValue, user_profile: UserProfile) ->
 * **Assignee**: {assignee}
 """.strip()
 
+    assignee_payload = get_in(payload, ["issue", "fields", "assignee"])
+    if assignee_payload.value and isinstance(assignee_payload.value, dict):
+        assignee = get_user_mention(user_profile.realm, assignee_payload)
+    else:
+        assignee = "no one"
+
     return template.format(
         author=get_issue_author(payload, user_profile.realm),
         issue_string=get_issue_string(payload, with_title=True),
         priority=get_in(payload, ["issue", "fields", "priority", "name"]).tame(check_string),
-        assignee=get_in(payload, ["issue", "fields", "assignee", "displayName"], "no one").tame(
-            check_string
-        ),
+        assignee=assignee,
     )
 
 
