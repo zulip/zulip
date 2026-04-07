@@ -876,7 +876,6 @@ export const realm_group_permission_settings: {
             "can_create_private_channel_group",
             "can_add_subscribers_group",
             "can_mention_many_users_group",
-            "can_set_delete_message_policy_group",
             "can_set_topics_policy_group",
         ],
     },
@@ -902,7 +901,11 @@ export const realm_group_permission_settings: {
     {
         subsection_heading: $t({defaultMessage: "Message deletion"}),
         subsection_key: "org-msg-deletion",
-        settings: ["can_delete_any_message_group", "can_delete_own_message_group"],
+        settings: [
+            "can_delete_any_message_group",
+            "can_delete_own_message_group",
+            "can_set_delete_message_policy_group",
+        ],
     },
     {
         subsection_heading: $t({defaultMessage: "Guests"}),
