@@ -887,15 +887,12 @@ export let format_text = (
 
     const format_list = (type: string): void => {
         let is_marked: (line: string) => boolean;
-        let mark: (line: string, i: number) => string;
         let strip_marking: (line: string) => string;
         if (type === "bulleted") {
             is_marked = bulleted_numbered_list_util.is_bulleted;
-            mark = (line: string) => "- " + line;
             strip_marking = bulleted_numbered_list_util.strip_bullet;
         } else {
             is_marked = bulleted_numbered_list_util.is_numbered;
-            mark = (line, i) => i + 1 + ". " + line;
             strip_marking = bulleted_numbered_list_util.strip_numbering;
         }
         // We toggle complete lines even when they are partially selected (and just selecting the
@@ -906,10 +903,23 @@ export let format_text = (
         // If there is even a single unmarked line selected, we mark all.
         const should_mark = selected_lines.split("\n").some((line) => !is_marked(line));
         if (should_mark) {
-            selected_lines = selected_lines
-                .split("\n")
-                .map((line, i) => mark(line, i))
-                .join("\n");
+            const lines = selected_lines.split("\n");
+            const processed_lines = [];
+            let counter = 1;
+            for (const line of lines) {
+                if (line.trim() === "") {
+                    processed_lines.push(line);
+                } else {
+                    if (type === "bulleted") {
+                        processed_lines.push("- " + line);
+                    } else {
+                        processed_lines.push(counter + ". " + line);
+                        counter += 1;
+                    }
+                }
+            }
+            selected_lines = processed_lines.join("\n");
+
             // We always ensure a blank line after the list, as we want
             // a clean separation between the list and the rest of the text, especially
             // when the markdown is rendered.
