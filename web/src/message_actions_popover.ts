@@ -41,6 +41,8 @@ const quote_menu_selection_by_instance = new WeakMap<
     compose_reply.QuoteMenuSelection
 >();
 
+let message_actions_popover_props: Partial<tippy.Props> | undefined;
+
 function get_action_menu_menu_items(): JQuery {
     return $("[data-tippy-root] #message-actions-menu-dropdown li:not(.divider) a");
 }
@@ -118,6 +120,28 @@ export function toggle_message_actions_menu(message: Message): boolean {
     return true;
 }
 
+export function open_message_actions_menu_at_mouse_position(
+    message_id: number,
+    x: number,
+    y: number,
+): void {
+    if (popovers.any_active()) {
+        popovers.hide_all();
+    }
+
+    assert(message_lists.current !== undefined);
+    const $row = message_lists.current.get_row(message_id);
+    // This has no ⋮ press of its own, so make sure it cannot consume a
+    // stale selection left behind by an earlier one.
+    quote_menu_selection_at_button_mousedown = undefined;
+    assert(message_actions_popover_props !== undefined);
+    popover_menus.toggle_popover_menu(
+        the($row.find(".message-actions-menu-button")),
+        message_actions_popover_props,
+        {mouse_position: {x, y}},
+    );
+}
+
 export function toggle_hide_link_previews(message: Message): void {
     message.hide_link_previews = !message.hide_link_previews;
     message_live_update.update_hide_link_previews_view([message.id], message.hide_link_previews);
@@ -156,7 +180,7 @@ export function initialize({
         },
     );
 
-    popover_menus.register_popover_menu(".actions_hover .message-actions-menu-button", {
+    message_actions_popover_props = {
         theme: "popover-menu",
         placement: "bottom",
         popperOptions: {
@@ -341,5 +365,9 @@ export function initialize({
             popover_menus.popover_instances.message_actions = null;
             message_actions_popover_keyboard_toggle = false;
         },
-    });
+    };
+    popover_menus.register_popover_menu(
+        ".actions_hover .message-actions-menu-button",
+        message_actions_popover_props,
+    );
 }
