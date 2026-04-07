@@ -144,7 +144,6 @@ const draft_1 = {
 };
 const draft_2 = {
     private_message_recipient_ids: [aaron.user_id],
-    reply_to: "aaron@zulip.com",
     type: "private",
     content: "Test direct message",
     updatedAt: mock_current_timestamp,
@@ -198,7 +197,6 @@ test("fix buggy drafts", () => {
     // 999 is an invalid user ID not present in the people store.
     const draft_with_invalid_recipient = {
         private_message_recipient_ids: [iago.user_id, 999],
-        reply_to: "iago@zulip.com, invalid-user@zulip.com",
         type: "private",
         content: "Test direct message 2",
         updatedAt: Date.now(),
@@ -207,7 +205,6 @@ test("fix buggy drafts", () => {
     };
     const draft_with_only_invalid_recipients = {
         private_message_recipient_ids: [999],
-        reply_to: "invalid-user@zulip.com",
         type: "private",
         content: "Test direct message 3",
         updatedAt: Date.now(),
@@ -238,6 +235,9 @@ test("fix buggy drafts", () => {
     const fixed_draft = draft_model.getDraft("id2");
     assert.equal(fixed_draft.private_message_recipient, undefined);
     assert.deepEqual(fixed_draft.private_message_recipient_ids, [iago.user_id, zoe.user_id]);
+    // reply_to field is also removed since it is not present in the
+    // zod schema.
+    assert.equal(fixed_draft.reply_to, undefined);
 
     // fix_private_draft_recipient_ids removes invalid user IDs.
     const fixed_invalid_recipient_draft = draft_model.getDraft("id3");
@@ -492,7 +492,6 @@ test("format_drafts", ({override, mock_template}) => {
     };
     const draft_2 = {
         private_message_recipient_ids: [aaron.user_id],
-        reply_to: "aaron@zulip.com",
         type: "private",
         content: "Test direct message",
         updatedAt: date(-1),
@@ -510,7 +509,6 @@ test("format_drafts", ({override, mock_template}) => {
     };
     const draft_4 = {
         private_message_recipient_ids: [iago.user_id],
-        reply_to: "iago@zulip.com",
         type: "private",
         content: "Test direct message 2",
         updatedAt: date(-5),
@@ -519,7 +517,6 @@ test("format_drafts", ({override, mock_template}) => {
     };
     const draft_5 = {
         private_message_recipient_ids: [zoe.user_id, iago.user_id],
-        reply_to: "zoe@zulip.com,iago@zulip.com",
         type: "private",
         content: "Test direct message 3",
         updatedAt: date(-2),
@@ -537,7 +534,6 @@ test("format_drafts", ({override, mock_template}) => {
     };
     const draft_7 = {
         private_message_recipient_ids: [],
-        reply_to: "",
         type: "private",
         content: "Test direct message 4",
         updatedAt: date(-12),
@@ -687,7 +683,6 @@ test("filter_drafts", ({override, mock_template}) => {
     };
     const pm_draft_1 = {
         private_message_recipient_ids: [aaron.user_id],
-        reply_to: "aaron@zulip.com",
         type: "private",
         content: "Test direct message",
         updatedAt: date(-1),
@@ -705,7 +700,6 @@ test("filter_drafts", ({override, mock_template}) => {
     };
     const pm_draft_2 = {
         private_message_recipient_ids: [aaron.user_id],
-        reply_to: "aaron@zulip.com",
         type: "private",
         content: "Test direct message 2",
         updatedAt: date(-5),
@@ -714,7 +708,6 @@ test("filter_drafts", ({override, mock_template}) => {
     };
     const pm_draft_3 = {
         private_message_recipient_ids: [aaron.user_id],
-        reply_to: "aaron@zulip.com",
         type: "private",
         content: "Test direct message 3",
         updatedAt: date(-2),

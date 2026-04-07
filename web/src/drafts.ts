@@ -50,7 +50,6 @@ const draft_schema = z.intersection(
         }),
         z.object({
             type: z.literal("private"),
-            reply_to: z.string(),
             private_message_recipient_ids: z.array(z.number()),
         }),
     ]),
@@ -78,7 +77,6 @@ const possibly_buggy_draft_schema = z.intersection(
         }),
         z.object({
             type: z.literal("private"),
-            reply_to: z.string(),
             private_message_recipient: z.optional(z.string()),
             private_message_recipient_ids: z.optional(z.array(z.number())),
         }),
@@ -352,11 +350,9 @@ export function snapshot_message(force_save = false): LocalStorageDraft | undefi
         updatedAt: getTimestamp(),
     };
     if (message.type === "private") {
-        const recipient_emails = compose_state.private_message_recipient_emails();
         return {
             ...message,
             type: "private",
-            reply_to: recipient_emails,
             private_message_recipient_ids: compose_state.private_message_recipient_ids(),
             is_sending_saving: false,
             drafts_version: CURRENT_DRAFT_VERSION,
