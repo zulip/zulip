@@ -200,50 +200,26 @@ def handle_updated_issue_event(payload: WildValue, user_profile: UserProfile) ->
     else:
         assignee_blurb = ""
 
-    sub_event = payload.get("issue_event_type_name").tame(check_string)
-    if "comment" in sub_event:
-        if sub_event == "issue_commented":
-            verb = "commented on"
-        elif sub_event == "issue_comment_edited":
-            verb = "edited a comment on"
-        else:
-            verb = "deleted a comment from"
+    content = f"{get_issue_author(payload)} updated {issue}{assignee_blurb}:\n\n"
+    changelog = payload.get("changelog")
 
-        if payload.get("webhookEvent").tame(check_none_or(check_string)) == "comment_created":
-            author = payload["comment"]["author"]["displayName"].tame(check_string)
-        else:
-            author = get_issue_author(payload)
+    if changelog:
+        # Use the changelog to display the changes, whitelist types we accept
+        items = changelog.get("items")
+        for item in items:
+            field = item.get("field").tame(check_none_or(check_string))
 
-        content = f"{author} {verb} {issue}{assignee_blurb}"
-        comment = get_in(payload, ["comment", "body"]).tame(check_string)
-        if comment:
-            comment = convert_jira_markup(comment, user_profile.realm)
-            content = f"{content}:\n\n``` quote\n{comment}\n```"
-        else:
-            content = f"{content}."
-    else:
-        content = f"{get_issue_author(payload)} updated {issue}{assignee_blurb}:\n\n"
-        changelog = payload.get("changelog")
+            if field == "assignee" and assignee_mention != "":
+                target_field_string = assignee_mention
+            else:
+                # Convert a user's target to a @-mention if possible
+                target_field_string = "**{}**".format(
+                    item.get("toString").tame(check_none_or(check_string))
+                )
 
-        if changelog:
-            # Use the changelog to display the changes, whitelist types we accept
-            items = changelog.get("items")
-            for item in items:
-                field = item.get("field").tame(check_none_or(check_string))
-
-                if field == "assignee" and assignee_mention != "":
-                    target_field_string = assignee_mention
-                else:
-                    # Convert a user's target to a @-mention if possible
-                    target_field_string = "**{}**".format(
-                        item.get("toString").tame(check_none_or(check_string))
-                    )
-
-                from_field_string = item.get("fromString").tame(check_none_or(check_string))
-                if target_field_string or from_field_string:
-                    content = add_change_info(
-                        content, field, from_field_string, target_field_string
-                    )
+            from_field_string = item.get("fromString").tame(check_none_or(check_string))
+            if target_field_string or from_field_string:
+                content = add_change_info(content, field, from_field_string, target_field_string)
 
     return content
 
