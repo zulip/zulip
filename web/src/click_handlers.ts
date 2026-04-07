@@ -18,6 +18,7 @@ import * as emoji_picker from "./emoji_picker.ts";
 import * as flatpickr from "./flatpickr.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
+import * as message_actions_popover from "./message_actions_popover.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
@@ -242,6 +243,53 @@ export function initialize(): void {
     // selection function which will open the compose box  and select the message.
     if (!util.is_mobile()) {
         $("#main_div").on("click", ".messagebox", select_message_function);
+    }
+
+    // Right-click opens the message actions popover at the cursor instead of the
+    // browser's context menu.
+    if (!util.is_mobile()) {
+        $("#main_div").on("contextmenu", ".messagebox", function (e) {
+            assert(e.target instanceof Element);
+            const $target = $(e.target);
+
+            if (document.getSelection()?.type === "Range") {
+                // The browser's context menu is more useful for selected
+                // text (copy, translate, search).
+                return;
+            }
+
+            if (is_clickable_message_element($target)) {
+                // Elements with their own click behavior keep the browser's
+                // native context menu rather than opening the popover.
+                return;
+            }
+
+            const $row = $(this).closest(".message_row");
+            const id = rows.id($row);
+            const message = message_store.get(id);
+            if (
+                message === undefined ||
+                message.locally_echoed ||
+                message_edit.currently_editing_messages.has(id)
+            ) {
+                // Failed sends lack the menu button and edits replace it, so
+                // leave the browser's native context menu in place rather than
+                // suppressing it for a popover we won't open.
+                return;
+            }
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            assert(message_lists.current !== undefined);
+            message_lists.current.select_id(id);
+
+            message_actions_popover.open_message_actions_popover_at_position(
+                $row,
+                e.clientX,
+                e.clientY,
+            );
+        });
     }
 
     $("#main_div").on("click", ".star_container", function (e) {
