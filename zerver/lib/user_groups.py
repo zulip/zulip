@@ -33,7 +33,7 @@ from zerver.models import (
     UserGroupMembership,
     UserProfile,
 )
-from zerver.models.groups import SystemGroups
+from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.realm_audit_logs import AuditLogEventType
 
 
@@ -896,6 +896,12 @@ def user_has_permission_for_group_setting(
     *,
     direct_member_only: bool = False,
 ) -> bool:
+
+    if setting_config.allow_internet_group:
+        system_groups_name_dict = get_realm_system_groups_name_dict(user.realm_id)
+        if system_groups_name_dict[user_group_id] == SystemGroups.EVERYONE_ON_INTERNET:
+            return True
+
     if not setting_config.allow_everyone_group and user.is_guest:
         return False
 

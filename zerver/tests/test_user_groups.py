@@ -37,7 +37,7 @@ from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import UserGroupMembersData, UserGroupMembersDict
+from zerver.lib.types import GroupPermissionSetting, UserGroupMembersData, UserGroupMembersDict
 from zerver.lib.user_groups import (
     check_user_has_permission_by_role,
     get_direct_user_groups,
@@ -57,6 +57,7 @@ from zerver.lib.user_groups import (
     is_user_in_group,
     user_group_ids_to_user_groups,
     user_groups_in_realm_serialized,
+    user_has_permission_for_group_setting,
 )
 from zerver.models import (
     GroupGroupMembership,
@@ -725,6 +726,51 @@ class UserGroupTestCase(ZulipTestCase):
         )
         self.assertTrue(
             check_user_has_permission_by_role(polonius, internet_group.id, system_groups_name_dict)
+        )
+
+    def test_user_has_permission_for_group_setting_with_internet_group(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        polonius = self.example_user("polonius")
+
+        internet_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE_ON_INTERNET,
+            realm_for_sharding=realm,
+            is_system_group=True,
+        )
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS,
+            realm_for_sharding=realm,
+            is_system_group=True,
+        )
+
+        # We do not have any setting with allow_internet_group as
+        # True currently, but this test is added for coverage.
+        setting_with_internet = GroupPermissionSetting(
+            allow_nobody_group=False,
+            allow_everyone_group=True,
+            allow_internet_group=True,
+            default_group_name=SystemGroups.EVERYONE_ON_INTERNET,
+        )
+
+        # When allow_internet_group is True and the setting is set to the
+        # internet group, all users (including guests) have permission.
+        self.assertTrue(
+            user_has_permission_for_group_setting(internet_group.id, hamlet, setting_with_internet)
+        )
+        self.assertTrue(
+            user_has_permission_for_group_setting(
+                internet_group.id, polonius, setting_with_internet
+            )
+        )
+
+        # A non-internet group still works normally regardless of
+        # allow_internet_group.
+        self.assertTrue(
+            user_has_permission_for_group_setting(members_group.id, hamlet, setting_with_internet)
+        )
+        self.assertFalse(
+            user_has_permission_for_group_setting(members_group.id, polonius, setting_with_internet)
         )
 
     def test_user_group_ids_to_user_groups(self) -> None:
