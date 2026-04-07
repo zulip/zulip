@@ -18,6 +18,7 @@ import * as emoji_picker from "./emoji_picker.ts";
 import * as flatpickr from "./flatpickr.ts";
 import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
+import * as message_actions_popover from "./message_actions_popover.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
@@ -242,6 +243,68 @@ export function initialize(): void {
     // selection function which will open the compose box  and select the message.
     if (!util.is_mobile()) {
         $("#main_div").on("click", ".messagebox", select_message_function);
+    }
+
+    // Right-clicking on the inert parts of a message (the rendered
+    // message body) opens the message actions popover. On interactive
+    // UI like the sender name, emoji reactions, action buttons, links,
+    // mentions, and inline media, we defer to the browser's native
+    // context menu.
+    if (!util.is_mobile()) {
+        $("#main_div").on("contextmenu", ".messagebox", function (e) {
+            assert(e.target instanceof Element);
+            const $target = $(e.target);
+
+            if (document.getSelection()?.type === "Range") {
+                // Browser's context menu is more useful for selected text
+                // (copy, translate, search).
+                return;
+            }
+
+            if ($target.closest("img, video, audio").length > 0) {
+                return;
+            }
+
+            if (
+                is_clickable_message_element($target) ||
+                $target.closest(
+                    ".sender_info_hover, .message_reactions, .user-mention, .user-group-mention, .topic-mention, .code_external_link, .poll-widget, .todo-widget",
+                ).length > 0
+            ) {
+                // Most of these have their own click handlers that call
+                // stopPropagation, so left-click on them is already inert
+                // and they aren't listed in is_clickable_message_element;
+                // for right-click we have to list them explicitly.
+                // .topic-mention has no handler, but we exclude it too so
+                // that all mention types behave consistently.
+                return;
+            }
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const $row = $(this).closest(".message_row");
+            const id = rows.id($row);
+
+            assert(message_lists.current !== undefined);
+            message_lists.current.select_id(id);
+
+            const message = message_store.get(id);
+            if (
+                message === undefined ||
+                message.locally_echoed ||
+                message_edit.currently_editing_messages.has(id)
+            ) {
+                // Failed sends lack the menu button and edits replace it.
+                return;
+            }
+
+            message_actions_popover.open_message_actions_popover_at_position(
+                $row,
+                e.clientX,
+                e.clientY,
+            );
+        });
     }
 
     $("#main_div").on("click", ".star_container", function (e) {

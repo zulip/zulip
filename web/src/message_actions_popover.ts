@@ -15,6 +15,7 @@ import * as message_lists from "./message_lists.ts";
 import * as message_report from "./message_report.ts";
 import type {Message} from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
+import * as overlay_util from "./overlay_util.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popover_menus_data from "./popover_menus_data.ts";
 import * as popovers from "./popovers.ts";
@@ -27,6 +28,14 @@ import {the} from "./util.ts";
 
 let message_actions_popover_keyboard_toggle = false;
 
+// Set when the popover is opened at the cursor via right-click, so that
+// while it's open we make the page behind it inert like a native context
+// menu: scrolling is locked and a transparent backdrop swallows the
+// dismissing click. Both are released when the menu closes.
+let message_actions_popover_scroll_locked = false;
+
+let message_actions_popover_props: Partial<tippy.Props> | undefined;
+
 function get_action_menu_menu_items(): JQuery {
     return $("[data-tippy-root] #message-actions-menu-dropdown li:not(.divider) a");
 }
@@ -36,6 +45,21 @@ function focus_first_action_popover_item(): void {
     // Our popup menus act kind of funny when you mix keyboard and mouse.
     const $items = get_action_menu_menu_items();
     popover_menus.focus_first_popover_item($items);
+}
+
+export function open_message_actions_popover_at_position($row: JQuery, x: number, y: number): void {
+    if (popovers.any_active()) {
+        popovers.hide_all();
+    }
+
+    assert(message_actions_popover_props !== undefined);
+    const button = the($row.find(".message-actions-menu-button"));
+    message_actions_popover_scroll_locked = true;
+    popover_menus.toggle_popover_menu(button, message_actions_popover_props, {
+        show_as_overlay_on_mobile: false,
+        show_as_overlay_always: false,
+        mouse_position: {x, y},
+    });
 }
 
 export function toggle_message_actions_menu(message: Message): boolean {
@@ -75,7 +99,7 @@ export function initialize({
         target: tippy.ReferenceElement,
     ) => void;
 }): void {
-    popover_menus.register_popover_menu(".actions_hover .message-actions-menu-button", {
+    message_actions_popover_props = {
         theme: "popover-menu",
         placement: "bottom",
         popperOptions: {
@@ -97,6 +121,17 @@ export function initialize({
             const args = popover_menus_data.get_actions_popover_content_context(message_id);
             instance.setContent(parse_html(render_message_actions_popover(args)));
             $row.addClass("has_actions_popover");
+            if (message_actions_popover_scroll_locked) {
+                overlay_util.disable_scrolling();
+                // A transparent backdrop below the menu captures the
+                // dismissing click so it only closes the menu, rather than
+                // also activating the link or button it lands on.
+                $("body").append(
+                    $("<div>")
+                        .attr("id", "popover-overlay-background")
+                        .addClass("transparent-backdrop"),
+                );
+            }
         },
         onMount(instance) {
             const $row = $(instance.reference).closest(".message_row");
@@ -260,6 +295,15 @@ export function initialize({
             instance.destroy();
             popover_menus.popover_instances.message_actions = null;
             message_actions_popover_keyboard_toggle = false;
+            if (message_actions_popover_scroll_locked) {
+                $("#popover-overlay-background").remove();
+                overlay_util.enable_scrolling();
+                message_actions_popover_scroll_locked = false;
+            }
         },
-    });
+    };
+    popover_menus.register_popover_menu(
+        ".actions_hover .message-actions-menu-button",
+        message_actions_popover_props,
+    );
 }

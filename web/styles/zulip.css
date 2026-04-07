@@ -407,6 +407,14 @@ body.has-overlay-scrollbar {
        emoji picker can render on top of the user status picker. */
     z-index: 106;
     background-color: hsl(0deg 0% 0% / 70%);
+
+    /* The right-click message-actions menu uses this backdrop only to
+       capture the dismissing click, so that the click closes the menu
+       instead of activating the link or button underneath it. There it
+       must not dim the view, the way it does for centered overlays. */
+    &.transparent-backdrop {
+        background-color: transparent;
+    }
 }
 
 .white-space-preserve-wrap {

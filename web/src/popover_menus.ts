@@ -441,6 +441,39 @@ function get_props_for_popover_centering(
 // to focusing the reference itself.
 export type GetFocusReturnElement = (reference: HTMLElement) => HTMLElement | undefined;
 
+function get_props_for_popover_at_mouse_position(
+    reference: tippy.ReferenceElement,
+    x: number,
+    y: number,
+): Partial<tippy.Props> {
+    // Pin the menu to the cursor as an offset from the reference element,
+    // and preserve the default modifiers the spread below would otherwise
+    // drop, so the popover still tears down when its reference is removed.
+    const reference_rect = reference.getBoundingClientRect();
+    const offset_x = x - reference_rect.left;
+    const offset_y = y - reference_rect.top;
+    return {
+        getReferenceClientRect() {
+            const rect = reference.getBoundingClientRect();
+            return new DOMRect(rect.left + offset_x, rect.top + offset_y, 0, 0);
+        },
+        // Top-left of the menu meets the cursor; if it overflows, flip
+        // through the remaining corners the way browser context menus do.
+        placement: "bottom-start",
+        popperOptions: {
+            modifiers: [
+                ...default_popover_props.popperOptions!.modifiers!,
+                {
+                    name: "flip",
+                    options: {
+                        fallbackPlacements: ["top-start", "bottom-end", "top-end"],
+                    },
+                },
+            ],
+        },
+    };
+}
+
 // Toggles a popover menu directly; intended for use in keyboard
 // shortcuts and similar alternative ways to open a popover menu.
 export function toggle_popover_menu(
@@ -452,6 +485,7 @@ export function toggle_popover_menu(
         // Only works for elements which are in message feed.
         message_feed_overlay_detection?: boolean;
         get_focus_return_element?: GetFocusReturnElement;
+        mouse_position?: {x: number; y: number};
     },
 ): tippy.Instance {
     const instance = target._tippy;
@@ -467,6 +501,11 @@ export function toggle_popover_menu(
     }
 
     let mobile_popover_props = {};
+    let mouse_position_props = {};
+    if (options?.mouse_position !== undefined) {
+        const {x, y} = options.mouse_position;
+        mouse_position_props = get_props_for_popover_at_mouse_position(target, x, y);
+    }
 
     // If the window is mobile-sized, we will render the
     // popover centered on the screen as an overlay.
@@ -509,6 +548,7 @@ export function toggle_popover_menu(
         showOnCreate: true,
         ...popover_props,
         ...mobile_popover_props,
+        ...mouse_position_props,
     };
 
     // If the popover was opened via keyboard, restore focus to
