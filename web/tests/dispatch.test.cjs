@@ -1488,6 +1488,11 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.web_navigate_to_sent_message, false);
 
+    event = event_fixtures.user_settings__web_right_click_opens_message_actions_menu;
+    override(user_settings, "web_right_click_opens_message_actions_menu", false);
+    dispatch(event);
+    assert_same(user_settings.web_right_click_opens_message_actions_menu, true);
+
     {
         const event = event_fixtures.user_settings_web_suggest_update_timezone;
         dispatch(event);
