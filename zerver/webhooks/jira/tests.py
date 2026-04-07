@@ -11,7 +11,7 @@ class JiraHookTests(WebhookTestCase):
         msg = self.send_webhook_payload(
             self.test_user,
             url,
-            self.get_body("created_v2"),
+            self.get_body("issue_created"),
             content_type="application/json",
         )
         expected_content = """
@@ -35,7 +35,7 @@ Leo Franchi created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/
 * **Priority**: Major
 * **Assignee**: no one
 """.strip()
-        self.check_webhook("created_v2", expected_topic_name, expected_message)
+        self.check_webhook("issue_created", expected_topic_name, expected_message)
 
     def test_ignored_events(self) -> None:
         ignored_actions = [
@@ -65,7 +65,7 @@ Leo Franchià created [BUG-15: New bug with à hook](http://lfranchi.com:8080/br
 * **Priority**: Major
 * **Assignee**: no one
 """.strip()
-        self.check_webhook("created_with_unicode_v2", expected_topic_name, expected_message)
+        self.check_webhook("issue_created_with_unicode", expected_topic_name, expected_message)
 
     def test_created_assignee(self) -> None:
         expected_topic_name = "TEST-4: Test Created Assignee"
@@ -75,33 +75,33 @@ Leonardo Franchi [Administrator] created [TEST-4: Test Created Assignee](https:/
 * **Priority**: Major
 * **Assignee**: Leonardo Franchi [Administrator]
 """.strip()
-        self.check_webhook("created_assignee_v2", expected_topic_name, expected_message)
+        self.check_webhook("issue_created_with_assignee", expected_topic_name, expected_message)
 
     def test_deleted(self) -> None:
         expected_topic_name = "BUG-15: New bug with hook"
         expected_message = "Leo Franchi deleted [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15)."
-        self.check_webhook("deleted_v2", expected_topic_name, expected_message)
+        self.check_webhook("issue_deleted", expected_topic_name, expected_message)
 
     def test_reassigned(self) -> None:
         expected_topic_name = "BUG-15: New bug with hook"
         expected_message = """Leo Franchi updated [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
 
 * Changed assignee to **Othello, the Moor of Venice**"""
-        self.check_webhook("reassigned_v2", expected_topic_name, expected_message)
+        self.check_webhook("issue_updated__reassigned", expected_topic_name, expected_message)
 
     def test_priority_updated(self) -> None:
         expected_topic_name = "TEST-1: Fix That"
         expected_message = """Leonardo Franchi [Administrator] updated [TEST-1: Fix That](https://zulipp.atlassian.net/browse/TEST-1) (assigned to **leo@zulip.com**):
 
 * Changed priority from **Critical** to **Major**"""
-        self.check_webhook("updated_priority_v2", expected_topic_name, expected_message)
+        self.check_webhook("issue_updated__priority", expected_topic_name, expected_message)
 
     def test_status_changed(self) -> None:
         expected_topic_name = "TEST-1: Fix That"
         expected_message = """Leonardo Franchi [Administrator] updated [TEST-1: Fix That](https://zulipp.atlassian.net/browse/TEST-1):
 
 * Changed status from **To Do** to **In Progress**"""
-        self.check_webhook("change_status_v2", expected_topic_name, expected_message)
+        self.check_webhook("issue_updated__status", expected_topic_name, expected_message)
 
     def test_comment_created(self) -> None:
         expected_topic_name = "SP-1: Add support for newer format Jira issue comment events"

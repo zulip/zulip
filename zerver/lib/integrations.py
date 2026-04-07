@@ -752,7 +752,7 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
     IncomingWebhookIntegration(
         "jira",
         ["project-management"],
-        [WebhookScreenshotConfig("created_assignee_v2.json")],
+        [WebhookScreenshotConfig("issue_created_with_assignee.json")],
     ),
     IncomingWebhookIntegration(
         "jotform", ["productivity"], [WebhookScreenshotConfig("screenshot_response.multipart")]
