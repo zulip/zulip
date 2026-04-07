@@ -9,6 +9,7 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import AnomalousWebhookPayloadError, UnsupportedWebhookEventTypeError
+from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_none_or, check_string
@@ -87,7 +88,7 @@ def convert_jira_markup(content: str, realm: Realm) -> str:
         # Try to look up username
         user_profile = guess_zulip_user_from_jira(username, realm)
         if user_profile:
-            replacement = f"**{user_profile.full_name}**"
+            replacement = silent_mention_syntax_for_user(user_profile)
         else:
             replacement = f"**{username}**"
 
@@ -117,7 +118,7 @@ def get_issue_string(
     if with_title:
         text = f"{issue_id}: {get_issue_title(payload)}"
     else:
-        text = issue_id
+        text = issue_id  # nocoverage
 
     base_url = re.match(
         r"(.*)\/rest\/api/.*", get_in(payload, ["issue", "self"]).tame(check_string)
