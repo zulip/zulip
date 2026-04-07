@@ -38,6 +38,7 @@ const quote_menu_selection_by_instance = new WeakMap<
     tippy.Instance,
     compose_reply.QuoteMenuSelection
 >();
+let message_actions_popover_props: Partial<tippy.Props> | undefined;
 
 function get_action_menu_menu_items(): JQuery {
     return $("[data-tippy-root] #message-actions-menu-dropdown li:not(.divider) a");
@@ -79,6 +80,20 @@ function focus_first_action_popover_item(): void {
     // Our popup menus act kind of funny when you mix keyboard and mouse.
     const $items = get_action_menu_menu_items();
     popover_menus.focus_first_popover_item($items);
+}
+
+export function open_message_actions_popover_at_position($row: JQuery, x: number, y: number): void {
+    if (popovers.any_active()) {
+        popovers.hide_all();
+    }
+
+    assert(message_actions_popover_props !== undefined);
+    const button = the($row.find(".message-actions-menu-button"));
+    popover_menus.toggle_popover_menu(button, message_actions_popover_props, {
+        show_as_overlay_on_mobile: false,
+        show_as_overlay_always: false,
+        mouse_position: {x, y},
+    });
 }
 
 export function toggle_message_actions_menu(message: Message): boolean {
@@ -139,7 +154,7 @@ export function initialize({
         },
     );
 
-    popover_menus.register_popover_menu(".actions_hover .message-actions-menu-button", {
+    message_actions_popover_props = {
         theme: "popover-menu",
         placement: "bottom",
         popperOptions: {
@@ -313,5 +328,9 @@ export function initialize({
             popover_menus.popover_instances.message_actions = null;
             message_actions_popover_keyboard_toggle = false;
         },
-    });
+    };
+    popover_menus.register_popover_menu(
+        ".actions_hover .message-actions-menu-button",
+        message_actions_popover_props,
+    );
 }
