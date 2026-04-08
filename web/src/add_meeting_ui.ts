@@ -487,3 +487,10 @@ function update_channel_warning(): void {
     $checkbox.closest("label").removeClass("disabled");
   }
 }
+
+export const __test_only = {
+    set_invite_users_widget: (w: any) => { invite_users_widget = w; },
+    on_add_all_users_click,
+    reset_composebox_widget_flag: () => { composebox_add_meeting_dropdown_widget = false; },
+    get_composebox_widget_flag: () => composebox_add_meeting_dropdown_widget,
+};
