@@ -1507,7 +1507,13 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
                 function matcher(query, person) {
                     query = typeahead.clean_query_lowercase(query);
-                    return typeahead_helper.query_matches_person(query, person);
+                    const should_remove_diacritics =
+                        people.should_remove_diacritics_for_query(query);
+                    return typeahead_helper.query_matches_person(
+                        query,
+                        person,
+                        should_remove_diacritics,
+                    );
                 }
 
                 let query;
@@ -1526,6 +1532,12 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 assert.equal(matcher(query, gael_item), true);
 
                 query = "gaël";
+                assert.equal(matcher(query, gael_item), true);
+
+                query = "gaël twi";
+                assert.equal(matcher(query, gael_item), true);
+
+                query = "gael twi";
                 assert.equal(matcher(query, gael_item), true);
 
                 // Don't make suggestions if the last name only has whitespaces

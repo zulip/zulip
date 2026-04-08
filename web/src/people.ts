@@ -1185,11 +1185,9 @@ export function get_people_for_search_bar(query: string): User[] {
 
 export function should_remove_diacritics_for_query(query_lower_case: string): boolean {
     // We only do diacritic-sensitive matching for queries that do not
-    // contain diacritics themselves.
-    //
-    // TODO: This check is too strict; ideally we'd check for presence
-    // of diacritics; punctuation should not be relevant.
-    return /^[a-z]+$/.test(query_lower_case);
+    // contain diacritics themselves. Spaces and other punctuation are
+    // irrelevant to this check.
+    return typeahead.remove_diacritics(query_lower_case) === query_lower_case;
 }
 
 export function maybe_remove_diacritics_from_name(

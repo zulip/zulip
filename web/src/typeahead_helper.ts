@@ -1079,11 +1079,10 @@ export function rewire_sort_user_groups(value: typeof sort_user_groups): void {
 export function query_matches_person_name(
     query: string,
     person: UserPillData,
-    should_remove_diacritics?: boolean,
+    should_remove_diacritics: boolean,
     match_prefix?: boolean,
 ): boolean {
     query = query.toLowerCase();
-    should_remove_diacritics ??= people.should_remove_diacritics_for_query(query);
 
     const full_name = people.maybe_remove_diacritics_from_name(
         person.user,
@@ -1101,7 +1100,7 @@ export function query_matches_person_name(
 export function query_matches_person(
     query: string,
     person: UserPillData | UserOrMentionPillData,
-    should_remove_diacritics?: boolean,
+    should_remove_diacritics: boolean,
     match_prefix?: boolean,
     allow_custom_profile_field_matching = false,
 ): boolean {
