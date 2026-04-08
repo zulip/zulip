@@ -1,0 +1,23 @@
+<div id="file-attachment-preview-overlay" class="overlay" data-overlay="file-attachment-preview" data-noclose="false">
+    <div class="media-info-wrapper">
+        <div class="media-description">
+            <div class="title file-preview-filename"></div>
+        </div>
+        <div class="media-actions">
+            <a class="lightbox-media-action file-preview-download" download>{{t "Download" }}</a>
+        </div>
+        <div class="file-preview-close exit" aria-label="{{t 'Close' }}">
+            <span aria-hidden="true" class="zulip-icon zulip-icon-close"></span>
+        </div>
+    </div>
+    <div class="file-preview-content">
+        <div class="file-preview-loading">
+            <div class="loading_indicator_spinner"></div>
+        </div>
+        <div class="file-preview-rendered"></div>
+        <div class="file-preview-error">
+            <p class="file-preview-error-message"></p>
+            <a class="file-preview-error-download lightbox-media-action" download>{{t "Download" }}</a>
+        </div>
+    </div>
+</div>

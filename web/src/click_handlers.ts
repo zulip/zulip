@@ -40,6 +40,7 @@ import * as spectators from "./spectators.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
 import * as stream_list from "./stream_list.ts";
 import * as stream_popover from "./stream_popover.ts";
+import * as file_attachment_preview from "./file_attachment_preview.ts";
 import * as topic_list from "./topic_list.ts";
 import * as ui_util from "./ui_util.ts";
 import {parse_html} from "./ui_util.ts";
@@ -390,6 +391,23 @@ export function initialize(): void {
         const $row = $(this).closest(".message_row");
         message_edit.end_message_row_edit($row);
         e.stopPropagation();
+    });
+    // Intercept clicks on user_uploads links for text attachment preview.
+    // This must be registered before the generic <a> blur handler below.
+    $("body").on("click", "a[href]", function (this: HTMLAnchorElement, e) {
+        const href = this.getAttribute("href");
+        if (
+            href &&
+            href.startsWith("/user_uploads/") &&
+            // Don't intercept image/video links handled by lightbox
+            !$(this).closest(".message_inline_image, .message_inline_video").length &&
+            file_attachment_preview.should_preview(href)
+        ) {
+            e.preventDefault();
+            e.stopPropagation();
+            const filename = decodeURIComponent(href.slice(href.lastIndexOf("/") + 1));
+            void file_attachment_preview.open_preview(href, filename);
+        }
     });
     $("body").on("click", "a", function () {
         if (document.activeElement === this) {

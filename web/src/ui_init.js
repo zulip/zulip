@@ -132,6 +132,7 @@ import * as sidebar_ui from "./sidebar_ui.ts";
 import * as spoilers from "./spoilers.ts";
 import * as starred_messages from "./starred_messages.ts";
 import * as starred_messages_ui from "./starred_messages_ui.ts";
+import * as file_attachment_preview from "./file_attachment_preview.ts";
 import {
     current_user,
     realm,
@@ -630,6 +631,7 @@ export async function initialize_everything(state_data) {
     condense.initialize();
     spoilers.initialize();
     lightbox.initialize();
+    file_attachment_preview.initialize();
     sidebar_ui.initialize();
     user_profile.initialize();
     stream_popover.initialize();

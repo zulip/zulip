@@ -957,6 +957,7 @@ export function dispatch_normal_event(event) {
                 "receives_typing_notifications",
                 "resolved_topic_notice_auto_read_policy",
                 "starred_message_counts",
+                "file_preview_extensions",
                 "timezone",
                 "translate_emoticons",
                 "twenty_four_hour_time",

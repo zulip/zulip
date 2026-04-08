@@ -191,6 +191,19 @@ export function set_up(settings_panel: SettingsPanel): void {
         change_display_setting(data, $status_element);
     });
 
+    $container.on(
+        "change",
+        "input[name='file_preview_extensions']",
+        function (this: HTMLElement, e) {
+            const $input_elem = $(e.currentTarget);
+            const data = {file_preview_extensions: $input_elem.val() as string};
+            const $status_element = $input_elem
+                .closest(".subsection-parent")
+                .find(".alert-notification");
+            change_display_setting(data, $status_element);
+        },
+    );
+
     $container.find(".info-density-button").on("click", function (this: HTMLElement, e) {
         e.preventDefault();
         const changed_property = z
