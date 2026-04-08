@@ -38,6 +38,14 @@ type DirectDestination = {type: "direct"; user_ids: number[]};
 type Destination = StreamDestination | DirectDestination;
 let pending_destinations: Destination[] = [];
 
+const MONTHLY_ORDINAL_LABELS = new Map([
+    [1, "first"],
+    [2, "second"],
+    [3, "third"],
+    [4, "fourth"],
+    [-1, "last"],
+]);
+
 // ---------------------------------------------------------------------------
 // Formatting helpers (used by the overlay list)
 // ---------------------------------------------------------------------------
@@ -51,20 +59,13 @@ function format_recurrence(rsm: RecurringScheduledMessage): string {
         return `Daily at ${rsm.scheduled_time} UTC`;
     }
     if (rsm.recurrence_type === "monthly" && !Array.isArray(rsm.recurrence_days)) {
-        const rule = rsm.recurrence_days as MonthlyRecurrenceDays;
+        const rule = rsm.recurrence_days;
         if (rule.type === "calendar_day") {
             const day_label = rule.day === -1 ? "last day" : `${rule.day}`;
             return `Monthly (${day_label}) at ${rsm.scheduled_time} UTC`;
         }
 
-        const ordinal_labels = new Map([
-            [1, "first"],
-            [2, "second"],
-            [3, "third"],
-            [4, "fourth"],
-            [-1, "last"],
-        ]);
-        const ordinal = ordinal_labels.get(rule.ordinal ?? 1) ?? String(rule.ordinal);
+        const ordinal = MONTHLY_ORDINAL_LABELS.get(rule.ordinal ?? 1) ?? String(rule.ordinal);
         const weekday = DAY_NAMES[rule.weekday ?? 0] ?? String(rule.weekday);
         return `Monthly (${ordinal} ${weekday}) at ${rsm.scheduled_time} UTC`;
     }
@@ -87,16 +88,20 @@ function clear_modal_error(): void {
     get_dialog_error_element().hide().empty();
 }
 
+function get_string_value(selector: string): string {
+    return String($(selector).val() ?? "");
+}
+
 function format_destination(dest: Record<string, unknown>): string {
     if (dest["type"] === "stream") {
-        const stream_id = dest["stream_id"] as number;
+        const stream_id = Number(dest["stream_id"]);
         const stream = sub_store.get(stream_id);
         const name = stream ? stream.name : `#${stream_id}`;
-        return `${name} > ${dest["topic"] as string}`;
+        return `${name} > ${String(dest["topic"])}`;
     }
-    const user_ids = dest["user_ids"] as number[];
+    const user_ids = Array.isArray(dest["user_ids"]) ? dest["user_ids"] : [];
     const names = user_ids.map((uid) => {
-        const person = people.maybe_get_user_by_id(uid);
+        const person = people.maybe_get_user_by_id(Number(uid));
         return person ? person.full_name : String(uid);
     });
     return `DM: ${names.join(", ")}`;
@@ -118,9 +123,7 @@ function render_list(): void {
     $list.find(".no-overlay-messages").hide();
 
     for (const rsm of all) {
-        const dest_text = rsm.destinations
-            .map((d) => format_destination(d as Record<string, unknown>))
-            .join("; ");
+        const dest_text = rsm.destinations.map((destination) => format_destination(destination)).join("; ");
         const $row = $(`
             <div class="recurring-scheduled-message-row" data-rsm-id="${rsm.id}">
                 <div class="rsm-content">${_.escape(rsm.content)}</div>
@@ -130,7 +133,7 @@ function render_list(): void {
                     ${$t({defaultMessage: "Cancel"})}
                 </button>
             </div>
-        `);
+        `.trim());
         $list.append($row);
     }
 }
@@ -182,7 +185,7 @@ function render_pending_destinations(): void {
                 <span>${label}</span>
                 <button type="button" class="rsm-remove-dest-btn" data-idx="${idx}">&times;</button>
             </div>
-        `);
+        `.trim());
         $list.append($chip);
     }
 }
@@ -240,6 +243,51 @@ function remove_destination(idx: number): void {
     render_pending_destinations();
 }
 
+function get_weekly_recurrence_days(): number[] {
+    const recurrence_days: number[] = [];
+    $("#create-recurring-scheduled-message-modal .recurrence-day-checkbox:checked").each(function () {
+        recurrence_days.push(Number.parseInt(String($(this).val()), 10));
+    });
+    return recurrence_days;
+}
+
+function get_monthly_recurrence_days(): MonthlyRecurrenceDays | undefined {
+    const monthly_rule_type = get_string_value("#rsm-monthly-rule-type");
+    if (monthly_rule_type === "calendar_day") {
+        const raw_day = get_string_value("#rsm-monthly-calendar-day");
+        if (!raw_day) {
+            return undefined;
+        }
+        return {
+            type: "calendar_day",
+            day: Number.parseInt(raw_day, 10),
+        };
+    }
+
+    const raw_ordinal = get_string_value("#rsm-monthly-ordinal");
+    const raw_weekday = get_string_value("#rsm-monthly-weekday");
+    if (!raw_ordinal || !raw_weekday) {
+        return undefined;
+    }
+    return {
+        type: "ordinal_weekday",
+        ordinal: Number.parseInt(raw_ordinal, 10),
+        weekday: Number.parseInt(raw_weekday, 10),
+    };
+}
+
+function get_recurrence_days(
+    recurrence_type: string,
+): number[] | MonthlyRecurrenceDays | undefined {
+    if (recurrence_type === "weekly" || recurrence_type === "specific_days") {
+        return get_weekly_recurrence_days();
+    }
+    if (recurrence_type === "monthly") {
+        return get_monthly_recurrence_days();
+    }
+    return [];
+}
+
 // ---------------------------------------------------------------------------
 // Create form submission
 // ---------------------------------------------------------------------------
@@ -247,20 +295,22 @@ function remove_destination(idx: number): void {
 function submit_create_form(): void {
     const content = ($<HTMLTextAreaElement>("#recurring-scheduled-message-content").val() ?? "")
         .trim();
-    const recurrence_type = $<HTMLSelectElement>(
-        "#recurring-scheduled-message-recurrence-type",
-    ).val() as string;
-    const scheduled_time = $<HTMLInputElement>("#recurring-scheduled-message-time").val() as string;
-
-    const recurrence_days: number[] = [];
-    $("#create-recurring-scheduled-message-modal .recurrence-day-checkbox:checked").each(
-        function () {
-            recurrence_days.push(Number.parseInt($(this).val() as string, 10));
-        },
-    );
+    const recurrence_type = get_string_value("#recurring-scheduled-message-recurrence-type");
+    const scheduled_time = get_string_value("#recurring-scheduled-message-time");
+    const recurrence_days = get_recurrence_days(recurrence_type);
 
     if (pending_destinations.length === 0) {
         show_modal_error($t({defaultMessage: "Please add at least one destination."}));
+        return;
+    }
+
+    if (recurrence_type === "monthly" && recurrence_days === undefined) {
+        const monthly_rule_type = get_string_value("#rsm-monthly-rule-type");
+        if (monthly_rule_type === "calendar_day") {
+            show_modal_error($t({defaultMessage: "Please choose a day of the month."}));
+        } else {
+            show_modal_error($t({defaultMessage: "Please choose both a week and weekday."}));
+        }
         return;
     }
 
@@ -296,15 +346,28 @@ function submit_create_form(): void {
 function post_render_create_modal(): void {
     const $recurrence_type = $("#recurring-scheduled-message-recurrence-type");
     const $days_section = $("#recurrence-days-section");
+    const $monthly_section = $("#monthly-recurrence-section");
+    const $monthly_rule_type = $("#rsm-monthly-rule-type");
+    const $monthly_calendar_day_section = $("#rsm-monthly-calendar-day-section");
+    const $monthly_ordinal_weekday_section = $("#rsm-monthly-ordinal-weekday-section");
     const $one_time_section = $("#one-time-timestamp-section");
 
+    function update_monthly_visibility(): void {
+        const monthly_rule_type = String($monthly_rule_type.val()!);
+        $monthly_calendar_day_section.toggle(monthly_rule_type === "calendar_day");
+        $monthly_ordinal_weekday_section.toggle(monthly_rule_type === "ordinal_weekday");
+    }
+
     function update_visibility(): void {
-        const val = $recurrence_type.val() as string;
+        const val = get_string_value("#recurring-scheduled-message-recurrence-type");
         $days_section.toggle(val === "weekly" || val === "specific_days");
+        $monthly_section.toggle(val === "monthly");
         $one_time_section.toggle(val === "one_time");
+        update_monthly_visibility();
     }
 
     $recurrence_type.on("change", update_visibility);
+    $monthly_rule_type.on("change", update_monthly_visibility);
     update_visibility();
 
     // Pre-populate from compose box context.
