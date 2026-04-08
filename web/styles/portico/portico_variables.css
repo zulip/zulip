@@ -27,6 +27,9 @@
     --color-link-underline-alternate: hsl(210deg 94% 100% / 40%);
     --color-link-underline-alternate-hover: hsl(210deg 94% 100% / 80%);
     --color-prominent-border: var(--color-link);
+    --color-action-button: hsl(240deg 66% 60%);
+    --color-action-button-hover: hsl(240deg 66% 55%);
+    --color-action-button-active: hsl(240deg 66% 50%);
 
     @media (prefers-color-scheme: dark) {
         --color-background-gradient-start: hsl(209deg 63% 40%);
