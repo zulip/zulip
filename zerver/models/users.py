@@ -98,6 +98,12 @@ class UserBaseSettings(models.Model):
     # UI setting to control how animated images are played.
     web_animate_image_previews = models.TextField(default="on_hover")
 
+    # Comma-separated list of additional file extensions (without dots) to
+    # preview in the text attachment preview modal beyond the built-in set.
+    # The built-in set (txt, md, csv, pdf, plus 50+ source code types) is
+    # always previewable. Set to "none" to disable all previews.
+    file_preview_extensions = models.TextField(default="")
+
     # UI setting controlling Zulip's behavior of demoting in the sort
     # order and graying out streams with no recent traffic.  The
     # default behavior, automatic, enables this behavior once a user
@@ -376,6 +382,7 @@ class UserBaseSettings(models.Model):
         send_read_receipts=bool,
         send_stream_typing_notifications=bool,
         starred_message_counts=bool,
+        file_preview_extensions=str,
         translate_emoticons=bool,
         twenty_four_hour_time=bool,
         user_list_style=int,

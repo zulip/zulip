@@ -787,6 +787,7 @@ def update_realm_user_settings_defaults(
     send_read_receipts: Json[bool] | None = None,
     send_stream_typing_notifications: Json[bool] | None = None,
     starred_message_counts: Json[bool] | None = None,
+    file_preview_extensions: str | None = None,
     translate_emoticons: Json[bool] | None = None,
     twenty_four_hour_time: Json[bool] | None = None,
     user_list_style: Json[
@@ -825,6 +826,11 @@ def update_realm_user_settings_defaults(
 ) -> HttpResponse:
     if notification_sound is not None or email_notifications_batching_period_seconds is not None:
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)
+
+    if file_preview_extensions is not None:
+        from zerver.views.user_settings import normalize_file_preview_extensions
+
+        file_preview_extensions = normalize_file_preview_extensions(file_preview_extensions)
 
     realm_user_default = RealmUserDefault.objects.get(realm=user_profile.realm)
 
