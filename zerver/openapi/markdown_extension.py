@@ -283,6 +283,10 @@ def generate_curl_example(
         "/dev_list_users:get",
     ]
     lines = []
+    has_multipart_form_data = (
+        "requestBody" in operation_entry
+        and "multipart/form-data" in (operation_entry["requestBody"]["content"])
+    )
     if operation in insecure_operations:
         lines.append("```curl")
     else:
@@ -345,17 +349,25 @@ def generate_curl_example(
         if exclude is not None and parameter.name in exclude:
             continue
 
-        example_value = get_openapi_param_example_value_as_string(
-            endpoint, method, parameter, curl_argument=True
-        )
-        lines.append(example_value)
+        if has_multipart_form_data:
+            example_value = get_openapi_param_example_value_as_string(
+                endpoint, method, parameter, curl_argument=False
+            )
+            lines.append("    -F " + shlex.quote(f"{parameter.name}={example_value}"))
+        else:
+            example_value = get_openapi_param_example_value_as_string(
+                endpoint, method, parameter, curl_argument=True
+            )
+            lines.append(example_value)
 
-    if "requestBody" in operation_entry and "multipart/form-data" in (
-        content := operation_entry["requestBody"]["content"]
-    ):
+    if has_multipart_form_data:
+        content = operation_entry["requestBody"]["content"]
         properties = content["multipart/form-data"]["schema"]["properties"]
         for key, property in properties.items():
-            lines.append("    -F " + shlex.quote("{}=@{}".format(key, property["example"])))
+            if property.get("format") == "binary":
+                lines.append("    -F " + shlex.quote("{}=@{}".format(key, property["example"])))
+            else:
+                lines.append("    -F " + shlex.quote(f"{key}={property['example']}"))
 
     for i in range(1, len(lines) - 1):
         lines[i] += " \\"

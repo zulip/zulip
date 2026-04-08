@@ -39,6 +39,17 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     "create-constructor-groups-video-call",
     # Would need Nextcloud Talk server configured to test this endpoint.
     "create-nextcloud-talk-video-call",
+    # This endpoint redirects to the logo asset URL, so the generated curl
+    # response is not a JSON success payload.
+    "get-realm-logo",
+    # These are documentation pages linked from rest-endpoints, not endpoint
+    # operationIds in the OpenAPI spec.
+    "construct-narrow",
+    "mobile-notifications",
+    "outgoing-webhook-payload",
+    "real-time-events",
+    "remove-profile-data",
+    "update-profile-data",
 }
 
 
