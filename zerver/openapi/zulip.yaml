@@ -10743,10 +10743,9 @@ paths:
                           }
                         description: |
                           A special failed JSON response (`"code": "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED"`)
-                          for when the user has permission to move
-                          the target message, but asked to move all messages in a topic
-                          (`"propagate_mode": "change_all"`) and the user does not have permission
-                          to move the entire topic.
+                          for when the user asked to move all messages in a topic
+                          (`"propagate_mode": "change_all"`) and the user can move at least one message
+                          but does not have permission to move the entire topic.
 
                           This happens when the topic contains some messages that are older than an
                           applicable time limit for the requested topic move (see
@@ -10788,7 +10787,13 @@ paths:
                           of a topic that they have access to, without this error or any confirmation
                           dialog.
 
-                          **Changes**: New in Zulip 7.0 (feature level 172).
+                          **Changes**: Before Zulip 13.0 (feature level ZF-a6120e), this error
+                          response was only returned when the request's target message was
+                          itself within the time limit. As of this feature level, it is also
+                          returned when the target message is past the limit but at least one
+                          message in the topic is within it.
+
+                          New in Zulip 7.0 (feature level 172).
 
                           [private-channels]: /help/channel-permissions#private-channels
                   - allOf:
