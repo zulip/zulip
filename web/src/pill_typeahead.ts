@@ -15,10 +15,14 @@ import type {UserGroup} from "./user_groups.ts";
 import * as user_pill from "./user_pill.ts";
 import type {UserPillData, UserPillWidget} from "./user_pill.ts";
 
-function person_matcher(query: string, item: UserPillData): boolean {
+function person_matcher(
+    query: string,
+    item: UserPillData,
+    should_remove_diacritics: boolean,
+): boolean {
     return (
         people.is_known_user_id(item.user.user_id) &&
-        typeahead_helper.query_matches_person(query, item)
+        typeahead_helper.query_matches_person(query, item, should_remove_diacritics)
     );
 }
 
@@ -53,7 +57,8 @@ export function set_up_user(
         matcher(query: string): (item: UserPillData) => boolean {
             query = query.toLowerCase();
             query = query.replaceAll("\u00A0", " ");
-            return (item: UserPillData) => person_matcher(query, item);
+            const should_remove_diacritics = people.should_remove_diacritics_for_query(query);
+            return (item: UserPillData) => person_matcher(query, item, should_remove_diacritics);
         },
         sorter(matches: UserPillData[], query: string): UserPillData[] {
             const users = matches.filter((match) => people.is_known_user_id(match.user.user_id));
@@ -208,6 +213,7 @@ export function set_up_group_setting_typeahead(
         matcher(query: string): (item: GroupSettingTypeaheadItem) => boolean {
             query = query.toLowerCase();
             query = query.replaceAll("\u00A0", " ");
+            const should_remove_diacritics = people.should_remove_diacritics_for_query(query);
 
             return (item: GroupSettingTypeaheadItem): boolean => {
                 let matches = false;
@@ -216,7 +222,7 @@ export function set_up_group_setting_typeahead(
                 }
 
                 if (item.type === "user") {
-                    matches = matches || person_matcher(query, item);
+                    matches = matches || person_matcher(query, item, should_remove_diacritics);
                 }
                 return matches;
             };
@@ -356,6 +362,7 @@ export function set_up_combined(
         matcher(query: string): (item: TypeaheadItem) => boolean {
             query = query.toLowerCase();
             query = query.replaceAll("\u00A0", " ");
+            const should_remove_diacritics = people.should_remove_diacritics_for_query(query);
 
             return (item: TypeaheadItem): boolean => {
                 if (include_streams(query) && item.type === "stream") {
@@ -377,7 +384,7 @@ export function set_up_combined(
                 }
 
                 if (include_users && item.type === "user") {
-                    matches = matches || person_matcher(query, item);
+                    matches = matches || person_matcher(query, item, should_remove_diacritics);
                 }
                 return matches;
             };

@@ -857,6 +857,18 @@ run_test("filtered_users", () => {
     filtered_people = people.filter_people_by_search_terms(users, "ëm");
     assert.equal(filtered_people.size, 1);
     assert.ok(filtered_people.has(noah.user_id));
+
+    // Multi-word query should ignore diacritics when the query
+    // itself has no diacritics.
+    filtered_people = people.filter_people_by_search_terms(users, "nooa em");
+    assert.equal(filtered_people.size, 2);
+    assert.ok(filtered_people.has(noah.user_id));
+    assert.ok(filtered_people.has(plain_noah.user_id));
+
+    // Multi-word query with diacritics should match only Nöôáàh
+    filtered_people = people.filter_people_by_search_terms(users, "nöôáàh Ëme");
+    assert.equal(filtered_people.size, 1);
+    assert.ok(filtered_people.has(noah.user_id));
 });
 
 run_test("dm_matches_search_string", () => {
