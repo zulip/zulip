@@ -236,6 +236,24 @@ export function focus_in_empty_compose(
     return false;
 }
 
+export function focus_in_unedited_restored_draft_at_end(): boolean {
+    if (
+        !composing() ||
+        !get_is_content_unedited_restored_draft() ||
+        is_recipient_edited_manually()
+    ) {
+        return false;
+    }
+
+    if (document.activeElement?.id !== "compose-textarea") {
+        return false;
+    }
+
+    const $textarea = $("textarea#compose-textarea");
+    const text = untrimmed_message_content();
+    return $textarea.caret() === text.length;
+}
+
 export function private_message_recipient_emails(): string;
 export function private_message_recipient_emails(value: string): undefined;
 export function private_message_recipient_emails(value?: string): string | undefined {
