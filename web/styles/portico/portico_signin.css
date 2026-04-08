@@ -957,7 +957,7 @@ button#register_auth_button_gitlab {
 
 .split-view .actions a,
 .back-to-login {
-    color: hsl(164deg 100% 23%);
+    color: var(--color-link-portico-auth);
     text-decoration: none;
     font-weight: 600;
     font-size: 0.8em;
@@ -968,7 +968,7 @@ button#register_auth_button_gitlab {
 
     &:hover {
         text-decoration: none;
-        color: hsl(156deg 62% 61%);
+        color: var(--color-link-portico-auth-hover);
     }
 }
 
