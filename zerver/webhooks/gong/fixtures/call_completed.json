@@ -1,0 +1,299 @@
+{
+    "isTest": false,
+    "callData": {
+        "metaData": {
+            "id": "5599332235511222779",
+            "url": "http://local.gong-it.net:8080/call?id=5599332235511222771",
+            "title": "Ron/Speedman",
+            "scheduled": "2019-10-18T14:00:00-07:00",
+            "started": "2019-10-18T14:03:37.041977-07:00",
+            "duration": 2159,
+            "primaryUserId": "7744111777663220493",
+            "direction": "Conference",
+            "system": "Zoom",
+            "scope": "External",
+            "media": "Video",
+            "language": "eng"
+        },
+        "context": [
+            {
+            "system": "Salesforce",
+            "objects": [
+                {
+                "objectType": "Opportunity",
+                "objectId": "0061Q00000mkU1fQAE",
+                "fields": [
+                    {
+                    "name": "StageName",
+                    "value": "Open Renewal"
+                    },
+                    {
+                    "name": "Number_of_seats__c",
+                    "value": 28
+                    },
+                    {
+                    "name": "Amount",
+                    "value": 50000
+                    },
+                    {
+                    "name": "Probability",
+                    "value": 85
+                    },
+                    {
+                    "name": "CloseDate",
+                    "value": "2019-12-30"
+                    },
+                    {
+                    "name": "ARR_impact_rollup__c",
+                    "value": "false"
+                    },
+                    {
+                    "name": "Name",
+                    "value": "Acme - Renewal (28)"
+                    },
+                    {
+                    "name": "Type",
+                    "value": "Renewal"
+                    },
+                    {
+                    "name": "Primary_contact_persona__c",
+                    "value": "Manager of Sales"
+                    },
+                    {
+                    "name": "ARR_future_impact__c",
+                    "value": "false"
+                    },
+                    {
+                    "name": "MRR__c",
+                    "value": 4166.67
+                    },
+                    {
+                    "name": "Must_Win__c",
+                    "value": "false"
+                    }
+                ]
+                },
+                {
+                "objectType": "Account",
+                "objectId": "0011630000vmLBaEEN",
+                "fields": [
+                    {
+                    "name": "Industry",
+                    "value": "Internet Software & Services"
+                    },
+                    {
+                    "name": "Acme2__c",
+                    "value": 1121
+                    },
+                    {
+                    "name": "ARR__c",
+                    "value": 25166.67
+                    },
+                    {
+                    "name": "CS_Tier__c",
+                    "value": "3. Gold"
+                    },
+                    {
+                    "name": "Account_Behavior_Score__c",
+                    "value": 5150
+                    },
+                    {
+                    "name": "Website",
+                    "value": "acme.com"
+                    },
+                    {
+                    "name": "Sales_Team_Size__c",
+                    "value": "232"
+                    },
+                    {
+                    "name": "Score__c",
+                    "value": 120
+                    },
+                    {
+                    "name": "Size_Category__c",
+                    "value": "2. Enterprise"
+                    },
+                    {
+                    "name": "Name",
+                    "value": "Acme"
+                    }
+                ]
+                }
+            ]
+            }
+        ],
+        "parties": [
+            {
+            "id": "7409609343412403343",
+            "emailAddress": "deshon.white@acme.com",
+            "name": "Deshon White",
+            "title": "Sales Enablement Manager - Sales Development",
+            "speakerId": "1177336688551133887",
+            "context": [
+                {
+                "system": "Salesforce",
+                "objects": [
+                    {
+                    "objectType": "Contact",
+                    "objectId": "0331Z0000571AdPQDU",
+                    "fields": [
+                        {
+                        "name": "AccountOwnerId__c",
+                        "value": "0551Z00000KdYa3"
+                        },
+                        {
+                        "name": "Account_Name__c",
+                        "value": "Acme"
+                        },
+                        {
+                        "name": "Account_Status__c",
+                        "value": "Closed Won ARR: $34166.67"
+                        }
+                    ]
+                    }
+                ]
+                }
+            ],
+            "affiliation": "External",
+            "methods": [
+                "Invitee",
+                "Attendee"
+            ]
+            },
+            {
+            "id": "9048546196233268852",
+            "emailAddress": "jennifer.band@fasttrail.com",
+            "name": "Jennifer Band",
+            "title": "Customer Success Manager",
+            "userId": "3022101605611220443",
+            "speakerId": "7265406288145283521",
+            "context": [
+                {
+                "system": "Salesforce",
+                "objects": [
+                    {
+                    "objectType": "User",
+                    "objectId": "00557000007AJB1DDO",
+                    "fields": [
+                        {
+                        "name": "PlayGongVoicePrompt__c",
+                        "value": "false"
+                        }
+                    ]
+                    }
+                ]
+                }
+            ],
+            "affiliation": "Internal",
+            "methods": [
+                "Attendee"
+            ]
+            }
+        ],
+        "content": {
+            "trackers": [
+            {
+                "name": "Products",
+                "count": 1
+            },
+            {
+                "name": "Renewal (positive)",
+                "count": 7
+            },
+            {
+                "name": "Competitors",
+                "count": 1,
+                "phrases": [
+                {
+                    "count": 1,
+                    "phrase": "Zlymbo"
+                }
+                ]
+            },
+            {
+                "name": "CRM",
+                "count": 3,
+                "phrases": [
+                {
+                    "count": 3,
+                    "phrase": "Salesforce"
+                }
+                ]
+            }
+            ],
+            "topics": [
+            {
+                "name": "Integrations",
+                "duration": 517
+            },
+            {
+                "name": "Differentiation",
+                "duration": 203
+            },
+            {
+                "name": "Customer Success",
+                "duration": 0
+            }
+            ]
+        },
+        "interaction": {
+            "speakers": [
+            {
+                "id": "9048546196233268852",
+                "userId": "7041101707613290443",
+                "talkTime": 1032
+            }
+            ],
+            "interactionStats": [
+            {
+                "name": "Talk Ratio",
+                "value": 0.51
+            },
+            {
+                "name": "Longest Monologue",
+                "value": 150
+            },
+            {
+                "name": "Longest Customer Story",
+                "value": 107
+            },
+            {
+                "name": "Interactivity",
+                "value": 5.07
+            },
+            {
+                "name": "Patience",
+                "value": 0.86
+            }
+            ],
+            "video": [
+            {
+                "name": "Browser",
+                "duration": 0
+            },
+            {
+                "name": "Presentation",
+                "duration": 0
+            },
+            {
+                "name": "Webcam",
+                "duration": 1091.83
+            }
+            ]
+        },
+        "collaboration": {
+            "publicComments": [
+            {
+                "id": "2255211009900224213",
+                "audioStartTime": 1800.8911,
+                "audioEndTime": 1800.8911,
+                "commenterUserId": "7041101707613290443",
+                "comment": "Might be helpful to loop us in on Outreach issue with Outreach team",
+                "posted": "2019-10-19T00:34:39.113071+03:00",
+                "inReplyTo": null,
+                "duringCall": true
+            }
+            ]
+        }
+    }
+}
