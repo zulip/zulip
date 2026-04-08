@@ -486,6 +486,18 @@ input[name="licenses"] {
     text-align: left;
 }
 
+#update-card-button {
+    position: relative;
+
+    .billing-button-loader {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        margin: 0;
+    }
+}
+
 #billing-page-details .plan-toggle-action .plan-toggle-action-button {
     margin: 20px auto 0;
     background-color: hsl(0deg 70% 40%);
