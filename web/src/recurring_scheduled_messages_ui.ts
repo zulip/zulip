@@ -17,8 +17,20 @@ import type {RecurringScheduledMessage} from "./recurring_scheduled_messages.ts"
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
+import * as ui_report from "./ui_report.ts";
 
 const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+type MonthlyRecurrenceDays =
+    | {
+          type: "calendar_day";
+          day?: number;
+      }
+    | {
+          type: "ordinal_weekday";
+          ordinal?: number;
+          weekday?: number;
+      };
 
 // In-modal destination list, rebuilt each time the modal opens.
 type StreamDestination = {type: "stream"; stream_id: number; topic: string};
@@ -38,9 +50,41 @@ function format_recurrence(rsm: RecurringScheduledMessage): string {
     if (rsm.recurrence_type === "daily") {
         return `Daily at ${rsm.scheduled_time} UTC`;
     }
-    const day_labels = rsm.recurrence_days.map((d) => DAY_NAMES[d]).join(", ");
+    if (rsm.recurrence_type === "monthly" && !Array.isArray(rsm.recurrence_days)) {
+        const rule = rsm.recurrence_days as MonthlyRecurrenceDays;
+        if (rule.type === "calendar_day") {
+            const day_label = rule.day === -1 ? "last day" : `${rule.day}`;
+            return `Monthly (${day_label}) at ${rsm.scheduled_time} UTC`;
+        }
+
+        const ordinal_labels = new Map([
+            [1, "first"],
+            [2, "second"],
+            [3, "third"],
+            [4, "fourth"],
+            [-1, "last"],
+        ]);
+        const ordinal = ordinal_labels.get(rule.ordinal ?? 1) ?? String(rule.ordinal);
+        const weekday = DAY_NAMES[rule.weekday ?? 0] ?? String(rule.weekday);
+        return `Monthly (${ordinal} ${weekday}) at ${rsm.scheduled_time} UTC`;
+    }
+
+    const recurrence_days = Array.isArray(rsm.recurrence_days) ? rsm.recurrence_days : [];
+    const day_labels = recurrence_days.map((d) => DAY_NAMES[d]).join(", ");
     const label = rsm.recurrence_type === "weekly" ? "Weekly" : "Specific days";
     return `${label} (${day_labels}) at ${rsm.scheduled_time} UTC`;
+}
+
+function get_dialog_error_element(): JQuery {
+    return $("#dialog_error").expectOne();
+}
+
+function show_modal_error(message: string): void {
+    ui_report.client_error(message, get_dialog_error_element());
+}
+
+function clear_modal_error(): void {
+    get_dialog_error_element().hide().empty();
 }
 
 function format_destination(dest: Record<string, unknown>): string {
@@ -157,12 +201,12 @@ function add_stream_destination(): void {
 
     const stream_id = stream_data.get_stream_id(stream_name);
     if (stream_id === undefined) {
-        // eslint-disable-next-line no-alert
-        window.alert($t({defaultMessage: "Channel not found: {name}"}, {name: stream_name}));
+        show_modal_error($t({defaultMessage: "Channel not found: {name}"}, {name: stream_name}));
         return;
     }
 
     pending_destinations.push({type: "stream", stream_id, topic});
+    clear_modal_error();
     render_pending_destinations();
     $<HTMLInputElement>("#rsm-stream-name-input").val("");
     $<HTMLInputElement>("#rsm-topic-input").val("");
@@ -179,14 +223,14 @@ function add_direct_destination(): void {
     for (const email of emails) {
         const person = people.get_by_email(email);
         if (person === undefined) {
-            // eslint-disable-next-line no-alert
-            window.alert($t({defaultMessage: "User not found: {email}"}, {email}));
+            show_modal_error($t({defaultMessage: "User not found: {email}"}, {email}));
             return;
         }
         user_ids.push(person.user_id);
     }
 
     pending_destinations.push({type: "direct", user_ids});
+    clear_modal_error();
     render_pending_destinations();
     $<HTMLInputElement>("#rsm-dm-emails-input").val("");
 }
@@ -216,8 +260,7 @@ function submit_create_form(): void {
     );
 
     if (pending_destinations.length === 0) {
-        // eslint-disable-next-line no-alert
-        window.alert($t({defaultMessage: "Please add at least one destination."}));
+        show_modal_error($t({defaultMessage: "Please add at least one destination."}));
         return;
     }
 
@@ -234,8 +277,7 @@ function submit_create_form(): void {
             $<HTMLInputElement>("#recurring-scheduled-message-datetime").val() ?? ""
         );
         if (!datetime_val) {
-            // eslint-disable-next-line no-alert
-            window.alert($t({defaultMessage: "Please choose a send time."}));
+            show_modal_error($t({defaultMessage: "Please choose a send time."}));
             return;
         }
         data["scheduled_delivery_timestamp"] = JSON.stringify(
@@ -243,6 +285,7 @@ function submit_create_form(): void {
         );
     }
 
+    clear_modal_error();
     dialog_widget.submit_api_request(channel.post, "/json/recurring_scheduled_messages", data);
 }
 
