@@ -748,7 +748,7 @@ export class Typeahead<ItemType extends string | object> {
                 this.next();
                 break;
 
-            // ✅ YE ADD KAR
+            
             case "n":
             case "N":
                 if (e.ctrlKey) {
