@@ -230,6 +230,26 @@ class MessageMoveStreamTest(ZulipTestCase):
             messages = get_topic_messages(user_profile, new_stream, new_topic_name)
             self.assert_length(messages, 0)
 
+            # Using an older message (id2) for the request still reports
+            # how many recent messages can be moved, rather than rejecting
+            # outright.
+            result = self.client_patch(
+                f"/json/messages/{id2}",
+                params_dict,
+            )
+            self.assert_json_error(
+                result,
+                "You only have permission to move the 3/5 most recent messages in this topic.",
+            )
+
+            # Check message count in old topic and/or stream.
+            messages = get_topic_messages(user_profile, old_stream, old_topic_name)
+            self.assert_length(messages, 5)
+
+            # Check message count in new topic and/or stream.
+            messages = get_topic_messages(user_profile, new_stream, new_topic_name)
+            self.assert_length(messages, 0)
+
             json = orjson.loads(result.content)
             first_message_id_allowed_to_move = json["first_message_id_allowed_to_move"]
 
@@ -1021,6 +1041,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             user: UserProfile,
             old_stream: Stream,
             new_stream: Stream,
+            propagate_mode: str = "change_all",
             *,
             expect_error_message: str | None = None,
         ) -> None:
@@ -1029,7 +1050,7 @@ class MessageMoveStreamTest(ZulipTestCase):
                 "/json/messages/" + str(msg_id),
                 {
                     "stream_id": new_stream.id,
-                    "propagate_mode": "change_all",
+                    "propagate_mode": propagate_mode,
                     "send_notification_to_new_thread": orjson.dumps(False).decode(),
                 },
             )
@@ -1056,6 +1077,14 @@ class MessageMoveStreamTest(ZulipTestCase):
             cordelia,
             test_stream_1,
             test_stream_2,
+            expect_error_message="You only have permission to move the 2/3 most recent messages in this topic.",
+        )
+
+        check_move_message_to_stream(
+            cordelia,
+            test_stream_1,
+            test_stream_2,
+            propagate_mode="change_one",
             expect_error_message="The time limit for editing this message's channel has passed",
         )
 

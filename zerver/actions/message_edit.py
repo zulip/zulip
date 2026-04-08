@@ -1512,6 +1512,9 @@ def check_time_limit_for_change_all_propagate_mode(
         # We return if all messages are allowed to move.
         return
 
+    if len(messages_allowed_to_move) == 0:
+        raise JsonableError(_("The time limit for moving this topic has passed."))
+
     raise MessageMoveError(
         first_message_id_allowed_to_move=messages_allowed_to_move[0],
         total_messages_in_topic=total_messages_requested_to_move,
@@ -1639,6 +1642,7 @@ def check_stream_topic_edit_permissions(
     if (
         user_profile.realm.move_messages_within_stream_limit_seconds is not None
         and not user_profile.is_moderator
+        and message_edit_request.propagate_mode != "change_all"
     ):
         deadline_seconds = (
             user_profile.realm.move_messages_within_stream_limit_seconds + edit_limit_buffer
@@ -1767,6 +1771,7 @@ def check_update_message(
             if (
                 user_profile.realm.move_messages_between_streams_limit_seconds is not None
                 and not user_profile.is_moderator
+                and propagate_mode != "change_all"
             ):
                 deadline_seconds = (
                     user_profile.realm.move_messages_between_streams_limit_seconds

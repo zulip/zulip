@@ -1494,6 +1494,22 @@ class MessageMoveTopicTest(ZulipTestCase):
             "You only have permission to move the 2/5 most recent messages in this topic.",
         )
 
+        # Using an older message (id3) for the request still reports
+        # how many recent messages can be moved, rather than rejecting
+        # outright.
+        result = self.client_patch(
+            f"/json/messages/{id3}",
+            {
+                "topic": "edited",
+                "propagate_mode": "change_all",
+                "send_notification_to_new_thread": "false",
+            },
+        )
+        self.assert_json_error(
+            result,
+            "You only have permission to move the 2/5 most recent messages in this topic.",
+        )
+
     def test_notify_new_topic(self) -> None:
         user_profile = self.example_user("iago")
         self.login("iago")
@@ -2664,9 +2680,7 @@ class MessageMoveTopicTest(ZulipTestCase):
                 "propagate_mode": "change_all",
             },
         )
-        self.assert_json_error(
-            result, "The time limit for editing this message's topic has passed."
-        )
+        self.assert_json_error(result, "The time limit for moving this topic has passed.")
 
         result = self.resolve_topic_containing_message(
             cordelia,
@@ -2879,9 +2893,7 @@ class MessageMoveTopicTest(ZulipTestCase):
                 "propagate_mode": "change_all",
             },
         )
-        self.assert_json_error(
-            result, "The time limit for editing this message's topic has passed."
-        )
+        self.assert_json_error(result, "The time limit for moving this topic has passed.")
 
         result = self.resolve_topic_containing_message(
             hamlet,
