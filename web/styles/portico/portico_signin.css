@@ -1467,7 +1467,7 @@ button#register_auth_button_gitlab {
                 margin: 20px 0;
 
                 & a {
-                    color: hsl(200deg 100% 36%);
+                    color: var(--color-link-portico-auth);
                 }
             }
         }
