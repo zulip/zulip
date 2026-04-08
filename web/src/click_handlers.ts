@@ -392,7 +392,7 @@ export function initialize(): void {
         message_edit.end_message_row_edit($row);
         e.stopPropagation();
     });
-    // Intercept clicks on user_uploads links for text attachment preview.
+    // Intercept clicks on user_uploads links for file attachment preview.
     // This must be registered before the generic <a> blur handler below.
     $("body").on("click", "a[href]", function (this: HTMLAnchorElement, e) {
         const href = this.getAttribute("href");
@@ -400,13 +400,16 @@ export function initialize(): void {
             href &&
             href.startsWith("/user_uploads/") &&
             // Don't intercept image/video links handled by lightbox
-            !$(this).closest(".message_inline_image, .message_inline_video").length &&
-            file_attachment_preview.should_preview(href)
+            !$(this).closest(".message_inline_image, .message_inline_video").length
         ) {
             e.preventDefault();
             e.stopPropagation();
             const filename = decodeURIComponent(href.slice(href.lastIndexOf("/") + 1));
-            void file_attachment_preview.open_preview(href, filename);
+            if (file_attachment_preview.should_preview(href)) {
+                void file_attachment_preview.open_preview(href, filename);
+            } else {
+                void file_attachment_preview.open_download_only(href, filename);
+            }
         }
     });
     $("body").on("click", "a", function () {

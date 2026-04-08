@@ -5,6 +5,7 @@ import type {PanZoom} from "panzoom";
 
 import render_lightbox_overlay from "../templates/lightbox_overlay.hbs";
 
+import * as attachment_navigator from "./attachment_navigator.ts";
 import * as blueslip from "./blueslip.ts";
 import * as message_store from "./message_store.ts";
 import * as overlays from "./overlays.ts";
@@ -411,6 +412,9 @@ export function build_open_media_function(
             on_close,
         });
 
+        // Start unified attachment navigation
+        attachment_navigator.start_navigation(payload.url);
+
         popovers.hide_all();
         is_open = true;
     };
@@ -622,14 +626,41 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
 }
 
 export function prev(): void {
+    // Use the unified attachment navigator for cross-type navigation
+    if (attachment_navigator.get_total() > 1) {
+        attachment_navigator.prev();
+        return;
+    }
     $(".image-list .image.selected").prev().trigger("click");
 }
 
 export function next(): void {
+    // Use the unified attachment navigator for cross-type navigation
+    if (attachment_navigator.get_total() > 1) {
+        attachment_navigator.next();
+        return;
+    }
     $(".image-list .image.selected").next().trigger("click");
 }
 
 function update_arrow_visibility(): void {
+    const nav_has_multiple = attachment_navigator.get_total() > 1;
+    if (nav_has_multiple) {
+        // When using the unified navigator, always show arrows (wrapping enabled)
+        $("#lightbox_overlay .center .arrow[data-direction='prev']").toggleClass(
+            "invisible",
+            false,
+        );
+        $("#lightbox_overlay .center .arrow[data-direction='next']").toggleClass(
+            "invisible",
+            false,
+        );
+        // Show side nav arrows too
+        $("#lightbox_overlay .lightbox-nav-prev").addClass("visible");
+        $("#lightbox_overlay .lightbox-nav-next").addClass("visible");
+        return;
+    }
+
     const $selected = $(".image-list .image.selected");
     const has_prev = $selected.prev(".image").length > 0;
     const has_next = $selected.next(".image").length > 0;
@@ -641,6 +672,10 @@ function update_arrow_visibility(): void {
         "invisible",
         !has_next,
     );
+    // Show side arrows when there are multiple lightbox images
+    const show_side = has_prev || has_next;
+    $("#lightbox_overlay .lightbox-nav-prev").toggleClass("visible", show_side);
+    $("#lightbox_overlay .lightbox-nav-next").toggleClass("visible", show_side);
 }
 
 function remove_video_players(): void {
@@ -802,6 +837,18 @@ export function initialize(): void {
     $("#lightbox_overlay").on("click", ".center .arrow", function () {
         const direction = $(this).attr("data-direction");
 
+        if (direction === "next") {
+            next();
+        } else if (direction === "prev") {
+            prev();
+        }
+    });
+
+    // Side navigation arrows (matching file preview style)
+    $("#lightbox_overlay").on("click", ".lightbox-side-nav", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const direction = $(this).attr("data-direction");
         if (direction === "next") {
             next();
         } else if (direction === "prev") {

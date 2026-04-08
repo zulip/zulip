@@ -4,6 +4,7 @@ import $ from "jquery";
 
 import render_file_attachment_preview from "../templates/file_attachment_preview.hbs";
 
+import * as attachment_navigator from "./attachment_navigator.ts";
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import {$t} from "./i18n.ts";
@@ -84,6 +85,13 @@ const MAX_PREVIEW_SIZE = 256 * 1024; // 256 KB
 const OVERLAY_NAME = "file-attachment-preview";
 
 let is_initialized = false;
+
+function update_nav_arrows(): void {
+    const $overlay = $(`#${CSS.escape(OVERLAY_NAME)}-overlay`);
+    const show_arrows = attachment_navigator.get_total() > 1;
+    $overlay.find(".file-preview-nav-prev").toggleClass("visible", show_arrows);
+    $overlay.find(".file-preview-nav-next").toggleClass("visible", show_arrows);
+}
 
 function get_extension(filename: string): string {
     const dot_index = filename.lastIndexOf(".");
@@ -216,7 +224,7 @@ function render_csv_table(text: string): string {
         return `<pre><code>${escape_html(text)}</code></pre>`;
     }
 
-    const header = rows[0];
+    const header = rows[0]!;
     const body_rows = rows.slice(1);
 
     let html = '<div class="file-preview-csv-wrapper"><table class="file-preview-csv-table"><thead><tr>';
@@ -273,7 +281,9 @@ function render_content(text: string, ext: string): void {
         return;
     }
 
-    // Default: plain text in <pre>
+    // For unknown extensions, show as plain text only if in the
+    // allowed set (built-in or user-configured extras). Otherwise
+    // the file should not have reached here — show a download prompt.
     show_rendered(`<pre><code>${escape_html(text)}</code></pre>`, false);
 }
 
@@ -299,6 +309,10 @@ export async function open_preview(url: string, filename: string): Promise<void>
             $overlay.find(".file-preview-error").removeClass("show");
         },
     });
+
+    // Set up attachment navigation
+    attachment_navigator.start_navigation(url);
+    update_nav_arrows();
 
     show_loading();
 
@@ -349,6 +363,38 @@ export async function open_preview(url: string, filename: string): Promise<void>
     }
 }
 
+// Open the overlay for a file type that cannot be previewed.
+// Shows only the filename and download button, with navigation arrows.
+export function open_download_only(url: string, filename: string): void {
+    if (overlays.any_active()) {
+        overlays.close_active();
+    }
+
+    const download_url = get_download_url(url);
+
+    const $overlay = $(`#${CSS.escape(OVERLAY_NAME)}-overlay`);
+    $overlay.find(".file-preview-filename").text(filename);
+    $overlay.find(".file-preview-download").attr("href", download_url);
+    $overlay.find(".file-preview-error-download").attr("href", download_url);
+
+    overlays.open_overlay({
+        name: OVERLAY_NAME,
+        $overlay,
+        on_close() {
+            $overlay.find(".file-preview-rendered").empty().removeClass("show rendered-markdown");
+            $overlay.find(".file-preview-loading").removeClass("show");
+            $overlay.find(".file-preview-error").removeClass("show");
+        },
+    });
+
+    attachment_navigator.start_navigation(url);
+    update_nav_arrows();
+
+    show_error(
+        $t({defaultMessage: "No preview available for this file type. Use the Download button to save it."}),
+    );
+}
+
 export function initialize(): void {
     if (is_initialized) {
         return;
@@ -373,4 +419,26 @@ export function initialize(): void {
     $overlay.on("click", ".file-preview-error-download", function () {
         this.blur();
     });
+
+    // Attachment navigation handlers
+    $overlay.on("click", ".file-preview-nav-prev", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        attachment_navigator.prev();
+    });
+
+    $overlay.on("click", ".file-preview-nav-next", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        attachment_navigator.next();
+    });
+}
+
+// Export for use by hotkey.ts
+export function prev(): void {
+    attachment_navigator.prev();
+}
+
+export function next(): void {
+    attachment_navigator.next();
 }

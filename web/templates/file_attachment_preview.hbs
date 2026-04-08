@@ -11,13 +11,21 @@
         </div>
     </div>
     <div class="file-preview-content">
-        <div class="file-preview-loading">
-            <div class="loading_indicator_spinner"></div>
+        <div class="file-preview-nav-arrow file-preview-nav-prev no-select" aria-label="{{t 'Previous attachment' }}">
+            <i class="zulip-icon zulip-icon-chevron-left"></i>
         </div>
-        <div class="file-preview-rendered"></div>
-        <div class="file-preview-error">
-            <p class="file-preview-error-message"></p>
-            <a class="file-preview-error-download lightbox-media-action" download>{{t "Download" }}</a>
+        <div class="file-preview-main">
+            <div class="file-preview-loading">
+                <div class="loading_indicator_spinner"></div>
+            </div>
+            <div class="file-preview-rendered"></div>
+            <div class="file-preview-error">
+                <p class="file-preview-error-message"></p>
+                <a class="file-preview-error-download lightbox-media-action" download>{{t "Download" }}</a>
+            </div>
+        </div>
+        <div class="file-preview-nav-arrow file-preview-nav-next no-select" aria-label="{{t 'Next attachment' }}">
+            <i class="zulip-icon zulip-icon-chevron-right"></i>
         </div>
     </div>
 </div>

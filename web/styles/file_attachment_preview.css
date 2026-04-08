@@ -372,11 +372,45 @@
 
     .file-preview-content {
         flex: 1;
+        overflow: hidden;
+        padding: 0 0 24px;
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        min-height: 0;
+    }
+
+    .file-preview-main {
+        flex: 1;
         overflow: auto;
-        padding: 0 24px 24px;
         display: flex;
         flex-direction: column;
         min-height: 0;
+        padding: 0 24px;
+    }
+
+    .file-preview-nav-arrow {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        width: 60px;
+        flex-shrink: 0;
+        cursor: pointer;
+        color: hsl(0deg 0% 100% / 60%);
+        font-size: 28px;
+        transition:
+            color 0.2s ease,
+            background-color 0.2s ease;
+        user-select: none;
+
+        &:hover {
+            color: hsl(0deg 0% 100%);
+            background-color: hsl(0deg 0% 100% / 8%);
+        }
+
+        &.visible {
+            display: flex;
+        }
     }
 
     .file-preview-loading {
