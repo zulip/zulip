@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 483
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (374, 0)  # bumped 2026-04-02 to switch circuitbreaker to pybreaker
+PROVISION_VERSION = (374, 1)  # bumped 2026-04-08 to add overlayscrollbars.

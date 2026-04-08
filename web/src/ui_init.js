@@ -91,6 +91,7 @@ import * as navigate from "./navigate.ts";
 import * as navigation_views from "./navigation_views.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as overlays from "./overlays.ts";
+import * as overlayscrollbars from "./overlayscrollbars.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as personal_menu_popover from "./personal_menu_popover.ts";
@@ -462,6 +463,7 @@ export async function initialize_everything(state_data) {
        density is so fundamental, we initialize that first, however. */
     initialize_user_settings(state_data.user_settings);
     mouse_drag.initialize();
+    overlayscrollbars.initialize();
     sidebar_ui.restore_sidebar_toggle_status();
     i18n.initialize({language_list: page_params.language_list});
     timerender.initialize();

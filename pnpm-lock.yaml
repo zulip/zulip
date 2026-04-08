@@ -219,6 +219,9 @@ importers:
       minimalistic-assert:
         specifier: ^1.0.1
         version: 1.0.1
+      overlayscrollbars:
+        specifier: ^2.15.1
+        version: 2.15.1
       panzoom:
         specifier: ^9.4.2
         version: 9.4.3
@@ -7312,6 +7315,9 @@ packages:
 
   ordered-read-streams@1.0.1:
     resolution: {integrity: sha512-Z87aSjx3r5c0ZB7bcJqIgIRX5bxR7A4aSzvIbaxd0oTkWBCOoKfuGHiKj60CHVUgg1Phm5yMZzBdt8XqRs73Mw==}
+
+  overlayscrollbars@2.15.1:
+    resolution: {integrity: sha512-glX26JwjL+Tkzv0JNOWdW4VozP5dGXO+Wx8+TPrdTEJTSYT/8eJS8yXM+fewjU0nFq/JeCa+X+BqABNjC4YZSA==}
 
   own-keys@1.0.1:
     resolution: {integrity: sha512-qFOyK5PjiWZd+QQIh+1jhdb9LpxTF0qs7Pm8o5QHYZ0M3vKqSqzsZaEB6oWlxZ+q2sJBMI/Ktgd2N5ZwQoRHfg==}
@@ -18244,6 +18250,8 @@ snapshots:
   ordered-read-streams@1.0.1:
     dependencies:
       readable-stream: 2.3.8
+
+  overlayscrollbars@2.15.1: {}
 
   own-keys@1.0.1:
     dependencies:
