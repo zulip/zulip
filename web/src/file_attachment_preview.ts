@@ -73,11 +73,12 @@ const EXT_TO_HLJS_LANGUAGE: Record<string, string> = {
 };
 
 // Built-in set of extensions that are always previewable.
-// Includes txt, md, csv, plus all extensions with known syntax highlighting.
+// Includes txt, md, csv, pdf, plus all extensions with known syntax highlighting.
 const BUILT_IN_PREVIEW_EXTENSIONS = new Set([
     "txt",
     "md",
     "csv",
+    "pdf",
     ...Object.keys(EXT_TO_HLJS_LANGUAGE),
 ]);
 
@@ -243,6 +244,21 @@ function render_csv_table(text: string): string {
     return html;
 }
 
+// PDF state for multi-page navigation — managed by the dynamically
+// imported pdf_preview module.  We keep a local reference for the
+// click handlers that need synchronous access to the state.
+let pdf_preview_mod: typeof import("./pdf_preview.ts") | null = null;
+
+// Lazy-load the PDF preview module (and its pdfjs-dist dependency).
+// Isolated into its own module so that pdfjs-dist (ESM-only) doesn't
+// prevent the CJS test runner from loading this file.
+async function load_pdf_preview(): Promise<typeof import("./pdf_preview.ts")> {
+    if (!pdf_preview_mod) {
+        pdf_preview_mod = await import("./pdf_preview.ts");
+    }
+    return pdf_preview_mod;
+}
+
 function render_markdown_via_server(text: string): void {
     // Use Zulip's server-side markdown renderer for accurate preview.
     void channel.post({
@@ -307,6 +323,7 @@ export async function open_preview(url: string, filename: string): Promise<void>
             $overlay.find(".file-preview-rendered").empty().removeClass("show rendered-markdown");
             $overlay.find(".file-preview-loading").removeClass("show");
             $overlay.find(".file-preview-error").removeClass("show");
+            pdf_preview_mod?.clear_pdf_state();
         },
     });
 
@@ -315,6 +332,13 @@ export async function open_preview(url: string, filename: string): Promise<void>
     update_nav_arrows();
 
     show_loading();
+
+    // PDF files rendered via pdf.js (secure canvas rendering, no iframe)
+    if (ext === "pdf") {
+        const pdf_mod = await load_pdf_preview();
+        await pdf_mod.show_pdf(url, $overlay, show_error);
+        return;
+    }
 
     try {
         const response = await fetch(url);
@@ -384,6 +408,7 @@ export function open_download_only(url: string, filename: string): void {
             $overlay.find(".file-preview-rendered").empty().removeClass("show rendered-markdown");
             $overlay.find(".file-preview-loading").removeClass("show");
             $overlay.find(".file-preview-error").removeClass("show");
+            pdf_preview_mod?.clear_pdf_state();
         },
     });
 
@@ -418,6 +443,23 @@ export function initialize(): void {
 
     $overlay.on("click", ".file-preview-error-download", function () {
         this.blur();
+    });
+
+    // PDF page navigation handlers
+    $overlay.on("click", ".file-preview-pdf-prev", (e) => {
+        e.preventDefault();
+        const state = pdf_preview_mod?.get_pdf_state();
+        if (state && state.current_page > 1) {
+            void pdf_preview_mod!.render_pdf_page(state.current_page - 1, $overlay, show_error);
+        }
+    });
+
+    $overlay.on("click", ".file-preview-pdf-next", (e) => {
+        e.preventDefault();
+        const state = pdf_preview_mod?.get_pdf_state();
+        if (state && state.current_page < state.total_pages) {
+            void pdf_preview_mod!.render_pdf_page(state.current_page + 1, $overlay, show_error);
+        }
     });
 
     // Attachment navigation handlers

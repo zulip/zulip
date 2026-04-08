@@ -19,6 +19,7 @@ run_test("should_preview matches built-in extensions with empty setting", () => 
     assert.equal(file_attachment_preview.should_preview("/user_uploads/1/ab/file.md"), true);
     assert.equal(file_attachment_preview.should_preview("/user_uploads/1/ab/file.py"), true);
     assert.equal(file_attachment_preview.should_preview("/user_uploads/1/ab/file.csv"), true);
+    assert.equal(file_attachment_preview.should_preview("/user_uploads/1/ab/file.pdf"), true);
     assert.equal(file_attachment_preview.should_preview("/user_uploads/1/ab/file.rs"), true);
     assert.equal(file_attachment_preview.should_preview("/user_uploads/1/ab/file.go"), true);
     assert.equal(file_attachment_preview.should_preview("/user_uploads/1/ab/file.js"), true);
@@ -36,10 +37,9 @@ run_test("should_preview rejects non-matching extensions", () => {
     assert.equal(file_attachment_preview.should_preview("/user_uploads/1/ab/file.zip"), false);
 });
 
-run_test("should_preview rejects pdf without pdf.js support", () => {
-    // PDF is not in the built-in set until pdf.js support is added
-    assert.equal(file_attachment_preview.should_preview("/user_uploads/1/ab/file.pdf"), false);
-    assert.equal(file_attachment_preview.should_preview("/user_uploads/1/ab/file.PDF"), false);
+run_test("should_preview matches pdf extension", () => {
+    assert.equal(file_attachment_preview.should_preview("/user_uploads/1/ab/file.pdf"), true);
+    assert.equal(file_attachment_preview.should_preview("/user_uploads/1/ab/file.PDF"), true);
 });
 
 run_test("should_preview rejects files without extensions", () => {
@@ -81,6 +81,7 @@ run_test("should_preview none disables all previews", () => {
     assert.equal(file_attachment_preview.should_preview("/user_uploads/1/ab/file.txt"), false);
     assert.equal(file_attachment_preview.should_preview("/user_uploads/1/ab/file.md"), false);
     assert.equal(file_attachment_preview.should_preview("/user_uploads/1/ab/file.py"), false);
+    assert.equal(file_attachment_preview.should_preview("/user_uploads/1/ab/file.pdf"), false);
 
     // Reset
     user_settings.file_preview_extensions = "";
