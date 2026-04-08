@@ -40,11 +40,11 @@ html {
     font-size: 0.9em;
 
     & a {
-        color: hsl(164deg 100% 23%);
+        color: var(--color-link-portico-auth);
 
         &:hover {
             text-decoration: none;
-            color: hsl(156deg 62% 61%);
+            color: var(--color-link-portico-auth-hover);
         }
     }
 }
@@ -72,11 +72,11 @@ html {
     font-size: 1.2em;
 
     & a {
-        color: hsl(164deg 100% 23%);
+        color: var(--color-link-portico-auth);
 
         &:hover {
             text-decoration: none;
-            color: hsl(156deg 62% 61%);
+            color: var(--color-link-portico-auth-hover);
         }
     }
 }
@@ -1656,7 +1656,7 @@ button#register_auth_button_gitlab {
     &:hover,
     &:focus {
         cursor: pointer;
-        color: hsl(200.16deg 100% 25.1%);
+        color: var(--color-link-portico-auth-hover);
         text-decoration: underline;
     }
 }
