@@ -645,6 +645,13 @@ html {
         }
     }
 
+    .input-box.horizontal > .inline-block + button {
+        /* Add standard 8px gap between inline input and
+           button. The ~3px of inline-block whitespace is
+           already present, so 5px margin completes it. */
+        margin-left: 5px;
+    }
+
     .lead {
         margin: 0;
     }
