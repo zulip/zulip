@@ -892,7 +892,7 @@ html {
 
 button.login-social-button {
     width: 328px;
-    height: auto;
+    height: 48px;
     /* Using 16% gives us space between text and icon so that they don't overlap. */
     padding-left: 16%;
     line-height: 1;
@@ -901,22 +901,19 @@ button.login-social-button {
     background-repeat: no-repeat;
     background-position: 13px 50%;
     background-color: hsl(0deg 0% 100%);
-    box-shadow:
-        0 1px 3px hsl(0deg 0% 0% / 30%),
-        0 0 5px hsl(0deg 0% 0% / 10%);
-    margin-left: 0;
-    margin-top: 0;
+    border: 1px solid hsl(0deg 0% 0% / 20%);
+    /* Tighten stacking so the sharp border doesn't visually push
+       buttons apart the way the old drop shadow did. */
+    margin: 0;
 
     color: hsl(0deg 0% 34%);
 
     &:hover {
-        background-color: hsl(0deg 0% 98%);
-        box-shadow: 1px 2px 5px hsl(0deg 0% 0% / 20%);
+        background-color: hsl(0deg 0% 97%);
     }
 
     &:active {
         background-color: hsl(0deg 0% 93%);
-        box-shadow: 0 1px 1px hsl(0deg 0% 0% / 30%);
     }
 }
 
