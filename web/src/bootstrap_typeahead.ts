@@ -748,7 +748,6 @@ export class Typeahead<ItemType extends string | object> {
                 this.next();
                 break;
 
-            
             case "n":
             case "N":
                 if (e.ctrlKey) {
