@@ -430,7 +430,7 @@ html {
         box-sizing: border-box;
         outline: none;
         color: hsl(0deg 0% 100%);
-        background-color: hsl(213deg 23% 25%);
+        background-color: var(--color-action-button);
 
         margin: 25px 0 5px;
         height: 48px;
@@ -442,11 +442,11 @@ html {
         transition-property: background-color, outline;
 
         &:hover {
-            background-color: hsl(213deg 33% 31%);
+            background-color: var(--color-action-button-hover);
         }
 
         &:active {
-            background-color: hsl(214deg 28% 16%);
+            background-color: var(--color-action-button-active);
         }
 
         &:focus {
