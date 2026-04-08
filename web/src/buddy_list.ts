@@ -24,10 +24,11 @@ import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_config from "./settings_config.ts";
+import {disconnect_toggle_class, observe_toggle_class} from "./sidebar_tooltip_helpers.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
-import {INTERACTIVE_HOVER_DELAY} from "./tippyjs.ts";
+import {EXTRA_LONG_HOVER_DELAY, INTERACTIVE_HOVER_DELAY} from "./tippyjs.ts";
 import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
@@ -301,6 +302,26 @@ export class BuddyList extends BuddyListConf {
                 });
             },
         );
+
+        tippy.delegate("body", {
+            target: ".section-toggle-tooltip-target",
+            onShow(instance) {
+                const $toggle = $(instance.reference);
+                observe_toggle_class(instance, () => {
+                    if ($toggle.hasClass("rotate-icon-down")) {
+                        instance.setContent($t({defaultMessage: "Collapse section"}));
+                    } else {
+                        instance.setContent($t({defaultMessage: "Expand section"}));
+                    }
+                });
+            },
+            delay: EXTRA_LONG_HOVER_DELAY,
+            appendTo: () => document.body,
+            onHidden(instance) {
+                disconnect_toggle_class(instance);
+                instance.destroy();
+            },
+        });
     }
 
     async non_participant_users_matching_view_count(): Promise<number | null> {

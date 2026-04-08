@@ -6,6 +6,7 @@ import * as drafts from "./drafts.ts";
 import {$t} from "./i18n.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as settings_data from "./settings_data.ts";
+import {disconnect_toggle_class, observe_toggle_class} from "./sidebar_tooltip_helpers.ts";
 import * as starred_messages from "./starred_messages.ts";
 import {
     EXTRA_LONG_HOVER_DELAY,
@@ -15,24 +16,6 @@ import {
 } from "./tippyjs.ts";
 import * as unread from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
-
-// Watches the reference element's class for changes while a tooltip is
-// visible, so the content stays accurate when the element is toggled via
-// keyboard (or any other path) without hiding the tooltip first.
-const class_observers = new WeakMap<tippy.Instance, MutationObserver>();
-function observe_toggle_class(instance: tippy.Instance, update: () => void): void {
-    update();
-    const observer = new MutationObserver(update);
-    observer.observe(instance.reference, {
-        attributes: true,
-        attributeFilter: ["class"],
-    });
-    class_observers.set(instance, observer);
-}
-function disconnect_toggle_class(instance: tippy.Instance): void {
-    class_observers.get(instance)?.disconnect();
-    class_observers.delete(instance);
-}
 
 export function initialize(): void {
     tippy.delegate("body", {
@@ -228,28 +211,6 @@ export function initialize(): void {
                     instance.setContent($t({defaultMessage: "Collapse folder"}));
                 } else {
                     instance.setContent($t({defaultMessage: "Expand folder"}));
-                }
-            });
-        },
-        delay: EXTRA_LONG_HOVER_DELAY,
-        appendTo: () => document.body,
-        onHidden(instance) {
-            disconnect_toggle_class(instance);
-            instance.destroy();
-        },
-    });
-
-    // This is actually for the right sidebar, but putting it here because it has
-    // shared logic.
-    tippy.delegate("body", {
-        target: ".section-toggle-tooltip-target",
-        onShow(instance) {
-            const $toggle = $(instance.reference);
-            observe_toggle_class(instance, () => {
-                if ($toggle.hasClass("rotate-icon-down")) {
-                    instance.setContent($t({defaultMessage: "Collapse section"}));
-                } else {
-                    instance.setContent($t({defaultMessage: "Expand section"}));
                 }
             });
         },

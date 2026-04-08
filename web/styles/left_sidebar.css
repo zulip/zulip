@@ -776,6 +776,18 @@
     }
 }
 
+/* Arrow-key sidebar navigation focuses the toggle icon inside a
+   section header row while also applying .highlighted_row to the row
+   itself. Suppress the inner outline in that case to avoid showing
+   two nested focus rings on the same row. The IDs are needed to win
+   over the ID-scoped :focus-visible rules on the Views and DM
+   toggle icons above. */
+.highlighted_row #toggle-direct-messages-section-icon:focus-visible,
+.highlighted_row #toggle-top-left-navigation-area-icon:focus-visible,
+.highlighted_row .stream-list-section-toggle:focus-visible {
+    outline: 0;
+}
+
 .active-direct-messages-section {
     background-color: var(--color-background-active-narrow-filter);
 
