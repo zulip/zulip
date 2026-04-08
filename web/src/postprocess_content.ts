@@ -102,6 +102,39 @@ export function postprocess_content(html: string): string {
                         ),
                     },
                 );
+
+                // Add a download icon button next to the attachment link
+                // so users can download without opening the preview.
+                const download_pathname =
+                    "/user_uploads/download/" +
+                    url.pathname.slice("/user_uploads/".length);
+                const download_url = new URL(download_pathname, url.origin);
+
+                // Only add if not already present (idempotent)
+                if (
+                    !elt.nextElementSibling?.classList.contains(
+                        "attachment-download-icon",
+                    )
+                ) {
+                    assert(inertDocument !== undefined);
+                    const download_link = inertDocument.createElement("a");
+                    download_link.classList.add(
+                        "attachment-download-icon",
+                        "icon-button",
+                        "icon-button-square",
+                        "icon-button-neutral",
+                    );
+                    download_link.setAttribute("href", download_url.toString());
+                    download_link.setAttribute("download", "");
+                    download_link.setAttribute("aria-label", $t({defaultMessage: "Download"}));
+                    download_link.setAttribute("title", title);
+
+                    const icon = inertDocument.createElement("i");
+                    icon.classList.add("zulip-icon", "zulip-icon-download");
+                    download_link.append(icon);
+
+                    elt.after(download_link);
+                }
             } else {
                 title = url.toString();
                 legacy_title = href;
