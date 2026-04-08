@@ -339,12 +339,22 @@ export const saved_snippet_schema = z.object({
     date_created: z.number(),
 });
 
+const recurring_scheduled_message_recurrence_days_schema = z.union([
+    z.array(z.number()),
+    z.object({
+        type: z.enum(["calendar_day", "ordinal_weekday"]),
+        day: z.optional(z.number()),
+        ordinal: z.optional(z.number()),
+        weekday: z.optional(z.number()),
+    }),
+]);
+
 export const recurring_scheduled_message_schema = z.object({
     id: z.number(),
     content: z.string(),
     destinations: z.array(z.record(z.string(), NOT_TYPED_YET)),
     recurrence_type: z.string(),
-    recurrence_days: z.array(z.number()),
+    recurrence_days: recurring_scheduled_message_recurrence_days_schema,
     scheduled_time: z.string(),
     next_delivery: z.number(),
     is_active: z.boolean(),
