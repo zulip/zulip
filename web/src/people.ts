@@ -388,28 +388,6 @@ export function emails_strings_to_user_ids_array(emails_string: string): number[
     return user_ids_array;
 }
 
-export function reply_to_to_user_ids_string(emails_string: string): string | undefined {
-    // This is basically emails_strings_to_user_ids_string
-    // without blueslip warnings, since it can be called with
-    // invalid data.
-    const emails = emails_string.split(",");
-
-    let user_ids = util.try_parse_as_truthy(
-        emails.map((email) => {
-            const person = get_by_email(email);
-            return person?.user_id;
-        }),
-    );
-
-    if (user_ids === undefined) {
-        return undefined;
-    }
-
-    user_ids = util.sorted_ids(user_ids);
-
-    return user_ids.join(",");
-}
-
 export function user_ids_to_full_names_string(user_ids: number[]): string {
     const sorted_names = user_ids.map((user_id) => {
         const person = maybe_get_user_by_id(user_id);

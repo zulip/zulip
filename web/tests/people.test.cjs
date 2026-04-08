@@ -970,11 +970,6 @@ run_test("multi_user_methods", () => {
     let user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
     assert.equal(user_ids_string, "401,402");
 
-    user_ids_string = people.reply_to_to_user_ids_string(emails_string);
-    assert.equal(user_ids_string, "401,402");
-
-    assert.equal(people.reply_to_to_user_ids_string("invalid@example.com"), undefined);
-
     assert.equal(people.user_ids_string_to_slug("401,402"), "401,402-group");
     assert.equal(people.user_ids_string_to_slug("402"), "402-whatever-402");
     assert.equal(people.user_ids_to_slug([401, 402]), "401,402-group");
