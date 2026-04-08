@@ -910,10 +910,13 @@ button.login-social-button {
 
     &:hover {
         background-color: hsl(0deg 0% 97%);
+        transition: 0.1s ease-out;
+        transition-property: background-color, clip-path;
     }
 
     &:active {
         background-color: hsl(0deg 0% 93%);
+        clip-path: inset(1px round 4px);
     }
 }
 
