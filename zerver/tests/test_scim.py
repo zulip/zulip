@@ -1022,6 +1022,47 @@ class TestSCIMUser(SCIMTestCase):
         )
         self.assertEqual(UserProfile.objects.count(), original_user_count)
 
+    def test_custom_profile_field_value_truncation(self) -> None:
+        hamlet = self.example_user("hamlet")
+        field_map = {"phone_number": "phoneNumber", "biography": "biography"}
+        long_short_value = "x" * 60
+        expected_short_value = "x" * 49 + "…"
+        long_long_value = "y" * 510
+        expected_long_value = "y" * 499 + "…"
+        payload = {
+            "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
+            "id": hamlet.id,
+            "userName": hamlet.delivery_email,
+            "name": {"formatted": hamlet.full_name},
+            "active": True,
+            "phoneNumber": long_short_value,
+            "biography": long_long_value,
+        }
+
+        with (
+            self.mock_custom_profile_field_map(field_map),
+            self.assertLogs("zerver.lib.scim", level="WARNING") as log_output,
+        ):
+            result = self.json_put(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(
+            log_output.output,
+            [
+                f"WARNING:zerver.lib.scim:Truncated value for custom profile field phone_number of user {hamlet.id} to 50 characters.",
+                f"WARNING:zerver.lib.scim:Truncated value for custom profile field biography of user {hamlet.id} to 500 characters.",
+            ],
+        )
+
+        phone_field = CustomProfileField.objects.get(realm=hamlet.realm, name="Phone number")
+        phone_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=phone_field)
+        self.assertEqual(phone_value.value, expected_short_value)
+
+        biography_field = CustomProfileField.objects.get(realm=hamlet.realm, name="Biography")
+        biography_value = CustomProfileFieldValue.objects.get(
+            user_profile=hamlet, field=biography_field
+        )
+        self.assertEqual(biography_value.value, expected_long_value)
+
     def test_custom_profile_field_nonexistent_field(self) -> None:
         # Map a SCIM attribute to a var_name that doesn't match any custom profile field.
         field_map = {"nonexistent_field": "someAttr"}

@@ -74,8 +74,11 @@ def check_string_in(possible_values: Container[str]) -> Validator[str]:
     return validator
 
 
+SHORT_STRING_MAX_LENGTH = 50
+
+
 def check_short_string(var_name: str, val: object) -> str:
-    return check_capped_string(50)(var_name, val)
+    return check_capped_string(SHORT_STRING_MAX_LENGTH)(var_name, val)
 
 
 def check_capped_string(max_length: int) -> Validator[str]:
@@ -109,8 +112,11 @@ def check_string_fixed_length(length: int) -> Validator[str]:
     return validator
 
 
+LONG_STRING_MAX_LENGTH = 500
+
+
 def check_long_string(var_name: str, val: object) -> str:
-    return check_capped_string(500)(var_name, val)
+    return check_capped_string(LONG_STRING_MAX_LENGTH)(var_name, val)
 
 
 def check_date(var_name: str, val: object) -> str:

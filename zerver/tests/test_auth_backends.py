@@ -3415,6 +3415,36 @@ class SAMLAuthBackendTest(SocialAuthBase):
         self.user_profile.refresh_from_db()
         self.assertEqual(self.user_profile.role, UserProfile.ROLE_REALM_OWNER)
 
+        # Verify that values for text fields are truncated if they're too long.
+        long_value = "x" * 60
+        expected_value = "x" * 49 + "…"
+        with (
+            self.settings(
+                SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict,
+                SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_custom_attrs_dict,
+            ),
+            self.assertLogs(self.logger_string, level="WARNING") as m,
+        ):
+            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+                extra_attributes=dict(mobilePhone=[long_value]),
+            )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertIn(
+            self.logger_output(
+                f"Truncated value for custom profile field phone_number of user {self.user_profile.id} to 50 characters.",
+                type="warning",
+            ),
+            m.output,
+        )
+        phone_field_value = CustomProfileFieldValue.objects.get(
+            user_profile=self.user_profile, field=phone_field
+        ).value
+        self.assertEqual(phone_field_value, expected_value)
+
     def test_social_auth_group_sync(self) -> None:
         realm = get_realm("zulip")
         hamlet = self.example_user("hamlet")
@@ -8351,6 +8381,31 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         self.assertIn(
             "DEBUG:django_auth_ldap:Failed to populate user hamlet: Invalid data for birthday field: Birthday is not a date",
             debug_log.output,
+        )
+
+    def test_update_custom_profile_field_truncation(self) -> None:
+        long_value = "x" * 60
+        expected_value = "x" * 49 + "…"
+        self.change_ldap_user_attr("hamlet", "homePhone", long_value)
+
+        with (
+            self.settings(
+                AUTH_LDAP_USER_ATTR_MAP={
+                    "full_name": "cn",
+                    "custom_profile_field__phone_number": "homePhone",
+                }
+            ),
+            self.assertLogs("zulip.ldap", "WARNING") as log_output,
+        ):
+            self.perform_ldap_sync(self.example_user("hamlet"))
+
+        hamlet = self.example_user("hamlet")
+        phone_field = CustomProfileField.objects.get(realm=hamlet.realm, name="Phone number")
+        phone_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=phone_field)
+        self.assertEqual(phone_value.value, expected_value)
+        self.assertIn(
+            f"WARNING:zulip.ldap:Truncated value for custom profile field phone_number of user {hamlet.id} to 50 characters.",
+            log_output.output,
         )
 
     def test_update_custom_profile_field_no_mapping(self) -> None:

@@ -1,3 +1,4 @@
+import logging
 import re
 from collections.abc import Callable
 from typing import Any
@@ -45,7 +46,9 @@ from zerver.models.realms import (
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
 )
-from zproject.backends import SyncUserError, validate_custom_profile_field_data
+from zproject.backends import SyncUserError, validate_custom_profile_field_data_for_sync
+
+logger = logging.getLogger(__name__)
 
 
 class ZulipSCIMUser(SCIMUser):
@@ -361,8 +364,11 @@ class ZulipSCIMUser(SCIMUser):
         custom_profile_data = None
         if custom_profile_field_data:
             try:
-                custom_profile_data = validate_custom_profile_field_data(
-                    realm.id, custom_profile_field_data
+                custom_profile_data = validate_custom_profile_field_data_for_sync(
+                    realm.id,
+                    custom_profile_field_data,
+                    logger,
+                    None if self.is_new_user() else self.obj.id,
                 )
             except SyncUserError as e:
                 raise scim_exceptions.BadRequestError(str(e))

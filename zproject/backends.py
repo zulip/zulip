@@ -96,6 +96,7 @@ from zerver.lib.subdomains import get_subdomain
 from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.lib.user_groups import check_user_group_name, get_role_based_system_groups_dict
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
+from zerver.lib.validator import LONG_STRING_MAX_LENGTH, SHORT_STRING_MAX_LENGTH
 from zerver.models import (
     CustomProfileField,
     NamedUserGroup,
@@ -1099,7 +1100,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             values_by_var_name[var_name] = value
 
         try:
-            sync_user_profile_custom_fields(user_profile, values_by_var_name)
+            sync_user_profile_custom_fields(user_profile, values_by_var_name, ldap_logger)
         except SyncUserError as e:
             raise ZulipLDAPError(str(e)) from e
 
@@ -1747,8 +1748,18 @@ class SyncUserError(Exception):
     pass
 
 
-def validate_custom_profile_field_data(
-    realm_id: int, custom_field_name_to_value: dict[str, Any]
+def truncate_custom_profile_field_text_for_sync(value: str, length: int) -> str:
+    assert len(value) > length
+    return value[: length - 1] + "…"
+
+
+def validate_custom_profile_field_data_for_sync(
+    realm_id: int,
+    custom_field_name_to_value: dict[str, Any],
+    logger: logging.Logger,
+    # This can be called during new user creation (in SCIM codepaths),
+    # so user ID might not be available.
+    user_id: int | None,
 ) -> list[ProfileDataElementUpdateDict]:
     """Validate custom profile field var names and values, returning the
     validated profile data list.  Raises SyncUserError if a var name
@@ -1765,6 +1776,26 @@ def validate_custom_profile_field_data(
             field = fields_by_var_name[var_name]
         except KeyError:
             raise SyncUserError(f"Custom profile field with name {var_name} not found.")
+
+        # For TEXT type fields we can provide a reasonable truncation behavior to allow
+        # a mostly-successful sync instead of failing with an error.
+        text_field_max_length = {
+            CustomProfileField.SHORT_TEXT: SHORT_STRING_MAX_LENGTH,
+            CustomProfileField.LONG_TEXT: LONG_STRING_MAX_LENGTH,
+        }.get(field.field_type)
+        if (
+            isinstance(value, str)
+            and text_field_max_length is not None
+            and len(value) > text_field_max_length
+        ):
+            value = truncate_custom_profile_field_text_for_sync(value, text_field_max_length)
+            logger.warning(
+                "Truncated value for custom profile field %s of user %s to %d characters.",
+                var_name,
+                user_id,
+                text_field_max_length,
+            )
+
         try:
             validate_user_custom_profile_field(realm_id, field, value)
         except ValidationError as error:
@@ -1779,10 +1810,12 @@ def validate_custom_profile_field_data(
 
 
 def sync_user_profile_custom_fields(
-    user_profile: UserProfile, custom_field_name_to_value: dict[str, Any]
+    user_profile: UserProfile,
+    custom_field_name_to_value: dict[str, Any],
+    logger: logging.Logger,
 ) -> None:
-    profile_data = validate_custom_profile_field_data(
-        user_profile.realm_id, custom_field_name_to_value
+    profile_data = validate_custom_profile_field_data_for_sync(
+        user_profile.realm_id, custom_field_name_to_value, logger, user_profile.id
     )
     do_update_user_custom_profile_data_if_changed(user_profile, profile_data, None, notify=True)
 
@@ -2215,7 +2248,9 @@ def social_auth_sync_user_attributes(
         )
 
     try:
-        sync_user_profile_custom_fields(user_profile, custom_profile_field_name_to_value)
+        sync_user_profile_custom_fields(
+            user_profile, custom_profile_field_name_to_value, backend.logger
+        )
     except SyncUserError as e:
         backend.logger.warning(
             "Exception while syncing custom profile fields for user %s: %s",
