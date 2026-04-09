@@ -1720,7 +1720,10 @@ test("render_person shows value of custom profile fields in secondary", ({
         return "typeahead-item-stub";
     });
 
-    assert.equal(th.render_person(a_user_item, "Alpha"), "typeahead-item-stub");
+    assert.equal(
+        th.render_person(a_user_item, {query: "Alpha", should_remove_diacritics: true}),
+        "typeahead-item-stub",
+    );
     assert.ok(rendered);
 });
 
@@ -1754,7 +1757,10 @@ test("render_person shows both email and custom profile fields as secondary if b
         return "typeahead-item-stub";
     });
 
-    assert.equal(th.render_person(a_user_item, "a_user"), "typeahead-item-stub");
+    assert.equal(
+        th.render_person(a_user_item, {query: "a_user", should_remove_diacritics: true}),
+        "typeahead-item-stub",
+    );
     assert.ok(rendered);
 });
 
@@ -1789,7 +1795,10 @@ test("render_person skips custom profile fields not used for user matching", ({
         return "typeahead-item-stub";
     });
 
-    assert.equal(th.render_person(a_user_item, "Alpha"), "typeahead-item-stub");
+    assert.equal(
+        th.render_person(a_user_item, {query: "Alpha", should_remove_diacritics: true}),
+        "typeahead-item-stub",
+    );
     assert.ok(rendered);
 });
 

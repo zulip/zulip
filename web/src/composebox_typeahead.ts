@@ -215,30 +215,48 @@ export function get_language_matcher(query: string): (language: string) => boole
 
 export function get_stream_matcher(query: string): (stream: StreamPillData) => boolean {
     // Case-insensitive.
-    query = typeahead.clean_query_lowercase(query);
+    query = typeahead.clean_query_lowercase(query, false);
+    const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
     return function (stream: StreamPillData) {
-        return typeahead_helper.query_matches_stream_name(query, stream);
+        return typeahead_helper.query_matches_stream_name(query, stream, should_remove_diacritics);
     };
 }
 
 export function get_slash_matcher(query: string): (item: SlashCommand) => boolean {
-    query = typeahead.clean_query_lowercase(query);
+    query = typeahead.clean_query_lowercase(query, false);
+    const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
     return function (item: SlashCommand) {
         return (
-            typeahead.query_matches_string_in_order(query, item.name, " ") ||
-            typeahead.query_matches_string_in_order(query, item.aliases, " ")
+            typeahead.query_matches_string_in_order(
+                query,
+                item.name,
+                " ",
+                should_remove_diacritics,
+            ) ||
+            typeahead.query_matches_string_in_order(
+                query,
+                item.aliases,
+                " ",
+                should_remove_diacritics,
+            )
         );
     };
 }
 
 function get_topic_matcher(query: string): (topic: string) => boolean {
-    query = typeahead.clean_query_lowercase(query);
+    query = typeahead.clean_query_lowercase(query, false);
+    const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
     return function (topic: string): boolean {
         const topic_display_name = util.get_final_topic_display_name(topic);
-        return typeahead.query_matches_string_in_order(query, topic_display_name, " ");
+        return typeahead.query_matches_string_in_order(
+            query,
+            topic_display_name,
+            " ",
+            should_remove_diacritics,
+        );
     };
 }
 
@@ -689,17 +707,13 @@ function filter_persons<T>(
 }
 
 export function get_person_suggestion_for_topic_typeahead(query: string): UserPillData[] {
-    query = typeahead.clean_query_lowercase(query);
+    query = typeahead.clean_query_lowercase(query, false);
+    const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
-    const filterer = (person_items: UserPillData[]): UserPillData[] => {
-        const should_remove_diacritics = people.should_remove_diacritics_for_query(
-            query.toLowerCase(),
-        );
-
-        return person_items.filter((item) =>
+    const filterer = (person_items: UserPillData[]): UserPillData[] =>
+        person_items.filter((item) =>
             typeahead_helper.query_matches_person_name(query, item, should_remove_diacritics, true),
         );
-    };
 
     const current_narrow_participant_ids = message_lists.current?.data.participants.visible();
 
@@ -766,7 +780,8 @@ export function get_person_suggestions(
     opts: PersonSuggestionOpts,
     exclude_non_welcome_bots = false,
 ): (UserOrMentionPillData | UserGroupPillData)[] {
-    query = typeahead.clean_query_lowercase(query);
+    query = typeahead.clean_query_lowercase(query, false);
+    const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
     let groups: UserGroup[];
     if (opts.filter_groups_for_mention) {
@@ -805,7 +820,7 @@ export function get_person_suggestions(
     }));
 
     const filtered_groups = group_pill_data.filter((item) =>
-        typeahead_helper.query_matches_group_name(query, item),
+        typeahead_helper.query_matches_group_name(query, item, should_remove_diacritics),
     );
 
     const user = people.get_from_unique_full_name(query);
@@ -857,9 +872,6 @@ export function get_person_suggestions(
         broadcast_items: UserOrMentionPillData[],
     ): UserOrMentionPillData[] {
         const suggestion_items: UserOrMentionPillData[] = [...person_items, ...broadcast_items];
-        const should_remove_diacritics = people.should_remove_diacritics_for_query(
-            query.toLowerCase(),
-        );
 
         return suggestion_items.filter((item) =>
             typeahead_helper.query_matches_person(
@@ -1263,8 +1275,9 @@ export function get_candidates(
 }
 
 export function content_item_html(
-    _query: string,
+    query: string,
 ): (item: TypeaheadSuggestion) => string | undefined {
+    const should_remove_diacritics = !typeahead.contains_diacritics(query);
     return function (item: TypeaheadSuggestion): string | undefined {
         switch (item.type) {
             case "emoji":
@@ -1272,7 +1285,10 @@ export function content_item_html(
             case "user_group":
             case "user":
             case "broadcast":
-                return typeahead_helper.render_person_or_user_group(item, token);
+                return typeahead_helper.render_person_or_user_group(item, {
+                    query: token,
+                    should_remove_diacritics,
+                });
             case "slash":
                 return typeahead_helper.render_typeahead_item({
                     primary: item.text,
