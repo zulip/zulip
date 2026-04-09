@@ -61,7 +61,7 @@ export function set_up_user(
         },
         matcher(query: string): (item: UserPillData) => boolean {
             query = typeahead.clean_query_lowercase(query, false);
-            const should_remove_diacritics = people.should_remove_diacritics_for_query(query);
+            const should_remove_diacritics = !typeahead.contains_diacritics(query);
             return (item: UserPillData) => person_matcher(query, item, should_remove_diacritics);
         },
         sorter(matches: UserPillData[], query: string): UserPillData[] {
@@ -161,7 +161,7 @@ export function set_up_user_group(
         },
         matcher(query: string): (item: UserGroupPillData) => boolean {
             query = typeahead.clean_query_lowercase(query, false);
-            const should_remove_diacritics = people.should_remove_diacritics_for_query(query);
+            const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
             return (item: UserGroupPillData) =>
                 group_matcher(query, item, should_remove_diacritics);
@@ -217,7 +217,7 @@ export function set_up_group_setting_typeahead(
         },
         matcher(query: string): (item: GroupSettingTypeaheadItem) => boolean {
             query = typeahead.clean_query_lowercase(query, false);
-            const should_remove_diacritics = people.should_remove_diacritics_for_query(query);
+            const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
             return (item: GroupSettingTypeaheadItem): boolean => {
                 let matches = false;
@@ -365,7 +365,7 @@ export function set_up_combined(
         },
         matcher(query: string): (item: TypeaheadItem) => boolean {
             query = typeahead.clean_query_lowercase(query, false);
-            const should_remove_diacritics = people.should_remove_diacritics_for_query(query);
+            const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
             return (item: TypeaheadItem): boolean => {
                 if (include_streams(query) && item.type === "stream") {
