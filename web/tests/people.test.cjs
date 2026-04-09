@@ -966,10 +966,6 @@ run_test("multi_user_methods", () => {
     user_ids = people.slug_to_user_ids("402,401-group");
     assert.deepEqual(user_ids, [402, 401]);
 
-    emails_string = "emp402@example.com,EMP401@EXAMPLE.COM";
-    let user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
-    assert.equal(user_ids_string, "401,402");
-
     assert.equal(people.user_ids_string_to_slug("401,402"), "401,402-group");
     assert.equal(people.user_ids_string_to_slug("402"), "402-whatever-402");
     assert.equal(people.user_ids_to_slug([401, 402]), "401,402-group");
@@ -1511,19 +1507,6 @@ run_test("is_valid_full_name_and_user_id", () => {
     assert.ok(!people.is_valid_full_name_and_user_id("bogus", 99));
     assert.ok(!people.is_valid_full_name_and_user_id(me.full_name, 99));
     assert.ok(people.is_valid_full_name_and_user_id(me.full_name, me.user_id));
-});
-
-run_test("emails_strings_to_user_ids_array", () => {
-    initialize();
-    people.add_active_user(steven);
-    people.add_active_user(maria);
-
-    let user_ids = people.emails_strings_to_user_ids_array(`${steven.email},${maria.email}`);
-    assert.deepEqual(user_ids, [steven.user_id, maria.user_id]);
-
-    blueslip.expect("warn", "Unknown emails");
-    user_ids = people.emails_strings_to_user_ids_array("dummyuser@example.com");
-    assert.equal(user_ids, undefined);
 });
 
 run_test("get_visible_email", () => {

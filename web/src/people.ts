@@ -378,16 +378,6 @@ export function get_participants_from_user_ids_string(user_ids_string: string): 
     return user_ids;
 }
 
-export function emails_strings_to_user_ids_array(emails_string: string): number[] | undefined {
-    const user_ids_string = emails_strings_to_user_ids_string(emails_string);
-    if (user_ids_string === undefined) {
-        return undefined;
-    }
-
-    const user_ids_array = user_ids_string_to_ids_array(user_ids_string);
-    return user_ids_array;
-}
-
 export function user_ids_to_full_names_string(user_ids: number[]): string {
     const sorted_names = user_ids.map((user_id) => {
         const person = maybe_get_user_by_id(user_id);
@@ -421,11 +411,6 @@ export function get_user_time(user_id: number): string | undefined {
 export function get_user_type(user_id: number): string | undefined {
     const user_profile = get_by_user_id(user_id);
     return settings_config.user_role_map.get(user_profile.role);
-}
-
-export function emails_strings_to_user_ids_string(emails_string: string): string | undefined {
-    const emails = emails_string.split(",").map((email) => email.trim());
-    return email_list_to_user_ids_string(emails);
 }
 
 export function emails_string_to_user_ids(emails_string: string): number[] {
