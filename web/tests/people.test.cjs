@@ -1292,22 +1292,6 @@ run_test("updates", () => {
     assert.equal(person.user_id, user_id);
 });
 
-run_test("update_email_in_reply_to", () => {
-    initialize();
-    people.add_active_user(charles);
-    people.add_active_user(maria);
-
-    let reply_to = "    charles@example.com,   athens@example.com";
-    assert.equal(people.update_email_in_reply_to(reply_to, 9999, "whatever"), reply_to);
-    assert.equal(
-        people.update_email_in_reply_to(reply_to, maria.user_id, "maria@example.com"),
-        "charles@example.com,maria@example.com",
-    );
-
-    reply_to = "    charles@example.com,   athens@example.com, invalid@example.com";
-    assert.equal(people.update_email_in_reply_to(reply_to, 9999, "whatever"), reply_to);
-});
-
 run_test("track_duplicate_full_names", () => {
     initialize();
     people.add_active_user(maria);

@@ -695,38 +695,6 @@ export function pm_with_url(message: Message | MessageWithBooleans): string | un
     return url;
 }
 
-export function update_email_in_reply_to(
-    reply_to: string,
-    user_id: number,
-    new_email: string,
-): string {
-    // We try to replace an old email with a new email in a reply_to,
-    // but we try to avoid changing the reply_to if we don't have to,
-    // and we don't warn on any errors.
-    let emails = reply_to.split(",");
-
-    const persons = util.try_parse_as_truthy(emails.map((email) => people_dict.get(email.trim())));
-
-    if (persons === undefined) {
-        return reply_to;
-    }
-
-    const needs_patch = persons.some((person) => person.user_id === user_id);
-
-    if (!needs_patch) {
-        return reply_to;
-    }
-
-    emails = persons.map((person) => {
-        if (person.user_id === user_id) {
-            return new_email;
-        }
-        return person.email;
-    });
-
-    return emails.join(",");
-}
-
 export function filter_other_guest_ids(user_ids: number[]): number[] {
     return util.sorted_ids(
         user_ids.filter((id) => id !== current_user.user_id && get_by_user_id(id)?.is_guest),

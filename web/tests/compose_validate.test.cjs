@@ -188,7 +188,6 @@ test_ui("validate", ({mock_template, override}) => {
 
     initialize_pm_pill(mock_template);
     add_content_to_compose_box();
-    compose_state.private_message_recipient_emails("");
     let pm_recipient_error_rendered = false;
     override(realm, "realm_direct_message_permission_group", everyone.id);
     override(realm, "realm_direct_message_initiator_group", everyone.id);
@@ -205,7 +204,7 @@ test_ui("validate", ({mock_template, override}) => {
     pm_recipient_error_rendered = false;
 
     people.add_active_user(bob);
-    compose_state.private_message_recipient_emails("bob@example.com");
+    compose_state.set_private_message_recipient_ids([bob.user_id]);
     assert.ok(compose_validate.validate());
     assert.ok(!pm_recipient_error_rendered);
 
@@ -235,13 +234,13 @@ test_ui("validate", ({mock_template, override}) => {
 
     initialize_pm_pill(mock_template);
     add_content_to_compose_box();
-    compose_state.private_message_recipient_emails("welcome-bot@example.com");
+    compose_state.set_private_message_recipient_ids([welcome_bot.user_id]);
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
     assert.ok(compose_validate.validate());
 
     // For this first block, we should fail due to empty compose.
     initialize_pm_pill(mock_template);
-    compose_state.private_message_recipient_emails("welcome-bot@example.com");
+    compose_state.set_private_message_recipient_ids([welcome_bot.user_id]);
     $("textarea#compose-textarea").removeClass("invalid");
     assert.ok(!compose_validate.validate());
     assert.ok(!$("#compose-send-button .loader").visible());
@@ -920,7 +919,7 @@ test_ui("test_warn_if_guest_in_dm_recipient", ({mock_template, override}) => {
 
     compose_state.set_message_type("private");
     initialize_pm_pill(mock_template);
-    compose_state.private_message_recipient_emails("guest@example.com");
+    compose_state.set_private_message_recipient_ids([guest.user_id]);
     const classname = compose_banner.CLASSNAMES.guest_in_dm_recipient_warning;
     let $banner = $(`#compose_banners .${CSS.escape(classname)}`);
 
@@ -953,7 +952,7 @@ test_ui("test_warn_if_guest_in_dm_recipient", ({mock_template, override}) => {
     people.add_active_user(new_guest);
 
     initialize_pm_pill(mock_template);
-    compose_state.private_message_recipient_emails("guest@example.com, new_guest@example.com");
+    compose_state.set_private_message_recipient_ids([guest.user_id, new_guest.user_id]);
     $.reset_selector(`#compose_banners .${CSS.escape(classname)}`);
     $banner = $(`#compose_banners .${CSS.escape(classname)}`);
     const $banner_content = $(`#compose_banners .${CSS.escape(classname)} .banner_content`);

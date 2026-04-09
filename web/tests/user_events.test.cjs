@@ -57,9 +57,6 @@ buddy_list.buddy_list = buddy_data;
 mock_esm("../src/activity_ui", {
     redraw() {},
 });
-mock_esm("../src/compose_state", {
-    update_email() {},
-});
 mock_esm("../src/settings", {
     update_lock_icon_in_sidebar() {},
 });

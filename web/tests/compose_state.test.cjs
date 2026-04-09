@@ -17,14 +17,7 @@ const realm = make_realm();
 set_realm(realm);
 
 run_test("private_message_recipient_emails", ({override}) => {
-    let emails;
-    override(compose_pm_pill, "set_from_emails", (value) => {
-        emails = value;
-    });
-
-    override(compose_pm_pill, "get_emails", () => emails);
-
-    compose_state.private_message_recipient_emails("fred@fred.org");
+    override(compose_pm_pill, "get_emails", () => "fred@fred.org");
     assert.equal(compose_state.private_message_recipient_emails(), "fred@fred.org");
 });
 

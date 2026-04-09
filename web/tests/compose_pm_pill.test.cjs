@@ -65,25 +65,13 @@ run_test("pills", ({override}) => {
     };
     pills.items = () => [...all_pills.values()];
 
-    let text_cleared;
-    pills.clear_text = () => {
-        text_cleared = true;
-    };
+    pills.clear_text = () => {};
 
-    let pills_cleared;
     pills.clear = () => {
-        pills_cleared = true;
         pills = {
             pill: {},
         };
         all_pills.clear();
-    };
-
-    let appendValue_called;
-    pills.appendValue = function (value) {
-        appendValue_called = true;
-        assert.equal(value, othello.user_id.toString());
-        this.appendValidatedData(othello);
     };
 
     function test_create_item(handler) {
@@ -156,13 +144,7 @@ run_test("pills", ({override}) => {
 
     test_create_item(create_item_handler);
 
-    compose_pm_pill.set_from_emails("othello@example.com");
-    assert.ok(compose_pm_pill.widget);
-
-    assert.ok(pills_cleared);
-    assert.ok(appendValue_called);
-    assert.ok(text_cleared);
-
+    compose_pm_pill.clear();
     compose_pm_pill.set_from_typeahead(me);
     compose_pm_pill.set_from_typeahead(othello);
 
