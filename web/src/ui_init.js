@@ -571,7 +571,9 @@ export async function initialize_everything(state_data) {
     });
     alert_words.initialize(state_data.alert_words);
     saved_snippets.initialize(state_data.saved_snippets);
-    recurring_scheduled_messages.initialize(state_data.recurring_scheduled_messages);
+    recurring_scheduled_messages.initialize(
+        state_data.recurring_scheduled_messages ?? {recurring_scheduled_messages: []},
+    );
     recurring_scheduled_messages_ui.initialize();
     emojisets.initialize(user_settings.emojiset);
     scroll_bar.initialize();
