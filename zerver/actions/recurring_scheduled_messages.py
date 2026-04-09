@@ -89,7 +89,11 @@ def do_cancel_recurring_scheduled_message(
 ) -> None:
     """Cancel an active recurring scheduled message job."""
     try:
-        job = RecurringScheduledMessage.objects.get(id=job_id, sender=user_profile)
+        job = RecurringScheduledMessage.objects.get(
+            id=job_id,
+            sender=user_profile,
+            is_active=True,
+        )
     except RecurringScheduledMessage.DoesNotExist:
         raise ResourceNotFoundError(_("Recurring scheduled message does not exist."))
 
