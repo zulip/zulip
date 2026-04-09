@@ -151,10 +151,15 @@ def do_deliver_recurring_scheduled_message(job: RecurringScheduledMessage) -> No
                 do_send_messages([send_request])
 
         except Exception:
+            destination_label = destination.get("type", "unknown")
+            if destination_label == "stream":
+                destination_label = f"stream:{destination.get('stream_id', 'unknown')}"
+            elif destination_label == "direct":
+                destination_label = f"direct:{len(destination.get('user_ids', []))}_recipients"
             logger.exception(
                 "Failed to deliver recurring scheduled message %s to destination %s",
                 job.id,
-                destination,
+                destination_label,
                 stack_info=True,
             )
 
@@ -195,6 +200,7 @@ def try_deliver_one_recurring_scheduled_message() -> bool:
             next_delivery__lte=timezone_now(),
             is_active=True,
         )
+        .order_by("next_delivery", "id")
         .select_for_update()
         .first()
     )
@@ -231,8 +237,18 @@ def try_deliver_one_recurring_scheduled_message() -> bool:
                 timezone_now(),
             )
             job.save(update_fields=["next_delivery"])
+            event: dict[str, Any] = {
+                "type": "recurring_scheduled_messages",
+                "op": "update",
+                "recurring_scheduled_message": job.to_api_dict(),
+            }
         else:
             job.is_active = False
             job.save(update_fields=["is_active"])
-
+            event = {
+                "type": "recurring_scheduled_messages",
+                "op": "remove",
+                "recurring_scheduled_message_id": job.id,
+            }
+        send_event_on_commit(job.realm, event, [job.sender_id])
     return True
