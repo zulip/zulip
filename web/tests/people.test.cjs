@@ -340,7 +340,6 @@ run_test("basics", ({override}) => {
     const active_user_ids = people.get_active_user_ids().toSorted();
     assert.deepEqual(active_user_ids, [me.user_id, isaac.user_id]);
     assert.equal(people.is_active_user_or_system_bot(isaac.user_id), true);
-    assert.ok(people.is_valid_email_for_compose(isaac.email));
     assert.ok(people.is_valid_user_id_for_compose(isaac.user_id));
 
     let bot_user_ids = people.get_bot_ids();
@@ -352,7 +351,6 @@ run_test("basics", ({override}) => {
     assert.equal(people.get_non_active_user_ids_count([isaac.user_id]), 1);
     assert.equal(people.get_active_human_count(), 1);
     assert.equal(people.is_active_user_or_system_bot(isaac.user_id), false);
-    assert.equal(people.is_valid_email_for_compose(isaac.email), true);
     assert.equal(people.is_valid_user_id_for_compose(isaac.user_id), true);
 
     people.add_active_user(bot_botson);
@@ -417,9 +415,6 @@ run_test("basics", ({override}) => {
     // The current user should still be there
     person = people.get_by_email("me@example.com");
     assert.equal(person.full_name, "Me Myself");
-
-    // Test undefined people
-    assert.equal(people.is_cross_realm_email("invalid@example.com"), false);
 
     // Test is_my_user_id function
     assert.equal(people.is_my_user_id(me.user_id), true);
@@ -1277,7 +1272,6 @@ run_test("updates", () => {
 
     // Do sanity checks on our data.
     assert.equal(people.get_by_email(old_email).user_id, user_id);
-    assert.ok(!people.is_cross_realm_email(old_email));
 
     assert.equal(people.get_by_email(new_email), undefined);
 
@@ -1286,7 +1280,6 @@ run_test("updates", () => {
 
     // Now look up using the new email.
     assert.equal(people.get_by_email(new_email).user_id, user_id);
-    assert.ok(!people.is_cross_realm_email(new_email));
 
     const all_people = get_all_persons();
     assert.equal(all_people.length, 3);
@@ -1425,18 +1418,11 @@ run_test("initialize", () => {
     people.initialize(current_user.user_id, params, user_group_params);
 
     assert.equal(people.is_active_user_or_system_bot(17), true);
-    assert.ok(people.is_cross_realm_email("bot@example.com"));
-    assert.ok(people.is_valid_email_for_compose("bot@example.com"));
     assert.ok(people.is_valid_user_id_for_compose(test_bot.user_id));
-    assert.ok(people.is_valid_email_for_compose("alice@example.com"));
     assert.ok(people.is_valid_user_id_for_compose(alice.user_id));
-    assert.ok(people.is_valid_email_for_compose("retiree@example.com"));
     assert.ok(people.is_valid_user_id_for_compose(retiree.user_id));
-    assert.ok(!people.is_valid_email_for_compose("totally-bogus-username@example.com"));
     blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
     assert.ok(!people.is_valid_user_id_for_compose(9999));
-    assert.ok(people.is_valid_bulk_emails_for_compose(["bot@example.com", "alice@example.com"]));
-    assert.ok(!people.is_valid_bulk_emails_for_compose(["not@valid.com", "alice@example.com"]));
     assert.ok(people.is_valid_bulk_user_ids_for_compose([17, 16, 15]));
     blueslip.reset();
     blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");

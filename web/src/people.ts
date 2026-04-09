@@ -1026,31 +1026,6 @@ export function is_valid_user_id_for_compose(user_id: number, ignore_missing = f
     return true;
 }
 
-export function is_valid_email_for_compose(email: string): boolean {
-    if (is_cross_realm_email(email)) {
-        return true;
-    }
-
-    const person = get_by_email(email);
-    if (!person || person.is_inaccessible_user) {
-        return false;
-    }
-
-    // we allow deactivated users in compose so that
-    // one can attempt to reply to threads that contained them.
-    return true;
-}
-
-export function is_valid_bulk_emails_for_compose(emails: string[]): boolean {
-    // Returns false if at least one of the emails is invalid.
-    return emails.every((email) => {
-        if (!is_valid_email_for_compose(email)) {
-            return false;
-        }
-        return true;
-    });
-}
-
 export function is_valid_bulk_user_ids_for_compose(
     user_ids: number[],
     ignore_missing = true,
@@ -1243,14 +1218,6 @@ export function get_active_user_ids(): number[] {
 
 export function get_non_active_realm_users(): User[] {
     return [...non_active_user_dict.values()];
-}
-
-export function is_cross_realm_email(email: string): boolean {
-    const person = get_by_email(email);
-    if (!person) {
-        return false;
-    }
-    return cross_realm_dict.has(person.user_id);
 }
 
 export function get_recipient_count(person: User | PseudoMentionUser): number {
