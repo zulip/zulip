@@ -14715,7 +14715,7 @@ paths:
           required: true
           description: |
             The ID of the custom profile field to delete.
-          example: 1
+          example: 5
       responses:
         "200":
           description: Success.
