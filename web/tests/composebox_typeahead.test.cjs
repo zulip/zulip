@@ -1507,8 +1507,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
                 function matcher(query, person) {
                     query = typeahead.clean_query_lowercase(query, false);
-                    const should_remove_diacritics =
-                        people.should_remove_diacritics_for_query(query);
+                    const should_remove_diacritics = !typeahead.contains_diacritics(query);
                     return typeahead_helper.query_matches_person(
                         query,
                         person,

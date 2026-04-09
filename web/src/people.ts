@@ -1183,19 +1183,12 @@ export function get_people_for_search_bar(query: string): User[] {
     return filter_all_persons(pred);
 }
 
-export function should_remove_diacritics_for_query(query_lower_case: string): boolean {
-    // We only do diacritic-sensitive matching for queries that do not
-    // contain diacritics themselves. Spaces and other punctuation are
-    // irrelevant to this check.
-    return typeahead.remove_diacritics(query_lower_case) === query_lower_case;
-}
-
 export function maybe_remove_diacritics_from_name(
     user: User,
     should_remove_diacritics: boolean,
 ): string {
     // Callers should compute should_remove_diacritics using
-    // should_remove_diacritics_for_query. It's fastest if the caller
+    // contains_diacritics. It's fastest if the caller
     // computes that once outside the loop over all users.
     if (should_remove_diacritics) {
         // Reuse removed diacritics version of the `full_name` if
@@ -1209,7 +1202,7 @@ export function maybe_remove_diacritics_from_name(
 export function build_termlet_matcher(termlet: string): (user: User) => boolean {
     // Note: termlets are required to be lower case.
     termlet = termlet.trim();
-    const should_remove_diacritics = should_remove_diacritics_for_query(termlet);
+    const should_remove_diacritics = !typeahead.contains_diacritics(termlet);
 
     return function (user: User): boolean {
         const full_name = maybe_remove_diacritics_from_name(user, should_remove_diacritics);
