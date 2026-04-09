@@ -3,8 +3,8 @@
 const assert = require("node:assert/strict");
 
 const blueslip = require("./lib/zblueslip.cjs");
-const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+const {zrequire} = require("./lib/namespace.cjs");
 
 const recurring_scheduled_messages = zrequire("recurring_scheduled_messages");
 
