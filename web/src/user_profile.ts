@@ -908,6 +908,9 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         }
         toggle_submit_button($("#bot-edit-form"));
     });
+    // Remove any previously registered handler to avoid duplicate API
+    // calls when the "Manage bot" tab is opened multiple times.
+    $("#user-profile-modal").off("click", ".dialog_submit_button");
     $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
         const role = Number.parseInt(
             $<HTMLSelectOneElement>("select:not([multiple])#bot-role-select").val()!.trim(),
@@ -1359,6 +1362,9 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         toggle_submit_button($("#edit-user-form"));
     });
 
+    // Remove any previously registered handler to avoid duplicate API
+    // calls when the "Manage user" tab is opened multiple times.
+    $("#user-profile-modal").off("click", ".dialog_submit_button");
     $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
         const role = Number.parseInt(
             $<HTMLSelectOneElement>("select:not([multiple])#user-role-select").val()!.trim(),
