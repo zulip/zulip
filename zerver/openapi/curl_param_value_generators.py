@@ -26,7 +26,7 @@ from zerver.lib.test_helpers import read_test_image_file
 from zerver.lib.upload import upload_message_attachment
 from zerver.models import Client, Message, NamedUserGroup, UserPresence
 from zerver.models.channel_folders import ChannelFolder
-from zerver.models.realms import get_realm
+from zerver.models.realms import RealmExport, get_realm
 from zerver.models.users import UserProfile, get_user
 from zerver.openapi.openapi import Parameter
 
@@ -499,3 +499,17 @@ def delete_realm_domain_owner_auth() -> dict[str, object]:
 
     do_add_realm_domain(owner.realm, "delete-domain-example.com", False, acting_user=None)
     return {"domain": "delete-domain-example.com"}
+
+
+@openapi_param_value_generator(["/export/realm/{export_id}:delete"])
+def delete_realm_export() -> dict[str, object]:
+    export = RealmExport.objects.create(
+        realm=get_realm("zulip"),
+        type=RealmExport.EXPORT_PUBLIC,
+        status=RealmExport.SUCCEEDED,
+        date_requested=timezone_now(),
+        date_started=timezone_now(),
+        date_succeeded=timezone_now(),
+        export_path="/dummy",
+    )
+    return {"export_id": export.id}
