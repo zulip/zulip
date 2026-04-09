@@ -123,8 +123,6 @@ class DirectMessageGroup(models.Model):
     corresponding DirectMessageGroup object.
     """
 
-    # TODO: We should consider whether using
-    # CommaSeparatedIntegerField would be better.
     huddle_hash = models.CharField(max_length=40, db_index=True, unique=True)
     # Foreign key to the Recipient object for this DirectMessageGroup.
     recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
