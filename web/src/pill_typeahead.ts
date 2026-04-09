@@ -7,6 +7,7 @@ import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import * as stream_pill from "./stream_pill.ts";
 import type {StreamPillData, StreamPillWidget} from "./stream_pill.ts";
+import * as typeahead from "./typeahead.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import type {CombinedPillContainer, GroupSettingPillContainer} from "./typeahead_helper.ts";
 import * as user_group_pill from "./user_group_pill.ts";
@@ -26,8 +27,12 @@ function person_matcher(
     );
 }
 
-function group_matcher(query: string, item: UserGroupPillData): boolean {
-    return typeahead_helper.query_matches_group_name(query, item);
+function group_matcher(
+    query: string,
+    item: UserGroupPillData,
+    should_remove_diacritics: boolean,
+): boolean {
+    return typeahead_helper.query_matches_group_name(query, item, should_remove_diacritics);
 }
 
 type TypeaheadItem = UserGroupPillData | StreamPillData | UserPillData;
@@ -55,8 +60,7 @@ export function set_up_user(
             return (item: UserPillData) => typeahead_helper.render_person(item);
         },
         matcher(query: string): (item: UserPillData) => boolean {
-            query = query.toLowerCase();
-            query = query.replaceAll("\u00A0", " ");
+            query = typeahead.clean_query_lowercase(query, false);
             const should_remove_diacritics = people.should_remove_diacritics_for_query(query);
             return (item: UserPillData) => person_matcher(query, item, should_remove_diacritics);
         },
@@ -156,10 +160,11 @@ export function set_up_user_group(
             return (item: UserGroupPillData) => typeahead_helper.render_user_group(item);
         },
         matcher(query: string): (item: UserGroupPillData) => boolean {
-            query = query.toLowerCase();
-            query = query.replaceAll("\u00A0", " ");
+            query = typeahead.clean_query_lowercase(query, false);
+            const should_remove_diacritics = people.should_remove_diacritics_for_query(query);
 
-            return (item: UserGroupPillData) => group_matcher(query, item);
+            return (item: UserGroupPillData) =>
+                group_matcher(query, item, should_remove_diacritics);
         },
         sorter(matches: UserGroupPillData[], query: string): UserGroupPillData[] {
             return typeahead_helper.sort_user_groups(matches, query);
@@ -211,14 +216,13 @@ export function set_up_group_setting_typeahead(
             };
         },
         matcher(query: string): (item: GroupSettingTypeaheadItem) => boolean {
-            query = query.toLowerCase();
-            query = query.replaceAll("\u00A0", " ");
+            query = typeahead.clean_query_lowercase(query, false);
             const should_remove_diacritics = people.should_remove_diacritics_for_query(query);
 
             return (item: GroupSettingTypeaheadItem): boolean => {
                 let matches = false;
                 if (item.type === "user_group") {
-                    matches = matches || group_matcher(query, item);
+                    matches = matches || group_matcher(query, item, should_remove_diacritics);
                 }
 
                 if (item.type === "user") {
@@ -360,8 +364,7 @@ export function set_up_combined(
             };
         },
         matcher(query: string): (item: TypeaheadItem) => boolean {
-            query = query.toLowerCase();
-            query = query.replaceAll("\u00A0", " ");
+            query = typeahead.clean_query_lowercase(query, false);
             const should_remove_diacritics = people.should_remove_diacritics_for_query(query);
 
             return (item: TypeaheadItem): boolean => {
@@ -373,14 +376,14 @@ export function set_up_combined(
                 if (include_user_groups && query.startsWith("@")) {
                     if (item.type === "user_group") {
                         const normalized_query = query.slice(1);
-                        return group_matcher(normalized_query, item);
+                        return group_matcher(normalized_query, item, should_remove_diacritics);
                     }
                     return false;
                 }
 
                 let matches = false;
                 if (include_user_groups && item.type === "user_group") {
-                    matches = group_matcher(query, item);
+                    matches = group_matcher(query, item, should_remove_diacritics);
                 }
 
                 if (include_users && item.type === "user") {
