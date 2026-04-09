@@ -114,7 +114,7 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 473**
 
-- [`POST /users/{user_id}/status`](/api/update-status-for-user): Bots
+* [`POST /users/{user_id}/status`](/api/update-status-for-user): Bots
   with administrator permissions can now use this endpoint.
 
 **Feature level 472**
@@ -240,7 +240,7 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 457**
 
-[`GET /events`](/api/get-events): `delete_message` events are now
+* [`GET /events`](/api/get-events): `delete_message` events are now
   sent to the user who deletes the message only if they have content
   access to the messages' recipient, and the `message_ids` list only
   includes IDs of the messages that they can access.
@@ -263,7 +263,7 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 454**
 
-- [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults)
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults)
   [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
   [`PATCH /settings`](/api/update-settings): Changed the `web_home_view`
   value for the recent view to "recent".
@@ -575,7 +575,7 @@ No changes; API feature level used for the Zulip 11.0 release.
   `zulip_message_ids`.
 * Mobile push notification payloads for FCM to for new messages no
   longer contain the (unused) `content_truncated` boolean field.
-- E2EE mobile push notification payloads now have a [modernized and
+* E2EE mobile push notification payloads now have a [modernized and
   documented format](/api/mobile-notifications).
 
 **Feature level 412**
@@ -638,7 +638,7 @@ No changes; API feature level used for the Zulip 11.0 release.
   `can_delete_own_message_group` parameter to support setting and
   changing the user group whose members can delete the messages they have sent
   in the channel.
-- [`POST /users/{user_id}/status`](/api/update-status-for-user): Added
+* [`POST /users/{user_id}/status`](/api/update-status-for-user): Added
   new API endpoint for an administrator to update the status for
   another user.
 
@@ -1012,7 +1012,7 @@ No changes; feature level used for Zulip 10.0 release.
   the field is not present. Clients should use this field, rather than
   parsing the message object's `edit_history` array, to display an
   indicator that the message has been moved.
- * [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
+* [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
   [`GET /messages/{message_id}`](/api/get-message): The
   `last_edit_timestamp` field on message objects is only present if the
   message's content has been edited. Previously, this field was present
@@ -1298,9 +1298,9 @@ No changes; feature level used for Zulip 10.0 release.
 
 **Feature level 340**
 
-[`PATCH /user_groups/{user_group_id}`](/api/update-user-group): All
-the permission settings and description can now be updated for
-deactivated groups.
+* [`PATCH /user_groups/{user_group_id}`](/api/update-user-group): All
+  the permission settings and description can now be updated for
+  deactivated groups.
 
 **Feature level 339**
 
