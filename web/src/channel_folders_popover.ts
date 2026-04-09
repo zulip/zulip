@@ -219,6 +219,7 @@ export function initialize(): void {
                 ...popover_menus.left_sidebar_tippy_options,
                 theme: "popover-menu",
                 onMount(instance) {
+                    popover_menus.popover_instances.folder_actions = instance;
                     const $popper = $(instance.popper);
                     assert(instance.reference instanceof HTMLElement);
                     ui_util.show_left_sidebar_menu_icon(instance.reference);
@@ -248,6 +249,7 @@ export function initialize(): void {
                 onHidden(instance) {
                     ui_util.hide_left_sidebar_menu_icon();
                     instance.destroy();
+                    popover_menus.popover_instances.folder_actions = null;
                 },
             });
         },
