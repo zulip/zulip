@@ -22,6 +22,7 @@ def create_task(
 
     title = request.POST.get("title")
     description = request.POST.get("description", "")
+    assignee_email = request.POST.get("assignee", "")
 
     if not title:
         return JsonResponse({"error": "Missing title"}, status=400)
@@ -32,11 +33,19 @@ def create_task(
         return JsonResponse({"error": "Invalid message"}, status=404)
 
     user = user_profile
+    assignee = user  # default to current user
+
+    # Handle assignment to different user
+    if assignee_email:
+        try:
+            assignee = UserProfile.objects.get(email=assignee_email)
+        except UserProfile.DoesNotExist:
+            return JsonResponse({"error": f"User {assignee_email} not found"}, status=404)
 
     #create a task and insert into postgresql
     task = Task.objects.create(
         message=message,
-        assignee=user,
+        assignee=assignee,
         creator=user,
         title=title,
         description=description,
@@ -50,13 +59,27 @@ def create_task(
     })
 
 @require_GET
-@typed_endpoint_without_parameters
+@typed_endpoint
 def list_my_tasks(
     request: HttpRequest,
     user_profile: UserProfile,
+    *,
+    assignee: str = "",
 ) -> HttpResponse:
-    """Get tasks assigned to current user"""
-    tasks = Task.objects.filter(assignee=user_profile).select_related('message', 'creator')
+    """Get tasks assigned to current user or specified assignee"""
+    if assignee:
+        # Get tasks for specified assignee
+        try:
+            target_user = UserProfile.objects.get(email=assignee)
+        except UserProfile.DoesNotExist:
+            return JsonResponse({"error": f"User {assignee} not found"}, status=404)
+        
+        # For now, allow any user to view tasks for any user (can add permissions later)
+            
+        tasks = Task.objects.filter(assignee=target_user).select_related('message', 'creator')
+    else:
+        # Get tasks for current user (original behavior)
+        tasks = Task.objects.filter(assignee=user_profile).select_related('message', 'creator')
     
     task_data = []
     for task in tasks:

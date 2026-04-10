@@ -1070,3 +1070,672 @@ window.deleteTask = function(taskId) {
         }
     });
 };
+
+
+// Show users overlay function
+function showUsersOverlay() {
+    // Create users overlay if it doesn't exist
+    if ($("#users-overlay").length === 0) {
+        const usersOverlayHtml = `
+            <div id="users-overlay" class="overlay" data-overlay="users" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 2000;
+                display: none;
+            ">
+                <div class="overlay-content" style="
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: white;
+                    padding: 30px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                    max-width: 500px;
+                    width: 90%;
+                    max-height: 70vh;
+                    overflow-y: auto;
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="margin: 0; color: #333;">Server Users</h2>
+                        <button class="overlay-close" style="
+                            background: none;
+                            border: none;
+                            font-size: 24px;
+                            cursor: pointer;
+                            color: #666;
+                        ">&times;</button>
+                    </div>
+                    <div id="users-content">
+                        <div style="color: #666; text-align: center; padding: 40px 0;">
+                            <p>Loading users...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        $("body").append(usersOverlayHtml);
+        
+        // Set up users overlay handlers
+        const $usersOverlay = $("#users-overlay");
+        $usersOverlay.find(".overlay-close").on("click", () => {
+            overlays.close_overlay("users");
+        });
+        
+        $usersOverlay.on("click", (e) => {
+            if (e.target.id === "users-overlay") {
+                overlays.close_overlay("users");
+            }
+        });
+    }
+    
+    // Show users overlay
+    $("#users-overlay").show();
+    
+    // Open overlay using Zulip's overlay system
+    overlays.open_overlay({
+        name: "users",
+        $overlay: $("#users-overlay"),
+        on_close: () => {
+            $("#users-overlay").hide();
+        },
+    });
+    
+    // Load users
+    loadUsers();
+}
+
+// Load users function
+function loadUsers() {
+    try {
+        // Import people module to get users
+        import("./people.ts").then(people => {
+            const users = people.get_realm_users();
+            displayUsers(users);
+        }).catch(err => {
+            console.error("Failed to load people module:", err);
+            $("#users-content").html(`
+                <div style="color: #d32f2f; text-align: center; padding: 40px 0;">
+                    <p>Failed to load users</p>
+                </div>
+            `);
+        });
+    } catch (err) {
+        console.error("Error loading users:", err);
+        $("#users-content").html(`
+            <div style="color: #d32f2f; text-align: center; padding: 40px 0;">
+                <p>Failed to load users</p>
+            </div>
+        `);
+    }
+}
+
+// Display users function
+function displayUsers(users) {
+    if (users.length === 0) {
+        $("#users-content").html(`
+            <div style="color: #666; text-align: center; padding: 40px 0;">
+                <p>No users found</p>
+            </div>
+        `);
+        return;
+    }
+
+    const usersHtml = users.map(user => `
+        <div style="
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: white;
+        ">
+            <div style="display: flex; align-items: center;">
+                <div style="
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    background: #1976d2;
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: bold;
+                    margin-right: 15px;
+                    font-size: 16px;
+                ">
+                    ${user.full_name.charAt(0).toUpperCase()}
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; font-size: 16px; margin-bottom: 5px;">
+                        ${user.full_name}
+                    </div>
+                    <div style="color: #666; font-size: 14px;">
+                        ${user.email}
+                    </div>
+                    ${user.is_bot ? '<div style="color: #9c27b0; font-size: 12px; margin-top: 5px;">Bot</div>' : ''}
+                </div>
+                ${!user.is_bot ? `
+                <div style="display: flex; gap: 5px; margin-left: 10px;">
+                    <button class="assign-task-btn" data-user-email="${user.email}" data-user-name="${user.full_name}" style="
+                        background: #28a745;
+                        color: white;
+                        border: none;
+                        padding: 6px 12px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 12px;
+                    ">Assign Task</button>
+                    <button class="view-tasks-btn" data-user-email="${user.email}" data-user-name="${user.full_name}" style="
+                        background: #17a2b8;
+                        color: white;
+                        border: none;
+                        padding: 6px 12px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 12px;
+                    ">View Tasks</button>
+                </div>
+                ` : ''}
+            </div>
+        </div>
+    `).join('');
+
+    $("#users-content").html(`
+        <div style="color: #666; font-size: 14px; margin-bottom: 15px;">
+            Found ${users.length} users
+        </div>
+        <div style="max-height: 400px; overflow-y: auto;">
+            ${usersHtml}
+        </div>
+    `);
+    
+    // Add click handlers for Assign Task buttons
+    $(".assign-task-btn").on("click", (e) => {
+        const userEmail = $(e.target).attr("data-user-email");
+        const userName = $(e.target).attr("data-user-name");
+        console.log(`Assign Task clicked for: ${userName} (${userEmail})`);
+        showSimpleTaskForm(userName, userEmail);
+    });
+    
+    // Add click handlers for View Tasks buttons
+    $(".view-tasks-btn").on("click", (e) => {
+        const userEmail = $(e.target).attr("data-user-email");
+        const userName = $(e.target).attr("data-user-name");
+        console.log(`View Tasks clicked for: ${userName} (${userEmail})`);
+        showUserTasksOverlay(userName, userEmail);
+    });
+}
+
+// Show simple task form function
+function showSimpleTaskForm(userName, userEmail) {
+    // Create simple task form overlay if it doesn't exist
+    if ($("#simple-task-form-overlay").length === 0) {
+        const formOverlayHtml = `
+            <div id="simple-task-form-overlay" class="overlay" data-overlay="simple-task-form" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 3000;
+                display: none;
+            ">
+                <div class="overlay-content" style="
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: white;
+                    padding: 25px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                    max-width: 400px;
+                    width: 90%;
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; color: #333;">Assign Task</h3>
+                        <button class="overlay-close" style="
+                            background: none;
+                            border: none;
+                            font-size: 24px;
+                            cursor: pointer;
+                            color: #666;
+                        ">&times;</button>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <div style="color: #666; font-size: 14px; margin-bottom: 15px;">
+                            Assign to: <strong>${userName} (${userEmail})</strong>
+                        </div>
+                        <input type="text" id="simple-task-title" placeholder="Task title..." style="
+                            width: 100%;
+                            padding: 10px;
+                            border: 1px solid #ddd;
+                            border-radius: 6px;
+                            font-size: 14px;
+                            box-sizing: border-box;
+                            margin-bottom: 15px;
+                        ">
+                        <textarea id="simple-task-desc" placeholder="Description (optional)..." style="
+                            width: 100%;
+                            padding: 10px;
+                            border: 1px solid #ddd;
+                            border-radius: 6px;
+                            font-size: 14px;
+                            box-sizing: border-box;
+                            resize: vertical;
+                            min-height: 80px;
+                            margin-bottom: 15px;
+                        "></textarea>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="simple-assign-btn" style="
+                            background: #28a745;
+                            color: white;
+                            border: none;
+                            padding: 8px 16px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 14px;
+                            flex: 1;
+                        ">Assign</button>
+                        <button id="simple-cancel-btn" style="
+                            background: #6c757d;
+                            color: white;
+                            border: none;
+                            padding: 8px 16px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 14px;
+                            flex: 1;
+                        ">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        $("body").append(formOverlayHtml);
+        
+        // Set up simple form handlers
+        const $formOverlay = $("#simple-task-form-overlay");
+        $formOverlay.find(".overlay-close").on("click", () => {
+            overlays.close_overlay("simple-task-form");
+        });
+        
+        $formOverlay.on("click", (e) => {
+            if (e.target.id === "simple-task-form-overlay") {
+                overlays.close_overlay("simple-task-form");
+            }
+        });
+        
+        // Assign button handler
+        $("#simple-assign-btn").on("click", () => {
+            const title = $("#simple-task-title").val().trim();
+            const desc = $("#simple-task-desc").val().trim();
+            
+            if (!title) {
+                alert("Please enter a task title.");
+                return;
+            }
+            
+            // Get user data from overlay
+            const userData = $("#simple-task-form-overlay").data();
+            const userName = userData.userName;
+            const userEmail = userData.userEmail;
+            
+            console.log(`Creating task "${title}" for ${userName} (${userEmail})`);
+            
+            // Show loading state
+            $("#simple-assign-btn").prop('disabled', true).text('Assigning...');
+            
+            // Create task with assignee using backend API
+            createTaskForUser(userEmail, title, desc, userName);
+        });
+        
+        // Cancel button handler
+        $("#simple-cancel-btn").on("click", () => {
+            overlays.close_overlay("simple-task-form");
+        });
+    }
+    
+    // Store user data for the form
+    $("#simple-task-form-overlay").data({
+        userName: userName,
+        userEmail: userEmail
+    });
+    
+    // Close users overlay first
+    overlays.close_overlay("users");
+    
+    // Show form overlay
+    $("#simple-task-form-overlay").show();
+    
+    // Open overlay using Zulip's overlay system
+    overlays.open_overlay({
+        name: "simple-task-form",
+        $overlay: $("#simple-task-form-overlay"),
+        on_close: () => {
+            $("#simple-task-form-overlay").hide();
+        },
+    });
+}
+
+// Create task for user function
+function createTaskForUser(userEmail, title, description, userName) {
+    // Use a system message ID for task creation (we'll use message ID 1 as a placeholder)
+    const messageId = 1;
+    
+    const data = {
+        title: title,
+        description: description,
+        assignee: userEmail,
+    };
+    
+    channel.post({
+        url: "/json/messages/" + messageId + "/tasks",
+        data: data,
+        success: function(response) {
+            blueslip.info("Task created successfully", response);
+            
+            // Get user data from the form
+            const userData = $("#simple-task-form-overlay").data();
+            const userName = userData.userName;
+            const userEmail = userData.userEmail;
+            
+            // Reset form
+            $("#simple-task-title").val("");
+            $("#simple-task-desc").val("");
+            $("#simple-assign-btn").prop('disabled', false).text('Assign');
+            
+            // Close assign form and show user's tasks
+            overlays.close_overlay("simple-task-form");
+            
+            // Show user tasks (this function already handles closing users overlay)
+            showUserTasksOverlay(userName, userEmail);
+        },
+        error: function(xhr) {
+            console.error("Failed to create task:", xhr);
+            $("#simple-assign-btn").prop('disabled', false).text('Assign');
+            
+            var errorMsg = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : "Failed to assign task. Please try again.";
+            alert("Error: " + errorMsg);
+        }
+    });
+}
+
+// Show user tasks overlay function
+function showUserTasksOverlay(userName, userEmail) {
+    // Create user tasks overlay if it doesn't exist
+    if ($("#user-tasks-overlay").length === 0) {
+        const headerText = "Tasks for " + userName;
+        const tasksOverlayHtml = '<div id="user-tasks-overlay" class="overlay" data-overlay="user-tasks" style="' +
+            'position: fixed; top: 0; left: 0; width: 100%; height: 100%; ' +
+            'background: rgba(0, 0, 0, 0.5); z-index: 3000; display: none;">' +
+            '<div class="overlay-content" style="' +
+            'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); ' +
+            'background: white; padding: 25px; border-radius: 8px; ' +
+            'box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); max-width: 600px; ' +
+            'width: 90%; max-height: 70vh; overflow-y: auto;">' +
+            '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">' +
+                '<h3 style="margin: 0; color: #333;">' + headerText + '</h3>' +
+                '<button class="overlay-close" style="' +
+                    'background: none; border: none; font-size: 24px; ' +
+                    'cursor: pointer; color: #666;">&times;</button>' +
+            '</div>' +
+            '<div id="user-tasks-content">' +
+                '<div style="color: #666; text-align: center; padding: 40px 0;">' +
+                    '<p>Loading tasks...</p>' +
+                '</div>' +
+            '</div>' +
+            '</div>' +
+        '</div>';
+        $("body").append(tasksOverlayHtml);
+        
+        // Set up user tasks overlay handlers
+        const $tasksOverlay = $("#user-tasks-overlay");
+        $tasksOverlay.find(".overlay-close").on("click", () => {
+            overlays.close_overlay("user-tasks");
+        });
+        
+        $tasksOverlay.on("click", (e) => {
+            if (e.target.id === "user-tasks-overlay") {
+                overlays.close_overlay("user-tasks");
+            }
+        });
+    }
+    
+    // Store user data for the overlay
+    $("#user-tasks-overlay").data({
+        userName: userName,
+        userEmail: userEmail
+    });
+    
+    // Close any active overlay first
+    if (overlays.any_active()) {
+        overlays.close_active();
+    }
+    
+    // Update the header text with current user
+    $("#user-tasks-overlay").find("h3").text("Tasks for " + userName);
+    
+    // Show tasks overlay
+    $("#user-tasks-overlay").show();
+    
+    // Open overlay using Zulip's overlay system
+    overlays.open_overlay({
+        name: "user-tasks",
+        $overlay: $("#user-tasks-overlay"),
+        on_close: () => {
+            $("#user-tasks-overlay").hide();
+        },
+    });
+    
+    // Load tasks for this user
+    loadTasksForUser(userEmail, userName);
+}
+
+// Load tasks for user function
+function loadTasksForUser(userEmail, userName) {
+    console.log("Loading tasks for:", userEmail, userName);
+    channel.get({
+        url: "/json/users/me/tasks",
+        data: { assignee: userEmail },
+        success: function(response) {
+            console.log("API response:", response);
+            displayUserTasks(response.tasks, userName);
+        },
+        error: function(xhr) {
+            console.error("Failed to load tasks:", xhr);
+            console.error("Status:", xhr.status);
+            console.error("Response text:", xhr.responseText);
+            $("#user-tasks-content").html(
+                '<div style="color: #d32f2f; text-align: center; padding: 40px 0;">' +
+                    '<p>Failed to load tasks for ' + userName + '</p>' +
+                    '<p style="font-size: 12px;">Status: ' + xhr.status + '</p>' +
+                    '<p style="font-size: 12px;">Response: ' + xhr.responseText + '</p>' +
+                '</div>'
+            );
+        }
+    });
+}
+
+// Display user tasks function
+function displayUserTasks(tasks, userName) {
+    if (!tasks || tasks.length === 0) {
+        $("#user-tasks-content").html(
+            '<div style="color: #666; text-align: center; padding: 40px 0;">' +
+                '<p>No tasks assigned to ' + userName + '</p>' +
+            '</div>'
+        );
+        return;
+    }
+
+    var tasksHtml = tasks.map(function(task) {
+        var completedClass = task.completed ? "completed-task" : "";
+        var completedIcon = task.completed ? " (Completed)" : "";
+        var taskDesc = task.description ? " - " + task.description : "";
+        var taskBg = task.completed ? '#f5f5f5' : 'white';
+        var statusBg = task.completed ? '#28a745' : '#ffc107';
+        var statusText = task.completed ? '!' : 'o';
+        var titleStyle = task.completed ? 'text-decoration: line-through;' : '';
+        var descHtml = task.description ? '<div style="color: #000000; font-size: 14px;">' + task.description + '</div>' : '';
+        var createdDate = new Date(task.created_at).toLocaleDateString();
+        
+        return '<div style="border: 1px solid #ddd; border-radius: 6px; padding: 15px; margin-bottom: 10px; background: ' + taskBg + ';">' +
+            '<div style="display: flex; align-items: center;">' +
+                '<div style="width: 20px; height: 20px; border-radius: 50%; background: ' + statusBg + '; color: white; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 12px;">' +
+                    statusText +
+                '</div>' +
+                '<div style="flex: 1;">' +
+                    '<div style="font-weight: 600; font-size: 16px; margin-bottom: 5px; color: #000000; ' + titleStyle + '">' +
+                        task.title + completedIcon +
+                    '</div>' +
+                    descHtml +
+                    '<div style="color: #999; font-size: 12px; margin-top: 5px;">' +
+                        'Created: ' + createdDate +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+
+    var taskCountText = tasks.length !== 1 ? 's' : '';
+    $("#user-tasks-content").html(
+        '<div style="color: #666; font-size: 14px; margin-bottom: 15px;">' +
+            'Found ' + tasks.length + ' task' + taskCountText + ' for ' + userName +
+        '</div>' +
+        '<div style="max-height: 400px; overflow-y: auto;">' +
+            tasksHtml +
+        '</div>'
+    );
+}
+
+
+// Test users button
+$(document).ready(() => {
+    console.log("UI init loaded, checking for users button...");
+    $("#users-toggle-button").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("Users button clicked!");
+        showUsersOverlay();
+    });
+});
+
+// Test tasks button
+$(document).ready(() => {
+    console.log("UI init loaded, checking for tasks button...");
+    $("#tasks-toggle-button").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("Tasks button clicked!");
+        
+        // Create or show tasks overlay using Zulip's overlay system
+        const $overlay = $("#tasks-overlay");
+        if ($overlay.length === 0) {
+            const overlayHtml = `
+                <div id="tasks-overlay" class="overlay" data-overlay="tasks" style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    z-index: 1000;
+                    display: none;
+                ">
+                    <div class="overlay-content" style="
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: white;
+                        padding: 30px;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                        max-width: 600px;
+                        width: 90%;
+                    ">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0; color: #333;">My Tasks</h2>
+                            <button class="overlay-close" style="
+                                background: none;
+                                border: none;
+                                font-size: 24px;
+                                cursor: pointer;
+                                color: #666;
+                            ">&times;</button>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <input type="text" id="tasks-search" placeholder="Search tasks..." style="
+                                width: 100%;
+                                padding: 12px 14px;
+                                border: 1px solid #ddd;
+                                border-radius: 6px;
+                                font-size: 14px;
+                                box-sizing: border-box;
+                                background: white;
+                                color: black;
+                            ">
+                        </div>
+                        <div id="tasks-content">
+                            <div style="color: #666; text-align: center; padding: 40px 0;">
+                                <p>Loading tasks...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $("body").append(overlayHtml);
+            
+            // Set up overlay handlers
+            const $tasksOverlay = $("#tasks-overlay");
+            $tasksOverlay.find(".overlay-close").on("click", () => {
+                overlays.close_overlay("tasks");
+            });
+            
+            $tasksOverlay.on("click", (e) => {
+                if (e.target.id === "tasks-overlay") {
+                    overlays.close_overlay("tasks");
+                }
+            });
+            
+            // Search functionality
+            $("#tasks-search").on("input", (e) => {
+                const searchTerm = $(e.target).val().toLowerCase();
+                const allTasks = $tasksOverlay.data('allTasks') || [];
+                const filteredTasks = allTasks.filter(task => 
+                    task.title.toLowerCase().includes(searchTerm) ||
+                    (task.description && task.description.toLowerCase().includes(searchTerm))
+                );
+                displayTasks(filteredTasks);
+            });
+        }
+        
+        // If overlay is already open, close it and return
+        if ($("#tasks-overlay").is(":visible")) {
+            overlays.close_overlay("tasks");
+            return;
+        }
+        
+        // Show the overlay first
+        $("#tasks-overlay").show();
+        
+        // Open overlay using Zulip's overlay system
+        overlays.open_overlay({
+            name: "tasks",
+            $overlay: $("#tasks-overlay"),
+            on_close: () => {
+                $("#tasks-overlay").hide();
+            },
+        });
+        
+        // Clear search field and load tasks
+        $("#tasks-search").val('');
+        loadTasks();
+    });
+});
