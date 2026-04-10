@@ -1364,13 +1364,18 @@ function showSimpleTaskForm(userName, userEmail) {
                 return;
             }
             
-            console.log(`Creating task "${title}" for ${userName}`);
-            alert(`Task "${title}" assigned to ${userName}! (Coming soon: actual task creation)`);
-            overlays.close_overlay("simple-task-form");
+            // Get user data from overlay
+            const userData = $("#simple-task-form-overlay").data();
+            const userName = userData.userName;
+            const userEmail = userData.userEmail;
             
-            // Clear form
-            $("#simple-task-title").val("");
-            $("#simple-task-desc").val("");
+            console.log(`Creating task "${title}" for ${userName} (${userEmail})`);
+            
+            // Show loading state
+            $("#simple-assign-btn").prop('disabled', true).text('Assigning...');
+            
+            // Create task with assignee using backend API
+            createTaskForUser(userEmail, title, desc, userName);
         });
         
         // Cancel button handler
@@ -1398,6 +1403,42 @@ function showSimpleTaskForm(userName, userEmail) {
         on_close: () => {
             $("#simple-task-form-overlay").hide();
         },
+    });
+}
+
+// Create task for user function
+function createTaskForUser(userEmail, title, description, userName) {
+    // Use a system message ID for task creation (we'll use message ID 1 as a placeholder)
+    const messageId = 1;
+    
+    const data = {
+        title: title,
+        description: description,
+        assignee: userEmail,
+    };
+    
+    channel.post({
+        url: "/json/messages/" + messageId + "/tasks",
+        data: data,
+        success: function(response) {
+            blueslip.info("Task created successfully", response);
+            overlays.close_overlay("simple-task-form");
+            
+            // Reset form
+            $("#simple-task-title").val("");
+            $("#simple-task-desc").val("");
+            $("#simple-assign-btn").prop('disabled', false).text('Assign');
+            
+            // Show success message
+            alert("Task \"" + title + "\" assigned successfully to " + userName + "!");
+        },
+        error: function(xhr) {
+            console.error("Failed to create task:", xhr);
+            $("#simple-assign-btn").prop('disabled', false).text('Assign');
+            
+            var errorMsg = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : "Failed to assign task. Please try again.";
+            alert("Error: " + errorMsg);
+        }
     });
 }
 
