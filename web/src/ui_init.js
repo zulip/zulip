@@ -1471,49 +1471,28 @@ function createTaskForUser(userEmail, title, description, userName) {
 function showUserTasksOverlay(userName, userEmail) {
     // Create user tasks overlay if it doesn't exist
     if ($("#user-tasks-overlay").length === 0) {
-        const tasksOverlayHtml = `
-            <div id="user-tasks-overlay" class="overlay" data-overlay="user-tasks" style="
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 3000;
-                display: none;
-            ">
-                <div class="overlay-content" style="
-                    position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    background: white;
-                    padding: 25px;
-                    border-radius: 8px;
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-                    max-width: 600px;
-                    width: 90%;
-                    max-height: 70vh;
-                    overflow-y: auto;
-                ">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h3 style="margin: 0; color: #333;">Tasks for ${userName}</h3>
-                        <button class="overlay-close" style="
-                            background: none;
-                            border: none;
-                            font-size: 24px;
-                            cursor: pointer;
-                            color: #666;
-                        ">&times;</button>
-                    </div>
-                    <div id="user-tasks-content">
-                        <div style="color: #666; text-align: center; padding: 40px 0;">
-                            <p>Loading tasks...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
+        const headerText = "Tasks for " + userName;
+        const tasksOverlayHtml = '<div id="user-tasks-overlay" class="overlay" data-overlay="user-tasks" style="' +
+            'position: fixed; top: 0; left: 0; width: 100%; height: 100%; ' +
+            'background: rgba(0, 0, 0, 0.5); z-index: 3000; display: none;">' +
+            '<div class="overlay-content" style="' +
+            'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); ' +
+            'background: white; padding: 25px; border-radius: 8px; ' +
+            'box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); max-width: 600px; ' +
+            'width: 90%; max-height: 70vh; overflow-y: auto;">' +
+            '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">' +
+                '<h3 style="margin: 0; color: #333;">' + headerText + '</h3>' +
+                '<button class="overlay-close" style="' +
+                    'background: none; border: none; font-size: 24px; ' +
+                    'cursor: pointer; color: #666;">&times;</button>' +
+            '</div>' +
+            '<div id="user-tasks-content">' +
+                '<div style="color: #666; text-align: center; padding: 40px 0;">' +
+                    '<p>Loading tasks...</p>' +
+                '</div>' +
+            '</div>' +
+            '</div>' +
+        '</div>';
         $("body").append(tasksOverlayHtml);
         
         // Set up user tasks overlay handlers
@@ -1539,6 +1518,9 @@ function showUserTasksOverlay(userName, userEmail) {
     if (overlays.any_active()) {
         overlays.close_active();
     }
+    
+    // Update the header text with current user
+    $("#user-tasks-overlay").find("h3").text("Tasks for " + userName);
     
     // Show tasks overlay
     $("#user-tasks-overlay").show();
