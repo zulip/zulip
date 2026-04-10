@@ -1613,3 +1613,13 @@ function displayUserTasks(tasks, userName) {
         '</div>'
     );
 }
+
+$(document).ready(() => {
+    console.log("UI init loaded, checking for users button...");
+    $("#users-toggle-button").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("Users button clicked!");
+        showUsersOverlay();
+    });
+});
