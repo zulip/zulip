@@ -286,6 +286,9 @@ export function initialize_custom_date_type_fields(
             );
             const original_value = people.get_custom_profile_data(user_id, field_id)?.value ?? "";
             instance.setDate(original_value);
+            $input_elem
+                .closest(".custom_user_field")
+                .toggleClass("has-date", original_value !== "");
             if (!for_profile_settings_panel) {
                 // Trigger "input" event so that save button state can
                 // be toggled in "Manage user" modal.
@@ -340,6 +343,11 @@ export function initialize_custom_date_type_fields(
         allowInvalidPreload: true,
         onChange(_selected_dates, date_str, instance) {
             update_date(instance, date_str);
+            if (date_str !== "Invalid Date") {
+                $(instance.element)
+                    .closest(".custom_user_field")
+                    .toggleClass("has-date", date_str !== "");
+            }
         },
     });
 
@@ -382,7 +390,22 @@ export function initialize_custom_date_type_fields(
             const $displayed_input = $(this).parent().find(".date-field-alt-input");
             $displayed_input.val("");
             $custom_user_field.val("");
+            $(this).closest(".custom_user_field").removeClass("has-date");
             $custom_user_field.trigger("input");
+        });
+
+    $(element_id)
+        .find<HTMLInputElement>("input.date-field-alt-input")
+        .on("input", function () {
+            const has_value = $(this).val()!.length > 0;
+            $(this).closest(".custom_user_field").toggleClass("has-date", has_value);
+        });
+
+    $(element_id)
+        .find<HTMLInputElement>(".custom_user_field .custom_user_field_value.datepicker")
+        .each(function () {
+            const has_value = $(this).val()!.length > 0;
+            $(this).closest(".custom_user_field").toggleClass("has-date", has_value);
         });
 }
 
