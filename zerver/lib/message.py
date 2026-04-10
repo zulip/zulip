@@ -3,7 +3,7 @@ from collections import defaultdict
 from collections.abc import Callable, Collection, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, TypedDict
+from typing import Any, Literal, TypedDict
 
 from django.conf import settings
 from django.db import connection
@@ -228,6 +228,18 @@ def truncate_topic(topic_name: str) -> str:
     return truncate_content(topic_name, MAX_TOPIC_NAME_LENGTH, TOPIC_TRUNCATION_MESSAGE)
 
 
+# Allowlist of edit-history fields exposed when a realm restricts
+# visibility to message moves. Each field is copied only if present,
+# since visible_edit_history_for_message is called both with
+# FormattedEditHistoryEvent values (from the message edit history
+# endpoint) and with raw EditHistoryEvent values from the database (in
+# the message fetching code path); the latter only has topic/stream
+# when those fields changed in the event.
+ALLOWED_MOVE_KEYS: tuple[
+    Literal["timestamp", "user_id", "topic", "prev_topic", "stream", "prev_stream"], ...
+] = ("timestamp", "user_id", "topic", "prev_topic", "stream", "prev_stream")
+
+
 def visible_edit_history_for_message(
     message_edit_history_visibility_policy: int,
     edit_history: list[FormattedEditHistoryEvent],
@@ -239,14 +251,17 @@ def visible_edit_history_for_message(
 
     visible_edit_history: list[FormattedEditHistoryEvent] = []
     for edit_history_event in edit_history:
-        if "prev_content" in edit_history_event:
-            if "prev_topic" in edit_history_event:
-                del edit_history_event["prev_content"]
-                del edit_history_event["prev_rendered_content"]
-                del edit_history_event["content_html_diff"]
-            else:
-                continue
-        visible_edit_history.append(edit_history_event)
+        if (
+            "prev_content" in edit_history_event
+            and "prev_topic" not in edit_history_event
+            and "prev_stream" not in edit_history_event
+        ):
+            continue
+        entry: FormattedEditHistoryEvent = {}
+        for key in ALLOWED_MOVE_KEYS:
+            if key in edit_history_event:
+                entry[key] = edit_history_event[key]
+        visible_edit_history.append(entry)
 
     return visible_edit_history
 

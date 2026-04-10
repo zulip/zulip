@@ -18,13 +18,14 @@ from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_us
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib import utils
-from zerver.lib.message import messages_for_ids
+from zerver.lib.message import messages_for_ids, visible_edit_history_for_message
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, queries_captured
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
+from zerver.lib.types import FormattedEditHistoryEvent
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Attachment,
@@ -1139,13 +1140,13 @@ class EditMessageTest(ZulipTestCase):
             self.example_user("hamlet"),
             "stream 1",
             topic_name="topic 1",
-            content="content 1",
+            content="CANARY 1",
         )
 
         result_1 = self.client_patch(
             f"/json/messages/{msg_id}",
             {
-                "content": "content 2",
+                "content": "CANARY 2",
             },
         )
         self.assert_json_success(result_1)
@@ -1170,7 +1171,7 @@ class EditMessageTest(ZulipTestCase):
             f"/json/messages/{msg_id}",
             {
                 "topic": "topic 3",
-                "content": "content 3",
+                "content": "CANARY 3",
             },
         )
         self.assert_json_success(result_4)
@@ -1206,29 +1207,27 @@ class EditMessageTest(ZulipTestCase):
         json_response = orjson.loads(result_message_edit_history_moves_only.content)
         message_edit_history_moves_only = json_response["message_history"]
 
+        self.assertNotIn(b"CANARY", result_message_edit_history_moves_only.content)
         for edit_history_entry in message_edit_history_moves_only:
+            self.assertNotIn("content", edit_history_entry)
+            self.assertNotIn("rendered_content", edit_history_entry)
             self.assertNotIn("prev_content", edit_history_entry)
             self.assertNotIn("prev_rendered_content", edit_history_entry)
             self.assertNotIn("content_html_diff", edit_history_entry)
 
         self.assert_length(message_edit_history_moves_only, 5)
-        self.assertEqual(message_edit_history_moves_only[0]["content"], "content 1")
         self.assertEqual(message_edit_history_moves_only[0]["topic"], "topic 1")
 
-        self.assertEqual(message_edit_history_moves_only[1]["content"], "content 2")
         self.assertEqual(message_edit_history_moves_only[1]["topic"], "topic 2")
         self.assertEqual(message_edit_history_moves_only[1]["prev_topic"], "topic 1")
 
-        self.assertEqual(message_edit_history_moves_only[2]["content"], "content 2")
         self.assertEqual(message_edit_history_moves_only[2]["topic"], "topic 2")
         self.assertEqual(message_edit_history_moves_only[2]["stream"], stream_2.id)
         self.assertEqual(message_edit_history_moves_only[2]["prev_stream"], stream_1.id)
 
-        self.assertEqual(message_edit_history_moves_only[3]["content"], "content 3")
         self.assertEqual(message_edit_history_moves_only[3]["topic"], "topic 3")
         self.assertEqual(message_edit_history_moves_only[3]["prev_topic"], "topic 2")
 
-        self.assertEqual(message_edit_history_moves_only[4]["content"], "content 3")
         self.assertEqual(message_edit_history_moves_only[4]["topic"], "topic 4")
         self.assertEqual(message_edit_history_moves_only[4]["prev_topic"], "topic 3")
         self.assertEqual(message_edit_history_moves_only[4]["stream"], stream_3.id)
@@ -1245,32 +1244,92 @@ class EditMessageTest(ZulipTestCase):
         message_edit_history_all = json_response["message_history"]
 
         self.assert_length(message_edit_history_all, 6)
-        self.assertEqual(message_edit_history_all[0]["content"], "content 1")
+        self.assertEqual(message_edit_history_all[0]["content"], "CANARY 1")
         self.assertEqual(message_edit_history_all[0]["topic"], "topic 1")
 
-        self.assertEqual(message_edit_history_all[1]["content"], "content 2")
-        self.assertEqual(message_edit_history_all[1]["prev_content"], "content 1")
+        self.assertEqual(message_edit_history_all[1]["content"], "CANARY 2")
+        self.assertEqual(message_edit_history_all[1]["prev_content"], "CANARY 1")
         self.assertEqual(message_edit_history_all[1]["topic"], "topic 1")
 
-        self.assertEqual(message_edit_history_all[2]["content"], "content 2")
+        self.assertEqual(message_edit_history_all[2]["content"], "CANARY 2")
         self.assertEqual(message_edit_history_all[2]["topic"], "topic 2")
         self.assertEqual(message_edit_history_all[2]["prev_topic"], "topic 1")
 
-        self.assertEqual(message_edit_history_all[3]["content"], "content 2")
+        self.assertEqual(message_edit_history_all[3]["content"], "CANARY 2")
         self.assertEqual(message_edit_history_all[3]["topic"], "topic 2")
         self.assertEqual(message_edit_history_all[3]["stream"], stream_2.id)
         self.assertEqual(message_edit_history_all[3]["prev_stream"], stream_1.id)
 
-        self.assertEqual(message_edit_history_all[4]["content"], "content 3")
-        self.assertEqual(message_edit_history_all[4]["prev_content"], "content 2")
+        self.assertEqual(message_edit_history_all[4]["content"], "CANARY 3")
+        self.assertEqual(message_edit_history_all[4]["prev_content"], "CANARY 2")
         self.assertEqual(message_edit_history_all[4]["topic"], "topic 3")
         self.assertEqual(message_edit_history_all[4]["prev_topic"], "topic 2")
 
-        self.assertEqual(message_edit_history_all[5]["content"], "content 3")
+        self.assertEqual(message_edit_history_all[5]["content"], "CANARY 3")
         self.assertEqual(message_edit_history_all[5]["topic"], "topic 4")
         self.assertEqual(message_edit_history_all[5]["prev_topic"], "topic 3")
         self.assertEqual(message_edit_history_all[5]["stream"], stream_3.id)
         self.assertEqual(message_edit_history_all[5]["prev_stream"], stream_2.id)
+
+    def test_visible_edit_history_with_raw_events(self) -> None:
+        # visible_edit_history_for_message is also called from
+        # messages_for_ids with the raw EditHistoryEvent shape stored
+        # in the database, where topic/user_id/stream are only present
+        # when those fields changed in that event. Verify that each
+        # event shape is handled without KeyError and that no content
+        # fields leak through.
+        moves_policy = MessageEditHistoryVisibilityPolicyEnum.moves.value
+
+        stream_only_move: list[FormattedEditHistoryEvent] = [
+            {"timestamp": 1234, "user_id": 5, "prev_stream": 1, "stream": 2}
+        ]
+        self.assertEqual(
+            visible_edit_history_for_message(moves_policy, stream_only_move),
+            [{"timestamp": 1234, "user_id": 5, "stream": 2, "prev_stream": 1}],
+        )
+
+        topic_only_move: list[FormattedEditHistoryEvent] = [
+            {"timestamp": 1234, "user_id": 5, "prev_topic": "a", "topic": "b"}
+        ]
+        self.assertEqual(
+            visible_edit_history_for_message(moves_policy, topic_only_move),
+            [{"timestamp": 1234, "user_id": 5, "topic": "b", "prev_topic": "a"}],
+        )
+
+        content_only_edit: list[FormattedEditHistoryEvent] = [
+            {
+                "timestamp": 1234,
+                "user_id": 5,
+                "prev_content": "old",
+                "prev_rendered_content": "<p>old</p>",
+            }
+        ]
+        self.assertEqual(visible_edit_history_for_message(moves_policy, content_only_edit), [])
+
+        # Pre-March-2017 events have user_id == None (see EditHistoryEvent).
+        null_user_id: list[FormattedEditHistoryEvent] = [
+            {"timestamp": 1234, "user_id": None, "prev_topic": "a", "topic": "b"}
+        ]
+        self.assertEqual(
+            visible_edit_history_for_message(moves_policy, null_user_id),
+            [{"timestamp": 1234, "user_id": None, "topic": "b", "prev_topic": "a"}],
+        )
+
+        # Combined content+topic edit: content fields must not leak.
+        content_and_topic: list[FormattedEditHistoryEvent] = [
+            {
+                "timestamp": 1234,
+                "user_id": 5,
+                "prev_topic": "a",
+                "topic": "b",
+                "prev_content": "old",
+                "prev_rendered_content": "<p>old</p>",
+            }
+        ]
+        self.assertEqual(
+            visible_edit_history_for_message(moves_policy, content_and_topic),
+            [{"timestamp": 1234, "user_id": 5, "topic": "b", "prev_topic": "a"}],
+        )
 
     def test_edit_message_content_limit(self) -> None:
         def set_message_editing_params(
