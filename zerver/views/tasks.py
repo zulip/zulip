@@ -22,6 +22,7 @@ def create_task(
 
     title = request.POST.get("title")
     description = request.POST.get("description", "")
+    assignee_email = request.POST.get("assignee", "")
 
     if not title:
         return JsonResponse({"error": "Missing title"}, status=400)
@@ -32,11 +33,19 @@ def create_task(
         return JsonResponse({"error": "Invalid message"}, status=404)
 
     user = user_profile
+    assignee = user  # default to current user
+
+    # Handle assignment to different user
+    if assignee_email:
+        try:
+            assignee = UserProfile.objects.get(email=assignee_email)
+        except UserProfile.DoesNotExist:
+            return JsonResponse({"error": f"User {assignee_email} not found"}, status=404)
 
     #create a task and insert into postgresql
     task = Task.objects.create(
         message=message,
-        assignee=user,
+        assignee=assignee,
         creator=user,
         title=title,
         description=description,

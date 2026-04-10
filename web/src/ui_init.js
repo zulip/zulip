@@ -1071,16 +1071,193 @@ window.deleteTask = function(taskId) {
     });
 };
 
+
+// Show users overlay function
+function showUsersOverlay() {
+    // Create users overlay if it doesn't exist
+    if ($("#users-overlay").length === 0) {
+        const usersOverlayHtml = `
+            <div id="users-overlay" class="overlay" data-overlay="users" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 2000;
+                display: none;
+            ">
+                <div class="overlay-content" style="
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: white;
+                    padding: 30px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                    max-width: 500px;
+                    width: 90%;
+                    max-height: 70vh;
+                    overflow-y: auto;
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="margin: 0; color: #333;">Server Users</h2>
+                        <button class="overlay-close" style="
+                            background: none;
+                            border: none;
+                            font-size: 24px;
+                            cursor: pointer;
+                            color: #666;
+                        ">&times;</button>
+                    </div>
+                    <div id="users-content">
+                        <div style="color: #666; text-align: center; padding: 40px 0;">
+                            <p>Loading users...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        $("body").append(usersOverlayHtml);
+        
+        // Set up users overlay handlers
+        const $usersOverlay = $("#users-overlay");
+        $usersOverlay.find(".overlay-close").on("click", () => {
+            overlays.close_overlay("users");
+        });
+        
+        $usersOverlay.on("click", (e) => {
+            if (e.target.id === "users-overlay") {
+                overlays.close_overlay("users");
+            }
+        });
+    }
+    
+    // Show users overlay
+    $("#users-overlay").show();
+    
+    // Open overlay using Zulip's overlay system
+    overlays.open_overlay({
+        name: "users",
+        $overlay: $("#users-overlay"),
+        on_close: () => {
+            $("#users-overlay").hide();
+        },
+    });
+    
+    // Load users
+    loadUsers();
+}
+
+// Load users function
+function loadUsers() {
+    try {
+        // Import people module to get users
+        import("./people.ts").then(people => {
+            const users = people.get_realm_users();
+            displayUsers(users);
+        }).catch(err => {
+            console.error("Failed to load people module:", err);
+            $("#users-content").html(`
+                <div style="color: #d32f2f; text-align: center; padding: 40px 0;">
+                    <p>Failed to load users</p>
+                </div>
+            `);
+        });
+    } catch (err) {
+        console.error("Error loading users:", err);
+        $("#users-content").html(`
+            <div style="color: #d32f2f; text-align: center; padding: 40px 0;">
+                <p>Failed to load users</p>
+            </div>
+        `);
+    }
+}
+
+// Display users function
+function displayUsers(users) {
+    if (users.length === 0) {
+        $("#users-content").html(`
+            <div style="color: #666; text-align: center; padding: 40px 0;">
+                <p>No users found</p>
+            </div>
+        `);
+        return;
+    }
+
+    const usersHtml = users.map(user => `
+        <div style="
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: white;
+        ">
+            <div style="display: flex; align-items: center;">
+                <div style="
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    background: #1976d2;
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: bold;
+                    margin-right: 15px;
+                    font-size: 16px;
+                ">
+                    ${user.full_name.charAt(0).toUpperCase()}
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; font-size: 16px; margin-bottom: 5px;">
+                        ${user.full_name}
+                    </div>
+                    <div style="color: #666; font-size: 14px;">
+                        ${user.email}
+                    </div>
+                    ${user.is_bot ? '<div style="color: #9c27b0; font-size: 12px; margin-top: 5px;">Bot</div>' : ''}
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    $("#users-content").html(`
+        <div style="color: #666; font-size: 14px; margin-bottom: 15px;">
+            Found ${users.length} users
+        </div>
+        <div style="max-height: 400px; overflow-y: auto;">
+            ${usersHtml}
+        </div>
+    `);
+}
+
+
+// Test users button
+$(document).ready(() => {
+    console.log("UI init loaded, checking for users button...");
+    $("#users-toggle-button").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("Users button clicked!");
+        showUsersOverlay();
+    });
+});
+
 // Test tasks button
 $(document).ready(() => {
     console.log("UI init loaded, checking for tasks button...");
-    $("#tasks-toggle-button").on("click", () => {
+    $("#tasks-toggle-button").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         console.log("Tasks button clicked!");
         
-        // Create simple tasks overlay if it doesn't exist
-        if ($("#tasks-overlay").length === 0) {
+        // Create or show tasks overlay using Zulip's overlay system
+        const $overlay = $("#tasks-overlay");
+        if ($overlay.length === 0) {
             const overlayHtml = `
-                <div id="tasks-overlay" style="
+                <div id="tasks-overlay" class="overlay" data-overlay="tasks" style="
                     position: fixed;
                     top: 0;
                     left: 0;
@@ -1090,7 +1267,7 @@ $(document).ready(() => {
                     z-index: 1000;
                     display: none;
                 ">
-                    <div style="
+                    <div class="overlay-content" style="
                         position: absolute;
                         top: 50%;
                         left: 50%;
@@ -1104,7 +1281,7 @@ $(document).ready(() => {
                     ">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                             <h2 style="margin: 0; color: #333;">My Tasks</h2>
-                            <button id="close-tasks" style="
+                            <button class="overlay-close" style="
                                 background: none;
                                 border: none;
                                 font-size: 24px;
@@ -1134,22 +1311,22 @@ $(document).ready(() => {
             `;
             $("body").append(overlayHtml);
             
-            // Close button handler
-            $("#close-tasks").on("click", () => {
-                $("#tasks-overlay").hide();
+            // Set up overlay handlers
+            const $tasksOverlay = $("#tasks-overlay");
+            $tasksOverlay.find(".overlay-close").on("click", () => {
+                overlays.close_overlay("tasks");
             });
             
-            // Close on background click
-            $("#tasks-overlay").on("click", (e) => {
+            $tasksOverlay.on("click", (e) => {
                 if (e.target.id === "tasks-overlay") {
-                    $("#tasks-overlay").hide();
+                    overlays.close_overlay("tasks");
                 }
             });
             
             // Search functionality
             $("#tasks-search").on("input", (e) => {
                 const searchTerm = $(e.target).val().toLowerCase();
-                const allTasks = $("#tasks-overlay").data('allTasks') || [];
+                const allTasks = $tasksOverlay.data('allTasks') || [];
                 const filteredTasks = allTasks.filter(task => 
                     task.title.toLowerCase().includes(searchTerm) ||
                     (task.description && task.description.toLowerCase().includes(searchTerm))
@@ -1158,8 +1335,23 @@ $(document).ready(() => {
             });
         }
         
-        // Show the overlay
+        // If overlay is already open, close it and return
+        if ($("#tasks-overlay").is(":visible")) {
+            overlays.close_overlay("tasks");
+            return;
+        }
+        
+        // Show the overlay first
         $("#tasks-overlay").show();
+        
+        // Open overlay using Zulip's overlay system
+        overlays.open_overlay({
+            name: "tasks",
+            $overlay: $("#tasks-overlay"),
+            on_close: () => {
+                $("#tasks-overlay").hide();
+            },
+        });
         
         // Clear search field and load tasks
         $("#tasks-search").val('');
