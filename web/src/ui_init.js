@@ -1219,6 +1219,18 @@ function displayUsers(users) {
                     </div>
                     ${user.is_bot ? '<div style="color: #9c27b0; font-size: 12px; margin-top: 5px;">Bot</div>' : ''}
                 </div>
+                ${!user.is_bot ? `
+                <button class="assign-task-btn" data-user-email="${user.email}" data-user-name="${user.full_name}" style="
+                    background: #28a745;
+                    color: white;
+                    border: none;
+                    padding: 6px 12px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                    margin-left: 10px;
+                ">Assign Task</button>
+                ` : ''}
             </div>
         </div>
     `).join('');
@@ -1231,6 +1243,162 @@ function displayUsers(users) {
             ${usersHtml}
         </div>
     `);
+    
+    // Add click handlers for Assign Task buttons
+    $(".assign-task-btn").on("click", (e) => {
+        const userEmail = $(e.target).attr("data-user-email");
+        const userName = $(e.target).attr("data-user-name");
+        console.log(`Assign Task clicked for: ${userName} (${userEmail})`);
+        showSimpleTaskForm(userName, userEmail);
+    });
+}
+
+// Show simple task form function
+function showSimpleTaskForm(userName, userEmail) {
+    // Create simple task form overlay if it doesn't exist
+    if ($("#simple-task-form-overlay").length === 0) {
+        const formOverlayHtml = `
+            <div id="simple-task-form-overlay" class="overlay" data-overlay="simple-task-form" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 3000;
+                display: none;
+            ">
+                <div class="overlay-content" style="
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: white;
+                    padding: 25px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                    max-width: 400px;
+                    width: 90%;
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; color: #333;">Assign Task</h3>
+                        <button class="overlay-close" style="
+                            background: none;
+                            border: none;
+                            font-size: 24px;
+                            cursor: pointer;
+                            color: #666;
+                        ">&times;</button>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <div style="color: #666; font-size: 14px; margin-bottom: 15px;">
+                            Assign to: <strong>${userName} (${userEmail})</strong>
+                        </div>
+                        <input type="text" id="simple-task-title" placeholder="Task title..." style="
+                            width: 100%;
+                            padding: 10px;
+                            border: 1px solid #ddd;
+                            border-radius: 6px;
+                            font-size: 14px;
+                            box-sizing: border-box;
+                            margin-bottom: 15px;
+                        ">
+                        <textarea id="simple-task-desc" placeholder="Description (optional)..." style="
+                            width: 100%;
+                            padding: 10px;
+                            border: 1px solid #ddd;
+                            border-radius: 6px;
+                            font-size: 14px;
+                            box-sizing: border-box;
+                            resize: vertical;
+                            min-height: 80px;
+                            margin-bottom: 15px;
+                        "></textarea>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="simple-assign-btn" style="
+                            background: #28a745;
+                            color: white;
+                            border: none;
+                            padding: 8px 16px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 14px;
+                            flex: 1;
+                        ">Assign</button>
+                        <button id="simple-cancel-btn" style="
+                            background: #6c757d;
+                            color: white;
+                            border: none;
+                            padding: 8px 16px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 14px;
+                            flex: 1;
+                        ">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        $("body").append(formOverlayHtml);
+        
+        // Set up simple form handlers
+        const $formOverlay = $("#simple-task-form-overlay");
+        $formOverlay.find(".overlay-close").on("click", () => {
+            overlays.close_overlay("simple-task-form");
+        });
+        
+        $formOverlay.on("click", (e) => {
+            if (e.target.id === "simple-task-form-overlay") {
+                overlays.close_overlay("simple-task-form");
+            }
+        });
+        
+        // Assign button handler
+        $("#simple-assign-btn").on("click", () => {
+            const title = $("#simple-task-title").val().trim();
+            const desc = $("#simple-task-desc").val().trim();
+            
+            if (!title) {
+                alert("Please enter a task title.");
+                return;
+            }
+            
+            console.log(`Creating task "${title}" for ${userName}`);
+            alert(`Task "${title}" assigned to ${userName}! (Coming soon: actual task creation)`);
+            overlays.close_overlay("simple-task-form");
+            
+            // Clear form
+            $("#simple-task-title").val("");
+            $("#simple-task-desc").val("");
+        });
+        
+        // Cancel button handler
+        $("#simple-cancel-btn").on("click", () => {
+            overlays.close_overlay("simple-task-form");
+        });
+    }
+    
+    // Store user data for the form
+    $("#simple-task-form-overlay").data({
+        userName: userName,
+        userEmail: userEmail
+    });
+    
+    // Close users overlay first
+    overlays.close_overlay("users");
+    
+    // Show form overlay
+    $("#simple-task-form-overlay").show();
+    
+    // Open overlay using Zulip's overlay system
+    overlays.open_overlay({
+        name: "simple-task-form",
+        $overlay: $("#simple-task-form-overlay"),
+        on_close: () => {
+            $("#simple-task-form-overlay").hide();
+        },
+    });
 }
 
 
