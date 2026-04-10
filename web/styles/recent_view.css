@@ -34,7 +34,6 @@
     border-bottom-width: var(--recent-view-table-border-bottom-width);
     border-radius: 0 0 var(--recent-view-table-border-radius)
         var(--recent-view-table-border-radius);
-    overflow: hidden;
 }
 
 #recent_view {
@@ -444,6 +443,22 @@
             background-color: var(--color-background-recent-view-row);
         }
 
+        /* Round the last row's bottom corners to hug the
+           container's rounded bottom corners. */
+        &:last-child {
+            & td:first-child {
+                border-bottom-left-radius: var(
+                    --recent-view-table-inner-radius
+                );
+            }
+
+            & td:last-child {
+                border-bottom-right-radius: var(
+                    --recent-view-table-inner-radius
+                );
+            }
+        }
+
         /* Avoid annoying, confusing hover-state when scrolling on
            touch devices like iPad that treat a tap-and-hold/swipe
            as a hover. */
@@ -821,6 +836,15 @@
             .recent_topic_timestamp,
             thead .last_msg_time_header {
                 display: none;
+            }
+
+            /* With the timestamp cell hidden, the topic name cell
+               is the last visible one in the row, so round its
+               bottom-right corner too. */
+            tr:last-child .recent_topic_name {
+                border-bottom-right-radius: var(
+                    --recent-view-table-inner-radius
+                );
             }
         }
 
