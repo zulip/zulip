@@ -1729,7 +1729,7 @@ label.preferences-radio-choice-label {
             resize: vertical;
         }
 
-        &:hover .remove_date {
+        &.has-date:hover .remove_date {
             display: inline-flex;
         }
 
