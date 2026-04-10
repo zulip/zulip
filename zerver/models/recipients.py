@@ -127,7 +127,7 @@ class DirectMessageGroup(models.Model):
     # varchar_pattern_ops index; see Meta, below.
     huddle_hash = models.CharField(max_length=40)
     # Foreign key to the Recipient object for this DirectMessageGroup.
-    recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
+    recipient = models.OneToOneField(Recipient, null=True, on_delete=models.SET_NULL)
 
     group_size = models.IntegerField()
 
