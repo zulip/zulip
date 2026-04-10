@@ -1,6 +1,7 @@
 # https://zulip.readthedocs.io/en/latest/subsystems/email.html#testing-in-a-real-email-client
 import configparser
 import logging
+import smtplib
 from collections.abc import Sequence
 from email.message import Message
 from typing import Any
@@ -16,11 +17,18 @@ from typing_extensions import override
 
 MAX_CONNECTION_TRIES = 3
 
+# SMTPException is a subclass of OSError, so retry on connection-level
+# errors (ConnectionError, TimeoutError) and SMTPServerDisconnected
+# (dropped connection), but not on SMTP protocol errors like
+# SMTPAuthenticationError, SMTPRecipientsRefused, or SMTPDataError.
 smtp_connection_backoff = backoff.on_exception(
     backoff.expo,
     OSError,
     max_tries=MAX_CONNECTION_TRIES,
     logger=None,
+    giveup=lambda e: (
+        isinstance(e, smtplib.SMTPException) and not isinstance(e, smtplib.SMTPServerDisconnected)
+    ),
 )
 
 

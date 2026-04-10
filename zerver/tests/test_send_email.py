@@ -1,5 +1,11 @@
 from datetime import timedelta
-from smtplib import SMTP, SMTPDataError, SMTPException, SMTPRecipientsRefused
+from smtplib import (
+    SMTP,
+    SMTPDataError,
+    SMTPException,
+    SMTPRecipientsRefused,
+    SMTPServerDisconnected,
+)
 from unittest import mock
 
 import time_machine
@@ -11,6 +17,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.send_email import (
     EmailNotDeliveredError,
     FromAddress,
+    _send_messages,
     build_email,
     logger,
     send_email,
@@ -131,6 +138,40 @@ class TestSendEmail(ZulipTestCase):
                 backend.ensure_connected()
             # 3 calls to open as we try 3 times before giving up
             self.assertEqual(open_call.call_count, 3)
+
+    def test_send_messages_backoff(self) -> None:
+        """_send_messages retries on connection-level errors but not
+        on SMTP protocol errors."""
+        connection = mock.MagicMock()
+
+        # ConnectionError: retries 3 times then raises
+        connection.send_messages.side_effect = ConnectionError
+        with self.assertRaises(ConnectionError):
+            _send_messages(connection, [])
+        self.assertEqual(connection.send_messages.call_count, 3)
+        connection.reset_mock()
+
+        # SMTPServerDisconnected: retries (it's a dropped connection)
+        connection.send_messages.side_effect = SMTPServerDisconnected
+        with self.assertRaises(SMTPServerDisconnected):
+            _send_messages(connection, [])
+        self.assertEqual(connection.send_messages.call_count, 3)
+        connection.reset_mock()
+
+        # SMTPRecipientsRefused: no retry (protocol error)
+        connection.send_messages.side_effect = SMTPRecipientsRefused(
+            recipients={"a@b.com": (550, b"Unknown")}
+        )
+        with self.assertRaises(SMTPRecipientsRefused):
+            _send_messages(connection, [])
+        self.assertEqual(connection.send_messages.call_count, 1)
+        connection.reset_mock()
+
+        # SMTPDataError: no retry (protocol error)
+        connection.send_messages.side_effect = SMTPDataError(550, b"Rejected")
+        with self.assertRaises(SMTPDataError):
+            _send_messages(connection, [])
+        self.assertEqual(connection.send_messages.call_count, 1)
 
     def test_send_immediate_email_backoff_only_without_connection(self) -> None:
         """send_immediate_email uses backoff when it creates the
@@ -343,19 +384,15 @@ class TestSendEmail(ZulipTestCase):
         )
         self.assertEqual(mail.extra_headers["From"], f"{from_name} <{FromAddress.NOREPLY}>")
 
-        # We test the cases that should raise an EmailNotDeliveredError.
-        # Exception side_effects need 3 entries because
-        # smtp_connection_backoff retries OSError (which SMTPException
-        # is a subclass of) up to 3 times before giving up.
+        # We test the cases that should raise an EmailNotDeliveredError
         errors = {
             f"Unknown error sending password_reset email to {mail.to}": [0],
-            f"Error sending password_reset email to {mail.to}": [SMTPException() for _ in range(3)],
+            f"Error sending password_reset email to {mail.to}": [SMTPException()],
             f"Error sending password_reset email to {mail.to}: {{'{address}': (550, b'User unknown')}}": [
                 SMTPRecipientsRefused(recipients={address: (550, b"User unknown")})
-                for _ in range(3)
             ],
             f"Error sending password_reset email to {mail.to} with error code 242: From field too long": [
-                SMTPDataError(242, "From field too long.") for _ in range(3)
+                SMTPDataError(242, "From field too long.")
             ],
         }
 
