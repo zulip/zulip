@@ -390,7 +390,11 @@ export function initialize(): void {
         },
     });
 
-    message_list_tooltip(".media-image-element", {
+    // Disable tooltip in compose box and message edit preview. Scrolling over a
+    // large image caused the tooltip to go out of its container and made it look
+    // like it was floating in the app. Since the tooltip was not that useful for
+    // this case, we chose to remove it instead.
+    message_list_tooltip(".media-image-element:not(.preview_content *)", {
         // Add a short delay so the user can mouseover several inline images without
         // tooltips showing and hiding rapidly
         delay: [300, 20],
