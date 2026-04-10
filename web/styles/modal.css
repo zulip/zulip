@@ -135,7 +135,7 @@
 }
 
 .modal__subtitle {
-    margin-top: 0.25em; /* 4px at 16px/1em */
+    margin-top: 0.875em; /* 14px at 16px/1em */
     line-height: 1.25; /* 20px at 16px/1em */
 }
 
