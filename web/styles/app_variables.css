@@ -1163,6 +1163,18 @@
     --recent-view-participants-padding-x-start: 0.25em; /* 4px at 16px / 1em */
     --recent-view-table-border-radius: 5px;
     --recent-view-table-border-bottom-width: 1px;
+    /* Inner radius used on the last row's corner cells, so they
+       hug the container's rounded bottom corners. Derived from
+       the outer radius minus the border widths, which lets it
+       track dark mode's wider side border. */
+    --recent-view-table-inner-radius: calc(
+            var(--recent-view-table-border-radius) -
+                var(--recent-view-table-border-side-width)
+        )
+        calc(
+            var(--recent-view-table-border-radius) -
+                var(--recent-view-table-border-bottom-width)
+        );
     --color-border-recent-view-row: light-dark(
         hsl(0deg 0% 87%),
         hsl(0deg 0% 0% / 20%)
