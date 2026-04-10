@@ -123,10 +123,10 @@ class PersistentSMTPEmailBackend(EmailBackend):
         # auto-close the connection after sending.
         return False
 
-    def validate_or_reconnect(self) -> None:
+    def _validate_or_reconnect(self) -> None:
         """Validate that the existing SMTP connection is still alive,
-        reconnecting if necessary. Called from initialize_connection
-        with backoff protection, not from open()."""
+        reconnecting if necessary. Called with backoff protection,
+        not from open()."""
         status = None
         time_elapsed = (timezone_now() - self.opened_at).total_seconds() / 60
         if (

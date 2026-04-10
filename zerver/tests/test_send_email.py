@@ -89,7 +89,7 @@ class TestSendEmail(ZulipTestCase):
             mock.patch.object(backend, "open", wraps=backend.open) as open_call,
             mock.patch.object(backend, "close", wraps=backend.close) as close_call,
         ):
-            # Noop raises an exception — validate_or_reconnect closes
+            # Noop raises an exception — _validate_or_reconnect closes
             # and reopens. open() is called twice: once from
             # initialize_connection, once from the reconnect path.
             backend.connection = mock.MagicMock(spec=SMTP)
@@ -113,7 +113,7 @@ class TestSendEmail(ZulipTestCase):
             close_call.reset_mock()
             open_call.reset_mock()
 
-            # Noop returns 404 — validate_or_reconnect closes and reopens.
+            # Noop returns 404 — _validate_or_reconnect closes and reopens.
             backend.connection.noop.return_value = [404]
             with mock.patch(
                 "django.core.mail.backends.smtp.EmailBackend.open", side_effect=[False, True]

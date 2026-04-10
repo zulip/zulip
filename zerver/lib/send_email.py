@@ -410,7 +410,7 @@ def initialize_connection(connection: BaseEmailBackend | None = None) -> BaseEma
 
     connection.open()
     if isinstance(connection, PersistentSMTPEmailBackend):
-        connection.validate_or_reconnect()
+        connection._validate_or_reconnect()
     return connection
 
 
