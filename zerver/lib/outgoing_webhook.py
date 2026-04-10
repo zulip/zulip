@@ -105,6 +105,42 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
 
 class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
+    @staticmethod
+    def parse_bot_mention(message_content: str, bot_name: str) -> tuple[str | None, str]:
+        """
+        Parse a bot mention from the beginning of a message.
+
+        Returns (command, text) where:
+        - command is the slash command (e.g., "/mybot") if a mention was found, else None
+        - text is the message content with the mention stripped
+
+        Supports Zulip mention formats:
+        - @**bot name**
+        - @*bot name*
+        - @bot (single word, no spaces)
+        """
+        import re
+
+        # Try to match Zulip mention formats at the start of the message
+        # Format: @**bot name** or @*bot name* or @bot
+        mention_patterns = [
+            rf'^@\*\*{re.escape(bot_name)}\*\*\s*',  # @**bot name**
+            rf'^@\*{re.escape(bot_name)}\*\s*',      # @*bot name*
+            rf'^@{re.escape(bot_name)}\s*',          # @bot (no special formatting)
+        ]
+
+        for pattern in mention_patterns:
+            match = re.match(pattern, message_content)
+            if match:
+                # Extract text after the mention
+                text = message_content[match.end():].strip()
+                # Convert bot name to slash command format
+                command = f"/{bot_name}"
+                return command, text
+
+        # No mention found at start
+        return None, message_content
+
     @override
     def make_request(self, base_url: str, event: dict[str, Any], realm: Realm) -> Response | None:
         if event["message"]["type"] == "private":
@@ -127,6 +163,9 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         # text=googlebot: What is the air-speed velocity of an unladen swallow?
         # trigger_word=googlebot:
 
+        # Parse bot mention to separate command and text for Slack compatibility
+        command, text = self.parse_bot_mention(event["command"], self.user_profile.full_name)
+
         request_data = [
             ("token", self.token),
             ("team_id", f"T{realm.id}"),
@@ -137,10 +176,15 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
             ("timestamp", event["message"]["timestamp"]),
             ("user_id", f"U{event['message']['sender_id']}"),
             ("user_name", event["message"]["sender_full_name"]),
-            ("text", event["command"]),
+            ("text", text),
             ("trigger_word", event["trigger"]),
             ("service_id", event["user_profile_id"]),
         ]
+
+        # Add command field if a bot mention was parsed
+        if command is not None:
+            request_data.append(("command", command))
+
         return self.session.post(base_url, data=request_data)
 
     @override
