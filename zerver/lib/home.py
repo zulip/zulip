@@ -105,6 +105,7 @@ def build_page_params_for_home_page_load(
         archived_channels=True,
         empty_topic_name=True,
         simplified_presence_events=True,
+        individual_emoji_changes=True,
     )
 
     if user_profile is not None:

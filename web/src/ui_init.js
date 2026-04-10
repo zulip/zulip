@@ -821,6 +821,7 @@ $(() => {
                 stream_typing_notifications: false,
                 user_settings_object: true,
                 empty_topic_name: true,
+                individual_emoji_changes: true,
             }),
             client_gravatar: false,
         };

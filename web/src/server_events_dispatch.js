@@ -518,12 +518,21 @@ export function dispatch_normal_event(event) {
             break;
 
         case "realm_emoji":
-            // The authoritative data source is here.
-            emoji.update_emojis(event.realm_emoji);
-
-            // And then let other widgets know.
-            settings_emoji.populate_emoji();
-            emoji_picker.rebuild_catalog();
+            switch (event.op) {
+                case "add":
+                    emoji.update_emojis(event.emoji);
+                    settings_emoji.populate_emoji();
+                    emoji_picker.rebuild_catalog();
+                    break;
+                case "update_one":
+                    emoji.update_one_emoji(event.emoji_id, event.data);
+                    settings_emoji.populate_emoji();
+                    emoji_picker.rebuild_catalog();
+                    break;
+                default:
+                    blueslip.error("Unexpected event type realm_emoji/" + event.op);
+                    break;
+            }
             break;
 
         case "realm_export":
