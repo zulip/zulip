@@ -5,6 +5,7 @@ from collections.abc import Sequence
 from email.message import Message
 from typing import Any
 
+import backoff
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.core.mail.backends.smtp import EmailBackend
@@ -12,6 +13,15 @@ from django.core.mail.message import EmailAlternative, EmailMessage
 from django.template import loader
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
+
+MAX_CONNECTION_TRIES = 3
+
+smtp_connection_backoff = backoff.on_exception(
+    backoff.expo,
+    OSError,
+    max_tries=MAX_CONNECTION_TRIES,
+    logger=None,
+)
 
 
 def get_forward_address() -> str:
@@ -122,6 +132,13 @@ class PersistentSMTPEmailBackend(EmailBackend):
         # Always return False so that Django's send_messages does not
         # auto-close the connection after sending.
         return False
+
+    @smtp_connection_backoff
+    def ensure_connected(self) -> None:
+        """Open the connection if needed, and validate that it is
+        still alive, reconnecting if necessary."""
+        self.open()
+        self._validate_or_reconnect()
 
     def _validate_or_reconnect(self) -> None:
         """Validate that the existing SMTP connection is still alive,

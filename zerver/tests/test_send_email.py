@@ -12,11 +12,12 @@ from zerver.lib.send_email import (
     EmailNotDeliveredError,
     FromAddress,
     build_email,
-    initialize_connection,
     logger,
     send_email,
+    send_immediate_email,
 )
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.worker.email_senders import ImmediateEmailSenderWorker
 from zproject.email_backends import PersistentSMTPEmailBackend
 
 
@@ -75,14 +76,13 @@ class TestBuildEmail(ZulipTestCase):
 
 class TestSendEmail(ZulipTestCase):
     @override_settings(
-        EMAIL_BACKEND="zproject.email_backends.PersistentSMTPEmailBackend",
         EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES=5,
     )
     @time_machine.travel(timezone_now(), tick=False)
-    def test_connection_reuse_noop(self) -> None:
+    def test_ensure_connected_noop_validation(self) -> None:
+        backend = PersistentSMTPEmailBackend()
         with mock.patch.object(EmailBackend, "open", return_value=True):
-            backend = initialize_connection(None)
-            assert isinstance(backend, PersistentSMTPEmailBackend)
+            backend.ensure_connected()
             self.assertEqual(backend.opened_at, timezone_now())
 
         with (
@@ -91,13 +91,13 @@ class TestSendEmail(ZulipTestCase):
         ):
             # Noop raises an exception — _validate_or_reconnect closes
             # and reopens. open() is called twice: once from
-            # initialize_connection, once from the reconnect path.
+            # ensure_connected, once from the reconnect path.
             backend.connection = mock.MagicMock(spec=SMTP)
             backend.connection.noop.side_effect = AssertionError
             with mock.patch(
                 "django.core.mail.backends.smtp.EmailBackend.open", side_effect=[False, True]
             ):
-                initialize_connection(backend)
+                backend.ensure_connected()
             self.assertEqual(open_call.call_count, 2)
             self.assertEqual(close_call.call_count, 0)
             close_call.reset_mock()
@@ -106,7 +106,7 @@ class TestSendEmail(ZulipTestCase):
             # Noop succeeds — no reconnect needed.
             backend.connection = mock.MagicMock(spec=SMTP)
             backend.connection.noop.return_value = [250]
-            initialize_connection(backend)
+            backend.ensure_connected()
 
             self.assertEqual(open_call.call_count, 1)
             self.assertEqual(backend.connection.noop.call_count, 1)
@@ -118,7 +118,7 @@ class TestSendEmail(ZulipTestCase):
             with mock.patch(
                 "django.core.mail.backends.smtp.EmailBackend.open", side_effect=[False, True]
             ):
-                initialize_connection(backend)
+                backend.ensure_connected()
 
             self.assertEqual(open_call.call_count, 2)
             self.assertEqual(close_call.call_count, 0)
@@ -128,9 +128,86 @@ class TestSendEmail(ZulipTestCase):
             # Test backoff procedure
             open_call.side_effect = OSError
             with self.assertRaises(OSError):
-                initialize_connection(backend)
+                backend.ensure_connected()
             # 3 calls to open as we try 3 times before giving up
             self.assertEqual(open_call.call_count, 3)
+
+    def test_send_immediate_email_backoff_only_without_connection(self) -> None:
+        """send_immediate_email uses backoff when it creates the
+        connection (no caller-provided one), but sends directly
+        when a connection is provided."""
+        hamlet = self.example_user("hamlet")
+
+        # Without a connection: _send_messages is called (with backoff)
+        with (
+            mock.patch("zerver.lib.send_email._send_messages", return_value=1) as patched,
+            mock.patch.object(EmailBackend, "send_messages", return_value=1) as direct,
+        ):
+            send_immediate_email(
+                "zerver/emails/password_reset",
+                to_emails=[hamlet.email],
+                from_name="Test",
+                from_address=FromAddress.NOREPLY,
+                language="en",
+            )
+            self.assertEqual(patched.call_count, 1)
+            self.assertEqual(direct.call_count, 0)
+
+        # With a connection: send_messages is called directly (no backoff)
+        connection = mock.MagicMock()
+        connection.send_messages.return_value = 1
+        with mock.patch("zerver.lib.send_email._send_messages") as patched:
+            send_immediate_email(
+                "zerver/emails/password_reset",
+                to_emails=[hamlet.email],
+                from_name="Test",
+                from_address=FromAddress.NOREPLY,
+                language="en",
+                connection=connection,
+            )
+            self.assertEqual(patched.call_count, 0)
+            self.assertEqual(connection.send_messages.call_count, 1)
+
+    @override_settings(
+        EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend",
+        EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES=0,
+    )
+    def test_worker_no_persistent_connection(self) -> None:
+        """With EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES=0, the worker
+        does not hold a persistent SMTP connection, so connections
+        are not left open between sends."""
+        worker = ImmediateEmailSenderWorker()
+        self.assertIsNone(worker.connection)
+
+    @override_settings(
+        EMAIL_BACKEND="zproject.email_backends.PersistentSMTPEmailBackend",
+        EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES=5,
+    )
+    def test_worker_persistent_connection(self) -> None:
+        """With EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES > 0, the
+        worker holds a PersistentSMTPEmailBackend and calls
+        ensure_connected() before each send."""
+        hamlet = self.example_user("hamlet")
+        worker = ImmediateEmailSenderWorker()
+        self.assertIsInstance(worker.connection, PersistentSMTPEmailBackend)
+
+        event = {
+            "template_prefix": "zerver/emails/password_reset",
+            "to_emails": [hamlet.email],
+            "from_name": "Test",
+            "from_address": FromAddress.NOREPLY,
+            "language": "en",
+            "context": {},
+        }
+        with (
+            mock.patch.object(worker.connection, "ensure_connected") as mock_ensure,
+            mock.patch("zerver.worker.email_senders_base.send_immediate_email") as mock_send,
+        ):
+            worker.send_email(event)
+            mock_ensure.assert_called_once()
+            mock_send.assert_called_once()
+            # Verify the persistent connection was passed through
+            self.assertIs(mock_send.call_args[1]["connection"], worker.connection)
 
     @time_machine.travel(timezone_now(), tick=False)
     @override_settings(EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES=None)
@@ -157,14 +234,11 @@ class TestSendEmail(ZulipTestCase):
                 timezone_now() + timedelta(minutes=10),
                 tick=False,
             ):
-                initialize_connection(backend)
+                backend.ensure_connected()
             self.assertEqual(close_call.call_count, 0)
-            # open is called once from initialize_connection; no reconnect.
+            # open is called once from ensure_connected; no reconnect.
             self.assertEqual(open_call.call_count, 1)
             self.assertEqual(backend.connection.noop.call_count, 1)
-            close_call.reset_mock()
-            open_call.reset_mock()
-            backend.connection.noop.reset_mock()
 
     @time_machine.travel(timezone_now(), tick=False)
     @override_settings(EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES=5)
@@ -189,10 +263,10 @@ class TestSendEmail(ZulipTestCase):
                 timezone_now() + timedelta(minutes=3),
                 tick=False,
             ):
-                initialize_connection(backend)
+                backend.ensure_connected()
 
             self.assertEqual(close_call.call_count, 0)
-            # open is called once from initialize_connection; no reconnect.
+            # open is called once from ensure_connected; no reconnect.
             self.assertEqual(open_call.call_count, 1)
             self.assertEqual(backend.connection.noop.call_count, 1)
             close_call.reset_mock()
@@ -210,7 +284,7 @@ class TestSendEmail(ZulipTestCase):
                 with mock.patch(
                     "django.core.mail.backends.smtp.EmailBackend.open", side_effect=[False, True]
                 ):
-                    initialize_connection(backend)
+                    backend.ensure_connected()
                 self.assertEqual(backend.opened_at, timezone_now())
 
             self.assertEqual(close_call.call_count, 0)
@@ -231,7 +305,7 @@ class TestSendEmail(ZulipTestCase):
                 with mock.patch(
                     "django.core.mail.backends.smtp.EmailBackend.open", side_effect=[False, True]
                 ):
-                    initialize_connection(backend)
+                    backend.ensure_connected()
                 self.assertEqual(backend.opened_at, timezone_now())
 
             # Noop should not have been attempted on the old connection.
@@ -269,15 +343,19 @@ class TestSendEmail(ZulipTestCase):
         )
         self.assertEqual(mail.extra_headers["From"], f"{from_name} <{FromAddress.NOREPLY}>")
 
-        # We test the cases that should raise an EmailNotDeliveredError
+        # We test the cases that should raise an EmailNotDeliveredError.
+        # Exception side_effects need 3 entries because
+        # smtp_connection_backoff retries OSError (which SMTPException
+        # is a subclass of) up to 3 times before giving up.
         errors = {
             f"Unknown error sending password_reset email to {mail.to}": [0],
-            f"Error sending password_reset email to {mail.to}": [SMTPException()],
+            f"Error sending password_reset email to {mail.to}": [SMTPException() for _ in range(3)],
             f"Error sending password_reset email to {mail.to}: {{'{address}': (550, b'User unknown')}}": [
                 SMTPRecipientsRefused(recipients={address: (550, b"User unknown")})
+                for _ in range(3)
             ],
             f"Error sending password_reset email to {mail.to} with error code 242: From field too long": [
-                SMTPDataError(242, "From field too long.")
+                SMTPDataError(242, "From field too long.") for _ in range(3)
             ],
         }
 

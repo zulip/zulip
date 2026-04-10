@@ -15,7 +15,6 @@ from email.utils import formatdate as email_formatdate
 from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-import backoff
 import css_inline
 import orjson
 from bs4 import BeautifulSoup
@@ -40,11 +39,10 @@ from zerver.models import Realm, RealmAuditLog, ScheduledEmail, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.scheduled_jobs import EMAIL_TYPES
 from zerver.models.users import get_user_profile_by_id
+from zproject.email_backends import smtp_connection_backoff
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteZulipServer
-
-MAX_CONNECTION_TRIES = 3
 
 ## Logging setup ##
 
@@ -263,6 +261,11 @@ class NoEmailArgumentError(CommandError):
         super().__init__(msg)
 
 
+@smtp_connection_backoff
+def _send_messages(connection: BaseEmailBackend, messages: list[EmailMultiAlternatives]) -> int:
+    return connection.send_messages(messages)
+
+
 # When changing the arguments to this function, you may need to write a
 # migration to change or remove any emails in ScheduledEmail.
 def send_immediate_email(
@@ -305,8 +308,10 @@ def send_immediate_email(
         print(mail.message().get_payload()[0])
         return
 
-    if connection is None:
+    owns_connection = connection is None
+    if owns_connection:
         connection = get_connection()
+    assert connection is not None
 
     cause = ""
     if request is not None:
@@ -322,7 +327,15 @@ def send_immediate_email(
     logger.info("Sending %s email to %s%s", template, logging_recipient, cause)
 
     try:
-        if connection.send_messages([mail]) == 0:
+        # When we created the connection (no caller-provided one),
+        # retry with backoff on transient connection failures.
+        # Caller-provided connections (e.g. PersistentSMTPEmailBackend)
+        # manage their own lifecycle via ensure_connected().
+        if owns_connection:
+            result = _send_messages(connection, [mail])
+        else:
+            result = connection.send_messages([mail])
+        if result == 0:
             logger.error("Unknown error sending %s email to %s", template, mail.to)
             connection.close()
             raise EmailNotDeliveredError
@@ -398,20 +411,6 @@ def send_email(
             request,
             remove_suppressed_destination=remove_suppressed_destination,
         )
-
-
-@backoff.on_exception(backoff.expo, OSError, max_tries=MAX_CONNECTION_TRIES, logger=None)
-def initialize_connection(connection: BaseEmailBackend | None = None) -> BaseEmailBackend:
-    from zproject.email_backends import PersistentSMTPEmailBackend
-
-    if not connection:
-        connection = get_connection()
-        assert connection is not None
-
-    connection.open()
-    if isinstance(connection, PersistentSMTPEmailBackend):
-        connection._validate_or_reconnect()
-    return connection
 
 
 def send_future_email(

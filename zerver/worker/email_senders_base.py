@@ -5,18 +5,18 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any
 
-from django.core.mail.backends.base import BaseEmailBackend
+from django.core.mail import get_connection
 from typing_extensions import override
 
 from zerver.lib.queue import retry_event
 from zerver.lib.send_email import (
     EmailNotDeliveredError,
     handle_send_email_format_changes,
-    initialize_connection,
     send_immediate_email,
 )
 from zerver.models import Realm
 from zerver.worker.base import ConcreteQueueWorker, LoopQueueProcessingWorker
+from zproject.email_backends import PersistentSMTPEmailBackend
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,11 @@ class EmailSendingWorker(LoopQueueProcessingWorker):
         worker_num: int | None = None,
     ) -> None:
         super().__init__(threaded, disable_timeout, worker_num)
-        self.connection: BaseEmailBackend | None = None
+        connection = get_connection()
+        if isinstance(connection, PersistentSMTPEmailBackend):
+            self.connection: PersistentSMTPEmailBackend | None = connection
+        else:
+            self.connection = None
 
     @retry_send_email_failures
     def send_email(self, event: dict[str, Any]) -> None:
@@ -68,8 +72,11 @@ class EmailSendingWorker(LoopQueueProcessingWorker):
             if copied_event.get("realm_id") is not None:
                 copied_event["realm"] = Realm.objects.get(id=copied_event["realm_id"])
             del copied_event["realm_id"]
-        self.connection = initialize_connection(self.connection)
-        send_immediate_email(**copied_event, connection=self.connection)
+        if self.connection is not None:
+            self.connection.ensure_connected()
+            send_immediate_email(**copied_event, connection=self.connection)
+        else:
+            send_immediate_email(**copied_event)
 
     @override
     def consume_batch(self, events: list[dict[str, Any]]) -> None:
