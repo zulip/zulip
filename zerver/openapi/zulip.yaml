@@ -13196,6 +13196,8 @@ paths:
                   $ref: "#/components/schemas/MessageRetentionDays"
                 topics_policy:
                   $ref: "#/components/schemas/TopicsPolicy"
+                message_content_allowed_in_email_notifications:
+                  $ref: "#/components/schemas/MessageContentAllowedInEmailNotifications"
                 can_add_subscribers_group:
                   $ref: "#/components/schemas/ChannelCanAddSubscribersGroup"
                 can_remove_subscribers_group:
@@ -13248,6 +13250,8 @@ paths:
               history_public_to_subscribers:
                 contentType: application/json
               topics_policy:
+                contentType: application/json
+              message_content_allowed_in_email_notifications:
                 contentType: application/json
               can_add_subscribers_group:
                 contentType: application/json
@@ -18999,6 +19003,8 @@ paths:
                                   nullable: true
                                 history_public_to_subscribers: {}
                                 topics_policy: {}
+                                message_content_allowed_in_email_notifications:
+                                  {}
                                 first_message_id:
                                   nullable: true
                                 folder_id:
@@ -24058,6 +24064,8 @@ paths:
                                   nullable: true
                                 history_public_to_subscribers: {}
                                 topics_policy: {}
+                                message_content_allowed_in_email_notifications:
+                                  {}
                                 first_message_id:
                                   nullable: true
                                 folder_id:
@@ -24412,6 +24420,8 @@ paths:
                   example: 1
                 topics_policy:
                   $ref: "#/components/schemas/TopicsPolicy"
+                message_content_allowed_in_email_notifications:
+                  $ref: "#/components/schemas/MessageContentAllowedInEmailNotifications"
                 can_add_subscribers_group:
                   allOf:
                     - description: |
@@ -25288,6 +25298,8 @@ paths:
                   example: 1
                 topics_policy:
                   $ref: "#/components/schemas/TopicsPolicy"
+                message_content_allowed_in_email_notifications:
+                  $ref: "#/components/schemas/MessageContentAllowedInEmailNotifications"
                 history_public_to_subscribers:
                   $ref: "#/components/schemas/HistoryPublicToSubscribers"
                 message_retention_days:
@@ -25351,6 +25363,8 @@ paths:
               folder_id:
                 contentType: application/json
               topics_policy:
+                contentType: application/json
+              message_content_allowed_in_email_notifications:
                 contentType: application/json
       responses:
         "200":
@@ -27252,6 +27266,7 @@ components:
               nullable: true
             history_public_to_subscribers: {}
             topics_policy: {}
+            message_content_allowed_in_email_notifications: {}
             first_message_id:
               nullable: true
             folder_id:
@@ -27425,6 +27440,8 @@ components:
             assumption, as we may change that behavior in the future.
         topics_policy:
           $ref: "#/components/schemas/TopicsPolicy"
+        message_content_allowed_in_email_notifications:
+          $ref: "#/components/schemas/MessageContentAllowedInEmailNotifications"
         first_message_id:
           type: integer
           nullable: true
@@ -28574,6 +28591,8 @@ components:
           $ref: "#/components/schemas/FolderId"
         topics_policy:
           $ref: "#/components/schemas/TopicsPolicy"
+        message_content_allowed_in_email_notifications:
+          $ref: "#/components/schemas/MessageContentAllowedInEmailNotifications"
         is_recently_active:
           type: boolean
           description: |
@@ -30643,6 +30662,15 @@ components:
         New in Zulip 11.0 (feature level 392).
 
         [realm-topics-policy]: /help/require-topics#set-the-default-general-chat-topic-configuration
+    MessageContentAllowedInEmailNotifications:
+      type: boolean
+      example: true
+      description: |
+        Whether notification emails for messages in this channel are
+        allowed to contain Zulip the message content, or simply indicate
+        that a new message was sent.
+
+        **Changes**: New in Zulip 13.0 (feature level ZF-e7a20b).
     SendNewSubscriptionMessages:
       description: |
         Whether any other users newly subscribed via this request should be

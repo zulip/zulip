@@ -196,6 +196,7 @@ class RawStreamDict(TypedDict):
     stream_post_policy: int
     subscriber_count: int
     topics_policy: str
+    message_content_allowed_in_email_notifications: bool
 
 
 class RawSubscriptionDict(TypedDict):
@@ -263,6 +264,7 @@ class SubscriptionStreamDict(TypedDict):
     partial_subscribers: NotRequired[list[int]]
     topics_policy: str
     wildcard_mentions_notify: bool | None
+    message_content_allowed_in_email_notifications: bool
 
 
 class NeverSubscribedStreamDict(TypedDict):
@@ -298,6 +300,7 @@ class NeverSubscribedStreamDict(TypedDict):
     subscribers: NotRequired[list[int]]
     partial_subscribers: NotRequired[list[int]]
     topics_policy: str
+    message_content_allowed_in_email_notifications: bool
 
 
 class DefaultStreamDict(TypedDict):
@@ -334,6 +337,7 @@ class DefaultStreamDict(TypedDict):
     stream_post_policy: int
     subscriber_count: int
     topics_policy: str
+    message_content_allowed_in_email_notifications: bool
     # Computed fields not specified in `Stream.API_FIELDS`
     is_announcement_only: bool
     is_default: NotRequired[bool]

@@ -313,6 +313,7 @@ def update_stream_backend(
     new_name: str | None = None,
     stream_id: PathOnly[int],
     topics_policy: TopicsPolicy = None,
+    message_content_allowed_in_email_notifications: Json[bool] | None = None,
 ) -> HttpResponse:
     # Most settings updates only require metadata access, not content
     # access. We will check for content access further when and where
@@ -398,6 +399,14 @@ def update_stream_backend(
     validated_topics_policy = validate_topics_policy(topics_policy, user_profile, stream)
     if validated_topics_policy is not None:
         do_set_stream_property(stream, "topics_policy", validated_topics_policy.value, user_profile)
+
+    if message_content_allowed_in_email_notifications is not None:
+        do_set_stream_property(
+            stream,
+            "message_content_allowed_in_email_notifications",
+            message_content_allowed_in_email_notifications,
+            user_profile,
+        )
 
     system_groups_name_dict = get_role_based_system_groups_dict(user_profile.realm)
     if not proposed_history_public_to_subscribers and can_create_topic_group is None:
@@ -701,6 +710,7 @@ def create_channel(
     name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)],
     subscribers: Json[list[int]],
     topics_policy: Json[TopicsPolicy] = None,
+    message_content_allowed_in_email_notifications: Json[bool] = True,
 ) -> HttpResponse:
     realm = user_profile.realm
     request_settings_dict = locals()
@@ -769,6 +779,7 @@ def create_channel(
         can_resolve_topics_group=group_settings_map["can_resolve_topics_group"],
         folder=folder,
         topics_policy=topics_policy_value,
+        message_content_allowed_in_email_notifications=message_content_allowed_in_email_notifications,
     )
 
     if is_default_stream:
@@ -834,6 +845,7 @@ def add_subscriptions_backend(
     send_new_subscription_messages: Json[bool] = True,
     streams_raw: Annotated[Json[list[AddSubscriptionData]], ApiParamConfig("subscriptions")],
     topics_policy: Json[TopicsPolicy] = None,
+    message_content_allowed_in_email_notifications: Json[bool] = True,
 ) -> HttpResponse:
     realm = user_profile.realm
     stream_dicts = []
@@ -870,6 +882,9 @@ def add_subscriptions_backend(
         if validated_topics_policy is not None:
             stream_dict_copy["topics_policy"] = validated_topics_policy.value
         stream_dict_copy["folder"] = folder
+        stream_dict_copy["message_content_allowed_in_email_notifications"] = (
+            message_content_allowed_in_email_notifications
+        )
 
         stream_dicts.append(stream_dict_copy)
 

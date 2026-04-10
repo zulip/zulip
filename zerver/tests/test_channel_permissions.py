@@ -929,6 +929,9 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
             self.do_test_updating_channel(
                 stream, "topics_policy", StreamTopicsPolicyEnum.allow_empty_topic.value
             )
+            self.do_test_updating_channel(
+                stream, "message_content_allowed_in_email_notifications", False
+            )
             self.do_test_updating_channel(stream, "deactivated", True)
 
             do_deactivate_stream(stream, acting_user=None)

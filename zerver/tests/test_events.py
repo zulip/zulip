@@ -5301,6 +5301,15 @@ class SubscribeActionTest(BaseAction):
             )
         check_stream_update("events[0]", events[0])
 
+        with self.verify_action(include_subscribers=include_subscribers, num_events=1) as events:
+            do_set_stream_property(
+                stream,
+                "message_content_allowed_in_email_notifications",
+                False,
+                self.example_user("hamlet"),
+            )
+        check_stream_update("events[0]", events[0])
+
         for setting_name in Stream.stream_permission_group_settings:
             self.do_test_subscribe_events_for_stream_permission_group_setting(
                 setting_name, stream, iago, include_subscribers
