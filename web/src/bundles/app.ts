@@ -11,7 +11,7 @@ import "../reload.ts";
 import "../templates.ts";
 import "../zulip_test.ts";
 import "../inputs.ts";
-// import "../tasks_view.ts";
+import "../tasks_view.ts";
 
 // Import styles
 import "tippy.js/dist/tippy.css";
