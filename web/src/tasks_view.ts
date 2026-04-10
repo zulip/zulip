@@ -15,6 +15,8 @@ type Task = {
     creator_email: string;
     creator_full_name: string;
     message_id: number;
+    stream_id: number | null;
+    topic: string | null;
 };
 
 export class TasksView {
@@ -38,7 +40,7 @@ export class TasksView {
                 this.render_modal();
             },
             error: (xhr: JQuery.jqXHR) => {
-                blueslip.error("Failed to load tasks", xhr);
+                blueslip.error("Failed to load tasks", {status: xhr.status, responseText: xhr.responseText});
                 this.loading = false;
                 this.render_modal();
             },
@@ -103,7 +105,7 @@ export class TasksView {
                 this.render_modal();
             },
             error: (xhr: JQuery.jqXHR) => {
-                blueslip.error("Failed to update task", xhr);
+                blueslip.error("Failed to update task", {status: xhr.status, responseText: xhr.responseText});
             },
         });
     }
@@ -120,7 +122,7 @@ export class TasksView {
                 this.render_modal();
             },
             error: (xhr: JQuery.jqXHR) => {
-                blueslip.error("Failed to delete task", xhr);
+                blueslip.error("Failed to delete task", {status: xhr.status, responseText: xhr.responseText});
             },
         });
     }
@@ -180,6 +182,15 @@ export class TasksView {
         const checked_attr = task.completed ? "checked" : "";
         const due_date_str = task.due_date ? new Date(task.due_date).toLocaleDateString() : null;
         const created_date_str = new Date(task.created_at).toLocaleDateString();
+
+        // Generate proper message link
+        let message_link = "#";
+        if (task.stream_id && task.topic) {
+            message_link = `#narrow/channel/${task.stream_id}/${encodeURIComponent(task.topic)}/near/${task.message_id}`;
+        } else if (task.message_id) {
+            // Fallback for DM messages or if stream info is missing
+            message_link = `#narrow/dm/near/${task.message_id}`;
+        }
 
         return `
             <div class="task-item ${completed_class}" data-task-id="${task.task_id}" style="display: flex; align-items: flex-start; gap: 12px; padding: 16px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 12px; background: #fafafa;">

@@ -21,6 +21,7 @@ def create_task(
 ) -> HttpResponse:
 
     title = request.POST.get("title")
+    description = request.POST.get("description", "")
 
     if not title:
         return JsonResponse({"error": "Missing title"}, status=400)
@@ -38,11 +39,13 @@ def create_task(
         assignee=user,
         creator=user,
         title=title,
+        description=description,
     )
 
     return JsonResponse({
         "task_id": task.id,
         "title": task.title,
+        "description": task.description,
         "completed": task.completed,
     })
 
@@ -57,12 +60,22 @@ def list_my_tasks(
     
     task_data = []
     for task in tasks:
+        message = task.message
+        # Get stream and topic info for navigation
+        stream_id = None
+        topic = None
+        if message.type == "stream":
+            stream_id = message.recipient.type_id
+            topic = message.subject
+        
         task_data.append({
             "task_id": task.id,
             "title": task.title,
             "completed": task.completed,
             "due_date": task.due_date.isoformat() if task.due_date else None,
             "message_id": task.message.id,
+            "stream_id": stream_id,
+            "topic": topic,
             "creator_email": task.creator.email,
             "created_at": task.created_at.isoformat(),
         })
