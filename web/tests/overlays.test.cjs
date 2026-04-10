@@ -55,4 +55,3 @@ run_test("settings overlay does not close on backdrop click when select is open"
     overlays.close_overlay("settings");
     assert.equal(overlay_closed, true);
 });
-
