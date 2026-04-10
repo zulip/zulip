@@ -198,6 +198,20 @@ export function initialize(): void {
 
         const target_name = $target.attr("data-overlay")!;
 
+        // When a native <select> dropdown is open inside the settings overlay,
+        // the browser can retarget the click event to the overlay backdrop.
+        // Avoid treating that click as an "outside click" that closes settings.
+        if (target_name === "settings" && $target.is("div.overlay")) {
+            const active_element = document.activeElement;
+            if (
+                active_element !== null &&
+                $(active_element).is("select") &&
+                $(active_element).closest("#settings_overlay_container").length === 1
+            ) {
+                return;
+            }
+        }
+
         close_overlay(target_name);
 
         e.preventDefault();
