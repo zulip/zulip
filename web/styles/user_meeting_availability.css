@@ -1,0 +1,93 @@
+/* Availability grid */
+.availability-grid-inner {
+  overflow-x: auto;
+  user-select: none;
+}
+
+.availability-header-row,
+.availability-row {
+  display: flex;
+  align-items: center;
+}
+
+.availability-time-label-empty,
+.availability-time-label {
+  width: 80px;
+  flex-shrink: 0;
+  font-size: 0.8em;
+  color: var(--color-text-default);
+  padding-right: 8px;
+  text-align: right;
+}
+
+.availability-col-header {
+  flex: 1;
+  text-align: center;
+  font-size: 0.85em;
+  font-weight: 600;
+  padding: 4px 2px;
+  color: var(--color-text-default);
+}
+
+.availability-cell {
+  flex: 1;
+  height: 14px;
+  margin: 1px;
+  border-radius: 2px;
+  cursor: pointer;
+  background-color: hsl(0deg 0% 30%);
+  transition: background-color 0.1s;
+}
+
+.availability-modal-header {
+  margin-bottom: 8px;
+}
+
+.availability-modal-title {
+  font-weight: 600;
+  font-size: 1em;
+  margin-bottom: 4px;
+}
+
+.availability-timezone-row {
+  font-size: 0.8em;
+  opacity: 0.7;
+  margin-bottom: 8px;
+}
+
+.availability-cell:hover {
+  opacity: 0.8;
+}
+
+.availability-cell-selected {
+  background-color: hsl(145deg 60% 40%) !important;
+}
+
+/* Heat map intensities based on how many people are free */
+.availability-intensity-0 {
+  background-color: hsl(0deg 0% 25%);
+}
+.availability-intensity-1 {
+  background-color: hsl(145deg 40% 25%);
+}
+.availability-intensity-2 {
+  background-color: hsl(145deg 50% 33%);
+}
+.availability-intensity-3 {
+  background-color: hsl(145deg 60% 40%);
+}
+.availability-intensity-4 {
+  background-color: hsl(145deg 70% 48%);
+}
+
+.availability-grid-wrapper {
+  padding: 8px 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.availability-instructions {
+  font-size: 0.9em;
+  color: var(--color-text-default);
+  margin-bottom: 8px;
+}

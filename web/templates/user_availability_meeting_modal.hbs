@@ -1,0 +1,18 @@
+<div id="availability-submission-modal">
+    <form class="modal-form" id="availability-submission-form">
+        <div class="availability-modal-header">
+            <div class="availability-modal-title">{{t "Add Available Times" }}</div>
+            <div class="availability-timezone-row">
+                <span class="availability-timezone-label">{{t "Timezone: " }}</span>
+                <span id="availability-timezone-name"></span>
+            </div>
+        </div>
+        <div class="input-group">
+            <div class="availability-grid-wrapper">
+                <div id="availability-grid" class="availability-grid">
+                    {{!-- Grid is rendered dynamically by meeting_availability_submission_ui.ts --}}
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
