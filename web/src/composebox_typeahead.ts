@@ -17,6 +17,7 @@ import type {EmojiDict} from "./emoji.ts";
 import * as flatpickr from "./flatpickr.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as linkifiers from "./linkifiers.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import * as muted_users from "./muted_users.ts";
@@ -932,6 +933,24 @@ const ALLOWED_MARKDOWN_FEATURES = {
     timestamp: true,
 };
 
+function query_matches_linkifier_pattern(text: string): boolean {
+    for (const pattern of linkifiers.get_linkifier_map().keys()) {
+        const matches = pattern.test(text);
+        pattern.lastIndex = 0;
+        if (matches) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// When the typed text matches a linkifier pattern, require at least
+// 3 characters before showing typeahead suggestions to avoid
+// distracting typeahead when typing linkifier patterns.
+function should_suppress_typeahead_for_linkifier(token: string, query: string): boolean {
+    return token.length < 3 && query_matches_linkifier_pattern(query);
+}
+
 export function get_candidates(
     query: string,
     input_element: TypeaheadInputElement,
@@ -1013,6 +1032,11 @@ export function get_candidates(
         }
         completing = "emoji";
         token = current_token.slice(1);
+
+        if (should_suppress_typeahead_for_linkifier(token, query)) {
+            return [];
+        }
+
         const candidate_list: EmojiSuggestion[] = emoji_collection.map((emoji_dict) => ({
             ...emoji_dict,
             type: "emoji",
@@ -1037,6 +1061,11 @@ export function get_candidates(
             completing = null;
             return [];
         }
+
+        if (should_suppress_typeahead_for_linkifier(filtered_current_token, query)) {
+            return [];
+        }
+
         token = filtered_current_token;
 
         const opts = get_stream_topic_data(input_element);
@@ -1201,6 +1230,10 @@ export function get_candidates(
 
         // Don't autocomplete if there is a space following a '#'
         if (current_token.startsWith(" ")) {
+            return [];
+        }
+
+        if (should_suppress_typeahead_for_linkifier(current_token, query)) {
             return [];
         }
 
