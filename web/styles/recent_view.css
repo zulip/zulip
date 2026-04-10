@@ -435,18 +435,25 @@
     }
 
     & tr {
-        background-color: var(--color-background-recent-view-row);
+        /* Put background on the cells, not tr. Border radius does not work
+           on tr, it works only on td. We want to set the border radius of
+           the last row in accordance to the border radius of the table so
+           that we don't need to use overflow hidden to keep the background
+           from spilling out. */
+        & td {
+            background-color: var(--color-background-recent-view-row);
+        }
 
         /* Avoid annoying, confusing hover-state when scrolling on
            touch devices like iPad that treat a tap-and-hold/swipe
            as a hover. */
         @media (hover: hover) and (pointer: fine) {
-            &:hover {
+            &:hover td {
                 background-color: var(--color-background-recent-view-row-hover);
+            }
 
-                .change_visibility_policy .recent-view-row-topic-menu {
-                    opacity: 0.4;
-                }
+            &:hover .change_visibility_policy .recent-view-row-topic-menu {
+                opacity: 0.4;
             }
         }
     }
@@ -459,7 +466,9 @@
     }
 
     .unread_topic {
-        background-color: var(--color-background-recent-view-unread-row);
+        & td {
+            background-color: var(--color-background-recent-view-unread-row);
+        }
 
         & a {
             color: var(--color-recent-view-link-unread);
@@ -470,7 +479,7 @@
            touch devices like iPad that treat a tap-and-hold/swipe
            as a hover. */
         @media (hover: hover) and (pointer: fine) {
-            &:hover {
+            &:hover td {
                 background-color: var(
                     --color-background-recent-view-unread-row-hover
                 );
