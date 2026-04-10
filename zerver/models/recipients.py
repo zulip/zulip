@@ -123,7 +123,9 @@ class DirectMessageGroup(models.Model):
     corresponding DirectMessageGroup object.
     """
 
-    huddle_hash = models.CharField(max_length=40, db_index=True, unique=True)
+    # We omit db_index and unique, as that also results in a useless
+    # varchar_pattern_ops index; see Meta, below.
+    huddle_hash = models.CharField(max_length=40)
     # Foreign key to the Recipient object for this DirectMessageGroup.
     recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
 
@@ -134,6 +136,9 @@ class DirectMessageGroup(models.Model):
     # it needs to be renamed to "zerver_directmessagegroup".
     class Meta:
         db_table = "zerver_huddle"
+        constraints = [
+            models.UniqueConstraint(fields=["huddle_hash"], name="zerver_huddle_huddle_hash_key")
+        ]
 
 
 def get_direct_message_group_hash(id_list: list[int]) -> str:
