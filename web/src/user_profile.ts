@@ -1155,7 +1155,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
 
 function get_human_profile_data(fields_user_pills: Map<number, user_pill.UserPillWidget>): {
     id: number;
-    value: number[];
+    value: string | number[];
 }[] {
     /*
         This formats custom profile field data to send to the server.
