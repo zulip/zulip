@@ -1220,16 +1220,26 @@ function displayUsers(users) {
                     ${user.is_bot ? '<div style="color: #9c27b0; font-size: 12px; margin-top: 5px;">Bot</div>' : ''}
                 </div>
                 ${!user.is_bot ? `
-                <button class="assign-task-btn" data-user-email="${user.email}" data-user-name="${user.full_name}" style="
-                    background: #28a745;
-                    color: white;
-                    border: none;
-                    padding: 6px 12px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 12px;
-                    margin-left: 10px;
-                ">Assign Task</button>
+                <div style="display: flex; gap: 5px; margin-left: 10px;">
+                    <button class="assign-task-btn" data-user-email="${user.email}" data-user-name="${user.full_name}" style="
+                        background: #28a745;
+                        color: white;
+                        border: none;
+                        padding: 6px 12px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 12px;
+                    ">Assign Task</button>
+                    <button class="view-tasks-btn" data-user-email="${user.email}" data-user-name="${user.full_name}" style="
+                        background: #17a2b8;
+                        color: white;
+                        border: none;
+                        padding: 6px 12px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 12px;
+                    ">View Tasks</button>
+                </div>
                 ` : ''}
             </div>
         </div>
@@ -1250,6 +1260,14 @@ function displayUsers(users) {
         const userName = $(e.target).attr("data-user-name");
         console.log(`Assign Task clicked for: ${userName} (${userEmail})`);
         showSimpleTaskForm(userName, userEmail);
+    });
+    
+    // Add click handlers for View Tasks buttons
+    $(".view-tasks-btn").on("click", (e) => {
+        const userEmail = $(e.target).attr("data-user-email");
+        const userName = $(e.target).attr("data-user-name");
+        console.log(`View Tasks clicked for: ${userName} (${userEmail})`);
+        showUserTasksOverlay(userName, userEmail);
     });
 }
 
@@ -1440,6 +1458,163 @@ function createTaskForUser(userEmail, title, description, userName) {
             alert("Error: " + errorMsg);
         }
     });
+}
+
+// Show user tasks overlay function
+function showUserTasksOverlay(userName, userEmail) {
+    // Create user tasks overlay if it doesn't exist
+    if ($("#user-tasks-overlay").length === 0) {
+        const tasksOverlayHtml = `
+            <div id="user-tasks-overlay" class="overlay" data-overlay="user-tasks" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 3000;
+                display: none;
+            ">
+                <div class="overlay-content" style="
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: white;
+                    padding: 25px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                    max-width: 600px;
+                    width: 90%;
+                    max-height: 70vh;
+                    overflow-y: auto;
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; color: #333;">Tasks for ${userName}</h3>
+                        <button class="overlay-close" style="
+                            background: none;
+                            border: none;
+                            font-size: 24px;
+                            cursor: pointer;
+                            color: #666;
+                        ">&times;</button>
+                    </div>
+                    <div id="user-tasks-content">
+                        <div style="color: #666; text-align: center; padding: 40px 0;">
+                            <p>Loading tasks...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        $("body").append(tasksOverlayHtml);
+        
+        // Set up user tasks overlay handlers
+        const $tasksOverlay = $("#user-tasks-overlay");
+        $tasksOverlay.find(".overlay-close").on("click", () => {
+            overlays.close_overlay("user-tasks");
+        });
+        
+        $tasksOverlay.on("click", (e) => {
+            if (e.target.id === "user-tasks-overlay") {
+                overlays.close_overlay("user-tasks");
+            }
+        });
+    }
+    
+    // Store user data for the overlay
+    $("#user-tasks-overlay").data({
+        userName: userName,
+        userEmail: userEmail
+    });
+    
+    // Close users overlay first
+    overlays.close_overlay("users");
+    
+    // Show tasks overlay
+    $("#user-tasks-overlay").show();
+    
+    // Open overlay using Zulip's overlay system
+    overlays.open_overlay({
+        name: "user-tasks",
+        $overlay: $("#user-tasks-overlay"),
+        on_close: () => {
+            $("#user-tasks-overlay").hide();
+        },
+    });
+    
+    // Load tasks for this user
+    loadTasksForUser(userEmail, userName);
+}
+
+// Load tasks for user function
+function loadTasksForUser(userEmail, userName) {
+    channel.get({
+        url: "/json/tasks",
+        data: { assignee: userEmail },
+        success: function(response) {
+            displayUserTasks(response.tasks, userName);
+        },
+        error: function(xhr) {
+            console.error("Failed to load tasks:", xhr);
+            $("#user-tasks-content").html(
+                '<div style="color: #d32f2f; text-align: center; padding: 40px 0;">' +
+                    '<p>Failed to load tasks for ' + userName + '</p>' +
+                '</div>'
+            );
+        }
+    });
+}
+
+// Display user tasks function
+function displayUserTasks(tasks, userName) {
+    if (!tasks || tasks.length === 0) {
+        $("#user-tasks-content").html(
+            '<div style="color: #666; text-align: center; padding: 40px 0;">' +
+                '<p>No tasks assigned to ' + userName + '</p>' +
+            '</div>'
+        );
+        return;
+    }
+
+    var tasksHtml = tasks.map(function(task) {
+        var completedClass = task.completed ? "completed-task" : "";
+        var completedIcon = task.completed ? " (Completed)" : "";
+        var taskDesc = task.description ? " - " + task.description : "";
+        var taskBg = task.completed ? '#f5f5f5' : 'white';
+        var statusBg = task.completed ? '#28a745' : '#ffc107';
+        var statusText = task.completed ? '!' : 'o';
+        var titleStyle = task.completed ? 'text-decoration: line-through;' : '';
+        var descHtml = task.description ? '<div style="color: #666; font-size: 14px;">' + task.description + '</div>' : '';
+        var createdDate = new Date(task.created_at).toLocaleDateString();
+        
+        return '<div style="border: 1px solid #ddd; border-radius: 6px; padding: 15px; margin-bottom: 10px; background: ' + taskBg + ';">' +
+            '<div style="display: flex; align-items: center;">' +
+                '<div style="width: 20px; height: 20px; border-radius: 50%; background: ' + statusBg + '; color: white; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 12px;">' +
+                    statusText +
+                '</div>' +
+                '<div style="flex: 1;">' +
+                    '<div style="font-weight: 600; font-size: 16px; margin-bottom: 5px; ' + titleStyle + '">' +
+                        task.title + completedIcon +
+                    '</div>' +
+                    descHtml +
+                    '<div style="color: #999; font-size: 12px; margin-top: 5px;">' +
+                        'Created: ' + createdDate +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+
+    var taskCountText = tasks.length !== 1 ? 's' : '';
+    $("#user-tasks-content").html(
+        '<div style="color: #666; font-size: 14px; margin-bottom: 15px;">' +
+            'Found ' + tasks.length + ' task' + taskCountText + ' for ' + userName +
+        '</div>' +
+        '<div style="max-height: 400px; overflow-y: auto;">' +
+            tasksHtml +
+        '</div>'
+    );
 }
 
 
