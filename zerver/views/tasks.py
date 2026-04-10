@@ -59,13 +59,27 @@ def create_task(
     })
 
 @require_GET
-@typed_endpoint_without_parameters
+@typed_endpoint
 def list_my_tasks(
     request: HttpRequest,
     user_profile: UserProfile,
+    *,
+    assignee: str = "",
 ) -> HttpResponse:
-    """Get tasks assigned to current user"""
-    tasks = Task.objects.filter(assignee=user_profile).select_related('message', 'creator')
+    """Get tasks assigned to current user or specified assignee"""
+    if assignee:
+        # Get tasks for specified assignee
+        try:
+            target_user = UserProfile.objects.get(email=assignee)
+        except UserProfile.DoesNotExist:
+            return JsonResponse({"error": f"User {assignee} not found"}, status=404)
+        
+        # For now, allow any user to view tasks for any user (can add permissions later)
+            
+        tasks = Task.objects.filter(assignee=target_user).select_related('message', 'creator')
+    else:
+        # Get tasks for current user (original behavior)
+        tasks = Task.objects.filter(assignee=user_profile).select_related('message', 'creator')
     
     task_data = []
     for task in tasks:

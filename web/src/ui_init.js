@@ -1440,15 +1440,22 @@ function createTaskForUser(userEmail, title, description, userName) {
         data: data,
         success: function(response) {
             blueslip.info("Task created successfully", response);
-            overlays.close_overlay("simple-task-form");
+            
+            // Get user data from the form
+            const userData = $("#simple-task-form-overlay").data();
+            const userName = userData.userName;
+            const userEmail = userData.userEmail;
             
             // Reset form
             $("#simple-task-title").val("");
             $("#simple-task-desc").val("");
             $("#simple-assign-btn").prop('disabled', false).text('Assign');
             
-            // Show success message
-            alert("Task \"" + title + "\" assigned successfully to " + userName + "!");
+            // Close assign form and show user's tasks
+            overlays.close_overlay("simple-task-form");
+            
+            // Show user tasks (this function already handles closing users overlay)
+            showUserTasksOverlay(userName, userEmail);
         },
         error: function(xhr) {
             console.error("Failed to create task:", xhr);
@@ -1528,8 +1535,10 @@ function showUserTasksOverlay(userName, userEmail) {
         userEmail: userEmail
     });
     
-    // Close users overlay first
-    overlays.close_overlay("users");
+    // Close any active overlay first
+    if (overlays.any_active()) {
+        overlays.close_active();
+    }
     
     // Show tasks overlay
     $("#user-tasks-overlay").show();
@@ -1549,17 +1558,23 @@ function showUserTasksOverlay(userName, userEmail) {
 
 // Load tasks for user function
 function loadTasksForUser(userEmail, userName) {
+    console.log("Loading tasks for:", userEmail, userName);
     channel.get({
-        url: "/json/tasks",
+        url: "/json/users/me/tasks",
         data: { assignee: userEmail },
         success: function(response) {
+            console.log("API response:", response);
             displayUserTasks(response.tasks, userName);
         },
         error: function(xhr) {
             console.error("Failed to load tasks:", xhr);
+            console.error("Status:", xhr.status);
+            console.error("Response text:", xhr.responseText);
             $("#user-tasks-content").html(
                 '<div style="color: #d32f2f; text-align: center; padding: 40px 0;">' +
                     '<p>Failed to load tasks for ' + userName + '</p>' +
+                    '<p style="font-size: 12px;">Status: ' + xhr.status + '</p>' +
+                    '<p style="font-size: 12px;">Response: ' + xhr.responseText + '</p>' +
                 '</div>'
             );
         }
@@ -1585,7 +1600,7 @@ function displayUserTasks(tasks, userName) {
         var statusBg = task.completed ? '#28a745' : '#ffc107';
         var statusText = task.completed ? '!' : 'o';
         var titleStyle = task.completed ? 'text-decoration: line-through;' : '';
-        var descHtml = task.description ? '<div style="color: #666; font-size: 14px;">' + task.description + '</div>' : '';
+        var descHtml = task.description ? '<div style="color: #000000; font-size: 14px;">' + task.description + '</div>' : '';
         var createdDate = new Date(task.created_at).toLocaleDateString();
         
         return '<div style="border: 1px solid #ddd; border-radius: 6px; padding: 15px; margin-bottom: 10px; background: ' + taskBg + ';">' +
@@ -1594,7 +1609,7 @@ function displayUserTasks(tasks, userName) {
                     statusText +
                 '</div>' +
                 '<div style="flex: 1;">' +
-                    '<div style="font-weight: 600; font-size: 16px; margin-bottom: 5px; ' + titleStyle + '">' +
+                    '<div style="font-weight: 600; font-size: 16px; margin-bottom: 5px; color: #000000; ' + titleStyle + '">' +
                         task.title + completedIcon +
                     '</div>' +
                     descHtml +
