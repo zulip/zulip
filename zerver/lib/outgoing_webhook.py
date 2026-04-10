@@ -104,6 +104,15 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
         return None
 
 
+def _slack_command_and_text(content: str, bot_full_name: str) -> list[tuple[str, str]]:
+    mention = f"@**{bot_full_name}**"
+    if content.startswith(mention):
+        text = content[len(mention) :].strip()
+        command = "/" + bot_full_name.replace(" ", "_").lower()
+        return [("command", command), ("text", text)]
+    return [("text", content)]
+
+
 class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
     @override
     def make_request(self, base_url: str, event: dict[str, Any], realm: Realm) -> Response | None:
@@ -137,7 +146,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
             ("timestamp", event["message"]["timestamp"]),
             ("user_id", f"U{event['message']['sender_id']}"),
             ("user_name", event["message"]["sender_full_name"]),
-            ("text", event["command"]),
+            *_slack_command_and_text(event["command"], event["message"]["sender_full_name"]),
             ("trigger_word", event["trigger"]),
             ("service_id", event["user_profile_id"]),
         ]

@@ -13,6 +13,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.outgoing_webhook import (
     GenericOutgoingWebhookService,
     SlackOutgoingWebhookService,
+    _slack_command_and_text,
     do_rest_call,
     fail_with_message,
 )
@@ -720,3 +721,21 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         # by the response_not_required option.
         last_message = self.get_last_message()
         self.assertEqual(last_message.id, stream_message_id)
+
+
+class TestSlackCommandAndText(ZulipTestCase):
+    def test_message_with_bot_mention(self) -> None:
+        result = _slack_command_and_text("@**my bot** do something", "my bot")
+        self.assertEqual(result, [("command", "/my_bot"), ("text", "do something")])
+
+    def test_message_without_bot_mention(self) -> None:
+        result = _slack_command_and_text("just a message", "my bot")
+        self.assertEqual(result, [("text", "just a message")])
+
+    def test_message_with_only_bot_mention(self) -> None:
+        result = _slack_command_and_text("@**my bot**", "my bot")
+        self.assertEqual(result, [("command", "/my_bot"), ("text", "")])
+
+    def test_message_with_wrong_bot_mention(self) -> None:
+        result = _slack_command_and_text("@**other bot** do something", "my bot")
+        self.assertEqual(result, [("text", "@**other bot** do something")])
