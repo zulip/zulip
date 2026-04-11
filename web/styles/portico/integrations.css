@@ -10,6 +10,15 @@
        gap. */
     padding-bottom: 60px;
 
+    /* Modern blue gradient background, matching /plans and the homepage.
+       This replaces the complex multi-layer gradient system from
+       zerver/gradients.html (which is no longer included on these pages). */
+    background: linear-gradient(
+        180deg,
+        var(--color-background-gradient-start) 0%,
+        var(--color-background-gradient-end) 100%
+    );
+
     & h1,
     h2,
     h3 {
