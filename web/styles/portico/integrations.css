@@ -130,7 +130,8 @@
     /* Markdown-style blue links used in the page subheading and in
        content areas that render user-facing text. */
     .portico-page-subheading a,
-    .integration-instructions a {
+    .integration-instructions a,
+    .eligible_realm_end_notice a {
         color: var(--color-link);
         text-decoration: underline;
         text-decoration-color: var(--color-link-underline);
@@ -763,7 +764,7 @@
             border-radius: 4px;
 
             &:hover {
-                border: 1px solid hsl(167deg 34% 56%);
+                border: 1px solid hsl(0deg 0% 73%);
             }
 
             .eligible_realm_logo {
@@ -804,6 +805,8 @@
 
         & hr {
             margin: 10px 0;
+            border: 0;
+            border-top: 1px solid hsl(0deg 0% 93%);
         }
 
         .eligible_realm_end_notice {
