@@ -3,6 +3,12 @@
 
     color: hsl(0deg 0% 27%);
     font-weight: normal;
+    /* Extra gradient space below the main card before the footer.
+       This is padding-bottom on .portico-landing (not margin-bottom
+       on .main), so the blue gradient background fills the space
+       instead of margin-collapsing through to an invisible external
+       gap. */
+    padding-bottom: 60px;
 
     & h1,
     h2,
@@ -22,6 +28,13 @@
         margin: 0 auto;
         border-radius: 10px;
         background-color: hsl(0deg 0% 100%);
+
+        /* The catalog page gets a gray content area so the white
+           integration cards stand out. Specific integration doc pages
+           keep the default white content background. */
+        &:has(.catalog) {
+            background-color: hsl(0deg 0% 96%);
+        }
 
         & img {
             /* Replace the Bootstrap image reset that the new
@@ -49,14 +62,17 @@
     }
 
     .padded-content {
-        padding: 50px 0;
+        /* `.integration-request` already supplies 20px of bottom
+           padding, so we only need a small bottom gap here to give
+           the buttons breathing room inside the gray card. */
+        padding: 50px 0 20px;
 
         .inner-content {
             min-height: 870px;
         }
 
         @media (width <= 450px) {
-            padding: 40px 0;
+            padding: 40px 0 20px;
         }
     }
 
@@ -172,6 +188,11 @@
     }
 
     .catalog {
+        /* `flow-root` makes .catalog a new block formatting context
+           that contains the floated sidebar, so when a category has
+           few cards the sidebar doesn't overflow past .catalog's
+           bottom into the page background below. */
+        display: flow-root;
         margin-top: 20px;
         padding: 0 30px;
         min-height: 500px;
@@ -348,7 +369,7 @@
         overflow: hidden;
         text-align: left;
 
-        @media (width <= 906px) {
+        @media (width <= 1000px) {
             text-align: center;
         }
 
@@ -368,7 +389,8 @@
         padding: 0 4px;
         margin: 7px 5px;
         border-radius: 5px;
-        border: 1px solid var(--color-integrations-light-blue-border);
+        border: 1px solid hsl(0deg 0% 88%);
+        background-color: hsl(0deg 0% 100%);
         color: var(--color-integrations-category-text);
         text-align: center;
         transition: 0.3s ease;
@@ -379,7 +401,7 @@
         }
 
         &:hover {
-            border-color: var(--color-integrations-border-green);
+            border-color: hsl(0deg 0% 73%);
         }
 
         .integration-secondary-line-text {
