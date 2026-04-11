@@ -35,7 +35,11 @@
             border: none;
         }
 
-        @media (width <= 768px) {
+        /* Below 1000px the sidebar is hidden, so narrow the main's
+           own side margins at the same breakpoint. This keeps the
+           "blue gradient strip" on each side of the main card
+           consistently sized across the two primary layouts. */
+        @media (width <= 1000px) {
             width: calc(100% - 50px);
         }
 
@@ -118,6 +122,7 @@
 
         @media (width <= 1000px) {
             padding: 0 30px;
+            margin-bottom: 10px;
         }
 
         .searchbar {
@@ -186,52 +191,86 @@
             }
 
             & h3 {
-                font-weight: 400;
+                font-weight: 700;
                 font-size: 1.1em;
-                margin: 0;
+                margin: 0 0 5px;
+                color: var(--color-integrations-category-text);
+            }
+
+            /* Visually separate "Custom integrations" (the second h3)
+               from the last category pill above it. */
+            & h3 ~ h3 {
+                margin-top: 20px;
+            }
+
+            & a {
+                text-decoration: none;
             }
 
             & h4 {
                 font-weight: 400;
                 font-size: 0.95em;
-                padding: 6px 10px 3px;
-                margin: 3px 0;
+                padding: 6px 10px;
+                margin: 2px 0;
                 border-radius: 5px;
-                transition: 0.3s ease;
-                transition-property: background-color, color;
                 color: var(--color-integrations-category-text);
+                cursor: pointer;
 
-                &.selected,
                 &:hover {
-                    background-color: var(--color-integrations-hover-green);
-                    color: var(--color-integrations-text-green);
-                    cursor: pointer;
+                    color: hsl(223deg 6% 15%);
+                }
+
+                &.selected {
+                    background-color: hsl(0deg 0% 100%);
+                    color: hsl(223deg 6% 25%);
+                    font-weight: 600;
                 }
             }
 
-            @media (width <= 906px) {
+            @media (width <= 1000px) {
                 display: none;
             }
         }
     }
 
     .integration-categories-dropdown {
-        margin: 30px auto;
         display: none;
 
         .heading {
             font-weight: 600;
         }
 
-        @media (width <= 906px) {
+        & a {
+            text-decoration: none;
+        }
+
+        /* Match the search box at narrow widths: the outer container
+           takes 30px horizontal padding, and the inner elements
+           (toggle + list) cap at 500px and center within the content
+           area — mirroring the `#integration-search { padding: 0 30px }`
+           + `.searchbar-reset { max-width: 500px }` structure. */
+        @media (width <= 1000px) {
             display: block;
-            width: 670px;
+            margin: 0;
+            padding: 0 30px;
 
             & h3,
             h4 {
                 font-weight: 400;
                 margin: 0;
                 padding: 12px 20px;
+            }
+
+            .integration-toggle-categories-dropdown,
+            .dropdown-list {
+                /* border-box so the 1px border is included in the
+                   500px cap, matching the search input's dimensions
+                   exactly. */
+                box-sizing: border-box;
+                width: 100%;
+                max-width: 500px;
+                margin-left: auto;
+                margin-right: auto;
             }
 
             .integration-toggle-categories-dropdown {
@@ -241,9 +280,14 @@
                 padding: 0;
                 align-items: center;
                 justify-content: space-between;
-                margin-left: 25px;
-                margin-right: 25px;
-                border: 1px solid var(--color-integrations-light-blue-border);
+                /* White background so the toggle button stands out
+                   from the gray catalog content area, matching the
+                   white-highlight selected pill in the wide-window
+                   sidebar. */
+                background-color: hsl(0deg 0% 100%);
+                border: 1px solid hsl(0deg 0% 80%);
+                /* Match the rounded corners of the search input. */
+                border-radius: 5px;
             }
 
             & i {
@@ -251,60 +295,52 @@
                 font-size: 24px;
             }
 
+            /* The outer box is on the list container, so the items
+               inside have no borders and no dividers between them.
+               `border-top: 0` lets the list visually continue the
+               toggle's bottom edge without a double line. Only the
+               bottom corners are rounded; `overflow: hidden` clips
+               the selected item's white background so it doesn't
+               extend past the rounded border at the bottom. */
             .dropdown-list {
                 display: none;
                 cursor: pointer;
                 padding: 0;
-                margin-left: 25px;
-                margin-right: 25px;
+                border: 1px solid hsl(0deg 0% 80%);
+                border-top: 0;
+                border-radius: 0 0 5px 5px;
+                overflow: hidden;
             }
 
             & h3 {
-                font-size: 1em;
+                font-size: 1.1em;
                 text-align: left;
             }
 
             & h4 {
-                border-left: 1px solid
-                    var(--color-integrations-light-blue-border);
-                border-right: 1px solid
-                    var(--color-integrations-light-blue-border);
-                border-bottom: 1px solid
-                    var(--color-integrations-light-blue-border);
-                transition: 0.3s ease;
-                transition-property: background-color, color;
-                font-size: 0.9em;
+                font-size: 1em;
+                color: var(--color-integrations-category-text);
 
-                &.selected,
                 &:hover {
-                    background-color: var(--color-integrations-hover-green);
-                    color: var(--color-integrations-text-green);
+                    color: hsl(223deg 6% 15%);
+                }
+
+                &.selected {
+                    background-color: hsl(0deg 0% 100%);
+                    color: hsl(223deg 6% 25%);
+                    font-weight: 600;
                 }
             }
         }
 
-        @media (width <= 830px) {
-            width: 666px;
-        }
-
-        @media (width <= 786px) {
-            width: 509px;
-        }
-
-        @media (width <= 768px) {
-            width: 666px;
-        }
-
-        @media (width <= 686px) {
-            width: 509px;
-        }
-
-        @media (width <= 578px) {
-            width: 351px;
-        }
-
-        @media (width <= 357px) {
-            width: 299px;
+        /* While the dropdown list is open, square the toggle's
+           bottom corners so they meet the list's straight top edge
+           cleanly instead of showing a rounded-to-straight seam.
+           jQuery's `slideToggle` sets `style="display: block"` inline
+           on the list when open, which we detect via :has(). */
+        &:has(.dropdown-list[style*="display: block"]) .integration-toggle-categories-dropdown {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
         }
     }
 
