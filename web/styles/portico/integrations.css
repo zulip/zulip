@@ -1,12 +1,6 @@
-:root {
-    --color-integrations-light-blue-border: hsl(208deg 46% 93%);
-    --color-integrations-border-green: hsl(170deg 47% 53%);
-    --color-integrations-hover-green: hsl(170deg 65% 85%);
-    --color-integrations-text-green: hsl(170deg 72% 32%);
-    --color-integrations-category-text: hsl(219deg 23% 33%);
-}
-
 .portico-landing.integrations {
+    --color-integrations-category-text: hsl(223deg 6% 35%);
+
     color: hsl(0deg 0% 27%);
     font-weight: normal;
 
@@ -70,8 +64,18 @@
         }
     }
 
+    /* Left-align the header block with the cards column, so the title,
+       subtitle, and search box don't spill into the sidebar area. The
+       sidebar column below takes 230px (200 sidebar + 30 gutter), so
+       we pad the header block to start at the same x-position as the
+       cards. At narrow widths, the sidebar is hidden and the header
+       reverts to its original near-full-width layout. */
     .integration-main-text {
-        padding: 0 15px;
+        padding: 0 30px 0 260px;
+
+        @media (width <= 1000px) {
+            padding: 0 30px;
+        }
     }
 
     .portico-page-heading {
@@ -79,74 +83,84 @@
         font-weight: 300;
         line-height: 1.2;
         text-align: center;
+        /* When the heading wraps to multiple lines at narrow widths,
+           balance the line widths so the top line doesn't end up much
+           longer than the bottom (which makes a centered title look
+           visually off-center). */
+        text-wrap: balance;
     }
 
     .portico-page-subheading {
         font-weight: 400;
         font-size: 1.1em;
-        color: hsl(0deg 0% 67%);
+        color: hsl(0deg 0% 40%);
         line-height: 1.2;
         text-align: center;
     }
 
+    /* Markdown-style blue links used in the page subheading and in
+       content areas that render user-facing text. */
+    .portico-page-subheading a {
+        color: var(--color-link);
+        text-decoration: underline;
+        text-decoration-color: var(--color-link-underline);
+        text-underline-offset: 0.1176em;
+
+        &:hover {
+            color: var(--color-link-hover);
+            text-decoration-color: var(--color-link-underline-hover);
+        }
+    }
+
     #integration-search {
         margin-bottom: 30px;
+        padding: 0 30px 0 260px;
+
+        @media (width <= 1000px) {
+            padding: 0 30px;
+        }
 
         .searchbar {
-            width: calc(100% - 40px);
             display: flex;
             justify-content: center;
             margin: 30px auto 0;
 
             .searchbar-reset {
                 position: relative;
+                width: 100%;
+                max-width: 500px;
 
                 .search_input {
-                    box-shadow: 0 0 7px 2px hsl(0deg 0% 0% / 3%);
-
+                    /* border-box so width:100% includes the 70px of
+                       horizontal padding; otherwise the search box
+                       overflows its 500px cap by padding width. */
+                    box-sizing: border-box;
                     font-size: 1em;
                     font-family: inherit;
 
-                    width: 500px;
+                    width: 100%;
                     height: 45px;
                     padding: 0 20px 0 50px;
-                    border-radius: 40px;
-                    border: 1px solid
-                        var(--color-integrations-light-blue-border);
+                    border-radius: 5px;
+                    border: 1px solid hsl(0deg 0% 80%);
                     display: block;
                     color: hsl(0deg 0% 33%);
                     margin-bottom: 10px;
                     transition: border-color linear 0.2s;
 
                     &:focus {
-                        border-color: var(--color-integrations-border-green);
+                        border-color: var(--color-link);
                         outline: 0;
                     }
-
-                    @media (width <= 768px) {
-                        width: 375px;
-                        margin: 0 auto;
-                    }
-
-                    @media (width <= 550px) {
-                        width: calc(100% - 80px);
-                    }
                 }
 
-                & i.fa-search {
+                & .zulip-icon-search {
                     position: absolute;
-                    left: 20px;
+                    left: 18px;
                     top: 13px;
-                    font-size: 19px;
-                    color: var(--color-integrations-border-green);
-                }
-
-                @media (width <= 768px) {
-                    width: 445px;
-                }
-
-                @media (width <= 550px) {
-                    width: 100%;
+                    font-size: 18px;
+                    color: hsl(0deg 0% 53%);
+                    pointer-events: none;
                 }
             }
         }
