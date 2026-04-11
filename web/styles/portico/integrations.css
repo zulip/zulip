@@ -496,30 +496,23 @@
 
     .integration-request {
         font-size: 1em;
-        padding: 10px 0;
+        /* Generous top/bottom padding so the "Don't see an integration
+           you need?" section has visible breathing room between the
+           last row of cards above and the section content below. */
+        padding: 40px 0 20px;
 
         & p {
-            padding-bottom: 10px;
+            margin: 0 0 20px;
         }
 
-        .button {
-            padding: 11px 25px;
-            margin: 0 auto;
-            font-size: 0.9em;
-        }
-    }
-
-    @media (width <= 550px) {
-        .button {
+        /* Lay out the /why-zulip-style hero-buttons as a centered
+           flex row, since the flex rule in marketing_page.css is
+           scoped to .why-page and its siblings. */
+        .hero-buttons {
             display: flex;
-            flex-wrap: wrap;
-            width: 170px;
+            flex-flow: row wrap;
             justify-content: center;
         }
-    }
-
-    .integration-divider {
-        padding: 11px 15px 0;
     }
 
     /* -- integration instructions -- */

@@ -106,18 +106,16 @@
                             {{ integration_macros.render_integration_lozenge(integration) }}
                         </a>
                         {% endfor %}
-                        <hr />
                         <div class="integration-request center">
                             <p>Don't see an integration you need? We'd love to help.</p>
-                            <a href="/api/integrations-overview" class="button green">
-                                Create your own
-                            </a>
-                            <span class="integration-divider">
-                                or
-                            </span>
-                            <a href="/help/request-an-integration" class="button green">
-                                Request an integration
-                            </a>
+                            <div class="hero-buttons center">
+                                <a href="/api/integrations-overview" class="button">
+                                    Create your own
+                                </a>
+                                <a href="/help/request-an-integration" class="button">
+                                    Request an integration
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
