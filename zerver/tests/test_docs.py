@@ -445,7 +445,7 @@ class DocPageTest(ZulipTestCase):
         result = self._test(
             "/integrations/asana?category=project-management",
             expected_strings=[
-                '<a href="/integrations/category/project-management" id="integration-list-link" class="no-underline">'
+                '<a href="/integrations/category/project-management" id="integration-list-link"'
             ],
         )
 
@@ -453,9 +453,7 @@ class DocPageTest(ZulipTestCase):
             "/integrations/asana?category=nonexistent_category",
         )
         self.assert_not_in_success_response(
-            [
-                '<a href="/integrations/category/project-management" id="integration-list-link" class="no-underline">'
-            ],
+            ['<a href="/integrations/category/project-management" id="integration-list-link"'],
             response,
         )
 
@@ -464,9 +462,7 @@ class DocPageTest(ZulipTestCase):
             "/integrations/asana?category=communication",
         )
         self.assert_not_in_success_response(
-            [
-                '<a href="/integrations/category/project-management" id="integration-list-link" class="no-underline">'
-            ],
+            ['<a href="/integrations/category/project-management" id="integration-list-link"'],
             response,
         )
 

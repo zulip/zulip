@@ -369,7 +369,8 @@
            cleanly instead of showing a rounded-to-straight seam.
            jQuery's `slideToggle` sets `style="display: block"` inline
            on the list when open, which we detect via :has(). */
-        &:has(.dropdown-list[style*="display: block"]) .integration-toggle-categories-dropdown {
+        &:has(.dropdown-list[style*="display: block"])
+            .integration-toggle-categories-dropdown {
             border-bottom-left-radius: 0;
             border-bottom-right-radius: 0;
         }
@@ -534,12 +535,28 @@
         .integration-instruction-block {
             display: flex;
             flex-direction: column;
+            /* Let the left column size to its widest child (the logo
+               box, or a long category pill) plus a right-padding
+               gutter. The instructions column uses `flex: 1` to fill
+               the remaining space. */
+            flex-shrink: 0;
+            padding-right: 30px;
 
             .integration-lozenge {
                 width: 125px;
                 height: auto;
                 padding: 0 5px 20px;
-                margin: 0 21px 20px;
+                /* Align the top of the logo card with the visible
+                   cap-height of the title's first character. This
+                   `margin-top` is tuned so that the card's top edge
+                   sits on the same horizontal line as the top of
+                   the "Z" (or equivalent cap-height glyph) in the
+                   h1 title, not on its typographic ascender line.
+                   The value balances the 15px top margin the shared
+                   markdown rules give h1 plus the half-leading and
+                   ascender offset that sit above the visible glyph
+                   in Source Sans 3 VF at the h1's font-size. */
+                margin: 25px 21px 20px;
                 order: 1;
 
                 .integration-category,
@@ -547,7 +564,7 @@
                     display: none;
                 }
 
-                @media (width <= 768px) {
+                @media (width <= 1000px) {
                     border: none;
 
                     display: flex !important;
@@ -578,26 +595,35 @@
 
             .categories {
                 order: 2;
+                /* Left-align the pills with the logo box above, which
+                   has `margin: 0 21px 20px` on `.integration-lozenge`. */
+                margin-left: 21px;
+
+                /* Each category is its own <a> wrapping an <h3>. Lay
+                   them out as a vertical flex column so the pills are
+                   sized to their content (like in-app pills) instead
+                   of stretching to a fixed width. */
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+
+                & a {
+                    text-decoration: none;
+                }
 
                 .integration-category,
                 .realm-category {
-                    font-size: 0.9em;
+                    font-size: 0.95em;
                     font-weight: 400;
-                    padding: 6px 3px;
-                    margin: 7px 0;
-                    width: 165px;
-                    text-align: center;
-                    border-radius: 5px;
-                    transition: 0.3s ease;
-                    transition-property: background-color, color;
-                    background-color: var(
-                        --color-integrations-light-blue-border
-                    );
-                    color: var(--color-integrations-category-text);
+                    padding: 5px 14px;
+                    margin: 0 0 6px;
+                    border-radius: 14px;
+                    background-color: hsl(210deg 94% 42% / 10%);
+                    color: hsl(210deg 70% 35%);
 
                     &:hover {
-                        background-color: var(--color-integrations-hover-green);
-                        color: var(--color-integrations-text-green);
+                        background-color: hsl(210deg 94% 42% / 17%);
+                        color: hsl(210deg 70% 28%);
                     }
                 }
             }
@@ -605,36 +631,54 @@
             #integration-list-link {
                 margin-left: 30px;
                 order: 3;
+                color: var(--color-integrations-category-text);
+                text-decoration: none;
+                display: flex;
+                align-items: center;
 
-                .integrations-back-to-list-label {
-                    display: inline-block;
-                    margin-left: 5px;
+                .zulip-icon-arrow-left {
+                    font-size: 16px;
+                    margin-right: 5px;
+                }
 
-                    @media (width >= 768px) {
-                        margin-top: 15px;
+                /* Show "Back to list" on wide screens, "Back" on
+                   narrow where space is limited. */
+                .integrations-back-label-short {
+                    display: none;
+                }
+
+                @media (width <= 1000px) {
+                    .integrations-back-label-long {
+                        display: none;
                     }
 
-                    @media (width <= 768px) {
-                        display: none;
+                    .integrations-back-label-short {
+                        display: inline;
                     }
                 }
 
-                @media (width <= 768px) {
-                    font-size: 22px;
+                &:hover {
+                    color: hsl(223deg 6% 15%);
+                }
+
+                @media (width >= 1000px) {
+                    margin-top: 15px;
                 }
             }
 
-            @media (width <= 768px) {
+            @media (width <= 1000px) {
                 flex-direction: row;
                 justify-content: space-between;
                 align-items: center;
                 margin-bottom: 20px;
-                padding-bottom: 20px;
-                border-bottom: 1px solid
-                    var(--color-integrations-light-blue-border);
+                /* Drop the column-gutter padding on the right so
+                   the back-link reaches the card's right edge
+                   instead of sitting 30 px inside it. */
+                padding: 0 0 20px;
+                border-bottom: 1px solid hsl(0deg 0% 88%);
             }
 
-            @media (width <= 768px) {
+            @media (width <= 1000px) {
                 .name {
                     display: block;
                 }
@@ -651,18 +695,30 @@
                 font-style: italic;
             }
 
-            @media (width >= 768px) {
-                width: calc(100% - 200px);
+            @media (width >= 1000px) {
+                /* Fill whatever space the left column leaves after
+                   sizing to its widest child. min-width: 0 lets the
+                   column shrink below its intrinsic content size when
+                   the viewport is narrow. */
+                flex: 1;
+                min-width: 0;
             }
 
-            @media (width <= 768px) {
+            @media (width <= 1000px) {
                 margin-left: 0;
             }
         }
 
-        @media (width <= 768px) {
+        @media (width <= 1000px) {
             flex-direction: column;
+        }
+
+        @media (width <= 768px) {
             padding: 0 25px;
+        }
+
+        @media (width <= 450px) {
+            padding: 0 12px;
         }
     }
 }
