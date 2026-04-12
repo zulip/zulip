@@ -31,7 +31,7 @@ a.help_link_widget {
     color: inherit;
     margin-left: 3px;
 
-    .fa-question-circle-o {
+    .zulip-icon-question {
         position: relative;
         top: 1px;
     }
