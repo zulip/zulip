@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import assert from "minimalistic-assert";
 
 import render_left_sidebar from "../templates/left_sidebar.hbs";
 import render_buddy_list_popover from "../templates/popovers/buddy_list_popover.hbs";
@@ -311,6 +312,7 @@ export function update_expanded_views_for_search(search_term: string): void {
         value: LEFT_SIDEBAR_NAVIGATION_AREA_TITLE,
         search_term,
     });
+    const auto_collapse_views = user_settings.web_left_sidebar_auto_collapse_views;
     for (const view of expanded_views) {
         let show_view =
             show_all_views ||
@@ -331,19 +333,26 @@ export function update_expanded_views_for_search(search_term: string): void {
         any_view_visible ||= show_view;
     }
     // Hide "VIEWS" header if all views are hidden.
-    $("#left-sidebar-navigation-area").toggleClass("hidden-by-filters", !any_view_visible);
+    if (auto_collapse_views) {
+        $("#views-label-container").toggle(any_view_visible);
+        $("#left-sidebar-navigation-list").toggle(any_view_visible);
+    } else {
+        $("#left-sidebar-navigation-area").toggleClass("hidden-by-filters", !any_view_visible);
+    }
 }
 
 export function initialize_left_sidebar(): void {
     const primary_condensed_views =
         left_sidebar_navigation_area.get_built_in_primary_condensed_views();
     const expanded_views = left_sidebar_navigation_area.get_built_in_views();
+    const auto_collapse_views = user_settings.web_left_sidebar_auto_collapse_views;
 
     const rendered_sidebar = render_left_sidebar({
         is_guest: current_user.is_guest,
         is_spectator: page_params.is_spectator,
         primary_condensed_views,
         expanded_views,
+        auto_collapse_views,
         LEFT_SIDEBAR_NAVIGATION_AREA_TITLE,
         LEFT_SIDEBAR_DIRECT_MESSAGES_TITLE: pm_list.LEFT_SIDEBAR_DIRECT_MESSAGES_TITLE,
     });
@@ -716,6 +725,37 @@ export function set_event_handlers(): void {
         left_sidebar_cursor.clear();
     });
     $search_input.on("input", update_left_sidebar_for_search);
+
+    function toggle_views_header_icon(): void {
+        if (left_sidebar_navigation_area.get_views_state() === "condensed") {
+            return;
+        }
+
+        const auto_collapse_views = user_settings.web_left_sidebar_auto_collapse_views;
+        if (!auto_collapse_views) {
+            return;
+        }
+
+        const scroll_position = $(
+            "#left_sidebar_scroll_container .simplebar-content-wrapper",
+        ).scrollTop();
+        const views_list_height = $("#left-sidebar-navigation-list").height();
+        assert(scroll_position !== undefined);
+        assert(views_list_height !== undefined);
+
+        if (scroll_position > views_list_height) {
+            $("#toggle-top-left-navigation-area-icon").addClass("rotate-icon-right");
+            $("#toggle-top-left-navigation-area-icon").removeClass("rotate-icon-down");
+        } else {
+            $("#toggle-top-left-navigation-area-icon").addClass("rotate-icon-down");
+            $("#toggle-top-left-navigation-area-icon").removeClass("rotate-icon-right");
+        }
+    }
+
+    // check for user scrolls on streams list for first time
+    scroll_util.get_scroll_element($("#left_sidebar_scroll_container")).on("scroll", () => {
+        toggle_views_header_icon();
+    });
 }
 
 export function initiate_search(): void {

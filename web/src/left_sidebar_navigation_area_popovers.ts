@@ -70,6 +70,26 @@ function register_toggle_unread_message_count(
     popover_menus.hide_current_popover_if_visible(instance);
 }
 
+function register_toggle_auto_collapse_views(
+    event: JQuery.ClickEvent<
+        tippy.PopperElement,
+        {
+            instance: tippy.Instance;
+        }
+    >,
+): void {
+    const auto_collapse_views = user_settings.web_left_sidebar_auto_collapse_views;
+    const {instance} = event.data;
+    const data = {
+        web_left_sidebar_auto_collapse_views: JSON.stringify(!auto_collapse_views),
+    };
+    void channel.patch({
+        url: "/json/settings",
+        data,
+    });
+    popover_menus.hide_current_popover_if_visible(instance);
+}
+
 export function initialize(): void {
     // Starred messages popover
     popover_menus.register_popover_menu(".starred-messages-sidebar-menu-icon", {
@@ -301,6 +321,13 @@ export function initialize(): void {
                 {instance},
                 register_toggle_unread_message_count,
             );
+
+            $popper.one(
+                "click",
+                ".toggle_auto_collapse_views",
+                {instance},
+                register_toggle_auto_collapse_views,
+            );
         },
         onShow(instance) {
             const built_in_popover_condensed_views =
@@ -309,15 +336,20 @@ export function initialize(): void {
             const unread_messages_present = unread_count.home_unread_messages > 0;
             const show_unread_count = user_settings.web_left_sidebar_unreads_count_summary;
             const is_home_view_active = window.location.hash === "#" + user_settings.web_home_view;
-
+            const is_condensed = $("#views-label-container").hasClass(
+                "showing-condensed-navigation",
+            );
+            const auto_collapse_views = user_settings.web_left_sidebar_auto_collapse_views;
             popovers.hide_all();
             instance.setContent(
                 ui_util.parse_html(
                     render_left_sidebar_views_popover({
                         views: built_in_popover_condensed_views,
                         is_home_view_active,
+                        is_condensed,
                         unread_messages_present,
                         show_unread_count,
+                        auto_collapse_views,
                     }),
                 ),
             );

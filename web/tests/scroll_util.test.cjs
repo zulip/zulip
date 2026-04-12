@@ -6,6 +6,7 @@ const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const scroll_util = zrequire("scroll_util");
+const {initialize_user_settings} = zrequire("user_settings");
 
 run_test("scroll_delta", () => {
     // If we are entirely on-screen, don't scroll
@@ -85,6 +86,8 @@ run_test("scroll_delta", () => {
 });
 
 run_test("scroll_element_into_container", () => {
+    const user_settings = {};
+    initialize_user_settings({user_settings});
     const $container = (function () {
         let top = 3;
         return {

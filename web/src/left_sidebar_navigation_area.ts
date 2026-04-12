@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import {z} from "zod/mini";
 
 import * as drafts from "./drafts.ts";
 import type {Filter} from "./filter.ts";
@@ -23,6 +24,10 @@ const STATES = {
     EXPANDED: "expanded",
     CONDENSED: "condensed",
 };
+
+const ls_schema = z._default(z.enum([STATES.EXPANDED, STATES.CONDENSED]), STATES.CONDENSED);
+
+let navigation_area_collapse = STATES.CONDENSED;
 
 export function restore_views_state(): void {
     if (page_params.is_spectator) {
@@ -336,7 +341,12 @@ export function get_built_in_views(): navigation_views.BuiltInViewMetadata[] {
     return navigation_views.get_built_in_views();
 }
 
+export function get_views_state(): (typeof STATES)[keyof typeof STATES] {
+    return navigation_area_collapse;
+}
+
 export function initialize(): void {
+    navigation_area_collapse = ls_schema.parse(ls.get(ls_key));
     update_reminders_row();
     update_scheduled_messages_row();
     restore_views_state();
