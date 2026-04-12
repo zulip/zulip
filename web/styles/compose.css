@@ -1673,7 +1673,7 @@ textarea.new_message_textarea {
         }
     }
 
-    .fa-eye {
+    .zulip-icon-eye {
         position: relative;
         top: -0.7px;
     }
