@@ -1781,7 +1781,7 @@ def validate_custom_profile_field_data_for_sync(
         # a mostly-successful sync instead of failing with an error.
         text_field_max_length = {
             CustomProfileField.SHORT_TEXT: SHORT_STRING_MAX_LENGTH,
-            CustomProfileField.LONG_TEXT: LONG_STRING_MAX_LENGTH,
+            CustomProfileField.PARAGRAPH: LONG_STRING_MAX_LENGTH,
         }.get(field.field_type)
         if (
             isinstance(value, str)
