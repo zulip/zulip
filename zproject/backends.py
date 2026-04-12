@@ -3387,7 +3387,8 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
                 raise AuthMissingParameter(self, "RelayState.idp")
             # Use the only configured IDP
             idp_name = next(iter(enabled_idps))
-        idp_config = enabled_idps[idp_name]
+        idp_config = dict(enabled_idps[idp_name])
+        idp_config.pop("name", None)
         return ZulipSAMLIdentityProvider(self, idp_name, **idp_config)
 
     @override
