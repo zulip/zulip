@@ -36,6 +36,33 @@ function common_click_handlers(): void {
         popovers.hide_all();
     });
 }
+
+function make_views_expanded(
+    event: JQuery.ClickEvent<
+        tippy.PopperElement,
+        {
+            instance: tippy.Instance;
+        }
+    >,
+): void {
+    const {instance} = event.data;
+    left_sidebar_navigation_area.set_views_section_pinned(true);
+    popover_menus.hide_current_popover_if_visible(instance);
+}
+
+function make_views_condensed(
+    event: JQuery.ClickEvent<
+        tippy.PopperElement,
+        {
+            instance: tippy.Instance;
+        }
+    >,
+): void {
+    const {instance} = event.data;
+    left_sidebar_navigation_area.set_views_section_pinned(false);
+    popover_menus.hide_current_popover_if_visible(instance);
+}
+
 // This callback is called from the popovers on all home views
 function register_mark_all_read_handler(
     event: JQuery.ClickEvent<
@@ -301,10 +328,15 @@ export function initialize(): void {
                 {instance},
                 register_toggle_unread_message_count,
             );
+
+            $popper.one("click", "#expand_views_section", {instance}, make_views_expanded);
+
+            $popper.one("click", "#collapse_views_section", {instance}, make_views_condensed);
         },
         onShow(instance) {
+            const is_expanded = $("#views-label-container").hasClass("showing-expanded-navigation");
             const built_in_popover_condensed_views =
-                left_sidebar_navigation_area.get_built_in_popover_condensed_views();
+                left_sidebar_navigation_area.get_built_in_popover_condensed_views({is_expanded});
             const unread_count = unread.get_counts();
             const unread_messages_present = unread_count.home_unread_messages > 0;
             const show_unread_count = user_settings.web_left_sidebar_unreads_count_summary;

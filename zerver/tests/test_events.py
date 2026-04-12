@@ -4771,6 +4771,7 @@ class RealmPropertyActionTest(BaseAction):
             automatically_follow_topics_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
             automatically_unmute_topics_in_muted_streams_policy=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_CHOICES,
             resolved_topic_notice_auto_read_policy=UserProfile.RESOLVED_TOPIC_NOTICE_AUTO_READ_POLICY_TYPES,
+            pin_views_section=UserProfile.VIEWS_SECTION_COLLAPSE_BEHAVIOR_CHOICES,
         )
 
         vals = test_values.get(name)
@@ -4904,6 +4905,7 @@ class UserDisplayActionTest(BaseAction):
             color_scheme=[2, 3, 1],
             email_address_visibility=[5, 4, 1, 2, 3],
             resolved_topic_notice_auto_read_policy=UserProfile.RESOLVED_TOPIC_NOTICE_AUTO_READ_POLICY_TYPES,
+            pin_views_section=[1, 2],
         )
 
         user_settings_object = True

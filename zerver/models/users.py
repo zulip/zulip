@@ -322,6 +322,17 @@ class UserBaseSettings(models.Model):
 
     EMAIL_ADDRESS_VISIBILITY_TYPES = list(EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP.keys())
 
+    # UI settings to control showing always expanded VIEWS section.
+    VIEWS_SECTION_COLLAPSE_BEHAVIOR_WHEN_SCROLLED = 1
+    VIEWS_SECTION_COLLAPSE_BEHAVIOR_NEVER = 2
+    VIEWS_SECTION_COLLAPSE_BEHAVIOR_CHOICES = [
+        VIEWS_SECTION_COLLAPSE_BEHAVIOR_WHEN_SCROLLED,
+        VIEWS_SECTION_COLLAPSE_BEHAVIOR_NEVER,
+    ]
+    pin_views_section = models.PositiveSmallIntegerField(
+        default=VIEWS_SECTION_COLLAPSE_BEHAVIOR_NEVER
+    )
+
     # Whether user wants to see AI features in the UI.
     hide_ai_features = models.BooleanField(default=False)
 
@@ -370,6 +381,7 @@ class UserBaseSettings(models.Model):
         hide_ai_features=bool,
         high_contrast_mode=bool,
         left_side_userlist=bool,
+        pin_views_section=int,
         receives_typing_notifications=bool,
         resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum,
         send_private_typing_notifications=bool,

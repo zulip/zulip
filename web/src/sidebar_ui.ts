@@ -37,6 +37,8 @@ const LEFT_SIDEBAR_NAVIGATION_AREA_TITLE = $t({defaultMessage: "VIEWS"});
 
 export let left_sidebar_cursor: ListCursor<JQuery>;
 
+let views_previous_pin_state: boolean | null = null;
+
 function save_sidebar_toggle_status(): void {
     const ls = localstorage();
     ls.set("left-sidebar", $("body").hasClass("hide-left-sidebar"));
@@ -582,6 +584,21 @@ function actually_update_left_sidebar_for_search(): void {
     const search_value = ui_util.get_left_sidebar_search_term();
     const is_left_sidebar_search_active = search_value !== "";
     left_sidebar_cursor.set_is_highlight_visible(is_left_sidebar_search_active);
+
+    if (is_left_sidebar_search_active && views_previous_pin_state === null) {
+        views_previous_pin_state = left_sidebar_navigation_area.views_section_pinned_state();
+        $(".left-sidebar-navigation-menu-icon").hide();
+        requestAnimationFrame(() => {
+            left_sidebar_navigation_area.set_views_section_pinned(false);
+        });
+    } else if (!is_left_sidebar_search_active && views_previous_pin_state !== null) {
+        const restore_state = views_previous_pin_state;
+        views_previous_pin_state = null;
+        $(".left-sidebar-navigation-menu-icon").show();
+        requestAnimationFrame(() => {
+            left_sidebar_navigation_area.set_views_section_pinned(restore_state);
+        });
+    }
 
     // Update left sidebar navigation area.
     update_expanded_views_for_search(search_value);

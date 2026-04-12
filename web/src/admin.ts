@@ -317,6 +317,8 @@ export function build_page(): void {
         realm_enable_two_tier_billing: settings_data.two_tier_billing_enabled(),
         show_two_tier_billing_settings:
             page_params.development_environment && page_params.non_workplace_pricing_eligible,
+        pin_left_sidebar_views_section_values:
+            settings_config.pin_left_sidebar_views_section_values,
     };
 
     const rendered_admin_tab = render_admin_tab(options);
