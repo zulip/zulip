@@ -1250,6 +1250,11 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.web_mark_read_on_scroll_policy, 1);
 
+    event = event_fixtures.user_settings__web_smooth_topic_navigation;
+    override(user_settings, "web_smooth_topic_navigation", false);
+    dispatch(event);
+    assert_same(user_settings.web_smooth_topic_navigation, true);
+
     event = event_fixtures.user_settings__web_channel_default_view;
     override(user_settings, "web_channel_default_view", 2);
     let called_create_initial_sidebar_rows = false;

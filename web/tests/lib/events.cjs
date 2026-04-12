@@ -1307,6 +1307,13 @@ exports.fixtures = {
         value: 1,
     },
 
+    user_settings__web_smooth_topic_navigation: {
+        type: "user_settings",
+        op: "update",
+        property: "web_smooth_topic_navigation",
+        value: true,
+    },
+
     user_settings__web_navigate_to_sent_message: {
         type: "user_settings",
         op: "update",

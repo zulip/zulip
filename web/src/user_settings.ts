@@ -83,6 +83,7 @@ export const user_settings_schema = z.object({
     web_left_sidebar_unreads_count_summary: z.boolean(),
     web_line_height_percent: z.number(),
     web_mark_read_on_scroll_policy: z.number(),
+    web_smooth_topic_navigation: z.boolean(),
     web_navigate_to_sent_message: z.boolean(),
     web_stream_unreads_count_display_policy: z.number(),
     web_suggest_update_timezone: z.boolean(),

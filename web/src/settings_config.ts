@@ -659,6 +659,9 @@ export const preferences_settings_labels = {
     web_navigate_to_sent_message: $t({
         defaultMessage: "Automatically go to conversation where you sent a message",
     }),
+    web_smooth_topic_navigation: $t({
+        defaultMessage: "Use smooth scrolling when navigating messages",
+    }),
 };
 
 export const notification_settings_labels = {

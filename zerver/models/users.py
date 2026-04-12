@@ -94,6 +94,7 @@ class UserBaseSettings(models.Model):
     web_line_height_percent = models.PositiveSmallIntegerField(
         default=WEB_LINE_HEIGHT_PERCENT_DEFAULT
     )
+    web_smooth_topic_navigation = models.BooleanField(default=False)
 
     # UI setting to control how animated images are played.
     web_animate_image_previews = models.TextField(default="on_hover")
@@ -389,6 +390,7 @@ class UserBaseSettings(models.Model):
         web_left_sidebar_unreads_count_summary=bool,
         web_line_height_percent=int,
         web_mark_read_on_scroll_policy=int,
+        web_smooth_topic_navigation=bool,
         web_navigate_to_sent_message=bool,
         web_stream_unreads_count_display_policy=int,
         web_suggest_update_timezone=bool,

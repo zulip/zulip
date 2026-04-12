@@ -4,6 +4,9 @@ import * as message_lists from "./message_lists.ts";
 import * as message_view from "./message_view.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as unread_ops from "./unread_ops.ts";
+import {user_settings} from "./user_settings.ts";
+
+const SMOOTH_TOPIC_NAVIGATION_STEP = 40;
 
 function go_to_row(msg_id: number): void {
     assert(message_lists.current !== undefined);
@@ -20,13 +23,41 @@ function is_long_message(message_height: number): boolean {
     return message_height >= 0.5 * message_viewport.height();
 }
 
+function row_is_fully_visible($message_row: JQuery): boolean {
+    const viewport_info = message_viewport.message_viewport_info();
+    const message_props = $message_row.get_offset_to_window();
+    return (
+        message_props.top >= viewport_info.visible_top &&
+        message_props.bottom <= viewport_info.visible_bottom
+    );
+}
+
+function maybe_smooth_scroll_at_edge(msg_id: number | undefined, direction: 1 | -1): boolean {
+    if (!user_settings.web_smooth_topic_navigation || msg_id === undefined) {
+        return false;
+    }
+
+    assert(message_lists.current !== undefined);
+    const $target_message = message_lists.current.get_row(msg_id);
+    assert($target_message.length > 0);
+
+    if (row_is_fully_visible($target_message)) {
+        return false;
+    }
+
+    message_viewport.scrollTop(
+        message_viewport.scrollTop() + direction * SMOOTH_TOPIC_NAVIGATION_STEP,
+    );
+    return true;
+}
+
 export function up(): void {
     assert(message_lists.current !== undefined);
     message_viewport.set_last_movement_direction(-1);
 
     const $selected_message = message_lists.current.selected_row();
-    const viewport_info = message_viewport.message_viewport_info();
-    if ($selected_message.length > 0) {
+    if (!user_settings.web_smooth_topic_navigation && $selected_message.length > 0) {
+        const viewport_info = message_viewport.message_viewport_info();
         const message_props = $selected_message.get_offset_to_window();
         // We scroll up to show the hidden top of long messages.
         if (
@@ -48,10 +79,15 @@ export function up(): void {
     const prev_message_props = $prev_message.get_offset_to_window();
 
     if (
+        !user_settings.web_smooth_topic_navigation &&
         is_long_message(prev_message_props.height) &&
         prev_message_props.top < viewport_info.visible_top
     ) {
         page_up();
+        return;
+    }
+
+    if (maybe_smooth_scroll_at_edge(prev_msg_id, -1)) {
         return;
     }
 
@@ -63,7 +99,7 @@ export function down(with_centering = false): void {
     message_viewport.set_last_movement_direction(1);
 
     const $selected_message = message_lists.current.selected_row();
-    if ($selected_message.length > 0) {
+    if (!user_settings.web_smooth_topic_navigation && $selected_message.length > 0) {
         const viewport_info = message_viewport.message_viewport_info();
         const message_props = $selected_message.get_offset_to_window();
         // We scroll down to show the hidden bottom of long messages.
@@ -95,6 +131,11 @@ export function down(with_centering = false): void {
     if (msg_id === undefined) {
         return;
     }
+
+    if (maybe_smooth_scroll_at_edge(msg_id, 1)) {
+        return;
+    }
+
     go_to_row(msg_id);
 }
 

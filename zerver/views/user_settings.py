@@ -371,6 +371,7 @@ def json_change_settings(
         Json[int], check_int_in_validator(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES)
     ]
     | None = None,
+    web_smooth_topic_navigation: Json[bool] | None = None,
     web_navigate_to_sent_message: Json[bool] | None = None,
     web_stream_unreads_count_display_policy: Annotated[
         Json[int],
