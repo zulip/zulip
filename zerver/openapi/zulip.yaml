@@ -12655,6 +12655,11 @@ paths:
                     exist a new channel is created. The description of the channel created can
                     be specified by setting the dictionary key `description` with an
                     appropriate value.
+
+                    **Changes**: Before Zulip 12.0 (feature level XXX),
+                    only the `name` property was supported in each dictionary and
+                    it was required. Now, either `name` or `stream_id` (or both)
+                    can be provided, and `stream_id` is preferred for existing channels.
                   type: array
                   items:
                     type: object
@@ -12663,11 +12668,20 @@ paths:
                       name:
                         type: string
                         description: |
-                          The name of the channel.
+                          The name of the channel. Required when creating a new channel.
+                          Optional when `stream_id` is provided for an existing channel.
 
                           Clients should use the `max_stream_name_length` returned by the
                           [`POST /register`](/api/register-queue) endpoint to determine
                           the maximum channel name length.
+                      stream_id:
+                        type: integer
+                        description: |
+                          The ID of an existing channel to subscribe to. When provided,
+                          the channel is looked up by ID rather than name, which is
+                          resilient to channel renames and name collisions.
+
+                          **Changes**: New in Zulip 12.0 (feature level XXX).
                       description:
                         type: string
                         description: |
@@ -12679,8 +12693,6 @@ paths:
                           Clients should use the `max_stream_description_length` returned
                           by the [`POST /register`](/api/register-queue) endpoint to
                           determine the maximum channel description length.
-                    required:
-                      - name
                     example:
                       no-description:
                         value: {"name": "Verona"}
@@ -12940,10 +12952,16 @@ paths:
               properties:
                 delete:
                   description: |
-                    A list of channel names to unsubscribe from.
+                    A list of channel names (strings) or channel IDs (integers)
+                    to unsubscribe from.
+
+                    **Changes**: Before Zulip 12.0 (feature level XXX),
+                    only channel names (strings) were supported.
                   type: array
                   items:
-                    type: string
+                    oneOf:
+                      - type: string
+                      - type: integer
                   example: ["Verona", "Denmark"]
                 add:
                   description: |
@@ -12957,6 +12975,8 @@ paths:
                     properties:
                       name:
                         type: string
+                      stream_id:
+                        type: integer
                       color:
                         type: string
                       description:
@@ -13125,11 +13145,17 @@ paths:
               properties:
                 subscriptions:
                   description: |
-                    A list of channel names to unsubscribe from. This parameter is called
+                    A list of channel names (strings) or channel IDs (integers)
+                    to unsubscribe from. This parameter is called
                     `streams` in our Python API.
+
+                    **Changes**: Before Zulip 12.0 (feature level XXX),
+                    only channel names (strings) were supported.
                   type: array
                   items:
-                    type: string
+                    oneOf:
+                      - type: string
+                      - type: integer
                   example: ["Verona", "Denmark"]
                 principals:
                   $ref: "#/components/schemas/Principals"
