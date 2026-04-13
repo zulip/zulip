@@ -1032,13 +1032,17 @@ test("people_suggestions", ({override}) => {
     suggestions = get_suggestions(query);
     assert.deepEqual(suggestions, expected);
 
+    // The search bar typeahead always converts person operators to
+    // user_id-based pills, so raw email operands are not reachable.
+    // Both valid and invalid emails get merged with the trailing
+    // search term, producing no person match.
     query = "sender:ted@zulip.com new";
-    expected = ["new"];
+    expected = [];
     suggestions = get_suggestions(query);
     assert.deepEqual(suggestions, expected);
 
     query = "sender:ted@tulip.com new";
-    expected = []; // Invalid email
+    expected = [];
     suggestions = get_suggestions(query);
     assert.deepEqual(suggestions, expected);
 });

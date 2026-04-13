@@ -1100,25 +1100,22 @@ export let get_suggestions = function (
     // Handle spaces in person name in new suggestions only. Checks if the last operator is 'search'
     // and the second last operator in search_terms is one out of person_suggestion_ops.
     // e.g for `sender:Ted sm`, initially last = {operator: 'search', operand: 'sm'....}
-    // and second last is {operator: 'sender', operand: 'sm'....}. If the second last operand
-    // is an email of a user, both of these terms remain unchanged. Otherwise search operator
-    // will be deleted and new last will become {operator:'sender', operand: 'Ted sm`....}.
+    // and second last is {operator: 'sender', operand: 'Ted'....}. The search operator
+    // will be deleted and new last will become {operator:'sender', operand: 'Ted sm'....}.
     if (
         text_search_terms.length > 1 &&
         last.operator === "search" &&
         person_suggestion_ops.includes(text_search_terms.at(-2)!.operator)
     ) {
         const person_op = text_search_terms.at(-2)!;
-        if (!people.reply_to_to_user_ids_string(person_op.operand)) {
-            last = {
-                operator: person_op.operator,
-                operand: person_op.operand + " " + last.operand,
-                negated: person_op.negated,
-            };
-            text_search_terms.splice(-2);
-            text_search_terms.push(last);
-            all_search_terms = [...pill_search_terms, ...text_search_terms];
-        }
+        last = {
+            operator: person_op.operator,
+            operand: person_op.operand + " " + last.operand,
+            negated: person_op.negated,
+        };
+        text_search_terms.splice(-2);
+        text_search_terms.push(last);
+        all_search_terms = [...pill_search_terms, ...text_search_terms];
     }
     const valid_base_text_search_terms = text_search_terms
         .slice(0, -1)
