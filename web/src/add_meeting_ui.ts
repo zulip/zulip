@@ -111,9 +111,10 @@ function update_rsvp_submit_button_state(): void {
     .val()
     ?.trim();
   const has_invitees = user_pill.get_user_ids(invite_users_widget).length > 0;
+  const stream_id = narrow_state.stream_id();
 
   const $submit_button = $("#add-rsvp-meeting-modal .dialog_submit_button");
-  const is_disabled = !topic || !datetime || !has_invitees;
+  const is_disabled = !topic || !datetime || !has_invitees || stream_id === undefined;
 
   $submit_button.prop("disabled", is_disabled);
 }
@@ -366,6 +367,9 @@ function rsvp_meeting_modal_post_render(): void {
       },
     );
   });
+
+  // Set initial submit button state (may be disabled if not in a channel narrow)
+  update_rsvp_submit_button_state();
 }
 
 function on_add_all_users_click(): void {
