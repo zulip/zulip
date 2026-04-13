@@ -76,16 +76,16 @@
         "./styles/portico/comparison_table.css"
     ],
     "integrations": [
-        "./src/bundles/legacy_portico_bundle.ts",
+        "./src/bundles/integrations_bundle.ts",
         "./src/portico/integrations.ts",
-        "./styles/portico/legacy_landing_page.css",
+        "./styles/portico/marketing_page.css",
         "./styles/portico/integrations.css",
         "./src/portico/help.ts"
     ],
     "communities": [
-        "./src/bundles/legacy_portico_bundle.ts",
+        "./src/bundles/integrations_bundle.ts",
         "./src/portico/communities.ts",
-        "./styles/portico/legacy_landing_page.css",
+        "./styles/portico/marketing_page.css",
         "./styles/portico/integrations.css"
     ],
     "signup": [

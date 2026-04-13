@@ -30,6 +30,13 @@
         background-color: hsl(0deg 0% 100%);
 
         & img {
+            /* Replace the Bootstrap image reset that the new
+               integrations_bundle no longer provides. Without these,
+               images embedded in integration instructions render at
+               their natural size and overflow the content column. */
+            max-width: 100%;
+            height: auto;
+            vertical-align: middle;
             box-shadow: none;
             border: none;
         }
@@ -293,6 +300,14 @@
 
         @media (width <= 906px) {
             text-align: center;
+        }
+
+        /* The lozenge cards are wrapped in bare <a> tags, which
+           inherit the browser-default underline. Suppress it so
+           the underline doesn't peek through the whitespace gaps
+           between inline-block cards as visible dashes. */
+        & > a {
+            text-decoration: none;
         }
     }
 
