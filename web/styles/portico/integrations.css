@@ -36,7 +36,6 @@
 
         @media (width <= 768px) {
             width: calc(100% - 50px);
-            margin: 0 auto;
         }
 
         @media (width <= 450px) {
@@ -49,15 +48,6 @@
 
         .inner-content {
             min-height: 870px;
-
-            .show {
-                opacity: 1;
-                pointer-events: all;
-            }
-
-            @media (width <= 500px) {
-                height: auto;
-            }
         }
 
         @media (width <= 450px) {
@@ -82,11 +72,6 @@
         font-weight: 300;
         line-height: 1.2;
         text-align: center;
-        border-bottom: none;
-
-        & a {
-            color: inherit;
-        }
     }
 
     .portico-page-subheading {
@@ -597,7 +582,6 @@
 
 .portico-landing.integrations.communities {
     .main {
-        visibility: visible;
         max-width: 900px;
     }
 
