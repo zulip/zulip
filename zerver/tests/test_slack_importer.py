@@ -2,6 +2,7 @@ import os
 import re
 import shutil
 import tempfile
+import zipfile
 from collections.abc import Iterator
 from io import BytesIO
 from typing import TYPE_CHECKING, Any
@@ -2637,6 +2638,24 @@ To Do
         self.assertEqual(slack_emoji_name_to_codepoint["tophat"], "1f3a9")
         self.assertEqual(slack_emoji_name_to_codepoint["dog2"], "1f415")
         self.assertEqual(slack_emoji_name_to_codepoint["dog"], "1f436")
+
+    def test_slack_zip_path_traversal_rejected(self) -> None:
+        output_dir = os.path.join(settings.DEPLOY_ROOT, "var", "test-slack-path-traversal")
+        remove_folder(output_dir)
+
+        with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as f:
+            zip_path = f.name
+            with zipfile.ZipFile(f, "w") as zf:
+                zf.writestr("../traversal.json", "{}")
+
+        unzipped_path = zip_path.removesuffix(".zip")
+        try:
+            with self.assertRaises(SlackImportInvalidFileError):
+                do_convert_zipfile(zip_path, output_dir, "xoxb-fake-token", processes=1)
+        finally:
+            os.unlink(zip_path)
+            remove_folder(output_dir)
+            remove_folder(unzipped_path)
 
     @mock.patch("zerver.data_import.slack.requests.get")
     @mock.patch("zerver.data_import.slack.build_attachment", return_value=[])

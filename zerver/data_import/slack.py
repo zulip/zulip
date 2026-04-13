@@ -1632,7 +1632,6 @@ def do_convert_zipfile(
         os.makedirs(slack_data_dir, exist_ok=True)
 
         with zipfile.ZipFile(original_path) as zipObj:
-            total_size = 0
             for fileinfo in zipObj.infolist():
                 # Slack's export doesn't set the UTF-8 flag on each
                 # filename entry, despite encoding them as such, so
@@ -1642,6 +1641,17 @@ def do_convert_zipfile(
                 fileinfo.filename = fileinfo.filename.encode("cp437").decode("utf-8")
                 zipObj.NameToInfo[fileinfo.filename] = fileinfo
 
+            # Reject the archive wholesale if any entry contains a
+            # `..` path component.  Python's zipfile silently strips
+            # these during extraction, so this is defense in depth
+            # rather than a fix for a live traversal bug -- but we'd
+            # rather refuse an obviously malformed archive than rely
+            # on stdlib sanitization.
+            if any(".." in info.filename.split("/") for info in zipObj.infolist()):
+                raise SlackImportInvalidFileError("Uploaded zip file is not a valid Slack export.")
+
+            total_size = 0
+            for fileinfo in zipObj.infolist():
                 # The only files we expect to find in a Slack export are .json files:
                 #   something.json
                 #   channelname/
