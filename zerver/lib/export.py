@@ -36,7 +36,7 @@ from django.utils.timezone import now as timezone_now
 from psycopg2 import sql
 
 import zerver.lib.upload
-from analytics.models import RealmCount, StreamCount, UserCount
+from analytics.models import FillState, RealmCount, StreamCount, UserCount
 from scripts.lib.zulip_tools import TIMESTAMP_FORMAT
 from version import ZULIP_VERSION
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
@@ -283,8 +283,6 @@ NON_EXPORTED_TABLES = {
     # total of all the realmcount values on the server.  Might need to
     # recompute it after a fillstate import.
     "analytics_installationcount",
-    # Fillstate will require some cleverness to do the right partial export.
-    "analytics_fillstate",
     # These are for unfinished features; we'll want to add them to the
     # export before they reach full production status.
     "zerver_defaultstreamgroup",
@@ -331,6 +329,7 @@ ANALYTICS_TABLES = {
     "analytics_realmcount",
     "analytics_streamcount",
     "analytics_usercount",
+    "analytics_fillstate",
 }
 
 
@@ -2973,6 +2972,13 @@ def export_analytics_tables(realm: Realm, output_dir: Path) -> None:
     write_table_data(output_file=export_file, data=response)
 
 
+def custom_fetch_fillstate(response: TableData, context: Context) -> None:
+    """
+    FillState is a global table, so we can't fetch by realm filtering.
+    """
+    response["analytics_fillstate"] = make_raw(FillState.objects.order_by("id").iterator())
+
+
 def get_analytics_config() -> Config:
     # The Config function defines what data to export for the
     # analytics.json file in a full-realm export.
@@ -3001,6 +3007,13 @@ def get_analytics_config() -> Config:
         model=StreamCount,
         normal_parent=analytics_config,
         include_rows="realm_id__in",
+    )
+
+    Config(
+        table="analytics_fillstate",
+        model=FillState,
+        virtual_parent=analytics_config,
+        custom_fetch=custom_fetch_fillstate,
     )
 
     return analytics_config
