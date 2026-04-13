@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("zerver", "0776_realm_default_avatar_source"),
+        ("zerver", "0792_fix_animated_emoji_still_images"),
     ]
 
     operations = [

@@ -17,11 +17,17 @@ Flow summary:
 from datetime import datetime, timezone
 
 from django.db.models import Count, Q
+from django.utils.translation import gettext as _
 
 from zerver.actions.message_send import internal_send_private_message, internal_send_stream_message
 from zerver.actions.streams import bulk_add_subscriptions, get_subscriber_ids
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.streams import access_stream_by_name, create_stream_if_needed
+from zerver.lib.streams import (
+    access_stream_by_id,
+    access_stream_by_name,
+    create_stream_if_needed,
+    subscribed_to_stream,
+)
 from zerver.models import Stream, UserProfile
 from zerver.models.channel_folders import ChannelFolder
 from zerver.models.meetings import Meeting, MeetingResponse, MeetingSlot
@@ -56,6 +62,68 @@ def get_stream_subscribers(requesting_user: UserProfile, stream_name: str) -> li
 # Meeting lifecycle
 # ---------------------------------------------------------------------------
 
+def access_meeting_for_user(user_profile: UserProfile, meeting_id: int) -> Meeting:
+    """Load a meeting in the user's realm and ensure they can access its channel."""
+    try:
+        meeting = Meeting.objects.select_related("owner", "stream").get(
+            id=meeting_id, stream__realm_id=user_profile.realm_id
+        )
+    except Meeting.DoesNotExist:
+        raise JsonableError("Meeting not found.")
+    access_stream_by_id(user_profile, meeting.stream_id)
+    return meeting
+
+
+def assert_user_can_submit_meeting_responses(user: UserProfile, meeting: Meeting) -> None:
+    """Must see the stream; non-owners must be subscribed (invited to the channel)."""
+    access_stream_by_id(user, meeting.stream_id)
+    if user.id == meeting.owner_id:
+        return
+    if not subscribed_to_stream(user, meeting.stream_id):
+        raise JsonableError(
+            _("You must be subscribed to this meeting's channel to submit availability.")
+        )
+
+
+def _invitees_and_owner_for_subscriptions(
+    owner: UserProfile, invite_user_ids: list[int], realm: Realm
+) -> list[UserProfile]:
+    invited = list(
+        UserProfile.objects.filter(id__in=invite_user_ids, realm=realm, is_active=True)
+    )
+    by_id = {u.id: u for u in invited}
+    by_id[owner.id] = owner
+    return list(by_id.values())
+
+
+def _validate_existing_stream_invitees(
+    owner: UserProfile, stream: Stream, invite_user_ids: list[int]
+) -> None:
+    """
+    Existing-channel policy: all invited users must already be subscribers.
+    The caller should add missing users to the channel first, or create a new channel.
+    """
+    if not invite_user_ids:
+        return
+
+    invited_users = list(
+        UserProfile.objects.filter(id__in=invite_user_ids, realm=owner.realm, is_active=True)
+    )
+    found_ids = {user.id for user in invited_users}
+    requested_ids = set(invite_user_ids)
+    unknown_ids = sorted(requested_ids - found_ids)
+    if unknown_ids:
+        raise JsonableError(f"Invalid invite_user_ids: {unknown_ids}")
+
+    subscriber_ids = set(get_subscriber_ids(stream, requesting_user=owner))
+    missing_ids = sorted(found_ids - subscriber_ids)
+    if missing_ids:
+        raise JsonableError(
+            f"All invited users must already be subscribed to the selected channel. "
+            f"Missing subscriber user IDs: {missing_ids}"
+        )
+
+
 def do_create_meeting(
     owner: UserProfile,
     topic: str,
@@ -87,12 +155,14 @@ def do_create_meeting(
             folder=folder,
             acting_user=owner,
         )
-        invited_users = list(
-            UserProfile.objects.filter(id__in=invite_user_ids, realm=realm, is_active=True)
+        users_to_subscribe = _invitees_and_owner_for_subscriptions(
+            owner, invite_user_ids, realm
         )
-        bulk_add_subscriptions(realm, [stream], invited_users, acting_user=owner)
+        bulk_add_subscriptions(realm, [stream], users_to_subscribe, acting_user=owner)
     elif stream is None:
         raise JsonableError("Either create_channel must be True or a stream must be provided.")
+    else:
+        _validate_existing_stream_invitees(owner, stream, invite_user_ids)
 
     meeting = Meeting.objects.create(
         owner=owner,
@@ -127,6 +197,8 @@ def do_upsert_responses(
     # Maps slot_id → available (True/False).
     slot_responses: dict[int, bool],
 ) -> None:
+    assert_user_can_submit_meeting_responses(user, meeting)
+
     now = datetime.now(tz=timezone.utc)
 
     if meeting.status == Meeting.Status.CONFIRMED:

@@ -3,6 +3,13 @@ FROM ubuntu:22.04
 ARG UBUNTU_MIRROR
 
 # Basic packages and dependencies of docker-systemctl-replacement
+# Reduce flaky "Hash Sum mismatch" from Ubuntu mirrors during Docker builds (pipelining/CDN).
+RUN printf '%s\n' \
+    'Acquire::http::Pipeline-Depth "0";' \
+    'Acquire::http::No-Cache "true";' \
+    'Acquire::ForceIPv4 "true";' \
+    > /etc/apt/apt.conf.d/99docker-apt-reliability
+
 RUN echo locales locales/default_environment_locale select C.UTF-8 | debconf-set-selections \
     && echo locales locales/locales_to_be_generated select "C.UTF-8 UTF-8" | debconf-set-selections \
     && { [ ! "$UBUNTU_MIRROR" ] || sed -i "s|http://\(\w*\.\)*archive\.ubuntu\.com/ubuntu/\? |$UBUNTU_MIRROR |" /etc/apt/sources.list; } \

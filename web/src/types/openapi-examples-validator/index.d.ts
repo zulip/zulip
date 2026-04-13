@@ -1,4 +1,4 @@
-import type {ApplicationError} from "./application-error.d.ts";
+import type {ApplicationError} from "./application-error";
 
 declare namespace OpenApiExamplesValidator {
     export type ValidationStatistics = {
