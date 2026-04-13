@@ -129,7 +129,8 @@
 
     /* Markdown-style blue links used in the page subheading and in
        content areas that render user-facing text. */
-    .portico-page-subheading a {
+    .portico-page-subheading a,
+    .integration-instructions a {
         color: var(--color-link);
         text-decoration: underline;
         text-decoration-color: var(--color-link-underline);
@@ -661,9 +662,6 @@
 
         @media (width <= 768px) {
             flex-direction: column;
-        }
-
-        @media (width <= 450px) {
             padding: 0 25px;
         }
     }
