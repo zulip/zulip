@@ -1,3 +1,17 @@
+/* Override `width: 100vw` from marketing_page.css, which makes
+   html wider than the visible content area when a classic scrollbar
+   is present — the CSS `vw` unit always includes the scrollbar's
+   width. That shifts every centered element rightward by half the
+   scrollbar width, producing asymmetric side margins on the gradient.
+   `scrollbar-gutter: stable` reserves gutter space even when no
+   scrollbar is shown, preventing layout jiggle when switching between
+   categories whose heights differ enough to add or remove the
+   vertical scrollbar. */
+html:has(.portico-landing.integrations) {
+    width: auto;
+    scrollbar-gutter: stable;
+}
+
 .portico-landing.integrations {
     --color-integrations-category-text: hsl(223deg 6% 35%);
 
