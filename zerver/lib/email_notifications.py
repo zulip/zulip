@@ -373,7 +373,12 @@ def build_message_list(
     return messages_to_render
 
 
-def message_content_allowed_in_missedmessage_emails(user_profile: UserProfile) -> bool:
+def message_content_allowed_in_missedmessage_emails(
+    user_profile: UserProfile, stream: Stream | None
+) -> bool:
+    if stream is not None and not stream.message_content_allowed_in_email_notifications:
+        return False
+
     return (
         user_profile.realm.message_content_allowed_in_email_notifications
         and user_profile.message_content_in_email_notifications
@@ -531,6 +536,7 @@ def do_send_missedmessage_events_reply_in_zulip(
 
     senders = list({m["message"].sender for m in missed_messages})
     message = missed_messages[0]["message"]
+    stream = None
     if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         display_recipient = get_display_recipient(message.recipient)
         narrow_url = direct_message_group_narrow_url(
@@ -598,7 +604,7 @@ def do_send_missedmessage_events_reply_in_zulip(
         raise AssertionError("Invalid messages!")
 
     # If message content is disabled, then flush all information we pass to email.
-    if not message_content_allowed_in_missedmessage_emails(user_profile):
+    if not message_content_allowed_in_missedmessage_emails(user_profile, stream):
         realm = user_profile.realm
         context.update(
             reply_to_zulip=False,
@@ -609,6 +615,8 @@ def do_send_missedmessage_events_reply_in_zulip(
             show_message_content=False,
             message_content_disabled_by_user=not user_profile.message_content_in_email_notifications,
             message_content_disabled_by_realm=not realm.message_content_allowed_in_email_notifications,
+            message_content_disabled_by_stream=stream is not None
+            and not stream.message_content_allowed_in_email_notifications,
         )
     else:
         context.update(
