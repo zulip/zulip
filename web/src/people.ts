@@ -304,28 +304,6 @@ export function direct_message_group_string(message: Message): string | undefine
     return user_ids.join(",");
 }
 
-export function user_ids_string_to_emails_string(user_ids_string: string): string | undefined {
-    const user_ids = split_to_ints(user_ids_string);
-    return user_ids_to_emails_string(user_ids);
-}
-
-export function user_ids_to_emails_string(user_ids: number[]): string | undefined {
-    const sorted_ids = sort_user_ids_by_username(user_ids);
-    const emails = util.try_parse_as_truthy(
-        sorted_ids.map((user_id) => {
-            const person = people_by_user_id_dict.get(user_id);
-            return person?.email.toLowerCase();
-        }),
-    );
-
-    if (emails === undefined) {
-        blueslip.warn("Unknown user ids: " + user_ids.join(","));
-        return undefined;
-    }
-
-    return emails.join(",");
-}
-
 export function user_ids_string_to_ids_array(user_ids_string: string): number[] {
     const user_ids = user_ids_string.length === 0 ? [] : user_ids_string.split(",");
     const ids = user_ids.map((user_id_string) => {

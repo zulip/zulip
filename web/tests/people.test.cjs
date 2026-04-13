@@ -957,9 +957,6 @@ run_test("multi_user_methods", () => {
     assert.equal(emp401.user_id, 401);
     assert.equal(emp402.user_id, 402);
 
-    const emails_string = people.user_ids_string_to_emails_string("402,401");
-    assert.equal(emails_string, "emp401@example.com,emp402@example.com");
-
     let user_ids = people.slug_to_user_ids("402,401");
     assert.deepEqual(user_ids, [402, 401]);
 

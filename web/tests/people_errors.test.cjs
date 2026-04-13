@@ -74,9 +74,6 @@ run_test("blueslip", () => {
     });
     people.add_active_user(person);
 
-    blueslip.expect("warn", "Unknown user ids: 1,2");
-    people.user_ids_string_to_emails_string("1,2");
-
     blueslip.expect("warn", "Unknown emails");
     people.email_list_to_user_ids_string([unknown_email]);
 
