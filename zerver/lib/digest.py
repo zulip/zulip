@@ -459,7 +459,7 @@ def bulk_get_digest_context(
             "message_content_disabled_by_user"
         ] = not user.message_content_in_email_notifications
 
-        if not message_content_allowed_in_missedmessage_emails(user):
+        if not message_content_allowed_in_missedmessage_emails(user, None):
             # Count new messages when message content is hidden in email notifications.
             if not have_min_recent_message_id:
                 min_recent_message_id = get_min_recent_message_id(realm.id, cutoff_date)

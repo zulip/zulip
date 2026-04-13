@@ -15,6 +15,8 @@
     <div class="missed_message no-content-explanation">
     {% if message_content_disabled_by_realm %}
     {% trans help_url=realm_url + "/help/hide-message-content-in-emails" %}This email does not include message content because your organization <a class="content_disabled_help_link" href="{{ help_url }}">hides message content</a> in email notifications.{% endtrans %}
+    {% elif message_content_disabled_by_stream %}
+    {% trans help_url=realm_url + "/help/hide-message-content-in-emails" %}This email does not include message content because messages in this channel <a class="content_disabled_help_link" href="{{ help_url }}">hide their content</a> in email notifications.{% endtrans %}
     {% elif message_content_disabled_by_user %}
     {% trans help_url=realm_url + "/help/email-notifications#hide-message-content" %}This email does not include message content because you have chosen to <a class="content_disabled_help_link" href="{{ help_url }}">hide message content</a> in email notifications.{% endtrans %}
     {% endif %}
