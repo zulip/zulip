@@ -209,7 +209,7 @@ run_test("reply_message_private", ({override}) => {
         queue_id: 177,
         local_id: "199",
         type: "private",
-        to: '["fred@example.com"]',
+        to: `[${fred.user_id}]`,
         content: "hello",
     });
 });

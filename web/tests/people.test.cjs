@@ -957,7 +957,7 @@ run_test("multi_user_methods", () => {
     assert.equal(emp401.user_id, 401);
     assert.equal(emp402.user_id, 402);
 
-    let emails_string = people.user_ids_string_to_emails_string("402,401");
+    const emails_string = people.user_ids_string_to_emails_string("402,401");
     assert.equal(emails_string, "emp401@example.com,emp402@example.com");
 
     let user_ids = people.slug_to_user_ids("402,401");
@@ -1065,7 +1065,6 @@ run_test("message_methods", () => {
     };
     assert.equal(people.pm_with_url(message), "#narrow/dm/301,302-group");
     assert.equal(people.pm_perma_link(message), "#narrow/dm/30,301,302-group");
-    assert.equal(people.pm_reply_to(message), "charles@example.com,Athens@example.com");
     assert.equal(people.small_avatar_url(message), "http://charles.com/foo.png");
 
     message = {
@@ -1075,7 +1074,6 @@ run_test("message_methods", () => {
     };
     assert.equal(people.pm_with_url(message), "#narrow/dm/302-Maria-Athens");
     assert.equal(people.pm_perma_link(message), "#narrow/dm/30,302-dm");
-    assert.equal(people.pm_reply_to(message), "Athens@example.com");
     assert.equal(people.small_avatar_url(message), "legacy.png");
 
     message = {
@@ -1125,7 +1123,6 @@ run_test("message_methods", () => {
     assert.equal(people.all_user_ids_in_pm(message), undefined);
 
     // Test undefined user_ids
-    assert.equal(people.pm_reply_to(message), undefined);
     assert.equal(people.pm_reply_user_string(message), undefined);
     assert.equal(people.pm_with_url(message), undefined);
 

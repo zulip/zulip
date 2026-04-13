@@ -515,27 +515,6 @@ export function pm_reply_user_string(message: Message | MessageWithBooleans): st
     return user_ids.join(",");
 }
 
-export function pm_reply_to(message: Message): string | undefined {
-    const user_ids = pm_with_user_ids(message);
-
-    if (!user_ids) {
-        return undefined;
-    }
-
-    const emails = user_ids.map((user_id) => {
-        const person = people_by_user_id_dict.get(user_id);
-        if (!person) {
-            blueslip.error("Unknown user id in message", {user_id});
-            return "?";
-        }
-        return person.email;
-    });
-
-    const reply_to = sort_emails_by_username(emails).join(",");
-
-    return reply_to;
-}
-
 export function sorted_other_user_ids(user_ids: number[]): number[] {
     // This excludes your own user id unless you're the only user
     // (i.e. you sent a message to yourself).

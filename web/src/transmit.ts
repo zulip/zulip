@@ -148,15 +148,15 @@ export function reply_message(message: Message, content: string): void {
     }
 
     if (message.type === "private") {
-        const pm_recipient = people.pm_reply_to(message);
-        assert(pm_recipient !== undefined);
+        const user_ids = people.pm_with_user_ids(message);
+        assert(user_ids !== undefined);
 
         const reply: SendMessageData = {
             type: "private",
             local_id,
             sender_id,
             queue_id,
-            to: JSON.stringify(pm_recipient.split(",")),
+            to: JSON.stringify(user_ids),
             content,
         };
 

@@ -66,7 +66,7 @@ run_test("blueslip", () => {
     blueslip.expect("error", "Unknown user_id");
     people.get_actual_name_from_user_id(9999);
 
-    blueslip.expect("error", "Unknown email for get_user_id", 2);
+    blueslip.expect("error", "Unknown email for get_user_id");
     people.get_user_id(unknown_email);
 
     blueslip.expect("warn", "No user_id provided");
@@ -87,7 +87,7 @@ run_test("blueslip", () => {
     blueslip.expect("warn", "Unknown emails");
     people.email_list_to_user_ids_string([unknown_email]);
 
-    let message = {
+    const message = {
         type: "private",
         display_recipient: [],
         sender_id: me.user_id,
@@ -96,29 +96,6 @@ run_test("blueslip", () => {
     people.pm_with_user_ids(message);
     people.all_user_ids_in_pm(message);
     assert.equal(people.pm_perma_link(message), undefined);
-
-    const charles = make_user({
-        email: "charles@example.com",
-        user_id: 451,
-        full_name: "Charles Dickens",
-        avatar_url: "charles.com/foo.png",
-    });
-    const maria = make_user({
-        email: "athens@example.com",
-        user_id: 452,
-        full_name: "Maria Athens",
-    });
-    people.add_active_user(charles);
-    people.add_active_user(maria);
-
-    message = {
-        type: "private",
-        display_recipient: [{id: maria.user_id}, {id: 42}, {id: charles.user_id}],
-        sender_id: charles.user_id,
-    };
-    blueslip.expect("error", "Unknown user id in message");
-    const reply_to = people.pm_reply_to(message);
-    assert.ok(reply_to.includes("?"));
 
     blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
     blueslip.expect("error", "Unknown people in message");
@@ -129,5 +106,5 @@ run_test("blueslip", () => {
     assert.equal(people.my_custom_profile_data(undefined), undefined);
 
     blueslip.expect("error", "Trying to set undefined field id");
-    people.set_custom_profile_field_data(maria.user_id, {});
+    people.set_custom_profile_field_data(me.user_id, {});
 });
