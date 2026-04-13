@@ -18,7 +18,9 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
-from analytics.models import UserCount
+from analytics.lib.counts import COUNT_STATS, do_drop_all_analytics_tables, process_count_stat
+from analytics.models import FillState, InstallationCount, RealmCount, UserCount
+from analytics.tests.test_counts import AnalyticsTestCase
 from version import ZULIP_VERSION
 from zerver.actions.alert_words import do_add_alert_words
 from zerver.actions.create_user import do_create_user
@@ -41,7 +43,7 @@ from zerver.actions.user_activity import do_update_user_activity_interval
 from zerver.actions.user_settings import do_change_user_delivery_email, do_change_user_setting
 from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
-from zerver.actions.users import do_deactivate_user
+from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib import import_realm, upload
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
@@ -3831,3 +3833,140 @@ class GetFKFieldNameTest(ZulipTestCase):
         self.assertEqual(get_fk_field_name(UserProfile, Realm), "realm")
         self.assertEqual(get_fk_field_name(Reaction, Stream), None)
         self.assertEqual(get_fk_field_name(Message, UserProfile), "sender")
+
+
+class AnalyticsImportExportTest(AnalyticsTestCase, ExportFile):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        # There must be at least one realm owner user for a realm to be
+        # successfully imported.
+        user = self.create_user()
+        do_change_user_role(user, UserProfile.ROLE_REALM_OWNER, acting_user=None, notify=True)
+        self.shylock = user
+
+    def test_migrate_fillstate_to_empty_server(self) -> None:
+        current_time = self.TIME_ZERO
+
+        # Log a stat in the original realm before exporting it.
+        stat = COUNT_STATS["messages_sent:message_type:day"]
+        self.current_property = stat.property
+
+        public_channel = self.create_stream_with_recipient()[1]
+        self.create_message(self.shylock, public_channel)
+
+        process_count_stat(stat, current_time)
+        self.assertFillStateEquals(stat, current_time)
+        self.assertTableState(
+            RealmCount,
+            ["property", "subgroup", "value", "end_time"],
+            [[stat.property, "public_stream", 1, current_time]],
+        )
+
+        self.export_realm_and_create_auditlog(self.default_realm)
+
+        # Empty the server.
+        do_drop_all_analytics_tables()
+        self.assertEqual(FillState.objects.filter(property=stat.property).count(), 0)
+        Realm.objects.all().exclude(string_id=settings.SYSTEM_BOT_REALM).delete()
+
+        with self.assertLogs(level="INFO"):
+            # Update self.default_realm since the count-related helper methods
+            # use that variable.
+            self.default_realm = do_import_realm(get_output_dir(), "test-zulip")
+
+        # Bump current time a day to log a new Count entry.
+        current_time += self.DAY
+        imported_shylock = UserProfile.objects.get(
+            delivery_email=self.shylock.delivery_email, realm=self.default_realm
+        )
+
+        # FillState is imported and process_count_stat properly logs new rows.
+        private_channel = self.create_stream_with_recipient(
+            invite_only=True, date_created=self.TIME_ZERO + self.HOUR
+        )[1]
+        self.create_message(imported_shylock, private_channel, date_sent=self.TIME_ZERO + self.HOUR)
+        process_count_stat(stat, current_time)
+
+        self.assertTableState(
+            RealmCount,
+            ["property", "subgroup", "value", "end_time"],
+            [
+                [stat.property, "public_stream", 1, current_time - self.DAY],
+                [stat.property, "private_stream", 1, current_time],
+            ],
+        )
+        self.assertFillStateEquals(stat, current_time)
+
+    def test_migrate_fillstate_to_empty_server_with_stale_counts(self) -> None:
+        current_time = self.TIME_ZERO
+
+        # Log a stat in the original realm before exporting it.
+        stat = COUNT_STATS["messages_sent:message_type:day"]
+        self.current_property = stat.property
+
+        public_channel = self.create_stream_with_recipient()[1]
+        self.create_message(self.shylock, public_channel)
+
+        process_count_stat(stat, current_time)
+        self.assertFillStateEquals(stat, current_time)
+        self.assertTableState(
+            RealmCount,
+            ["property", "subgroup", "value", "end_time"],
+            [[stat.property, "public_stream", 1, current_time]],
+        )
+
+        self.export_realm_and_create_auditlog(self.default_realm)
+
+        # Delete all realms excluding the system bot realm but make sure there
+        # are stale Count rows. Unlike RealmCount, the InstallationCount row
+        # has no realm foreign key, so it survives the realm deletion and can
+        # only be cleared by the import itself.
+        RealmCount.objects.create(
+            property="whatever",
+            subgroup=None,
+            value=123,
+            realm=self.default_realm,
+            end_time=current_time,
+        )
+        InstallationCount.objects.create(
+            property="whatever",
+            subgroup=None,
+            value=123,
+            end_time=current_time,
+        )
+        self.assertEqual(FillState.objects.filter(property=stat.property).count(), 1)
+        Realm.objects.all().exclude(string_id=settings.SYSTEM_BOT_REALM).delete()
+
+        # The rest of the test should result exactly the same as
+        # test_migrate_fillstate_to_empty_server.
+        with self.assertLogs(level="INFO"):
+            self.default_realm = do_import_realm(get_output_dir(), "test-zulip")
+
+        current_time += self.DAY
+        imported_shylock = UserProfile.objects.get(
+            delivery_email=self.shylock.delivery_email, realm=self.default_realm
+        )
+
+        private_channel = self.create_stream_with_recipient(
+            invite_only=True, date_created=self.TIME_ZERO + self.HOUR
+        )[1]
+        self.create_message(imported_shylock, private_channel, date_sent=self.TIME_ZERO + self.HOUR)
+        process_count_stat(stat, current_time)
+
+        # The stale RealmCount and InstallationCount rows we created
+        # earlier are gone.
+        self.assertTableState(
+            RealmCount,
+            ["property", "subgroup", "value", "end_time"],
+            [
+                [stat.property, "public_stream", 1, current_time - self.DAY],
+                [stat.property, "private_stream", 1, current_time],
+            ],
+        )
+        self.assertTableState(
+            InstallationCount,
+            ["property", "subgroup", "value", "end_time"],
+            [[stat.property, "private_stream", 1, current_time]],
+        )
+        self.assertFillStateEquals(stat, current_time)
