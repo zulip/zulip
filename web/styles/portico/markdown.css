@@ -488,8 +488,24 @@
             border-radius: 0 6px 6px;
         }
 
+        /* A "no-tabs" section is a degenerate zero-tabs wrapper that
+           just holds flowing markdown content. The border and radius
+           on `.blocks` exist to visually group a tab bar with the
+           content below it, which is meaningless when there's no tab
+           bar — it just draws a random frame around a subset of the
+           content. Drop the frame in that case.
+
+           Reset padding to 0 and use `margin-block` instead so that
+           the top/bottom margins collapse with adjacent paragraphs,
+           the first list item's margin, etc. — that gives a natural,
+           single breathing-room gap of ~20 px instead of stacking
+           the preceding paragraph's 10 px margin on top of the
+           block's own space. */
         &.no-tabs .blocks {
-            border-radius: 6px;
+            padding: 0;
+            margin-block: 20px;
+            border: 0;
+            border-radius: 0;
         }
 
         &.no-tabs .blocks > .tab-content,
