@@ -337,10 +337,6 @@ html {
         }
     }
 
-    & ol > li::before {
-        background-color: var(--color-link);
-    }
-
     .copy-to-clipboard-button:focus {
         outline-color: var(--color-link);
     }
