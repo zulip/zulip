@@ -446,6 +446,26 @@ class TestMutuallyExclusiveWith(ZulipTestCase):
                 stdout.getvalue(),
             )
 
+    def test_import_blocked_by_update_analytics_counts(self) -> None:
+        stdout = StringIO()
+        with tempfile.TemporaryDirectory() as lock_dir, self.settings(LOCKFILE_DIRECTORY=lock_dir):
+            # With the lock free, the import command runs normally,
+            # here far enough to reject the nonexistent export path.
+            with self.assertRaisesRegex(CommandError, "Directory not found"):
+                call_command("import", "newimport", "/nonexistent", stdout=stdout)
+
+            # While update_analytics_counts holds its lock, the import
+            # command aborts instead.
+            lock_path = os.path.join(lock_dir, "update_analytics_counts.lock")
+            with open(lock_path, "w") as held:
+                fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                with self.assertRaises(SystemExit):
+                    call_command("import", "newimport", "/nonexistent", stdout=stdout)
+            self.assertIn(
+                "Process 'update_analytics_counts' is currently running",
+                stdout.getvalue(),
+            )
+
 
 class TestPasswordRestEmail(ZulipTestCase):
     COMMAND_NAME = "send_password_reset_email"
