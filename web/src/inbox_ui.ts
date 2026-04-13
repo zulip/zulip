@@ -1640,7 +1640,7 @@ function update_closed_compose_text($row: JQuery, is_header_row: boolean): void 
 }
 
 export function get_focused_row_message(): {message?: Message | undefined} & (
-    | {msg_type: "private"; private_message_recipient?: string}
+    | {msg_type: "private"; private_message_recipient_ids?: number[]}
     | {msg_type: "stream"; stream_id: number; topic?: string}
     | {msg_type?: never}
 ) {
@@ -1679,11 +1679,11 @@ export function get_focused_row_message(): {message?: Message | undefined} & (
         assert(row_info !== undefined);
         const message = message_store.get(row_info.latest_msg_id);
         if (message === undefined) {
-            const recipients = people.user_ids_string_to_emails_string(row_info.user_ids_string);
-            assert(recipients !== undefined);
             return {
                 msg_type: "private",
-                private_message_recipient: recipients,
+                private_message_recipient_ids: people.user_ids_string_to_ids_array(
+                    row_info.user_ids_string,
+                ),
             };
         }
         return {message};
