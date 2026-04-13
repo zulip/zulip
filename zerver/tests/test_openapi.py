@@ -273,8 +273,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
 
     # Endpoints where the documentation is currently failing our
     # consistency tests.  We aim to keep this list empty.
-    # TODO: Cleanup /realm/emoji/{emoji_name} from this list.
-    buggy_documentation_endpoints: set[str] = {"/realm/emoji/{emoji_name}"}
+    buggy_documentation_endpoints: set[str] = set()
 
     def ensure_no_documentation_if_intentionally_undocumented(
         self, url_pattern: str, method: str, msg: str | None = None

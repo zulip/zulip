@@ -1,5 +1,3 @@
-from typing import Annotated
-
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpRequest, HttpResponse
@@ -10,12 +8,7 @@ from zerver.decorator import require_human_non_guest_user
 from zerver.lib.emoji import check_remove_custom_emoji, check_valid_emoji_name, name_to_codepoint
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import (
-    INTENTIONALLY_UNDOCUMENTED,
-    ApiParamConfig,
-    PathOnly,
-    typed_endpoint,
-)
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.lib.upload import get_file_info
 from zerver.models import RealmEmoji, UserProfile
 from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
@@ -36,10 +29,7 @@ def upload_emoji(
     user_profile: UserProfile,
     *,
     emoji_name: PathOnly[str],
-    resize_method: Annotated[
-        str,
-        ApiParamConfig(documentation_status=INTENTIONALLY_UNDOCUMENTED),
-    ] = "crop",
+    resize_method: str = "crop",
 ) -> HttpResponse:
     emoji_name = emoji_name.strip().replace(" ", "_")
     valid_built_in_emoji = name_to_codepoint.keys()
