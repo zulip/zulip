@@ -36,14 +36,12 @@
                         <i class="fa fa-angle-down" aria-hidden="true"></i>
                     </div>
                     <div class="dropdown-list">
-                        <a href="#all">
-                            <h4 class="realm-category selected" data-category="all">All</h4>
+                        <a href="#all" class="realm-category selected" data-category="all">
+                            {% trans %}All{% endtrans %}
                         </a>
                         {% for org_type in org_types.keys() %}
-                        <a href="#{{ org_type }}">
-                            <h4 class="realm-category" data-category="{{ org_type }}">
-                                {{ org_types[org_type]["name"] }}
-                            </h4>
+                        <a href="#{{ org_type }}" class="realm-category" data-category="{{ org_type }}">
+                            {{ org_types[org_type]["name"] }}
                         </a>
                         {% endfor %}
                     </div>
@@ -52,14 +50,12 @@
                 <div class="catalog">
                     <div class="integration-categories-sidebar">
                         <h3>{% trans %}Categories{% endtrans %}</h3>
-                        <a href="#all">
-                            <h4 data-category="all" class="realm-category selected">{% trans %}All{% endtrans %}</h4>
+                        <a href="#all" data-category="all" class="realm-category selected">
+                            {% trans %}All{% endtrans %}
                         </a>
                         {% for org_type in org_types.keys() %}
-                        <a href="#{{ org_type }}">
-                            <h4 data-category="{{ org_type }}" class="realm-category">
-                                {{  org_types[org_type]["name"] }}
-                            </h4>
+                        <a href="#{{ org_type }}" data-category="{{ org_type }}" class="realm-category">
+                            {{ org_types[org_type]["name"] }}
                         </a>
                         {% endfor %}
                     </div>

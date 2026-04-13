@@ -236,10 +236,8 @@
             }
 
             & a {
+                display: block;
                 text-decoration: none;
-            }
-
-            & h4 {
                 font-weight: 400;
                 font-size: 0.95em;
                 padding: 6px 10px;
@@ -268,14 +266,6 @@
     .integration-categories-dropdown {
         display: none;
 
-        .heading {
-            font-weight: 600;
-        }
-
-        & a {
-            text-decoration: none;
-        }
-
         /* Match the search box at narrow widths: the outer container
            takes 30px horizontal padding, and the inner elements
            (toggle + list) cap at 500px and center within the content
@@ -286,11 +276,16 @@
             margin: 0;
             padding: 0 30px;
 
-            & h3,
-            h4 {
+            & h3 {
                 font-weight: 400;
+                font-size: 1.1em;
+                text-align: left;
                 margin: 0;
                 padding: 12px 20px;
+
+                &.heading {
+                    font-weight: 600;
+                }
             }
 
             .integration-toggle-categories-dropdown,
@@ -342,26 +337,24 @@
                 border-top: 0;
                 border-radius: 0 0 5px 5px;
                 overflow: hidden;
-            }
 
-            & h3 {
-                font-size: 1.1em;
-                text-align: left;
-            }
+                & a {
+                    display: block;
+                    text-decoration: none;
+                    font-weight: 400;
+                    font-size: 1em;
+                    padding: 12px 20px;
+                    color: var(--color-integrations-category-text);
 
-            & h4 {
-                font-size: 1em;
-                color: var(--color-integrations-category-text);
+                    &:hover {
+                        color: hsl(223deg 6% 15%);
+                    }
 
-                &:hover {
-                    color: hsl(223deg 6% 15%);
-                }
-
-                &.selected {
-                    background-color: hsl(0deg 0% 100%);
-                    color: hsl(223deg 6% 25%);
-                    font-weight: 600;
-                }
+                    &.selected {
+                        background-color: hsl(0deg 0% 100%);
+                        color: hsl(223deg 6% 25%);
+                        font-weight: 600;
+                    }
             }
         }
 
