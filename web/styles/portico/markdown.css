@@ -167,7 +167,7 @@
                 vertical-align: top;
                 padding: 3px 6.5px 3px 7.5px;
                 margin-right: 5px;
-                background-color: hsl(170deg 48% 54%);
+                background-color: var(--color-link);
                 color: hsl(0deg 0% 100%);
                 border-radius: 100%;
                 font-size: 0.9em;
