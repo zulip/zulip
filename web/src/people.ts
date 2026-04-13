@@ -249,40 +249,11 @@ export function sort_user_ids_by_username(user_ids: number[]): number[] {
     return name_id_dict.map(({user_id}) => user_id);
 }
 
-// A function that sorts Email according to the user's full name
-export function sort_emails_by_username(emails: string[]): (string | undefined)[] {
-    const user_ids = emails.map((email) => get_user_id(email));
-    const name_email_dict = user_ids.map((user_id, index) => ({
-        name:
-            user_id !== undefined && people_by_user_id_dict.has(user_id)
-                ? people_by_user_id_dict.get(user_id)?.full_name
-                : "?",
-        email: emails[index],
-    }));
-    name_email_dict.sort((a, b) => util.strcmp(a.name!, b.name!));
-    return name_email_dict.map(({email}) => email);
-}
-
 export function get_visible_email(user: User): string {
     if (user.delivery_email) {
         return user.delivery_email;
     }
     return user.email;
-}
-
-export function get_user_id(email: string): number | undefined {
-    const person = get_by_email(email);
-    if (person === undefined) {
-        blueslip.error("Unknown email for get_user_id", {email});
-        return undefined;
-    }
-    const user_id = person.user_id;
-    if (!user_id) {
-        blueslip.error("No user_id found for email", {email});
-        return undefined;
-    }
-
-    return user_id;
 }
 
 export function maybe_get_user_id_by_email(email: string): number | undefined {
@@ -339,10 +310,11 @@ export function user_ids_string_to_emails_string(user_ids_string: string): strin
 }
 
 export function user_ids_to_emails_string(user_ids: number[]): string | undefined {
-    let emails = util.try_parse_as_truthy(
-        user_ids.map((user_id) => {
+    const sorted_ids = sort_user_ids_by_username(user_ids);
+    const emails = util.try_parse_as_truthy(
+        sorted_ids.map((user_id) => {
             const person = people_by_user_id_dict.get(user_id);
-            return person?.email;
+            return person?.email.toLowerCase();
         }),
     );
 
@@ -351,9 +323,7 @@ export function user_ids_to_emails_string(user_ids: number[]): string | undefine
         return undefined;
     }
 
-    emails = emails.map((email) => email.toLowerCase());
-
-    return sort_emails_by_username(emails).join(",");
+    return emails.join(",");
 }
 
 export function user_ids_string_to_ids_array(user_ids_string: string): number[] {

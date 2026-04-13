@@ -1643,12 +1643,6 @@ run_test("sort_by_username", () => {
         people.sort_user_ids_by_username([maria.user_id, cedar.user_id, leo.user_id]),
         [cedar.user_id, leo.user_id, maria.user_id],
     );
-
-    assert.deepEqual(people.sort_emails_by_username([maria.email, cedar.email, leo.email]), [
-        cedar.email,
-        leo.email,
-        maria.email,
-    ]);
 });
 
 run_test("get_users_that_match_role_ids", () => {

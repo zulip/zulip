@@ -66,9 +66,6 @@ run_test("blueslip", () => {
     blueslip.expect("error", "Unknown user_id");
     people.get_actual_name_from_user_id(9999);
 
-    blueslip.expect("error", "Unknown email for get_user_id");
-    people.get_user_id(unknown_email);
-
     blueslip.expect("warn", "No user_id provided");
     const person = make_user({
         email: "person@example.com",
@@ -76,10 +73,6 @@ run_test("blueslip", () => {
         full_name: "Person Person",
     });
     people.add_active_user(person);
-
-    blueslip.expect("error", "No user_id found for email");
-    const user_id = people.get_user_id("person@example.com");
-    assert.equal(user_id, undefined);
 
     blueslip.expect("warn", "Unknown user ids: 1,2");
     people.user_ids_string_to_emails_string("1,2");
