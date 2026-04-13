@@ -3,6 +3,7 @@ import os
 import re
 import tempfile
 from datetime import timedelta
+from io import StringIO
 from typing import Any
 from unittest import mock, skipUnless
 from unittest.mock import MagicMock, call, patch
@@ -20,7 +21,7 @@ from typing_extensions import override
 from confirmation.models import Confirmation, generate_realm_creation_url
 from zerver.actions.create_user import do_create_user
 from zerver.actions.user_settings import do_change_user_setting
-from zerver.lib.management import ZulipBaseCommand, skip_unless_locked
+from zerver.lib.management import ZulipBaseCommand, mutually_exclusive_with, skip_unless_locked
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, stdout_suppressed
 from zerver.models import Realm, RealmAuditLog, Recipient, UserProfile
@@ -406,6 +407,44 @@ class TestSkipUnlessLocked(ZulipTestCase):
                 fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
                 handle(command)
             self.assertEqual(ran, [])
+
+
+class TestMutuallyExclusiveWith(ZulipTestCase):
+    def test_abort_when_conflicting_lock_is_held(self) -> None:
+        ran = []
+
+        def conflicting_handle(self: BaseCommand, *args: Any, **kwargs: Any) -> None: ...
+
+        # Simulate a handle function belonging to another command
+        # module, whose lockfile name is derived from that module.
+        conflicting_handle.__module__ = "zerver.management.commands.conflicting_command"
+
+        @mutually_exclusive_with(conflicting_handle)
+        def handle(self: BaseCommand, *args: Any, **kwargs: Any) -> None:
+            ran.append(True)
+
+        stdout = StringIO()
+        command = BaseCommand(stdout=stdout)
+        with tempfile.TemporaryDirectory() as lock_dir, self.settings(LOCKFILE_DIRECTORY=lock_dir):
+            # With the conflicting command's lock free, the wrapped
+            # command runs.
+            handle(command)
+            self.assertEqual(ran, [True])
+
+            # While the conflicting command's lock is held, the command
+            # aborts with an error explaining what is blocking it.
+            ran.clear()
+            lock_path = os.path.join(lock_dir, "conflicting_command.lock")
+            with open(lock_path, "w") as held:
+                fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                with self.assertRaises(SystemExit):
+                    handle(command)
+            self.assertEqual(ran, [])
+            self.assertIn(
+                f"Process 'conflicting_command' is currently running (lock {lock_path} is held). "
+                "Please wait until it has finished before trying again.",
+                stdout.getvalue(),
+            )
 
 
 class TestPasswordRestEmail(ZulipTestCase):
