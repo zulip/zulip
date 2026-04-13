@@ -61,6 +61,7 @@ import "../../styles/inbox.css";
 import "../../styles/color_picker.css";
 import "../../styles/animate.css";
 import "../../styles/rsvp_widget.css";
+import "../../styles/user_meeting_availability.css";
 import "@uppy/core/css/style.min.css";
 import "@uppy/image-editor/css/style.min.css";
 
