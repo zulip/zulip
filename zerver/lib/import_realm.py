@@ -1186,7 +1186,7 @@ def import_uploads(
                 relative_path += ".original"
             sanitized_record.raw_record["last_modified"] = timestamp
         elif processing_realm_icons:
-            icon_name = os.path.basename(sanitized_record.original_relative_path)
+            icon_name = sanitize_name(os.path.basename(sanitized_record.original_relative_path))
             relative_path = os.path.join(
                 str(sanitized_record.raw_record["realm_id"]), "realm", icon_name
             )
