@@ -317,49 +317,11 @@ html {
         padding-top: 10px;
     }
 
-    /* Restore element styles that Bootstrap previously provided. */
-    & p {
-        margin: 0 0 10px;
-    }
-
-    & p:empty {
-        margin: 0;
-    }
-
-    & h1 {
-        margin-top: 15px;
-    }
-
-    & h4 {
-        margin: 15px 0 5px;
-    }
-
-    & hr {
-        margin: 20px 0;
-        border: 0;
-        border-top: 1px solid hsl(0deg 0% 93%);
-    }
-
-    & ul,
-    ol {
-        padding: 0;
-    }
-
-    & pre {
-        padding: 9.5px;
-        margin: 0 0 10px;
-        word-break: break-all;
-        line-height: 20px;
-        background-color: hsl(0deg 0% 96%);
-        border: 1px solid hsl(0deg 0% 0% / 15%);
-        border-radius: 4px;
-    }
-
-    .tabbed-section .blocks pre {
-        margin: 0;
-        padding-top: 0;
-        padding-bottom: 0;
-    }
+    /* Element-level styles for paragraphs, headings, lists, code
+       blocks, and horizontal rules live in portico/markdown.css
+       under `.help .markdown, .integration-instructions` so that
+       both the help bundle and the integrations bundle share a
+       single source of truth. */
 
     /* Match the link styling from marketing/case-study pages. */
     & a {
@@ -373,10 +335,6 @@ html {
             color: var(--color-link-hover);
             text-decoration-color: var(--color-link-underline-hover);
         }
-
-        & code {
-            color: var(--color-link);
-        }
     }
 
     & ol > li::before {
@@ -385,10 +343,6 @@ html {
 
     .copy-to-clipboard-button:focus {
         outline-color: var(--color-link);
-    }
-
-    .tabbed-section ul.nav li.active {
-        color: var(--color-link);
     }
 
     .api-field-type {

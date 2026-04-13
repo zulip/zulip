@@ -460,7 +460,7 @@
                 cursor: pointer;
 
                 &.active {
-                    color: hsl(176deg 46% 41%);
+                    color: var(--color-link);
                     margin-bottom: -1px;
 
                     border: 1px solid hsl(0deg 0% 87%);
@@ -509,5 +509,72 @@
             line-height: 1.25;
             margin-bottom: 0;
         }
+    }
+}
+
+/* Shared element-level styling for pages that render markdown as
+   content documentation: /help and /api pages (under `.help .markdown`)
+   and integration doc pages (under `.integration-instructions`).
+   Keeping these rules in one place lets both the help bundle and the
+   integrations bundle depend on a single source of truth — markdown.css
+   is already loaded by both. Marketing pages (which also load this
+   file but don't match either selector) are intentionally unaffected,
+   because their layouts rely on different defaults for lists,
+   paragraph margins, and so on. */
+.help .markdown,
+.integration-instructions {
+    & p {
+        margin: 0 0 10px;
+    }
+
+    & p:empty {
+        margin: 0;
+    }
+
+    & h1 {
+        margin-top: 15px;
+    }
+
+    & h4 {
+        margin: 15px 0 5px;
+    }
+
+    & hr {
+        margin: 20px 0;
+        border: 0;
+        border-top: 1px solid hsl(0deg 0% 93%);
+    }
+
+    /* Reset the browser-default left padding on lists so numbered
+       items and bullets align with surrounding paragraphs. */
+    & ul,
+    & ol {
+        padding: 0;
+    }
+
+    /* Fenced code blocks: light gray card with a subtle border and
+       rounded corners. The 15px vertical margins give surrounding
+       paragraphs visible breathing room around the code card, which
+       a tighter 10px bottom margin (and 0 top) was not providing.
+       The explicit font-size matches the `pre code` rule in .markdown
+       above and ensures code blocks render at the same size whether
+       the codehilite wraps content in <code> or not (some integration
+       pages generate bare <pre> without a <code> child). */
+    & pre {
+        padding: 9.5px;
+        margin: 15px 0;
+        font-family: "Source Code Pro", monospace;
+        font-size: 14px;
+        color: hsl(0deg 0% 0%);
+        word-break: break-all;
+        line-height: 20px;
+        background-color: hsl(0deg 0% 96%);
+        border: 1px solid hsl(0deg 0% 0% / 15%);
+        border-radius: 4px;
+    }
+
+    /* Inline `<code>` inside a link inherits the link color. */
+    & a code {
+        color: var(--color-link);
     }
 }
