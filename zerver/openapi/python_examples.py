@@ -837,6 +837,39 @@ def regenerate_bot_api_key(client: Client) -> None:
     validate_against_openapi_schema(result, "/bots/{bot_id}/api_key/regenerate", "post", "200")
 
 
+@openapi_test_function("/bot_storage:put")
+def update_bot_storage(client: Client) -> None:
+    # {code_example|start}
+    # Store value of "bar" for the key "foo" for a bot user.
+    result = client.update_storage({"storage": {"foo": "bar"}})
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/bot_storage", "put", "200")
+
+
+@openapi_test_function("/bot_storage:get")
+def get_bot_storage(client: Client) -> None:
+    # {code_example|start}
+    # Retrieve all data stored for a bot user.
+    result = client.get_storage()
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/bot_storage", "get", "200")
+
+
+@openapi_test_function("/bot_storage:delete")
+def remove_bot_storage(client: Client) -> None:
+    # {code_example|start}
+    # Remove all data stored for a bot user.
+    result = client.call_endpoint(
+        url="/bot_storage",
+        method="DELETE",
+    )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/bot_storage", "delete", "200")
+
+
 @openapi_test_function("/get_stream_id:get")
 def get_stream_id(client: Client) -> int:
     name = "python-test"
@@ -2265,8 +2298,19 @@ def test_api_key_endpoints(client: Client) -> None:
     regenerate_api_key(client)
 
 
-def test_the_api(client: Client, nonadmin_client: Client, owner_client: Client) -> None:
+def test_bot_storage(bot_client: Client) -> None:
+    update_bot_storage(bot_client)
+    get_bot_storage(bot_client)
+    remove_bot_storage(bot_client)
+
+
+def test_the_api(
+    client: Client, nonadmin_client: Client, owner_client: Client, bot_client: Client
+) -> None:
     get_user_agent(client)
+    # test_bot_storage authenticates as default-bot, whose API key is
+    # regenerated in test_api_key_endpoints.
+    test_bot_storage(bot_client)
     # Run `test_api_key_endpoints` before `test_users` so Device records created by
     # `register_push_device` & `register_device` are not bulk-deleted by
     # `regenerate_api_key`, since they are needed for curl tests.

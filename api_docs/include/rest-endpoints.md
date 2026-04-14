@@ -166,6 +166,12 @@
 * [Get events from an event queue](/api/get-events)
 * [Delete an event queue](/api/delete-queue)
 
+## Interactive bots
+
+* [Get a bot's stored data](/api/get-bot-storage)
+* [Update a bot's stored data](/api/update-bot-storage)
+* [Remove a bot's stored data](/api/remove-bot-storage)
+
 ## Specialty endpoints
 
 * [Fetch an API key (production)](/api/fetch-api-key)

@@ -225,7 +225,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         #### These personal settings endpoints have modest value to document:
         "/users/me/avatar",
         #### Should be documented as part of interactive bots documentation
-        "/bot_storage",
         "/submessage",
         "/zcommand",
         #### These "organization settings" endpoint have modest value to document:
@@ -930,6 +929,7 @@ class OpenAPIAttributesTest(ZulipTestCase):
             "invites",
             "reminders",
             "navigation_views",
+            "bots",
         ]
         paths = OpenAPISpec(OPENAPI_SPEC_PATH).openapi()["paths"]
         for path, path_item in paths.items():

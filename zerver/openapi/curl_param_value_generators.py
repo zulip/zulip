@@ -19,6 +19,7 @@ from zerver.actions.reactions import do_add_reaction
 from zerver.actions.realm_domains import do_add_realm_domain
 from zerver.actions.realm_linkifiers import do_add_linkifier
 from zerver.actions.realm_playgrounds import check_add_realm_playground
+from zerver.lib.bot_storage import set_bot_storage
 from zerver.lib.events import do_events_register
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
@@ -499,3 +500,26 @@ def delete_realm_domain_owner_auth() -> dict[str, object]:
 
     do_add_realm_domain(owner.realm, "delete-domain-example.com", False, acting_user=None)
     return {"domain": "delete-domain-example.com"}
+
+
+@openapi_param_value_generator(["/bot_storage:put"])
+def update_bot_storage_bot_auth() -> dict[str, object]:
+    bot = helpers.example_user("default_bot")
+    AUTHENTICATION_LINE[0] = f"{bot.email}:{bot.api_key}"
+    return {}
+
+
+@openapi_param_value_generator(["/bot_storage:get"])
+def get_bot_storage_bot_auth() -> dict[str, object]:
+    bot = helpers.example_user("default_bot")
+    set_bot_storage(bot, [("foo", "bar")])
+    AUTHENTICATION_LINE[0] = f"{bot.email}:{bot.api_key}"
+    return {}
+
+
+@openapi_param_value_generator(["/bot_storage:delete"])
+def remove_bot_storage_bot_auth() -> dict[str, object]:
+    bot = helpers.example_user("default_bot")
+    set_bot_storage(bot, [("foo", "bar")])
+    AUTHENTICATION_LINE[0] = f"{bot.email}:{bot.api_key}"
+    return {}
