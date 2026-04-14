@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 494**
+
+* [`PUT /bot_storage`](/api/update-bot-storage),
+  [`GET /bot_storage`](/api/get-bot-storage),
+  [`DELETE /bot_storage`](/api/remove-bot-storage): These
+  endpoints now require the caller to be a bot user account.
+  Previously, any authenticated user account could call these
+  endpoints.
+
 **Feature level 493**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),

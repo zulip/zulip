@@ -1172,6 +1172,22 @@ Output:
             **extra,
         )
 
+    def api_put(
+        self, user: UserProfile, url: str, info: Mapping[str, Any] = {}, **extra: str
+    ) -> "TestHttpResponse":
+        assert not url.startswith("/json/"), "Invalid URL for API authentication"
+        extra["HTTP_AUTHORIZATION"] = self.encode_user(user)
+        return self.client_put(
+            url,
+            info,
+            skip_user_agent=False,
+            follow=False,
+            secure=False,
+            headers=None,
+            query_params=None,
+            **extra,
+        )
+
     def api_patch(
         self, user: UserProfile, url: str, info: Mapping[str, Any] = {}, **extra: str
     ) -> "TestHttpResponse":

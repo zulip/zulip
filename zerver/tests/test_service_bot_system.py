@@ -258,27 +258,36 @@ class TestServiceBotStateHandler(ZulipTestCase):
         self.assertTrue(storage.contains("another key"))
         self.assertRaises(StateError, lambda: storage.remove("some key"))
 
-    def test_internal_endpoint(self) -> None:
-        self.login_user(self.user_profile)
+    def test_bot_storage_restrictions(self) -> None:
+        bot_storage_url = "/api/v1/bot_storage"
+        result = self.api_put(self.user_profile, bot_storage_url, {"storage": "{}"})
+        self.assert_json_error(result, "Must be a bot user")
+        result = self.api_get(self.user_profile, bot_storage_url)
+        self.assert_json_error(result, "Must be a bot user")
+        result = self.api_delete(self.user_profile, bot_storage_url)
+        self.assert_json_error(result, "Must be a bot user")
+
+    def test_bot_storage_endpoint(self) -> None:
+        bot_storage_url = "/api/v1/bot_storage"
 
         # Store some data.
         initial_dict = {"key 1": "value 1", "key 2": "value 2", "key 3": "value 3"}
         params = {
             "storage": orjson.dumps(initial_dict).decode(),
         }
-        result = self.client_put("/json/bot_storage", params)
+        result = self.api_put(self.bot_profile, bot_storage_url, params)
         self.assert_json_success(result)
 
         # Assert the stored data for some keys.
         params = {
             "keys": orjson.dumps(["key 1", "key 3"]).decode(),
         }
-        result = self.client_get("/json/bot_storage", params)
+        result = self.api_get(self.bot_profile, bot_storage_url, params)
         response_dict = self.assert_json_success(result)
         self.assertEqual(response_dict["storage"], {"key 3": "value 3", "key 1": "value 1"})
 
         # Assert the stored data for all keys.
-        result = self.client_get("/json/bot_storage")
+        result = self.api_get(self.bot_profile, bot_storage_url)
         response_dict = self.assert_json_success(result)
         self.assertEqual(response_dict["storage"], initial_dict)
 
@@ -287,13 +296,13 @@ class TestServiceBotStateHandler(ZulipTestCase):
         params = {
             "storage": orjson.dumps(dict_update).decode(),
         }
-        result = self.client_put("/json/bot_storage", params)
+        result = self.api_put(self.bot_profile, bot_storage_url, params)
         self.assert_json_success(result)
 
         # Assert the data was updated.
         updated_dict = initial_dict.copy()
         updated_dict.update(dict_update)
-        result = self.client_get("/json/bot_storage")
+        result = self.api_get(self.bot_profile, bot_storage_url)
         response_dict = self.assert_json_success(result)
         self.assertEqual(response_dict["storage"], updated_dict)
 
@@ -301,19 +310,19 @@ class TestServiceBotStateHandler(ZulipTestCase):
         invalid_params = {
             "keys": ["This is a list, but should be a serialized string."],
         }
-        result = self.client_get("/json/bot_storage", invalid_params)
+        result = self.api_get(self.bot_profile, bot_storage_url, invalid_params)
         self.assert_json_error(result, "keys is not valid JSON")
 
         params = {
             "keys": orjson.dumps(["key 1", "nonexistent key"]).decode(),
         }
-        result = self.client_get("/json/bot_storage", params)
+        result = self.api_get(self.bot_profile, bot_storage_url, params)
         self.assert_json_error(result, "Key does not exist.")
 
         params = {
             "storage": orjson.dumps({"foo": [1, 2, 3]}).decode(),
         }
-        result = self.client_put("/json/bot_storage", params)
+        result = self.api_put(self.bot_profile, bot_storage_url, params)
         self.assert_json_error(result, 'storage["foo"] is not a string')
 
         # Remove some entries.
@@ -321,13 +330,13 @@ class TestServiceBotStateHandler(ZulipTestCase):
         params = {
             "keys": orjson.dumps(keys_to_remove).decode(),
         }
-        result = self.client_delete("/json/bot_storage", params)
+        result = self.api_delete(self.bot_profile, bot_storage_url, params)
         self.assert_json_success(result)
 
         # Assert the entries were removed.
         for key in keys_to_remove:
             updated_dict.pop(key)
-        result = self.client_get("/json/bot_storage")
+        result = self.api_get(self.bot_profile, bot_storage_url)
         response_dict = self.assert_json_success(result)
         self.assertEqual(response_dict["storage"], updated_dict)
 
@@ -335,20 +344,20 @@ class TestServiceBotStateHandler(ZulipTestCase):
         params = {
             "keys": orjson.dumps(["key 3", "nonexistent key"]).decode(),
         }
-        result = self.client_delete("/json/bot_storage", params)
+        result = self.api_delete(self.bot_profile, bot_storage_url, params)
         self.assert_json_error(result, "Key does not exist.")
 
         # Assert an error has been thrown and no entries were removed.
-        result = self.client_get("/json/bot_storage")
+        result = self.api_get(self.bot_profile, bot_storage_url)
         response_dict = self.assert_json_success(result)
         self.assertEqual(response_dict["storage"], updated_dict)
 
         # Remove the entire storage.
-        result = self.client_delete("/json/bot_storage")
+        result = self.api_delete(self.bot_profile, bot_storage_url)
         self.assert_json_success(result)
 
         # Assert the entire storage has been removed.
-        result = self.client_get("/json/bot_storage")
+        result = self.api_get(self.bot_profile, bot_storage_url)
         response_dict = self.assert_json_success(result)
         self.assertEqual(response_dict["storage"], {})
 

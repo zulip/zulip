@@ -7128,8 +7128,16 @@ paths:
       summary: Get a bot's stored data
       tags: ["bots"]
       description: |
+        !!! warn ""
+
+            **Note:** This endpoint is only available to [bot user](/help/bots-overview)
+            accounts.
+
         Retrieve [data stored](/help/interactive-bots-api#bot_handlerstorage)
         for a bot user.
+
+        **Changes**: Prior to Zulip 12.0 (feature level 494), users who
+        were not bots could access this endpoint.
       x-curl-examples-parameters:
         oneOf:
           - type: exclude
@@ -7201,16 +7209,34 @@ paths:
                         description: |
                           A typical failed JSON response when a requested key does not exist
                           in the bot's storage:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "PERMISSION_DENIED",
+                            "msg": "Must be a bot user",
+                            "result": "error",
+                          }
+                        description: |
+                          A typical failed JSON response when the user is not a bot:
     put:
       operationId: update-bot-storage
       summary: Update a bot's stored data
       tags: ["bots"]
       description: |
+        !!! warn ""
+
+            **Note:** This endpoint is only available to [bot user](/help/bots-overview)
+            accounts.
+
         Add or update [data stored](/help/interactive-bots-api#bot_handlerstorage)
         for a bot user.
 
         Each bot has a limited storage set by the server, which normally is a
         default of 10,000,000 characters.
+
+        **Changes**: Prior to Zulip 12.0 (feature level 494), users who
+        were not bots could access this endpoint.
       requestBody:
         required: true
         content:
@@ -7254,13 +7280,31 @@ paths:
                         description: |
                           A typical failed JSON response when the request would exceed the
                           server's storage size limit:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "PERMISSION_DENIED",
+                            "msg": "Must be a bot user",
+                            "result": "error",
+                          }
+                        description: |
+                          A typical failed JSON response when the user is not a bot:
     delete:
       operationId: remove-bot-storage
       summary: Remove a bot's stored data
       tags: ["bots"]
       description: |
+        !!! warn ""
+
+            **Note:** This endpoint is only available to [bot user](/help/bots-overview)
+            accounts.
+
         Delete [data stored](/help/interactive-bots-api#bot_handlerstorage)
         for a bot user.
+
+        **Changes**: Prior to Zulip 12.0 (feature level 494), users who
+        were not bots could access this endpoint.
       requestBody:
         required: false
         content:
@@ -7301,6 +7345,16 @@ paths:
                         description: |
                           A typical failed JSON response when a key to be deleted does not exist
                           in the bot's storage:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "PERMISSION_DENIED",
+                            "msg": "Must be a bot user",
+                            "result": "error",
+                          }
+                        description: |
+                          A typical failed JSON response when the user is not a bot:
   /drafts:
     get:
       operationId: get-drafts
