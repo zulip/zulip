@@ -1,11 +1,9 @@
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import render_search_description from "../templates/search_description.hbs";
-
 import * as filter_util from "./filter_util.ts";
 import * as hash_parser from "./hash_parser.ts";
-import {$t} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as internal_url from "./internal_url.ts";
 import * as message_parser from "./message_parser.ts";
 import * as message_store from "./message_store.ts";
@@ -15,7 +13,12 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as resolved_topic from "./resolved_topic.ts";
 import {current_user, narrow_canonical_term_schema, narrow_operator_schema} from "./state_data.ts";
-import type {NarrowCanonicalTerm, NarrowTerm, NarrowTermSuggestion} from "./state_data.ts";
+import type {
+    NarrowCanonicalOperator,
+    NarrowCanonicalTerm,
+    NarrowTerm,
+    NarrowTermSuggestion,
+} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as user_topics from "./user_topics.ts";
@@ -34,39 +37,147 @@ type IconData = {
       }
 );
 
-type Part =
-    | {
-          type: "plain_text";
-          content: string;
-      }
-    | {
-          type: "channel_topic";
-          channel: string;
-          topic_display_name: string;
-          is_empty_string_topic: boolean;
-      }
-    | {
-          type: "channel";
-          prefix_for_operator: string;
-          operand: string;
-      }
-    | {
-          type: "is_operator";
-          verb: string;
-          operand: string;
-      }
-    | {
-          type: "invalid_has";
-          operand: string;
-      }
-    | {
-          type: "prefix_for_operator";
-          prefix_for_operator: string;
-          operand: string;
-          is_empty_string_topic?: boolean;
-      };
-
 const channels_operands = new Set(["public", "web-public"]);
+const static_filter_descriptions: Record<string, string> = {
+    "channels:public": $t({defaultMessage: "all public channels"}),
+    "-channels:public": $t({defaultMessage: "exclude all public channels"}),
+    "channels:web-public": $t({defaultMessage: "all web-public channels"}),
+    "-channels:web-public": $t({defaultMessage: "exclude all web-public channels"}),
+    "has:link": $t({defaultMessage: "messages with links"}),
+    "-has:link": $t({defaultMessage: "exclude messages with links"}),
+    "has:image": $t({defaultMessage: "messages with images"}),
+    "-has:image": $t({defaultMessage: "messages with images"}),
+    "has:attachment": $t({defaultMessage: "messages with attachments"}),
+    "-has:attachment": $t({defaultMessage: "exclude messages with attachments"}),
+    "has:reaction": $t({defaultMessage: "messages with reactions"}),
+    "-has:reaction": $t({defaultMessage: "exclude messages with reactions"}),
+    "is:mentioned": $t({defaultMessage: "messages that mention you"}),
+    "-is:mentioned": $t({defaultMessage: "exclude messages that mention you"}),
+    "is:starred": $t({defaultMessage: "starred messages"}),
+    "-is:starred": $t({defaultMessage: "exclude starred messages"}),
+    "is:alerted": $t({defaultMessage: "starred messages"}),
+    "-is:alerted": $t({defaultMessage: "exclude starred messages"}),
+    "is:unread": $t({defaultMessage: "unread messages"}),
+    "-is:unread": $t({defaultMessage: "exclude unread messages"}),
+    "is:dm": $t({defaultMessage: "direct messages"}),
+    "-is:dm": $t({defaultMessage: "exclude direct messages"}),
+    "is:resolved": $t({defaultMessage: "resolved topics"}),
+    "-is:resolved": $t({defaultMessage: "unresolved topics"}),
+    "is:followed": $t({defaultMessage: "followed topics"}),
+    "-is:followed": $t({defaultMessage: "exclude followed topics"}),
+    "is:muted": $t({defaultMessage: "muted messages"}),
+    "-is:muted": $t({defaultMessage: "exclude muted messages"}),
+};
+
+const operator_suggestion_descriptions: Partial<
+    Record<NarrowCanonicalOperator, (negated: boolean) => string>
+> = {
+    channel: (negated: boolean) =>
+        negated
+            ? $t({defaultMessage: "exclude messages in a specific channel"})
+            : $t({defaultMessage: "messages in a specific channel"}),
+    channels: (negated: boolean) =>
+        negated
+            ? $t({defaultMessage: "exclude channel type"})
+            : $t({defaultMessage: "channel type"}),
+    near: (negated: boolean) =>
+        negated
+            ? $t({defaultMessage: "exclude messages around"})
+            : $t({defaultMessage: "messages around"}),
+    id: (negated: boolean) =>
+        negated ? $t({defaultMessage: "exclude message ID"}) : $t({defaultMessage: "message ID"}),
+    topic: (negated: boolean) =>
+        negated ? $t({defaultMessage: "exclude topic"}) : $t({defaultMessage: "topic"}),
+    sender: (negated: boolean) =>
+        negated ? $t({defaultMessage: "exclude sent by"}) : $t({defaultMessage: "sent by"}),
+    dm: (negated: boolean) =>
+        negated
+            ? $t({defaultMessage: "exclude direct messages with"})
+            : $t({defaultMessage: "direct messages with"}),
+    "dm-including": (negated: boolean) =>
+        negated
+            ? $t({defaultMessage: "exclude direct messages including"})
+            : $t({defaultMessage: "direct messages including"}),
+    in: (negated: boolean) =>
+        negated ? $t({defaultMessage: "exclude messages in"}) : $t({defaultMessage: "messages in"}),
+    search: (negated: boolean) =>
+        negated ? $t({defaultMessage: "exclude"}) : $t({defaultMessage: "search for"}),
+};
+
+const variable_suggestion_descriptions: Partial<
+    Record<NarrowCanonicalOperator, (operand: string, negated: boolean) => string>
+> = {
+    channel(operand: string, negated: boolean) {
+        const stream = stream_data.get_sub_by_id_string(operand);
+        assert(stream !== undefined);
+        return negated
+            ? $t_html(
+                  {defaultMessage: "exclude messages in #{stream_name}"},
+                  {stream_name: stream.name},
+              )
+            : $t_html({defaultMessage: "messages in #{stream_name}"}, {stream_name: stream.name});
+    },
+    near: (operand: string, negated: boolean) =>
+        negated
+            ? $t_html({defaultMessage: "exclude messages around {operand}"}, {operand})
+            : $t_html({defaultMessage: "messages around {operand}"}, {operand}),
+    id: (operand: string, negated: boolean) =>
+        negated
+            ? $t_html(
+                  {
+                      defaultMessage: "exclude message ID {operand}",
+                  },
+                  {operand},
+              )
+            : $t_html({defaultMessage: "message ID {operand}"}, {operand}),
+    topic(operand: string, negated: boolean) {
+        const topic_name = util.get_final_topic_display_name(operand);
+        if (operand === "") {
+            return negated
+                ? $t_html(
+                      {defaultMessage: "exclude topic <z-topic>{topic_name}</z-topic>"},
+                      {
+                          topic_name,
+                          "z-topic": (content_html) =>
+                              `<span class="empty-topic-display">${content_html.join("")}</span>`,
+                      },
+                  )
+                : $t_html(
+                      {defaultMessage: "topic <z-topic>{topic_name}</z-topic>"},
+                      {
+                          topic_name,
+                          "z-topic": (content_html) =>
+                              `<span class="empty-topic-display">${content_html.join("")}</span>`,
+                      },
+                  );
+        }
+        return negated
+            ? $t_html({defaultMessage: "exclude topic {operand}"}, {operand})
+            : $t_html({defaultMessage: "topic {operand}"}, {operand});
+    },
+    sender: (operand: string, negated: boolean) =>
+        negated
+            ? $t_html({defaultMessage: "exclude sent by {operand}"}, {operand})
+            : $t_html({defaultMessage: "sent by {operand}"}, {operand}),
+    dm: (operand: string, negated: boolean) =>
+        negated
+            ? $t_html({defaultMessage: "exclude direct messages with {operand}"}, {operand})
+            : $t_html({defaultMessage: "direct messages with {operand}"}, {operand}),
+    "dm-including": (operand: string, negated: boolean) =>
+        negated
+            ? $t_html({defaultMessage: "exclude direct messages including {operand}"}, {operand})
+            : $t_html({defaultMessage: "direct messages including {operand}"}, {operand}),
+    in: (operand: string, negated: boolean) =>
+        negated
+            ? $t_html({defaultMessage: "exclude messages in {operand}"}, {operand})
+            : $t_html({defaultMessage: "messages in {operand}"}, {operand}),
+    is: (operand: string, _negated: boolean) =>
+        $t_html({defaultMessage: "invalid {operand} operand for is operator"}, {operand}),
+    search: (operand: string, negated: boolean) =>
+        negated
+            ? $t_html({defaultMessage: "exclude {operand}"}, {operand})
+            : $t_html({defaultMessage: "search for {operand}"}, {operand}),
+};
 
 function message_in_home(message: Message): boolean {
     // The home view contains messages not sent to muted channels,
@@ -699,198 +810,52 @@ export class Filter {
         return term_types.toSorted(compare);
     }
 
-    static operator_to_prefix(operator: NarrowTerm["operator"], negated?: boolean): string {
-        operator = filter_util.canonicalize_operator(operator);
-
-        if (operator === "search") {
-            return negated ? "exclude" : "search for";
-        }
-
-        const verb = negated ? "exclude " : "";
-
-        switch (operator) {
-            case "channel":
-                return verb + "messages in a specific channel";
-            case "channels":
-                return verb + "channel type";
-            case "near":
-                return verb + "messages around";
-
-            // Note: We hack around using this in "describe" below.
-            case "has":
-                return verb + "messages with";
-
-            case "id":
-                return verb + "message ID";
-
-            case "topic":
-                return verb + "topic";
-
-            case "sender":
-                return verb + "sent by";
-
-            case "dm":
-                return verb + "direct messages with";
-
-            case "dm-including":
-                return verb + "direct messages including";
-
-            case "in":
-                return verb + "messages in";
-
-            // Note: We hack around using this in "describe" below.
-            case "is":
-                return verb + "messages that are";
-        }
-        return "";
-    }
-
     // Convert a list of terms to a human-readable description.
-    static parts_for_describe(
-        terms: NarrowTermSuggestion[],
+    static search_description_as_html(
+        term: NarrowTermSuggestion,
         is_operator_suggestion: boolean,
-    ): Part[] {
+        search_string: string,
+    ): string {
+        const static_filter_description = static_filter_descriptions[search_string];
+        if (static_filter_description !== undefined) {
+            return static_filter_description;
+        }
         // Calling canonicalize_term on the terms is not easy here,
         // and so it's expected that callers already do those conversions,
         // and the current only callpath (generate_pills_html) does.
-        const parts: Part[] = [];
-
-        if (terms.length === 0) {
-            parts.push({type: "plain_text", content: "combined feed"});
-            return parts;
-        }
-
-        if (terms[0] !== undefined && terms[1] !== undefined) {
-            const term_0 = terms[0];
-            const term_1 = terms[1];
-            if (
-                term_0.operator === "channel" &&
-                !term_0.negated &&
-                term_1.operator === "topic" &&
-                !term_1.negated
-            ) {
-                // `channel` might be undefined if it's coming from a text query
-                const channel = stream_data.get_sub_by_id_string(term_0.operand)?.name;
-                if (channel) {
-                    const topic = term_1.operand;
-                    parts.push({
-                        type: "channel_topic",
-                        channel,
-                        topic_display_name: util.get_final_topic_display_name(topic),
-                        is_empty_string_topic: topic === "",
-                    });
-                    terms = terms.slice(2);
-                }
+        const operator = filter_util.canonicalize_operator(term.operator);
+        const negated = Boolean(term.negated);
+        const operand = term.operand;
+        if (is_operator_suggestion && operand === "") {
+            const operator_suggestion_description = operator_suggestion_descriptions[operator];
+            if (operator_suggestion_description !== undefined) {
+                return operator_suggestion_description(negated);
             }
         }
-
-        const more_parts = terms.map((term): Part => {
-            if (term.operator === "is") {
-                // Some operands have their own negative words, like
-                // unresolved, rather than the default "exclude " prefix.
-                const custom_negated_operand_phrases: Record<string, string> = {
-                    resolved: "unresolved",
-                };
-                const negated_phrase = custom_negated_operand_phrases[term.operand];
-                if (term.negated && negated_phrase !== undefined) {
-                    return {
-                        type: "is_operator",
-                        verb: "",
-                        operand: negated_phrase,
-                    };
-                }
-
-                const verb = term.negated ? "exclude " : "";
-                return {
-                    type: "is_operator",
-                    verb,
-                    operand: term.operand,
-                };
-            }
-            if (term.operator === "has") {
-                // search_suggestion.get_suggestions takes care that this message will
-                // only be shown if the `has` operator is not at the last.
-                const valid_has_operands = [
-                    "image",
-                    "images",
-                    "link",
-                    "links",
-                    "attachment",
-                    "attachments",
-                    "reaction",
-                    "reactions",
-                ];
-                if (!valid_has_operands.includes(term.operand)) {
-                    return {
-                        type: "invalid_has",
-                        operand: term.operand,
-                    };
-                }
-            }
-            if (term.operator === "channels" && channels_operands.has(term.operand)) {
-                return {
-                    type: "plain_text",
-                    content: this.describe_channels_operator(term.negated ?? false, term.operand),
-                };
-            }
-            const prefix_for_operator = Filter.operator_to_prefix(term.operator, term.negated);
-            if (prefix_for_operator !== "") {
-                if (term.operator === "channel") {
-                    const stream = stream_data.get_sub_by_id_string(term.operand);
-                    const verb = term.negated ? "exclude " : "";
-                    if (stream) {
-                        return {
-                            type: "channel",
-                            prefix_for_operator: verb + "messages in #",
-                            operand: stream.name,
-                        };
-                    }
-                    // Assume the operand is a partially formed name and return
-                    // the operator as the channel name in the next block.
-                }
-                if (term.operator === "topic" && !is_operator_suggestion) {
-                    return {
-                        type: "prefix_for_operator",
-                        prefix_for_operator,
-                        operand: util.get_final_topic_display_name(term.operand),
-                        is_empty_string_topic: term.operand === "",
-                    };
-                }
-                return {
-                    type: "prefix_for_operator",
-                    prefix_for_operator,
-                    operand: term.operand,
-                };
-            }
-            return {
-                type: "plain_text",
-                content: "unknown operator",
-            };
-        });
-        return [...parts, ...more_parts];
+        const variable_suggestion_description = variable_suggestion_descriptions[operator];
+        if (variable_suggestion_description !== undefined) {
+            return variable_suggestion_description(operand, negated);
+        }
+        return $t({defaultMessage: "unknown operator"});
     }
 
     static describe_channels_operator(negated: boolean, operand: string): string {
-        const possible_prefix = negated ? "exclude " : "";
         assert(channels_operands.has(operand));
         if ((page_params.is_spectator || current_user.is_guest) && operand === "public") {
-            return possible_prefix + "all public channels that you can view";
+            return negated
+                ? $t({defaultMessage: "exclude all public channels that you can view"})
+                : $t({defaultMessage: "all public channels that you can view"});
         }
         switch (operand) {
             case "web-public":
-                return possible_prefix + "all web-public channels";
+                return negated
+                    ? $t({defaultMessage: "exclude all web-public channels"})
+                    : $t({defaultMessage: "all web-public channels"});
             default:
-                return possible_prefix + "all public channels";
+                return negated
+                    ? $t({defaultMessage: "exclude all public channels"})
+                    : $t({defaultMessage: "all public channels"});
         }
-    }
-
-    static search_description_as_html(
-        terms: NarrowTermSuggestion[],
-        is_operator_suggestion: boolean,
-    ): string {
-        return render_search_description({
-            parts: Filter.parts_for_describe(terms, is_operator_suggestion),
-        });
     }
 
     static is_spectator_compatible(terms: NarrowTerm[]): boolean {
