@@ -106,6 +106,17 @@ function set_message_for_message_content($content, value) {
     // no message row found
     if (value === undefined) {
         $content.set_closest_results(".message_row", []);
+
+        const $reply = $(".reply");
+        const $preview_content = $(".preview_content");
+        const $reply_parent = $("#mock-parent");
+        $reply_parent[0].remove = noop;
+        $reply_parent.set_matches("p", true);
+        $reply.set_parent($reply_parent);
+        $content.set_find_results(".reply", $reply);
+        $preview_content.length = 1;
+        $content.set_closest_results(".preview_content", $preview_content);
+
         return;
     }
     // message row found
