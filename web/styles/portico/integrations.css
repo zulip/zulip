@@ -109,12 +109,15 @@ html:has(.portico-landing.integrations) {
 
     /* Left-align the header block with the cards column, so the title,
        subtitle, and search box don't spill into the sidebar area. The
-       sidebar column below takes 230px (200 sidebar + 30 gutter), so
-       we pad the header block to start at the same x-position as the
-       cards. At narrow widths, the sidebar is hidden and the header
-       reverts to its original near-full-width layout. */
+       sidebar column below takes 230 px (200 sidebar + 30 gutter),
+       and the first visible `.integration-lozenge` sits another 5 px
+       further right due to its own horizontal margin, so we pad the
+       header block to start at 265 px from the main card's left edge
+       to land on the card's visible left edge. At narrow widths, the
+       sidebar is hidden and the header reverts to its original
+       near-full-width layout. */
     .integration-main-text {
-        padding: 0 30px 0 260px;
+        padding: 0 30px 0 265px;
 
         @media (width <= 1000px) {
             padding: 0 30px;
@@ -131,6 +134,13 @@ html:has(.portico-landing.integrations) {
            longer than the bottom (which makes a centered title look
            visually off-center). */
         text-wrap: balance;
+
+        /* At widths where the sidebar is visible, left-align the
+           title so its left edge matches the left edge of the cards
+           column below. */
+        @media (width > 1000px) {
+            text-align: left;
+        }
     }
 
     .portico-page-subheading {
@@ -139,6 +149,10 @@ html:has(.portico-landing.integrations) {
         color: hsl(0deg 0% 40%);
         line-height: 1.2;
         text-align: center;
+
+        @media (width > 1000px) {
+            text-align: left;
+        }
     }
 
     /* Markdown-style blue links used in the page subheading and in
@@ -159,7 +173,7 @@ html:has(.portico-landing.integrations) {
 
     #integration-search {
         margin-bottom: 30px;
-        padding: 0 30px 0 260px;
+        padding: 0 30px 0 265px;
 
         @media (width <= 1000px) {
             padding: 0 30px;
@@ -170,6 +184,13 @@ html:has(.portico-landing.integrations) {
             display: flex;
             justify-content: center;
             margin: 30px auto 0;
+
+            /* At widths where the sidebar is visible, left-align the
+               search box so its left edge matches the left edge of
+               the cards column below. */
+            @media (width > 1000px) {
+                justify-content: flex-start;
+            }
 
             .searchbar-reset {
                 position: relative;
@@ -267,7 +288,11 @@ html:has(.portico-landing.integrations) {
                 &.selected {
                     background-color: hsl(0deg 0% 100%);
                     color: hsl(223deg 6% 25%);
-                    font-weight: 600;
+                    /* !important is needed to override the
+                       `.portico-landing a:not(.button) {
+                       font-weight: inherit !important }` rule
+                       in marketing_page.css. */
+                    font-weight: 600 !important;
                 }
             }
 
@@ -367,8 +392,9 @@ html:has(.portico-landing.integrations) {
                     &.selected {
                         background-color: hsl(0deg 0% 100%);
                         color: hsl(223deg 6% 25%);
-                        font-weight: 600;
+                        font-weight: 600 !important;
                     }
+                }
             }
         }
 
@@ -520,17 +546,35 @@ html:has(.portico-landing.integrations) {
            last row of cards above and the section content below. */
         padding: 40px 0 20px;
 
+        /* At widths where the header is left-aligned, left-align
+           the bottom section to match. The 5px left padding lines
+           up the text with the visible card edges, since each
+           `.integration-lozenge` has a 5px horizontal margin. */
+        @media (width > 1000px) {
+            text-align: left;
+            padding-left: 5px;
+        }
+
         & p {
             margin: 0 0 20px;
         }
 
-        /* Lay out the /why-zulip-style hero-buttons as a centered
-           flex row, since the flex rule in marketing_page.css is
-           scoped to .why-page and its siblings. */
+        /* Lay out the /why-zulip-style hero-buttons as a flex row,
+           since the flex rule in marketing_page.css is scoped to
+           .why-page and its siblings. Centered at narrow widths,
+           left-aligned at wide widths to match the header. */
         .hero-buttons {
             display: flex;
             flex-flow: row wrap;
             justify-content: center;
+
+            @media (width > 1000px) {
+                justify-content: flex-start;
+                /* Each .button has 10px margin from marketing_page.css,
+                   which pushes its visible border right of the text
+                   above. Pull the flex container left to compensate. */
+                margin-left: -10px;
+            }
         }
     }
 
@@ -734,6 +778,19 @@ html:has(.portico-landing.integrations) {
 .portico-landing.integrations.communities {
     .main {
         max-width: 900px;
+    }
+
+    /* `.eligible_realm` has no horizontal margin, unlike
+       `.integration-lozenge` which has a 5 px left/right margin, so
+       the communities heading needs 5 px less left padding than the
+       integrations heading to line up with the first realm's visible
+       left edge. */
+    .integration-main-text {
+        padding-left: 260px;
+
+        @media (width <= 1000px) {
+            padding-left: 30px;
+        }
     }
 
     .portico-page-heading {
