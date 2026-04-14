@@ -259,9 +259,11 @@
         line-height: 1;
     }
 
-    #profile-tab {
+    .tabcontent {
         margin: 1px 5px 0;
+    }
 
+    #profile-tab {
         & li.custom_user_field {
             display: block;
         }
