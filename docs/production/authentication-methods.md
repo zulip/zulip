@@ -3,8 +3,8 @@
 Zulip supports a wide variety of authentication methods:
 
 - [Email and password](#email-and-password), which is enabled by default.
-- [Social authentication](#social-authentication) with Google, GitHub,
-  and GitLab, which is easy to set up with a few lines of configuration.
+- [Social authentication](#social-authentication) with Google, GitHub, GitLab,
+  and Discord, which is easy to set up with a few lines of configuration.
   Authentication with Apple additionally requires registering with Apple.
 - [Microsoft Entra ID](#microsoft-entra-id) (AzureAD) via OpenID Connect,
   supporting authentication restricted to a specific Entra ID tenant.
