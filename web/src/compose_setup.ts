@@ -393,6 +393,34 @@ export function initialize(): void {
         });
     }
 
+    // Trap Tab/Shift+Tab focus within #compose-container so keyboard navigation
+    // doesn't leave the compose box when it is open.
+    $("#compose-container").on("keydown", (e) => {
+        if (e.key !== "Tab" || !compose_state.composing()) {
+            return;
+        }
+
+        const $compose_container = $("#compose-container");
+        const visible_focusable_elements = [
+            ...$compose_container.find("input, textarea, button, .input, a[href], a[tabindex='0']"),
+        ].filter(
+            (element) =>
+                element.getClientRects().length > 0 &&
+                $(element).css("visibility") !== "hidden" &&
+                !$(element).is(":disabled"),
+        );
+
+        if (e.shiftKey) {
+            if (document.activeElement === visible_focusable_elements[0]) {
+                e.preventDefault();
+            }
+        } else {
+            if (document.activeElement === visible_focusable_elements.at(-1)) {
+                e.preventDefault();
+            }
+        }
+    });
+
     // Click event binding for "Attach files" button
     // Triggers a click on a hidden file input field
 
