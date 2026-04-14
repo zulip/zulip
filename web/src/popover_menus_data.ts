@@ -196,13 +196,20 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         stream_id = message.stream_id;
     }
 
-    // Disabling this for /me messages is a temporary workaround
-    // for the fact that we don't have a styling for how that
+    // Disabling these for /me messages is a workaround for
+    // the fact that we don't have a styling for how that
     // should look.  See also condense.js.
-    const should_display_collapse =
-        !message.locally_echoed && !message.is_me_message && !message.collapsed && not_spectator;
-    const should_display_uncollapse =
-        !message.locally_echoed && !message.is_me_message && message.collapsed;
+    function maybe_show_collapse_uncollapse(message: Message): boolean {
+        return !message.locally_echoed && !message.is_me_message && not_spectator;
+    }
+
+    let should_display_collapse = false;
+    let should_display_uncollapse = false;
+    if (maybe_show_collapse_uncollapse(message)) {
+        const message_condensed = $message_row.find(".message_content").hasClass("condensed");
+        should_display_collapse = !message.collapsed && !message_condensed;
+        should_display_uncollapse = message.collapsed || message_condensed;
+    }
 
     const should_display_quote_message = not_spectator;
 
