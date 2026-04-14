@@ -1,9 +1,12 @@
 import os
+from datetime import timedelta
 from unittest import mock
 
 import orjson
 from django.conf import settings
 from django.test import override_settings
+from django.utils.timezone import now as timezone_now
+from oauth2_provider.models import AccessToken, Application
 from typing_extensions import ParamSpec
 
 from zerver.lib.cache import cache_delete, get_realm_used_upload_space_cache_key
@@ -191,6 +194,59 @@ class TusdPreCreateTest(ZulipTestCase):
             orjson.loads(result_json["HttpResponse"]["Body"]), {"message": "Unauthenticated upload"}
         )
         self.assertEqual(result_json["RejectUpload"], True)
+
+    def test_oauth_token_auth(self) -> None:
+        user_profile = self.example_user("hamlet")
+        application = Application.objects.create(
+            name="test_app",
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        )
+        access_token = AccessToken.objects.create(
+            user=user_profile,
+            token="test-bearer-token",
+            application=application,
+            expires=timezone_now() + timedelta(days=1),
+        )
+        result = self.client_post(
+            "/api/internal/tusd",
+            self.request().model_dump(),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {access_token.token}",
+        )
+        self.assertEqual(result.status_code, 200)
+        result_json = result.json()
+        self.assertEqual(result_json.get("HttpResponse", None), None)
+        self.assertEqual(result_json.get("RejectUpload", False), False)
+        self.assertEqual(list(result_json["ChangeFileInfo"].keys()), ["ID"])
+        self.assertTrue(result_json["ChangeFileInfo"]["ID"].endswith("/zulip.txt"))
+
+    def test_oauth_token_bad_auth(self) -> None:
+        user_profile = self.example_user("hamlet")
+        application = Application.objects.create(
+            name="test_app",
+            client_type=Application.CLIENT_CONFIDENTIAL,
+            authorization_grant_type=Application.GRANT_AUTHORIZATION_CODE,
+        )
+        AccessToken.objects.create(
+            user=user_profile,
+            token="test-bearer-token",
+            application=application,
+            expires=timezone_now() + timedelta(days=1),
+        )
+        result = self.client_post(
+            "/api/internal/tusd",
+            self.request().model_dump(),
+            content_type="application/json",
+            HTTP_AUTHORIZATION="Bearer badtoken",
+        )
+        self.assertEqual(result.status_code, 200)
+        result_json = result.json()
+        self.assertEqual(result_json["HttpResponse"]["StatusCode"], 401)
+        self.assertEqual(result_json["RejectUpload"], True)
+        self.assertEqual(
+            orjson.loads(result_json["HttpResponse"]["Body"]), {"message": "Unauthenticated upload"}
+        )
 
     def test_sanitize_filename(self) -> None:
         self.login("hamlet")
