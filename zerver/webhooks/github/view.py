@@ -257,11 +257,37 @@ def get_deployment_body(helper: Helper) -> str:
     return f"{get_sender_name(helper)} created new deployment."
 
 
+STATUS_EMOJI = {
+    "error": ":thumbs_down:",
+    "failure": ":thumbs_down:",
+    "pending": ":counterclockwise:",
+    "success": ":thumbs_up:",
+}
+
+DEPLOYMENT_STATUS_EMOJI = {
+    "error": ":thumbs_down:",
+    "failure": ":thumbs_down:",
+    "in_progress": ":counterclockwise:",
+    "pending": ":counterclockwise:",
+    "success": ":thumbs_up:",
+}
+
+PAGE_BUILD_STATUS_EMOJI = {
+    "building": ":counterclockwise:",
+    "built": ":thumbs_up:",
+    "errored": ":thumbs_down:",
+}
+
+
 def get_change_deployment_status_body(helper: Helper) -> str:
     payload = helper.payload
-    return "Deployment changed status to {}.".format(
-        payload["deployment_status"]["state"].tame(check_string),
-    )
+    status = payload["deployment_status"]["state"].tame(check_string)
+    emoji = DEPLOYMENT_STATUS_EMOJI.get(status)
+
+    if emoji is not None:
+        return f"Deployment changed status to {status} {emoji}."
+
+    return f"Deployment changed status to {status}."
 
 
 def get_create_or_delete_body(action: str, helper: Helper) -> str:
@@ -565,6 +591,7 @@ def get_page_build_body(helper: Helper) -> str:
     payload = helper.payload
     build = payload["build"]
     status = build["status"].tame(check_string)
+    emoji = PAGE_BUILD_STATUS_EMOJI.get(status)
     actions = {
         "null": "has yet to be built",
         "building": "is being built",
@@ -582,6 +609,9 @@ def get_page_build_body(helper: Helper) -> str:
             ),
         )
 
+    if emoji is not None:
+        action = f"{action} {emoji}"
+
     return "GitHub Pages build, triggered by {}, {}.".format(
         payload["build"]["pusher"]["login"].tame(check_string),
         action,
@@ -590,17 +620,22 @@ def get_page_build_body(helper: Helper) -> str:
 
 def get_status_body(helper: Helper) -> str:
     payload = helper.payload
+    state = payload["state"].tame(check_string)
     if payload["target_url"]:
         status = "[{}]({})".format(
-            payload["state"].tame(check_string),
+            state,
             payload["target_url"].tame(check_string),
         )
     else:
-        status = payload["state"].tame(check_string)
+        status = state
+
+    emoji = STATUS_EMOJI.get(state)
+    status_description = status if emoji is None else f"{status} {emoji}"
+
     return "[{}]({}) changed its status to {}.".format(
         get_short_sha(payload["sha"].tame(check_string)),
         payload["commit"]["html_url"].tame(check_string),
-        status,
+        status_description,
     )
 
 

@@ -145,7 +145,7 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("deployment", TOPIC_DEPLOYMENT, expected_message)
 
     def test_deployment_status_msg(self) -> None:
-        expected_message = "Deployment changed status to success."
+        expected_message = "Deployment changed status to success :thumbs_up:."
         self.check_webhook("deployment_status", TOPIC_DEPLOYMENT, expected_message)
 
     def test_fork_msg(self) -> None:
@@ -380,20 +380,20 @@ class GitHubWebhookTest(WebhookTestCase):
 
     def test_page_build_msg(self) -> None:
         expected_message = (
-            "GitHub Pages build, triggered by baxterthehacker, has finished building."
+            "GitHub Pages build, triggered by baxterthehacker, has finished building :thumbs_up:."
         )
         self.check_webhook("page_build", TOPIC_REPO, expected_message)
 
     def test_page_build_errored_msg(self) -> None:
-        expected_message = "GitHub Pages build, triggered by baxterthehacker, has failed: \n``` quote\nSomething went wrong.\n```."
+        expected_message = "GitHub Pages build, triggered by baxterthehacker, has failed: \n``` quote\nSomething went wrong.\n``` :thumbs_down:."
         self.check_webhook("page_build__errored", TOPIC_REPO, expected_message)
 
     def test_status_msg(self) -> None:
-        expected_message = "[9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to success."
+        expected_message = "[9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to success :thumbs_up:."
         self.check_webhook("status", TOPIC_REPO, expected_message)
 
     def test_status_with_target_url_msg(self) -> None:
-        expected_message = "[9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to [success](https://example.com/build/status)."
+        expected_message = "[9049f1265b7](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to [success](https://example.com/build/status) :thumbs_up:."
         self.check_webhook("status__with_target_url", TOPIC_REPO, expected_message)
 
     def test_pull_request_review_msg(self) -> None:
