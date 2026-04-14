@@ -107,8 +107,35 @@ def remove_custom_profile_field_value_if_required(
     new_values = set(field_data.keys())
     removed_values = old_values - new_values
 
-    if removed_values:
-        CustomProfileFieldValue.objects.filter(field=field, value__in=removed_values).delete()
+    if not removed_values:
+        return
+
+    notifications_to_send: list[
+        tuple[UserProfile, dict[str, int | str | list[int] | list[str] | None]]
+    ] = []
+
+    if field.field_type == CustomProfileField.DROPDOWN:
+        values_to_delete = CustomProfileFieldValue.objects.filter(
+            field=field, value__in=removed_values
+        ).select_related("user_profile")
+
+        notifications_to_send.extend(
+            (
+                field_value.user_profile,
+                {
+                    "id": field.id,
+                    "value": None,
+                    "rendered_value": None,
+                    "type": field.field_type,
+                },
+            )
+            for field_value in values_to_delete
+        )
+
+        values_to_delete.delete()
+
+    for user_profile, payload in notifications_to_send:
+        notify_user_update_custom_profile_data(user_profile, payload)
 
 
 @transaction.atomic(durable=True)

@@ -1753,6 +1753,40 @@ class NormalActionsTest(BaseAction):
             do_remove_realm_custom_profile_field(realm, field)
         check_custom_profile_fields("events[0]", events[0])
 
+        # Test that deleting a dropdown choice correctly dispatches a realm_user
+        # update event to clear the profile data for users who had that choice selected.
+        hamlet = self.example_user("hamlet")
+
+        field = CustomProfileField.objects.get(name="Favorite editor", realm=hamlet.realm)
+        existing_choices = orjson.loads(field.field_data)
+        self.assertEqual(set(existing_choices.keys()), {"0", "1"})
+
+        custom_field_value: ProfileDataElementUpdateDict = {
+            "id": field.id,
+            "value": "0",
+        }
+        self.set_user_custom_profile_data(hamlet, [custom_field_value])
+
+        # Remove the option with value "0"
+        new_choices: dict[str, Any] = {"1": {"text": "Emacs", "order": "1"}}
+
+        with self.verify_action(num_events=2) as events:
+            try_update_realm_custom_profile_field(
+                realm=self.user_profile.realm,
+                field=field,
+                name=field.name,
+                field_data=new_choices,
+            )
+
+        check_realm_user_update("events[0]", events[0], "custom_profile_field")
+        check_custom_profile_fields("events[1]", events[1])
+
+        self.assertEqual(events[0]["person"]["user_id"], hamlet.id)
+
+        custom_field_payload = events[0]["person"]["custom_profile_field"]
+        self.assertEqual(custom_field_payload["id"], field.id)
+        self.assertEqual(custom_field_payload["value"], None)
+
     def test_pronouns_type_support_in_custom_profile_fields_events(self) -> None:
         realm = self.user_profile.realm
         field = CustomProfileField.objects.get(realm=realm, name="Pronouns")
