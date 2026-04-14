@@ -194,11 +194,7 @@ export function initialize({
                 assert(message_lists.current !== undefined);
                 const message = message_lists.current.get(message_id);
                 assert(message !== undefined);
-                if (message.collapsed) {
-                    condense.uncollapse(message);
-                } else {
-                    condense.collapse(message);
-                }
+                condense.toggle_collapse(message);
                 e.preventDefault();
                 e.stopPropagation();
                 popover_menus.hide_current_popover_if_visible(instance);
