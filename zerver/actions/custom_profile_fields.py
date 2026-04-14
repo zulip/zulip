@@ -107,8 +107,27 @@ def remove_custom_profile_field_value_if_required(
     new_values = set(field_data.keys())
     removed_values = old_values - new_values
 
-    if removed_values:
-        CustomProfileFieldValue.objects.filter(field=field, value__in=removed_values).delete()
+    if not removed_values:
+        return
+
+    values_to_delete = CustomProfileFieldValue.objects.filter(
+        field=field, value__in=removed_values
+    ).select_related("user_profile")
+
+    updated_users = [field_value.user_profile for field_value in values_to_delete]
+
+    values_to_delete.delete()
+
+    for user_profile in updated_users:
+        notify_user_update_custom_profile_data(
+            user_profile,
+            {
+                "id": field.id,
+                "value": None,
+                "rendered_value": None,
+                "type": field.field_type,
+            },
+        )
 
 
 @transaction.atomic(durable=True)
