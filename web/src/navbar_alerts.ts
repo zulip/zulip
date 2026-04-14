@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 
 import render_navbar_banners_testing_popover from "../templates/popovers/navbar_banners_testing_popover.hbs";
 
+import * as attachments_ui from "./attachments_ui.ts";
 import * as banners from "./banners.ts";
 import type {AlertBanner} from "./banners.ts";
 import {is_browser_unsupported_old_version} from "./browser_support.ts";
@@ -20,6 +21,7 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {recent_view_messages_data} from "./recent_view_messages_data.ts";
+import * as settings_config from "./settings_config.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as timerender from "./timerender.ts";
@@ -128,6 +130,12 @@ export function set_last_upgrade_nag_dismissal_time(ls: LocalStorage): void {
     }
 }
 
+export function set_upload_quota_limit_banner_dismissal_time(ls: LocalStorage): void {
+    if (localstorage.supported()) {
+        ls.set("upload_quota_limit_banner_dismissal_time", Date.now());
+    }
+}
+
 export function should_show_organization_profile_incomplete_banner(timestamp: number): boolean {
     if (!current_user.is_admin) {
         return false;
@@ -171,6 +179,48 @@ export function toggle_organization_profile_incomplete_banner(): void {
         // this is meant to be a one-time task for administrators.
         open_navbar_banner_and_resize(ORGANIZATION_PROFILE_INCOMPLETE_BANNER);
     }
+}
+
+export function should_show_upload_quota_limit_banner(ls: LocalStorage): boolean {
+    if (page_params.is_spectator) {
+        return false;
+    }
+
+    const used_upload_quota_percentage = attachments_ui.get_realm_used_upload_quota_percentage();
+    if (used_upload_quota_percentage === null) {
+        // get_realm_used_upload_quota_percentage returns null
+        // when there is no limit set for the upload quota, and
+        // thus there is no need to show the banner in that case.
+        return false;
+    }
+
+    // We show the banner when the used upload quota percentage
+    // exceeds 90% for admins, and 95% for non-admins, to give
+    // admins a head start to take the required action without
+    // nudging the non-admins with the warning banner.
+    const threshold = current_user.is_admin ? 90 : 95;
+    if (used_upload_quota_percentage < threshold) {
+        return false;
+    }
+
+    if (
+        !localstorage.supported() ||
+        ls.get("upload_quota_limit_banner_dismissal_time") === undefined
+    ) {
+        return true;
+    }
+
+    const upload_quota_limit_banner_dismissal_time = ls.get(
+        "upload_quota_limit_banner_dismissal_time",
+    );
+    assert(typeof upload_quota_limit_banner_dismissal_time === "number");
+    const upload_quota_banner_min_date = addDays(
+        new Date(upload_quota_limit_banner_dismissal_time),
+        7,
+    ).getTime();
+    // Show the banner only if it has been more than
+    // a week since the user last dismissed the banner.
+    return Date.now() > upload_quota_banner_min_date;
 }
 
 export function should_offer_to_update_timezone(): boolean {
@@ -522,6 +572,59 @@ export function check_and_show_muted_messages_banner(): void {
     }
 }
 
+const upload_file_quota_warning_banner = (): AlertBanner => {
+    const used_upload_quota_percentage = Math.floor(
+        attachments_ui.get_realm_used_upload_quota_percentage()!,
+    );
+    const upload_quota_size = attachments_ui.get_realm_upload_quota_size();
+
+    let label = $t(
+        {
+            defaultMessage:
+                "Your organization is using {used_upload_quota_percentage}% of the {upload_quota_size} file storage quota.",
+        },
+        {
+            used_upload_quota_percentage,
+            upload_quota_size,
+        },
+    );
+    let buttons: ActionButton[] = [];
+    if (realm.realm_plan_type === settings_config.realm_plan_types.limited.code) {
+        // Show the "Upgrade for more storage" text for Zulip Cloud Free users.
+        label = $t(
+            {
+                defaultMessage:
+                    "Your organization is using {used_upload_quota_percentage}% of the {upload_quota_size} file storage quota. Upgrade for more storage.",
+            },
+            {
+                used_upload_quota_percentage,
+                upload_quota_size,
+            },
+        );
+    }
+    if (
+        current_user.is_admin &&
+        realm.realm_plan_type === settings_config.realm_plan_types.limited.code
+    ) {
+        // Show the "Upgrade" button for admins in Zulip Cloud Free organizations.
+        buttons = [
+            {
+                variant: "subtle",
+                label: $t({defaultMessage: "Upgrade"}),
+                custom_classes: "upgrade-upload-quota",
+            },
+        ];
+    }
+    return {
+        process: "upload-quota-warning",
+        intent: "warning",
+        label,
+        buttons,
+        close_button: true,
+        custom_classes: "navbar-alert-banner upgrade-quota-banner",
+    };
+};
+
 export function initialize(): void {
     const ls = localstorage();
     const browser_time_zone = timerender.browser_time_zone();
@@ -550,6 +653,8 @@ export function initialize(): void {
         should_show_organization_profile_incomplete_banner(realm.realm_date_created)
     ) {
         open_navbar_banner_and_resize(ORGANIZATION_PROFILE_INCOMPLETE_BANNER);
+    } else if (should_show_upload_quota_limit_banner(ls)) {
+        open_navbar_banner_and_resize(upload_file_quota_warning_banner());
     } else {
         maybe_toggle_empty_required_profile_fields_banner();
     }
@@ -683,6 +788,20 @@ export function initialize(): void {
             set_last_upgrade_nag_dismissal_time(ls);
         },
     );
+
+    $("#navbar_alerts_wrapper").on(
+        "click",
+        ".upgrade-quota-banner .banner-close-button",
+        function (this: HTMLElement) {
+            const $banner = $(this).closest(".banner");
+            close_navbar_banner_and_resize($banner);
+            set_upload_quota_limit_banner_dismissal_time(ls);
+        },
+    );
+
+    $("#navbar_alerts_wrapper").on("click", ".upgrade-upload-quota", () => {
+        window.open("/upgrade", "_blank", "noopener,noreferrer");
+    });
 
     $("#navbar_alerts_wrapper").on(
         "click",
