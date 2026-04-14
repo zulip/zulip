@@ -201,6 +201,15 @@
         /* Align to compose controls; that's 112px width,
            plus 4px of grid gap for 116px here. */
         margin-right: calc(var(--compose-send-controls-width) + 4px);
+
+        .main-view-banner {
+            padding-right: 4px;
+
+            .main-view-banner-close-button {
+                outline-offset: 0;
+                border-radius: 4px;
+            }
+        }
     }
 }
 
