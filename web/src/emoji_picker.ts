@@ -150,7 +150,7 @@ class SessionManager {
 
     start_picker_for_compose_icon(icon: HTMLElement): void {
         this.compose_icon_session = new ComposeIconSession(icon);
-        toggle_emoji_popover(icon);
+        toggle_emoji_popover(icon, {popperOptions: {strategy: "fixed"}});
     }
 
     start_picker_for_message_reaction(reference: tippy.ReferenceElement, message_id: number): void {

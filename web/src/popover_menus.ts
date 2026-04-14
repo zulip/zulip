@@ -347,6 +347,7 @@ export const left_sidebar_tippy_options: Partial<tippy.Props> = {
                 },
             },
         ],
+        strategy: "fixed",
     },
 };
 

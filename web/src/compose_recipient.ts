@@ -390,6 +390,7 @@ export function initialize(): void {
         get_options: get_options_for_recipient_widget,
         item_click_callback,
         $events_container: $("body"),
+
         on_exit_with_escape_callback: focus_compose_recipient,
         // We want to focus on topic box if dropdown was closed via selecting an item.
         focus_target_on_hidden: false,
@@ -399,6 +400,9 @@ export function initialize(): void {
         prefer_top_start_placement: true,
         tippy_props: {
             offset: [-10, 5],
+            popperOptions: {
+                strategy: "fixed",
+            },
         },
         tab_moves_focus_to_target() {
             if (compose_state.get_message_type() === "stream") {

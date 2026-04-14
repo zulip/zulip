@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang='{{LANGUAGE_CODE}}' {% if color_scheme == 1 %} class="color-scheme-automatic" {% elif color_scheme == 2 %} class="dark-theme" {% endif %}>
+<html lang='{{LANGUAGE_CODE}}' {% if color_scheme == 1 %} class="color-scheme-automatic" {% elif color_scheme == 2 %} class="dark-theme" {% endif %} data-overlayscrollbars-initialize>
 
     {# Base template for the whole site. #}
 
@@ -41,7 +41,7 @@
         {% endblock %}
     </head>
 
-    <body>
+    <body data-overlayscrollbars-initialize>
         {% block content %}
         {% endblock %}
 
