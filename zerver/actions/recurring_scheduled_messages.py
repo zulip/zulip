@@ -155,13 +155,16 @@ def do_deliver_recurring_scheduled_message(job: RecurringScheduledMessage) -> No
             if destination_label == "stream":
                 destination_label = f"stream:{destination.get('stream_id', 'unknown')}"
             elif destination_label == "direct":
-                destination_label = f"direct:{len(destination.get('user_ids', []))}_recipients"
+                destination_label = (
+                    f"direct:{len(destination.get('user_ids', []))}_recipients"
+                )
             logger.exception(
                 "Failed to deliver recurring scheduled message %s to destination %s",
                 job.id,
                 destination_label,
                 stack_info=True,
             )
+            raise
 
     # Update job state — runs within the caller's durable transaction.
     if job.recurrence_type == RecurringScheduledMessage.ONE_TIME:

@@ -29,6 +29,7 @@ class Migration(migrations.Migration):
                             ("daily", "Daily"),
                             ("weekly", "Weekly"),
                             ("specific_days", "Specific days"),
+                            ("monthly", "Monthly"),
                         ],
                         default="one_time",
                         max_length=20,
