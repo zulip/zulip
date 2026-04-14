@@ -1298,6 +1298,63 @@ class MessageMoveTopicTest(ZulipTestCase):
             )
             self.assert_length(orjson.loads(assert_is_not_none(msg.edit_history)), 1)
 
+    def test_partial_move_inherits_follow_status_for_moved_authors(self) -> None:
+        self.login("iago")
+
+        stream_name = "Denmark"
+        stream = get_stream(stream_name, self.example_user("iago").realm)
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        self.subscribe(hamlet, stream_name)
+        self.subscribe(iago, stream_name)
+
+        orig_topic = "topic1"
+        target_topic = "topic1 split"
+
+        first_message_id = self.send_stream_message(hamlet, stream_name, topic_name=orig_topic)
+        split_from_message_id = self.send_stream_message(hamlet, stream_name, topic_name=orig_topic)
+        moved_author_message_id = self.send_stream_message(iago, stream_name, topic_name=orig_topic)
+
+        do_set_user_topic_visibility_policy(
+            iago,
+            stream,
+            orig_topic,
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+
+        self.assert_has_visibility_policy(
+            iago, orig_topic, stream, UserTopic.VisibilityPolicy.FOLLOWED
+        )
+        self.assert_has_visibility_policy(
+            iago, target_topic, stream, UserTopic.VisibilityPolicy.FOLLOWED, expected=False
+        )
+
+        check_update_message(
+            user_profile=iago,
+            message_id=split_from_message_id,
+            stream_id=None,
+            topic_name=target_topic,
+            propagate_mode="change_later",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+        )
+
+        self.check_topic(first_message_id, topic_name=orig_topic)
+        self.check_topic(split_from_message_id, topic_name=target_topic)
+        self.check_topic(moved_author_message_id, topic_name=target_topic)
+
+        self.assert_has_visibility_policy(
+            iago, orig_topic, stream, UserTopic.VisibilityPolicy.FOLLOWED
+        )
+        self.assert_has_visibility_policy(
+            iago, target_topic, stream, UserTopic.VisibilityPolicy.FOLLOWED
+        )
+        self.assert_has_visibility_policy(
+            hamlet, target_topic, stream, UserTopic.VisibilityPolicy.FOLLOWED, expected=False
+        )
+
     def test_propagate_topic_forward(self) -> None:
         self.login("hamlet")
         id1 = self.send_stream_message(self.example_user("hamlet"), "Denmark", topic_name="topic1")

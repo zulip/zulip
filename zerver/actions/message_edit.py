@@ -1229,6 +1229,30 @@ def do_update_message(
         target_stream = message_edit_request.target_stream
         target_topic = message_edit_request.target_topic_name
 
+        if message_edit_request.is_message_moved:
+            user_ids_following_original_topic = {
+                user_topic.user_profile_id
+                for user_topic in get_users_with_user_topic_visibility_policy(
+                    stream_being_edited.id, orig_topic_name
+                )
+                if user_topic.visibility_policy == UserTopic.VisibilityPolicy.FOLLOWED
+            }
+            user_ids_with_moved_messages = set(
+                changed_messages.values_list("sender_id", flat=True)
+            )
+            user_ids_to_follow_target = user_ids_following_original_topic & user_ids_with_moved_messages
+
+            if message_edit_request.is_stream_edited:
+                user_ids_to_follow_target -= {user.id for user in users_losing_access}
+
+            if user_ids_to_follow_target:
+                bulk_do_set_user_topic_visibility_policy(
+                    list(UserProfile.objects.filter(id__in=user_ids_to_follow_target)),
+                    target_stream,
+                    target_topic,
+                    visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+                )
+
         assert target_stream.recipient_id is not None
 
         messages_in_target_topic = messages_for_topic(
