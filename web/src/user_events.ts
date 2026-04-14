@@ -198,6 +198,7 @@ export const update_person = function update(event: UserUpdate): void {
         }
 
         message_live_update.update_avatar(user.user_id, event.avatar_url);
+        buddy_list.insert_or_move([event.user_id]);
         user_profile.update_profile_modal_ui(user, event);
     }
 
