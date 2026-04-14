@@ -406,7 +406,23 @@ export function initialize(): void {
         tippy_props: {
             offset: [-10, 5],
         },
-        tab_moves_focus_to_target() {
+        tab_moves_focus_to_target(e: JQuery.KeyDownEvent): string | undefined {
+            if (e.shiftKey) {
+                const $last_banner = $("#compose_banners .main-view-banner").last();
+                if ($last_banner.length === 0) {
+                    return undefined;
+                }
+                // The close button is the last element in compose banner, so we return
+                // this if it exists or else check for action buttons.
+                if ($last_banner.find(".main-view-banner-close-button").length > 0) {
+                    return "#compose_banners .main-view-banner-close-button:last";
+                }
+                if ($last_banner.find(".main-view-banner-action-button").length > 0) {
+                    return "#compose_banners .main-view-banner-action-button:last";
+                }
+                return undefined;
+            }
+
             if (compose_state.get_message_type() === "stream") {
                 return "#stream_message_recipient_topic";
             }

@@ -94,7 +94,7 @@ export type DropdownWidgetOptions = {
     // with a keyboard trigger or not.
     dropdown_triggered_via_keyboard?: boolean;
     // When this is set, pressing tab will move focus to the target element.
-    tab_moves_focus_to_target?: string | (() => string);
+    tab_moves_focus_to_target?: (event: JQuery.KeyDownEvent) => string | undefined;
     search_placeholder_text?: string;
     sort_list_by_filter_value?: (items: Option[], filter_value: string) => Option[];
 };
@@ -140,7 +140,7 @@ export class DropdownWidget {
     prefer_top_start_placement: boolean;
     dropdown_triggered_via_keyboard: boolean;
     keep_focus_on_search: boolean;
-    tab_moves_focus_to_target: string | (() => string) | undefined;
+    tab_moves_focus_to_target: ((event: JQuery.KeyDownEvent) => string | undefined) | undefined;
     current_hover_index: number;
 
     // TODO: This is only used in one widget, with no implementation
@@ -602,15 +602,16 @@ export class DropdownWidget {
 
                         case "Tab":
                             if (this.tab_moves_focus_to_target) {
+                                // Prevent focus from leaving the dropdown even when no target
+                                // is available.
                                 e.preventDefault();
                                 e.stopPropagation();
-                                popover_menus.hide_current_popover_if_visible(instance);
-                                this.current_hover_index = 0;
-                                const target =
-                                    typeof this.tab_moves_focus_to_target === "function"
-                                        ? this.tab_moves_focus_to_target()
-                                        : this.tab_moves_focus_to_target;
-                                $(target).trigger("focus");
+                                const target = this.tab_moves_focus_to_target(e);
+                                if (target !== undefined) {
+                                    popover_menus.hide_current_popover_if_visible(instance);
+                                    this.current_hover_index = 0;
+                                    $(target).trigger("focus");
+                                }
                             } else if (!this.hide_search_box && this.keep_focus_on_search) {
                                 e.preventDefault();
                                 e.stopPropagation();
