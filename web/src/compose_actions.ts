@@ -34,6 +34,7 @@ import * as saved_snippets_ui from "./saved_snippets_ui.ts";
 import * as spectators from "./spectators.ts";
 import * as stream_data from "./stream_data.ts";
 import * as util from "./util.ts";
+import * as add_meeting from "./add_meeting_ui.ts"
 
 // Opts sent to `compose_actions.start`.
 type ComposeActionsStartOpts = {
@@ -499,6 +500,8 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
     complete_starting_tasks(opts);
 
     saved_snippets_ui.setup_saved_snippets_dropdown_widget_if_needed();
+
+    add_meeting.setup_add_meeting_dropdown_widget_if_needed();
 };
 
 export function rewire_start(value: typeof start): void {

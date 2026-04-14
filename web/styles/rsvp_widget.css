@@ -1,0 +1,127 @@
+.rsvp-widget {
+    padding: 8px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-width: 480px;
+}
+
+.rsvp-topic {
+    font-weight: 700;
+    font-size: 1.05em;
+    line-height: 1.3;
+}
+
+.rsvp-datetime {
+    font-size: 0.95em;
+    color: var(--color-text-default);
+}
+
+.rsvp-time {
+    background-color: var(--color-background-unread-counter-quiet);
+    color: var(--color-unread-counter-quiet);
+    font-weight: 600;
+    border-radius: 4px;
+    padding: 0 5px;
+    font-size: 0.95em;
+}
+
+.rsvp-invitees {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+.rsvp-invitees-label {
+    font-weight: 700;
+    font-size: 0.95em;
+    flex-shrink: 0;
+}
+
+.rsvp-invitees-list {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 0.9em;
+    align-items: flex-start;
+}
+
+.rsvp-invitee-empty {
+    font-size: 0.85em;
+    opacity: 0.6;
+    font-style: italic;
+}
+
+.rsvp-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.rsvp-option {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.rsvp-vote-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-family: inherit;
+    transition: background 0.1s;
+    flex-shrink: 0;
+}
+
+.rsvp-vote-btn .zulip-icon-message-circle-check {
+    font-size: 1.2em;
+    color: #73BA7D;
+}
+
+.rsvp-vote-btn .zulip-icon-message-circle-question-mark {
+    font-size: 1.2em;
+    color: #E9D684;
+}
+
+.rsvp-vote-btn .zulip-icon-message-circle-x {
+    font-size: 1.2em;
+    color: #DC9DB4;
+}
+
+.rsvp-vote-btn:hover {
+    background: var(--color-background-hover-popover-menu);
+}
+
+.rsvp-active .rsvp-vote-btn {
+    background: var(--color-background-modal-bar);
+    font-weight: 600;
+}
+
+.rsvp-count {
+    background: var(--color-background-modal-bar);
+    border-radius: 10px;
+    padding: 0 6px;
+    font-size: 0.85em;
+    font-weight: 600;
+    min-width: 18px;
+    text-align: center;
+}
+
+.rsvp-names {
+    font-size: 0.9em;
+    color: var(--color-text-default);
+    opacity: 0.75;
+    overflow-wrap: break-word;
+}

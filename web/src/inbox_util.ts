@@ -1,7 +1,7 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
 
-import type {Filter} from "./filter";
+import type {Filter} from "./filter.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 import type {UpdatableStreamProperties} from "./stream_types.ts";

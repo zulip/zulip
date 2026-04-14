@@ -473,6 +473,16 @@ def check_widget_content(widget_content: object) -> dict[str, Any]:
             return widget_content
 
         raise ValidationError("unknown zform type: " + extra_data["type"])
+    if widget_type == "rsvp":
+        checker = check_dict(
+            [
+                ("topic", check_string),
+                ("datetime", check_string),
+                ("invitees", check_list(check_int)),
+            ]
+        )
+        checker("extra_data", extra_data)
+        return widget_content
 
     raise ValidationError("unknown widget type: " + widget_type)
 
@@ -480,6 +490,22 @@ def check_widget_content(widget_content: object) -> dict[str, Any]:
 # This should match MAX_IDX in our client widgets. It is somewhat arbitrary.
 MAX_IDX = 1000
 
+def validate_rsvp_data(rsvp_data: object, is_widget_author: bool) -> None:
+    check_dict([("type", check_string)])("rsvp data", rsvp_data)
+
+    assert isinstance(rsvp_data, dict)
+
+    if rsvp_data["type"] == "vote":
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("status", check_string_in(["accept", "tentative", "decline"])),
+            ]
+        )
+        checker("rsvp data", rsvp_data)
+        return
+
+    raise ValidationError(f"Unknown type for rsvp data: {rsvp_data['type']}")
 
 def validate_poll_data(poll_data: object, is_widget_author: bool) -> None:
     check_dict([("type", check_string)])("poll data", poll_data)

@@ -17,6 +17,7 @@
 # See `git help ignore` for details on the format.
 
 ## Config files for the dev environment
+
 /zproject/apns-dev.pem
 /zproject/apns-dev-key.p8
 /zproject/dev-secrets.conf
@@ -25,6 +26,8 @@
 /tools/conf.ini
 /tools/custom_provision
 /tools/droplets/conf.ini
+/update_docs/
+/zerver/dev_docs/
 
 ## Byproducts of setting up and using the dev environment
 *.pyc

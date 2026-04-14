@@ -563,6 +563,26 @@ export const dev_only_slash_commands = [
         aliases: "day",
         info: $t({defaultMessage: "Switch to light theme"}),
     },
+    {
+        text: "/add",
+        name: "add",
+        aliases: "",
+        placeholder: $t({defaultMessage: "channel_name user_id1 user_id2 ..."}),
+        info: $t({defaultMessage: "Create test-channel and add users by ID"}),
+    },
+    {
+        text: "/realm_users",
+        name: "realm_users",
+        aliases: "",
+        info: $t({defaultMessage: "List all users in the realm with IDs"}),
+    },
+    {
+        text: "/channel_users",
+        name: "channel_users",
+        aliases: "",
+        placeholder: $t({defaultMessage: "[channel_name]"}),
+        info: $t({defaultMessage: "List users in a channel with IDs"}),
+    },
 ];
 
 export const slash_commands = [
