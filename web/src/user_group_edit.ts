@@ -251,12 +251,12 @@ function update_user_group_title_buttons(group: UserGroup): void {
             `.selected-group-buttons[data-group-id='${CSS.escape(group.id.toString())}'] .deactivate`,
         ).hide();
         $(
-            `.selected-group-buttons[data-group-id='${CSS.escape(group.id.toString())}'] #open_group_info_modal`,
+            `.selected-group-buttons[data-group-id='${CSS.escape(group.id.toString())}'] #group_title_open_group_info_modal`,
         ).hide();
         return;
     }
     $(
-        `.selected-group-buttons[data-group-id='${CSS.escape(group.id.toString())}'] #open_group_info_modal`,
+        `.selected-group-buttons[data-group-id='${CSS.escape(group.id.toString())}'] #group_title_open_group_info_modal`,
     ).show();
 
     if (group.deactivated) {
@@ -2072,7 +2072,7 @@ export function initialize(): void {
 
     $("#groups_overlay_container").on(
         "click",
-        "#open_group_info_modal",
+        ".open-group-info-button",
         function (this: HTMLElement, e) {
             e.preventDefault();
             e.stopPropagation();
