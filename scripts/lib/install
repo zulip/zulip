@@ -619,8 +619,15 @@ elif [ "$package_system" = yum ]; then
 fi
 
 if [ -n "$USE_CERTBOT" ]; then
+    certbot_tos_args=()
+    if [ -n "$AGREE_TO_TERMS_OF_SERVICE_FLAG" ]; then
+        certbot_tos_args=(--agree-tos)
+    fi
+
     "$deploy_path"/scripts/setup/setup-certbot \
-        "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
+        --email "$ZULIP_ADMINISTRATOR" \
+        "${certbot_tos_args[@]}" \
+        "$EXTERNAL_HOST"
 fi
 
 if has_class "zulip::nginx" && ! has_class "zulip::profile::docker"; then
