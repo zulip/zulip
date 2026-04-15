@@ -460,6 +460,33 @@ html {
         &.full-width {
             width: 100%;
         }
+
+        &.anonymous-access-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background-color: hsl(0deg 0% 100%);
+            color: var(--color-action-button);
+            box-shadow: 0 0 0 1px var(--color-action-button) inset;
+
+            &:hover {
+                background-color: var(--color-action-button-subtle-hover);
+            }
+
+            &:active {
+                background-color: var(--color-action-button-subtle-active);
+                /* Preserve the inset border — the default active
+                   clip-path would crop the bottom edge. */
+                clip-path: inset(0 round 4px);
+            }
+
+            .zulip-icon {
+                font-size: 1.3em;
+                /* Nudge icon down to visually align with text x-height. */
+                transform: translateY(1px);
+            }
+        }
     }
 
     .alert-info {
