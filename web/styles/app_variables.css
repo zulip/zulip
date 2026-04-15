@@ -169,6 +169,12 @@
        Chrome 105) that do not support dynamic viewport
        units. 100% is the legacy full-height value. */
     --full-height-dynamic-viewport: 100%;
+
+    /* Exposed so callers can reserve matching padding on a
+       resizable box, keeping handles out of the clickable content
+       area. Consumed by box_resize.css. */
+    --resizable-box-handle-size: 10px;
+
     --gif-scroll-container-height: 80vh;
 
     @supports (height: 100dvh) {
