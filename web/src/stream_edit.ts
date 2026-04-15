@@ -264,6 +264,7 @@ export function update_stream_description(sub: StreamSubscription): void {
     $edit_container.find("input.description").val(sub.description);
     const html = render_stream_description({
         rendered_description: postprocess_content(sub.rendered_description),
+        use_view_only_styling: true,
     });
     $edit_container.find(".stream-description").html(html);
 }
