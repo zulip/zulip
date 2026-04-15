@@ -1,12 +1,15 @@
 from urllib.parse import urlencode
 
+import orjson
 from typing_extensions import override
 
 from zerver.lib.test_classes import WebhookTestCase
 
 
 class TravisHookTests(WebhookTestCase):
-    TOPIC_NAME = "builds"
+    NON_PR_TOPIC = "travis-test / main"
+    PR_TOPIC = "travis-test / PR #2 feat: Add Name.txt."
+
     EXPECTED_NON_PULL_REQUEST_MESSAGE = (
         ":time_ticking: Build [#1](https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277712204) "
         "**is in progress** for commit [Add Projects model.](https://github.com/sathwikshetty33/travis-test/commit/193da1b72346) by sathwikshetty33."
@@ -27,7 +30,7 @@ class TravisHookTests(WebhookTestCase):
 
         self.check_webhook(
             "non_pull_request",
-            self.TOPIC_NAME,
+            self.NON_PR_TOPIC,
             self.EXPECTED_NON_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
@@ -37,7 +40,7 @@ class TravisHookTests(WebhookTestCase):
 
         self.check_webhook(
             "pull_request",
-            self.TOPIC_NAME,
+            self.PR_TOPIC,
             self.EXPECTED_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
@@ -59,7 +62,7 @@ class TravisHookTests(WebhookTestCase):
 
         self.check_webhook(
             "non_pull_request",
-            self.TOPIC_NAME,
+            self.NON_PR_TOPIC,
             self.EXPECTED_NON_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
@@ -69,7 +72,7 @@ class TravisHookTests(WebhookTestCase):
 
         self.check_webhook(
             "non_pull_request",
-            self.TOPIC_NAME,
+            self.NON_PR_TOPIC,
             self.EXPECTED_NON_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
@@ -91,7 +94,7 @@ class TravisHookTests(WebhookTestCase):
 
         self.check_webhook(
             "pull_request",
-            self.TOPIC_NAME,
+            self.PR_TOPIC,
             self.EXPECTED_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
@@ -101,14 +104,14 @@ class TravisHookTests(WebhookTestCase):
 
         self.check_webhook(
             "pull_request",
-            self.TOPIC_NAME,
+            self.PR_TOPIC,
             self.EXPECTED_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
 
         self.check_webhook(
             "non_pull_request",
-            self.TOPIC_NAME,
+            self.NON_PR_TOPIC,
             self.EXPECTED_NON_PULL_REQUEST_MESSAGE,
             content_type="application/x-www-form-urlencoded",
         )
