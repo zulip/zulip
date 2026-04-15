@@ -413,7 +413,9 @@ export function populate_linkifiers(linkifiers_data: RealmLinkifiers): void {
     });
 
     if (current_user.is_admin) {
-        new SortableJS(util.the($linkifiers_table), {
+        const linkifiers_table = util.the($linkifiers_table);
+        SortableJS.get(linkifiers_table)?.destroy();
+        SortableJS.create(linkifiers_table, {
             onUpdate: update_linkifiers_order,
             handle: ".move-handle",
             filter: "input",
