@@ -274,10 +274,6 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-#stream_creation_form .subscriber_list_container {
-    max-height: var(--new-stream-subscriber-list-max-height);
-}
-
 .subscriber-name,
 .subscriber-email {
     padding: 5px;
@@ -1364,34 +1360,66 @@ h4.user_group_setting_subsection_title {
                 .subscriber_list_settings_container {
                     height: 100%;
                 }
+            }
+        }
+    }
 
-                .subscriber_list_settings_container .subscriber-list-box {
-                    /* flex: 1 takes remaining space after the auto-sized siblings. */
-                    flex: 1;
-                    overflow: hidden;
-                    /* Hide borders here since they would extend to the
-                       full flex item height; they are redeclared on
-                       .subscriber_list_container instead. */
-                    border-left: none;
-                    border-right: none;
+    .two-pane-settings-creation-simplebar-container.subscribers-visible {
+        /* When the subscribers step is visible in the stream creation form,
+        disable simplebar on the outer container and use flex layout so
+        only the subscriber list table scrolls via its own simplebar. */
+        overflow-y: hidden;
 
-                    .subscriber_list_container {
-                        box-sizing: border-box;
-                        max-height: 100%;
-                        /* overflow: clip prevents the native scrollbar that would otherwise
-                           appear because the simplebar placeholder can overflow the
-                           container. Unlike overflow: hidden, clip does not disable
-                           simplebar (simplebar only disables on overflow: hidden). */
-                        overflow: clip;
-                        border-left: 1px solid
-                            var(--color-border-table-subscriber-list);
-                        border-right: 1px solid
-                            var(--color-border-table-subscriber-list);
-                        border-top-left-radius: 4px;
-                        border-top-right-radius: 4px;
+        .simplebar-content:has(> .stream-creation-body) {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+
+            .stream-creation-body {
+                flex: 1;
+                overflow: hidden;
+
+                .subscribers_container {
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+
+                    .stream_create_add_subscriber_container,
+                    #people_to_add {
+                        flex: 1;
+                        overflow: hidden;
+                        display: flex;
+                        flex-direction: column;
                     }
                 }
             }
+        }
+    }
+
+    #stream_settings.subscribers-tab-active .subscriber-list-box,
+    .two-pane-settings-creation-simplebar-container.subscribers-visible
+        .subscriber-list-box {
+        /* flex: 1 takes remaining space after the auto-sized siblings. */
+        flex: 1;
+        overflow: hidden;
+        /* Hide borders here since they would extend to the
+           full flex item height; they are redeclared on
+           .subscriber_list_container instead. */
+        border-left: none;
+        border-right: none;
+
+        .subscriber_list_container {
+            box-sizing: border-box;
+            max-height: 100%;
+            /* overflow: clip prevents the native scrollbar that would otherwise
+               appear because the simplebar placeholder can overflow the
+               container. Unlike overflow: hidden, clip does not disable
+               simplebar (simplebar only disables on overflow: hidden). */
+            overflow: clip;
+            border-left: 1px solid var(--color-border-table-subscriber-list);
+            border-right: 1px solid var(--color-border-table-subscriber-list);
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
         }
     }
 
