@@ -13,7 +13,8 @@
                 {{> stream_settings_tip .}}
             </div>
             <div class="channel-description-box">
-                <label class="settings-field-label">
+                <label class="settings-field-label {{#unless can_change_name_description}}cursor-text{{/unless}}"
+                  for="{{#if can_change_name_description}}open_stream_info_modal{{/if}}">
                     {{t "Description" }}
                     {{> ../help_link_widget link="/help/change-the-channel-description" }}
                 </label>
