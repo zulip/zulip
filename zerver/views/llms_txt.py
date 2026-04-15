@@ -76,9 +76,12 @@ Fetch the 100 oldest messages from a topic:
 
 ## Fetching messages in specific conversations / views
 
-Zulip conversations are referenced by a URL of this form:
+Zulip conversations are referenced by URLs of these forms:
 
-    https://HOST.DOMAIN/#narrow/channel/ID-NAME/topic/TOPIC[/with|near/MSG_ID]
+    {server_url}/#narrow/channel/ID-NAME
+    {server_url}/#narrow/channel/ID-NAME/topic/TOPIC
+    {server_url}/#narrow/channel/ID-NAME/topic/TOPIC/with/MSG_ID
+    {server_url}/#narrow/channel/ID-NAME/topic/TOPIC/near/MSG_ID
 
 Never follow links to related conversations by fetching those URLs; to
 read the messages, you MUST translate them to the equivalent API
