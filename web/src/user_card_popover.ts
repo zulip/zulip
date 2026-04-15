@@ -433,6 +433,13 @@ function show_user_card_popover(
         popover_html = render_user_card_popover(args);
     }
 
+    if ($popover_element.hasClass("inline-profile-picture-wrapper")) {
+        // The .inline-profile-picture-wrapper element has additional
+        // space around it, but we want to place the user card immediately
+        // adjacent the avatar. So we update the element here accordingly.
+        $popover_element = $popover_element.find(".inline_profile_picture");
+    }
+
     popover_menus.toggle_popover_menu(
         the($popover_element),
         {
