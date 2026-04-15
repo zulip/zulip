@@ -655,6 +655,22 @@ def create_realm_profile_field(client: Client) -> None:
     validate_against_openapi_schema(result, "/realm/profile_fields", "post", "200")
 
 
+@openapi_test_function("/realm:patch")
+def update_realm(client: Client) -> None:
+    # {code_example|start}
+    # Update organization settings, including name, description,
+    # and whether non-owners can manage allowed email domains.
+    request = {
+        "name": "Zulip HQ",
+        "description": "The official organization for Zulip development.",
+        "emails_restricted_to_domains": False,
+    }
+    result = client.call_endpoint(url="/realm", method="PATCH", request=request)
+    print(result)
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/realm", "patch", "200")
+
+
 @openapi_test_function("/realm/filters:post")
 def add_realm_filter(client: Client) -> int:
     # TODO: Switch back to using client.add_realm_filter when python-zulip-api
@@ -2225,7 +2241,7 @@ def test_queues(client: Client) -> None:
     register_queue_all_events(client)
 
 
-def test_server_organizations(client: Client) -> None:
+def test_server_organizations(client: Client, owner_client: Client) -> None:
     get_realm_linkifiers(client)
     filter_id = add_realm_filter(client)
     update_realm_filter(client, filter_id)
@@ -2240,6 +2256,7 @@ def test_server_organizations(client: Client) -> None:
     get_realm_profile_fields(client)
     reorder_realm_profile_fields(client)
     create_realm_profile_field(client)
+    update_realm(owner_client)
     export_realm(client)
     get_realm_exports(client)
     get_realm_export_consents(client)
@@ -2275,7 +2292,7 @@ def test_the_api(client: Client, nonadmin_client: Client, owner_client: Client) 
     test_streams(client, nonadmin_client)
     test_messages(client, nonadmin_client)
     test_queues(client)
-    test_server_organizations(client)
+    test_server_organizations(client, owner_client)
     test_errors(client)
     test_invitations(client)
     test_welcome_bot_custom_message(client)

@@ -13791,6 +13791,469 @@ paths:
                         "result": "success",
                         "server_timestamp": 1656958539.6287155,
                       }
+  /realm:
+    patch:
+      operationId: update-realm
+      summary: Update organization settings
+      tags: ["server_and_organizations"]
+      x-requires-administrator: true
+      description: |
+        See [Customize organization settings](https://zulip.com/help/customize-organization-settings).
+
+        The `string_id` parameter can only be changed for demo organizations.
+      x-curl-examples-parameters:
+        oneOf:
+          - type: include
+            parameters:
+              enum:
+                - name
+                - description
+                - emails_restricted_to_domains
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                allow_message_editing:
+                  $ref: "#/components/schemas/RealmAllowMessageEditing"
+                authentication_methods:
+                  type: object
+                  description: |
+                    A dictionary mapping authentication method names to boolean values indicating whether that method is enabled.
+                  example:
+                    Google: true
+                avatar_changes_disabled:
+                  type: boolean
+                  description: |
+                    Whether users are prevented from changing their avatars.
+                  example: false
+                can_access_all_users_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_add_custom_emoji_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_add_subscribers_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_create_bots_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_create_groups:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_create_private_channel_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_create_public_channel_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_create_web_public_channel_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_create_write_only_bots_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_delete_any_message_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_delete_own_message_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_invite_users_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_manage_all_groups:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_manage_billing_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_mention_many_users_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_move_messages_between_channels_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_move_messages_between_topics_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_resolve_topics_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_set_delete_message_policy_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_set_topics_policy_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                can_summarize_topics_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                create_multiuse_invite_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                default_avatar_source:
+                  type: string
+                  description: |
+                    The default avatar source for users.
+                  example: "G"
+                default_code_block_language:
+                  type: string
+                  description: |
+                    The default language used for formatting code blocks.
+                  example: "python"
+                default_language:
+                  $ref: "#/components/schemas/RealmDefaultLanguage"
+                description:
+                  $ref: "#/components/schemas/RealmDescription"
+                digest_emails_enabled:
+                  $ref: "#/components/schemas/RealmDigestEmailsEnabled"
+                digest_weekday:
+                  type: integer
+                  description: |
+                    The day of the week when digest emails are sent.
+                  example: 1
+                direct_message_initiator_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                direct_message_permission_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                disallow_disposable_email_addresses:
+                  type: boolean
+                  description: |
+                    Whether users are restricted from using disposable email addresses.
+                  example: true
+                email_changes_disabled:
+                  $ref: "#/components/schemas/RealmEmailChangesDisabled"
+                emails_restricted_to_domains:
+                  $ref: "#/components/schemas/RealmEmailsRestrictedToDomains"
+                enable_guest_user_dm_warning:
+                  type: boolean
+                  description: |
+                    Whether to warn before sending a direct message to a guest user.
+                  example: false
+                enable_guest_user_indicator:
+                  type: boolean
+                  description: |
+                    Whether to show a visual indicator for guest users.
+                  example: false
+                enable_read_receipts:
+                  type: boolean
+                  description: |
+                    Whether read receipts are enabled in the organization.
+                  example: true
+                enable_spectator_access:
+                  $ref: "#/components/schemas/RealmEnableSpectatorAccess"
+                gif_rating_policy:
+                  type: integer
+                  description: |
+                    The policy for acceptable GIF content ratings.
+                  example: 1
+                inline_image_preview:
+                  $ref: "#/components/schemas/RealmInlineImagePreview"
+                inline_url_embed_preview:
+                  $ref: "#/components/schemas/RealmInlineUrlEmbedPreview"
+                invite_required:
+                  $ref: "#/components/schemas/RealmInviteRequired"
+                jitsi_server_url:
+                  type: string
+                  description: |
+                    The Jitsi server URL for video calls.
+                  example: "https://jitsi.example.com"
+                media_preview_size:
+                  type: string
+                  description: |
+                    The size configuration for media previews.
+                  example: "large"
+                message_content_allowed_in_email_notifications:
+                  type: boolean
+                  description: |
+                    Whether message content is permitted in email notifications.
+                  example: true
+                message_content_delete_limit_seconds:
+                  $ref: "#/components/schemas/RealmMessageContentDeleteLimitSeconds"
+                message_content_edit_limit_seconds:
+                  $ref: "#/components/schemas/RealmMessageContentEditLimitSeconds"
+                message_edit_history_visibility_policy:
+                  type: string
+                  description: |
+                    The policy governing the visibility of message edit history.
+                  example: "all"
+                message_retention_days:
+                  oneOf:
+                    - type: integer
+                    - type: string
+                  description: |
+                    The number of days to retain messages before they are automatically removed.
+                  example: 365
+                moderation_request_channel_id:
+                  type: integer
+                  description: |
+                    The channel ID where moderation requests are sent.
+                  example: 1
+                move_messages_between_streams_limit_seconds:
+                  oneOf:
+                    - type: integer
+                    - type: string
+                  description: |
+                    The time limit in seconds for moving messages between channels. Use "unlimited" for no limit.
+                  example: 3600
+                move_messages_within_stream_limit_seconds:
+                  oneOf:
+                    - type: integer
+                    - type: string
+                  description: |
+                    The time limit in seconds for moving messages within a channel. Use "unlimited" for no limit.
+                  example: 3600
+                name:
+                  $ref: "#/components/schemas/RealmName"
+                name_changes_disabled:
+                  $ref: "#/components/schemas/RealmNameChangesDisabled"
+                new_stream_announcements_stream_id:
+                  type: integer
+                  description: |
+                    The channel ID where new stream announcements are posted.
+                  example: 1
+                org_type:
+                  $ref: "#/components/schemas/RealmOrgType"
+                require_e2ee_push_notifications:
+                  type: boolean
+                  description: |
+                    Whether to require end-to-end encrypted push notifications.
+                  example: false
+                require_unique_names:
+                  type: boolean
+                  description: |
+                    Whether users must have unique names.
+                  example: true
+                send_channel_events_messages:
+                  type: boolean
+                  description: |
+                    Whether to send channel creation and deletion event messages.
+                  example: true
+                send_welcome_emails:
+                  $ref: "#/components/schemas/RealmSendWelcomeEmails"
+                signup_announcements_stream_id:
+                  type: integer
+                  description: |
+                    The channel ID where new user signup announcements are posted.
+                  example: 1
+                string_id:
+                  type: string
+                  description: |
+                    The new subdomain for the organization.
+                  example: "acme"
+                topics_policy:
+                  type: string
+                  enum:
+                    - allow_empty_topic
+                    - disable_empty_topic
+                  description: |
+                    The policy for sending messages to the empty "general chat" topic.
+                  example: "allow_empty_topic"
+                video_chat_provider:
+                  $ref: "#/components/schemas/RealmVideoChatProvider"
+                waiting_period_threshold:
+                  $ref: "#/components/schemas/RealmWaitingPeriodThreshold"
+                want_advertise_in_communities_directory:
+                  type: boolean
+                  description: |
+                    Whether to advertise the organization in the directory.
+                  example: true
+                welcome_message_custom_text:
+                  type: string
+                  description: |
+                    Custom text for the welcome message sent to new users.
+                  example: "Welcome to our organization!"
+                workplace_users_group:
+                  type: object
+                  description: |
+                    A group-setting update object controlling access.
+                  example:
+                    new: 2
+                zulip_update_announcements_stream_id:
+                  type: integer
+                  description: |
+                    The channel ID where Zulip server update announcements are posted.
+                  example: 1
+            encoding:
+              allow_message_editing:
+                contentType: application/json
+              authentication_methods:
+                contentType: application/json
+              avatar_changes_disabled:
+                contentType: application/json
+              can_access_all_users_group:
+                contentType: application/json
+              can_add_custom_emoji_group:
+                contentType: application/json
+              can_add_subscribers_group:
+                contentType: application/json
+              can_create_bots_group:
+                contentType: application/json
+              can_create_groups:
+                contentType: application/json
+              can_create_private_channel_group:
+                contentType: application/json
+              can_create_public_channel_group:
+                contentType: application/json
+              can_create_web_public_channel_group:
+                contentType: application/json
+              can_create_write_only_bots_group:
+                contentType: application/json
+              can_delete_any_message_group:
+                contentType: application/json
+              can_delete_own_message_group:
+                contentType: application/json
+              can_invite_users_group:
+                contentType: application/json
+              can_manage_all_groups:
+                contentType: application/json
+              can_manage_billing_group:
+                contentType: application/json
+              can_mention_many_users_group:
+                contentType: application/json
+              can_move_messages_between_channels_group:
+                contentType: application/json
+              can_move_messages_between_topics_group:
+                contentType: application/json
+              can_resolve_topics_group:
+                contentType: application/json
+              can_set_delete_message_policy_group:
+                contentType: application/json
+              can_set_topics_policy_group:
+                contentType: application/json
+              can_summarize_topics_group:
+                contentType: application/json
+              create_multiuse_invite_group:
+                contentType: application/json
+              digest_emails_enabled:
+                contentType: application/json
+              direct_message_initiator_group:
+                contentType: application/json
+              direct_message_permission_group:
+                contentType: application/json
+              email_changes_disabled:
+                contentType: application/json
+              emails_restricted_to_domains:
+                contentType: application/json
+              enable_spectator_access:
+                contentType: application/json
+              inline_image_preview:
+                contentType: application/json
+              inline_url_embed_preview:
+                contentType: application/json
+              invite_required:
+                contentType: application/json
+              message_content_delete_limit_seconds:
+                contentType: application/json
+              message_content_edit_limit_seconds:
+                contentType: application/json
+              message_retention_days:
+                contentType: application/json
+              org_type:
+                contentType: application/json
+              send_welcome_emails:
+                contentType: application/json
+              video_chat_provider:
+                contentType: application/json
+              waiting_period_threshold:
+                contentType: application/json
+              workplace_users_group:
+                contentType: application/json
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - type: object
+                    additionalProperties: {}
+              examples:
+                success:
+                  summary: Successful response
+                  value:
+                    result: success
+                    msg: ""
   /realm/domains:
     get:
       operationId: get-realm-domains
@@ -27581,15 +28044,23 @@ components:
     RealmVideoChatProvider:
       type: integer
       description: |
-        Members whose accounts have been created at least this many days ago
-        will be treated as [full members][calc-full-member]
-        for the purpose of settings that restrict access to new members.
+        The configured [video call provider](/help/configure-call-provider)
+        for the organization.
 
-        **Changes**: As of Zulip 6.0 (feature level 143), only organization owners can
-        change this setting.
+        - 0 = None
+        - 1 = Jitsi Meet
+        - 3 = Zoom (User OAuth integration)
+        - 4 = BigBlueButton
+        - 5 = Zoom (Server to Server OAuth integration)
+        - 6 = Constructor Groups
+        - 7 = Nextcloud Talk
+        - 8 = Webex (User OAuth integration)
 
-        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
-      example: 3
+        Note that only one of the [Zoom integrations][zoom-video-calls]
+        can be configured on a Zulip server.
+
+        [zoom-video-calls]: https://zulip.readthedocs.io/en/latest/production/video-calls.html#zoom
+      example: 1
 
     RealmAllowMessageEditing:
       type: boolean
