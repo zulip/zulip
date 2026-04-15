@@ -692,8 +692,9 @@ input[name="licenses"] {
     margin: 20px;
 }
 
-#sponsorship-form #sponsorship-button {
-    width: 100%;
+#sponsorship-form .upgrade-button-container {
+    display: block;
+    text-align: center;
 }
 
 .billing-page-discount {
