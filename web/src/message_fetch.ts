@@ -29,6 +29,7 @@ import {narrow_operator_schema} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
+import * as unread_ops from "./unread_ops.ts";
 import * as util from "./util.ts";
 
 export const message_ids_response_schema = z.object({
@@ -266,6 +267,16 @@ function get_messages_success(data: MessageFetchResponse, opts: MessageFetchOpti
     }
 
     process_result(data, opts);
+
+    if (current_fetch_found_newest && opts.msg_list === message_lists.current) {
+        // Now that we've confirmed we have the newest messages in
+        // this view, re-check whether the visible messages should
+        // be marked as read. Without this, a fetch that completes
+        // after narrow activation (with no subsequent scroll, focus
+        // change, or new-message event) would leave messages unread
+        // even though the user is looking at the bottom of the view.
+        unread_ops.process_visible();
+    }
 }
 
 // This function modifies the narrow data to use integer IDs instead of
