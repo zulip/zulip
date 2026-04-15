@@ -134,7 +134,10 @@ export const show_subs_pane = {
         $("#stream-creation").show();
         resize.resize_settings_overlay($("#channels_overlay_container"));
         resize.resize_settings_creation_overlay($("#channels_overlay_container"));
-        resize.resize_stream_creation_subscribers_list();
+        $("#stream_creation_form .two-pane-settings-creation-simplebar-container").toggleClass(
+            "subscribers-visible",
+            container_name === "subscribers_container",
+        );
     },
 };
 
