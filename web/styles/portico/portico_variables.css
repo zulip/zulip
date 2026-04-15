@@ -30,6 +30,8 @@
     --color-action-button: hsl(240deg 66% 60%);
     --color-action-button-hover: hsl(240deg 66% 55%);
     --color-action-button-active: hsl(240deg 66% 50%);
+    --color-action-button-subtle-hover: hsl(240deg 66% 97%);
+    --color-action-button-subtle-active: hsl(240deg 66% 94%);
 
     @media (prefers-color-scheme: dark) {
         --color-background-gradient-start: hsl(209deg 63% 40%);
