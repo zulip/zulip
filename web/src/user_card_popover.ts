@@ -604,7 +604,7 @@ export function toggle_sender_info(): void {
     popovers.hide_all();
 
     const $message = $(".selected_message");
-    let $sender = $message.find(".message-avatar");
+    let $sender = $message.find(".message-avatar .inline-profile-picture-wrapper");
     if ($sender.length === 0) {
         // Messages without an avatar have an invisible message_sender
         // element that's roughly in the right place.
