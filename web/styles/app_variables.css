@@ -175,11 +175,51 @@
        area. Consumed by box_resize.css. */
     --resizable-box-handle-size: 10px;
 
-    --gif-scroll-container-height: 80vh;
+    /* GIF picker overlay: resize bounds are expressed in columns so
+       the picker resizes to useful sizes. Tweaking these retunes the
+       bounds, grid columns, and gap together. */
+    --gif-picker-gif-column-min-width: 200px;
+    --gif-picker-gif-column-gap: 6px;
+    /* Horizontal chrome inside .gif-grid-in-popover around the grid
+       columns, measured against its border-box. Breakdown: 3px × 2
+       .gif-scrolling-container margin, 2px × 2 .gif-picker-content
+       padding, and handle-size padding on each side reserved for
+       resize handles. SimpleBar's scrollbar is a positioned overlay
+       and doesn't take content width, so nothing extra is reserved
+       for it. Keep in sync with popovers.css. */
+    --gif-picker-grid-horizontal-chrome: calc(
+        10px + 2 * var(--resizable-box-handle-size)
+    );
+    --gif-picker-viewport-safe-margin: 20px;
+
+    /* Min = 1 column. Max = 5 columns, capped at viewport minus safe
+       margins. */
+    --gif-picker-grid-min-width: calc(
+        var(--gif-picker-gif-column-min-width) +
+            var(--gif-picker-grid-horizontal-chrome)
+    );
+    --gif-picker-grid-max-width: min(
+        calc(
+            5 * var(--gif-picker-gif-column-min-width) + 4 *
+                var(--gif-picker-gif-column-gap) +
+                var(--gif-picker-grid-horizontal-chrome)
+        ),
+        calc(100vw - 2 * var(--gif-picker-viewport-safe-margin))
+    );
+    /* Room for the search input, one row of GIFs, the footer, and
+       the outer handle-size padding on the top and bottom. */
+    --gif-picker-grid-min-height: calc(
+        300px + 2 * var(--resizable-box-handle-size)
+    );
+    --gif-picker-grid-max-height: calc(
+        100vh - 2 * var(--gif-picker-viewport-safe-margin)
+    );
 
     @supports (height: 100dvh) {
         --full-height-dynamic-viewport: 100dvh;
-        --gif-scroll-container-height: 80dvh;
+        --gif-picker-grid-max-height: calc(
+            100dvh - 2 * var(--gif-picker-viewport-safe-margin)
+        );
     }
 
     /*
