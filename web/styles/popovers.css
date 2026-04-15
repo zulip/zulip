@@ -498,13 +498,47 @@ ul.popover-group-menu-member-list {
 }
 
 .gif-grid-in-popover {
-    width: 90vw;
-    /* 6px `.gif-scroll-container` horizontal margin + 6px is the extra gutter space
-       + 4px padding between gif columns. Our max-width is calculated based on this so the
-       max width of the GIFs becomes 250px */
-    max-width: 516px;
+    /* Anchor resize handles to this element's padding box so they
+       stay inside the popover. */
+    position: relative;
+    /* So width / min-width / max-width refer to the total visible
+       box, including the handle-size padding added below; the viewport
+       safe-margin caps then compare apples-to-apples. */
+    box-sizing: border-box;
+    /* Initial width: four columns. On narrow viewports, `max-width`
+       caps this at what fits. Users can drag between one and five
+       columns. */
+    width: calc(
+        4 * var(--gif-picker-gif-column-min-width) + 3 *
+            var(--gif-picker-gif-column-gap) +
+            var(--gif-picker-grid-horizontal-chrome)
+    );
+    height: 70dvh;
+    min-width: var(--gif-picker-grid-min-width);
+    min-height: var(--gif-picker-grid-min-height);
+    max-width: var(--gif-picker-grid-max-width);
+    max-height: var(--gif-picker-grid-max-height);
+
+    /* On mobile devices (userAgent-based, see gif_picker_ui.ts), fill
+       the viewport and drop the handle-size padding since resize is
+       disabled. Gating on device class rather than viewport width
+       lets a desktop user on a narrow window keep the resizable
+       picker. */
+    &.is-mobile-device {
+        width: calc(100vw - 2 * var(--gif-picker-viewport-safe-margin));
+        height: calc(100dvh - 2 * var(--gif-picker-viewport-safe-margin));
+        min-width: 0;
+        min-height: 0;
+        max-width: none;
+        max-height: none;
+        padding: 0;
+    }
+
     border: 0;
-    padding: 0;
+    /* Reserve a strip equal to the resize handle size on every side
+       so the handles don't overlap clickable GIFs, the search input,
+       or the inner scrollbar. */
+    padding: var(--resizable-box-handle-size);
 
     .gif-search-container {
         margin: 4px 4px 2px;
@@ -519,9 +553,19 @@ ul.popover-group-menu-member-list {
 
     .gif-picker-content {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        /* Reflow to more columns as the picker enlarges, using the
+           same min column width as the container resize bounds. */
+        grid-template-columns: repeat(
+            auto-fit,
+            minmax(var(--gif-picker-gif-column-min-width), 1fr)
+        );
         grid-auto-rows: auto;
-        gap: 6px;
+        gap: var(--gif-picker-gif-column-gap);
+
+        @media (width < $md_min) {
+            /* Allow narrower columns on mobile so two can fit on a phone. */
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
 
         /* Meant to prevent outline overflow when the GIF
        is focused. */
@@ -547,23 +591,55 @@ ul.popover-group-menu-member-list {
         }
     }
 
-    .gif-scrolling-container {
-        overflow: hidden auto;
-        height: var(--gif-scroll-container-height);
-        max-height: 500px;
-        margin: 2px 3px;
-        padding: 5px 0;
+    .popover-inner {
+        /* Fill .gif-grid-in-popover so the scrolling container takes
+           the space left over after the search input. */
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+
+        .gif-scrolling-container {
+            flex: 1 1 auto;
+            /* `min-height: 0` lets this flex item shrink below its
+               content's intrinsic height, so the scroll area can
+               be shorter than the grid it contains. */
+            min-height: 0;
+            /* SimpleBar's `.simplebar-wrapper` uses `height: inherit`
+               to pick up its host's *computed* height; when the host
+               is `height: auto` (the default on a flex item),
+               SimpleBar falls back to an "auto height" mode that
+               disables its internal scroll. Setting `height: 100%`
+               here gives the wrapper a resolvable percentage instead,
+               so SimpleBar drives scrolling against the flex-computed
+               height. SimpleBar also reads this element's `overflow-y`
+               and suppresses its own scrollbar if it's `hidden`, so
+               we use `overflow: hidden auto` to allow Y scrolling while
+               still blocking any horizontal overflow. */
+            height: 100%;
+            overflow: hidden auto;
+            margin: 2px 3px;
+            padding: 5px 0;
+        }
     }
 
     .popover-footer {
-        text-align: center;
+        /* We center the attribution image with flex so it doesn't
+           pick up a baseline descender gap, and set flex-shrink: 0 so
+           the flex layout on `.popover-inner` can't squeeze the
+           footer below the image's own height. */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
         background-color: hsl(0deg 0% 0%);
         /* The border radius corresponds to the default radius value from `tippy-box`. */
         border-radius: 0 0 4px 4px;
 
-        /* This prevents the footer from experiencing height
-           fluctuations at the moment when the image is uploaded. */
-        min-height: 25px;
+        /* The GIPHY image is 200×42 natural, rendered at 120px wide
+           (so ~25px tall); 34px gives the image a little breathing
+           room and keeps the footer from collapsing before the image
+           has loaded. */
+        min-height: 34px;
 
         & img {
             width: 120px;

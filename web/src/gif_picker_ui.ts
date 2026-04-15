@@ -7,14 +7,19 @@ import render_gif_picker_gif from "../templates/gif_picker_gif.hbs";
 import render_no_gif_results from "../templates/no_gif_results.hbs";
 
 import type {GifInfoUrl, GifNetwork} from "./abstract_gif_network.ts";
+import {make_resizable} from "./box_resize.ts";
 import {ComposeIconSession} from "./compose_icon_session.ts";
 import * as gif_picker_popover_content from "./gif_picker_popover_content.ts";
 import * as gif_state from "./gif_state.ts";
 import * as giphy_network from "./giphy_network.ts";
 import * as klipy_network from "./klipy_network.ts";
+import * as modals from "./modals.ts";
+import * as overlay_util from "./overlay_util.ts";
+import * as overlays from "./overlays.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as tenor_network from "./tenor_network.ts";
+import * as util from "./util.ts";
 
 // Only used if popover called from edit message, otherwise it is `undefined`.
 let compose_icon_session: ComposeIconSession | undefined;
@@ -23,6 +28,7 @@ let current_search_term: undefined | string;
 // Stores the index of the last GIF that is part of the grid.
 let last_gif_index = -1;
 let network: GifNetwork;
+let resizable_grid_cleanup: (() => void) | undefined;
 
 function is_editing_existing_message(): boolean {
     if (compose_icon_session === undefined) {
@@ -146,6 +152,7 @@ function render_gifs_to_grid(urls: GifInfoUrl[], next_page: boolean): void {
         if (urls.length === 0) {
             const no_gif_results_html = render_no_gif_results();
             $popper.find(".gif-picker-content").html(no_gif_results_html);
+            recenter_overlay();
             return;
         }
     }
@@ -163,7 +170,16 @@ function render_gifs_to_grid(urls: GifInfoUrl[], next_page: boolean): void {
     } else {
         $popper.find(".gif-scrolling-container .simplebar-content-wrapper").scrollTop(0);
         $popper.find(".gif-picker-content").html(gif_grid_html);
+        // On the initial render, Tippy positioned the popover before
+        // the grid's `height: 70dvh` had settled, so the `translate3d`
+        // is computed against a smaller box and the final-sized box
+        // overflows at the bottom. Re-run popper with the final size.
+        recenter_overlay();
     }
+}
+
+function recenter_overlay(): void {
+    void popover_instance?.popperInstance?.update();
 }
 
 function render_featured_gifs(next_page: boolean): void {
@@ -205,21 +221,6 @@ function toggle_picker_popover(target: HTMLElement): void {
         target,
         {
             theme: "popover-menu",
-            placement: "top",
-            popperOptions: {
-                modifiers: [
-                    {
-                        // The placement is set to top by default, and we use
-                        // bottom and left configurations as fallback, which is
-                        // useful for scenarios when opening the picker while editing
-                        // messages near the top of the viewport.
-                        name: "flip",
-                        options: {
-                            fallbackPlacements: ["bottom", "left"],
-                        },
-                    },
-                ],
-            },
             onCreate(instance) {
                 const provider = network.get_provider();
                 instance.setContent(gif_picker_popover_content.get_gif_popover_content(provider));
@@ -229,6 +230,12 @@ function toggle_picker_popover(target: HTMLElement): void {
             },
             onShow(instance) {
                 popover_instance = instance;
+                // Clicking the compose GIF icon outside an overlay or
+                // modal would close the overlay/modal first, so we
+                // should never show the picker with one open.
+                assert(!overlays.any_active());
+                assert(!modals.any_active());
+                overlay_util.disable_scrolling();
                 const $popper = $(instance.popper).trigger("focus");
                 const debounced_search = _.debounce((search_term: string) => {
                     update_grid_with_search_term(search_term);
@@ -253,6 +260,34 @@ function toggle_picker_popover(target: HTMLElement): void {
                 $popper.on("keydown", ".gif-picker-gif", handle_keyboard_navigation_on_gif);
             },
             onMount(instance) {
+                const grid = instance.popper.querySelector<HTMLElement>(".gif-grid-in-popover")!;
+                // On mobile devices, the picker fills the viewport and
+                // resize is disabled — 10px touch targets are too small
+                // for fingers, and there's no real estate to gain. We
+                // gate on device class (userAgent) rather than viewport
+                // width so a desktop user with a narrow window still
+                // gets the resizable picker.
+                if (util.is_mobile()) {
+                    grid.classList.add("is-mobile-device");
+                } else {
+                    resizable_grid_cleanup = make_resizable(
+                        grid,
+                        [
+                            "top",
+                            "right",
+                            "bottom",
+                            "left",
+                            "top_left",
+                            "top_right",
+                            "bottom_left",
+                            "bottom_right",
+                        ],
+                        // Re-center the overlay against the new size.
+                        () => {
+                            void instance.popperInstance?.update();
+                        },
+                    );
+                }
                 render_featured_gifs(false);
                 const $popper = $(instance.popper);
                 $popper.find("#gif-search-query").trigger("focus");
@@ -280,11 +315,16 @@ function toggle_picker_popover(target: HTMLElement): void {
             },
             onHidden() {
                 hide_picker_popover();
+                resizable_grid_cleanup?.();
+                resizable_grid_cleanup = undefined;
+                overlay_util.enable_scrolling();
             },
         },
         {
             show_as_overlay_on_mobile: true,
-            show_as_overlay_always: false,
+            // A centered overlay sidesteps popper-anchor edge cases near
+            // the viewport top, and lets resize work symmetrically.
+            show_as_overlay_always: true,
         },
     );
 }
