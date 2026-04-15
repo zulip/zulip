@@ -134,11 +134,12 @@ export function decodeHashComponent(str: string): string {{
 ```
 
 Zulip topics can be renamed, moved, deleted, or most frequently,
-marked as resolved (represented via adding `RESOLVED_TOPIC_PREFIX = "✔
-"` to the start of the topic name). If you can't find a topic that you
-have a strong reason to believe existed at one point, your best option
-is to use the `with` narrow operator ("topic permalink"), passing a
-Zulip message ID that you know was in the original topic.
+marked as resolved (represented via adding the prefix
+`RESOLVED_TOPIC_PREFIX = "✔ "` to the start of the topic name). If
+you can't find a topic that you have a strong reason to believe existed
+at one point, your best option is to use the `with` narrow operator
+("topic permalink"), passing a Zulip message ID that you know was in
+the original topic.
 
 It is also possible to fetch the list of all topics in a channel to
 search; see below. That operation can be expensive, so use it
