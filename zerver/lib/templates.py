@@ -1,5 +1,5 @@
 import time
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from typing import Any
 
 import markdown
@@ -219,44 +219,3 @@ def webpack_entry(entrypoint: str) -> list[str]:
         )
 
     return files_from_entrypoints
-
-
-def webpack_asset(asset_name: str) -> str:
-    while True:
-        with open(settings.WEBPACK_STATS_FILE, "rb") as f:
-            stats = orjson.loads(f.read())
-        status = stats["status"]
-        if not settings.DEBUG or status != "compile":
-            break
-        time.sleep(0.2)
-
-    if status != "done":
-        raise RuntimeError("Webpack compilation was not successful")
-
-    assets = stats["assets"]
-    if asset_name in assets:
-        filename = assets[asset_name]["name"]
-        return staticfiles_storage.url(settings.WEBPACK_BUNDLES + filename)
-
-    requested_path = PurePosixPath(asset_name.split("?", 1)[0])
-    matching_filenames = []
-    for asset in assets.values():
-        filename = asset["name"]
-        candidate_path = PurePosixPath(filename.split("?", 1)[0])
-
-        # Production webpack stats hash emitted asset names, while development
-        # stats keep the original logical filename as the key.
-        if (
-            candidate_path.parent == requested_path.parent
-            and candidate_path.suffix == requested_path.suffix
-            and (
-                candidate_path.stem == requested_path.stem
-                or candidate_path.stem.startswith(f"{requested_path.stem}.")
-            )
-        ):
-            matching_filenames.append(filename)
-
-    if len(matching_filenames) != 1:
-        raise KeyError(f"'{asset_name}' asset could not be found in webpack stats.")
-
-    return staticfiles_storage.url(settings.WEBPACK_BUNDLES + matching_filenames[0])

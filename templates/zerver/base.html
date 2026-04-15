@@ -26,9 +26,6 @@
         {% if sentry_params is defined %}
         <script id="sentry-params" type="text/json">{{ sentry_params|tojson }}</script>
         {% endif %}
-        {% if user_profile %}
-        <link rel="preload" href="{{ webpack_asset('files/zulip-icons.woff2') }}" as="font" type="font/woff2" crossorigin />
-        {% endif %}
 
         {% block webpack %}
             {% for filename in webpack_entry(entrypoint) -%}

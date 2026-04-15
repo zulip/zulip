@@ -1,41 +1,10 @@
-import tempfile
-from unittest import mock
-
-import orjson
 from django.template.loader import get_template
-from django.test import override_settings
 
 from zerver.lib.exceptions import InvalidMarkdownIncludeStatementError
-from zerver.lib.templates import webpack_asset
 from zerver.lib.test_classes import ZulipTestCase
 
 
 class TemplateTestCase(ZulipTestCase):
-    def check_webpack_asset_url(
-        self: "TemplateTestCase",
-        asset_name: str,
-        assets: dict[str, dict[str, str]],
-        expected_filename: str,
-    ) -> None:
-        with (
-            tempfile.NamedTemporaryFile(mode="wb") as stats_file,
-            mock.patch(
-                "zerver.lib.templates.staticfiles_storage.url",
-                side_effect="/static/{}".format,
-            ),
-            override_settings(
-                DEBUG=False,
-                WEBPACK_BUNDLES="webpack-bundles/",
-                WEBPACK_STATS_FILE=stats_file.name,
-            ),
-        ):
-            stats_file.write(orjson.dumps({"status": "done", "assets": assets}))
-            stats_file.flush()
-            self.assertEqual(
-                webpack_asset(asset_name),
-                f"/static/webpack-bundles/{expected_filename}",
-            )
-
     def test_markdown_in_template(self: "TemplateTestCase") -> None:
         template = get_template("tests/test_markdown.html")
         context = {
@@ -169,29 +138,3 @@ footer
         content_sans_whitespace = content.replace(" ", "").replace("\n", "")
         expected = "headerfooter"
         self.assertEqual(content_sans_whitespace, expected)
-
-    def test_webpack_asset_finds_unhashed_asset(self: "TemplateTestCase") -> None:
-        self.check_webpack_asset_url(
-            "files/zulip-icons.woff2",
-            {
-                "files/zulip-icons.woff2": {
-                    "name": "files/zulip-icons.woff2",
-                    "path": "/srv/zulip-icons.woff2",
-                    "publicPath": "auto",
-                },
-            },
-            "files/zulip-icons.woff2",
-        )
-
-    def test_webpack_asset_finds_hashed_asset(self: "TemplateTestCase") -> None:
-        self.check_webpack_asset_url(
-            "files/zulip-icons.woff2",
-            {
-                "files/zulip-icons.215f05ca63c0e743c729.woff2": {
-                    "name": "files/zulip-icons.215f05ca63c0e743c729.woff2",
-                    "path": "/srv/zulip-icons.215f05ca63c0e743c729.woff2",
-                    "publicPath": "auto",
-                },
-            },
-            "files/zulip-icons.215f05ca63c0e743c729.woff2",
-        )
