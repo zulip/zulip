@@ -1585,6 +1585,35 @@ class UserSignUpTest(ZulipTestCase):
 
         outbox.pop()
 
+    def test_default_language_cookie_overrides_browser_locale(self) -> None:
+        email = self.nonreg_email("newguy")
+        password = "newpassword"
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "default_language", "de", acting_user=None)
+
+        self.client.cookies[str(settings.LANGUAGE_COOKIE_NAME)] = "zh-hans"
+
+        result = self.client_post("/accounts/home/", {"email": email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(
+            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
+        )
+        result = self.client_get(result["Location"])
+        self.assert_in_response("确认电子邮箱地址", result)
+
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        result = self.submit_reg_form_for_user(email, password, HTTP_ACCEPT_LANGUAGE="fr,en;q=0.9")
+        self.assertEqual(result.status_code, 302)
+
+        user_profile = self.nonreg_user("newguy")
+        self.assertEqual(user_profile.default_language, "zh-hans")
+        from django.core.mail import outbox
+
+        outbox.pop()
+
     def test_default_language_with_unsupported_browser_locale(self) -> None:
         email = self.nonreg_email("newguy")
         password = "newpassword"
@@ -3634,9 +3663,19 @@ class UserSignUpTest(ZulipTestCase):
         req.META["HTTP_ACCEPT_LANGUAGE"] = "de,en"
         self.assertEqual(get_default_language_for_new_user(realm, request=req), "de")
 
+        req = HostRequestMock()
+        req.COOKIES = {str(settings.LANGUAGE_COOKIE_NAME): "zh-hans"}
+        req.META["HTTP_ACCEPT_LANGUAGE"] = "de,en"
+        self.assertEqual(get_default_language_for_new_user(realm, request=req), "zh-hans")
+
         do_set_realm_property(realm, "default_language", "hi", acting_user=None)
         realm.refresh_from_db()
         req = HostRequestMock()
+        req.META["HTTP_ACCEPT_LANGUAGE"] = "de,en"
+        self.assertEqual(get_default_language_for_new_user(realm, request=req), "de")
+
+        req = HostRequestMock()
+        req.COOKIES = {str(settings.LANGUAGE_COOKIE_NAME): "invalid-language-code"}
         req.META["HTTP_ACCEPT_LANGUAGE"] = "de,en"
         self.assertEqual(get_default_language_for_new_user(realm, request=req), "de")
 
