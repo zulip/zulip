@@ -62,6 +62,25 @@ function focus_gif_at_index(index: number): void {
     $target_gif.trigger("focus");
 }
 
+function get_gifs_per_row(): number {
+    assert(popover_instance !== undefined);
+    const gif_elements = popover_instance.popper.querySelectorAll<HTMLElement>(".gif-picker-gif");
+    if (gif_elements.length === 0) {
+        return 0;
+    }
+    // The column count varies with resize and responsive CSS, so count
+    // elements sharing the first element's top offset.
+    const first_row_top = gif_elements[0]!.getBoundingClientRect().top;
+    let count = 0;
+    for (const gif_element of gif_elements) {
+        if (gif_element.getBoundingClientRect().top !== first_row_top) {
+            break;
+        }
+        count += 1;
+    }
+    return count;
+}
+
 function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
     e.stopPropagation();
     assert(e.currentTarget instanceof HTMLElement);
@@ -83,6 +102,7 @@ function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
     }
 
     const curr_gif_index = Number.parseInt(e.currentTarget.dataset["gifIndex"]!, 10);
+    const gifs_per_row = get_gifs_per_row();
     switch (key) {
         case "ArrowRight": {
             focus_gif_at_index(curr_gif_index + 1);
@@ -93,11 +113,11 @@ function handle_keyboard_navigation_on_gif(e: JQuery.KeyDownEvent): void {
             break;
         }
         case "ArrowUp": {
-            focus_gif_at_index(curr_gif_index - 2);
+            focus_gif_at_index(curr_gif_index - gifs_per_row);
             break;
         }
         case "ArrowDown": {
-            focus_gif_at_index(curr_gif_index + 2);
+            focus_gif_at_index(curr_gif_index + gifs_per_row);
             break;
         }
     }
