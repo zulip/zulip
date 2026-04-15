@@ -6,6 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from pydantic import BaseModel, Json
 
 from zerver.decorator import webhook_view
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -15,6 +16,8 @@ from zerver.models import UserProfile
 ALL_EVENT_TYPES = [
     "push",
     "pull_request",
+    "api",
+    "cron",
 ]
 
 STATUS_MAP = {
@@ -30,7 +33,7 @@ STATUS_MAP = {
 
 MESSAGE_TEMPLATE = """
 {emoji} Build [#{build_number}]({build_url}) **{status}** \
-for commit [{commit_message}]({compare_url}) by {author}.
+for commit [{commit_message}]({compare_url}) by {author}{trigger}.
 """.strip()
 
 
@@ -52,12 +55,13 @@ class TravisPayload(BaseModel):
     pull_request_title: str | None = None
 
 
-def get_message_body(payload: TravisPayload) -> str:
+def get_message_body(payload: TravisPayload, event: str) -> str:
     # Extract only the first line of the commit message
     # for multi-line commit messages.
     commit_message = (
         payload.message.strip().splitlines()[0] if payload.message else "(no commit message)"
     )
+    trigger = f" (triggered by {event})" if event in ("api", "cron") else ""
     status_message, emoji = STATUS_MAP[payload.status_message]
     body = MESSAGE_TEMPLATE.format(
         build_number=payload.number,
@@ -67,6 +71,7 @@ def get_message_body(payload: TravisPayload) -> str:
         author=payload.author_name,
         emoji=emoji,
         compare_url=payload.compare_url,
+        trigger=trigger,
     )
 
     return body
@@ -99,8 +104,10 @@ def api_travis_webhook(
     message: Annotated[Json[TravisPayload], ApiParamConfig("payload")],
 ) -> HttpResponse:
     event = message.type
+    if event not in ALL_EVENT_TYPES:
+        raise UnsupportedWebhookEventTypeError(event)
 
-    body = get_message_body(message)
+    body = get_message_body(message, event)
     topic_name = get_topic(message, event)
 
     check_send_webhook_message(request, user_profile, topic_name, body, event)

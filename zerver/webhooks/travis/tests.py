@@ -12,7 +12,7 @@ class TravisHookTests(WebhookTestCase):
 
     EXPECTED_NON_PULL_REQUEST_MESSAGE = (
         ":time_ticking: Build [#1](https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277712204) "
-        "**is in progress** for commit [Add Projects model.](https://github.com/sathwikshetty33/travis-test/commit/193da1b72346) by sathwikshetty33."
+        "**is in progress** for commit [Add Projects model.](https://github.com/sathwikshetty33/travis-test/commit/193da1b72346) by sathwikshetty33"
     )
 
     EXPECTED_PULL_REQUEST_MESSAGE = (
@@ -31,7 +31,7 @@ class TravisHookTests(WebhookTestCase):
         self.check_webhook(
             "non_pull_request",
             self.NON_PR_TOPIC,
-            self.EXPECTED_NON_PULL_REQUEST_MESSAGE,
+            f"{self.EXPECTED_NON_PULL_REQUEST_MESSAGE}.",
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -63,7 +63,7 @@ class TravisHookTests(WebhookTestCase):
         self.check_webhook(
             "non_pull_request",
             self.NON_PR_TOPIC,
-            self.EXPECTED_NON_PULL_REQUEST_MESSAGE,
+            f"{self.EXPECTED_NON_PULL_REQUEST_MESSAGE}.",
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -73,7 +73,7 @@ class TravisHookTests(WebhookTestCase):
         self.check_webhook(
             "non_pull_request",
             self.NON_PR_TOPIC,
-            self.EXPECTED_NON_PULL_REQUEST_MESSAGE,
+            f"{self.EXPECTED_NON_PULL_REQUEST_MESSAGE}.",
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -112,7 +112,7 @@ class TravisHookTests(WebhookTestCase):
         self.check_webhook(
             "non_pull_request",
             self.NON_PR_TOPIC,
-            self.EXPECTED_NON_PULL_REQUEST_MESSAGE,
+            f"{self.EXPECTED_NON_PULL_REQUEST_MESSAGE}.",
             content_type="application/x-www-form-urlencoded",
         )
 
@@ -148,6 +148,29 @@ one or more new messages.
 
     @override
     def get_body(self, fixture_name: str) -> str:
+        if fixture_name in {"api", "cron"}:
+            payload = orjson.loads(
+                self.webhook_fixture_data("travis", "non_pull_request", file_type="json")
+            )
+            payload["type"] = fixture_name
+            return urlencode({"payload": orjson.dumps(payload).decode()})
+
         return urlencode(
             {"payload": self.webhook_fixture_data("travis", fixture_name, file_type="json")}
+        )
+
+    def test_travis_api_event(self) -> None:
+        self.check_webhook(
+            "api",
+            self.NON_PR_TOPIC,
+            f"{self.EXPECTED_NON_PULL_REQUEST_MESSAGE} (triggered by api).",
+            content_type="application/x-www-form-urlencoded",
+        )
+
+    def test_travis_cron_event(self) -> None:
+        self.check_webhook(
+            "cron",
+            self.NON_PR_TOPIC,
+            f"{self.EXPECTED_NON_PULL_REQUEST_MESSAGE} (triggered by cron).",
+            content_type="application/x-www-form-urlencoded",
         )
