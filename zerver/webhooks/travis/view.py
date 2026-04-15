@@ -17,14 +17,14 @@ ALL_EVENT_TYPES = [
 ]
 
 STATUS_MAP = {
-    "Passed": ("passed", ":thumbs_up:"),
-    "Fixed": ("was fixed", ":thumbs_up:"),
-    "Failed": ("failed", ":thumbs_down:"),
-    "Broken": ("is broken", ":thumbs_down:"),
-    "Still Failing": ("is still failing", ":thumbs_down:"),
-    "Canceled": ("was canceled", ":thumbs_down:"),
-    "Errored": ("errored", ":thumbs_down:"),
-    "Pending": ("is in progress", ":counterclockwise:"),
+    "Passed": ("passed", ":check:"),
+    "Fixed": ("was fixed", ":check:"),
+    "Failed": ("failed", ":warning:"),
+    "Broken": ("is broken", ":warning:"),
+    "Still Failing": ("is still failing", ":warning:"),
+    "Canceled": ("was canceled", ":no_entry:"),
+    "Errored": ("errored", ":rotating_light:"),
+    "Pending": ("is in progress", ":time_ticking:"),
 }
 
 MESSAGE_TEMPLATE = """

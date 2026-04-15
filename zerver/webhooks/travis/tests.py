@@ -8,12 +8,12 @@ from zerver.lib.test_classes import WebhookTestCase
 class TravisHookTests(WebhookTestCase):
     TOPIC_NAME = "builds"
     EXPECTED_NON_PULL_REQUEST_MESSAGE = (
-        ":counterclockwise: Build [#1](https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277712204) "
+        ":time_ticking: Build [#1](https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277712204) "
         "**is in progress** for commit [Add Projects model.](https://github.com/sathwikshetty33/travis-test/commit/193da1b72346) by sathwikshetty33."
     )
 
     EXPECTED_PULL_REQUEST_MESSAGE = (
-        ":thumbs_down: Build [#42](https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277927122) "
+        ":warning: Build [#42](https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277927122) "
         "**failed** for commit [feat: Created Name.txt.](https://github.com/sathwikshetty33/travis-test/pull/2) by Sathwik Shetty."
     )
 
