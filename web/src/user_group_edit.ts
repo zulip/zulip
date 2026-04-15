@@ -280,9 +280,17 @@ function update_general_panel_ui(group: UserGroup): void {
     const $edit_container = get_edit_container(group.id);
 
     if (settings_data.can_manage_user_group(group.id)) {
-        $edit_container.find(".group-description-field #open_group_info_modal").show();
+        $edit_container.find(".group-setting-label").removeClass("cursor-text");
+        $edit_container
+            .find(".group-description-field #open_group_info_modal")
+            .prop("disabled", false)
+            .show();
     } else {
-        $edit_container.find(".group-description-field #open_group_info_modal").hide();
+        $edit_container.find(".group-setting-label").addClass("cursor-text");
+        $edit_container
+            .find(".group-description-field #open_group_info_modal")
+            .prop("disabled", true)
+            .hide();
     }
     update_user_group_title_buttons(group);
     update_group_permission_settings_elements(group);
