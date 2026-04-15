@@ -152,15 +152,6 @@
 
     .invoice-button {
         font-size: 19px;
-
-        &:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-
-            &:hover {
-                pointer-events: all;
-            }
-        }
     }
 
     .upgrade-button-container {
@@ -515,15 +506,6 @@ input[name="licenses"] {
 #org-upgrade-button {
     margin: 0;
     width: 100%;
-
-    &:disabled,
-    .permanent-disabled {
-        color: hsl(0deg 0% 80%);
-
-        &:hover {
-            cursor: not-allowed;
-        }
-    }
 }
 
 #upgrade-page-details #payment-schedule-select {
