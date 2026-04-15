@@ -965,11 +965,22 @@ button#register_auth_button_gitlab {
 
     &.signup-link-wrapper {
         font-weight: normal;
-        float: right;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        text-align: center;
 
         .register-link {
             font-size: 1rem;
-            margin-left: 5px;
+        }
+
+        .anonymous_access_form {
+            width: 100%;
+
+            & button {
+                margin: 0;
+            }
         }
     }
 }
