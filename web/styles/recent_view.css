@@ -654,8 +654,11 @@
         }
 
         .recent-view-unread-sort-header {
+            /* Use width that reasonably covers 2-3 magnitudes of count. */
+            width: 1.5em;
             margin-right: -0.1563em; /* 2.5px at 16px/1em */
             justify-self: end;
+            justify-content: center;
         }
     }
 
