@@ -35,7 +35,7 @@ def llms_txt(request: HttpRequest) -> HttpResponse:
     content = f"""\
 # {realm.name}
 
-> {realm.url} is a Zulip team chat server.
+> {server_url} is a Zulip team chat server.
 > Zulip organizes messages into channels containing threads ("topics").
 >
 > Web-public channels can be read without logging in.
