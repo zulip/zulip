@@ -324,13 +324,6 @@ html {
     & button {
         margin-top: 22px;
     }
-
-    .new-organization-button {
-        &[disabled] {
-            cursor: default;
-            opacity: 0.6;
-        }
-    }
 }
 
 .account-accept-terms-page {
@@ -455,6 +448,11 @@ html {
 
         &:focus {
             outline: 3px solid hsl(213deg 81% 79%);
+        }
+
+        &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         &.full-width {
