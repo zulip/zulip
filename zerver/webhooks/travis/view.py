@@ -11,18 +11,26 @@ from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-GOOD_STATUSES = ["Passed", "Fixed"]
-BAD_STATUSES = ["Failed", "Broken", "Still Failing", "Errored", "Canceled"]
-PENDING_STATUSES = ["Pending"]
 ALL_EVENT_TYPES = [
     "push",
     "pull_request",
 ]
 
-MESSAGE_TEMPLATE = """\
-Author: {}
-Build status: {} {}
-Details: [changes]({}), [build log]({})"""
+STATUS_MAP = {
+    "Passed": ("passed", ":thumbs_up:"),
+    "Fixed": ("was fixed", ":thumbs_up:"),
+    "Failed": ("failed", ":thumbs_down:"),
+    "Broken": ("is broken", ":thumbs_down:"),
+    "Still Failing": ("is still failing", ":thumbs_down:"),
+    "Canceled": ("was canceled", ":thumbs_down:"),
+    "Errored": ("errored", ":thumbs_down:"),
+    "Pending": ("is in progress", ":counterclockwise:"),
+}
+
+MESSAGE_TEMPLATE = """
+{emoji} Build [#{build_number}]({build_url}) **{status}** \
+for commit [{commit_message}]({compare_url}) by {author}.
+""".strip()
 
 
 class TravisPayload(BaseModel):
@@ -31,6 +39,29 @@ class TravisPayload(BaseModel):
     compare_url: str
     build_url: str
     type: str
+    message: str | None = None
+    number: str
+
+
+def get_message_body(payload: TravisPayload) -> str:
+    # Extract only the first line of the commit message
+    # for multi-line commit messages.
+    commit_message = (
+        payload.message.strip().splitlines()[0] if payload.message else "(no commit message)"
+    )
+
+    status_message, emoji = STATUS_MAP[payload.status_message]
+    body = MESSAGE_TEMPLATE.format(
+        build_number=payload.number,
+        build_url=payload.build_url,
+        status=status_message,
+        commit_message=commit_message,
+        author=payload.author_name,
+        emoji=emoji,
+        compare_url=payload.compare_url,
+    )
+
+    return body
 
 
 @webhook_view("Travis", all_event_types=ALL_EVENT_TYPES)
@@ -42,24 +73,7 @@ def api_travis_webhook(
     message: Annotated[Json[TravisPayload], ApiParamConfig("payload")],
 ) -> HttpResponse:
     event = message.type
-    message_status = message.status_message
-
-    if message_status in GOOD_STATUSES:
-        emoji = ":thumbs_up:"
-    elif message_status in BAD_STATUSES:
-        emoji = ":thumbs_down:"
-    elif message_status in PENDING_STATUSES:
-        emoji = ":counterclockwise:"
-    else:
-        emoji = f"(No emoji specified for status '{message_status}'.)"
-
-    body = MESSAGE_TEMPLATE.format(
-        message.author_name,
-        message_status,
-        emoji,
-        message.compare_url,
-        message.build_url,
-    )
+    body = get_message_body(message)
     topic_name = "builds"
 
     check_send_webhook_message(request, user_profile, topic_name, body, event)
