@@ -368,6 +368,12 @@ h4.user_group_setting_subsection_title {
     opacity: 0.7;
 }
 
+.send_notification_to_new_subscribers_container {
+    /* Avoid having the clickable area extend to the full width of
+    the containing element. */
+    width: fit-content;
+}
+
 .choose-subscribers-label {
     display: inline;
 }
