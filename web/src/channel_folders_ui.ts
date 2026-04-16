@@ -37,7 +37,7 @@ function compare_by_name(a: dropdown_widget.Option, b: dropdown_widget.Option): 
     return util.strcmp(a.name, b.name);
 }
 
-export function add_channel_folder(): void {
+export function add_channel_folder(on_create?: (folder_id: number) => void): void {
     const modal_content_html = render_create_channel_folder_modal({
         max_channel_folder_name_length: realm.max_channel_folder_name_length,
         max_channel_folder_description_length: realm.max_channel_folder_description_length,
@@ -76,6 +76,7 @@ export function add_channel_folder(): void {
                         order: id,
                     };
                     channel_folders.add(channel_folder);
+                    on_create?.(id);
                 },
             },
             close_on_success,

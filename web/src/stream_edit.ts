@@ -1114,7 +1114,14 @@ export function initialize(): void {
         },
     );
 
-    $("#channels_overlay_container").on("click", ".create-channel-folder-button", () => {
-        channel_folders_ui.add_channel_folder();
-    });
+    // Scope to #stream_settings (the editing pane) so this handler does not
+    // fire for the sibling creation pane (#stream-creation), which has its
+    // own handler.
+    $("#channels_overlay_container").on(
+        "click",
+        "#stream_settings .create-channel-folder-button",
+        () => {
+            channel_folders_ui.add_channel_folder();
+        },
+    );
 }
