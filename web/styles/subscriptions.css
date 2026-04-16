@@ -286,6 +286,39 @@ h4.user_group_setting_subsection_title {
 
 .add_subscribers_container {
     width: 100%;
+
+    /* Set minimum height so that at least one row of pills is visible. */
+    min-height: calc(
+        var(--height-input-pill) + 2 *
+            var(--outer-spacing-input-pill-container) + 2px
+    );
+
+    .subscriber-input-scrollable-container {
+        max-height: 30vh;
+        height: 100%;
+        /* This makes sure that the element not takes the 100% space
+           and only takes the space remaining after button's width. */
+        flex: 1;
+        min-width: 0;
+
+        .simplebar-content {
+            /* Render as a flex container so whitespace-only text nodes around
+               .pill-container are not rendered as anonymous flex items.
+               Otherwise those text nodes contribute line box height to
+               scrollHeight, which triggers simplebar to show a scrollbar even
+               when the pill-container fits its visible area. */
+            display: flex;
+        }
+
+        .pill-container {
+            /* Subtract the total padding and border width from both width and height. */
+            width: calc(100% - 15px);
+            height: calc(100% - 6px);
+            /* Reserve space for the 11px simplebar vertical track so
+               pills don't overlap the scrollbar. */
+            padding-right: 11px;
+        }
+    }
 }
 
 .member_list_add {
@@ -1414,6 +1447,11 @@ h4.user_group_setting_subsection_title {
            .subscriber_list_container instead. */
         border-left: none;
         border-right: none;
+        /* This is slightly larger than the height required to show at least one
+           subscriber row is shown along with the table header. It is not easy
+           to calculate exact height since it depends whether the user has
+           permission to remove subscribers or not. */
+        min-height: 4.7em;
 
         .subscriber_list_container {
             box-sizing: border-box;
