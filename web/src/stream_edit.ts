@@ -1121,7 +1121,17 @@ export function initialize(): void {
         "click",
         "#stream_settings .create-channel-folder-button",
         () => {
-            channel_folders_ui.add_channel_folder();
+            const active_stream_id = stream_settings_components.get_active_data().id;
+            const sub = sub_store.get(active_stream_id);
+            assert(sub !== undefined);
+            channel_folders_ui.add_channel_folder((folder_id) => {
+                settings_components.set_dropdown_list_widget_setting_value("folder_id", folder_id);
+                const $edit_container = stream_settings_containers.get_edit_container(sub);
+                settings_components.save_discard_stream_settings_widget_status_handler(
+                    $edit_container.find(".stream-settings-subsection"),
+                    sub,
+                );
+            });
         },
     );
 }
