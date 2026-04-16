@@ -4356,7 +4356,8 @@ paths:
                                 realm_emoji:
                                   type: object
                                   description: |
-                                    An object in which each key describes a realm emoji.
+                                    An object in which keys are RealmEmoji ids, and the
+                                    values describe the custom emoji for that id.
                                   additionalProperties:
                                     $ref: "#/components/schemas/RealmEmoji"
                               example:
@@ -14306,8 +14307,8 @@ paths:
                       emoji:
                         type: object
                         description: |
-                          An object that contains `emoji` objects, each identified with their
-                          emoji ID as the key.
+                          An object in which keys are RealmEmoji ids, and the
+                          values describe the custom emoji for that id.
                         additionalProperties:
                           $ref: "#/components/schemas/RealmEmoji"
                     example:
@@ -18221,8 +18222,8 @@ paths:
                         description: |
                           Present if `realm_emoji` is present in `fetch_event_types`.
 
-                          A dictionary of objects where each object describes a custom
-                          emoji that has been uploaded in this Zulip organization.
+                          An object in which keys are RealmEmoji ids, and the
+                          values describe the custom emoji for that id.
                         type: object
                         additionalProperties:
                           $ref: "#/components/schemas/RealmEmoji"
@@ -27283,8 +27284,8 @@ components:
       type: object
       additionalProperties: false
       description: |
-        `{emoji_id}`: Object containing details about the emoji with
-        the specified ID. It has the following properties:
+        Object containing details about an emoji. It has the
+        following properties:
       properties:
         id:
           type: string
