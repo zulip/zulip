@@ -1462,6 +1462,9 @@ li.active-sub-filter {
     grid-area: row-content;
     overflow: hidden;
     text-overflow: ellipsis;
+    /* Baseline alignment works for single-line rows, but for clamped
+       multi-line DM names it can let text sit slightly below the row. */
+    align-self: start;
 }
 
 .conversation-partners .status-emoji {
@@ -1946,8 +1949,7 @@ li.active-sub-filter {
     }
 }
 
-.dm-markers-and-unreads,
-.conversation-partners {
+.dm-markers-and-unreads {
     align-self: baseline;
 }
 
