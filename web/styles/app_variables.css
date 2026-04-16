@@ -164,16 +164,30 @@
 
     color-scheme: light;
 
-    /* Variable for setting the viewport to full height.
+    /* Variables for setting viewport-sized layouts.
        As of late 2025, we still support browsers (e.g.,
        Chrome 105) that do not support dynamic viewport
-       units. 100% is the legacy full-height value. */
+       units. Use percentage/vw/vh fallbacks where needed
+       until dynamic viewport units are available. */
     --full-height-dynamic-viewport: 100%;
+    --full-width-dynamic-viewport: 100vw;
     --gif-scroll-container-height: 80vh;
+    --overlay-container-height: 95vh;
+    --settings-overlay-width: 97vw;
+    --settings-overlay-vertical-margin: 2.5vh;
+    --popover-menu-max-height: 85vh;
 
     @supports (height: 100dvh) {
         --full-height-dynamic-viewport: 100dvh;
         --gif-scroll-container-height: 80dvh;
+        --overlay-container-height: 95dvh;
+        --settings-overlay-vertical-margin: 2.5dvh;
+        --popover-menu-max-height: 85dvh;
+    }
+
+    @supports (width: 100dvw) {
+        --full-width-dynamic-viewport: 100dvw;
+        --settings-overlay-width: 97dvw;
     }
 
     /*
@@ -639,8 +653,7 @@
     --length-user-status-circle-popover-menu: 8px;
     --length-user-popover-menu-avatar: 64px;
 
-    /* Overlay heights for streams modal */
-    --overlay-container-height: 95vh;
+    /* Streams modal overlay max height. */
     --overlay-container-max-height: 1000px;
     /* The width of the settings sidebar. */
     --settings-sidebar-width: 18.2142em; /* 255px at 14px/em */

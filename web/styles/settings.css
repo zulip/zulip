@@ -1087,13 +1087,13 @@ input[type="checkbox"] {
 
 .progressive-table-wrapper {
     position: relative;
-    max-height: calc(95vh - 220px);
+    max-height: calc(var(--overlay-container-height) - 220px);
     overflow: auto;
     width: 100%;
 }
 
 #admin-default-channels-list .progressive-table-wrapper {
-    max-height: calc(95vh - 280px);
+    max-height: calc(var(--overlay-container-height) - 280px);
 }
 
 .edit_bot_form {
@@ -1428,10 +1428,10 @@ label.preferences-radio-choice-label {
 
 /* -- new settings overlay -- */
 #settings_page {
-    height: 95vh;
-    width: 97vw;
+    height: var(--overlay-container-height);
+    width: var(--settings-overlay-width);
     max-width: 73.1429em; /* 1024px at 14px em */
-    margin: 2.5vh auto;
+    margin: var(--settings-overlay-vertical-margin) auto;
     overflow: hidden;
     border-radius: 4px;
 
