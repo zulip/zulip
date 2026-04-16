@@ -319,11 +319,6 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-.subscriber_list_add .form-inline,
-.member_list_add .form-inline {
-    margin-bottom: 0;
-}
-
 .add_subscribers_container,
 .add_members_container {
     display: inline-flex;
