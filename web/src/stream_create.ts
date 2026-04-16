@@ -505,9 +505,7 @@ export function show_new_stream_modal(): void {
         }
     }
 
-    const $add_subscribers_container = $(
-        "#stream_creation_form .subscriber_list_settings",
-    ).expectOne();
+    const $add_subscribers_container = $("#stream_creation_form .subscriber_list_add").expectOne();
 
     stream_ui_updates.enable_or_disable_add_subscribers_elements(
         $add_subscribers_container,

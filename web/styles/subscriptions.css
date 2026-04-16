@@ -1085,7 +1085,7 @@ h4.user_group_setting_subsection_title {
     color: hsl(0deg 0% 67%);
 }
 
-.subscriber_list_settings .add_subscribers_disabled,
+.subscriber_list_add .add_subscribers_disabled,
 .member_list_settings .add_members_disabled {
     cursor: not-allowed;
 
@@ -1095,7 +1095,7 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-.subscriber_list_settings,
+.subscriber_list_add,
 .member_list_settings {
     & button[disabled] {
         pointer-events: none;
