@@ -117,6 +117,7 @@ import * as scheduled_messages_ui from "./scheduled_messages_ui.ts";
 import * as scroll_bar from "./scroll_bar.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as search from "./search.ts";
+import {FETCH_EVENT_TYPES} from "./server_event_types.ts";
 import * as server_events from "./server_events.js";
 import * as server_events_state from "./server_events_state.ts";
 import * as settings from "./settings.ts";
@@ -851,6 +852,7 @@ $(() => {
                 slim_presence: true,
                 include_subscribers: "partial",
                 presence_history_limit_days: page_params.presence_history_limit_days_for_web_app,
+                fetch_event_types: JSON.stringify(FETCH_EVENT_TYPES),
                 client_capabilities: JSON.stringify({
                     notification_settings_null: true,
                     bulk_message_deletion: true,
