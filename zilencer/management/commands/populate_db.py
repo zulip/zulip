@@ -760,9 +760,7 @@ class Command(ZulipBaseCommand):
             event_time = timezone_now()
             all_subscription_logs: list[RealmAuditLog] = []
 
-            i = 0
-            for profile, recipient in subscriptions_list:
-                i += 1
+            for i, (profile, recipient) in enumerate(subscriptions_list, 1):
                 color = STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)]
                 s = Subscription(
                     recipient=recipient,
