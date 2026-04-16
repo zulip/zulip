@@ -101,15 +101,15 @@ class CustomProfileField(models.Model):
     # These are the fields whose validators require more than var_name
     # and value argument. i.e. DROPDOWN require field_data, USER require
     # realm as argument.
-    SELECT_FIELD_TYPE_DATA: list[ExtendedFieldElement] = [
+    DROPDOWN_FIELD_TYPE_DATA: list[ExtendedFieldElement] = [
         (DROPDOWN, gettext_lazy("Dropdown"), validate_select_field, str, "DROPDOWN"),
     ]
     USER_FIELD_TYPE_DATA: list[UserFieldElement] = [
         (USER, gettext_lazy("Users"), check_valid_user_ids, orjson.loads, "USER"),
     ]
 
-    SELECT_FIELD_VALIDATORS: dict[int, ExtendedValidator] = {
-        item[0]: item[2] for item in SELECT_FIELD_TYPE_DATA
+    DROPDOWN_FIELD_VALIDATORS: dict[int, ExtendedValidator] = {
+        item[0]: item[2] for item in DROPDOWN_FIELD_TYPE_DATA
     }
     USER_FIELD_VALIDATORS: dict[int, RealmUserValidator] = {
         item[0]: item[2] for item in USER_FIELD_TYPE_DATA
@@ -132,7 +132,7 @@ class CustomProfileField(models.Model):
     ]
 
     ALL_FIELD_TYPES = sorted(
-        [*FIELD_TYPE_DATA, *SELECT_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA], key=lambda x: x[1]
+        [*FIELD_TYPE_DATA, *DROPDOWN_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA], key=lambda x: x[1]
     )
 
     FIELD_VALIDATORS: dict[int, Validator[ProfileDataElementValue]] = {

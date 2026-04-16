@@ -627,7 +627,7 @@ function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
             required: field.required,
             editable_by_user: field.editable_by_user,
             use_for_user_matching: field.use_for_user_matching,
-            is_select_field: field.type === field_types.DROPDOWN.id,
+            is_dropdown_field: field.type === field_types.DROPDOWN.id,
             is_external_account_field: field.type === field_types.EXTERNAL_ACCOUNT.id,
             valid_to_display_in_summary: is_valid_to_display_in_summary(field.type),
             valid_to_use_for_user_matching: is_valid_to_use_for_user_matching(field.type),
