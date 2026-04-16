@@ -28,7 +28,8 @@
 }
 
 #recent-view-content-table {
-    border: 1px solid var(--color-border-recent-view-table);
+    border: var(--recent-view-body-border-width) solid
+        var(--color-border-recent-view-table);
     border-top: none;
     border-radius: 0 0 5px 5px;
     overflow: hidden;
