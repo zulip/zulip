@@ -493,7 +493,7 @@ export function update_add_subscriptions_elements(sub: SettingsSubscription): vo
     }
 
     // We are only concerned with the Subscribers tab for editing streams.
-    const $add_subscribers_container = $(".edit_subscribers_for_stream .subscriber_list_settings");
+    const $add_subscribers_container = $(".edit_subscribers_for_stream .subscriber_list_add");
 
     if (current_user.is_guest) {
         // For guest users, we just hide the add_subscribers feature.
@@ -551,14 +551,12 @@ export function enable_or_disable_add_subscribers_elements(
     stream_creation = false,
 ): void {
     const $input_element = $container_elem.find(".input").expectOne();
-    const $add_subscribers_container = $<tippy.PopperElement>(
-        ".edit_subscribers_for_stream .subscriber_list_settings",
-    );
 
     $input_element.prop("contenteditable", enable_elem);
 
     if (enable_elem) {
-        $add_subscribers_container[0]?._tippy?.destroy();
+        const tippy_container: tippy.ReferenceElement = $container_elem[0]!;
+        tippy_container._tippy?.destroy();
         $container_elem.find(".add_subscribers_container").removeClass("add_subscribers_disabled");
     } else {
         $container_elem.find(".add_subscribers_container").addClass("add_subscribers_disabled");
