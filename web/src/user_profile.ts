@@ -496,7 +496,7 @@ export function get_custom_profile_field_data(
             profile_field.value = field_value.value;
             break;
         case field_types.DROPDOWN.id: {
-            const field_choice_dict = settings_components.select_field_data_schema.parse(
+            const field_choice_dict = settings_components.custom_profile_field_choices_schema.parse(
                 JSON.parse(field.field_data),
             );
             profile_field.value = field_choice_dict[field_value.value]!.text;

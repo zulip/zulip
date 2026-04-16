@@ -528,7 +528,7 @@ def validate_user_custom_profile_field(
         validator = validators[field_type]
         return validator(var_name, value)
     elif field_type == CustomProfileField.DROPDOWN:
-        choice_field_validator = CustomProfileField.SELECT_FIELD_VALIDATORS[field_type]
+        choice_field_validator = CustomProfileField.DROPDOWN_FIELD_VALIDATORS[field_type]
         field_data = field.field_data
         # Put an assertion so that mypy doesn't complain.
         assert field_data is not None
