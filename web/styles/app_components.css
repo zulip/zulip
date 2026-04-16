@@ -774,6 +774,7 @@ input.settings_text_input {
 }
 
 .inline-decorated-channel-name {
+    white-space: nowrap;
     display: inline;
     padding-left: var(--inline-decorated-channel-name-padding-left);
 
