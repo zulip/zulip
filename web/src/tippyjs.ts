@@ -556,18 +556,6 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#stream_creation_form .add_subscribers_disabled",
-        content: $t({
-            defaultMessage:
-                "You do not have permission to add other users to channels in this organization.",
-        }),
-        appendTo: () => document.body,
-        onHidden(instance) {
-            instance.destroy();
-        },
-    });
-
-    tippy.delegate("body", {
         target: ".add-users-button-wrapper",
         onShow(instance) {
             const $wrapper = $(instance.reference);
