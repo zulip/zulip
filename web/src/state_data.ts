@@ -307,6 +307,11 @@ export const muted_user_schema = z.object({
     timestamp: z.number(),
 });
 
+export const followed_user_schema = z.object({
+    id: z.number(),
+    timestamp: z.number(),
+});
+
 const unread_stream_info_schema = z.object({
     stream_id: z.number(),
     topic: z.string(),
@@ -668,6 +673,7 @@ export const split_state_data_schema = z.object({
         }),
     }),
     muted_users: z.object({muted_users: z.array(muted_user_schema)}),
+    followed_users: z.object({followed_users: z.array(followed_user_schema)}),
     user_topics: z.object({user_topics: z.array(user_topic_schema)}),
     user_status: z.object({user_status: z.record(z.string(), user_status_schema)}),
     user_settings: z.object({user_settings: user_settings_schema}),

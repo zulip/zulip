@@ -1241,5 +1241,11 @@ export function dispatch_normal_event(event) {
             }
             break;
         }
+
+        case "followed_users": {
+            people.initialize_follows(event.followed_users);
+            activity_ui.redraw();
+            break;
+        }
     }
 }

@@ -49,6 +49,7 @@ let cross_realm_dict: Map<number, User>;
 let pm_recipient_count_dict: Map<number, number>;
 let duplicate_full_name_data: FoldDict<Set<number>>;
 let my_user_id: number;
+let followed_user_ids: Set<number>;
 let valid_user_ids: Set<number>;
 let fetch_users_storage: {
     pending_user_ids: Set<number>;
@@ -103,6 +104,8 @@ export function init(): void {
 
     // This maintains a set of ids of people with same full names.
     duplicate_full_name_data = new FoldDict();
+
+    followed_user_ids = new Set();
 
     INACCESSIBLE_USER_NAME = $t({defaultMessage: "Unknown user"});
 
@@ -191,6 +194,27 @@ export function validate_user_ids(user_ids: number[]): number[] {
     }
 
     return good_ids;
+}
+
+export function is_following(user_id: number): boolean {
+    return followed_user_ids.has(user_id);
+}
+
+export function add_follow(user_id: number): void {
+    followed_user_ids.add(user_id);
+}
+
+export function remove_follow(user_id: number): void {
+    followed_user_ids.delete(user_id);
+}
+
+export function initialize_follows(
+    followed_users: StateData["followed_users"]["followed_users"],
+): void {
+    followed_user_ids = new Set();
+    for (const follow of followed_users) {
+        followed_user_ids.add(follow.id);
+    }
 }
 
 export function get_by_email(email: string): User | undefined {
@@ -2284,8 +2308,10 @@ export async function initialize(
     my_user_id: number,
     people_params: StateData["people"],
     user_group_params: StateData["user_groups"],
+    followed_users_params: StateData["followed_users"],
 ): Promise<void> {
     initialize_current_user(my_user_id);
+    initialize_follows(followed_users_params.followed_users);
     populate_valid_user_ids(
         user_group_params,
         people_params.cross_realm_bots,

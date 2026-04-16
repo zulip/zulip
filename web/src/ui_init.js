@@ -503,7 +503,12 @@ export async function initialize_everything(state_data) {
     // has permission to access all other users.
     user_groups.initialize(state_data.user_groups);
 
-    await people.initialize(current_user.user_id, state_data.people, state_data.user_groups);
+    await people.initialize(
+        current_user.user_id,
+        state_data.people,
+        state_data.user_groups,
+        state_data.followed_users,
+    );
     starred_messages.initialize(state_data.starred_messages);
 
     // Must happen after people.initialize(). And also before
