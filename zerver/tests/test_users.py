@@ -3996,6 +3996,16 @@ class DeleteUserTest(ZulipTestCase):
         result = orjson.loads(self.client_get(f"/json/users/{hamlet_user_id}").content)
         self.assertEqual(result["user"]["is_deleted"], True)
 
+    def test_reactivate_deleted_user(self) -> None:
+        hamlet = self.example_user("hamlet")
+        do_delete_user(hamlet, acting_user=None)
+        hamlet.refresh_from_db()
+        self.assertTrue(hamlet.is_deleted)
+
+        self.login("iago")
+        result = self.client_post(f"/json/users/{hamlet.id}/reactivate")
+        self.assert_json_error(result, "Cannot reactivate a deleted user")
+
     def test_do_delete_user_preserving_messages(self) -> None:
         """
         Since do_delete_user and do_delete_user_preserving_messages share the same
