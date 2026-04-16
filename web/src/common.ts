@@ -23,7 +23,6 @@ const keys_map = new Map([
 // Any changes to this function should be followed by a check for changes needed
 // to adjust_mac_kbd_tags of starlight_help/src/scripts/adjust_mac_kbd_tags.ts.
 export function has_mac_keyboard(): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return /mac/i.test(navigator.platform);
 }
 

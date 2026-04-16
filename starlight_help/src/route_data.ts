@@ -25,12 +25,14 @@ function extractFirstParagraph(content: string): string | undefined {
 }
 
 export const onRequest = defineRouteMiddleware((context) => {
-    assert.ok(typeof context.locals.starlightRoute.entry.body === "string");
+    const entry: unknown = context.locals.starlightRoute.entry;
+    assert.ok(typeof entry === "object" && entry !== null);
+    assert.ok("body" in entry && typeof entry.body === "string");
     context.locals.starlightRoute.head.push({
         tag: "meta",
         attrs: {
             name: "description",
-            content: extractFirstParagraph(context.locals.starlightRoute.entry.body),
+            content: extractFirstParagraph(entry.body),
         },
     });
 
