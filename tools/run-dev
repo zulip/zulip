@@ -283,7 +283,7 @@ async def forward(upstream_port: int, request: web.Request) -> web.StreamRespons
             )
         except aiohttp.ClientConnectorError as error:
             if time.time() - request_started > 30:
-                logging.error("Backend on :%d did no respond to requests", upstream_port)
+                logging.error("Backend on :%d did not respond to requests", upstream_port)
                 raise web.HTTPBadGateway from error
             logging.info("Backend :%d is not up yet, sleeping and retrying", upstream_port)
             await asyncio.sleep(0.5)
