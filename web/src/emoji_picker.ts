@@ -834,9 +834,12 @@ function get_default_emoji_popover_options(
                 emoji_catalog = complete_emoji_catalog.slice(1);
             }
 
-            // Initially render only the first category fully, others as placeholders.
+            /* Initially render only the first two category fully,
+               to avoid flicker since they are displayed immediately,
+               the other categs are only as placeholders.
+            */
             const initial_catalog = emoji_catalog.map((cat, index) =>
-                index === 0 ? cat : {...cat, emojis: []},
+                index < 2 ? cat : {...cat, emojis: []},
             );
 
             const $container = $popover.find(".emoji-popover-emoji-map .simplebar-content");
@@ -846,7 +849,7 @@ function get_default_emoji_popover_options(
             const $first_emoji = $popover.find(".emoji-popover-emoji").first();
             const row_height = $first_emoji.outerHeight(true)!;
             $sections.each((index, section) => {
-                if (index === 0) {
+                if (index < 2) {
                     return;
                 }
                 // set min_height is necessary to have a coherent scrollbar size, and avoid
