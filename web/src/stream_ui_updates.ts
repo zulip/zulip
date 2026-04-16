@@ -501,6 +501,7 @@ export function update_add_subscriptions_elements(sub: SettingsSubscription): vo
         $(
             ".subscriber_list_settings_container .send_notification_to_new_subscribers_container",
         ).hide();
+        $(".subscriber_list_settings_container .add-subscribers-subtitle").hide();
         $add_subscribers_container.hide();
         return;
     }
