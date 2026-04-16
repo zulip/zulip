@@ -397,13 +397,13 @@ function get_message_retention_setting_value(
     return util.check_time_input(custom_input_val);
 }
 
-export const select_field_data_schema = z.record(
+export const custom_profile_field_choices_schema = z.record(
     z.string(),
     z.object({text: z.string(), order: z.string()}),
 );
-export type SelectFieldData = z.output<typeof select_field_data_schema>;
+export type SelectFieldData = z.output<typeof custom_profile_field_choices_schema>;
 
-function read_select_field_data_from_form(
+function read_custom_profile_field_choices_from_form(
     $profile_field_form: JQuery,
     old_field_data: unknown,
 ): SelectFieldData {
@@ -413,7 +413,7 @@ function read_select_field_data_from_form(
     const old_option_value_map = new Map<string, string>();
     if (old_field_data !== undefined) {
         for (const [value, choice] of Object.entries(
-            select_field_data_schema.parse(old_field_data),
+            custom_profile_field_choices_schema.parse(old_field_data),
         )) {
             assert(typeof choice !== "string");
             old_option_value_map.set(choice.text, value);
@@ -486,7 +486,7 @@ export function read_field_data_from_form(
 
     // Only the following field types support associated field data.
     if (field_type_id === field_types.DROPDOWN.id) {
-        return read_select_field_data_from_form($profile_field_form, old_field_data);
+        return read_custom_profile_field_choices_from_form($profile_field_form, old_field_data);
     } else if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
         const parsed_old_field_data = old_field_data
             ? external_account_field_schema.parse(old_field_data)

@@ -379,7 +379,7 @@ function open_custom_profile_field_creation_form_modal(): void {
     }
 
     function initialize_custom_profile_field_form(): void {
-        set_up_select_field();
+        set_up_custom_profile_field_choices();
         setup_external_accounts_dropdown_widget();
 
         $("#profile_field_type").on("change", () => {
@@ -562,7 +562,7 @@ function alphabetize_profile_field_choices($sortable_element: JQuery): void {
     sortable_instance.sort(choices_array.map((v) => v[1]));
 }
 
-function set_up_select_field_edit_form(
+function set_up_custom_profile_field_choices_edit_form(
     $profile_field_form: JQuery,
     field: CustomProfileField,
 ): void {
@@ -571,7 +571,7 @@ function set_up_select_field_edit_form(
     $choice_list.off();
     $choice_list.empty();
     const choices_data = parse_field_choices_from_field_data(
-        settings_components.select_field_data_schema.parse(JSON.parse(field.field_data)),
+        settings_components.custom_profile_field_choices_schema.parse(JSON.parse(field.field_data)),
     );
 
     for (const choice of choices_data) {
@@ -613,8 +613,9 @@ function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
     }
     let choices: FieldChoice[] = [];
     if (field.type === field_types.DROPDOWN.id) {
-        const select_field_data = settings_components.select_field_data_schema.parse(field_data);
-        choices = parse_field_choices_from_field_data(select_field_data);
+        const custom_profile_field_choices =
+            settings_components.custom_profile_field_choices_schema.parse(field_data);
+        choices = parse_field_choices_from_field_data(custom_profile_field_choices);
     }
 
     const modal_content_html = render_edit_custom_profile_field_form({
@@ -627,7 +628,7 @@ function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
             required: field.required,
             editable_by_user: field.editable_by_user,
             use_for_user_matching: field.use_for_user_matching,
-            is_select_field: field.type === field_types.DROPDOWN.id,
+            is_dropdown_field: field.type === field_types.DROPDOWN.id,
             is_external_account_field: field.type === field_types.EXTERNAL_ACCOUNT.id,
             valid_to_display_in_summary: is_valid_to_display_in_summary(field.type),
             valid_to_use_for_user_matching: is_valid_to_use_for_user_matching(field.type),
@@ -650,7 +651,7 @@ function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
         }
 
         if (field.type === field_types.DROPDOWN.id) {
-            set_up_select_field_edit_form($profile_field_form, field);
+            set_up_custom_profile_field_choices_edit_form($profile_field_form, field);
         }
 
         if (field.type === field_types.EXTERNAL_ACCOUNT.id) {
@@ -732,25 +733,25 @@ function open_custom_profile_field_edit_form_modal(this: HTMLElement): void {
         if (field.type === field_types.DROPDOWN.id && data["field_data"] !== undefined) {
             const new_values = new Set(
                 Object.keys(
-                    settings_components.select_field_data_schema.parse(
+                    settings_components.custom_profile_field_choices_schema.parse(
                         JSON.parse(data["field_data"].toString()),
                     ),
                 ),
             );
             const deleted_values: Record<string, string> = {};
-            const select_field_data =
-                settings_components.select_field_data_schema.parse(field_data);
-            for (const [value, option] of Object.entries(select_field_data)) {
+            const custom_profile_field_choices =
+                settings_components.custom_profile_field_choices_schema.parse(field_data);
+            for (const [value, option] of Object.entries(custom_profile_field_choices)) {
                 if (!new_values.has(value)) {
                     deleted_values[value] = option.text;
                 }
             }
 
             if (Object.keys(deleted_values).length > 0) {
-                const edit_select_field_modal_callback = (): void => {
+                const edit_custom_profile_field_modal_callback = (): void => {
                     show_modal_for_deleting_options(field, deleted_values, update_profile_field);
                 };
-                dialog_widget.close(edit_select_field_modal_callback);
+                dialog_widget.close(edit_custom_profile_field_modal_callback);
                 return;
             }
         }
@@ -908,7 +909,7 @@ export function do_populate_profile_fields(profile_fields_data: CustomProfileFie
     loading.destroy_indicator($("#admin_page_profile_fields_loading_indicator"));
 }
 
-function set_up_select_field(): void {
+function set_up_custom_profile_field_choices(): void {
     const $profile_field_choices = $("#profile_field_choices");
 
     create_choice_row($profile_field_choices);
