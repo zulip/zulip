@@ -287,10 +287,7 @@ export function render_lightbox_media_list(): void {
 }
 
 function display_image(payload: Media): void {
-    render_lightbox_media_list();
-
-    $(".player-container, .video-player").hide();
-    $(".image-preview, .media-actions, .media-description, .download, .lightbox-zoom-reset").show();
+    $(".image-preview, .media-actions, .lightbox-zoom-reset").show();
 
     const $img_container = $("#lightbox_overlay .image-preview > .zoom-element");
     const $img = $("<img>");
@@ -307,62 +304,20 @@ function display_image(payload: Media): void {
     }
     $img_container.empty();
     $img_container.append($img).show();
-
-    const filename = payload.url?.split("/").pop();
-    $(".media-description .title")
-        .text(payload.title ?? "N/A")
-        .attr("aria-label", payload.title ?? "N/A")
-        .attr("data-filename", filename ?? "N/A");
-    if (payload.user !== undefined) {
-        $(".media-description .user").text(payload.user).prop("title", payload.user);
-    }
-
-    $(".media-actions .open").attr("href", payload.url);
-
-    const url = new URL(payload.url, window.location.href);
-    const same_origin = url.origin === window.location.origin;
-    if (same_origin && url.pathname.startsWith("/user_uploads/")) {
-        // Switch to the "download" handler, so S3 URLs set their Content-Disposition
-        url.pathname = "/user_uploads/download/" + url.pathname.slice("/user_uploads/".length);
-        $(".media-actions .download").attr("href", url.href);
-    } else if (same_origin) {
-        $(".media-actions .download").attr("href", payload.url);
-    } else {
-        // If it's not same-origin, and we don't know how to tell the remote service to put a
-        // content-disposition on it, the download can't possibly download, just show -- so hide the
-        // element.
-        $(".media-actions .download").hide();
-    }
 }
 
 function display_video(payload: Media): void {
-    render_lightbox_media_list();
-
-    $(
-        "#lightbox_overlay .image-preview, .media-description, .download, .lightbox-zoom-reset, .video-player",
-    ).hide();
-    $(".player-container").show();
-
     if (payload.type === "inline-video") {
-        $(".player-container").hide();
-        $(".video-player, .media-description").show();
+        $(".video-player").show();
         const $video = $("<video>");
         $video.attr("src", payload.source);
         $video.attr("controls", "true");
         $(".video-player").empty();
         $(".video-player").append($video);
-        $(".media-actions .open").attr("href", payload.url);
-
-        const filename = payload.url?.split("/").pop();
-        $(".media-description .title")
-            .text(payload.title ?? "N/A")
-            .attr("aria-label", payload.title ?? "N/A")
-            .attr("data-filename", filename ?? "N/A");
-        if (payload.user !== undefined) {
-            $(".media-description .user").text(payload.user).prop("title", payload.user);
-        }
         return;
     }
+
+    $(".player-container").show();
 
     const $iframe = $("<iframe>");
     $iframe.attr(
@@ -376,7 +331,6 @@ function display_video(payload: Media): void {
 
     $("#lightbox_overlay .player-container").empty();
     $("#lightbox_overlay .player-container").append($iframe);
-    $(".media-actions .open").attr("href", payload.url);
 }
 
 function invoke_overlay_restore_callback(): void {
@@ -402,10 +356,49 @@ export function build_open_media_function(
         const payload = parse_media_data(util.the($media));
 
         assert(payload !== undefined);
+        render_lightbox_media_list();
+
+        $(
+            "#lightbox_overlay .image-preview, .lightbox-zoom-reset, .player-container, .video-player",
+        ).hide();
+
         if (payload.type === "image") {
             display_image(payload);
         } else {
             display_video(payload);
+        }
+        $(".media-actions .open").attr("href", payload.url);
+        if (payload.type === "image" || payload.type === "inline-video") {
+            $(".media-description").show();
+
+            const filename = payload.url?.split("/").pop();
+            $(".media-description .title")
+                .text(payload.title ?? "N/A")
+                .attr("aria-label", payload.title ?? "N/A")
+                .attr("data-filename", filename ?? "N/A");
+
+            if (payload.user !== undefined) {
+                $(".media-description .user").text(payload.user).prop("title", payload.user);
+            }
+
+            const url = new URL(payload.url, window.location.href);
+            const same_origin = url.origin === window.location.origin;
+            if (same_origin && url.pathname.startsWith("/user_uploads/")) {
+                // Switch to the "download" handler, so S3 URLs set their Content-Disposition
+                url.pathname =
+                    "/user_uploads/download/" + url.pathname.slice("/user_uploads/".length);
+                $(".media-actions .download").attr("href", url.href).show();
+            } else if (same_origin) {
+                $(".media-actions .download").attr("href", payload.url).show();
+            } else {
+                // If it's not same-origin, and we don't know how to tell the remote service to put a
+                // content-disposition on it, the download can't possibly download, just show -- so hide the
+                // element.
+                $(".media-actions .download").hide();
+            }
+        } else {
+            // It's an external embed (YouTube/Vimeo) - hide the metadata and download button
+            $(".media-description, .media-actions .download").hide();
         }
         if (is_open) {
             return;
