@@ -308,24 +308,27 @@ class TestStreamEmailMessages(ZulipTestCase):
         email_token = get_channel_email_token(stream, creator=user_profile, sender=user_profile)
         stream_to_address = encode_email_address(stream.name, email_token)
 
-        incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestStreamEmailMessages body")
+        for header_name, header_value in [
+            ("Delivered-To", stream_to_address),
+            ("Envelope-To", f"<{stream_to_address}>"),
+        ]:
+            with self.subTest(header_name):
+                incoming_valid_message = EmailMessage()
+                incoming_valid_message.set_content(f"{header_name} body")
 
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
-        incoming_valid_message["From"] = self.example_email("hamlet")
-        # Simulate a mailing list
-        incoming_valid_message["To"] = "foo-mailinglist@example.com"
-        incoming_valid_message["Envelope-To"] = stream_to_address
-        incoming_valid_message["Reply-to"] = self.example_email("othello")
+                incoming_valid_message["Subject"] = f"{header_name} subject"
+                incoming_valid_message["From"] = self.example_email("hamlet")
+                incoming_valid_message["To"] = "foo-mailinglist@example.com"
+                incoming_valid_message["Reply-to"] = self.example_email("othello")
+                incoming_valid_message[header_name] = header_value
 
-        process_message(incoming_valid_message)
+                process_message(incoming_valid_message)
 
-        # Hamlet is subscribed to this stream so should see the email message from Othello.
-        message = most_recent_message(user_profile)
-
-        self.assertEqual(message.content, "TestStreamEmailMessages body")
-        self.assert_message_stream_name(message, stream.name)
-        self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
+                # Hamlet is subscribed to this stream so should see the email message from Othello.
+                message = most_recent_message(user_profile)
+                self.assertEqual(message.content, f"{header_name} body")
+                self.assert_message_stream_name(message, stream.name)
+                self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
 
     def test_receive_stream_email_messages_blank_subject_success(self) -> None:
         user_profile = self.example_user("hamlet")

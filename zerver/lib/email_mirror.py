@@ -5,6 +5,7 @@ import secrets
 import sys
 from email.headerregistry import Address, AddressHeader
 from email.message import EmailMessage
+from email.utils import parseaddr
 from re import Match
 
 from django.conf import settings
@@ -400,7 +401,7 @@ def find_emailgateway_recipient(message: EmailMessage) -> str:
             if isinstance(header_value, AddressHeader):
                 emails = [addr.addr_spec for addr in header_value.addresses]
             else:
-                emails = [str(header_value)]
+                emails = [parseaddr(str(header_value))[1]]
 
             for email in emails:
                 if match_email_re.match(email):
