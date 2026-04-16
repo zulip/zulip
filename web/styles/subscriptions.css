@@ -284,7 +284,10 @@ h4.user_group_setting_subsection_title {
     padding-right: 8px;
 }
 
-.subscriber_list_add,
+.subscriber_list_add {
+    width: 100%;
+}
+
 .member_list_add {
     width: 100%;
     margin: 0 0 10px;
@@ -373,6 +376,10 @@ h4.user_group_setting_subsection_title {
     tab content. This shifts the checkbox 2px right, but the effect
     on alignment is negligible. */
     padding-left: 2px;
+}
+
+#stream_settings .add-subscribers-subtitle {
+    margin-bottom: 10px;
 }
 
 .choose-subscribers-label {

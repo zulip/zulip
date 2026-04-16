@@ -8,6 +8,16 @@
             {{> add_subscribers_form .}}
         </div>
     </div>
+    <div class="add-subscribers-subtitle">
+        {{#tr}}
+            Enter a <z-user-roles-link>user role</z-user-roles-link>,
+            <z-user-groups-link>user group</z-user-groups-link>,
+            or <z-channel-link>#channel</z-channel-link> to add multiple users at once.
+            {{#*inline "z-user-roles-link"}}<a href="/help/user-roles" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+            {{#*inline "z-user-groups-link"}}<a href="/help/user-groups" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+            {{#*inline "z-channel-link"}}<a href="/help/introduction-to-channels" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    </div>
     <div class="subsection-parent send_notification_to_new_subscribers_container">
         {{> ./../settings/settings_checkbox
           setting_name="send_notification_to_new_subscribers"
