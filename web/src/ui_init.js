@@ -803,28 +803,69 @@ function show_try_zulip_modal() {
 $(() => {
     update_page_loading_indicator_notice();
 
-    // Remove '?show_try_zulip_modal', if present.
+    // Remove transient query parameters.
     const url = new URL(window.location.href);
+    let needs_url_cleanup = false;
     if (url.searchParams.has("show_try_zulip_modal")) {
         url.searchParams.delete("show_try_zulip_modal");
+        needs_url_cleanup = true;
+    }
+    if (url.searchParams.has("state_data")) {
+        url.searchParams.delete("state_data");
+        needs_url_cleanup = true;
+    }
+    if (needs_url_cleanup) {
         window.history.replaceState(window.history.state, "", url.toString());
     }
 
-    if (page_params.is_spectator) {
-        const data = {
-            apply_markdown: true,
-            client_capabilities: JSON.stringify({
-                notification_settings_null: true,
-                bulk_message_deletion: true,
-                user_avatar_url_field_optional: true,
-                // Set this to true when stream typing notifications are implemented.
-                stream_typing_notifications: false,
-                user_settings_object: true,
-                empty_topic_name: true,
-                individual_emoji_changes: true,
-            }),
-            client_gravatar: false,
-        };
+    if (page_params.no_event_queue) {
+        // For spectators and client-triggered reloads, fetch
+        // state_data via the API rather than reading it from the
+        // (potentially very large) HTML response. For reloads, this
+        // avoids partial-transfer failures that leave users stuck on
+        // the loading screen. See #36094.
+        let data;
+        if (page_params.is_spectator) {
+            data = {
+                apply_markdown: true,
+                client_capabilities: JSON.stringify({
+                    notification_settings_null: true,
+                    bulk_message_deletion: true,
+                    user_avatar_url_field_optional: true,
+                    // Set this to true when stream typing notifications are implemented.
+                    stream_typing_notifications: false,
+                    user_settings_object: true,
+                    empty_topic_name: true,
+                    individual_emoji_changes: true,
+                }),
+                client_gravatar: false,
+            };
+        } else {
+            // Logged-in reload: request the same parameters the
+            // server-side do_events_register call uses for the initial
+            // page load. Keep these in sync with the call in
+            // zerver/lib/home.py.
+            data = {
+                apply_markdown: true,
+                client_gravatar: true,
+                slim_presence: true,
+                include_subscribers: "partial",
+                presence_history_limit_days: page_params.presence_history_limit_days_for_web_app,
+                client_capabilities: JSON.stringify({
+                    notification_settings_null: true,
+                    bulk_message_deletion: true,
+                    user_avatar_url_field_optional: true,
+                    stream_typing_notifications: true,
+                    linkifier_url_template: true,
+                    user_list_incomplete: true,
+                    include_deactivated_groups: true,
+                    archived_channels: true,
+                    empty_topic_name: true,
+                    simplified_presence_events: true,
+                    individual_emoji_changes: true,
+                }),
+            };
+        }
         channel.post({
             url: "/json/register",
             data,

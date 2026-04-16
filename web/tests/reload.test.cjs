@@ -19,6 +19,7 @@ const reload_state = zrequire("reload_state");
 set_global("window", {
     to_$: () => $("window-stub"),
     location: {
+        href: "http://zulip.zulipdev.com/#",
         reload: noop,
         replace: noop,
     },
