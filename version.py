@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 490
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (374, 2)  # bumped 2026-04-10 to add bsonstream
+PROVISION_VERSION = (374, 3)  # bumped 2026-04-16 to upgrade uv
