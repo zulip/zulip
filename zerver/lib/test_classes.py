@@ -1312,14 +1312,18 @@ Output:
         anchor: int | str = 1,
         num_before: int = 100,
         num_after: int = 100,
-        use_first_unread_anchor: bool = False,
+        use_first_unread_anchor: bool | None = None,
         include_anchor: bool = True,
     ) -> dict[str, list[dict[str, Any]]]:
         post_params = {
             "anchor": anchor,
             "num_before": num_before,
             "num_after": num_after,
-            "use_first_unread_anchor": orjson.dumps(use_first_unread_anchor).decode(),
+            **(
+                {}
+                if use_first_unread_anchor is None
+                else {"use_first_unread_anchor": orjson.dumps(use_first_unread_anchor).decode()}
+            ),
             "include_anchor": orjson.dumps(include_anchor).decode(),
         }
         result = self.client_get("/json/messages", dict(post_params))
@@ -1331,7 +1335,7 @@ Output:
         anchor: str | int = 1,
         num_before: int = 100,
         num_after: int = 100,
-        use_first_unread_anchor: bool = False,
+        use_first_unread_anchor: bool | None = None,
     ) -> list[dict[str, Any]]:
         data = self.get_messages_response(anchor, num_before, num_after, use_first_unread_anchor)
         return data["messages"]

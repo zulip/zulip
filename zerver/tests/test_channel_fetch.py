@@ -286,7 +286,10 @@ class GetStreamsTest(ZulipTestCase):
             result = self.api_get(admin_user, url, data)
         json = self.assert_json_success(result)
 
-        backward_compatible_result = self.api_get(admin_user, url, backward_compatible_data)
+        with self.assertWarnsRegex(
+            DeprecationWarning, r"^include_all_active parameter is deprecated$"
+        ):
+            backward_compatible_result = self.api_get(admin_user, url, backward_compatible_data)
         json_for_backward_compatible_request = self.assert_json_success(backward_compatible_result)
 
         self.assertEqual(json, json_for_backward_compatible_request)

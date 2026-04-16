@@ -86,18 +86,19 @@ class FirstUnreadAnchorTests(ZulipTestCase):
         self.assertEqual(messages_response["anchor"], new_message_id)
 
         # Test with the old way of expressing use_first_unread_anchor=True
-        messages_response = self.get_messages_response(
-            anchor=0, num_before=0, num_after=1, use_first_unread_anchor=True
-        )
+        with self.assertWarnsRegex(
+            DeprecationWarning, r"^use_first_unread_anchor parameter is deprecated$"
+        ):
+            messages_response = self.get_messages_response(
+                anchor=0, num_before=0, num_after=1, use_first_unread_anchor=True
+            )
         self.assertEqual(messages_response["messages"][0]["id"], new_message_id)
         self.assertEqual(messages_response["anchor"], new_message_id)
 
         # We want to get the message_id of an arbitrary old message. We can
         # call get_messages with use_first_unread_anchor=False and simply
         # save the first message we're returned.
-        messages = self.get_messages(
-            anchor=0, num_before=0, num_after=2, use_first_unread_anchor=False
-        )
+        messages = self.get_messages(anchor=0, num_before=0, num_after=2)
         old_message_id = messages[0]["id"]
 
         # Verify the message is marked as read
