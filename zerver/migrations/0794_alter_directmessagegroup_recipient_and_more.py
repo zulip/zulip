@@ -1,9 +1,7 @@
 import django.db.models.deletion
 from django.db import connection, migrations, models
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
-from django.db.backends.utils import (  # type: ignore[attr-defined] # Added in django-stubs 6.0
-    names_digest,
-)
+from django.db.backends.utils import names_digest
 from django.db.migrations.state import StateApps
 from psycopg2.sql import SQL, Identifier
 

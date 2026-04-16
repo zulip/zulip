@@ -100,8 +100,9 @@ def maybe_add_charset(content_type: str, file_data: bytes | StreamingSourceWithS
     elif detected["confidence"] >= 0.90 and detected["encoding"]:
         fake_msg.set_param("charset", detected["encoding"], replace=True)
     elif detected["confidence"] >= 0.73 and detected["encoding"] == "ISO-8859-1":
-        # ISO-8859-1 detection maxes out at 73%, so if that's what
-        # we're seeing as the best guess, provide it.
+        # Older versions of chardet capped ISO-8859-1 confidence to at
+        # most 73%.  Newer versions do not, but are still somewhat
+        # reluctant to guess ISO-8859-1 confidently for short files.
         fake_msg.set_param("charset", detected["encoding"], replace=True)
     elif detected["confidence"] >= 0.66 and detected["encoding"] == "utf-8":
         # UTF-8 is far and wide the most common current encoding,

@@ -147,7 +147,7 @@ prod = [
   "requests-oauthlib",
 
   # For OpenAPI schema validation.
-  "openapi-core",
+  "openapi-core>=0.23.1",
 
   # For reporting errors to sentry.io
   "sentry-sdk",
@@ -206,7 +206,7 @@ prod = [
   "pynacl",
 
   # Character set detection for text/plain
-  "chardet<6", # https://github.com/psf/requests/issues/7219
+  "chardet",
 
   # Better compression than zlib
   "zstd",
@@ -340,6 +340,7 @@ dev = [
 ]
 
 [tool.uv]
+exclude-newer = "24 hours"
 no-binary-package = [
   # https://github.com/xmlsec/python-xmlsec/issues/320
   "lxml",

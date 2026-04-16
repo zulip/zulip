@@ -548,7 +548,7 @@ class StripeTestCase(ZulipTestCase):
             usage=usage,
         )
         [stripe_session] = iter(stripe.checkout.Session.list(customer=customer_stripe_id, limit=1))
-        stripe_session_dict = orjson.loads(orjson.dumps(stripe_session))
+        stripe_session_dict = stripe_session.to_dict(for_json=True)
         stripe_session_dict["setup_intent"] = stripe_setup_intent.id
 
         event_payload = {
@@ -566,7 +566,7 @@ class StripeTestCase(ZulipTestCase):
 
     def send_stripe_webhook_event(self, event: stripe.Event) -> None:
         response = self.client_post(
-            "/stripe/webhook/", orjson.loads(orjson.dumps(event)), content_type="application/json"
+            "/stripe/webhook/", event.to_dict(for_json=True), content_type="application/json"
         )
         assert response.status_code == 200
 
@@ -943,7 +943,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(item0.description, "Zulip Cloud Plus")
         self.assertFalse(item0.discountable)
         assert item0.pricing is not None
-        self.assertEqual(item0.pricing.unit_amount_decimal, "12000")
+        self.assertEqual(item0.pricing.unit_amount_decimal, Decimal(12000))
         self.assertEqual(item0.quantity, licenses_purchased)
         self.assertEqual(item0.period.start, datetime_to_timestamp(self.now))
         self.assertEqual(item0.period.end, datetime_to_timestamp(add_months(self.now, 12)))
@@ -1065,7 +1065,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(item.description, "Zulip Cloud Plus")
         self.assertFalse(item.discountable)
         assert item.pricing is not None
-        self.assertEqual(item.pricing.unit_amount_decimal, "12000")
+        self.assertEqual(item.pricing.unit_amount_decimal, Decimal(12000))
         self.assertEqual(item.quantity, 123)
         self.assertEqual(item.period.start, datetime_to_timestamp(self.now))
         self.assertEqual(item.period.end, datetime_to_timestamp(add_months(self.now, 12)))
@@ -1192,7 +1192,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(item0.description, "Zulip Cloud Standard")
         self.assertFalse(item0.discountable)
         assert item0.pricing is not None
-        self.assertEqual(item0.pricing.unit_amount_decimal, "8000")
+        self.assertEqual(item0.pricing.unit_amount_decimal, Decimal(8000))
         self.assertEqual(item0.quantity, self.seat_count)
         self.assertEqual(item0.period.start, datetime_to_timestamp(self.now))
         self.assertEqual(item0.period.end, datetime_to_timestamp(add_months(self.now, 12)))
@@ -1326,7 +1326,7 @@ class StripeTest(StripeTestCase):
         self.assertFalse(item.discountable)
         self.assertEqual(item.quantity, 123)
         assert item.pricing is not None
-        self.assertEqual(item.pricing.unit_amount_decimal, "8000")
+        self.assertEqual(item.pricing.unit_amount_decimal, Decimal(8000))
         self.assertEqual(item.period.start, datetime_to_timestamp(self.now))
         self.assertEqual(item.period.end, datetime_to_timestamp(add_months(self.now, 12)))
 
@@ -1564,7 +1564,7 @@ class StripeTest(StripeTestCase):
             self.assertEqual(invoice_item.quantity, 15)
             self.assertFalse(invoice_item.discountable)
             assert invoice_item.pricing is not None
-            self.assertEqual(invoice_item.pricing.unit_amount_decimal, "8000")
+            self.assertEqual(invoice_item.pricing.unit_amount_decimal, Decimal(8000))
             self.assertEqual(invoice_item.period.start, datetime_to_timestamp(free_trial_end_date))
             self.assertEqual(
                 invoice_item.period.end, datetime_to_timestamp(add_months(free_trial_end_date, 12))
@@ -4763,7 +4763,7 @@ class StripeTest(StripeTestCase):
             customer=zulip_customer.stripe_customer_id,
             description="Zulip Cloud Standard upgrade",
             discountable=False,
-            unit_amount_decimal="800",
+            unit_amount_decimal=Decimal(800),
             quantity=8,
         )
         stripe.Invoice.finalize_invoice(stripe_invoice)
@@ -4783,7 +4783,7 @@ class StripeTest(StripeTestCase):
             customer=lear_customer.stripe_customer_id,
             description="Zulip Cloud Standard upgrade",
             discountable=False,
-            unit_amount_decimal="800",
+            unit_amount_decimal=Decimal(800),
             quantity=8,
         )
         stripe.Invoice.finalize_invoice(stripe_invoice)
