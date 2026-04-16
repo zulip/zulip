@@ -435,7 +435,8 @@ generate a video preview element with the following format.
 When the Markdown media syntax is used with an uploaded file with an
 audio `Content-Type`, Zulip will generate an HTML5 `<audio>` player
 element. Supported MIME types are currently `audio/aac`, `audio/flac`,
-`audio/mpeg`, and `audio/wav`.
+`audio/mpeg`, and `audio/wav` (and its `audio/x-wav` and
+`audio/vnd.wave` variants).
 
 For example, `![file.mp3](/user_uploads/path/to/file.mp3)` renders as:
 
