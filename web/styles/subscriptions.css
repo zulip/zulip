@@ -130,7 +130,8 @@
     color: hsl(0deg 100% 50%);
 }
 
-.change-stream-name-container {
+.change-stream-name-container,
+.channel-folder-name-container {
     margin-bottom: 20px;
 }
 
