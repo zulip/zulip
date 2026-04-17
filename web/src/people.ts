@@ -897,6 +897,10 @@ export function is_valid_bulk_user_ids_for_compose(
     });
 }
 
+export function is_active_user(user_id: number): boolean {
+    return active_user_dict.has(user_id);
+}
+
 export function is_active_user_or_system_bot(user_id: number): boolean {
     // For popover menus, we include cross-realm bots as active
     // users.
@@ -1146,9 +1150,7 @@ export function get_message_people(): User[] {
 
 export function get_active_message_people(): User[] {
     const message_people = get_message_people();
-    const active_message_people = message_people.filter((item) =>
-        active_user_dict.has(item.user_id),
-    );
+    const active_message_people = message_people.filter((item) => is_active_user(item.user_id));
     return active_message_people;
 }
 
