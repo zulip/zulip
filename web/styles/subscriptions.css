@@ -372,6 +372,11 @@ h4.user_group_setting_subsection_title {
     /* Avoid having the clickable area extend to the full width of
     the containing element. */
     width: fit-content;
+    /* Padding ensures the focus outline is fully visible; without it,
+    the left side gets clipped by overflow: hidden on the subscribers
+    tab content. This shifts the checkbox 2px right, but the effect
+    on alignment is negligible. */
+    padding-left: 2px;
 }
 
 .choose-subscribers-label {
