@@ -1154,6 +1154,19 @@ export function get_active_message_people(): User[] {
     return active_message_people;
 }
 
+export function get_people_for_dm(opts: {
+    exclude_non_welcome_bots: boolean;
+    exclude_non_message_people: boolean;
+    active_users_only: boolean;
+}): User[] {
+    if (opts.exclude_non_message_people) {
+        return opts.active_users_only ? get_active_message_people() : get_message_people();
+    } else if (opts.exclude_non_welcome_bots) {
+        return get_realm_users_and_welcome_bot();
+    }
+    return get_realm_users_and_system_bots();
+}
+
 export function get_people_for_search_bar(query: string): User[] {
     const pred = build_person_matcher(query);
 

@@ -870,8 +870,13 @@ export function get_person_suggestions(
         );
     };
 
+    const message_persons = people.get_people_for_dm({
+        exclude_non_welcome_bots,
+        exclude_non_message_people: true,
+        active_users_only: true,
+    });
     const filtered_message_persons = filter_persons(
-        people.get_active_message_people(),
+        message_persons,
         opts.filter_pills,
         opts.want_broadcast,
         filterer,
@@ -882,21 +887,16 @@ export function get_person_suggestions(
     if (filtered_message_persons.length >= cutoff_length) {
         filtered_persons = filtered_message_persons;
     } else {
-        if (exclude_non_welcome_bots) {
-            filtered_persons = filter_persons(
-                people.get_realm_users_and_welcome_bot(),
-                opts.filter_pills,
-                opts.want_broadcast,
-                filterer,
-            );
-        } else {
-            filtered_persons = filter_persons(
-                people.get_realm_users_and_system_bots(),
-                opts.filter_pills,
-                opts.want_broadcast,
-                filterer,
-            );
-        }
+        filtered_persons = filter_persons(
+            people.get_people_for_dm({
+                exclude_non_welcome_bots,
+                exclude_non_message_people: false,
+                active_users_only: false,
+            }),
+            opts.filter_pills,
+            opts.want_broadcast,
+            filterer,
+        );
     }
 
     return typeahead_helper.sort_recipients({
