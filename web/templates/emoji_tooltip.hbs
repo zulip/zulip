@@ -1,0 +1,10 @@
+<div class="emoji-tooltip-content">
+    {{#if url}}
+        <img src="{{url}}" class="emoji emoji-tooltip-large" alt="{{emoji_name}}" />
+    {{else if emoji_unicode}}
+        <span class="emoji-tooltip-large-unicode" aria-label="{{emoji_name}}" role="img">{{emoji_unicode}}</span>
+    {{else}}
+        <span class="emoji emoji-tooltip-large emoji-{{emoji_code}}" aria-label="{{emoji_name}}" role="img"></span>
+    {{/if}}
+    <span class="emoji-tooltip-name">{{emoji_name}}</span>
+</div>
