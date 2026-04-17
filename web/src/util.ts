@@ -221,6 +221,10 @@ export function is_mobile(): boolean {
     );
 }
 
+export function is_touch_screen(): boolean {
+    return !window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+}
+
 export function is_client_safari(): boolean {
     // Since GestureEvent is only supported on Safari, we can use it
     // to detect if the browser is Safari including Safari on iOS.

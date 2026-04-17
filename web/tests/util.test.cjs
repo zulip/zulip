@@ -139,6 +139,15 @@ run_test("is_mobile", () => {
     assert.ok(!util.is_mobile());
 });
 
+run_test("is_touch_screen", ({override}) => {
+    // Desktop: hover and fine pointer available
+    override(window, "matchMedia", (query) => {
+        assert.equal(query, "(hover: hover) and (pointer: fine)");
+        return {matches: true};
+    });
+    assert.ok(!util.is_touch_screen());
+});
+
 run_test("array_compare", () => {
     assert.ok(util.array_compare([], []));
     assert.ok(util.array_compare([1, 2, 3], [1, 2, 3]));
