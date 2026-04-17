@@ -82,6 +82,10 @@ export function message_edit_history_open(): boolean {
     return open_overlay_name === "message_edit_history";
 }
 
+export function users_open(): boolean {
+    return open_overlay_name === "users";
+}
+
 export function open_overlay(opts: OverlayOptions): void {
     call_hooks(pre_open_hooks);
 

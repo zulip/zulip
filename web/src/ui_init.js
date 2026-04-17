@@ -1074,6 +1074,14 @@ window.deleteTask = function (taskId) {
 
 // Show users overlay function
 function showUsersOverlay() {
+    // If already open, close it (toggle behaviour)
+    if (overlays.any_active()) {
+        if (overlays.users_open()) {
+            overlays.close_overlay("users");
+        }
+        return;
+    }
+
     // Create users overlay if it doesn't exist
     if ($("#users-overlay").length === 0) {
         const usersOverlayHtml = `
@@ -1103,7 +1111,7 @@ function showUsersOverlay() {
                 ">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                         <h2 style="margin: 0; color: #333;">Server Users</h2>
-                        <button class="overlay-close" style="
+                        <button class="overlay-close exit" style="
                             background: none;
                             border: none;
                             font-size: 24px;
@@ -1120,24 +1128,14 @@ function showUsersOverlay() {
             </div>
         `;
         $("body").append(usersOverlayHtml);
-
-        // Set up users overlay handlers
-        const $usersOverlay = $("#users-overlay");
-        $usersOverlay.find(".overlay-close").on("click", () => {
-            overlays.close_overlay("users");
-        });
-
-        $usersOverlay.on("click", (e) => {
-            if (e.target.id === "users-overlay") {
-                overlays.close_overlay("users");
-            }
-        });
     }
 
     // Show users overlay
     $("#users-overlay").show();
 
-    // Open overlay using Zulip's overlay system
+    // Open overlay using Zulip's overlay system.
+    // Background and close-button clicks are handled by the global div.overlay
+    // handler in overlays.initialize(), so no extra click listeners are needed here.
     overlays.open_overlay({
         name: "users",
         $overlay: $("#users-overlay"),
