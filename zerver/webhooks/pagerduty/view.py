@@ -160,6 +160,8 @@ def build_pagerduty_formatdict_v2(message: WildValue) -> FormatDictType:
     trigger_description = message["incident"].get("description").tame(check_none_or(check_string))
     if trigger_description is not None:
         format_dict["trigger_message"] = TRIGGER_MESSAGE.format(message=trigger_description)
+    else:
+        format_dict["trigger_message"] = ""
     return format_dict
 
 

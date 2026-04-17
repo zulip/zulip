@@ -96,13 +96,17 @@ def api_harbor_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-    operator_username = "**{}**".format(payload["operator"].tame(check_string))
+    operator_username = payload["operator"].tame(check_string)
 
     if operator_username != "auto":
         operator_profile = guess_zulip_user_from_harbor(operator_username, user_profile.realm)
+    else:
+        operator_profile = None
 
     if operator_profile:
         operator_username = f"@**{operator_profile.full_name}**"  # nocoverage
+    else:
+        operator_username = f"**{operator_username}**"
 
     event = payload["type"].tame(check_string)
     topic_name = payload["event_data"]["repository"]["repo_full_name"].tame(check_string)

@@ -33,15 +33,16 @@ def get_topic(payload: WildValue) -> str:
 
 
 def get_body(payload: WildValue) -> str:
+    status = payload["execution"]["status"].tame(check_string)
     message_data = {
         "job_name": payload["execution"]["job"]["name"].tame(check_string),
         "job_link": payload["execution"]["job"]["permalink"].tame(check_string),
         "execution_id": payload["execution"]["id"].tame(check_int),
         "execution_link": payload["execution"]["href"].tame(check_string),
         "project_name": payload["execution"]["project"].tame(check_string),
-        "status": payload["execution"]["status"].tame(check_string),
+        "status": status,
+        "emoji": "link",
     }
-    status = payload["execution"]["status"].tame(check_string)
 
     if status == "failed":
         message_data["status"] = "has failed"
