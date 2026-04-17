@@ -1118,6 +1118,7 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
     if (processed_count < row_keys.length && was_all_rendered) {
         topics_widget.render(row_keys.length - processed_count);
     }
+    update_unread_sort_header_state();
     setTimeout(revive_current_focus, 0);
 }
 
@@ -1178,6 +1179,7 @@ export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): b
         );
     }
     if (!is_bulk_rerender) {
+        update_unread_sort_header_state();
         setTimeout(revive_current_focus, 0);
     }
     return true;
@@ -1433,6 +1435,54 @@ function unread_sort(a: ConversationData, b: ConversationData): number {
     return a.last_msg_id - b.last_msg_id;
 }
 
+function has_visible_unread_conversation(): boolean {
+    // Fast path: no unreads exist anywhere, so none can be visible.
+    if (unread.get_unread_message_count() === 0) {
+        return false;
+    }
+    assert(topics_widget !== undefined);
+    // When the unread filter is active, every row in the filtered
+    // list is unread by construction, so any non-empty list suffices.
+    if (filters.has("unread")) {
+        return topics_widget.get_current_list().length > 0;
+    }
+    // Iterate the widget's already-filtered list so we avoid
+    // re-evaluating `filters_should_hide_row` per topic.
+    for (const topic_data of topics_widget.get_current_list()) {
+        const msg = message_store.get(topic_data.last_msg_id);
+        assert(msg !== undefined);
+        if (message_to_conversation_unread_count(msg) > 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+let last_has_visible_unread_conversation: boolean | undefined;
+
+function update_unread_sort_header_state(): void {
+    if (!topics_widget || !recent_view_util.is_visible()) {
+        return;
+    }
+    const has_visible_unreads = has_visible_unread_conversation();
+    if (has_visible_unreads === last_has_visible_unread_conversation) {
+        return;
+    }
+    last_has_visible_unread_conversation = has_visible_unreads;
+    const $unread_sort_header = $("#recent-view-table-headers .recent-view-unread-sort-header");
+    $unread_sort_header.toggleClass("hidden", !has_visible_unreads);
+    if (!has_visible_unreads && $unread_sort_header.hasClass("active")) {
+        // Fall back to time sort, which is the default, when the
+        // unread sort column is no longer meaningful.
+        $unread_sort_header.removeClass("active descend");
+        $("#recent-view-table-headers .recent-view-last-msg-time-header").addClass(
+            "active descend",
+        );
+        topics_widget.set_reverse_mode(true);
+        topics_widget.sort("numeric", "last_msg_id");
+    }
+}
+
 function topic_offset_to_visible_area($topic_row: JQuery): string | undefined {
     if ($topic_row.length === 0) {
         // TODO: There is a possibility of topic_row being undefined here
@@ -1512,6 +1562,7 @@ function callback_after_render(): void {
     }
 
     update_load_more_banner();
+    update_unread_sort_header_state();
     setTimeout(() => {
         revive_current_focus();
         is_waiting_for_revive_current_focus = false;
