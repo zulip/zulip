@@ -404,6 +404,19 @@ run_test("allow normal typing when editing text", ({override, override_rewire}) 
     }
 });
 
+run_test("Ctrl+@ opens mentions view even while editing text", ({override_rewire}) => {
+    // Ctrl+@ / Cmd+@ should open the mentions view regardless of
+    // whether the focus is in a text input, matching the behavior
+    // of Ctrl+K (search) and Ctrl+S (star message).
+    override_rewire(hotkey, "processing_text", () => true);
+
+    stubbing(browser_history, "go_to_location", (stub) => {
+        assert.ok(hotkey.process_keydown({key: "@", shiftKey: true, ctrlKey: true}));
+        assert.equal(stub.num_calls, 1);
+        assert.equal(stub.last_call_args[0], "#narrow/is/mentioned");
+    });
+});
+
 test_while_not_editing_text("streams", ({override}) => {
     settings_data.user_can_create_private_streams = () => true;
     delete settings_data.user_can_create_public_streams;

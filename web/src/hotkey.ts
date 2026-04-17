@@ -1072,6 +1072,9 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
                 case "star_message":
                     // Do nothing; this allows one to use Ctrl+S inside compose.
                     break;
+                case "open_mentions_view":
+                    // Do nothing; this allows one to use Ctrl+@ inside compose.
+                    break;
                 default:
                     // Let the browser handle the key normally.
                     return false;
