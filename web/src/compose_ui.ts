@@ -812,6 +812,7 @@ export let format_text = (
     const italic_syntax = "*";
     const bold_syntax = "**";
     const bold_and_italic_syntax = "***";
+    const strikethrough_syntax = "~~";
     let is_selected_text_italic = false;
     let is_inner_text_italic = false;
     const field = $textarea.get(0)!;
@@ -822,6 +823,10 @@ export let format_text = (
     // before the selected text, as it is conventionally depicted with a highlight
     // at the end of the previous line, which we would like to format.
     const TRIM_ONLY_END_TYPES = ["bulleted", "numbered"];
+
+    // Inline formatting syntax markers that should be applied
+    // independently to each line in a multiline selection.
+    const inline_syntax_markers = new Set([italic_syntax, bold_syntax, strikethrough_syntax]);
 
     let start_trim_length;
     if (TRIM_ONLY_END_TYPES.includes(type)) {
@@ -967,6 +972,45 @@ export let format_text = (
         }
     };
 
+    // Splits a line into its leading list prefix, its trailing
+    // whitespace, and the content in between. Inline syntax markers
+    // wrap the content; the prefix and trailing whitespace are
+    // re-attached unchanged. Trailing whitespace must stay outside the
+    // wrapping markers because Markdown won't recognize a closing `**`
+    // (or `*`, `~~`) preceded by whitespace.
+    const split_inline_line = (
+        line: string,
+    ): {prefix: string; content: string; trailing: string} => {
+        const prefix = bulleted_numbered_list_util.get_prefix(line);
+        const after_prefix = line.slice(prefix.length);
+        const content = after_prefix.trimEnd();
+        const trailing = after_prefix.slice(content.length);
+        return {prefix, content, trailing};
+    };
+
+    // Whether `content` is already wrapped by `syntax`. For italic we
+    // intentionally do NOT count `**X**` (bold-only) as wrapped, so
+    // that applying italic to a bold line promotes it to `***X***`
+    // rather than stripping the bold markers.
+    const is_content_wrapped = (content: string, syntax: string): boolean => {
+        if (
+            content.length <= syntax.length * 2 ||
+            !content.startsWith(syntax) ||
+            !content.endsWith(syntax)
+        ) {
+            return false;
+        }
+        if (
+            syntax === italic_syntax &&
+            content.startsWith(bold_syntax) &&
+            content.endsWith(bold_syntax) &&
+            !content.startsWith(bold_and_italic_syntax)
+        ) {
+            return false;
+        }
+        return true;
+    };
+
     const format = (syntax_start: string, syntax_end = syntax_start): boolean => {
         let linebreak_start = "";
         let linebreak_end = "";
@@ -976,6 +1020,77 @@ export let format_text = (
         if (syntax_end.endsWith("\n")) {
             linebreak_end = "\n";
         }
+
+        // For multiline selections with inline syntax (bold, italic,
+        // strikethrough), apply formatting per line rather than
+        // wrapping the entire block (which Zulip's Markdown won't
+        // render across paragraphs; see #23138). We mirror format_list:
+        // if any non-blank line is unmarked, mark every non-blank line;
+        // otherwise strip the syntax from every non-blank line. This
+        // matches the toggle behavior users expect from text editors
+        // (per CZO discussion on #37614).
+        if (
+            selected_text.includes("\n") &&
+            syntax_start === syntax_end &&
+            inline_syntax_markers.has(syntax_start)
+        ) {
+            const syntax = syntax_start;
+            const parsed_lines = selected_text.split("\n").map((line) => {
+                if (line.trim() === "") {
+                    return {prefix: "", content: "", trailing: line, is_blank: true};
+                }
+                const parts = split_inline_line(line);
+                return {...parts, is_blank: parts.content === ""};
+            });
+            const formattable = parsed_lines.filter((line) => !line.is_blank);
+            const should_format = formattable.some(
+                (line) => !is_content_wrapped(line.content, syntax),
+            );
+
+            const formatted_lines = parsed_lines.map(({prefix, content, trailing, is_blank}) => {
+                if (is_blank) {
+                    return prefix + content + trailing;
+                }
+                if (should_format) {
+                    // Promote a bold-only line to bold+italic when
+                    // adding italic, instead of double-wrapping.
+                    if (
+                        syntax === italic_syntax &&
+                        content.startsWith(bold_syntax) &&
+                        content.endsWith(bold_syntax) &&
+                        !content.startsWith(bold_and_italic_syntax) &&
+                        content.length > bold_syntax.length * 2
+                    ) {
+                        const inner = content.slice(
+                            bold_syntax.length,
+                            content.length - bold_syntax.length,
+                        );
+                        return (
+                            prefix +
+                            bold_and_italic_syntax +
+                            inner +
+                            bold_and_italic_syntax +
+                            trailing
+                        );
+                    }
+                    if (is_content_wrapped(content, syntax)) {
+                        return prefix + content + trailing;
+                    }
+                    return prefix + syntax + content + syntax + trailing;
+                }
+                // Strip pass: every formattable line is wrapped.
+                return (
+                    prefix + content.slice(syntax.length, content.length - syntax.length) + trailing
+                );
+            });
+
+            const new_selected = formatted_lines.join("\n");
+            text = text.slice(0, range.start) + new_selected + text.slice(range.end);
+            insert_and_scroll_into_view(text, $textarea, true);
+            field.setSelectionRange(range.start, range.start + new_selected.length);
+            return true;
+        }
+
         if (is_selection_formatted(syntax_start, syntax_end)) {
             text =
                 text.slice(0, range.start - syntax_start.length) +
@@ -1289,6 +1404,17 @@ export let format_text = (
             // fact it's just bold syntax, even though with *foo* and
             // ***foo*** should remove italics.
 
+            // For multiline selections, the elaborate single-line
+            // logic below is meaningless: it inspects characters at
+            // range.start / range.end of the whole selection, but
+            // those boundaries lie on unrelated lines. Delegate to
+            // format(), which applies italic per line with the same
+            // bold-vs-italic-vs-both toggling semantics.
+            if (selected_text.includes("\n")) {
+                format(italic_syntax);
+                break;
+            }
+
             // If the text is already italic, we remove the italic_syntax from text.
             if (range.start >= 1 && text.length - range.end >= italic_syntax.length) {
                 // If text has italic_syntax around it.
@@ -1372,7 +1498,6 @@ export let format_text = (
             format_list(type);
             break;
         case "strikethrough": {
-            const strikethrough_syntax = "~~";
             format(strikethrough_syntax);
             break;
         }
