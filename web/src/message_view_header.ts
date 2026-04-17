@@ -242,6 +242,28 @@ export function render_title_area(): void {
     build_message_view_header(filter);
 }
 
+function is_visible(): boolean {
+    return !$("#message_view_header").hasClass("hidden");
+}
+
+export function refresh_after_users_fetched(user_ids: number[]): void {
+    if (is_visible()) {
+        render_title_area();
+        return;
+    }
+    // The header is hidden while the search bar is open, and
+    // render_title_area() would reset the search bar, so we update just
+    // the title text. A DM title keeps its loading shimmer until none
+    // of its recipients is a placeholder.
+    const filter = narrow_state.filter();
+    if (filter !== undefined && dm_narrow_has_placeholder_user(filter)) {
+        return;
+    }
+    for (const user_id of user_ids) {
+        maybe_update_navbar_title_for_user(user_id);
+    }
+}
+
 // This function checks if "modified_sub" which is the stream whose values
 // have been updated is the same as the stream which is currently
 // narrowed and rerenders if necessary

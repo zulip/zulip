@@ -440,6 +440,12 @@ function rerender_drafts(): void {
     setup_event_handlers();
 }
 
+export function refresh_after_users_fetched(): void {
+    if (overlays.drafts_open()) {
+        rerender_drafts();
+    }
+}
+
 export function launch(): void {
     // Save any current draft, so that the drafts list is accurate.
     drafts.update_draft({no_notify: true});

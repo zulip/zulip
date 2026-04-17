@@ -10,15 +10,23 @@ import * as activity_ui from "./activity_ui.ts";
 import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import {buddy_list} from "./buddy_list.ts";
+import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
+import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
+import * as inbox_ui from "./inbox_ui.ts";
 import * as message_live_update from "./message_live_update.ts";
 import * as message_view_header from "./message_view_header.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as narrow_title from "./narrow_title.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
 import * as reactions from "./reactions.ts";
+import * as read_receipts from "./read_receipts.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
+import * as search from "./search.ts";
 import * as settings from "./settings.ts";
 import * as settings_account from "./settings_account.ts";
 import * as settings_bots from "./settings_bots.ts";
@@ -312,3 +320,33 @@ export const update_person = function update(event: UserUpdate): void {
         settings_panel_menu.update_imported_users_tab(true, true);
     }
 };
+
+export function initialize(): void {
+    people.set_users_fetched_callback((user_ids) => {
+        pm_list.update_private_messages();
+        message_view_header.refresh_after_users_fetched(user_ids);
+        for (const user_id of user_ids) {
+            const user = people.get_by_user_id(user_id);
+            message_live_update.update_user_full_name(user_id, user.full_name);
+            message_live_update.update_avatar(user_id, user.avatar_url ?? null);
+            reactions.update_user_full_name(user_id);
+        }
+        const buddy_list_user_ids = new Set(buddy_list.all_user_ids);
+        buddy_list.insert_or_move(
+            user_ids.filter((user_id) => buddy_list_user_ids.has(user_id)),
+            activity_ui.get_filter_text(),
+        );
+
+        inbox_ui.complete_rerender();
+        recent_view_ui.complete_rerender();
+        scheduled_messages_overlay_ui.rerender();
+        settings_panel_menu.refresh_users_panel_after_users_fetched();
+        read_receipts.refresh_after_users_fetched();
+        drafts_overlay_ui.refresh_after_users_fetched();
+        search.refresh_after_users_fetched();
+        if (narrow_state.is_message_feed_visible()) {
+            compose_closed_ui.update_reply_button();
+            narrow_title.update_narrow_title(narrow_state.filter());
+        }
+    });
+}
