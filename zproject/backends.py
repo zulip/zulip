@@ -2109,7 +2109,7 @@ def process_social_auth_group_sync_info(
             # should be passed in zulip_groups.
             all_realm_groups = NamedUserGroup.objects.filter(
                 realm=realm, deactivated=False, is_system_group=False
-            )
+            ).order_by("name")
             external_group_name_to_zulip_group_name = (
                 {g.name: g.name for g in all_realm_groups}
                 # If a group name is included in the user's zulip_groups, in sync-all-groups mode
