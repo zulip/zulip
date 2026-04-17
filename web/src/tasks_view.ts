@@ -83,7 +83,7 @@ export class TasksView {
             e.stopPropagation();
             const $task_item = $(e.target).closest(".task-item");
             const task_id = $task_item.data("task-id");
-            this.delete_task(task_id);
+            this.show_delete_confirmation(task_id);
         });
 
         // Time tracking handlers
@@ -147,10 +147,45 @@ export class TasksView {
         });
     }
 
+    show_delete_confirmation(task_id: number): void {
+        const modalHtml = `
+            <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 99999; display: flex; align-items: center; justify-content: center;">
+                <div style="background: white; padding: 30px; border-radius: 8px; max-width: 400px; width: 90%; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; color: #000; font-size: 20px; font-weight: 600;">${$t({ defaultMessage: "Delete Task" })}</h3>
+                        <button onclick="this.closest('[style*=fixed]').remove()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">&times;</button>
+                    </div>
+                    <p style="margin: 0 0 25px 0; color: #333; line-height: 1.4;">${$t({ defaultMessage: "Are you sure you want to delete this task? This action cannot be undone." })}</p>
+                    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                        <button class="cancel-delete-btn" style="background: #6c757d; color: white; border: none; border-radius: 6px; padding: 10px 20px; cursor: pointer; font-size: 14px; font-weight: 500;">${$t({ defaultMessage: "Cancel" })}</button>
+                        <button class="confirm-delete-btn" style="background: #dc3545; color: white; border: none; border-radius: 6px; padding: 10px 20px; cursor: pointer; font-size: 14px; font-weight: 500;">${$t({ defaultMessage: "Delete" })}</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Remove any existing modal
+        $("#delete-confirmation-modal").remove();
+
+        // Add the modal
+        const $modal = $(modalHtml);
+        $modal.attr("id", "delete-confirmation-modal");
+        $("body").append($modal);
+
+        // Set up event handlers
+        $modal.find(".cancel-delete-btn").on("click", () => {
+            $modal.remove();
+        });
+
+        $modal.find(".confirm-delete-btn").on("click", () => {
+            $modal.remove();
+            this.delete_task(task_id);
+        });
+    }
+
     delete_task(task_id: number): void {
-        if (!confirm($t({ defaultMessage: "Are you sure you want to delete this task?" }))) {
-            return;
-        }
+        // This method now just performs the deletion without confirmation
+        // Confirmation is handled by show_delete_confirmation
 
         channel.post({
             url: `/json/tasks/${task_id}/delete`,
@@ -525,8 +560,7 @@ export class TasksView {
             e.stopPropagation();
             const $task_item = $(e.target).closest(".task-item");
             const task_id = $task_item.data("task-id");
-            this.delete_task(task_id);
-            this.render_modal();
+            this.show_delete_confirmation(task_id);
         });
 
         // Time tracking handlers for modal
