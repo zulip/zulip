@@ -1658,6 +1658,24 @@ run_test("add_placeholder_user", ({override}) => {
     assert.equal(retrieved.full_name, "translated: Loading…");
 });
 
+run_test("set_users_fetched_callback and notify_users_fetched", () => {
+    initialize();
+
+    const notified_ids = [];
+    people.set_users_fetched_callback((user_ids) => {
+        notified_ids.push(...user_ids);
+    });
+
+    // Callback fires with the provided user IDs.
+    people.notify_users_fetched([10, 20]);
+    assert.deepEqual(notified_ids, [10, 20]);
+
+    // init() clears the callback.
+    people.init();
+    people.notify_users_fetched([30]);
+    assert.deepEqual(notified_ids, [10, 20]);
+});
+
 run_test("user_can_initiate_direct_message_thread", ({override}) => {
     initialize();
     people.add_active_user(welcome_bot);

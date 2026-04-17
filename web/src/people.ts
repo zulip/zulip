@@ -76,6 +76,8 @@ let fetch_users_storage: {
     >;
 };
 
+let users_fetched_callback: ((user_ids: number[]) => void) | undefined;
+
 export let INACCESSIBLE_USER_NAME: string;
 export let PLACEHOLDER_USER_NAME: string;
 export let WELCOME_BOT: User;
@@ -117,6 +119,8 @@ export function init(): void {
         promise_for_requested: new Map(),
         promise_for_in_transit: new Map(),
     };
+
+    users_fetched_callback = undefined;
 }
 
 // WE INITIALIZE DATA STRUCTURES HERE!
@@ -1626,6 +1630,14 @@ export function add_placeholder_user(user_id: number): User {
     return placeholder;
 }
 
+export function set_users_fetched_callback(callback: (user_ids: number[]) => void): void {
+    users_fetched_callback = callback;
+}
+
+export function notify_users_fetched(user_ids: number[]): void {
+    users_fetched_callback?.(user_ids);
+}
+
 export function get_user_by_id_assert_valid(
     user_id: number,
     allow_missing_user = !settings_data.user_can_access_all_other_users(),
@@ -1996,6 +2008,16 @@ async function start_fetch_for_requested_users(): Promise<void> {
         }
     }
 
+    // Collect IDs of users that were placeholders before replacing
+    // them with real data, so we can notify UI to re-render.
+    const fetched_placeholder_user_ids: number[] = [];
+    for (const user of fetched_users) {
+        const existing = people_by_user_id_dict.get(user.user_id);
+        if (existing?.is_placeholder_user) {
+            fetched_placeholder_user_ids.push(user.user_id);
+        }
+    }
+
     for (const user of fetched_users) {
         if (user.is_active) {
             add_active_user(user);
@@ -2005,6 +2027,10 @@ async function start_fetch_for_requested_users(): Promise<void> {
             }
             _add_user(user);
         }
+    }
+
+    if (fetched_placeholder_user_ids.length > 0) {
+        notify_users_fetched(fetched_placeholder_user_ids);
     }
 
     // Resolve promises waiting on this fetch after updating the data locally.

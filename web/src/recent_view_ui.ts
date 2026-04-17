@@ -1713,6 +1713,10 @@ export function update_participants_column_class(): void {
         );
 }
 
+export function refresh_after_users_fetched(): void {
+    complete_rerender();
+}
+
 export function complete_rerender(coming_from_other_views = false): void {
     if (!recent_view_util.is_visible()) {
         return;

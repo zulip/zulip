@@ -177,6 +177,10 @@ export function rerender(): void {
     $messages_list.append($(rendered_list));
 }
 
+export function refresh_after_users_fetched(): void {
+    rerender();
+}
+
 export function remove_scheduled_message_id(scheduled_msg_id: number): void {
     if (overlays.scheduled_messages_open()) {
         $(

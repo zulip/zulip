@@ -242,6 +242,16 @@ export function render_title_area(): void {
     build_message_view_header(filter);
 }
 
+export function is_visible(): boolean {
+    return !$("#message_view_header").hasClass("hidden");
+}
+
+export function refresh_after_users_fetched(): void {
+    if (is_visible()) {
+        render_title_area();
+    }
+}
+
 // This function checks if "modified_sub" which is the stream whose values
 // have been updated is the same as the stream which is currently
 // narrowed and rerenders if necessary

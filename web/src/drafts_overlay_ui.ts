@@ -446,6 +446,12 @@ function rerender_drafts(): void {
     setup_event_handlers();
 }
 
+export function refresh_after_users_fetched(): void {
+    if (overlays.drafts_open()) {
+        rerender_drafts();
+    }
+}
+
 export function launch(): void {
     const {narrow_drafts, other_drafts, narrow_drafts_header} = get_formatted_drafts_data();
 

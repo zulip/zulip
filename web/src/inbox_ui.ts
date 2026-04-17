@@ -1270,6 +1270,10 @@ function inbox_view_dropdown_options(
     return views_util.filters_dropdown_options(current_value, inbox_util.is_channel_view());
 }
 
+export function refresh_after_users_fetched(): void {
+    complete_rerender();
+}
+
 export function complete_rerender(coming_from_other_views = false): void {
     if (!inbox_util.is_visible()) {
         return;
