@@ -224,6 +224,8 @@ function render_channel_list(streams: StreamSubscription[], folder_id: number): 
         $simplebar_container: $("#edit_channel_folder .modal__content"),
     });
 
+    $container.find(".remove-button").attr("tabindex", "0");
+
     $container.on("click", ".remove-button", (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -494,5 +496,35 @@ export function handle_editing_channel_folder(folder_id: number): void {
                 render_add_channel_folder_widget();
             }
         },
+    });
+}
+
+export function initialize(): void {
+    $("body").on("keydown", "#edit_channel_folder .stream-row", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
+        const $row = $(e.currentTarget);
+        const $button = $row.find(".remove-button");
+
+        if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && $button.length > 0) {
+            e.preventDefault();
+            e.stopPropagation();
+            $button.trigger("focus");
+        }
+    });
+
+    $("body").on("keydown", "#edit_channel_folder .stream-row .remove-button", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
+        if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+            e.preventDefault();
+            e.stopPropagation();
+            const $row = $(e.currentTarget).closest(".stream-row");
+            $row.trigger("focus");
+        }
     });
 }
