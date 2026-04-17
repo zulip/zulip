@@ -268,8 +268,35 @@ export const default_popover_props: Partial<tippy.Props> = {
                     }
 
                     if (is_reference_outside_window) {
+                        // On touch devices, focusing a text input inside the
+                        // popover opens the soft keyboard, which can resize
+                        // the viewport and push the reference element out of
+                        // view. Don't destroy the popover if the user is
+                        // actively interacting with an input inside it.
+                        // We add `show-when-reference-hidden` so that the
+                        // CSS rule hiding `[data-reference-hidden]` elements
+                        // is also bypassed, preventing a visual flicker.
+                        const active_element = document.activeElement;
+                        if (
+                            util.is_touch_screen() &&
+                            active_element instanceof HTMLElement &&
+                            popper.contains(active_element) &&
+                            $(active_element).is("input[type=text], input[type=number], textarea")
+                        ) {
+                            $tippy_box.addClass("show-when-reference-hidden");
+                            $tippy_box.attr("data-soft-keyboard-hidden", "");
+                            return;
+                        }
                         hide_current_popover_if_visible(instance);
                         return;
+                    }
+
+                    // Remove the class if it was added by the soft keyboard
+                    // workaround above, now that the reference is visible again
+                    // (e.g. when the keyboard is dismissed).
+                    if ($tippy_box.attr("data-soft-keyboard-hidden") !== undefined) {
+                        $tippy_box.removeClass("show-when-reference-hidden");
+                        $tippy_box.removeAttr("data-soft-keyboard-hidden");
                     }
 
                     const $reference = $(state.elements.reference);
