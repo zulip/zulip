@@ -2,7 +2,6 @@ import $ from "jquery";
 import * as channel from "./channel.ts";
 import * as blueslip from "./blueslip.ts";
 import { $t } from "./i18n.ts";
-import { filter } from "./inbox_util.ts";
 
 type Task = {
     task_id: number;
@@ -17,6 +16,22 @@ type Task = {
     message_id: number;
     stream_id: number | null;
     topic: string | null;
+    // Time tracking fields
+    total_time_seconds?: number;
+    total_time_formatted?: string;
+    active_timer?: boolean;
+};
+
+type TimeLog = {
+    id: number;
+    user_email: string;
+    start_time: string;
+    end_time: string | null;
+    duration_seconds: number;
+    duration_formatted: string;
+    description: string;
+    is_active: boolean;
+    created_at: string;
 };
 
 export class TasksView {
@@ -53,8 +68,8 @@ export class TasksView {
         });
 
         $("#tasks-overlay .filter-tabs button").on("click", (e) => {
-            const filter = $(e.target).data("filter");
-            this.set_filter(filter);
+            const filterType = $(e.target).data("filter");
+            this.set_filter(filterType);
         });
 
         $("#tasks-overlay .task-item").on("click", ".task-checkbox", (e) => {
@@ -69,6 +84,28 @@ export class TasksView {
             const $task_item = $(e.target).closest(".task-item");
             const task_id = $task_item.data("task-id");
             this.delete_task(task_id);
+        });
+
+        // Time tracking handlers
+        $("#tasks-overlay .task-item").on("click", ".start-timer-btn", (e) => {
+            e.stopPropagation();
+            const $task_item = $(e.target).closest(".task-item");
+            const task_id = $task_item.data("task-id");
+            this.start_time_tracking(task_id);
+        });
+
+        $("#tasks-overlay .task-item").on("click", ".stop-timer-btn", (e) => {
+            e.stopPropagation();
+            const $task_item = $(e.target).closest(".task-item");
+            const task_id = $task_item.data("task-id");
+            this.stop_time_tracking(task_id);
+        });
+
+        $("#tasks-overlay .task-item").on("click", ".time-logs-btn", (e) => {
+            e.stopPropagation();
+            const $task_item = $(e.target).closest(".task-item");
+            const task_id = $task_item.data("task-id");
+            this.show_time_logs(task_id);
         });
     }
 
@@ -125,6 +162,112 @@ export class TasksView {
                 blueslip.error("Failed to delete task", {status: xhr.status, responseText: xhr.responseText});
             },
         });
+    }
+
+    start_time_tracking(task_id: number): void {
+        channel.post({
+            url: `/json/tasks/${task_id}/time/start`,
+            data: { description: '' },
+            success: (response: any) => {
+                blueslip.info("Time tracking started", response);
+                this.load_tasks(); // Reload to update timer status
+            },
+            error: (xhr: JQuery.jqXHR) => {
+                if (xhr.status === 503) {
+                    // Time tracking feature not available yet
+                    blueslip.warn("Time tracking feature not available - database migration not applied");
+                } else {
+                    blueslip.error("Failed to start time tracking", {status: xhr.status, responseText: xhr.responseText});
+                }
+            },
+        });
+    }
+
+    stop_time_tracking(task_id: number): void {
+        channel.post({
+            url: `/json/tasks/${task_id}/time/stop`,
+            success: (response: any) => {
+                blueslip.info("Time tracking stopped", response);
+                this.load_tasks(); // Reload to update timer status
+            },
+            error: (xhr: JQuery.jqXHR) => {
+                if (xhr.status === 503) {
+                    // Time tracking feature not available yet
+                    blueslip.warn("Time tracking feature not available - database migration not applied");
+                } else {
+                    blueslip.error("Failed to stop time tracking", {status: xhr.status, responseText: xhr.responseText});
+                }
+            },
+        });
+    }
+
+    show_time_logs(task_id: number): void {
+        channel.get({
+            url: `/json/tasks/${task_id}/time/logs`,
+            success: (response: any) => {
+                this.render_time_logs_modal(response);
+            },
+            error: (xhr: JQuery.jqXHR) => {
+                if (xhr.status === 503) {
+                    // Time tracking feature not available yet
+                    blueslip.warn("Time tracking feature not available - database migration not applied");
+                } else {
+                    blueslip.error("Failed to load time logs", {status: xhr.status, responseText: xhr.responseText});
+                }
+            },
+        });
+    }
+
+    render_time_logs_modal(data: any): void {
+        const { time_logs, total_time_formatted, active_timer_count } = data;
+        
+        const modalHtml = `
+            <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 99999; display: flex; align-items: center; justify-content: center;">
+                <div style="background: white; padding: 30px; border-radius: 8px; max-width: 700px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+                        <h2 style="margin: 0; color: #000; font-size: 24px; font-weight: 600;">${$t({ defaultMessage: "Time Logs" })}</h2>
+                        <button onclick="this.closest('[style*=fixed]').remove()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #000; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">&times;</button>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <p style="margin: 0; font-size: 16px; color: #333;">
+                            <strong>${$t({ defaultMessage: "Total time tracked:" })}</strong> ${total_time_formatted}
+                            ${active_timer_count > 0 ? `<span style="color: #28a745; margin-left: 10px;">(${active_timer_count} ${$t({ defaultMessage: "active timer" })})</span>` : ''}
+                        </p>
+                    </div>
+                    <div class="time-logs-list">
+                        ${time_logs.length === 0 ? 
+                            '<div style="text-align: center; padding: 40px; color: #666; font-size: 16px;">No time logs found</div>' :
+                            time_logs.map((log: TimeLog) => `
+                                <div style="padding: 15px; border: 1px solid #eee; border-radius: 6px; margin-bottom: 10px; background: #fafafa;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                                        <div>
+                                            <strong>${log.user_email}</strong>
+                                            ${log.is_active ? '<span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-left: 8px;">Active</span>' : ''}
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <div style="font-weight: 600; color: #007bff;">${log.duration_formatted}</div>
+                                            <div style="font-size: 12px; color: #999;">
+                                                ${new Date(log.start_time).toLocaleString()} 
+                                                ${log.end_time ? `- ${new Date(log.end_time).toLocaleString()}` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    ${log.description ? `<div style="color: #666; font-size: 14px; margin-top: 8px;">${log.description}</div>` : ''}
+                                </div>
+                            `).join('')
+                        }
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Remove any existing modal
+        $("#time-logs-modal").remove();
+
+        // Add the modal
+        const $modal = $(modalHtml);
+        $modal.attr("id", "time-logs-modal");
+        $("body").append($modal);
     }
 
     render(): void {
@@ -184,12 +327,12 @@ export class TasksView {
         const created_date_str = new Date(task.created_at).toLocaleDateString();
 
         // Generate proper message link
-        let message_link = "#";
+        let messageLink = "#";
         if (task.stream_id && task.topic) {
-            message_link = `#narrow/channel/${task.stream_id}/${encodeURIComponent(task.topic)}/near/${task.message_id}`;
+            messageLink = `#narrow/channel/${task.stream_id}/${encodeURIComponent(task.topic)}/near/${task.message_id}`;
         } else if (task.message_id) {
             // Fallback for DM messages or if stream info is missing
-            message_link = `#narrow/dm/near/${task.message_id}`;
+            messageLink = `#narrow/dm/near/${task.message_id}`;
         }
 
         return `
@@ -203,18 +346,111 @@ export class TasksView {
                         <span class="task-creator" style="color: #333;">${task.creator_email || 'Unknown'}</span>
                         <span class="task-created" style="color: #999;">Created: ${created_date_str}</span>
                         ${due_date_str ? `<span class="task-due-date" style="color: #007bff; font-weight: 500;">Due: ${due_date_str}</span>` : '<span class="task-due-date" style="color: #999; font-style: italic;">No due date</span>'}
-                        <a href="#narrow/stream/${task.message_id}" class="task-message-link" style="color: #007bff; text-decoration: none; font-weight: 500;">View Message</a>
+                        <a href="${messageLink}" class="task-message-link" style="color: #007bff; text-decoration: none; font-weight: 500;">View Message</a>
                     </div>
                     ${task.description ? `<div class="task-description" style="color: #333; font-size: 14px; line-height: 1.4; margin-top: 8px;">${task.description}</div>` : ""}
                     <div class="task-details" style="margin-top: 8px; font-size: 12px; color: #999;">
                         ${task.completed ? '<span class="task-completed" style="margin-left: 15px; color: #28a745;">Completed</span>' : '<span class="task-pending" style="margin-left: 15px; color: #ffc107;">Pending</span>'}
+                        ${task.total_time_formatted ? `<span class="task-time" style="margin-left: 15px; color: #007bff;">Time: ${task.total_time_formatted}</span>` : ''}
+                        ${task.active_timer ? '<span class="active-timer" style="margin-left: 15px; color: #28a745; font-weight: 500;">Timer Active</span>' : ''}
                     </div>
                 </div>
-                <div class="task-actions">
+                <div class="task-actions" style="display: flex; flex-direction: column; gap: 4px;">
+                    ${task.active_timer ? 
+                        `<button class="stop-timer-btn" title="Stop timer" style="background: #ffc107; color: #000; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px;">Stop</button>` :
+                        `<button class="start-timer-btn" title="Start timer" style="background: #28a745; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px;">Start</button>`
+                    }
+                    <button class="time-logs-btn" title="View time logs" style="background: #007bff; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px;">Logs</button>
                     <button class="delete-task-btn" title="Delete task" style="background: #dc3545; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;">×</button>
                 </div>
             </div>
         `;
+    }
+
+    show_time_stats(): void {
+        channel.get({
+            url: "/json/users/me/time/stats",
+            success: (response: any) => {
+                this.render_time_stats_modal(response);
+            },
+            error: (xhr: JQuery.jqXHR) => {
+                if (xhr.status === 503) {
+                    // Time tracking feature not available yet
+                    blueslip.warn("Time tracking feature not available - database migration not applied");
+                } else {
+                    blueslip.error("Failed to load time statistics", {status: xhr.status, responseText: xhr.responseText});
+                }
+            },
+        });
+    }
+
+    render_time_stats_modal(data: any): void {
+        const { 
+            total_time_formatted, 
+            completed_sessions, 
+            active_sessions, 
+            recent_week_formatted,
+            task_breakdown 
+        } = data;
+        
+        const modalHtml = `
+            <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 99999; display: flex; align-items: center; justify-content: center;">
+                <div style="background: white; padding: 30px; border-radius: 8px; max-width: 700px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+                        <h2 style="margin: 0; color: #000; font-size: 24px; font-weight: 600;">${$t({ defaultMessage: "Time Tracking Statistics" })}</h2>
+                        <button onclick="this.closest('[style*=fixed]').remove()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #000; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">&times;</button>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                        <div style="text-align: center; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #f8f9fa;">
+                            <div style="font-size: 24px; font-weight: bold; color: #007bff; margin-bottom: 5px;">${total_time_formatted}</div>
+                            <div style="color: #666; font-size: 14px;">${$t({ defaultMessage: "Total Time Tracked" })}</div>
+                        </div>
+                        <div style="text-align: center; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #f8f9fa;">
+                            <div style="font-size: 24px; font-weight: bold; color: #28a745; margin-bottom: 5px;">${completed_sessions}</div>
+                            <div style="color: #666; font-size: 14px;">${$t({ defaultMessage: "Completed Sessions" })}</div>
+                        </div>
+                        <div style="text-align: center; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #f8f9fa;">
+                            <div style="font-size: 24px; font-weight: bold; color: #ffc107; margin-bottom: 5px;">${active_sessions}</div>
+                            <div style="color: #666; font-size: 14px;">${$t({ defaultMessage: "Active Timers" })}</div>
+                        </div>
+                        <div style="text-align: center; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #f8f9fa;">
+                            <div style="font-size: 24px; font-weight: bold; color: #17a2b8; margin-bottom: 5px;">${recent_week_formatted}</div>
+                            <div style="color: #666; font-size: 14px;">${$t({ defaultMessage: "Last 7 Days" })}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="margin: 0 0 15px 0; color: #333; font-size: 18px;">${$t({ defaultMessage: "Top Tasks by Time" })}</h3>
+                        ${task_breakdown.length === 0 ? 
+                            '<div style="text-align: center; padding: 40px; color: #666; font-size: 16px;">No tasks with time tracking data</div>' :
+                            task_breakdown.map((task: any, index: number) => `
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid #eee; border-radius: 6px; margin-bottom: 8px; background: #fafafa;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="background: #007bff; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">${index + 1}</span>
+                                        <div>
+                                            <div style="font-weight: 600; color: #333;">${task.task_title}</div>
+                                            <div style="font-size: 12px; color: #999;">${task.sessions} ${$t({ defaultMessage: "sessions" })}</div>
+                                        </div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="font-weight: 600; color: #007bff;">${task.total_formatted}</div>
+                                    </div>
+                                </div>
+                            `).join('')
+                        }
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Remove any existing modal
+        $("#time-stats-modal").remove();
+
+        // Add the modal
+        const $modal = $(modalHtml);
+        $modal.attr("id", "time-stats-modal");
+        $("body").append($modal);
     }
 
     show(): void {
@@ -235,7 +471,10 @@ export class TasksView {
                 <div style="background: white; padding: 30px; border-radius: 8px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
                         <h2 style="margin: 0; color: #000; font-size: 24px; font-weight: 600;">${$t({ defaultMessage: "My Tasks" })}</h2>
-                        <button onclick="this.closest('[style*=fixed]').remove()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #000; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">&times;</button>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button class="time-stats-btn" style="background: #007bff; color: white; border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-size: 14px; font-weight: 500;">${$t({ defaultMessage: "Time Stats" })}</button>
+                            <button onclick="this.closest('[style*=fixed]').remove()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #000; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">&times;</button>
+                        </div>
                     </div>
                     <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                         <button data-filter="all" class="filter-btn ${this.current_filter === 'all' ? 'active' : ''}" style="padding: 10px 18px; border: 2px solid #007bff; background: ${this.current_filter === 'all' ? '#007bff' : 'white'}; color: ${this.current_filter === 'all' ? 'white' : '#007bff'}; cursor: pointer; border-radius: 6px; font-weight: 500; font-size: 14px;">${$t({ defaultMessage: "All" })} (${this.tasks.length})</button>
@@ -288,6 +527,34 @@ export class TasksView {
             const task_id = $task_item.data("task-id");
             this.delete_task(task_id);
             this.render_modal();
+        });
+
+        // Time tracking handlers for modal
+        $("#tasks-modal .task-item").on("click", ".start-timer-btn", (e) => {
+            e.stopPropagation();
+            const $task_item = $(e.target).closest(".task-item");
+            const task_id = $task_item.data("task-id");
+            this.start_time_tracking(task_id);
+        });
+
+        $("#tasks-modal .task-item").on("click", ".stop-timer-btn", (e) => {
+            e.stopPropagation();
+            const $task_item = $(e.target).closest(".task-item");
+            const task_id = $task_item.data("task-id");
+            this.stop_time_tracking(task_id);
+        });
+
+        $("#tasks-modal .task-item").on("click", ".time-logs-btn", (e) => {
+            e.stopPropagation();
+            const $task_item = $(e.target).closest(".task-item");
+            const task_id = $task_item.data("task-id");
+            this.show_time_logs(task_id);
+        });
+
+        // Time stats button handler
+        $("#tasks-modal .time-stats-btn").on("click", (e) => {
+            e.stopPropagation();
+            this.show_time_stats();
         });
     }
 

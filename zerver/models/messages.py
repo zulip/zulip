@@ -857,3 +857,21 @@ class Task(models.Model):
     #We might use this below in the future in order to prevent duplicates
     # class Meta:
     #     unique_together = ("message", "assignee", "title")
+
+
+#Model for tracking time spent on tasks
+class TaskTimeLog(models.Model):
+    task = models.ForeignKey(Task, on_delete=CASCADE, related_name='time_logs')
+    user = models.ForeignKey(UserProfile, on_delete=CASCADE, related_name='task_time_logs')
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True, blank=True)
+    duration_seconds = models.PositiveIntegerField(default=0)  # Store duration in seconds
+    description = models.TextField(blank=True)  # Optional notes about the work session
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"Time log for {self.task.title} by {self.user.email}"

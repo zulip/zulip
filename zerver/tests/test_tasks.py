@@ -1,6 +1,6 @@
 from django.utils.timezone import now
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Task
+from zerver.models import Task, TaskTimeLog
 
 
 class TasksViewTest(ZulipTestCase):
@@ -17,6 +17,9 @@ class TasksViewTest(ZulipTestCase):
                 "topic",
                 "creator_email",
                 "created_at",
+                "total_time_seconds",
+                "total_time_formatted",
+                "active_timer",
             },
         )
 
@@ -288,3 +291,198 @@ class TasksViewTest(ZulipTestCase):
         self.assertIsNone(task_by_id[incomplete_task.id]["due_date"])
         self._assert_my_tasks_payload_shape(task_by_id[completed_task.id])
         self._assert_my_tasks_payload_shape(task_by_id[incomplete_task.id])
+
+    def test_list_my_tasks_includes_time_tracking_fields(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        message_id = self.send_stream_message(iago, "Verona", topic_name="time", content="Track time")
+        task = Task.objects.create(
+            message_id=message_id,
+            assignee=hamlet,
+            creator=iago,
+            title="Time tracking task",
+            description="Test time tracking",
+        )
+
+        # Create some time logs
+        TaskTimeLog.objects.create(
+            task=task,
+            user=hamlet,
+            start_time=now(),
+            end_time=now(),
+            duration_seconds=3600,  # 1 hour
+        )
+        TaskTimeLog.objects.create(
+            task=task,
+            user=hamlet,
+            start_time=now(),
+            end_time=None,  # Active timer
+            duration_seconds=0,
+        )
+
+        result = self.api_get(hamlet, "/api/v1/users/me/tasks")
+        data = self.assert_json_success(result)
+
+        self.assertLength(data["tasks"], 1)
+        task_data = data["tasks"][0]
+
+        self.assertEqual(task_data["task_id"], task.id)
+        self.assertEqual(task_data["total_time_seconds"], 3600)
+        self.assertEqual(task_data["total_time_formatted"], "1h 0m")
+        self.assertTrue(task_data["active_timer"])
+
+    def test_start_time_tracking(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        message_id = self.send_stream_message(iago, "Verona", content="Start timer")
+        task = Task.objects.create(
+            message_id=message_id,
+            assignee=hamlet,
+            creator=iago,
+            title="Timer test task",
+        )
+
+        result = self.api_post(hamlet, f"/api/v1/tasks/{task.id}/time/start", {})
+        data = self.assert_json_success(result)
+
+        self.assertEqual(data["task_id"], task.id)
+        self.assertTrue(data["is_active"])
+        self.assertIsNotNone(data["start_time"])
+
+        # Verify the time log was created
+        time_log = TaskTimeLog.objects.get(task=task, user=hamlet)
+        self.assertIsNotNone(time_log.start_time)
+        self.assertIsNone(time_log.end_time)
+
+    def test_stop_time_tracking(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        message_id = self.send_stream_message(iago, "Verona", content="Stop timer")
+        task = Task.objects.create(
+            message_id=message_id,
+            assignee=hamlet,
+            creator=iago,
+            title="Timer stop test",
+        )
+
+        # Start timer first
+        start_time = now()
+        TaskTimeLog.objects.create(
+            task=task,
+            user=hamlet,
+            start_time=start_time,
+            end_time=None,
+        )
+
+        result = self.api_post(hamlet, f"/api/v1/tasks/{task.id}/time/stop", {})
+        data = self.assert_json_success(result)
+
+        self.assertEqual(data["task_id"], task.id)
+        self.assertIsNotNone(data["end_time"])
+        self.assertGreater(data["duration_seconds"], 0)
+        self.assertIn("duration_formatted", data)
+
+        # Verify the time log was updated
+        time_log = TaskTimeLog.objects.get(task=task, user=hamlet)
+        self.assertIsNotNone(time_log.end_time)
+        self.assertGreater(time_log.duration_seconds, 0)
+
+    def test_get_task_time_logs(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        message_id = self.send_stream_message(iago, "Verona", content="Time logs")
+        task = Task.objects.create(
+            message_id=message_id,
+            assignee=hamlet,
+            creator=iago,
+            title="Time logs test",
+        )
+
+        # Create time logs
+        TaskTimeLog.objects.create(
+            task=task,
+            user=hamlet,
+            start_time=now(),
+            end_time=now(),
+            duration_seconds=1800,  # 30 minutes
+            description="First session",
+        )
+        TaskTimeLog.objects.create(
+            task=task,
+            user=hamlet,
+            start_time=now(),
+            end_time=None,  # Active
+            duration_seconds=0,
+            description="Active session",
+        )
+
+        result = self.api_get(hamlet, f"/api/v1/tasks/{task.id}/time/logs")
+        data = self.assert_json_success(result)
+
+        self.assertEqual(data["task_id"], task.id)
+        self.assertEqual(data["total_time_seconds"], 1800)
+        self.assertEqual(data["total_time_formatted"], "30m 0s")
+        self.assertEqual(data["active_timer_count"], 1)
+        self.assertLength(data["time_logs"], 2)
+
+    def test_get_my_time_stats(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        # Create tasks and time logs
+        message_id1 = self.send_stream_message(iago, "Verona", content="Stats test 1")
+        task1 = Task.objects.create(
+            message_id=message_id1,
+            assignee=hamlet,
+            creator=iago,
+            title="Stats task 1",
+        )
+
+        message_id2 = self.send_stream_message(iago, "Verona", content="Stats test 2")
+        task2 = Task.objects.create(
+            message_id=message_id2,
+            assignee=hamlet,
+            creator=iago,
+            title="Stats task 2",
+        )
+
+        # Add time logs
+        TaskTimeLog.objects.create(
+            task=task1,
+            user=hamlet,
+            start_time=now(),
+            end_time=now(),
+            duration_seconds=3600,  # 1 hour
+        )
+        TaskTimeLog.objects.create(
+            task=task2,
+            user=hamlet,
+            start_time=now(),
+            end_time=now(),
+            duration_seconds=1800,  # 30 minutes
+        )
+        TaskTimeLog.objects.create(
+            task=task1,
+            user=hamlet,
+            start_time=now(),
+            end_time=None,  # Active
+            duration_seconds=0,
+        )
+
+        result = self.api_get(hamlet, "/api/v1/users/me/time/stats")
+        data = self.assert_json_success(result)
+
+        self.assertEqual(data["total_time_seconds"], 5400)  # 1.5 hours
+        self.assertEqual(data["total_time_formatted"], "1h 30m")
+        self.assertEqual(data["completed_sessions"], 2)
+        self.assertEqual(data["active_sessions"], 1)
+        self.assertLength(data["task_breakdown"], 2)
+
+        # Check task breakdown
+        task_breakdown = {task["task_id"]: task for task in data["task_breakdown"]}
+        self.assertEqual(task_breakdown[task1.id]["total_formatted"], "1h 0m")
+        self.assertEqual(task_breakdown[task2.id]["total_formatted"], "30m 0s")
