@@ -1,0 +1,36 @@
+{
+    "event": {
+        "id": "01GI0L22UIJYVH9Y2II3TNPVER",
+        "event_type": "incident.responder.replied",
+        "resource_type": "incident",
+        "occurred_at": "2026-04-01T02:21:54.532Z",
+        "agent": {
+            "id": "PXRUEF2",
+            "type": "user_reference",
+            "self": "https://api.pagerduty.com/users/PXRUEF2",
+            "html_url": "https://harsh0303.pagerduty.com/users/PXRUEF2",
+            "summary": "Harsh Santwani"
+        },
+        "client": null,
+        "data": {
+            "incident": {
+                "id": "Q3B15VLMF3ASBD",
+                "type": "incident_reference",
+                "self": "https://api.pagerduty.com/incidents/Q3B15VLMF3ASBD",
+                "html_url": "https://harsh0303.pagerduty.com/incidents/Q3B15VLMF3ASBD",
+                "summary": "Critical: Checkout API High Latency"
+            },
+            "user": {
+                "id": "PXRUEF2",
+                "type": "user_reference",
+                "self": "https://api.pagerduty.com/users/PXRUEF2",
+                "html_url": "https://harsh0303.pagerduty.com/users/PXRUEF2",
+                "summary": "Harsh Santwani"
+            },
+            "escalation_policy": null,
+            "message": "Checking now. Investigating DB locks on cluster-01 and reviewing latency metrics in Datadog. Will update in 5 mins.\n",
+            "state": "accepted",
+            "type": "incident_responder"
+        }
+    }
+}

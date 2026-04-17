@@ -1,0 +1,29 @@
+{
+    "event": {
+        "id": "01GI0KTE33V5QXBVIJDEVJFUNE",
+        "event_type": "incident.annotated",
+        "resource_type": "incident",
+        "occurred_at": "2026-04-01T02:18:59.674Z",
+        "agent": {
+            "id": "PXRUEF2",
+            "type": "user_reference",
+            "self": "https://api.pagerduty.com/users/PXRUEF2",
+            "html_url": "https://harsh0303.pagerduty.com/users/PXRUEF2",
+            "summary": "Harsh Santwani"
+        },
+        "client": null,
+        "data": {
+            "incident": {
+                "id": "Q3B15VLMF3ASBD",
+                "type": "incident_reference",
+                "self": "https://api.pagerduty.com/incidents/Q3B15VLMF3ASBD",
+                "html_url": "https://harsh0303.pagerduty.com/incidents/Q3B15VLMF3ASBD",
+                "summary": "Critical: Checkout API High Latency"
+            },
+            "id": "PEMJB6G",
+            "content": "Running KILL on long-running queries from the reporting-service.",
+            "trimmed": false,
+            "type": "incident_note"
+        }
+    }
+}

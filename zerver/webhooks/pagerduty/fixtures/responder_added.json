@@ -1,0 +1,42 @@
+{
+    "event": {
+        "id": "01GI0KX4BFZXPEDNCS4USCAH22",
+        "event_type": "incident.responder.added",
+        "resource_type": "incident",
+        "occurred_at": "2026-04-01T02:20:14.737Z",
+        "agent": {
+            "id": "PXRUEF2",
+            "type": "user_reference",
+            "self": "https://api.pagerduty.com/users/PXRUEF2",
+            "html_url": "https://harsh0303.pagerduty.com/users/PXRUEF2",
+            "summary": "Harsh Santwani"
+        },
+        "client": null,
+        "data": {
+            "incident": {
+                "id": "Q3B15VLMF3ASBD",
+                "type": "incident_reference",
+                "self": "https://api.pagerduty.com/incidents/Q3B15VLMF3ASBD",
+                "html_url": "https://harsh0303.pagerduty.com/incidents/Q3B15VLMF3ASBD",
+                "summary": "Critical: Checkout API High Latency"
+            },
+            "user": {
+                "id": "PXRUEF2",
+                "type": "user_reference",
+                "self": "https://api.pagerduty.com/users/PXRUEF2",
+                "html_url": "https://harsh0303.pagerduty.com/users/PXRUEF2",
+                "summary": "Harsh Santwani"
+            },
+            "escalation_policy": {
+                "id": "P3RAX8S",
+                "type": "escalation_policy_reference",
+                "self": "https://api.pagerduty.com/escalation_policies/P3RAX8S",
+                "html_url": "https://harsh0303.pagerduty.com/escalation_policies/P3RAX8S",
+                "summary": "APIs-ep"
+            },
+            "message": "Please help with \"Critical: Checkout API High Latency\"",
+            "state": "pending",
+            "type": "incident_responder"
+        }
+    }
+}

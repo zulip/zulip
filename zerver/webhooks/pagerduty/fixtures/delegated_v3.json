@@ -1,0 +1,65 @@
+{
+    "event": {
+        "id": "01GI0KCK1VJGU2A90B814E1RF0",
+        "event_type": "incident.delegated",
+        "resource_type": "incident",
+        "occurred_at": "2026-04-01T02:13:20.295Z",
+        "agent": {
+            "id": "PXRUEF2",
+            "type": "user_reference",
+            "self": "https://api.pagerduty.com/users/PXRUEF2",
+            "html_url": "https://harsh0303.pagerduty.com/users/PXRUEF2",
+            "summary": "Harsh Santwani"
+        },
+        "client": null,
+        "data": {
+            "id": "Q3B15VLMF3ASBD",
+            "type": "incident",
+            "self": "https://api.pagerduty.com/incidents/Q3B15VLMF3ASBD",
+            "html_url": "https://harsh0303.pagerduty.com/incidents/Q3B15VLMF3ASBD",
+            "number": 5,
+            "status": "triggered",
+            "incident_key": "d387d7bd2e0a4294a5307339dfe1669a",
+            "created_at": "2026-04-01T02:07:30Z",
+            "reopened_at": null,
+            "title": "Critical: Checkout API High Latency",
+            "service": {
+                "id": "PLVTM9H",
+                "type": "service_reference",
+                "self": "https://api.pagerduty.com/services/PLVTM9H",
+                "html_url": "https://harsh0303.pagerduty.com/services/PLVTM9H",
+                "summary": "Default Service"
+            },
+            "assignees": [
+                {
+                    "id": "PXRUEF2",
+                    "type": "user_reference",
+                    "self": "https://api.pagerduty.com/users/PXRUEF2",
+                    "html_url": "https://harsh0303.pagerduty.com/users/PXRUEF2",
+                    "summary": "Harsh Santwani"
+                }
+            ],
+            "escalation_policy": {
+                "id": "P3RAX8S",
+                "type": "escalation_policy_reference",
+                "self": "https://api.pagerduty.com/escalation_policies/P3RAX8S",
+                "html_url": "https://harsh0303.pagerduty.com/escalation_policies/P3RAX8S",
+                "summary": "APIs-ep"
+            },
+            "teams": [],
+            "priority": {
+                "id": "P12CAYR",
+                "type": "priority_reference",
+                "self": "https://api.pagerduty.com/priorities/P12CAYR",
+                "html_url": "https://harsh0303.pagerduty.com/account/settings/incidents",
+                "summary": "P1"
+            },
+            "urgency": "high",
+            "conference_bridge": null,
+            "resolve_reason": null,
+            "incident_type": {
+                "name": "major_default"
+            }
+        }
+    }
+}
