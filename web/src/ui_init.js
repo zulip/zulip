@@ -1318,6 +1318,8 @@ function showSimpleTaskForm(userName, userEmail) {
                             font-size: 14px;
                             box-sizing: border-box;
                             margin-bottom: 15px;
+                            background: #f5f5f5;
+                            color: black;
                         ">
                         <textarea id="simple-task-desc" placeholder="Description (optional)..." style="
                             width: 100%;
@@ -1329,6 +1331,8 @@ function showSimpleTaskForm(userName, userEmail) {
                             resize: vertical;
                             min-height: 80px;
                             margin-bottom: 15px;
+                            background: #f5f5f5;
+                            color: black;
                         "></textarea>
                     </div>
                     <div style="display: flex; gap: 10px;">
