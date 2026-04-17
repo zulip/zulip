@@ -89,6 +89,14 @@ mock_esm("../src/settings_realm_user_settings_defaults", {
 mock_esm("../src/settings_streams", {
     rerender_default_streams_for_role_change() {},
 });
+const narrow_title = mock_esm("../src/narrow_title", {
+    update_narrow_title() {},
+});
+mock_esm("../src/narrow_state", {
+    filter: () => message_lists.current?.data.filter,
+    is_message_feed_visible: () => message_lists.current !== undefined,
+    pm_ids_set: (filter) => new Set(filter?.terms_with_operator("dm")[0]?.operand),
+});
 
 const bot_data = zrequire("bot_data");
 const message_lists = zrequire("message_lists");
@@ -482,4 +490,31 @@ run_test("update_person rerenders the user's recent view rows", ({override}) => 
 
     user_events.update_person({user_id: marie.user_id, timezone: "UTC"});
     assert.equal(users_at_rerender.length, changes_recent_view_shows.length);
+});
+
+run_test("initialize registers users_fetched callback", ({override}) => {
+    initialize();
+
+    let narrow_title_filter;
+    override(narrow_title, "update_narrow_title", (filter) => {
+        narrow_title_filter = filter;
+    });
+
+    const isaac = make_user({
+        email: "isaac@example.com",
+        user_id: 32,
+        full_name: "Isaac Newton",
+        avatar_url: "isaac-avatar-url",
+    });
+    people.add_active_user(isaac);
+    people.add_valid_user_id(isaac.user_id);
+
+    // Narrow to a DM with the fetched user so the callback refreshes the
+    // browser tab title.
+    message_lists.set_current(make_message_list([{operator: "dm", operand: [isaac.user_id]}]));
+
+    user_events.initialize();
+    people.notify_users_fetched([isaac.user_id]);
+
+    assert.equal(narrow_title_filter, message_lists.current.data.filter);
 });

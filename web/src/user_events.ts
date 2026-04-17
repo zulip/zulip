@@ -14,6 +14,8 @@ import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as message_live_update from "./message_live_update.ts";
 import * as message_view_header from "./message_view_header.ts";
+import * as narrow_state from "./narrow_state.ts";
+import * as narrow_title from "./narrow_title.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
@@ -312,3 +314,13 @@ export const update_person = function update(event: UserUpdate): void {
         settings_panel_menu.update_imported_users_tab(true, true);
     }
 };
+
+function refresh_ui_after_users_fetched(_user_ids: number[]): void {
+    if (narrow_state.is_message_feed_visible()) {
+        narrow_title.update_narrow_title(narrow_state.filter());
+    }
+}
+
+export function initialize(): void {
+    people.set_users_fetched_callback(refresh_ui_after_users_fetched);
+}

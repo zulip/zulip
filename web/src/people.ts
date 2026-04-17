@@ -63,6 +63,8 @@ let fetch_users_storage: {
     promise_for_in_transit: Map<Set<number>, PromiseWithResolvers<void>>;
 };
 
+let users_fetched_callback: ((user_ids: number[]) => void) | undefined;
+
 export let INACCESSIBLE_USER_NAME: string;
 let PLACEHOLDER_USER_NAME: string;
 export let WELCOME_BOT: User;
@@ -102,6 +104,8 @@ export function init(): void {
         promise_for_requested: new Map(),
         promise_for_in_transit: new Map(),
     };
+
+    users_fetched_callback = undefined;
 }
 
 // WE INITIALIZE DATA STRUCTURES HERE!
@@ -1594,6 +1598,14 @@ export function add_placeholder_user(user_id: number): User {
     return placeholder;
 }
 
+export function set_users_fetched_callback(callback: (user_ids: number[]) => void): void {
+    users_fetched_callback = callback;
+}
+
+export function notify_users_fetched(user_ids: number[]): void {
+    users_fetched_callback?.(user_ids);
+}
+
 export function get_user_by_id_assert_valid(
     user_id: number,
     allow_missing_user = !settings_data.user_can_access_all_other_users(),
@@ -2113,7 +2125,12 @@ async function fetch_next_user_batch(
 }
 
 function add_fetched_users(fetched_users: UsersFetchResponse["members"]): void {
+    const fetched_placeholder_user_ids: number[] = [];
     for (const user of fetched_users) {
+        // Check before the fetched data replaces the placeholder.
+        if (is_placeholder_user(user.user_id)) {
+            fetched_placeholder_user_ids.push(user.user_id);
+        }
         if (user.is_active) {
             add_active_user(user);
         } else {
@@ -2123,16 +2140,26 @@ function add_fetched_users(fetched_users: UsersFetchResponse["members"]): void {
             _add_user(user);
         }
     }
+
+    if (fetched_placeholder_user_ids.length > 0) {
+        notify_users_fetched(fetched_placeholder_user_ids);
+    }
 }
 
 // The server omits users we cannot access from its response, so a
 // placeholder that is still present after its fetch succeeded will
 // never get real data.
 function mark_unfetched_placeholder_users_inaccessible(requested_user_ids: Iterable<number>): void {
+    const unfetched_placeholder_user_ids: number[] = [];
     for (const user_id of requested_user_ids) {
         if (is_placeholder_user(user_id)) {
             remove_inaccessible_user(user_id);
+            unfetched_placeholder_user_ids.push(user_id);
         }
+    }
+
+    if (unfetched_placeholder_user_ids.length > 0) {
+        notify_users_fetched(unfetched_placeholder_user_ids);
     }
 }
 
