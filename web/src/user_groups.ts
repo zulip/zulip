@@ -613,6 +613,30 @@ export function is_user_in_setting_group(
     return false;
 }
 
+export function get_user_ids_in_setting_group(setting_value: GroupSettingValue): Set<number> {
+    const user_ids = new Set<number>();
+    const group_ids: number[] =
+        typeof setting_value === "number" ? [setting_value] : [...setting_value.direct_subgroups];
+
+    if (typeof setting_value !== "number") {
+        for (const user_id of setting_value.direct_members) {
+            user_ids.add(user_id);
+        }
+    }
+
+    for (const group_id of group_ids) {
+        const group = user_group_by_id_dict.get(group_id);
+        if (group === undefined) {
+            blueslip.error("Could not find user group", {group_id});
+            continue;
+        }
+        for (const member_id of get_recursive_group_members(group)) {
+            user_ids.add(member_id);
+        }
+    }
+    return user_ids;
+}
+
 export function check_system_user_group_allowed_for_setting(
     group_name: string,
     group_setting_config: GroupPermissionSetting,

@@ -4,8 +4,10 @@ import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
 import * as pm_conversations from "./pm_conversations.ts";
 import {recent_view_messages_data} from "./recent_view_messages_data.ts";
+import {realm} from "./state_data.ts";
 import * as unread from "./unread.ts";
 import * as unread_ui from "./unread_ui.ts";
+import * as user_groups from "./user_groups.ts";
 
 type DirectMessagePermissionHints = {
     is_known_empty_conversation: boolean;
@@ -117,4 +119,81 @@ export function user_can_send_direct_message(user_ids_string: string): boolean {
             people.user_can_initiate_direct_message_thread(user_ids_string)) &&
         people.user_can_direct_message(user_ids_string)
     );
+}
+
+// Returns a per user permission check if required for DM message to occur.
+export function make_check_message_permission_for_dm_candidate(
+    recipient_ids: number[],
+): ((candidate_user_id: number) => boolean) | null {
+    const current_user_id = people.my_current_user_id();
+    const is_current_user_in_initiator_group = user_groups.is_user_in_setting_group(
+        realm.realm_direct_message_initiator_group,
+        current_user_id,
+    );
+    const is_current_user_in_permission_group = user_groups.is_user_in_setting_group(
+        realm.realm_direct_message_permission_group,
+        current_user_id,
+    );
+
+    // Current user is in both initiator and permission groups,
+    // so they can message anyone.
+    if (is_current_user_in_initiator_group && is_current_user_in_permission_group) {
+        return null;
+    }
+
+    const recipient_is_in_permission_group = recipient_ids.some(
+        (user_id) =>
+            !people.is_valid_bot_user(user_id) &&
+            user_id !== current_user_id &&
+            user_groups.is_user_in_setting_group(
+                realm.realm_direct_message_permission_group,
+                user_id,
+            ),
+    );
+
+    // Current user is in initiator group and at least one
+    // human recipient is in the permission group.
+    if (is_current_user_in_initiator_group && recipient_is_in_permission_group) {
+        return null;
+    }
+
+    const all_recipients_are_bots = recipient_ids.every(
+        (user_id) => people.is_valid_bot_user(user_id) || user_id === current_user_id,
+    );
+
+    const permission_group_user_ids = user_groups.get_user_ids_in_setting_group(
+        realm.realm_direct_message_permission_group,
+    );
+
+    return (candidate_user_id: number): boolean => {
+        // Include bots when all recipients are bots.
+        if (all_recipients_are_bots && people.is_valid_bot_user(candidate_user_id)) {
+            return true;
+        }
+
+        const is_candidate_in_permission_group = permission_group_user_ids.has(candidate_user_id);
+
+        // Current user can initiate and the candidate is in the permission group.
+        if (is_current_user_in_initiator_group && is_candidate_in_permission_group) {
+            return true;
+        }
+
+        // A past conversation exists between the full group {sender, recipient_ids,
+        // candidate} and at least one participant is in the permission group.
+        const conversation_user_ids = [...recipient_ids, candidate_user_id];
+        const conversation_user_ids_string = conversation_user_ids.join(",");
+        const is_known_empty_conversation = get_direct_message_permission_hints(
+            conversation_user_ids_string,
+        ).is_known_empty_conversation;
+        if (
+            !is_known_empty_conversation &&
+            (is_current_user_in_permission_group ||
+                recipient_is_in_permission_group ||
+                is_candidate_in_permission_group)
+        ) {
+            return true;
+        }
+
+        return false;
+    };
 }
