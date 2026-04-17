@@ -141,6 +141,7 @@
 
 .modal__close {
     grid-area: modal-close-button;
+    align-self: center;
 
     &:focus-visible {
         outline-offset: -2px !important;
