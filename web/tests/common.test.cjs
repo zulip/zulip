@@ -168,8 +168,8 @@ run_test("show password", () => {
 
     function check_assertion(type, present_class, absent_class) {
         assert.equal($("#id_password").attr("type"), type);
-        assert.ok($(password_selector).hasClass(present_class));
-        assert.ok(!$(password_selector).hasClass(absent_class));
+        assert.ok($(`${password_selector} i`).hasClass(present_class));
+        assert.ok(!$(`${password_selector} i`).hasClass(absent_class));
     }
 
     const click_ev = {
@@ -191,19 +191,19 @@ run_test("show password", () => {
     const key_handler = $(password_selector).get_on_handler("keydown");
 
     click_handler(click_ev);
-    check_assertion("text", "fa-eye", "fa-eye-slash");
+    check_assertion("text", "zulip-icon-eye", "zulip-icon-hide");
 
     click_handler(click_ev);
-    check_assertion("password", "fa-eye-slash", "fa-eye");
+    check_assertion("password", "zulip-icon-hide", "zulip-icon-eye");
 
     key_handler(key_ev);
-    check_assertion("text", "fa-eye", "fa-eye-slash");
+    check_assertion("text", "zulip-icon-eye", "zulip-icon-hide");
 
     key_handler(key_ev);
-    check_assertion("password", "fa-eye-slash", "fa-eye");
+    check_assertion("password", "zulip-icon-hide", "zulip-icon-eye");
 
     click_handler(click_ev);
 
     common.reset_password_toggle_icons("#id_password", password_selector);
-    check_assertion("password", "fa-eye-slash", "fa-eye");
+    check_assertion("password", "zulip-icon-hide", "zulip-icon-eye");
 });

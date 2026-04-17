@@ -108,7 +108,7 @@ page can be easily identified in it's respective JavaScript file. -->
                                   {% if email %} autofocus {% endif %}
                                   required />
                                 <label for="id_password">{{ _('Password') }}</label>
-                                <i class="fa fa-eye-slash password_visibility_toggle" role="button" tabindex="0"></i>
+                                <button type="button" class="password_visibility_toggle icon-button icon-button-neutral" tabindex="0" aria-label="{{ _('Show password') }}"><i class="zulip-icon zulip-icon-hide" aria-hidden="true"></i></button>
                             </div>
 
                             <div class="actions forgot-password-container">
