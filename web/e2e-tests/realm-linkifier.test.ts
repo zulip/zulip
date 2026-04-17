@@ -60,10 +60,13 @@ async function test_add_invalid_linkifier_pattern(page: Page): Promise<void> {
     });
     await page.click(".dialog_submit_button");
 
-    await page.waitForSelector("div#add-linkifier-status", {visible: true});
+    // Invalid patterns are rejected client-side by RE2JS compilation before
+    // the form is submitted; the error appears in the pattern-specific status
+    // element and includes RE2JS's description of the compilation failure.
+    await page.waitForSelector("div#linkifier-pattern-status", {visible: true});
     assert.strictEqual(
-        await common.get_text_from_selector(page, "div#add-linkifier-status"),
-        "Failed: Bad regular expression: missing ): (foo",
+        await common.get_text_from_selector(page, "div#linkifier-pattern-status"),
+        "Failed: Bad regular expression: missing closing )",
     );
 
     await page.click(".dialog_exit_button");
@@ -108,24 +111,27 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
     });
     await page.click(".dialog_submit_button");
 
-    const edit_linkifier_pattern_status_selector = "div#dialog_error";
+    // Invalid patterns are rejected client-side by RE2JS, so the form
+    // does not submit and the URL template is never checked server-side.
+    const edit_linkifier_pattern_status_selector = "div#linkifier-pattern-status";
     await page.waitForSelector(edit_linkifier_pattern_status_selector, {visible: true});
-    const edit_linkifier_pattern_status = await common.get_text_from_selector(
-        page,
-        edit_linkifier_pattern_status_selector,
-    );
     assert.strictEqual(
-        edit_linkifier_pattern_status,
-        "Failed: Bad regular expression: bad repetition operator: ????",
+        await common.get_text_from_selector(page, edit_linkifier_pattern_status_selector),
+        "Failed: Bad regular expression: invalid nested repetition operator",
     );
+
+    // Fix the pattern; the invalid URL template now surfaces from the server.
+    await common.fill_form(page, "form.linkifier-edit-form", {
+        pattern: "#(?P<id>[0-9]+)",
+    });
+    await page.click(".dialog_submit_button");
 
     const edit_linkifier_template_status_selector = "div#linkifier-template-status";
     await page.waitForSelector(edit_linkifier_template_status_selector, {visible: true});
-    const edit_linkifier_template_status = await common.get_text_from_selector(
-        page,
-        edit_linkifier_template_status_selector,
+    assert.strictEqual(
+        await common.get_text_from_selector(page, edit_linkifier_template_status_selector),
+        "Failed: Invalid URL template.",
     );
-    assert.strictEqual(edit_linkifier_template_status, "Failed: Invalid URL template.");
 
     await page.click(".dialog_exit_button");
     await common.wait_for_micromodal_to_close(page);

@@ -4,6 +4,7 @@ we only use parts of the marked API and are using a fork
 of the upstream library.
 */
 
+import type {Matcher, RE2JS} from "re2js";
 
 declare class Renderer {
     code: (code: string) => string;
@@ -17,12 +18,10 @@ declare namespace marked {
         | {
               exec(string: string): RegExpExecArray | null;
           };
-    // uri-template-lite has this type set as unknown.
-    type LinkifierMatch = unknown;
 
     type ParseOptions = {
-        get_linkifier_regexes: () => RegExp[];
-        linkifierHandler: (pattern: RegExp, matches: LinkifierMatch[]) => string;
+        get_linkifier_regexes: () => RE2JS[];
+        linkifierHandler: (pattern: RE2JS, matcher: Matcher) => string;
         emojiHandler: (emoji_name: string) => string;
         unicodeEmojiHandler: (unicode_emoji: string) => string;
         streamHandler: (stream_name: string) => string | undefined;
