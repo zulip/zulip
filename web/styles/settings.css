@@ -8,7 +8,7 @@ h3,
 /* We need settings-section-title here because some legacy settings
    widgets use a <div> with this class for their heading. */
 .settings-section-title {
-    .fa-info-circle {
+    .zulip-icon-info {
         top: 1px;
         position: relative;
     }
@@ -1022,7 +1022,7 @@ input[type="checkbox"] {
             margin-right: 5px;
         }
 
-        .fa-ellipsis-v {
+        .zulip-icon-more-vertical {
             color: hsl(0deg 0% 75%);
             position: relative;
             top: 1px;
