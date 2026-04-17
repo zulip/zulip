@@ -7,7 +7,7 @@
             <form class="grid">
                 {{#if user_has_email_set}}
                 <div class="input-group">
-                    <label class="settings-field-label {{#unless user_can_change_email}}cursor-text{{/unless}}" for="change_email_button">{{t "Email" }}</label>
+                    <label class="settings-field-label {{#unless user_can_change_email}}cursor-text{{/unless}}" for="change_email_button">{{t "Email address" }}</label>
                     <div class="change-email">
                         <div id="email_field_container" class="inline-block {{#unless user_can_change_email}}disabled_setting_tooltip{{/unless}}">
                             <input type="email" value="{{current_user.delivery_email}}" class="settings_text_input" disabled="disabled" />
