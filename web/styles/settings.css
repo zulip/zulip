@@ -1244,8 +1244,17 @@ input[type="checkbox"] {
 
                 opacity: 0.6;
 
-                &:hover {
+                &:focus {
+                    outline: none;
+                }
+
+                &:hover,
+                &:focus-visible {
                     opacity: 1;
+                }
+
+                &:focus-visible {
+                    outline: 2px solid var(--color-outline-focus);
                 }
             }
 
