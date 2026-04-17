@@ -1429,6 +1429,16 @@ function unread_count(conversation_data: ConversationData): number {
 function unread_sort(a: ConversationData, b: ConversationData): number {
     const a_unread_count = unread_count(a);
     const b_unread_count = unread_count(b);
+    const a_has_unread = a_unread_count > 0;
+    const b_has_unread = b_unread_count > 0;
+    if (a_has_unread !== b_has_unread) {
+        // Always float conversations with unreads above those without,
+        // regardless of sort direction. list_widget negates the entire
+        // return value in descend mode, so we compensate here.
+        const is_descend = $(".recent-view-unread-sort-header").hasClass("descend");
+        const unread_first = a_has_unread ? -1 : 1;
+        return is_descend ? -unread_first : unread_first;
+    }
     if (a_unread_count !== b_unread_count) {
         return a_unread_count - b_unread_count;
     }
