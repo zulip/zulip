@@ -178,6 +178,17 @@ function render_gifs_to_grid(urls: GifInfoUrl[], next_page: boolean): void {
     }
 }
 
+function load_next_page(): void {
+    if (network.is_loading_more_gifs()) {
+        return;
+    }
+    if (current_search_term === undefined || current_search_term.length === 0) {
+        render_featured_gifs(true);
+    } else {
+        update_grid_with_search_term(current_search_term, true);
+    }
+}
+
 function recenter_overlay(): void {
     void popover_instance?.popperInstance?.update();
 }
@@ -302,14 +313,7 @@ function toggle_picker_popover(target: HTMLElement): void {
                         scroll_element.scrollTop + scroll_element.clientHeight >
                         scroll_element.scrollHeight - scroll_element.clientHeight
                     ) {
-                        if (network.is_loading_more_gifs()) {
-                            return;
-                        }
-                        if (current_search_term === undefined) {
-                            render_featured_gifs(true);
-                            return;
-                        }
-                        update_grid_with_search_term(current_search_term, true);
+                        load_next_page();
                     }
                 });
             },
