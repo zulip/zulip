@@ -273,7 +273,7 @@ export function insert_local_message(
         id: local_id_float,
         resend: false,
         is_me_message: false,
-        topic_links: topic ? markdown.get_topic_links(topic) : [],
+        topic_links: markdown.get_topic_links(topic),
         reactions: [],
     };
 

@@ -14,25 +14,23 @@ function get_linkifier_regexes() {
     return [...linkifiers.get_linkifier_map().keys()];
 }
 
-run_test("python_to_js_linkifier", () => {
-    // The only way to reach python_to_js_linkifier is indirectly, hence the call
-    // to update_linkifier_rules.
+run_test("compile_linkifier", () => {
+    // Verify basic pattern compilation with RE2JS.
     linkifiers.update_linkifier_rules([
         {
-            pattern: "/a(?im)a/g",
-            url_template: "http://example1.example.com",
+            pattern: "TICKET-(?P<id>\\d+)",
+            url_template: "http://example1.example.com/{id}",
             id: 10,
         },
-        {
-            pattern: "/a(?L)a/g",
-            url_template: "http://example2.example.com",
-            id: 20,
-        },
     ]);
-    let actual_value = get_linkifier_regexes();
-    let expected_value = [/\/aa\/g(?!\w)/gim, /\/aa\/g(?!\w)/g];
-    assert.deepEqual(actual_value, expected_value);
-    // Test case with multiple replacements.
+    let regexes = get_linkifier_regexes();
+    assert.equal(regexes.length, 1);
+    let matcher = regexes[0].matcher(" TICKET-42 ");
+    assert.ok(matcher.find());
+    assert.equal(matcher.group(2), "TICKET-42");
+    assert.equal(matcher.group("id"), "42");
+
+    // Test case with multiple named groups.
     linkifiers.update_linkifier_rules([
         {
             pattern: "#cf(?P<contest>\\d+)(?P<problem>[A-Z][\\dA-Z]*)",
@@ -40,11 +38,25 @@ run_test("python_to_js_linkifier", () => {
             id: 30,
         },
     ]);
-    actual_value = get_linkifier_regexes();
-    expected_value = [/#cf(\d+)([A-Z][\dA-Z]*)(?!\w)/g];
-    assert.deepEqual(actual_value, expected_value);
-    // Test incorrect syntax.
-    blueslip.expect("error", "python_to_js_linkifier failure!");
+    regexes = get_linkifier_regexes();
+    assert.equal(regexes.length, 1);
+    matcher = regexes[0].matcher(" #cf100Z ");
+    assert.ok(matcher.find());
+    assert.equal(matcher.group(2), "#cf100Z");
+    assert.equal(matcher.group("contest"), "100");
+    assert.equal(matcher.group("problem"), "Z");
+
+    // Boundary matching: linkifier only matches after boundary characters.
+    matcher = regexes[0].matcher("x#cf100Z ");
+    assert.ok(!matcher.find());
+    matcher = regexes[0].matcher("(#cf100Z)");
+    assert.ok(matcher.find());
+    assert.equal(matcher.group(2), "#cf100Z");
+
+    // Test incorrect syntaxes
+
+    // Just absolute garbage:
+    blueslip.expect("error", "Failed to compile linkifier!", 1);
     linkifiers.update_linkifier_rules([
         {
             pattern: "!@#@(!#&((!&(@#(",
@@ -52,7 +64,18 @@ run_test("python_to_js_linkifier", () => {
             id: 40,
         },
     ]);
-    actual_value = get_linkifier_regexes();
-    expected_value = [];
-    assert.deepEqual(actual_value, expected_value);
+    blueslip.reset();
+    assert.deepEqual(get_linkifier_regexes(), []);
+
+    // Python-only inline flags like (?L) are rejected by RE2JS.
+    blueslip.expect("error", "Failed to compile linkifier!", 1);
+    linkifiers.update_linkifier_rules([
+        {
+            pattern: "(?L)foo",
+            url_template: "http://example2.example.com",
+            id: 20,
+        },
+    ]);
+    blueslip.reset();
+    assert.deepEqual(get_linkifier_regexes(), []);
 });

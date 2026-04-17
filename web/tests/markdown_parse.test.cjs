@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {RE2JS} = require("re2js");
 const Template = require("uri-template-lite");
 
 const {zrequire} = require("./lib/namespace.cjs");
@@ -113,13 +114,16 @@ function get_realm_emoji_url(emoji_name) {
     return realm_emoji_map.get(emoji_name);
 }
 
-const regex = /#foo(\d+)(?!\w)/g;
+const regex = RE2JS.compile(
+    "(^|\\s|\\x{0085}|\\p{Z}|['\"(,:<])(#foo(?P<id>\\d+))($|[^\\p{L}\\p{N}])",
+);
 const linkifier_map = new Map([
     [
         regex,
         {
             url_template: new Template("http://foo.com/{id}"),
-            group_number_to_name: {1: "id"},
+            reverse_template: null,
+            alternative_url_templates: [],
         },
     ],
 ]);
