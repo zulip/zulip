@@ -39,13 +39,84 @@ const compose_validate = mock_esm("../src/compose_validate", {
 });
 const input_pill = mock_esm("../src/input_pill");
 const message_util = mock_esm("../src/message_util", {
-    is_known_empty: () => false,
+    get_direct_message_permission_hints: () => ({
+        is_known_empty_conversation: false,
+        is_local_echo_safe: true,
+    }),
     user_can_send_direct_message(user_ids_string) {
         return (
-            (!message_util.is_known_empty(user_ids_string) ||
+            (!message_util.get_direct_message_permission_hints(user_ids_string)
+                .is_known_empty_conversation ||
                 people.user_can_initiate_direct_message_thread(user_ids_string)) &&
             people.user_can_direct_message(user_ids_string)
         );
+    },
+    // currently is synced with the actual function.
+    make_check_message_permission_for_dm_candidate(recipient_ids) {
+        const current_user_id = people.my_current_user_id();
+        const is_current_user_in_initiator_group = user_groups.is_user_in_setting_group(
+            realm.realm_direct_message_initiator_group,
+            current_user_id,
+        );
+        const is_current_user_in_permission_group = user_groups.is_user_in_setting_group(
+            realm.realm_direct_message_permission_group,
+            current_user_id,
+        );
+
+        if (is_current_user_in_initiator_group && is_current_user_in_permission_group) {
+            return null;
+        }
+
+        const recipient_is_in_permission_group = recipient_ids.some(
+            (user_id) =>
+                !people.is_valid_bot_user(user_id) &&
+                user_id !== current_user_id &&
+                user_groups.is_user_in_setting_group(
+                    realm.realm_direct_message_permission_group,
+                    user_id,
+                ),
+        );
+
+        if (is_current_user_in_initiator_group && recipient_is_in_permission_group) {
+            return null;
+        }
+
+        const all_recipients_are_bots = recipient_ids.every(
+            (user_id) => people.is_valid_bot_user(user_id) || user_id === current_user_id,
+        );
+
+        const permission_group_user_ids = user_groups.get_user_ids_in_setting_group(
+            realm.realm_direct_message_permission_group,
+        );
+
+        return (candidate_user_id) => {
+            if (all_recipients_are_bots && people.is_valid_bot_user(candidate_user_id)) {
+                return true;
+            }
+
+            const is_candidate_in_permission_group =
+                permission_group_user_ids.has(candidate_user_id);
+
+            if (is_current_user_in_initiator_group && is_candidate_in_permission_group) {
+                return true;
+            }
+
+            const conversation_user_ids = [...recipient_ids, candidate_user_id];
+            const conversation_user_ids_string = conversation_user_ids.join(",");
+            const is_known_empty_conversation = message_util.get_direct_message_permission_hints(
+                conversation_user_ids_string,
+            ).is_known_empty_conversation;
+            if (
+                !is_known_empty_conversation &&
+                (is_current_user_in_permission_group ||
+                    recipient_is_in_permission_group ||
+                    is_candidate_in_permission_group)
+            ) {
+                return true;
+            }
+
+            return false;
+        };
     },
 });
 const message_user_ids = mock_esm("../src/message_user_ids", {
@@ -712,6 +783,7 @@ function test(label, f) {
         );
         helpers.override(realm, "realm_can_access_all_users_group", members.id);
         helpers.override(realm, "realm_direct_message_permission_group", members.id);
+        helpers.override(realm, "realm_direct_message_initiator_group", members.id);
 
         people.add_active_user(ali);
         people.add_active_user(alice);
@@ -1919,7 +1991,10 @@ test("get_person_suggestion_for_topic_typeahead respects DM permissions", ({over
     }
     // Set message history to empty
     override(pm_conversations, "get_partners", () => []);
-    override(message_util, "is_known_empty", () => true);
+    override(message_util, "get_direct_message_permission_hints", () => ({
+        is_known_empty_conversation: true,
+        is_local_echo_safe: true,
+    }));
 
     // Bot suggestion doesn't show up if there is no past conversation.
     override(realm, "realm_direct_message_permission_group", nobody.id);
@@ -1991,7 +2066,10 @@ test("get_person_suggestion_for_topic_typeahead respects DM permissions", ({over
 
     // Set message history
     override(pm_conversations, "get_partners", () => [notification_bot.user_id, lear.user_id]);
-    override(message_util, "is_known_empty", () => false);
+    override(message_util, "get_direct_message_permission_hints", () => ({
+        is_known_empty_conversation: false,
+        is_local_echo_safe: true,
+    }));
 
     // Suggestion for bot always show up even if direct message is disabled,
     // considering past conversation exists.
@@ -2992,4 +3070,126 @@ test("direct message recipients sorted according to stream / topic being viewed"
     // 1st despite having an exact name match with the query.
     results = ct.get_pm_people("ali");
     assert.deepEqual(results, [alice_item, ali_item]);
+});
+
+test("get_pm_people respects DM permissions", ({override}) => {
+    $("#private_message_recipient").set_parent($.create("pm-recipient-container"));
+
+    let pill_items = [];
+
+    override(input_pill, "create", () => ({
+        clear() {
+            pill_items = [];
+        },
+        clear_text() {},
+        items: () => pill_items,
+        onPillCreate() {},
+        onPillRemove() {},
+        appendValidatedData(item) {
+            pill_items.push(item);
+        },
+    }));
+
+    compose_pm_pill.initialize({on_pill_create_or_remove: noop});
+
+    mock_banners();
+    compose_state.set_stream_id("");
+
+    compose_state.set_private_message_recipient_ids([]);
+
+    override(message_util, "get_direct_message_permission_hints", () => ({
+        is_known_empty_conversation: true,
+        is_local_echo_safe: true,
+    }));
+
+    // When DMs are disabled realm-wide, lear should not appear in suggestions.
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+    override(realm, "realm_direct_message_initiator_group", nobody.id);
+    let results = ct.get_pm_people("king lear");
+    assert.deepEqual(results, []);
+
+    // Bot suggestions always appear regardless of DM permissions.
+    results = ct.get_pm_people("welcome");
+    assert.deepEqual(results, [welcome_bot_item]);
+
+    // When DMs are allowed, lear should appear in suggestions.
+    override(realm, "realm_direct_message_permission_group", members.id);
+    override(realm, "realm_direct_message_initiator_group", members.id);
+    results = ct.get_pm_people("king lear");
+    assert.deepEqual(results, [lear_item]);
+
+    // Sender is not in initiator group and no past conversation history;
+    // lear should not appear even though lear is in the permission group.
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [lear.user_id],
+        direct_subgroups: [],
+    });
+    override(realm, "realm_direct_message_initiator_group", nobody.id);
+    results = ct.get_pm_people("king lear");
+    assert.deepEqual(results, []);
+
+    // Sender is in initiator group; lear should appear.
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [lear.user_id],
+        direct_subgroups: [],
+    });
+    override(realm, "realm_direct_message_initiator_group", {
+        direct_members: [hamlet.user_id],
+        direct_subgroups: [],
+    });
+    results = ct.get_pm_people("king lear");
+    assert.deepEqual(results, [lear_item]);
+
+    // Othello is not in the permission group, so othello should not appear.
+    results = ct.get_pm_people("othello");
+    assert.deepEqual(results, []);
+
+    // With lear already in the recipient box, othello can be added to a group
+    // DM because lear is in the permission group, satisfying the check.
+    compose_state.set_private_message_recipient_ids([lear.user_id]);
+    results = ct.get_pm_people("othello");
+    assert.deepEqual(results, [othello_item]);
+
+    // Sender is not in initiator group but past conversation history exists;
+    // lear should appear because the conversation is not known to be empty.
+    compose_state.set_private_message_recipient_ids([]);
+    override(message_util, "get_direct_message_permission_hints", () => ({
+        is_known_empty_conversation: false,
+        is_local_echo_safe: true,
+    }));
+    override(realm, "realm_direct_message_initiator_group", nobody.id);
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [lear.user_id],
+        direct_subgroups: [],
+    });
+    results = ct.get_pm_people("king lear");
+    assert.deepEqual(results, [lear_item]);
+
+    // With a bot already in the recipient box and sender in the initiator
+    // group, another bot should always appear in suggestions.
+    override(message_util, "get_direct_message_permission_hints", () => ({
+        is_known_empty_conversation: true,
+        is_local_echo_safe: true,
+    }));
+    compose_state.set_private_message_recipient_ids([notification_bot.user_id]);
+    override(realm, "realm_direct_message_initiator_group", {
+        direct_members: [hamlet.user_id],
+        direct_subgroups: [],
+    });
+    override(realm, "realm_direct_message_permission_group", {
+        direct_members: [lear.user_id],
+        direct_subgroups: [],
+    });
+    results = ct.get_pm_people("welcome");
+    assert.deepEqual(results, [welcome_bot_item]);
+
+    // With a bot already in the recipient box, a user in the permission
+    // group should appear because the sender can initiate.
+    results = ct.get_pm_people("king lear");
+    assert.deepEqual(results, [lear_item]);
+
+    // With a bot already in the recipient box, a user not in the
+    // permission group should not appear.
+    results = ct.get_pm_people("othello");
+    assert.deepEqual(results, []);
 });
