@@ -2848,11 +2848,12 @@ def export_messages_single_user(
         sender=user_profile,
     )
 
-    my_subscriptions = Subscription.objects.filter(
-        user_profile=user_profile,
-        recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+    my_recipient_ids = list(
+        Subscription.objects.filter(
+            user_profile=user_profile,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+        ).values_list("recipient_id", flat=True)
     )
-    my_recipient_ids = [sub.recipient_id for sub in my_subscriptions]
     messages_to_me = Message.objects.filter(
         # Uses index: zerver_message_realm_recipient_id (prefix)
         realm_id=user_profile.realm_id,
