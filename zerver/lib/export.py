@@ -1652,7 +1652,7 @@ def custom_fetch_realm_audit_logs_for_realm(response: TableData, context: Contex
         assert exportable_user_ids_from_context is None
         consenting_user_ids = set()
 
-    query = RealmAuditLog.objects.filter(realm=realm)
+    query = RealmAuditLog.objects.filter(realm=realm).order_by("id")
     if export_type != RealmExport.EXPORT_FULL_WITHOUT_CONSENT:
         # Keep entries whose modified_user is a consenting user, is
         # None, or whose event_type is one we preserve for every
