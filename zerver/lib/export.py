@@ -1699,16 +1699,18 @@ def fetch_usermessages(
 ) -> list[Record]:
     # UserMessage export security rule: You can export UserMessages
     # for the messages you exported for the users in your realm.
-    user_message_query = UserMessage.objects.filter(
-        user_profile__realm=realm, message_id__in=message_ids
-    )
+    # user_profile_ids comes from response["zerver_userprofile"] and
+    # is therefore already scoped to this realm's exported users, so
+    # filtering on user_profile_id directly is sufficient -- no JOIN
+    # to UserProfile is needed to reconfirm the realm.
     if export_full_with_consent:
         assert consented_user_ids is not None
         user_profile_ids = consented_user_ids & user_profile_ids
+    user_message_query = UserMessage.objects.filter(
+        user_profile_id__in=user_profile_ids, message_id__in=message_ids
+    ).iterator()
     user_message_chunk = []
     for user_message in user_message_query:
-        if user_message.user_profile_id not in user_profile_ids:
-            continue
         user_message_obj = model_to_dict(user_message)
         user_message_obj["flags_mask"] = user_message.flags.mask
         del user_message_obj["flags"]
