@@ -179,9 +179,6 @@ function render_gifs_to_grid(urls: GifInfoUrl[], next_page: boolean): void {
 }
 
 function load_next_page(): void {
-    if (network.is_loading_more_gifs()) {
-        return;
-    }
     if (current_search_term === undefined || current_search_term.length === 0) {
         render_featured_gifs(true);
     } else {
