@@ -729,6 +729,33 @@ def remove_realm_playground(client: Client) -> None:
     validate_against_openapi_schema(result, "/realm/playgrounds/{playground_id}", "delete", "200")
 
 
+@openapi_test_function("/realm/logo:post")
+def upload_realm_logo(client: Client) -> None:
+    logo_path = os.path.join(ZULIP_DIR, "zerver", "tests", "images", "img.png")
+    # {code_example|start}
+    # Upload a custom logo for the organization.
+    with open(logo_path, "rb") as fp:
+        result = client.call_endpoint(
+            url="/realm/logo",
+            method="POST",
+            request={"night": False},
+            files=[fp],
+        )
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/realm/logo", "post", "200")
+
+
+@openapi_test_function("/realm/logo:delete")
+def delete_realm_logo(client: Client) -> None:
+    # {code_example|start}
+    # Restore the organization's default logo.
+    result = client.call_endpoint(url="/realm/logo", method="DELETE", request={"night": False})
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/realm/logo", "delete", "200")
+
+
 @openapi_test_function("/export/realm:get")
 def get_realm_exports(client: Client) -> None:
     # {code_example|start}
@@ -2237,6 +2264,8 @@ def test_server_organizations(client: Client) -> None:
     get_realm_emoji(client)
     upload_custom_emoji(client)
     delete_custom_emoji(client)
+    upload_realm_logo(client)
+    delete_realm_logo(client)
     get_realm_profile_fields(client)
     reorder_realm_profile_fields(client)
     create_realm_profile_field(client)

@@ -335,6 +335,14 @@ def upload_custom_emoji() -> dict[str, object]:
     }
 
 
+@openapi_param_value_generator(["/realm/logo:post", "/realm/logo:delete"])
+def realm_logo() -> dict[str, object]:
+    return {
+        "night": False,
+        "file": "zerver/tests/images/img.png",
+    }
+
+
 @openapi_param_value_generator(["/realm/playgrounds:post"])
 def add_realm_playground() -> dict[str, object]:
     return {
