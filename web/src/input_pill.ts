@@ -38,6 +38,7 @@ type InputPillCreateOptions<ItemType> = {
     ) => void;
     show_outline_on_invalid_input?: boolean;
     split_text_to_form_pills?: (pills: string) => string[];
+    disable_pill_editing?: boolean;
 };
 
 export type InputPill<ItemType> = {
@@ -65,6 +66,8 @@ type InputPillStore<ItemType> = {
     convert_to_pill_on_enter: boolean;
     show_outline_on_invalid_input: boolean;
     split_text_to_form_pills: InputPillCreateOptions<ItemType>["split_text_to_form_pills"];
+    setupTypeahead?: ($input: JQuery) => void;
+    disable_pill_editing: boolean;
 };
 
 // These are the functions that are exposed to other modules.
@@ -86,6 +89,8 @@ export type InputPillContainer<ItemType> = {
     onPillExpand: (callback: (pill: JQuery) => void) => void;
     onTextInputHook: (callback: () => void) => void;
     createPillonPaste: (callback: () => void) => void;
+    setSetupTypeahead: (callback: ($input: JQuery) => void) => void;
+    replaceEditingPill: (item: ItemType, triggered_by_blur?: boolean) => void;
     clear: (quiet?: boolean) => void;
     clear_text: () => void;
     getCurrentText: () => string | null;
@@ -94,6 +99,24 @@ export type InputPillContainer<ItemType> = {
 };
 
 export type RemovePillTrigger = "close" | "backspace" | "clear";
+
+function is_cursor_at_start(): boolean {
+    const selection = window.getSelection();
+    return selection !== null && selection.anchorOffset === 0 && !selection.toString();
+}
+
+function is_cursor_at_end(element: HTMLElement): boolean {
+    const selection = window.getSelection();
+    if (!selection || selection.toString() || selection.rangeCount === 0) {
+        return false;
+    }
+    // cloneRange avoids false negatives from a trailing <br> in contenteditable.
+    const cursor = selection.getRangeAt(0);
+    const to_end = cursor.cloneRange();
+    to_end.selectNodeContents(element);
+    to_end.setStart(cursor.endContainer, cursor.endOffset);
+    return to_end.toString() === "";
+}
 
 export function create<ItemType extends {type: string}>(
     opts: InputPillCreateOptions<ItemType>,
@@ -114,7 +137,13 @@ export function create<ItemType extends {type: string}>(
         on_pill_exit: opts.on_pill_exit,
         show_outline_on_invalid_input: opts.show_outline_on_invalid_input ?? false,
         split_text_to_form_pills: opts.split_text_to_form_pills,
+        disable_pill_editing: opts.disable_pill_editing ?? false,
     };
+
+    // Active pill being edited; undefined when not editing.
+    let editing_pill: InputPill<ItemType> | undefined;
+    // Edit element for the active edit; used to detect stale blur callbacks.
+    let $editing_pill_edit: JQuery | undefined;
 
     // a dictionary of internal functions. Some of these are exposed as well,
     // and nothing in here should be assumed to be private (due to the passing)
@@ -169,6 +198,21 @@ export function create<ItemType extends {type: string}>(
                 display_value: store.get_display_value_from_item(item),
                 disabled,
             });
+        },
+
+        replaceEditingPill(item: ItemType, triggered_by_blur = false): void {
+            if (editing_pill === undefined) {
+                return;
+            }
+            const pill = editing_pill;
+            editing_pill = undefined;
+            $editing_pill_edit = undefined;
+            funcs.updatePill(pill.$element[0]!, item);
+            store.onPillRemove?.(pill, "close");
+            store.onPillCreate?.();
+            if (!triggered_by_blur) {
+                store.$input.trigger("focus");
+            }
         },
 
         // This is generally called by typeahead logic, where we have all
@@ -310,7 +354,7 @@ export function create<ItemType extends {type: string}>(
         getPillByPredicate(
             predicate: (item: ItemType) => boolean,
         ): InputPill<ItemType> | undefined {
-            return store.pills.find((pill) => predicate(pill.item));
+            return store.pills.find((pill) => pill !== editing_pill && predicate(pill.item));
         },
 
         // Updates a pill's item data and refreshes its HTML representation in-place.
@@ -338,7 +382,7 @@ export function create<ItemType extends {type: string}>(
         },
 
         items() {
-            return store.pills.map((pill) => pill.item);
+            return store.pills.filter((pill) => pill !== editing_pill).map((pill) => pill.item);
         },
 
         createPillonPaste() {
@@ -347,6 +391,183 @@ export function create<ItemType extends {type: string}>(
                 return undefined;
             }
             return true;
+        },
+
+        startEditingPill(pill: InputPill<ItemType>, consume_enter_keypress = false): void {
+            if (pill.disabled) {
+                return;
+            }
+            if (editing_pill !== undefined) {
+                return;
+            }
+            editing_pill = pill;
+
+            // Seed the edit box with the displayed text, not the internal
+            // text: e.g. a "role:administrators" system group shows as
+            // "Administrators". The unchanged check in commitEditingPill
+            // compares against the same value.
+            const text = store.get_display_value_from_item(pill.item);
+            const $edit = pill.$element.find(".pill-edit-input");
+            $edit.text(text);
+
+            pill.$element.addClass("editing");
+            $editing_pill_edit = $edit;
+
+            ui_util.place_caret_at_end($edit[0]!);
+
+            if (store.setupTypeahead !== undefined) {
+                if (consume_enter_keypress) {
+                    // Absorb the Enter keypress and keyup that triggered this edit,
+                    // so they don't commit the edit or select a typeahead suggestion.
+                    function block_enter(e: JQuery.KeyPressEvent | JQuery.KeyUpEvent): void {
+                        if (keydown_util.is_enter_event(e)) {
+                            e.preventDefault();
+                            e.stopImmediatePropagation();
+                        }
+                    }
+                    $edit.one("keypress", block_enter);
+                    $edit.one("keyup", block_enter);
+                }
+
+                store.setupTypeahead($edit);
+            }
+
+            $edit.on("keydown", (e) => {
+                // Stop keydown events from bubbling to the .pill keydown handler.
+                e.stopPropagation();
+                if (keydown_util.is_enter_event(e)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Defer to typeahead when it has an active selection.
+                    if (
+                        $edit.text().trim().length === 0 ||
+                        !(store.setupTypeahead !== undefined && $(".typeahead .active").length > 0)
+                    ) {
+                        funcs.commitEditingPill($edit, false);
+                    }
+                    // Block the corresponding keyup Enter from reaching outer handlers.
+                    function block_enter_keyup(ev: JQuery.KeyUpEvent): void {
+                        if (keydown_util.is_enter_event(ev)) {
+                            ev.stopPropagation();
+                        }
+                    }
+                    store.$parent.one("keyup", block_enter_keyup);
+                    return;
+                }
+                switch (e.key) {
+                    case "Escape": {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        funcs.cancelEditingPill($edit);
+                        break;
+                    }
+                    case "ArrowLeft": {
+                        if (is_cursor_at_start()) {
+                            const $prev = pill.$element.prev(".pill");
+                            if ($prev.length > 0) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                funcs.cancelEditingPill($edit);
+                                $prev.trigger("focus");
+                            }
+                        }
+                        break;
+                    }
+                    case "ArrowRight": {
+                        if (is_cursor_at_end($edit[0]!)) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const $next = pill.$element.next();
+                            funcs.cancelEditingPill($edit);
+                            if ($next.length > 0) {
+                                $next.trigger("focus");
+                            }
+                        }
+                        break;
+                    }
+                }
+            });
+
+            // Defer commit to allow a typeahead click to complete first.
+            const check_commit_on_blur = (): void => {
+                if (editing_pill !== pill || $editing_pill_edit !== $edit) {
+                    return;
+                }
+                if ($(".typeahead:hover").length > 0) {
+                    setTimeout(check_commit_on_blur, 100);
+                    return;
+                }
+                funcs.commitEditingPill($edit, true);
+            };
+
+            $edit.on("blur", () => {
+                setTimeout(check_commit_on_blur, 200);
+            });
+        },
+
+        commitEditingPill($edit: JQuery, triggered_by_blur: boolean): void {
+            if (editing_pill === undefined || $editing_pill_edit !== $edit) {
+                return;
+            }
+
+            const text = $edit.text().trim();
+            if (text === store.get_display_value_from_item(editing_pill.item)) {
+                funcs.cancelEditingPill($edit);
+                return;
+            }
+
+            if (text.length === 0) {
+                const pill = editing_pill;
+                editing_pill = undefined;
+                $editing_pill_edit = undefined;
+                const idx = store.pills.findIndex((p) => p.$element[0] === pill.$element[0]);
+                if (idx !== -1) {
+                    store.pills.splice(idx, 1);
+                }
+                pill.$element.remove();
+                store.onPillRemove?.(pill, "close");
+                if (!triggered_by_blur) {
+                    store.$input.trigger("focus");
+                }
+                return;
+            }
+
+            // Use create_item directly to avoid comma-splitting via insertManyPills.
+            const item = funcs.create_item(text);
+
+            if (item !== undefined) {
+                funcs.replaceEditingPill(item, triggered_by_blur);
+            } else {
+                const pill = editing_pill;
+                editing_pill = undefined;
+                $editing_pill_edit = undefined;
+                pill.$element.removeClass("editing");
+                $(".typeahead").hide();
+
+                // Redirect the invalid-input shake from the input to the pill.
+                store.$input.removeClass("shake");
+                if (store.show_outline_on_invalid_input) {
+                    store.$parent.removeClass("invalid");
+                }
+                pill.$element.addClass("shake");
+                if (!triggered_by_blur) {
+                    pill.$element.trigger("focus");
+                }
+            }
+        },
+
+        cancelEditingPill($edit: JQuery): void {
+            if (editing_pill === undefined || $editing_pill_edit !== $edit) {
+                return;
+            }
+            const pill = editing_pill;
+            editing_pill = undefined;
+            $editing_pill_edit = undefined;
+            pill.$element.removeClass("editing");
+
+            // Prevent focus from jumping to <body>.
+            pill.$element.trigger("focus");
+            $(".typeahead").hide();
         },
     };
 
@@ -468,12 +689,36 @@ export function create<ItemType extends {type: string}>(
                     e.preventDefault();
                     break;
                 }
+                case "Enter": {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!store.disable_pill_editing) {
+                        const pill = funcs.getByElement(util.the($pill));
+                        if (pill !== undefined) {
+                            funcs.startEditingPill(pill, true);
+                        }
+                    }
+                    break;
+                }
+            }
+        });
+
+        store.$parent.on("dblclick", ".pill", function (this: HTMLElement, e) {
+            if ($(e.target).closest(".exit, .expand").length > 0) {
+                return;
+            }
+            e.preventDefault();
+            if (!store.disable_pill_editing) {
+                const pill = funcs.getByElement(this);
+                if (pill !== undefined) {
+                    funcs.startEditingPill(pill);
+                }
             }
         });
 
         // when the shake animation is applied to the ".input" on invalid input,
         // we want to remove the class when finished automatically.
-        store.$parent.on("animationend", ".input", function () {
+        store.$parent.on("animationend", ".input, .pill", function () {
             $(this).removeClass("shake");
         });
 
@@ -571,6 +816,12 @@ export function create<ItemType extends {type: string}>(
         createPillonPaste(callback) {
             store.createPillonPaste = callback;
         },
+
+        setSetupTypeahead(callback) {
+            store.setupTypeahead = callback;
+        },
+
+        replaceEditingPill: funcs.replaceEditingPill.bind(funcs),
 
         clear(quiet?: boolean) {
             funcs.removeAllPills.bind(funcs)("clear", quiet);

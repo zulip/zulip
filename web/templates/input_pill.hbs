@@ -52,4 +52,7 @@
         <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="{{t 'Remove' }}"></a>
     </div>
     {{/unless}}
+    {{#unless hide_edit_input}}
+    <span class="pill-edit-input" contenteditable="true" spellcheck="false"></span>
+    {{/unless}}
 </div>
