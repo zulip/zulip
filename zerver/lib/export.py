@@ -2294,7 +2294,7 @@ def export_uploads_from_local(
             stat = os.stat(local_path)
             record = dict(
                 realm_id=attachment.realm_id,
-                user_profile_id=attachment.owner.id,
+                user_profile_id=attachment.owner_id,
                 s3_path=path_id,
                 path=path_id,
                 size=stat.st_size,
