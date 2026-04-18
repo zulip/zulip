@@ -168,6 +168,7 @@ def build_email(
             )
             .strip()
             .replace("\n", "")
+            .replace("\r", "")
         )
         message = loader.render_to_string(
             template_prefix + ".txt", context=context, using="Jinja2_plaintext"

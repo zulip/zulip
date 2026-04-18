@@ -80,6 +80,32 @@ class TestBuildEmail(ZulipTestCase):
         )
         self.assertEqual(mail.to[0], hamlet.delivery_email)
 
+    def test_email_subject_strips_crlf(self) -> None:
+        # Email header injection would require a CR or LF making it
+        # through email-subject rendering.  Templates are trusted, but
+        # we strip both CR and LF defensively so any future template
+        # that interpolates a user-controlled value can't smuggle a
+        # header-terminating sequence into the email header.
+        hamlet = self.example_user("hamlet")
+        with mock.patch(
+            "zerver.lib.send_email.loader.render_to_string",
+            side_effect=lambda template_name, *args, **kwargs: (
+                "Subject\r\nBcc: attacker@example.com"
+                if template_name == "zerver/emails/password_reset.subject.txt"
+                else ""
+            ),
+        ):
+            email = build_email(
+                "zerver/emails/password_reset",
+                to_user_ids=[hamlet.id],
+                from_name="Noreply",
+                from_address=FromAddress.NOREPLY,
+                language="en",
+            )
+        self.assertNotIn("\r", email.subject)
+        self.assertNotIn("\n", email.subject)
+        self.assertEqual(email.subject, "SubjectBcc: attacker@example.com")
+
 
 class TestSendEmail(ZulipTestCase):
     @override_settings(
