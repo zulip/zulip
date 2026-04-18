@@ -1540,18 +1540,21 @@ def custom_fetch_direct_message_groups(response: TableData, context: Context) ->
         )
         recipient_filter = Q(recipient_id__in=exportable_direct_message_group_recipient_ids)
 
-    # Now we fetch all the Subscription objects to the exportable DireMessageGroups in the realm.
-    realm_direct_message_group_subs = (
-        Subscription.objects.select_related("recipient")
-        .filter(
+    # Find the set of recipient ids of DirectMessageGroups with at
+    # least one subscriber among the users we're exporting.  We query
+    # just the recipient_id column rather than materializing the full
+    # Subscription rows; the actual Subscription, Recipient, and
+    # DirectMessageGroup records we emit are queried separately below
+    # against the subset that survives the cross-realm safety check.
+    realm_direct_message_group_recipient_ids = set(
+        Subscription.objects.filter(
             recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             user_profile__in=user_profile_ids,
         )
         .filter(recipient_filter)
+        .distinct("recipient_id")
+        .values_list("recipient_id", flat=True)
     )
-    realm_direct_message_group_recipient_ids = {
-        sub.recipient_id for sub in realm_direct_message_group_subs
-    }
 
     # Mark all Direct Message groups whose recipient ID contains a cross-realm user.
     unsafe_direct_message_group_recipient_ids = set()
@@ -1564,30 +1567,32 @@ def custom_fetch_direct_message_groups(response: TableData, context: Context) ->
             # In almost every case the other realm will be zulip.com
             unsafe_direct_message_group_recipient_ids.add(sub.recipient_id)
 
-    # Now filter down to just those direct message groups that are
-    # entirely within the realm.
-    #
-    # This is important for ensuring that the User objects needed to
-    # import it on the other end exist (since we're only exporting the
-    # users from this realm), at the cost of losing any true
+    # Drop the unsafe groups and emit the surviving Recipient,
+    # Subscription, and DirectMessageGroup rows.  This ensures the
+    # User objects needed to import each exported group exist on the
+    # other end (we're only exporting this realm's users, plus the
+    # cross-realm system bots), at the cost of losing any true
     # cross-realm messages. (As of 2025, true cross-realm messages,
     # not involving system bots cannot exist without a bug or fork of
-    # Zulip).
-    direct_message_group_subs = [
-        sub
-        for sub in realm_direct_message_group_subs
-        if sub.recipient_id not in unsafe_direct_message_group_recipient_ids
-    ]
-    direct_message_group_recipient_ids = {sub.recipient_id for sub in direct_message_group_subs}
-    direct_message_group_ids = {sub.recipient.type_id for sub in direct_message_group_subs}
-
-    direct_message_group_subscription_dicts = make_raw(direct_message_group_subs)
-    direct_message_group_recipients = make_raw(
-        Recipient.objects.filter(id__in=direct_message_group_recipient_ids)
+    # Zulip.)
+    direct_message_group_recipient_ids = (
+        realm_direct_message_group_recipient_ids - unsafe_direct_message_group_recipient_ids
+    )
+    direct_message_group_ids = set(
+        Recipient.objects.filter(id__in=direct_message_group_recipient_ids).values_list(
+            "type_id", flat=True
+        )
     )
 
-    response["_huddle_recipient"] = direct_message_group_recipients
-    response["_huddle_subscription"] = direct_message_group_subscription_dicts
+    response["_huddle_recipient"] = make_raw(
+        Recipient.objects.filter(id__in=direct_message_group_recipient_ids)
+    )
+    response["_huddle_subscription"] = make_raw(
+        Subscription.objects.filter(
+            recipient_id__in=direct_message_group_recipient_ids,
+            user_profile_id__in=user_profile_ids,
+        )
+    )
     response["zerver_huddle"] = make_raw(
         DirectMessageGroup.objects.filter(id__in=direct_message_group_ids)
     )
