@@ -1445,6 +1445,12 @@ class RealmImportExportTest(ExportFile):
             # "user setting"-type attributes with default values, so the #foo color
             # will be overwritten in the process.
             self.assertNotEqual(exported_sub["color"], "#foo")
+            # is_user_active on the exported Subscription must match
+            # is_active on the exported UserProfile; hamlet (the
+            # non-consenting user) is currently active but gets
+            # mirror-dummied in a consent export, so his exported
+            # Subscription rows must report is_user_active=False.
+            self.assertFalse(exported_sub["is_user_active"])
 
         # Verify the export/scrubbing of user settings for consenting/non-consenting users.
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
