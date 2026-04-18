@@ -2,6 +2,7 @@ import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
+import {INCOMING_WEBHOOK_BOT_TYPE_INT} from "./bot_type_values.ts";
 import * as channel from "./channel.ts";
 import {LazySet} from "./lazy_set.ts";
 import {page_params} from "./page_params.ts";
@@ -222,7 +223,26 @@ export async function is_subscriber_subset(
         return null;
     }
 
-    return [...sub1_set.keys()].every((key) => sub2_set.has(key));
+    return [...sub1_set.keys()].every((key) => {
+        // If the user is in the linked stream, the check passes.
+        if (sub2_set.has(key)) {
+            return true;
+        }
+
+        // Use ignore_missing=true because subscribers may include users
+        // inaccessible to the current viewer (e.g., guest-visibility limits);
+        // those will return undefined and fall through to the non-subset case.
+        const user = people.maybe_get_user_by_id(key, true);
+
+        // Incoming webhook bots are write-only and can't read messages, so a
+        // private channel containing them as the only "extra" subscriber
+        // doesn't expose anything.
+        if (user?.bot_type === INCOMING_WEBHOOK_BOT_TYPE_INT) {
+            return true;
+        }
+
+        return false;
+    });
 }
 
 export function potential_subscribers(stream_id: number): User[] {

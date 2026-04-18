@@ -21,6 +21,7 @@ const {page_params} = require("./lib/zpage_params.cjs");
 
 const channel = mock_esm("../src/channel");
 
+const {GENERIC_BOT_TYPE, INCOMING_WEBHOOK_BOT_TYPE_INT} = zrequire("bot_type_values");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const {set_current_user, set_realm} = zrequire("state_data");
@@ -528,6 +529,46 @@ test("is_subscriber_subset", async () => {
             row[2],
         );
     }
+
+    // Create a mock Incoming Webhook bot
+    const webhook_bot = make_bot({
+        email: "webhook@zulip.com",
+        full_name: "Webhook Bot",
+        user_id: 105,
+        bot_type: INCOMING_WEBHOOK_BOT_TYPE_INT,
+    });
+    people.add_active_user(webhook_bot);
+
+    // Create a mock Generic Bot
+    const generic_bot = make_bot({
+        email: "generic@zulip.com",
+        full_name: "Generic Bot",
+        user_id: 106,
+        bot_type: GENERIC_BOT_TYPE,
+    });
+    people.add_active_user(generic_bot);
+
+    const sub_with_webhook = make_sub(304, [1, 2, webhook_bot.user_id]);
+    const sub_with_generic = make_sub(305, [1, 2, generic_bot.user_id]);
+    const sub_with_unknown_user = make_sub(306, [1, 2, 9999]);
+
+    // Webhooks should be ignored.
+    assert.equal(
+        await peer_data.is_subscriber_subset(sub_with_webhook.stream_id, sub_a.stream_id),
+        true,
+    );
+
+    // Generic bots can read, so they are NOT ignored.
+    assert.equal(
+        await peer_data.is_subscriber_subset(sub_with_generic.stream_id, sub_a.stream_id),
+        false,
+    );
+
+    // Unknown users are treated conservatively (not ignored).
+    assert.equal(
+        await peer_data.is_subscriber_subset(sub_with_unknown_user.stream_id, sub_a.stream_id),
+        false,
+    );
 
     // Two untracked streams should never be passed into us.
     blueslip.expect(
