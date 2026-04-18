@@ -82,9 +82,6 @@ mock_esm("../src/settings_profile_fields", {
 mock_esm("../src/settings_realm_user_settings_defaults", {
     maybe_disable_widgets() {},
 });
-mock_esm("../src/settings_streams", {
-    maybe_disable_widgets() {},
-});
 
 const bot_data = zrequire("bot_data");
 const message_lists = zrequire("message_lists");

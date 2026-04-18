@@ -88,16 +88,6 @@ export function reset(): void {
     meta.loaded = false;
 }
 
-export function maybe_disable_widgets(): void {
-    if (current_user.is_admin) {
-        return;
-    }
-
-    $(".organization-box [data-name='default-channels-list']")
-        .find("input:not(.search), button, select")
-        .prop("disabled", true);
-}
-
 export function build_default_stream_table(): void {
     const $table = $("#admin_default_streams_table").expectOne();
 
@@ -235,7 +225,6 @@ function show_add_default_streams_modal(): void {
 
 export function set_up(): void {
     build_page();
-    maybe_disable_widgets();
 }
 
 export function build_page(): void {
