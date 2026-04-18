@@ -1594,16 +1594,16 @@ def custom_fetch_direct_message_groups(response: TableData, context: Context) ->
     )
 
     response["_huddle_recipient"] = make_raw(
-        Recipient.objects.filter(id__in=direct_message_group_recipient_ids)
+        Recipient.objects.filter(id__in=direct_message_group_recipient_ids).iterator()
     )
     response["_huddle_subscription"] = make_raw(
         Subscription.objects.filter(
             recipient_id__in=direct_message_group_recipient_ids,
             user_profile_id__in=user_profile_ids,
-        )
+        ).iterator()
     )
     response["zerver_huddle"] = make_raw(
-        DirectMessageGroup.objects.filter(id__in=direct_message_group_ids)
+        DirectMessageGroup.objects.filter(id__in=direct_message_group_ids).iterator()
     )
 
 
