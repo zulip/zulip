@@ -6,6 +6,7 @@ from django.db import transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils.crypto import constant_time_compare
 from django.utils.translation import gettext as _
 from pydantic import Json
 
@@ -294,7 +295,7 @@ def self_hosting_registration_transfer_challenge_verify(
         raise VerificationSecretNotPreparedError
 
     data = orjson.loads(json_data)
-    if data["access_token"] != access_token:
+    if not constant_time_compare(data["access_token"], access_token):
         # Without knowing the access_token, the client gets the same error
         # as if we're not serving the verification secret at all.
         raise VerificationSecretNotPreparedError
