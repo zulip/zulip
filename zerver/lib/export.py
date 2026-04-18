@@ -1540,15 +1540,22 @@ def custom_fetch_direct_message_groups(response: TableData, context: Context) ->
         )
         recipient_filter = Q(recipient_id__in=exportable_direct_message_group_recipient_ids)
 
-    # Find the set of recipient ids of DirectMessageGroups with at
-    # least one subscriber among the users we're exporting.  We query
-    # just the recipient_id column rather than materializing the full
-    # Subscription rows; the actual Subscription, Recipient, and
-    # DirectMessageGroup records we emit are queried separately below
-    # against the subset that survives the cross-realm safety check.
+    # Find the set of recipient ids of DirectMessageGroups that
+    # contain at least one user from this realm.
+    #
+    # We restrict discovery to subscriptions whose user_profile is in
+    # this realm. Cross-realm system bots (notification-bot, welcome-bot,
+    # etc.) are part of the exported user_profile_ids set but
+    # participate in DirectMessageGroups across every realm on the
+    # server; discovering through their subscriptions would pull in
+    # every 1:1 DM with a system bot on the server, the vast majority
+    # of which have no connection to this realm.  The bots' own
+    # Subscription rows are still exported below via the output query,
+    # which is keyed on user_profile_ids rather than realm membership.
     realm_direct_message_group_recipient_ids = set(
         Subscription.objects.filter(
             recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+            user_profile__realm_id=realm.id,
             user_profile__in=user_profile_ids,
         )
         .filter(recipient_filter)
