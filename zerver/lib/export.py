@@ -1350,7 +1350,7 @@ def custom_fetch_user_profile(response: TableData, context: Context) -> None:
         email__in=settings.CROSS_REALM_BOT_EMAILS,
     )
     exclude = EXCLUDED_USER_PROFILE_FIELDS
-    rows = make_raw(list(query), exclude=exclude)
+    rows = make_raw(query.iterator(), exclude=exclude)
 
     normal_rows: list[Record] = []
     dummy_rows: list[Record] = []
@@ -1615,7 +1615,7 @@ def custom_fetch_scheduled_messages(response: TableData, context: Context) -> No
     exportable_scheduled_message_ids = context["exportable_scheduled_message_ids"]
 
     query = ScheduledMessage.objects.filter(realm=realm, id__in=exportable_scheduled_message_ids)
-    rows = make_raw(query)
+    rows = make_raw(query.iterator())
 
     response["zerver_scheduledmessage"] = rows
 
@@ -1694,15 +1694,15 @@ def custom_fetch_realm_audit_logs_for_realm(response: TableData, context: Contex
 
 def custom_fetch_onboarding_usermessage(response: TableData, context: Context) -> None:
     realm = context["realm"]
-    onboarding = []
 
-    onboarding_usermessage_query = OnboardingUserMessage.objects.filter(realm=realm)
-    for onboarding_usermessage in onboarding_usermessage_query:
-        onboarding_usermessage_obj = model_to_dict(onboarding_usermessage)
-        onboarding_usermessage_obj["flags_mask"] = onboarding_usermessage.flags.mask
-        del onboarding_usermessage_obj["flags"]
-        onboarding.append(onboarding_usermessage_obj)
-    response["zerver_onboardingusermessage"] = onboarding
+    def rows() -> Iterator[Record]:
+        for onboarding_usermessage in OnboardingUserMessage.objects.filter(realm=realm).iterator():
+            onboarding_usermessage_obj = model_to_dict(onboarding_usermessage)
+            onboarding_usermessage_obj["flags_mask"] = onboarding_usermessage.flags.mask
+            del onboarding_usermessage_obj["flags"]
+            yield onboarding_usermessage_obj
+
+    response["zerver_onboardingusermessage"] = rows()
 
 
 def fetch_usermessages(
