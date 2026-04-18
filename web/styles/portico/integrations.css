@@ -97,6 +97,15 @@ html:has(.portico-landing.integrations) {
         @media (width <= 450px) {
             padding: 40px 0 20px;
         }
+
+        /* On doc pages at narrow widths the header is a compact
+           logo + name + back row, so it needs less top breathing
+           room than the catalog page's tall heading block. */
+        &:has(#integration-instructions-group) {
+            @media (width <= 1000px) {
+                padding-top: 25px;
+            }
+        }
     }
 
     & ol li {
@@ -620,6 +629,7 @@ html:has(.portico-landing.integrations) {
                     border: none;
 
                     display: flex !important;
+                    align-items: center;
                     justify-content: space-between;
                     height: auto;
                     width: auto;
@@ -627,12 +637,17 @@ html:has(.portico-landing.integrations) {
                     padding: unset;
 
                     .integration-logo {
+                        /* Override the shared catalog-card rule at
+                           `@media (width <= 830px)` that shrinks logos
+                           to 45px — the doc-page header should keep the
+                           full-size logo at every width. */
+                        height: 60px;
                         margin: 0;
                     }
 
                     .integration-name {
                         font-size: 1.2em !important;
-                        margin-left: 20px;
+                        margin: 0 0 0 20px;
                     }
                 }
             }
@@ -722,11 +737,11 @@ html:has(.portico-landing.integrations) {
                 flex-direction: row;
                 justify-content: space-between;
                 align-items: center;
-                margin-bottom: 20px;
+                margin-bottom: 12px;
                 /* Drop the column-gutter padding on the right so
                    the back-link reaches the card's right edge
                    instead of sitting 30 px inside it. */
-                padding: 0 0 20px;
+                padding: 0 0 12px;
                 border-bottom: 1px solid hsl(0deg 0% 88%);
             }
 
@@ -758,6 +773,10 @@ html:has(.portico-landing.integrations) {
 
             @media (width <= 1000px) {
                 margin-left: 0;
+
+                & h1:first-child {
+                    margin-top: 0;
+                }
             }
         }
 
