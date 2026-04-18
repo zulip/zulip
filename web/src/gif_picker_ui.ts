@@ -29,6 +29,7 @@ let current_search_term: undefined | string;
 let last_gif_index = -1;
 let network: GifNetwork;
 let resizable_grid_cleanup: (() => void) | undefined;
+let fill_observer: ResizeObserver | undefined;
 
 function is_editing_existing_message(): boolean {
     if (compose_icon_session === undefined) {
@@ -137,6 +138,8 @@ export function hide_picker_popover(): boolean {
         popover_instance = undefined;
         current_search_term = undefined;
         network.abandon();
+        fill_observer?.disconnect();
+        fill_observer = undefined;
         return true;
     }
     return false;
@@ -313,6 +316,49 @@ function toggle_picker_popover(target: HTMLElement): void {
                         load_next_page();
                     }
                 });
+
+                // Keep fetching while the grid doesn't fill the
+                // visible area. Both inputs to that check — the grid
+                // content's size (which grows as images load and new
+                // pages are appended) and the scroll container's
+                // viewport (which changes on resize) — are observed
+                // here so we react to all three drivers without
+                // hand-rolled image-load plumbing.
+                //
+                // Debounce: `grid-auto-rows: auto` against images
+                // sized with `height: 100%` creates circular sizing
+                // that collapses each row to zero until the image's
+                // intrinsic size resolves, so `scrollHeight`
+                // underreports the filled area while a batch is
+                // loading and the observer fires on every progressive
+                // image load. Waiting briefly lets the layout settle
+                // before we decide whether to fetch; otherwise a
+                // single underfilled page stampedes several more
+                // pagination requests before the first batch paints.
+                //
+                // Termination: once `scrollHeight > clientHeight` the
+                // check short-circuits; once the source is exhausted
+                // no new content arrives so ResizeObserver stops
+                // firing; further pagination is guarded by
+                // `is_loading_more_gifs` in the callees. Before the
+                // initial fetch has rendered, `last_gif_index < 0`
+                // and we hold off — firing `load_next_page` in that
+                // window would race the initial request (which is
+                // not yet covered by the pagination guard) and
+                // dispatch a duplicate offset=0 fetch.
+                const grid_content = $popper.find(".gif-picker-content")[0]!;
+                const check_fill = _.debounce(() => {
+                    if (
+                        popover_instance !== undefined &&
+                        last_gif_index >= 0 &&
+                        scroll_element.scrollHeight <= scroll_element.clientHeight
+                    ) {
+                        load_next_page();
+                    }
+                }, 200);
+                fill_observer = new ResizeObserver(check_fill);
+                fill_observer.observe(scroll_element);
+                fill_observer.observe(grid_content);
             },
             onHidden() {
                 hide_picker_popover();
