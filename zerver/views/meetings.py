@@ -4,7 +4,7 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.meeting_actions import (
-    check_meeting_deadlines,
+    access_meeting_for_user,
     do_confirm_meeting,
     do_create_meeting,
     do_upsert_responses,
@@ -13,9 +13,9 @@ from zerver.lib.meeting_actions import (
     get_stream_subscribers,
 )
 from zerver.lib.response import json_success
+from zerver.lib.streams import access_stream_by_id, access_stream_for_send_message
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.models import Stream, UserProfile
-from zerver.models.meetings import Meeting
 
 
 @typed_endpoint
@@ -36,15 +36,6 @@ def get_meeting_candidates(
     else:
         users = get_realm_users(user_profile.realm)
     return json_success(request, data={"users": users})
-
-
-def _get_meeting_or_error(meeting_id: int, realm_id: int) -> Meeting:
-    try:
-        return Meeting.objects.select_related("owner", "stream").get(
-            id=meeting_id, stream__realm_id=realm_id
-        )
-    except Meeting.DoesNotExist:
-        raise JsonableError("Meeting not found.")
 
 
 @typed_endpoint
@@ -73,10 +64,8 @@ def create_meeting(
     if not create_channel:
         if stream_id is None:
             raise JsonableError("stream_id is required when create_channel is False.")
-        try:
-            stream = Stream.objects.get(id=stream_id, realm=user_profile.realm)
-        except Stream.DoesNotExist:
-            raise JsonableError("Stream not found.")
+        stream, _sub = access_stream_by_id(user_profile, stream_id)
+        access_stream_for_send_message(user_profile, stream, None)
 
     meeting = do_create_meeting(
         owner=user_profile,
@@ -99,7 +88,7 @@ def get_meeting(
     meeting_id: PathOnly[int],
 ) -> HttpResponse:
     """GET /json/meetings/<meeting_id>"""
-    meeting = _get_meeting_or_error(meeting_id, user_profile.realm_id)
+    meeting = access_meeting_for_user(user_profile, meeting_id)
 
     slots = [
         {
@@ -135,7 +124,7 @@ def upsert_meeting_responses(
     slot_responses: dict[str, bool],
 ) -> HttpResponse:
     """PATCH /json/meetings/<meeting_id>/responses"""
-    meeting = _get_meeting_or_error(meeting_id, user_profile.realm_id)
+    meeting = access_meeting_for_user(user_profile, meeting_id)
 
     try:
         parsed: dict[int, bool] = {int(k): v for k, v in slot_responses.items()}
@@ -154,7 +143,7 @@ def get_meeting_responses(
     meeting_id: PathOnly[int],
 ) -> HttpResponse:
     """GET /json/meetings/<meeting_id>/responses"""
-    meeting = _get_meeting_or_error(meeting_id, user_profile.realm_id)
+    meeting = access_meeting_for_user(user_profile, meeting_id)
     return json_success(request, data={"slots": get_ranked_slots(meeting)})
 
 
@@ -167,6 +156,6 @@ def confirm_meeting(
     winning_slot_id: int,
 ) -> HttpResponse:
     """POST /json/meetings/<meeting_id>/confirm"""
-    meeting = _get_meeting_or_error(meeting_id, user_profile.realm_id)
+    meeting = access_meeting_for_user(user_profile, meeting_id)
     do_confirm_meeting(user_profile, meeting, winning_slot_id)
     return json_success(request)

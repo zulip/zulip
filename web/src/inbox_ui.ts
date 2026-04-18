@@ -20,7 +20,7 @@ import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_state from "./compose_state.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
-import type {Filter} from "./filter";
+import type {Filter} from "./filter.ts";
 import * as focus_outline_util from "./focus_outline_util.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";

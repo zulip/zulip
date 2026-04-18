@@ -16,7 +16,7 @@ import * as scroll_util from "./scroll_util.ts";
 import * as settings_profile_fields from "./settings_profile_fields.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
-import type {StreamSubscription} from "./sub_store";
+import type {StreamSubscription} from "./sub_store.ts";
 import * as sub_store from "./sub_store.ts";
 import * as ui_report from "./ui_report.ts";
 
