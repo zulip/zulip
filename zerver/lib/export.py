@@ -95,7 +95,7 @@ from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import DEFAULT_REALM_EXPORT_TYPE_SLUG, get_fake_email_domain, get_realm
 from zerver.models.saved_snippets import SavedSnippet
-from zerver.models.users import ExternalAuthID, get_system_bot, is_cross_realm_bot_email
+from zerver.models.users import ExternalAuthID, get_system_bot
 
 if TYPE_CHECKING:
     from mypy_boto3_s3.service_resource import Bucket, Object
@@ -1563,25 +1563,27 @@ def custom_fetch_direct_message_groups(response: TableData, context: Context) ->
         .values_list("recipient_id", flat=True)
     )
 
-    # Mark all Direct Message groups whose recipient ID contains a cross-realm user.
-    unsafe_direct_message_group_recipient_ids = set()
-    for sub in Subscription.objects.select_related("user_profile").filter(
-        recipient__in=realm_direct_message_group_recipient_ids
-    ):
-        if sub.user_profile.realm_id != realm.id and not is_cross_realm_bot_email(
-            sub.user_profile.delivery_email
-        ):
-            # In almost every case the other realm will be zulip.com
-            unsafe_direct_message_group_recipient_ids.add(sub.recipient_id)
+    # A DirectMessageGroup is safe to export only if every subscriber
+    # is a UserProfile we're already exporting -- either a user in
+    # this realm (including mirror dummies) or a cross-realm system
+    # bot.  Otherwise, importing the group on the other end would
+    # require a UserProfile we aren't providing. (As of 2025, true
+    # cross-realm messages not involving system bots cannot exist
+    # without a bug or fork of Zulip.)
+    #
+    # The union of those three cases is exactly user_profile_ids, so
+    # the check reduces to "this subscription's user is not in the
+    # exported set". Expressing it that way lets Postgres answer it
+    # from the Subscription table alone, with no JOIN to UserProfile.
+    unsafe_direct_message_group_recipient_ids = set(
+        Subscription.objects.filter(
+            recipient_id__in=realm_direct_message_group_recipient_ids,
+        )
+        .exclude(user_profile_id__in=user_profile_ids)
+        .distinct("recipient_id")
+        .values_list("recipient_id", flat=True)
+    )
 
-    # Drop the unsafe groups and emit the surviving Recipient,
-    # Subscription, and DirectMessageGroup rows.  This ensures the
-    # User objects needed to import each exported group exist on the
-    # other end (we're only exporting this realm's users, plus the
-    # cross-realm system bots), at the cost of losing any true
-    # cross-realm messages. (As of 2025, true cross-realm messages,
-    # not involving system bots cannot exist without a bug or fork of
-    # Zulip.)
     direct_message_group_recipient_ids = (
         realm_direct_message_group_recipient_ids - unsafe_direct_message_group_recipient_ids
     )
