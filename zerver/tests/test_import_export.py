@@ -113,7 +113,11 @@ from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 from zerver.models.realms import get_realm
-from zerver.models.recipients import get_direct_message_group, get_direct_message_group_hash
+from zerver.models.recipients import (
+    get_direct_message_group,
+    get_direct_message_group_hash,
+    get_or_create_direct_message_group,
+)
 from zerver.models.streams import get_active_streams, get_stream
 from zerver.models.users import ExternalAuthID, get_system_bot, get_user_by_delivery_email
 
@@ -883,6 +887,54 @@ class RealmImportExportTest(ExportFile):
 
         exported_huddle_ids = self.get_set(realm_data["zerver_huddle"], "id")
         self.assertEqual(exported_huddle_ids, set())
+
+    def test_export_direct_message_group_cross_realm_safety(self) -> None:
+        """
+        A DirectMessageGroup is exported only if every subscriber's
+        UserProfile will be available to the import: users from this
+        realm (including mirror dummies) and the cross-realm system
+        bots we export in zerver_userprofile_crossrealm.  A DMG
+        containing any user from an unrelated realm must be excluded,
+        since the import has no way to recreate its membership.
+        """
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        cordelia_lear = self.lear_user("cordelia")
+
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        welcome_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
+
+        safe_dm_group = get_or_create_direct_message_group([iago.id, hamlet.id, welcome_bot.id])
+        unsafe_dm_group = get_or_create_direct_message_group([iago.id, hamlet.id, cordelia_lear.id])
+
+        self.export_realm_and_create_auditlog(realm)
+
+        realm_data = read_json("realm.json")
+        exported_dm_group_ids = self.get_set(realm_data["zerver_huddle"], "id")
+        self.assertIn(safe_dm_group.id, exported_dm_group_ids)
+        self.assertNotIn(unsafe_dm_group.id, exported_dm_group_ids)
+
+        # All three Subscription rows for the safe group -- including
+        # the cross-realm bot's -- must be exported, so the import can
+        # reconstruct the group membership.
+        exported_safe_sub_user_ids = {
+            sub["user_profile"]
+            for sub in realm_data["zerver_subscription"]
+            if sub["recipient"] == safe_dm_group.recipient_id
+        }
+        self.assertEqual(
+            exported_safe_sub_user_ids,
+            {iago.id, hamlet.id, welcome_bot.id},
+        )
+
+        # No Subscription to the unsafe group should be exported.
+        exported_unsafe_sub_user_ids = {
+            sub["user_profile"]
+            for sub in realm_data["zerver_subscription"]
+            if sub["recipient"] == unsafe_dm_group.recipient_id
+        }
+        self.assertEqual(exported_unsafe_sub_user_ids, set())
 
     def test_export_realm_with_member_consent(self) -> None:
         realm = Realm.objects.get(string_id="zulip")
