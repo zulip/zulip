@@ -1166,6 +1166,8 @@ def custom_process_subscription_in_realm_config(
         assert exportable_user_ids_from_context is None
         consented_user_ids = set()
 
+    exported_inactive_user_ids = context["exported_inactive_user_ids"]
+
     for subscription in subscriptions:
         if subscription["user_profile"] in consented_user_ids:
             yield subscription
@@ -1173,12 +1175,21 @@ def custom_process_subscription_in_realm_config(
         # We create a replacement Subscription, setting only the essential fields,
         # while allowing all the other ones to fall back to the defaults
         # defined in the model.
+        #
+        # is_user_active must match the is_active we're emitting on the
+        # user's UserProfile row; otherwise the Subscription's
+        # denormalized copy of UserProfile.is_active would contradict
+        # the exported UserProfile (e.g., when a non-consenting user is
+        # mirror-dummied to is_active=False).
         scrubbed_subscription = Subscription(
             id=subscription["id"],
             user_profile_id=subscription["user_profile"],
             recipient_id=subscription["recipient"],
             active=subscription["active"],
-            is_user_active=subscription["is_user_active"],
+            is_user_active=(
+                subscription["is_user_active"]
+                and subscription["user_profile"] not in exported_inactive_user_ids
+            ),
             # Letting the color be the default color for every stream would create a visually
             # jarring experience. Instead, we can pick colors randomly for a normal-feeling
             # experience, without leaking any information about the user's preferences.
@@ -1398,6 +1409,17 @@ def custom_fetch_user_profile(response: TableData, context: Context) -> None:
 
     response["zerver_userprofile"] = normal_rows
     response["zerver_userprofile_mirrordummy"] = dummy_rows
+
+    # Subscription.is_user_active is a denormalized copy of
+    # UserProfile.is_active.  The export can force is_active=False on a
+    # UserProfile row (mirror-dummying a non-consenting user, or
+    # replacing the delivery_email of a NOBODY-visibility user in a
+    # public export); custom_process_subscription_in_realm_config
+    # consults this set so that scrubbed Subscription rows stay in
+    # sync with the UserProfile rows we're emitting.
+    context["exported_inactive_user_ids"] = {
+        row["id"] for row in normal_rows + dummy_rows if not row["is_active"]
+    }
 
 
 def custom_fetch_user_profile_cross_realm(response: TableData, context: Context) -> None:
