@@ -360,6 +360,9 @@ export function create_pills($pill_container: JQuery): SearchPillWidget {
         get_text_from_item: get_search_string_from_item,
         split_text_on_comma: false,
         convert_to_pill_on_enter: false,
+        // Search pills use a custom template with no .pill-edit-input
+        // element, so in-place editing is not supported.
+        disable_pill_editing: true,
         generate_pill_html(item) {
             switch (item.operator) {
                 case "dm":
