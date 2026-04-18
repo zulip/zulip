@@ -233,8 +233,8 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
             const text_terms = Filter.parse(search_bar_text);
             return text_terms.at(-1)?.operator === "search";
         },
-        matcher(): boolean {
-            return true;
+        matcher(_query: string) {
+            return () => true;
         },
         updater(search_string: string): string {
             if (search_string) {

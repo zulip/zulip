@@ -168,9 +168,9 @@ function build_page(): void {
         item_html(_query: string): (item: string) => string {
             return (item: string) => render_typeahead_item({primary: language_labels.get(item)});
         },
-        matcher(item: string, query: string): boolean {
+        matcher(query: string): (item: string) => boolean {
             const q = query.trim().toLowerCase();
-            return item.toLowerCase().startsWith(q);
+            return (item: string) => item.toLowerCase().startsWith(q);
         },
         sorter(items: string[], query: string): string[] {
             return bootstrap_typeahead.defaultSorter(items, query);

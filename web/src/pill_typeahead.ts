@@ -50,10 +50,10 @@ export function set_up_user(
         item_html(_query: string): (item: UserPillData) => string {
             return (item: UserPillData) => typeahead_helper.render_person(item);
         },
-        matcher(item: UserPillData, query: string): boolean {
+        matcher(query: string): (item: UserPillData) => boolean {
             query = query.toLowerCase();
             query = query.replaceAll("\u00A0", " ");
-            return person_matcher(query, item);
+            return (item: UserPillData) => person_matcher(query, item);
         },
         sorter(matches: UserPillData[], query: string): UserPillData[] {
             const users = matches.filter((match) => people.is_known_user_id(match.user.user_id));
@@ -99,14 +99,14 @@ export function set_up_stream(
         item_html(_query: string): (item: StreamPillData) => string {
             return (item: StreamPillData) => typeahead_helper.render_stream(item);
         },
-        matcher(item: StreamPillData, query: string): boolean {
+        matcher(query: string): (item: StreamPillData) => boolean {
             query = query.toLowerCase();
             query = query.replaceAll("\u00A0", " ");
             query = query.trim();
             if (query.startsWith("#")) {
                 query = query.slice(1);
             }
-            return item.name.toLowerCase().includes(query);
+            return (item: StreamPillData) => item.name.toLowerCase().includes(query);
         },
         sorter(matches: StreamPillData[], query: string): StreamPillData[] {
             const stream_matches: StreamPillData[] = [];
@@ -150,10 +150,11 @@ export function set_up_user_group(
         item_html(_query: string): (item: UserGroupPillData) => string {
             return (item: UserGroupPillData) => typeahead_helper.render_user_group(item);
         },
-        matcher(item: UserGroupPillData, query: string): boolean {
+        matcher(query: string): (item: UserGroupPillData) => boolean {
             query = query.toLowerCase();
             query = query.replaceAll("\u00A0", " ");
-            return group_matcher(query, item);
+
+            return (item: UserGroupPillData) => group_matcher(query, item);
         },
         sorter(matches: UserGroupPillData[], query: string): UserGroupPillData[] {
             return typeahead_helper.sort_user_groups(matches, query);
@@ -204,19 +205,21 @@ export function set_up_group_setting_typeahead(
                 return typeahead_helper.render_person(item);
             };
         },
-        matcher(item: GroupSettingTypeaheadItem, query: string): boolean {
+        matcher(query: string): (item: GroupSettingTypeaheadItem) => boolean {
             query = query.toLowerCase();
             query = query.replaceAll("\u00A0", " ");
 
-            let matches = false;
-            if (item.type === "user_group") {
-                matches = matches || group_matcher(query, item);
-            }
+            return (item: GroupSettingTypeaheadItem): boolean => {
+                let matches = false;
+                if (item.type === "user_group") {
+                    matches = matches || group_matcher(query, item);
+                }
 
-            if (item.type === "user") {
-                matches = matches || person_matcher(query, item);
-            }
-            return matches;
+                if (item.type === "user") {
+                    matches = matches || person_matcher(query, item);
+                }
+                return matches;
+            };
         },
         sorter(matches: GroupSettingTypeaheadItem[], query: string): GroupSettingTypeaheadItem[] {
             const users: UserPillData[] = [];
@@ -350,32 +353,34 @@ export function set_up_combined(
                 return typeahead_helper.render_person(item);
             };
         },
-        matcher(item: TypeaheadItem, query: string): boolean {
+        matcher(query: string): (item: TypeaheadItem) => boolean {
             query = query.toLowerCase();
             query = query.replaceAll("\u00A0", " ");
 
-            if (include_streams(query) && item.type === "stream") {
-                query = query.trim().slice(1);
-                return item.name.toLowerCase().includes(query);
-            }
-
-            if (include_user_groups && query.startsWith("@")) {
-                if (item.type === "user_group") {
-                    const normalized_query = query.slice(1);
-                    return group_matcher(normalized_query, item);
+            return (item: TypeaheadItem): boolean => {
+                if (include_streams(query) && item.type === "stream") {
+                    const stream_query = query.trim().slice(1);
+                    return item.name.toLowerCase().includes(stream_query);
                 }
-                return false;
-            }
 
-            let matches = false;
-            if (include_user_groups && item.type === "user_group") {
-                matches = group_matcher(query, item);
-            }
+                if (include_user_groups && query.startsWith("@")) {
+                    if (item.type === "user_group") {
+                        const normalized_query = query.slice(1);
+                        return group_matcher(normalized_query, item);
+                    }
+                    return false;
+                }
 
-            if (include_users && item.type === "user") {
-                matches = matches || person_matcher(query, item);
-            }
-            return matches;
+                let matches = false;
+                if (include_user_groups && item.type === "user_group") {
+                    matches = group_matcher(query, item);
+                }
+
+                if (include_users && item.type === "user") {
+                    matches = matches || person_matcher(query, item);
+                }
+                return matches;
+            };
         },
         sorter(matches: TypeaheadItem[], query: string): TypeaheadItem[] {
             if (include_streams(query)) {
