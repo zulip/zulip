@@ -1652,28 +1652,44 @@ def custom_fetch_realm_audit_logs_for_realm(response: TableData, context: Contex
         assert exportable_user_ids_from_context is None
         consenting_user_ids = set()
 
-    query = RealmAuditLog.objects.filter(realm=realm).select_related("acting_user")
-    realmauditlog_objects = list(query)
-    for realmauditlog in realmauditlog_objects:
-        if realmauditlog.acting_user is not None and realmauditlog.acting_user.realm_id != realm.id:
-            realmauditlog.acting_user = None
+    query = RealmAuditLog.objects.filter(realm=realm)
+    if export_type != RealmExport.EXPORT_FULL_WITHOUT_CONSENT:
+        # Keep entries whose modified_user is a consenting user, is
+        # None, or whose event_type is one we preserve for every
+        # user (subscription lifecycle events, which are needed to
+        # reconstruct channel membership on import regardless of
+        # consent).
+        query = query.filter(
+            Q(event_type__in=PRESERVED_AUDIT_LOG_EVENT_TYPES)
+            | Q(modified_user_id__isnull=True)
+            | Q(modified_user_id__in=consenting_user_ids)
+        )
 
-    # We want to drop all RealmAuditLog objects where modified_user is not a consenting
-    # user, except those of event_type in PRESERVED_AUDIT_LOG_EVENT_TYPES.
-    realmauditlog_objects_for_export = []
-    for realmauditlog in realmauditlog_objects:
-        if (
-            export_type == RealmExport.EXPORT_FULL_WITHOUT_CONSENT
-            or (realmauditlog.event_type in PRESERVED_AUDIT_LOG_EVENT_TYPES)
-            or (realmauditlog.modified_user_id is None)
-            or (realmauditlog.modified_user_id in consenting_user_ids)
-        ):
-            realmauditlog_objects_for_export.append(realmauditlog)
-            continue
+    # Some RealmAuditLog entries have an acting_user in a different
+    # realm (typically a server administrator taking an action on
+    # this realm's objects).  Their UserProfile won't appear in the
+    # export, so we null out acting_user on the exported row.  We
+    # precompute the set of cross-realm acting users rather than
+    # JOIN via select_related so that the audit rows themselves can
+    # stream through .iterator() instead of being fully materialized
+    # along with their joined UserProfile.
+    cross_realm_acting_user_ids = set(
+        UserProfile.objects.filter(
+            id__in=RealmAuditLog.objects.filter(realm=realm)
+            .exclude(acting_user_id__isnull=True)
+            .values("acting_user_id")
+        )
+        .exclude(realm_id=realm.id)
+        .values_list("id", flat=True)
+    )
 
-    rows = make_raw(realmauditlog_objects_for_export)
+    def rows() -> Iterator[Record]:
+        for record in make_raw(query.iterator()):
+            if record["acting_user"] in cross_realm_acting_user_ids:
+                record["acting_user"] = None
+            yield record
 
-    response["zerver_realmauditlog"] = rows
+    response["zerver_realmauditlog"] = rows()
 
 
 def custom_fetch_onboarding_usermessage(response: TableData, context: Context) -> None:
