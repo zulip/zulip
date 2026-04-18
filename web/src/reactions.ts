@@ -5,6 +5,8 @@ import * as z from "zod/mini";
 import render_message_reaction from "../templates/message_reaction.hbs";
 import render_message_reactions from "../templates/message_reactions.hbs";
 
+import * as tippy from "tippy.js";
+
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import type {RawLocalMessage} from "./echo.ts";
@@ -16,6 +18,7 @@ import * as message_store from "./message_store.ts";
 import type {Message, MessageCleanReaction, RawMessage} from "./message_store.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import * as popover_menus from "./popover_menus.ts";
 import * as spectators from "./spectators.ts";
 import {current_user} from "./state_data.ts";
 import {user_settings} from "./user_settings.ts";
@@ -740,4 +743,53 @@ export function rewire_update_vote_text_on_message(
     value: typeof update_vote_text_on_message,
 ): void {
     update_vote_text_on_message = value;
+}
+
+export function show_reaction_popover(
+    target: HTMLElement,
+    message_id: number,
+    local_id: string,
+): void {
+    const message = get_message(message_id);
+    if (!message) {
+        return;
+    }
+    const clean_reaction_object = message.clean_reactions.get(local_id);
+    if (!clean_reaction_object) {
+        return;
+    }
+
+    const user_ids = clean_reaction_object.user_ids;
+    const $content = $("<ul>").addClass("reaction-popover-users");
+
+    for (const user_id of user_ids) {
+        const user = people.maybe_get_user_by_id(user_id);
+        if (!user) {
+            continue;
+        }
+
+        const $li = $("<li>");
+
+        const avatar_url = people.small_avatar_url_for_person(user);
+        const $img = $("<img>").attr("src", avatar_url).addClass("reaction-popover-avatar");
+
+        const $name = $("<span>").text(user.full_name);
+        $li.append($img).append($name);
+        $content.append($li);
+    }
+
+    // Initialize tippy
+    // We check if an instance already exists data-tippy-root
+    if ((target as any)._tippy) {
+        (target as any)._tippy.destroy();
+    }
+
+    tippy.default(target, {
+        ...popover_menus.default_popover_props,
+        content: $content[0],
+        trigger: "manual",
+        placement: "bottom",
+        showOnCreate: true,
+        theme: "popover-menu",
+    });
 }
