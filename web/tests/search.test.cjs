@@ -101,10 +101,10 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
 
             /* Test highlighter */
             let expected_value = `<div class="search_list_item">\n            <div class="description">Search for dm</div>\n    \n</div>\n`;
-            assert.equal(opts.item_html(search_suggestions[0], "dm"), expected_value);
+            assert.equal(opts.item_html("dm")(search_suggestions[0]), expected_value);
 
             expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\ndm:\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">Direct messages with</div>\n</div>\n`;
-            assert.equal(opts.item_html(search_suggestions[1], "dm"), expected_value);
+            assert.equal(opts.item_html("dm")(search_suggestions[1]), expected_value);
 
             /* Test sorter */
             assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);
@@ -116,12 +116,12 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             /* Test highlighter */
             let description_html = "Search for ver";
             let expected_value = `<div class="search_list_item">\n            <div class="description">Search for ver</div>\n    \n</div>\n`;
-            assert.equal(opts.item_html(search_suggestions[0], "ver"), expected_value);
+            assert.equal(opts.item_html("ver")(search_suggestions[0]), expected_value);
 
             const search_string = "channel: Verona";
             description_html = "Messages in #Verona";
             expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n${search_string}\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">${description_html}</div>\n</div>\n`;
-            assert.equal(opts.item_html(search_suggestions[1], "ver"), expected_value);
+            assert.equal(opts.item_html("ver")(search_suggestions[1]), expected_value);
 
             /* Test sorter */
             assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);
@@ -138,17 +138,17 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             /* Test highlighter */
             const description_html = "Search for zo";
             let expected_value = `<div class="search_list_item">\n            <div class="description">${description_html}</div>\n    \n</div>\n`;
-            assert.equal(opts.item_html(search_suggestions[0], "zo"), expected_value);
+            assert.equal(opts.item_html("zo")(search_suggestions[0]), expected_value);
 
             override(realm, "realm_enable_guest_user_indicator", true);
             expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">sender:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
-            assert.equal(opts.item_html(search_suggestions[1], "zo"), expected_value);
+            assert.equal(opts.item_html("zo")(search_suggestions[1]), expected_value);
 
             expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">dm:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
-            assert.equal(opts.item_html(search_suggestions[2], "zo"), expected_value);
+            assert.equal(opts.item_html("zo")(search_suggestions[2]), expected_value);
 
             expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">dm-including:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
-            assert.equal(opts.item_html(search_suggestions[3], "zo"), expected_value);
+            assert.equal(opts.item_html("zo")(search_suggestions[3]), expected_value);
 
             /* Test sorter */
             assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);

@@ -417,8 +417,9 @@ export function initialize_custom_pronouns_type_fields(element_id: string): void
                 sorter(items, query) {
                     return bootstrap_typeahead.defaultSorter(items, query);
                 },
-                item_html(item) {
-                    return typeahead_helper.render_typeahead_item({primary: item});
+                item_html(_query: string) {
+                    return (item: string) =>
+                        typeahead_helper.render_typeahead_item({primary: item});
                 },
             });
         });

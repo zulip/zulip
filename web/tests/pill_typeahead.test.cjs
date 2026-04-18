@@ -196,7 +196,7 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
         const person_query = "me";
 
         (function test_item_html() {
-            assert.equal(config.item_html(me_item, person_query), "<rendered-person-stub>");
+            assert.equal(config.item_html(person_query)(me_item), "<rendered-person-stub>");
         })();
 
         (function test_matcher() {
@@ -288,7 +288,7 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
         const stream_query = "#denmark";
 
         (function test_item_html() {
-            assert.equal(config.item_html(denmark_item, stream_query), "<rendered-stream-stub>");
+            assert.equal(config.item_html(stream_query)(denmark_item), "<rendered-stream-stub>");
         })();
 
         (function test_matcher() {
@@ -380,7 +380,7 @@ run_test("set_up_user_group", ({mock_template, override, override_rewire}) => {
         const group_query = "testers";
 
         (function test_item_html() {
-            assert.equal(config.item_html(testers_item, group_query), "<rendered-group-stub>");
+            assert.equal(config.item_html(group_query)(testers_item), "<rendered-group-stub>");
         })();
 
         (function test_matcher() {
@@ -486,21 +486,21 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
             if (opts.stream) {
                 // Test stream item_html for widgets that allow stream pills.
                 assert.equal(
-                    config.item_html(denmark_item, stream_query),
+                    config.item_html(stream_query)(denmark_item),
                     "<rendered-stream-stub>",
                 );
             }
             if (opts.user_group && opts.user) {
                 // If user is also allowed along with user_group
                 // then we should check that each of them rendered correctly.
-                assert.equal(config.item_html(testers_item, group_query), "<rendered-group-stub>");
-                assert.equal(config.item_html(me_item, person_query), "<rendered-person-stub>");
+                assert.equal(config.item_html(group_query)(testers_item), "<rendered-group-stub>");
+                assert.equal(config.item_html(person_query)(me_item), "<rendered-person-stub>");
             }
             if (opts.user && !opts.user_group) {
-                assert.equal(config.item_html(me_item, person_query), "<rendered-person-stub>");
+                assert.equal(config.item_html(person_query)(me_item), "<rendered-person-stub>");
             }
             if (!opts.user && opts.user_group) {
-                assert.equal(config.item_html(testers_item, group_query), "<rendered-group-stub>");
+                assert.equal(config.item_html(group_query)(testers_item), "<rendered-group-stub>");
             }
         })();
 
@@ -794,8 +794,8 @@ run_test("set_up_group_setting_typeahead", ({mock_template, override, override_r
         (function test_item_html() {
             // If user is also allowed along with user_group
             // then we should check that each of them rendered correctly.
-            assert.equal(config.item_html(testers_item, group_query), "<rendered-group-stub>");
-            assert.equal(config.item_html(me_item, person_query), "<rendered-person-stub>");
+            assert.equal(config.item_html(group_query)(testers_item), "<rendered-group-stub>");
+            assert.equal(config.item_html(person_query)(me_item), "<rendered-person-stub>");
         })();
 
         (function test_matcher() {

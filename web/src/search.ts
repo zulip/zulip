@@ -215,8 +215,8 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
         helpOnEmptyStrings: true,
         stopAdvance: true,
         requireHighlight: false,
-        item_html(item: string, query: string): string {
-            return search_pill.generate_pills_html(item, query);
+        item_html(query: string): (item: string) => string {
+            return (item: string) => search_pill.generate_pills_html(item, query);
         },
         // When the user starts typing new search operands,
         // we want to highlight the first typeahead row by default
