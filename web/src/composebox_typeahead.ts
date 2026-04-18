@@ -1543,9 +1543,8 @@ export function initialize_topic_edit_typeahead(
                 });
             };
         },
-        matcher(item: string, query: string): boolean {
-            const matcher = get_topic_matcher(query);
-            return matcher(item);
+        matcher(query: string): (item: string) => boolean {
+            return get_topic_matcher(query);
         },
         sorter(items: string[], query: string): string[] {
             const stream_id = stream_data.get_stream_id(stream_name);
@@ -1630,8 +1629,8 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
             // inside the typeahead library.
             source: get_candidates,
             item_html: content_item_html,
-            matcher() {
-                return true;
+            matcher(_query: string) {
+                return () => true;
             },
             sorter(items) {
                 return items;
@@ -1734,12 +1733,14 @@ export function initialize({
                 return typeahead_helper.render_person_or_user_group(item);
             };
         },
-        matcher(item: UserPillData | string, query: string): boolean {
-            if (typeof item === "string") {
-                const matcher = get_topic_matcher(query);
-                return matcher(item);
-            }
-            return true;
+        matcher(query: string): (item: UserPillData | string) => boolean {
+            const topic_matcher = get_topic_matcher(query);
+            return (item: UserPillData | string): boolean => {
+                if (typeof item === "string") {
+                    return topic_matcher(item);
+                }
+                return true;
+            };
         },
         sorter(items: (UserPillData | string)[], query: string): (UserPillData | string)[] {
             const topic_items: string[] = [];
@@ -1825,8 +1826,8 @@ export function initialize({
             return (item: UserGroupPillData | UserPillData) =>
                 typeahead_helper.render_person_or_user_group(item);
         },
-        matcher(): boolean {
-            return true;
+        matcher(_query: string) {
+            return () => true;
         },
         sorter(items: (UserGroupPillData | UserPillData)[]): (UserGroupPillData | UserPillData)[] {
             return items;

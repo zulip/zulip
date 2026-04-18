@@ -82,7 +82,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         assert.equal(input_element.$element[0], $search_query_box[0]);
         assert.equal(opts.items, 999);
         assert.equal(opts.helpOnEmptyStrings, true);
-        assert.equal(opts.matcher(), true);
+        assert.equal(opts.matcher("")(), true);
 
         return {
             lookup() {

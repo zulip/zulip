@@ -220,7 +220,7 @@ export type TypeaheadInputElement =
 export class Typeahead<ItemType extends string | object> {
     input_element: TypeaheadInputElement;
     items: number;
-    matcher: (item: ItemType, query: string) => boolean;
+    matcher: (query: string) => (item: ItemType) => boolean;
     sorter: (items: ItemType[], query: string) => ItemType[];
     item_html: (query: string) => (item: ItemType) => string | undefined;
     updater: (
@@ -282,7 +282,7 @@ export class Typeahead<ItemType extends string | object> {
             assert(!this.input_element.$element.is("[contenteditable]"));
         }
         this.items = options.items ?? MAX_ITEMS;
-        this.matcher = options.matcher ?? ((item, query) => this.defaultMatcher(item, query));
+        this.matcher = options.matcher ?? ((query) => (item) => this.defaultMatcher(item, query));
         this.sorter = options.sorter;
         this.item_html = options.item_html;
         this.updater = options.updater ?? ((items) => this.defaultUpdater(items));
@@ -564,7 +564,7 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     process(items: ItemType[]): this {
-        const matching_items = $.grep(items, (item) => this.matcher(item, this.query));
+        const matching_items = $.grep(items, this.matcher(this.query));
 
         const final_items = this.sorter(matching_items, this.query);
 
@@ -964,7 +964,7 @@ type TypeaheadOptions<ItemType> = {
     footer_html?: (matching_items: ItemType[]) => string | false;
     helpOnEmptyStrings?: boolean;
     hideOnEmptyAfterBackspace?: boolean;
-    matcher?: (item: ItemType, query: string) => boolean;
+    matcher?: (query: string) => (item: ItemType) => boolean;
     on_escape?: () => void;
     clear_typeahead_tooltip?: () => void;
     openInputFieldOnKeyUp?: () => void;
