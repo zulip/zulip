@@ -1262,41 +1262,45 @@ export function get_candidates(
     return [];
 }
 
-export function content_item_html(item: TypeaheadSuggestion): string | undefined {
-    switch (item.type) {
-        case "emoji":
-            return typeahead_helper.render_emoji(item);
-        case "user_group":
-        case "user":
-        case "broadcast":
-            return typeahead_helper.render_person_or_user_group(item, token);
-        case "slash":
-            return typeahead_helper.render_typeahead_item({
-                primary: item.text,
-                secondary: item.info,
-            });
-        case "stream":
-            return typeahead_helper.render_stream(item);
-        case "syntax":
-            return typeahead_helper.render_typeahead_item({
-                primary: item.language,
-                is_default_language:
-                    item.language !== "" &&
-                    item.language === realm.realm_default_code_block_language,
-            });
-        case "topic_jump":
-            return typeahead_helper.render_typeahead_item({primary: item.message});
-        case "topic_list": {
-            if (item.is_channel_link) {
-                return typeahead_helper.render_stream(item.stream_data);
+export function content_item_html(
+    _query: string,
+): (item: TypeaheadSuggestion) => string | undefined {
+    return function (item: TypeaheadSuggestion): string | undefined {
+        switch (item.type) {
+            case "emoji":
+                return typeahead_helper.render_emoji(item);
+            case "user_group":
+            case "user":
+            case "broadcast":
+                return typeahead_helper.render_person_or_user_group(item, token);
+            case "slash":
+                return typeahead_helper.render_typeahead_item({
+                    primary: item.text,
+                    secondary: item.info,
+                });
+            case "stream":
+                return typeahead_helper.render_stream(item);
+            case "syntax":
+                return typeahead_helper.render_typeahead_item({
+                    primary: item.language,
+                    is_default_language:
+                        item.language !== "" &&
+                        item.language === realm.realm_default_code_block_language,
+                });
+            case "topic_jump":
+                return typeahead_helper.render_typeahead_item({primary: item.message});
+            case "topic_list": {
+                if (item.is_channel_link) {
+                    return typeahead_helper.render_stream(item.stream_data);
+                }
+                return typeahead_helper.render_stream_topic(item);
             }
-            return typeahead_helper.render_stream_topic(item);
+            case "time_jump":
+                return typeahead_helper.render_typeahead_item({primary: item.message});
+            default:
+                return undefined;
         }
-        case "time_jump":
-            return typeahead_helper.render_typeahead_item({primary: item.message});
-        default:
-            return undefined;
-    }
+    };
 }
 
 export function content_typeahead_selected(
@@ -1559,13 +1563,15 @@ export function initialize_topic_edit_typeahead(
     };
     return new Typeahead(bootstrap_typeahead_input, {
         dropup,
-        item_html(item: string): string {
-            const is_empty_string_topic = item === "";
-            const topic_display_name = util.get_final_topic_display_name(item);
-            return typeahead_helper.render_typeahead_item({
-                primary: topic_display_name,
-                is_empty_string_topic,
-            });
+        item_html(_query: string): (item: string) => string {
+            return function (item: string): string {
+                const is_empty_string_topic = item === "";
+                const topic_display_name = util.get_final_topic_display_name(item);
+                return typeahead_helper.render_typeahead_item({
+                    primary: topic_display_name,
+                    is_empty_string_topic,
+                });
+            };
         },
         matcher(item: string, query: string): boolean {
             const matcher = get_topic_matcher(query);
@@ -1745,16 +1751,18 @@ export function initialize({
             return [...people_candidates, ...topics];
         },
         items: max_num_items,
-        item_html(item: string | UserPillData): string {
-            if (typeof item === "string") {
-                const is_empty_string_topic = item === "";
-                const topic_display_name = util.get_final_topic_display_name(item);
-                return typeahead_helper.render_typeahead_item({
-                    primary: topic_display_name,
-                    is_empty_string_topic,
-                });
-            }
-            return typeahead_helper.render_person_or_user_group(item);
+        item_html(_query: string): (item: string | UserPillData) => string {
+            return function (item: string | UserPillData): string {
+                if (typeof item === "string") {
+                    const is_empty_string_topic = item === "";
+                    const topic_display_name = util.get_final_topic_display_name(item);
+                    return typeahead_helper.render_typeahead_item({
+                        primary: topic_display_name,
+                        is_empty_string_topic,
+                    });
+                }
+                return typeahead_helper.render_person_or_user_group(item);
+            };
         },
         matcher(item: UserPillData | string, query: string): boolean {
             if (typeof item === "string") {
@@ -1843,8 +1851,9 @@ export function initialize({
         source: get_pm_people,
         items: max_num_items,
         dropup: true,
-        item_html(item: UserGroupPillData | UserPillData) {
-            return typeahead_helper.render_person_or_user_group(item);
+        item_html(_query: string): (item: UserGroupPillData | UserPillData) => string {
+            return (item: UserGroupPillData | UserPillData) =>
+                typeahead_helper.render_person_or_user_group(item);
         },
         matcher(): boolean {
             return true;

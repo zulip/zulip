@@ -47,8 +47,8 @@ export function set_up_user(
         source(_query: string): UserPillData[] {
             return user_pill.typeahead_source(pills, exclude_bots);
         },
-        item_html(item: UserPillData, _query: string): string {
-            return typeahead_helper.render_person(item);
+        item_html(_query: string): (item: UserPillData) => string {
+            return (item: UserPillData) => typeahead_helper.render_person(item);
         },
         matcher(item: UserPillData, query: string): boolean {
             query = query.toLowerCase();
@@ -96,8 +96,8 @@ export function set_up_stream(
         source(_query: string): StreamPillData[] {
             return stream_pill.typeahead_source(pills, opts.invite_streams);
         },
-        item_html(item: StreamPillData, _query: string): string {
-            return typeahead_helper.render_stream(item);
+        item_html(_query: string): (item: StreamPillData) => string {
+            return (item: StreamPillData) => typeahead_helper.render_stream(item);
         },
         matcher(item: StreamPillData, query: string): boolean {
             query = query.toLowerCase();
@@ -147,8 +147,8 @@ export function set_up_user_group(
                 .user_group_source()
                 .map((user_group) => ({type: "user_group", ...user_group}));
         },
-        item_html(item: UserGroupPillData, _query: string): string {
-            return typeahead_helper.render_user_group(item);
+        item_html(_query: string): (item: UserGroupPillData) => string {
+            return (item: UserGroupPillData) => typeahead_helper.render_user_group(item);
         },
         matcher(item: UserGroupPillData, query: string): boolean {
             query = query.toLowerCase();
@@ -194,13 +194,15 @@ export function set_up_group_setting_typeahead(
 
             return source;
         },
-        item_html(item: GroupSettingTypeaheadItem, _query: string): string {
-            if (item.type === "user_group") {
-                return typeahead_helper.render_user_group(item);
-            }
+        item_html(_query: string): (item: GroupSettingTypeaheadItem) => string {
+            return (item: GroupSettingTypeaheadItem): string => {
+                if (item.type === "user_group") {
+                    return typeahead_helper.render_user_group(item);
+                }
 
-            assert(item.type === "user");
-            return typeahead_helper.render_person(item);
+                assert(item.type === "user");
+                return typeahead_helper.render_person(item);
+            };
         },
         matcher(item: GroupSettingTypeaheadItem, query: string): boolean {
             query = query.toLowerCase();
@@ -330,21 +332,23 @@ export function set_up_combined(
             }
             return source;
         },
-        item_html(item: TypeaheadItem, query: string): string {
-            if (include_streams(query) && item.type === "stream") {
-                return typeahead_helper.render_stream(item);
-            }
+        item_html(query: string): (item: TypeaheadItem) => string {
+            return (item: TypeaheadItem): string => {
+                if (include_streams(query) && item.type === "stream") {
+                    return typeahead_helper.render_stream(item);
+                }
 
-            if (include_user_groups && item.type === "user_group") {
-                return typeahead_helper.render_user_group(item);
-            }
+                if (include_user_groups && item.type === "user_group") {
+                    return typeahead_helper.render_user_group(item);
+                }
 
-            // After reaching this point, it is sure
-            // that given item is a person. So this
-            // handles `include_users` cases along with
-            // default cases.
-            assert(item.type === "user");
-            return typeahead_helper.render_person(item);
+                // After reaching this point, it is sure
+                // that given item is a person. So this
+                // handles `include_users` cases along with
+                // default cases.
+                assert(item.type === "user");
+                return typeahead_helper.render_person(item);
+            };
         },
         matcher(item: TypeaheadItem, query: string): boolean {
             query = query.toLowerCase();

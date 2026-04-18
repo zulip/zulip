@@ -15,7 +15,7 @@ export type TopicFilterPill = {
 export type TopicFilterPillWidget = InputPillContainer<TopicFilterPill>;
 
 type TopicFilterTypeaheadOptions = {
-    item_html: (item: TopicFilterPill, query: string) => string | undefined;
+    item_html: (query: string) => (item: TopicFilterPill) => string | undefined;
     matcher: (item: TopicFilterPill, query: string) => boolean;
     sorter: (items: TopicFilterPill[], query: string) => TopicFilterPill[];
     stopAdvance: boolean;
@@ -48,8 +48,8 @@ export const filter_options: TopicFilterPill[] = [
 
 export function get_typeahead_base_options(): TopicFilterTypeaheadOptions {
     return {
-        item_html(item: TopicFilterPill, _query: string) {
-            return typeahead_helper.render_topic_state(item.label);
+        item_html(_query: string) {
+            return (item: TopicFilterPill) => typeahead_helper.render_topic_state(item.label);
         },
         matcher(item: TopicFilterPill, query: string) {
             // This basically only matches if `is:` is in the query.
