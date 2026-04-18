@@ -673,6 +673,11 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
                 label="Include repository name in the notifications",
                 input_type="checkbox",
             ),
+            WebhookUrlOption(
+                name="include_emoji_indicators",
+                label="Include emoji indicators in the notifications",
+                input_type="checkbox_enabled",
+            ),
         ],
     ),
     IncomingWebhookIntegration(

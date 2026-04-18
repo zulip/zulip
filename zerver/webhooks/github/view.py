@@ -67,12 +67,14 @@ class Helper:
         payload: WildValue,
         include_title: bool,
         include_repository_name: bool,
+        include_emoji_indicators: bool,
         user_profile: UserProfile,
     ) -> None:
         self.request = request
         self.payload = payload
         self.include_title = include_title
         self.include_repository_name = include_repository_name
+        self.include_emoji_indicators = include_emoji_indicators
         self.realm = user_profile.realm
 
     def log_unsupported(self, event: str) -> None:
@@ -1150,6 +1152,7 @@ def api_github_webhook(
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
     ignore_private_repositories: Json[bool] = False,
     include_repository_name: Json[bool] = False,
+    include_emoji_indicators: Json[bool] = True,
 ) -> HttpResponse:
     """
     GitHub sends the event as an HTTP header.  We have our
@@ -1194,6 +1197,7 @@ def api_github_webhook(
         payload=payload,
         include_title=user_specified_topic is not None,
         include_repository_name=include_repository_name,
+        include_emoji_indicators=include_emoji_indicators,
         user_profile=user_profile,
     )
     body = body_function(helper)
