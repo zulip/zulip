@@ -612,6 +612,7 @@ body.has-overlay-scrollbar {
     }
 
     .column-right .right-sidebar {
+        box-sizing: border-box;
         padding-left: var(--right-sidebar-left-spacing);
         width: var(--right-sidebar-width);
     }
