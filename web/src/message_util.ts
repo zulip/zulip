@@ -178,22 +178,20 @@ export function make_check_message_permission_for_dm_candidate(
             return true;
         }
 
-        // A past conversation exists between the full group {sender, recipient_ids,
-        // candidate} and at least one participant is in the permission group.
-        const conversation_user_ids = [...recipient_ids, candidate_user_id];
-        const conversation_user_ids_string = conversation_user_ids.join(",");
-        const is_known_empty_conversation = get_direct_message_permission_hints(
-            conversation_user_ids_string,
-        ).is_known_empty_conversation;
+        // The remaining path allows the DM only if a past conversation
+        // exists AND at least one participant is in the permission group.
+        // If none of the three permission flags are true, no conversation
+        // history can unlock the DM, so skip the hints lookup.
         if (
-            !is_known_empty_conversation &&
-            (is_current_user_in_permission_group ||
-                recipient_is_in_permission_group ||
-                is_candidate_in_permission_group)
+            !is_current_user_in_permission_group &&
+            !recipient_is_in_permission_group &&
+            !is_candidate_in_permission_group
         ) {
-            return true;
+            return false;
         }
 
-        return false;
+        const conversation_user_ids_string = [...recipient_ids, candidate_user_id].join(",");
+        return !get_direct_message_permission_hints(conversation_user_ids_string)
+            .is_known_empty_conversation;
     };
 }
