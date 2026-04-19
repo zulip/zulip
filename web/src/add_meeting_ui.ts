@@ -1,6 +1,6 @@
 import $ from "jquery";
 import assert from "minimalistic-assert";
-import type * as tippy from "tippy.js";
+import * as tippy from "tippy.js";
 
 import render_add_rsvp_meeting_modal from "../templates/add_rsvp_meeting_modal.hbs";
 
@@ -15,11 +15,11 @@ import * as browser_history from "./browser_history.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
-import * as pill_typeahead from "./pill_typeahead.ts";
 import * as timerender from "./timerender.ts";
 import * as user_pill from "./user_pill.ts";
 import * as flatpickr from "./flatpickr.ts";
 import * as util from "./util.ts";
+import * as compose_state from "./compose_state.ts";
 
 let add_meeting_widget: dropdown_widget.DropdownWidget | undefined;
 let add_meeting_dropdown: tippy.Instance | undefined;
@@ -79,11 +79,7 @@ function submit_rsvp_meeting_form(): void {
         ]),
         announce: false,
       },
-      success(data) {
-        const result = data as {
-          subscribed: Record<string, number[]>;
-          already_subscribed: Record<string, number[]>;
-        };
+      success() {
         // Find the new stream id by looking it up by name
         void channel.get({
           url: "/json/streams",
@@ -316,7 +312,8 @@ function rsvp_meeting_modal_post_render(): void {
       defaultDate,
       {
         enableTime: true,
-        minDate: new Date(),
+        // Use defaultDate as minDate to prevent slight pass of time from erroring
+        minDate: defaultDate,
         appendTo: document.body,
         onOpen: (_selectedDates, _dateStr, instance) => {
           const inputEl = util.the($input); // same $input you passed to show_flatpickr
@@ -412,6 +409,17 @@ function item_click_callback(
   assert(typeof current_value === "number");
 
   if (current_value === add_meeting.OPTION_RSVP_MEETING) {
+    // RESTRICTIVE CHECK: Ensure we are in a valid channel narrow
+    const is_in_channel_narrow = narrow_state.stream_id() !== undefined;
+    const is_stream_mode = compose_state.get_message_type() === "stream";
+    const selected_stream_id = compose_state.stream_id();
+    const has_real_stream = selected_stream_id !== undefined && selected_stream_id !== "" && selected_stream_id !== 0;
+
+    // Must be in a channel view AND composing to a valid channel
+    if (!is_in_channel_narrow || !is_stream_mode || !has_real_stream) {
+        return;
+    }
+
     dialog_widget.launch({
       modal_title_html: $t_html({defaultMessage: "Meeting RSVP"}),
       modal_content_html: render_add_rsvp_meeting_modal({}),
