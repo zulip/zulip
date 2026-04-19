@@ -655,47 +655,6 @@ type PersonSuggestionOpts = {
     filter_by_dm_permission?: boolean;
 };
 
-function get_dm_suggestion_candidates(opts: {
-    exclude_non_welcome_bots: boolean;
-    exclude_non_message_people: boolean;
-    active_users_only: boolean;
-    filter_by_dm_permission: boolean;
-}): User[] {
-    if (!opts.filter_by_dm_permission) {
-        return people.get_people_for_dm({
-            exclude_non_welcome_bots: opts.exclude_non_welcome_bots,
-            exclude_non_message_people: opts.exclude_non_message_people,
-            active_users_only: opts.active_users_only,
-        });
-    }
-
-    const recipient_ids = compose_state.private_message_recipient_ids();
-    const check_dm_permission =
-        message_util.make_check_message_permission_for_dm_candidate(recipient_ids);
-
-    if (check_dm_permission === null) {
-        return people.get_people_for_dm({
-            exclude_non_welcome_bots: opts.exclude_non_welcome_bots,
-            exclude_non_message_people: opts.exclude_non_message_people,
-            active_users_only: opts.active_users_only,
-        });
-    }
-
-    // Filter people based on per-user permission checks. We will filter active
-    // user if required in the per-user check itself.
-    const dm_people_candidate = people.get_people_for_dm({
-        exclude_non_welcome_bots: opts.exclude_non_welcome_bots,
-        exclude_non_message_people: opts.exclude_non_message_people,
-        active_users_only: false,
-    });
-    return dm_people_candidate.filter((item) => {
-        if (opts.active_users_only && !people.is_active_user(item.user_id)) {
-            return false;
-        }
-        return check_dm_permission(item.user_id);
-    });
-}
-
 function filter_persons<T>(
     all_persons: User[],
     filter_pills: boolean,
@@ -913,19 +872,33 @@ export function get_person_suggestions(
         );
     };
 
-    const filter_by_dm_permission = opts.filter_by_dm_permission ?? false;
-    const message_persons = get_dm_suggestion_candidates({
+    // The DM-permission check is expensive per candidate, so we apply it after
+    // the query-match filter trims the candidate set — the loop then runs over
+    // the handful of query-matched users rather than the full realm.
+    const check_dm_permission = opts.filter_by_dm_permission
+        ? message_util.make_check_message_permission_for_dm_candidate(
+              compose_state.private_message_recipient_ids(),
+          )
+        : null;
+    const apply_dm_permission_filter = (
+        items: UserOrMentionPillData[],
+    ): UserOrMentionPillData[] => {
+        if (check_dm_permission === null) {
+            return items;
+        }
+        return items.filter(
+            (item) => item.type !== "user" || check_dm_permission(item.user.user_id),
+        );
+    };
+
+    const message_persons = people.get_people_for_dm({
         exclude_non_welcome_bots,
         exclude_non_message_people: true,
         active_users_only: true,
-        filter_by_dm_permission,
     });
 
-    const filtered_message_persons = filter_persons(
-        message_persons,
-        opts.filter_pills,
-        opts.want_broadcast,
-        filterer,
+    const filtered_message_persons = apply_dm_permission_filter(
+        filter_persons(message_persons, opts.filter_pills, opts.want_broadcast, filterer),
     );
 
     let filtered_persons: UserOrMentionPillData[];
@@ -933,17 +906,13 @@ export function get_person_suggestions(
     if (filtered_message_persons.length >= cutoff_length) {
         filtered_persons = filtered_message_persons;
     } else {
-        const realm_people = get_dm_suggestion_candidates({
+        const realm_people = people.get_people_for_dm({
             exclude_non_welcome_bots,
             exclude_non_message_people: false,
             active_users_only: false,
-            filter_by_dm_permission,
         });
-        filtered_persons = filter_persons(
-            realm_people,
-            opts.filter_pills,
-            opts.want_broadcast,
-            filterer,
+        filtered_persons = apply_dm_permission_filter(
+            filter_persons(realm_people, opts.filter_pills, opts.want_broadcast, filterer),
         );
     }
 
