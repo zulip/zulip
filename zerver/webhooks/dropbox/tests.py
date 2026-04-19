@@ -1,4 +1,5 @@
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.lib.users import get_api_key
 
 
 class DropboxHookTests(WebhookTestCase):
@@ -15,7 +16,7 @@ class DropboxHookTests(WebhookTestCase):
 
     def test_verification_request(self) -> None:
         self.subscribe(self.test_user, self.channel_name)
-        get_params = {"stream_name": self.channel_name, "api_key": self.test_user.api_key}
+        get_params = {"stream_name": self.channel_name, "api_key": get_api_key(self.test_user)}
         result = self.client_get(self.url, get_params)
         self.assert_json_error(result, "Missing 'challenge' argument", 400)
 

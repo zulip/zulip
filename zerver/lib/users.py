@@ -21,7 +21,7 @@ from zerver.lib.cache import cache_with_key, get_cross_realm_dicts_key
 from zerver.lib.create_user import get_dummy_email_address_for_display_regex
 from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.string_validation import check_string_is_printable
-from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue, RawUserDict
 from zerver.lib.user_groups import user_has_permission_for_group_setting
@@ -34,6 +34,7 @@ from zerver.models import (
     Recipient,
     Service,
     Subscription,
+    UserAPIKey,
     UserMessage,
     UserProfile,
 )
@@ -51,6 +52,54 @@ from zerver.models.users import (
     get_user_profile_by_id_in_realm,
     is_cross_realm_bot_email,
 )
+
+
+def get_api_key(
+    user_profile: UserProfile,
+    revoked: bool = False,
+    description: str | None = None,
+) -> str:
+    # Deprecated: dates from when only one API key per user was supported.
+    # Currently reliable only for bot users, who are guaranteed to have
+    # exactly one API key.  May be renamed if kept for that purpose.
+    user_api_keys = UserAPIKey.objects.filter(user=user_profile)
+
+    if not revoked:
+        user_api_keys = user_api_keys.filter(is_revoked=False)
+
+    if description is not None:
+        description_matches = user_api_keys.filter(description=description)
+
+        if (
+            not description_matches.exists()
+            and description != UserAPIKey.LEGACY_API_KEY_DESCRIPTION
+        ):
+            description_matches = user_api_keys.filter(
+                description=UserAPIKey.LEGACY_API_KEY_DESCRIPTION
+            )
+        user_api_keys = description_matches
+
+    api_key_obj = user_api_keys.first()
+
+    if api_key_obj is None:
+        raise JsonableError(_("No API key found for user"))
+
+    return api_key_obj.api_key
+
+
+def get_api_key_data(user_profile: UserProfile) -> list[dict[str, object]]:
+    api_keys_data = UserAPIKey.objects.filter(user=user_profile, is_revoked=False).values(
+        "id", "description", "date_created"
+    )
+
+    return [
+        {
+            "id": api_data["id"],
+            "description": api_data["description"],
+            "date_created": datetime_to_timestamp(api_data["date_created"]),
+        }
+        for api_data in api_keys_data
+    ]
 
 
 def check_full_name(

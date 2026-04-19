@@ -2,12 +2,13 @@ from unittest.mock import patch
 
 from zerver.actions.custom_profile_fields import try_add_realm_default_custom_profile_field
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.lib.users import get_api_key
 from zerver.models.realms import get_realm
 
 
 class JiraHookTests(WebhookTestCase):
     def test_custom_channel(self) -> None:
-        api_key = self.test_user.api_key
+        api_key = get_api_key(self.test_user)
         self.subscribe(self.test_user, "jira_custom")
         url = f"/api/v1/external/jira?api_key={api_key}&stream=jira_custom"
         msg = self.send_webhook_payload(

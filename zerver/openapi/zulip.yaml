@@ -12118,6 +12118,115 @@ paths:
                         "msg": "",
                         "api_key": "a1b2c3d4e5f6g7h8i9j0",
                       }
+  /users/me/api_keys:
+    get:
+      operationId: get-api-keys
+      summary: Get API keys
+      tags: ["users"]
+      description: |
+        Get the API keys for the user making the request.
+
+        **Changes**: New in Zulip 12.0 (feature level ZF-43e372).
+
+        Previous versions of Zulip only supported a single API key per
+        user, this endpoint returned an array of API keys information
+        (id, description, etc.).
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      api_keys:
+                        type: array
+                        description: An array of the user's API keys information.
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            id:
+                              type: integer
+                              description: The unique identifier for this API key.
+                            description:
+                              type: string
+                              description: The description of the API key.
+                            date_created:
+                              type: integer
+                              description: The date on which API key created.
+                      email:
+                        type: string
+                        description: The email of the user whose API keys are being returned.
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "api_keys":
+                          [
+                            {
+                              "id": 10,
+                              "description": "Legacy API key",
+                              "date_created": 1682625600,
+                            },
+                            {
+                              "id": 12,
+                              "description": "Legacy API key",
+                              "date_created": 1457328000,
+                            },
+                          ],
+                        "email": "example@zulip.com",
+                      }
+  /users/me/api_keys/{key_id}:
+    delete:
+      operationId: revoke-api-key
+      summary: Revoke an API key
+      tags: ["users"]
+      description: |
+        Revoke an API key for the user making the request, given the
+        ID of the API key to revoke.
+
+        **Changes**: New in Zulip 12.0 (feature level ZF-43e372).
+      parameters:
+        - $ref: "#/components/parameters/UserApiKeyId"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                    example: {"result": "success", "msg": ""}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedErrorBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      code: {}
+                    example:
+                      {
+                        "result": "error",
+                        "msg": "There are no API keys with such ID in your account.",
+                        "code": "BAD_REQUEST",
+                      }
+                    description: |
+                      An example JSON error response when an invalid API key ID is supplied:
   /users/me/alert_words:
     get:
       operationId: get-alert-words
@@ -31219,4 +31328,13 @@ components:
       schema:
         type: integer
       example: 17
+      required: true
+    UserApiKeyId:
+      name: key_id
+      in: path
+      description: |
+        The ID of the API key to revoke.
+      schema:
+        type: integer
+      example: 11
       required: true
