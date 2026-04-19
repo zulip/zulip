@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 04:54+0000\n"
-"PO-Revision-Date: 2026-02-10 19:43+0000\n"
+"PO-Revision-Date: 2026-03-31 19:49+0000\n"
 "Last-Translator: Sietse Planting <sietse@planting.nu>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/zulip/django/nl/>\n"
 "Language: nl\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -76,9 +76,9 @@ msgid ""
 "users to join."
 msgstr ""
 "Jouw organisatie heeft geen resterende Zulip-licenties en kan geen nieuwe "
-"gebruikers meer accepteren. [Verhoog het aantal licenties]"
-"({billing_page_link}) of [deactiveer inactieve gebruikers]"
-"({deactivate_user_help_page_link}) om nieuwe gebruikers toe te laten treden."
+"gebruikers meer accepteren. [Verhoog het aantal licenties]("
+"{billing_page_link}) of [deactiveer inactieve gebruikers]("
+"{deactivate_user_help_page_link}) om nieuwe gebruikers toe te laten treden."
 
 #: corporate/lib/registration.py:42
 #, python-brace-format
@@ -577,8 +577,8 @@ msgid ""
 "This confirms that the email address for your Zulip account has changed from "
 "%(old_email_html_tag)s to %(new_email_html_tag)s"
 msgstr ""
-"Dit bevestigt dat het e-mailadres voor jouw Zulip account is veranderd van "
-"%(old_email_html_tag)s naar %(new_email_html_tag)s"
+"Dit bevestigt dat het e-mailadres voor jouw Zulip account is veranderd van %"
+"(old_email_html_tag)s naar %(new_email_html_tag)s"
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
 #: templates/confirmation/redirect_to_post.html:5
@@ -3797,8 +3797,7 @@ msgstr ""
 
 #: templates/zerver/login.html:69
 msgid "You've already registered with this email address. Please log in below."
-msgstr ""
-"Je bent al geregistreerd met dit e-mailadres. Hieronder inloggen graag."
+msgstr "Je bent al geregistreerd met dit e-mailadres. Hieronder inloggen graag."
 
 #: templates/zerver/login.html:97
 msgid "Email or username"

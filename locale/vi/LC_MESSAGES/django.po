@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 04:54+0000\n"
-"PO-Revision-Date: 2025-08-07 23:52+0000\n"
+"PO-Revision-Date: 2026-03-31 19:01+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/zulip/django/"
 "vi/>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -2227,8 +2227,8 @@ msgid ""
 "If you did not request this change, please contact us immediately at "
 "%(support_email)s."
 msgstr ""
-"If you did not request this change, please contact us immediately at "
-"%(support_email)s."
+"If you did not request this change, please contact us immediately at %"
+"(support_email)s."
 
 #: templates/zerver/emails/confirm_demo_organization_email.subject.txt:1
 #, fuzzy
@@ -2243,8 +2243,8 @@ msgid ""
 "If you did not request this change, please contact us immediately at "
 "<%(support_email)s>."
 msgstr ""
-"If you did not request this change, please contact us immediately at "
-"<%(support_email)s>."
+"If you did not request this change, please contact us immediately at <%"
+"(support_email)s>."
 
 #: templates/zerver/emails/confirm_new_email.html:10
 #: templates/zerver/emails/confirm_new_email.txt:4
@@ -2397,8 +2397,8 @@ msgid ""
 "content</a> in email notifications."
 msgstr ""
 "This email does not include message content because your organization has "
-"disabled <a class=\"content_disabled_help_link\" "
-"href=\"%(help_url)s\">message content appearing in email notifications</a>."
+"disabled <a class=\"content_disabled_help_link\" href=\"%(help_url)s\">"
+"message content appearing in email notifications</a>."
 
 #: templates/zerver/emails/digest.html:46
 #: templates/zerver/emails/missed_message.html:19
@@ -2616,8 +2616,8 @@ msgid ""
 "%(referrer_full_name)s (%(referrer_email)s) wants you to join them on Zulip "
 "-- the team communication tool designed for productivity."
 msgstr ""
-"%(referrer_full_name)s (%(referrer_email)s) wants you to join them on Zulip "
-"-- the team communication tool designed for productivity."
+"%(referrer_full_name)s (%(referrer_email)s) wants you to join them on "
+"Zulip -- the team communication tool designed for productivity."
 
 #: templates/zerver/emails/invitation.txt:5
 #: templates/zerver/emails/invitation_reminder.txt:5
@@ -2814,8 +2814,8 @@ msgid ""
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at %(support_email)s."
 msgstr ""
-"The email associated with your Zulip account was recently changed to "
-"%(new_email)s. If you did not request this change, please contact us "
+"The email associated with your Zulip account was recently changed to %"
+"(new_email)s. If you did not request this change, please contact us "
 "immediately at %(support_email)s."
 
 #: templates/zerver/emails/notify_change_in_email.html:13
@@ -2840,8 +2840,8 @@ msgid ""
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at <%(support_email)s>."
 msgstr ""
-"The email associated with your Zulip account was recently changed to "
-"%(new_email)s. If you did not request this change, please contact us "
+"The email associated with your Zulip account was recently changed to %"
+"(new_email)s. If you did not request this change, please contact us "
 "immediately at <%(support_email)s>."
 
 #: templates/zerver/emails/notify_new_login.html:4
@@ -3189,8 +3189,8 @@ msgid ""
 "href=\"%(help_link)s\">reactivate your account</a>."
 msgstr ""
 "You previously had an account on %(organization_url)s, but it has been "
-"deactivated. You can contact an organization administrator to <a "
-"href=\"%(help_link)s\">reactivate your account</a>."
+"deactivated. You can contact an organization administrator to <a href=\"%"
+"(help_link)s\">reactivate your account</a>."
 
 #: templates/zerver/emails/password_reset.html:21
 #: templates/zerver/emails/password_reset.txt:11
@@ -3870,8 +3870,7 @@ msgstr ""
 
 #: templates/zerver/login.html:69
 msgid "You've already registered with this email address. Please log in below."
-msgstr ""
-"You've already registered with this email address. Please log in below."
+msgstr "You've already registered with this email address. Please log in below."
 
 #: templates/zerver/login.html:97
 msgid "Email or username"
@@ -4156,8 +4155,7 @@ msgstr "Xác nhận mật khẩu"
 
 #: templates/zerver/reset_confirm.html:76
 msgid "Sorry, the link you provided is invalid or has already been used."
-msgstr ""
-"Xin lỗi nha, đường link bạn cung cấp không hợp lệ hoặc đã được sử dụng."
+msgstr "Xin lỗi nha, đường link bạn cung cấp không hợp lệ hoặc đã được sử dụng."
 
 #: templates/zerver/reset_done.html:4
 msgid "New password successfully set"

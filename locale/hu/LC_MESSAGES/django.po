@@ -17,7 +17,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 04:54+0000\n"
-"PO-Revision-Date: 2025-09-29 22:14+0000\n"
+"PO-Revision-Date: 2026-03-31 19:30+0000\n"
 "Last-Translator: Buzási Róbert <drbuzasi@gmail.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/zulip/django/"
 "hu/>\n"
@@ -26,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -580,8 +580,8 @@ msgid ""
 "This confirms that the email address for your Zulip account has changed from "
 "%(old_email_html_tag)s to %(new_email_html_tag)s"
 msgstr ""
-"Megerősítjük, hogy a Zulip-fiókja e-mail címe megváltozott a régi "
-"%(old_email_html_tag)s helyett erre: %(new_email_html_tag)s"
+"Megerősítjük, hogy a Zulip-fiókja e-mail címe megváltozott a régi %"
+"(old_email_html_tag)s helyett erre: %(new_email_html_tag)s"
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
 #: templates/confirmation/redirect_to_post.html:5
@@ -2434,8 +2434,8 @@ msgid ""
 "content</a> in email notifications."
 msgstr ""
 "Ez az e-mail nem tartalmazza az üzenet szövegét, mert szervezeted "
-"letiltotta, hogy <a class=\"content_disabled_help_link\" "
-"href=\"%(help_url)s\">az e-mail értesítésekben üzenetszöveg jelenjen meg</a>."
+"letiltotta, hogy <a class=\"content_disabled_help_link\" href=\"%(help_url)"
+"s\">az e-mail értesítésekben üzenetszöveg jelenjen meg</a>."
 
 #: templates/zerver/emails/digest.html:46
 #: templates/zerver/emails/missed_message.html:19
@@ -2560,8 +2560,8 @@ msgid ""
 "Your email address %(email)s has accounts with the following Zulip "
 "organizations hosted by %(external_host)s:"
 msgstr ""
-"E-mail címed %(email)s a következő Zulip szerveknél rendelkezik fiókkal "
-"%(external_host)s:"
+"E-mail címed %(email)s a következő Zulip szerveknél rendelkezik fiókkal %"
+"(external_host)s:"
 
 #: templates/zerver/emails/find_team.html:24
 #, python-format
@@ -2696,8 +2696,8 @@ msgstr ""
 #, python-format
 msgid "Reminder: Join %(referrer_name)s at %(referrer_realm_name)s"
 msgstr ""
-"Emlékeztető: csatlakozz, %(referrer_name)s téged vár a/az "
-"%(referrer_realm_name)s -ban/ben"
+"Emlékeztető: csatlakozz, %(referrer_name)s téged vár a/az %"
+"(referrer_realm_name)s -ban/ben"
 
 #: templates/zerver/emails/invitation_reminder.txt:3
 #, python-format
@@ -2855,9 +2855,9 @@ msgid ""
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at %(support_email)s."
 msgstr ""
-"A Zulip fiókodhoz tartozó e-mail cím nemrég változott meg erre: "
-"%(new_email)s. Ha nem te akartad a változtatást, sürgősen írj nekünk erre a "
-"címre: %(support_email)s."
+"A Zulip fiókodhoz tartozó e-mail cím nemrég változott meg erre: %(new_email)"
+"s. Ha nem te akartad a változtatást, sürgősen írj nekünk erre a címre: %"
+"(support_email)s."
 
 #: templates/zerver/emails/notify_change_in_email.html:13
 #: templates/zerver/emails/notify_change_in_email.txt:6
@@ -2881,9 +2881,9 @@ msgid ""
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at <%(support_email)s>."
 msgstr ""
-"A Zulip fiókodhoz tartozó e-mail cím nemrég változott meg erre: "
-"%(new_email)s. Ha nem te akartad a változtatást, sürgősen írj nekünk erre a "
-"címre: <%(support_email)s>."
+"A Zulip fiókodhoz tartozó e-mail cím nemrég változott meg erre: %(new_email)"
+"s. Ha nem te akartad a változtatást, sürgősen írj nekünk erre a címre: <%"
+"(support_email)s>."
 
 #: templates/zerver/emails/notify_new_login.html:4
 #, python-format
@@ -2939,8 +2939,8 @@ msgid ""
 "contact us immediately at %(support_email)s."
 msgstr ""
 "Ha nem ismered fel ezt a belépést, vagy a fiókod feltörhették, kérjük <a "
-"href=\"%(reset_link)s\">változtass jelszót</a> vagy keress bennünket a/az "
-"%(support_email)s címen."
+"href=\"%(reset_link)s\">változtass jelszót</a> vagy keress bennünket a/az %"
+"(support_email)s címen."
 
 #: templates/zerver/emails/notify_new_login.html:38
 #: templates/zerver/emails/notify_new_login.txt:20
@@ -4970,8 +4970,7 @@ msgstr "A valós e-mail címedet használd."
 #: zerver/forms.py:285
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
-msgstr ""
-"Nem létezik a szervezet, amibe a/az {email} címmel megpróbálsz belépni."
+msgstr "Nem létezik a szervezet, amibe a/az {email} címmel megpróbálsz belépni."
 
 #: zerver/forms.py:294
 #, python-brace-format
@@ -7428,8 +7427,7 @@ msgstr ""
 #| msgid "Disposable email addresses are not allowed in this organization"
 msgid ""
 "Exports of all public and private data are not enabled for this organization."
-msgstr ""
-"Eldobható email címek használata ebben a szervezetben nem engedélyezett"
+msgstr "Eldobható email címek használata ebben a szervezetben nem engedélyezett"
 
 #: zerver/views/realm_export.py:70
 msgid "Exceeded rate limit."
@@ -7886,8 +7884,7 @@ msgstr "A/az '{email}' email cím nincs engedélyezve ebben a szervezetben"
 
 #: zerver/views/users.py:891
 msgid "Disposable email addresses are not allowed in this organization"
-msgstr ""
-"Eldobható email címek használata ebben a szervezetben nem engedélyezett"
+msgstr "Eldobható email címek használata ebben a szervezetben nem engedélyezett"
 
 #: zerver/views/video_calls.py:58
 #, fuzzy, python-brace-format

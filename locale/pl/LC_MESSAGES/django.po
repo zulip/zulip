@@ -25,11 +25,10 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 04:54+0000\n"
-"PO-Revision-Date: 2025-10-23 17:02+0000\n"
-"Last-Translator: Sylwester Cyba <pl-en-silver@users.noreply.hosted.weblate."
-"org>\n"
-"Language-Team: Polish <https://hosted.weblate.org/projects/zulip/django/pl/"
-">\n"
+"PO-Revision-Date: 2026-03-31 19:36+0000\n"
+"Last-Translator: Arusekk <arek_koz@o2.pl>\n"
+"Language-Team: Polish <https://hosted.weblate.org/projects/zulip/django/pl/>"
+"\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -37,7 +36,7 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && "
 "(n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && "
 "n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
-"X-Generator: Weblate 5.14.1-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -82,8 +81,7 @@ msgstr ""
 
 #: analytics/views/stats.py:457 analytics/views/stats.py:494
 msgid "No analytics data available. Please contact your server administrator."
-msgstr ""
-"Dane analityczne niedostępne. Skontaktuj się z administratorem serwera."
+msgstr "Dane analityczne niedostępne. Skontaktuj się z administratorem serwera."
 
 #: corporate/lib/registration.py:35
 #, python-brace-format
@@ -118,8 +116,8 @@ msgid ""
 "({deactivate_user_help_page_link}) to allow more than two users to join."
 msgstr ""
 "W Twojej organizacji pozostały dwie licencje Zulip. Możesz [zwiększyć liczbę "
-"licencji]({billing_page_link}) albo [odłączyć nieaktywnych użytkowników]"
-"({deactivate_user_help_page_link}) aby zezwolić więcej niż dwóm użytkownikom "
+"licencji]({billing_page_link}) albo [odłączyć nieaktywnych użytkowników]("
+"{deactivate_user_help_page_link}) aby zezwolić więcej niż dwóm użytkownikom "
 "na dołączenie."
 
 #: corporate/lib/registration.py:52
@@ -130,9 +128,9 @@ msgid ""
 "({deactivate_user_help_page_link}) to allow more than three users to join."
 msgstr ""
 "W Twojej organizacji pozostały trzy licencje Zulip. Możesz [zwiększyć liczbę "
-"licencji]({billing_page_link}) albo [odłączyć nieaktywnych użytkowników]"
-"({deactivate_user_help_page_link}) aby zezwolić więcej niż trzem "
-"użytkownikom na dołączenie."
+"licencji]({billing_page_link}) albo [odłączyć nieaktywnych użytkowników]("
+"{deactivate_user_help_page_link}) aby zezwolić więcej niż trzem użytkownikom "
+"na dołączenie."
 
 #: corporate/lib/registration.py:63
 #, python-brace-format
@@ -264,8 +262,7 @@ msgstr ""
 
 #: corporate/lib/stripe.py:3081
 msgid "You cannot decrease the licenses in the current billing period."
-msgstr ""
-"Nie można zmniejszyć liczby licencji w bieżącym okresie rozliczeniowym."
+msgstr "Nie można zmniejszyć liczby licencji w bieżącym okresie rozliczeniowym."
 
 #: corporate/lib/stripe.py:3107
 msgid ""
@@ -341,8 +338,8 @@ msgstr ""
 "Wniosek organizacji o sponsorowany hosting został zatwierdzony! Zostałeś "
 "bezpłatnie przeniesiony do {plan_name}. {emoji}\n"
 "\n"
-"Jeśli mógłbyś {begin_link}wymienić Zulip jako sponsora na swojej "
-"stronie{end_link}, bylibyśmy naprawdę wdzięczni!"
+"Jeśli mógłbyś {begin_link}wymienić Zulip jako sponsora na swojej stronie"
+"{end_link}, bylibyśmy naprawdę wdzięczni!"
 
 #: corporate/views/billing_page.py:349
 msgid "Parameter 'confirmed' is required"
@@ -403,8 +400,8 @@ msgid ""
 "If this error is unexpected, you can <a href=\"mailto:"
 "%(support_email)s\">contact support</a>."
 msgstr ""
-"O ile błąd jest nieoczekiwany możesz <a href=\"mailto:"
-"%(support_email)s\">dać znać pomocy technicznej</a>."
+"O ile błąd jest nieoczekiwany możesz <a href=\"mailto:%(support_email)s\">"
+"dać znać pomocy technicznej</a>."
 
 #: templates/4xx.html:11
 msgid "Access forbidden (403)"
@@ -484,9 +481,9 @@ msgid ""
 "If you administer this server, you may want to check out the <a "
 "href=\"%(troubleshooting_url)s\">Zulip server troubleshooting guide</a>."
 msgstr ""
-"O ile sam administrujesz serwerem, możesz sprawdzić <a "
-"href=\"%(troubleshooting_url)s\">poradnik Zulip jak rozwiązać problemy na "
-"tym poziomie</a>."
+"O ile sam administrujesz serwerem, możesz sprawdzić <a href=\"%"
+"(troubleshooting_url)s\">poradnik Zulip jak rozwiązać problemy na tym "
+"poziomie</a>."
 
 #: templates/analytics/stats.html:6
 #, python-format
@@ -623,8 +620,8 @@ msgid ""
 "A full update of all the graphs happens once a day. The “messages sent over "
 "time” graph is updated once an hour."
 msgstr ""
-"Pełna aktualizacja wszystkich wykresów odbywa się raz dziennie. Wykres "
-"„wiadomości wysłane w czasie” jest aktualizowany raz na godzinę."
+"Pełna aktualizacja wszystkich wykresów odbywa się raz dziennie. Wykres „"
+"wiadomości wysłane w czasie” jest aktualizowany raz na godzinę."
 
 #: templates/confirmation/confirm_email_change.html:4
 msgid "Email changed"
@@ -799,10 +796,9 @@ msgid ""
 "in</a> to plan management for your organization instead, or <a href='mailto:"
 "%(support_email)s'>contact support</a> with any questions."
 msgstr ""
-"<a href=\"https://zulip.com/help/self-hosted-billing#manage-"
-"billing\">Zaloguj się</a> aby zarządzać planami dla twojej organizacji, bądź "
-"<a href='mailto:%(support_email)s'>skontaktuj się</a> aby rozwiać "
-"wątpliwości."
+"<a href=\"https://zulip.com/help/self-hosted-billing#manage-billing\">"
+"Zaloguj się</a> aby zarządzać planami dla twojej organizacji, bądź <a "
+"href='mailto:%(support_email)s'>skontaktuj się</a> aby rozwiać wątpliwości."
 
 #: templates/corporate/billing/remote_server_rate_limit_exceeded.html:4
 #: templates/zerver/portico_error_pages/rate_limit_exceeded.html:4
@@ -1587,8 +1583,7 @@ msgstr "Email"
 #: templates/zerver/create_user/register.html:217
 #: templates/zerver/reset_confirm.html:64
 msgid "Subscribe me to Zulip's low-traffic newsletter (a few emails a year)."
-msgstr ""
-"Dopisz mnie do listy wysyłkowej newslettera Zulip (kilka maili na rok)."
+msgstr "Dopisz mnie do listy wysyłkowej newslettera Zulip (kilka maili na rok)."
 
 #: templates/zerver/accounts_accept_terms.html:54
 msgid "Continue"
@@ -1645,8 +1640,8 @@ msgid ""
 "If this message does not go away, try <a class=\"reload-lnk\">reloading</a> "
 "the page."
 msgstr ""
-"O ile ta wiadomość nie chce zniknąć, spróbuj <a class=\"reload-"
-"lnk\">przeładować</a> stronę."
+"O ile ta wiadomość nie chce zniknąć, spróbuj <a class=\"reload-lnk\">"
+"przeładować</a> stronę."
 
 #: templates/zerver/app/index.html:138
 msgid ""
@@ -1833,9 +1828,8 @@ msgid ""
 "mattermost\">Mattermost</a> or <a href=\"/help/import-from-"
 "rocketchat\">Rocket.Chat</a>."
 msgstr ""
-"Dowiedz się jak dokonać migracji z <a href=\"/help/import-from-"
-"mattermost\">Mattermost</a> lub <a href=\"/help/import-from-"
-"rocketchat\">Rocket.Chat</a>."
+"Dowiedz się jak dokonać migracji z <a href=\"/help/import-from-mattermost\">"
+"Mattermost</a> lub <a href=\"/help/import-from-rocketchat\">Rocket.Chat</a>."
 
 #: templates/zerver/create_realm/realm_creation_import_form_field.html:24
 msgid "Import chat history?"
@@ -2050,8 +2044,8 @@ msgid ""
 "This organization has moved to <a "
 "href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a>."
 msgstr ""
-"Ta organizacja przeniosła się do <a "
-"href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a>."
+"Ta organizacja przeniosła się do <a href=\"%(deactivated_redirect)s\">%"
+"(deactivated_redirect)s</a>."
 
 #: templates/zerver/deactivated.html:33
 #, python-format
@@ -2098,8 +2092,8 @@ msgid ""
 "If you are an owner of this organization, you can <a href=\"mailto:"
 "%(support_email)s\">contact Zulip support</a> to reactivate it."
 msgstr ""
-"Jak jesteś właścicielem tej organizacji, to możesz <a href=\"mailto:"
-"%(support_email)s\">skontaktować się z zespołem Zulip</a> aby ją reaktywować."
+"Jak jesteś właścicielem tej organizacji, to możesz <a href=\"mailto:%"
+"(support_email)s\">skontaktować się z zespołem Zulip</a> aby ją reaktywować."
 
 #: templates/zerver/deactivated.html:55
 msgid ""
@@ -2118,9 +2112,9 @@ msgid ""
 "%(support_email)s\">contact this Zulip server's administrators</a> to "
 "reactivate it."
 msgstr ""
-"Jak jesteś właścicielem tej organizacji możesz <a href=\"mailto:"
-"%(support_email)s\">skontaktować się z administracją serwera Zulip</a> aby "
-"ją reaktywować."
+"Jak jesteś właścicielem tej organizacji możesz <a href=\"mailto:%"
+"(support_email)s\">skontaktować się z administracją serwera Zulip</a> aby ją "
+"reaktywować."
 
 #: templates/zerver/desktop_login.html:5
 msgid "Finish desktop app login"
@@ -2246,8 +2240,8 @@ msgid ""
 "You will use the following info to log into the Zulip web, <a "
 "href=\"%(apps_page_link)s\">mobile and desktop</a> apps:"
 msgstr ""
-"Następujące dane posłużą do logowania do Zulip w przeglądarce, <a "
-"href=\"%(apps_page_link)s\">apek mobilnej i na komputer</a>:"
+"Następujące dane posłużą do logowania do Zulip w przeglądarce, <a href=\"%"
+"(apps_page_link)s\">apek mobilnej i na komputer</a>:"
 
 #: templates/zerver/emails/account_registered.html:25
 #: templates/zerver/emails/account_registered.txt:12
@@ -2284,8 +2278,8 @@ msgid ""
 "If you are new to Zulip, check out our <a "
 "href=\"%(getting_user_started_link)s\">getting started guide</a>!"
 msgstr ""
-"O ile nie masz doświadczenia z Zulip sprawdź <a "
-"href=\"%(getting_user_started_link)s\">poradnik dla początkujących</a>!"
+"O ile nie masz doświadczenia z Zulip sprawdź <a href=\"%"
+"(getting_user_started_link)s\">poradnik dla początkujących</a>!"
 
 #: templates/zerver/emails/account_registered.html:43
 #, python-format
@@ -2342,8 +2336,8 @@ msgid ""
 "If you are new to Zulip, check out our getting started guide "
 "(%(getting_user_started_link)s)!"
 msgstr ""
-"O ile stawiasz pierwsze kroki z Zulip warto zajrzeć do przewodnika "
-"(%(getting_user_started_link)s)!"
+"O ile stawiasz pierwsze kroki z Zulip warto zajrzeć do przewodnika (%"
+"(getting_user_started_link)s)!"
 
 #: templates/zerver/emails/account_registered.txt:27
 #, python-format
@@ -2351,8 +2345,8 @@ msgid ""
 "We also have a guide for moving your organization to Zulip "
 "(%(getting_organization_started_link)s)."
 msgstr ""
-"Mamy też poradnik dla przenoszących organizację do Zulip "
-"(%(getting_organization_started_link)s)."
+"Mamy też poradnik dla przenoszących organizację do Zulip (%"
+"(getting_organization_started_link)s)."
 
 #: templates/zerver/emails/account_registered.txt:32
 #, python-format
@@ -2432,8 +2426,8 @@ msgid ""
 "%(realm_url)s from %(old_email)s to %(new_email)s. To confirm this change, "
 "please click below:"
 msgstr ""
-"Otrzymaliśmy prośbę o zmianę adresu email dla konta Zulip w %(realm_url)s z "
-"%(old_email)s na %(new_email)s. Aby potwierdzić zmianę kliknij poniżej:"
+"Otrzymaliśmy prośbę o zmianę adresu email dla konta Zulip w %(realm_url)s z %"
+"(old_email)s na %(new_email)s. Aby potwierdzić zmianę kliknij poniżej:"
 
 #: templates/zerver/emails/confirm_new_email.html:11
 msgid "Confirm email change"
@@ -2501,8 +2495,8 @@ msgid ""
 "Do you have questions or feedback to share? Contact us at %(support_email)s "
 "— we'd love to help!"
 msgstr ""
-"Masz pytania lub opinię, którą chesz się podzielić? Odezwij się do nas "
-"%(support_email)s — chętnie pomożemy!"
+"Masz pytania lub opinię, którą chesz się podzielić? Odezwij się do nas %"
+"(support_email)s — chętnie pomożemy!"
 
 #: templates/zerver/emails/custom_email_base.pre.html:23
 #: templates/zerver/emails/custom_email_base.pre.manage_preferences_block.txt:12
@@ -2556,9 +2550,9 @@ msgid ""
 "%(new_streams_count)s new channels in <a "
 "href=\"%(realm_url)s\">%(realm_name)s</a>."
 msgstr ""
-"Masz %(new_messages_count)s nowych wiadomości i utworzono "
-"%(new_streams_count)s nowych kanałów w <a "
-"href=\"%(realm_url)s\">%(realm_name)s</a>."
+"Masz %(new_messages_count)s nowych wiadomości i utworzono %"
+"(new_streams_count)s nowych kanałów w <a href=\"%(realm_url)s\">%(realm_name)"
+"s</a>."
 
 #: templates/zerver/emails/digest.html:37
 #, python-format
@@ -2566,8 +2560,8 @@ msgid ""
 "You have %(new_messages_count)s new messages in <a "
 "href=\"%(realm_url)s\">%(realm_name)s</a>."
 msgstr ""
-"Masz %(new_messages_count)s nowych wiadomości w <a "
-"href=\"%(realm_url)s\">%(realm_name)s</a>."
+"Masz %(new_messages_count)s nowych wiadomości w <a href=\"%(realm_url)s\">%"
+"(realm_name)s</a>."
 
 #: templates/zerver/emails/digest.html:39
 #, python-format
@@ -2575,8 +2569,8 @@ msgid ""
 "There are %(new_streams_count)s new channels in <a "
 "href=\"%(realm_url)s\">%(realm_name)s</a>."
 msgstr ""
-"Utworzono %(new_streams_count)s nowych kanałów w <a "
-"href=\"%(realm_url)s\">%(realm_name)s</a>."
+"Utworzono %(new_streams_count)s nowych kanałów w <a href=\"%(realm_url)s\">%"
+"(realm_name)s</a>."
 
 #: templates/zerver/emails/digest.html:44
 #: templates/zerver/emails/missed_message.html:17
@@ -2622,8 +2616,8 @@ msgid ""
 "You have %(new_messages_count)s new messages, and there are "
 "%(new_streams_count)s new channels in %(realm_name)s."
 msgstr ""
-"Masz %(new_messages_count)s nowych wiadomości i utworzono "
-"%(new_streams_count)s nowych kanałów w %(realm_name)s."
+"Masz %(new_messages_count)s nowych wiadomości i utworzono %"
+"(new_streams_count)s nowych kanałów w %(realm_name)s."
 
 #: templates/zerver/emails/digest.txt:16
 #, python-format
@@ -2708,8 +2702,8 @@ msgid ""
 "If you have trouble logging in, you can <a "
 "href=\"%(help_reset_password_link)s\">reset your password</a>."
 msgstr ""
-"O ile masz problem z zalogowaniem, możesz <a "
-"href=\"%(help_reset_password_link)s\">zresetować swoje hasło</a>."
+"O ile masz problem z zalogowaniem, możesz <a href=\"%"
+"(help_reset_password_link)s\">zresetować swoje hasło</a>."
 
 #: templates/zerver/emails/find_team.html:28
 #: templates/zerver/emails/find_team.txt:21
@@ -2770,8 +2764,8 @@ msgid ""
 "try another way to find your account (%(help_logging_in_link)s)."
 msgstr ""
 "Możesz poszukać kont z użyciem innego emaila (%(find_accounts_link)s) lub "
-"skorzystać z alternatywnej metody odnalezienia konta "
-"(%(help_logging_in_link)s)."
+"skorzystać z alternatywnej metody odnalezienia konta (%(help_logging_in_link)"
+"s)."
 
 #: templates/zerver/emails/invitation.html:9
 #: templates/zerver/emails/invitation.txt:1
@@ -2872,8 +2866,8 @@ msgid ""
 "Do you have questions or feedback to share? <a href=\"mailto:"
 "%(email)s\">Contact us</a> — we'd love to help!"
 msgstr ""
-"Masz pytania lub opinię, którą chesz się podzielić? <a href=\"mailto:"
-"%(email)s\">Skontaktuj się z nami</a> — chętnie pomożemy!"
+"Masz pytania lub opinię, którą chesz się podzielić? <a href=\"mailto:%(email)"
+"s\">Skontaktuj się z nami</a> — chętnie pomożemy!"
 
 #: templates/zerver/emails/missed_message.html:29
 #: templates/zerver/emails/missed_message.txt:23
@@ -2933,8 +2927,8 @@ msgid ""
 "You are receiving this because you have email notifications enabled for "
 "#%(channel_name)s."
 msgstr ""
-"Otrzymujesz tę wiadomość, ponieważ masz włączone powiadomienia email dla "
-"#%(channel_name)s."
+"Otrzymujesz tę wiadomość, ponieważ masz włączone powiadomienia email dla #%"
+"(channel_name)s."
 
 #: templates/zerver/emails/missed_message.html:46
 #, python-format
@@ -2943,8 +2937,8 @@ msgid ""
 "%(realm_name)s Zulip</a>, or <a href=\"%(notif_url)s\">manage email "
 "preferences</a>."
 msgstr ""
-"Odpowiedz na ten email bezpośrednio, <a href=\"%(narrow_url)s\">zobacza w "
-"%(realm_name)s Zulip</a>, bądź <a href=\"%(notif_url)s\">zmień ustawienia "
+"Odpowiedz na ten email bezpośrednio, <a href=\"%(narrow_url)s\">zobacza w %"
+"(realm_name)s Zulip</a>, bądź <a href=\"%(notif_url)s\">zmień ustawienia "
 "email</a>."
 
 #: templates/zerver/emails/missed_message.html:48
@@ -2972,8 +2966,8 @@ msgid ""
 "incoming emails (<a href=\"%(url)s\">help</a>)."
 msgstr ""
 "Nie odpowiadaj na tę wiadomość email. Ten serwer Zulip nie jest "
-"skonfigurowany do przyjmowania przychodzących wiadomości email (<a "
-"href=\"%(url)s\">pomoc</a>)."
+"skonfigurowany do przyjmowania przychodzących wiadomości email (<a href=\"%"
+"(url)s\">pomoc</a>)."
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
@@ -3025,9 +3019,9 @@ msgid ""
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at %(support_email)s."
 msgstr ""
-"Adres email przypisany do konta Zulip został ostatnio zmieniony na "
-"%(new_email)s. O ile to problem skontaktuj się jak najszybciej z "
-"%(support_email)s."
+"Adres email przypisany do konta Zulip został ostatnio zmieniony na %"
+"(new_email)s. O ile to problem skontaktuj się jak najszybciej z %"
+"(support_email)s."
 
 #: templates/zerver/emails/notify_change_in_email.html:13
 #: templates/zerver/emails/notify_change_in_email.txt:6
@@ -3051,9 +3045,9 @@ msgid ""
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at <%(support_email)s>."
 msgstr ""
-"Adres email przypisany do twojego konta Zulip został ostatnio zmieniony na "
-"%(new_email)s. O ile nie było to twoją intencją skontaktuj się z nami "
-"<%(support_email)s>."
+"Adres email przypisany do twojego konta Zulip został ostatnio zmieniony na %"
+"(new_email)s. O ile nie było to twoją intencją skontaktuj się z nami <%"
+"(support_email)s>."
 
 #: templates/zerver/emails/notify_new_login.html:4
 #, python-format
@@ -3109,8 +3103,8 @@ msgid ""
 "contact us immediately at %(support_email)s."
 msgstr ""
 "Jeśli nie rozpoznajesz tego loginu lub uważasz, że Twoje konto mogło zostać "
-"przejęte <a href=\"%(reset_link)s\">zresetuj hasło</a> lub daj znać na "
-"%(support_email)s."
+"przejęte <a href=\"%(reset_link)s\">zresetuj hasło</a> lub daj znać na %"
+"(support_email)s."
 
 #: templates/zerver/emails/notify_new_login.html:38
 #: templates/zerver/emails/notify_new_login.txt:20
@@ -3144,8 +3138,8 @@ msgid ""
 "immediately at %(support_email)s."
 msgstr ""
 "Jeśli nie rozpoznajesz tego loginu lub uważasz, że Twoje konto mogło zostać "
-"przejęte, zresetuj hasło pod adresem %(reset_link)s lub skontaktuj się z "
-"%(support_email)s."
+"przejęte, zresetuj hasło pod adresem %(reset_link)s lub skontaktuj się z %"
+"(support_email)s."
 
 #: templates/zerver/emails/onboarding_team_to_zulip.html:10
 #, python-format
@@ -3155,9 +3149,8 @@ msgid ""
 "Zulip</a> to get started."
 msgstr ""
 "Jeśli już zdecydowałeś się korzystać z Zulip dla swojej organizacji, witamy! "
-"Możesz skorzystać z naszego <a "
-"href=\"%(get_organization_started)s\">przewodnika dla przenoszących się do "
-"Zulip</a> aby zacząć."
+"Możesz skorzystać z naszego <a href=\"%(get_organization_started)s\">"
+"przewodnika dla przenoszących się do Zulip</a> aby zacząć."
 
 #: templates/zerver/emails/onboarding_team_to_zulip.html:13
 msgid ""
@@ -3375,8 +3368,8 @@ msgid ""
 msgstr ""
 "Aby rozpocząć nową rozmowę, wybierz kanał i rozpocznij nowy temat. W ten "
 "sposób nowy wątek rozmowy nie przerwie toczących się dyskusji. Aby wymyślić "
-"dobrą nazwę tematu, pomyśl o zakończeniu zdania: „Hej, możemy porozmawiać "
-"o…?”"
+"dobrą nazwę tematu, pomyśl o zakończeniu zdania: „Hej, możemy porozmawiać o"
+"…?”"
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:22
 msgid "Examples of short topics"
@@ -3393,8 +3386,8 @@ msgstr ""
 "Nie przejmuj się aż tak bardzo jak nazwać wątek. Jak coś nie trafi tam gdzie "
 "powinno zawsze można łatwo <a href=\"%(move_messages_link)s\">przenieść "
 "wpisy</a>, <a href=\"%(rename_topics_link)s\">przemianować wątki</a>, a "
-"nawet <a href=\"%(move_channels_link)s\">przenieść wątek do innego kanału</"
-"a>."
+"nawet <a href=\"%(move_channels_link)s\">przenieść wątek do innego kanału</a>"
+"."
 
 #: templates/zerver/emails/onboarding_zulip_topics.html:28
 #: templates/zerver/emails/onboarding_zulip_topics.txt:10
@@ -3434,8 +3427,8 @@ msgid ""
 "Somebody (possibly you) requested a new password for the Zulip account "
 "%(email)s on %(realm_url)s."
 msgstr ""
-"Ktoś (pewnie Ty) poprosił o nowe hasło do konta Zulip %(email)s na "
-"%(realm_url)s."
+"Ktoś (pewnie Ty) poprosił o nowe hasło do konta Zulip %(email)s na %"
+"(realm_url)s."
 
 #: templates/zerver/emails/password_reset.html:13
 msgid "Click the button below to reset your password."
@@ -3453,8 +3446,8 @@ msgid ""
 "href=\"%(help_link)s\">reactivate your account</a>."
 msgstr ""
 "Poprzednio miałeś konto na %(organization_url)s, które zostało "
-"dezaktywowane. Skontaktuj się z administratorem organizacji aby <a "
-"href=\"%(help_link)s\">reaktywować konto</a>."
+"dezaktywowane. Skontaktuj się z administratorem organizacji aby <a href=\"%"
+"(help_link)s\">reaktywować konto</a>."
 
 #: templates/zerver/emails/password_reset.html:21
 #: templates/zerver/emails/password_reset.txt:11
@@ -3518,8 +3511,8 @@ msgid ""
 "To continue on the Zulip Cloud Standard plan, please upgrade again by going "
 "to %(upgrade_url)s."
 msgstr ""
-"Aby kontynować użytkowanie Zulip Cloud Standard proszę przejdź do "
-"%(upgrade_url)s."
+"Aby kontynować użytkowanie Zulip Cloud Standard proszę przejdź do %"
+"(upgrade_url)s."
 
 #: templates/zerver/emails/realm_auto_downgraded.html:22
 #, python-format
@@ -3540,8 +3533,8 @@ msgid ""
 "You have deactivated your Zulip demo organization, %(realm_name)s, on "
 "%(localized_date)s."
 msgstr ""
-"Zdezaktywowałeś swoją organizację Zulip %(realm_name)sdnia "
-"%(localized_date)s."
+"Zdezaktywowałeś swoją organizację Zulip %(realm_name)sdnia %(localized_date)"
+"s."
 
 #: templates/zerver/emails/realm_deactivated.html:17
 #: templates/zerver/emails/realm_deactivated.txt:9
@@ -3553,8 +3546,8 @@ msgid ""
 "Your Zulip demo organization, %(realm_name)s, was deactivated by "
 "%(deactivating_owner)s on %(localized_date)s."
 msgstr ""
-"Twoja organizacja Zulip, %(realm_name)s, została wyłączona przez "
-"%(deactivating_owner)s dnia %(localized_date)s."
+"Twoja organizacja Zulip, %(realm_name)s, została wyłączona przez %"
+"(deactivating_owner)s dnia %(localized_date)s."
 
 #: templates/zerver/emails/realm_deactivated.html:19
 #: templates/zerver/emails/realm_deactivated.txt:11
@@ -3566,8 +3559,8 @@ msgid ""
 "Your Zulip demo organization, %(realm_name)s, was deactivated on "
 "%(localized_date)s."
 msgstr ""
-"Twoja organizacja Zulip, %(realm_name)s, została wyłączona dnia "
-"%(localized_date)s."
+"Twoja organizacja Zulip, %(realm_name)s, została wyłączona dnia %"
+"(localized_date)s."
 
 #: templates/zerver/emails/realm_deactivated.html:23
 #: templates/zerver/emails/realm_deactivated.txt:15
@@ -3576,8 +3569,8 @@ msgid ""
 "You have deactivated your Zulip organization, %(realm_name)s, on "
 "%(localized_date)s."
 msgstr ""
-"Zdezaktywowałeś swoją organizację Zulip %(realm_name)sdnia "
-"%(localized_date)s."
+"Zdezaktywowałeś swoją organizację Zulip %(realm_name)sdnia %(localized_date)"
+"s."
 
 #: templates/zerver/emails/realm_deactivated.html:25
 #: templates/zerver/emails/realm_deactivated.txt:17
@@ -3586,8 +3579,8 @@ msgid ""
 "Your Zulip organization, %(realm_name)s, was deactivated by "
 "%(deactivating_owner)s on %(localized_date)s."
 msgstr ""
-"Twoja organizacja Zulip, %(realm_name)s, została wyłączona przez "
-"%(deactivating_owner)s dnia %(localized_date)s."
+"Twoja organizacja Zulip, %(realm_name)s, została wyłączona przez %"
+"(deactivating_owner)s dnia %(localized_date)s."
 
 #: templates/zerver/emails/realm_deactivated.html:27
 #: templates/zerver/emails/realm_deactivated.txt:19
@@ -3596,8 +3589,8 @@ msgid ""
 "Your Zulip organization, %(realm_name)s, was deactivated on "
 "%(localized_date)s."
 msgstr ""
-"Twoja organizacja Zulip, %(realm_name)s, została wyłączona dnia "
-"%(localized_date)s."
+"Twoja organizacja Zulip, %(realm_name)s, została wyłączona dnia %"
+"(localized_date)s."
 
 #: templates/zerver/emails/realm_deactivated.html:31
 #: templates/zerver/emails/realm_deactivated.txt:23
@@ -3612,8 +3605,8 @@ msgid ""
 "All data associated with this organization will be permanently deleted on "
 "%(deletion_date)s."
 msgstr ""
-"Wszystkie dane powiązane z tą organizacją zostaną trwale usunięte dnia "
-"%(deletion_date)s."
+"Wszystkie dane powiązane z tą organizacją zostaną trwale usunięte dnia %"
+"(deletion_date)s."
 
 #: templates/zerver/emails/realm_deactivated.html:37
 #: templates/zerver/emails/realm_deactivated.txt:29
@@ -3742,8 +3735,8 @@ msgid ""
 "Questions? Learn more at %(billing_help_link)s or contact "
 "%(billing_contact_email)s."
 msgstr ""
-"Pytania? Dowiedz się więcej %(billing_help_link)s lub napisz "
-"%(billing_contact_email)s."
+"Pytania? Dowiedz się więcej %(billing_help_link)s lub napisz %"
+"(billing_contact_email)s."
 
 #: templates/zerver/emails/remote_realm_billing_confirm_login.html:9
 #, python-format
@@ -3830,8 +3823,8 @@ msgid ""
 "If you don't receive an email, you can <a href=\"%(current_url)s\">find "
 "accounts for another email address</a>."
 msgstr ""
-"O ile nie dostałeś żadnego emaila w tej sprawie to <a "
-"href=\"%(current_url)s\">można poszukać konta dla innego adresu email</a>."
+"O ile nie dostałeś żadnego emaila w tej sprawie to <a href=\"%(current_url)"
+"s\">można poszukać konta dla innego adresu email</a>."
 
 #: templates/zerver/find_account.html:42
 msgid ""
@@ -4073,8 +4066,8 @@ msgid ""
 "And hundreds more through <a href=\"/integrations/zapier\">Zapier</a> and <a "
 "href=\"/integrations/ifttt\">IFTTT</a>."
 msgstr ""
-"A także setki innych za pośrednictwem <a href=\"/integrations/doc/"
-"zapier\">Zapier</a> oraz <a href=\"/integrations/doc/ifttt\">IFTTT</a>."
+"A także setki innych za pośrednictwem <a href=\"/integrations/doc/zapier\">"
+"Zapier</a> oraz <a href=\"/integrations/doc/ifttt\">IFTTT</a>."
 
 #: templates/zerver/integrations/catalog.html:40
 msgid "Search integrations"
@@ -4119,9 +4112,8 @@ msgid ""
 "href=\"%(realm_url)s\">%(realm_name)s</a>, does not allow signups using "
 "emails with your email domain."
 msgstr ""
-"Organizacja, do której chcesz dołączyć <a "
-"href=\"%(realm_url)s\">%(realm_name)s</a>, nie przyjmuje rejestracji z domen "
-"email jak twoja."
+"Organizacja, do której chcesz dołączyć <a href=\"%(realm_url)s\">%"
+"(realm_name)s</a>, nie przyjmuje rejestracji z domen email jak twoja."
 
 #: templates/zerver/invalid_email.html:27
 #, python-format
@@ -4130,9 +4122,8 @@ msgid ""
 "href=\"%(realm_url)s\">%(realm_name)s</a>, does not allow signups using "
 "disposable email addresses."
 msgstr ""
-"Organizacja, do której chcesz dołączyć <a "
-"href=\"%(realm_url)s\">%(realm_name)s</a>, nie przyjmuje rejestracji przez "
-"tymczasowy adres email."
+"Organizacja, do której chcesz dołączyć <a href=\"%(realm_url)s\">%"
+"(realm_name)s</a>, nie przyjmuje rejestracji przez tymczasowy adres email."
 
 #: templates/zerver/invalid_email.html:30
 #, python-format
@@ -4141,9 +4132,8 @@ msgid ""
 "href=\"%(realm_url)s\">%(realm_name)s</a>, does not allow signups using "
 "emails that contain \"+\"."
 msgstr ""
-"Organizacja do której chcesz dołączyć <a "
-"href=\"%(realm_url)s\">%(realm_name)s</a>, nie zezwala na rejestracje z "
-"użyciem emaila zawierającego \"+\"."
+"Organizacja do której chcesz dołączyć <a href=\"%(realm_url)s\">%(realm_name)"
+"s</a>, nie zezwala na rejestracje z użyciem emaila zawierającego \"+\"."
 
 #: templates/zerver/invalid_email.html:33
 msgid "Please sign up using a valid email address."
@@ -4170,8 +4160,8 @@ msgid ""
 "%(support_email)s\">contact Zulip support</a>."
 msgstr ""
 "Proszę spróbuj z innym adresem URL, <a href=\"%(root_domain_url)s/accounts/"
-"find/\">uzyskaj listę swoich kont Zulip Cloud </a>, bądź <a href=\"mailto:"
-"%(support_email)s\">uzyskaj pomoc Zulip</a>."
+"find/\">uzyskaj listę swoich kont Zulip Cloud </a>, bądź <a href=\"mailto:%"
+"(support_email)s\">uzyskaj pomoc Zulip</a>."
 
 #: templates/zerver/invalid_realm.html:23
 #, python-format
@@ -4180,9 +4170,9 @@ msgid ""
 "\">get a list of your accounts</a> on this server, or <a href=\"mailto:"
 "%(support_email)s\">contact this Zulip server's administrators</a>."
 msgstr ""
-"Proszę użyj innego URL, <a href=\"%(root_domain_url)s/accounts/find/"
-"\">uzyskaj listę swoich kont</a> na tym serwerze lub <a href=\"mailto:"
-"%(support_email)s\">skontaktuj się z administratorami tego serwera Zulip</a>."
+"Proszę użyj innego URL, <a href=\"%(root_domain_url)s/accounts/find/\">"
+"uzyskaj listę swoich kont</a> na tym serwerze lub <a href=\"mailto:%"
+"(support_email)s\">skontaktuj się z administratorami tego serwera Zulip</a>."
 
 #: templates/zerver/invalid_realm.html:28
 #, python-format
@@ -4255,9 +4245,9 @@ msgid ""
 "New members cannot currently join <a href=\"%(realm_url)s\">%(realm_name)s</"
 "a> because all Zulip Cloud licenses are in use."
 msgstr ""
-"Nowi członkowie chwilowo nie mogą dołączyć do <a "
-"href=\"%(realm_url)s\">%(realm_name)s</a> ponieważ wykorzystano wszystkie "
-"licencje usługi Zulip Cloud."
+"Nowi członkowie chwilowo nie mogą dołączyć do <a href=\"%(realm_url)s\">%"
+"(realm_name)s</a> ponieważ wykorzystano wszystkie licencje usługi Zulip "
+"Cloud."
 
 #: templates/zerver/no_spare_licenses.html:19
 msgid ""
@@ -4423,9 +4413,8 @@ msgid ""
 "associate your email address with."
 msgstr ""
 "Brak konta w zaimportowanych danych, które by korespondowało z adresem "
-"email, który został użyty do weryfikacji w Zulip "
-"(<strong>%(verified_email)s</strong>). Wybierz konto, które ma zostać "
-"powiązane z Twoim adresem email."
+"email, który został użyty do weryfikacji w Zulip (<strong>%(verified_email)"
+"s</strong>). Wybierz konto, które ma zostać powiązane z Twoim adresem email."
 
 #: templates/zerver/realm_import_post_process.html:31
 msgid "Select your account"
@@ -4481,9 +4470,8 @@ msgid ""
 "href=\"%(org_creation_link)s\">Create a new organization</a> if you don't "
 "have one yet."
 msgstr ""
-"<a target=\"_blank\" rel=\"noopener noreferrer\" "
-"href=\"%(org_creation_link)s\">Utwórz nową organizację</a> o ile jeszcze "
-"tego nie zrobiłeś."
+"<a target=\"_blank\" rel=\"noopener noreferrer\" href=\"%(org_creation_link)"
+"s\">Utwórz nową organizację</a> o ile jeszcze tego nie zrobiłeś."
 
 #: templates/zerver/realm_redirect.html:52
 msgid "Self-hosting Zulip?"
@@ -4495,9 +4483,9 @@ msgid ""
 "You can <a target=\"_blank\" rel=\"noopener noreferrer\" "
 "href=\"%(self_hosted_login_help)s\">log in to manage plans and billing.</a>"
 msgstr ""
-"Możesz <a target=\"_blank\" rel=\"noopener noreferrer\" "
-"href=\"%(self_hosted_login_help)s\">zalogować się aby zarządzać planami i "
-"opłatami.</a>"
+"Możesz <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"%"
+"(self_hosted_login_help)s\">zalogować się aby zarządzać planami i opłatami.</"
+"a>"
 
 #: templates/zerver/reset.html:4 templates/zerver/reset.html:12
 msgid "Reset your password"
@@ -4714,8 +4702,8 @@ msgid ""
 "You've successfully unsubscribed from Zulip %(subscription_type)s emails for "
 "<a href=\"%(realm_url)s\">%(realm_name)s</a>."
 msgstr ""
-"Udało się odsubskrybować mailing Zulip %(subscription_type)s dla <a "
-"href=\"%(realm_url)s\">%(realm_name)s</a>."
+"Udało się odsubskrybować mailing Zulip %(subscription_type)s dla <a href=\"%"
+"(realm_url)s\">%(realm_name)s</a>."
 
 #: templates/zerver/unsubscribe_success.html:27
 #, python-format
@@ -4806,8 +4794,8 @@ msgstr "Wadliwa domyślna grupa dla kanału {group_name}"
 msgid ""
 "'{channel_name}' is a default channel and cannot be added to '{group_name}'"
 msgstr ""
-"'{channel_name}' jest domyślnym kanałem i nie może zostać przypisany do "
-"'{group_name}'"
+"'{channel_name}' jest domyślnym kanałem i nie może zostać przypisany do '"
+"{group_name}'"
 
 #: zerver/actions/default_streams.py:105 zerver/actions/default_streams.py:166
 #, python-brace-format
@@ -4820,8 +4808,8 @@ msgid ""
 "Channel '{channel_name}' is already present in default channel group "
 "'{group_name}'"
 msgstr ""
-"Kanał '{channel_name}' jest już obecny w domyślnej grupie kanałów "
-"'{group_name}'"
+"Kanał '{channel_name}' jest już obecny w domyślnej grupie kanałów '"
+"{group_name}'"
 
 #: zerver/actions/default_streams.py:144
 #, python-brace-format
@@ -4829,8 +4817,8 @@ msgid ""
 "Channel '{channel_name}' is not present in default channel group "
 "'{group_name}'"
 msgstr ""
-"Kanał '{channel_name}' nie jest obecny w domyślnej grupie kanałów "
-"'{group_name}'"
+"Kanał '{channel_name}' nie jest obecny w domyślnej grupie kanałów '"
+"{group_name}'"
 
 #: zerver/actions/default_streams.py:159
 #, python-brace-format
@@ -6130,8 +6118,7 @@ msgstr "Wiadomość nie może być pusta"
 #: zerver/lib/message.py:1590
 #, python-brace-format
 msgid "You are not allowed to mention user group '{user_group_name}'."
-msgstr ""
-"Nie masz uprawnień aby wymienić grupy użytkowników '{user_group_name}'."
+msgstr "Nie masz uprawnień aby wymienić grupy użytkowników '{user_group_name}'."
 
 #: zerver/lib/message_report.py:46
 #, fuzzy, python-brace-format
@@ -6257,8 +6244,8 @@ msgid ""
 "({getting_started_url})!\n"
 msgstr ""
 "\n"
-"Aby dowiedzieć się więcej zobacz jak [korzystać z Zulip w klasie]"
-"({getting_started_url})!\n"
+"Aby dowiedzieć się więcej zobacz jak [korzystać z Zulip w klasie]("
+"{getting_started_url})!\n"
 
 #: zerver/lib/onboarding.py:96
 #, python-brace-format
@@ -6268,8 +6255,8 @@ msgid ""
 "({getting_started_url})!\n"
 msgstr ""
 "\n"
-"Aby dowiedzieć się więcej skorzystaj z [poradnika jak zacząć]"
-"({getting_started_url})!\n"
+"Aby dowiedzieć się więcej skorzystaj z [poradnika jak zacząć]("
+"{getting_started_url})!\n"
 
 #: zerver/lib/onboarding.py:104
 #, python-brace-format
@@ -6279,8 +6266,8 @@ msgid ""
 "({organization_setup_url}).\n"
 msgstr ""
 "\n"
-"Mamy też przewodnik jak [ustawić Zulip dla klasy]"
-"({organization_setup_url}).\n"
+"Mamy też przewodnik jak [ustawić Zulip dla klasy]({organization_setup_url})"
+".\n"
 
 #: zerver/lib/onboarding.py:108
 #, python-brace-format
@@ -6290,8 +6277,8 @@ msgid ""
 "({organization_setup_url}).\n"
 msgstr ""
 "\n"
-"Mamy też przewodnik dla [przenoszących organizację do Zulip]"
-"({organization_setup_url}).\n"
+"Mamy też przewodnik dla [przenoszących organizację do Zulip]("
+"{organization_setup_url}).\n"
 
 #: zerver/lib/onboarding.py:120
 #, fuzzy, python-brace-format
@@ -6517,12 +6504,12 @@ msgid ""
 "({move_content_another_channel_help_url}).\n"
 msgstr ""
 "\n"
-"O ile cokolwiek jest nie na miejscu, można [przenieść wpisy]"
-"({move_content_another_topic_help_url}),\n"
-"[przemianować]({rename_topic_help_url}) i [rozdzielić]"
-"({move_content_another_topic_help_url}) wątki,\n"
-"bądź przenieść temat [do innego kanału]"
-"({move_content_another_channel_help_url}).\n"
+"O ile cokolwiek jest nie na miejscu, można [przenieść wpisy]("
+"{move_content_another_topic_help_url}),\n"
+"[przemianować]({rename_topic_help_url}) i [rozdzielić]("
+"{move_content_another_topic_help_url}) wątki,\n"
+"bądź przenieść temat [do innego kanału]("
+"{move_content_another_channel_help_url}).\n"
 
 #: zerver/lib/onboarding.py:379
 msgid ""
@@ -6769,8 +6756,7 @@ msgstr "Błąd sieci przy próbie połączenia z usługą powiadomień push Zuli
 
 #: zerver/lib/push_notifications.py:2072
 msgid "Internal server error on Zulip push notification service, retry later."
-msgstr ""
-"Wewnętrzny błąd serwera usługi powiadomień push Zulip, spróbuj później."
+msgstr "Wewnętrzny błąd serwera usługi powiadomień push Zulip, spróbuj później."
 
 #: zerver/lib/push_notifications.py:2086
 msgid ""
@@ -7142,14 +7128,13 @@ msgstr "Wadliwy ID grupy użytkowników: {group_id}"
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:internet' group."
 msgstr ""
-"'{setting_name}' ustawienie nie można zostać ustawione dla grupy 'role:"
-"internet'."
+"'{setting_name}' ustawienie nie można zostać ustawione dla grupy "
+"'role:internet'."
 
 #: zerver/lib/user_groups.py:415
 #, python-brace-format
 msgid "'{setting_name}' setting cannot be set to 'role:nobody' group."
-msgstr ""
-"Ustawienia '{setting_name}' nie można przypisać do grupy 'role:nobody'."
+msgstr "Ustawienia '{setting_name}' nie można przypisać do grupy 'role:nobody'."
 
 #: zerver/lib/user_groups.py:425
 #, python-brace-format
@@ -7897,8 +7882,8 @@ msgid ""
 "later. Is this a good time?\n"
 msgstr ""
 "\n"
-"Poprosiłeś o odłożenie oglądania filmiku [Witaj w Zulip]"
-"({navigation_tour_video_url}) Czy teraz masz chwilę?\n"
+"Poprosiłeś o odłożenie oglądania filmiku [Witaj w Zulip]("
+"{navigation_tour_video_url}) Czy teraz masz chwilę?\n"
 
 #: zerver/views/presence.py:47
 msgid "Presence is not supported for bot users."
@@ -8617,8 +8602,8 @@ msgid ""
 "Your data export is complete. [View and download exports]"
 "({export_settings_link})."
 msgstr ""
-"Eksport danych zakończony. [View and download exports]"
-"({export_settings_link})."
+"Eksport danych zakończony. [View and download exports]("
+"{export_settings_link})."
 
 #: zilencer/auth.py:61
 msgid "The verification secret has expired"

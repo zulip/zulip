@@ -16,15 +16,15 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 04:54+0000\n"
-"PO-Revision-Date: 2025-07-17 06:37+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"PO-Revision-Date: 2026-03-31 19:22+0000\n"
+"Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Hindi <https://hosted.weblate.org/projects/zulip/django/hi/>\n"
 "Language: hi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -67,7 +67,8 @@ msgstr ""
 
 #: analytics/views/stats.py:457 analytics/views/stats.py:494
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "कोई विश्लेषण डेटा उपलब्ध नहीं है। कृपया अपने सर्वर व्यवस्थापक से संपर्क करें।"
+msgstr ""
+"कोई विश्लेषण डेटा उपलब्ध नहीं है। कृपया अपने सर्वर व्यवस्थापक से संपर्क करें।"
 
 #: corporate/lib/registration.py:35
 #, python-brace-format
@@ -4789,7 +4790,8 @@ msgstr ""
 #: zerver/forms.py:285
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
-msgstr "जिस संगठन को आप {email} के उपयोग से जोड़ने का प्रयास कर रहे हैं वह मौजूद नहीं है।"
+msgstr ""
+"जिस संगठन को आप {email} के उपयोग से जोड़ने का प्रयास कर रहे हैं वह मौजूद नहीं है।"
 
 #: zerver/forms.py:294
 #, python-brace-format
@@ -7581,7 +7583,8 @@ msgstr ""
 msgid ""
 "Can't change bot email until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
-msgstr "कोई विश्लेषण डेटा उपलब्ध नहीं है। कृपया अपने सर्वर व्यवस्थापक से संपर्क करें।"
+msgstr ""
+"कोई विश्लेषण डेटा उपलब्ध नहीं है। कृपया अपने सर्वर व्यवस्थापक से संपर्क करें।"
 
 #: zerver/views/users.py:493
 msgid "Email address already in use"

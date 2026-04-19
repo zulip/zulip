@@ -56,7 +56,7 @@
   "<z-link>Learn more</z-link> about other data export options.": "",
   "<z-link>Reminder</z-link> scheduled for {formatted_delivery_time}.": "",
   "<z-link>Upload a profile picture</z-link> for your organization.": "",
-  "<z-user></z-user> will have the same properties as it did prior to deactivation, including role, owner and channel subscriptions.": "",
+  "<z-user></z-user> will have the same properties as it did prior to deactivation, including role, owner and channel subscriptions.": "<z-user></z-user> θα έχει τις ίδιες ιδιότητες που είχε πριν την απενεργοποίηση, συμπεριλαμβανομένων των ρόλων, ιδιοκτησιών και συνδρομών σε κανάλια.",
   "<z-user></z-user> will have the same role, channel subscriptions, user group memberships, and other settings and permissions as they did prior to deactivation.": "",
   "@{name} (guest)": "@{name} (επισκέπτης)",
   "A <z-link>channel</z-link> with this name already exists.": "",

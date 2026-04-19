@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 04:54+0000\n"
-"PO-Revision-Date: 2025-08-07 23:52+0000\n"
+"PO-Revision-Date: 2026-03-31 19:16+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/zulip/django/"
 "id/>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -4808,8 +4808,7 @@ msgstr "Organisasi yang Anda coba gabung menggunakan {email} tidak tersedia."
 #, python-brace-format
 msgid ""
 "Please request an invite for {email} from the organization administrator."
-msgstr ""
-"Silakan meminta sebuah undangan untuk {email} dari pengurus organisasi."
+msgstr "Silakan meminta sebuah undangan untuk {email} dari pengurus organisasi."
 
 #: zerver/forms.py:299
 msgid "Can't join the organization: password authentication is not enabled."

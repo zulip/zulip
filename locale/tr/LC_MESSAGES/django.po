@@ -20,16 +20,16 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 04:54+0000\n"
-"PO-Revision-Date: 2025-08-07 23:52+0000\n"
+"PO-Revision-Date: 2026-03-31 19:47+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
-"Language-Team: Turkish <https://hosted.weblate.org/projects/zulip/django/tr/"
-">\n"
+"Language-Team: Turkish <https://hosted.weblate.org/projects/zulip/django/tr/>"
+"\n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -86,8 +86,8 @@ msgid ""
 msgstr ""
 "Organizasyonunuzun bütün Zulip lisansları kullanılmıştır ve yeni kullanıcı "
 "kabul edemez. Yeni kullanıcı eklenebillmesi için lütfen [lisans sayısını "
-"artırın]({billing_page_link})  ve [atıl kullanıcıları devre dışı bırakın]"
-"({deactivate_user_help_page_link})."
+"artırın]({billing_page_link})  ve [atıl kullanıcıları devre dışı bırakın]("
+"{deactivate_user_help_page_link})."
 
 #: corporate/lib/registration.py:42
 #, python-brace-format
@@ -97,8 +97,8 @@ msgid ""
 "({deactivate_user_help_page_link}) to allow more than one user to join."
 msgstr ""
 "Organizasyonunuzun yalnızca bir Zulip lisansı kaldı. Birden fazla "
-"kullanıcının katılmasına izin vermek için [lisans sayısını artırabilirsiniz]"
-"({billing_page_link}) veya [etkin olmayan kullanıcıları devre dışı "
+"kullanıcının katılmasına izin vermek için [lisans sayısını artırabilirsiniz]("
+"{billing_page_link}) veya [etkin olmayan kullanıcıları devre dışı "
 "bırakabilirsiniz]({deactivate_user_help_page_link})."
 
 #: corporate/lib/registration.py:47
@@ -109,8 +109,8 @@ msgid ""
 "({deactivate_user_help_page_link}) to allow more than two users to join."
 msgstr ""
 "Organizasyonununuzun yalnızca iki Zulip lisansı kaldı. İkiden fazla "
-"kullanıcının katılmasına izin vermek için [lisans sayısını artırabilirsiniz]"
-"({billing_page_link}) veya [etkin olmayan kullanıcıları devre dışı "
+"kullanıcının katılmasına izin vermek için [lisans sayısını artırabilirsiniz]("
+"{billing_page_link}) veya [etkin olmayan kullanıcıları devre dışı "
 "bırakabilirsiniz]({deactivate_user_help_page_link})."
 
 #: corporate/lib/registration.py:52
@@ -121,8 +121,8 @@ msgid ""
 "({deactivate_user_help_page_link}) to allow more than three users to join."
 msgstr ""
 "Organizasyonunuzun yalnızca üç Zulip lisansı kaldı. Üçten fazla kullanıcının "
-"katılmasına izin vermek için [lisans sayısını artırabilirsiniz]"
-"({billing_page_link}) veya [etkin olmayan kullanıcıları devre dışı "
+"katılmasına izin vermek için [lisans sayısını artırabilirsiniz]("
+"{billing_page_link}) veya [etkin olmayan kullanıcıları devre dışı "
 "bırakabilirsiniz]({deactivate_user_help_page_link})."
 
 #: corporate/lib/registration.py:63
@@ -316,8 +316,8 @@ msgid ""
 "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, "
 "we would really appreciate it!"
 msgstr ""
-"Kuruluşunuzun sponsorlu hosting talebi onaylandı! Ücretsiz olarak "
-"{plan_name}'na yükseltildiniz. {emoji}\n"
+"Kuruluşunuzun sponsorlu hosting talebi onaylandı! Ücretsiz olarak {plan_name}"
+"'na yükseltildiniz. {emoji}\n"
 "\n"
 "Eğer {begin_link} Zulip'i web sitenizde sponsor olarak listeleyebilirseniz "
 "{end_link} gerçekten minnettar oluruz!"
@@ -609,8 +609,8 @@ msgid ""
 "This confirms that the email address for your Zulip account has changed from "
 "%(old_email_html_tag)s to %(new_email_html_tag)s"
 msgstr ""
-"Bu, Zulip hesabınızın e-postasını %(old_email_html_tag)s dan "
-"%(new_email_html_tag)s a değiştirdiğinizi onaylar"
+"Bu, Zulip hesabınızın e-postasını %(old_email_html_tag)s dan %"
+"(new_email_html_tag)s a değiştirdiğinizi onaylar"
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
 #: templates/confirmation/redirect_to_post.html:5
@@ -1488,8 +1488,8 @@ msgid ""
 "You can find answers to frequently asked questions in the <a href=\"/help/"
 "\">Zulip help center</a>."
 msgstr ""
-"Sık sorulan soruların yanıtlarını <a href=\"/help/\">Zulip yardım merkezi</"
-"a>'nde bulabilirsiniz."
+"Sık sorulan soruların yanıtlarını <a href=\"/help/\">Zulip yardım merkezi</a>"
+"'nde bulabilirsiniz."
 
 #: templates/corporate/zulip-cloud.html:20
 #, fuzzy
@@ -1504,8 +1504,8 @@ msgid ""
 "continue."
 msgstr ""
 "Bu ekip sohbeti artık Zulip Cloud üzerinde barındırılıyor. Devam etmek için "
-"lütfen <a href=\"https://zulip.com/policies/terms\">Zulip Hizmet Şartları</"
-"a>'nı kabul edin."
+"lütfen <a href=\"https://zulip.com/policies/terms\">Zulip Hizmet Şartları</a>"
+"'nı kabul edin."
 
 #: templates/two_factor/_wizard_forms.html:26
 msgid "Or, alternatively, use one of your backup phones:"
@@ -1650,8 +1650,8 @@ msgid ""
 "href=\"%(doc_url)s\">documentation</a>."
 msgstr ""
 "Bu sunucu anlık bildirimlerini kullanacak şekilde yapılandırılmamıştır. "
-"Anlık bildirimlerini yapılandırmak için lütfen <a "
-"href=\"%(doc_url)s\">dökümantasyonu</a> inceleyin."
+"Anlık bildirimlerini yapılandırmak için lütfen <a href=\"%(doc_url)s\">"
+"dökümantasyonu</a> inceleyin."
 
 #: templates/zerver/confirm_continue_registration.html:4
 msgid "Account not found"
@@ -2060,8 +2060,8 @@ msgid ""
 "%(support_email)s\">contact this Zulip server's administrators</a> to "
 "reactivate it."
 msgstr ""
-"Herhangi bir sorunuz varsa, lütfen bu Zulip sunucusunun yöneticileriyle "
-"%(support_email)s adresinden iletişime geçin."
+"Herhangi bir sorunuz varsa, lütfen bu Zulip sunucusunun yöneticileriyle %"
+"(support_email)s adresinden iletişime geçin."
 
 #: templates/zerver/desktop_login.html:5
 msgid "Finish desktop app login"
@@ -2307,8 +2307,8 @@ msgid ""
 "If you have any questions, please contact this Zulip server's administrators "
 "at %(support_email)s."
 msgstr ""
-"Herhangi bir sorunuz varsa, lütfen bu Zulip sunucusunun yöneticileriyle "
-"%(support_email)s adresinden iletişime geçin."
+"Herhangi bir sorunuz varsa, lütfen bu Zulip sunucusunun yöneticileriyle %"
+"(support_email)s adresinden iletişime geçin."
 
 #: templates/zerver/emails/confirm_demo_organization_email.html:8
 #: templates/zerver/emails/confirm_demo_organization_email.txt:1
@@ -2433,8 +2433,8 @@ msgid ""
 "Do you have questions or feedback to share? Contact us at %(support_email)s "
 "— we'd love to help!"
 msgstr ""
-"Paylaşmak istediğiniz sorularınız veya geri bildirimleriniz mi var? Bize "
-"%(support_email)s adresinden ulaşın - yardımcı olmak isteriz!"
+"Paylaşmak istediğiniz sorularınız veya geri bildirimleriniz mi var? Bize %"
+"(support_email)s adresinden ulaşın - yardımcı olmak isteriz!"
 
 #: templates/zerver/emails/custom_email_base.pre.html:23
 #: templates/zerver/emails/custom_email_base.pre.manage_preferences_block.txt:12
@@ -2771,8 +2771,8 @@ msgid ""
 "This invitation expires in two days. If the invitation expires, you'll need "
 "to ask %(referrer_name)s for another one."
 msgstr ""
-"Bu davetiye iki gün içersinde sona eriyor. Eğer davetiye sona ererse, "
-"%(referrer_name)s'a başka bir tanesi için sorman gerekir."
+"Bu davetiye iki gün içersinde sona eriyor. Eğer davetiye sona ererse, %"
+"(referrer_name)s'a başka bir tanesi için sorman gerekir."
 
 #: templates/zerver/emails/invitation_reminder.subject.txt:1
 #, python-format
@@ -2986,8 +2986,8 @@ msgstr ""
 msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: %(user_email)s"
 msgstr ""
-"Organizasyon: %(organization_url)s Zaman: %(login_time)s E-posta: "
-"%(user_email)s"
+"Organizasyon: %(organization_url)s Zaman: %(login_time)s E-posta: %"
+"(user_email)s"
 
 #: templates/zerver/emails/notify_new_login.html:12
 #: templates/zerver/emails/notify_new_login.txt:1
@@ -3072,8 +3072,8 @@ msgid ""
 "immediately at %(support_email)s."
 msgstr ""
 "Eğer bu girişi hatırlamıyorsanız veya hesabınızın ele geçirilmiş olacağını "
-"düşünüyorsanız lütfen parolanızı%(reset_link)s adresinden yenileyin veya "
-"%(support_email)s adresinden bizimle iletişime geçin."
+"düşünüyorsanız lütfen parolanızı%(reset_link)s adresinden yenileyin veya %"
+"(support_email)s adresinden bizimle iletişime geçin."
 
 #: templates/zerver/emails/onboarding_team_to_zulip.html:10
 #, python-format
@@ -3650,8 +3650,8 @@ msgid ""
 "Your request for Zulip sponsorship has been approved! Your organization has "
 "been upgraded to the <a href=\"%(plans_link)s\">Zulip Community plan</a>."
 msgstr ""
-"Zulip sponsorluk talebiniz onaylandı! Kuruluşunuz <a "
-"href=\"%(plans_link)s\">Zulip Topluluk planına</a> yükseltildi."
+"Zulip sponsorluk talebiniz onaylandı! Kuruluşunuz <a href=\"%(plans_link)s\">"
+"Zulip Topluluk planına</a> yükseltildi."
 
 #: templates/zerver/emails/sponsorship_approved_community_plan.html:12
 #, python-format
@@ -4380,8 +4380,7 @@ msgstr "Parola sıfırlama gönderildi!"
 
 #: templates/zerver/reset_emailed.html:17
 msgid "Check your email in a few minutes to finish the process."
-msgstr ""
-"Bir kaç dakika içersinde işlemi sonlandırmak için e-postanı kontrol et."
+msgstr "Bir kaç dakika içersinde işlemi sonlandırmak için e-postanı kontrol et."
 
 #: templates/zerver/slack_import.html:5 templates/zerver/slack_import.html:13
 msgid "Import from Slack"
@@ -4731,8 +4730,7 @@ msgstr "Bu konu {user} tarafından {new_location} konumuna taşındı."
 #: zerver/actions/message_edit.py:1284
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
-msgstr ""
-"Bir mesaj {user} tarafından bu konudan {new_location} konumuna taşındı."
+msgstr "Bir mesaj {user} tarafından bu konudan {new_location} konumuna taşındı."
 
 #: zerver/actions/message_edit.py:1288
 #, python-brace-format
@@ -4746,8 +4744,7 @@ msgstr ""
 #: zerver/actions/message_edit.py:1327
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
-msgstr ""
-"Bu konu {user} tarafından {old_location} konumundan buraya taşınmıştır."
+msgstr "Bu konu {user} tarafından {old_location} konumundan buraya taşınmıştır."
 
 #: zerver/actions/message_edit.py:1332
 #, python-brace-format
@@ -4896,8 +4893,7 @@ msgstr "Sıralı liste yinelenen bağlayıcılar içermemelidir"
 
 #: zerver/actions/realm_linkifiers.py:154
 msgid "The ordered list must enumerate all existing linkifiers exactly once"
-msgstr ""
-"Sıralı liste, mevcut tüm bağlayıcıları tam olarak bir kez sıralamalıdır"
+msgstr "Sıralı liste, mevcut tüm bağlayıcıları tam olarak bir kez sıralamalıdır"
 
 #: zerver/actions/realm_settings.py:320
 #, python-brace-format
@@ -5170,8 +5166,7 @@ msgstr "{email} ile katılmak istediğiniz organizasyon mevcut değil."
 #, python-brace-format
 msgid ""
 "Please request an invite for {email} from the organization administrator."
-msgstr ""
-"Lütfen organizasyon yöneticinizden {email} için bir davetiye isteyiniz."
+msgstr "Lütfen organizasyon yöneticinizden {email} için bir davetiye isteyiniz."
 
 #: zerver/forms.py:299
 msgid "Can't join the organization: password authentication is not enabled."
@@ -6068,8 +6063,8 @@ msgid ""
 msgstr ""
 " Tebrikler, yeni bir demo Zulip organizasyonu oluşturdunuz. Bu "
 "organizasyonun 30 gün içinde otomatik olarak silineceğini unutmayın. Demo "
-"organizasyonlar hakkında daha fazla bilgiyi buradan edinebilirsiniz: "
-"%(demo_organizations_help_link)s!"
+"organizasyonlar hakkında daha fazla bilgiyi buradan edinebilirsiniz: %"
+"(demo_organizations_help_link)s!"
 
 #: zerver/lib/onboarding.py:132
 msgid ""

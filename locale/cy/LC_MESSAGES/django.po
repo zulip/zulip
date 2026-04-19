@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 04:54+0000\n"
-"PO-Revision-Date: 2025-08-07 23:52+0000\n"
+"PO-Revision-Date: 2026-03-31 19:47+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
 "Language-Team: Welsh <https://hosted.weblate.org/projects/zulip/django/cy/>\n"
 "Language: cy\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n==2) ? 1 : (n != 8 && n != "
 "11) ? 2 : 3;\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -76,9 +76,9 @@ msgid ""
 "users to join."
 msgstr ""
 "Nid oes gan eich sefydliad drwyddedau Zulip ar ôl ac ni all dderbyn "
-"defnyddwyr newydd mwyach. Plis [cynyddwch nifer y trwyddedau]"
-"({billing_page_link}) neu [deactivate defnyddwyr anactif]"
-"({deactivate_user_help_page_link}) i ganiatáu i ddefnyddwyr newydd ymuno."
+"defnyddwyr newydd mwyach. Plis [cynyddwch nifer y trwyddedau]("
+"{billing_page_link}) neu [deactivate defnyddwyr anactif]("
+"{deactivate_user_help_page_link}) i ganiatáu i ddefnyddwyr newydd ymuno."
 
 #: corporate/lib/registration.py:42
 #, python-brace-format
@@ -1452,8 +1452,8 @@ msgid ""
 "You can find answers to frequently asked questions in the <a href=\"/help/"
 "\">Zulip help center</a>."
 msgstr ""
-"Gallwch ddod o hyd i atebion i gwestiynau cyffredin yn y <a href=\"/help/"
-"\">Canolfan gymorth Zulip</a>."
+"Gallwch ddod o hyd i atebion i gwestiynau cyffredin yn y <a href=\"/help/\">"
+"Canolfan gymorth Zulip</a>."
 
 #: templates/corporate/zulip-cloud.html:20
 #, fuzzy
@@ -2266,8 +2266,8 @@ msgid ""
 "If you did not request this change, please contact us immediately at "
 "%(support_email)s."
 msgstr ""
-"Os na ofynasoch am y newid hwn, cysylltwch â ni ar unwaith ar "
-"%(support_email)s."
+"Os na ofynasoch am y newid hwn, cysylltwch â ni ar unwaith ar %"
+"(support_email)s."
 
 #: templates/zerver/emails/confirm_demo_organization_email.subject.txt:1
 #, fuzzy
@@ -2282,8 +2282,8 @@ msgid ""
 "If you did not request this change, please contact us immediately at "
 "<%(support_email)s>."
 msgstr ""
-"Os na ofynasoch am y newid hwn, cysylltwch â ni ar unwaith "
-"yn<%(support_email)s> ."
+"Os na ofynasoch am y newid hwn, cysylltwch â ni ar unwaith yn<%"
+"(support_email)s> ."
 
 #: templates/zerver/emails/confirm_new_email.html:10
 #: templates/zerver/emails/confirm_new_email.txt:4
@@ -2452,9 +2452,8 @@ msgid ""
 "content</a> in email notifications."
 msgstr ""
 "Nid yw'r e-bost hwn yn cynnwys cynnwys neges oherwydd bod gennych "
-"analluogi<a class=\"content_disabled_help_link\" "
-"href=\"%(alert_notif_url)s\">gynnwys neges yn ymddangos mewn hysbysiadau e-"
-"bost</a> ."
+"analluogi<a class=\"content_disabled_help_link\" href=\"%(alert_notif_url)"
+"s\">gynnwys neges yn ymddangos mewn hysbysiadau e-bost</a> ."
 
 #: templates/zerver/emails/digest.html:50
 #, fuzzy, python-format
@@ -2520,8 +2519,8 @@ msgid ""
 msgstr ""
 "\n"
 "Nid yw'r e-bost hwn yn cynnwys cynnwys neges oherwydd bod gennych analluogi "
-"gynnwys neges yn ymddangos mewn hysbysiadau e-bost. Gweler "
-"%(alert_notif_url)s i gael mwy o fanylion.\n"
+"gynnwys neges yn ymddangos mewn hysbysiadau e-bost. Gweler %(alert_notif_url)"
+"s i gael mwy o fanylion.\n"
 
 #: templates/zerver/emails/digest.txt:32
 #, fuzzy, python-format
@@ -2649,8 +2648,8 @@ msgstr "I ddechrau, cliciwch y botwm isod."
 #, python-format
 msgid "%(referrer_full_name)s has invited you to join %(referrer_realm_name)s"
 msgstr ""
-"Mae %(referrer_full_name)s wedi eich gwahodd i ymuno ag "
-"%(referrer_realm_name)s"
+"Mae %(referrer_full_name)s wedi eich gwahodd i ymuno ag %"
+"(referrer_realm_name)s"
 
 #: templates/zerver/emails/invitation.txt:3
 #, python-format
@@ -2860,9 +2859,9 @@ msgid ""
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at %(support_email)s."
 msgstr ""
-"Newidiwyd yr e-bost sy'n gysylltiedig â'ch cyfrif Zulip yn ddiweddar i "
-"%(new_email)s. Os na ofynasoch am y newid hwn, cysylltwch â ni ar unwaith ar "
-"%(support_email)s."
+"Newidiwyd yr e-bost sy'n gysylltiedig â'ch cyfrif Zulip yn ddiweddar i %"
+"(new_email)s. Os na ofynasoch am y newid hwn, cysylltwch â ni ar unwaith ar %"
+"(support_email)s."
 
 #: templates/zerver/emails/notify_change_in_email.html:13
 #: templates/zerver/emails/notify_change_in_email.txt:6
@@ -2886,9 +2885,9 @@ msgid ""
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at <%(support_email)s>."
 msgstr ""
-"Newidiwyd yr e-bost sy'n gysylltiedig â'ch cyfrif Zulip yn ddiweddar i "
-"%(new_email)s. Os na ofynasoch am y newid hwn, cysylltwch â ni ar unwaith "
-"yn<%(support_email)s> ."
+"Newidiwyd yr e-bost sy'n gysylltiedig â'ch cyfrif Zulip yn ddiweddar i %"
+"(new_email)s. Os na ofynasoch am y newid hwn, cysylltwch â ni ar unwaith yn<%"
+"(support_email)s> ."
 
 #: templates/zerver/emails/notify_new_login.html:4
 #, python-format
@@ -3238,8 +3237,8 @@ msgid ""
 "href=\"%(help_link)s\">reactivate your account</a>."
 msgstr ""
 "Yn flaenorol, roedd gennych gyfrif ar %(organization_url)s, ond mae wedi "
-"cael ei ddadactifadu. Gallwch gysylltu â gweinyddwr sefydliad i <a "
-"href=\"%(help_link)s\">ail-greu'ch cyfrif</a> ."
+"cael ei ddadactifadu. Gallwch gysylltu â gweinyddwr sefydliad i <a href=\"%"
+"(help_link)s\">ail-greu'ch cyfrif</a> ."
 
 #: templates/zerver/emails/password_reset.html:21
 #: templates/zerver/emails/password_reset.txt:11
@@ -3301,8 +3300,8 @@ msgid ""
 "To continue on the Zulip Cloud Standard plan, please upgrade again by going "
 "to %(upgrade_url)s."
 msgstr ""
-"I barhau ar gynllun Zulip Cloud Standard, uwchraddiwch eto trwy fynd i "
-"%(upgrade_url)s."
+"I barhau ar gynllun Zulip Cloud Standard, uwchraddiwch eto trwy fynd i %"
+"(upgrade_url)s."
 
 #: templates/zerver/emails/realm_auto_downgraded.html:22
 #, python-format

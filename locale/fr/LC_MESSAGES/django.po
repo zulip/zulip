@@ -35,8 +35,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 04:54+0000\n"
-"PO-Revision-Date: 2026-02-25 17:05+0000\n"
-"Last-Translator: Raphaël Hertzog <hertzog@debian.org>\n"
+"PO-Revision-Date: 2026-03-31 18:50+0000\n"
+"Last-Translator: Cyril Gros <cyril+weblate@velocipede.ch>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/zulip/django/fr/>"
 "\n"
 "Language: fr\n"
@@ -45,7 +45,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % "
 "1000000 == 0 ? 1 : 2;\n"
-"X-Generator: Weblate 5.16.1-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -103,9 +103,9 @@ msgid ""
 "users to join."
 msgstr ""
 "Votre organisation n'a plus de licences Zulip et ne peut plus accepter de "
-"nouveaux utilisateurs. Veuillez [augmenter le nombre de licences]"
-"({billing_page_link}) ou [désactiver les utilisateurs inactifs]"
-"({deactivate_user_help_page_link}) pour permettre à de nouveaux utilisateurs "
+"nouveaux utilisateurs. Veuillez [augmenter le nombre de licences]("
+"{billing_page_link}) ou [désactiver les utilisateurs inactifs]("
+"{deactivate_user_help_page_link}) pour permettre à de nouveaux utilisateurs "
 "de s'inscrire."
 
 #: corporate/lib/registration.py:42
@@ -155,8 +155,8 @@ msgstr ""
 "Un nouvel utilisateur ({email}) n’a pas pu rejoindre l’organisation car "
 "celle-ci ne dispose pas de suffisamment de licences Zulip. Pour permettre à "
 "de nouveaux utilisateurs de rejoindre, veuillez vous assurer que le [nombre "
-"de licences pour la période de facturation en cours et la suivante]"
-"({billing_page_link}) est supérieur au nombre actuel d’utilisateurs."
+"de licences pour la période de facturation en cours et la suivante]("
+"{billing_page_link}) est supérieur au nombre actuel d’utilisateurs."
 
 #: corporate/lib/registration.py:119
 msgid ""
@@ -418,8 +418,8 @@ msgid ""
 "If this error is unexpected, you can <a href=\"mailto:"
 "%(support_email)s\">contact support</a>."
 msgstr ""
-"Si cette erreur est inattendue, vous pouvez <a href=\"mailto:"
-"%(support_email)s\">contacter le support</a>."
+"Si cette erreur est inattendue, vous pouvez <a href=\"mailto:%(support_email)"
+"s\">contacter le support</a>."
 
 #: templates/4xx.html:11
 msgid "Access forbidden (403)"
@@ -472,8 +472,8 @@ msgid ""
 "a> with any questions."
 msgstr ""
 "Veuillez consulter <a href=\"%(status_url)s\">l’état du service Zulip Cloud</"
-"a> pour plus d’informations, et <a href=\"mailto:"
-"%(support_email)s\">contacter le support Zulip</a> pour toute question."
+"a> pour plus d’informations, et <a href=\"mailto:%(support_email)s\">"
+"contacter le support Zulip</a> pour toute question."
 
 #: templates/500.html:36
 msgid ""
@@ -657,8 +657,8 @@ msgid ""
 "This confirms that the email address for your Zulip account has changed from "
 "%(old_email_html_tag)s to %(new_email_html_tag)s"
 msgstr ""
-"Cela confirme que le courriel de votre compte Zulip est passé de "
-"%(old_email_html_tag)s à %(new_email_html_tag)s"
+"Cela confirme que le courriel de votre compte Zulip est passé de %"
+"(old_email_html_tag)s à %(new_email_html_tag)s"
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
 #: templates/confirmation/redirect_to_post.html:5
@@ -792,8 +792,8 @@ msgid ""
 msgstr ""
 "La gestion des forfaits n'est pas disponible pour cette organisation, car "
 "votre serveur Zulip utilise déjà un forfait %(server_plan_name)s, qui couvre "
-"toutes les organisations hébergées sur ce serveur. Consultez l'onglet "
-"<b>Facturation au niveau du serveur</b> des <a href=\"https://zulip.com/help/"
+"toutes les organisations hébergées sur ce serveur. Consultez l'onglet <b>"
+"Facturation au niveau du serveur</b> des <a href=\"https://zulip.com/help/"
 "self-hosted-billing#log-in-to-billing-management\">instructions de "
 "connexion</a> pour gérer le forfait de votre serveur Zulip."
 
@@ -1565,8 +1565,8 @@ msgid ""
 "continue."
 msgstr ""
 "Ce chat d&#39;équipe est maintenant hébergé sur Zulip Cloud. Veuillez "
-"accepter les <a href=\"https://zulip.com/policies/terms\">Conditions d&#39;"
-"Ctilisation de Zulip</a> pour continuer."
+"accepter les <a href=\"https://zulip.com/policies/terms\">Conditions "
+"d&#39;Ctilisation de Zulip</a> pour continuer."
 
 #: templates/two_factor/_wizard_forms.html:26
 msgid "Or, alternatively, use one of your backup phones:"
@@ -1936,8 +1936,8 @@ msgid ""
 "configuration for this organization?"
 msgstr ""
 "Souhaitez-vous modifier les paramètres de confidentialité de votre courrier "
-"électronique par rapport à la configuration par défaut de cette "
-"organisation ?"
+"électronique par rapport à la configuration par défaut de cette organisation "
+"?"
 
 #: templates/zerver/create_user/change_email_address_visibility_modal.html:15
 msgid "Who can access your email address"
@@ -2265,8 +2265,8 @@ msgid ""
 "Congratulations, you have created a new Zulip organization: "
 "<b>%(realm_name)s</b>."
 msgstr ""
-"Félicitations, vous avez créé une nouvelle organisation Zulip : "
-"<b>%(realm_name)s</b>."
+"Félicitations, vous avez créé une nouvelle organisation Zulip : <b>%"
+"(realm_name)s</b>."
 
 #: templates/zerver/emails/account_registered.html:14
 #: templates/zerver/emails/account_registered.txt:1
@@ -2361,8 +2361,8 @@ msgstr "%(realm_name)s sur Zulip : Votre nouveau compte"
 msgid ""
 "Congratulations, you have created a new Zulip organization: %(realm_name)s."
 msgstr ""
-"Félicitations, vous avez créé une nouvelle organisation Zulip : "
-"%(realm_name)s."
+"Félicitations, vous avez créé une nouvelle organisation Zulip : %(realm_name)"
+"s."
 
 #: templates/zerver/emails/account_registered.txt:6
 #, python-format
@@ -2384,8 +2384,8 @@ msgid ""
 "If you are new to Zulip, check out our getting started guide "
 "(%(getting_user_started_link)s)!"
 msgstr ""
-"Si vous êtes nouveau sur Zulip, consultez notre guide de démarrage "
-"(%(getting_user_started_link)s) !"
+"Si vous êtes nouveau sur Zulip, consultez notre guide de démarrage (%"
+"(getting_user_started_link)s) !"
 
 #: templates/zerver/emails/account_registered.txt:27
 #, python-format
@@ -3115,8 +3115,8 @@ msgstr ""
 msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: %(user_email)s"
 msgstr ""
-"Organisation : %(organization_url)s Date/heure : %(login_time)s Courriel : "
-"%(user_email)s"
+"Organisation : %(organization_url)s Date/heure : %(login_time)s Courriel : %"
+"(user_email)s"
 
 #: templates/zerver/emails/notify_new_login.html:12
 #: templates/zerver/emails/notify_new_login.txt:1
@@ -3497,8 +3497,7 @@ msgstr ""
 
 #: templates/zerver/emails/password_reset.html:13
 msgid "Click the button below to reset your password."
-msgstr ""
-"Cliquer sur le bouton ci-dessous pour réinitialiser votre mot de passe."
+msgstr "Cliquer sur le bouton ci-dessous pour réinitialiser votre mot de passe."
 
 #: templates/zerver/emails/password_reset.html:14
 msgid "Reset password"
@@ -4769,8 +4768,9 @@ msgid ""
 "href=\"mailto:%(support_email)s\">email us</a> and we'll get this squared "
 "away!"
 msgstr ""
-"Vérifiez que vous avez bien l'URL complète et réessayez, ou <a href=\"mailto:"
-"%(support_email)s\">envoyez-nous un courriel</a> et nous nous en occuperons !"
+"Vérifiez que vous avez bien l'URL complète et réessayez, ou <a "
+"href=\"mailto:%(support_email)s\">envoyez-nous un courriel</a> et nous nous "
+"en occuperons !"
 
 #: templates/zerver/unsubscribe_success.html:4
 #: templates/zerver/unsubscribe_success.html:14
@@ -5422,8 +5422,8 @@ msgid ""
 "Your account {username} has been deactivated. Please contact your "
 "organization administrator to reactivate it."
 msgstr ""
-"Votre compte {username} a été désactivé. Veuillez contacter l&#39;"
-"administrateur de votre organisation pour le réactiver."
+"Votre compte {username} a été désactivé. Veuillez contacter "
+"l&#39;administrateur de votre organisation pour le réactiver."
 
 #: zerver/forms.py:69
 msgid "The password is too weak."
@@ -5459,8 +5459,7 @@ msgstr "Merci d'utiliser votre véritable adresse électronique."
 #: zerver/forms.py:285
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
-msgstr ""
-"L'organisation que vous essayez de rejoindre avec {email} n'existe pas."
+msgstr "L'organisation que vous essayez de rejoindre avec {email} n'existe pas."
 
 #: zerver/forms.py:294
 #, python-brace-format
@@ -5766,8 +5765,7 @@ msgstr "Type d'emoji invalide."
 
 #: zerver/lib/emoji.py:131
 msgid "Must be an organization administrator or emoji author"
-msgstr ""
-"Doit être un administrateur de l'organisation ou le créateur de l'emoji"
+msgstr "Doit être un administrateur de l'organisation ou le créateur de l'emoji"
 
 #: zerver/lib/emoji.py:139
 msgid "Emoji names must end with either a letter or digit."
@@ -8742,8 +8740,7 @@ msgstr "Le secret de vérification est destiné à un autre nom d’hôte"
 
 #: zilencer/auth.py:128
 msgid "Invalid subdomain for push notifications bouncer"
-msgstr ""
-"Sous-domaine non valide pour le serveur de relai des notifications push"
+msgstr "Sous-domaine non valide pour le serveur de relai des notifications push"
 
 #: zilencer/auth.py:147
 msgid "Must validate with valid Zulip server API key"
