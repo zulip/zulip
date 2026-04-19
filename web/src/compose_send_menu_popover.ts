@@ -1,3 +1,4 @@
+import autosize from "autosize";
 import $ from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
@@ -83,6 +84,18 @@ export function open_schedule_message_menu(
                 );
             }
             const $popper = $(instance.popper);
+            const $reminder_note_textarea = $popper.find<HTMLTextAreaElement>(
+                "textarea.schedule-reminder-note",
+            );
+
+            if ($reminder_note_textarea.length > 0) {
+                $reminder_note_textarea.off("autosize:resized").on("autosize:resized", () => {
+                    // Keep popper visible in viewport when textarea height increases.
+                    void instance.popperInstance?.update();
+                });
+                autosize($reminder_note_textarea);
+            }
+
             const message_schedule_callback = (time: string | number): void => {
                 if (remind_message_id !== undefined) {
                     do_schedule_reminder(
