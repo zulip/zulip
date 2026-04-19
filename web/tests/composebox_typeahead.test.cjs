@@ -101,21 +101,17 @@ const message_util = mock_esm("../src/message_util", {
                 return true;
             }
 
-            const conversation_user_ids = [...recipient_ids, candidate_user_id];
-            const conversation_user_ids_string = conversation_user_ids.join(",");
-            const is_known_empty_conversation = message_util.get_direct_message_permission_hints(
-                conversation_user_ids_string,
-            ).is_known_empty_conversation;
             if (
-                !is_known_empty_conversation &&
-                (is_current_user_in_permission_group ||
-                    recipient_is_in_permission_group ||
-                    is_candidate_in_permission_group)
+                !is_current_user_in_permission_group &&
+                !recipient_is_in_permission_group &&
+                !is_candidate_in_permission_group
             ) {
-                return true;
+                return false;
             }
 
-            return false;
+            const conversation_user_ids_string = [...recipient_ids, candidate_user_id].join(",");
+            return !message_util.get_direct_message_permission_hints(conversation_user_ids_string)
+                .is_known_empty_conversation;
         };
     },
 });
@@ -3167,10 +3163,6 @@ test("get_pm_people respects DM permissions", ({override}) => {
 
     // With a bot already in the recipient box and sender in the initiator
     // group, another bot should always appear in suggestions.
-    override(message_util, "get_direct_message_permission_hints", () => ({
-        is_known_empty_conversation: true,
-        is_local_echo_safe: true,
-    }));
     compose_state.set_private_message_recipient_ids([notification_bot.user_id]);
     override(realm, "realm_direct_message_initiator_group", {
         direct_members: [hamlet.user_id],
