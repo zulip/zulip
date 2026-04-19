@@ -798,6 +798,7 @@
     /* Input padding and border variables */
     --input-horizontal-padding: 6px;
     --input-vertical-padding: 4px;
+    --schedule-reminder-note-padding: 3px;
     --input-border-width: 1px;
 
     /* Message date divider variables */
