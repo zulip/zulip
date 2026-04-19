@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 04:54+0000\n"
-"PO-Revision-Date: 2025-08-18 15:40+0000\n"
+"PO-Revision-Date: 2026-03-31 19:23+0000\n"
 "Last-Translator: Pavlos M <pavlos.mrls@gmail.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/zulip/django/el/>\n"
 "Language: el\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.13\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -1487,8 +1487,8 @@ msgid ""
 "<a href=\"#\" id=\"resend_email_link\">resend it</a>."
 msgstr ""
 "Αν δεν δείτε ένα email επιβεβαίωσης στον φάκελο με τα Εισερχόμενα ή τα "
-"Ανεπιθύμητα, μπορούμε να το <a href=\"#\" "
-"id=\"resend_email_link\">ξαναστείλουμε</a>."
+"Ανεπιθύμητα, μπορούμε να το <a href=\"#\" id=\"resend_email_link\">"
+"ξαναστείλουμε</a>."
 
 #: templates/zerver/app/index.html:6
 #, python-brace-format

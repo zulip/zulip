@@ -11,17 +11,17 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 04:54+0000\n"
-"PO-Revision-Date: 2025-08-07 23:52+0000\n"
+"PO-Revision-Date: 2026-03-31 19:12+0000\n"
 "Last-Translator: Alex Vandiver <alexmv@zulip.com>\n"
-"Language-Team: Serbian <https://hosted.weblate.org/projects/zulip/django/sr/"
-">\n"
+"Language-Team: Serbian <https://hosted.weblate.org/projects/zulip/django/sr/>"
+"\n"
 "Language: sr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.13-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -91,9 +91,9 @@ msgid ""
 "({deactivate_user_help_page_link}) to allow more than one user to join."
 msgstr ""
 "Ваша организација има само једну слободну Зулип лиценцу. Можете [повећати "
-"број лиценци]({billing_page_link}) или [деактивирати неактивне кориснике]"
-"({deactivate_user_help_page_link}) да би сте омогућили приступ више од "
-"једном кориснику."
+"број лиценци]({billing_page_link}) или [деактивирати неактивне кориснике]("
+"{deactivate_user_help_page_link}) да би сте омогућили приступ више од једном "
+"кориснику."
 
 #: corporate/lib/registration.py:47
 #, python-brace-format
@@ -103,8 +103,8 @@ msgid ""
 "({deactivate_user_help_page_link}) to allow more than two users to join."
 msgstr ""
 "Ваша организација има само две слободне Зулип лиценце. Можете [повећати број "
-"лиценци]({billing_page_link}) или [деактивирати неактивне кориснике]"
-"({deactivate_user_help_page_link}) да би сте омогућили приступ више од два "
+"лиценци]({billing_page_link}) или [деактивирати неактивне кориснике]("
+"{deactivate_user_help_page_link}) да би сте омогућили приступ више од два "
 "корисника."
 
 #: corporate/lib/registration.py:52
@@ -115,8 +115,8 @@ msgid ""
 "({deactivate_user_help_page_link}) to allow more than three users to join."
 msgstr ""
 "Ваша организација има само три слободне Зулип лиценце. Можете [повећати број "
-"лиценци]({billing_page_link}) или [деактивирати неактивне кориснике]"
-"({deactivate_user_help_page_link}) да би сте омогућили приступ више од три "
+"лиценци]({billing_page_link}) или [деактивирати неактивне кориснике]("
+"{deactivate_user_help_page_link}) да би сте омогућили приступ више од три "
 "корисника."
 
 #: corporate/lib/registration.py:63
@@ -198,8 +198,7 @@ msgstr ""
 
 #: corporate/lib/stripe.py:1888
 msgid "Please add a credit card before starting your free trial."
-msgstr ""
-"Молимо додајте кредитну картицу пре почетка бесплатног пробног периода."
+msgstr "Молимо додајте кредитну картицу пре почетка бесплатног пробног периода."
 
 #: corporate/lib/stripe.py:1911
 msgid "Please add a credit card to schedule upgrade."
@@ -452,8 +451,7 @@ msgstr "Аналитика за %(target_name)s | Зулип"
 
 #: templates/analytics/stats.html:18
 msgid "Analytics are fully available 24 hours after organization creation."
-msgstr ""
-"Аналитика је у потпуности доступна 24 сата након креирања организације."
+msgstr "Аналитика је у потпуности доступна 24 сата након креирања организације."
 
 #: templates/analytics/stats.html:23
 #, python-format
@@ -597,8 +595,8 @@ msgid ""
 "This confirms that the email address for your Zulip account has changed from "
 "%(old_email_html_tag)s to %(new_email_html_tag)s"
 msgstr ""
-"Ово потврђује да је адреса е-поште вашег Зулип налога промењена из "
-"%(old_email_html_tag)s у %(new_email_html_tag)s"
+"Ово потврђује да је адреса е-поште вашег Зулип налога промењена из %"
+"(old_email_html_tag)s у %(new_email_html_tag)s"
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
 #: templates/confirmation/redirect_to_post.html:5
@@ -1476,8 +1474,8 @@ msgid ""
 "You can find answers to frequently asked questions in the <a href=\"/help/"
 "\">Zulip help center</a>."
 msgstr ""
-"Можете пронаћи одговоре на често постављана питања у <a href=\"/help/"
-"\">Зулиповом центру за помоћ</a>."
+"Можете пронаћи одговоре на често постављана питања у <a href=\"/help/\">"
+"Зулиповом центру за помоћ</a>."
 
 #: templates/corporate/zulip-cloud.html:20
 #, fuzzy
@@ -1859,8 +1857,8 @@ msgid ""
 "noreferrer\">after you join</a>."
 msgstr ""
 "Такође можете променити ово подешавање <a href=\"%(root_domain_url)s/help/"
-"configure-email-visibility\" target=\"_blank\" rel=\"noopener "
-"noreferrer\">након што приступите</a>."
+"configure-email-visibility\" target=\"_blank\" rel=\"noopener noreferrer\">"
+"након што приступите</a>."
 
 #: templates/zerver/create_user/new_user_email_address_visibility.html:5
 msgid ""
@@ -2419,8 +2417,8 @@ msgid ""
 "Do you have questions or feedback to share? Contact us at %(support_email)s "
 "— we'd love to help!"
 msgstr ""
-"Да ли имате питања или утисак који би сте поделили? Контактирајте нас на "
-"%(support_email)s — волели би смо да помогнемо!"
+"Да ли имате питања или утисак који би сте поделили? Контактирајте нас на %"
+"(support_email)s — волели би смо да помогнемо!"
 
 #: templates/zerver/emails/custom_email_base.pre.html:23
 #: templates/zerver/emails/custom_email_base.pre.manage_preferences_block.txt:12
@@ -2754,8 +2752,8 @@ msgid ""
 "This invitation expires in two days. If the invitation expires, you'll need "
 "to ask %(referrer_name)s for another one."
 msgstr ""
-"Ова позивница истиче за два дана. Ако позивница истекне, мораћете замолити "
-"%(referrer_name)s за нову."
+"Ова позивница истиче за два дана. Ако позивница истекне, мораћете замолити %"
+"(referrer_name)s за нову."
 
 #: templates/zerver/emails/invitation_reminder.subject.txt:1
 #, python-format
@@ -2788,8 +2786,8 @@ msgid ""
 "Do you have questions or feedback to share? <a href=\"mailto:"
 "%(email)s\">Contact us</a> — we'd love to help!"
 msgstr ""
-"Да ли имате питања или утисак који би сте поделили? <a href=\"mailto:"
-"%(email)s\">Контактирајте нас</a> — волели би смо да помогнемо!"
+"Да ли имате питања или утисак који би сте поделили? <a href=\"mailto:%(email)"
+"s\">Контактирајте нас</a> — волели би смо да помогнемо!"
 
 #: templates/zerver/emails/missed_message.html:29
 #: templates/zerver/emails/missed_message.txt:23
@@ -2934,9 +2932,9 @@ msgid ""
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at %(support_email)s."
 msgstr ""
-"Е-пошта повезана са вашим Зулип налогом је недавно промењена у "
-"%(new_email)s. Ако ви нисте затражили ову промену, молим вас контактирајте "
-"на моментално на %(support_email)s."
+"Е-пошта повезана са вашим Зулип налогом је недавно промењена у %(new_email)"
+"s. Ако ви нисте затражили ову промену, молим вас контактирајте на моментално "
+"на %(support_email)s."
 
 #: templates/zerver/emails/notify_change_in_email.html:13
 #: templates/zerver/emails/notify_change_in_email.txt:6
@@ -2960,17 +2958,17 @@ msgid ""
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at <%(support_email)s>."
 msgstr ""
-"Е-пошта повезана са вашим Зулип налогом је недавно промењена у "
-"%(new_email)s. Ако ви нисте затражили ову промену, молим вас контактирајте "
-"на моментално на <%(support_email)s>."
+"Е-пошта повезана са вашим Зулип налогом је недавно промењена у %(new_email)"
+"s. Ако ви нисте затражили ову промену, молим вас контактирајте на моментално "
+"на <%(support_email)s>."
 
 #: templates/zerver/emails/notify_new_login.html:4
 #, python-format
 msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: %(user_email)s"
 msgstr ""
-"Организација: %(organization_url)s Време: %(login_time)s Е-пошта: "
-"%(user_email)s"
+"Организација: %(organization_url)s Време: %(login_time)s Е-пошта: %"
+"(user_email)s"
 
 #: templates/zerver/emails/notify_new_login.html:12
 #: templates/zerver/emails/notify_new_login.txt:1
@@ -3338,8 +3336,8 @@ msgid ""
 "href=\"%(help_link)s\">reactivate your account</a>."
 msgstr ""
 "Раније сте имали налог у %(organization_url)s, али је он деактивиран. Можете "
-"контактирати администратора организације да вам <a "
-"href=\"%(help_link)s\">поново активира налог</a>."
+"контактирати администратора организације да вам <a href=\"%(help_link)s\">"
+"поново активира налог</a>."
 
 #: templates/zerver/emails/password_reset.html:21
 #: templates/zerver/emails/password_reset.txt:11
@@ -3591,8 +3589,8 @@ msgid ""
 "Questions? Learn more at %(billing_help_link)s or contact "
 "%(billing_contact_email)s."
 msgstr ""
-"Питања? Сазнајте више на %(billing_help_link)s или контактирајте "
-"%(billing_contact_email)s."
+"Питања? Сазнајте више на %(billing_help_link)s или контактирајте %"
+"(billing_contact_email)s."
 
 #: templates/zerver/emails/remote_realm_billing_confirm_login.html:9
 #, python-format
@@ -4317,8 +4315,7 @@ msgstr "Потврдите лозинку"
 
 #: templates/zerver/reset_confirm.html:76
 msgid "Sorry, the link you provided is invalid or has already been used."
-msgstr ""
-"Извините, веза коју сте доставили је неисправна или је већ искоришћена."
+msgstr "Извините, веза коју сте доставили је неисправна или је већ искоришћена."
 
 #: templates/zerver/reset_done.html:4
 msgid "New password successfully set"
@@ -7278,8 +7275,7 @@ msgstr "Неисправан тип поља."
 #: zerver/views/custom_profile_fields.py:198
 #: zerver/views/custom_profile_fields.py:272
 msgid "Only 2 custom profile fields can be displayed in the profile summary."
-msgstr ""
-"Само 2 прилагођена поља профила могу бити приказана у прегледу профила."
+msgstr "Само 2 прилагођена поља профила могу бити приказана у прегледу профила."
 
 #: zerver/views/custom_profile_fields.py:231
 #: zerver/views/custom_profile_fields.py:306
@@ -7977,8 +7973,7 @@ msgstr ""
 #: zerver/views/users.py:292
 msgid ""
 "The owner permission cannot be removed from the only organization owner."
-msgstr ""
-"Дозволу власника није могуће уклонити од јединог власника организације."
+msgstr "Дозволу власника није могуће уклонити од јединог власника организације."
 
 #: zerver/views/users.py:338
 msgid "Invalid new email address."
@@ -8164,8 +8159,8 @@ msgid ""
 "Your data export is complete. [View and download exports]"
 "({export_settings_link})."
 msgstr ""
-"Извоз ваших података је завршен. [Прегледај и преузми извоз]"
-"({export_settings_link})."
+"Извоз ваших података је завршен. [Прегледај и преузми извоз]("
+"{export_settings_link})."
 
 #: zilencer/auth.py:61
 msgid "The verification secret has expired"

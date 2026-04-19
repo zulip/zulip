@@ -11,16 +11,16 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-27 04:54+0000\n"
-"PO-Revision-Date: 2025-09-17 16:39+0000\n"
+"PO-Revision-Date: 2026-03-31 18:59+0000\n"
 "Last-Translator: Achton Smidt Winther <achton@reload.dk>\n"
-"Language-Team: Danish <https://hosted.weblate.org/projects/zulip/django/da/"
-">\n"
+"Language-Team: Danish <https://hosted.weblate.org/projects/zulip/django/da/>"
+"\n"
 "Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.14-dev\n"
+"X-Generator: Weblate 5.17-dev\n"
 
 #: analytics/views/stats.py:109 zerver/decorator.py:682 zerver/decorator.py:700
 msgid "Not allowed for guest users"
@@ -87,8 +87,8 @@ msgid ""
 "({deactivate_user_help_page_link}) to allow more than one user to join."
 msgstr ""
 "Din organisation har kun én Zulip licens tilbage. Du kan [tilkøbe flere "
-"licenser]({billing_page_link}) eller [deaktivere inaktive brugere]"
-"({deactivate_user_help_page_link}) for at lukke nye brugere ind."
+"licenser]({billing_page_link}) eller [deaktivere inaktive brugere]("
+"{deactivate_user_help_page_link}) for at lukke nye brugere ind."
 
 #: corporate/lib/registration.py:47
 #, python-brace-format
@@ -98,8 +98,8 @@ msgid ""
 "({deactivate_user_help_page_link}) to allow more than two users to join."
 msgstr ""
 "Din organisation har kun to Zulip licenser tilbage. Du kan [tilkøbe flere "
-"licenser]({billing_page_link}) eller [deaktivere inaktive brugere]"
-"({deactivate_user_help_page_link}) for at lukke nye brugere ind."
+"licenser]({billing_page_link}) eller [deaktivere inaktive brugere]("
+"{deactivate_user_help_page_link}) for at lukke nye brugere ind."
 
 #: corporate/lib/registration.py:52
 #, python-brace-format
@@ -109,8 +109,8 @@ msgid ""
 "({deactivate_user_help_page_link}) to allow more than three users to join."
 msgstr ""
 "Din organisation har kun tre Zulip licenser tilbage. Du kan [tilkøbe flere "
-"licenser]({billing_page_link}) eller [deaktivere inaktive brugere]"
-"({deactivate_user_help_page_link}) for at lukke nye brugere ind."
+"licenser]({billing_page_link}) eller [deaktivere inaktive brugere]("
+"{deactivate_user_help_page_link}) for at lukke nye brugere ind."
 
 #: corporate/lib/registration.py:63
 #, python-brace-format
@@ -122,8 +122,8 @@ msgid ""
 msgstr ""
 "En ny bruger ({email}) kunne ikke tilføjes, da din organisation ikke har nok "
 "Zulip-licenser. For at tilføje nye brugere, skal du sikre dig at [antallet "
-"af licenser for den aktuelle og kommende faktueringsperiode]"
-"({billing_page_link}) er større end det aktuelle antal brugere."
+"af licenser for den aktuelle og kommende faktueringsperiode]("
+"{billing_page_link}) er større end det aktuelle antal brugere."
 
 #: corporate/lib/registration.py:119
 msgid ""
@@ -316,8 +316,8 @@ msgstr ""
 "Din organisations ansøgning om sponseret hosting er blevet godkendt! Du er "
 "blevet opgraderet til {plan_name} gratis. {emoji}\n"
 "\n"
-"Hvis I vil {begin_link}angive Zulip som sponsor på jeres "
-"hjemmeside{end_link}, sætter vi stor pris på det!"
+"Hvis I vil {begin_link}angive Zulip som sponsor på jeres hjemmeside{end_link}"
+", sætter vi stor pris på det!"
 
 #: corporate/views/billing_page.py:349
 msgid "Parameter 'confirmed' is required"
@@ -378,8 +378,8 @@ msgid ""
 "If this error is unexpected, you can <a href=\"mailto:"
 "%(support_email)s\">contact support</a>."
 msgstr ""
-"Hvis dette er en uventet fejl, kan du <a href=\"mailto:"
-"%(support_email)s\">kontakte supporten</a>."
+"Hvis dette er en uventet fejl, kan du <a href=\"mailto:%(support_email)s\">"
+"kontakte supporten</a>."
 
 #: templates/4xx.html:11
 msgid "Access forbidden (403)"
@@ -456,8 +456,8 @@ msgid ""
 "If you administer this server, you may want to check out the <a "
 "href=\"%(troubleshooting_url)s\">Zulip server troubleshooting guide</a>."
 msgstr ""
-"Hvis du administrerer denne server, kan du med fordel læse <a "
-"href=\"%(troubleshooting_url)s\">Zulip-serverens fejlfindingsvejledning</a>."
+"Hvis du administrerer denne server, kan du med fordel læse <a href=\"%"
+"(troubleshooting_url)s\">Zulip-serverens fejlfindingsvejledning</a>."
 
 #: templates/analytics/stats.html:6
 #, python-format
