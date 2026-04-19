@@ -413,7 +413,7 @@ function item_click_callback(
     const is_in_channel_narrow = narrow_state.stream_id() !== undefined;
     const is_stream_mode = compose_state.get_message_type() === "stream";
     const selected_stream_id = compose_state.stream_id();
-    const has_real_stream = selected_stream_id !== undefined && selected_stream_id !== "" && selected_stream_id !== 0;
+    const has_real_stream = selected_stream_id !== undefined && selected_stream_id !== 0;
 
     // Must be in a channel view AND composing to a valid channel
     if (!is_in_channel_narrow || !is_stream_mode || !has_real_stream) {
