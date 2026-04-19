@@ -1,0 +1,56 @@
+<section class="catch-up-time-saved" aria-labelledby="catch-up-time-saved-heading">
+    <div class="catch-up-time-saved-header">
+        <h2 id="catch-up-time-saved-heading" class="catch-up-time-saved-title">
+            <i class="zulip-icon zulip-icon-clock" aria-hidden="true"></i>
+            {{t "Time saved with catch-up" }}
+        </h2>
+        <p class="catch-up-time-saved-disclaimer">{{t "Illustrative preview — real usage metrics will ship later." }}</p>
+    </div>
+    <div class="catch-up-time-saved-grid">
+        <div class="catch-up-time-saved-hero">
+            <div class="catch-up-time-saved-hero-metric">
+                <span class="catch-up-time-saved-hero-value" aria-hidden="true">~{{minutes_saved}}</span>
+                <span class="catch-up-time-saved-hero-unit">{{t "min" }}</span>
+            </div>
+            <p class="catch-up-time-saved-hero-caption">
+                {{t "Versus roughly {minutes_linear} minutes to read the same activity linearly (estimate)." minutes_linear=minutes_linear }}
+            </p>
+        </div>
+        <div class="catch-up-time-saved-donut-block">
+            <div class="catch-up-time-saved-donut" style="--d1: {{seg_summaries_end_deg}}deg; --d2: {{seg_priority_end_deg}}deg;"></div>
+            <ul class="catch-up-time-saved-donut-legend">
+                <li><span class="catch-up-time-saved-swatch catch-up-time-saved-swatch-a"></span> {{t "Summaries & highlights" }}</li>
+                <li><span class="catch-up-time-saved-swatch catch-up-time-saved-swatch-b"></span> {{t "Mentions & decisions" }}</li>
+                <li><span class="catch-up-time-saved-swatch catch-up-time-saved-swatch-c"></span> {{t "Low-signal threads skipped" }}</li>
+            </ul>
+        </div>
+    </div>
+    <div class="catch-up-time-saved-compare">
+        <p class="catch-up-time-saved-compare-label">{{t "Time to get oriented (illustrative)" }}</p>
+        <div class="catch-up-time-saved-compare-row">
+            <span class="catch-up-time-saved-compare-name">{{t "Reading every message" }}</span>
+            <div class="catch-up-time-saved-compare-track">
+                <div class="catch-up-time-saved-compare-fill catch-up-time-saved-compare-fill-linear" style="width: {{linear_bar_pct}}%;"></div>
+            </div>
+        </div>
+        <div class="catch-up-time-saved-compare-row">
+            <span class="catch-up-time-saved-compare-name">{{t "Catch-up view" }}</span>
+            <div class="catch-up-time-saved-compare-track">
+                <div class="catch-up-time-saved-compare-fill catch-up-time-saved-compare-fill-catchup" style="width: {{catchup_bar_pct}}%;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="catch-up-time-saved-stack">
+        <p class="catch-up-time-saved-stack-label">{{t "Where catch-up focused you (sample)" }}</p>
+        <div class="catch-up-time-saved-stack-bar" role="presentation">
+            <span class="catch-up-time-saved-stack-seg catch-up-time-saved-stack-summaries" style="width: {{seg_summaries_pct}}%;"></span>
+            <span class="catch-up-time-saved-stack-seg catch-up-time-saved-stack-priority" style="width: {{seg_priority_pct}}%;"></span>
+            <span class="catch-up-time-saved-stack-seg catch-up-time-saved-stack-skipped" style="width: {{seg_skipped_pct}}%;"></span>
+        </div>
+        <div class="catch-up-time-saved-stack-legend">
+            <span><span class="catch-up-time-saved-dot catch-up-time-saved-dot-summaries"></span> {{t "Summaries" }} {{seg_summaries_pct}}%</span>
+            <span><span class="catch-up-time-saved-dot catch-up-time-saved-dot-priority"></span> {{t "Priority threads" }} {{seg_priority_pct}}%</span>
+            <span><span class="catch-up-time-saved-dot catch-up-time-saved-dot-skipped"></span> {{t "Deferred" }} {{seg_skipped_pct}}%</span>
+        </div>
+    </div>
+</section>

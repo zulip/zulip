@@ -12,7 +12,7 @@ const {initialize_user_settings} = zrequire("user_settings");
 
 initialize_user_settings({user_settings: {}});
 
-run_test("catch_up_view AI Summary mode renders page-level summary block", ({mock_template}) => {
+run_test("catch_up_view AI Summary tab has preferences and overview body mount", ({mock_template}) => {
     mock_template("catch_up_view/catch_up_view.hbs", true, (_data, html) => html);
 
     const html = require("../templates/catch_up_view/catch_up_view.hbs")({
@@ -24,22 +24,31 @@ run_test("catch_up_view AI Summary mode renders page-level summary block", ({moc
         topics: [],
         streams: [{id: 1, name: "design"}],
         has_streams: true,
-        has_ai_summary_entries: true,
-        ai_summary_entries: [
-            {
-                sender_full_name: "aaron",
-                rendered_content: "<p>Please review <strong>this</strong>.</p>",
-            },
-        ],
         is_all_filter: false,
         is_mentions_filter: false,
         is_important_filter: false,
         is_ai_summary_filter: true,
+        catch_up_summary_preferences_value: "",
+        time_saved: {
+            minutes_saved: 10,
+            minutes_linear: 35,
+            seg_summaries_pct: 42,
+            seg_priority_pct: 33,
+            seg_skipped_pct: 25,
+            seg_summaries_end_deg: 151,
+            seg_priority_end_deg: 270,
+            linear_bar_pct: 100,
+            catchup_bar_pct: 29,
+        },
     });
 
-    assert.match(html, /catch-up-ai-summary-block/);
-    assert.match(html, /aaron:/);
-    assert.match(html, /<strong>this<\/strong>/);
+    assert.match(html, /catch-up-time-saved/);
+    assert.match(html, /catch-up-ai-summary-tab/);
+    assert.match(html, /catch-up-summary-preferences/);
+    assert.match(html, /catch-up-regenerate-overview/);
+    assert.match(html, /catch-up-summary-prefs-toggle/);
+    assert.match(html, /catch-up-preferences-collapsible/);
+    assert.match(html, /catch-up-ai-summary-body/);
     assert.doesNotMatch(html, /catch-up-topics-container/);
     assert.doesNotMatch(html, /catch-up-stream-filter/);
 });
@@ -84,14 +93,25 @@ run_test("catch_up_view standard mode renders topics container and stream filter
         ],
         streams: [{id: 1, name: "design"}],
         has_streams: true,
-        has_ai_summary_entries: false,
-        ai_summary_entries: [],
         is_all_filter: true,
         is_mentions_filter: false,
         is_important_filter: false,
         is_ai_summary_filter: false,
+        catch_up_summary_preferences_value: "",
+        time_saved: {
+            minutes_saved: 12,
+            minutes_linear: 40,
+            seg_summaries_pct: 42,
+            seg_priority_pct: 33,
+            seg_skipped_pct: 25,
+            seg_summaries_end_deg: 151,
+            seg_priority_end_deg: 270,
+            linear_bar_pct: 100,
+            catchup_bar_pct: 30,
+        },
     });
 
+    assert.match(html, /catch-up-time-saved/);
     assert.match(html, /catch-up-topics-container/);
     assert.match(html, /catch-up-stream-filter/);
     assert.match(html, /catch-up-topic-card/);

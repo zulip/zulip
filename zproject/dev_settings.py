@@ -249,3 +249,5 @@ RATE_LIMITING_RULES = {
         (86400, 1000),
     ],
 }
+
+DEBUG = True
