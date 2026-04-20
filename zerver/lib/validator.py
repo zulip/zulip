@@ -477,6 +477,17 @@ def check_widget_content(widget_content: object) -> dict[str, Any]:
         )
         checker("extra_data", extra_data)
         return widget_content
+    
+    if widget_type == "propose_meeting":
+        checker = check_dict(
+            [
+                ("meeting_id", check_int),
+                ("topic", check_string),
+                ("invitees", check_list(check_int)),
+            ]
+        )
+        checker("extra_data", extra_data)
+        return widget_content
 
     raise ValidationError("unknown widget type: " + widget_type)
 
@@ -500,6 +511,23 @@ def validate_rsvp_data(rsvp_data: object, is_widget_author: bool) -> None:
         return
 
     raise ValidationError(f"Unknown type for rsvp data: {rsvp_data['type']}")
+
+def validate_propose_meeting_data(propose_data: object, is_widget_author: bool) -> None:
+    check_dict([("type", check_string)])("propose data", propose_data)
+
+    assert isinstance(propose_data, dict)
+
+    if propose_data["type"] == "availability_submitted":
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("user_id", check_int),
+            ]
+        )
+        checker("propose data", propose_data)
+        return
+
+    raise ValidationError(f"Unknown type for propose_meeting data: {propose_data['type']}")
 
 def validate_poll_data(poll_data: object, is_widget_author: bool) -> None:
     check_dict([("type", check_string)])("poll data", poll_data)

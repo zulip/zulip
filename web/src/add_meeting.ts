@@ -13,7 +13,7 @@ export function get_options_for_dropdown_widget(): Option[] {
         },
         {
             unique_id: OPTION_PROPOSE_MEETING,
-            name: $t({defaultMessage: "Propose a meeting"}),
+            name: $t({defaultMessage: "Propose a Meeting"}),
             bold_current_selection: true,
         },
     ];

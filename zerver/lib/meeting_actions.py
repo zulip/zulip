@@ -175,18 +175,18 @@ def do_create_meeting(
         MeetingSlot(meeting=meeting, start_time=start, end_time=end) for start, end in slots
     )
 
-    slot_lines = "\n".join(
-        f"- {slot.start_time.strftime('%Y-%m-%d %H:%M UTC')}"
-        + (f" – {slot.end_time.strftime('%H:%M UTC')}" if slot.end_time else "")
-        for slot in meeting.slots.all()
-    )
-    content = (
-        f"**Meeting proposed:** {topic}\n\n"
-        f"**Time options:**\n{slot_lines}\n\n"
-        f"**RSVP deadline:** {deadline.strftime('%Y-%m-%d %H:%M UTC')}\n\n"
-        f"Reply to this thread with your availability. (Meeting ID: {meeting.id})"
-    )
-    internal_send_stream_message(owner, stream, topic, content, acting_user=owner)
+    # slot_lines = "\n".join(
+    #     f"- {slot.start_time.strftime('%Y-%m-%d %H:%M UTC')}"
+    #     + (f" – {slot.end_time.strftime('%H:%M UTC')}" if slot.end_time else "")
+    #     for slot in meeting.slots.all()
+    # )
+    # content = (
+    #     f"**Meeting proposed:** {topic}\n\n"
+    #     f"**Time options:**\n{slot_lines}\n\n"
+    #     f"**RSVP deadline:** {deadline.strftime('%Y-%m-%d %H:%M UTC')}\n\n"
+    #     f"Reply to this thread with your availability. (Meeting ID: {meeting.id})"
+    # )
+    # internal_send_stream_message(owner, stream, topic, content, acting_user=owner)
 
     return meeting
 

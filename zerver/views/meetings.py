@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from django.http import HttpRequest, HttpResponse
 
@@ -14,7 +14,7 @@ from zerver.lib.meeting_actions import (
 )
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id, access_stream_for_send_message
-from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
+from zerver.lib.typed_endpoint import Json, PathOnly, typed_endpoint
 from zerver.models import Stream, UserProfile
 
 
@@ -45,40 +45,44 @@ def create_meeting(
     *,
     topic: str,
     # ISO-8601 strings; the frontend sends these as strings.
-    slots: list[dict[str, str]],
+    slots: Json[list[dict[str, str]]],
     deadline: str,
-    invite_user_ids: list[int],
-    create_channel: bool = False,
-    stream_id: int | None = None,
+    invite_user_ids: Json[list[int]],
+    create_channel: Json[bool] = False,
+    stream_id: Json[int] | None = None,
 ) -> HttpResponse:
     """POST /json/meetings"""
-    parsed_deadline = datetime.fromisoformat(deadline)
+    try:
+        parsed_deadline = datetime.fromisoformat(deadline).replace(tzinfo=timezone.utc)
 
-    parsed_slots: list[tuple[datetime, datetime | None]] = []
-    for slot in slots:
-        start = datetime.fromisoformat(slot["start_time"])
-        end = datetime.fromisoformat(slot["end_time"]) if slot.get("end_time") else None
-        parsed_slots.append((start, end))
+        parsed_slots: list[tuple[datetime, datetime | None]] = []
+        for slot in slots:
+            start = datetime.fromisoformat(slot["start_time"]).replace(tzinfo=timezone.utc)
+            end = datetime.fromisoformat(slot["end_time"]).replace(tzinfo=timezone.utc) if slot.get("end_time") else None
+            parsed_slots.append((start, end))
 
-    stream: Stream | None = None
-    if not create_channel:
-        if stream_id is None:
-            raise JsonableError("stream_id is required when create_channel is False.")
-        stream, _sub = access_stream_by_id(user_profile, stream_id)
-        access_stream_for_send_message(user_profile, stream, None)
+        stream: Stream | None = None
+        if not create_channel:
+            if stream_id is None:
+                raise JsonableError("stream_id is required when create_channel is False.")
+            stream, _sub = access_stream_by_id(user_profile, stream_id)
+            access_stream_for_send_message(user_profile, stream, None)
 
-    meeting = do_create_meeting(
-        owner=user_profile,
-        topic=topic,
-        slots=parsed_slots,
-        deadline=parsed_deadline,
-        invite_user_ids=invite_user_ids,
-        create_channel=create_channel,
-        stream=stream,
-    )
+        meeting = do_create_meeting(
+            owner=user_profile,
+            topic=topic,
+            slots=parsed_slots,
+            deadline=parsed_deadline,
+            invite_user_ids=invite_user_ids,
+            create_channel=create_channel,
+            stream=stream,
+        )
 
-    return json_success(request, data={"meeting_id": meeting.id, "stream_id": meeting.stream_id})
-
+        return json_success(request, data={"meeting_id": meeting.id, "stream_id": meeting.stream_id})
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise 
 
 @typed_endpoint
 def get_meeting(
