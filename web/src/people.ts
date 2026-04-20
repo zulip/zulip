@@ -2118,6 +2118,16 @@ function mark_unfetched_placeholder_users_inaccessible(requested_user_ids: Itera
     }
 }
 
+// The background fetch may still have many users to go, so this
+// fetches one user right away when the UI needs their data now.
+export async function fetch_placeholder_user_now(user_id: number): Promise<void> {
+    if (has_fetched_user(user_id)) {
+        return;
+    }
+    add_fetched_users(await fetch_user_batch([user_id]));
+    mark_unfetched_placeholder_users_inaccessible([user_id]);
+}
+
 export async function initialize(
     my_user_id: number,
     people_params: StateData["people"],
