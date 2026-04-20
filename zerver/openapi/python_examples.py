@@ -20,11 +20,15 @@ from email.headerregistry import Address
 from functools import wraps
 from typing import Any, TypeVar
 
+from django.core.files.base import File
 from typing_extensions import ParamSpec
 from zulip import Client
 
+from zerver.actions.realm_emoji import check_add_realm_emoji
+from zerver.lib.storage import static_path
+from zerver.models.realm_emoji import RealmEmoji
 from zerver.models.realms import get_realm
-from zerver.models.users import get_user
+from zerver.models.users import UserProfile, get_user
 from zerver.openapi.openapi import validate_against_openapi_schema
 
 ZULIP_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -59,6 +63,18 @@ def openapi_test_function(
         return _record_calls_wrapper
 
     return wrapper
+
+
+def reset_realm_uploaded_emoji(user: UserProfile) -> None:
+    # Due to the way that the test runner varies settings.LOCAL_UPLOADS_DIR
+    # we need to reset the uploaded green_tick emoji in order to generate
+    # successful realm exports for the API python and curl example tests.
+    RealmEmoji.objects.all().delete()
+    IMAGE_FILE_PATH = static_path("images/test-images/checkbox.png")
+    with open(IMAGE_FILE_PATH, "rb") as fp:
+        check_add_realm_emoji(
+            user.realm, "green_tick", user, File(fp, name="checkbox.png"), "image/png"
+        )
 
 
 def ensure_users(ids_list: list[int], user_names: list[str]) -> None:
