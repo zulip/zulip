@@ -698,6 +698,30 @@ function add_user_to_groups(group_ids: number[], user_id: number, $alert_box: JQ
 }
 
 export function show_user_profile(user_id: number, default_tab_key = "profile-tab"): void {
+    if (people.is_placeholder_user(user_id)) {
+        // An open profile can't be redrawn with the real data, so we
+        // fetch the user before opening it.
+        void (async () => {
+            try {
+                await people.fetch_placeholder_user_now(user_id);
+            } catch {
+                ui_report.error(
+                    $t_html({defaultMessage: "Failed to load user profile."}),
+                    undefined,
+                    $("#home-error"),
+                    2000,
+                );
+                on_user_profile_hide();
+                return;
+            }
+            open_user_profile(user_id, default_tab_key);
+        })();
+        return;
+    }
+    open_user_profile(user_id, default_tab_key);
+}
+
+function open_user_profile(user_id: number, default_tab_key: string): void {
     const user = people.get_by_user_id(user_id);
     // Reset these widgets so that they are created again for the opened modal.
     user_streams_list_widget = undefined;
@@ -714,10 +738,12 @@ export function show_user_profile(user_id: number, default_tab_key = "profile-ta
 
     // We currently have the main UI for editing your own profile in
     // settings for non-admins, so can_manage_profile is artificially
-    // false for those.
+    // false for those. A placeholder user's data hasn't arrived, so
+    // there is nothing to manage yet.
     const can_manage_profile =
         (current_user.is_admin || (user.is_bot && people.can_admin_user(user))) &&
-        !user.is_system_bot;
+        !user.is_system_bot &&
+        !user.is_placeholder_user;
     const args: Record<string, unknown> = {
         can_manage_profile,
         date_joined: user.is_placeholder_user

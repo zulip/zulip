@@ -2398,6 +2398,66 @@ run_test("fetch inaccessible user", async ({override, override_rewire}) => {
     assert.equal(inaccessible_user.is_inaccessible_user, true);
 });
 
+run_test("fetch_placeholder_user_now", async ({override}) => {
+    initialize();
+
+    // Set up two placeholders to exercise the active and non-active branches.
+    people.add_valid_user_id(61);
+    people.add_valid_user_id(62);
+    people.add_placeholder_user(61);
+    people.add_placeholder_user(62);
+
+    const fetched_notifications = [];
+    people.set_users_fetched_callback((user_ids) => {
+        fetched_notifications.push([...user_ids]);
+    });
+
+    override(channel, "get", ({url, data, success}) => {
+        assert.equal(url, "/json/users");
+        const requested_user_id = JSON.parse(data.user_ids)[0];
+        if (requested_user_id === 61) {
+            success({
+                members: [make_fetched_user(61)],
+                result: "success",
+                msg: "",
+            });
+        } else {
+            success({
+                members: [{...make_fetched_user(62), is_active: false}],
+                result: "success",
+                msg: "",
+            });
+        }
+    });
+
+    // A successful fetch ends the failing state of requests for users.
+    const fetch_failing_notifications = [];
+    people.set_users_fetch_failing_callback((is_failing) => {
+        fetch_failing_notifications.push(is_failing);
+    });
+    people.notify_users_fetch_failing(true);
+
+    await people.fetch_placeholder_user_now(61);
+    assert.equal(people.get_by_user_id(61).full_name, "User 61");
+    assert.deepEqual(fetched_notifications, [[61]]);
+    assert.deepEqual(fetch_failing_notifications, [true, false]);
+
+    await people.fetch_placeholder_user_now(62);
+    assert.equal(people.get_by_user_id(62).full_name, "User 62");
+    assert.ok(people.get_non_active_realm_users().some((u) => u.user_id === 62));
+    assert.deepEqual(fetched_notifications, [[61], [62]]);
+
+    // A failed request rejects, and the user stays a placeholder.
+    people.add_valid_user_id(63);
+    people.add_placeholder_user(63);
+    override(channel, "get", ({error}) => {
+        error({responseJSON: {msg: "Simulated failure"}});
+    });
+    await assert.rejects(people.fetch_placeholder_user_now(63), {message: "Simulated failure"});
+    assert.ok(people.is_placeholder_user(63));
+    assert.deepEqual(fetched_notifications, [[61], [62]]);
+});
+
 run_test("get_by_user_id", () => {
     initialize();
     people.add_active_user(maria);
