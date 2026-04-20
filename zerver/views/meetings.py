@@ -15,6 +15,7 @@ from zerver.lib.meeting_actions import (
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id, access_stream_for_send_message
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
+from zerver.lib.typed_endpoint import Json, PathOnly, typed_endpoint
 from zerver.models import Stream, UserProfile
 
 
@@ -44,12 +45,11 @@ def create_meeting(
     user_profile: UserProfile,
     *,
     topic: str,
-    # ISO-8601 strings; the frontend sends these as strings.
-    slots: list[dict[str, str]],
+    slots: Json[list[dict[str, str]]],
     deadline: str,
-    invite_user_ids: list[int],
-    create_channel: bool = False,
-    stream_id: int | None = None,
+    invite_user_ids: Json[list[int]],
+    create_channel: Json[bool] = False,
+    stream_id: Json[int] | None = None,
 ) -> HttpResponse:
     """POST /json/meetings"""
     parsed_deadline = datetime.fromisoformat(deadline)
@@ -121,7 +121,7 @@ def upsert_meeting_responses(
     *,
     meeting_id: PathOnly[int],
     # Maps slot_id (as string key from JSON) → available bool.
-    slot_responses: dict[str, bool],
+    slot_responses: Json[dict[str, bool]],
 ) -> HttpResponse:
     """PATCH /json/meetings/<meeting_id>/responses"""
     meeting = access_meeting_for_user(user_profile, meeting_id)
@@ -153,7 +153,7 @@ def confirm_meeting(
     user_profile: UserProfile,
     *,
     meeting_id: PathOnly[int],
-    winning_slot_id: int,
+    winning_slot_id: Json[int],
 ) -> HttpResponse:
     """POST /json/meetings/<meeting_id>/confirm"""
     meeting = access_meeting_for_user(user_profile, meeting_id)
