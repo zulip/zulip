@@ -257,11 +257,19 @@ def get_deployment_body(helper: Helper) -> str:
     return f"{get_sender_name(helper)} created new deployment."
 
 
+def get_deployment_status_emoji(state: str) -> str:
+    if state == "success":
+        return ":green_circle:"
+    if state in ("failure", "error"):
+        return ":cross_mark:"
+    return ":yellow_circle:"
+
+
 def get_change_deployment_status_body(helper: Helper) -> str:
     payload = helper.payload
-    return "Deployment changed status to {}.".format(
-        payload["deployment_status"]["state"].tame(check_string),
-    )
+    state = payload["deployment_status"]["state"].tame(check_string)
+    emoji = get_deployment_status_emoji(state)
+    return "{} Deployment changed status to {}.".format(emoji, state)
 
 
 def get_create_or_delete_body(action: str, helper: Helper) -> str:
@@ -561,6 +569,14 @@ def get_release_body(helper: Helper) -> str:
     return get_release_event_message(**data)
 
 
+def get_page_build_emoji(status: str) -> str:
+    if status == "built":
+        return ":green_circle:"
+    if status == "errored":
+        return ":cross_mark:"
+    return ":yellow_circle:"
+
+
 def get_page_build_body(helper: Helper) -> str:
     payload = helper.payload
     build = payload["build"]
@@ -582,7 +598,9 @@ def get_page_build_body(helper: Helper) -> str:
             ),
         )
 
-    return "GitHub Pages build, triggered by {}, {}.".format(
+    emoji = get_page_build_emoji(status)
+    return "{} GitHub Pages build, triggered by {}, {}.".format(
+        emoji,
         payload["build"]["pusher"]["login"].tame(check_string),
         action,
     )
@@ -795,13 +813,23 @@ def get_pull_request_review_requested_body(helper: Helper) -> str:
     )
 
 
+def get_check_run_conclusion_emoji(conclusion: str) -> str:
+    if conclusion == "success":
+        return ":green_circle:"
+    if conclusion in ("failure", "cancelled", "timed_out", "action_required"):
+        return ":cross_mark:"
+    return ":yellow_circle:"
+
+
 def get_check_run_body(helper: Helper) -> str:
     payload = helper.payload
     template = """
-Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}))
+{emoji} Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}))
 """.strip()
 
+    conclusion = payload["check_run"]["conclusion"].tame(check_string)
     kwargs = {
+        "emoji": get_check_run_conclusion_emoji(conclusion),
         "name": payload["check_run"]["name"].tame(check_string),
         "html_url": payload["check_run"]["html_url"].tame(check_string),
         "status": payload["check_run"]["status"].tame(check_string),
@@ -810,7 +838,7 @@ Check [{name}]({html_url}) {status} ({conclusion}). ([{short_hash}]({commit_url}
             payload["repository"]["html_url"].tame(check_string),
             payload["check_run"]["head_sha"].tame(check_string),
         ),
-        "conclusion": payload["check_run"]["conclusion"].tame(check_string),
+        "conclusion": conclusion,
     }
 
     return template.format(**kwargs)

@@ -145,7 +145,7 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("deployment", TOPIC_DEPLOYMENT, expected_message)
 
     def test_deployment_status_msg(self) -> None:
-        expected_message = "Deployment changed status to success."
+        expected_message = ":green_circle: Deployment changed status to success."
         self.check_webhook("deployment_status", TOPIC_DEPLOYMENT, expected_message)
 
     def test_fork_msg(self) -> None:
@@ -380,12 +380,12 @@ class GitHubWebhookTest(WebhookTestCase):
 
     def test_page_build_msg(self) -> None:
         expected_message = (
-            "GitHub Pages build, triggered by baxterthehacker, has finished building."
+            ":green_circle: GitHub Pages build, triggered by baxterthehacker, has finished building."
         )
         self.check_webhook("page_build", TOPIC_REPO, expected_message)
 
     def test_page_build_errored_msg(self) -> None:
-        expected_message = "GitHub Pages build, triggered by baxterthehacker, has failed: \n``` quote\nSomething went wrong.\n```."
+        expected_message = ":cross_mark: GitHub Pages build, triggered by baxterthehacker, has failed: \n``` quote\nSomething went wrong.\n```."
         self.check_webhook("page_build__errored", TOPIC_REPO, expected_message)
 
     def test_status_msg(self) -> None:
@@ -563,7 +563,7 @@ class GitHubWebhookTest(WebhookTestCase):
     def test_check_run(self) -> None:
         expected_topic_name = "hello-world / checks"
         expected_message = """
-Check [randscape](http://github.com/github/hello-world/runs/4) completed (success). ([d6fde92930d](http://github.com/github/hello-world/commit/d6fde92930d4715a2b49857d24b940956b26d2d3))
+:green_circle: Check [randscape](http://github.com/github/hello-world/runs/4) completed (success). ([d6fde92930d](http://github.com/github/hello-world/commit/d6fde92930d4715a2b49857d24b940956b26d2d3))
 """.strip()
         self.check_webhook("check_run__completed", expected_topic_name, expected_message)
 
