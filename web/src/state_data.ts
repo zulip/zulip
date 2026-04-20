@@ -670,11 +670,11 @@ export const split_state_data_schema = z.object({
         presence_last_update_id: z.optional(z.number()),
     }),
     saved_snippets: z.object({saved_snippets: z.array(saved_snippet_schema)}),
-    recurring_scheduled_messages: z
-        .object({
+    recurring_scheduled_messages: z.optional(
+        z.object({
             recurring_scheduled_messages: z.array(recurring_scheduled_message_schema),
-        })
-        .optional(),
+        }),
+    ),
     starred_messages: z.object({starred_messages: z.array(z.number())}),
     stream_data: z.object({
         subscriptions: z.array(api_stream_subscription_schema),
