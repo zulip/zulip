@@ -729,7 +729,7 @@ html {
             color: hsl(0deg 0% 40%);
 
             .registration-lead-subtitle-link {
-                color: hsl(200deg 100% 40%);
+                color: var(--color-link-portico-auth);
                 text-decoration: none;
             }
         }
@@ -1650,7 +1650,7 @@ button#register_auth_button_gitlab {
 }
 
 #cancel-slack-import {
-    color: hsl(200deg 100% 40%);
+    color: var(--color-link-portico-auth);
     text-decoration: none;
 
     &:hover,

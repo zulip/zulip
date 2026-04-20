@@ -20,6 +20,8 @@
     --color-box-copy-fine-print: hsl(223deg 43% 55%);
     --color-link: hsl(210deg 94% 42%);
     --color-link-hover: hsl(210deg 100% 50%);
+    --color-link-portico-auth: hsl(200deg 100% 40%);
+    --color-link-portico-auth-hover: hsl(200deg 100% 25%);
     --color-link-underline: hsl(210deg 94% 42% / 30%);
     --color-link-underline-hover: hsl(210deg 100% 50%);
     --color-link-underline-alternate: hsl(210deg 94% 100% / 40%);
