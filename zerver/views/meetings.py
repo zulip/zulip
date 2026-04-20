@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 from django.http import HttpRequest, HttpResponse
+from pydantic import Json
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.meeting_actions import (
@@ -14,8 +15,15 @@ from zerver.lib.meeting_actions import (
 )
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id, access_stream_for_send_message
-from zerver.lib.typed_endpoint import Json, PathOnly, typed_endpoint
+from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.models import Stream, UserProfile
+
+
+def _parse_iso_datetime_to_utc(value: str) -> datetime:
+    dt = datetime.fromisoformat(value)
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
 
 
 @typed_endpoint
@@ -44,7 +52,6 @@ def create_meeting(
     user_profile: UserProfile,
     *,
     topic: str,
-    # ISO-8601 strings; the frontend sends these as strings.
     slots: Json[list[dict[str, str]]],
     deadline: str,
     invite_user_ids: Json[list[int]],
@@ -52,37 +59,33 @@ def create_meeting(
     stream_id: Json[int] | None = None,
 ) -> HttpResponse:
     """POST /json/meetings"""
-    try:
-        parsed_deadline = datetime.fromisoformat(deadline).replace(tzinfo=timezone.utc)
+    parsed_deadline = _parse_iso_datetime_to_utc(deadline)
 
-        parsed_slots: list[tuple[datetime, datetime | None]] = []
-        for slot in slots:
-            start = datetime.fromisoformat(slot["start_time"]).replace(tzinfo=timezone.utc)
-            end = datetime.fromisoformat(slot["end_time"]).replace(tzinfo=timezone.utc) if slot.get("end_time") else None
-            parsed_slots.append((start, end))
+    parsed_slots: list[tuple[datetime, datetime | None]] = []
+    for slot in slots:
+        start = _parse_iso_datetime_to_utc(slot["start_time"])
+        end = _parse_iso_datetime_to_utc(slot["end_time"]) if slot.get("end_time") else None
+        parsed_slots.append((start, end))
 
-        stream: Stream | None = None
-        if not create_channel:
-            if stream_id is None:
-                raise JsonableError("stream_id is required when create_channel is False.")
-            stream, _sub = access_stream_by_id(user_profile, stream_id)
-            access_stream_for_send_message(user_profile, stream, None)
+    stream: Stream | None = None
+    if not create_channel:
+        if stream_id is None:
+            raise JsonableError("stream_id is required when create_channel is False.")
+        stream, _sub = access_stream_by_id(user_profile, stream_id)
+        access_stream_for_send_message(user_profile, stream, None)
 
-        meeting = do_create_meeting(
-            owner=user_profile,
-            topic=topic,
-            slots=parsed_slots,
-            deadline=parsed_deadline,
-            invite_user_ids=invite_user_ids,
-            create_channel=create_channel,
-            stream=stream,
-        )
+    meeting = do_create_meeting(
+        owner=user_profile,
+        topic=topic,
+        slots=parsed_slots,
+        deadline=parsed_deadline,
+        invite_user_ids=invite_user_ids,
+        create_channel=create_channel,
+        stream=stream,
+    )
 
-        return json_success(request, data={"meeting_id": meeting.id, "stream_id": meeting.stream_id})
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise 
+    return json_success(request, data={"meeting_id": meeting.id, "stream_id": meeting.stream_id})
+
 
 @typed_endpoint
 def get_meeting(
@@ -124,8 +127,7 @@ def upsert_meeting_responses(
     user_profile: UserProfile,
     *,
     meeting_id: PathOnly[int],
-    # Maps slot_id (as string key from JSON) → available bool.
-    slot_responses: dict[str, bool],
+    slot_responses: Json[dict[str, bool]],
 ) -> HttpResponse:
     """PATCH /json/meetings/<meeting_id>/responses"""
     meeting = access_meeting_for_user(user_profile, meeting_id)
@@ -157,7 +159,7 @@ def confirm_meeting(
     user_profile: UserProfile,
     *,
     meeting_id: PathOnly[int],
-    winning_slot_id: int,
+    winning_slot_id: Json[int],
 ) -> HttpResponse:
     """POST /json/meetings/<meeting_id>/confirm"""
     meeting = access_meeting_for_user(user_profile, meeting_id)

@@ -212,3 +212,53 @@ run_test("setup only creates the dropdown widget once", () => {
 
     assert.ok(add_meeting_ui.__test_only.get_composebox_widget_flag());
 });
+
+// ---------------------------------------------------------------------------
+// update_rsvp_submit_button_state - stream_id undefined cases
+// ---------------------------------------------------------------------------
+
+run_test("submit button disabled when stream_id is undefined", () => {
+    // Set stream_id to undefined (as in DM narrow)
+    current_stream_id = undefined;
+
+    // Fill other required fields
+    $("#rsvp-meeting-topic").val("Team sync");
+    $("#rsvp-meeting-datetime-value").val("2026-03-24T14:30");
+
+    // Trigger update_rsvp_submit_button_state manually
+    add_meeting_ui.__test_only.update_rsvp_submit_button_state();
+
+    // Verify button is disabled
+    assert.ok($("#add-rsvp-meeting-modal .dialog_submit_button").prop("disabled"));
+});
+
+run_test("submit button disabled when stream_id is undefined even with invitees", () => {
+    current_stream_id = undefined;
+
+    $("#rsvp-meeting-topic").val("Team sync");
+    $("#rsvp-meeting-datetime-value").val("2026-03-24T14:30");
+
+    // Mock invite_users_widget with users
+    add_meeting_ui.__test_only.set_invite_users_widget({
+        get_user_ids: () => [100, 101], // alice and bob
+    });
+
+    add_meeting_ui.__test_only.update_rsvp_submit_button_state();
+
+    assert.ok($("#add-rsvp-meeting-modal .dialog_submit_button").prop("disabled"));
+});
+
+run_test("submit button disabled when stream_id is undefined with all fields filled", () => {
+    // All fields filled, but stream_id is undefined
+    current_stream_id = undefined;
+    $("#rsvp-meeting-topic").val("Team sync");
+    $("#rsvp-meeting-datetime-value").val("2026-03-24T14:30");
+    add_meeting_ui.__test_only.set_invite_users_widget({
+        get_user_ids: () => [100],
+    });
+
+    add_meeting_ui.__test_only.update_rsvp_submit_button_state();
+
+    // Button should still be disabled, not in channel narrow
+    assert.ok($("#add-rsvp-meeting-modal .dialog_submit_button").prop("disabled"));
+});
