@@ -29,12 +29,11 @@
                 <i class="zulip-icon zulip-icon-hash" aria-hidden="true"></i>
                 {{total_topics}} {{t "topics" }}
             </span>
-            <button id="catch-up-overview-btn" class="catch-up-overview-btn" tabindex="0">
-                ✦ {{t "AI Summary" }}
-            </button>
         </div>
     </div>
-    <div id="catch-up-overview-panel" class="catch-up-overview-panel" style="display:none;"></div>
+    {{#if time_saved}}
+    {{> catch_up_time_saved time_saved}}
+    {{/if}}
     <div class="catch-up-filters" role="group" aria-label="{{t 'Filters' }}">
         <div class="catch-up-filter-buttons">
             <button class="catch-up-filter-btn {{#if is_all_filter}}active{{/if}}" data-filter="all" tabindex="0">
@@ -65,19 +64,21 @@
         {{/if}}
     </div>
     {{#if is_ai_summary_filter}}
-    <div class="catch-up-ai-summary-block">
-        {{#if has_ai_summary_entries}}
-        <ul class="catch-up-ai-summary-list">
-            {{#each ai_summary_entries}}
-            <li class="catch-up-ai-summary-item">
-                <strong class="catch-up-ai-summary-sender">{{sender_full_name}}:</strong>
-                <div class="catch-up-ai-summary-message rendered_markdown">{{rendered_markdown rendered_content}}</div>
-            </li>
-            {{/each}}
-        </ul>
-        {{else}}
-        <p class="catch-up-ai-summary-empty">{{t "No messages available for the summary view." }}</p>
-        {{/if}}
+    <div class="catch-up-ai-summary-tab">
+        <div class="catch-up-ai-summary-toolbar">
+            <button type="button" id="catch-up-summary-prefs-toggle" class="catch-up-summary-prefs-toggle" aria-expanded="false" aria-controls="catch-up-preferences-collapsible">
+                {{t "Instructions" }}
+            </button>
+            <button type="button" id="catch-up-regenerate-overview" class="catch-up-regenerate-overview-btn">
+                {{t "Regenerate summary" }}
+            </button>
+        </div>
+        <div id="catch-up-preferences-collapsible" class="catch-up-preferences-collapsible" style="display: none;" aria-label="{{t 'Summary preferences' }}">
+            <label for="catch-up-summary-preferences" class="catch-up-preferences-label">{{t "Summary preferences" }}</label>
+            <p class="catch-up-preferences-hint">{{t "Optional instructions added to the AI prompt (tone, focus, what to skip)." }}</p>
+            <textarea id="catch-up-summary-preferences" class="catch-up-summary-preferences" rows="4" maxlength="4000" placeholder="{{t 'E.g. focus on decisions and blockers; skip social chatter.' }}">{{catch_up_summary_preferences_value}}</textarea>
+        </div>
+        <div id="catch-up-ai-summary-body" class="catch-up-ai-summary-body"></div>
     </div>
     {{else}}
     <div id="catch-up-no-filter-results" class="catch-up-no-filter-results" style="display: none;">

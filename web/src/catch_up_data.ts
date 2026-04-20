@@ -102,6 +102,53 @@ export async function fetch_topic_summary(
     });
 }
 
+/** Response shape from GET/POST `/json/catch-up/overview` (json_success payload). */
+export type CatchUpOverviewResponse = {
+    result?: string;
+    structured: boolean;
+    overview: string;
+    keywords: string[];
+    action_items: {
+        text: string;
+        assignee: string | null;
+        message_id: number | null;
+        narrow_url: string | null;
+    }[];
+    topics: {
+        stream: string;
+        topic: string;
+        summary: string;
+        narrow_url: string;
+        key_messages: {id: number; excerpt: string; narrow_url: string}[];
+    }[];
+    model_used: string;
+    message_count: number;
+};
+
+export async function fetch_catch_up_overview(
+    summary_preferences: string,
+): Promise<CatchUpOverviewResponse> {
+    const clipped = summary_preferences.slice(0, 4000);
+    return new Promise((resolve, reject) => {
+        void channel.post({
+            url: "/json/catch-up/overview",
+            data: {
+                summary_preferences: JSON.stringify(clipped),
+            },
+            success(raw_data) {
+                resolve(raw_data as CatchUpOverviewResponse);
+            },
+            error(xhr: JQuery.jqXHR) {
+                const parsed = xhr.responseJSON as {msg?: string} | undefined;
+                const msg =
+                    parsed?.msg ??
+                    `Failed to fetch catch-up overview (${String(xhr.status)})`;
+                reject(new Error(msg));
+            },
+        });
+    });
+}
+
 export function report_catch_up_usage(duration_ms: number): void {
     // Best-effort analytics; ignore failures.
     if (!Number.isFinite(duration_ms) || duration_ms <= 0) {

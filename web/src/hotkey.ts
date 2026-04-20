@@ -885,7 +885,9 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         case "vim_right":
         case "page_up":
         case "page_down":
-            if (catch_up_ui.is_in_focus()) {
+            // Skip when typing in the catch-up preferences textarea (or any
+            // input): otherwise vim keys like `l`/`h` are eaten as navigation.
+            if (catch_up_ui.is_in_focus() && !processing_text()) {
                 return catch_up_ui.change_focused_element(event_name);
             }
     }

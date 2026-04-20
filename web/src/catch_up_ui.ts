@@ -6,6 +6,7 @@ import render_catch_up_view from "../templates/catch_up_view/catch_up_view.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import * as catch_up_data from "./catch_up_data.ts";
+import type {CatchUpOverviewResponse} from "./catch_up_data.ts";
 import type {CatchUpTopic} from "./catch_up_data.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as hash_util from "./hash_util.ts";
@@ -46,6 +47,12 @@ function stop_and_report_catch_up_usage_timer(): void {
 type FilterMode = "all" | "mentions" | "important" | "ai-summary";
 let current_filter: FilterMode = "all";
 let current_stream_filter: number | "all" = "all";
+
+/** Draft text for catch-up overview prompt preferences (survives filter re-renders). */
+let summary_preferences_draft = "";
+
+/** Whether the AI Summary tab instructions textarea is visible (hidden by default). */
+let ai_summary_instructions_expanded = false;
 
 // Keyboard navigation state
 let card_focus = -1;
@@ -139,21 +146,38 @@ function prepare_topic_for_render(topic: CatchUpTopic): Record<string, unknown> 
     };
 }
 
-function get_ai_summary_entries(
-    topics: CatchUpTopic[],
-): Array<{sender_full_name: string; rendered_content: string}> {
-    const entries: Array<{sender_full_name: string; rendered_content: string}> = [];
+/** Illustrative “time saved” metrics for the catch-up tab (dummy visualization). */
+function prepare_time_saved_context(
+    data: catch_up_data.CatchUpData,
+): Record<string, unknown> {
+    const messages = data.total_messages;
+    const topics = data.total_topics;
+    const minutes_saved = Math.min(120, Math.max(10, Math.round(messages * 0.4 + topics * 2.5)));
+    const minutes_linear = Math.min(480, Math.max(35, Math.round(messages * 1.35 + topics * 6)));
 
-    for (const topic of topics) {
-        for (const message of topic.all_messages) {
-            entries.push({
-                sender_full_name: message.sender_full_name,
-                rendered_content: message.rendered_content ?? message.content,
-            });
-        }
-    }
+    const seg_summaries_pct = 42;
+    const seg_priority_pct = 33;
+    const seg_skipped_pct = 25;
 
-    return entries;
+    const d1 = Math.round((360 * seg_summaries_pct) / 100);
+    const d2 = d1 + Math.round((360 * seg_priority_pct) / 100);
+
+    const catchup_bar_pct = Math.max(
+        18,
+        Math.min(100, Math.round((minutes_saved / minutes_linear) * 100)),
+    );
+
+    return {
+        minutes_saved,
+        minutes_linear,
+        seg_summaries_pct,
+        seg_priority_pct,
+        seg_skipped_pct,
+        seg_summaries_end_deg: d1,
+        seg_priority_end_deg: d2,
+        linear_bar_pct: 100,
+        catchup_bar_pct,
+    };
 }
 
 function get_unique_streams(
@@ -184,9 +208,13 @@ function render_empty(): void {
 }
 
 function render_data(data: catch_up_data.CatchUpData): void {
+    const $prefs_field = $("#catch-up-summary-preferences");
+    if ($prefs_field.length > 0) {
+        summary_preferences_draft = String($prefs_field.val() ?? "");
+    }
+
     const topics = data.topics.map((topic) => prepare_topic_for_render(topic));
     const streams = get_unique_streams(data.topics);
-    const ai_summary_entries = get_ai_summary_entries(data.topics);
 
     const html = render_catch_up_view({
         loading: false,
@@ -197,12 +225,12 @@ function render_data(data: catch_up_data.CatchUpData): void {
         topics,
         streams,
         has_streams: streams.length > 0,
-        has_ai_summary_entries: ai_summary_entries.length > 0,
-        ai_summary_entries,
         is_all_filter: current_filter === "all",
         is_mentions_filter: current_filter === "mentions",
         is_important_filter: current_filter === "important",
         is_ai_summary_filter: current_filter === "ai-summary",
+        catch_up_summary_preferences_value: summary_preferences_draft,
+        time_saved: prepare_time_saved_context(data),
     });
 
     $("#catch-up-pane").html(html);
@@ -217,8 +245,26 @@ function render_data(data: catch_up_data.CatchUpData): void {
     card_focus = -1;
 
     setup_event_handlers();
-    if (current_filter !== "ai-summary") {
+    if (current_filter === "ai-summary") {
+        sync_ai_summary_instructions_visibility();
+        load_ai_summary_overview(false);
+    } else {
         apply_filters();
+    }
+}
+
+function sync_ai_summary_instructions_visibility(): void {
+    const $block = $("#catch-up-preferences-collapsible");
+    const $toggle = $("#catch-up-summary-prefs-toggle");
+    if ($block.length === 0 || $toggle.length === 0) {
+        return;
+    }
+    if (ai_summary_instructions_expanded) {
+        $block.show();
+        $toggle.attr("aria-expanded", "true");
+    } else {
+        $block.hide();
+        $toggle.attr("aria-expanded", "false");
     }
 }
 
@@ -229,11 +275,31 @@ function setup_event_handlers(): void {
         if (!filter) {
             return;
         }
+        if (current_filter === "ai-summary" && filter !== "ai-summary") {
+            ai_summary_instructions_expanded = false;
+        }
         current_filter = filter;
         const data = catch_up_data.get_current_data();
         if (data !== undefined) {
             render_data(data);
         }
+    });
+
+    $("#catch-up-summary-preferences").on("input", function (this: HTMLTextAreaElement) {
+        summary_preferences_draft = this.value;
+    });
+
+    $("#catch-up-summary-prefs-toggle").on("click", () => {
+        ai_summary_instructions_expanded = !ai_summary_instructions_expanded;
+        sync_ai_summary_instructions_visibility();
+    });
+
+    $("#catch-up-regenerate-overview").on("click", () => {
+        const $ta = $("#catch-up-summary-preferences");
+        if ($ta.length > 0) {
+            summary_preferences_draft = String($ta.val() ?? "");
+        }
+        load_ai_summary_overview(true);
     });
 
     // Stream filter dropdown.
@@ -553,40 +619,79 @@ export function hide(): void {
     card_focus = -1;
     current_filter = "all";
     current_stream_filter = "all";
-    overview_open = false;
     cached_overview = null;
+    cached_overview_preferences_key = "";
+    summary_preferences_draft = "";
+    ai_summary_instructions_expanded = false;
     catch_up_data.clear_data();
 }
 
-// ── Global AI Summary (US-08: context linking across all missed messages) ─────
+// ── AI Summary tab: POST /json/catch-up/overview (US-08) ──────────────────────
 
-type OverviewActionItem = {
-    text: string;
-    assignee: string | null;
-    message_id: number | null;
-    narrow_url: string | null;
-};
+type OverviewResponse = CatchUpOverviewResponse;
 
-type OverviewTopic = {
-    stream: string;
-    topic: string;
-    summary: string;
-    narrow_url: string;
-    key_messages: {id: number; excerpt: string; narrow_url: string}[];
-};
-
-type OverviewResponse = {
-    structured: boolean;
-    overview: string;
-    keywords: string[];
-    action_items: OverviewActionItem[];
-    topics: OverviewTopic[];
-    model_used: string;
-    message_count: number;
-};
-
-let overview_open = false;
 let cached_overview: OverviewResponse | null = null;
+/** Preferences string used for `cached_overview`; regenerated when preferences differ. */
+let cached_overview_preferences_key = "";
+
+function wrap_overview_html(inner: string): string {
+    return `<div class="catch-up-overview-panel">${inner}</div>`;
+}
+
+function load_ai_summary_overview(force: boolean): void {
+    const $body = $("#catch-up-ai-summary-body");
+    if ($body.length === 0) {
+        return;
+    }
+
+    const prefs = String($("#catch-up-summary-preferences").val() ?? summary_preferences_draft);
+
+    if (
+        !force &&
+        cached_overview !== null &&
+        cached_overview_preferences_key === prefs
+    ) {
+        $body.html(
+            wrap_overview_html(
+                render_catch_up_overview_panel(prepare_overview_context(cached_overview)),
+            ),
+        );
+        return;
+    }
+
+    $body.html(
+        wrap_overview_html(
+            render_catch_up_overview_status({is_loading: true, error_msg: ""}),
+        ),
+    );
+
+    void catch_up_data
+        .fetch_catch_up_overview(prefs)
+        .then((data: OverviewResponse) => {
+            cached_overview = data;
+            cached_overview_preferences_key = prefs;
+            if (!$("#catch-up-ai-summary-body").length) {
+                return;
+            }
+            $("#catch-up-ai-summary-body").html(
+                wrap_overview_html(
+                    render_catch_up_overview_panel(prepare_overview_context(data)),
+                ),
+            );
+        })
+        .catch((error: unknown) => {
+            const error_msg =
+                error instanceof Error ? error.message : "Failed to generate summary.";
+            if (!$("#catch-up-ai-summary-body").length) {
+                return;
+            }
+            $("#catch-up-ai-summary-body").html(
+                wrap_overview_html(
+                    render_catch_up_overview_status({is_loading: false, error_msg}),
+                ),
+            );
+        });
+}
 
 function resolve_topic_url(stream: string, topic: string): string {
     const sub = stream_data.get_sub_by_name(stream);
@@ -630,33 +735,3 @@ function prepare_overview_context(data: OverviewResponse): object {
     };
 }
 
-$(document).on("click", "#catch-up-overview-btn", () => {
-    overview_open = !overview_open;
-    const $panel = $("#catch-up-overview-panel");
-
-    if (!overview_open) {
-        $panel.slideUp(150);
-        return;
-    }
-
-    if (cached_overview) {
-        $panel.html(render_catch_up_overview_panel(prepare_overview_context(cached_overview))).slideDown(160);
-        return;
-    }
-
-    $panel
-        .html(render_catch_up_overview_status({is_loading: true, error_msg: ""}))
-        .slideDown(160);
-
-    void $.get("/json/catch-up/overview")
-        .done((data: {result: string} & OverviewResponse) => {
-            cached_overview = data;
-            if (overview_open) {
-                $panel.html(render_catch_up_overview_panel(prepare_overview_context(data)));
-            }
-        })
-        .fail((xhr: {responseJSON?: {msg?: string}}) => {
-            const error_msg = (xhr.responseJSON?.msg) ?? "Failed to generate summary.";
-            $panel.html(render_catch_up_overview_status({is_loading: false, error_msg}));
-        });
-});
