@@ -210,7 +210,7 @@ function populate_rsvp_user_dropdown(): void {
   );
   const users = people
     .get_realm_users()
-    .filter((user) => !already_added_ids.has(user.user_id));
+    .filter((user) => !already_added_ids.has(user.user_id) && !user.is_bot);
 
   if (users.length === 0) {
     $dropdown.append(
@@ -252,7 +252,7 @@ function populate_propose_user_dropdown(): void {
   $dropdown.empty();
 
   const already_added_ids = new Set(user_pill.get_user_ids(invite_users_widget));
-  const users = people.get_realm_users().filter((u) => !already_added_ids.has(u.user_id));
+  const users = people.get_realm_users().filter((u) => !already_added_ids.has(u.user_id) && !u.is_bot);
 
   if (users.length === 0) {
     $dropdown.append(
@@ -912,7 +912,7 @@ function on_add_all_users_click(): void {
     }
 
     const user = people.get_by_user_id(id);
-    if (user) {
+    if (user && !user.is_bot) {
       user_pill.append_user(user, invite_users_widget);
     }
   }
