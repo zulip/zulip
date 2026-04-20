@@ -589,6 +589,20 @@ users who haven't personally configured it.
             configure_default_new_user_settings_url="/help/configure-default-new-user-settings",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=25,
+        message="""
+**Web and desktop updates**
+- You can now instantly [scroll to any date]({scroll_to_date_url}) in the
+message feed, whether you're viewing a conversation, a channel feed, search
+results, or anything else.
+- You can now [quote or forward]({quote_or_forward_url}) selected text from
+several messages at once using the `>` and `<` keyboard shortcuts.
+""".format(
+            scroll_to_date_url="/help/scroll-to-date",
+            quote_or_forward_url="/help/quote-or-forward-a-message",
+        ),
+    ),
 ]
 
 
