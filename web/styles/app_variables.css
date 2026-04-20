@@ -1830,7 +1830,7 @@
     );
     --color-background-image-thumbnail-hover: light-dark(
         hsl(0deg 0% 0% / 30%),
-        hsl(0deg 0% 100% / 45%)
+        hsl(0deg 0% 100% / 35%)
     );
 
     /* Icon colors */
