@@ -216,11 +216,26 @@ function rsvp_meeting_modal_post_render(): void {
 
     populate_user_dropdown();
 
-    $dropdown.find(".rsvp-user-option").each(function () {
-      const name = $(this).find(".user-name").text().toLowerCase();
-      const email = $(this).find(".user-email").text().toLowerCase();
-      $(this).toggle(name.includes(query) || email.includes(query));
-    });
+    const $options = $dropdown.find(".rsvp-user-option").toArray();
+    const starts_with: HTMLElement[] = [];
+
+    for (const el of $options) {
+      const name = $(el).find(".user-name").text().toLowerCase();
+      const email = $(el).find(".user-email").text().toLowerCase();
+      if (name.startsWith(query) || email.startsWith(query)) {
+        starts_with.push(el);
+      }
+    }
+
+    $dropdown.empty();
+    for (const el of starts_with) {
+      $dropdown.append(el);
+    }
+
+    if (starts_with.length === 0) {
+      $dropdown.hide();
+      return;
+    }
 
     const containerEl = $("#rsvp-invite-users-container")[0];
     if (containerEl) {
@@ -437,6 +452,32 @@ function item_click_callback(
     });
   } else if (current_value === add_meeting.OPTION_PROPOSE_MEETING) {
     // TODO: implement "Propose a meeting" flow
+    void import("./meeting_availability_data.ts").then(
+      ({MeetingAvailabilityData}) => {
+        void import("./meeting_availability_submission_ui.ts").then(
+          ({open_availability_modal}) => {
+            const test_data = new MeetingAvailabilityData({
+              topic: "Team Sync",
+              dates: [
+                "2026-04-07",
+                "2026-04-08",
+                "2026-04-09",
+                "2026-04-10",
+                "2026-04-11",
+              ],
+              start_time: "09:00",
+              end_time: "11:00",
+              slot_duration_mins: 30,
+              invitees: [6, 7, 8],
+              current_user_id: 6,
+            });
+            open_availability_modal(test_data, (event) => {
+              console.log("Submitted:", event);
+            });
+          },
+        );
+      },
+    );
   }
 }
 
