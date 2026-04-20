@@ -2,11 +2,12 @@ import $ from "jquery";
 import * as z from "zod/mini";
 
 import render_unsubscribe_private_stream_modal from "../templates/confirm_dialog/confirm_unsubscribe_private_stream.hbs";
-import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
+import render_decorated_channel_name from "../templates/decorated_channel_name.hbs";
 import render_new_channel_members_title from "../templates/stream_settings/new_channel_members_title.hbs";
 import render_selected_stream_title from "../templates/stream_settings/selected_stream_title.hbs";
 
 import * as blueslip from "./blueslip.ts";
+import * as buttons from "./buttons.ts";
 import * as channel from "./channel.ts";
 import * as channel_folders from "./channel_folders.ts";
 import * as channel_folders_ui from "./channel_folders_ui.ts";
@@ -36,7 +37,7 @@ export let archived_status_filter_dropdown_widget: DropdownWidget;
 export let channel_creation_privacy_widget: DropdownWidget;
 let folder_filter_dropdown_widget: DropdownWidget;
 
-function set_visibility_for_archive_and_unarchive_buttons(sub: StreamSubscription): void {
+function set_visibility_for_stream_title_buttons(sub: StreamSubscription): void {
     // This is for the Archive/Unarchive button in the right panel.
     const $archive_button = $(
         `.stream-title-buttons[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .deactivate`,
@@ -45,9 +46,14 @@ function set_visibility_for_archive_and_unarchive_buttons(sub: StreamSubscriptio
         `.stream-title-buttons[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] .reactivate`,
     );
 
+    const $edit_stream_button = $(
+        `.stream-title-buttons[data-stream-id='${CSS.escape(sub.stream_id.toString())}'] #channel_title_open_channel_info_modal`,
+    );
+
     if (!stream_data.can_administer_channel(sub)) {
         $archive_button.hide();
         $unarchive_button.hide();
+        $edit_stream_button.hide();
         return;
     }
 
@@ -77,7 +83,7 @@ export function set_right_panel_title(sub: StreamSubscription): void {
             }),
         )
         .toggleClass("new-channel-members-title", false);
-    set_visibility_for_archive_and_unarchive_buttons(sub);
+    set_visibility_for_stream_title_buttons(sub);
 }
 
 export const show_subs_pane = {
@@ -116,6 +122,7 @@ export const show_subs_pane = {
                             name: "",
                             invite_only: false,
                             is_web_public: false,
+                            can_change_name_description: false,
                         },
                     }),
                 )
@@ -127,6 +134,7 @@ export const show_subs_pane = {
         $("#stream-creation").show();
         resize.resize_settings_overlay($("#channels_overlay_container"));
         resize.resize_settings_creation_overlay($("#channels_overlay_container"));
+        resize.resize_stream_creation_subscribers_list();
     },
 };
 
@@ -190,12 +198,18 @@ function hide_subscribe_toggle_spinner($stream_row: JQuery): void {
     loading.destroy_indicator($spinner);
 }
 
-export function ajaxSubscribe(stream: string, color?: string, $stream_row?: JQuery): void {
+export function ajaxSubscribe(
+    stream: string,
+    color: string,
+    $stream_row: JQuery | undefined,
+    $button_elem: JQuery | undefined,
+): void {
     // Subscribe yourself to a single stream.
-    let true_stream_name;
-
     if ($stream_row !== undefined) {
         display_subscribe_toggle_spinner($stream_row);
+    }
+    if ($button_elem !== undefined) {
+        buttons.show_button_loading_indicator($button_elem);
     }
     void channel.post({
         url: "/json/users/me/subscriptions",
@@ -211,13 +225,8 @@ export function ajaxSubscribe(stream: string, color?: string, $stream_row?: JQue
                 })
                 .parse(xhr.responseJSON);
             if (Object.keys(res.already_subscribed).length > 0) {
-                // Display the canonical stream capitalization.
-                true_stream_name = res.already_subscribed[current_user.user_id]![0];
                 ui_report.success(
-                    $t_html(
-                        {defaultMessage: "Already subscribed to {channel}"},
-                        {channel: true_stream_name},
-                    ),
+                    $t_html({defaultMessage: "Already subscribed"}),
                     $(".stream_change_property_info"),
                 );
             }
@@ -226,13 +235,19 @@ export function ajaxSubscribe(stream: string, color?: string, $stream_row?: JQue
             if ($stream_row !== undefined) {
                 hide_subscribe_toggle_spinner($stream_row);
             }
+            if ($button_elem !== undefined) {
+                buttons.hide_button_loading_indicator($button_elem);
+            }
         },
         error(xhr) {
             if ($stream_row !== undefined) {
                 hide_subscribe_toggle_spinner($stream_row);
             }
+            if ($button_elem !== undefined) {
+                buttons.hide_button_loading_indicator($button_elem);
+            }
             ui_report.error(
-                $t_html({defaultMessage: "Error adding subscription"}),
+                $t_html({defaultMessage: "Error subscribing"}),
                 xhr,
                 $(".stream_change_property_info"),
             );
@@ -240,10 +255,17 @@ export function ajaxSubscribe(stream: string, color?: string, $stream_row?: JQue
     });
 }
 
-function ajaxUnsubscribe(sub: StreamSubscription, $stream_row: JQuery | undefined): void {
+function ajaxUnsubscribe(
+    sub: StreamSubscription,
+    $stream_row: JQuery | undefined,
+    $button_elem: JQuery | undefined,
+): void {
     // TODO: use stream_id when backend supports it
     if ($stream_row !== undefined) {
         display_subscribe_toggle_spinner($stream_row);
+    }
+    if ($button_elem !== undefined) {
+        buttons.show_button_loading_indicator($button_elem);
     }
     void channel.del({
         url: "/json/users/me/subscriptions",
@@ -255,13 +277,19 @@ function ajaxUnsubscribe(sub: StreamSubscription, $stream_row: JQuery | undefine
             if ($stream_row !== undefined) {
                 hide_subscribe_toggle_spinner($stream_row);
             }
+            if ($button_elem !== undefined) {
+                buttons.hide_button_loading_indicator($button_elem);
+            }
         },
         error(xhr) {
             if ($stream_row !== undefined) {
                 hide_subscribe_toggle_spinner($stream_row);
             }
+            if ($button_elem !== undefined) {
+                buttons.hide_button_loading_indicator($button_elem);
+            }
             ui_report.error(
-                $t_html({defaultMessage: "Error removing subscription"}),
+                $t_html({defaultMessage: "Error unsubscribing"}),
                 xhr,
                 $(".stream_change_property_info"),
             );
@@ -269,10 +297,15 @@ function ajaxUnsubscribe(sub: StreamSubscription, $stream_row: JQuery | undefine
     });
 }
 
-export function unsubscribe_from_private_stream(sub: StreamSubscription): void {
+export function unsubscribe_from_private_stream(
+    sub: StreamSubscription,
+    $stream_row: JQuery | undefined,
+    $button_elem: JQuery | undefined,
+): void {
     const invite_only = sub.invite_only;
     const sub_count = peer_data.get_subscriber_count(sub.stream_id);
-    const stream_name_with_privacy_symbol_html = render_inline_decorated_channel_name({
+    const stream_name_with_privacy_symbol_html = render_decorated_channel_name({
+        inline_with_text: true,
         stream: sub,
     });
 
@@ -286,16 +319,7 @@ export function unsubscribe_from_private_stream(sub: StreamSubscription): void {
     });
 
     function unsubscribe_from_stream(): void {
-        let $stream_row;
-        if (overlays.streams_open()) {
-            $stream_row = $(
-                "#channels_overlay_container div.stream-row[data-stream-id='" +
-                    sub.stream_id +
-                    "']",
-            );
-        }
-
-        ajaxUnsubscribe(sub, $stream_row);
+        ajaxUnsubscribe(sub, $stream_row, $button_elem);
     }
 
     confirm_dialog.launch({
@@ -308,19 +332,23 @@ export function unsubscribe_from_private_stream(sub: StreamSubscription): void {
     });
 }
 
-export function sub_or_unsub(sub: StreamSubscription, $stream_row?: JQuery): void {
+export function sub_or_unsub(
+    sub: StreamSubscription,
+    $stream_row?: JQuery,
+    $button_elem?: JQuery,
+): void {
     if (sub.subscribed) {
         // TODO: This next line should allow guests to access web-public streams.
         if (
             (sub.invite_only && !stream_data.has_content_access_via_group_permissions(sub)) ||
             current_user.is_guest
         ) {
-            unsubscribe_from_private_stream(sub);
+            unsubscribe_from_private_stream(sub, $stream_row, $button_elem);
             return;
         }
-        ajaxUnsubscribe(sub, $stream_row);
+        ajaxUnsubscribe(sub, $stream_row, $button_elem);
     } else {
-        ajaxSubscribe(sub.name, sub.color, $stream_row);
+        ajaxSubscribe(sub.name, sub.color, $stream_row, $button_elem);
     }
 }
 

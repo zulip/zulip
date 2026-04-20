@@ -31,7 +31,7 @@ class ZulipUploadBackend:
     def generate_message_upload_path(self, realm_id: str, uploaded_file_name: str) -> str:
         raise NotImplementedError
 
-    def upload_message_attachment(
+    def store_message_attachment(
         self,
         path_id: str,
         filename: str,
@@ -48,7 +48,9 @@ class ZulipUploadBackend:
     def attachment_source(self, path_id: str) -> StreamingSourceWithSize:
         raise NotImplementedError
 
-    def delete_message_attachment(self, path_id: str, *, raw_path: bool = False) -> None:
+    def delete_message_attachment_from_storage(
+        self, path_id: str, *, raw_path: bool = False
+    ) -> None:
         """This must delete the attachment, any adjacent .info files, and any thumbnails.
 
         If raw_path is passed, just delete the one path provided.
@@ -59,14 +61,14 @@ class ZulipUploadBackend:
         raise NotImplementedError
 
     @contextmanager
-    def delete_message_attachments(
+    def delete_message_attachments_from_storage(
         self,
         *,
         raw_paths: bool = False,
         flush: None | Callable[[list[str]], None] = None,
     ) -> Iterator[Callable[[str], None]]:
         def delete_one(path_id: str) -> None:
-            self.delete_message_attachment(path_id, raw_path=raw_paths)
+            self.delete_message_attachment_from_storage(path_id, raw_path=raw_paths)
             if flush:
                 flush([path_id])
 
@@ -92,7 +94,7 @@ class ZulipUploadBackend:
         else:
             return f"{hash_key}.png"
 
-    def upload_single_avatar_image(
+    def store_single_avatar_image(
         self,
         file_path: str,
         *,
@@ -103,7 +105,7 @@ class ZulipUploadBackend:
     ) -> None:
         raise NotImplementedError
 
-    def delete_avatar_image(self, path_id: str) -> None:
+    def delete_avatar_image_from_storage(self, path_id: str) -> None:
         raise NotImplementedError
 
     # Realm icon and logo uploads
@@ -113,7 +115,7 @@ class ZulipUploadBackend:
     def get_realm_icon_url(self, realm_id: int, version: int) -> str:
         raise NotImplementedError
 
-    def upload_realm_icon_image(
+    def store_realm_icon_image(
         self, icon_file: IO[bytes], user_profile: UserProfile, content_type: str
     ) -> None:
         raise NotImplementedError
@@ -121,7 +123,7 @@ class ZulipUploadBackend:
     def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
         raise NotImplementedError
 
-    def upload_realm_logo_image(
+    def store_realm_logo_image(
         self, logo_file: IO[bytes], user_profile: UserProfile, night: bool, content_type: str
     ) -> None:
         raise NotImplementedError
@@ -130,7 +132,7 @@ class ZulipUploadBackend:
     def get_emoji_url(self, emoji_file_name: str, realm_id: int, still: bool = False) -> str:
         raise NotImplementedError
 
-    def upload_single_emoji_image(
+    def store_single_emoji_image(
         self,
         path: str,
         content_type: str | None,
@@ -143,7 +145,7 @@ class ZulipUploadBackend:
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
         raise NotImplementedError
 
-    def upload_export_tarball(
+    def store_export_tarball(
         self,
         realm: Realm,
         tarball_path: str,
@@ -151,5 +153,5 @@ class ZulipUploadBackend:
     ) -> str:
         raise NotImplementedError
 
-    def delete_export_tarball(self, export_path: str) -> None:
+    def delete_export_tarball_from_storage(self, export_path: str) -> None:
         raise NotImplementedError

@@ -130,7 +130,8 @@
     color: hsl(0deg 100% 50%);
 }
 
-.change-stream-name-container {
+.change-stream-name-container,
+.channel-folder-name-container {
     margin-bottom: 20px;
 }
 
@@ -163,6 +164,10 @@ h4.user_group_setting_subsection_title {
 .subscriber-list-settings-loading {
     display: flex;
     align-items: center;
+    /* Override the inline width set by loading.make_indicator(),
+       which is miscalculated when the element is inside a hidden
+       parent (display:none makes $text_elem.width() return 0). */
+    width: fit-content !important;
     margin: auto;
 
     &:not(:empty) {
@@ -182,8 +187,24 @@ h4.user_group_setting_subsection_title {
     }
 }
 
-.add-group-member-loading-spinner,
-.add-subscriber-loading-spinner {
+.subscribers-list-header,
+.create_stream_subscriber_list_header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    .subscribers-heading {
+        display: flex;
+        align-items: center;
+
+        .loading_indicator_spinner {
+            width: 100%;
+            height: 100%;
+        }
+    }
+}
+
+.add-group-member-loading-spinner {
     align-self: center;
 }
 
@@ -253,6 +274,10 @@ h4.user_group_setting_subsection_title {
     }
 }
 
+#stream_creation_form .subscriber_list_container {
+    max-height: var(--new-stream-subscriber-list-max-height);
+}
+
 .subscriber-name,
 .subscriber-email {
     padding: 5px;
@@ -292,11 +317,6 @@ h4.user_group_setting_subsection_title {
         align-items: center;
         margin: 0 0 5px;
     }
-}
-
-.subscriber_list_add .form-inline,
-.member_list_add .form-inline {
-    margin-bottom: 0;
 }
 
 .add_subscribers_container,
@@ -348,6 +368,17 @@ h4.user_group_setting_subsection_title {
     opacity: 0.7;
 }
 
+.send_notification_to_new_subscribers_container {
+    /* Avoid having the clickable area extend to the full width of
+    the containing element. */
+    width: fit-content;
+    /* Padding ensures the focus outline is fully visible; without it,
+    the left side gets clipped by overflow: hidden on the subscribers
+    tab content. This shifts the checkbox 2px right, but the effect
+    on alignment is negligible. */
+    padding-left: 2px;
+}
+
 .choose-subscribers-label {
     display: inline;
 }
@@ -385,10 +416,6 @@ h4.user_group_setting_subsection_title {
             font-weight: normal;
             line-height: 1.5;
             display: inline;
-
-            .channel-privacy-type-icon {
-                margin-right: 4px;
-            }
         }
     }
 
@@ -468,7 +495,6 @@ h4.user_group_setting_subsection_title {
             text-align: center;
             text-overflow: ellipsis;
             white-space: nowrap;
-            margin-left: 5px;
         }
 
         .stream-info-title,
@@ -488,17 +514,47 @@ h4.user_group_setting_subsection_title {
                 width: unset;
             }
 
+            /* The right pane header/title for user group and channel setting menu has
+               two major components, The group/channel name section and the button groups. */
             .selected-group-title,
             .selected-stream-title {
                 display: flex;
                 width: 100%;
-                justify-content: space-between;
+
+                /* This works in tandem with ".small-window-alert-notification-container"
+                   in the right pane body. */
+                .large-window-alert-notification-container {
+                    display: flex;
+
+                    @media (width < $sm_min) {
+                        display: none;
+                    }
+
+                    .stream_change_property_info {
+                        margin-right: 1px;
+                        font-weight: 400;
+                        font-size: var(--base-font-size-px);
+                        min-width: max-content;
+                    }
+                }
 
                 .selected-stream,
-                .selected-group-name {
+                .selected-group {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
+                }
+
+                /* These contain two button groups, the left group should stick to the
+                   right side of the group/channel title name, and the right group that
+                   should stick to the rightmost side of the right pane header. */
+                .selected-group-buttons,
+                .stream-title-buttons {
+                    display: flex;
+                    justify-content: space-between;
+                    /* Make the button groups stretch and take the rest of the right pane
+                       header */
+                    flex-grow: 1;
                 }
 
                 .button-group {
@@ -519,16 +575,7 @@ h4.user_group_setting_subsection_title {
                     }
                 }
 
-                .selected-group {
-                    display: flex;
-                    align-items: center;
-                    overflow: hidden;
-                }
-
-                .deactivated-user-group-icon-right {
-                    margin-right: 5px;
-                    margin-left: 3px;
-                    opacity: 0.6;
+                .deactivated-user-group-icon {
                     font-size: var(--base-font-size-px);
                 }
             }
@@ -905,7 +952,7 @@ h4.user_group_setting_subsection_title {
             }
 
             .loading_indicator_spinner svg path {
-                fill: hsl(178deg 100% 40%);
+                fill: var(--color-stream-group-row-plus-icon);
             }
         }
     }
@@ -915,6 +962,13 @@ h4.user_group_setting_subsection_title {
            center to make the icon color same as the web app. Do change
            the color there when changing the color here */
         color: var(--color-stream-group-row-checked-icon);
+    }
+
+    .checked .sub_unsub_status,
+    .checked .join_leave_status {
+        .loading_indicator_spinner svg path {
+            fill: var(--color-stream-group-row-checked-icon);
+        }
     }
 
     .check:not(.checked, .disabled):hover .sub-unsub-icon,
@@ -1131,6 +1185,7 @@ h4.user_group_setting_subsection_title {
         .add-user-list-filter {
             width: 140px;
             float: right;
+            margin-top: 10px;
         }
 
         #user_group_creation_form,
@@ -1187,82 +1242,33 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    .group-header,
-    .stream-header {
-        white-space: nowrap;
-        padding-top: 5px;
+    .group-description-field,
+    .channel-description-field {
         display: flex;
-        align-items: center;
+        flex-wrap: wrap;
+        /* 10px at 16px */
+        margin: 0 0 0.625em;
 
-        .group-name-wrapper,
-        .stream-name {
-            position: relative;
-            font-size: 1.5em;
-            font-weight: 600;
-            white-space: nowrap;
-            max-width: 90%;
-            flex: auto;
-            min-width: 0;
-            overflow-x: clip;
-            text-overflow: ellipsis;
-
-            .group-name,
-            .sub-stream-name {
-                display: block;
-                width: 100%;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
+        /* Subtract the total horizontal padding and border width from the input width
+           so that this matches other setting elements using box-sizing: border-box. */
+        .settings-view-only-textarea {
+            width: calc(
+                var(--modal-input-width) - 2 *
+                    var(--view-only-field-horizontal-padding) - 2 *
+                    var(--input-border-width)
+            );
         }
 
-        #open_group_info_modal {
-            display: flex;
-            align-items: center;
-        }
-
-        .button-group {
-            margin-left: auto;
-
-            /* This icon is narrower in width, we have to explicitly
-               set it's width to 1em so that it vertically aligns with
-               other buttons near it. */
-            .fa-pencil {
-                width: 1em;
-            }
-
-            .deactivate,
-            .reactivate {
-                margin-right: 3px;
-                text-decoration: none;
-            }
-        }
-
-        .large-icon {
-            display: flex;
-            margin-right: 5px;
-
-            &.hash::after {
-                top: -1px;
-                font-size: 1.09em;
-                font-weight: 700;
-            }
-
-            .zulip-icon {
-                font-size: 1.2857em; /* 18px at 14px/em */
-            }
-        }
-
-        .group_change_property_info,
-        .stream_change_property_info {
-            vertical-align: top;
-            margin: 0 5px 0 0;
+        .icon-button {
+            align-items: baseline;
         }
     }
 
-    .group-description-wrapper,
+    .user-group-description,
     .stream-description {
         hyphens: auto;
-        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
 
         .no-description {
             font-style: italic;
@@ -1307,6 +1313,85 @@ h4.user_group_setting_subsection_title {
 
         &.show {
             display: block;
+        }
+
+        /* This works in tandem with ".large-window-alert-notification-container"
+           in the right pane title. */
+        .small-window-alert-notification-container {
+            display: none;
+
+            @media (width < $sm_min) {
+                display: flex;
+                justify-content: end;
+            }
+
+            .stream_change_property_info {
+                margin-bottom: 10px;
+            }
+        }
+    }
+
+    #stream_settings.subscribers-tab-active {
+        /* When the subscribers tab is active, disable simplebar on
+           #stream_settings so the panel itself is not scrollable —
+           only the subscriber list table scrolls via its own simplebar.
+           Simplebar reads the host element's computed overflow-y and
+           disables its scrollbar when it sees 'hidden'. */
+        overflow-y: hidden;
+
+        /* Propagate the container height through simplebar's wrapper
+           DOM to the actual content. :has() targets only the outer
+           simplebar-content (the one containing .subscription_settings),
+           not the nested one inside .subscriber_list_container. */
+        .simplebar-content:has(> .subscription_settings) {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+
+            .subscription_settings,
+            .inner-box {
+                flex: 1;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .stream_section[data-stream-section="subscribers"] {
+                flex: 1;
+                overflow: hidden;
+
+                .edit_subscribers_for_stream,
+                .subscriber_list_settings_container {
+                    height: 100%;
+                }
+
+                .subscriber_list_settings_container .subscriber-list-box {
+                    /* flex: 1 takes remaining space after the auto-sized siblings. */
+                    flex: 1;
+                    overflow: hidden;
+                    /* Hide borders here since they would extend to the
+                       full flex item height; they are redeclared on
+                       .subscriber_list_container instead. */
+                    border-left: none;
+                    border-right: none;
+
+                    .subscriber_list_container {
+                        box-sizing: border-box;
+                        max-height: 100%;
+                        /* overflow: clip prevents the native scrollbar that would otherwise
+                           appear because the simplebar placeholder can overflow the
+                           container. Unlike overflow: hidden, clip does not disable
+                           simplebar (simplebar only disables on overflow: hidden). */
+                        overflow: clip;
+                        border-left: 1px solid
+                            var(--color-border-table-subscriber-list);
+                        border-right: 1px solid
+                            var(--color-border-table-subscriber-list);
+                        border-top-left-radius: 4px;
+                        border-top-right-radius: 4px;
+                    }
+                }
+            }
         }
     }
 
@@ -1554,29 +1639,6 @@ h4.user_group_setting_subsection_title {
             display: block;
             float: right;
             margin-top: 10px;
-        }
-
-        .group-header,
-        .stream-header {
-            .button-group {
-                margin-top: -5px;
-            }
-        }
-
-        .group_change_property_info,
-        .stream_change_property_info {
-            /* For small widths where there is not enough space
-            to show alert beside stream name we set its display
-            to block so it is shown in new line. But to avoid
-            it covering whole screen width we set max-width
-            so that it does not losses inline-block appearance. */
-
-            /* TODO: This will probably be not required once
-            we have tabbed navigation as button group width
-            will be smaller. */
-            display: block;
-            max-width: max-content;
-            white-space: nowrap;
         }
     }
 }

@@ -20,7 +20,7 @@ from zerver.lib.thumbnail import (
     missing_thumbnails,
     rewrite_thumbnailed_images,
 )
-from zerver.lib.upload import save_attachment_contents, upload_backend
+from zerver.lib.upload import save_attachment_contents, store_message_attachment
 from zerver.models import ArchivedMessage, ImageAttachment, Message
 from zerver.worker.base import QueueProcessingWorker, assign_queue
 
@@ -33,6 +33,7 @@ class ThumbnailWorker(QueueProcessingWorker):
     def consume(self, event: dict[str, Any]) -> None:
         start_time = time.perf_counter()
         with transaction.atomic(savepoint=False):
+            logger.info("Starting thumbnailing for %s", event.get("path_id", f"id: {event['id']}"))
             try:
                 # This lock prevents us from racing with the on-demand
                 # rendering that can be triggered if a request is made
@@ -53,7 +54,6 @@ class ThumbnailWorker(QueueProcessingWorker):
                 )
                 return
             lock_time = time.perf_counter() - start_time
-            logger.info("Starting thumbnailing for %s", row.path_id)
             result = ensure_thumbnails(row)
             commit_time = time.perf_counter()
         end_time = time.perf_counter()
@@ -144,7 +144,7 @@ def ensure_thumbnails(image_attachment: ImageAttachment) -> ThumbnailingResult:
             thumbnail_path = get_image_thumbnail_path(image_attachment, thumbnail_format)
             logger.debug("Uploading %d bytes to %s", len(thumbnailed_bytes), thumbnail_path)
             start_time = time.perf_counter()
-            upload_backend.upload_message_attachment(
+            store_message_attachment(
                 thumbnail_path,
                 str(thumbnail_format),
                 content_type,

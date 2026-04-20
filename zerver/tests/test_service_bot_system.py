@@ -56,7 +56,7 @@ class TestServiceBotBasics(ZulipTestCase):
             ],
             active_user_ids={outgoing_bot.id},
             mentioned_user_ids=set(),
-            recipient_type=Recipient.PERSONAL,
+            recipient_type=Recipient.DIRECT_MESSAGE_GROUP,
         )
 
         expected = dict(
@@ -140,7 +140,7 @@ class TestServiceBotBasics(ZulipTestCase):
             ],
             active_user_ids=set(),
             mentioned_user_ids={outgoing_bot.id},
-            recipient_type=Recipient.PERSONAL,
+            recipient_type=Recipient.DIRECT_MESSAGE_GROUP,
         )
 
         self.assert_length(event_dict, 0)
@@ -165,7 +165,7 @@ class TestServiceBotBasics(ZulipTestCase):
                 ],
                 active_user_ids=set(),
                 mentioned_user_ids={bot.id},
-                recipient_type=Recipient.PERSONAL,
+                recipient_type=Recipient.DIRECT_MESSAGE_GROUP,
             )
 
         self.assert_length(event_dict, 0)

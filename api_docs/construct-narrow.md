@@ -58,6 +58,10 @@ as an empty string.
 
 ## Changes
 
+* In Zulip 12.0 (feature level 489), support was added for a new
+  filter, `channels:archived`, which returns messages the current user
+  received in channels that have been [archived](/help/archive-a-channel).
+
 * In Zulip 12.0 (feature level 446), add the `mentions` operator,
   matching messages that contain a direct personal mention of the
   specified user.

@@ -52,7 +52,7 @@ _Released 2026-03-12_
   for moderators to handle reports.
 - Demo organizations allow testing Zulip without sharing an email address.
 - Improved search typeahead with topic suggestions from all subscribed
-  channels and nicer styling for channel/topic pair suggestions.-
+  channels and nicer styling for channel/topic pair suggestions.
 - Added many new default external account types for custom profile
   fields, and made URL pattern optional for external
   accounts. External accounts can now be used for matching users in
@@ -60,6 +60,11 @@ _Released 2026-03-12_
 - Added a beta data import tool for Microsoft Teams.
 - Migrated the help center to Starlight, the Astro-based static site
   generator, adding full-text search and a modernized design.
+- The Zulip Docker container has been reworked, and the new version
+  published as https://ghcr.io/zulip/zulip-server. This resolves nearly
+  all outstanding issues in the issue tracker, and adds tests and
+  substantially more documentation, for both Docker Compose and Helm
+  deployments. See the [upgrade notes](#upgrade-notes-for-120) for details.
 
 #### Full feature changelog
 
@@ -122,8 +127,8 @@ _Released 2026-03-12_
 - Added a keyboard shortcut (`Shift+Y`) to open the set-status modal.
 - Added a keyboard shortcut (`L`) to copy a link to the currently
   selected message.
-- Added a compose box keyboard shortcut (`Ctrl+Shift+C`) for wrapping
-  text in an inline code span.
+- Added a compose box keyboard shortcut (`Ctrl+Shift+C`) for formatting
+  text as code.
 - Added an icon button in recipient headers to copy the topic link.
 - Added a `+` button for adding DM recipients in the compose box.
 - Added a "new topic" button in the left sidebar all topics view.
@@ -133,7 +138,7 @@ _Released 2026-03-12_
   point in the video in the lightbox.
 - Emoji settings UI now warns when overriding a unicode emoji with a
   custom emoji.
-- Added new webhook integrations for Notion, Redmine, and dbt Cloud.
+- Added new webhook integrations for Redmine and dbt Cloud.
   Rewrote the Intercom webhook integration with full support for
   ticket, conversation, contact, and company events.
 - Added GitLab webhook support for emoji reaction events, design
@@ -188,13 +193,64 @@ _Released 2026-03-12_
 
 ### Upgrade notes for 12.0
 
+- The Zulip Docker container has been reworked, with greatly improved
+  documentation and fixes for essentially all issues with the previous
+  container. Upgrading a Docker installation to 12.0+ requires several
+  manual adjustments to your Docker setup that are detailed in a special
+  [upgrade guide][docker-upgrade-to-12].
 - The `LDAP_SYNCHRONIZED_GROUPS_BY_REALM` setting for LDAP group
   synchronization no longer ignores groups that are configured to be
   synced but don't exist in the Zulip organization. Starting in 12.0,
   such groups will be created automatically when syncing the groups
   for a user who should be a member of that group.
+- The [`GET /api/v1/users/{user_id_or_email}/presence`](https://zulip.com/api/get-user-presence)
+  API endpoint was migrated to the modern presence API format that is
+  incompatible with the previous format. Custom API integrations that
+  fetch presence data for a user using this endpoint will need to be
+  updated after upgrading. (See the [API changelog][api-changelog] for
+  the dozens of other API changes in this release; this specific
+  change is notable only because backwards-compatibility was not
+  implemented, because the endpoint is rarely used).
+
+[api-changelog]: https://zulip.com/api/changelog
+[docker-upgrade-to-12]: https://zulip.readthedocs.io/projects/docker/en/latest/how-to/compose-upgrading.html#upgrading-from-zulip-docker-zulip-11-x-and-earlier
 
 ## Zulip Server 11.x series
+
+### Zulip Server 11.6
+
+_Released 2026-03-31_
+
+- CVE-2026-26058: A carefully crafted export tarball could cause the
+  importing server to copy any file the `zulip` user could read into
+  the uploads directory during import. This vulnerability was
+  reported by Garett Kopcha (@0x5t).
+- CVE-2026-25742: Even after web-public access was disabled,
+  attachments originating from web-public channels would still be
+  available without logging in. A similar vulnerability existed for
+  the topic list API. This vulnerability was reported by Sho Odagiri
+  of GMO Cybersecurity by Ierae, Inc.
+- Added imports for all LDAP object types to the new server `settings.py`
+  template.
+- Ensured that logrotate is installed, which it was not previously in Docker.
+- Improved error messages when required settings were missing.
+- Fixed `upgrade-postgresql` when extensions needed extra steps.
+- Fixed configuration section names on error pages when proxies were
+  misconfigured.
+- Fixed “generate incoming email address” to respect the user’s choice of
+  sender.
+- Added documentation for `INSTALLATION_NAME` setting when configuring outgoing
+  email.
+- Fixed a potential race condition when adding emoji.
+- Fixed an error when the client attempted to upload a file with a NULL byte in
+  its filename.
+- Fixed restore-backup when restoring with a remote PostgreSQL instance with an
+  explicit port.
+- Fixed the Zulip version in Camo’s user-agent lagging to the previous deploy’s.
+- Adjusted the default `PASSWORD_MIN_LENGTH` setting to 8, up from 6.
+- Updated Python dependencies.
+- Updated puppet dependencies.
+- Updated translations from Weblate.
 
 ### Zulip Server 11.5
 

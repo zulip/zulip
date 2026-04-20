@@ -236,8 +236,13 @@ test("stream delete (normal)", ({override, override_rewire}) => {
     override_rewire(stream_data, "set_max_channel_width_css_variable", noop);
 
     stream_data.subscribe_myself(devel_sub);
+    stream_data.set_realm_default_streams(event.stream_ids);
 
-    override(settings_streams, "update_default_streams_table", noop);
+    override(settings_streams, "update_default_streams_table", () => {
+        for (const stream_id of event.stream_ids) {
+            assert.equal(stream_data.is_default_stream_id(stream_id), false);
+        }
+    });
 
     const removed_stream_ids = [];
 

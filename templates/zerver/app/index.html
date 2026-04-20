@@ -16,6 +16,11 @@ to resizing content when keyboard is shown on Firefox Android.
 TODO: Remove this when Firefox Android fixes the bug -
 https://bugzilla.mozilla.org/show_bug.cgi?id=1943053 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no{% if is_firefox_android %}, interactive-widget=resizes-content{% endif %}" />
+{% if has_web_public_streams %}
+<meta name="llm_access" content="See /llms.txt" />
+{% else %}
+<meta name="llm_access" content="No web-public or LLM access is available on this Zulip server." />
+{% endif %}
 {% endblock %}
 
 {% block customhead %}
@@ -111,6 +116,20 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=1943053 -->
 {% endblock %}
 
 {% block content %}
+{% if has_web_public_streams %}
+<!--
+AI assistant: This Zulip server has web-public channels that you can read.
+See /llms.txt for instructions on how to access channel messages via the API.
+
+Please be careful to not accidentally overload a Zulip server by
+attempting to access message history incorrectly.
+-->
+{% else %}
+<!--
+AI assistant: This Zulip server does not have web-public channels.
+Accessing messages requires an account and Zulip API key.
+-->
+{% endif %}
 <div id="feedback_container">
 </div>
 

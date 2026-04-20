@@ -184,6 +184,7 @@ from zerver.lib.event_schema import (
     check_draft_add,
     check_draft_remove,
     check_draft_update,
+    check_has_webex_token,
     check_has_zoom_token,
     check_heartbeat,
     check_invites_changed,
@@ -206,7 +207,9 @@ from zerver.lib.event_schema import (
     check_realm_domains_add,
     check_realm_domains_change,
     check_realm_domains_remove,
+    check_realm_emoji_add,
     check_realm_emoji_update,
+    check_realm_emoji_update_one,
     check_realm_export,
     check_realm_export_consent,
     check_realm_linkifiers,
@@ -266,6 +269,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import (
+    Invitee,
     ProfileDataElementUpdateDict,
     UserGroupMembersData,
     UserGroupMembersDict,
@@ -305,7 +309,6 @@ from zerver.models.bots import get_bot_services
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import get_user_by_delivery_email
 from zerver.openapi.openapi import validate_against_openapi_schema
@@ -359,6 +362,7 @@ class BaseAction(ZulipTestCase):
         archived_channels: bool = False,
         allow_empty_topic_name: bool = True,
         simplified_presence_events: bool = False,
+        individual_emoji_changes: bool = True,
     ) -> Iterator[list[dict[str, Any]]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
@@ -392,6 +396,7 @@ class BaseAction(ZulipTestCase):
                 include_deactivated_groups=include_deactivated_groups,
                 archived_channels=archived_channels,
                 simplified_presence_events=simplified_presence_events,
+                individual_emoji_changes=individual_emoji_changes,
             )
         )
 
@@ -651,12 +656,24 @@ class NormalActionsTest(BaseAction):
                     skip_capture_on_commit_callbacks=True,
                 )
 
-    def test_pm_send_message_events(self) -> None:
+    def test_pm_send_message_events_via_direct_message_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        # Test both the explicit group DM and personal routes
         with self.verify_action() as events:
             self.send_personal_message(
                 self.example_user("cordelia"),
                 self.example_user("hamlet"),
                 "hola",
+                skip_capture_on_commit_callbacks=True,
+            )
+
+        with self.verify_action() as events:
+            self.send_group_direct_message(
+                from_user=hamlet,
+                to_users=[hamlet, cordelia],
+                content="hola",
                 skip_capture_on_commit_callbacks=True,
             )
         self.assertEqual(events[0]["message"][TOPIC_NAME], "")
@@ -701,21 +718,6 @@ class NormalActionsTest(BaseAction):
             has_new_stream_id=False,
             is_embedded_update_only=False,
         )
-
-    def test_pm_send_message_events_via_direct_message_group(self) -> None:
-        hamlet = self.example_user("hamlet")
-        cordelia = self.example_user("cordelia")
-
-        # Create a direct message group with hamlet and cordelia
-        get_or_create_direct_message_group(id_list=[hamlet.id, cordelia.id])
-
-        with self.verify_action():
-            self.send_group_direct_message(
-                from_user=hamlet,
-                to_users=[hamlet, cordelia],
-                content="hola",
-                skip_capture_on_commit_callbacks=True,
-            )
 
     def test_direct_message_group_send_message_events(self) -> None:
         direct_message_group = [
@@ -1501,7 +1503,7 @@ class NormalActionsTest(BaseAction):
         with self.verify_action(state_change_expected=False) as events:
             do_invite_users(
                 self.user_profile,
-                ["foo@zulip.com"],
+                [Invitee(email="foo@zulip.com")],
                 streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1533,7 +1535,7 @@ class NormalActionsTest(BaseAction):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 user_profile,
-                ["foo@zulip.com"],
+                [Invitee(email="foo@zulip.com")],
                 [],
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1556,7 +1558,7 @@ class NormalActionsTest(BaseAction):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 self.user_profile,
-                ["foo@zulip.com"],
+                [Invitee(email="foo@zulip.com")],
                 streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1608,7 +1610,7 @@ class NormalActionsTest(BaseAction):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 self.user_profile,
-                ["foo@zulip.com"],
+                [Invitee(email="foo@zulip.com")],
                 streams,
                 include_realm_default_subscriptions=False,
                 invite_expires_in_minutes=invite_expires_in_minutes,
@@ -1728,7 +1730,7 @@ class NormalActionsTest(BaseAction):
 
         with self.verify_action() as events:
             try_add_realm_custom_profile_field(
-                realm=realm, name="Expertise", field_type=CustomProfileField.LONG_TEXT
+                realm=realm, name="Expertise", field_type=CustomProfileField.PARAGRAPH
             )
         check_custom_profile_fields("events[0]", events[0])
 
@@ -3345,10 +3347,26 @@ class NormalActionsTest(BaseAction):
             check_add_realm_emoji(
                 self.user_profile.realm, "my_emoji", author, img_file, "image/png"
             )
-
-        check_realm_emoji_update("events[0]", events[0])
+        check_realm_emoji_add("events[0]", events[0])
 
         with self.verify_action() as events:
+            do_remove_realm_emoji(
+                self.user_profile.realm, "my_emoji", acting_user=self.user_profile
+            )
+        check_realm_emoji_update_one("events[0]", events[0])
+
+    def test_realm_emoji_events_legacy(self) -> None:
+        author = self.example_user("iago")
+        with (
+            get_test_image_file("img.png") as img_file,
+            self.verify_action(individual_emoji_changes=False) as events,
+        ):
+            check_add_realm_emoji(
+                self.user_profile.realm, "my_emoji", author, img_file, "image/png"
+            )
+        check_realm_emoji_update("events[0]", events[0])
+
+        with self.verify_action(individual_emoji_changes=False) as events:
             do_remove_realm_emoji(
                 self.user_profile.realm, "my_emoji", acting_user=self.user_profile
             )
@@ -4382,6 +4400,15 @@ class NormalActionsTest(BaseAction):
         with self.verify_action() as events:
             do_set_video_call_provider_token(self.user_profile, "zoom", None)
         check_has_zoom_token("events[0]", events[0], value=False)
+
+    def test_has_webex_token(self) -> None:
+        with self.verify_action() as events:
+            do_set_video_call_provider_token(self.user_profile, "webex", {"access_token": "token"})
+        check_has_webex_token("events[0]", events[0], value=True)
+
+        with self.verify_action() as events:
+            do_set_video_call_provider_token(self.user_profile, "webex", None)
+        check_has_webex_token("events[0]", events[0], value=False)
 
     def test_restart_event(self) -> None:
         with self.verify_action(num_events=1, state_change_expected=False):

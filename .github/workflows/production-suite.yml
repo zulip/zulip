@@ -18,6 +18,8 @@ on:
       - web/postcss.config.js
       - web/third/**
       - web/webpack.config.ts
+      - zerver/apps.py
+      - zerver/checks.py
       - zerver/worker/queue_processors.py
       - zerver/lib/push_notifications.py
       - zerver/lib/storage.py

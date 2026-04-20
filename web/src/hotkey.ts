@@ -53,6 +53,7 @@ import * as read_receipts from "./read_receipts.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
+import * as saved_snippets_ui from "./saved_snippets_ui.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as search from "./search.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
@@ -483,7 +484,6 @@ function process_escape_key(e: JQuery.KeyDownEvent): boolean {
         // will zoom out, handled below.
         if (stream_list.is_zoomed_in() && $("#topic_filter_query").is(":focus")) {
             topic_list.clear_topic_search(e);
-            $("#topic_filter_query").trigger("blur");
             return true;
         }
 
@@ -652,6 +652,10 @@ function process_enter_key(e: JQuery.KeyDownEvent): boolean {
     // This handles when pressing Enter while looking at drafts.
     // It restores draft that is focused.
     if (overlays.drafts_open()) {
+        const $draft_overlay = $("#draft_overlay");
+        if ($draft_overlay.find("a:focus, button:focus, input:focus").length > 0) {
+            return false;
+        }
         drafts_overlay_ui.handle_keyboard_events("enter");
         return true;
     }
@@ -761,38 +765,6 @@ export function process_tab_key(): boolean {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
     // without our intervention.
-    const focused_element = document.activeElement;
-
-    if (!(focused_element instanceof HTMLElement)) {
-        return false;
-    }
-
-    const $focused_element = $(focused_element);
-    const $message_edit_form = $focused_element.closest(".message_edit_form");
-
-    if ($message_edit_form.length === 0) {
-        return false;
-    }
-
-    const form_element = $message_edit_form[0];
-    if (!form_element) {
-        return false;
-    }
-
-    // 1. Content -> Save
-    if ($focused_element.hasClass("message_edit_content")) {
-        const $message_edit_form = $focused_element.closest(".message_edit_form");
-        // Open message edit forms either have a save button or a close button, but not both.
-        $message_edit_form.find(".message_edit_save,.message_edit_close").trigger("focus");
-        return true;
-    }
-
-    // 2. Save -> Cancel
-    if ($focused_element.hasClass("message_edit_save")) {
-        const $message_edit_form = $focused_element.closest(".message_edit_form");
-        $message_edit_form.find(".message_edit_cancel").trigger("focus");
-        return true;
-    }
 
     if (emoji_picker.is_open()) {
         return emoji_picker.navigate("tab");
@@ -815,22 +787,6 @@ export function process_shift_tab_key(): boolean {
         // Shift-Tab: go back to content textarea and restore
         // cursor position.
         compose_textarea.restore_compose_cursor();
-        return true;
-    }
-
-    // Shift-Tabbing from the edit message cancel button takes you to save.
-    if ($(".message_edit_cancel:focus").length > 0) {
-        $(".message_edit_save").trigger("focus");
-        return true;
-    }
-
-    // Shift-Tabbing from the edit message save button takes you to the content.
-    const $focused_message_edit_save = $(".message_edit_save:focus");
-    if ($focused_message_edit_save.length > 0) {
-        $focused_message_edit_save
-            .closest(".message_edit_form")
-            .find(".message_edit_content")
-            .trigger("focus");
         return true;
     }
 
@@ -1016,7 +972,6 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         if ($last_focused_compose_type_input.hasClass("message_edit_content")) {
             if ($last_focused_compose_type_input.closest(".preview_mode").length > 0) {
                 message_edit.clear_preview_area($last_focused_compose_type_input);
-                $last_focused_compose_type_input.trigger("focus");
             } else {
                 message_edit.show_preview_area($last_focused_compose_type_input);
             }
@@ -1069,7 +1024,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         if (event_name === "open_saved_snippet_dropdown") {
             const $messagebox = $(":focus").parents(".messagebox");
             if ($messagebox.length === 1) {
-                util.the($messagebox.find(".saved_snippets_widget")).click();
+                saved_snippets_ui.open_saved_snippets_dropdown_via_hotkey();
             }
         }
 
@@ -1497,10 +1452,10 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             unread_ops.mark_as_unread_from_here(msg.id);
             return true;
         case "compose_quote_message": // > : respond to selected message with quote
-            compose_reply.quote_message({trigger: "hotkey"});
+            compose_reply.quote_messages({trigger: "hotkey"});
             return true;
         case "compose_forward_message": // < : forward selected message
-            compose_reply.quote_message({trigger: "hotkey", forward_message: true});
+            compose_reply.quote_messages({trigger: "hotkey", forward_message: true});
             return true;
         case "edit_message": {
             const $row = message_lists.current.get_row(msg.id);

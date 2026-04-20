@@ -2,7 +2,6 @@ from datetime import timedelta
 
 import time_machine
 from django.conf import settings
-from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from django_stubs_ext import QuerySetAny
 from typing_extensions import Any, override
@@ -378,40 +377,6 @@ class ReportMessageTest(ZulipTestCase):
         self.assertIn(expected_message_link_syntax, report.content)
 
     @time_machine.travel(MOCKED_DATE_SENT, tick=False)
-    def test_dm_report(self) -> None:
-        # Send a DM to be reported
-        dm_recipient = self.hamlet
-        reported_dm_id = self.send_personal_message(
-            self.reported_user,
-            dm_recipient,
-            content="I dip fries in ice cream",
-        )
-        reported_dm = self.get_last_message()
-        assert reported_dm.id == reported_dm_id
-        reporting_user = self.example_user("hamlet")
-        report_type = "harassment"
-        description = "this is crime against food"
-
-        result = self.report_message(reporting_user, reported_dm_id, report_type, description)
-        self.assert_json_success(result)
-        reports = self.get_submitted_moderation_requests()
-        assert reports.count() == 1
-        self.check_direct_message_report_details(
-            dm_recipient=dm_recipient,
-            report_description=description,
-            report_type=report_type,
-            reported_dm=reported_dm,
-            reported_user=self.reported_user,
-            reporting_user=reporting_user,
-            submitted_report=reports.last(),
-        )
-
-        # User can't report DM they're not a part of.
-        ZOE = self.example_user("ZOE")
-        result = self.report_message(ZOE, reported_dm_id, report_type, description)
-        self.assert_json_error(result, msg="Invalid message(s)")
-
-    @time_machine.travel(MOCKED_DATE_SENT, tick=False)
     def test_dm_to_oneself(self) -> None:
         dm_recipient = self.reported_user
         reported_dm_id = self.send_personal_message(
@@ -472,8 +437,7 @@ class ReportMessageTest(ZulipTestCase):
         )
 
     @time_machine.travel(MOCKED_DATE_SENT, tick=False)
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
-    def test_personal_message_report_using_direct_message_group(self) -> None:
+    def test_personal_message_report(self) -> None:
         dm_recipient = self.hamlet
         direct_message_group = get_or_create_direct_message_group(
             id_list=[dm_recipient.id, self.reported_user.id],
@@ -504,6 +468,11 @@ class ReportMessageTest(ZulipTestCase):
             reporting_user=reporting_user,
             submitted_report=reports.last(),
         )
+
+        # User can't report DM they're not a part of.
+        ZOE = self.example_user("ZOE")
+        result = self.report_message(ZOE, reported_dm_id, report_type, description)
+        self.assert_json_error(result, msg="Invalid message(s)")
 
     def test_gdm_report(self) -> None:
         # Send a group DM to be reported

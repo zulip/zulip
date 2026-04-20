@@ -32,6 +32,7 @@ from zerver.models import DefaultStream, Draft, Realm, UserActivity, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user
+from zerver.tornado.django_api import EventQueueData
 from zerver.worker.user_activity import UserActivityWorker
 
 if TYPE_CHECKING:
@@ -93,8 +94,11 @@ class HomeTest(ZulipTestCase):
         "full_name",
         "giphy_api_key",
         "tenor_api_key",
+        "klipy_api_key",
         "gif_rating_policy_options",
         "has_zoom_token",
+        "idle_queue_timeout_secs",
+        "has_webex_token",
         "is_admin",
         "is_guest",
         "is_moderator",
@@ -337,18 +341,12 @@ class HomeTest(ZulipTestCase):
         self.assertCountEqual(page_params["state_data"]["realm_bots"][0], realm_bots_expected_keys)
 
     def test_home_demo_organization(self) -> None:
-        realm = get_realm("zulip")
-
-        # We construct a scheduled deletion date that's definitely in
-        # the future, regardless of how long ago the Zulip realm was
-        # created.
-        realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=1)
-        realm.save()
-        self.login("hamlet")
+        demo_organization_owner = self.create_demo_organization_owner()
+        realm = demo_organization_owner.realm
 
         # Verify succeeds once logged-in
         with queries_captured(), patch("zerver.lib.cache.cache_set"):
-            result = self._get_home_page(stream="Denmark")
+            result = self._get_home_page(subdomain=realm.subdomain, stream="Zulip")
             self.check_rendered_logged_in_app(result)
 
         page_params = self._get_page_params(result)
@@ -411,6 +409,37 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         page_params = self._get_page_params(result)
         self.assertEqual(page_params["show_try_zulip_modal"], True)
+
+    def test_home_has_llms_comment_when_web_public(self) -> None:
+        """
+        The homepage HTML includes a comment pointing LLMs to /llms.txt
+        when the realm has web-public streams enabled.
+        """
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "enable_spectator_access", True, acting_user=None)
+        # Use spectator (logged-out) view to ensure the comment renders in that path.
+        result = self.client_get("/")
+        self.assertEqual(result.status_code, 200)
+        html = result.content.decode()
+        self.assertIn("AI assistant:", html)
+        self.assertIn("/llms.txt", html)
+
+    def test_home_fallback_llms_comment_when_not_web_public(self) -> None:
+        """
+        The homepage HTML includes a fallback comment informing LLMs that
+        web-public channels are disabled when the realm does not allow
+        web-public stream access.
+        """
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "enable_spectator_access", False, acting_user=None)
+        # Login as a regular user to get a 200 even without spectator access.
+        self.login("hamlet")
+        result = self._get_home_page()
+        self.assertEqual(result.status_code, 200)
+        html = result.content.decode()
+        self.assertIn("AI assistant:", html)
+        self.assertNotIn("/llms.txt", html)
+        self.assertIn("does not have web-public channels", html)
 
     def test_realm_authentication_methods(self) -> None:
         realm = get_realm("zulip")
@@ -613,12 +642,12 @@ class HomeTest(ZulipTestCase):
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
         with (
-            self.assert_database_query_count(57),
+            self.assert_database_query_count(58),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page()
             self.check_rendered_logged_in_app(result)
-            self.assert_length(cache_mock.call_args_list, 8)
+            self.assert_length(cache_mock.call_args_list, 9)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user("hamlet")
@@ -652,13 +681,15 @@ class HomeTest(ZulipTestCase):
         html = result.content.decode()
         self.assertIn("test_stream_7", html)
 
-    def _get_home_page(self, **kwargs: Any) -> "TestHttpResponse":
+    def _get_home_page(self, subdomain: str | None = None, **kwargs: Any) -> "TestHttpResponse":
+        queue_data = EventQueueData(queue_id="test-queue-id", idle_queue_timeout_secs=600)
         with (
-            patch("zerver.lib.events.request_event_queue", return_value=42),
+            patch("zerver.lib.events.request_event_queue", return_value=queue_data),
             patch("zerver.lib.events.get_user_events", return_value=[]),
         ):
-            result = self.client_get("/", dict(**kwargs))
-        return result
+            if subdomain:
+                return self.client_get("/", dict(**kwargs), subdomain=subdomain)
+            return self.client_get("/", dict(**kwargs))
 
     def _sanity_check(self, result: "TestHttpResponse") -> None:
         """
@@ -1351,8 +1382,9 @@ class HomeTest(ZulipTestCase):
         self.login_user(user)
         result = self._get_home_page()
         self.check_rendered_logged_in_app(result)
+        queue_data = EventQueueData(queue_id="test-queue-id", idle_queue_timeout_secs=600)
         with (
-            patch("zerver.lib.events.request_event_queue", return_value=42),
+            patch("zerver.lib.events.request_event_queue", return_value=queue_data),
             patch("zerver.lib.events.get_user_events", return_value=[]),
         ):
             result = self.client_get("/de/")

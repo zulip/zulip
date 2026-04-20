@@ -11,11 +11,11 @@ import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import {buddy_list} from "./buddy_list.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
-import * as compose_state from "./compose_state.ts";
 import * as message_live_update from "./message_live_update.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
+import * as reactions from "./reactions.ts";
 import * as settings from "./settings.ts";
 import * as settings_account from "./settings_account.ts";
 import * as settings_bots from "./settings_bots.ts";
@@ -74,7 +74,6 @@ export const update_person = function update(event: UserUpdate): void {
         const new_email = event.new_email;
 
         people.update_email(user_id, new_email);
-        compose_state.update_email(user_id, new_email);
 
         if (people.is_my_user_id(event.user_id)) {
             current_user.email = new_email;
@@ -104,6 +103,7 @@ export const update_person = function update(event: UserUpdate): void {
         settings_users.update_user_data(event.user_id, event);
         activity_ui.redraw();
         message_live_update.update_user_full_name(event.user_id, event.full_name);
+        reactions.update_user_full_name(event.user_id);
         pm_list.update_private_messages();
         user_profile.update_profile_modal_ui(user, event);
         if (people.is_my_user_id(event.user_id)) {
@@ -126,6 +126,13 @@ export const update_person = function update(event: UserUpdate): void {
         settings_users.update_user_data(event.user_id, event);
         user_profile.update_profile_modal_ui(user, event);
         settings_account.set_user_own_role_dropdown_value();
+
+        if (people.is_my_user_id(event.user_id) && current_user.is_guest !== user.is_guest) {
+            current_user.is_guest = user.is_guest;
+            if (current_user.is_guest) {
+                settings_panel_menu.hide_default_streams_list_for_guest();
+            }
+        }
 
         if (people.is_my_user_id(event.user_id)) {
             settings_account.update_role_text();
@@ -191,6 +198,7 @@ export const update_person = function update(event: UserUpdate): void {
         }
 
         message_live_update.update_avatar(user.user_id, event.avatar_url);
+        buddy_list.insert_or_move([event.user_id]);
         user_profile.update_profile_modal_ui(user, event);
     }
 

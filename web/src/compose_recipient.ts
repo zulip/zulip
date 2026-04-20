@@ -5,7 +5,7 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
-import render_inline_decorated_channel_name from "../templates/inline_decorated_channel_name.hbs";
+import render_decorated_channel_name from "../templates/decorated_channel_name.hbs";
 
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_fade from "./compose_fade.ts";
@@ -59,8 +59,7 @@ function composing_to_current_private_message_narrow(): boolean {
     return _.isEqual(narrow_state_recipient, compose_state_recipient);
 }
 
-export let update_recipient_row_attention_level = (): void => {
-    // We need to adjust the privacy-icon colors in the low-attention state
+export function adjust_compose_channel_privacy_icon_color(): void {
     const message_type = compose_state.get_message_type();
     if (message_type === "stream") {
         const stream_id = compose_state.stream_id();
@@ -69,6 +68,12 @@ export let update_recipient_row_attention_level = (): void => {
 
         stream_color.adjust_stream_privacy_icon_colors(stream_id, channel_picker_icon_selector);
     }
+}
+
+export let update_recipient_row_attention_level = (): void => {
+    // We need to adjust the privacy-icon colors in the low-attention state
+    adjust_compose_channel_privacy_icon_color();
+
     // If there is any text that hasn't yet been transformed into a pill,
     // we should consider that the user is not composing to the current
     // DM narrow -- even though that input is ignored when sending a DM.
@@ -79,6 +84,17 @@ export let update_recipient_row_attention_level = (): void => {
     // We also want to watch out for cases where the DM isn't valid,
     // as when trying to message deactivated users.
     const is_valid_dm = compose_validate.validate_private_message(false);
+    // It is possible that focus can remain in the recipient row while
+    // narrowing, e.g., with the `Ctrl + .` shortcut. We should account
+    // for that in the logic below, so that we don't erroneously add
+    // the `low-attention-recipient-row` class. And because focus is
+    // maintained under certain renarrows, we can't trust that a new
+    // focus event will fire after narrowing.
+    const recipient_row_focus_ids = ["private_message_recipient", "stream_message_recipient_topic"];
+    let has_recipient_row_focus = false;
+    if (document.activeElement && recipient_row_focus_ids.includes(document.activeElement?.id)) {
+        has_recipient_row_focus = true;
+    }
 
     // We're piggy-backing here, in a roundabout way, on
     // compose_ui.set_focus(). Any time the topic or DM recipient
@@ -92,7 +108,8 @@ export let update_recipient_row_attention_level = (): void => {
             (composing_to_current_private_message_narrow() &&
                 !has_unpilled_input &&
                 is_valid_dm)) &&
-        compose_state.has_full_recipient()
+        compose_state.has_full_recipient() &&
+        !has_recipient_row_focus
     ) {
         $("#compose-recipient").toggleClass("low-attention-recipient-row", true);
     } else {
@@ -214,7 +231,7 @@ function update_recipient_label(stream_id?: number): void {
         );
     } else {
         $("#compose_select_recipient_widget .dropdown_widget_value").html(
-            render_inline_decorated_channel_name({stream, show_colored_icon: true}),
+            render_decorated_channel_name({stream, show_colored_icon: true}),
         );
     }
 }

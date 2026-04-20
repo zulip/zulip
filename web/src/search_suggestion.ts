@@ -31,13 +31,23 @@ type ChannelTopicEntry = {
 
 type TermPattern = Omit<NarrowTerm, "operand"> & Partial<Pick<NarrowTerm, "operand">>;
 
-const channel_incompatible_patterns: TermPattern[] = [
+const common_incompatible_patterns: TermPattern[] = [
     {operator: "is", operand: "dm"},
     {operator: "channel"},
     {operator: "dm-including"},
     {operator: "dm"},
     {operator: "in"},
+];
+
+const channel_incompatible_patterns: TermPattern[] = [
+    ...common_incompatible_patterns,
     {operator: "channels"},
+];
+
+const channels_public_incompatible_patterns: TermPattern[] = [
+    ...common_incompatible_patterns,
+    {operator: "channels", operand: "public"},
+    {operator: "channels", operand: "web-public"},
 ];
 
 // TODO: Expand this to support all available filters and its description.
@@ -65,6 +75,7 @@ type SearchFilter =
     | NarrowCanonicalOperator
     | "channels:public"
     | "channels:web-public"
+    | "channels:archived"
     | "is:resolved"
     | "-is:resolved"
     | "is:dm"
@@ -82,8 +93,12 @@ type SearchFilter =
 const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
     channel: channel_incompatible_patterns,
     channels: channel_incompatible_patterns,
-    "channels:public": channel_incompatible_patterns,
-    "channels:web-public": channel_incompatible_patterns,
+    "channels:public": channels_public_incompatible_patterns,
+    "channels:web-public": channels_public_incompatible_patterns,
+    "channels:archived": [
+        ...common_incompatible_patterns,
+        {operator: "channels", operand: "archived"},
+    ],
     topic: [
         {operator: "dm"},
         {operator: "is", operand: "dm"},
@@ -94,9 +109,10 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
         {operator: "dm"},
         {operator: "pm-with"},
         {operator: "channel"},
+        {operator: "channels"},
         {operator: "is", operand: "resolved"},
     ],
-    "dm-including": [{operator: "channel"}, {operator: "stream"}],
+    "dm-including": [{operator: "channel"}, {operator: "stream"}, {operator: "channels"}],
     "is:resolved": [
         {operator: "is", operand: "resolved"},
         {operator: "is", operand: "dm"},
@@ -116,6 +132,7 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
         {operator: "dm"},
         {operator: "in"},
         {operator: "topic"},
+        {operator: "channels"},
     ],
     sender: [{operator: "sender"}, {operator: "from"}],
     "is:starred": [{operator: "is", operand: "starred"}],
@@ -726,6 +743,7 @@ function get_channels_filter_suggestions(
     }
     const public_channels_search_string = "channels:public";
     const web_public_channels_search_string = "channels:web-public";
+    const archived_channels_search_string = "channels:archived";
     const suggestions: Suggestion[] = [];
 
     if (!page_params.is_spectator) {
@@ -738,6 +756,7 @@ function get_channels_filter_suggestions(
         );
     }
 
+    suggestions.push(...filter_suggestions_by_criteria(terms, [archived_channels_search_string]));
     return get_special_filter_suggestions(last, suggestions);
 }
 
@@ -763,8 +782,10 @@ function get_is_filter_suggestions(
     }
     const special_filtered_suggestions = get_special_filter_suggestions(last, suggestions);
     // Suggest "is:dm" to anyone with "is:private" in their muscle memory
+    // if it is compatible with the other terms.
     const other_suggestions = [];
     if (
+        suggestions.includes("is:dm") &&
         last.operator === "is" &&
         common.phrase_match(last.operand, "private") &&
         !page_params.is_spectator
@@ -1096,25 +1117,22 @@ export let get_suggestions = function (
     // Handle spaces in person name in new suggestions only. Checks if the last operator is 'search'
     // and the second last operator in search_terms is one out of person_suggestion_ops.
     // e.g for `sender:Ted sm`, initially last = {operator: 'search', operand: 'sm'....}
-    // and second last is {operator: 'sender', operand: 'sm'....}. If the second last operand
-    // is an email of a user, both of these terms remain unchanged. Otherwise search operator
-    // will be deleted and new last will become {operator:'sender', operand: 'Ted sm`....}.
+    // and second last is {operator: 'sender', operand: 'Ted'....}. The search operator
+    // will be deleted and new last will become {operator:'sender', operand: 'Ted sm'....}.
     if (
         text_search_terms.length > 1 &&
         last.operator === "search" &&
         person_suggestion_ops.includes(text_search_terms.at(-2)!.operator)
     ) {
         const person_op = text_search_terms.at(-2)!;
-        if (!people.reply_to_to_user_ids_string(person_op.operand)) {
-            last = {
-                operator: person_op.operator,
-                operand: person_op.operand + " " + last.operand,
-                negated: person_op.negated,
-            };
-            text_search_terms.splice(-2);
-            text_search_terms.push(last);
-            all_search_terms = [...pill_search_terms, ...text_search_terms];
-        }
+        last = {
+            operator: person_op.operator,
+            operand: person_op.operand + " " + last.operand,
+            negated: person_op.negated,
+        };
+        text_search_terms.splice(-2);
+        text_search_terms.push(last);
+        all_search_terms = [...pill_search_terms, ...text_search_terms];
     }
     const valid_base_text_search_terms = text_search_terms
         .slice(0, -1)

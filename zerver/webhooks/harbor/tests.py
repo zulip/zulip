@@ -6,7 +6,7 @@ from zerver.lib.test_classes import WebhookTestCase
 class HarborHookTests(WebhookTestCase):
     def test_push_image(self) -> None:
         expected_topic_name = "example/test"
-        expected_message = """**admin** pushed image `example/test:latest`"""
+        expected_message = """**admin** pushed image `example/test:latest`."""
         self.check_webhook("push_image", expected_topic_name, expected_message)
 
     @patch("zerver.lib.webhooks.common.check_send_webhook_message")

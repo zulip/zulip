@@ -676,6 +676,10 @@ class Realm(models.Model):
             "name": "Nextcloud Talk",
             "id": 7,
         },
+        "webex": {
+            "name": "Webex",
+            "id": 8,
+        },
     }
 
     video_chat_provider = models.PositiveSmallIntegerField(
@@ -688,12 +692,13 @@ class Realm(models.Model):
     # Please access this via get_gif_rating_policy_options.
     GIF_RATING_POLICY_OPTIONS = {
         "disabled": {
-            "name": gettext_lazy("GIF integration disabled"),
+            "name": gettext_lazy("Disabled"),
             "id": 0,
         },
         # Source:
         # 1. https://developers.giphy.com/docs/optional-settings/#rating
         # 2. https://developers.google.com/tenor/guides/content-filtering#ContentFilter-options
+        # 3. https://docs.klipy.com/migrate-from-tenor/content-filtering
         "g": {
             "name": gettext_lazy("Allow GIFs rated G (General audience)"),
             "id": 1,
@@ -1116,6 +1121,10 @@ class Realm(models.Model):
                 settings.NEXTCLOUD_SERVER is None
                 or settings.NEXTCLOUD_TALK_USERNAME is None
                 or settings.NEXTCLOUD_TALK_PASSWORD is None
+            ):
+                continue
+            if provider == "webex" and (
+                settings.VIDEO_WEBEX_CLIENT_ID is None or settings.VIDEO_WEBEX_CLIENT_SECRET is None
             ):
                 continue
             enabled_video_chat_providers[provider] = self.VIDEO_CHAT_PROVIDERS[provider]

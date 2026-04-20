@@ -275,6 +275,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
             "s3_avatar_public_url_prefix": settings.S3_AVATAR_PUBLIC_URL_PREFIX
             if settings.LOCAL_UPLOADS_DIR is None
             else "",
+            "has_web_public_streams": realm.web_public_streams_enabled(),
         },
     )
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)

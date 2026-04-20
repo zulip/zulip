@@ -1087,6 +1087,46 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(stream.history_public_to_subscribers, False)
         self.assertEqual(stream.can_create_topic_group.id, everyone_system_group.id)
 
+    def test_attachment_in_web_public_stream(self) -> None:
+        self.login("desdemona")
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        url = self.assert_json_success(result)["url"]
+
+        owner = self.example_user("desdemona")
+        realm = owner.realm
+        self.make_stream("test_stream", realm=realm, is_web_public=True)
+        self.subscribe(owner, "test_stream")
+        body = f"First message ...[zulip.txt](http://{realm.host}" + url + ")"
+        msg_id = self.send_stream_message(owner, "test_stream", body, "test")
+        attachment = Attachment.objects.get(messages__id=msg_id)
+        self.assertTrue(attachment.is_web_public)
+
+        self.assertTrue(validate_attachment_request_for_spectator_access(realm, attachment))
+
+        do_set_realm_property(realm, "enable_spectator_access", False, acting_user=None)
+        attachment = Attachment.objects.get(messages__id=msg_id)
+        self.assertIsNone(attachment.is_web_public)
+
+        self.assertFalse(validate_attachment_request_for_spectator_access(realm, attachment))
+        attachment = Attachment.objects.get(messages__id=msg_id)
+        self.assertIsNone(attachment.is_web_public)
+
+        # Check that is_web_public is set as False when uploading a file in
+        # web-public stream with spectator access disabled for realm.
+        fp = StringIO("zulip!")
+        fp.name = "zulip1.txt"
+
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        url = self.assert_json_success(result)["url"]
+
+        body = f"Second message ...[zulip1.txt](http://{realm.host}" + url + ")"
+        msg_id = self.send_stream_message(owner, "test_stream", body, "test")
+        attachment = Attachment.objects.get(messages__id=msg_id)
+        self.assertEqual(attachment.is_web_public, False)
+
     def test_stream_permission_changes_updates_updates_attachments(self) -> None:
         self.login("desdemona")
         fp = StringIO("zulip!")
@@ -5352,16 +5392,10 @@ class SubscriptionAPITest(ZulipTestCase):
         notification_bot_dms = Message.objects.filter(
             realm_id=realm.id,
             sender=bot.id,
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             date_sent__gt=now,
         )
         self.assert_length(notification_bot_dms, 5)
-        notif_bot_dm_recipients = [
-            dm["recipient__type_id"] for dm in notification_bot_dms.values("recipient__type_id")
-        ]
-        self.assertSetEqual(
-            {id for id in user_ids if id != desdemona.id}, set(notif_bot_dm_recipients)
-        )
 
         announcement_channel_message = Message.objects.filter(
             realm_id=realm.id,
@@ -5387,7 +5421,7 @@ class SubscriptionAPITest(ZulipTestCase):
         notification_bot_dms = Message.objects.filter(
             realm_id=realm.id,
             sender=bot.id,
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             date_sent__gt=now,
         )
         self.assertEqual(notification_bot_dms.count(), 0)
@@ -5440,7 +5474,7 @@ class SubscriptionAPITest(ZulipTestCase):
         notification_bot_dms = Message.objects.filter(
             realm_id=realm.id,
             sender=bot.id,
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             date_sent__gt=now,
         )
         self.assertEqual(notification_bot_dms.count(), 0)
@@ -5471,7 +5505,7 @@ class SubscriptionAPITest(ZulipTestCase):
         notification_bot_dms = Message.objects.filter(
             realm_id=realm.id,
             sender=bot.id,
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             date_sent__gt=now,
         )
         self.assertEqual(notification_bot_dms.count(), 0)

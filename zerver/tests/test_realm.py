@@ -6,6 +6,7 @@ import re
 import string
 from datetime import datetime, timedelta
 from enum import Enum
+from io import StringIO
 from pathlib import Path
 from typing import Any
 from unittest import mock, skipUnless
@@ -270,32 +271,19 @@ class RealmTest(ZulipTestCase):
         self.assertNotEqual(realm.description, new_description)
 
     def test_demo_organization_invite_required(self) -> None:
-        realm = get_realm("zulip")
-        self.assertFalse(realm.invite_required)
+        demo_organization_owner = self.create_demo_organization_owner()
+        realm = demo_organization_owner.realm
 
-        self.login("desdemona")
-        data = dict(invite_required="true")
-        result = self.client_patch("/json/realm", data)
-        self.assert_json_success(result)
-        realm.refresh_from_db()
+        # Demo organization owners must configure an email to invite
+        # other users.
         self.assertTrue(realm.invite_required)
-
-        # Update realm to be a demo organization
-        realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=30)
-        realm.save()
-
-        # Demo organization owner's don't have an email address set initially
-        desdemona = self.example_user("desdemona")
-        desdemona.delivery_email = ""
-        desdemona.save()
-
         data = dict(invite_required="false")
-        result = self.client_patch("/json/realm", data)
+        result = self.client_patch("/json/realm", data, subdomain=realm.subdomain)
         self.assert_json_error(result, "Configure owner account email address.")
 
-        desdemona.delivery_email = "desdemona@zulip.com"
-        desdemona.save()
-        result = self.client_patch("/json/realm", data)
+        demo_organization_owner.delivery_email = "test-demo-owner@zulip.com"
+        demo_organization_owner.save()
+        result = self.client_patch("/json/realm", data, subdomain=realm.subdomain)
         self.assert_json_success(result)
         realm.refresh_from_db()
         self.assertFalse(realm.invite_required)
@@ -312,27 +300,9 @@ class RealmTest(ZulipTestCase):
         self.assert_json_error(result, "Must be a demo organization.")
 
     def test_realm_convert_demo_organization_success(self) -> None:
-        result = self.submit_demo_creation_form()
-        realm = Realm.objects.filter(
-            demo_organization_scheduled_deletion_date__isnull=False
-        ).latest("date_created")
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(
-            result["Location"].startswith(
-                f"http://{realm.string_id}.testserver/accounts/login/subdomain"
-            )
-        )
-        self.assertIsNotNone(realm.demo_organization_scheduled_deletion_date)
-
-        result = self.client_get(result["Location"], subdomain=realm.string_id)
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], f"http://{realm.string_id}.testserver")
-
+        demo_owner_account = self.create_demo_organization_owner()
+        realm = demo_owner_account.realm
         demo_string_id = realm.string_id
-        demo_owner_account = realm.get_first_human_user()
-        assert demo_owner_account is not None
-        self.assert_logged_in_user_id(demo_owner_account.id)
-        self.assertEqual(demo_owner_account.delivery_email, "")
 
         # Confirm there is a scheduled message reminder about automated
         # demo organization deletion.
@@ -674,30 +644,8 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(confirmation.realm, realm)
 
     def test_realm_deactivation_demo_organization_owner_email_not_configured(self) -> None:
-        result = self.submit_demo_creation_form()
-        realm = Realm.objects.filter(
-            demo_organization_scheduled_deletion_date__isnull=False
-        ).latest("date_created")
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(
-            result["Location"].startswith(
-                f"http://{realm.string_id}.testserver/accounts/login/subdomain"
-            )
-        )
-        assert settings.DEMO_ORG_DEADLINE_DAYS is not None
-        expected_deletion_date = realm.date_created + timedelta(
-            days=settings.DEMO_ORG_DEADLINE_DAYS
-        )
-        self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
-
-        result = self.client_get(result["Location"], subdomain=realm.string_id)
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], f"http://{realm.string_id}.testserver")
-
-        demo_owner_account = realm.get_first_human_user()
-        assert demo_owner_account is not None
-        self.assert_logged_in_user_id(demo_owner_account.id)
-        self.assertEqual(demo_owner_account.delivery_email, "")
+        demo_owner_account = self.create_demo_organization_owner()
+        realm = demo_owner_account.realm
 
         # There must be a value set for deletion_delay_days.
         result = self.client_post("/json/realm/deactivate", subdomain=realm.subdomain)
@@ -720,30 +668,8 @@ class RealmTest(ZulipTestCase):
         self.assert_logged_in_user_id(None)
 
     def test_realm_deactivation_demo_organization_owner_email_configured(self) -> None:
-        result = self.submit_demo_creation_form()
-        realm = Realm.objects.filter(
-            demo_organization_scheduled_deletion_date__isnull=False
-        ).latest("date_created")
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(
-            result["Location"].startswith(
-                f"http://{realm.string_id}.testserver/accounts/login/subdomain"
-            )
-        )
-        assert settings.DEMO_ORG_DEADLINE_DAYS is not None
-        expected_deletion_date = realm.date_created + timedelta(
-            days=settings.DEMO_ORG_DEADLINE_DAYS
-        )
-        self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
-
-        result = self.client_get(result["Location"], subdomain=realm.string_id)
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], f"http://{realm.string_id}.testserver")
-
-        demo_owner_account = realm.get_first_human_user()
-        assert demo_owner_account is not None
-        self.assert_logged_in_user_id(demo_owner_account.id)
-        self.assertEqual(demo_owner_account.delivery_email, "")
+        demo_owner_account = self.create_demo_organization_owner()
+        realm = demo_owner_account.realm
 
         # Set an email for the demo organization owner's account.
         demo_owner_account.delivery_email = "demo-owner@example.com"
@@ -1439,6 +1365,24 @@ class RealmTest(ZulipTestCase):
             nextcloud_talk_provider_id,
         )
 
+        webex_provider_id = Realm.VIDEO_CHAT_PROVIDERS["webex"]["id"]
+        req = {"video_chat_provider": f"{webex_provider_id}"}
+
+        with self.settings(VIDEO_WEBEX_CLIENT_ID=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(result, f"Invalid video_chat_provider {webex_provider_id}")
+
+        with self.settings(VIDEO_WEBEX_CLIENT_SECRET=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(result, f"Invalid video_chat_provider {webex_provider_id}")
+
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        self.assertEqual(
+            get_realm("zulip").video_chat_provider,
+            webex_provider_id,
+        )
+
     def test_data_deletion_schedule_when_deactivating_realm(self) -> None:
         self.login("desdemona")
 
@@ -1533,61 +1477,50 @@ class RealmTest(ZulipTestCase):
             mock_scrub_realm.assert_called_once_with(zephyr, acting_user=None)
 
     def test_delete_expired_demo_organizations(self) -> None:
-        zulip = get_realm("zulip")
-        assert not zulip.deactivated
-        assert zulip.demo_organization_scheduled_deletion_date is None
+        demo_organization_owner = self.create_demo_organization_owner()
+        demo_organization = demo_organization_owner.realm
+        assert not demo_organization.deactivated
 
+        # Before deletion date, demo organization is not deleted.
         with mock.patch(
             "zerver.actions.realm_settings.do_deactivate_realm"
         ) as mock_deactivate_realm:
             delete_expired_demo_organizations()
             mock_deactivate_realm.assert_not_called()
-
-        # Add scheduled demo organization deletion date
-        zulip.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=4)
-        zulip.save()
-
-        # Before deletion date
-        with mock.patch(
-            "zerver.actions.realm_settings.do_deactivate_realm"
-        ) as mock_deactivate_realm:
-            delete_expired_demo_organizations()
-            mock_deactivate_realm.assert_not_called()
-
-        # After deletion date, when owner email is set.
-        with (
-            time_machine.travel(timezone_now() + timedelta(days=5), tick=False),
-            mock.patch(
-                "zerver.actions.realm_settings.do_deactivate_realm"
-            ) as mock_deactivate_realm,
-        ):
-            delete_expired_demo_organizations()
-            mock_deactivate_realm.assert_called_once_with(
-                realm=zulip,
-                acting_user=None,
-                deactivation_reason="demo_expired",
-                deletion_delay_days=0,
-                email_owners=True,
-            )
 
         # After deletion date, when owner email is not set.
-        desdemona = self.example_user("desdemona")
-        desdemona.delivery_email = ""
-        desdemona.save()
-
         with (
-            time_machine.travel(timezone_now() + timedelta(days=5), tick=False),
+            time_machine.travel(timezone_now() + timedelta(days=31), tick=False),
             mock.patch(
                 "zerver.actions.realm_settings.do_deactivate_realm"
             ) as mock_deactivate_realm,
         ):
             delete_expired_demo_organizations()
             mock_deactivate_realm.assert_called_once_with(
-                realm=zulip,
+                realm=demo_organization,
                 acting_user=None,
                 deactivation_reason="demo_expired",
                 deletion_delay_days=0,
                 email_owners=False,
+            )
+
+        demo_organization_owner.delivery_email = "test-demo-owner@zulip.com"
+        demo_organization_owner.save()
+
+        # After deletion date, when owner email is set.
+        with (
+            time_machine.travel(timezone_now() + timedelta(days=31), tick=False),
+            mock.patch(
+                "zerver.actions.realm_settings.do_deactivate_realm"
+            ) as mock_deactivate_realm,
+        ):
+            delete_expired_demo_organizations()
+            mock_deactivate_realm.assert_called_once_with(
+                realm=demo_organization,
+                acting_user=None,
+                deactivation_reason="demo_expired",
+                deletion_delay_days=0,
+                email_owners=True,
             )
 
     def test_initial_plan_type(self) -> None:
@@ -3058,6 +2991,32 @@ class RealmAPITest(ZulipTestCase):
         req = {"enable_spectator_access": orjson.dumps(True).decode()}
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "Available on Zulip Cloud Standard. Upgrade to access.")
+
+    def test_attachment_when_updating_enable_spectator_access(self) -> None:
+        self.login("desdemona")
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        url = self.assert_json_success(result)["url"]
+
+        owner = self.example_user("desdemona")
+        realm = owner.realm
+        self.make_stream("test_stream", realm=realm, is_web_public=True)
+        self.subscribe(owner, "test_stream")
+        body = f"First message ...[zulip.txt](http://{realm.host}" + url + ")"
+        msg_id = self.send_stream_message(owner, "test_stream", body, "test")
+        attachment = Attachment.objects.get(messages__id=msg_id)
+
+        self.assertTrue(realm.enable_spectator_access)
+        self.assertTrue(attachment.is_web_public)
+
+        result = self.client_patch(
+            "/json/realm", {"enable_spectator_access": orjson.dumps(False).decode()}
+        )
+        self.assert_json_success(result)
+        attachment.refresh_from_db()
+        self.assertIsNone(attachment.is_web_public)
 
     def test_can_create_groups_limited_plan_realms(self) -> None:
         self.login("iago")

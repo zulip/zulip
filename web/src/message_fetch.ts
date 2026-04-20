@@ -29,10 +29,10 @@ import {narrow_operator_schema} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
+import * as unread_ops from "./unread_ops.ts";
 import * as util from "./util.ts";
 
-export const response_schema = z.object({
-    anchor: z.number(),
+export const message_ids_response_schema = z.object({
     found_newest: z.boolean(),
     found_oldest: z.boolean(),
     found_anchor: z.boolean(),
@@ -42,7 +42,12 @@ export const response_schema = z.object({
     msg: z.string(),
 });
 
-type MessageFetchResponse = z.infer<typeof response_schema>;
+export const message_fetch_response_schema = z.object({
+    ...message_ids_response_schema.shape,
+    anchor: z.number(),
+});
+
+type MessageFetchResponse = z.infer<typeof message_fetch_response_schema>;
 
 type MessageFetchOptions = {
     anchor: string | number;
@@ -223,6 +228,14 @@ function get_messages_success(data: MessageFetchResponse, opts: MessageFetchOpti
         });
         if (opts.msg_list) {
             message_feed_top_notices.update_top_of_narrow_notices(opts.msg_list);
+            // When we've just backfilled to the oldest message in
+            // a /near/ conversation view, re-check whether reading
+            // can be resumed. This handles the old_unreads_missing
+            // case: the gate defers until has_found_oldest() is
+            // true, and this is the moment that becomes true.
+            if (current_fetch_found_oldest && opts.msg_list === message_lists.current) {
+                opts.msg_list.maybe_resume_reading_for_near_view();
+            }
         }
     }
 
@@ -254,6 +267,16 @@ function get_messages_success(data: MessageFetchResponse, opts: MessageFetchOpti
     }
 
     process_result(data, opts);
+
+    if (current_fetch_found_newest && opts.msg_list === message_lists.current) {
+        // Now that we've confirmed we have the newest messages in
+        // this view, re-check whether the visible messages should
+        // be marked as read. Without this, a fetch that completes
+        // after narrow activation (with no subsequent scroll, focus
+        // change, or new-message event) would leave messages unread
+        // even though the user is looking at the bottom of the view.
+        unread_ops.process_visible();
+    }
 }
 
 // This function modifies the narrow data to use integer IDs instead of
@@ -419,7 +442,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
         data,
         success(raw_data) {
             popup_banners.close_connection_error_popup_banner("message_fetch");
-            const data = response_schema.parse(raw_data);
+            const data = message_fetch_response_schema.parse(raw_data);
             get_messages_success(data, opts);
         },
         error(xhr) {

@@ -628,11 +628,7 @@ def use_s3_backend(method: Callable[P, None]) -> Callable[P, None]:
     @override_settings(LOCAL_FILES_DIR=None)
     def new_method(*args: P.args, **kwargs: P.kwargs) -> None:
         backend = S3UploadBackend()
-        with (
-            mock.patch("zerver.worker.thumbnail.upload_backend", backend),
-            mock.patch("zerver.lib.upload.upload_backend", backend),
-            mock.patch("zerver.views.tusd.upload_backend", backend),
-        ):
+        with mock.patch("zerver.lib.upload._upload_backend", backend):
             return method(*args, **kwargs)
 
     return new_method
@@ -677,7 +673,6 @@ def use_db_models(
         RealmEmoji = apps.get_model("zerver", "RealmEmoji")
         RealmFilter = apps.get_model("zerver", "RealmFilter")
         Recipient = apps.get_model("zerver", "Recipient")
-        Recipient.PERSONAL = 1
         Recipient.STREAM = 2
         Recipient.DIRECT_MESSAGE_GROUP = 3
         ScheduledEmail = apps.get_model("zerver", "ScheduledEmail")

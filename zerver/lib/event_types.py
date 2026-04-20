@@ -224,6 +224,11 @@ class EventHasZoomToken(BaseEvent):
     value: bool
 
 
+class EventHasWebexToken(BaseEvent):
+    type: Literal["has_webex_token"]
+    value: bool
+
+
 class EventHeartbeat(BaseEvent):
     type: Literal["heartbeat"]
 
@@ -367,15 +372,6 @@ class EventModernPresence(BaseEvent):
     presences: dict[str, ModernPresence]
 
 
-# Type for the legacy user field; the `user_id` field is intended to
-# replace this and we expect to remove this once clients have migrated
-# to support the modern API.
-class ReactionLegacyUserType(BaseModel):
-    email: str
-    full_name: str
-    user_id: int
-
-
 class EventReactionAdd(BaseEvent):
     type: Literal["reaction"]
     op: Literal["add"]
@@ -384,7 +380,6 @@ class EventReactionAdd(BaseEvent):
     emoji_code: str
     reaction_type: Literal["realm_emoji", "unicode_emoji", "zulip_extra_emoji"]
     user_id: int
-    user: ReactionLegacyUserType
 
 
 class EventReactionRemove(BaseEvent):
@@ -395,7 +390,6 @@ class EventReactionRemove(BaseEvent):
     emoji_code: str
     reaction_type: Literal["realm_emoji", "unicode_emoji", "zulip_extra_emoji"]
     user_id: int
-    user: ReactionLegacyUserType
 
 
 class BotServicesOutgoing(BaseModel):
@@ -487,6 +481,23 @@ class RealmEmoji(BaseModel):
     deactivated: bool
     author_id: int
     still_url: str | None
+
+
+class EventRealmEmojiAdd(BaseEvent):
+    type: Literal["realm_emoji"]
+    op: Literal["add"]
+    emoji: RealmEmoji
+
+
+class RealmEmojiUpdateData(BaseModel):
+    deactivated: bool | None = None
+
+
+class EventRealmEmojiUpdateOne(BaseEvent):
+    type: Literal["realm_emoji"]
+    op: Literal["update_one"]
+    emoji_id: str
+    data: RealmEmojiUpdateData
 
 
 class EventRealmEmojiUpdate(BaseEvent):

@@ -122,7 +122,6 @@ not_yet_fully_covered = [
     "zerver/data_import/import_util.py",
     # Webhook integrations with incomplete coverage
     "zerver/webhooks/greenhouse/view.py",
-    "zerver/webhooks/jira/view.py",
     "zerver/webhooks/teamcity/view.py",
     "zerver/webhooks/travis/view.py",
     "zerver/webhooks/zapier/view.py",

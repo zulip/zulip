@@ -9,6 +9,7 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import AnomalousWebhookPayloadError, UnsupportedWebhookEventTypeError
+from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_none_or, check_string
@@ -44,6 +45,7 @@ def guess_zulip_user_from_jira(jira_username: str, realm: Realm) -> UserProfile 
         return None
 
 
+# https://jira.atlassian.com/secure/WikiRendererHelpAction.jspa?section=all
 def convert_jira_markup(content: str, realm: Realm) -> str:
     # Attempt to do some simplistic conversion of Jira
     # formatting to Markdown, for consumption in Zulip
@@ -86,7 +88,7 @@ def convert_jira_markup(content: str, realm: Realm) -> str:
         # Try to look up username
         user_profile = guess_zulip_user_from_jira(username, realm)
         if user_profile:
-            replacement = f"**{user_profile.full_name}**"
+            replacement = silent_mention_syntax_for_user(user_profile)
         else:
             replacement = f"**{username}**"
 
@@ -116,7 +118,7 @@ def get_issue_string(
     if with_title:
         text = f"{issue_id}: {get_issue_title(payload)}"
     else:
-        text = issue_id
+        text = issue_id  # nocoverage
 
     base_url = re.match(
         r"(.*)\/rest\/api/.*", get_in(payload, ["issue", "self"]).tame(check_string)
@@ -171,23 +173,6 @@ def get_issue_topic(payload: WildValue) -> str:
     return f"{get_issue_id(payload)}: {get_issue_title(payload)}"
 
 
-def get_sub_event_for_update_issue(payload: WildValue) -> str:
-    sub_event = payload.get("issue_event_type_name", "").tame(check_string)
-    if sub_event == "":
-        if payload.get("comment"):
-            return "issue_commented"
-        elif payload.get("transition"):
-            return "issue_transited"
-    return sub_event
-
-
-def get_event_type(payload: WildValue) -> str | None:
-    event = payload.get("webhookEvent").tame(check_none_or(check_string))
-    if event is None and payload.get("transition"):
-        event = "jira:issue_updated"
-    return event
-
-
 def add_change_info(
     content: str, field: str | None, from_field: str | None, to_field: str | None
 ) -> str:
@@ -216,58 +201,26 @@ def handle_updated_issue_event(payload: WildValue, user_profile: UserProfile) ->
     else:
         assignee_blurb = ""
 
-    sub_event = get_sub_event_for_update_issue(payload)
-    if "comment" in sub_event:
-        if sub_event == "issue_commented":
-            verb = "commented on"
-        elif sub_event == "issue_comment_edited":
-            verb = "edited a comment on"
-        else:
-            verb = "deleted a comment from"
+    content = f"{get_issue_author(payload)} updated {issue}{assignee_blurb}:\n\n"
+    changelog = payload.get("changelog")
 
-        if payload.get("webhookEvent").tame(check_none_or(check_string)) == "comment_created":
-            author = payload["comment"]["author"]["displayName"].tame(check_string)
-        else:
-            author = get_issue_author(payload)
+    if changelog:
+        # Use the changelog to display the changes, whitelist types we accept
+        items = changelog.get("items")
+        for item in items:
+            field = item.get("field").tame(check_none_or(check_string))
 
-        content = f"{author} {verb} {issue}{assignee_blurb}"
-        comment = get_in(payload, ["comment", "body"]).tame(check_string)
-        if comment:
-            comment = convert_jira_markup(comment, user_profile.realm)
-            content = f"{content}:\n\n``` quote\n{comment}\n```"
-        else:
-            content = f"{content}."
-    else:
-        content = f"{get_issue_author(payload)} updated {issue}{assignee_blurb}:\n\n"
-        changelog = payload.get("changelog")
+            if field == "assignee" and assignee_mention != "":
+                target_field_string = assignee_mention
+            else:
+                # Convert a user's target to a @-mention if possible
+                target_field_string = "**{}**".format(
+                    item.get("toString").tame(check_none_or(check_string))
+                )
 
-        if changelog:
-            # Use the changelog to display the changes, whitelist types we accept
-            items = changelog.get("items")
-            for item in items:
-                field = item.get("field").tame(check_none_or(check_string))
-
-                if field == "assignee" and assignee_mention != "":
-                    target_field_string = assignee_mention
-                else:
-                    # Convert a user's target to a @-mention if possible
-                    target_field_string = "**{}**".format(
-                        item.get("toString").tame(check_none_or(check_string))
-                    )
-
-                from_field_string = item.get("fromString").tame(check_none_or(check_string))
-                if target_field_string or from_field_string:
-                    content = add_change_info(
-                        content, field, from_field_string, target_field_string
-                    )
-
-        elif sub_event == "issue_transited":
-            from_field_string = get_in(payload, ["transition", "from_status"]).tame(check_string)
-            target_field_string = "**{}**".format(
-                get_in(payload, ["transition", "to_status"]).tame(check_string)
-            )
+            from_field_string = item.get("fromString").tame(check_none_or(check_string))
             if target_field_string or from_field_string:
-                content = add_change_info(content, "status", from_field_string, target_field_string)
+                content = add_change_info(content, field, from_field_string, target_field_string)
 
     return content
 
@@ -301,7 +254,9 @@ def handle_deleted_issue_event(payload: WildValue, user_profile: UserProfile) ->
     )
 
 
-def normalize_comment(comment: str) -> str:
+def normalize_comment(comment: str, realm: Realm) -> str:
+    comment = convert_jira_markup(comment, realm)
+
     # Here's how Jira escapes special characters in their payload:
     # ,.?\\!\n\"'\n\\[]\\{}()\n@#$%^&*\n~`|/\\\\
     # for some reason, as of writing this, ! has two '\' before it.
@@ -314,7 +269,9 @@ def handle_comment_created_event(payload: WildValue, user_profile: UserProfile) 
 \n``` quote\n{comment}\n```\n".format(
         author=payload["comment"]["author"]["displayName"].tame(check_string),
         issue_string=get_issue_string(payload, with_title=True),
-        comment=normalize_comment(payload["comment"]["body"].tame(check_string)),
+        comment=normalize_comment(
+            payload["comment"]["body"].tame(check_string), user_profile.realm
+        ),
     )
 
 
@@ -323,7 +280,9 @@ def handle_comment_updated_event(payload: WildValue, user_profile: UserProfile) 
 \n``` quote\n{comment}\n```\n".format(
         author=payload["comment"]["author"]["displayName"].tame(check_string),
         issue_string=get_issue_string(payload, with_title=True),
-        comment=normalize_comment(payload["comment"]["body"].tame(check_string)),
+        comment=normalize_comment(
+            payload["comment"]["body"].tame(check_string), user_profile.realm
+        ),
     )
 
 
@@ -332,7 +291,9 @@ def handle_comment_deleted_event(payload: WildValue, user_profile: UserProfile) 
 \n``` quote\n~~{comment}~~\n```\n".format(
         author=payload["comment"]["author"]["displayName"].tame(check_string),
         issue_string=get_issue_string(payload, with_title=True),
-        comment=normalize_comment(payload["comment"]["body"].tame(check_string)),
+        comment=normalize_comment(
+            payload["comment"]["body"].tame(check_string), user_profile.realm
+        ),
     )
 
 
@@ -356,7 +317,7 @@ def api_jira_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-    event = get_event_type(payload)
+    event = payload.get("webhookEvent").tame(check_none_or(check_string))
     if event in IGNORED_EVENTS:
         return json_success(request)
 

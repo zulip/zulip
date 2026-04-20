@@ -35,7 +35,6 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import messages_for_topic
 from zerver.models.messages import Message
 from zerver.models.realms import Realm, get_realm
-from zerver.models.recipients import Recipient
 from zerver.models.streams import Stream, Subscription
 from zerver.models.users import UserProfile, get_system_bot
 from zerver.tests.test_import_export import make_export_output_dir
@@ -541,30 +540,6 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
             "Could not find email address for Microsoft Teams user {'BusinessPhones': [], 'JobTitle': None, 'Mail': None, 'MobilePhone': None, 'OfficeLocation': None, 'PreferredLanguage': None, 'UserPrincipalName': None, 'Id': '5dbe468a-1e96-4aaa-856d-cdf825081e11', 'UserId': None, 'DisplayName': 'zoe', 'UserName': None, 'PhoneNumber': None, 'Location': None, 'InterpretedUserType': None, 'DirectoryStatus': None, 'AudioConferencing': None, 'PhoneSystems': None, 'CallingPlan': None, 'AssignedPlans': None, 'OnlineDialinConferencingPolicy': None, 'FeatureTypes': None, 'State': None, 'City': None, 'Surname': None, 'GivenName': 'zoe'}",
             str(e.exception),
         )
-
-    def test_at_least_one_recipient_per_user(self) -> None:
-        """
-        Make sure each user at least has a recipient field. This makes sure the
-        the onboarding messages, runs smoothly even for users without any
-        personal messages.
-        """
-        realm: dict[str, Any] = {}
-        realm["zerver_stream"] = []
-        realm["zerver_defaultstream"] = []
-        realm["zerver_recipient"] = []
-        realm["zerver_subscription"] = []
-        with self.assertLogs(level="INFO"):
-            microsoft_teams_user_id_to_zulip_user_id = self.convert_users_handler(
-                realm=realm, microsoft_teams_user_role_data=MICROSOFT_TEAMS_EXPORT_USER_ROLE_DATA
-            )
-
-        self.assert_length(
-            realm["zerver_recipient"], len(self.get_exported_microsoft_teams_user_data())
-        )
-        zulip_user_ids = set(microsoft_teams_user_id_to_zulip_user_id.values())
-        for recipient in realm["zerver_recipient"]:
-            self.assertTrue(recipient["type_id"] in zulip_user_ids)
-            self.assertTrue(recipient["type"] == Recipient.PERSONAL)
 
     @responses.activate
     def test_failed_get_microsoft_graph_api_data(self) -> None:

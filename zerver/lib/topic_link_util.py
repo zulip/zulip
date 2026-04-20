@@ -14,6 +14,8 @@ def will_produce_broken_stream_topic_link(word: str) -> bool:
     return bool(invalid_stream_topic_regex.search(word))
 
 
+TOPIC_LINK_SYNTAX_FOR_DISPLAY = "#{channel_name} > {topic_name}"
+
 escape_mapping = {
     "`": "&#96;",
     ">": "&gt;",

@@ -13,20 +13,26 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.presence import get_presence_for_user, get_presence_response
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
-from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
+from zerver.lib.typed_endpoint import (
+    ApiParamConfig,
+    PathOnly,
+    typed_endpoint,
+    typed_endpoint_without_parameters,
+)
 from zerver.lib.user_status import check_update_user_status, get_user_status
 from zerver.lib.users import access_user_by_id, check_can_access_user
 from zerver.models import UserPresence, UserProfile
 from zerver.models.users import get_active_user, get_active_user_profile_by_id_in_realm
 
 
+@typed_endpoint_without_parameters
 def get_presence_backend(
-    request: HttpRequest, user_profile: UserProfile, user_id_or_email: str
+    request: HttpRequest,
+    user_profile: UserProfile,
+    user_id_or_email: PathOnly[str],
 ) -> HttpResponse:
     # This isn't used by the web app; it's available for API use by
-    # bots and other clients.  We may want to add slim_presence
-    # support for it (or just migrate its API wholesale) later.
+    # bots and other clients.
 
     try:
         try:
@@ -50,21 +56,13 @@ def get_presence_backend(
     ):
         raise JsonableError(_("Insufficient permission"))
 
-    presence_dict = get_presence_for_user(target.id)
+    presence_dict = get_presence_for_user(target.id, slim_presence=True)
     if len(presence_dict) == 0:
         raise JsonableError(
             _("No presence data for {user_id_or_email}").format(user_id_or_email=user_id_or_email)
         )
 
-    # For initial version, we just include the status and timestamp keys
-    result = dict(presence=presence_dict[target.email])
-    aggregated_info = result["presence"]["aggregated"]
-    aggr_status_duration = datetime_to_timestamp(timezone_now()) - aggregated_info["timestamp"]
-    if aggr_status_duration > settings.OFFLINE_THRESHOLD_SECS:
-        aggregated_info["status"] = "offline"
-    for val in result["presence"].values():
-        val.pop("client", None)
-        val.pop("pushable", None)
+    result = dict(presence=presence_dict[str(target.id)])
     return json_success(request, data=result)
 
 

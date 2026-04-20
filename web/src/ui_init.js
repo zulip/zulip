@@ -225,6 +225,7 @@ function initialize_compose_box() {
                 giphy_enabled: gif_state.is_giphy_enabled(),
                 max_stream_name_length: realm.max_stream_name_length,
                 tenor_enabled: gif_state.is_tenor_enabled(),
+                klipy_enabled: gif_state.is_klipy_enabled(),
                 max_topic_length: realm.max_topic_length,
                 empty_string_topic_display_name: util.get_final_topic_display_name(""),
             }),
@@ -606,7 +607,7 @@ export async function initialize_everything(state_data) {
             message_view.show(
                 [
                     {
-                        operator: "stream",
+                        operator: "channel",
                         operand: sub.stream_id.toString(),
                     },
                 ],
@@ -820,6 +821,7 @@ $(() => {
                 stream_typing_notifications: false,
                 user_settings_object: true,
                 empty_topic_name: true,
+                individual_emoji_changes: true,
             }),
             client_gravatar: false,
         };

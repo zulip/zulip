@@ -6,6 +6,7 @@ import * as tippy from "tippy.js";
 
 import render_confirm_mute_user from "../templates/confirm_dialog/confirm_mute_user.hbs";
 import render_user_card_popover from "../templates/popovers/user_card/user_card_popover.hbs";
+import render_user_card_popover_for_deleted_user from "../templates/popovers/user_card/user_card_popover_for_deleted_user.hbs";
 import render_user_card_popover_for_unknown_user from "../templates/popovers/user_card/user_card_popover_for_unknown_user.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -423,6 +424,13 @@ function show_user_card_popover(
             user_avatar,
         };
         popover_html = render_user_card_popover_for_unknown_user(args);
+    } else if (user.is_deleted) {
+        args = {
+            user_avatar: people.small_avatar_url_for_person(user),
+            user_full_name: user.full_name,
+            is_bot: user.is_bot,
+        };
+        popover_html = render_user_card_popover_for_deleted_user(args);
     } else {
         args = get_user_card_popover_data(
             user,
@@ -431,6 +439,13 @@ function show_user_card_popover(
             private_msg_class,
         );
         popover_html = render_user_card_popover(args);
+    }
+
+    if ($popover_element.hasClass("inline-profile-picture-wrapper")) {
+        // The .inline-profile-picture-wrapper element has additional
+        // space around it, but we want to place the user card immediately
+        // adjacent the avatar. So we update the element here accordingly.
+        $popover_element = $popover_element.find(".inline_profile_picture");
     }
 
     popover_menus.toggle_popover_menu(
@@ -533,19 +548,20 @@ function load_medium_avatar(user: User, $elt: JQuery): void {
 // Functions related to message user card popover.
 
 // element is the target element to pop off of.
-// user is the user whose profile to show.
+// user_id is the user whose profile to show.
 // sender_id is the user id of the sender for the message we are
 // showing the popover from.
 export function toggle_user_card_popover_for_message(
     element: HTMLElement,
-    user: User,
+    user_id: number,
     sender_id: number,
     has_message_context: boolean,
     on_mount?: (instance: tippy.Instance) => void,
 ): void {
     const $elt = $(element);
+    const user = people.get_by_user_id(user_id);
 
-    const is_sender_popover = sender_id === user.user_id;
+    const is_sender_popover = sender_id === user_id;
     show_user_card_popover(
         user,
         $elt,
@@ -579,9 +595,8 @@ export function unsaved_message_user_mention_event_handler(
     }
 
     const user_id = Number.parseInt(id_string, 10);
-    const user = people.get_by_user_id(user_id);
 
-    toggle_user_card_popover_for_message(this, user, current_user.user_id, false);
+    toggle_user_card_popover_for_message(this, user_id, current_user.user_id, false);
 }
 
 // This function serves as the entry point for toggling
@@ -604,7 +619,7 @@ export function toggle_sender_info(): void {
     popovers.hide_all();
 
     const $message = $(".selected_message");
-    let $sender = $message.find(".message-avatar");
+    let $sender = $message.find(".message-avatar .inline-profile-picture-wrapper");
     if ($sender.length === 0) {
         // Messages without an avatar have an invisible message_sender
         // element that's roughly in the right place.
@@ -614,12 +629,17 @@ export function toggle_sender_info(): void {
     assert(message_lists.current !== undefined);
     const message = message_lists.current.get(rows.id($message));
     assert(message !== undefined);
-    const user = people.get_by_user_id(message.sender_id);
-    toggle_user_card_popover_for_message(the($sender), user, message.sender_id, true, () => {
-        if (!page_params.is_spectator) {
-            focus_user_card_popover_item();
-        }
-    });
+    toggle_user_card_popover_for_message(
+        the($sender),
+        message.sender_id,
+        message.sender_id,
+        true,
+        () => {
+            if (!page_params.is_spectator) {
+                focus_user_card_popover_item();
+            }
+        },
+    );
 }
 
 function focus_user_card_popover_item(): void {
@@ -694,8 +714,7 @@ function register_click_handlers(): void {
             assert(message_lists.current !== undefined);
             const message = message_lists.current.get(rows.id($row));
             assert(message !== undefined);
-            const user = people.get_by_user_id(message.sender_id);
-            toggle_user_card_popover_for_message(this, user, message.sender_id, true);
+            toggle_user_card_popover_for_message(this, message.sender_id, message.sender_id, true);
         },
     );
 
@@ -715,14 +734,13 @@ function register_click_handlers(): void {
         assert(message_lists.current !== undefined);
         const message = message_lists.current.get(rows.id($row));
         assert(message !== undefined);
-        let user;
+        let user_id;
         if (id_string) {
-            const user_id = Number.parseInt(id_string, 10);
-            user = people.get_by_user_id(user_id);
+            user_id = Number.parseInt(id_string, 10);
         } else {
-            user = email === undefined ? undefined : people.get_by_email(email);
-            if (user === undefined) {
-                // There can be a case when user is undefined if
+            user_id = email === undefined ? undefined : people.maybe_get_user_id_by_email(email);
+            if (user_id === undefined) {
+                // There can be a case when user_id is undefined if
                 // the user is an inaccessible user as we do not
                 // create the fake user objects for it because
                 // we do not have user ID. It is fine to not
@@ -731,7 +749,7 @@ function register_click_handlers(): void {
                 return;
             }
         }
-        toggle_user_card_popover_for_message(this, user, message.sender_id, true);
+        toggle_user_card_popover_for_message(this, user_id, message.sender_id, true);
     });
 
     // Note: Message feeds and drafts have their own direct event listeners
@@ -815,8 +833,7 @@ function register_click_handlers(): void {
         // If any overlay is already open, we want the user profile to behave
         // as a modal rather than an overlay.
         if (is_overlay_hash(current_hash)) {
-            const user = people.get_by_user_id(user_id);
-            user_profile.show_user_profile(user);
+            user_profile.show_user_profile(user_id);
         } else {
             browser_history.go_to_location(`user/${user_id}`);
         }
@@ -832,7 +849,7 @@ function register_click_handlers(): void {
             });
         }
         const user_id = elem_to_user_id($(this).parents("ul"));
-        const name = people.get_by_user_id(user_id).full_name;
+        const name = people.get_full_name(user_id);
         const mention = people.get_mention_syntax(name, user_id);
         compose_ui.insert_syntax_and_focus(mention);
         user_sidebar.hide();
@@ -849,7 +866,7 @@ function register_click_handlers(): void {
             });
         }
         const user_id = elem_to_user_id($(this).parents("ul"));
-        const name = people.get_by_user_id(user_id).full_name;
+        const name = people.get_full_name(user_id);
         const is_active = people.is_active_user_or_system_bot(user_id);
         const mention = people.get_mention_syntax(name, user_id, !is_active);
         compose_ui.insert_syntax_and_focus(mention);
@@ -965,8 +982,7 @@ function register_click_handlers(): void {
     $("body").on("click", ".sidebar-popover-manage-user", function () {
         hide_all();
         const user_id = elem_to_user_id($(this).parents("ul"));
-        const user = people.get_by_user_id(user_id);
-        user_profile.show_user_profile(user, "manage-profile-tab");
+        user_profile.show_user_profile(user_id, "manage-profile-tab");
     });
 
     $("body").on("click", ".edit-your-profile", () => {

@@ -87,20 +87,24 @@ Sometimes you know approximately where the message you are looking for was sent.
 Zulip offers the following filters based on the location of the message.
 
 * `channel:design`: Search within the channel **#design**.
-* `channel:design topic:new+logo`: Search within the topic "new logo" in
+* `channel:design topic:"new logo"`: Search within the topic "new logo" in
   **#design**.
+* `topic:"new logo"`: Search within the topic "new logo" in all subscribed
+  channels.
 * `is:dm`: Search all your direct messages.
 * `dm:Bo Lin`: Search 1-on-1 direct messages between you and Bo.
 * `dm:Bo Lin, Elena García`: Search group direct messages
   between you, Bo, and Elena.
 * `dm-including:Bo Lin`: Search all direct message conversations
   (1-on-1 and group) that include you and Bo, as well as any other users.
+* `channels:archived`: Search the messages you received in [archived
+  channels](/help/archive-a-channel).
 
 ### Search shared history
 
 To avoid cluttering your search results, by default, Zulip searches just the
-messages you received. You can use `channels:` or `channel:` filters to search
-additional messages.
+messages you received. You can use the `channel:` filter, and some `channels:`
+filters, to search additional messages.
 
 * `channels:public`: Search messages in all
   [public](/help/channel-permissions#public-channels) and

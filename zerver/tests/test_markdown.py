@@ -1,5 +1,6 @@
 import os
 import re
+from dataclasses import dataclass
 from html import escape
 from textwrap import dedent
 from typing import Any
@@ -30,7 +31,7 @@ from zerver.actions.users import change_user_is_active
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.camo import get_camo_url
 from zerver.lib.create_user import create_user
-from zerver.lib.emoji import codepoint_to_name, get_emoji_url
+from zerver.lib.emoji import codepoint_to_name
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import JsonableError, MarkdownRenderingError
 from zerver.lib.markdown import (
@@ -49,6 +50,7 @@ from zerver.lib.markdown import (
     url_to_a,
 )
 from zerver.lib.markdown.fenced_code import FencedBlockPreprocessor
+from zerver.lib.markdown.from_html import convert_html_to_markdown
 from zerver.lib.mdiff import diff_strings
 from zerver.lib.mention import (
     FullNameInfo,
@@ -66,7 +68,7 @@ from zerver.lib.streams import user_has_content_access, user_has_metadata_access
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
 from zerver.lib.types import UserGroupMembersData
-from zerver.lib.upload import upload_message_attachment
+from zerver.lib.upload import get_emoji_url, upload_message_attachment
 from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.models import Message, NamedUserGroup, RealmEmoji, RealmFilter, UserMessage, UserProfile
 from zerver.models.clients import get_client
@@ -640,6 +642,8 @@ class MarkdownFixtureTest(ZulipTestCase):
         def replaced(payload: str, url: str, phrase: str = "") -> str:
             if url[:4] == "http":
                 href = url
+            elif "://" in url:
+                href = url
             elif "@" in url:
                 href = "mailto:" + url
             else:
@@ -761,6 +765,54 @@ class MarkdownLinkTest(ZulipTestCase):
             converted,
             '<p>To <a href="bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa">bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</a> or not to bitcoin</p>',
         )
+
+    def test_mentions_formatted_with_link(self) -> None:
+        # Make sure the inline link processor is takes priority over the mention processors
+        # and don't double-process mentions with a link.
+        sender_user_profile = self.example_user("othello")
+        msg = Message(
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
+        )
+
+        @dataclass
+        class MentionFixture:
+            name: str
+            mention_syntax: str
+            expected_html_class: str
+
+        mention_fixtures = [
+            MentionFixture(
+                name="channel_mention",
+                mention_syntax="#**Denmark**",
+                expected_html_class="stream",
+            ),
+            MentionFixture(
+                name="channel_topic_mention",
+                mention_syntax="#**Denmark>topic**",
+                expected_html_class="stream-topic",
+            ),
+            MentionFixture(
+                name="channel_topic_message_mention",
+                mention_syntax="#**Denmark>topic>@123**",
+                expected_html_class="message-link",
+            ),
+        ]
+
+        for fixture in mention_fixtures:
+            with self.subTest(fixture.name):
+                # Make sure the mention syntax is valid first.
+                self.assertIn(
+                    fixture.expected_html_class,
+                    render_message_markdown(msg, fixture.mention_syntax).rendered_content,
+                )
+                link = "https://chat.zulip.org"
+                mention_with_link = f"[{fixture.mention_syntax}]({link})"
+                self.assertEqual(
+                    render_message_markdown(msg, mention_with_link).rendered_content,
+                    f'<p><a href="{link}">{escape(fixture.mention_syntax)}</a></p>',
+                )
 
 
 class MarkdownEmbedsTest(ZulipTestCase):
@@ -1279,7 +1331,9 @@ class MarkdownEmojiTest(ZulipTestCase):
     def test_realm_emoji(self) -> None:
         def emoji_img(name: str, file_name: str, realm_id: int) -> str:
             return '<img alt="{}" class="emoji" src="{}" title="{}">'.format(
-                name, get_emoji_url(file_name, realm_id), name[1:-1].replace("_", " ")
+                name,
+                get_emoji_url(file_name, realm_id),
+                name[1:-1].replace("_", " "),
             )
 
         realm = get_realm("zulip")
@@ -3807,3 +3861,10 @@ class MarkdownErrorTests(ZulipTestCase):
         self.assertIn("print('pygments fallback test')", rendered_html)
         mocked_hilite.assert_called()
         self.assertIn("Failed to highlight fenced code block", log.output[0])
+
+
+class TestHtmlToMarkdown(ZulipTestCase):
+    def test_unicode(self) -> None:
+        self.assertEqual(
+            convert_html_to_markdown("a rose is not a ros&eacute;"), "a rose is not a rosé"
+        )

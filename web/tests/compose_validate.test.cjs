@@ -188,7 +188,6 @@ test_ui("validate", ({mock_template, override}) => {
 
     initialize_pm_pill(mock_template);
     add_content_to_compose_box();
-    compose_state.private_message_recipient_emails("");
     let pm_recipient_error_rendered = false;
     override(realm, "realm_direct_message_permission_group", everyone.id);
     override(realm, "realm_direct_message_initiator_group", everyone.id);
@@ -205,7 +204,7 @@ test_ui("validate", ({mock_template, override}) => {
     pm_recipient_error_rendered = false;
 
     people.add_active_user(bob);
-    compose_state.private_message_recipient_emails("bob@example.com");
+    compose_state.set_private_message_recipient_ids([bob.user_id]);
     assert.ok(compose_validate.validate());
     assert.ok(!pm_recipient_error_rendered);
 
@@ -233,15 +232,30 @@ test_ui("validate", ({mock_template, override}) => {
     assert.ok(!compose_validate.validate());
     assert.ok(deactivated_user_error_rendered);
 
+    bob.is_deleted = true;
+    let deleted_user_error_rendered = false;
+    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+        assert.equal(data.classname, compose_banner.CLASSNAMES.deactivated_user);
+        assert.equal(
+            data.banner_text,
+            $t({defaultMessage: "You cannot send messages to deleted users."}),
+        );
+        deleted_user_error_rendered = true;
+        return "<banner-stub>";
+    });
+    assert.ok(!compose_validate.validate());
+    assert.ok(deleted_user_error_rendered);
+    bob.is_deleted = false;
+
     initialize_pm_pill(mock_template);
     add_content_to_compose_box();
-    compose_state.private_message_recipient_emails("welcome-bot@example.com");
+    compose_state.set_private_message_recipient_ids([welcome_bot.user_id]);
     $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
     assert.ok(compose_validate.validate());
 
     // For this first block, we should fail due to empty compose.
     initialize_pm_pill(mock_template);
-    compose_state.private_message_recipient_emails("welcome-bot@example.com");
+    compose_state.set_private_message_recipient_ids([welcome_bot.user_id]);
     $("textarea#compose-textarea").removeClass("invalid");
     assert.ok(!compose_validate.validate());
     assert.ok(!$("#compose-send-button .loader").visible());
@@ -720,6 +734,117 @@ test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}
     assert.ok(!new_banner_rendered);
 });
 
+test_ui("maybe_clear_stale_recipient_not_subscribed_warnings", () => {
+    const $textarea = $("<textarea>").attr("id", "compose-textarea");
+    stub_message_row($textarea);
+    const $banner_container = $("#compose_banners");
+
+    // Using a shared factory so the removal callback has a single
+    // source location — coverage is satisfied as long as any banner
+    // is actually removed across all test cases.
+    const removed_banners = new Set();
+    function make_banner(name, user_id_str) {
+        removed_banners.delete(name);
+        const $banner = $.create(name);
+        if (user_id_str !== undefined) {
+            $banner.attr("data-user-id", user_id_str);
+        }
+        $banner[0].remove = () => {
+            removed_banners.add(name);
+        };
+        return $banner;
+    }
+
+    // No banners present: function is a no-op.
+    $banner_container.set_find_results(".recipient_not_subscribed", []);
+    $textarea.val("text without any mention");
+    compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+
+    // Banner preserved when canonical @**Name** mention is present.
+    {
+        const $banner = make_banner("canonical", String(alice.user_id));
+        const mention = people.get_mention_syntax(alice.full_name, alice.user_id, false);
+        $banner_container.set_find_results(".recipient_not_subscribed", $banner);
+        $textarea.val(`Hello ${mention} here.`);
+        compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+        assert.ok(!removed_banners.has("canonical"));
+    }
+
+    // Banner removed when mention is deleted from compose text.
+    {
+        const $banner = make_banner("deleted", String(alice.user_id));
+        $banner_container.set_find_results(".recipient_not_subscribed", $banner);
+        $textarea.val("Hello, how are you?");
+        compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+        assert.ok(removed_banners.has("deleted"));
+    }
+
+    // Banner preserved for @**|user_id** form.
+    {
+        const $banner = make_banner("id-only", String(alice.user_id));
+        $banner_container.set_find_results(".recipient_not_subscribed", $banner);
+        $textarea.val(`Hello @**|${alice.user_id}** how are you?`);
+        compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+        assert.ok(!removed_banners.has("id-only"));
+    }
+
+    // Banner preserved for @**Name|user_id** form.
+    {
+        const $banner = make_banner("name-and-id", String(alice.user_id));
+        $banner_container.set_find_results(".recipient_not_subscribed", $banner);
+        $textarea.val(`Hello @**${alice.full_name}|${alice.user_id}** how are you?`);
+        compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+        assert.ok(!removed_banners.has("name-and-id"));
+    }
+
+    // Banner removed when only a silent mention is present, since
+    // the banner is not displayed for silent mentions.
+    {
+        const silent_mention = people.get_mention_syntax(alice.full_name, alice.user_id, true);
+        const $banner = make_banner("silent-only", String(alice.user_id));
+        $banner_container.set_find_results(".recipient_not_subscribed", $banner);
+        $textarea.val(`Hello ${silent_mention} here.`);
+        compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+        assert.ok(removed_banners.has("silent-only"));
+    }
+
+    // Banner removed when compose text is empty.
+    {
+        const $banner = make_banner("empty-text", String(alice.user_id));
+        $banner_container.set_find_results(".recipient_not_subscribed", $banner);
+        $textarea.val("");
+        compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+        assert.ok(removed_banners.has("empty-text"));
+    }
+
+    // Banner removed when mention syntax is incomplete.
+    {
+        const $banner = make_banner("incomplete", String(alice.user_id));
+        $banner_container.set_find_results(".recipient_not_subscribed", $banner);
+        $textarea.val(`Hello @**${alice.full_name} here.`);
+        compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+        assert.ok(removed_banners.has("incomplete"));
+    }
+
+    // Banner removed for unknown user_id.
+    {
+        const $banner = make_banner("unknown-user", "99999");
+        $banner_container.set_find_results(".recipient_not_subscribed", $banner);
+        $textarea.val("No mention here.");
+        compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+        assert.ok(removed_banners.has("unknown-user"));
+    }
+
+    // Banner removed when data-user-id attribute is missing.
+    {
+        const $banner = make_banner("no-user-id", undefined);
+        $banner_container.set_find_results(".recipient_not_subscribed", $banner);
+        $textarea.val("Some text.");
+        compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
+        assert.ok(removed_banners.has("no-user-id"));
+    }
+});
+
 test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     mock_banners();
     $.reset_selector("#compose_banners .topic_resolved");
@@ -809,7 +934,7 @@ test_ui("test_warn_if_guest_in_dm_recipient", ({mock_template, override}) => {
 
     compose_state.set_message_type("private");
     initialize_pm_pill(mock_template);
-    compose_state.private_message_recipient_emails("guest@example.com");
+    compose_state.set_private_message_recipient_ids([guest.user_id]);
     const classname = compose_banner.CLASSNAMES.guest_in_dm_recipient_warning;
     let $banner = $(`#compose_banners .${CSS.escape(classname)}`);
 
@@ -842,7 +967,7 @@ test_ui("test_warn_if_guest_in_dm_recipient", ({mock_template, override}) => {
     people.add_active_user(new_guest);
 
     initialize_pm_pill(mock_template);
-    compose_state.private_message_recipient_emails("guest@example.com, new_guest@example.com");
+    compose_state.set_private_message_recipient_ids([guest.user_id, new_guest.user_id]);
     $.reset_selector(`#compose_banners .${CSS.escape(classname)}`);
     $banner = $(`#compose_banners .${CSS.escape(classname)}`);
     const $banner_content = $(`#compose_banners .${CSS.escape(classname)} .banner_content`);

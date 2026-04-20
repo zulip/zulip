@@ -410,6 +410,7 @@ class RawUserDict(TypedDict):
     long_term_idle: bool
     email_address_visibility: int
     is_imported_stub: bool
+    is_deleted: bool
 
 
 class RemoteRealmDictValue(TypedDict):
@@ -447,3 +448,9 @@ class DirectMessageEditRequest:
     content: str
     orig_content: str
     is_content_edited: bool
+
+
+@dataclass(frozen=True)
+class Invitee:
+    email: str
+    full_name: str = ""

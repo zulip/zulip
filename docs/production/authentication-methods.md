@@ -3,11 +3,11 @@
 Zulip supports a wide variety of authentication methods:
 
 - [Email and password](#email-and-password), which is enabled by default.
-- [Social authentication](#social-authentication) with Google, GitHub,
-  and GitLab, which is easy to set up with a few lines of configuration.
+- [Social authentication](#social-authentication) with Google, GitHub, GitLab,
+  and Discord, which is easy to set up with a few lines of configuration.
   Authentication with Apple additionally requires registering with Apple.
-- [Microsoft Entra ID](#microsoft-entra-id) (AzureAD), which is similarly easy to
-  configure.
+- [Microsoft Entra ID](#microsoft-entra-id) (AzureAD) via OpenID Connect,
+  supporting authentication restricted to a specific Entra ID tenant.
 - [LDAP (including Active Directory)](#ldap-including-active-directory). Zulip
   supports retrieving information about users via LDAP, and optionally using LDAP
   as an authentication mechanism.
@@ -98,6 +98,7 @@ authenticate users with:
 - Google accounts, with `GoogleAuthBackend`
 - GitHub accounts, with `GitHubAuthBackend`
 - GitLab accounts, with `GitLabAuthBackend`
+- Discord accounts, with `DiscordAuthBackend`
 
 Each of these requires one to a handful of lines of configuration in
 `settings.py`, as well as a secret in `zulip-secrets.conf`. Details
@@ -152,12 +153,6 @@ self-hosted servers. To do so, you'll need to do the following:
 [apple-create-private-key]: https://help.apple.com/developer-account/?lang=en#/dev77c875b7e
 [apple-get-started]: https://developer.apple.com/sign-in-with-apple/get-started/
 [outgoing-email]: email.md
-
-## Microsoft Entra ID
-
-Set up authentication with Microsoft Entra ID (AzureAD) by modifying the
-`AzureADAuthBackend` configuration in `settings.py`, as well as a secret in
-`zulip-secrets.conf`. Details are documented in your `settings.py`.
 
 ## LDAP (including Active Directory)
 
@@ -686,8 +681,11 @@ other IdPs (identity providers). You can configure it as follows:
         in your IdP's interface when setting up SAML authentication
         (referred to as "Attribute Statements" with Okta, or
         "Attribute Mapping" with Google Workspace). You'll want to connect
-        these so that Zulip gets the email address (used as a unique
-        user ID) and name for the user.
+        these so that Zulip gets the email address and name for the
+        user. The `attr_user_permanent_id` field should be set to a
+        **stable unique identifier** for the user (see
+        [Synchronizing email addresses with
+        SAML](#synchronizing-email-addresses-with-saml)).
      5. The `display_name` and `display_icon` fields are used to
         display the login/registration buttons for the IdP.
      6. The `auto_signup` field determines how Zulip should handle
@@ -873,6 +871,35 @@ Only direct membership of groups is synced through this protocol;
 subgroups of Zulip groups are managed entirely [inside
 Zulip](https://zulip.com/help/manage-user-groups#add-user-groups-to-a-group).
 
+### Synchronizing email addresses with SAML
+
+Zulip supports automatically handling changes in email address for
+SAML-authenticated users. This feature activates automatically when
+`attr_user_permanent_id` is set to an attribute **different from**
+`attr_email` in `SOCIAL_AUTH_SAML_ENABLED_IDPS`. When active, users
+are identified by their permanent ID rather than by email address, and
+Zulip will update their email on their next login instead of creating
+a duplicate account.
+
+For this to work correctly, `attr_user_permanent_id` must point to a
+**stable unique identifier** that does not change when the user's
+email address changes. Check your IdP's documentation for a suitable
+attribute — for example, an opaque user ID or UUID. If
+`attr_user_permanent_id` is set to the same attribute as `attr_email`
+(or left unset), email synchronization will not be active, and email
+changes at the IdP will result in duplicate accounts.
+
+:::{note}
+
+The first time a user logs in with SAML, the permanent ID is linked to
+their Zulip account. After a change in their email address at the IdP,
+Zulip will update the linked account's email address the next time the
+user logs in. If another Zulip user already has the new email address,
+the email will not be updated, a warning will be logged and the
+administrator should resolve the conflict manually.
+
+:::
+
 ### SCIM
 
 Many SAML IdPs also offer SCIM provisioning to manage automatically
@@ -959,8 +986,7 @@ integration](../production/scim.md).
 
    ```
    "attr_user_permanent_id": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
-   "attr_first_name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
-   "attr_last_name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+   "attr_full_name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
    "attr_username": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
    "attr_email": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
    ```
@@ -1200,6 +1226,12 @@ If your OIDC server's HTTPS server is signed by a custom certificate
 authority, you will need to [configure Zulip to trust
 it](system-configuration.md#custom_ca_path).
 
+### Microsoft Entra ID (OIDC)
+
+Microsoft Entra ID (AzureAD) can be configured as an OIDC provider.
+See the [Microsoft Entra ID](#microsoft-entra-id) section for complete
+setup instructions.
+
 ## JSON Web Tokens (JWT)
 
 Zulip supports using JSON Web Tokens (JWT) authentication in two ways:
@@ -1222,6 +1254,88 @@ In order to use JWT authentication with Zulip, one must first
 configure the JWT secret and algorithm via `JWT_AUTH_KEYS` in
 `/etc/zulip/settings.py`; see the inline comment documentation in that
 file for details.
+
+## Microsoft Entra ID
+
+The recommended approach for Microsoft Entra ID (formerly AzureAD) SSO
+on self-hosted Zulip servers is to use Zulip's [OpenID
+Connect](#openid-connect) integration. This allows you to restrict
+authentication to a specific Entra ID tenant.
+
+To set this up:
+
+1. Sign in to the [Microsoft Entra admin center][entra-admin-center].
+   Browse to **Entra ID > App registrations** and select **New
+   registration**.
+
+1. Under **Supported account types**, select **Single tenant only** to restrict
+   authentication to your tenant.
+
+1. In the **Redirect URI** section, select **Web** as the platform and
+   enter `https://zulip.example.com/complete/oidc/` as the redirect
+   URI, based on your values of `EXTERNAL_HOST` and
+   `SOCIAL_AUTH_SUBDOMAIN`.
+
+1. Select **Register**. From the app's **Overview** page, note the
+   **Application (client) ID** and **Directory (tenant) ID**.
+
+1. Select **Certificates & secrets > Client secrets > New client
+   secret**. Add a description and select an expiration, then select
+   **Add**. Record the generated **Value** (it is only shown once).
+
+1. In `/etc/zulip/settings.py`, enable the `zproject.backends.GenericOpenIdConnectBackend`
+   backend in `AUTHENTICATION_BACKENDS`.
+
+1. Configure `SOCIAL_AUTH_OIDC_ENABLED_IDPS`, replacing `YOUR_TENANT_ID` with
+   the **Directory (tenant) ID** and `YOUR_APPLICATION_ID` with the
+   **Application (client) ID** from step 4:
+
+   ```python
+   SOCIAL_AUTH_OIDC_ENABLED_IDPS = {
+       "entra": {
+           "oidc_url": "https://login.microsoftonline.com/YOUR_TENANT_ID/v2.0",
+           "display_name": "Microsoft",
+           "display_icon": "/static/images/authentication_backends/microsoft-icon.png",
+           "client_id": "YOUR_APPLICATION_ID",
+           "secret": get_secret("social_auth_oidc_secret"),
+           ## Set to True to automatically create accounts on first login.
+           ## When False, users are prompted to confirm account creation.
+           "auto_signup": True,
+       }
+   }
+   ```
+
+1. Add the client secret from step 5 to
+   `/etc/zulip/zulip-secrets.conf`:
+
+   ```ini
+   social_auth_oidc_secret = your_client_secret_value
+   ```
+
+1. (Optional) If you want Zulip to trust the full name provided by
+   Entra ID rather than prompting new users to confirm it, set the
+   following in `/etc/zulip/settings.py`:
+
+   ```python
+   SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED = True
+   ```
+
+1. Restart the Zulip server:
+
+   ```bash
+   /home/zulip/deployments/current/scripts/restart-server
+   ```
+
+[entra-admin-center]: https://entra.microsoft.com
+
+:::{note}
+Zulip also includes an `AzureADAuthBackend` that uses OAuth2 with
+the Microsoft `common` tenant endpoint. This allows authentication
+with any Microsoft account but does not restrict logins to a
+specific Entra ID tenant. If that meets your needs, you can
+configure it via the settings documented in `/etc/zulip/settings.py`.
+For tenant-specific authentication, use the OIDC approach above.
+:::
 
 ## Custom authentication backends
 

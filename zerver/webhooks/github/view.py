@@ -48,7 +48,7 @@ DISCUSSION_TEMPLATES = {
     "generic_action": "{sender} {action} [discussion #{discussion_number}{configured_title}]({url}).",
     "deleted": "{sender} {action} discussion #{discussion_number}{configured_title}.",
     "closed": "{sender} {action} [discussion #{discussion_number}{configured_title}]({url}) as {closed_reason}.",
-    "locked": "{sender} {action} [discussion #{discussion_number}{configured_title}]({url}{configured_title}){locked_reason}.",
+    "locked": "{sender} {action} [discussion #{discussion_number}{configured_title}]({url}){locked_reason}.",
     "labeled": "{sender} added the {label} label to [discussion #{discussion_number}{configured_title}]({url}).",
     "unlabeled": "{sender} removed the {label} label from [discussion #{discussion_number}{configured_title}]({url}).",
     "category_changed": "{sender} changed the category of [discussion #{discussion_number}{configured_title}]({url}) from {old_category} to {category}.",

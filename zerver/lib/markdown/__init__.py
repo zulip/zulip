@@ -44,7 +44,7 @@ from zerver.lib.exceptions import MarkdownRenderingError
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.mention import (
-    BEFORE_MENTION_ALLOWED_REGEX,
+    BEFORE_LINK_PRODUCING_MENTION_ALLOWED_REGEX,
     ChannelTopicInfo,
     FullNameInfo,
     MentionBackend,
@@ -63,6 +63,7 @@ from zerver.lib.thumbnail import (
 )
 from zerver.lib.timeout import unsafe_timeout
 from zerver.lib.timezone import common_timezones
+from zerver.lib.topic_link_util import TOPIC_LINK_SYNTAX_FOR_DISPLAY
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_channel, encode_hash_component
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
@@ -78,12 +79,14 @@ ReturnT = TypeVar("ReturnT")
 html_safelisted_schemes = (
     "bitcoin",
     "geo",
+    "hansoft",
     "im",
     "irc",
     "ircs",
     "magnet",
     "mailto",
     "matrix",
+    "obsidian",
     "mms",
     "news",
     "nntp",
@@ -97,7 +100,10 @@ html_safelisted_schemes = (
     "webcal",
     "wtai",
     "xmpp",
+    "zotero",
+    "asanadesktop",
 )
+auto_linked_schemes = ["https?", "hansoft", "obsidian", "zotero", "asanadesktop"]
 allowed_schemes = ("http", "https", "ftp", "file", "mid", *html_safelisted_schemes)
 
 
@@ -153,7 +159,7 @@ def verbose_compile(pattern: str) -> Pattern[str]:
 
 
 STREAM_LINK_REGEX = rf"""
-                     {BEFORE_MENTION_ALLOWED_REGEX} # Start after whitespace or specified chars
+                     {BEFORE_LINK_PRODUCING_MENTION_ALLOWED_REGEX} # Start after whitespace or specified chars
                      \#\*\*                         # and after hash sign followed by double asterisks
                          (?P<stream_name>[^\*]+)    # stream name can contain anything
                      \*\*                           # ends by double asterisks
@@ -174,7 +180,7 @@ def get_compiled_stream_link_regex() -> Pattern[str]:
 
 
 STREAM_TOPIC_LINK_REGEX = rf"""
-                     {BEFORE_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
+                     {BEFORE_LINK_PRODUCING_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
                      \#\*\*                          # and after hash sign followed by double asterisks
                          (?P<stream_name>[^\*>]+)    # stream name can contain anything except >
                          >                           # > acts as separator
@@ -197,7 +203,7 @@ def get_compiled_stream_topic_link_regex() -> Pattern[str]:
 
 
 STREAM_TOPIC_MESSAGE_LINK_REGEX = rf"""
-                     {BEFORE_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
+                     {BEFORE_LINK_PRODUCING_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
                      \#\*\*                          # and after hash sign followed by double asterisks
                          (?P<stream_name>[^\*>]+)    # stream name can contain anything except >
                          >                           # > acts as separator
@@ -229,6 +235,7 @@ def get_web_link_regex() -> Pattern[str]:
     # caching the value is super important here.
 
     tlds = r"|".join(list_of_tlds())
+    schemes_regex = r"|".join(auto_linked_schemes)
 
     # A link starts at a word boundary, and ends at space, punctuation, or end-of-input.
     #
@@ -252,12 +259,13 @@ def get_web_link_regex() -> Pattern[str]:
     nested_paren_chunk %= (inner_paren_contents,)
 
     file_links = r"| (?:file://(/[^/ ]*)+/?)" if settings.ENABLE_FILE_LINKS else r""
+
     REGEX = rf"""
-        (?<![^\s'"\(,:<])    # Start after whitespace or specified chars
+        (?<![^\s'"\(,:<\u0080-\U0010FFFF])    # Start after whitespace, specified chars, or multibyte chars
                              # (Double-negative lookbehind to allow start-of-string)
         (?P<url>             # Main group
             (?:(?:           # Domain part
-                https?://[\w.:@-]+?   # If it has a protocol, anything goes.
+                (?:{schemes_regex})://[\w.:@-]+?   # If it has a protocol, anything goes.
                |(?:                   # Or, if not, be more strict to avoid false-positives
                     (?:[\w-]+\.)+     # One or more domain components, separated by dots
                     (?:{tlds})        # TLDs
@@ -1874,7 +1882,9 @@ class StreamTopicPattern(StreamTopicMessageProcessor):
             el.text = markdown.util.AtomicString(f"#{stream_name} > ")
             el.append(topic_el)
         else:
-            text = f"#{stream_name} > {topic_name}"
+            text = TOPIC_LINK_SYNTAX_FOR_DISPLAY.format(
+                channel_name=stream_name, topic_name=topic_name
+            )
             el.text = markdown.util.AtomicString(text)
 
         return el, m.start(), m.end()

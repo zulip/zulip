@@ -252,7 +252,7 @@ class S3UploadBackend(ZulipUploadBackend):
         )
 
     @override
-    def upload_message_attachment(
+    def store_message_attachment(
         self,
         path_id: str,
         filename: str,
@@ -293,13 +293,15 @@ class S3UploadBackend(ZulipUploadBackend):
         )
 
     @override
-    def delete_message_attachment(self, path_id: str, *, raw_path: bool = False) -> None:
-        with self.delete_message_attachments(raw_paths=raw_path) as delete_one:
+    def delete_message_attachment_from_storage(
+        self, path_id: str, *, raw_path: bool = False
+    ) -> None:
+        with self.delete_message_attachments_from_storage(raw_paths=raw_path) as delete_one:
             delete_one(path_id)
 
     @contextmanager
     @override
-    def delete_message_attachments(
+    def delete_message_attachments_from_storage(
         self, *, raw_paths: bool = False, flush: None | Callable[[list[str]], None] = None
     ) -> Iterator[Callable[[str], None]]:
         paths: list[tuple[str, bool]] = []
@@ -369,7 +371,7 @@ class S3UploadBackend(ZulipUploadBackend):
         return image_data, content_type
 
     @override
-    def upload_single_avatar_image(
+    def store_single_avatar_image(
         self,
         file_path: str,
         *,
@@ -390,7 +392,7 @@ class S3UploadBackend(ZulipUploadBackend):
         )
 
     @override
-    def delete_avatar_image(self, path_id: str) -> None:
+    def delete_avatar_image_from_storage(self, path_id: str) -> None:
         self.delete_file_from_s3(path_id + ".original", self.avatar_bucket)
         self.delete_file_from_s3(self.get_avatar_path(path_id, True), self.avatar_bucket)
         self.delete_file_from_s3(self.get_avatar_path(path_id, False), self.avatar_bucket)
@@ -401,7 +403,7 @@ class S3UploadBackend(ZulipUploadBackend):
         return public_url + f"?version={version}"
 
     @override
-    def upload_realm_icon_image(
+    def store_realm_icon_image(
         self, icon_file: IO[bytes], user_profile: UserProfile, content_type: str
     ) -> None:
         s3_file_name = os.path.join(self.realm_avatar_and_logo_path(user_profile.realm), "icon")
@@ -436,7 +438,7 @@ class S3UploadBackend(ZulipUploadBackend):
         return public_url + f"?version={version}"
 
     @override
-    def upload_realm_logo_image(
+    def store_realm_logo_image(
         self, logo_file: IO[bytes], user_profile: UserProfile, night: bool, content_type: str
     ) -> None:
         if night:
@@ -480,7 +482,7 @@ class S3UploadBackend(ZulipUploadBackend):
             return self.get_public_upload_url(emoji_path)
 
     @override
-    def upload_single_emoji_image(
+    def store_single_emoji_image(
         self, path: str, content_type: str | None, user_profile: UserProfile, image_data: bytes
     ) -> None:
         upload_content_to_s3(
@@ -535,7 +537,7 @@ class S3UploadBackend(ZulipUploadBackend):
             )
 
     @override
-    def upload_export_tarball(
+    def store_export_tarball(
         self,
         realm: Realm,
         tarball_path: str,
@@ -551,7 +553,7 @@ class S3UploadBackend(ZulipUploadBackend):
         return self.get_export_tarball_url(realm, key.key)
 
     @override
-    def delete_export_tarball(self, export_path: str) -> None:
+    def delete_export_tarball_from_storage(self, export_path: str) -> None:
         assert export_path.startswith("/")
         path_id = export_path.removeprefix("/")
         bucket = self.export_bucket or self.avatar_bucket

@@ -35,6 +35,7 @@ from zerver.lib.users import (
 )
 from zerver.lib.utils import generate_api_key
 from zerver.models import (
+    Device,
     Draft,
     EmailChangeStatus,
     Realm,
@@ -338,6 +339,9 @@ def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -
 
     event = {"type": "clear_push_device_tokens", "user_profile_id": user_profile.id}
     queue_event_on_commit("deferred_work", event)
+
+    # Delete all of the user's Device records to stop sending E2EE push notifications.
+    Device.objects.filter(user_id=user_profile.id).delete()
 
     return new_api_key
 

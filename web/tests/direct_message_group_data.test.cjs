@@ -48,10 +48,7 @@ const norbert = create_user({
 people.initialize_current_user(me.user_id);
 
 run_test("direct_message_group_data.process_loaded_messages", () => {
-    const direct_message_group1 = "jill@zulip.com,norbert@zulip.com";
     const timestamp1 = 1382479029; // older
-
-    const direct_message_group2 = "alice@zulip.com,fred@zulip.com";
     const timestamp2 = 1382479033; // newer
 
     const old_timestamp = 1382479000;
@@ -84,10 +81,8 @@ run_test("direct_message_group_data.process_loaded_messages", () => {
 
     direct_message_group_data.process_loaded_messages(messages);
 
-    const user_ids_string1 = people.emails_strings_to_user_ids_string(direct_message_group1);
-    const user_ids_string2 = people.emails_strings_to_user_ids_string(direct_message_group2);
     assert.deepEqual(direct_message_group_data.get_direct_message_groups(), [
-        user_ids_string2,
-        user_ids_string1,
+        `${alice.user_id},${fred.user_id}`,
+        `${jill.user_id},${norbert.user_id}`,
     ]);
 });

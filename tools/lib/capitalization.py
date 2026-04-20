@@ -157,6 +157,8 @@ IGNORED_PHRASES = [
     r"GIPHY",
     # Used for Tenor attributions
     r"Search Tenor",
+    # Used for KLIPY attributions
+    r"Search KLIPY",
     # Used in our case studies
     r"Technical University of Munich",
     r"University of California San Diego",

@@ -1,10 +1,12 @@
 # https://zulip.readthedocs.io/en/latest/subsystems/email.html#testing-in-a-real-email-client
 import configparser
 import logging
+import smtplib
 from collections.abc import Sequence
 from email.message import Message
 from typing import Any
 
+import backoff
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.core.mail.backends.smtp import EmailBackend
@@ -12,6 +14,22 @@ from django.core.mail.message import EmailAlternative, EmailMessage
 from django.template import loader
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
+
+MAX_CONNECTION_TRIES = 3
+
+# SMTPException is a subclass of OSError, so retry on connection-level
+# errors (ConnectionError, TimeoutError) and SMTPServerDisconnected
+# (dropped connection), but not on SMTP protocol errors like
+# SMTPAuthenticationError, SMTPRecipientsRefused, or SMTPDataError.
+smtp_connection_backoff = backoff.on_exception(
+    backoff.expo,
+    OSError,
+    max_tries=MAX_CONNECTION_TRIES,
+    logger=None,
+    giveup=lambda e: (
+        isinstance(e, smtplib.SMTPException) and not isinstance(e, smtplib.SMTPServerDisconnected)
+    ),
+)
 
 
 def get_forward_address() -> str:
@@ -115,22 +133,27 @@ class EmailLogBackEnd(EmailBackend):
 
 
 class PersistentSMTPEmailBackend(EmailBackend):
-    def _open(self, **kwargs: Any) -> bool | None:
-        is_opened = super().open(**kwargs)
-        if is_opened:
-            self.opened_at = timezone_now()
-            return True
-
-        return is_opened
-
     @override
-    def open(self, **kwargs: Any) -> bool | None:
-        is_opened = self._open(**kwargs)
-        if is_opened:
-            return True
+    def open(self, **kwargs: Any) -> bool:
+        if super().open(**kwargs):
+            self.opened_at = timezone_now()
+        # Always return False so that Django's send_messages does not
+        # auto-close the connection after sending.
+        return False
 
+    @smtp_connection_backoff
+    def ensure_connected(self) -> None:
+        """Open the connection if needed, and validate that it is
+        still alive, reconnecting if necessary."""
+        self.open()
+        self._validate_or_reconnect()
+
+    def _validate_or_reconnect(self) -> None:
+        """Validate that the existing SMTP connection is still alive,
+        reconnecting if necessary. Called with backoff protection,
+        not from open()."""
         status = None
-        time_elapsed = (timezone_now() - self.opened_at).seconds / 60
+        time_elapsed = (timezone_now() - self.opened_at).total_seconds() / 60
         if (
             settings.EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES is None
             or time_elapsed <= settings.EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES
@@ -145,16 +168,4 @@ class PersistentSMTPEmailBackend(EmailBackend):
         if status is None or status != 250:
             # Close and connect again.
             super().close()
-            self._open()
-            # We return false here as Django will then have
-            # to leave the connection alive for next entries.
-            return False
-
-        # The connection was already open, the noop succeeded.
-        return False
-
-    @override
-    def close(self) -> None:
-        # We override close to a no-op so that Django's send_messages
-        # does not close the connection after sending a batch of emails.
-        pass
+            self.open()

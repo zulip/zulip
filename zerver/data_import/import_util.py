@@ -238,7 +238,6 @@ def make_subscriber_map(zerver_subscription: list[ZerverFieldsT]) -> dict[int, s
 def make_user_messages(
     zerver_message: list[ZerverFieldsT],
     subscriber_map: dict[int, set[int]],
-    is_pm_data: bool,
     mention_map: dict[int, set[int]],
     wildcard_mention_map: Mapping[int, bool] = {},
 ) -> list[ZerverFieldsT]:
@@ -248,6 +247,7 @@ def make_user_messages(
         message_id = message["id"]
         recipient_id = message["recipient"]
         sender_id = message["sender"]
+        is_private = not message["is_channel_message"]
         mention_user_ids = mention_map[message_id]
         wildcard_mention = wildcard_mention_map.get(message_id, False)
         subscriber_ids = subscriber_map.get(recipient_id, set())
@@ -258,7 +258,7 @@ def make_user_messages(
             user_message = build_user_message(
                 user_id=user_id,
                 message_id=message_id,
-                is_private=is_pm_data,
+                is_private=is_private,
                 is_mentioned=is_mentioned,
                 wildcard_mention=wildcard_mention,
             )
@@ -338,26 +338,6 @@ def build_direct_message_group_subscriptions(
     return subscriptions
 
 
-def build_personal_subscriptions(zerver_recipient: list[ZerverFieldsT]) -> list[ZerverFieldsT]:
-    subscriptions: list[ZerverFieldsT] = []
-
-    personal_recipients = [
-        recipient for recipient in zerver_recipient if recipient["type"] == Recipient.PERSONAL
-    ]
-
-    for recipient in personal_recipients:
-        recipient_id = recipient["id"]
-        user_id = recipient["type_id"]
-        subscription = build_subscription(
-            recipient_id=recipient_id,
-            user_id=user_id,
-            subscription_id=NEXT_ID("subscription"),
-        )
-        subscriptions.append(subscription)
-
-    return subscriptions
-
-
 def build_recipient(type_id: int, recipient_id: int, type: int) -> ZerverFieldsT:
     recipient = Recipient(
         type_id=type_id,  # stream id
@@ -380,17 +360,6 @@ def build_recipients(
     """
 
     recipients = []
-
-    for user in zerver_userprofile:
-        type_id = user["id"]
-        type = Recipient.PERSONAL
-        recipient = Recipient(
-            type_id=type_id,
-            id=NEXT_ID("recipient"),
-            type=type,
-        )
-        recipient_dict = model_to_dict(recipient)
-        recipients.append(recipient_dict)
 
     for stream in zerver_stream:
         type_id = stream["id"]

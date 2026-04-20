@@ -4,6 +4,7 @@ import * as z from "zod/mini";
 import * as blueslip from "./blueslip.ts";
 import type * as dropdown_widget from "./dropdown_widget.ts";
 import {$t} from "./i18n.ts";
+import {page_params} from "./page_params.ts";
 import * as settings_config from "./settings_config.ts";
 import {realm} from "./state_data.ts";
 import type {GroupPermissionSetting, GroupSettingValue} from "./state_data.ts";
@@ -226,6 +227,17 @@ export function get_assigned_permission_object(
                         "This permission cannot be removed, as it would mean that nobody is allowed to take this action.",
                 });
             }
+
+            if (
+                setting_name === "workplace_users_group" &&
+                page_params.is_cloud_realm_with_discounted_plan
+            ) {
+                assigned_permission_object.can_edit = false;
+                assigned_permission_object.tooltip_message = $t(
+                    {defaultMessage: "Contact {sales_email} to change this setting."},
+                    {sales_email: "sales@zulip.com"},
+                );
+            }
             return assigned_permission_object;
         }
 
@@ -265,6 +277,17 @@ export function get_assigned_permission_object(
                         "This permission cannot be removed, as it would mean that nobody is allowed to take this action.",
                 });
             }
+        }
+
+        if (
+            setting_name === "workplace_users_group" &&
+            page_params.is_cloud_realm_with_discounted_plan
+        ) {
+            assigned_permission_object.can_edit = false;
+            assigned_permission_object.tooltip_message = $t(
+                {defaultMessage: "Contact {sales_email} to change this setting."},
+                {sales_email: "sales@zulip.com"},
+            );
         }
         return assigned_permission_object;
     }

@@ -21,6 +21,7 @@ import responses
 import stripe
 import time_machine
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.core import signing
 from django.urls.resolvers import get_resolver
 from django.utils.crypto import get_random_string
@@ -35,6 +36,7 @@ from corporate.lib.stripe import (
     BillingError,
     BillingSessionAuditLogEventError,
     BillingSessionEventType,
+    BillingUserCounts,
     InitialUpgradeRequest,
     InvalidBillingScheduleError,
     InvalidTierError,
@@ -546,7 +548,7 @@ class StripeTestCase(ZulipTestCase):
             usage=usage,
         )
         [stripe_session] = iter(stripe.checkout.Session.list(customer=customer_stripe_id, limit=1))
-        stripe_session_dict = orjson.loads(orjson.dumps(stripe_session))
+        stripe_session_dict = stripe_session.to_dict(for_json=True)
         stripe_session_dict["setup_intent"] = stripe_setup_intent.id
 
         event_payload = {
@@ -564,7 +566,7 @@ class StripeTestCase(ZulipTestCase):
 
     def send_stripe_webhook_event(self, event: stripe.Event) -> None:
         response = self.client_post(
-            "/stripe/webhook/", orjson.loads(orjson.dumps(event)), content_type="application/json"
+            "/stripe/webhook/", event.to_dict(for_json=True), content_type="application/json"
         )
         assert response.status_code == 200
 
@@ -910,10 +912,9 @@ class StripeTest(StripeTestCase):
         self.assertEqual(stripe_customer.discount, None)
         self.assertEqual(stripe_customer.email, user.delivery_email)
         assert stripe_customer.metadata is not None
-        metadata_dict = dict(stripe_customer.metadata)
-        self.assertEqual(metadata_dict["realm_str"], "zulip")
+        self.assertEqual(stripe_customer.metadata["realm_str"], "zulip")
         try:
-            int(metadata_dict["realm_id"])
+            int(stripe_customer.metadata["realm_id"])
         except ValueError:  # nocoverage
             raise AssertionError("realm_id is not a number")
 
@@ -929,35 +930,23 @@ class StripeTest(StripeTestCase):
         # Check Invoices in Stripe
         [invoice] = iter(stripe.Invoice.list(customer=stripe_customer.id))
         self.assertIsNotNone(invoice.status_transitions.finalized_at)
-        invoice_params = {
-            # auto_advance is False because the invoice has been paid
-            "amount_due": 120000,
-            "amount_paid": 120000,
-            "auto_advance": False,
-            "collection_method": "charge_automatically",
-            "status": "paid",
-        }
-        for key, value in invoice_params.items():
-            self.assertEqual(invoice.get(key), value)
+        self.assertEqual(invoice.amount_due, 120000)
+        self.assertEqual(invoice.amount_paid, 120000)
+        # auto_advance is False because the invoice has been paid
+        self.assertFalse(invoice.auto_advance)
+        self.assertEqual(invoice.collection_method, "charge_automatically")
+        self.assertEqual(invoice.status, "paid")
         # Check Line Items on Stripe Invoice
         [item0] = iter(invoice.lines)
-        line_item_params = {
-            "amount": 12000 * licenses_purchased,
-            "currency": "usd",
-            "description": "Zulip Cloud Plus",
-            "discountable": False,
-            "unit_amount_decimal": "12000",
-            "quantity": licenses_purchased,
-            "period": {
-                "start": datetime_to_timestamp(self.now),
-                "end": datetime_to_timestamp(add_months(self.now, 12)),
-            },
-        }
-        for key, value in line_item_params.items():
-            if key == "unit_amount_decimal":
-                self.assertEqual(item0["pricing"]["unit_amount_decimal"], value)
-                continue
-            self.assertEqual(item0.get(key), value)
+        self.assertEqual(item0.amount, 12000 * licenses_purchased)
+        self.assertEqual(item0.currency, "usd")
+        self.assertEqual(item0.description, "Zulip Cloud Plus")
+        self.assertFalse(item0.discountable)
+        assert item0.pricing is not None
+        self.assertEqual(item0.pricing.unit_amount_decimal, Decimal(12000))
+        self.assertEqual(item0.quantity, licenses_purchased)
+        self.assertEqual(item0.period.start, datetime_to_timestamp(self.now))
+        self.assertEqual(item0.period.end, datetime_to_timestamp(add_months(self.now, 12)))
 
         # Check that we correctly populated Customer, CustomerPlan, and LicenseLedger in Zulip
         customer = Customer.objects.get(stripe_customer_id=stripe_customer.id, realm=user.realm)
@@ -1061,37 +1050,25 @@ class StripeTest(StripeTestCase):
         [invoice] = iter(stripe.Invoice.list(customer=stripe_customer.id))
         self.assertIsNotNone(invoice.due_date)
         self.assertIsNotNone(invoice.status_transitions.finalized_at)
-        invoice_params = {
-            "amount_due": 12000 * 123,
-            "amount_paid": 12000 * 123,
-            "attempt_count": 0,
-            "auto_advance": False,
-            "collection_method": "send_invoice",
-            "statement_descriptor": "Zulip Cloud Plus",
-            "status": "paid",
-        }
-        for key, value in invoice_params.items():
-            self.assertEqual(invoice.get(key), value)
+        self.assertEqual(invoice.amount_due, 12000 * 123)
+        self.assertEqual(invoice.amount_paid, 12000 * 123)
+        self.assertEqual(invoice.attempt_count, 0)
+        self.assertFalse(invoice.auto_advance)
+        self.assertEqual(invoice.collection_method, "send_invoice")
+        self.assertEqual(invoice.statement_descriptor, "Zulip Cloud Plus")
+        self.assertEqual(invoice.status, "paid")
+
         # Check Line Items on Stripe Invoice
         [item] = iter(invoice.lines)
-        line_item_params = {
-            "amount": 12000 * 123,
-            "currency": "usd",
-            "description": "Zulip Cloud Plus",
-            "discountable": False,
-            "plan": None,
-            "unit_amount_decimal": "12000",
-            "quantity": 123,
-            "period": {
-                "start": datetime_to_timestamp(self.now),
-                "end": datetime_to_timestamp(add_months(self.now, 12)),
-            },
-        }
-        for key, value in line_item_params.items():
-            if key == "unit_amount_decimal":
-                self.assertEqual(item["pricing"]["unit_amount_decimal"], value)
-                continue
-            self.assertEqual(item.get(key), value)
+        self.assertEqual(item.amount, 12000 * 123)
+        self.assertEqual(item.currency, "usd")
+        self.assertEqual(item.description, "Zulip Cloud Plus")
+        self.assertFalse(item.discountable)
+        assert item.pricing is not None
+        self.assertEqual(item.pricing.unit_amount_decimal, Decimal(12000))
+        self.assertEqual(item.quantity, 123)
+        self.assertEqual(item.period.start, datetime_to_timestamp(self.now))
+        self.assertEqual(item.period.end, datetime_to_timestamp(add_months(self.now, 12)))
 
         # Check that we correctly populated Customer, CustomerPlan and LicenseLedger in Zulip
         customer = Customer.objects.get(stripe_customer_id=stripe_customer.id, realm=user.realm)
@@ -1186,10 +1163,9 @@ class StripeTest(StripeTestCase):
         self.assertEqual(stripe_customer.discount, None)
         self.assertEqual(stripe_customer.email, user.delivery_email)
         assert stripe_customer.metadata is not None
-        metadata_dict = dict(stripe_customer.metadata)
-        self.assertEqual(metadata_dict["realm_str"], "zulip")
+        self.assertEqual(stripe_customer.metadata["realm_str"], "zulip")
         try:
-            int(metadata_dict["realm_id"])
+            int(stripe_customer.metadata["realm_id"])
         except ValueError:  # nocoverage
             raise AssertionError("realm_id is not a number")
 
@@ -1202,36 +1178,24 @@ class StripeTest(StripeTestCase):
         # Check Invoices in Stripe
         [invoice] = iter(stripe.Invoice.list(customer=stripe_customer.id))
         self.assertIsNotNone(invoice.status_transitions.finalized_at)
-        invoice_params = {
-            # auto_advance is False because the invoice has been paid
-            "amount_due": 48000,
-            "amount_paid": 48000,
-            "auto_advance": False,
-            "collection_method": "charge_automatically",
-            "status": "paid",
-        }
-        for key, value in invoice_params.items():
-            self.assertEqual(invoice.get(key), value)
+        self.assertEqual(invoice.amount_due, 48000)
+        self.assertEqual(invoice.amount_paid, 48000)
+        # auto_advance is False because the invoice has been paid
+        self.assertFalse(invoice.auto_advance)
+        self.assertEqual(invoice.collection_method, "charge_automatically")
+        self.assertEqual(invoice.statement_descriptor, "Zulip Cloud Standard")
+
         # Check Line Items on Stripe Invoice
         [item0] = iter(invoice.lines)
-        line_item_params = {
-            "amount": 8000 * self.seat_count,
-            "currency": "usd",
-            "description": "Zulip Cloud Standard",
-            "discountable": False,
-            "unit_amount_decimal": "8000",
-            "plan": None,
-            "quantity": self.seat_count,
-            "period": {
-                "start": datetime_to_timestamp(self.now),
-                "end": datetime_to_timestamp(add_months(self.now, 12)),
-            },
-        }
-        for key, value in line_item_params.items():
-            if key == "unit_amount_decimal":
-                self.assertEqual(item0["pricing"]["unit_amount_decimal"], value)
-                continue
-            self.assertEqual(item0.get(key), value)
+        self.assertEqual(item0.amount, 8000 * self.seat_count)
+        self.assertEqual(item0.currency, "usd")
+        self.assertEqual(item0.description, "Zulip Cloud Standard")
+        self.assertFalse(item0.discountable)
+        assert item0.pricing is not None
+        self.assertEqual(item0.pricing.unit_amount_decimal, Decimal(8000))
+        self.assertEqual(item0.quantity, self.seat_count)
+        self.assertEqual(item0.period.start, datetime_to_timestamp(self.now))
+        self.assertEqual(item0.period.end, datetime_to_timestamp(add_months(self.now, 12)))
 
         # Check that we correctly populated Customer, CustomerPlan, and LicenseLedger in Zulip
         customer = Customer.objects.get(stripe_customer_id=stripe_customer.id, realm=user.realm)
@@ -1346,37 +1310,25 @@ class StripeTest(StripeTestCase):
         [invoice] = iter(stripe.Invoice.list(customer=stripe_customer.id))
         self.assertIsNotNone(invoice.due_date)
         self.assertIsNotNone(invoice.status_transitions.finalized_at)
-        invoice_params = {
-            "amount_due": 8000 * 123,
-            "amount_paid": 8000 * 123,
-            "attempt_count": 0,
-            "auto_advance": False,
-            "collection_method": "send_invoice",
-            "statement_descriptor": "Zulip Cloud Standard",
-            "status": "paid",
-        }
-        for key, value in invoice_params.items():
-            self.assertEqual(invoice.get(key), value)
+        self.assertEqual(invoice.amount_due, 8000 * 123)
+        self.assertEqual(invoice.amount_paid, 8000 * 123)
+        self.assertEqual(invoice.attempt_count, 0)
+        self.assertFalse(invoice.auto_advance)
+        self.assertEqual(invoice.collection_method, "send_invoice")
+        self.assertEqual(invoice.statement_descriptor, "Zulip Cloud Standard")
+        self.assertEqual(invoice.status, "paid")
+
         # Check Line Items on Stripe Invoice
         [item] = iter(invoice.lines)
-        line_item_params = {
-            "currency": "usd",
-            "amount": 8000 * 123,
-            "description": "Zulip Cloud Standard",
-            "discountable": False,
-            "plan": None,
-            "quantity": 123,
-            "unit_amount_decimal": "8000",
-            "period": {
-                "start": datetime_to_timestamp(self.now),
-                "end": datetime_to_timestamp(add_months(self.now, 12)),
-            },
-        }
-        for key, value in line_item_params.items():
-            if key == "unit_amount_decimal":
-                self.assertEqual(item["pricing"]["unit_amount_decimal"], value)
-                continue
-            self.assertEqual(item.get(key), value)
+        self.assertEqual(item.currency, "usd")
+        self.assertEqual(item.amount, 8000 * 123)
+        self.assertEqual(item.description, "Zulip Cloud Standard")
+        self.assertFalse(item.discountable)
+        self.assertEqual(item.quantity, 123)
+        assert item.pricing is not None
+        self.assertEqual(item.pricing.unit_amount_decimal, Decimal(8000))
+        self.assertEqual(item.period.start, datetime_to_timestamp(self.now))
+        self.assertEqual(item.period.end, datetime_to_timestamp(add_months(self.now, 12)))
 
         # Check that we correctly populated Customer, CustomerPlan and LicenseLedger in Zulip
         customer = Customer.objects.get(stripe_customer_id=stripe_customer.id, realm=user.realm)
@@ -1482,10 +1434,9 @@ class StripeTest(StripeTestCase):
             self.assertEqual(stripe_customer.discount, None)
             self.assertEqual(stripe_customer.email, user.delivery_email)
             assert stripe_customer.metadata is not None
-            metadata_dict = dict(stripe_customer.metadata)
-            self.assertEqual(metadata_dict["realm_str"], "zulip")
+            self.assertEqual(stripe_customer.metadata["realm_str"], "zulip")
             try:
-                int(metadata_dict["realm_id"])
+                int(stripe_customer.metadata["realm_id"])
             except ValueError:  # nocoverage
                 raise AssertionError("realm_id is not a number")
 
@@ -1597,37 +1548,27 @@ class StripeTest(StripeTestCase):
             self.assertEqual(customer_plan.status, CustomerPlan.ACTIVE)
             self.assertEqual(customer_plan.next_invoice_date, add_months(free_trial_end_date, 1))
             self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
+
             [invoice] = iter(stripe.Invoice.list(customer=stripe_customer.id))
-            invoice_params = {
-                "amount_due": 15 * 80 * 100,
-                "amount_paid": 0,
-                "amount_remaining": 15 * 80 * 100,
-                "auto_advance": True,
-                "collection_method": "charge_automatically",
-                "customer_email": self.example_email("hamlet"),
-                "discount": None,
-                "paid": None,
-                "status": "open",
-            }
-            for key, value in invoice_params.items():
-                self.assertEqual(invoice.get(key), value)
+            self.assertEqual(invoice.amount_due, 15 * 80 * 100)
+            self.assertEqual(invoice.amount_paid, 0)
+            self.assertEqual(invoice.amount_remaining, 15 * 80 * 100)
+            self.assertTrue(invoice.auto_advance)
+            self.assertEqual(invoice.collection_method, "charge_automatically")
+            self.assertEqual(invoice.customer_email, self.example_email("hamlet"))
+            self.assertEqual(invoice.status, "open")
+
             [invoice_item] = iter(invoice.lines)
-            invoice_item_params = {
-                "amount": 15 * 80 * 100,
-                "description": "Zulip Cloud Standard - renewal",
-                "quantity": 15,
-                "discountable": False,
-                "unit_amount_decimal": "8000",
-                "period": {
-                    "start": datetime_to_timestamp(free_trial_end_date),
-                    "end": datetime_to_timestamp(add_months(free_trial_end_date, 12)),
-                },
-            }
-            for key, value in invoice_item_params.items():
-                if key == "unit_amount_decimal":
-                    self.assertEqual(invoice_item["pricing"]["unit_amount_decimal"], value)
-                    continue
-                self.assertEqual(invoice_item[key], value)
+            self.assertEqual(invoice_item.amount, 15 * 80 * 100)
+            self.assertEqual(invoice_item.description, "Zulip Cloud Standard - renewal")
+            self.assertEqual(invoice_item.quantity, 15)
+            self.assertFalse(invoice_item.discountable)
+            assert invoice_item.pricing is not None
+            self.assertEqual(invoice_item.pricing.unit_amount_decimal, Decimal(8000))
+            self.assertEqual(invoice_item.period.start, datetime_to_timestamp(free_trial_end_date))
+            self.assertEqual(
+                invoice_item.period.end, datetime_to_timestamp(add_months(free_trial_end_date, 12))
+            )
 
             invoice_plans_as_needed(add_months(free_trial_end_date, 1))
             [invoice] = iter(stripe.Invoice.list(customer=stripe_customer.id))
@@ -1645,23 +1586,23 @@ class StripeTest(StripeTestCase):
             plan.save(update_fields=["next_invoice_date"])
             invoice_plans_as_needed(add_months(free_trial_end_date, 10))
             [invoice0, _invoice1] = iter(stripe.Invoice.list(customer=stripe_customer.id))
-            invoice_params = {
-                "amount_due": 5172,
-                "auto_advance": True,
-                "collection_method": "charge_automatically",
-                "customer_email": "hamlet@zulip.com",
-            }
+            self.assertEqual(invoice0.amount_due, 5172)
+            self.assertEqual(invoice0.auto_advance, True)
+            self.assertEqual(invoice0.collection_method, "charge_automatically")
+            self.assertEqual(invoice0.customer_email, "hamlet@zulip.com")
+
             [invoice_item] = iter(invoice0.lines)
-            invoice_item_params = {
-                "amount": 5172,
-                "description": "Additional Zulip Cloud Standard license",
-                "discountable": False,
-                "quantity": 4,
-                "period": {
-                    "start": datetime_to_timestamp(add_months(free_trial_end_date, 10)),
-                    "end": datetime_to_timestamp(add_months(free_trial_end_date, 12)),
-                },
-            }
+            self.assertEqual(invoice_item.amount, 5172)
+            self.assertEqual(invoice_item.description, "Additional Zulip Cloud Standard license")
+            self.assertFalse(invoice_item.discountable)
+            self.assertEqual(invoice_item.quantity, 4)
+            self.assertEqual(
+                invoice_item.period.start,
+                datetime_to_timestamp(add_months(free_trial_end_date, 10)),
+            )
+            self.assertEqual(
+                invoice_item.period.end, datetime_to_timestamp(add_months(free_trial_end_date, 12))
+            )
 
             # Fast forward next_invoice_date to one year from the free_trial_end_date
             plan.next_invoice_date = add_months(free_trial_end_date, 12)
@@ -1705,26 +1646,20 @@ class StripeTest(StripeTestCase):
             self.assertEqual(stripe_customer.discount, None)
             self.assertEqual(stripe_customer.email, user.delivery_email)
             assert stripe_customer.metadata is not None
-            metadata_dict = dict(stripe_customer.metadata)
-            self.assertEqual(metadata_dict["realm_str"], "zulip")
+            self.assertEqual(stripe_customer.metadata["realm_str"], "zulip")
             try:
-                int(metadata_dict["realm_id"])
+                int(stripe_customer.metadata["realm_id"])
             except ValueError:  # nocoverage
                 raise AssertionError("realm_id is not a number")
 
             [invoice] = iter(stripe.Invoice.list(customer=stripe_customer.id))
-            invoice_params = {
-                "amount_due": 123 * 80 * 100,
-                "amount_paid": 0,
-                "amount_remaining": 123 * 80 * 100,
-                "auto_advance": True,
-                "collection_method": "send_invoice",
-                "customer_email": self.example_email("hamlet"),
-                "discount": None,
-                "status": "open",
-            }
-            for key, value in invoice_params.items():
-                self.assertEqual(invoice.get(key), value)
+            self.assertEqual(invoice.amount_due, 123 * 80 * 100)
+            self.assertEqual(invoice.amount_paid, 0)
+            self.assertEqual(invoice.amount_remaining, 123 * 80 * 100)
+            self.assertTrue(invoice.auto_advance)
+            self.assertEqual(invoice.collection_method, "send_invoice")
+            self.assertEqual(invoice.customer_email, self.example_email("hamlet"))
+            self.assertEqual(invoice.status, "open")
 
             customer = Customer.objects.get(stripe_customer_id=stripe_customer.id, realm=user.realm)
             plan = CustomerPlan.objects.get(
@@ -1796,18 +1731,14 @@ class StripeTest(StripeTestCase):
                 self.assert_in_response(substring, response)
 
             [invoice_item] = iter(invoice.lines)
-            invoice_item_params = {
-                "amount": 123 * 80 * 100,
-                "description": "Zulip Cloud Standard",
-                "quantity": 123,
-                "discountable": False,
-                "period": {
-                    "start": datetime_to_timestamp(free_trial_end_date),
-                    "end": datetime_to_timestamp(add_months(free_trial_end_date, 12)),
-                },
-            }
-            for key, value in invoice_item_params.items():
-                self.assertEqual(invoice_item[key], value)
+            self.assertEqual(invoice_item.amount, 123 * 80 * 100)
+            self.assertEqual(invoice_item.description, "Zulip Cloud Standard")
+            self.assertEqual(invoice_item.quantity, 123)
+            self.assertFalse(invoice_item.discountable)
+            self.assertEqual(invoice_item.period.start, datetime_to_timestamp(free_trial_end_date))
+            self.assertEqual(
+                invoice_item.period.end, datetime_to_timestamp(add_months(free_trial_end_date, 12))
+            )
 
             with patch("corporate.lib.stripe.BillingSession.invoice_plan") as mocked:
                 invoice_plans_as_needed(self.next_month)
@@ -1880,26 +1811,20 @@ class StripeTest(StripeTestCase):
             self.assertEqual(stripe_customer.discount, None)
             self.assertEqual(stripe_customer.email, user.delivery_email)
             assert stripe_customer.metadata is not None
-            metadata_dict = dict(stripe_customer.metadata)
-            self.assertEqual(metadata_dict["realm_str"], "zulip")
+            self.assertEqual(stripe_customer.metadata["realm_str"], "zulip")
             try:
-                int(metadata_dict["realm_id"])
+                int(stripe_customer.metadata["realm_id"])
             except ValueError:  # nocoverage
                 raise AssertionError("realm_id is not a number")
 
             [invoice] = iter(stripe.Invoice.list(customer=stripe_customer.id))
-            invoice_params = {
-                "amount_due": 123 * 80 * 100,
-                "amount_paid": 0,
-                "amount_remaining": 123 * 80 * 100,
-                "auto_advance": True,
-                "collection_method": "send_invoice",
-                "customer_email": self.example_email("hamlet"),
-                "discount": None,
-                "status": "open",
-            }
-            for key, value in invoice_params.items():
-                self.assertEqual(invoice.get(key), value)
+            self.assertEqual(invoice.amount_due, 123 * 80 * 100)
+            self.assertEqual(invoice.amount_paid, 0)
+            self.assertEqual(invoice.amount_remaining, 123 * 80 * 100)
+            self.assertTrue(invoice.auto_advance)
+            self.assertEqual(invoice.collection_method, "send_invoice")
+            self.assertEqual(invoice.customer_email, self.example_email("hamlet"))
+            self.assertEqual(invoice.status, "open")
 
             customer = Customer.objects.get(stripe_customer_id=stripe_customer.id, realm=user.realm)
             plan = CustomerPlan.objects.get(
@@ -1971,18 +1896,14 @@ class StripeTest(StripeTestCase):
                 self.assert_in_response(substring, response)
 
             [invoice_item] = iter(invoice.lines)
-            invoice_item_params = {
-                "amount": 123 * 80 * 100,
-                "description": "Zulip Cloud Standard",
-                "quantity": 123,
-                "discountable": False,
-                "period": {
-                    "start": datetime_to_timestamp(free_trial_end_date),
-                    "end": datetime_to_timestamp(add_months(free_trial_end_date, 12)),
-                },
-            }
-            for key, value in invoice_item_params.items():
-                self.assertEqual(invoice_item[key], value)
+            self.assertEqual(invoice_item.amount, 123 * 80 * 100)
+            self.assertEqual(invoice_item.description, "Zulip Cloud Standard")
+            self.assertEqual(invoice_item.quantity, 123)
+            self.assertFalse(invoice_item.discountable)
+            self.assertEqual(invoice_item.period.start, datetime_to_timestamp(free_trial_end_date))
+            self.assertEqual(
+                invoice_item.period.end, datetime_to_timestamp(add_months(free_trial_end_date, 12))
+            )
 
             with patch("corporate.lib.stripe.BillingSession.invoice_plan") as mocked:
                 invoice_plans_as_needed(self.next_month)
@@ -2048,18 +1969,16 @@ class StripeTest(StripeTestCase):
                 stripe.Invoice.list(customer=stripe_customer.id)
             )
             self.assertEqual(renewal_invoice.id, invoice.id)
-            invoice_params = {
-                "amount_due": 2 * 80 * 100,
-                "amount_paid": 0,
-                "amount_remaining": 2 * 80 * 100,
-                "auto_advance": True,
-                "collection_method": "send_invoice",
-                "customer_email": self.example_email("hamlet"),
-                "discount": None,
-                "status": "open",
-            }
-            for key, value in invoice_params.items():
-                self.assertEqual(additional_license_invoice.get(key), value)
+
+            self.assertEqual(additional_license_invoice.amount_due, 2 * 80 * 100)
+            self.assertEqual(additional_license_invoice.amount_paid, 0)
+            self.assertEqual(additional_license_invoice.amount_remaining, 2 * 80 * 100)
+            self.assertTrue(additional_license_invoice.auto_advance)
+            self.assertEqual(additional_license_invoice.collection_method, "send_invoice")
+            self.assertEqual(
+                additional_license_invoice.customer_email, self.example_email("hamlet")
+            )
+            self.assertEqual(additional_license_invoice.status, "open")
 
     @mock_stripe()
     def test_free_trial_upgrade_by_invoice_customer_fails_to_pay(self, *mocks: Mock) -> None:
@@ -2085,26 +2004,20 @@ class StripeTest(StripeTestCase):
             self.assertEqual(stripe_customer.discount, None)
             self.assertEqual(stripe_customer.email, user.delivery_email)
             assert stripe_customer.metadata is not None
-            metadata_dict = dict(stripe_customer.metadata)
-            self.assertEqual(metadata_dict["realm_str"], "zulip")
+            self.assertEqual(stripe_customer.metadata["realm_str"], "zulip")
             try:
-                int(metadata_dict["realm_id"])
+                int(stripe_customer.metadata["realm_id"])
             except ValueError:  # nocoverage
                 raise AssertionError("realm_id is not a number")
 
             [invoice] = iter(stripe.Invoice.list(customer=stripe_customer.id))
-            invoice_params = {
-                "amount_due": 123 * 80 * 100,
-                "amount_paid": 0,
-                "amount_remaining": 123 * 80 * 100,
-                "auto_advance": True,
-                "collection_method": "send_invoice",
-                "customer_email": self.example_email("hamlet"),
-                "discount": None,
-                "status": "open",
-            }
-            for key, value in invoice_params.items():
-                self.assertEqual(invoice.get(key), value)
+            self.assertEqual(invoice.amount_due, 123 * 80 * 100)
+            self.assertEqual(invoice.amount_paid, 0)
+            self.assertEqual(invoice.amount_remaining, 123 * 80 * 100)
+            self.assertTrue(invoice.auto_advance)
+            self.assertEqual(invoice.collection_method, "send_invoice")
+            self.assertEqual(invoice.customer_email, self.example_email("hamlet"))
+            self.assertEqual(invoice.status, "open")
 
             customer = Customer.objects.get(stripe_customer_id=stripe_customer.id, realm=user.realm)
             plan = CustomerPlan.objects.get(
@@ -2176,18 +2089,14 @@ class StripeTest(StripeTestCase):
                 self.assert_in_response(substring, response)
 
             [invoice_item] = iter(invoice.lines)
-            invoice_item_params = {
-                "amount": 123 * 80 * 100,
-                "description": "Zulip Cloud Standard",
-                "quantity": 123,
-                "discountable": False,
-                "period": {
-                    "start": datetime_to_timestamp(free_trial_end_date),
-                    "end": datetime_to_timestamp(add_months(free_trial_end_date, 12)),
-                },
-            }
-            for key, value in invoice_item_params.items():
-                self.assertEqual(invoice_item[key], value)
+            self.assertEqual(invoice_item.amount, 123 * 80 * 100)
+            self.assertEqual(invoice_item.description, "Zulip Cloud Standard")
+            self.assertEqual(invoice_item.quantity, 123)
+            self.assertFalse(invoice_item.discountable)
+            self.assertEqual(invoice_item.period.start, datetime_to_timestamp(free_trial_end_date))
+            self.assertEqual(
+                invoice_item.period.end, datetime_to_timestamp(add_months(free_trial_end_date, 12))
+            )
 
             # We reached free trial end but customer didn't pay the invoice.
             invoice_plans_as_needed(free_trial_end_date)
@@ -2230,7 +2139,7 @@ class StripeTest(StripeTestCase):
         # Change the seat count in upgrade flow: after do_upgrade, during process_initial_upgrade
         with (
             patch(
-                "corporate.lib.stripe.BillingSession.stale_seat_count_check",
+                "corporate.lib.stripe.BillingSession.stale_license_count_check",
                 return_value=self.seat_count,
             ),
             patch("corporate.lib.stripe.get_latest_seat_count", return_value=new_seat_count),
@@ -2282,7 +2191,7 @@ class StripeTest(StripeTestCase):
         # Change the seat count in upgrade flow: after do_upgrade, during process_initial_upgrade
         with (
             patch(
-                "corporate.lib.stripe.BillingSession.stale_seat_count_check",
+                "corporate.lib.stripe.BillingSession.stale_license_count_check",
                 return_value=self.seat_count,
             ),
             patch("corporate.lib.stripe.get_latest_seat_count", return_value=new_seat_count),
@@ -2536,16 +2445,14 @@ class StripeTest(StripeTestCase):
         )
         self.assert_length(m.output, 1)
 
-    @mock_stripe(tested_timestamp_fields=["created"])
+    @mock_stripe()
     def test_check_upgrade_parameters(self, *mocks: Mock) -> None:
-        # Tests all the error paths except 'not enough licenses'
         def check_error(
             error_message: str,
             error_description: str,
             upgrade_params: Mapping[str, Any],
             del_args: Sequence[str] = [],
         ) -> None:
-            self.add_card_to_customer_for_upgrade()
             if error_description:
                 with self.assertLogs("corporate.stripe", "WARNING"):
                     response = self.upgrade(
@@ -2560,9 +2467,17 @@ class StripeTest(StripeTestCase):
 
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
+        self.add_card_to_customer_for_upgrade()
         check_error("Invalid billing_modality", "", {"billing_modality": "invalid"})
         check_error("Invalid schedule", "", {"schedule": "invalid"})
         check_error("Invalid license_management", "", {"license_management": "invalid"})
+
+        check_error(
+            "Something went wrong. Please contact",
+            "unknown license_management",
+            {},
+            del_args=["license_management"],
+        )
 
         check_error(
             "You must purchase licenses for all active users in your organization (minimum 30).",
@@ -3616,45 +3531,35 @@ class StripeTest(StripeTestCase):
         )
 
         [invoice_item0, invoice_item1] = iter(invoice0.lines)
-        annual_plan_invoice_item_params = {
-            "amount": 5 * 80 * 100,
-            "description": "Additional Zulip Cloud Standard license",
-            "quantity": 5,
-            "discountable": False,
-            "period": {
-                "start": datetime_to_timestamp(self.next_month),
-                "end": datetime_to_timestamp(add_months(self.next_month, 12)),
-            },
-        }
-        for key, value in annual_plan_invoice_item_params.items():
-            self.assertEqual(invoice_item0[key], value)
+        self.assertEqual(invoice_item0.amount, 5 * 80 * 100)
+        self.assertEqual(invoice_item0.description, "Additional Zulip Cloud Standard license")
+        self.assertEqual(invoice_item0.quantity, 5)
+        self.assertEqual(invoice_item0.discountable, False)
+        self.assertEqual(invoice_item0.period.start, datetime_to_timestamp(self.next_month))
+        self.assertEqual(
+            invoice_item0.period.end, datetime_to_timestamp(add_months(self.next_month, 12))
+        )
 
-        annual_plan_invoice_item_params = {
-            "amount": 20 * 80 * 100,
-            "description": "Zulip Cloud Standard - renewal",
-            "quantity": 20,
-            "discountable": False,
-            "period": {
-                "start": datetime_to_timestamp(self.next_month),
-                "end": datetime_to_timestamp(add_months(self.next_month, 12)),
-            },
-        }
-        for key, value in annual_plan_invoice_item_params.items():
-            self.assertEqual(invoice_item1[key], value)
+        self.assertEqual(invoice_item1.amount, 20 * 80 * 100)
+        self.assertEqual(invoice_item1.description, "Zulip Cloud Standard - renewal")
+        self.assertEqual(invoice_item1.quantity, 20)
+        self.assertFalse(invoice_item1.discountable)
+        self.assertEqual(invoice_item1.period.start, datetime_to_timestamp(self.next_month))
+        self.assertEqual(
+            invoice_item1.period.end, datetime_to_timestamp(add_months(self.next_month, 12))
+        )
 
         [monthly_plan_invoice_item] = iter(invoice1.lines)
-        monthly_plan_invoice_item_params = {
-            "amount": 14 * 8 * 100,
-            "description": "Additional Zulip Cloud Standard license",
-            "quantity": 14,
-            "discountable": False,
-            "period": {
-                "start": datetime_to_timestamp(self.now),
-                "end": datetime_to_timestamp(self.next_month),
-            },
-        }
-        for key, value in monthly_plan_invoice_item_params.items():
-            self.assertEqual(monthly_plan_invoice_item[key], value)
+        self.assertEqual(monthly_plan_invoice_item.amount, 14 * 8 * 100)
+        self.assertEqual(
+            monthly_plan_invoice_item.description, "Additional Zulip Cloud Standard license"
+        )
+        self.assertEqual(monthly_plan_invoice_item.quantity, 14)
+        self.assertFalse(monthly_plan_invoice_item.discountable)
+        self.assertEqual(monthly_plan_invoice_item.period.start, datetime_to_timestamp(self.now))
+        self.assertEqual(
+            monthly_plan_invoice_item.period.end, datetime_to_timestamp(self.next_month)
+        )
 
         with patch("corporate.lib.stripe.get_latest_seat_count", return_value=30):
             billing_session.update_license_ledger_if_needed(add_months(self.next_month, 1))
@@ -3665,18 +3570,20 @@ class StripeTest(StripeTestCase):
         )
 
         [monthly_plan_invoice_item] = iter(invoice0.lines)
-        monthly_plan_invoice_item_params = {
-            "amount": 5 * 7366,
-            "description": "Additional Zulip Cloud Standard license",
-            "quantity": 5,
-            "discountable": False,
-            "period": {
-                "start": datetime_to_timestamp(add_months(self.next_month, 1)),
-                "end": datetime_to_timestamp(add_months(self.next_month, 12)),
-            },
-        }
-        for key, value in monthly_plan_invoice_item_params.items():
-            self.assertEqual(monthly_plan_invoice_item[key], value)
+        self.assertEqual(monthly_plan_invoice_item.amount, 5 * 7366)
+        self.assertEqual(
+            monthly_plan_invoice_item.description, "Additional Zulip Cloud Standard license"
+        )
+        self.assertEqual(monthly_plan_invoice_item.quantity, 5)
+        self.assertFalse(monthly_plan_invoice_item.discountable)
+        self.assertEqual(
+            monthly_plan_invoice_item.period.start,
+            datetime_to_timestamp(add_months(self.next_month, 1)),
+        )
+        self.assertEqual(
+            monthly_plan_invoice_item.period.end,
+            datetime_to_timestamp(add_months(self.next_month, 12)),
+        )
 
         # Fast forward next_invoice_date to one year from the day we switched to annual plan.
         annual_plan.next_invoice_date = add_months(self.now, 13)
@@ -3688,18 +3595,16 @@ class StripeTest(StripeTestCase):
         )
 
         [invoice_item] = iter(invoice0.lines)
-        annual_plan_invoice_item_params = {
-            "amount": 30 * 80 * 100,
-            "description": "Zulip Cloud Standard - renewal",
-            "quantity": 30,
-            "discountable": False,
-            "period": {
-                "start": datetime_to_timestamp(add_months(self.next_month, 12)),
-                "end": datetime_to_timestamp(add_months(self.next_month, 24)),
-            },
-        }
-        for key, value in annual_plan_invoice_item_params.items():
-            self.assertEqual(invoice_item[key], value)
+        self.assertEqual(invoice_item.amount, 30 * 80 * 100)
+        self.assertEqual(invoice_item.description, "Zulip Cloud Standard - renewal")
+        self.assertEqual(invoice_item.quantity, 30)
+        self.assertFalse(invoice_item.discountable)
+        self.assertEqual(
+            invoice_item.period.start, datetime_to_timestamp(add_months(self.next_month, 12))
+        )
+        self.assertEqual(
+            invoice_item.period.end, datetime_to_timestamp(add_months(self.next_month, 24))
+        )
 
     @mock_stripe()
     def test_switch_from_monthly_plan_to_annual_plan_for_manual_license_management(
@@ -3780,18 +3685,14 @@ class StripeTest(StripeTestCase):
         [invoice0, _invoice1] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
 
         [invoice_item] = iter(invoice0.lines)
-        annual_plan_invoice_item_params = {
-            "amount": num_licenses * 80 * 100,
-            "description": "Zulip Cloud Standard - renewal",
-            "quantity": num_licenses,
-            "discountable": False,
-            "period": {
-                "start": datetime_to_timestamp(self.next_month),
-                "end": datetime_to_timestamp(add_months(self.next_month, 12)),
-            },
-        }
-        for key, value in annual_plan_invoice_item_params.items():
-            self.assertEqual(invoice_item[key], value)
+        self.assertEqual(invoice_item.amount, num_licenses * 80 * 100)
+        self.assertEqual(invoice_item.description, "Zulip Cloud Standard - renewal")
+        self.assertEqual(invoice_item.quantity, num_licenses)
+        self.assertFalse(invoice_item.discountable)
+        self.assertEqual(invoice_item.period.start, datetime_to_timestamp(self.next_month))
+        self.assertEqual(
+            invoice_item.period.end, datetime_to_timestamp(add_months(self.next_month, 12))
+        )
 
         invoice_plans_as_needed(add_months(self.now, 13))
 
@@ -3800,18 +3701,16 @@ class StripeTest(StripeTestCase):
         )
 
         [invoice_item] = iter(invoice0.lines)
-        annual_plan_invoice_item_params = {
-            "amount": num_licenses * 80 * 100,
-            "description": "Zulip Cloud Standard - renewal",
-            "quantity": num_licenses,
-            "discountable": False,
-            "period": {
-                "start": datetime_to_timestamp(add_months(self.next_month, 12)),
-                "end": datetime_to_timestamp(add_months(self.next_month, 24)),
-            },
-        }
-        for key, value in annual_plan_invoice_item_params.items():
-            self.assertEqual(invoice_item[key], value)
+        self.assertEqual(invoice_item.amount, num_licenses * 80 * 100)
+        self.assertEqual(invoice_item.description, "Zulip Cloud Standard - renewal")
+        self.assertEqual(invoice_item.quantity, num_licenses)
+        self.assertFalse(invoice_item.discountable)
+        self.assertEqual(
+            invoice_item.period.start, datetime_to_timestamp(add_months(self.next_month, 12))
+        )
+        self.assertEqual(
+            invoice_item.period.end, datetime_to_timestamp(add_months(self.next_month, 24))
+        )
 
     @mock_stripe()
     def test_switch_from_annual_plan_to_monthly_plan_for_automatic_license_management(
@@ -3888,33 +3787,19 @@ class StripeTest(StripeTestCase):
         assert customer.stripe_customer_id
         [invoice0, _invoice1] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
         [invoice_item1, invoice_item2] = iter(invoice0.lines)
-        annual_plan_invoice_item_params = {
-            "amount": 7322 * 5,
-            "description": "Additional Zulip Cloud Standard license",
-            "quantity": 5,
-            "discountable": False,
-            "period": {
-                "start": datetime_to_timestamp(self.next_month),
-                "end": datetime_to_timestamp(self.next_year),
-            },
-        }
+        self.assertEqual(invoice_item1.amount, 7322 * 5)
+        self.assertEqual(invoice_item1.description, "Additional Zulip Cloud Standard license")
+        self.assertEqual(invoice_item1.quantity, 5)
+        self.assertFalse(invoice_item1.discountable)
+        self.assertEqual(invoice_item1.period.start, datetime_to_timestamp(self.next_month))
+        self.assertEqual(invoice_item1.period.end, datetime_to_timestamp(self.next_year))
 
-        for key, value in annual_plan_invoice_item_params.items():
-            self.assertEqual(invoice_item1[key], value)
-
-        annual_plan_invoice_item_params = {
-            "amount": 14 * 80 * 1 * 100,
-            "description": "Additional Zulip Cloud Standard license",
-            "quantity": 14,
-            "discountable": False,
-            "period": {
-                "start": datetime_to_timestamp(self.now),
-                "end": datetime_to_timestamp(self.next_year),
-            },
-        }
-
-        for key, value in annual_plan_invoice_item_params.items():
-            self.assertEqual(invoice_item2[key], value)
+        self.assertEqual(invoice_item2.amount, 14 * 80 * 1 * 100)
+        self.assertEqual(invoice_item2.description, "Additional Zulip Cloud Standard license")
+        self.assertEqual(invoice_item2.quantity, 14)
+        self.assertFalse(invoice_item2.discountable)
+        self.assertEqual(invoice_item2.period.start, datetime_to_timestamp(self.now))
+        self.assertEqual(invoice_item2.period.end, datetime_to_timestamp(self.next_year))
 
         # Check that we switch to monthly plan at the end of current billing cycle.
         with (
@@ -3974,18 +3859,14 @@ class StripeTest(StripeTestCase):
 
         [invoice_item0] = iter(invoice0.lines)
 
-        monthly_plan_invoice_item_params = {
-            "amount": 25 * 8 * 100,
-            "description": "Zulip Cloud Standard - renewal",
-            "quantity": 25,
-            "discountable": False,
-            "period": {
-                "start": datetime_to_timestamp(self.next_year),
-                "end": datetime_to_timestamp(add_months(self.next_year, 1)),
-            },
-        }
-        for key, value in monthly_plan_invoice_item_params.items():
-            self.assertEqual(invoice_item0[key], value)
+        self.assertEqual(invoice_item0.amount, 25 * 8 * 100)
+        self.assertEqual(invoice_item0.description, "Zulip Cloud Standard - renewal")
+        self.assertEqual(invoice_item0.quantity, 25)
+        self.assertFalse(invoice_item0.discountable)
+        self.assertEqual(invoice_item0.period.start, datetime_to_timestamp(self.next_year))
+        self.assertEqual(
+            invoice_item0.period.end, datetime_to_timestamp(add_months(self.next_year, 1))
+        )
 
         with time_machine.travel(self.next_year, tick=False):
             response = self.client_get("/billing/")
@@ -4532,59 +4413,41 @@ class StripeTest(StripeTestCase):
             stripe.Invoice.list(customer=stripe_customer.id)
         )
 
-        invoice_params = {
-            "amount_due": 8000 * 150,
-            "amount_paid": 0,
-            "attempt_count": 0,
-            "auto_advance": True,
-            "collection_method": "send_invoice",
-            "statement_descriptor": "Zulip Cloud Standard",
-            "status": "open",
-        }
-        for key, value in invoice_params.items():
-            self.assertEqual(renewal_invoice.get(key), value)
+        self.assertEqual(renewal_invoice.amount_due, 8000 * 150)
+        self.assertEqual(renewal_invoice.amount_paid, 0)
+        self.assertEqual(renewal_invoice.attempt_count, 0)
+        self.assertTrue(renewal_invoice.auto_advance)
+        self.assertEqual(renewal_invoice.collection_method, "send_invoice")
+        self.assertEqual(renewal_invoice.statement_descriptor, "Zulip Cloud Standard")
+        self.assertEqual(renewal_invoice.status, "open")
+
         [renewal_item] = iter(renewal_invoice.lines)
 
-        line_item_params = {
-            "amount": 8000 * 150,
-            "description": "Zulip Cloud Standard - renewal",
-            "discountable": False,
-            "period": {
-                "end": datetime_to_timestamp(self.next_year + timedelta(days=365)),
-                "start": datetime_to_timestamp(self.next_year),
-            },
-            "plan": None,
-            "quantity": 150,
-        }
-        for key, value in line_item_params.items():
-            self.assertEqual(renewal_item.get(key), value)
+        self.assertEqual(renewal_item.amount, 8000 * 150)
+        self.assertEqual(renewal_item.description, "Zulip Cloud Standard - renewal")
+        self.assertFalse(renewal_item.discountable)
+        self.assertEqual(renewal_item.period.start, datetime_to_timestamp(self.next_year))
+        self.assertEqual(
+            renewal_item.period.end, datetime_to_timestamp(self.next_year + timedelta(days=365))
+        )
+        self.assertEqual(renewal_item.quantity, 150)
 
-        invoice_params = {
-            "amount_due": 8000 * 50,
-            "amount_paid": 0,
-            "attempt_count": 0,
-            "auto_advance": True,
-            "collection_method": "send_invoice",
-            "statement_descriptor": "Zulip Cloud Standard",
-            "status": "open",
-        }
-        for key, value in invoice_params.items():
-            self.assertEqual(additional_licenses_invoice.get(key), value)
+        self.assertEqual(additional_licenses_invoice.amount_due, 8000 * 50)
+        self.assertEqual(additional_licenses_invoice.amount_paid, 0)
+        self.assertEqual(additional_licenses_invoice.attempt_count, 0)
+        self.assertTrue(additional_licenses_invoice.auto_advance)
+        self.assertEqual(additional_licenses_invoice.collection_method, "send_invoice")
+        self.assertEqual(additional_licenses_invoice.statement_descriptor, "Zulip Cloud Standard")
+        self.assertEqual(additional_licenses_invoice.status, "open")
+
         [extra_license_item] = iter(additional_licenses_invoice.lines)
 
-        line_item_params = {
-            "amount": 8000 * 50,
-            "description": "Additional Zulip Cloud Standard license",
-            "discountable": False,
-            "period": {
-                "end": datetime_to_timestamp(self.next_year),
-                "start": datetime_to_timestamp(self.now),
-            },
-            "plan": None,
-            "quantity": 50,
-        }
-        for key, value in line_item_params.items():
-            self.assertEqual(extra_license_item.get(key), value)
+        self.assertEqual(extra_license_item.amount, 8000 * 50)
+        self.assertEqual(extra_license_item.description, "Additional Zulip Cloud Standard license")
+        self.assertFalse(extra_license_item.discountable)
+        self.assertEqual(extra_license_item.period.start, datetime_to_timestamp(self.now))
+        self.assertEqual(extra_license_item.period.end, datetime_to_timestamp(self.next_year))
+        self.assertEqual(extra_license_item.quantity, 50)
 
         with time_machine.travel(self.next_year, tick=False):
             result = self.client_billing_patch(
@@ -4595,32 +4458,26 @@ class StripeTest(StripeTestCase):
         invoice_plans_as_needed(self.next_year + timedelta(days=365))
         [renewal_invoice, _, _, _] = iter(stripe.Invoice.list(customer=stripe_customer.id))
 
-        invoice_params = {
-            "amount_due": 8000 * 120,
-            "amount_paid": 0,
-            "attempt_count": 0,
-            "auto_advance": True,
-            "collection_method": "send_invoice",
-            "statement_descriptor": "Zulip Cloud Standard",
-            "status": "open",
-        }
-        for key, value in invoice_params.items():
-            self.assertEqual(renewal_invoice.get(key), value)
+        self.assertEqual(renewal_invoice.amount_due, 8000 * 120)
+        self.assertEqual(renewal_invoice.amount_paid, 0)
+        self.assertEqual(renewal_invoice.attempt_count, 0)
+        self.assertTrue(renewal_invoice.auto_advance)
+        self.assertEqual(renewal_invoice.collection_method, "send_invoice")
+        self.assertEqual(renewal_invoice.statement_descriptor, "Zulip Cloud Standard")
+        self.assertEqual(renewal_invoice.status, "open")
+
         [renewal_item] = iter(renewal_invoice.lines)
 
-        line_item_params = {
-            "amount": 8000 * 120,
-            "description": "Zulip Cloud Standard - renewal",
-            "discountable": False,
-            "period": {
-                "end": datetime_to_timestamp(self.next_year + timedelta(days=2 * 365)),
-                "start": datetime_to_timestamp(self.next_year + timedelta(days=365)),
-            },
-            "plan": None,
-            "quantity": 120,
-        }
-        for key, value in line_item_params.items():
-            self.assertEqual(renewal_item.get(key), value)
+        self.assertEqual(renewal_item.amount, 8000 * 120)
+        self.assertEqual(renewal_item.description, "Zulip Cloud Standard - renewal")
+        self.assertFalse(renewal_item.discountable)
+        self.assertEqual(
+            renewal_item.period.start, datetime_to_timestamp(self.next_year + timedelta(days=365))
+        )
+        self.assertEqual(
+            renewal_item.period.end, datetime_to_timestamp(self.next_year + timedelta(days=2 * 365))
+        )
+        self.assertEqual(renewal_item.quantity, 120)
 
     def test_update_licenses_of_manual_plan_from_billing_page_exempt_from_license_number_check(
         self,
@@ -4906,7 +4763,7 @@ class StripeTest(StripeTestCase):
             customer=zulip_customer.stripe_customer_id,
             description="Zulip Cloud Standard upgrade",
             discountable=False,
-            unit_amount_decimal="800",
+            unit_amount_decimal=Decimal(800),
             quantity=8,
         )
         stripe.Invoice.finalize_invoice(stripe_invoice)
@@ -4926,7 +4783,7 @@ class StripeTest(StripeTestCase):
             customer=lear_customer.stripe_customer_id,
             description="Zulip Cloud Standard upgrade",
             discountable=False,
-            unit_amount_decimal="800",
+            unit_amount_decimal=Decimal(800),
             quantity=8,
         )
         stripe.Invoice.finalize_invoice(stripe_invoice)
@@ -5409,6 +5266,56 @@ class StripeWebhookEndpointTest(ZulipTestCase):
         self.assert_length(Event.objects.filter(stripe_event_id=stripe_event_id), 1)
         self.assertEqual(result.status_code, 200)
         m.assert_not_called()
+
+    def test_stripe_event_handler_billing_error_logging(self) -> None:
+        customer = Customer.objects.create(realm=get_realm("zulip"))
+        stripe_invoice_id = "stripe_invoice_id"
+        invoice = Invoice.objects.create(
+            stripe_invoice_id=stripe_invoice_id,
+            customer=customer,
+            status=Invoice.SENT,
+        )
+        content_type = ContentType.objects.get_for_model(Invoice)
+        event = Event.objects.create(
+            stripe_event_id="stripe_event_id",
+            type="invoice.paid",
+            content_type=content_type,
+            object_id=invoice.id,
+        )
+
+        stripe_invoice = stripe.Invoice.construct_from(
+            {
+                "id": stripe_invoice_id,
+                "object": "invoice",
+                "customer": "cus_test123",
+                "metadata": {"plan_tier": "1", "billing_schedule": "1"},
+            },
+            stripe.api_key,
+        )
+
+        from corporate.lib.stripe_event_handler import stripe_event_handler_decorator
+
+        @stripe_event_handler_decorator
+        def raise_billing_error(stripe_object: stripe.Invoice, invoice: Invoice) -> None:
+            raise BillingError("test error", "test error description")
+
+        with self.assertLogs("corporate.stripe", "WARNING") as warning_log:
+            raise_billing_error(stripe_invoice, event)
+
+        self.assert_length(warning_log.output, 1)
+        self.assertIn(
+            "BillingError in invoice.paid event handler: test error."
+            f" stripe_object_id={stripe_invoice_id},"
+            " customer_id=cus_test123 metadata=",
+            warning_log.output[0],
+        )
+
+        event.refresh_from_db()
+        self.assertEqual(event.status, Event.EVENT_HANDLER_FAILED)
+        self.assertEqual(
+            event.handler_error,
+            {"message": "test error description", "description": "test error"},
+        )
 
 
 class EventStatusTest(StripeTestCase):
@@ -6128,8 +6035,8 @@ class BillingHelpersTest(ZulipTestCase):
         billing_session.configure_fixed_price_plan(1200, None)
         self.assertEqual(remote_realm.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED)
         with mock.patch(
-            "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-            return_value=60,
+            "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+            return_value=BillingUserCounts(60, 0),
         ):
             billing_session.initialize_prepaid_fixed_price_plan(
                 plan_tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
@@ -6211,8 +6118,8 @@ class BillingHelpersTest(ZulipTestCase):
         billing_session.configure_fixed_price_plan(1200, None)
         self.assertEqual(remote_server.plan_type, RemoteRealm.PLAN_TYPE_SELF_MANAGED)
         with mock.patch(
-            "corporate.lib.stripe.RemoteServerBillingSession.current_count_for_billed_licenses",
-            return_value=60,
+            "corporate.lib.stripe.RemoteServerBillingSession.current_counts_for_billed_users",
+            return_value=BillingUserCounts(60, 0),
         ):
             billing_session.initialize_prepaid_fixed_price_plan(
                 plan_tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
@@ -6262,15 +6169,12 @@ class LicenseLedgerTest(StripeTestCase):
         )
         self.assertIsNone(new_plan)
         self.assertEqual(LicenseLedger.objects.count(), 2)
-        ledger_params = {
-            "plan": plan,
-            "is_renewal": True,
-            "event_time": self.next_year,
-            "licenses": self.seat_count,
-            "licenses_at_next_renewal": self.seat_count,
-        }
-        for key, value in ledger_params.items():
-            self.assertEqual(getattr(ledger_entry, key), value)
+        assert ledger_entry is not None
+        self.assertEqual(ledger_entry.plan, plan)
+        self.assertTrue(ledger_entry.is_renewal)
+        self.assertEqual(ledger_entry.event_time, self.next_year)
+        self.assertEqual(ledger_entry.licenses, self.seat_count)
+        self.assertEqual(ledger_entry.licenses_at_next_renewal, self.seat_count)
         # Plan needs to renew, but we already added the plan_renewal ledger entry
         billing_session.make_end_of_cycle_updates_if_needed(
             plan, self.next_year + timedelta(days=1)
@@ -6599,42 +6503,31 @@ class InvoiceTest(StripeTestCase):
         [invoice0, _invoice1] = iter(stripe.Invoice.list(customer=stripe_customer_id))
         self.assertIsNotNone(invoice0.status_transitions.finalized_at)
         [item0, item1, item2] = iter(invoice0.lines)
-        line_item_params = {
-            "amount": int(8000 * (1 - ((400 - 366) / 365)) + 0.5),
-            "description": "Additional Zulip Cloud Standard license",
-            "discountable": False,
-            "period": {
-                "start": datetime_to_timestamp(self.now + timedelta(days=400)),
-                "end": datetime_to_timestamp(self.now + timedelta(days=2 * 365 + 1)),
-            },
-            "quantity": 1,
-        }
-        for key, value in line_item_params.items():
-            self.assertEqual(item0.get(key), value)
-        line_item_params = {
-            "amount": 3 * int(8000 * (366 - 100) / 366 + 0.5),
-            "description": "Additional Zulip Cloud Standard license",
-            "discountable": False,
-            "period": {
-                "start": datetime_to_timestamp(self.now + timedelta(days=100)),
-                "end": datetime_to_timestamp(self.now + timedelta(days=366)),
-            },
-            "quantity": 3,
-        }
-        for key, value in line_item_params.items():
-            self.assertEqual(item1.get(key), value)
-        line_item_params = {
-            "amount": 8000 * (self.seat_count + 1),
-            "description": "Zulip Cloud Standard - renewal",
-            "discountable": False,
-            "period": {
-                "start": datetime_to_timestamp(self.now + timedelta(days=366)),
-                "end": datetime_to_timestamp(self.now + timedelta(days=2 * 365 + 1)),
-            },
-            "quantity": self.seat_count + 1,
-        }
-        for key, value in line_item_params.items():
-            self.assertEqual(item2.get(key), value)
+
+        self.assertEqual(item0.amount, int(8000 * (1 - ((400 - 366) / 365)) + 0.5))
+        self.assertEqual(item0.description, "Additional Zulip Cloud Standard license")
+        self.assertFalse(item0.discountable)
+        self.assertEqual(item0.period.start, datetime_to_timestamp(self.now + timedelta(days=400)))
+        self.assertEqual(
+            item0.period.end, datetime_to_timestamp(self.now + timedelta(days=2 * 365 + 1))
+        )
+        self.assertEqual(item0.quantity, 1)
+
+        self.assertEqual(item1.amount, 3 * int(8000 * (366 - 100) / 366 + 0.5))
+        self.assertEqual(item1.description, "Additional Zulip Cloud Standard license")
+        self.assertFalse(item1.discountable)
+        self.assertEqual(item1.period.start, datetime_to_timestamp(self.now + timedelta(days=100)))
+        self.assertEqual(item1.period.end, datetime_to_timestamp(self.now + timedelta(days=366)))
+        self.assertEqual(item1.quantity, 3)
+
+        self.assertEqual(item2.amount, 8000 * (self.seat_count + 1))
+        self.assertEqual(item2.description, "Zulip Cloud Standard - renewal")
+        self.assertFalse(item2.discountable)
+        self.assertEqual(item2.period.start, datetime_to_timestamp(self.now + timedelta(days=366)))
+        self.assertEqual(
+            item2.period.end, datetime_to_timestamp(self.now + timedelta(days=2 * 365 + 1))
+        )
+        self.assertEqual(item2.quantity, self.seat_count + 1)
 
     @mock_stripe()
     def test_invoice_plan_bundle_additional_licenses(self, *mocks: Mock) -> None:
@@ -6697,57 +6590,39 @@ class InvoiceTest(StripeTestCase):
         [invoice0, _invoice1] = iter(stripe.Invoice.list(customer=stripe_customer_id))
         self.assertIsNotNone(invoice0.status_transitions.finalized_at)
         [item0, item1, item2, item3] = iter(invoice0.lines.data)
+
+        self.assertEqual(item0.amount, 50 * int(8000 * (366 - 25) / 366 + 0.5))
+        self.assertEqual(item0.description, "Additional Zulip Cloud Standard license")
+        self.assertFalse(item0.discountable)
         # We have to adjust the start datetime for the 20 license ledger
         # entries (by 20 seconds) that were for licenses that were already
         # paid for in the billing period.
-        line_item_params = {
-            "amount": 50 * int(8000 * (366 - 25) / 366 + 0.5),
-            "description": "Additional Zulip Cloud Standard license",
-            "discountable": False,
-            "period": {
-                "start": datetime_to_timestamp(self.now + timedelta(days=25, seconds=20)),
-                "end": datetime_to_timestamp(self.next_year),
-            },
-            "quantity": 50,
-        }
-        for key, value in line_item_params.items():
-            self.assertEqual(item0.get(key), value)
-        line_item_params = {
-            "amount": 100 * int(8000 * (366 - 20) / 366 + 0.5),
-            "description": "Additional Zulip Cloud Standard license",
-            "discountable": False,
-            "period": {
-                "start": datetime_to_timestamp(self.now + timedelta(days=20)),
-                "end": datetime_to_timestamp(self.next_year),
-            },
-            "quantity": 100,
-        }
-        for key, value in line_item_params.items():
-            self.assertEqual(item1.get(key), value)
-        line_item_params = {
-            "amount": 100 * int(8000 * (366 - 15) / 366 + 0.5),
-            "description": "Additional Zulip Cloud Standard license",
-            "discountable": False,
-            "period": {
-                "start": datetime_to_timestamp(self.now + timedelta(days=15)),
-                "end": datetime_to_timestamp(self.next_year),
-            },
-            "quantity": 100,
-        }
-        for key, value in line_item_params.items():
-            self.assertEqual(item2.get(key), value)
-        line_item_params = {
-            "amount": 50 * int(8000 * (366 - 10) / 366 + 0.5),
-            "description": "Additional Zulip Cloud Standard license",
-            "discountable": False,
-            "period": {
-                "start": datetime_to_timestamp(self.now + timedelta(days=10)),
-                "end": datetime_to_timestamp(self.next_year),
-            },
-            "quantity": 50,
-        }
-        for key, value in line_item_params.items():
-            self.assertEqual(item3.get(key), value)
+        self.assertEqual(
+            item0.period.start, datetime_to_timestamp(self.now + timedelta(days=25, seconds=20))
+        )
+        self.assertEqual(item0.period.end, datetime_to_timestamp(self.next_year))
+        self.assertEqual(item0.quantity, 50)
+
+        self.assertEqual(item1.amount, 100 * int(8000 * (366 - 20) / 366 + 0.5))
+        self.assertEqual(item1.description, "Additional Zulip Cloud Standard license")
+        self.assertFalse(item1.discountable)
+        self.assertEqual(item1.period.start, datetime_to_timestamp(self.now + timedelta(days=20)))
+        self.assertEqual(item1.period.end, datetime_to_timestamp(self.next_year))
+        self.assertEqual(item1.quantity, 100)
+
+        self.assertEqual(item2.amount, 100 * int(8000 * (366 - 15) / 366 + 0.5))
+        self.assertEqual(item2.description, "Additional Zulip Cloud Standard license")
+        self.assertFalse(item2.discountable)
+        self.assertEqual(item2.period.start, datetime_to_timestamp(self.now + timedelta(days=15)))
+        self.assertEqual(item2.period.end, datetime_to_timestamp(self.next_year))
+        self.assertEqual(item2.quantity, 100)
+
+        self.assertEqual(item3.amount, 50 * int(8000 * (366 - 10) / 366 + 0.5))
+        self.assertEqual(item3.description, "Additional Zulip Cloud Standard license")
+        self.assertFalse(item3.discountable)
+        self.assertEqual(item3.period.start, datetime_to_timestamp(self.now + timedelta(days=10)))
+        self.assertEqual(item3.period.end, datetime_to_timestamp(self.next_year))
+        self.assertEqual(item3.quantity, 50)
 
     @mock_stripe()
     def test_fixed_price_plans(self, *mocks: Mock) -> None:
@@ -6769,18 +6644,14 @@ class InvoiceTest(StripeTestCase):
         [invoice0, _invoice1] = iter(stripe.Invoice.list(customer=stripe_customer_id))
         self.assertEqual(invoice0.collection_method, "send_invoice")
         [item] = iter(invoice0.lines)
-        line_item_params = {
-            "amount": 100,
-            "description": "Zulip Cloud Standard - renewal",
-            "discountable": False,
-            "period": {
-                "start": datetime_to_timestamp(self.next_year),
-                "end": datetime_to_timestamp(self.next_year + timedelta(days=365)),
-            },
-            "quantity": 1,
-        }
-        for key, value in line_item_params.items():
-            self.assertEqual(item.get(key), value)
+        self.assertEqual(item.amount, 100)
+        self.assertEqual(item.description, "Zulip Cloud Standard - renewal")
+        self.assertFalse(item.discountable)
+        self.assertEqual(item.period.start, datetime_to_timestamp(self.next_year))
+        self.assertEqual(
+            item.period.end, datetime_to_timestamp(self.next_year + timedelta(days=365))
+        )
+        self.assertEqual(item.quantity, 1)
 
     @mock_stripe()
     def test_upgrade_to_fixed_price_plus_plan(self, *mocks: Mock) -> None:
@@ -6963,13 +6834,9 @@ class InvoiceTest(StripeTestCase):
         [invoice0, _invoice1] = iter(stripe.Invoice.list(customer=stripe_customer_id))
         self.assertIsNotNone(invoice0.status_transitions.finalized_at)
         [item0] = iter(invoice0.lines)
-        line_item_params = {
-            "amount": int(8000 * (1 - ((366 - 356) / 366)) + 0.5),
-            "description": "Additional Zulip Cloud Standard license",
-            "quantity": 1,
-        }
-        for key, value in line_item_params.items():
-            self.assertEqual(item0.get(key), value)
+        self.assertEqual(item0.amount, int(8000 * (1 - ((366 - 356) / 366)) + 0.5))
+        self.assertEqual(item0.description, "Additional Zulip Cloud Standard license")
+        self.assertEqual(item0.quantity, 1)
 
 
 class TestTestClasses(ZulipTestCase):
@@ -7037,7 +6904,7 @@ class TestRealmBillingSession(StripeTestCase):
 
 
 class TestRemoteRealmBillingSession(StripeTestCase):
-    def test_current_count_for_billed_licenses(self) -> None:
+    def test_current_counts_for_billed_users(self) -> None:
         server_uuid = str(uuid.uuid4())
         remote_server = RemoteZulipServer.objects.create(
             uuid=server_uuid,
@@ -7057,13 +6924,13 @@ class TestRemoteRealmBillingSession(StripeTestCase):
 
         # remote server never uploaded statistics. 'last_audit_log_update' is None.
         with self.assertRaises(MissingDataError):
-            billing_session.current_count_for_billed_licenses()
+            billing_session.current_counts_for_billed_users()
 
         # Available statistics is stale.
         remote_server.last_audit_log_update = timezone_now() - timedelta(days=5)
         remote_server.save()
         with self.assertRaises(MissingDataError):
-            billing_session.current_count_for_billed_licenses()
+            billing_session.current_counts_for_billed_users()
 
         # Available statistics is not stale.
         event_time = timezone_now() - timedelta(days=1)
@@ -7107,7 +6974,9 @@ class TestRemoteRealmBillingSession(StripeTestCase):
         remote_server.last_audit_log_update = timezone_now() - timedelta(days=1)
         remote_server.save()
 
-        self.assertEqual(billing_session.current_count_for_billed_licenses(), 70)
+        current_billed_user_counts = billing_session.current_counts_for_billed_users()
+        self.assertEqual(current_billed_user_counts.workplace_users, 70)
+        self.assertEqual(current_billed_user_counts.non_workplace_users, 0)
 
 
 class TestRemoteServerBillingSession(StripeTestCase):
@@ -7449,22 +7318,24 @@ class TestSupportBillingHelpers(StripeTestCase):
         sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
 
         # Organization owners get the notification bot message
-        desdemona_recipient = self.example_user("desdemona").recipient
+        bot_and_desdemona_recipient = self.get_dm_group_recipient(
+            sender, self.example_user("desdemona")
+        )
         message_to_owner = Message.objects.filter(
-            realm_id=realm.id, sender=sender.id, recipient=desdemona_recipient
+            realm_id=realm.id, sender=sender.id, recipient=bot_and_desdemona_recipient
         ).first()
         assert message_to_owner is not None
         self.assertEqual(message_to_owner.content, expected_message)
-        self.assertEqual(message_to_owner.recipient.type, Recipient.PERSONAL)
+        self.assertEqual(message_to_owner.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
         # Hamlet is in `can_manage_billing_group` so should get the notification bot message
-        hamlet_recipient = self.example_user("hamlet").recipient
+        bot_and_hamlet_recipient = self.get_dm_group_recipient(sender, self.example_user("hamlet"))
         message_to_hamlet = Message.objects.filter(
-            realm_id=realm.id, sender=sender.id, recipient=hamlet_recipient
+            realm_id=realm.id, sender=sender.id, recipient=bot_and_hamlet_recipient
         ).last()
         assert message_to_hamlet is not None
         self.assertEqual(message_to_hamlet.content, expected_message)
-        self.assertEqual(message_to_hamlet.recipient.type, Recipient.PERSONAL)
+        self.assertEqual(message_to_hamlet.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
     def test_update_realm_sponsorship_status(self) -> None:
         lear = get_realm("lear")
@@ -9332,21 +9203,13 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         [invoice0] = iter(stripe.Invoice.list(customer=stripe_customer.id))
 
         [invoice_item0, invoice_item1] = iter(invoice0.lines)
-        invoice_item_params = {
-            "amount": -2000,
-            "description": "$20.00/month new customer discount",
-            "quantity": 1,
-        }
-        for key, value in invoice_item_params.items():
-            self.assertEqual(invoice_item0[key], value)
+        self.assertEqual(invoice_item0.amount, -2000)
+        self.assertEqual(invoice_item0.description, "$20.00/month new customer discount")
+        self.assertEqual(invoice_item0.quantity, 1)
 
-        invoice_item_params = {
-            "amount": realm_user_count * 3.5 * 100,
-            "description": "Zulip Basic",
-            "quantity": realm_user_count,
-        }
-        for key, value in invoice_item_params.items():
-            self.assertEqual(invoice_item1[key], value)
+        self.assertEqual(invoice_item1.amount, realm_user_count * 3.5 * 100)
+        self.assertEqual(invoice_item1.description, "Zulip Basic")
+        self.assertEqual(invoice_item1.quantity, realm_user_count)
 
     @responses.activate
     @mock_stripe()
@@ -9429,28 +9292,20 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         [invoice0, _invoice1] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
 
         [_invoice_item0, invoice_item1, invoice_item2] = iter(invoice0.lines)
-        invoice_item_params = {
-            "amount": 16 * 3.5 * 100,
-            "description": "Zulip Basic - renewal",
-            "quantity": 16,
-            "period": {
-                "start": datetime_to_timestamp(self.next_month),
-                "end": datetime_to_timestamp(add_months(self.next_month, 1)),
-            },
-        }
-        for key, value in invoice_item_params.items():
-            self.assertEqual(invoice_item2[key], value)
+        self.assertEqual(invoice_item2.amount, 16 * 3.5 * 100)
+        self.assertEqual(invoice_item2.description, "Zulip Basic - renewal")
+        self.assertEqual(invoice_item2.quantity, 16)
+        self.assertEqual(invoice_item2.period["start"], datetime_to_timestamp(self.next_month))
+        self.assertEqual(
+            invoice_item2.period["end"], datetime_to_timestamp(add_months(self.next_month, 1))
+        )
 
-        invoice_item_params = {
-            "description": "Additional Zulip Basic license",
-            "quantity": 5,
-            "period": {
-                "start": datetime_to_timestamp(self.now + timedelta(days=2)),
-                "end": datetime_to_timestamp(self.next_month),
-            },
-        }
-        for key, value in invoice_item_params.items():
-            self.assertEqual(invoice_item1[key], value)
+        self.assertEqual(invoice_item1.description, "Additional Zulip Basic license")
+        self.assertEqual(invoice_item1.quantity, 5)
+        self.assertEqual(
+            invoice_item1.period["start"], datetime_to_timestamp(self.now + timedelta(days=2))
+        )
+        self.assertEqual(invoice_item1.period["end"], datetime_to_timestamp(self.next_month))
 
         # Verify Zulip team receives mail for the next cycle.
         invoice_plans_as_needed(add_months(self.next_month, 1))
@@ -9532,21 +9387,13 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
         [invoice0] = iter(stripe.Invoice.list(customer=stripe_customer.id))
 
         [invoice_item0, invoice_item1] = iter(invoice0.lines)
-        invoice_item_params = {
-            "amount": -2000 * 12,
-            "description": "$20.00/month new customer discount",
-            "quantity": 1,
-        }
-        for key, value in invoice_item_params.items():
-            self.assertEqual(invoice_item0[key], value)
+        self.assertEqual(invoice_item0.amount, -2000 * 12)
+        self.assertEqual(invoice_item0.description, "$20.00/month new customer discount")
+        self.assertEqual(invoice_item0.quantity, 1)
 
-        invoice_item_params = {
-            "amount": licenses * 80 * 100,
-            "description": "Zulip Business - renewal",
-            "quantity": licenses,
-        }
-        for key, value in invoice_item_params.items():
-            self.assertEqual(invoice_item1[key], value)
+        self.assertEqual(invoice_item1.amount, licenses * 80 * 100)
+        self.assertEqual(invoice_item1.description, "Zulip Business - renewal")
+        self.assertEqual(invoice_item1.quantity, licenses)
 
 
 @activate_push_notification_service()
@@ -10918,21 +10765,13 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         [invoice0] = iter(stripe.Invoice.list(customer=stripe_customer.id))
 
         [invoice_item0, invoice_item1] = iter(invoice0.lines)
-        invoice_item_params = {
-            "amount": -2000,
-            "description": "$20.00/month new customer discount",
-            "quantity": 1,
-        }
-        for key, value in invoice_item_params.items():
-            self.assertEqual(invoice_item0[key], value)
+        self.assertEqual(invoice_item0.amount, -2000)
+        self.assertEqual(invoice_item0.description, "$20.00/month new customer discount")
+        self.assertEqual(invoice_item0.quantity, 1)
 
-        invoice_item_params = {
-            "amount": server_user_count * 3.5 * 100,
-            "description": "Zulip Basic",
-            "quantity": server_user_count,
-        }
-        for key, value in invoice_item_params.items():
-            self.assertEqual(invoice_item1[key], value)
+        self.assertEqual(invoice_item1.amount, server_user_count * 3.5 * 100)
+        self.assertEqual(invoice_item1.description, "Zulip Basic")
+        self.assertEqual(invoice_item1.quantity, server_user_count)
 
         self.assertEqual(invoice0.amount_due, server_user_count * 3.5 * 100 - 2000)
         self.assertEqual(invoice0.status, "paid")
@@ -11021,28 +10860,20 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         [invoice0, _invoice1] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
 
         [_invoice_item0, invoice_item1, invoice_item2] = iter(invoice0.lines)
-        invoice_item_params = {
-            "amount": server_user_count * 3.5 * 100,
-            "description": "Zulip Basic - renewal",
-            "quantity": server_user_count,
-            "period": {
-                "start": datetime_to_timestamp(self.next_month),
-                "end": datetime_to_timestamp(add_months(self.next_month, 1)),
-            },
-        }
-        for key, value in invoice_item_params.items():
-            self.assertEqual(invoice_item2[key], value)
+        self.assertEqual(invoice_item2.amount, server_user_count * 3.5 * 100)
+        self.assertEqual(invoice_item2.description, "Zulip Basic - renewal")
+        self.assertEqual(invoice_item2.quantity, server_user_count)
+        self.assertEqual(invoice_item2.period.start, datetime_to_timestamp(self.next_month))
+        self.assertEqual(
+            invoice_item2.period.end, datetime_to_timestamp(add_months(self.next_month, 1))
+        )
 
-        invoice_item_params = {
-            "description": "Additional Zulip Basic license",
-            "quantity": 5,
-            "period": {
-                "start": datetime_to_timestamp(self.now + timedelta(days=2)),
-                "end": datetime_to_timestamp(self.next_month),
-            },
-        }
-        for key, value in invoice_item_params.items():
-            self.assertEqual(invoice_item1[key], value)
+        self.assertEqual(invoice_item1.description, "Additional Zulip Basic license")
+        self.assertEqual(invoice_item1.quantity, 5)
+        self.assertEqual(
+            invoice_item1.period.start, datetime_to_timestamp(self.now + timedelta(days=2))
+        )
+        self.assertEqual(invoice_item1.period.end, datetime_to_timestamp(self.next_month))
 
         # Verify Zulip team receives mail for the next cycle.
         invoice_plans_as_needed(add_months(self.next_month, 1))
@@ -11171,18 +11002,10 @@ class TestRemoteServerBillingFlow(StripeTestCase, RemoteServerTestCase):
         [invoice0] = iter(stripe.Invoice.list(customer=stripe_customer.id))
 
         [invoice_item0, invoice_item1] = iter(invoice0.lines)
-        invoice_item_params = {
-            "amount": -2000 * 12,
-            "description": "$20.00/month new customer discount",
-            "quantity": 1,
-        }
-        for key, value in invoice_item_params.items():
-            self.assertEqual(invoice_item0[key], value)
+        self.assertEqual(invoice_item0.amount, -2000 * 12)
+        self.assertEqual(invoice_item0.description, "$20.00/month new customer discount")
+        self.assertEqual(invoice_item0.quantity, 1)
 
-        invoice_item_params = {
-            "amount": licenses * 80 * 100,
-            "description": "Zulip Business - renewal",
-            "quantity": licenses,
-        }
-        for key, value in invoice_item_params.items():
-            self.assertEqual(invoice_item1[key], value)
+        self.assertEqual(invoice_item1.amount, licenses * 80 * 100)
+        self.assertEqual(invoice_item1.description, "Zulip Business - renewal")
+        self.assertEqual(invoice_item1.quantity, licenses)

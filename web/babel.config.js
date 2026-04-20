@@ -1,6 +1,6 @@
 // @ts-check
 
-/** @type {import("babel-plugin-formatjs/types").Options} */
+/** @type {Parameters<typeof import("babel-plugin-formatjs").default>[1]} */
 const formatJsOptions = {
     additionalFunctionNames: ["$t", "$t_html"],
     overrideIdFn: (_id, defaultMessage) => defaultMessage ?? "",
@@ -8,13 +8,14 @@ const formatJsOptions = {
 
 /** @type {import("@babel/preset-env").Options} */
 const presetEnvOptions = {
-    corejs: "3.48",
+    corejs: "3.49",
     shippedProposals: true,
     useBuiltIns: "usage",
 };
 
 /** @type {import("@babel/core").TransformOptions} */
-export default {
+const config = {
     plugins: [["formatjs", formatJsOptions]],
     presets: [["@babel/preset-env", presetEnvOptions], "@babel/typescript"],
 };
+export default config;

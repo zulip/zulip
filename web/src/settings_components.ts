@@ -18,6 +18,7 @@ import type {
 } from "./group_permission_settings.ts";
 import * as group_setting_pill from "./group_setting_pill.ts";
 import {$t, get_language_list_columns} from "./i18n.ts";
+import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import {
     realm_default_settings_schema,
@@ -484,7 +485,7 @@ export function read_field_data_from_form(
     const field_types = realm.custom_profile_field_types;
 
     // Only the following field types support associated field data.
-    if (field_type_id === field_types.SELECT.id) {
+    if (field_type_id === field_types.DROPDOWN.id) {
         return read_select_field_data_from_form($profile_field_form, old_field_data);
     } else if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
         const parsed_old_field_data = old_field_data
@@ -1942,6 +1943,13 @@ export function get_group_assigned_realm_permissions(group: UserGroup): {
     } of settings_config.realm_group_permission_settings) {
         const assigned_permission_objects = [];
         for (const setting_name of settings) {
+            if (
+                setting_name === "workplace_users_group" &&
+                (!page_params.development_environment ||
+                    !page_params.non_workplace_pricing_eligible)
+            ) {
+                continue;
+            }
             const setting_value = realm[z.keyof(realm_schema).parse("realm_" + setting_name)];
             const can_edit = settings_config.owner_editable_realm_group_permission_settings.has(
                 setting_name,
@@ -2103,7 +2111,7 @@ export let resize_textareas_in_subsection = ($subsection: JQuery): void => {
     }
 
     $textareas.each(function () {
-        const $el = $<HTMLTextAreaElement>(this);
+        const $el = $(this);
 
         const min_rows = 2;
         const max_rows = 5;

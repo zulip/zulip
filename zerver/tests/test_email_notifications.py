@@ -10,7 +10,6 @@ from django.test import override_settings
 from django_auth_ldap.config import LDAPSearch
 
 from zerver.lib.email_notifications import (
-    convert_html_to_markdown,
     enqueue_welcome_emails,
     get_onboarding_email_schedule,
     send_account_registered_email,
@@ -29,6 +28,7 @@ class TestCustomEmails(ZulipTestCase):
         email_subject = "subject_test"
         reply_to = "reply_to_test"
         from_name = "from_name_test"
+        campaign_name = "test_campaign"
 
         with tempfile.NamedTemporaryFile() as markdown_template:
             markdown_template.write(b"# Some heading\n\nSome content\n{{ realm_name }}")
@@ -41,6 +41,7 @@ class TestCustomEmails(ZulipTestCase):
                     "reply_to": reply_to,
                     "subject": email_subject,
                     "from_name": from_name,
+                    "campaign_name": campaign_name,
                 },
             )
         self.assert_length(mail.outbox, 1)
@@ -62,6 +63,7 @@ class TestCustomEmails(ZulipTestCase):
         email_subject = "subject_test"
         reply_to = "reply_to_test"
         from_name = "from_name_test"
+        campaign_name = "test_campaign"
         markdown_template_path = "templates/corporate/policies/index.md"
         send_custom_server_email(
             remote_servers=RemoteZulipServer.objects.all(),
@@ -71,6 +73,7 @@ class TestCustomEmails(ZulipTestCase):
                 "reply_to": reply_to,
                 "subject": email_subject,
                 "from_name": from_name,
+                "campaign_name": campaign_name,
             },
         )
         self.assert_length(mail.outbox, 1)
@@ -95,6 +98,7 @@ class TestCustomEmails(ZulipTestCase):
 
     def test_send_custom_email_headers(self) -> None:
         hamlet = self.example_user("hamlet")
+        campaign_name = "test_campaign_headers"
         markdown_template_path = (
             "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.md"
         )
@@ -103,6 +107,7 @@ class TestCustomEmails(ZulipTestCase):
             dry_run=False,
             options={
                 "markdown_template_path": markdown_template_path,
+                "campaign_name": campaign_name,
             },
         )
         self.assert_length(mail.outbox, 1)
@@ -121,6 +126,7 @@ class TestCustomEmails(ZulipTestCase):
             dry_run=False,
             options={
                 "markdown_template_path": markdown_template_path,
+                "campaign_name": "test_campaign_context_1",
             },
         )
         self.assert_length(mail.outbox, 1)
@@ -144,6 +150,7 @@ class TestCustomEmails(ZulipTestCase):
             dry_run=False,
             options={
                 "markdown_template_path": markdown_template_path,
+                "campaign_name": "test_campaign_context_2",
             },
             add_context=add_context,
         )
@@ -155,6 +162,7 @@ class TestCustomEmails(ZulipTestCase):
 
     def test_send_custom_email_no_argument(self) -> None:
         hamlet = self.example_user("hamlet")
+        campaign_name = "test_campaign"
         from_name = "from_name_test"
         email_subject = "subject_test"
         markdown_template_path = (
@@ -171,6 +179,7 @@ class TestCustomEmails(ZulipTestCase):
             options={
                 "markdown_template_path": markdown_template_path,
                 "from_name": from_name,
+                "campaign_name": campaign_name,
             },
         )
 
@@ -182,6 +191,7 @@ class TestCustomEmails(ZulipTestCase):
             options={
                 "markdown_template_path": markdown_template_path,
                 "subject": email_subject,
+                "campaign_name": campaign_name,
             },
         )
 
@@ -192,6 +202,7 @@ class TestCustomEmails(ZulipTestCase):
         markdown_template_path = (
             "zerver/tests/fixtures/email/custom_emails/email_base_headers_test.md"
         )
+        campaign_name = "test_campaign"
 
         from zerver.lib.send_email import DoubledEmailArgumentError
 
@@ -203,6 +214,7 @@ class TestCustomEmails(ZulipTestCase):
             options={
                 "markdown_template_path": markdown_template_path,
                 "subject": email_subject,
+                "campaign_name": campaign_name,
             },
         )
 
@@ -214,6 +226,7 @@ class TestCustomEmails(ZulipTestCase):
             options={
                 "markdown_template_path": markdown_template_path,
                 "from_name": from_name,
+                "campaign_name": campaign_name,
             },
         )
 
@@ -223,6 +236,7 @@ class TestCustomEmails(ZulipTestCase):
         reply_to = "reply_to_test"
         from_name = "from_name_test"
         markdown_template_path = "templates/zerver/tests/markdown/test_nested_code_blocks.md"
+        campaign_name = "test_campaign"
         with patch("builtins.print") as _:
             send_custom_email(
                 UserProfile.objects.filter(id=hamlet.id),
@@ -232,6 +246,7 @@ class TestCustomEmails(ZulipTestCase):
                     "reply_to": reply_to,
                     "subject": email_subject,
                     "from_name": from_name,
+                    "campaign_name": campaign_name,
                 },
             )
             self.assert_length(mail.outbox, 0)
@@ -629,8 +644,23 @@ class TestCustomWelcomeEmailSender(ZulipTestCase):
             self.assertEqual(email_data["from_address"], email)
 
 
-class TestHtmlToMarkdown(ZulipTestCase):
-    def test_html_to_markdown_unicode(self) -> None:
-        self.assertEqual(
-            convert_html_to_markdown("a rose is not a ros&eacute;"), "a rose is not a rosé"
-        )
+class TestUtmParamsInEmailLinks(ZulipTestCase):
+    def test_add_utm_paras_to_links(self) -> None:
+        from zerver.lib.send_email import add_utm_params_to_links
+
+        campaign_name = "test_campaign"
+
+        html = '<a href="https://zulip.com/pricing">Pricing</a>'
+        expected = '<a href="https://zulip.com/pricing?utm_source=newsletter&amp;utm_medium=email&amp;utm_campaign=test_campaign">Pricing</a>'
+        self.assertEqual(add_utm_params_to_links(html, campaign_name), expected)
+
+        html_frag = '<a href="https://zulip.com/help#topic">Help</a>'
+        expected_frag = '<a href="https://zulip.com/help?utm_source=newsletter&amp;utm_medium=email&amp;utm_campaign=test_campaign#topic">Help</a>'
+        self.assertEqual(add_utm_params_to_links(html_frag, campaign_name), expected_frag)
+
+        html_ext = '<a href="https://github.com/zulip/zulip">GitHub</a>'
+        self.assertEqual(add_utm_params_to_links(html_ext, campaign_name), html_ext)
+
+        html_query = '<a href="https://blog.zulip.com/?page=2">Blog</a>'
+        expected_query = '<a href="https://blog.zulip.com/?page=2&amp;utm_source=newsletter&amp;utm_medium=email&amp;utm_campaign=test_campaign">Blog</a>'
+        self.assertEqual(add_utm_params_to_links(html_query, campaign_name), expected_query)

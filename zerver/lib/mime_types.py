@@ -28,8 +28,10 @@ AUDIO_INLINE_MIME_TYPES = [
     "audio/flac",
     "audio/mp4",
     "audio/mpeg",
+    "audio/vnd.wave",
     "audio/wav",
     "audio/webm",
+    "audio/x-wav",
 ]
 
 INLINE_MIME_TYPES = [

@@ -10,7 +10,7 @@ import * as bot_data from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import {buddy_list} from "./buddy_list.ts";
 import * as channel_folders from "./channel_folders.ts";
-import * as compose_call from "./compose_call.ts";
+import {compose_call_session_manager} from "./compose_call_session.ts";
 import * as compose_call_ui from "./compose_call_ui.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
@@ -200,12 +200,14 @@ export function dispatch_normal_event(event) {
         case "has_zoom_token":
             current_user.has_zoom_token = event.value;
             if (event.value) {
-                for (const callback of compose_call.oauth_call_provider_token_callbacks
-                    .get("zoom")
-                    .values()) {
-                    callback();
-                }
-                compose_call.oauth_call_provider_token_callbacks.get("zoom").clear();
+                compose_call_session_manager.run_and_clear_callbacks_for_provider("zoom");
+            }
+            break;
+
+        case "has_webex_token":
+            current_user.has_webex_token = event.value;
+            if (event.value) {
+                compose_call_session_manager.run_and_clear_callbacks_for_provider("webex");
             }
             break;
 
@@ -518,12 +520,21 @@ export function dispatch_normal_event(event) {
             break;
 
         case "realm_emoji":
-            // The authoritative data source is here.
-            emoji.update_emojis(event.realm_emoji);
-
-            // And then let other widgets know.
-            settings_emoji.populate_emoji();
-            emoji_picker.rebuild_catalog();
+            switch (event.op) {
+                case "add":
+                    emoji.update_emojis(event.emoji);
+                    settings_emoji.populate_emoji();
+                    emoji_picker.rebuild_catalog();
+                    break;
+                case "update_one":
+                    emoji.update_one_emoji(event.emoji_id, event.data);
+                    settings_emoji.populate_emoji();
+                    emoji_picker.rebuild_catalog();
+                    break;
+                default:
+                    blueslip.error("Unexpected event type realm_emoji/" + event.op);
+                    break;
+            }
             break;
 
         case "realm_export":
@@ -549,42 +560,41 @@ export function dispatch_normal_event(event) {
             settings_playgrounds.populate_playgrounds(realm.realm_playgrounds);
             break;
 
-        case "realm_domains":
-            {
-                let i;
-                switch (event.op) {
-                    case "add":
-                        realm.realm_domains.push(event.realm_domain);
-                        settings_org.populate_realm_domains_label(realm.realm_domains);
-                        settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
-                        break;
-                    case "change":
-                        for (i = 0; i < realm.realm_domains.length; i += 1) {
-                            if (realm.realm_domains[i].domain === event.realm_domain.domain) {
-                                realm.realm_domains[i].allow_subdomains =
-                                    event.realm_domain.allow_subdomains;
-                                break;
-                            }
+        case "realm_domains": {
+            let i;
+            switch (event.op) {
+                case "add":
+                    realm.realm_domains.push(event.realm_domain);
+                    settings_org.populate_realm_domains_label(realm.realm_domains);
+                    settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
+                    break;
+                case "change":
+                    for (i = 0; i < realm.realm_domains.length; i += 1) {
+                        if (realm.realm_domains[i].domain === event.realm_domain.domain) {
+                            realm.realm_domains[i].allow_subdomains =
+                                event.realm_domain.allow_subdomains;
+                            break;
                         }
-                        settings_org.populate_realm_domains_label(realm.realm_domains);
-                        settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
-                        break;
-                    case "remove":
-                        for (i = 0; i < realm.realm_domains.length; i += 1) {
-                            if (realm.realm_domains[i].domain === event.domain) {
-                                realm.realm_domains.splice(i, 1);
-                                break;
-                            }
+                    }
+                    settings_org.populate_realm_domains_label(realm.realm_domains);
+                    settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
+                    break;
+                case "remove":
+                    for (i = 0; i < realm.realm_domains.length; i += 1) {
+                        if (realm.realm_domains[i].domain === event.domain) {
+                            realm.realm_domains.splice(i, 1);
+                            break;
                         }
-                        settings_org.populate_realm_domains_label(realm.realm_domains);
-                        settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
-                        break;
-                    default:
-                        blueslip.error("Unexpected event type realm_domains/" + event.op);
-                        break;
-                }
+                    }
+                    settings_org.populate_realm_domains_label(realm.realm_domains);
+                    settings_realm_domains.populate_realm_domains_table(realm.realm_domains);
+                    break;
+                default:
+                    blueslip.error("Unexpected event type realm_domains/" + event.op);
+                    break;
             }
             break;
+        }
 
         case "realm_user_settings_defaults": {
             realm_user_settings_defaults[event.property] = event.value;
@@ -754,7 +764,6 @@ export function dispatch_normal_event(event) {
                             compose_state.set_selected_recipient_id("");
                             compose_recipient.on_compose_select_recipient_update();
                         }
-                        settings_streams.update_default_streams_table();
                         stream_data.remove_default_stream(stream_id);
                         if (realm.realm_moderation_request_channel_id === stream_id) {
                             settings_org.sync_realm_settings("moderation_request_channel_id");
@@ -778,6 +787,7 @@ export function dispatch_normal_event(event) {
                             stream_id,
                         );
                     }
+                    settings_streams.update_default_streams_table();
                     inbox_ui.complete_rerender();
                     recent_view_ui.complete_rerender();
                     stream_list.update_subscribe_to_more_streams_link();

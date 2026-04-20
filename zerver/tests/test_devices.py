@@ -28,3 +28,18 @@ class TestDeviceRegistration(ZulipTestCase):
         self.assert_json_success(result)
 
         self.assertEqual(Device.objects.count(), 0)
+
+    def test_remove_device_on_api_key_regeneration(self) -> None:
+        user = self.example_user("hamlet")
+
+        for _ in range(3):
+            result = self.api_post(user, "/api/v1/register_client_device")
+            self.assert_json_success(result)
+
+        self.assertEqual(Device.objects.filter(user=user).count(), 3)
+
+        # Verify all of the user's Device records deleted on API key
+        # regeneration, to stop sending E2EE push notifications.
+        result = self.api_post(user, "/api/v1/users/me/api_key/regenerate")
+        self.assert_json_success(result)
+        self.assertEqual(Device.objects.filter(user=user).count(), 0)

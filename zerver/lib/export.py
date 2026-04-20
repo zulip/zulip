@@ -95,7 +95,7 @@ from zerver.models.presence import PresenceSequence
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import DEFAULT_REALM_EXPORT_TYPE_SLUG, get_fake_email_domain, get_realm
 from zerver.models.saved_snippets import SavedSnippet
-from zerver.models.users import ExternalAuthID, get_system_bot, is_cross_realm_bot_email
+from zerver.models.users import ExternalAuthID, get_system_bot
 
 if TYPE_CHECKING:
     from mypy_boto3_s3.service_resource import Bucket, Object
@@ -1079,26 +1079,6 @@ def get_realm_config() -> Config:
     # Some of these tables are intermediate "tables" that we
     # create only for the export.  Think of them as similar to views.
 
-    user_subscription_config = Config(
-        table="_user_subscription",
-        model=Subscription,
-        normal_parent=user_profile_config,
-        filter_args={"recipient__type": Recipient.PERSONAL},
-        include_rows="user_profile_id__in",
-        # This is merely for fetching Subscriptions to users' own PERSONAL Recipient.
-        # It is just "glue" data for internal data model consistency purposes
-        # with no user-specific information.
-        limit_to_consenting_users=False,
-        use_iterator=False,
-    )
-
-    Config(
-        table="_user_recipient",
-        model=Recipient,
-        virtual_parent=user_subscription_config,
-        id_source=("_user_subscription", "recipient"),
-    )
-
     stream_config = Config(
         table="zerver_stream",
         model=Stream,
@@ -1141,7 +1121,6 @@ def get_realm_config() -> Config:
         table="zerver_recipient",
         virtual_parent=realm_config,
         concat_and_destroy=[
-            "_user_recipient",
             "_stream_recipient",
             "_huddle_recipient",
         ],
@@ -1152,7 +1131,6 @@ def get_realm_config() -> Config:
         table="zerver_subscription",
         virtual_parent=realm_config,
         concat_and_destroy=[
-            "_user_subscription",
             "_stream_subscription",
             "_huddle_subscription",
         ],
@@ -1445,16 +1423,11 @@ def custom_fetch_user_profile_cross_realm(response: TableData, context: Context)
         bot_default_email = bot_name_to_default_email[bot_name]
         bot_user_id = get_system_bot(bot_email, internal_realm.id).id
 
-        try:
-            recipient_id = Recipient.objects.get(type_id=bot_user_id, type=Recipient.PERSONAL).id
-        except Recipient.DoesNotExist:
-            recipient_id = None
-
         crossrealm_bots.append(
             dict(
                 email=bot_default_email,
                 id=bot_user_id,
-                recipient_id=recipient_id,
+                recipient_id=None,
             ),
         )
     response["zerver_userprofile_crossrealm"] = crossrealm_bots
@@ -1567,56 +1540,70 @@ def custom_fetch_direct_message_groups(response: TableData, context: Context) ->
         )
         recipient_filter = Q(recipient_id__in=exportable_direct_message_group_recipient_ids)
 
-    # Now we fetch all the Subscription objects to the exportable DireMessageGroups in the realm.
-    realm_direct_message_group_subs = (
-        Subscription.objects.select_related("recipient")
-        .filter(
+    # Find the set of recipient ids of DirectMessageGroups that
+    # contain at least one user from this realm.
+    #
+    # We restrict discovery to subscriptions whose user_profile is in
+    # this realm. Cross-realm system bots (notification-bot, welcome-bot,
+    # etc.) are part of the exported user_profile_ids set but
+    # participate in DirectMessageGroups across every realm on the
+    # server; discovering through their subscriptions would pull in
+    # every 1:1 DM with a system bot on the server, the vast majority
+    # of which have no connection to this realm.  The bots' own
+    # Subscription rows are still exported below via the output query,
+    # which is keyed on user_profile_ids rather than realm membership.
+    realm_direct_message_group_recipient_ids = set(
+        Subscription.objects.filter(
             recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+            user_profile__realm_id=realm.id,
             user_profile__in=user_profile_ids,
         )
         .filter(recipient_filter)
+        .distinct("recipient_id")
+        .values_list("recipient_id", flat=True)
     )
-    realm_direct_message_group_recipient_ids = {
-        sub.recipient_id for sub in realm_direct_message_group_subs
-    }
 
-    # Mark all Direct Message groups whose recipient ID contains a cross-realm user.
-    unsafe_direct_message_group_recipient_ids = set()
-    for sub in Subscription.objects.select_related("user_profile").filter(
-        recipient__in=realm_direct_message_group_recipient_ids
-    ):
-        if sub.user_profile.realm_id != realm.id and not is_cross_realm_bot_email(
-            sub.user_profile.delivery_email
-        ):
-            # In almost every case the other realm will be zulip.com
-            unsafe_direct_message_group_recipient_ids.add(sub.recipient_id)
-
-    # Now filter down to just those direct message groups that are
-    # entirely within the realm.
+    # A DirectMessageGroup is safe to export only if every subscriber
+    # is a UserProfile we're already exporting -- either a user in
+    # this realm (including mirror dummies) or a cross-realm system
+    # bot.  Otherwise, importing the group on the other end would
+    # require a UserProfile we aren't providing. (As of 2025, true
+    # cross-realm messages not involving system bots cannot exist
+    # without a bug or fork of Zulip.)
     #
-    # This is important for ensuring that the User objects needed to
-    # import it on the other end exist (since we're only exporting the
-    # users from this realm), at the cost of losing any true
-    # cross-realm messages. (As of 2025, true cross-realm messages,
-    # not involving system bots cannot exist without a bug or fork of
-    # Zulip).
-    direct_message_group_subs = [
-        sub
-        for sub in realm_direct_message_group_subs
-        if sub.recipient_id not in unsafe_direct_message_group_recipient_ids
-    ]
-    direct_message_group_recipient_ids = {sub.recipient_id for sub in direct_message_group_subs}
-    direct_message_group_ids = {sub.recipient.type_id for sub in direct_message_group_subs}
-
-    direct_message_group_subscription_dicts = make_raw(direct_message_group_subs)
-    direct_message_group_recipients = make_raw(
-        Recipient.objects.filter(id__in=direct_message_group_recipient_ids)
+    # The union of those three cases is exactly user_profile_ids, so
+    # the check reduces to "this subscription's user is not in the
+    # exported set". Expressing it that way lets Postgres answer it
+    # from the Subscription table alone, with no JOIN to UserProfile.
+    unsafe_direct_message_group_recipient_ids = set(
+        Subscription.objects.filter(
+            recipient_id__in=realm_direct_message_group_recipient_ids,
+        )
+        .exclude(user_profile_id__in=user_profile_ids)
+        .distinct("recipient_id")
+        .values_list("recipient_id", flat=True)
     )
 
-    response["_huddle_recipient"] = direct_message_group_recipients
-    response["_huddle_subscription"] = direct_message_group_subscription_dicts
+    direct_message_group_recipient_ids = (
+        realm_direct_message_group_recipient_ids - unsafe_direct_message_group_recipient_ids
+    )
+    direct_message_group_ids = set(
+        Recipient.objects.filter(id__in=direct_message_group_recipient_ids).values_list(
+            "type_id", flat=True
+        )
+    )
+
+    response["_huddle_recipient"] = make_raw(
+        Recipient.objects.filter(id__in=direct_message_group_recipient_ids).iterator()
+    )
+    response["_huddle_subscription"] = make_raw(
+        Subscription.objects.filter(
+            recipient_id__in=direct_message_group_recipient_ids,
+            user_profile_id__in=user_profile_ids,
+        ).iterator()
+    )
     response["zerver_huddle"] = make_raw(
-        DirectMessageGroup.objects.filter(id__in=direct_message_group_ids)
+        DirectMessageGroup.objects.filter(id__in=direct_message_group_ids).iterator()
     )
 
 
@@ -1895,30 +1882,6 @@ def export_partial_message_files(
             )
 
             message_queries.append(messages_we_received_in_protected_history_streams)
-
-        # The above query is missing some messages that consenting
-        # users have access to, namely, direct messages sent by one
-        # of the users in our export to another user (since the only
-        # subscriber to a Recipient object for Recipient.PERSONAL is
-        # the recipient, not the sender). The `consented_user_ids`
-        # list has precisely those users whose Recipient.PERSONAL
-        # recipient ID was already present in recipient_ids_for_us
-        # above.
-        ids_of_non_exported_possible_recipients = ids_of_our_possible_senders - consented_user_ids
-
-        recipients_for_them = Recipient.objects.filter(
-            type=Recipient.PERSONAL, type_id__in=ids_of_non_exported_possible_recipients
-        ).values("id")
-        recipient_ids_for_them = get_ids(recipients_for_them)
-
-        messages_we_sent_to_them = Message.objects.filter(
-            # Uses index: zerver_message_realm_sender_recipient
-            realm_id=realm.id,
-            sender__in=consented_user_ids,
-            recipient__in=recipient_ids_for_them,
-        )
-
-        message_queries.append(messages_we_sent_to_them)
 
     all_message_ids: set[int] = set()
 
@@ -2397,7 +2360,7 @@ def export_avatars_from_local(
 
 def export_realm_icons(realm: Realm, local_dir: Path, output_dir: Path) -> None:
     records = []
-    dir_relative_path = zerver.lib.upload.upload_backend.realm_avatar_and_logo_path(realm)
+    dir_relative_path = zerver.lib.upload.realm_avatar_and_logo_path(realm)
     icons_wildcard = os.path.join(local_dir, dir_relative_path, "*")
     for icon_absolute_path in glob.glob(icons_wildcard):
         icon_file_name = os.path.basename(icon_absolute_path)
@@ -2880,7 +2843,7 @@ def export_messages_single_user(
 
     my_subscriptions = Subscription.objects.filter(
         user_profile=user_profile,
-        recipient__type__in=[Recipient.PERSONAL, Recipient.DIRECT_MESSAGE_GROUP],
+        recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
     )
     my_recipient_ids = [sub.recipient_id for sub in my_subscriptions]
     messages_to_me = Message.objects.filter(
@@ -3095,7 +3058,7 @@ def export_realm_wrapper(
             return None
 
         print("Uploading export tarball...")
-        public_url = zerver.lib.upload.upload_backend.upload_export_tarball(
+        public_url = zerver.lib.upload.upload_export_tarball(
             export_row.realm, tarball_path, percent_callback=percent_callback
         )
         print(f"\nUploaded to {public_url}")
@@ -3148,7 +3111,7 @@ def get_realm_exports_serialized(realm: Realm) -> list[dict[str, Any]]:
 
         if export.status == RealmExport.SUCCEEDED:
             assert export_path is not None
-            export_url = zerver.lib.upload.upload_backend.get_export_tarball_url(realm, export_path)
+            export_url = zerver.lib.upload.get_export_tarball_url(realm, export_path)
 
         deleted_timestamp = (
             datetime_to_timestamp(export.date_deleted) if export.date_deleted else None

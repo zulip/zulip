@@ -17,7 +17,7 @@ export function initialize(): void {
     popover_menus.register_popover_menu("#personal-menu", {
         theme: "popover-menu",
         placement: "bottom",
-        offset: [-50, 0],
+        offset: popover_menus.NAVBAR_POPOVER_OFFSET,
         // The strategy: "fixed"; and eventlisteners modifier option
         // ensure that the personal menu does not modify its position
         // or disappear when user zooms the page.

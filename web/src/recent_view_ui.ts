@@ -359,6 +359,20 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
         return true;
     }
 
+    // If the target row is beyond what's currently rendered but
+    // exists in the full list, render more rows to include it.
+    // `get_min_load_count` ensures enough rows are rendered based
+    // on `row_focus`.
+    if (
+        row >= 0 &&
+        row >= topics_widget.get_rendered_list().length &&
+        row < topics_widget.get_current_list().length &&
+        !topics_widget.all_rendered()
+    ) {
+        row_focus = row;
+        topics_widget.render();
+    }
+
     const $topic_rows = $("#recent-view-content-tbody tr");
     if ($topic_rows.length === 0 || row < 0 || row >= $topic_rows.length) {
         row_focus = 0;
@@ -487,7 +501,18 @@ export function revive_current_focus(): boolean {
                 const last_visited_topic_index = current_list.findIndex(
                     (topic) => topic.last_msg_id === topic_last_msg_id,
                 );
-                if (last_visited_topic_index !== -1) {
+                // Only restore focus to the topic if it hasn't moved
+                // too far from where the user left off. A topic can
+                // shift significantly due to new messages arriving
+                // (sorted by time), topic renames (sorted by topic),
+                // or marking as read (sorted by unread count), which
+                // would disorient the user by jumping them far from
+                // their previous scroll position.
+                const max_focus_shift = 10;
+                if (
+                    last_visited_topic_index !== -1 &&
+                    Math.abs(last_visited_topic_index - row_focus) <= max_focus_shift
+                ) {
                     row_focus = last_visited_topic_index;
                 }
             }
@@ -807,8 +832,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
         if (!is_group) {
             const user_id = Number.parseInt(last_msg.to_user_ids, 10);
             const is_deactivated = !people.is_active_user_or_system_bot(user_id);
-            const user = people.get_by_user_id(user_id);
-            if (user.is_bot) {
+            if (people.is_valid_bot_user(user_id)) {
                 // We display the bot icon rather than a user circle for bots.
                 is_bot = true;
             } else {
@@ -1055,7 +1079,7 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
 }
 
 export function bulk_inplace_rerender(row_keys: string[]): void {
-    if (!topics_widget) {
+    if (!topics_widget || !recent_view_util.is_visible()) {
         return;
     }
 
@@ -1094,6 +1118,7 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
     if (processed_count < row_keys.length && was_all_rendered) {
         topics_widget.render(row_keys.length - processed_count);
     }
+    update_unread_sort_header_state();
     setTimeout(revive_current_focus, 0);
 }
 
@@ -1154,6 +1179,7 @@ export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): b
         );
     }
     if (!is_bulk_rerender) {
+        update_unread_sort_header_state();
         setTimeout(revive_current_focus, 0);
     }
     return true;
@@ -1210,6 +1236,10 @@ function show_selected_filters(): void {
             .addClass("button-recent-selected")
             .attr("aria-checked", "true");
     }
+
+    // Toggle class so CSS can hide the unread marker bar when
+    // every visible row is already unread.
+    $("#recent_view").toggleClass("recent-view-filtered-by-unread", filters.has("unread"));
 }
 
 function get_recent_view_filters_params(): {
@@ -1239,7 +1269,7 @@ function setup_dropdown_filters_widget(): void {
     filters_dropdown_widget = new dropdown_widget.DropdownWidget({
         ...views_util.COMMON_DROPDOWN_WIDGET_PARAMS,
         widget_name: "recent-view-filter",
-        item_click_callback: filter_click_handler,
+        item_click_callback: dropdown_filter_click_handler,
         $events_container: $("#recent_view_filter_buttons"),
         default_id: dropdown_filter.value,
     });
@@ -1270,6 +1300,13 @@ function update_recent_view_folder_filter_button(): void {
     );
 }
 
+function hard_redraw_with_scroll_to_top(): void {
+    row_focus = 0;
+    assert(topics_widget !== undefined);
+    topics_widget.hard_redraw();
+    window.scrollTo(0, 0);
+}
+
 function folder_filter_click_handler(
     event: JQuery.ClickEvent,
     dropdown: tippy.Instance,
@@ -1286,8 +1323,7 @@ function folder_filter_click_handler(
     save_filters();
     update_recent_view_folder_filter_button();
 
-    assert(topics_widget !== undefined);
-    topics_widget.hard_redraw();
+    hard_redraw_with_scroll_to_top();
 }
 
 function setup_folder_dropdown_widget(): void {
@@ -1393,10 +1429,68 @@ function unread_count(conversation_data: ConversationData): number {
 function unread_sort(a: ConversationData, b: ConversationData): number {
     const a_unread_count = unread_count(a);
     const b_unread_count = unread_count(b);
+    const a_has_unread = a_unread_count > 0;
+    const b_has_unread = b_unread_count > 0;
+    if (a_has_unread !== b_has_unread) {
+        // Always float conversations with unreads above those without,
+        // regardless of sort direction. list_widget negates the entire
+        // return value in descend mode, so we compensate here.
+        const is_descend = $(".recent-view-unread-sort-header").hasClass("descend");
+        const unread_first = a_has_unread ? -1 : 1;
+        return is_descend ? -unread_first : unread_first;
+    }
     if (a_unread_count !== b_unread_count) {
         return a_unread_count - b_unread_count;
     }
     return a.last_msg_id - b.last_msg_id;
+}
+
+function has_visible_unread_conversation(): boolean {
+    // Fast path: no unreads exist anywhere, so none can be visible.
+    if (unread.get_unread_message_count() === 0) {
+        return false;
+    }
+    assert(topics_widget !== undefined);
+    // When the unread filter is active, every row in the filtered
+    // list is unread by construction, so any non-empty list suffices.
+    if (filters.has("unread")) {
+        return topics_widget.get_current_list().length > 0;
+    }
+    // Iterate the widget's already-filtered list so we avoid
+    // re-evaluating `filters_should_hide_row` per topic.
+    for (const topic_data of topics_widget.get_current_list()) {
+        const msg = message_store.get(topic_data.last_msg_id);
+        assert(msg !== undefined);
+        if (message_to_conversation_unread_count(msg) > 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+let last_has_visible_unread_conversation: boolean | undefined;
+
+function update_unread_sort_header_state(): void {
+    if (!topics_widget || !recent_view_util.is_visible()) {
+        return;
+    }
+    const has_visible_unreads = has_visible_unread_conversation();
+    if (has_visible_unreads === last_has_visible_unread_conversation) {
+        return;
+    }
+    last_has_visible_unread_conversation = has_visible_unreads;
+    const $unread_sort_header = $("#recent-view-table-headers .recent-view-unread-sort-header");
+    $unread_sort_header.toggleClass("hidden", !has_visible_unreads);
+    if (!has_visible_unreads && $unread_sort_header.hasClass("active")) {
+        // Fall back to time sort, which is the default, when the
+        // unread sort column is no longer meaningful.
+        $unread_sort_header.removeClass("active descend");
+        $("#recent-view-table-headers .recent-view-last-msg-time-header").addClass(
+            "active descend",
+        );
+        topics_widget.set_reverse_mode(true);
+        topics_widget.sort("numeric", "last_msg_id");
+    }
 }
 
 function topic_offset_to_visible_area($topic_row: JQuery): string | undefined {
@@ -1452,12 +1546,13 @@ function recenter_focus_if_off_screen(): void {
         const topic_center_x = (thead_props.left + thead_props.right) / 2;
         const topic_center_y = (thead_props.bottom + compose_top) / 2;
 
-        const topic_element = document.elementFromPoint(topic_center_x, topic_center_y);
-        if (
-            topic_element === null ||
-            $(topic_element).parents("#recent-view-content-tbody").length === 0
-        ) {
-            // The table is too short for there to be an topic row element
+        const topic_element = views_util.find_element_at_point(
+            topic_center_x,
+            topic_center_y,
+            "#recent-view-content-tbody",
+        );
+        if (topic_element === undefined) {
+            // The table is too short for there to be a topic row element
             // at the center of the table region; in that case, we just
             // select the last element.
             row_focus = $topic_rows.length - 1;
@@ -1477,13 +1572,14 @@ function callback_after_render(): void {
     }
 
     update_load_more_banner();
+    update_unread_sort_header_state();
     setTimeout(() => {
         revive_current_focus();
         is_waiting_for_revive_current_focus = false;
     }, 0);
 }
 
-function filter_click_handler(
+function dropdown_filter_click_handler(
     event: JQuery.ClickEvent,
     dropdown: tippy.Instance,
     widget: DropdownWidget,
@@ -1504,8 +1600,7 @@ function filter_click_handler(
     widget.render();
     save_filters();
 
-    assert(topics_widget !== undefined);
-    topics_widget.hard_redraw();
+    hard_redraw_with_scroll_to_top();
 }
 
 function get_list_data_for_widget(): ConversationData[] {
@@ -2248,7 +2343,9 @@ export function initialize({
         const filter = this.getAttribute("data-filter");
         assert(filter !== null);
         set_filter(filter);
+        row_focus = 0;
         update_filters_view();
+        window.scrollTo(0, 0);
         revive_current_focus();
     });
 

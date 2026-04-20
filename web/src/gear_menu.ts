@@ -98,7 +98,7 @@ export function initialize(): void {
     popover_menus.register_popover_menu("#gear-menu", {
         theme: "popover-menu",
         placement: "bottom",
-        offset: [-50, 0],
+        offset: popover_menus.NAVBAR_POPOVER_OFFSET,
         popperOptions: {
             strategy: "fixed",
             modifiers: [

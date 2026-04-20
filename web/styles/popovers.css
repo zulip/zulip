@@ -236,24 +236,30 @@
 
 .hidden-remove-button {
     opacity: 0;
-    visibility: hidden;
-    transition:
-        opacity 0.3s ease,
-        visibility 0.3s ease;
+    transition: opacity 0.3s ease;
     pointer-events: none;
 }
 
 .hidden-remove-button:has(.button-loading-indicator) {
-    visibility: visible;
     cursor: default;
     opacity: 1;
 }
 
 .hidden-remove-button-row:hover
+    .hidden-remove-button:not(:has(.button-loading-indicator)),
+.hidden-remove-button-row:focus-within
     .hidden-remove-button:not(:has(.button-loading-indicator)) {
     opacity: 1;
-    visibility: visible;
     pointer-events: auto;
+}
+
+.hidden-remove-button:focus-visible {
+    opacity: 1;
+    /* TODO: We need to consolidate icon-button outline to this
+        outline color and separately define outline colors to specific
+        elements if needed. We should remove this after that. */
+    outline: 1px solid var(--color-outline-focus) !important;
+    outline-offset: -2px;
 }
 
 #stream-actions-menu-popover,
@@ -504,6 +510,13 @@ ul.popover-group-menu-member-list {
         margin: 4px 4px 2px;
     }
 
+    .no-results {
+        font-style: italic;
+        color: var(--color-text-default);
+        grid-column: 1 / -1;
+        text-align: center;
+    }
+
     .gif-picker-content {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -570,13 +583,6 @@ ul.popover-group-menu-member-list {
         max-width: 100%;
     }
 
-    .modal__title {
-        .channel-privacy-type-icon {
-            padding-left: 3px;
-            padding-right: 5px;
-        }
-    }
-
     #report_type_options_widget_wrapper,
     #move_topic_to_stream_widget_wrapper {
         display: flex;
@@ -595,16 +601,6 @@ ul.popover-group-menu-member-list {
             text-overflow: ellipsis;
             white-space: nowrap;
             color: var(--color-text-default);
-
-            .channel-privacy-type-icon {
-                /* 13px at 16px/1em */
-                font-size: 0.8125em;
-                /* 13px at 13px/1em */
-                width: 1em;
-                height: 1em;
-                position: relative;
-                top: 2px;
-            }
         }
 
         .zulip-icon-chevron-down {

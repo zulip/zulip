@@ -477,6 +477,17 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         EMBEDDED_BOT,
     ]
 
+    # Certain fields can imply an unusually elevated level of permissions
+    # for the user in some way. Such privileges generally should not be
+    # carried over to a new server at import time.
+    SPECIAL_PERMISSIONS_TO_RESET_AT_IMPORT = [
+        "is_staff",
+        "can_forge_sender",
+        "can_create_users",
+        "can_change_user_emails",
+        "rate_limits",
+    ]
+
     id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
 
     # For historical reasons, Zulip has two email fields.  The
@@ -499,8 +510,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     email = models.EmailField(blank=False, db_index=True)
 
     realm = models.ForeignKey("zerver.Realm", on_delete=CASCADE)
-    # Foreign key to the Recipient object for PERSONAL type messages to this user.
-    recipient = models.ForeignKey("zerver.Recipient", null=True, on_delete=models.SET_NULL)
 
     INACCESSIBLE_USER_NAME = gettext_lazy("Unknown user")
     # The user's name.  We prefer the model of a full_name
@@ -537,6 +546,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     #
     # See also `long_term_idle`.
     is_active = models.BooleanField(default=True, db_index=True)
+
+    # Deleted users are a subset of deactivated users whose metadata
+    # has been removed as well. They cannot be reactivated, to ensure
+    # is_deleted=True, is_active=True is impossible.
+    is_deleted = models.BooleanField(db_default=False, default=False)
 
     is_bot = models.BooleanField(default=False, db_index=True)
     bot_type = models.PositiveSmallIntegerField(null=True, db_index=True)
@@ -1002,7 +1016,6 @@ def base_get_user_narrow_queryset() -> QuerySet[UserProfile]:
         "presence_enabled",
         "rate_limits",
         "role",
-        "recipient_id",
         "realm__string_id",
         "realm__deactivated",
     )

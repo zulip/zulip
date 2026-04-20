@@ -7,10 +7,64 @@ contributors.
 
 ## Philosophy
 
-Zulip's coding philosophy is to **focus relentlessly on making the codebase
-easy to understand and difficult to make dangerous mistakes**. This applies
-equally to AI-generated contributions. Every change should make the codebase
-more maintainable and easier to read.
+Zulip is a team chat application used by thousands of organizations,
+built to last for many years. It is developed by a vibrant open-source
+community, with maintainers who have consistently emphasized **high
+standards for codebase readability, code review, commit discipline,
+debuggability, automated testing, tooling, documentation, and all the
+other subtle details that together determine whether software is easy
+to understand, operate, and modify**.
+
+Zulip's engineering strategy is to **"move quickly without breaking
+things"**. This is possible because the project has invested years in
+testing, tooling, code structure, documentation, and development
+practices that catch bugs systematically rather than relying on
+individual vigilance. Maintainers spend most of their review time on
+product decisions and code structure/readability, not on chasing
+correctness issues — because the process is designed to prevent them.
+
+This means Zulip's coding philosophy is to **focus relentlessly on
+making the codebase easy to understand and difficult to make dangerous
+mistakes**. This applies equally to AI-generated contributions. Every
+change should make the codebase more maintainable and easier to read.
+
+### No detail is too small
+
+Zulip holds itself to a high bar for polish because users depend on
+this software daily, and because the project is built to last for
+decades. There is no category of "minor issue" that is acceptable
+to ship — if something is broken in any context where a user would
+encounter it, it must be fixed before merging. The project's
+extensive investment in testing, tooling, and review processes exists
+precisely so that these issues get caught and fixed, not so that they
+can be classified as low-priority and deferred.
+
+This philosophy extends to every aspect of the product:
+
+- **Visual precision matters.** Alignment, spacing, colors, and font
+  sizes must be consistent with similar existing UI. When making CSS
+  changes, you must demonstrate with pixel-precise before/after
+  comparisons that there are no unintended side effects.
+- **Every state matters.** UI must look correct in all its states:
+  hover, active, disabled, focused, selected, empty, overflowing.
+  It must work in both light and dark themes.
+- **Every window size matters.** UI must look good from wide desktop
+  (1920px) down to narrow phone screens (480px).
+- **Every language matters.** Translated strings can be 1.5x longer
+  than English or half as short. UI must handle both extremes without
+  breaking layout. Think about right-to-left languages too.
+- **Every interaction path matters.** Keyboard navigation, screen
+  readers, permission levels, feature interactions (banners
+  overlapping, resolved topics, muted messages), and edge cases in
+  data (empty lists, very long names, single items vs. many) must all
+  be considered.
+
+The right attitude is: "What could go wrong, and how do I verify that
+it doesn't?" not "It looks fine to me." **What isn't tested probably
+doesn't work** — this applies to visual changes just as much as to
+backend logic.
+
+### Understand before coding
 
 Before writing any code, you must understand:
 
@@ -114,12 +168,21 @@ Zulip has over 185,000 words of developer documentation. Before working on any a
 - Prefer writing code that is readable without explanation over heavily
   commented code using clever tricks. Comments should explain "why" when
   the reason isn't obvious, not narrate "what" the code does.
+- Use `em` units instead of `px` for computed CSS values that need to
+  scale with font size. Pixel approximations break at different zoom
+  levels and font-size settings.
 - Comments should have a line to themself except for CSS px math.
 - **Review CSS for redundant rules.** After writing CSS, review the
   full set of rules affecting the same elements. Look for rules that
   are immediately overridden by a more specific selector, duplicated
   selector lists, or cases where scoping (e.g., `:not()`) would
   eliminate the need for an override.
+- **Check CSS change scope.** When modifying CSS, always check what
+  other pages or components use the same selectors, files, and
+  classes. Use `git grep` on class names and check webpack bundle
+  entries to understand which pages load the file. Prefer scoped
+  overrides (e.g., `.parent .target`) over modifying shared rules,
+  to avoid unintended changes to other parts of the app.
 
 See: https://zulip.readthedocs.io/en/latest/contributing/code-style.html
 
@@ -146,6 +209,9 @@ coherent idea."** This is non-negotiable.
 - Add content in one commit only to remove or move it in the next;
   plan upfront what belongs where and do it right the first time.
 - Include debugging code, commented-out code, or temporary TODOs.
+- Leave commits that break if a later commit in the PR is dropped.
+  When a commit is flagged as potentially droppable, verify all
+  earlier commits work correctly without it.
 
 ### Commit Message Format
 
@@ -255,22 +321,31 @@ tests.
 ### Manual Testing for UI Changes
 
 If a PR makes frontend changes, manually verify the affected UI. This
-catches issues that automated tests miss:
+catches issues that automated tests miss. **Treat this checklist as
+blocking, not advisory** — every applicable item must be verified
+before the change is ready.
 
 **Visual appearance:**
 
 - Is the new UI consistent with similar elements (fonts, colors, sizes)?
-- Is alignment correct, both vertically and horizontally?
+  Find the closest existing analogues and compare carefully.
+- Is alignment correct, both vertically and horizontally? Measure
+  programmatically with `getBoundingClientRect()` when in doubt —
+  don't eyeball it.
 - Do clickable elements have hover behavior consistent with similar UI?
 - If elements can be disabled, does the disabled state look right?
 - Did the change accidentally affect other parts of the UI? Use
-  `git grep` to check if modified CSS is used elsewhere.
+  `git grep` to check if modified CSS is used elsewhere. CSS changes
+  are notorious for unintended consequences — check every page and
+  component that shares the selectors you modified.
 - Check all of the above in both light and dark themes.
 
 **Responsiveness and internationalization:**
 
-- Does the UI look good at different window sizes, including mobile?
-- Would the UI break if translated strings were 1.5x longer than English?
+- Does the UI look good at different window sizes? Check wide desktop
+  (1920px), typical laptop (1280px), tablet, and narrow phone (480px).
+- Would the UI break if translated strings were 1.5x longer than
+  English? What if they were half as long? Both directions matter.
 
 **Functionality:**
 
@@ -284,6 +359,25 @@ catches issues that automated tests miss:
   has permissions and one who does not.
 - Think about feature interactions: could banners overlap? What about
   resolved/unresolved topics? Collapsed or muted messages?
+- Think about edge cases in data: empty lists, very long names, single
+  items vs. hundreds, special characters in strings.
+
+### Puppeteer Visual Tests: Verifying Alignment
+
+When using Puppeteer to verify visual alignment, do not rely on
+eyeballing screenshots — especially small full-page ones. Instead:
+
+- Use `page.evaluate()` with `getBoundingClientRect()` to measure
+  actual pixel positions of the elements you need aligned, and print
+  them to the console. Compare the numbers.
+- Always take **both** a full-page screenshot and a zoomed clip of
+  the area of interest.
+- For zoomed clips, calculate the clip region from non-fixed elements;
+  fixed/sticky elements may report bounding-box positions that don't
+  match their visual location on the page.
+- Be aware that CSS nesting can scope styles to a specific parent
+  (e.g., `.parent .my-class`) — reusing the same class name in a
+  different context may not pick up the expected styles.
 
 ## Self-Review Checklist
 
@@ -310,6 +404,18 @@ follow's Zulip's guidelines once you finish preparing a series of
 commits.
 
 ## Common Pitfalls
+
+### Treating Known Issues as Acceptable
+
+A common failure mode is discovering a problem during verification
+and then noting it as a known limitation rather than fixing it. At
+Zulip, there is no category of "known minor issue" that is acceptable
+to ship. If it's broken in any state, size, theme, or language, it
+needs to be fixed.
+
+**Mitigation:** When you find any issue during verification, fix it
+before presenting the work. If a fix would require a design decision,
+raise it as a question rather than shipping the broken state.
 
 ### Overconfident Code Generation
 
@@ -358,6 +464,10 @@ faster and easier to just plan and write them well the first time.
 - Don't use `cursor.execute()` with string formatting (SQL injection risk)
 - Don't use `.extra()` in Django without careful review and commenting
 - Don't use `onclick` attributes in HTML; use event delegation
+- Don't access DOM APIs (`document.documentElement.style`, `$()`
+  selectors for specific elements) without guarding for node test
+  environments, where the DOM is mocked minimally. Check that the
+  element exists before using it.
 - Don't create N+1 query patterns:
 
   ```python
@@ -375,6 +485,10 @@ faster and easier to just plan and write them well the first time.
   fetch + rebase when starting a project so you're not using a stale branch.
   If you're continuing a project, start by rebasing, resolving merge
   conflicts carefully.
+- Don't make design or UX decisions silently. When a technical
+  constraint forces a tradeoff, present the constraint and options
+  to the user rather than picking one. Never remove features, hide
+  UI elements, or change interaction patterns without asking.
 - Don't submit code you haven't tested
 - Don't skip becoming familiar with the code you're modifying
 - Don't make claims about code behavior without verification, and
@@ -454,6 +568,13 @@ Recommend pausing for discussion when:
 5. No behavior changes unless explicitly discussed
 6. Verify completeness: use `git grep` to find all occurrences and
    confirm nothing was missed
+
+When removing a CSS dependency (e.g., Bootstrap), audit the full
+property list of every rule, not just visually obvious properties like
+colors and backgrounds. Subtle properties like `line-height`, `margin`,
+`padding`, `text-decoration`, `font-weight`, and `border` are easy to
+miss but cause visible regressions. Check inherited properties too —
+e.g., a `body` rule's `line-height` or `margin` affects all descendants.
 
 ## Key Documentation Links
 

@@ -42,10 +42,17 @@ def image_id(payload: WildValue) -> str:
         return image_name + "@" + resource["digest"].tame(check_string)
 
 
-def handle_push_image_event(
-    payload: WildValue, user_profile: UserProfile, operator_username: str
-) -> str:
-    return f"{operator_username} pushed image `{image_id(payload)}`"
+IMAGE_PUSHED_TEMPLATE_WITH_OPERATOR = "{operator} pushed image `{image_id}`."
+IMAGE_PUSHED_TEMPLATE = "Image `{image_id}` was pushed."
+
+
+def handle_push_image_event(payload: WildValue, operator_username: str | None = None) -> str:
+    if operator_username:
+        return IMAGE_PUSHED_TEMPLATE_WITH_OPERATOR.format(
+            operator=operator_username,
+            image_id=image_id(payload),
+        )
+    return IMAGE_PUSHED_TEMPLATE.format(image_id=image_id(payload))  # nocoverage
 
 
 def handle_pull_image_event(
@@ -68,7 +75,7 @@ Image scan completed for `{image_id}`. Vulnerabilities by severity:
 
 
 def handle_scanning_completed_event(
-    payload: WildValue, user_profile: UserProfile, operator_username: str
+    payload: WildValue, operator_username: str | None = None
 ) -> str:
     scan_results = ""
     scan_overview = payload["event_data"]["resources"][0]["scan_overview"]
@@ -169,13 +176,6 @@ def api_harbor_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-    operator_username = "**{}**".format(payload["operator"].tame(check_string))
-
-    if operator_username != "auto":
-        operator_profile = guess_zulip_user_from_harbor(operator_username, user_profile.realm)
-        if operator_profile:
-            operator_username = f"@**{operator_profile.full_name}**"  # nocoverage
-
     event = payload["type"].tame(check_string)
     topic_name = payload["event_data"]["repository"]["repo_full_name"].tame(check_string)
 
@@ -187,7 +187,17 @@ def api_harbor_webhook(
     if content_func is None:
         raise UnsupportedWebhookEventTypeError(event)
 
-    content: str = content_func(payload, user_profile, operator_username)
+    operator = payload["operator"].tame(check_string)
+    if operator != "auto":
+        operator_profile = guess_zulip_user_from_harbor(operator, user_profile.realm)
+        if operator_profile:
+            operator_username = f"@**{operator_profile.full_name}**"  # nocoverage
+        else:
+            operator_username = f"**{operator}**"
+    else:
+        operator_username = None
+
+    content: str = content_func(payload, operator_username)
 
     check_send_webhook_message(
         request, user_profile, topic_name, content, event, unquote_url_parameters=True

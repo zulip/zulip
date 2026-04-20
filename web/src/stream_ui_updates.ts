@@ -229,13 +229,13 @@ export function update_settings_button_for_sub(sub: StreamSubscription): void {
     }
 
     if (sub.subscribed) {
+        $settings_button.find(".action-button-label").text($t({defaultMessage: "Unsubscribe"}));
         $settings_button
-            .text($t({defaultMessage: "Unsubscribe"}))
             .removeClass("unsubscribed action-button-subtle-brand")
             .addClass("action-button-subtle-neutral");
     } else {
+        $settings_button.find(".action-button-label").text($t({defaultMessage: "Subscribe"}));
         $settings_button
-            .text($t({defaultMessage: "Subscribe"}))
             .addClass("unsubscribed action-button-subtle-brand")
             .removeClass("action-button-subtle-neutral");
     }
@@ -497,6 +497,10 @@ export function update_add_subscriptions_elements(sub: SettingsSubscription): vo
 
     if (current_user.is_guest) {
         // For guest users, we just hide the add_subscribers feature.
+        $(".subscriber_list_settings_container .add-subscribers-heading").hide();
+        $(
+            ".subscriber_list_settings_container .send_notification_to_new_subscribers_container",
+        ).hide();
         $add_subscribers_container.hide();
         return;
     }

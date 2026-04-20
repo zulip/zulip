@@ -1,10 +1,14 @@
 import logging
 import os
+import struct
 import uuid
 from collections import defaultdict
-from typing import Any
+from collections.abc import Callable, Iterator
+from typing import IO, Any
 
 import bson
+from bson.errors import InvalidBSON
+from bsonstream import KeyValueBSONInput
 from django.conf import settings
 from django.forms.models import model_to_dict
 
@@ -16,7 +20,6 @@ from zerver.data_import.import_util import (
     build_direct_message_group,
     build_direct_message_group_subscriptions,
     build_message,
-    build_personal_subscriptions,
     build_realm,
     build_realm_emoji,
     build_recipients,
@@ -32,13 +35,124 @@ from zerver.data_import.import_util import (
 from zerver.data_import.sequencer import NEXT_ID, IdMapper
 from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
-from zerver.lib.export import do_common_export_processes
+from zerver.lib.export import batched, do_common_export_processes
 from zerver.lib.markdown import IMAGE_EXTENSIONS
 from zerver.lib.upload import sanitize_name
-from zerver.lib.utils import process_list_in_batches
 from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
 
 bson_codec_options = bson.DEFAULT_CODEC_OPTIONS.with_options(tz_aware=True)
+
+MESSAGE_BATCH_SIZE = 1000
+
+# We parse GridFS chunk document headers directly rather than using
+# bson.decode or KeyValueBSONInput, because chunk documents contain
+# large binary data payloads (up to 16 MB each).  Using bson.decode
+# would require reading the entire document into memory; using
+# KeyValueBSONInput with fast_string_prematch still reads every byte
+# (it just skips the BSON decode).  By parsing only the small header
+# portion, the index pass reads ~200 bytes per chunk regardless of
+# payload size.
+#
+# GridFS chunk documents have the schema {_id: ObjectId, files_id,
+# n: int32, data: BinData}.  Per the GridFS spec, _id, files_id, and
+# n appear before the large data field and together occupy ~60 bytes
+# for typical Rocket.Chat document IDs.  We read 200 bytes to allow
+# for IDs up to ~140 characters; if the fields aren't found within
+# that window, the import aborts with a clear error rather than
+# silently producing corrupt output.
+_CHUNK_HEADER_READ_SIZE = 200
+
+
+def _parse_chunk_header(raw: bytes) -> tuple[str, int]:
+    """Extract files_id and n from the beginning of a raw BSON chunk
+    document header, without reading the large binary data payload.
+
+    Walks BSON fields sequentially, handling only the types expected in
+    GridFS chunk headers: ObjectId (0x07), UTF-8 string (0x02), and
+    int32 (0x10).  Raises InvalidBSON on any unexpected structure —
+    this is a data import from an untrusted source, so we reject
+    anything outside the expected GridFS schema rather than trying to
+    handle it.
+    """
+    pos = 4  # skip document size prefix
+    files_id = None
+    n_val = None
+
+    while pos < len(raw) - 1:
+        type_byte = raw[pos]
+        if type_byte == 0x00:  # nocoverage  # end of document
+            break
+        pos += 1
+        null_pos = raw.find(0, pos)
+        if null_pos == -1 or null_pos - pos > 100:  # nocoverage
+            raise InvalidBSON(f"Invalid or overlong field name at offset {pos}")
+        key = raw[pos:null_pos].decode("ascii")
+        pos = null_pos + 1
+
+        if type_byte == 0x07:  # ObjectId — fixed 12 bytes
+            if pos + 12 > len(raw):  # nocoverage
+                break
+            pos += 12
+        elif type_byte == 0x02:  # UTF-8 string
+            if pos + 4 > len(raw):  # nocoverage
+                break
+            (str_len,) = struct.unpack("<i", raw[pos : pos + 4])
+            if str_len < 1 or pos + 4 + str_len > len(raw):  # nocoverage
+                break
+            if key == "files_id":
+                files_id = raw[pos + 4 : pos + 4 + str_len - 1].decode("ascii")
+            pos += 4 + str_len
+        elif type_byte == 0x10:  # int32
+            if pos + 4 > len(raw):  # nocoverage
+                break
+            if key == "n":
+                (n_val,) = struct.unpack("<i", raw[pos : pos + 4])
+            pos += 4
+        else:  # nocoverage
+            # Binary data or unrecognized type — stop scanning.
+            break
+
+        if files_id is not None and n_val is not None:
+            break
+
+    if files_id is None or n_val is None:  # nocoverage
+        raise InvalidBSON(
+            "Could not extract files_id and n from chunk header; "
+            f"parsed {pos} of {len(raw)} header bytes"
+        )
+
+    return files_id, n_val
+
+
+def _build_chunk_index(chunks_fh: IO[bytes]) -> dict[str, list[tuple[int, int]]]:
+    """Build an index from files_id to sorted [(n, file_offset)] by scanning
+    chunk document headers without reading the large binary data payloads.
+
+    Each BSON document starts with a 4-byte little-endian size.  We read
+    only the first few hundred bytes of each document to extract files_id
+    and n, then seek past the remainder.
+    """
+    chunk_index: dict[str, list[tuple[int, int]]] = {}
+
+    while True:
+        doc_offset = chunks_fh.tell()
+        size_bits = chunks_fh.read(4)
+        if len(size_bits) < 4:
+            break
+        (doc_size,) = struct.unpack("<i", size_bits)
+        if doc_size < 5:  # nocoverage — minimum BSON document is 5 bytes
+            raise InvalidBSON(f"Invalid BSON document size {doc_size} at offset {doc_offset}")
+        header_bytes = min(doc_size, _CHUNK_HEADER_READ_SIZE)
+        header = size_bits + chunks_fh.read(header_bytes - 4)
+        chunks_fh.seek(doc_offset + doc_size)
+
+        files_id, n = _parse_chunk_header(header)
+        chunk_index.setdefault(files_id, []).append((n, doc_offset))
+
+    for entries in chunk_index.values():
+        entries.sort()
+
+    return chunk_index
 
 
 def make_realm(
@@ -291,12 +405,12 @@ def build_custom_emoji(
     for emoji_file in custom_emoji_data["file"]:
         if isinstance(emoji_file["_id"], bson.objectid.ObjectId):  # nocoverage
             object_id_to_filename[str(emoji_file["_id"])] = emoji_file["filename"]
-    for emoji_chunk in custom_emoji_data["chunk"]:
+    for emoji_chunk in sorted(custom_emoji_data["chunk"], key=lambda c: c["n"]):
         file_id = str(emoji_chunk["files_id"])
         emoji_file_data[object_id_to_filename.get(file_id, file_id)].append(emoji_chunk["data"])
 
     for rc_emoji in custom_emoji_data["emoji"]:
-        emoji_filename = f"{rc_emoji['name']}.{rc_emoji['extension']}"
+        emoji_filename = sanitize_name(f"{rc_emoji['name']}.{rc_emoji['extension']}")
         emoji_data = b"".join(emoji_file_data[emoji_filename])
 
         target_sub_path = RealmEmoji.PATH_ID_TEMPLATE.format(
@@ -383,10 +497,11 @@ def process_message_attachment(
     user_id: int,
     zerver_attachment: list[ZerverFieldsT],
     uploads_list: list[UploadRecordData],
-    upload_id_to_upload_data_map: dict[str, dict[str, Any]],
+    attachment_lookup: Callable[[str], None | tuple[dict[str, Any], Iterator[bytes]]],
     output_dir: str,
 ) -> tuple[str, bool]:
-    if upload["_id"] not in upload_id_to_upload_data_map:  # nocoverage
+    attachment_data = attachment_lookup(upload["_id"])
+    if attachment_data is None:
         logging.info("Skipping unknown attachment of message_id: %s", message_id)
         return "", False
 
@@ -394,7 +509,7 @@ def process_message_attachment(
         logging.info("Skipping attachment without type of message_id: %s", message_id)
         return "", False
 
-    upload_file_data = upload_id_to_upload_data_map[upload["_id"]]
+    upload_file_data, content_iterator = attachment_data
     file_name = upload["name"]
     file_ext = f".{upload['type'].split('/')[-1]}"
 
@@ -412,18 +527,18 @@ def process_message_attachment(
         logging.info("Replacing too long attachment name with random uuid: %s", file_name)
         sanitized_name = uuid.uuid4().hex
 
-    attachment_data = get_attachment_path_and_content(
+    attachment_link = get_attachment_path_and_content(
         link_name=file_name, filename=file_name, realm_id=realm_id
     )
 
     # Build the attachment from chunks and save it to s3_path.
-    file_out_path = os.path.join(output_dir, "uploads", attachment_data.path_id)
+    file_out_path = os.path.join(output_dir, "uploads", attachment_link.path_id)
     os.makedirs(os.path.dirname(file_out_path), exist_ok=True)
     with open(file_out_path, "wb") as upload_file:
-        upload_file.write(b"".join(upload_file_data["chunk"]))
+        upload_file.writelines(content_iterator)
 
     attachment_content = (
-        f"{upload_file_data.get('description', '')}\n\n{attachment_data.markdown_link}"
+        f"{upload_file_data.get('description', '')}\n\n{attachment_link.markdown_link}"
     )
 
     fileinfo = {
@@ -436,9 +551,9 @@ def process_message_attachment(
         UploadRecordData(
             content_type=upload["type"],
             last_modified=fileinfo["created"],
-            path=attachment_data.path_id,
+            path=attachment_link.path_id,
             realm_id=realm_id,
-            s3_path=attachment_data.path_id,
+            s3_path=attachment_link.path_id,
             size=fileinfo["size"],
             user_profile_id=user_id,
         )
@@ -449,7 +564,7 @@ def process_message_attachment(
         message_ids={message_id},
         user_id=user_id,
         fileinfo=fileinfo,
-        s3_path=attachment_data.path_id,
+        s3_path=attachment_link.path_id,
         zerver_attachment=zerver_attachment,
     )
 
@@ -458,16 +573,15 @@ def process_message_attachment(
 
 def process_raw_message_batch(
     realm_id: int,
-    raw_messages: list[dict[str, Any]],
+    raw_messages: tuple[dict[str, Any], ...],
     subscriber_map: dict[int, set[int]],
     user_handler: UserHandler,
-    is_pm_data: bool,
     output_dir: str,
     zerver_realmemoji: list[ZerverFieldsT],
     total_reactions: list[ZerverFieldsT],
     uploads_list: list[UploadRecordData],
     zerver_attachment: list[ZerverFieldsT],
-    upload_id_to_upload_data_map: dict[str, dict[str, Any]],
+    attachment_lookup: Callable[[str], None | tuple[dict[str, Any], Iterator[bytes]]],
 ) -> None:
     def fix_mentions(
         content: str, mention_user_ids: set[int], rc_channel_mention_data: list[dict[str, str]]
@@ -530,7 +644,7 @@ def process_raw_message_batch(
                 user_id=sender_user_id,
                 uploads_list=uploads_list,
                 zerver_attachment=zerver_attachment,
-                upload_id_to_upload_data_map=upload_id_to_upload_data_map,
+                attachment_lookup=attachment_lookup,
                 output_dir=output_dir,
             )
 
@@ -551,7 +665,7 @@ def process_raw_message_batch(
             has_image=has_image,
             has_link=has_link,
             has_attachment=has_attachment,
-            is_direct_message_type=is_pm_data,
+            is_direct_message_type=not is_channel_message,
         )
         zerver_message.append(message)
         build_reactions(
@@ -564,7 +678,6 @@ def process_raw_message_batch(
     zerver_usermessage = make_user_messages(
         zerver_message=zerver_message,
         subscriber_map=subscriber_map,
-        is_pm_data=is_pm_data,
         mention_map=user_mention_map,
         wildcard_mention_map=wildcard_mention_map,
     )
@@ -605,9 +718,8 @@ def get_topic_name(
 
 def process_messages(
     realm_id: int,
-    messages: list[dict[str, Any]],
+    rocketchat_messages: Iterator[dict[str, Any]],
     subscriber_map: dict[int, set[int]],
-    is_pm_data: bool,
     username_to_user_id_map: dict[str, str],
     user_id_mapper: IdMapper[str],
     user_handler: UserHandler,
@@ -621,13 +733,19 @@ def process_messages(
     dsc_id_to_dsc_map: dict[str, dict[str, Any]],
     direct_id_to_direct_map: dict[str, dict[str, Any]],
     direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]],
+    livechat_id_to_livechat_map: dict[str, dict[str, Any]],
     zerver_realmemoji: list[ZerverFieldsT],
     total_reactions: list[ZerverFieldsT],
     uploads_list: list[UploadRecordData],
     zerver_attachment: list[ZerverFieldsT],
-    upload_id_to_upload_data_map: dict[str, dict[str, Any]],
+    attachment_lookup: Callable[[str], None | tuple[dict[str, Any], Iterator[bytes]]],
     output_dir: str,
 ) -> None:
+    private_channels_set = {
+        *direct_id_to_direct_map,
+        *direct_message_group_id_to_direct_message_group_map,
+    }
+
     def list_reactions(reactions: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
         # List of dictionaries of form:
         # {"name": "smile", "user_id": 2}
@@ -648,95 +766,8 @@ def process_messages(
 
         return reactions_list
 
-    def message_to_dict(message: dict[str, Any]) -> dict[str, Any]:
-        rc_sender_id = message["u"]["_id"]
-        sender_id = user_id_mapper.get(rc_sender_id)
-        if "msg" in message:
-            content = message["msg"]
-        else:  # nocoverage
-            content = "This message imported from Rocket.Chat had no body in the data export."
-            logging.info(
-                "Message %s contains no message content: %s",
-                message["_id"],
-                message,
-            )
-
-        if message.get("reactions"):
-            reactions = list_reactions(message["reactions"])
-        else:
-            reactions = []
-
-        message_dict = dict(
-            sender_id=sender_id,
-            content=content,
-            date_sent=int(message["ts"].timestamp()),
-            reactions=reactions,
-            has_link=bool(message.get("urls")),
-        )
-
-        # Add recipient_id to message_dict
-        if is_pm_data:
-            # Message is in a 1:1 or group direct message.
-            rc_channel_id = message["rid"]
-            message_dict["is_channel_message"] = False
-            if rc_channel_id in direct_message_group_id_to_direct_message_group_map:
-                direct_message_group_id = direct_message_group_id_mapper.get(rc_channel_id)
-                message_dict["recipient_id"] = direct_message_group_id_to_recipient_id[
-                    direct_message_group_id
-                ]
-            else:
-                rc_member_ids = direct_id_to_direct_map[rc_channel_id]["uids"]
-
-                if len(rc_member_ids) == 1:  # nocoverage
-                    # direct messages to yourself only have one user.
-                    rc_member_ids.append(rc_member_ids[0])
-                if rc_sender_id == rc_member_ids[0]:
-                    zulip_member_id = user_id_mapper.get(rc_member_ids[1])
-                    message_dict["recipient_id"] = user_id_to_recipient_id[zulip_member_id]
-                else:
-                    zulip_member_id = user_id_mapper.get(rc_member_ids[0])
-                    message_dict["recipient_id"] = user_id_to_recipient_id[zulip_member_id]
-        elif message["rid"] in dsc_id_to_dsc_map:
-            # Message is in a discussion
-            message_dict["is_channel_message"] = True
-            dsc_channel = dsc_id_to_dsc_map[message["rid"]]
-            parent_channel_id = dsc_channel["prid"]
-            stream_id = stream_id_mapper.get(parent_channel_id)
-            message_dict["recipient_id"] = stream_id_to_recipient_id[stream_id]
-        else:
-            message_dict["is_channel_message"] = True
-            stream_id = stream_id_mapper.get(message["rid"])
-            message_dict["recipient_id"] = stream_id_to_recipient_id[stream_id]
-
-        # Add topic name to message_dict
-        message_dict["topic_name"] = get_topic_name(
-            message, dsc_id_to_dsc_map, thread_id_mapper, is_pm_data
-        )
-
-        # Add user mentions to message_dict
-        mention_user_ids = set()
-        wildcard_mention = False
-        for mention in message.get("mentions", []):
-            mention_id = mention["_id"]
-            if mention_id in ["all", "here"]:
-                wildcard_mention = True
-                continue
-            if user_id_mapper.has(mention_id):
-                user_id = user_id_mapper.get(mention_id)
-                mention_user_ids.add(user_id)
-            else:  # nocoverage
-                logging.info(
-                    "Message %s contains mention of unknown user %s: %s",
-                    message["_id"],
-                    mention_id,
-                    mention,
-                )
-
-        message_dict["mention_user_ids"] = mention_user_ids
-        message_dict["wildcard_mention"] = wildcard_mention
-
-        # Add channel mentions to message_dict
-        rc_channel_mention_data: list[dict[str, str]] = []
+    def list_channel_mentions(message: dict[str, Any]) -> list[dict[str, str]]:
+        channel_mentions: list[dict[str, str]] = []
         for mention in message.get("channels", []):
             mention_rc_channel_id = mention["_id"]
             mention_rc_channel_name = mention["name"]
@@ -782,100 +813,121 @@ def process_messages(
                 continue
 
             mention_data = {"rc_mention": rc_mention, "zulip_mention": zulip_mention}
-            rc_channel_mention_data.append(mention_data)
-        message_dict["rc_channel_mention_data"] = rc_channel_mention_data
+            channel_mentions.append(mention_data)
+        return channel_mentions
 
-        # Add uploaded file (attachment) to message_dict
-        if message.get("file"):
-            message_dict["file"] = message["file"]
+    def messages_to_dict(rocketchat_messages: Iterator[dict[str, Any]]) -> Iterator[dict[str, Any]]:
+        for message in rocketchat_messages:
+            if message.get("t") is not None:
+                # Messages with a type are system notifications like user_joined
+                # that we don't include.
+                continue
+            if not message.get("rid"):  # nocoverage
+                # Message does not belong to any channel (might be
+                # related to livechat), so ignore all such messages.
+                continue
+            if message["rid"] in dsc_id_to_dsc_map:
+                parent_channel_id = dsc_id_to_dsc_map[message["rid"]]["prid"]
+                if parent_channel_id in private_channels_set:
+                    # Messages in discussions originating from direct channels
+                    # are treated as if they were posted in the parent direct
+                    # channel only.  This mutates the dict yielded by the
+                    # streaming BSON parser, which is safe since each
+                    # iteration yields a fresh dict.
+                    message["rid"] = parent_channel_id
+            if message["rid"] in livechat_id_to_livechat_map:
+                # TODO: Handle livechat messages
+                continue
 
-        return message_dict
+            rc_sender_id = message["u"]["_id"]
+            sender_id = user_id_mapper.get(rc_sender_id)
+            if "msg" in message:
+                content = message["msg"]
+            else:  # nocoverage
+                content = "This message imported from Rocket.Chat had no body in the data export."
+                logging.info(
+                    "Message %s contains no message content: %s",
+                    message["_id"],
+                    message,
+                )
 
-    raw_messages: list[dict[str, Any]] = []
-    for message in messages:
-        if message.get("t") is not None:
-            # Messages with a type are system notifications like user_joined
-            # that we don't include.
-            continue
-        raw_messages.append(message_to_dict(message))
+            message_dict = dict(
+                sender_id=sender_id,
+                content=content,
+                date_sent=int(message["ts"].timestamp()),
+                reactions=list_reactions(message.get("reactions", [])),
+                has_link=bool(message.get("urls")),
+            )
 
-    def process_batch(lst: list[dict[str, Any]]) -> None:
+            # Add recipient_id to message_dict
+            if message["rid"] in private_channels_set:
+                # Message is in a 1:1 or group direct message.
+                rc_channel_id = message["rid"]
+                message_dict["is_channel_message"] = False
+                assert rc_channel_id in direct_message_group_id_to_direct_message_group_map
+                direct_message_group_id = direct_message_group_id_mapper.get(rc_channel_id)
+                message_dict["recipient_id"] = direct_message_group_id_to_recipient_id[
+                    direct_message_group_id
+                ]
+            elif message["rid"] in dsc_id_to_dsc_map:
+                # Message is in a discussion
+                message_dict["is_channel_message"] = True
+                dsc_channel = dsc_id_to_dsc_map[message["rid"]]
+                parent_channel_id = dsc_channel["prid"]
+                stream_id = stream_id_mapper.get(parent_channel_id)
+                message_dict["recipient_id"] = stream_id_to_recipient_id[stream_id]
+            else:
+                message_dict["is_channel_message"] = True
+                stream_id = stream_id_mapper.get(message["rid"])
+                message_dict["recipient_id"] = stream_id_to_recipient_id[stream_id]
+
+            # Add topic name to message_dict
+            message_dict["topic_name"] = get_topic_name(
+                message, dsc_id_to_dsc_map, thread_id_mapper, not message_dict["is_channel_message"]
+            )
+
+            # Add user mentions to message_dict
+            mention_user_ids = set()
+            wildcard_mention = False
+            for mention in message.get("mentions", []):
+                mention_id = mention["_id"]
+                if mention_id in ["all", "here"]:
+                    wildcard_mention = True
+                    continue
+                if user_id_mapper.has(mention_id):
+                    user_id = user_id_mapper.get(mention_id)
+                    mention_user_ids.add(user_id)
+                else:  # nocoverage
+                    logging.info(
+                        "Message %s contains mention of unknown user %s: %s",
+                        message["_id"],
+                        mention_id,
+                        mention,
+                    )
+
+            message_dict["mention_user_ids"] = mention_user_ids
+            message_dict["wildcard_mention"] = wildcard_mention
+            message_dict["rc_channel_mention_data"] = list_channel_mentions(message)
+
+            # Add uploaded file (attachment) to message_dict
+            if message.get("file"):
+                message_dict["file"] = message["file"]
+
+            yield message_dict
+
+    for message_batch in batched(messages_to_dict(rocketchat_messages), n=MESSAGE_BATCH_SIZE):
         process_raw_message_batch(
             realm_id=realm_id,
-            raw_messages=lst,
+            raw_messages=message_batch,
             subscriber_map=subscriber_map,
             user_handler=user_handler,
-            is_pm_data=is_pm_data,
             output_dir=output_dir,
             zerver_realmemoji=zerver_realmemoji,
             total_reactions=total_reactions,
             uploads_list=uploads_list,
             zerver_attachment=zerver_attachment,
-            upload_id_to_upload_data_map=upload_id_to_upload_data_map,
+            attachment_lookup=attachment_lookup,
         )
-
-    chunk_size = 1000
-
-    process_list_in_batches(
-        lst=raw_messages,
-        chunk_size=chunk_size,
-        process_batch=process_batch,
-    )
-
-
-def map_upload_id_to_upload_data(
-    upload_data: dict[str, list[dict[str, Any]]],
-) -> dict[str, dict[str, Any]]:
-    upload_id_to_upload_data_map: dict[str, dict[str, Any]] = {}
-
-    for upload in upload_data["upload"]:
-        upload_id_to_upload_data_map[upload["_id"]] = {**upload, "chunk": []}
-
-    for chunk in upload_data["chunk"]:
-        if chunk["files_id"] not in upload_id_to_upload_data_map:  # nocoverage
-            logging.info("Skipping chunk %s without metadata", chunk["files_id"])
-            # It's unclear why this apparent data corruption in the
-            # Rocket.Chat database is possible, but empirically, some
-            # chunks don't have any associated metadata.
-            continue
-
-        upload_id_to_upload_data_map[chunk["files_id"]]["chunk"].append(chunk["data"])
-
-    return upload_id_to_upload_data_map
-
-
-def separate_channel_private_and_livechat_messages(
-    messages: list[dict[str, Any]],
-    dsc_id_to_dsc_map: dict[str, dict[str, Any]],
-    direct_id_to_direct_map: dict[str, dict[str, Any]],
-    direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]],
-    livechat_id_to_livechat_map: dict[str, dict[str, Any]],
-    channel_messages: list[dict[str, Any]],
-    private_messages: list[dict[str, Any]],
-    livechat_messages: list[dict[str, Any]],
-) -> None:
-    private_channels_list = [
-        *direct_id_to_direct_map,
-        *direct_message_group_id_to_direct_message_group_map,
-    ]
-    for message in messages:
-        if not message.get("rid"):
-            # Message does not belong to any channel (might be
-            # related to livechat), so ignore all such messages.
-            continue
-        if message["rid"] in dsc_id_to_dsc_map:
-            parent_channel_id = dsc_id_to_dsc_map[message["rid"]]["prid"]
-            if parent_channel_id in private_channels_list:
-                # Messages in discussions originating from direct channels
-                # are treated as if they were posted in the parent direct
-                # channel only.
-                message["rid"] = parent_channel_id
-        if message["rid"] in private_channels_list:
-            private_messages.append(message)
-        elif message["rid"] in livechat_id_to_livechat_map:
-            livechat_messages.append(message)
-        else:
-            channel_messages.append(message)
 
 
 def map_receiver_id_to_recipient_id(
@@ -890,8 +942,6 @@ def map_receiver_id_to_recipient_id(
             stream_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
         elif recipient["type"] == Recipient.DIRECT_MESSAGE_GROUP:
             direct_message_group_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
-        elif recipient["type"] == Recipient.PERSONAL:
-            user_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
 
 
 def categorize_channels_and_map_with_id(
@@ -908,49 +958,44 @@ def categorize_channels_and_map_with_id(
         if channel.get("prid"):
             dsc_id_to_dsc_map[channel["_id"]] = channel
         elif channel["t"] == "d":
-            if len(channel["uids"]) > 2 or settings.PREFER_DIRECT_MESSAGE_GROUP:
-                direct_message_group_members = frozenset(channel["uids"])
-                logging.info("Direct message group channel found. UIDs: %r", channel["uids"])
+            direct_message_group_members = frozenset(channel["uids"])
+            logging.info("Direct message group channel found. UIDs: %r", channel["uids"])
 
-                if channel["msgs"] == 0:  # nocoverage
-                    # Rocket.Chat exports in the wild sometimes
-                    # contain duplicates of real direct message
-                    # groups, with no messages in the duplicate.
-                    # We ignore these minor database corruptions
-                    # in the Rocket.Chat export. Doing so is safe,
-                    # because a direct message group with no message
-                    # history has no value in Zulip's data model.
-                    logging.debug("Skipping direct message group with 0 messages: %s", channel)
-                elif (
-                    direct_message_group_members in direct_message_group_hashed_channels
-                ):  # nocoverage
-                    logging.info(
-                        "Mapping direct message group %r to existing channel: %s",
-                        direct_message_group_members,
-                        direct_message_group_hashed_channels[direct_message_group_members],
-                    )
-                    direct_message_group_id_to_direct_message_group_map[channel["_id"]] = (
-                        direct_message_group_hashed_channels[direct_message_group_members]
-                    )
+            if channel["msgs"] == 0:  # nocoverage
+                # Rocket.Chat exports in the wild sometimes
+                # contain duplicates of real direct message
+                # groups, with no messages in the duplicate.
+                # We ignore these minor database corruptions
+                # in the Rocket.Chat export. Doing so is safe,
+                # because a direct message group with no message
+                # history has no value in Zulip's data model.
+                logging.debug("Skipping direct message group with 0 messages: %s", channel)
+            elif direct_message_group_members in direct_message_group_hashed_channels:  # nocoverage
+                logging.info(
+                    "Mapping direct message group %r to existing channel: %s",
+                    direct_message_group_members,
+                    direct_message_group_hashed_channels[direct_message_group_members],
+                )
+                direct_message_group_id_to_direct_message_group_map[channel["_id"]] = (
+                    direct_message_group_hashed_channels[direct_message_group_members]
+                )
 
-                    # Ideally, we'd merge the duplicate direct message
-                    # groups. Doing so correctly requires special
-                    # handling in convert_direct_message_group_data()
-                    # and on the message import side as well, since
-                    # those appear to be mapped via rocketchat channel
-                    # IDs and not all of that information is resolved
-                    # via the direct_message_group_id_to_direct_message_group_map.
-                    #
-                    # For now, just throw an exception here rather
-                    # than during the import process.
-                    raise NotImplementedError(
-                        "Mapping multiple direct message groups with messages to one is not fully implemented yet"
-                    )
-                else:
-                    direct_message_group_id_to_direct_message_group_map[channel["_id"]] = channel
-                    direct_message_group_hashed_channels[direct_message_group_members] = channel
+                # Ideally, we'd merge the duplicate direct message
+                # groups. Doing so correctly requires special
+                # handling in convert_direct_message_group_data()
+                # and on the message import side as well, since
+                # those appear to be mapped via rocketchat channel
+                # IDs and not all of that information is resolved
+                # via the direct_message_group_id_to_direct_message_group_map.
+                #
+                # For now, just throw an exception here rather
+                # than during the import process.
+                raise NotImplementedError(
+                    "Mapping multiple direct message groups with messages to one is not fully implemented yet"
+                )
             else:
-                direct_id_to_direct_map[channel["_id"]] = channel
+                direct_message_group_id_to_direct_message_group_map[channel["_id"]] = channel
+                direct_message_group_hashed_channels[direct_message_group_members] = channel
         elif channel["t"] == "l":
             livechat_id_to_livechat_map[channel["_id"]] = channel
         else:
@@ -980,9 +1025,6 @@ def rocketchat_data_to_dict(
     export. Defaults to fetching everything, which is convenient for tests, but
     we prefer to fetch only those sections that are needed for a given stage to
     provide a faster debug cycle for metadata data corruption issues.
-
-    TODO: Ideally, we'd read the big data sets, like messages and
-    uploads, with a streaming BSON parser, or pre-paginate the data.
     """
     rocketchat_data: dict[str, Any] = {}
 
@@ -1021,11 +1063,6 @@ def rocketchat_data_to_dict(
         with open(os.path.join(rocketchat_data_dir, "rocketchat_room.bson"), "rb") as fcache:
             rocketchat_data["room"] = bson.decode_all(fcache.read(), bson_codec_options)
 
-    if sections is None or "message" in sections:
-        rocketchat_data["message"] = []
-        with open(os.path.join(rocketchat_data_dir, "rocketchat_message.bson"), "rb") as fcache:
-            rocketchat_data["message"] = bson.decode_all(fcache.read(), bson_codec_options)
-
     if sections is None or "custom_emoji" in sections:
         rocketchat_data["custom_emoji"] = {"emoji": [], "file": [], "chunk": []}
         with open(
@@ -1045,26 +1082,6 @@ def rocketchat_data_to_dict(
                 os.path.join(rocketchat_data_dir, "custom_emoji.chunks.bson"), "rb"
             ) as fcache:
                 rocketchat_data["custom_emoji"]["chunk"] = bson.decode_all(
-                    fcache.read(), bson_codec_options
-                )
-
-    if sections is None or "upload" in sections:
-        rocketchat_data["upload"] = {"upload": [], "file": [], "chunk": []}
-        with open(os.path.join(rocketchat_data_dir, "rocketchat_uploads.bson"), "rb") as fcache:
-            rocketchat_data["upload"]["upload"] = bson.decode_all(fcache.read(), bson_codec_options)
-
-        if rocketchat_data["upload"]["upload"]:
-            with open(
-                os.path.join(rocketchat_data_dir, "rocketchat_uploads.files.bson"), "rb"
-            ) as fcache:
-                rocketchat_data["upload"]["file"] = bson.decode_all(
-                    fcache.read(), bson_codec_options
-                )
-
-            with open(
-                os.path.join(rocketchat_data_dir, "rocketchat_uploads.chunks.bson"), "rb"
-            ) as fcache:
-                rocketchat_data["upload"]["chunk"] = bson.decode_all(
                     fcache.read(), bson_codec_options
                 )
 
@@ -1179,13 +1196,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         zerver_direct_message_group=zerver_direct_message_group,
     )
 
-    personal_subscriptions = build_personal_subscriptions(
-        zerver_recipient=zerver_recipient,
-    )
-
-    zerver_subscription = (
-        personal_subscriptions + stream_subscriptions + direct_message_group_subscriptions
-    )
+    zerver_subscription = stream_subscriptions + direct_message_group_subscriptions
     realm["zerver_subscription"] = zerver_subscription
 
     subscriber_map = make_subscriber_map(
@@ -1203,83 +1214,69 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         user_id_to_recipient_id=user_id_to_recipient_id,
     )
 
-    channel_messages: list[dict[str, Any]] = []
-    private_messages: list[dict[str, Any]] = []
-    livechat_messages: list[dict[str, Any]] = []
-
-    rocketchat_message_data = rocketchat_data_to_dict(rocketchat_data_dir, ["message"])["message"]
-    separate_channel_private_and_livechat_messages(
-        messages=rocketchat_message_data,
-        dsc_id_to_dsc_map=dsc_id_to_dsc_map,
-        direct_id_to_direct_map=direct_id_to_direct_map,
-        direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
-        livechat_id_to_livechat_map=livechat_id_to_livechat_map,
-        channel_messages=channel_messages,
-        private_messages=private_messages,
-        livechat_messages=livechat_messages,
-    )
-    # Hint we can free the memory, now that we're done processing this.
-    rocketchat_message_data = []
-
     total_reactions: list[ZerverFieldsT] = []
     uploads_list: list[UploadRecordData] = []
     zerver_attachment: list[ZerverFieldsT] = []
 
-    rocketchat_upload_data = rocketchat_data_to_dict(rocketchat_data_dir, ["upload"])["upload"]
-    upload_id_to_upload_data_map = map_upload_id_to_upload_data(rocketchat_upload_data)
+    def message_stream() -> Iterator[dict[str, Any]]:
+        with open(f"{rocketchat_data_dir}/rocketchat_message.bson", "rb") as message_file:
+            yield from KeyValueBSONInput(fh=message_file)
 
-    # Process channel messages
-    process_messages(
-        realm_id=realm_id,
-        messages=channel_messages,
-        subscriber_map=subscriber_map,
-        is_pm_data=False,
-        username_to_user_id_map=username_to_user_id_map,
-        user_id_mapper=user_id_mapper,
-        user_handler=user_handler,
-        user_id_to_recipient_id=user_id_to_recipient_id,
-        stream_id_mapper=stream_id_mapper,
-        stream_id_to_recipient_id=stream_id_to_recipient_id,
-        direct_message_group_id_mapper=direct_message_group_id_mapper,
-        direct_message_group_id_to_recipient_id=direct_message_group_id_to_recipient_id,
-        thread_id_mapper=thread_id_mapper,
-        room_id_to_room_map=room_id_to_room_map,
-        dsc_id_to_dsc_map=dsc_id_to_dsc_map,
-        direct_id_to_direct_map=direct_id_to_direct_map,
-        direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
-        zerver_realmemoji=zerver_realmemoji,
-        total_reactions=total_reactions,
-        uploads_list=uploads_list,
-        zerver_attachment=zerver_attachment,
-        upload_id_to_upload_data_map=upload_id_to_upload_data_map,
-        output_dir=output_dir,
-    )
-    # Process direct messages
-    process_messages(
-        realm_id=realm_id,
-        messages=private_messages,
-        subscriber_map=subscriber_map,
-        is_pm_data=True,
-        username_to_user_id_map=username_to_user_id_map,
-        user_id_mapper=user_id_mapper,
-        user_handler=user_handler,
-        user_id_to_recipient_id=user_id_to_recipient_id,
-        stream_id_mapper=stream_id_mapper,
-        stream_id_to_recipient_id=stream_id_to_recipient_id,
-        direct_message_group_id_mapper=direct_message_group_id_mapper,
-        direct_message_group_id_to_recipient_id=direct_message_group_id_to_recipient_id,
-        thread_id_mapper=thread_id_mapper,
-        room_id_to_room_map=room_id_to_room_map,
-        dsc_id_to_dsc_map=dsc_id_to_dsc_map,
-        direct_id_to_direct_map=direct_id_to_direct_map,
-        direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
-        zerver_realmemoji=zerver_realmemoji,
-        total_reactions=total_reactions,
-        uploads_list=uploads_list,
-        zerver_attachment=zerver_attachment,
-        upload_id_to_upload_data_map=upload_id_to_upload_data_map,
-        output_dir=output_dir,
-    )
+    with (
+        open(os.path.join(rocketchat_data_dir, "rocketchat_uploads.bson"), "rb") as uploads_fh,
+        open(
+            os.path.join(rocketchat_data_dir, "rocketchat_uploads.chunks.bson"), "rb"
+        ) as chunks_fh,
+    ):
+        # Build indexes in a single pass over each file.  Upload
+        # metadata is small (no binary blobs), so we store it fully.
+        # For chunks, we store only (n, file_offset) per chunk —
+        # reading just the first few hundred bytes of each document
+        # header and seeking past the large binary data payloads.
+        upload_index: dict[str, dict[str, Any]] = {}
+        for doc in KeyValueBSONInput(fh=uploads_fh):
+            upload_index[doc["_id"]] = doc
+
+        chunk_index = _build_chunk_index(chunks_fh)
+
+        def attachment_lookup(file_id: str) -> None | tuple[dict[str, Any], Iterator[bytes]]:
+            if file_id not in upload_index:  # nocoverage
+                return None
+
+            def iterate_chunks() -> Iterator[bytes]:
+                for _n, offset in chunk_index.get(file_id, []):
+                    chunks_fh.seek(offset)
+                    doc = KeyValueBSONInput(fh=chunks_fh).read()
+                    if doc is not None:
+                        yield doc.get("data", b"")
+
+            return upload_index[file_id], iterate_chunks()
+
+        process_messages(
+            realm_id=realm_id,
+            rocketchat_messages=message_stream(),
+            subscriber_map=subscriber_map,
+            username_to_user_id_map=username_to_user_id_map,
+            user_id_mapper=user_id_mapper,
+            user_handler=user_handler,
+            user_id_to_recipient_id=user_id_to_recipient_id,
+            stream_id_mapper=stream_id_mapper,
+            stream_id_to_recipient_id=stream_id_to_recipient_id,
+            direct_message_group_id_mapper=direct_message_group_id_mapper,
+            direct_message_group_id_to_recipient_id=direct_message_group_id_to_recipient_id,
+            thread_id_mapper=thread_id_mapper,
+            room_id_to_room_map=room_id_to_room_map,
+            dsc_id_to_dsc_map=dsc_id_to_dsc_map,
+            direct_id_to_direct_map=direct_id_to_direct_map,
+            direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
+            livechat_id_to_livechat_map=livechat_id_to_livechat_map,
+            zerver_realmemoji=zerver_realmemoji,
+            total_reactions=total_reactions,
+            uploads_list=uploads_list,
+            zerver_attachment=zerver_attachment,
+            attachment_lookup=attachment_lookup,
+            output_dir=output_dir,
+        )
     realm["zerver_reaction"] = total_reactions
     realm["zerver_userprofile"] = user_handler.get_all_users()
     realm["sort_by_date"] = True

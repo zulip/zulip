@@ -340,7 +340,6 @@ run_test("basics", ({override}) => {
     const active_user_ids = people.get_active_user_ids().toSorted();
     assert.deepEqual(active_user_ids, [me.user_id, isaac.user_id]);
     assert.equal(people.is_active_user_or_system_bot(isaac.user_id), true);
-    assert.ok(people.is_valid_email_for_compose(isaac.email));
     assert.ok(people.is_valid_user_id_for_compose(isaac.user_id));
 
     let bot_user_ids = people.get_bot_ids();
@@ -352,7 +351,6 @@ run_test("basics", ({override}) => {
     assert.equal(people.get_non_active_user_ids_count([isaac.user_id]), 1);
     assert.equal(people.get_active_human_count(), 1);
     assert.equal(people.is_active_user_or_system_bot(isaac.user_id), false);
-    assert.equal(people.is_valid_email_for_compose(isaac.email), true);
     assert.equal(people.is_valid_user_id_for_compose(isaac.user_id), true);
 
     people.add_active_user(bot_botson);
@@ -417,9 +415,6 @@ run_test("basics", ({override}) => {
     // The current user should still be there
     person = people.get_by_email("me@example.com");
     assert.equal(person.full_name, "Me Myself");
-
-    // Test undefined people
-    assert.equal(people.is_cross_realm_email("invalid@example.com"), false);
 
     // Test is_my_user_id function
     assert.equal(people.is_my_user_id(me.user_id), true);
@@ -962,23 +957,11 @@ run_test("multi_user_methods", () => {
     assert.equal(emp401.user_id, 401);
     assert.equal(emp402.user_id, 402);
 
-    let emails_string = people.user_ids_string_to_emails_string("402,401");
-    assert.equal(emails_string, "emp401@example.com,emp402@example.com");
-
     let user_ids = people.slug_to_user_ids("402,401");
     assert.deepEqual(user_ids, [402, 401]);
 
     user_ids = people.slug_to_user_ids("402,401-group");
     assert.deepEqual(user_ids, [402, 401]);
-
-    emails_string = "emp402@example.com,EMP401@EXAMPLE.COM";
-    let user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
-    assert.equal(user_ids_string, "401,402");
-
-    user_ids_string = people.reply_to_to_user_ids_string(emails_string);
-    assert.equal(user_ids_string, "401,402");
-
-    assert.equal(people.reply_to_to_user_ids_string("invalid@example.com"), undefined);
 
     assert.equal(people.user_ids_string_to_slug("401,402"), "401,402-group");
     assert.equal(people.user_ids_string_to_slug("402"), "402-whatever-402");
@@ -1043,6 +1026,9 @@ run_test("message_methods", () => {
         maria.avatar_url,
         "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon",
     );
+    // small_avatar_url_for_user_id delegates to small_avatar_url_for_person.
+    assert.equal(people.small_avatar_url_for_user_id(maria.user_id), maria.avatar_url);
+
     // This will use the cached gravatar url
     assert.equal(
         people.medium_avatar_url_for_person(maria),
@@ -1076,7 +1062,6 @@ run_test("message_methods", () => {
     };
     assert.equal(people.pm_with_url(message), "#narrow/dm/301,302-group");
     assert.equal(people.pm_perma_link(message), "#narrow/dm/30,301,302-group");
-    assert.equal(people.pm_reply_to(message), "charles@example.com,Athens@example.com");
     assert.equal(people.small_avatar_url(message), "http://charles.com/foo.png");
 
     message = {
@@ -1086,7 +1071,6 @@ run_test("message_methods", () => {
     };
     assert.equal(people.pm_with_url(message), "#narrow/dm/302-Maria-Athens");
     assert.equal(people.pm_perma_link(message), "#narrow/dm/30,302-dm");
-    assert.equal(people.pm_reply_to(message), "Athens@example.com");
     assert.equal(people.small_avatar_url(message), "legacy.png");
 
     message = {
@@ -1136,7 +1120,6 @@ run_test("message_methods", () => {
     assert.equal(people.all_user_ids_in_pm(message), undefined);
 
     // Test undefined user_ids
-    assert.equal(people.pm_reply_to(message), undefined);
     assert.equal(people.pm_reply_user_string(message), undefined);
     assert.equal(people.pm_with_url(message), undefined);
 
@@ -1274,7 +1257,6 @@ run_test("updates", () => {
 
     // Do sanity checks on our data.
     assert.equal(people.get_by_email(old_email).user_id, user_id);
-    assert.ok(!people.is_cross_realm_email(old_email));
 
     assert.equal(people.get_by_email(new_email), undefined);
 
@@ -1283,7 +1265,6 @@ run_test("updates", () => {
 
     // Now look up using the new email.
     assert.equal(people.get_by_email(new_email).user_id, user_id);
-    assert.ok(!people.is_cross_realm_email(new_email));
 
     const all_people = get_all_persons();
     assert.equal(all_people.length, 3);
@@ -1299,22 +1280,6 @@ run_test("updates", () => {
     );
     person = people.get_by_email(old_email);
     assert.equal(person.user_id, user_id);
-});
-
-run_test("update_email_in_reply_to", () => {
-    initialize();
-    people.add_active_user(charles);
-    people.add_active_user(maria);
-
-    let reply_to = "    charles@example.com,   athens@example.com";
-    assert.equal(people.update_email_in_reply_to(reply_to, 9999, "whatever"), reply_to);
-    assert.equal(
-        people.update_email_in_reply_to(reply_to, maria.user_id, "maria@example.com"),
-        "charles@example.com,maria@example.com",
-    );
-
-    reply_to = "    charles@example.com,   athens@example.com, invalid@example.com";
-    assert.equal(people.update_email_in_reply_to(reply_to, 9999, "whatever"), reply_to);
 });
 
 run_test("track_duplicate_full_names", () => {
@@ -1422,18 +1387,11 @@ run_test("initialize", () => {
     people.initialize(current_user.user_id, params, user_group_params);
 
     assert.equal(people.is_active_user_or_system_bot(17), true);
-    assert.ok(people.is_cross_realm_email("bot@example.com"));
-    assert.ok(people.is_valid_email_for_compose("bot@example.com"));
     assert.ok(people.is_valid_user_id_for_compose(test_bot.user_id));
-    assert.ok(people.is_valid_email_for_compose("alice@example.com"));
     assert.ok(people.is_valid_user_id_for_compose(alice.user_id));
-    assert.ok(people.is_valid_email_for_compose("retiree@example.com"));
     assert.ok(people.is_valid_user_id_for_compose(retiree.user_id));
-    assert.ok(!people.is_valid_email_for_compose("totally-bogus-username@example.com"));
     blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
     assert.ok(!people.is_valid_user_id_for_compose(9999));
-    assert.ok(people.is_valid_bulk_emails_for_compose(["bot@example.com", "alice@example.com"]));
-    assert.ok(!people.is_valid_bulk_emails_for_compose(["not@valid.com", "alice@example.com"]));
     assert.ok(people.is_valid_bulk_user_ids_for_compose([17, 16, 15]));
     blueslip.reset();
     blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
@@ -1543,19 +1501,6 @@ run_test("is_valid_full_name_and_user_id", () => {
     assert.ok(!people.is_valid_full_name_and_user_id("bogus", 99));
     assert.ok(!people.is_valid_full_name_and_user_id(me.full_name, 99));
     assert.ok(people.is_valid_full_name_and_user_id(me.full_name, me.user_id));
-});
-
-run_test("emails_strings_to_user_ids_array", () => {
-    initialize();
-    people.add_active_user(steven);
-    people.add_active_user(maria);
-
-    let user_ids = people.emails_strings_to_user_ids_array(`${steven.email},${maria.email}`);
-    assert.deepEqual(user_ids, [steven.user_id, maria.user_id]);
-
-    blueslip.expect("warn", "Unknown emails");
-    user_ids = people.emails_strings_to_user_ids_array("dummyuser@example.com");
-    assert.equal(user_ids, undefined);
 });
 
 run_test("get_visible_email", () => {
@@ -1695,12 +1640,6 @@ run_test("sort_by_username", () => {
         people.sort_user_ids_by_username([maria.user_id, cedar.user_id, leo.user_id]),
         [cedar.user_id, leo.user_id, maria.user_id],
     );
-
-    assert.deepEqual(people.sort_emails_by_username([maria.email, cedar.email, leo.email]), [
-        cedar.email,
-        leo.email,
-        maria.email,
-    ]);
 });
 
 run_test("get_users_that_match_role_ids", () => {
@@ -2099,6 +2038,78 @@ run_test("get_by_user_id", () => {
             message: "Unknown user_id in get_by_user_id: 8888",
         },
     );
+});
+
+run_test("is_valid_bot_user", () => {
+    initialize();
+    people.add_active_user(bot_botson);
+    people.add_active_user(isaac);
+
+    assert.equal(people.is_valid_bot_user(bot_botson.user_id), true);
+    assert.equal(people.is_valid_bot_user(isaac.user_id), false);
+    assert.equal(people.is_valid_bot_user(me.user_id), false);
+    // Unknown user_id returns false without error (uses ignore_missing).
+    assert.equal(people.is_valid_bot_user(9999), false);
+});
+
+run_test("maybe_get_user_by_id", () => {
+    initialize();
+    people.add_active_user(isaac);
+
+    const user = people.maybe_get_user_by_id(isaac.user_id);
+    assert.equal(user.full_name, "Isaac Newton");
+
+    // With ignore_missing=true, returns undefined without error.
+    assert.equal(people.maybe_get_user_by_id(9999, true), undefined);
+
+    // Without ignore_missing, logs an error and returns undefined.
+    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
+    assert.equal(people.maybe_get_user_by_id(9999), undefined);
+});
+
+run_test("small_avatar_url_for_person", () => {
+    initialize();
+    people.add_active_user(charles);
+    people.add_active_user(maria);
+
+    // User with an explicit avatar_url returns it directly.
+    assert.equal(people.small_avatar_url_for_person(charles), "http://charles.com/foo.png");
+
+    // Current user (me) has no avatar_url set, so falls back to /avatar/{user_id}.
+    assert.equal(people.small_avatar_url_for_person(me), `/avatar/${me.user_id}`);
+
+    // User with avatar_url=null computes a gravatar URL from email.
+    assert.equal(
+        people.small_avatar_url_for_person(maria),
+        "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon",
+    );
+    // Verify the gravatar URL was cached on the person object.
+    assert.equal(
+        maria.avatar_url,
+        "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon",
+    );
+});
+
+run_test("sender_is_bot", () => {
+    initialize();
+    people.add_active_user(bot_botson);
+    people.add_active_user(isaac);
+
+    assert.equal(people.sender_is_bot({sender_id: bot_botson.user_id}), true);
+    assert.equal(people.sender_is_bot({sender_id: isaac.user_id}), false);
+    assert.equal(people.sender_is_bot({sender_id: me.user_id}), false);
+    assert.equal(people.sender_is_bot({sender_id: undefined}), false);
+});
+
+run_test("sender_is_guest", () => {
+    initialize();
+    people.add_active_user(guest);
+    people.add_active_user(isaac);
+
+    assert.equal(people.sender_is_guest({sender_id: guest.user_id}), true);
+    assert.equal(people.sender_is_guest({sender_id: isaac.user_id}), false);
+    assert.equal(people.sender_is_guest({sender_id: me.user_id}), false);
+    assert.equal(people.sender_is_guest({sender_id: undefined}), false);
 });
 
 run_test("get_user_mentions_for_display", () => {

@@ -496,7 +496,7 @@ function format_dm(
     if (recipient_ids.length === 1 && recipient_ids[0] !== undefined) {
         const user_id = recipient_ids[0];
         const is_deactivated = !people.is_active_user_or_system_bot(user_id);
-        is_bot = people.get_by_user_id(user_id).is_bot;
+        is_bot = people.is_valid_bot_user(user_id);
         user_circle_class = is_bot
             ? false
             : buddy_data.get_user_circle_class(recipient_ids[0], is_deactivated);
@@ -724,7 +724,7 @@ function format_topic(
 
     return {
         ...common_context,
-        is_hidden: filter_should_hide_stream_row({stream_id, topic}),
+        is_hidden: filter_should_hide_stream_row({stream_id, topic, require_subscribed: true}),
         is_collapsed: collapsed_containers.has(STREAM_HEADER_PREFIX + stream_id),
     };
 }
@@ -1232,7 +1232,14 @@ class InboxTopicListWidget extends topic_list.TopicListWidget {
 }
 
 function filter_topics_in_channel(channel_id: number, topics: string[]): string[] {
-    return topics.filter((topic) => !filter_should_hide_stream_row({stream_id: channel_id, topic}));
+    return topics.filter(
+        (topic) =>
+            !filter_should_hide_stream_row({
+                stream_id: channel_id,
+                topic,
+                require_subscribed: false,
+            }),
+    );
 }
 
 function render_channel_view(channel_id: number): void {
@@ -1377,12 +1384,14 @@ function filter_should_hide_dm_row({dm_key}: {dm_key: string}): boolean {
 function filter_should_hide_stream_row({
     stream_id,
     topic,
+    require_subscribed,
 }: {
     stream_id: number;
     topic: string;
+    require_subscribed: boolean;
 }): boolean {
     const sub = sub_store.get(stream_id);
-    if (!sub?.subscribed) {
+    if (!sub || (require_subscribed && !sub.subscribed)) {
         return true;
     }
 
@@ -1631,7 +1640,7 @@ function update_closed_compose_text($row: JQuery, is_header_row: boolean): void 
 }
 
 export function get_focused_row_message(): {message?: Message | undefined} & (
-    | {msg_type: "private"; private_message_recipient?: string}
+    | {msg_type: "private"; private_message_recipient_ids?: number[]}
     | {msg_type: "stream"; stream_id: number; topic?: string}
     | {msg_type?: never}
 ) {
@@ -1670,11 +1679,11 @@ export function get_focused_row_message(): {message?: Message | undefined} & (
         assert(row_info !== undefined);
         const message = message_store.get(row_info.latest_msg_id);
         if (message === undefined) {
-            const recipients = people.user_ids_string_to_emails_string(row_info.user_ids_string);
-            assert(recipients !== undefined);
             return {
                 msg_type: "private",
-                private_message_recipient: recipients,
+                private_message_recipient_ids: people.user_ids_string_to_ids_array(
+                    row_info.user_ids_string,
+                ),
             };
         }
         return {message};
@@ -2349,9 +2358,13 @@ function move_focus_to_visible_area(): void {
     const compose_top = window.innerHeight - $("#compose").outerHeight(true)!;
     const inbox_center_x = (inbox_filters_props.left + inbox_filters_props.right) / 2;
     const inbox_center_y = (compose_top + inbox_filters_props.bottom) / 2;
-    const element_in_row = document.elementFromPoint(inbox_center_x, inbox_center_y);
-    if (!element_in_row) {
-        // The table is too short for there to be an topic row element
+    const element_in_row = views_util.find_element_at_point(
+        inbox_center_x,
+        inbox_center_y,
+        ".inbox-row, .inbox-header",
+    );
+    if (element_in_row === undefined) {
+        // The table is too short for there to be a row element
         // at the center of the table region; in that case, we just
         // select the last element.
         row_focus = $all_rows.length - 1;

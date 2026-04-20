@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const $ = require("./lib/zjquery.cjs");
@@ -34,12 +35,12 @@ set_global("getSelection", () => ({
 
 let typeahead_forced_open = false;
 
-const verona = {
+const verona = make_stream({
     subscribed: true,
     color: "blue",
     name: "Verona",
     stream_id: 1,
-};
+});
 stream_data.add_sub_for_tests(verona);
 
 const zoe = {
@@ -102,7 +103,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
             let expected_value = `<div class="search_list_item">\n            <div class="description">Search for dm</div>\n    \n</div>\n`;
             assert.equal(opts.item_html(search_suggestions[0], "dm"), expected_value);
 
-            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n            dm:\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">Direct messages with</div>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\ndm:\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">Direct messages with</div>\n</div>\n`;
             assert.equal(opts.item_html(search_suggestions[1], "dm"), expected_value);
 
             /* Test sorter */
@@ -119,7 +120,7 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
 
             const search_string = "channel: Verona";
             description_html = "Messages in #Verona";
-            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n            ${search_string}\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">${description_html}</div>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n${search_string}\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>\n    </div>\n</div>\n</span>\n            <div class="description">${description_html}</div>\n</div>\n`;
             assert.equal(opts.item_html(search_suggestions[1], "ver"), expected_value);
 
             /* Test sorter */

@@ -4,6 +4,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.types import UserGroupMembersData
 from zerver.lib.user_groups import (
     check_group_membership_management_permissions_with_admins_only,
+    get_recursive_subgroups,
     get_recursive_subgroups_for_groups,
     get_role_based_system_groups_dict,
     get_user_group_by_id_in_realm,
@@ -94,3 +95,20 @@ def realm_on_discounted_cloud_plan(realm: Realm) -> bool:
     customer = get_customer_by_realm(realm)
     assert customer is not None
     return customer.monthly_discounted_price > 0 or customer.annual_discounted_price > 0
+
+
+def check_any_group_used_for_workplace_users_group(
+    realm: Realm, user_groups: list[NamedUserGroup]
+) -> bool:
+    user_group_ids = {group.id for group in user_groups}
+
+    if realm.workplace_users_group_id in user_group_ids:
+        return True
+
+    workplace_users_group_subgroup_ids = set(
+        get_recursive_subgroups(realm.workplace_users_group_id).values_list("id", flat=True)
+    )
+    if workplace_users_group_subgroup_ids & user_group_ids:
+        return True
+
+    return False

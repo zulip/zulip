@@ -295,6 +295,16 @@ export function set_up_combined(
             }
 
             if (include_user_groups) {
+                if (query.startsWith("@")) {
+                    // If query starts with @ we expect only user group
+                    // suggestions so we simply return user group source.
+                    if (opts.user_group_source !== undefined) {
+                        return opts
+                            .user_group_source()
+                            .map((user_group) => ({type: "user_group", ...user_group}));
+                    }
+                    return user_group_pill.typeahead_source(pills);
+                }
                 if (opts.user_group_source !== undefined) {
                     const groups: UserGroupPillData[] = opts
                         .user_group_source()
@@ -345,9 +355,17 @@ export function set_up_combined(
                 return item.name.toLowerCase().includes(query);
             }
 
+            if (include_user_groups && query.startsWith("@")) {
+                if (item.type === "user_group") {
+                    const normalized_query = query.slice(1);
+                    return group_matcher(normalized_query, item);
+                }
+                return false;
+            }
+
             let matches = false;
             if (include_user_groups && item.type === "user_group") {
-                matches = matches || group_matcher(query, item);
+                matches = group_matcher(query, item);
             }
 
             if (include_users && item.type === "user") {
@@ -383,9 +401,10 @@ export function set_up_combined(
                 }
             }
 
+            const normalized_query = query.startsWith("@") ? query.slice(1) : query;
             return typeahead_helper.sort_stream_or_group_members_options({
                 users,
-                query,
+                query: normalized_query,
                 groups,
                 for_stream_subscribers: opts.for_stream_subscribers,
             });

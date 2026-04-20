@@ -1,10 +1,11 @@
+import datetime
 import hashlib
 import json
 import logging
 import random
 from abc import ABC, abstractmethod
 from base64 import b64encode
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import quote, urlencode, urljoin, urlsplit
 
 import requests
@@ -15,6 +16,7 @@ from django.http import HttpRequest, HttpResponse
 from django.middleware import csrf
 from django.shortcuts import redirect, render
 from django.utils.crypto import constant_time_compare, salted_hmac
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
@@ -64,6 +66,56 @@ class CreateVideoCallFailedError(JsonableError):
     def __init__(self, provider_name: str) -> None:
         super().__init__(
             _("Failed to create {provider_name} call").format(provider_name=provider_name)
+        )
+
+
+class VideoCallProviderNotConfiguredError(JsonableError):
+    def __init__(self, provider_name: str) -> None:
+        super().__init__(
+            _("{provider_name} credentials have not been configured").format(
+                provider_name=provider_name
+            )
+        )
+
+
+class VideoCallProviderCredentialsError(JsonableError):
+    def __init__(self, provider_name: str) -> None:
+        super().__init__(
+            _("Invalid {provider_name} credentials").format(provider_name=provider_name)
+        )
+
+
+class VideoCallServerConnectionError(JsonableError):
+    def __init__(self, provider_name: str, reason: str) -> None:
+        super().__init__(
+            _("Error connecting to the {provider_name} server: {reason}").format(
+                provider_name=provider_name, reason=reason
+            )
+        )
+
+
+class VideoCallServerAuthError(JsonableError):
+    def __init__(self, provider_name: str) -> None:
+        super().__init__(
+            _("Error authenticating to the {provider_name} server").format(
+                provider_name=provider_name
+            )
+        )
+
+
+class VideoCallServerStatusError(JsonableError):
+    def __init__(self, provider_name: str, status: str | None) -> None:
+        super().__init__(
+            _("{provider_name} server returned an unexpected error: {status}").format(
+                provider_name=provider_name, status=status
+            )
+        )
+
+
+class VideoCallProviderSessionIdError(JsonableError):
+    def __init__(self, provider_name: str) -> None:
+        super().__init__(
+            _("Invalid {provider_name} session identifier").format(provider_name=provider_name)
         )
 
 
@@ -156,11 +208,7 @@ class OAuthVideoCallProvider(ABC):
 
     def __get_session(self, user: UserProfile) -> OAuth2Session:
         if self.client_id is None or self.client_secret is None:
-            raise JsonableError(
-                _("{provider_name} credentials have not been configured").format(
-                    provider_name=self.provider_name
-                )
-            )
+            raise VideoCallProviderNotConfiguredError(self.provider_name)
 
         return OAuth2Session(
             self.client_id,
@@ -211,11 +259,7 @@ class OAuthVideoCallProvider(ABC):
         self, request: HttpRequest, sid: str, code: str, **kwargs: Any
     ) -> HttpResponse:
         if not constant_time_compare(sid, self.__get_sid(request)):
-            raise JsonableError(
-                _("Invalid {provider_name} session identifier").format(
-                    provider_name=self.provider_name
-                )
-            )
+            raise VideoCallProviderSessionIdError(self.provider_name)
         assert isinstance(request.user, UserProfile)
         oauth = self.__get_session(request.user)
         try:
@@ -223,9 +267,7 @@ class OAuthVideoCallProvider(ABC):
                 self.token_url, code=code, client_secret=self.client_secret, **kwargs
             )
         except OAuth2Error:
-            raise JsonableError(
-                _("Invalid {provider_name} credentials").format(provider_name=self.provider_name)
-            )
+            raise VideoCallProviderCredentialsError(self.provider_name)
 
         self.update_token(request.user, token)
         return render(request, "zerver/close_window.html")
@@ -264,6 +306,54 @@ class OAuthVideoCallProvider(ABC):
         return self.get_meeting_details(request, response)
 
 
+class WebexOAuthProvider(OAuthVideoCallProvider):
+    provider_name = "Webex"
+    token_key_name = "webex"
+
+    def __init__(self) -> None:
+        self.client_id = settings.VIDEO_WEBEX_CLIENT_ID
+        self.client_secret = settings.VIDEO_WEBEX_CLIENT_SECRET
+        self.authorization_url = urljoin(settings.VIDEO_WEBEX_API_URL, "authorize")
+        self.token_url = urljoin(settings.VIDEO_WEBEX_API_URL, "access_token")
+        self.auto_refresh_url = urljoin(settings.VIDEO_WEBEX_API_URL, "access_token")
+        self.create_meeting_url = urljoin(settings.VIDEO_WEBEX_API_URL, "meetings")
+        self.create_room_url = urljoin(settings.VIDEO_WEBEX_API_URL, "rooms")
+        # We need spark:all to create meetings with an associated roomId, which are
+        # ad-hoc meetings in our case: https://developer.webex.com/meeting/docs/meetings.
+        self.authorization_scope = "meeting:schedules_read meeting:schedules_write spark:all"
+
+    @override
+    def get_meeting_details(self, request: HttpRequest, response: Response) -> HttpResponse:
+        return json_success(request, data={"url": response.json()["webLink"]})
+
+    # For ad-hoc meetings, we need to create a public room as a prerequisite,
+    # where a public room is a room that lets anyone in the Webex organization
+    # join meetings associated with it. Note that the public room feature is
+    # restricted to paid Webex organizations.
+    def maybe_generate_public_room_id(self, user: UserProfile) -> str | None:
+        create_room_payload = {
+            "title": "Webex Zulip Meeting",
+            "isPublic": True,
+            "description": "A Webex meeting created via the Zulip client.",
+        }
+        response = self.oauth_post(user, self.create_room_url, json=create_room_payload)
+
+        # This is probably a free organization, because the Webex API sends a 403
+        # response when trying to create a public room with user credentials that
+        # belong to a free organization with the message: "Spaces belonging to a
+        # free org cannot be made public". For details, see error docs at
+        # https://developer.webex.com/messaging/docs/api/v1/rooms/create-a-room.
+        if response.status_code == 403:
+            return None
+        elif not response.ok:
+            raise JsonableError(
+                _("Failed to create {provider_name} public room.").format(
+                    provider_name=self.provider_name
+                )
+            )
+        return response.json()["id"]
+
+
 class ZoomGeneralOAuthProvider(OAuthVideoCallProvider):
     provider_name = "Zoom"
     authorization_scope = None
@@ -288,6 +378,12 @@ def register_zoom_user(request: HttpRequest) -> HttpResponse:
     return ZoomGeneralOAuthProvider().register_user(request=request)
 
 
+@zulip_login_required
+@never_cache
+def register_webex_user(request: HttpRequest) -> HttpResponse:
+    return WebexOAuthProvider().register_user(request=request)
+
+
 class StateDictRealm(TypedDict):
     realm: str
     sid: str
@@ -307,6 +403,19 @@ class ZoomPayload(TypedDict):
     default_password: bool
 
 
+class WebexPersonalRoomMeetingPayload(TypedDict):
+    title: str
+    start: str
+    end: str
+    scheduledType: Literal["personalRoomMeeting"]
+
+
+class WebexAdhocMeetingPayload(TypedDict):
+    title: str
+    adhoc: Literal[True]
+    roomId: str
+
+
 @never_cache
 @zulip_login_required
 @typed_endpoint
@@ -321,10 +430,24 @@ def complete_zoom_user(
     return ZoomGeneralOAuthProvider().complete_user(request, code=code, sid=state["sid"])
 
 
+@never_cache
+@zulip_login_required
+@typed_endpoint
+def complete_webex_user(
+    request: HttpRequest,
+    *,
+    code: str,
+    state: Json[StateDictRealm],
+) -> HttpResponse:
+    if get_subdomain(request) != state["realm"]:
+        return redirect(urljoin(get_realm(state["realm"]).url, request.get_full_path()))
+    return WebexOAuthProvider().complete_user(request, code=code, sid=state["sid"])
+
+
 @cache_with_key(zoom_server_access_token_cache_key, timeout=3600 - 240)
 def get_zoom_server_to_server_access_token(account_id: str) -> str:
     if settings.VIDEO_ZOOM_CLIENT_ID is None:
-        raise JsonableError(_("Zoom credentials have not been configured"))
+        raise VideoCallProviderNotConfiguredError("Zoom")
 
     client_id = settings.VIDEO_ZOOM_CLIENT_ID.encode("utf-8")
     client_secret = str(settings.VIDEO_ZOOM_CLIENT_SECRET).encode("utf-8")
@@ -340,7 +463,7 @@ def get_zoom_server_to_server_access_token(account_id: str) -> str:
     if not response.ok:
         # {reason: 'Bad request', error: 'invalid_request'} for invalid account ID
         # {'reason': 'Invalid client_id or client_secret', 'error': 'invalid_client'}
-        raise JsonableError(_("Invalid Zoom credentials"))
+        raise VideoCallProviderCredentialsError("Zoom")
     return response.json()["access_token"]
 
 
@@ -416,6 +539,36 @@ def make_zoom_video_call(
     return ZoomGeneralOAuthProvider().make_video_call(request=request, user=user, payload=payload)
 
 
+@typed_endpoint_without_parameters
+def make_webex_video_call(request: HttpRequest, user: UserProfile) -> HttpResponse:
+    room_id = WebexOAuthProvider().maybe_generate_public_room_id(user)
+    payload: WebexAdhocMeetingPayload | WebexPersonalRoomMeetingPayload
+
+    # Quoting from https://developer.webex.com/meeting/docs/api/v1/meetings/create-a-meeting:
+    # An ad-hoc meeting is a non-recurring instant meeting for the target room
+    # which is supposed to be started immediately after being created for a
+    # quick collaboration.
+
+    # Public room IDs can only be generated if the user belongs to a paid Webex
+    # organization. They are necessary to generate ad-hoc Webex meetings which
+    # can be joined by anyone in the Webex organization. We fall back to
+    # generating a personal room meeting link if the user belongs to a free
+    # Webex organization.
+    if room_id is not None:
+        payload = WebexAdhocMeetingPayload(adhoc=True, roomId=room_id, title="Webex Ad-hoc meeting")
+    else:
+        start_time = timezone_now()
+        end_time = start_time + datetime.timedelta(minutes=40)
+        payload = WebexPersonalRoomMeetingPayload(
+            scheduledType="personalRoomMeeting",
+            start=start_time.isoformat(timespec="seconds"),
+            end=end_time.isoformat(timespec="seconds"),
+            title="Webex Personal Room Meeting",
+        )
+
+    return WebexOAuthProvider().make_video_call(request, user, payload=payload)
+
+
 @csrf_exempt
 @require_POST
 @typed_endpoint_without_parameters
@@ -462,7 +615,7 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
     assert request.user.is_authenticated
 
     if settings.BIG_BLUE_BUTTON_URL is None or settings.BIG_BLUE_BUTTON_SECRET is None:
-        raise JsonableError(_("BigBlueButton is not configured."))
+        raise VideoCallProviderNotConfiguredError("BigBlueButton")
 
     try:
         bigbluebutton_data = Signer().unsign_object(bigbluebutton)
@@ -494,19 +647,15 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
             reason = f"HTTP {response.status_code}: {response.text:.200}"
         else:
             reason = str(e)
-        raise JsonableError(
-            _("Error connecting to the BigBlueButton server: {reason}").format(reason=reason)
-        )
+        raise VideoCallServerConnectionError("BigBlueButton", reason=reason)
 
     payload = ElementTree.fromstring(response.text)
     if assert_is_not_none(payload.find("messageKey")).text == "checksumError":
-        raise JsonableError(_("Error authenticating to the BigBlueButton server."))
+        raise VideoCallServerAuthError("BigBlueButton")
 
     status = assert_is_not_none(payload.find("returncode")).text
     if status != "SUCCESS":
-        raise JsonableError(
-            _("BigBlueButton server returned an unexpected error: {status}").format(status=status)
-        )
+        raise VideoCallServerStatusError("BigBlueButton", status=status)
 
     join_params = urlencode(
         {
@@ -574,7 +723,7 @@ def create_nextcloud_talk_url(
         or settings.NEXTCLOUD_TALK_USERNAME is None
         or settings.NEXTCLOUD_TALK_PASSWORD is None
     ):
-        raise JsonableError(_("Nextcloud Talk is not configured"))
+        raise VideoCallProviderNotConfiguredError("Nextcloud Talk")
 
     room_name = truncate_content(room_name, MAX_NEXTCLOUD_TALK_ROOM_NAME_LENGTH, "...")
     # https://nextcloud-talk.readthedocs.io/en/stable/conversation/#creating-a-new-conversation
@@ -605,9 +754,7 @@ def create_nextcloud_talk_url(
             reason = f"HTTP {response.status_code}: {response.text:.200}"
         else:
             reason = str(e)
-        raise JsonableError(
-            _("Error connecting to the Nextcloud Talk server: {reason}").format(reason=reason)
-        )
+        raise VideoCallServerConnectionError("Nextcloud Talk", reason=reason)
     try:
         data = response.json()
         token = data["ocs"]["data"]["token"]

@@ -134,7 +134,12 @@ export function initialize(): void {
         onShow(instance) {
             popovers.hide_all();
 
+            if (drafts.draft_model.getDraftCount() === 0) {
+                return false;
+            }
+
             instance.setContent(ui_util.parse_html(render_left_sidebar_drafts_popover({})));
+            return undefined;
         },
         onHidden(instance) {
             instance.destroy();

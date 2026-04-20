@@ -11,6 +11,7 @@ supported by Zulip are:
 - [BigBlueButton](https://zulip.com/integrations/big-blue-button)
 - [Constructor Groups](https://zulip.com/integrations/constructor-groups)
 - [Nextcloud Talk](https://zulip.com/integrations/nextcloud-talk)
+- [Webex](https://zulip.com/integrations/category/video-calling)
 
 By default, Zulip uses the [cloud version of Jitsi Meet](https://meet.jit.si/)
 as its call provider. This page documents the configurations required to support
@@ -195,3 +196,47 @@ integration on a self-hosted Zulip installation, you'll need to have access
 to a Nextcloud server (version 22+) with the Talk app enabled. See
 documentation to configure the Nextcloud Talk video call integration
 [here](https://zulip.com/integrations/nextcloud-talk).
+
+## Webex
+
+To use the [Webex](https://www.webex.com/) integration on a self-hosted
+Zulip installation, you'll need to register a custom Webex integration.
+
+For users in paid Webex organizations, which have the ability to create
+public rooms that are visible to every member within that organization,
+an ad-hoc meeting is created in Webex. Otherwise, for users of free
+Webex organizations, a personal room meeting is created in Webex.
+
+### Create a custom Webex integration
+
+1. Visit the [New Integration](https://developer.webex.com/my-apps/new/integration)
+   page on the Webex developer portal.
+
+1. Select "No" for "Will this integration use a mobile SDK?".
+
+1. Fill in the **Integration name**, **Icon** and **App Hub Description**
+   according to your preferences.
+
+1. For **Redirect URI(s)**, enter `https://zulip.example.com/calls/webex/complete`
+   replacing `zulip.example.com` with your Zulip organization's URL.
+
+1. For **Scopes**, select `spark:all`, `meeting:schedules_read` and
+   `meeting:schedules_write`, and select **Add Integration**.
+
+1. _optional_: You can submit the integration to the [Webex App Hub](https://apphub.webex.com/)
+   by following [this documentation](https://developer.webex.com/create/docs/app-hub-submission-process).
+
+### Configure your Zulip server
+
+1. In `/etc/zulip/zulip-secrets.conf`, set `video_webex_client_secret`
+   to your Webex integration's "Client Secret".
+
+1. In `/etc/zulip/settings.py`, set `VIDEO_WEBEX_CLIENT_ID` to your
+   Webex integration's "Client ID".
+
+1. Restart the Zulip server with
+   `/home/zulip/deployments/current/scripts/restart-server`.
+
+This enables Webex support in your Zulip server. Finally, [configure Webex
+as the video call provider](https://zulip.com/help/configure-call-provider)
+in the Zulip organization where you want to use it.

@@ -86,6 +86,7 @@ SOCIAL_AUTH_GITLAB_KEY = get_secret("social_auth_gitlab_key", development_only=T
 SOCIAL_AUTH_SUBDOMAIN: str | None = None
 SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = get_secret("social_auth_azuread_oauth2_key", development_only=True)
 SOCIAL_AUTH_GOOGLE_KEY = get_secret("social_auth_google_key", development_only=True)
+SOCIAL_AUTH_DISCORD_KEY = get_secret("social_auth_discord_key", development_only=True)
 # SAML:
 SOCIAL_AUTH_SAML_SP_ENTITY_ID: str | None = None
 SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = ""
@@ -126,6 +127,9 @@ VIDEO_ZOOM_OAUTH_URL: str = "https://zoom.us"
 VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID = get_secret("video_zoom_account_id", development_only=True)
 VIDEO_ZOOM_CLIENT_ID = get_secret("video_zoom_client_id", development_only=True)
 VIDEO_ZOOM_CLIENT_SECRET = get_secret("video_zoom_client_secret")
+VIDEO_WEBEX_API_URL: str = "https://webexapis.com/v1/"
+VIDEO_WEBEX_CLIENT_ID = get_secret("video_webex_client_id", development_only=True)
+VIDEO_WEBEX_CLIENT_SECRET = get_secret("video_webex_client_secret")
 
 # Email gateway
 EMAIL_GATEWAY_PATTERN = ""
@@ -191,6 +195,9 @@ GIPHY_API_KEY = get_secret("giphy_api_key")
 
 # Tenor API key
 TENOR_API_KEY = get_secret("tenor_api_key")
+
+# Klipy API key
+KLIPY_API_KEY = get_secret("klipy_api_key")
 
 # Allow setting BigBlueButton settings in zulip-secrets.conf in
 # development; this is useful since there are no public BigBlueButton servers.
@@ -772,7 +779,3 @@ SCIM_CONFIG: dict[str, SCIMConfigDict] = {}
 # Minimum number of subscribers in a channel for us to no longer
 # send full subscriber data to the client.
 MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE = 1000
-
-# Whether to prefer direct message group over personal recipient
-# for 1:1 or self messages.
-PREFER_DIRECT_MESSAGE_GROUP = False

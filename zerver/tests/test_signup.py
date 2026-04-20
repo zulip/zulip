@@ -63,6 +63,7 @@ from zerver.lib.test_helpers import (
     ratelimit_rule,
     reset_email_visibility_to_everyone_in_zulip_realm,
 )
+from zerver.lib.types import Invitee
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -438,7 +439,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
 
         # Initial DM sent by welcome bot is also starred.
         initial_direct_user_message = UserMessage.objects.get(
-            user_profile=hamlet, message__recipient__type=Recipient.PERSONAL
+            user_profile=hamlet, message__recipient__type=Recipient.DIRECT_MESSAGE_GROUP
         )
         self.assertTrue(initial_direct_user_message.flags.starred.is_set)
 
@@ -455,7 +456,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
         new_messages_count = message_stream_count(user_profile)
         self.assertEqual(new_messages_count, old_messages_count + 1)
 
-        recipient = Recipient.objects.get(type_id=user_profile.id, type=Recipient.PERSONAL)
+        recipient = self.get_dm_group_recipient(user_profile)
         message = most_recent_message(user_profile)
         self.assertEqual(message.recipient, recipient)
 
@@ -987,7 +988,7 @@ class LoginTest(ZulipTestCase):
             # We're over the allowed limit, so the next attempt, even with the correct
             # password, will get blocked.
             result = self.login_with_return(email)
-            self.assert_in_success_response(["Try again in 10 seconds"], result)
+            self.assert_in_success_response(["Try again in 5 seconds"], result)
 
         # After time passes, we should be able to log in.
         with patch("time.time", return_value=start_time + 11):
@@ -1067,8 +1068,8 @@ class LoginTest(ZulipTestCase):
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
         with (
-            self.assert_database_query_count(96),
-            self.assert_memcached_count(18),
+            self.assert_database_query_count(101),
+            self.assert_memcached_count(19),
             self.captureOnCommitCallbacks(execute=True),
         ):
             self.register(self.nonreg_email("test"), "test")
@@ -3421,7 +3422,7 @@ class UserSignUpTest(ZulipTestCase):
         with self.captureOnCommitCallbacks(execute=True):
             do_invite_users(
                 admin,
-                [mirror_dummy.delivery_email],
+                [Invitee(email=mirror_dummy.delivery_email)],
                 [],
                 invite_expires_in_minutes=None,
                 include_realm_default_subscriptions=True,
@@ -3616,7 +3617,7 @@ class UserSignUpTest(ZulipTestCase):
         welcome_msg = Message.objects.filter(
             realm_id=realm.id,
             sender__email="welcome-bot@zulip.com",
-            recipient__type=Recipient.PERSONAL,
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
         ).latest("id")
         self.assertTrue(welcome_msg.content.startswith("Hello, and welcome to Zulip!"))
 

@@ -33,6 +33,7 @@ export function setup_toggler(): void {
                 const hash = hash_util.channels_settings_edit_url(sub, select_tab);
                 browser_history.update(hash);
             }
+            $("#stream_settings").toggleClass("subscribers-tab-active", key === "subscribers");
         },
     });
 }

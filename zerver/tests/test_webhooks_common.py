@@ -3,12 +3,14 @@ import hmac
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
+import requests
 from django.http import HttpRequest, QueryDict
 from django.http.response import HttpResponse
 from django.test import override_settings
 from django.utils.encoding import force_bytes
 from typing_extensions import override
 
+from version import ZULIP_VERSION
 from zerver.actions.custom_profile_fields import try_add_realm_custom_profile_field
 from zerver.actions.streams import do_rename_stream
 from zerver.decorator import webhook_view
@@ -24,6 +26,7 @@ from zerver.lib.webhooks.common import (
     call_fixture_to_headers,
     check_send_webhook_message,
     get_event_header,
+    get_service_api_data,
     guess_zulip_user_from_external_account,
     standardize_headers,
     validate_webhook_signature,
@@ -351,3 +354,103 @@ class MissingEventHeaderTestCase(WebhookTestCase):
     @override
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("groove", fixture_name, file_type="json")
+
+
+class TestGetServiceApiData(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        self.url = "https://api.example.com/users/123"
+        self.integration_name = "TestIntegration"
+        self.params = {"id": "123"}
+        self.headers = {"Authorization": "Bearer token"}
+
+        self.mock_response = MagicMock()
+        self.mock_response.status_code = 200
+        self.mock_response.json.return_value = {"name": "Test User"}
+
+    @patch("zerver.lib.webhooks.common.OutgoingSession")
+    def test_get_service_api_data_success(self, mock_session_class: MagicMock) -> None:
+        mock_session_instance = mock_session_class.return_value
+        mock_session_instance.request.return_value = self.mock_response
+
+        test_cases = [
+            {
+                "method": "get",
+                "expected_method": "GET",
+                "json": None,
+                "params": self.params,
+            },
+            {
+                "method": "POST",
+                "expected_method": "POST",
+                "json": self.params,
+                "params": None,
+            },
+        ]
+
+        for case in test_cases:
+            with self.subTest(method=case["method"]):
+                mock_session_class.reset_mock()
+                mock_session_instance.request.reset_mock()
+
+                with self.assertNoLogs("zerver.lib.webhooks.common", level="WARNING"):
+                    result = get_service_api_data(
+                        self.url,
+                        integration_name=self.integration_name,
+                        headers=self.headers,
+                        params=self.params,
+                        method=str(case["method"]),
+                        timeout=10.0,
+                    )
+
+                mock_session_class.assert_called_once_with(
+                    role="webhook_fetch",
+                    headers={
+                        "User-Agent": f"ZulipWebhookFetch/{ZULIP_VERSION}",
+                        **self.headers,
+                    },
+                    timeout=10.0,
+                    max_retries=3,
+                )
+
+                mock_session_instance.request.assert_called_once_with(
+                    method=case["expected_method"],
+                    url=self.url,
+                    json=case["json"],
+                    params=case["params"],
+                )
+                self.assertEqual(result.json(), {"name": "Test User"})
+
+    @patch("zerver.lib.webhooks.common.OutgoingSession.request")
+    def test_get_service_api_data_http_error(self, mock_request: MagicMock) -> None:
+        mock_request.return_value.raise_for_status.side_effect = requests.HTTPError("404 Not Found")
+
+        with (
+            self.assertLogs("zerver.lib.webhooks.common", level="WARNING") as cm,
+            self.assertRaises(requests.HTTPError),
+        ):
+            get_service_api_data(self.url, integration_name=self.integration_name)
+
+        self.assertEqual(
+            cm.output[0],
+            "WARNING:zerver.lib.webhooks.common:Failed to fetch data from "
+            "https://api.example.com/users/123 for "
+            "TestIntegration integration: 404 Not Found",
+        )
+
+    @patch("zerver.lib.webhooks.common.OutgoingSession.request")
+    def test_get_service_api_data_request_exception(self, mock_request: MagicMock) -> None:
+        mock_request.side_effect = requests.ConnectionError("Connection failed")
+
+        with (
+            self.assertLogs("zerver.lib.webhooks.common", level="WARNING") as cm,
+            self.assertRaises(requests.ConnectionError),
+        ):
+            get_service_api_data(self.url, integration_name=self.integration_name)
+
+        self.assertEqual(
+            cm.output[0],
+            "WARNING:zerver.lib.webhooks.common:Failed to fetch data from "
+            "https://api.example.com/users/123 for "
+            "TestIntegration integration: Connection failed",
+        )

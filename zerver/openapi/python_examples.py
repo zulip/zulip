@@ -801,6 +801,8 @@ def regenerate_api_key(client: Client) -> None:
 
     # Update the client with the new API key so subsequent tests don't fail.
     client.api_key = result["api_key"]
+    # Reset the session so it is re-created with the new API key.
+    client.session = None
 
 
 @openapi_test_function("/bots/{bot_id}/api_key:get")
@@ -2265,6 +2267,10 @@ def test_api_key_endpoints(client: Client) -> None:
 
 def test_the_api(client: Client, nonadmin_client: Client, owner_client: Client) -> None:
     get_user_agent(client)
+    # Run `test_api_key_endpoints` before `test_users` so Device records created by
+    # `register_push_device` & `register_device` are not bulk-deleted by
+    # `regenerate_api_key`, since they are needed for curl tests.
+    test_api_key_endpoints(client)
     test_users(client, owner_client)
     test_streams(client, nonadmin_client)
     test_messages(client, nonadmin_client)
@@ -2273,7 +2279,6 @@ def test_the_api(client: Client, nonadmin_client: Client, owner_client: Client) 
     test_errors(client)
     test_invitations(client)
     test_welcome_bot_custom_message(client)
-    test_api_key_endpoints(client)
 
     sys.stdout.flush()
     if REGISTERED_TEST_FUNCTIONS != CALLED_TEST_FUNCTIONS:

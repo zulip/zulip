@@ -1039,16 +1039,15 @@ def get_message_payload(
 
         data["topic"] = get_topic_display_name(message.topic_name(), user_profile.default_language)
     else:
-        assert message.recipient.type in [Recipient.PERSONAL, Recipient.DIRECT_MESSAGE_GROUP]
+        assert message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP
         if for_legacy_clients:
             data["recipient_type"] = "private"
-            if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
-                # For group DMs, we need to fetch the users for the pm_users field.
-                # Note that this doesn't do a separate database query, because both
-                # functions use the get_display_recipient_by_id cache.
-                recipients = get_display_recipient(message.recipient)
-                if len(recipients) > 2:
-                    data["pm_users"] = direct_message_group_users(message.recipient.id)
+            # For 3+ person DMs, we need to fetch the users for the pm_users field.
+            # Note that this doesn't do a separate database query, because both
+            # functions use the get_display_recipient_by_id cache.
+            recipients = get_display_recipient(message.recipient)
+            if len(recipients) > 2:
+                data["pm_users"] = direct_message_group_users(message.recipient.id)
         else:
             data["recipient_type"] = "direct"
             # For 1:1 and group DMs, we need to fetch the users for the `recipient_user_ids`
@@ -1058,7 +1057,7 @@ def get_message_payload(
             recipient_user_ids = {
                 display_recipient["id"] for display_recipient in display_recipients
             }
-            if len(recipient_user_ids) == 1:  # Recipient.PERSONAL
+            if len(recipient_user_ids) == 1:  # Self-DM
                 recipient_user_ids.add(message.sender_id)
             data["recipient_user_ids"] = sorted(recipient_user_ids)
 
@@ -1116,8 +1115,6 @@ def get_apns_alert_subtitle(
         NotificationTriggers.STREAM_WILDCARD_MENTION,
     ):
         return _("{full_name} mentioned everyone:").format(full_name=sender_name)
-    elif message.recipient.type == Recipient.PERSONAL:
-        return ""
     elif message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
         recipients = get_display_recipient(message.recipient)
         if len(recipients) <= 2:
@@ -1723,7 +1720,6 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
             "subject",
             "rendered_content",
             "date_sent",
-            "sender__recipient_id",
             "sender__realm_id",
             "sender__is_bot",
             "sender__email",

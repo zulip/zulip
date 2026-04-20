@@ -245,6 +245,11 @@ exports.fixtures = {
         topic: "topic1",
     },
 
+    has_webex_token: {
+        type: "has_webex_token",
+        value: true,
+    },
+
     has_zoom_token: {
         type: "has_zoom_token",
         value: true,
@@ -345,11 +350,6 @@ exports.fixtures = {
         emoji_name: "airplane",
         emoji_code: "2708",
         user_id: test_user.user_id,
-        user: {
-            email: test_user.email,
-            full_name: test_user.full_name,
-            user_id: test_user.user_id,
-        },
     },
 
     reaction__remove: {
@@ -360,11 +360,6 @@ exports.fixtures = {
         emoji_name: "8ball",
         emoji_code: "1f3b1",
         user_id: test_user.user_id,
-        user: {
-            email: test_user.email,
-            full_name: test_user.full_name,
-            user_id: test_user.user_id,
-        },
     },
 
     realm__deactivated: {
@@ -573,10 +568,26 @@ exports.fixtures = {
         domain: "ramen",
     },
 
-    realm_emoji__update: {
+    realm_emoji__add: {
         type: "realm_emoji",
-        op: "update",
-        realm_emoji: exports.test_realm_emojis,
+        op: "add",
+        emoji: {
+            id: "101",
+            name: "spain",
+            source_url: "/some/path/to/spain.gif",
+            still_url: "/some/path/to/spain.png",
+            deactivated: false,
+            author_id: test_user.user_id,
+        },
+    },
+
+    realm_emoji__update_one: {
+        type: "realm_emoji",
+        op: "update_one",
+        emoji_id: "101",
+        data: {
+            deactivated: true,
+        },
     },
 
     realm_export: {

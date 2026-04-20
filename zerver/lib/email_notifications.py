@@ -2,10 +2,7 @@
 
 import base64
 import logging
-import os
 import re
-import subprocess
-import sys
 import zoneinfo
 from collections import defaultdict
 from dataclasses import dataclass
@@ -41,7 +38,6 @@ from zerver.lib.topic import get_topic_display_name, get_topic_resolution_and_ba
 from zerver.lib.url_encoding import (
     direct_message_group_narrow_url,
     message_link_url,
-    personal_narrow_url,
     stream_narrow_url,
     topic_narrow_url,
 )
@@ -49,6 +45,25 @@ from zerver.models import Message, Realm, Recipient, Stream, UserMessage, UserPr
 from zerver.models.messages import get_context_for_message
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import get_user_profile_by_id
+
+
+@dataclass
+class FormattedText:
+    plain: str
+    html: Markup
+
+
+@dataclass
+class SenderPayload:
+    sender: str
+    content: list[FormattedText]
+
+
+@dataclass
+class MessageListPayload:
+    senders: list[SenderPayload]
+    header: FormattedText | None = None
+
 
 logger = logging.getLogger(__name__)
 
@@ -235,7 +250,7 @@ def build_message_list(
     user: UserProfile,
     messages: list[Message],
     stream_id_map: dict[int, Stream] | None = None,  # only needs id, name
-) -> dict[str, Any]:
+) -> MessageListPayload:
     """
     Builds the message list object for the message notification email and
     digest email template. All `messages` share the same recipient (and topic).
@@ -273,9 +288,7 @@ def build_message_list(
             message_soup.insert(0, sender_name_soup)
         return message_plain, Markup(BeautifulSoup.decode(message_soup))
 
-    def build_message_payload(
-        message: Message, sender: str | None = None
-    ) -> dict[str, str | Markup]:
+    def build_message_payload(message: Message, sender: str | None = None) -> FormattedText:
         plain = message.content
         plain = fix_plaintext_image_urls(plain)
         # There's a small chance of colliding with non-Zulip URLs containing
@@ -298,13 +311,13 @@ def build_message_list(
         html = Markup(lxml.html.tostring(fragment, encoding="unicode"))
         if sender:
             plain, html = prepend_sender_to_message(plain, html, sender)
-        return {"plain": plain, "html": html}
+        return FormattedText(plain=plain, html=html)
 
-    def build_sender_payload(message: Message) -> dict[str, Any]:
+    def build_sender_payload(message: Message) -> SenderPayload:
         sender = sender_string(message)
-        return {"sender": sender, "content": [build_message_payload(message, sender)]}
+        return SenderPayload(sender=sender, content=[build_message_payload(message, sender)])
 
-    def digest_block_header(message: Message) -> dict[str, Any]:
+    def digest_block_header(message: Message) -> FormattedText:
         assert message.recipient.type == Recipient.STREAM
         stream_id = message.recipient.type_id
         assert stream_id_map is not None
@@ -334,24 +347,7 @@ def build_message_list(
             narrow_link=narrow_link,
             topic_html=topic_html,
         )
-        return {
-            "plain": header,
-            "html": header_html,
-        }
-
-    # Collapse message list to:
-    # {
-    #     "header": {"plain": "header", "html": "htmlheader"},
-    #     "senders": [
-    #         {
-    #             "sender": "sender_name",
-    #             "content": [
-    #                 {"plain": "content", "html": "htmlcontent"},
-    #                 {"plain": "content", "html": "htmlcontent"},
-    #             ],
-    #         }
-    #     ],
-    # }
+        return FormattedText(plain=header, html=header_html)
 
     assert len(messages) > 0
     recipients = {(message.recipient_id, message.topic_name().lower()) for message in messages}
@@ -359,17 +355,17 @@ def build_message_list(
     messages.sort(key=lambda message: message.date_sent)
 
     sender_block = [build_sender_payload(messages[0])]
-    messages_to_render: dict[str, Any] = {"senders": sender_block}
+    messages_to_render = MessageListPayload(senders=sender_block)
+
     if stream_id_map:
         # Needed only for digest emails
-        header = digest_block_header(messages[0])
-        messages_to_render["header"] = header
+        messages_to_render.header = digest_block_header(messages[0])
 
     for message in messages[1:]:
         sender = sender_string(message)
-        # Same message sender, collapse again
-        if sender_block[-1]["sender"] == sender:
-            sender_block[-1]["content"].append(build_message_payload(message))
+        # Same message sender, collapse again using object attributes
+        if sender_block[-1].sender == sender:
+            sender_block[-1].content.append(build_message_payload(message))
         else:
             # Start a new sender block
             sender_block.append(build_sender_payload(message))
@@ -410,19 +406,15 @@ def prepare_synthetic_root_message_id(
     recipient_type: int,
     recipient_id: int,
     *,
-    dm_sender_id: int | None = None,
     topic_name: str | None = None,
 ) -> str:
     """
     To help email clients thread messages from the same conversation together,
     we treat all messages as replies to a synthetic root message. This root
-    message's `Message-ID` header is derived from the recipient_id (and sender_id or topic),
-    ensuring consistency across all emails in the thread.
+    message's `Message-ID` header is derived from the recipient_id (and topic
+    for channel messages), ensuring consistency across all emails in the thread.
     """
-    if recipient_type == Recipient.PERSONAL:
-        assert dm_sender_id is not None
-        id_left = f"{recipient_id}.{dm_sender_id}"
-    elif recipient_type == Recipient.DIRECT_MESSAGE_GROUP:
+    if recipient_type == Recipient.DIRECT_MESSAGE_GROUP:
         id_left = f"{recipient_id}"
     else:
         assert topic_name is not None
@@ -433,7 +425,7 @@ def prepare_synthetic_root_message_id(
         # ref:
         # - https://datatracker.ietf.org/doc/html/rfc5322#section-3.6.4
         # - https://datatracker.ietf.org/doc/html/rfc5322#section-3.2.3
-        topic_name_base64 = base64.b64encode(topic_name.encode("utf-8")).decode("utf-8")
+        topic_name_base64 = base64.b64encode(topic_name.lower().encode("utf-8")).decode("utf-8")
         id_left = f"{recipient_id}.{topic_name_base64}"
 
     return f"<{id_left}@{settings.EXTERNAL_HOST_WITHOUT_PORT}>"
@@ -460,8 +452,8 @@ def do_send_missedmessage_events_reply_in_zulip(
     recipients = set()
     for missed_message in missed_messages:
         message = missed_message["message"]
-        if message.recipient.type == Recipient.PERSONAL:
-            recipients.add((message.recipient_id, message.sender_id))
+        if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+            recipients.add((message.recipient_id, ""))
         else:
             recipients.add((message.recipient_id, message.topic_name().lower()))
     assert len(recipients) == 1, f"Unexpectedly multiple recipients: {recipients!r}"
@@ -565,16 +557,6 @@ def do_send_missedmessage_events_reply_in_zulip(
         synthetic_root_message_id = prepare_synthetic_root_message_id(
             Recipient.DIRECT_MESSAGE_GROUP, message.recipient_id
         )
-    elif message.recipient.type == Recipient.PERSONAL:
-        narrow_url = personal_narrow_url(
-            realm=user_profile.realm,
-            sender_id=message.sender.id,
-            sender_full_name=message.sender.full_name,
-        )
-        context.update(narrow_url=narrow_url, private_message=True)
-        synthetic_root_message_id = prepare_synthetic_root_message_id(
-            Recipient.PERSONAL, message.recipient_id, dm_sender_id=message.sender.id
-        )
     elif (
         context["mention"]
         or context["stream_email_notify"]
@@ -610,7 +592,7 @@ def do_send_missedmessage_events_reply_in_zulip(
             topic_resolved=topic_resolved,
         )
         synthetic_root_message_id = prepare_synthetic_root_message_id(
-            Recipient.STREAM, message.recipient_id, topic_name=display_topic_name.lower()
+            Recipient.STREAM, message.recipient_id, topic_name=display_topic_name
         )
     else:
         raise AssertionError("Invalid messages!")
@@ -718,11 +700,7 @@ def handle_missedmessage_emails(
     # For direct messages it's recipient id and sender.
     messages_by_bucket: dict[tuple[int, int | str], list[Message]] = defaultdict(list)
     for msg in messages:
-        if msg.recipient.type == Recipient.PERSONAL:
-            # For direct messages group using (recipient, sender).
-            messages_by_bucket[(msg.recipient_id, msg.sender_id)].append(msg)
-        else:
-            messages_by_bucket[(msg.recipient_id, msg.topic_name().lower())].append(msg)
+        messages_by_bucket[(msg.recipient_id, msg.topic_name().lower())].append(msg)
 
     message_count_by_bucket = {
         bucket_tup: len(msgs) for bucket_tup, msgs in messages_by_bucket.items()
@@ -1024,17 +1002,3 @@ def enqueue_welcome_emails(
             context=onboarding_team_to_zulip_context,
             delay=onboarding_email_schedule["onboarding_team_to_zulip"],
         )
-
-
-def convert_html_to_markdown(html: str) -> str:
-    # html2text is GPL licensed, so run it as a subprocess.
-    markdown = subprocess.check_output(
-        [os.path.join(sys.prefix, "bin", "html2text"), "--unicode-snob"], input=html, text=True
-    ).strip()
-
-    # We want images to get linked and inline previewed, but html2text will turn
-    # them into links of the form `![](http://foo.com/image.png)`, which is
-    # ugly. Run a regex over the resulting description, turning links of the
-    # form `![](http://foo.com/image.png?12345)` into
-    # `[image.png](http://foo.com/image.png)`.
-    return re.sub(r"!\[\]\((\S*)/(\S*)\?(\S*)\)", "[\\2](\\1/\\2)", markdown)

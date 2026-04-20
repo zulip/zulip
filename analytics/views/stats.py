@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from typing import Annotated, Any, Optional, TypeAlias, TypeVar, cast
+from typing import Annotated, Any, Optional, TypeAlias, TypeVar
 
 from django.conf import settings
 from django.db.models import QuerySet
@@ -449,21 +449,16 @@ def do_get_chart_data(
         # table.
         assert server is not None
         assert aggregate_table is RemoteInstallationCount or aggregate_table is RemoteRealmCount
-        aggregate_table_remote = cast(
-            type[RemoteInstallationCount] | type[RemoteRealmCount], aggregate_table
-        )  # https://stackoverflow.com/questions/68540528/mypy-assertions-on-the-types-of-types
-        if not aggregate_table_remote.objects.filter(server=server).exists():
+        if not aggregate_table.objects.filter(server=server).exists():
             raise JsonableError(
                 _("No analytics data available. Please contact your server administrator.")
             )
         if start is None:
-            first = (
-                aggregate_table_remote.objects.filter(server=server).order_by("remote_id").first()
-            )
+            first = aggregate_table.objects.filter(server=server).order_by("remote_id").first()
             assert first is not None
             start = first.end_time
         if end is None:
-            last = aggregate_table_remote.objects.filter(server=server).order_by("remote_id").last()
+            last = aggregate_table.objects.filter(server=server).order_by("remote_id").last()
             assert last is not None
             end = last.end_time
     else:

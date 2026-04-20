@@ -143,7 +143,7 @@ export function initialize(): void {
     });
 
     tippy.delegate("body", {
-        target: "#add_streams_tooltip",
+        target: "#streams_inline_icon",
         onShow(instance) {
             const can_create_streams =
                 settings_data.user_can_create_private_streams() ||

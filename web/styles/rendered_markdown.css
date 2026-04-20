@@ -334,8 +334,11 @@
     }
 
     .stream-topic {
-        /* Display whitespace within topics. */
-        white-space: pre-wrap;
+        /* Display whitespace within channel and topic names. */
+        .stream-topic-inner,
+        .decorated-channel-name {
+            white-space: pre;
+        }
     }
 
     .user-group-mention {

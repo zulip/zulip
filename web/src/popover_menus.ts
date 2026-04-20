@@ -68,6 +68,7 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
 // Font size in em for popover derived from popover font size being
 // 15px at base font size of 14px.
 export const POPOVER_FONT_SIZE_IN_EM = 1.0714;
+export const NAVBAR_POPOVER_OFFSET: [number, number] = [0, 7];
 
 /* Keyboard UI functions */
 export function popover_items_handle_keyboard(key: string, $items?: JQuery): void {

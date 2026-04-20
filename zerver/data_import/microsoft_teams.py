@@ -312,13 +312,6 @@ def create_is_mirror_dummy_user(
     realm["zerver_userprofile"].append(user_profile_dict)
     microsoft_teams_user_id_to_zulip_user_id[microsoft_team_user_id] = zulip_user_id
 
-    recipient_id = NEXT_ID("recipient")
-    subscription_id = NEXT_ID("subscription")
-    recipient = build_recipient(zulip_user_id, recipient_id, Recipient.PERSONAL)
-    sub = build_subscription(recipient_id, zulip_user_id, subscription_id)
-    realm["zerver_recipient"].append(recipient)
-    realm["zerver_subscription"].append(sub)
-
 
 def convert_users(
     microsoft_teams_user_role_data: MicrosoftTeamsUserRoleData,
@@ -372,13 +365,6 @@ def convert_users(
 
         if user_role == UserProfile.ROLE_REALM_OWNER:
             has_owner = True
-
-        recipient_id = NEXT_ID("recipient")
-        subscription_id = NEXT_ID("subscription")
-        recipient = build_recipient(zulip_user_id, recipient_id, Recipient.PERSONAL)
-        sub = build_subscription(recipient_id, zulip_user_id, subscription_id)
-        realm["zerver_recipient"].append(recipient)
-        realm["zerver_subscription"].append(sub)
 
         logging.info(
             "%s: %s -> %s",

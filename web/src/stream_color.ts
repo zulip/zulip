@@ -76,7 +76,11 @@ export function adjust_stream_privacy_icon_colors(
     icon_selector: string,
 ): void {
     if (stream_id !== undefined) {
-        const privacy_icon_color = stream_data.get_sub_by_id(stream_id)?.color;
+        const stream = stream_data.get_sub_by_id(stream_id);
+        if (!stream) {
+            return;
+        }
+        const privacy_icon_color = stream.color;
 
         assert(privacy_icon_color);
         const privacy_icon_colors_modified = get_stream_privacy_icon_color(

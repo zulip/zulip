@@ -272,7 +272,7 @@ class ChangeSettingsTest(ZulipTestCase):
                 ),
             )
             self.assert_json_error(
-                result, "You're making too many attempts! Try again in 10 seconds."
+                result, "You're making too many attempts! Try again in 5 seconds."
             )
 
         # After time passes, we should be able to succeed if we give the correct password.

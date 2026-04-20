@@ -23,9 +23,10 @@ from zerver.lib.upload import (
     check_upload_within_quota,
     create_attachment,
     delete_message_attachment,
+    generate_message_upload_path,
+    get_upload_backend,
     maybe_add_charset,
     sanitize_name,
-    upload_backend,
 )
 from zerver.models import ArchivedAttachment, Attachment, PreregistrationRealm, Realm, UserProfile
 
@@ -129,7 +130,7 @@ def handle_upload_pre_create_hook(
 
     # Determine the path_id to store it at
     file_name = sanitize_name(data.meta_data.get("filename", ""), strict=True)
-    path_id = upload_backend.generate_message_upload_path(str(user_profile.realm_id), file_name)
+    path_id = generate_message_upload_path(str(user_profile.realm_id), file_name)
     return tusd_json_response({"ChangeFileInfo": {"ID": path_id}})
 
 
@@ -173,6 +174,7 @@ def handle_upload_pre_finish_hook(
 
         from zerver.lib.upload.s3 import S3UploadBackend
 
+        upload_backend = get_upload_backend()
         assert isinstance(upload_backend, S3UploadBackend)
         key = upload_backend.uploads_bucket.Object(path_id)
         key.copy_from(

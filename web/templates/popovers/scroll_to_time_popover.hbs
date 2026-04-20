@@ -9,21 +9,13 @@
                 <span class="popover-menu-label">{{t "Oldest message" }}</span>
             </a>
         </li>
-        <li role="none" class="link-item popover-menu-list-item">
-            <a role="menuitem" class="popover-menu-link" id="scroll_to_last_week" tabindex="0">
-                <span class="popover-menu-label">{{t "A week ago" }}</span>
-            </a>
-        </li>
-        <li role="none" class="link-item popover-menu-list-item">
-            <a role="menuitem" class="popover-menu-link" id="scroll_to_yesterday" tabindex="0">
-                <span class="popover-menu-label">{{t "Yesterday" }}</span>
-            </a>
-        </li>
-        <li role="none" class="link-item popover-menu-list-item">
-            <a role="menuitem" class="popover-menu-link" id="scroll_to_newest" tabindex="0">
-                <span class="popover-menu-label">{{t "Newest message" }}</span>
-            </a>
-        </li>
+        {{#each suggested_dates}}
+            <li role="none" class="link-item popover-menu-list-item">
+                <a role="menuitem" class="popover-menu-link scroll-to-suggested-date" data-iso-date="{{this.iso_date_string}}" tabindex="0">
+                    <span class="popover-menu-label">{{this.label}}</span>
+                </a>
+            </li>
+        {{/each}}
         <li role="separator" class="popover-menu-separator"></li>
         <li role="none" class="link-item popover-menu-list-item">
             <a role="menuitem" class="popover-menu-link" id="scroll_to_custom" tabindex="0">

@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const _ = require("lodash");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
 const {make_bot, make_user} = require("./lib/example_user.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
@@ -307,6 +308,18 @@ test("filters deactivated users", () => {
     assert.ok(!buddy_data.matches_filter("selm", selma.user_id));
 });
 
+test("deleted users excluded from search", () => {
+    const deleted_selma = {...selma, is_deleted: true};
+    people._add_user(deleted_selma);
+
+    let user_ids = buddy_data.get_filtered_and_sorted_user_ids();
+    assert.equal(user_ids.includes(selma.user_id), false);
+
+    user_ids = buddy_data.get_filtered_and_sorted_user_ids("selm");
+    assert.deepEqual(user_ids, []);
+    assert.ok(!buddy_data.matches_filter("selm", selma.user_id));
+});
+
 test("muted users excluded from search", () => {
     people.add_active_user(selma);
     muted_users.add_muted_user(selma.user_id);
@@ -421,7 +434,7 @@ test("show offline channel subscribers for small channels", ({override_rewire}) 
     set_presence(jill.user_id, "offline");
 
     const stream_id = 1001;
-    const sub = {name: "Rome", subscribed: true, stream_id};
+    const sub = make_stream({name: "Rome", stream_id});
     stream_data.add_sub_for_tests(sub);
     peer_data.set_subscribers(stream_id, [
         selma.user_id,
@@ -452,7 +465,7 @@ test("show offline channel subscribers for small channels", ({override_rewire}) 
 test("get_conversation_participants", () => {
     people.add_active_user(selma);
 
-    const rome_sub = {name: "Rome", subscribed: true, stream_id: 1001};
+    const rome_sub = make_stream({name: "Rome", stream_id: 1001});
     stream_data.add_sub_for_tests(rome_sub);
     peer_data.set_subscribers(rome_sub.stream_id, [selma.user_id, me.user_id]);
 
@@ -505,7 +518,7 @@ test("compare_function", () => {
     const second_user_shown_higher = 1;
 
     const stream_id = 1001;
-    const sub = {name: "Rome", subscribed: true, stream_id};
+    const sub = make_stream({name: "Rome", stream_id});
     stream_data.add_sub_for_tests(sub);
     people.add_active_user(alice);
     people.add_active_user(fred);

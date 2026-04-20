@@ -115,15 +115,6 @@
         padding: 0.25em; /* 4px at 16px/1em */
     }
 
-    .channel-privacy-type-icon {
-        /* This pushes back on suspect styles
-           in app_components.css. A fuller fix
-           will require tracking down other
-           instances of this class. */
-        width: auto;
-        padding-right: 0;
-    }
-
     /* help_link_widget margin for the fa-circle-o. */
     .help_link_widget {
         margin-left: 5px;
@@ -144,12 +135,13 @@
 }
 
 .modal__subtitle {
-    margin-top: 0.25em; /* 4px at 16px/1em */
+    margin-top: 0.875em; /* 14px at 16px/1em */
     line-height: 1.25; /* 20px at 16px/1em */
 }
 
 .modal__close {
     grid-area: modal-close-button;
+    align-self: center;
 
     &:focus-visible {
         outline-offset: -2px !important;
@@ -173,15 +165,6 @@
         /* Compensate the 3em reduced in modal_content so it positions
            itself correctly */
         max-width: calc(100% + 3em);
-    }
-
-    .channel-privacy-type-icon {
-        /* This pushes back on suspect styles
-           in app_components.css. A fuller fix
-           will require tracking down other
-           instances of this class. */
-        width: auto;
-        padding-right: 0;
     }
 }
 
@@ -277,9 +260,11 @@
         line-height: 1;
     }
 
-    #profile-tab {
+    .tabcontent {
         margin: 1px 5px 0;
+    }
 
+    #profile-tab {
         & li.custom_user_field {
             display: block;
         }
@@ -485,10 +470,15 @@
         margin-bottom: 10px;
         gap: 10px;
 
-        .dropdown-widget-button,
-        .dropdown_widget_with_label_wrapper {
+        .dropdown-widget-button {
             max-width: 100%;
             width: var(--modal-input-width);
+
+            .dropdown_widget_value {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
         }
     }
 }
@@ -509,22 +499,28 @@
     margin-bottom: 5px;
     -webkit-overflow-scrolling: touch;
 
-    .user-profile-group-row,
-    .stream-row {
+    .modal-group-list-row,
+    .modal-channel-list-row {
         display: flex;
         justify-content: space-between;
-        padding: 0.3125em 0.625em;
+        padding-right: 0.625em;
         align-items: center;
         text-decoration: none;
         border-bottom: none;
         border-radius: 4px;
         color: var(--color-dropdown-item);
-        cursor: pointer;
 
-        .user-group-list-item,
-        .stream-row-content {
+        .list-row-content {
             display: flex;
             overflow: hidden;
+            border-radius: 4px;
+            padding: 0.3125em 0.5em;
+            cursor: pointer;
+
+            &:focus-visible {
+                outline: 1px solid var(--color-outline-focus);
+                outline-offset: -2px;
+            }
         }
 
         .stream-privacy {
@@ -536,34 +532,19 @@
             padding-right: 3px;
         }
 
-        &:hover {
-            background-color: var(--color-user-profile-list-item-hover);
-        }
-
-        &:focus-visible {
-            outline: 1px solid var(--color-outline-user-profile-list-item);
-            outline-offset: -2px;
-        }
-
-        .user-group-name,
-        .stream-name {
+        .list-item-name {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            padding-right: 2px;
         }
     }
 
-    .subscription-group-list,
-    .subscription-stream-list,
-    .edit-channel-folder-stream-list {
+    .modal-list-scroll-container {
         /* We set max-height to remaining height of stream-list-container
             so that we don't clip it. Search field height takes up 2em of total. */
         height: calc(100% - 2em);
 
-        .user-group-list,
-        .user-stream-list,
-        .folder-stream-list {
+        .modal-item-list {
             list-style: none;
             margin: 0;
         }
@@ -808,9 +789,9 @@
     padding: 4px 25px 4px 6px;
     color: var(--color-text-default);
     border-radius: 4px;
-    border: 1px solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid var(--color-border-legacy-input);
     cursor: pointer;
-    background-color: hsl(0deg 0% 100%);
+    background-color: var(--color-background-legacy-input);
     max-width: 100%;
     font-size: inherit;
 
@@ -819,7 +800,7 @@
 
         /* The background-color of select elements inside modal is different than the others in
         settings pages, because the background of the modal is brighter than the setting page. */
-        background-color: hsl(0deg 0% 90%);
+        background-color: var(--color-background-disabled-modal-select);
 
         /* This is reset for other browsers to use Chrome's opacity. */
         opacity: 0.7;

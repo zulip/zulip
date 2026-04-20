@@ -11,7 +11,6 @@ const keys_map = new Map<string, string>([
 function has_mac_keyboard(): boolean {
     "use strict";
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return /mac/i.test(navigator.platform);
 }
 

@@ -143,6 +143,7 @@ def do_delete_user_core(
             full_name=f"Deleted User {user_id}",
             bot_owner=user_profile.bot_owner,
             is_mirror_dummy=True,
+            is_deleted=True,
             tos_version=user_profile.tos_version,
             # These required arguments should get default values configured on the UserProfile model,
             # to overwrite the values of user_profile.

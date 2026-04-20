@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const _ = require("lodash");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -44,10 +45,10 @@ const REALM_EMPTY_TOPIC_DISPLAY_NAME = "test general chat";
 
 set_realm(make_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME}));
 
-const general = {
+const general = make_stream({
     stream_id: 556,
     name: "general",
-};
+});
 
 stream_data.add_sub_for_tests(general);
 

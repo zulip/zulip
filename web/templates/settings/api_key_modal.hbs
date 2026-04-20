@@ -18,7 +18,7 @@
                             <label for="get_api_key_password" class="modal-field-label">{{t "Your password" }}</label>
                             <div class="password-input-row">
                                 <input type="password" autocomplete="off" name="password" id="get_api_key_password" class=" modal_password_input" value="" />
-                                <i class="fa fa-eye-slash password_visibility_toggle tippy-zulip-tooltip" role="button"></i>
+                                <i class="fa fa-eye-slash password_visibility_toggle tippy-zulip-tooltip" role="button" tabindex="0"></i>
                             </div>
                         </div>
                         <p class="small">
@@ -36,6 +36,9 @@
                         </span>
                     </div>
                     <div id="user_api_key_error" class="text-error"></div>
+                    <p class="small">
+                        {{t "Generating a new API key will immediately log you out of this account on all mobile devices." }}
+                    </p>
                 </div>
             </main>
             <footer class="modal__footer">

@@ -828,7 +828,8 @@ export function zoom_out_topics(): void {
 export function set_in_home_view(stream_id: number, in_home: boolean): void {
     const $li = get_stream_li(stream_id);
     if (!$li) {
-        blueslip.error("passed in bad stream id", {stream_id});
+        // When zoomed into a channel's topic list, only the
+        // zoomed-in channel has a row in the sidebar.
         return;
     }
 
@@ -904,14 +905,12 @@ function set_stream_unread_count(
     stream_has_any_unmuted_unread_mention: boolean,
     stream_has_only_muted_unread_mentions: boolean,
 ): void {
-    // Update the unread count for the regular stream list, even if we're
-    // currently zoomed in, so that it has the correct number when we zoom
-    // out.
-    const $stream_li = get_stream_li(stream_id, false);
+    const $stream_li = get_stream_li(stream_id);
     if (!$stream_li) {
-        // This can happen for legitimate reasons, but we warn
-        // just in case.
-        blueslip.warn("stream id no longer in sidebar: " + stream_id);
+        // When zoomed into a channel's topic list, only the
+        // zoomed-in channel has a row. The regular sidebar
+        // counts will be refreshed via `update_dom_with_unread_counts`
+        // called at the end of `build_stream_list` on zoom out.
         return;
     }
     update_count_in_dom(
@@ -921,23 +920,6 @@ function set_stream_unread_count(
         stream_has_any_unmuted_unread_mention,
         stream_has_only_muted_unread_mentions,
     );
-
-    if (zoomed_in) {
-        const $stream_li = get_stream_li(stream_id);
-        if (!$stream_li) {
-            // When zoomed in, only the zoomed-in stream has a
-            // row in the zoomed view, so this is expected for
-            // all other streams.
-            return;
-        }
-        update_count_in_dom(
-            $stream_li,
-            count,
-            stream_has_any_unread_mention_messages,
-            stream_has_any_unmuted_unread_mention,
-            stream_has_only_muted_unread_mentions,
-        );
-    }
 }
 
 export let update_streams_sidebar = (force_rerender = false): void => {
@@ -1240,12 +1222,8 @@ export function update_stream_sidebar_for_narrow(filter: Filter): JQuery | undef
     const $stream_li = get_stream_li(stream_id);
 
     if (!$stream_li) {
-        // This is a sanity check.  When we narrow to a subscribed
-        // stream, there will always be a stream list item
-        // corresponding to that stream in our sidebar.  This error
-        // stopped appearing from March 2018 until at least
-        // April 2020, so if it appears again, something regressed.
-        blueslip.error("No stream_li for subscribed stream", {stream_id});
+        // When zoomed into a channel's topic list, only the
+        // zoomed-in channel has a row in the sidebar.
         clear_topics();
         return undefined;
     }
@@ -1292,6 +1270,8 @@ export function handle_narrow_activated(
     change_hash: boolean,
     show_more_topics: boolean,
 ): void {
+    const previously_expanded_stream_id = topic_list.active_stream_id();
+
     // Zoom out, if needed, so that get_stream_li returns the correct
     // value when calling update_stream_sidebar_for_narrow.
     if (!change_hash && is_zoomed_in() && !show_more_topics) {
@@ -1303,7 +1283,11 @@ export function handle_narrow_activated(
         zoom_in();
     }
 
-    scroll_stream_into_view();
+    // Do not auto scroll when switching topics in an already expanded channel.
+    const info = get_sidebar_stream_topic_info(filter);
+    if (info.stream_id !== previously_expanded_stream_id) {
+        scroll_stream_into_view();
+    }
 }
 
 export function handle_message_view_deactivated(): void {

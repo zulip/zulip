@@ -22,6 +22,7 @@ from requests.exceptions import ConnectionError
 from typing_extensions import override
 
 from analytics.models import RealmCount
+from corporate.lib.stripe import BillingUserCounts
 from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_update_message_flags
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_regenerate_api_key
@@ -595,8 +596,8 @@ class PushBouncerNotificationTest(BouncerTestCase):
             mock.patch("zilencer.views.send_android_push_notification", return_value=1),
             mock.patch("zilencer.views.send_apple_push_notification", return_value=1),
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                return_value=10,
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(10, 0),
             ),
             self.assertLogs("zilencer.views", level="INFO"),
         ):
@@ -670,8 +671,8 @@ class PushBouncerNotificationTest(BouncerTestCase):
             ) as android_push,
             mock.patch("zilencer.views.send_apple_push_notification", return_value=1) as apple_push,
             mock.patch(
-                "corporate.lib.stripe.RemoteRealmBillingSession.current_count_for_billed_licenses",
-                return_value=10,
+                "corporate.lib.stripe.RemoteRealmBillingSession.current_counts_for_billed_users",
+                return_value=BillingUserCounts(10, 0),
             ),
             time_machine.travel(time_sent, tick=False),
             self.assertLogs("zilencer.views", level="INFO") as logger,
@@ -735,6 +736,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
     def test_send_notification_endpoint_on_free_plans(self) -> None:
         hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        recipient = get_or_create_direct_message_group(id_list=[hamlet.id, othello.id]).recipient
+
         remote_server = self.server
         RemotePushDeviceToken.objects.create(
             kind=RemotePushDeviceToken.FCM,
@@ -746,7 +750,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
         current_time = now()
         message = Message(
             sender=hamlet,
-            recipient=self.example_user("othello").recipient,
+            recipient=recipient,
             realm_id=hamlet.realm_id,
             content="This is test content",
             rendered_content="This is test content",
@@ -776,12 +780,12 @@ class PushBouncerNotificationTest(BouncerTestCase):
                     "realm_id": hamlet.realm.id,
                     "realm_uri": hamlet.realm.url,
                     "realm_url": hamlet.realm.url,
-                    "user_id": self.example_user("othello").id,
+                    "user_id": othello.id,
                 }
             },
         }
         old_gcm_payload = {
-            "user_id": self.example_user("othello").id,
+            "user_id": othello.id,
             "event": "message",
             "alert": "New private message from King Hamlet",
             "zulip_message_id": message.id,
@@ -1510,47 +1514,6 @@ class TestGetAPNsPayload(PushNotificationTestCase):
         }
         self.assertDictEqual(payload, expected)
 
-    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
-    def test_get_message_payload_apns_personal_message_using_direct_message_group(self) -> None:
-        user_profile = self.example_user("othello")
-
-        direct_message_group = get_or_create_direct_message_group(
-            id_list=[self.sender.id, user_profile.id],
-        )
-
-        message_id = self.send_personal_message(
-            self.sender,
-            user_profile,
-            "Content of personal message",
-        )
-        message = Message.objects.get(id=message_id)
-        self.assertEqual(message.recipient, direct_message_group.recipient)
-        payload = self._get_message_payload_apns(
-            user_profile, message, NotificationTriggers.DIRECT_MESSAGE
-        )
-        expected = {
-            "alert": {
-                "title": "King Hamlet",
-                "subtitle": "",
-                "body": message.content,
-            },
-            "badge": 0,
-            "sound": "default",
-            "custom": {
-                "zulip": {
-                    "message_ids": [message.id],
-                    "recipient_type": "private",
-                    "sender_email": self.sender.email,
-                    "sender_id": self.sender.id,
-                    "realm_name": self.sender.realm.name,
-                    "realm_uri": self.sender.realm.url,
-                    "realm_url": self.sender.realm.url,
-                    "user_id": user_profile.id,
-                },
-            },
-        }
-        self.assertDictEqual(payload, expected)
-
     @mock.patch("zerver.lib.push_notifications.send_push_notifications_legacy")
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
     def test_get_message_payload_apns_group_direct_message(
@@ -1924,12 +1887,13 @@ class TestGetGCMPayload(PushNotificationTestCase):
         self._test_get_message_payload_gcm_stream_message(empty_string_topic=True)
 
     def test_get_message_payload_gcm_direct_message(self) -> None:
-        message = self.get_message(
-            Recipient.PERSONAL,
-            type_id=self.personal_recipient_user.id,
-            realm_id=self.personal_recipient_user.realm_id,
-        )
         hamlet = self.example_user("hamlet")
+        dm_group = get_or_create_direct_message_group([hamlet.id, self.dm_recipient_user.id])
+        message = self.get_message(
+            Recipient.DIRECT_MESSAGE_GROUP,
+            type_id=dm_group.id,
+            realm_id=self.dm_recipient_user.realm_id,
+        )
         payload, gcm_options = self._get_message_payload_gcm(hamlet, message)
         self.assertDictEqual(
             payload,
@@ -1957,6 +1921,29 @@ class TestGetGCMPayload(PushNotificationTestCase):
                 "priority": "high",
             },
         )
+
+    def test_get_message_payload_personal_message_to_self(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        # Create a message to self using PERSONAL recipient type
+        message_id = self.send_personal_message(hamlet, hamlet)
+        message = Message.objects.get(id=message_id)
+        payload = get_message_payload(hamlet, message, for_legacy_clients=False)
+
+        self.assertEqual(payload["recipient_type"], "direct")
+        self.assertEqual(payload["recipient_user_ids"], [hamlet.id])
+
+    @override_settings(PREFER_DIRECT_MESSAGE_GROUP=True)
+    def test_get_message_payload_personal_message_to_self_using_direct_message_group(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        message_id = self.send_personal_message(hamlet, hamlet)
+        message = Message.objects.get(id=message_id)
+
+        payload = get_message_payload(hamlet, message, for_legacy_clients=False)
+
+        self.assertEqual(payload["recipient_type"], "direct")
+        self.assertEqual(payload["recipient_user_ids"], [hamlet.id])
 
     def test_get_message_payload_gcm_stream_message_from_inaccessible_user(self) -> None:
         self.set_up_db_for_testing_user_access()

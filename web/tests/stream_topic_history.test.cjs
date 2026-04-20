@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 
@@ -130,10 +131,10 @@ test("basics", () => {
 });
 
 test("server_history", () => {
-    const sub = {
+    const sub = make_stream({
         name: "devel",
         stream_id: 66,
-    };
+    });
     const stream_id = sub.stream_id;
     stream_data.add_sub_for_tests(sub);
 
@@ -457,7 +458,7 @@ test("ask_server_for_latest_topic_data", () => {
         assert.equal(opts.url, "/json/messages");
         assert.deepEqual(opts.data, {
             anchor: "newest",
-            narrow: '[{"operator":"stream","operand":1080},{"operator":"topic","operand":"Topic1"}]',
+            narrow: '[{"operator":"channel","operand":1080},{"operator":"topic","operand":"Topic1"}]',
             num_after: 0,
             num_before: 1,
             allow_empty_topic_name: true,

@@ -11,7 +11,7 @@ import CommunicationPoliciesIntro from "../include/_CommunicationPoliciesIntro.m
 import CommunicationPoliciesList from "../include/_CommunicationPoliciesList.mdx";
 import ConfigureYourOrganization from "../include/_ConfigureYourOrganization.mdx";
 import CreateOrgNoImport from "../include/_CreateOrgNoImport.mdx";
-import HowToInviteUsersToJoinNoImport from "../include/_HowToInviteUsersToJoinNoImport.mdx";
+import HowToInviteUsersToJoinAllowAnyone from "../include/_HowToInviteUsersToJoinAllowAnyone.mdx";
 import MovingToZulipIntro from "../include/_MovingToZulipIntro.mdx";
 import PrepareForTransition1 from "../include/_PrepareForTransition1.mdx"
 import PrepareForTransition2 from "../include/_PrepareForTransition2.mdx"
@@ -109,9 +109,32 @@ cover include:
 
 ## Invite users to join
 
+[Enable](/help/configure-authentication-methods) authentication with Discord to
+let users join Zulip without creating a separate password.
+
 <Tabs>
-  <HowToInviteUsersToJoinNoImport />
+  <TabItem label="Require invitations">
+    <Steps>
+      1. [Configure allowed authentication
+         methods](/help/configure-authentication-methods). In addition to
+         Discord, Zulip offers a variety of
+         authentication methods, including email/password, Google, GitHub, GitLab,
+         Apple, LDAP and [SAML](/help/saml-authentication). Users can [log
+         in][logging-in] with any allowed authentication method, regardless of how
+         they signed up.
+      1. Invite users by [sending email invitations][email-invitations] or
+         sharing a [reusable invitation link][invitation-links].
+    </Steps>
+  </TabItem>
+
+  <HowToInviteUsersToJoinAllowAnyone />
 </Tabs>
+
+[email-invitations]: /help/invite-new-users#send-email-invitations
+
+[invitation-links]: /help/invite-new-users#create-a-reusable-invitation-link
+
+[logging-in]: /help/logging-in
 
 <ZulipTip>
   Remember to update links and login instructions to point to Zulip.

@@ -25,6 +25,7 @@ const settings_bots = mock_esm("../src/settings_bots", {
     toggle_bot_config_download_container() {},
 });
 mock_esm("../src/settings_panel_menu", {
+    hide_default_streams_list_for_guest() {},
     update_imported_users_tab() {},
 });
 mock_esm("../src/settings_users", {
@@ -55,9 +56,6 @@ buddy_list.buddy_list = buddy_data;
 
 mock_esm("../src/activity_ui", {
     redraw() {},
-});
-mock_esm("../src/compose_state", {
-    update_email() {},
 });
 mock_esm("../src/settings", {
     update_lock_icon_in_sidebar() {},
@@ -184,8 +182,15 @@ run_test("updates", ({override}) => {
 
     user_events.update_person({
         user_id: me.user_id,
+        role: settings_config.user_role_values.guest.code,
+    });
+    assert.ok(current_user.is_guest);
+
+    user_events.update_person({
+        user_id: me.user_id,
         role: settings_config.user_role_values.member.code,
     });
+    assert.ok(!current_user.is_guest);
     assert.ok(!current_user.is_admin);
 
     user_events.update_person({user_id: me.user_id, full_name: "Me V2"});
@@ -204,9 +209,13 @@ run_test("updates", ({override}) => {
     assert.equal(person.full_name, "Me V2");
 
     let avatar_url;
+    let inserted_or_moved_user_ids;
     message_live_update.update_avatar = (user_id_arg, avatar_url_arg) => {
         user_id = user_id_arg;
         avatar_url = avatar_url_arg;
+    };
+    buddy_data.insert_or_move = (user_ids_arg) => {
+        inserted_or_moved_user_ids = user_ids_arg;
     };
 
     user_events.update_person({user_id: isaac.user_id, full_name: "Sir Isaac"});
@@ -234,12 +243,14 @@ run_test("updates", ({override}) => {
     assert.equal(person.full_name, "Sir Isaac");
     assert.equal(user_id, isaac.user_id);
     assert.equal(person.avatar_url, avatar_url);
+    assert.deepEqual(inserted_or_moved_user_ids, [isaac.user_id]);
 
     user_events.update_person({user_id: me.user_id, avatar_url: "http://gravatar.com/789456"});
     person = people.get_by_email(me.email);
     assert.equal(person.full_name, "Me V2");
     assert.equal(user_id, me.user_id);
     assert.equal(person.avatar_url, avatar_url);
+    assert.deepEqual(inserted_or_moved_user_ids, [me.user_id]);
 
     user_events.update_person({user_id: me.user_id, timezone: "UTC"});
     person = people.get_by_email(me.email);

@@ -1,0 +1,10 @@
+diff --git a/lib/email-addresses.d.ts b/lib/email-addresses.d.ts
+index 902beadedd386fee0c45e1599c6d5ef9d734ac96..e708625ccd17966a02355a42432262ea218b878d 100644
+--- a/lib/email-addresses.d.ts
++++ b/lib/email-addresses.d.ts
+@@ -1,4 +1,4 @@
+-declare module emailAddresses {
++declare namespace emailAddresses {
+     function parseOneAddress(input: string | Options): ParsedMailbox | ParsedGroup | null;
+     function parseAddressList(input: string | Options): (ParsedMailbox | ParsedGroup)[] | null;
+     function parseFrom(input: string | Options): (ParsedMailbox | ParsedGroup)[] | null;

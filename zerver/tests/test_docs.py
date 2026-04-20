@@ -508,6 +508,11 @@ class DocPageTest(ZulipTestCase):
             "intercom/001.png",
             "logos/hubot.png",
             "hubot/001.png",
+            # Images newly added to python-zulip-api docs
+            "github_detail/001.png",
+            "matrix/001.png",
+            "matrix/002.png",
+            "xkcd/001.png",
         }
         images_in_dir.update(exception_images)
         images_in_docs.update(exception_images)

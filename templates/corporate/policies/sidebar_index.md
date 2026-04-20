@@ -1,4 +1,4 @@
-# Policies
+## Policies
 
 * [Index](/policies/)
 * [Terms of Service](/policies/terms)

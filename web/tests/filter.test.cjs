@@ -248,7 +248,7 @@ test("basics", () => {
     filter = new Filter(terms);
 
     assert.ok(!filter.is_keyword_search());
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.can_mark_messages_read());
     assert.ok(filter.contains_no_partial_conversations());
     assert.ok(!filter.contains_only_private_messages());
     assert.ok(!filter.allow_use_first_unread_when_narrowing());
@@ -256,7 +256,7 @@ test("basics", () => {
     assert.ok(!filter.is_personal_filter());
     assert.ok(filter.can_bucket_by("channel"));
     assert.ok(filter.can_bucket_by("channel", "topic"));
-    assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.is_conversation_view());
     assert.ok(!filter.is_channel_view());
     assert.ok(filter.is_conversation_view_with_near());
     assert.ok(!filter.may_contain_multiple_conversations());
@@ -333,6 +333,35 @@ test("basics", () => {
     assert.ok(!filter.can_mark_messages_read());
     assert.ok(filter.contains_no_partial_conversations());
     assert.ok(!filter.has_negated_operand("channels", "public"));
+    assert.ok(filter.can_apply_locally());
+    assert.ok(filter.includes_full_stream_history());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
+    assert.ok(!filter.is_channel_view());
+    assert.ok(filter.may_contain_multiple_conversations());
+    assert.ok(!filter.has_exactly_channel_topic_operators());
+
+    terms = [{operator: "channels", operand: "archived", negated: true}];
+    filter = new Filter(terms);
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(!filter.has_operator("channels"));
+    assert.ok(filter.can_mark_messages_read());
+    assert.ok(filter.contains_no_partial_conversations());
+    assert.ok(filter.has_negated_operand("channels", "archived"));
+    assert.ok(filter.can_apply_locally());
+    assert.ok(!filter.is_personal_filter());
+    assert.ok(!filter.is_conversation_view());
+    assert.ok(!filter.is_channel_view());
+    assert.ok(filter.may_contain_multiple_conversations());
+    assert.ok(!filter.has_exactly_channel_topic_operators());
+
+    terms = [{operator: "channels", operand: "archived"}];
+    filter = new Filter(terms);
+    assert.ok(!filter.contains_only_private_messages());
+    assert.ok(filter.has_operator("channels"));
+    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.contains_no_partial_conversations());
+    assert.ok(!filter.has_negated_operand("channels", "archived"));
     assert.ok(filter.can_apply_locally());
     assert.ok(filter.includes_full_stream_history());
     assert.ok(!filter.is_personal_filter());
@@ -439,12 +468,12 @@ test("basics", () => {
     filter = new Filter(terms);
     assert.ok(filter.is_search_for_specific_group_or_user());
     assert.ok(filter.contains_only_private_messages());
-    assert.ok(!filter.can_mark_messages_read());
+    assert.ok(filter.can_mark_messages_read());
     assert.ok(filter.contains_no_partial_conversations());
     assert.ok(!filter.has_operator("search"));
     assert.ok(filter.can_apply_locally());
     assert.ok(!filter.is_personal_filter());
-    assert.ok(!filter.is_conversation_view());
+    assert.ok(filter.is_conversation_view());
     assert.ok(filter.is_conversation_view_with_near());
     assert.ok(!filter.may_contain_multiple_conversations());
     assert.ok(!filter.is_channel_view());
@@ -1146,6 +1175,7 @@ test("predicate_basics", ({override}) => {
     const old_sub_id = new_stream_id();
     const private_sub_id = new_stream_id();
     const web_public_sub_id = new_stream_id();
+    const archived_sub_id = new_stream_id();
     const old_sub = {
         name: "old-subscription",
         stream_id: old_sub_id,
@@ -1167,9 +1197,18 @@ test("predicate_basics", ({override}) => {
         invite_only: false,
         is_web_public: true,
     };
+    const archived_sub = {
+        name: "archived-subscription",
+        stream_id: archived_sub_id,
+        subscribed: true,
+        invite_only: false,
+        is_web_public: true,
+        is_archived: true,
+    };
     stream_data.add_sub_for_tests(old_sub);
     stream_data.add_sub_for_tests(private_sub);
     stream_data.add_sub_for_tests(web_public_sub);
+    stream_data.add_sub_for_tests(archived_sub);
     predicate = get_predicate([
         ["channel", old_sub_id.toString()],
         ["topic", "Bar"],
@@ -1193,7 +1232,11 @@ test("predicate_basics", ({override}) => {
     assert.ok(!predicate({type: stream_message, stream_id: private_sub_id}));
     assert.ok(predicate({type: stream_message, stream_id: web_public_sub_id}));
 
+    predicate = get_predicate([["channels", "archived"]]);
+    assert.ok(predicate({type: stream_message, stream_id: archived_sub_id}));
+
     predicate = get_predicate([["channels", "web-public"]]);
+    assert.ok(predicate({type: stream_message, stream_id: archived_sub_id}));
     assert.ok(predicate({type: stream_message, stream_id: web_public_sub_id}));
     assert.ok(!predicate({type: stream_message, stream_id: old_sub_id}));
 
@@ -1758,6 +1801,14 @@ test("describe", ({mock_template, override}) => {
 
     narrow = [{operator: "channels", operand: "public", negated: true}];
     string = "exclude all public channels";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+    narrow = [{operator: "channels", operand: "archived"}];
+    string = "archived channels";
+    assert.equal(Filter.search_description_as_html(narrow, false), string);
+
+    narrow = [{operator: "channels", operand: "archived", negated: true}];
+    string = "exclude archived channels";
     assert.equal(Filter.search_description_as_html(narrow, false), string);
 
     narrow = [{operator: "channels", operand: "web-public"}];
@@ -2460,6 +2511,8 @@ test("navbar_helpers", ({override}) => {
     const is_resolved = [{operator: "is", operand: "resolved"}];
     const is_followed = [{operator: "is", operand: "followed"}];
     const channels_public = [{operator: "channels", operand: "public"}];
+    const channels_archived = [{operator: "channels", operand: "archived"}];
+    const not_channels_archived = [{operator: "channels", operand: "archived", negated: true}];
     const channels_web_public = [{operator: "channels", operand: "web-public"}];
     const channel_topic_terms = [
         {operator: "channel", operand: foo_stream_id.toString()},
@@ -2646,6 +2699,20 @@ test("navbar_helpers", ({override}) => {
             icon: undefined,
             title: "translated: Messages in all public channels",
             redirect_url_with_search: "/#narrow/channels/public",
+        },
+        {
+            terms: channels_archived,
+            is_common_narrow: true,
+            icon: undefined,
+            title: "translated: Messages in your archived channels",
+            redirect_url_with_search: "/#narrow/channels/archived",
+        },
+        {
+            terms: not_channels_archived,
+            is_common_narrow: true,
+            icon: undefined,
+            title: "translated: Messages not in archived channels",
+            redirect_url_with_search: "/#narrow/-channels/archived",
         },
         {
             terms: channels_web_public,
@@ -2964,6 +3031,7 @@ run_test("is_spectator_compatible", () => {
     assert.ok(!Filter.is_spectator_compatible([{operator: "is", operand: "starred"}]));
     assert.ok(!Filter.is_spectator_compatible([{operator: "is", operand: "dm"}]));
     assert.ok(Filter.is_spectator_compatible([{operator: "channels", operand: "public"}]));
+    assert.ok(Filter.is_spectator_compatible([{operator: "channels", operand: "archived"}]));
 
     // Malformed input not allowed
     assert.ok(!Filter.is_spectator_compatible([{operator: "has"}]));

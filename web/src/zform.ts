@@ -81,7 +81,8 @@ export function render(opts: {$elem: JQuery; message: Message; widget_data: Widg
     }
 
     if (data_with_choices_with_idx.type === "choices") {
-        $outer_elem.html(make_choices(data_with_choices_with_idx).html());
+        const $choices = make_choices(data_with_choices_with_idx);
+        $outer_elem.empty().append($choices);
     }
     return;
 }

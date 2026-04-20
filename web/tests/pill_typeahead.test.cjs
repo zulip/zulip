@@ -54,7 +54,8 @@ function override_typeahead_helper({mock_template, override_rewire}) {
     override_rewire(typeahead_helper, "sort_streams", () => {
         sort_streams_called = true;
     });
-    override_rewire(typeahead_helper, "sort_stream_or_group_members_options", ({users}) => {
+    override_rewire(typeahead_helper, "sort_stream_or_group_members_options", ({users, query}) => {
+        assert.ok(!query.startsWith("@"));
         sort_stream_or_group_members_options_called = true;
         return users;
     });
@@ -528,6 +529,14 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
                 // person query with wrong item.
                 result = config.matcher(jill_item, person_query);
                 assert.ok(!result);
+                // @-prefixed query matches groups only.
+                result = config.matcher(testers_item, "@" + group_query);
+                assert.ok(result);
+                result = config.matcher(admins_item, "@admins");
+                assert.ok(result);
+                // @-prefixed query must NOT match users.
+                result = config.matcher(me_item, "@" + person_query);
+                assert.ok(!result);
             }
             if (opts.user_group && !opts.user) {
                 result = config.matcher(testers_item, group_query);
@@ -554,6 +563,11 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
                 sort_stream_or_group_members_options_called = false;
                 config.sorter([testers_item], group_query);
                 assert.ok(!sort_recipients_called);
+                assert.ok(sort_stream_or_group_members_options_called);
+
+                // Ensure @-prefixed queries use normalized query in sorter.
+                sort_stream_or_group_members_options_called = false;
+                config.sorter([testers_item], "@" + group_query);
                 assert.ok(sort_stream_or_group_members_options_called);
             }
             if (opts.user) {
@@ -611,6 +625,13 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
                 })
                 .filter(Boolean);
             assert.deepEqual(actual_result, expected_result);
+
+            if (opts.user_group) {
+                const result = config.source("@" + group_query);
+                assert.ok(result.length > 0);
+                // Source returns only user groups for @-prefixed queries.
+                assert.ok(result.every((item) => item.type === "user_group"));
+            }
         })();
 
         (function test_updater() {

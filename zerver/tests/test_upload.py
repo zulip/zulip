@@ -227,13 +227,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         tests = [
             ("No high bytes in this string", "ascii", "ascii"),  # Explicit ASCII encoding
             ("नाम में क्या रक्खा हे", "utf-8", "utf-8"),  # Enough to get 99% confidence UTF-8
-            ("日本語", "iso2022_jp", "ISO-2022-JP"),  # Non-UTF-8 99% confidence
-            ("日本語", "utf-8", "utf-8"),  # UTF-8 is only 87% confident
-            (
-                "Min svävare är full av ålar.",
-                "iso-8859-1",
-                "ISO-8859-1",
-            ),  # iso-8859-1 maxes out at 73%, but we'll still guess it
+            ("日本語", "iso2022_jp", "ISO-2022-JP"),  # Non-UTF-8 95% confidence
+            ("\xa0" + " " * 30, "utf-8", "utf-8"),  # UTF-8 is only 87% confident
+            ("· ar aitheach a le chan ir ana s din tag", "L1", "ISO-8859-1"),  # 76% confidence
             ("Aucune idée", "mac-roman", None),  # Short text in obscure formats is left unguessed
         ]
         self.login("hamlet")

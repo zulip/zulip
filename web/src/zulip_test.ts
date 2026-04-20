@@ -21,3 +21,5 @@ export {add_user_id_to_new_stream} from "./stream_create_subscribers.ts";
 export {get as get_message} from "./message_store.ts";
 export {is_in_progress, is_pending} from "./reload_state.ts";
 export {show_reaction_data} from "./emoji_frequency_data.ts";
+export {num_unread_for_topic} from "./unread.ts";
+export {mark_topic_as_unread} from "./unread_ops.ts";

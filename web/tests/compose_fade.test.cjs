@@ -131,14 +131,13 @@ run_test("want_normal_display", ({override, override_rewire}) => {
     // Private message with no recipient.
     compose_fade_helper.set_focused_recipient({
         type: "private",
-        reply_to: "",
     });
     assert.ok(compose_fade_helper.want_normal_display());
 
     // Private message with a recipient.
     compose_fade_helper.set_focused_recipient({
         type: "private",
-        reply_to: "hello@zulip.com",
+        to_user_ids: "31",
     });
     assert.ok(!compose_fade_helper.want_normal_display());
 });

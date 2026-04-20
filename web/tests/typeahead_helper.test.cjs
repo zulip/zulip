@@ -579,9 +579,9 @@ test("sort_recipients", () => {
     const subscriber_email_1 = "b_user_2@zulip.net";
     const subscriber_email_2 = "b_user_3@zulip.net";
     const subscriber_email_3 = "b_bot@example.com";
-    peer_data.add_subscriber(1, people.get_user_id(subscriber_email_1));
-    peer_data.add_subscriber(1, people.get_user_id(subscriber_email_2));
-    peer_data.add_subscriber(1, people.get_user_id(subscriber_email_3));
+    peer_data.add_subscriber(1, b_user_2.user_id);
+    peer_data.add_subscriber(1, b_user_3.user_id);
+    peer_data.add_subscriber(1, b_bot.user_id);
 
     // For splitting based on whether a direct message was sent
     pm_conversations.set_partner(5);

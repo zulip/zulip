@@ -96,7 +96,7 @@ These URL options can be declared as follows:
           WebhookUrlOption(
             name='ignore_private_repositories',
             label='Exclude notifications from private repositories',
-            validator=check_string
+            input_type='checkbox',
           ),
         ],
     )
@@ -109,15 +109,16 @@ offer when generating the integration URL:
   integration's webhook URL.
 - `label`: A short descriptive label for this URL parameter in the web
   app UI.
-- `validator`: A validator function, which is used to determine the input
-  type for this option in the UI, and to indicate how to validate the
-  input. Currently, the web app UI only supports these validators:
-  - `check_bool` for checkbox/select input.
-  - `check_string` for text input.
+- `input_type`: The type of input field this option maps to in the UI.
+  The web app UI currently supports the following input types:
+  - `checkbox`: A checkbox input for presence-only values (true or absent),
+    disabled by default.
+  - `checkbox_enabled`: A checkbox input for boolean parameters, enabled by
+    default.
+  - `text`: A text input for string values.
 
-To add support for other validators, you can update
-`web/src/integration_url_modal.ts`. Common validators are available in
-`zerver/lib/validator.py`.
+To add support for other input types, you can update
+`web/src/integration_url_modal.ts`.
 
 In rare cases, it may be necessary for an incoming webhook to require
 additional user configuration beyond what is specified in the POST URL.

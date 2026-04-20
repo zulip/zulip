@@ -54,8 +54,10 @@ const SUPPORTED_AUDIO_TYPES = new Set([
     "audio/flac",
     "audio/mp4",
     "audio/mpeg",
+    "audio/vnd.wave",
     "audio/wav",
     "audio/webm",
+    "audio/x-wav",
 ]);
 
 function is_supported_audio_type(file_type: string): boolean {

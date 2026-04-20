@@ -1,5 +1,4 @@
 import contextlib
-import hashlib
 import logging
 import os
 import re
@@ -14,10 +13,11 @@ from email.policy import default
 from email.utils import formataddr, parseaddr
 from email.utils import formatdate as email_formatdate
 from typing import Any
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-import backoff
 import css_inline
 import orjson
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives, get_connection
 from django.core.mail.backends.base import BaseEmailBackend
@@ -39,11 +39,10 @@ from zerver.models import Realm, RealmAuditLog, ScheduledEmail, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.scheduled_jobs import EMAIL_TYPES
 from zerver.models.users import get_user_profile_by_id
+from zproject.email_backends import smtp_connection_backoff
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteZulipServer
-
-MAX_CONNECTION_TRIES = 3
 
 ## Logging setup ##
 
@@ -262,6 +261,11 @@ class NoEmailArgumentError(CommandError):
         super().__init__(msg)
 
 
+@smtp_connection_backoff
+def _send_messages(connection: BaseEmailBackend, messages: list[EmailMultiAlternatives]) -> int:
+    return connection.send_messages(messages)
+
+
 # When changing the arguments to this function, you may need to write a
 # migration to change or remove any emails in ScheduledEmail.
 def send_immediate_email(
@@ -304,8 +308,10 @@ def send_immediate_email(
         print(mail.message().get_payload()[0])
         return
 
-    if connection is None:
+    owns_connection = connection is None
+    if owns_connection:
         connection = get_connection()
+    assert connection is not None
 
     cause = ""
     if request is not None:
@@ -321,9 +327,15 @@ def send_immediate_email(
     logger.info("Sending %s email to %s%s", template, logging_recipient, cause)
 
     try:
-        # This will call .open() for us, which is a no-op if it's already open;
-        # it will only call .close() if it was not open to begin with
-        if connection.send_messages([mail]) == 0:
+        # When we created the connection (no caller-provided one),
+        # retry with backoff on transient connection failures.
+        # Caller-provided connections (e.g. PersistentSMTPEmailBackend)
+        # manage their own lifecycle via ensure_connected().
+        if owns_connection:
+            result = _send_messages(connection, [mail])
+        else:
+            result = connection.send_messages([mail])
+        if result == 0:
             logger.error("Unknown error sending %s email to %s", template, mail.to)
             connection.close()
             raise EmailNotDeliveredError
@@ -337,11 +349,11 @@ def send_immediate_email(
             stack_info=True,
         )
         connection.close()
-        raise EmailNotDeliveredError
-    except smtplib.SMTPException as e:
+        raise EmailNotDeliveredError from e
+    except (smtplib.SMTPException, OSError) as e:
         logger.exception("Error sending %s email to %s: %s", template, mail.to, e, stack_info=True)
         connection.close()
-        raise EmailNotDeliveredError
+        raise EmailNotDeliveredError from e
 
 
 def send_email(
@@ -399,16 +411,6 @@ def send_email(
             request,
             remove_suppressed_destination=remove_suppressed_destination,
         )
-
-
-@backoff.on_exception(backoff.expo, OSError, max_tries=MAX_CONNECTION_TRIES, logger=None)
-def initialize_connection(connection: BaseEmailBackend | None = None) -> BaseEmailBackend:
-    if not connection:
-        connection = get_connection()
-        assert connection is not None
-
-    connection.open()
-    return connection
 
 
 def send_future_email(
@@ -595,7 +597,32 @@ def get_header(option: str | None, header: str | None, name: str) -> str:
     return str(option or header)
 
 
+def add_utm_params_to_links(html_content: str, campaign_name: str) -> str:
+    target_domains = {"zulip.com", "blog.zulip.com", "zulip.readthedocs.io"}
+    soup = BeautifulSoup(html_content, "html.parser")
+
+    for a_tag in soup.find_all("a", href=True):
+        url = a_tag["href"]
+        parsed = urlsplit(url)
+
+        if parsed.netloc in target_domains:
+            query_params = dict(parse_qsl(parsed.query))
+            query_params["utm_source"] = "newsletter"
+            query_params["utm_medium"] = "email"
+            query_params["utm_campaign"] = campaign_name
+
+            new_query = urlencode(query_params)
+            new_url = urlunsplit(
+                (parsed.scheme, parsed.netloc, parsed.path, new_query, parsed.fragment)
+            )
+
+            a_tag["href"] = new_url
+
+    return str(soup)
+
+
 def custom_email_sender(
+    campaign_name: str,
     markdown_template_path: str,
     dry_run: bool,
     subject: str | None = None,
@@ -603,13 +630,12 @@ def custom_email_sender(
     from_name: str | None = None,
     reply_to: str | None = None,
     **kwargs: Any,
-) -> tuple[Callable[..., None], str]:
+) -> Callable[..., None]:
     with open(markdown_template_path) as f:
         text = f.read()
         parsed_email_template = Parser(_class=EmailMessage, policy=default).parsestr(text)
-        email_template_hash = hashlib.sha256(text.encode()).hexdigest()[0:32]
 
-    email_id = f"zerver/emails/custom/custom_email_{email_template_hash}"
+    email_id = f"zerver/emails/custom/custom_email_{campaign_name}"
     markdown_email_base_template_path = "templates/zerver/emails/custom_email_base.pre.html"
     html_template_path = f"templates/{email_id}.html"
     plain_text_template_path = f"templates/{email_id}.txt"
@@ -638,7 +664,12 @@ def custom_email_sender(
         #  3. Have that interpolation happen in the context of
         #     each individual email we send, so the contents can
         #     vary user-to-user
-        f.write(base_template.read().replace("{{ rendered_input }}", rendered_input))
+        html_body = base_template.read().replace("{{ rendered_input }}", rendered_input)
+
+        if campaign_name:
+            html_body = add_utm_params_to_links(html_body, campaign_name)
+
+        f.write(html_body)
 
     # Add the manage_preferences block content in the plain_text template.
     manage_preferences_block_template_path = (
@@ -684,14 +715,14 @@ def custom_email_sender(
                     event_type=AuditLogEventType.CUSTOM_EMAIL_SENT,
                     event_time=timezone_now(),
                     extra_data={
-                        "email_id": email_template_hash,
+                        "campaign_name": campaign_name,
                         "email_subject": get_header(
                             subject, parsed_email_template.get("subject"), "subject"
                         ),
                     },
                 )
 
-    return send_one_email, email_template_hash
+    return send_one_email
 
 
 def send_custom_email(
@@ -712,7 +743,8 @@ def send_custom_email(
         from_name="Sender Name")
     )
     """
-    email_sender, email_template_hash = custom_email_sender(**options, dry_run=dry_run)
+    email_sender = custom_email_sender(**options, dry_run=dry_run)
+    campaign_name = options["campaign_name"]
 
     users = users.select_related("realm")
 
@@ -727,7 +759,7 @@ def send_custom_email(
         already_sent_emails = (
             RealmAuditLog.objects.filter(
                 event_type=AuditLogEventType.CUSTOM_EMAIL_SENT,
-                extra_data__email_id=email_template_hash,
+                extra_data__campaign_name=campaign_name,
                 modified_user__isnull=False,
             )
             .annotate(lower_email=Lower("modified_user__delivery_email"))
@@ -745,7 +777,7 @@ def send_custom_email(
     else:
         # For regular emails: exclude by user ID
         already_sent_users = RealmAuditLog.objects.filter(
-            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT, extra_data__email_id=email_template_hash
+            event_type=AuditLogEventType.CUSTOM_EMAIL_SENT, extra_data__campaign_name=campaign_name
         ).values_list("modified_user_id", flat=True)
 
         already_sent_count = already_sent_users.count()
@@ -786,7 +818,7 @@ def send_custom_server_email(
 
     email_sender = custom_email_sender(
         **options, dry_run=dry_run, from_address=BILLING_SUPPORT_EMAIL
-    )[0]
+    )
 
     for server in remote_servers:
         context = {
