@@ -345,8 +345,15 @@ export function get_keydown_hotkey(e: JQuery.KeyDownEvent): Hotkey | Hotkey[] | 
     // the same physical key combination that a QWERTY user would
     // use (e.g. 'ф' on Cyrillic maps to 'a' on QWERTY). In such cases,
     // we derive the QWERTY equivalent using `e.code` and the `CODE_TO_QWERTY_CHAR` map.
+    //
+    // The same `e.code` path is needed on macOS when Cmd+Shift are
+    // both held, as browsers report the unshifted key in that case
+    // (e.g. Cmd+Shift+2 gives e.key="2" rather than "@").  Without
+    // this, `Cmd+<shifted_symbol>` hotkeys would never match.
+    const mac_cmd_shift = common.has_mac_keyboard() && e.metaKey && e.shiftKey;
     const use_event_key =
-        common.is_printable_ascii(e.key) || KNOWN_NAMED_KEY_ATTRIBUTE_VALUES.has(e.key);
+        KNOWN_NAMED_KEY_ATTRIBUTE_VALUES.has(e.key) ||
+        (common.is_printable_ascii(e.key) && !mac_cmd_shift);
     let key = e.key;
     if (!use_event_key) {
         const code = `${e.shiftKey ? "Shift+" : ""}${e.code}`;

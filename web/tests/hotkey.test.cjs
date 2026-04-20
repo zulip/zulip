@@ -243,7 +243,18 @@ run_test("mappings", () => {
     assert.equal(map_down("c", false, true, false), undefined);
     assert.equal(map_down("k", false, false, true).name, "search_with_k");
     assert.equal(map_down("k", false, true, false), undefined);
-    assert.equal(map_down("@", true, false, true).name, "open_mentions_view");
+    // On macOS, browsers report the unshifted key when Cmd+Shift
+    // are both held (e.g. Cmd+Shift+2 gives e.key="2", not "@"),
+    // so we fall back to `e.code` to recover the intended symbol.
+    assert.equal(
+        hotkey.get_keydown_hotkey({
+            key: "2",
+            code: "Digit2",
+            shiftKey: true,
+            metaKey: true,
+        }).name,
+        "open_mentions_view",
+    );
     assert.equal(map_down("@", true, true, false), undefined);
     assert.equal(map_down("s", false, false, true).name, "star_message");
     assert.equal(map_down("s", false, true, false), undefined);
