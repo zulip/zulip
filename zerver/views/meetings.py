@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from django.http import HttpRequest, HttpResponse
+from pydantic import Json
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.meeting_actions import (
@@ -15,8 +16,14 @@ from zerver.lib.meeting_actions import (
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id, access_stream_for_send_message
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
-from zerver.lib.typed_endpoint import Json, PathOnly, typed_endpoint
 from zerver.models import Stream, UserProfile
+
+
+def _parse_iso_datetime_to_utc(value: str) -> datetime:
+    dt = datetime.fromisoformat(value)
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
 
 
 @typed_endpoint
@@ -52,12 +59,12 @@ def create_meeting(
     stream_id: Json[int] | None = None,
 ) -> HttpResponse:
     """POST /json/meetings"""
-    parsed_deadline = datetime.fromisoformat(deadline)
+    parsed_deadline = _parse_iso_datetime_to_utc(deadline)
 
     parsed_slots: list[tuple[datetime, datetime | None]] = []
     for slot in slots:
-        start = datetime.fromisoformat(slot["start_time"])
-        end = datetime.fromisoformat(slot["end_time"]) if slot.get("end_time") else None
+        start = _parse_iso_datetime_to_utc(slot["start_time"])
+        end = _parse_iso_datetime_to_utc(slot["end_time"]) if slot.get("end_time") else None
         parsed_slots.append((start, end))
 
     stream: Stream | None = None
@@ -120,7 +127,6 @@ def upsert_meeting_responses(
     user_profile: UserProfile,
     *,
     meeting_id: PathOnly[int],
-    # Maps slot_id (as string key from JSON) → available bool.
     slot_responses: Json[dict[str, bool]],
 ) -> HttpResponse:
     """PATCH /json/meetings/<meeting_id>/responses"""

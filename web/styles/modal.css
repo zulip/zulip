@@ -109,8 +109,9 @@
     /* 16px icon + 4px padding = 24px icon button,
            which matches with the line height of the
            modal title. */
-        padding: 0.25em; /* 4px at 16px/1em */
-    }
+    padding: 0.25em;
+    /* 4px at 16px/1em */
+  }
 
   /* help_link_widget margin for the fa-circle-o. */
   .help_link_widget {
@@ -162,8 +163,8 @@
   >.simplebar-wrapper {
     /* Compensate the 3em reduced in modal_content so it positions
            itself correctly */
-        max-width: calc(100% + 3em);
-    }
+    max-width: calc(100% + 3em);
+  }
 }
 
 #api_key_value {
@@ -469,17 +470,17 @@
     margin-bottom: 10px;
     gap: 10px;
 
-        .dropdown-widget-button {
-            max-width: 100%;
-            width: var(--modal-input-width);
+    .dropdown-widget-button {
+      max-width: 100%;
+      width: var(--modal-input-width);
 
-            .dropdown_widget_value {
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-        }
+      .dropdown_widget_value {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
+  }
 }
 
 #channel_folder_banner {
@@ -796,22 +797,22 @@
 }
 
 .modal_select {
-    width: var(--modal-input-width);
-    padding: 4px 25px 4px 6px;
-    color: var(--color-text-default);
-    border-radius: 4px;
-    border: var(--input-border-width) solid var(--color-border-legacy-input);
-    cursor: pointer;
-    background-color: var(--color-background-legacy-input);
-    max-width: 100%;
-    font-size: inherit;
+  width: var(--modal-input-width);
+  padding: 4px 25px 4px 6px;
+  color: var(--color-text-default);
+  border-radius: 4px;
+  border: var(--input-border-width) solid var(--color-border-legacy-input);
+  cursor: pointer;
+  background-color: var(--color-background-legacy-input);
+  max-width: 100%;
+  font-size: inherit;
 
   &:disabled {
     cursor: not-allowed;
 
     /* The background-color of select elements inside modal is different than the others in
         settings pages, because the background of the modal is brighter than the setting page. */
-        background-color: var(--color-background-disabled-modal-select);
+    background-color: var(--color-background-disabled-modal-select);
 
     /* This is reset for other browsers to use Chrome's opacity. */
     opacity: 0.7;
@@ -1423,13 +1424,76 @@ ul.modal-options-list {
 }
 
 #rsvp-channel-warning {
-    font-style: italic;
-    font-size: 0.85em;
-    color: var(--color-text-light);
+  font-style: italic;
+  font-size: 0.85em;
+  color: var(--color-text-light);
 }
 
 label.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    pointer-events: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Propose meeting invite user input */
+.modal__container:has(#add-propose-meeting-modal) {
+  overflow: visible;
+  will-change: auto;
+}
+
+#propose-invite-users-container {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+
+  &:focus-visible {
+    outline-color: var(--color-compose-focus-ring);
+  }
+}
+
+#propose-invite-users {
+  min-height: 24px;
+  line-height: 24px;
+}
+
+#propose-invite-users-container .compose-new-recipient-button {
+  border-radius: 2px;
+  padding: 6px;
+  margin: 1px;
+  background: none;
+  border: none;
+  color: var(--color-compose-embedded-button-text-color);
+  font-size: inherit;
+
+  .zulip-icon {
+    display: block;
+  }
+
+  &:hover {
+    background-color: var(--color-compose-embedded-button-background-hover);
+    color: var(--color-compose-embedded-button-text-color-hover);
+  }
+
+  &:focus {
+    outline: 0;
+  }
+}
+
+#propose-invite-users:empty::before {
+  content: attr(data-placeholder);
+  color: var(--color-text-placeholder);
+  pointer-events: none;
+  cursor: text;
+}
+
+#propose-user-dropdown:empty {
+  display: none;
+}
+
+#propose-channel-warning {
+  font-style: italic;
+  font-size: 0.85em;
+  color: var(--color-text-light);
 }

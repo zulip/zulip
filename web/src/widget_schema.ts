@@ -2,6 +2,8 @@ import * as z from "zod/mini";
 
 import {poll_widget_extra_data_schema} from "./poll_data.ts";
 import type {PollData, PollWidgetOutboundData} from "./poll_data.ts";
+import {propose_widget_extra_data_schema} from "./propose_data.ts";
+import {ProposeData} from "./propose_data.ts";
 import {rsvp_widget_extra_data_schema} from "./rsvp_data.ts";
 import {RsvpData, type RsvpOutboundData} from "./rsvp_data.ts";
 import {todo_widget_extra_data_schema} from "./todo_data.ts";
@@ -32,6 +34,10 @@ export const any_widget_data_schema = z.discriminatedUnion("widget_type", [
         widget_type: z.literal("rsvp"),
         extra_data: rsvp_widget_extra_data_schema,
     }),
+    z.object({
+        widget_type: z.literal("propose_meeting"),
+        extra_data: propose_widget_extra_data_schema,
+    }),
 ]);
 export type AnyWidgetData = z.infer<typeof any_widget_data_schema>;
 export type WidgetData =
@@ -41,4 +47,5 @@ export type WidgetData =
       }
     | {widget_type: "poll"; data: PollData}
     | {widget_type: "zform"; data: ZFormExtraData | undefined}
-    | {widget_type: "rsvp"; data: RsvpData};
+    | {widget_type: "rsvp"; data: RsvpData}
+    | {widget_type: "propose_meeting"; data: ProposeData};

@@ -32,7 +32,7 @@ class RsvpData:
 
 
 def get_widget_data(content: str) -> tuple[str | None, Any]:
-    valid_widget_types = ["poll", "todo", "rsvp"]
+    valid_widget_types = ["poll", "todo", "rsvp", "propose_meeting"]
     tokens = re.split(r"\s+|\n+", content)
 
     # tokens[0] will always exist
@@ -92,6 +92,8 @@ def get_extra_data_from_widget_type(content: str, widget_type: str | None) -> Po
     if widget_type == "poll":
         return parse_poll_extra_data(content)
     elif widget_type == "rsvp":
+        return RsvpData(topic="", datetime="", invitees=[])
+    elif widget_type == "propose_meeting":
         return RsvpData(topic="", datetime="", invitees=[])
     else:
         return parse_todo_extra_data(content)

@@ -1,0 +1,69 @@
+<div id="add-propose-meeting-modal">
+    <form class="modal-form" id="propose-meeting-form">
+        <div class="input-group">
+            <label for="propose-meeting-topic" class="modal-field-label">{{t "Meeting Topic" }}</label>
+            <input id="propose-meeting-topic" type="text" name="topic" class="modal_text_input"
+                placeholder="{{t 'Topic for meeting' }}" autocomplete="off" autofocus="autofocus" />
+        </div>
+
+        <div class="input-group">
+            <label for="propose-meeting-dates" class="modal-field-label">{{t "Meeting Dates" }}</label>
+            <input id="propose-meeting-dates" type="text" class="modal_text_input" placeholder="{{t 'Select days' }}"
+                readonly />
+            <input type="hidden" id="propose-meeting-dates-value" name="dates" />
+            <p id="propose-dates-times-error" class="rsvp-channel-warning" style="display: none; color: #e74c3c;">
+                <em>{{t "One or more selected dates and times are in the past" }}</em>
+            </p>
+        </div>
+
+        <div class="input-group">
+            <label for="propose-meeting-times" class="modal-field-label">{{t "Meeting Times" }}</label>
+            <input id="propose-meeting-times" type="text" class="modal_text_input" placeholder="{{t 'Select times' }}"
+                readonly />
+            <input type="hidden" id="propose-meeting-times-value" name="times" />
+        </div>
+
+        <div class="input-group">
+            <div class="rsvp-invite-label modal-field-label">
+                <span>{{t "Invite Users" }}</span>
+                <a id="propose-add-all-users" class="rsvp-add-all-users-link" role="button">
+                    {{t "ADD ALL USERS IN CURRENT CHANNEL" }}
+                </a>
+            </div>
+            <div class="rsvp-invite-row">
+                <div class="pill-container" id="propose-invite-users-container">
+                    <div class="input" contenteditable="true" id="propose-invite-users"
+                        data-placeholder="{{t 'Add users' }}"></div>
+                    <button type="button" id="propose-user-dropdown-button"
+                        class="compose-new-recipient-button tippy-zulip-delayed-tooltip"
+                        data-tippy-content="{{t 'Add user' }}" tabindex="-1">
+                        <i class="zulip-icon zulip-icon-square-plus"></i>
+                    </button>
+                </div>
+                <div id="propose-user-dropdown" class="rsvp-user-dropdown" style="display: none;"></div>
+            </div>
+            <p id="propose-channel-warning" class="rsvp-channel-warning" style="display: none;">
+                {{t "A user is not in this channel - a new channel will automatically be created" }}
+            </p>
+        </div>
+
+        <div class="input-group propose-rsvp-by-row">
+            <div class="propose-rsvp-by-field">
+                <label for="propose-rsvp-by" class="modal-field-label">{{t "RSVP By:" }}</label>
+                <input id="propose-rsvp-by" type="text" class="modal_text_input"
+                    placeholder="{{t 'Select date and time' }}" readonly />
+                <input type="hidden" id="propose-rsvp-by-value" name="rsvp_by" />
+                <p id="propose-rsvp-error" class="rsvp-channel-warning" style="display: none; color: #e74c3c;">
+                    <em>{{t "RSVP deadline must be in the future" }}</em>
+                </p>
+            </div>
+        </div>
+        <div class="input-group">
+            <label class="checkbox display-block propose-create-channel-label">
+                <input type="checkbox" id="propose-create-channel" name="create_channel" />
+                <span class="rendered-checkbox"></span>
+                {{t 'Create new channel'}}
+            </label>
+        </div>
+    </form>
+</div>
