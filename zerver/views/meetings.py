@@ -40,7 +40,6 @@ def get_meeting_candidates(
 
 
 @typed_endpoint
-@typed_endpoint
 def create_meeting(
     request: HttpRequest,
     user_profile: UserProfile,
@@ -116,12 +115,12 @@ def get_meeting(
 
 
 @typed_endpoint
-@typed_endpoint
 def upsert_meeting_responses(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
     meeting_id: PathOnly[int],
+    # Maps slot_id (as string key from JSON) → available bool.
     slot_responses: Json[dict[str, bool]],
 ) -> HttpResponse:
     """PATCH /json/meetings/<meeting_id>/responses"""
