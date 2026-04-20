@@ -13,34 +13,34 @@ log][commit-log] for an up-to-date list of all changes.
 
 _Unreleased_
 
-### Zulip Server 12.0-beta1
+### Zulip Server 12.0-beta2
 
-_Released 2026-03-12_
+_Released 2026-04-26_
 
 #### Highlights
 
-- Server support for end-to-end encrypted mobile push notifications is
-  now generally available, with full mobile app support expected to be
-  released before the 12.0 final release.
+- End-to-end encrypted mobile push notifications are now generally
+  available and enabled if both server and client are modern.
 - Uploaded images and audio files now use the `![alt text](url)` markdown
   syntax, which does not require a separate link element.
 - Added a new organization setting for media preview size,
   controlling image and video thumbnail sizes in message content.
 - Added support for using Jdenticons for default profile pictures.
-  Jdenticons better in both Zulip themes and have less privacy risk than
-  Gravatar, and are the default for new organizations.
+  Jdenticons render better in both Zulip themes and have less
+  privacy risk than Gravatar, and are the default for new
+  organizations.
 - Redesigned the Recent Conversations view with a new table layout,
   one-line conversation display, folder filter dropdown, improved
   column sizing and alignment, and better touchscreen support.
 - Redesigned channel-specific settings, with a much cleaner view and a
-  dedicated "Permissions" tab. Channel settings now supports filtering
-  channels by folder and better highlights when a channel is archived.
+  dedicated "Permissions" tab. The channel settings panel now supports
+  filtering by folder.
 - Emoji-only messages now render the emoji extra large.
-- Linkifiers now support reverse linkification: pasting a URL that
-  matches a linkifier pattern now auto-converts to the short text
+- Linkifiers now support reverse linkification: pasting a URL
+  matching a linkifier pattern auto-converts to its short text
   form.
-- Added a jump-to-date picker in the message feed. Users can click a
-  date separator and navigate to any date in the conversation history.
+- Added a jump-to-date picker in the message feed, accessible by
+  clicking a date separator or the date in the conversation header bar.
 - Added support for administrators to bulk-edit most settings for
   existing users via the "Default user settings" panel. Administrators
   can choose to only edit settings for users who haven't already
@@ -50,13 +50,13 @@ _Released 2026-03-12_
   provider options.
 - Added a "Report message" feature, with a configurable private channel
   for moderators to handle reports.
-- Demo organizations allow testing Zulip without sharing an email address.
+- Added demo organizations, which allow testing Zulip without
+  sharing an email address.
 - Improved search typeahead with topic suggestions from all subscribed
   channels and nicer styling for channel/topic pair suggestions.
 - Added many new default external account types for custom profile
-  fields, and made URL pattern optional for external
-  accounts. External accounts can now be used for matching users in
-  typeahead.
+  fields, made the URL pattern optional, and made external accounts
+  available for matching users in typeahead.
 - Added a beta data import tool for Microsoft Teams.
 - Migrated the help center to Starlight, the Astro-based static site
   generator, adding full-text search and a modernized design.
@@ -74,9 +74,9 @@ _Released 2026-03-12_
   channel events (e.g., channel description changes).
 - Added a Roles tab in group settings, detailing the permissions
   assigned to users with specific roles.
-- Added a `mentions` search operator for finding messages that mention
-  a specific user, distinct from `has:mention` which filters to
-  messages mentioning yourself.
+- Added a `mentions:` search operator for finding messages that
+  mention a specific user, distinct from `has:mention` which
+  filters to messages mentioning yourself.
 - Added an icon button in recipient headers to copy the topic link.
 - Added an "unsupported browser" warning for ancient browser versions.
 - Added an `is:followed` filter for topics in the left sidebar.
@@ -84,12 +84,38 @@ _Released 2026-03-12_
   avatar uploads.
 - When deactivating a user, administrators now have convenient options
   to delete their messages or scrub their profile information.
+- Added distinct "Deleted user" display for accounts that have been
+  permanently deleted (unlike deactivated users, which preserves
+  metadata and is reversible).
+- Added Discord as an authentication option.
+- Added SCIM support for syncing custom profile fields.
+- The SAML integration now supports automatically handling changes
+  in user email addresses, when provided with a unique ID for each
+  user, matching the equivalent LDAP capability added in Zulip 11.0.
+  SAML can now also sync the `full_name` user attribute on login.
+- Added a `channels:archived` search filter.
+- Added support for quoting or forwarding multiple selected messages
+  at once, with the compose box pre-configured based on the selected
+  messages' recipients.
+- Message permalink views now mark messages as read as you scroll,
+  once you have scrolled up past any older unread messages in the
+  conversation (matching other conversation views).
+- Added arrow-key navigation in the zoomed-in topic list and direct
+  messages list.
+- Added a "Channel display options" submenu to the left sidebar
+  three-dot menu.
+- Added typeahead matching for user groups when the query begins
+  with `@`.
+- Poll and todo widgets now show an edited marker when modified.
+- Channel privacy icons now appear in channel mentions rendered in
+  message content and quoted replies.
+- Added an `/llms.txt` discovery endpoint, so that LLM-driven agents
+  can find web-public channels on a Zulip server.
 - Redesigned modals across the app.
 - Redesigned the left sidebar's "all topics" view.
-- Redesigned the GIF picker with nice keyboard UI, and support for
-  multiple GIF search backends, including Giphy and Tenor. (Tenor is
-  expected to be shut down mid-2026, but the restructuring greatly
-  simplifies adding other providers).
+- Redesigned the GIF picker with nice keyboard UI, a resizable
+  popover, and support for multiple GIF search backends, including
+  Giphy, Tenor, and KLIPY.
 - Redesigned how messages by muted users are displayed.
 - Redesigned the bot management settings panel to match the rest of
   settings, with consolidated "All bots" / "Your bots" tabbed views.
@@ -97,6 +123,9 @@ _Released 2026-03-12_
 - Redesigned user pills to show "deactivated" status with real-time
   updates, and present purple group pills across the UI with proper
   bot and deactivated user icons.
+- Redesigned the API documentation, legal policy, integrations
+  catalog, integration documentation, and login/signup pages to
+  match Zulip's modern visual style.
 - Improved the left sidebar to visually separate the DM section from
   channels and keep the DM header pinned.
 - Improved the left sidebar `n` key to better handle channels in
@@ -108,12 +137,19 @@ _Released 2026-03-12_
 - Improved the scroll-to-bottom button with a blur-on-hover effect.
 - Improved threading of message notification emails with
   `In-Reply-To` and `References` headers.
-- Improved channel and topic filtering with fancier matching.
+- Improved channel and topic filtering with smarter matching.
 - The message edit box is now resizable with a drag handle.
 - Improved Markdown table rendering with cell vertical alignment and
   better white-space wrapping.
 - Improved settings responsiveness for narrow screens.
-- Improved keyboard navigation in settings UI.
+- Improved keyboard navigation in settings UI, the left and right
+  sidebars, and the compose box.
+- DM compose typeahead now omits deactivated users and users you
+  do not have permission to direct message; the compose box is
+  also disabled for invalid DM recipients.
+- Improved typeahead diacritic matching for multi-word queries.
+- Improved reliability of web app reloads on marginal networks by
+  deferring state-data fetching with retry on failure.
 - Improved the language settings picker to sort languages by display
   name and show each language name in its own script.
 - Improved IPv6 support and error pages for the rate limiting system.
@@ -122,32 +158,54 @@ _Released 2026-03-12_
 - Improved handling of revoked invitations to preserve objects and
   record audit log entries.
 - Improved how drafts with an incomplete recipient are displayed.
+- Improved emoji picker load time by ~15x in organizations with a
+  large number of custom emoji.
+- Improved the compose preview to live-update as uploaded image
+  thumbnails become available.
+- Improved the subscribers list loading experience, with clearer
+  spinners and better empty-list handling.
 - Renamed "Joined" to "Created" in bot profiles.
-- The Markdown process now linkifies RFC 2392 `mid:` URLs.
+- The Markdown process now linkifies RFC 2392 `mid:` URLs, as well
+  as Asana Desktop, Obsidian, Zotero, and Hansoft deep-link URLs.
 - Added a keyboard shortcut (`Shift+Y`) to open the set-status modal.
 - Added a keyboard shortcut (`L`) to copy a link to the currently
   selected message.
 - Added a compose box keyboard shortcut (`Ctrl+Shift+C`) for formatting
   text as code.
-- Added an icon button in recipient headers to copy the topic link.
 - Added a `+` button for adding DM recipients in the compose box.
 - Added a "new topic" button in the left sidebar all topics view.
 - Added support for opening media in the lightbox from scheduled
   messages and message edit history.
 - YouTube video links with a timestamp now correctly open to that
   point in the video in the lightbox.
+- Added inline preview support for `.mov` video files in message
+  content.
 - Emoji settings UI now warns when overriding a unicode emoji with a
   custom emoji.
-- Added new webhook integrations for Redmine and dbt Cloud.
+- Added new webhook integrations for Redmine, dbt Cloud, and n8n.
   Rewrote the Intercom webhook integration with full support for
-  ticket, conversation, contact, and company events.
+  ticket, conversation, contact, and company events. Documented
+  Zulip's Atolio connector.
 - Added GitLab webhook support for emoji reaction events, design
   comments, and an option to ignore events from private projects.
 - Added GitHub webhook support for `repository_advisory` events and
   silent mentions for linked GitHub profiles.
+- Added emoji indicators for many event types in the GitHub
+  webhook integration, configurable via an `include_emoji` URL
+  parameter.
+- Added an "Atlassian account ID" custom profile field type, used
+  by the Jira and Bitbucket Cloud webhooks (along with email
+  matching for Jira) to render referenced users as silent mentions.
+- Improved many webhook integrations, including Travis CI (expanded
+  event coverage, cleaner topics and templates), PagerDuty (better
+  v2 topics and content, removed unsupported v1 events), Jira
+  (removed deprecated payloads, better markup in comment events),
+  GitLab (silent mention support for GitLab usernames), and Harbor
+  (cleaner push event templates).
 - Removed several integrations where the service had shut down
-  (Pivotal, Insping, Bitbucket Server, Jira plugin) or no longer
-  supported the original API (Twitter).
+  (Pivotal, Insping, Bitbucket Server, Jira plugin, Hubot, Dark Sky)
+  or no longer supported the original API (Twitter). Marked Codeship
+  integration as legacy.
 - Updated documentation for dozens of integrations, including fixing
   names for products that had been renamed.
 - Fixed several issues with pasting logic.
@@ -171,13 +229,55 @@ _Released 2026-03-12_
 - Fixed several minor bugs with keyboard shortcuts, typeahead, and
   focus management.
 - Fixed several minor issues with text selection in the main views.
-- Fixed name validation to permit 1-character user names (E.g., a
+- Fixed name validation to permit 1-character user names (e.g., a
   single Chinese character).
 - Fixed how the incoming email integration handles general chat.
+- Fixed `email_mirror` support for bracketed `Envelope-To` header
+  values and `iso-8859-8-i` Hebrew encoded messages.
 - Fixed exception emails containing excessive settings data.
+- Fixed mark-as-unread failing when the narrow includes a `with`
+  operator, and reminders to generate accurate `with` topic links.
+- Fixed Markdown autolinking for URLs preceded by multibyte
+  characters, and Markdown to not double-process mentions written
+  inside a link.
+- Fixed the lightbox's missing download button for inline videos.
+- Fixed Jitsi video call URL generation to include the pathname.
+- Fixed a crash in the GitLab webhook on group-level events with
+  custom topics.
+- Fixed animated custom emoji to have accurate still-frame
+  thumbnails.
+- Fixed the compose box to clear stale "recipient not subscribed"
+  banners.
+- Fixed read access for users viewing archived channels they had
+  permission to access.
+- Fixed the "list of topics" channel view to display topics even
+  when the user is not subscribed to the channel.
+- Fixed several subtle bugs in the drafts overlay, including focus
+  handling, Enter-key behavior, and invalid DM recipients.
+- Fixed several visual polish issues across modals, popovers, the
+  saved-snippets dropdown, stream-privacy decoration, recent-view
+  headers, and subscriber-list scrolling.
 - Enabled several modern HTTP headers for security hardening.
-- Improved correctness and performance of data import tools for
-  Slack, Mattermost, and Rocket.Chat.
+- Restricted the `/bot_storage` API endpoints to bot accounts.
+- Permitted bot users to call user-group management API endpoints.
+- Hardened XML parsing against external-entity attacks via an
+  `lxml` upgrade.
+- Improved SMTP email delivery to retry on `OSError` from firewalls
+  and to correctly manage persistent-connection lifetime.
+- Improved the event queue subsystem to support long-lived client
+  queues: after an idle period, such queues are marked offline and
+  missed-message notifications fire, while the queue itself is
+  retained so that a mobile client can resume without a full
+  re-fetch.
+- Migrated Tornado rate-limiting to the shared Redis GCRA backend,
+  eliminating a case where rate limits could be exceeded by
+  spreading requests across processes and correcting a
+  partial-update bug.
+- Improved correctness and performance of data import tools for Slack,
+  Mattermost, and Rocket.Chat. The Mattermost importer now supports
+  combining multiple teams into one Zulip organization, imports bot
+  users and their messages, imports self-DMs, and supports newer
+  `mmctl` export formats.
 - Improved performance of data import/export with parallel file
   downloading, streaming iterators, etc.
 - The web app now loads about 2x faster in organizations with more
@@ -187,6 +287,7 @@ _Released 2026-03-12_
   the system.
 - Added support for PostgreSQL 18, including defaulting to
   `io_method=io_uring` on PostgreSQL 18 for better performance.
+- Added support for Ubuntu 26.04.
 - Removed legacy Zephyr mirroring support.
 - Updated all dependencies. Emoji 16 is now supported.
 - Updated translations. New Estonian (et) locale.
