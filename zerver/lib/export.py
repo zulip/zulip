@@ -2128,7 +2128,6 @@ def _get_exported_s3_record(
 @dataclass
 class S3DownloadsProcessState:
     output_dir: str
-    processing_uploads: bool
     bucket: "Bucket"
 
 
@@ -2142,23 +2141,15 @@ class S3DownloadsProcessState:
 s3_downloads_context: ContextVar[S3DownloadsProcessState] = ContextVar("s3_downloads_context")
 
 
-def s3_downloads_process_initializer(
-    output_dir: str, processing_uploads: bool, bucket_name: str
-) -> None:
+def s3_downloads_process_initializer(output_dir: str, bucket_name: str) -> None:
     bucket = get_bucket(bucket_name)
-    s3_downloads_context.set(S3DownloadsProcessState(output_dir, processing_uploads, bucket))
+    s3_downloads_context.set(S3DownloadsProcessState(output_dir, bucket))
 
 
 def _save_s3_key_to_file(key_name: str) -> None:
-    context = s3_downloads_context.get()
     # Helper function for export_files_from_s3
-    if not context.processing_uploads:
-        filename = os.path.join(context.output_dir, key_name)
-    else:
-        fields = key_name.split("/")
-        if len(fields) != 3:
-            raise AssertionError(f"Suspicious key with invalid format {key_name}")
-        filename = os.path.join(context.output_dir, key_name)
+    context = s3_downloads_context.get()
+    filename = os.path.join(context.output_dir, key_name)
 
     if "../" in filename:
         raise AssertionError(f"Suspicious file with invalid format {filename}")
@@ -2183,7 +2174,6 @@ def export_files_from_s3(
     valid_hashes: set[str] | None,
     processes: int = 1,
 ) -> None:
-    processing_uploads = flavor == "upload"
     processing_emoji = flavor == "emoji"
 
     bucket = get_bucket(bucket_name)
@@ -2246,7 +2236,6 @@ def export_files_from_s3(
         initializer=s3_downloads_process_initializer,
         initargs=(
             output_dir,
-            processing_uploads,
             bucket_name,
         ),
         report_every=100,
