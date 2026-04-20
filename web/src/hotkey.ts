@@ -601,13 +601,23 @@ function handle_popover_events(event_name: string): boolean {
     }
 
     if (popover_menu_visible_instance) {
+        const $focused_element = $(":focus");
+        const focus_in_textarea = $focused_element.is("textarea");
+        const focused_element = $focused_element[0];
+        const focus_in_textarea_at_end =
+            focus_in_textarea &&
+            event_name === "down_arrow" &&
+            focused_element instanceof HTMLTextAreaElement &&
+            focused_element.selectionStart === focused_element.value.length &&
+            focused_element.selectionEnd === focused_element.value.length;
         if (
             // Allow all hotkeys except for `down_arrow` and `up_arrow`
             // to be handled by the browser.
-            // Added to handle `schedule-reminder-note` textarea.
+            // The `down_arrow` key is specifically intercepted when the cursor
+            // is at the end of a textarea to enable popover navigation.
             processing_text() &&
-            event_name !== "down_arrow" &&
-            event_name !== "up_arrow"
+            ((focus_in_textarea && !focus_in_textarea_at_end) ||
+                (event_name !== "down_arrow" && event_name !== "up_arrow"))
         ) {
             return false;
         }
