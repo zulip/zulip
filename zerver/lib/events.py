@@ -17,6 +17,7 @@ from zerver.actions.realm_settings import (
     do_set_realm_property,
     get_realm_authentication_methods_for_page_params_api,
 )
+from zerver.actions.recurring_scheduled_messages import do_get_recurring_scheduled_messages
 from zerver.actions.saved_snippets import do_get_saved_snippets
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import get_owned_bot_dicts
@@ -343,6 +344,11 @@ def fetch_initial_state_data(
 
     if want("reminders"):
         state["reminders"] = [] if user_profile is None else get_undelivered_reminders(user_profile)
+
+    if want("recurring_scheduled_messages"):
+        state["recurring_scheduled_messages"] = (
+            [] if user_profile is None else do_get_recurring_scheduled_messages(user_profile)
+        )
 
     if want("muted_topics") and (
         # Suppress muted_topics data for clients that explicitly
@@ -1076,6 +1082,21 @@ def apply_event(
             for idx, saved_snippet in enumerate(state["saved_snippets"]):
                 if saved_snippet["id"] == event["saved_snippet"]["id"]:
                     state["saved_snippets"][idx] = event["saved_snippet"]
+                    break
+
+    elif event["type"] == "recurring_scheduled_messages":
+        if event["op"] == "add":
+            state["recurring_scheduled_messages"].append(event["recurring_scheduled_message"])
+        elif event["op"] == "remove":
+            state["recurring_scheduled_messages"] = [
+                rsm
+                for rsm in state["recurring_scheduled_messages"]
+                if rsm["id"] != event["recurring_scheduled_message_id"]
+            ]
+        elif event["op"] == "update":
+            for idx, rsm in enumerate(state["recurring_scheduled_messages"]):
+                if rsm["id"] == event["recurring_scheduled_message"]["id"]:
+                    state["recurring_scheduled_messages"][idx] = event["recurring_scheduled_message"]
                     break
 
     elif event["type"] == "navigation_view":

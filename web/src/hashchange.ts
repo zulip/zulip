@@ -21,6 +21,7 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import * as recurring_scheduled_messages_ui from "./recurring_scheduled_messages_ui.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as settings from "./settings.ts";
@@ -537,6 +538,11 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
 
     if (base === "reminders") {
         reminders_overlay_ui.launch();
+        return;
+    }
+
+    if (base === "recurring-scheduled") {
+        recurring_scheduled_messages_ui.launch();
         return;
     }
 

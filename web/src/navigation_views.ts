@@ -165,6 +165,22 @@ export const built_in_views_meta_data: Record<string, BuiltInViewBasicMetadata> 
         home_view_code: "",
         prioritize_in_condensed_view: false,
     },
+    recurring_scheduled_messages: {
+        fragment: "recurring-scheduled",
+        name: $t({defaultMessage: "Recurring messages"}),
+        is_pinned: false,
+        icon: "zulip-icon-refresh-cw",
+        css_class_suffix: "recurring_scheduled_messages",
+        tooltip_template_id: "recurring-scheduled-tooltip-template",
+        has_unread_count: true,
+        unread_count_type: "quiet-count",
+        supports_masked_unread: false,
+        hidden_for_spectators: true,
+        menu_icon_class: "",
+        menu_aria_label: "",
+        home_view_code: "",
+        prioritize_in_condensed_view: false,
+    },
 };
 
 let navigation_views_dict: Map<string, NavigationView>;

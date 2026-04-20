@@ -8,6 +8,7 @@ import * as message_reminder from "./message_reminder.ts";
 import * as navigation_views from "./navigation_views.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import * as recurring_scheduled_messages from "./recurring_scheduled_messages.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as settings_config from "./settings_config.ts";
@@ -64,6 +65,13 @@ export function update_reminders_row(): void {
     const count = message_reminder.get_count();
     $reminders_li.toggleClass("hidden-by-filters", count === 0);
     ui_util.update_unread_count_in_dom($reminders_li, count);
+}
+
+export function update_recurring_scheduled_messages_row(): void {
+    const $li = $(".top_left_recurring_scheduled_messages");
+    const count = recurring_scheduled_messages.count();
+    $li.toggleClass("hidden-by-filters", count === 0);
+    ui_util.update_unread_count_in_dom($li, count);
 }
 
 export let update_dom_with_unread_counts = function (
@@ -339,6 +347,7 @@ export function get_built_in_views(): navigation_views.BuiltInViewMetadata[] {
 export function initialize(): void {
     update_reminders_row();
     update_scheduled_messages_row();
+    update_recurring_scheduled_messages_row();
     restore_views_state();
 
     $("body").on(

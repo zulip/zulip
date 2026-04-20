@@ -171,6 +171,11 @@ from zerver.views.registration import (
     realm_register,
     signup_send_confirm,
 )
+from zerver.views.recurring_scheduled_messages import (
+    cancel_recurring_scheduled_message,
+    create_recurring_scheduled_message,
+    get_recurring_scheduled_messages,
+)
 from zerver.views.reminders import create_reminders_message_backend, delete_reminder
 from zerver.views.report import report_csp_violations
 from zerver.views.saved_snippets import (
@@ -403,6 +408,16 @@ v1_api_and_json_patterns = [
         "saved_snippets/<int:saved_snippet_id>",
         DELETE=delete_saved_snippet,
         PATCH=edit_saved_snippet,
+    ),
+    # recurring_scheduled_messages -> zerver.views.recurring_scheduled_messages
+    rest_path(
+        "recurring_scheduled_messages",
+        GET=get_recurring_scheduled_messages,
+        POST=create_recurring_scheduled_message,
+    ),
+    rest_path(
+        "recurring_scheduled_messages/<int:recurring_scheduled_message_id>",
+        DELETE=cancel_recurring_scheduled_message,
     ),
     rest_path("reminders", GET=fetch_reminders, POST=create_reminders_message_backend),
     rest_path(

@@ -108,6 +108,8 @@ import * as realm_user_settings_defaults from "./realm_user_settings_defaults.ts
 import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as reload_setup from "./reload_setup.ts";
+import * as recurring_scheduled_messages from "./recurring_scheduled_messages.ts";
+import * as recurring_scheduled_messages_ui from "./recurring_scheduled_messages_ui.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as resize_handler from "./resize_handler.ts";
 import * as saved_snippets from "./saved_snippets.ts";
@@ -569,6 +571,10 @@ export async function initialize_everything(state_data) {
     });
     alert_words.initialize(state_data.alert_words);
     saved_snippets.initialize(state_data.saved_snippets);
+    recurring_scheduled_messages.initialize(
+        state_data.recurring_scheduled_messages ?? {recurring_scheduled_messages: []},
+    );
+    recurring_scheduled_messages_ui.initialize();
     emojisets.initialize(user_settings.emojiset);
     scroll_bar.initialize();
     message_viewport.initialize();

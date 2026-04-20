@@ -1,0 +1,154 @@
+<div id="create-recurring-scheduled-message-modal">
+    <form class="modal-form" id="create-recurring-scheduled-message-form">
+        <div class="modal-field-label">{{t "Message content" }}</div>
+        <textarea
+            id="recurring-scheduled-message-content"
+            class="modal-textarea"
+            rows="4"
+            placeholder="{{t 'Write your message here…' }}"
+        ></textarea>
+
+        <div class="modal-field-label">{{t "Recurrence" }}</div>
+        <select id="recurring-scheduled-message-recurrence-type" class="modal-select">
+            <option value="daily">{{t "Daily" }}</option>
+            <option value="weekly">{{t "Weekly" }}</option>
+            <option value="specific_days">{{t "Specific days" }}</option>
+            <option value="monthly">{{t "Monthly" }}</option>
+            <option value="one_time">{{t "One time" }}</option>
+        </select>
+
+        <div id="recurrence-days-section" class="modal-field-section">
+            <div class="modal-field-label">{{t "Days of week" }}</div>
+            <div class="recurrence-days-checkboxes">
+                <label><input type="checkbox" class="recurrence-day-checkbox" value="0" /> {{t "Mon" }}</label>
+                <label><input type="checkbox" class="recurrence-day-checkbox" value="1" /> {{t "Tue" }}</label>
+                <label><input type="checkbox" class="recurrence-day-checkbox" value="2" /> {{t "Wed" }}</label>
+                <label><input type="checkbox" class="recurrence-day-checkbox" value="3" /> {{t "Thu" }}</label>
+                <label><input type="checkbox" class="recurrence-day-checkbox" value="4" /> {{t "Fri" }}</label>
+                <label><input type="checkbox" class="recurrence-day-checkbox" value="5" /> {{t "Sat" }}</label>
+                <label><input type="checkbox" class="recurrence-day-checkbox" value="6" /> {{t "Sun" }}</label>
+            </div>
+        </div>
+
+        <div id="monthly-recurrence-section" class="modal-field-section">
+            <div class="modal-field-label">{{t "Monthly schedule" }}</div>
+            <select id="rsm-monthly-rule-type" class="modal-select">
+                <option value="calendar_day">{{t "Day of month" }}</option>
+                <option value="ordinal_weekday">{{t "Weekday of month" }}</option>
+            </select>
+
+            <div id="rsm-monthly-calendar-day-section" class="modal-field-section">
+                <div class="modal-field-label">{{t "Day" }}</div>
+                <select id="rsm-monthly-calendar-day" class="modal-select">
+                    <option value="">{{t "Select a day" }}</option>
+                    <option value="-1">{{t "Last day" }}</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                    <option value="13">13</option>
+                    <option value="14">14</option>
+                    <option value="15">15</option>
+                    <option value="16">16</option>
+                    <option value="17">17</option>
+                    <option value="18">18</option>
+                    <option value="19">19</option>
+                    <option value="20">20</option>
+                    <option value="21">21</option>
+                    <option value="22">22</option>
+                    <option value="23">23</option>
+                    <option value="24">24</option>
+                    <option value="25">25</option>
+                    <option value="26">26</option>
+                    <option value="27">27</option>
+                    <option value="28">28</option>
+                    <option value="29">29</option>
+                    <option value="30">30</option>
+                    <option value="31">31</option>
+                </select>
+            </div>
+
+            <div id="rsm-monthly-ordinal-weekday-section" class="modal-field-section">
+                <div class="modal-field-label">{{t "When" }}</div>
+                <div class="input-group">
+                    <select id="rsm-monthly-ordinal" class="modal-select">
+                        <option value="">{{t "Select week" }}</option>
+                        <option value="1">{{t "First" }}</option>
+                        <option value="2">{{t "Second" }}</option>
+                        <option value="3">{{t "Third" }}</option>
+                        <option value="4">{{t "Fourth" }}</option>
+                        <option value="-1">{{t "Last" }}</option>
+                    </select>
+                    <select id="rsm-monthly-weekday" class="modal-select">
+                        <option value="">{{t "Select weekday" }}</option>
+                        <option value="0">{{t "Monday" }}</option>
+                        <option value="1">{{t "Tuesday" }}</option>
+                        <option value="2">{{t "Wednesday" }}</option>
+                        <option value="3">{{t "Thursday" }}</option>
+                        <option value="4">{{t "Friday" }}</option>
+                        <option value="5">{{t "Saturday" }}</option>
+                        <option value="6">{{t "Sunday" }}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-field-label">{{t "Time (UTC)" }}</div>
+        <input
+            id="recurring-scheduled-message-time"
+            type="time"
+            class="modal_text_input"
+            value="09:00"
+        />
+
+        <div id="one-time-timestamp-section" class="modal-field-section">
+            <div class="modal-field-label">{{t "Send at" }}</div>
+            <input
+                id="recurring-scheduled-message-datetime"
+                type="datetime-local"
+                class="modal_text_input"
+            />
+        </div>
+
+        <div class="modal-field-label">{{t "Destinations" }}</div>
+        <div id="rsm-destinations-list"></div>
+
+        <div id="rsm-add-stream-form" class="rsm-add-dest-form">
+            <input
+                id="rsm-stream-name-input"
+                type="text"
+                class="modal_text_input"
+                placeholder="{{t 'Channel name' }}"
+            />
+            <input
+                id="rsm-topic-input"
+                type="text"
+                class="modal_text_input"
+                placeholder="{{t 'Topic' }}"
+            />
+            <button type="button" id="rsm-add-stream-btn" class="button small rounded">
+                {{t "+ Add channel" }}
+            </button>
+        </div>
+
+        <div id="rsm-add-direct-form" class="rsm-add-dest-form">
+            <input
+                id="rsm-dm-emails-input"
+                type="text"
+                class="modal_text_input"
+                placeholder="{{t 'Emails, comma-separated' }}"
+            />
+            <button type="button" id="rsm-add-direct-btn" class="button small rounded">
+                {{t "+ Add direct message" }}
+            </button>
+        </div>
+    </form>
+</div>

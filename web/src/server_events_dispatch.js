@@ -52,6 +52,8 @@ import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as reload from "./reload.ts";
+import * as recurring_scheduled_messages from "./recurring_scheduled_messages.ts";
+import * as recurring_scheduled_messages_ui from "./recurring_scheduled_messages_ui.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as saved_snippets from "./saved_snippets.ts";
 import * as saved_snippets_ui from "./saved_snippets_ui.ts";
@@ -692,6 +694,27 @@ export function dispatch_normal_event(event) {
                     left_sidebar_navigation_area.update_scheduled_messages_row();
                     break;
                 }
+                // No default
+            }
+            break;
+
+        case "recurring_scheduled_messages":
+            switch (event.op) {
+                case "add":
+                    recurring_scheduled_messages.add(event.recurring_scheduled_message);
+                    recurring_scheduled_messages_ui.rerender();
+                    left_sidebar_navigation_area.update_recurring_scheduled_messages_row();
+                    break;
+                case "remove":
+                    recurring_scheduled_messages.remove(event.recurring_scheduled_message_id);
+                    recurring_scheduled_messages_ui.rerender();
+                    left_sidebar_navigation_area.update_recurring_scheduled_messages_row();
+                    break;
+                case "update":
+                    recurring_scheduled_messages.update(event.recurring_scheduled_message);
+                    recurring_scheduled_messages_ui.rerender();
+                    left_sidebar_navigation_area.update_recurring_scheduled_messages_row();
+                    break;
                 // No default
             }
             break;

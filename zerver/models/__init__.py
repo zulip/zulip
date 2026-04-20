@@ -55,6 +55,9 @@ from zerver.models.realms import RealmDomain as RealmDomain
 from zerver.models.realms import RealmExport as RealmExport
 from zerver.models.recipients import DirectMessageGroup as DirectMessageGroup
 from zerver.models.recipients import Recipient as Recipient
+from zerver.models.recurring_scheduled_messages import (
+    RecurringScheduledMessage as RecurringScheduledMessage,
+)
 from zerver.models.saved_snippets import SavedSnippet as SavedSnippet
 from zerver.models.scheduled_jobs import AbstractScheduledJob as AbstractScheduledJob
 from zerver.models.scheduled_jobs import MissedMessageEmailAddress as MissedMessageEmailAddress

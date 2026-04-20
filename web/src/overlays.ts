@@ -78,6 +78,10 @@ export function reminders_open(): boolean {
     return open_overlay_name === "reminders";
 }
 
+export function recurring_scheduled_messages_open(): boolean {
+    return open_overlay_name === "recurring-scheduled";
+}
+
 export function message_edit_history_open(): boolean {
     return open_overlay_name === "message_edit_history";
 }
