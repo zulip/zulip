@@ -681,6 +681,11 @@ function add_user_to_groups(group_ids: number[], user_id: number, $alert_box: JQ
 
 export function show_user_profile(user_id: number, default_tab_key = "profile-tab"): void {
     const user = people.get_by_user_id(user_id);
+
+    if (user.is_placeholder_user) {
+        void people.fetch_user_for_profile(user_id);
+    }
+
     // Reset these widgets so that they are created again for the opened modal.
     user_streams_list_widget = undefined;
     user_groups_list_widget = undefined;

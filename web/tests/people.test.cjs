@@ -2077,6 +2077,86 @@ run_test("fetch inaccessible user", async ({override, override_rewire}) => {
     assert.equal(inaccessible_user.is_inaccessible_user, true);
 });
 
+run_test("fetch_user_for_profile", async ({override}) => {
+    initialize();
+
+    // Fetching a user we already have complete data for is a no-op.
+    people.add_active_user({
+        ...me,
+        user_id: 60,
+        email: "sixty@example.com",
+        full_name: "Sixty",
+    });
+    await people.fetch_user_for_profile(60);
+
+    // Set up two placeholders to exercise the active and non-active branches.
+    people.add_valid_user_id(61);
+    people.add_valid_user_id(62);
+    people.add_placeholder_user(61);
+    people.add_placeholder_user(62);
+
+    const fetched_notifications = [];
+    people.set_users_fetched_callback((user_ids) => {
+        fetched_notifications.push([...user_ids]);
+    });
+
+    const user_template = {
+        delivery_email: "",
+        date_joined: "",
+        is_owner: false,
+        is_admin: false,
+        is_guest: false,
+        role: 1,
+        avatar_url: "",
+        avatar_version: 1,
+        is_bot: false,
+        is_imported_stub: false,
+    };
+
+    override(channel, "get", ({url, data, success}) => {
+        assert.equal(url, "/json/users");
+        const requested_user_id = JSON.parse(data.user_ids)[0];
+        if (requested_user_id === 61) {
+            success({
+                members: [
+                    {
+                        ...user_template,
+                        email: "sixtyone@example.com",
+                        user_id: 61,
+                        full_name: "SixtyOne",
+                        is_active: true,
+                    },
+                ],
+                result: "success",
+                msg: "",
+            });
+        } else {
+            success({
+                members: [
+                    {
+                        ...user_template,
+                        email: "sixtytwo@example.com",
+                        user_id: 62,
+                        full_name: "SixtyTwo",
+                        is_active: false,
+                    },
+                ],
+                result: "success",
+                msg: "",
+            });
+        }
+    });
+
+    await people.fetch_user_for_profile(61);
+    assert.equal(people.get_by_user_id(61).full_name, "SixtyOne");
+    assert.deepEqual(fetched_notifications, [[61]]);
+
+    await people.fetch_user_for_profile(62);
+    assert.equal(people.get_by_user_id(62).full_name, "SixtyTwo");
+    assert.ok(people.get_non_active_realm_users().some((u) => u.user_id === 62));
+    assert.deepEqual(fetched_notifications, [[61], [62]]);
+});
+
 run_test("get_by_user_id", () => {
     initialize();
     people.add_active_user(maria);

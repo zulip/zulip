@@ -40,6 +40,7 @@ mock_esm("../src/settings_users", {
 mock_esm("../src/user_profile", {
     update_profile_modal_ui() {},
     update_user_custom_profile_fields() {},
+    get_user_id_if_user_profile_modal_open: () => undefined,
 });
 
 const buddy_list = mock_esm("../src/buddy_list", {

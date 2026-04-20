@@ -341,5 +341,12 @@ export function initialize(): void {
         if (narrow_state.filter()?.contains_only_private_messages()) {
             compose_closed_ui.update_recipient_text_for_reply_button();
         }
+
+        // If the user profile modal is open for a fetched placeholder
+        // user, re-render it with the real data.
+        const profile_user_id = user_profile.get_user_id_if_user_profile_modal_open();
+        if (profile_user_id !== undefined && user_ids.includes(profile_user_id)) {
+            user_profile.show_user_profile(profile_user_id);
+        }
     });
 }

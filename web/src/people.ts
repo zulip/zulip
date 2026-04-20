@@ -2008,8 +2008,26 @@ async function start_fetch_for_requested_users(): Promise<void> {
         }
     }
 
-    // Collect IDs of users that were placeholders before replacing
-    // them with real data, so we can notify UI to re-render.
+    apply_fetched_users(fetched_users);
+
+    // Resolve promises waiting on this fetch after updating the data locally.
+    fetch_users_storage.promise_for_in_transit.get(user_ids_pending_fetch)!.resolver();
+    // Clean up in transit promise for this fetch.
+    fetch_users_storage.promise_for_in_transit.delete(user_ids_pending_fetch);
+    // Remove fetched users from in transit user ids.
+    fetch_users_storage.in_transit_user_ids =
+        fetch_users_storage.in_transit_user_ids.difference(user_ids_pending_fetch);
+
+    await promise_for_all_requested_users;
+    // Resolve promises waiting on the complete fetch.
+    fetch_users_storage.promise_for_requested.get(user_ids_to_fetch)!.resolver();
+    fetch_users_storage.promise_for_requested.delete(user_ids_pending_fetch);
+}
+
+// Apply a batch of fetched users to the local people store and
+// notify any registered callback about the IDs that were
+// placeholders before this update.
+function apply_fetched_users(fetched_users: UsersFetchResponse["members"]): void {
     const fetched_placeholder_user_ids: number[] = [];
     for (const user of fetched_users) {
         const existing = people_by_user_id_dict.get(user.user_id);
@@ -2032,19 +2050,17 @@ async function start_fetch_for_requested_users(): Promise<void> {
     if (fetched_placeholder_user_ids.length > 0) {
         notify_users_fetched(fetched_placeholder_user_ids);
     }
+}
 
-    // Resolve promises waiting on this fetch after updating the data locally.
-    fetch_users_storage.promise_for_in_transit.get(user_ids_pending_fetch)!.resolver();
-    // Clean up in transit promise for this fetch.
-    fetch_users_storage.promise_for_in_transit.delete(user_ids_pending_fetch);
-    // Remove fetched users from in transit user ids.
-    fetch_users_storage.in_transit_user_ids =
-        fetch_users_storage.in_transit_user_ids.difference(user_ids_pending_fetch);
-
-    await promise_for_all_requested_users;
-    // Resolve promises waiting on the complete fetch.
-    fetch_users_storage.promise_for_requested.get(user_ids_to_fetch)!.resolver();
-    fetch_users_storage.promise_for_requested.delete(user_ids_pending_fetch);
+// Direct fetch for a single user, bypassing the batch queue.
+// Used when the user explicitly views a placeholder user's profile
+// and we don't want to wait for a large background fetch to complete.
+export async function fetch_user_for_profile(user_id: number): Promise<void> {
+    if (has_fetched_user(user_id)) {
+        return;
+    }
+    const fetched_users = await fetch_users(new Set([user_id]));
+    apply_fetched_users(fetched_users);
 }
 
 export let fetch_users_from_ids_internal = async (user_ids: number[]): Promise<unknown> => {
