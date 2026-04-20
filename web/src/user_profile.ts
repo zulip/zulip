@@ -703,10 +703,12 @@ export function show_user_profile(user_id: number, default_tab_key = "profile-ta
         !user.is_system_bot;
     const args: Record<string, unknown> = {
         can_manage_profile,
-        date_joined: timerender.get_localized_date_or_time_for_format(
-            parseISO(user.date_joined),
-            "dayofyear_year",
-        ),
+        date_joined: user.is_placeholder_user
+            ? undefined
+            : timerender.get_localized_date_or_time_for_format(
+                  parseISO(user.date_joined),
+                  "dayofyear_year",
+              ),
         email: user.delivery_email,
         full_name: user.full_name,
         is_active: people.is_person_active(user.user_id),
