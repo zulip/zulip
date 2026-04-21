@@ -642,7 +642,7 @@ export type FormattedDraft =
           is_sending_saving: boolean;
           is_dm_with_self?: boolean;
           draft_id: string;
-          recipients: string;
+          recipient_users: {full_name: string; is_placeholder_user: boolean}[];
           has_recipient_data: boolean;
           raw_content: string;
           time_stamp: string;
@@ -737,7 +737,7 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
             is_stream: false,
             is_sending_saving: draft.is_sending_saving,
             has_recipient_data: false,
-            recipients: "",
+            recipient_users: [],
             raw_content: draft.content,
             time_stamp,
             ...markdown_data,
@@ -747,13 +747,21 @@ export function format_draft(draft: LocalStorageDraftWithId): FormattedDraft | u
     const is_dm_with_self = people.is_direct_message_conversation_with_self(
         draft.private_message_recipient_ids,
     );
-    const recipients = people.user_ids_to_full_names_string(draft.private_message_recipient_ids);
+    const recipient_users = draft.private_message_recipient_ids
+        .map((user_id) => {
+            const person = people.get_by_user_id(user_id);
+            return {
+                full_name: person.full_name,
+                is_placeholder_user: person.is_placeholder_user ?? false,
+            };
+        })
+        .toSorted((a, b) => util.strcmp(a.full_name, b.full_name));
     return {
         draft_id: draft.id,
         is_stream: false,
         is_sending_saving: draft.is_sending_saving,
         is_dm_with_self,
-        recipients,
+        recipient_users,
         raw_content: draft.content,
         time_stamp,
         has_recipient_data: true,
