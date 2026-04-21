@@ -1,3 +1,5 @@
+import "altcha";
+import type {AltchaWidgetElement} from "altcha";
 import $ from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
@@ -11,9 +13,6 @@ import {password_quality, password_warning} from "../password_quality.ts";
 import * as settings_config from "../settings_config.ts";
 
 import * as portico_modals from "./portico_modals.ts";
-
-/* global AltchaWidgetMethods, AltchaStateChangeEvent */
-import "altcha";
 
 $(() => {
     // Initialize emoji rendering for login/signup pages
@@ -383,18 +382,24 @@ $(() => {
     });
 
     // Configure altcha
-    const altcha = document.querySelector<AltchaWidgetMethods & HTMLElement>("altcha-widget");
+    const altcha = document.querySelector<AltchaWidgetElement>("altcha-widget");
     if (altcha) {
-        altcha.configure({
+        void altcha.configure({
             auto: "onload",
-            async customfetch(url: string, init?: RequestInit) {
+            async fetch(url: string | Request | URL, init?: RequestInit) {
                 return fetch(url, {...init, credentials: "include"});
             },
         });
         const $submit = $(altcha).closest("form").find("button[type=submit]");
         $submit.prop("disabled", true);
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        altcha.addEventListener("statechange", ((ev: AltchaStateChangeEvent) => {
+        altcha.addEventListener("statechange", ((ev) => {
+            assert(
+                "detail" in ev &&
+                    typeof ev.detail === "object" &&
+                    ev.detail !== null &&
+                    "state" in ev.detail,
+            );
             if (ev.detail.state === "verified") {
                 $submit.prop("disabled", false);
                 // Hide checkbox on successful verification.

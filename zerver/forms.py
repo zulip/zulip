@@ -375,7 +375,7 @@ class AltchaWidget(forms.TextInput):
             (
                 "<altcha-widget"
                 '  name="captcha"'
-                '  challengeurl="/json/antispam_challenge"'
+                '  challenge="/json/antispam_challenge"'
                 "  hidelogo"
                 "  hidefooter"
                 "  refetchonexpire"
