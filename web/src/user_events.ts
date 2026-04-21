@@ -319,6 +319,7 @@ export function initialize(): void {
             if (user?.is_bot) {
                 settings_bots.update_bot_data(user_id);
             }
+            compose_pm_pill.update_placeholder_user_pill(user_id);
         }
         buddy_list.insert_or_move(user_ids);
 

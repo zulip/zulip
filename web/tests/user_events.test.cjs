@@ -463,6 +463,7 @@ run_test("initialize registers users_fetched callback", ({override}) => {
     buddy_data.insert_or_move = (user_ids) => {
         buddy_list_user_ids = user_ids;
     };
+    override(compose_pm_pill, "update_placeholder_user_pill", noop);
     let reply_button_updated = false;
     override(compose_closed_ui, "update_recipient_text_for_reply_button", () => {
         reply_button_updated = true;
