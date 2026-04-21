@@ -14,6 +14,7 @@ from corporate.lib.stripe import (
     RemoteServerBillingSession,
     add_months,
     get_configured_fixed_price_plan_offer,
+    get_next_billing_cycle_for_plan,
     start_of_next_billing_cycle,
 )
 from corporate.models.customers import Customer, get_customer_by_realm
@@ -1771,7 +1772,7 @@ class TestSupportEndpoint(ZulipTestCase):
         )
 
         billing_session = RealmBillingSession(user=iago, realm=lear_realm, support_session=True)
-        next_billing_cycle = billing_session.get_next_billing_cycle(plan).date().isoformat()
+        next_billing_cycle = get_next_billing_cycle_for_plan(plan).date().isoformat()
         with time_machine.travel(datetime(2016, 1, 3, tzinfo=timezone.utc), tick=False):
             result = self.client_post(
                 "/activity/support",
