@@ -1183,13 +1183,9 @@
         hsl(0deg 0% 0% / 10%),
         hsl(0deg 0% 0% / 10%)
     );
-    --color-background-recent-view-row: light-dark(
-        hsl(0deg 0% 100%),
-        hsl(0deg 0% 11%)
-    );
-    --color-background-recent-view-row-hover: light-dark(
-        color-mix(in srgb, hsl(0deg 0% 0%) 5%, hsl(0deg 0% 100%)),
-        color-mix(in srgb, hsl(0deg 0% 100%) 5%, hsl(0deg 0% 11%))
+    --color-background-recent-view-row: var(--color-background-inbox-row);
+    --color-background-recent-view-row-hover: var(
+        --color-background-inbox-row-hover
     );
     --color-recent-view-link-unread: light-dark(
         hsl(0deg 0% 5%),
