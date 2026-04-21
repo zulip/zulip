@@ -32,7 +32,15 @@
                     <span class="private_message_header_name">{{t "You" }}</span>
                     {{else}}
                     {{#if has_recipient_data}}
-                    <span class="private_message_header_name">{{t "You and {recipients}" }}</span>
+                    <span class="private_message_header_name">
+                        {{~#tr}}You and <z-user-names></z-user-names>
+                        {{#*inline "z-user-names"}}
+                            {{#each recipient_users}}
+                                {{~#if is_placeholder_user}}<span class="loading-shimmer"></span>{{else}}{{~full_name}}{{/if}}{{#unless @last}}, {{/unless}}
+                            {{/each}}
+                        {{/inline}}
+                        {{/tr~}}
+                    </span>
                     {{else}}
                     <span class="drafts-unknown-msg-header-field">{{t "No DM recipients" }}</span>
                     {{/if}}
