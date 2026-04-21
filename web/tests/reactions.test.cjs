@@ -61,6 +61,7 @@ set_global("document", "document-stub");
 
 const emoji = zrequire("emoji");
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
+const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 const reactions = zrequire("reactions");
 const retry_backoff = zrequire("retry_backoff");
@@ -292,6 +293,48 @@ test("reactions from unknown users", () => {
         },
     ];
     assert.deepEqual(result, expected_result);
+});
+
+test("reactions from placeholder users", ({override}) => {
+    // When any reactor is a placeholder user, we show counts instead
+    // of names, so that a reactor name never reads "Loading…".
+    settings_data.user_can_access_all_other_users = () => true;
+    override(user_settings, "display_emoji_reaction_users", true);
+
+    const placeholder_user_id = 50;
+    const placeholder_user = make_user({
+        email: "placeholder@example.com",
+        user_id: placeholder_user_id,
+        full_name: "Loading…",
+        is_placeholder_user: true,
+    });
+    people.add_active_user(placeholder_user);
+
+    const message = {
+        id: 1001,
+        reactions: [
+            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f604"},
+            {
+                emoji_name: "smile",
+                user_id: placeholder_user_id,
+                reaction_type: "unicode_emoji",
+                emoji_code: "1f604",
+            },
+        ],
+    };
+
+    convert_reactions_to_clean_reactions(message);
+    const result = reactions.get_message_reactions(message);
+    assert.equal(result.length, 1);
+    // With display_emoji_reaction_users on, two reactions would
+    // normally show the reactors' names. Here we get a count instead.
+    assert.deepEqual(result[0].vote_list, ["2"]);
+
+    // A muted reactor is shown as "Muted user", so we can show names.
+    muted_users.add_muted_user(placeholder_user_id);
+    const muted_result = reactions.get_message_reactions(message);
+    assert.deepEqual(muted_result[0].vote_list, ["translated: You", "translated: Muted user"]);
+    muted_users.remove_muted_user(placeholder_user_id);
 });
 
 test("unknown realm emojis (add)", () => {
