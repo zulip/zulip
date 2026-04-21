@@ -896,6 +896,15 @@
         hsl(0deg 0% 0% / 30%),
         hsl(0deg 0% 100% / 30%)
     );
+    /* Layered drop shadow for sticky sidebar headers when scrolled content
+       passes beneath them. Dark mode overrides to full-opacity black in the
+       dark-theme block below, since shadows over a dark background need more
+       contrast to read as "something is floating above." */
+    --box-shadow-sidebar-sticky-header-drop:
+        0 1px 1px -1px hsl(0deg 0% 0% / 25%),
+        0 3px 4px -5px hsl(0deg 0% 0% / 40%),
+        0 4px 9px -10px hsl(0deg 0% 0% / 45%),
+        0 12px 12px -13px hsl(0deg 0% 0% / 30%);
     --color-sidebar-action: light-dark(
         hsl(240deg 30% 40%),
         hsl(240deg 35% 68%)
@@ -3201,6 +3210,12 @@
 
     /* Box shadow for overlays across the web app */
     --box-shadow-overlay: 0 0 30px hsl(212deg 32% 7%);
+
+    /* Shadow layers use full-opacity black on dark backgrounds so the drop
+       shadow still reads as a crisp separation. */
+    --box-shadow-sidebar-sticky-header-drop:
+        0 1px 1px -1px hsl(0deg 0% 0%), 0 3px 4px -5px hsl(0deg 0% 0%),
+        0 4px 9px -10px hsl(0deg 0% 0%), 0 12px 12px -13px hsl(0deg 0% 0%);
 
     /* Colors used across the app */
     --color-recipient-bar-controls-spinner: hsl(0deg 0% 100%);
