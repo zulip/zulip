@@ -224,11 +224,23 @@ export function dispatch_normal_event(event) {
             muted_users_ui.handle_user_updates(event.muted_users);
             break;
 
-        case "followed_users":
+        case "followed_users": {
             // Keep the client-side follow list in sync so that is:followed-user
             // narrow filtering stays accurate without a page reload.
             followed_users_data.set_followed_users(event.followed_users);
+            people.initialize_follows(event.followed_users);
+            activity_ui.redraw();
+            message_events.discard_cached_lists_with_term_type("is-followed-user");
+            const filter = message_lists.current?.data.filter;
+            if (filter !== undefined && message_events.filter_has_term_type(filter, "is-followed-user")) {
+                message_view.show(filter.terms(), {
+                    then_select_id: message_lists.current.selected_id(),
+                    trigger: "followed users change",
+                    force_rerender: true,
+                });
+            }
             break;
+        }
 
         case "navigation_view":
             switch (event.op) {
@@ -1249,10 +1261,5 @@ export function dispatch_normal_event(event) {
             break;
         }
 
-        case "followed_users": {
-            people.initialize_follows(event.followed_users);
-            activity_ui.redraw();
-            break;
         }
-    }
 }
