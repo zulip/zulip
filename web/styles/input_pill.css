@@ -34,6 +34,21 @@
         background-color: var(--color-background-input-pill);
         cursor: pointer;
 
+        /* Adjust shimmer colors to blend with the pill background
+           (--color-background-input-pill). The override must be on
+           .loading-shimmer itself because app_components.css sets
+           the custom properties on that element directly. */
+        .loading-shimmer {
+            --shimmer-color-base: light-dark(
+                hsl(237deg 40% 85%),
+                hsl(240deg 30% 30%)
+            );
+            --shimmer-color-highlight: light-dark(
+                hsl(237deg 40% 75%),
+                hsl(240deg 30% 50%)
+            );
+        }
+
         /* Not focus-visible, because we want to support mouse+backpace to
            delete pills */
         &:focus {

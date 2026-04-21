@@ -1442,6 +1442,35 @@ input.invalid-input {
     }
 }
 
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.loading-shimmer {
+    --shimmer-color-base: light-dark(hsl(0deg 0% 88%), hsl(0deg 0% 25%));
+    --shimmer-color-highlight: light-dark(hsl(0deg 0% 78%), hsl(0deg 0% 35%));
+
+    display: inline-block;
+    height: 1em;
+    width: 6em;
+    border-radius: 4px;
+    background: linear-gradient(
+        90deg,
+        var(--shimmer-color-base) 25%,
+        var(--shimmer-color-highlight) 50%,
+        var(--shimmer-color-base) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer var(--shimmer-duration, 2.5s) infinite linear;
+    vertical-align: middle;
+}
+
 @keyframes spin {
     from {
         transform: rotate(0deg);
