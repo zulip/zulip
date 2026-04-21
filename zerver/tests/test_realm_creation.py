@@ -5,6 +5,7 @@ from unittest.mock import patch
 from urllib.parse import quote, quote_plus
 
 import orjson
+from altcha.v2 import VerifySolutionResult
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.test import override_settings
@@ -161,46 +162,80 @@ class DemoCreationTest(ZulipTestCase):
         with self.assertLogs(level="WARNING") as logs:
             result = self.submit_demo_creation_form(
                 captcha=base64.b64encode(
-                    orjson.dumps(["algorithm", "challenge", "number", "salt", "signature"])
+                    orjson.dumps(
+                        {
+                            "challenge": {
+                                "parameters": {
+                                    "algorithm": 0,
+                                    "cost": 0,
+                                    "nonce": 0,
+                                    "salt": 0,
+                                    "expiresAt": " ",
+                                }
+                            },
+                            "solution": {"counter": 0, "derivedKey": 0},
+                        }
+                    )
                 ).decode(),
             )
             self.assert_in_success_response(["Validation failed, please try again."], result)
             self.assert_length(logs.output, 1)
             self.assertIn(
-                "TypeError: list indices must be integers or slices, not str", logs.output[0]
+                "TypeError: '<' not supported between instances of 'str' and 'float'",
+                logs.output[0],
             )
 
         # If we override the validation, we get an error because it's not in the session
-        payload = base64.b64encode(orjson.dumps({"challenge": "moose"})).decode()
+        payload = base64.b64encode(orjson.dumps({"challenge": {"parameters": "moose"}})).decode()
         with (
-            patch("zerver.forms.verify_solution", return_value=(True, None)) as verify,
+            patch(
+                "zerver.forms.verify_solution",
+                return_value=VerifySolutionResult(
+                    expired=False,
+                    invalid_signature=False,
+                    invalid_solution=False,
+                    time=0.0,
+                    verified=True,
+                ),
+            ) as verify,
             self.assertLogs(level="WARNING") as logs,
         ):
             result = self.submit_demo_creation_form(captcha=payload)
             self.assert_in_success_response(["Validation failed, please try again."], result)
-            verify.assert_called_once_with(payload, "secret", check_expires=True)
+            verify.assert_called_once_with(payload, "secret", hmac_key_secret="secret")
             self.assert_length(logs.output, 1)
             self.assertIn("Expired or replayed altcha solution", logs.output[0])
 
         self.assertEqual(self.client.session.get("altcha_challenges"), None)
         result = self.client_get("/json/antispam_challenge")
         data = self.assert_json_success(result)
-        self.assertEqual(data["algorithm"], "SHA-256")
-        self.assertEqual(data["max_number"], 500000)
+        self.assertEqual(data["parameters"]["algorithm"], "PBKDF2/SHA-256")
+        self.assertEqual(data["parameters"]["cost"], 5000)
         self.assertIn("signature", data)
-        self.assertIn("challenge", data)
-        self.assertIn("salt", data)
+        self.assertIn("nonce", data["parameters"])
+        self.assertIn("salt", data["parameters"])
 
         self.assert_length(self.client.session["altcha_challenges"], 1)
-        self.assertEqual(self.client.session["altcha_challenges"][0][0], data["challenge"])
+        self.assertEqual(self.client.session["altcha_challenges"][0][0], data["parameters"])
 
         # Update the payload so the challenge matches what is in the
         # session.  The real payload would have other keys.
-        payload = base64.b64encode(orjson.dumps({"challenge": data["challenge"]})).decode()
-        with patch("zerver.forms.verify_solution", return_value=(True, None)) as verify:
+        payload = base64.b64encode(
+            orjson.dumps({"challenge": {"parameters": data["parameters"]}})
+        ).decode()
+        with patch(
+            "zerver.forms.verify_solution",
+            return_value=VerifySolutionResult(
+                expired=False,
+                invalid_signature=False,
+                invalid_solution=False,
+                time=0.0,
+                verified=True,
+            ),
+        ) as verify:
             result = self.submit_demo_creation_form(captcha=payload)
             self.assertEqual(result.status_code, 302)
-            verify.assert_called_once_with(payload, "secret", check_expires=True)
+            verify.assert_called_once_with(payload, "secret", hmac_key_secret="secret")
 
         # And the challenge has been stripped out of the session
         self.assertEqual(self.client.session["altcha_challenges"], [])
@@ -1171,50 +1206,84 @@ class RealmCreationTest(ZulipTestCase):
                 realm_subdomain=string_id,
                 realm_name=realm_name,
                 captcha=base64.b64encode(
-                    orjson.dumps(["algorithm", "challenge", "number", "salt", "signature"])
+                    orjson.dumps(
+                        {
+                            "challenge": {
+                                "parameters": {
+                                    "algorithm": 0,
+                                    "cost": 0,
+                                    "nonce": 0,
+                                    "salt": 0,
+                                    "expiresAt": " ",
+                                }
+                            },
+                            "solution": {"counter": 0, "derivedKey": 0},
+                        }
+                    )
                 ).decode(),
             )
             self.assert_in_success_response(["Validation failed, please try again."], result)
             self.assert_length(logs.output, 1)
             self.assertIn(
-                "TypeError: list indices must be integers or slices, not str", logs.output[0]
+                "TypeError: '<' not supported between instances of 'str' and 'float'",
+                logs.output[0],
             )
 
         # If we override the validation, we get an error because it's not in the session
-        payload = base64.b64encode(orjson.dumps({"challenge": "moose"})).decode()
+        payload = base64.b64encode(orjson.dumps({"challenge": {"parameters": "moose"}})).decode()
         with (
-            patch("zerver.forms.verify_solution", return_value=(True, None)) as verify,
+            patch(
+                "zerver.forms.verify_solution",
+                return_value=VerifySolutionResult(
+                    expired=False,
+                    invalid_signature=False,
+                    invalid_solution=False,
+                    time=0.0,
+                    verified=True,
+                ),
+            ) as verify,
             self.assertLogs(level="WARNING") as logs,
         ):
             result = self.submit_realm_creation_form(
                 email, realm_subdomain=string_id, realm_name=realm_name, captcha=payload
             )
             self.assert_in_success_response(["Validation failed, please try again."], result)
-            verify.assert_called_once_with(payload, "secret", check_expires=True)
+            verify.assert_called_once_with(payload, "secret", hmac_key_secret="secret")
             self.assert_length(logs.output, 1)
             self.assertIn("Expired or replayed altcha solution", logs.output[0])
 
         self.assertEqual(self.client.session.get("altcha_challenges"), None)
         result = self.client_get("/json/antispam_challenge")
         data = self.assert_json_success(result)
-        self.assertEqual(data["algorithm"], "SHA-256")
-        self.assertEqual(data["max_number"], 500000)
+        self.assertEqual(data["parameters"]["algorithm"], "PBKDF2/SHA-256")
+        self.assertEqual(data["parameters"]["cost"], 5000)
         self.assertIn("signature", data)
-        self.assertIn("challenge", data)
-        self.assertIn("salt", data)
+        self.assertIn("nonce", data["parameters"])
+        self.assertIn("salt", data["parameters"])
 
         self.assert_length(self.client.session["altcha_challenges"], 1)
-        self.assertEqual(self.client.session["altcha_challenges"][0][0], data["challenge"])
+        self.assertEqual(self.client.session["altcha_challenges"][0][0], data["parameters"])
 
         # Update the payload so the challenge matches what is in the
         # session.  The real payload would have other keys.
-        payload = base64.b64encode(orjson.dumps({"challenge": data["challenge"]})).decode()
-        with patch("zerver.forms.verify_solution", return_value=(True, None)) as verify:
+        payload = base64.b64encode(
+            orjson.dumps({"challenge": {"parameters": data["parameters"]}})
+        ).decode()
+        with patch(
+            "zerver.forms.verify_solution",
+            return_value=VerifySolutionResult(
+                expired=False,
+                invalid_signature=False,
+                invalid_solution=False,
+                time=0.0,
+                verified=True,
+            ),
+        ) as verify:
             result = self.submit_realm_creation_form(
                 email, realm_subdomain=string_id, realm_name=realm_name, captcha=payload
             )
             self.assertEqual(result.status_code, 302)
-            verify.assert_called_once_with(payload, "secret", check_expires=True)
+            verify.assert_called_once_with(payload, "secret", hmac_key_secret="secret")
 
         # And the challenge has been stripped out of the session
         self.assertEqual(self.client.session["altcha_challenges"], [])

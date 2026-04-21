@@ -1,7 +1,8 @@
 import logging
+import secrets
 from datetime import timedelta
 
-from altcha.v1 import ChallengeOptions, create_challenge
+from altcha.v2 import create_challenge
 from django.conf import settings
 from django.http import HttpRequest, HttpResponseBase
 from django.utils.timezone import now as timezone_now
@@ -32,11 +33,12 @@ def get_challenge(
     expires = now + timedelta(minutes=1)
     try:
         challenge = create_challenge(
-            ChallengeOptions(
-                hmac_key=settings.ALTCHA_HMAC_KEY,
-                max_number=500000,
-                expires=expires,
-            )
+            algorithm="PBKDF2/SHA-256",
+            cost=5000,
+            counter=secrets.randbelow(20000),
+            hmac_secret=settings.ALTCHA_HMAC_KEY,
+            hmac_key_secret=settings.ALTCHA_HMAC_KEY,
+            expires_at=expires,
         )
         session_challenges = request.session.get("altcha_challenges", [])
         # We prune out expired challenges not for correctness (the
@@ -45,9 +47,9 @@ def get_challenge(
         session_challenges = [(c, e) for (c, e) in session_challenges if e > now.timestamp()]
         request.session["altcha_challenges"] = [
             *session_challenges,
-            (challenge.challenge, expires.timestamp()),
+            (challenge.parameters.to_dict(), expires.timestamp()),
         ]
-        return json_success(request, data=challenge.__dict__)
+        return json_success(request, data=challenge.to_dict())
     except Exception as e:  # nocoverage
         logging.exception(e)
         raise JsonableError(_("Failed to generate challenge"))

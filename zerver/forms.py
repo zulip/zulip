@@ -4,7 +4,7 @@ import re
 from typing import Any
 
 import orjson
-from altcha.v1 import verify_solution
+from altcha.v2 import verify_solution
 from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate, password_validation
@@ -398,9 +398,11 @@ def validate_captcha_payload(request: HttpRequest, captcha_payload: str) -> None
         raise forms.ValidationError(_("Challenges are not enabled."))
 
     try:
-        ok, err = verify_solution(captcha_payload, settings.ALTCHA_HMAC_KEY, check_expires=True)
-        if not ok:
-            logging.warning("Invalid altcha solution: %s", err)
+        result = verify_solution(
+            captcha_payload, settings.ALTCHA_HMAC_KEY, hmac_key_secret=settings.ALTCHA_HMAC_KEY
+        )
+        if not result.verified:
+            logging.warning("Invalid altcha solution: %s", result.error)
             raise forms.ValidationError(_("Validation failed, please try again."))
     except forms.ValidationError:
         raise
@@ -409,15 +411,15 @@ def validate_captcha_payload(request: HttpRequest, captcha_payload: str) -> None
         raise forms.ValidationError(_("Validation failed, please try again."))
 
     captcha_data = orjson.loads(base64.b64decode(captcha_payload))
-    challenge = captcha_data["challenge"]
+    parameters = captcha_data["challenge"]["parameters"]
     session_challenges = [e[0] for e in request.session.get("altcha_challenges", [])]
-    if challenge not in session_challenges:
+    if parameters not in session_challenges:
         logging.warning("Expired or replayed altcha solution")
         raise forms.ValidationError(_("Validation failed, please try again."))
 
     # Remove the successful solve from the session, to prevent replay
     request.session["altcha_challenges"] = [
-        e for e in request.session.get("altcha_challenges", []) if e[0] != challenge
+        e for e in request.session.get("altcha_challenges", []) if e[0] != parameters
     ]
 
 
