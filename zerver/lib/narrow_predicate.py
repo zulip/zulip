@@ -15,7 +15,11 @@ channels_operators: list[str] = ["channels", "streams"]
 
 def check_narrow_for_events(narrow: Collection[NeverNegatedNarrowTerm]) -> None:
     supported_operators = [*channel_operators, "topic", "sender", "is"]
-    unsupported_is_operands = ["followed"]
+    # These "is:" operands require per-user database state (topic follow records
+    # and user follow records respectively) that is unavailable inside the event
+    # predicate context.  Mark them as unsupported so the server raises a clear
+    # error rather than silently applying incorrect filtering.
+    unsupported_is_operands = ["followed", "followed-user"]
     for narrow_term in narrow:
         operator = narrow_term.operator
         if operator not in supported_operators:

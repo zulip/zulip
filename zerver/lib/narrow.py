@@ -35,6 +35,7 @@ from typing_extensions import override
 
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError
+from zerver.lib.followed_users import get_following_user_ids
 from zerver.lib.message import (
     access_message,
     access_web_public_message,
@@ -444,6 +445,15 @@ class NarrowBuilder:
             return query.where(maybe_negate(cond))
         elif operand == "followed":
             cond = get_followed_topic_condition_sa(self.user_profile.id)
+            return query.where(maybe_negate(cond))
+        elif operand == "followed-user":
+            # Filter to messages sent by users that the current user follows.
+            # Distinct from "followed" above, which filters by followed *topics*.
+            # If the user follows nobody, the result is intentionally empty.
+            following_ids = get_following_user_ids(self.user_profile.id)
+            if not following_ids:
+                return query.where(maybe_negate(false()))
+            cond = column("sender_id", Integer).in_(following_ids)
             return query.where(maybe_negate(cond))
         elif operand == "muted":
             # TODO: If we also have a channel operator, this could be

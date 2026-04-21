@@ -24,7 +24,16 @@ from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, get_recent_deployments
 if TYPE_CHECKING:
     # These modules have to be imported for type annotations but
     # they cannot be imported at runtime due to cyclic dependency.
-    from zerver.models import Attachment, FollowedUser, Message, MutedUser, Realm, Stream, SubMessage, UserProfile
+    from zerver.models import (
+        Attachment,
+        FollowedUser,
+        Message,
+        MutedUser,
+        Realm,
+        Stream,
+        SubMessage,
+        UserProfile,
+    )
 
 MEMCACHED_MAX_KEY_LENGTH = 250
 
@@ -687,6 +696,7 @@ def flush_muting_users_cache(*, instance: "MutedUser", **kwargs: object) -> None
 def flush_following_users_cache(*, instance: "FollowedUser", **kwargs: object) -> None:
     follow_object = instance
     cache_delete(get_followed_users_cache_key(follow_object.followed_user_id))
+
 
 # Called by models/realms.py to flush various caches whenever we save
 # a Realm object.  The main tricky thing here is that Realm info is

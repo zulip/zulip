@@ -307,6 +307,8 @@ export const muted_user_schema = z.object({
     timestamp: z.number(),
 });
 
+// Schema for a single followed-user record.  Matches the shape returned by
+// get_user_follows() on the backend: {id, timestamp}.
 export const followed_user_schema = z.object({
     id: z.number(),
     timestamp: z.number(),
@@ -673,6 +675,7 @@ export const split_state_data_schema = z.object({
         }),
     }),
     muted_users: z.object({muted_users: z.array(muted_user_schema)}),
+    // List of users the current user follows; initialized from the server on page load.
     followed_users: z.object({followed_users: z.array(followed_user_schema)}),
     user_topics: z.object({user_topics: z.array(user_topic_schema)}),
     user_status: z.object({user_status: z.record(z.string(), user_status_schema)}),
