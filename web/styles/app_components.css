@@ -1446,6 +1446,39 @@ input.invalid-input {
     }
 }
 
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.loading-shimmer,
+.pill-loading-shimmer::before {
+    background: linear-gradient(
+        90deg,
+        var(--shimmer-color-base) 25%,
+        var(--shimmer-color-highlight) 50%,
+        var(--shimmer-color-base) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2.5s infinite linear;
+}
+
+.loading-shimmer {
+    --shimmer-color-base: var(--color-loading-shimmer-base);
+    --shimmer-color-highlight: var(--color-loading-shimmer-highlight);
+
+    display: inline-block;
+    height: 1em;
+    width: 6em;
+    border-radius: 4px;
+    vertical-align: middle;
+}
+
 @keyframes spin {
     from {
         transform: rotate(0deg);

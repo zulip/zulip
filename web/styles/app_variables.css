@@ -2177,6 +2177,22 @@
         hsl(0deg 0% 0% / 15%),
         hsl(0deg 0% 0% / 45%)
     );
+    --color-loading-shimmer-base: light-dark(
+        hsl(0deg 0% 88%),
+        hsl(0deg 0% 25%)
+    );
+    --color-loading-shimmer-highlight: light-dark(
+        hsl(0deg 0% 78%),
+        hsl(0deg 0% 35%)
+    );
+    --color-loading-shimmer-pill-base: light-dark(
+        hsl(237deg 40% 85%),
+        hsl(240deg 30% 30%)
+    );
+    --color-loading-shimmer-pill-highlight: light-dark(
+        hsl(237deg 40% 75%),
+        hsl(240deg 30% 50%)
+    );
 
     /* Message collapsing/condensing button colors */
     --color-show-more-less-button-background: light-dark(
