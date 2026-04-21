@@ -330,7 +330,9 @@ export function initialize(): void {
             message_live_update.update_user_full_name(user_id, user.full_name);
             message_live_update.update_avatar(user_id, user.avatar_url ?? null);
             reactions.update_user_full_name(user_id);
+            compose_pm_pill.update_placeholder_user_pill(user_id);
         }
+        compose_recipient.update_compose_area_placeholder_text();
         const buddy_list_user_ids = new Set(buddy_list.all_user_ids);
         buddy_list.insert_or_move(
             user_ids.filter((user_id) => buddy_list_user_ids.has(user_id)),

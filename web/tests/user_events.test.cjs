@@ -54,7 +54,8 @@ const buddy_list = mock_esm("../src/buddy_list", {
 const compose_pm_pill = mock_esm("../src/compose_pm_pill", {
     update_user_pill_active_status() {},
 });
-mock_esm("../src/compose_recipient", {
+const compose_recipient = mock_esm("../src/compose_recipient", {
+    update_compose_area_placeholder_text() {},
     update_user_name_in_compose() {},
 });
 const pm_list = mock_esm("../src/pm_list", {
@@ -536,6 +537,11 @@ run_test("initialize registers users_fetched callback", ({override}) => {
         buddy_list_user_ids = user_ids;
     };
     buddy_data.all_user_ids = [32];
+    override(compose_pm_pill, "update_placeholder_user_pill", noop);
+    let compose_placeholder_text_updated = false;
+    override(compose_recipient, "update_compose_area_placeholder_text", () => {
+        compose_placeholder_text_updated = true;
+    });
     let reply_button_updated = false;
     override(compose_closed_ui, "update_reply_button", () => {
         reply_button_updated = true;
@@ -566,6 +572,7 @@ run_test("initialize registers users_fetched callback", ({override}) => {
     people.notify_users_fetched([isaac.user_id]);
 
     assert.ok(pm_list_updated);
+    assert.ok(compose_placeholder_text_updated);
     assert.ok(reply_button_updated);
     assert.equal(narrow_title_filter, message_lists.current.data.filter);
     assert.equal($navbar_title.text(), "Isaac Newton");

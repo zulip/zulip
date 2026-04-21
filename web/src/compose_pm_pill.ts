@@ -134,6 +134,23 @@ export function update_user_pill_full_name(user_id: number, full_name: string): 
     user_pill.update_pill_full_name(widget, user_id, full_name);
 }
 
+export function update_placeholder_user_pill(user_id: number): void {
+    if (!widget) {
+        return;
+    }
+    const pill = widget.getPillByPredicate(
+        (item) => item.user_id === user_id && item.is_placeholder_user === true,
+    );
+    if (!pill) {
+        return;
+    }
+    const new_item = user_pill.create_item_from_user_id(String(user_id), [], pill_config);
+    if (!new_item) {
+        return;
+    }
+    widget.updatePill(pill.$element[0]!, new_item);
+}
+
 export function rewire_widget(value: UserPillWidget): void {
     widget = value;
 }
