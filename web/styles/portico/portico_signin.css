@@ -448,6 +448,9 @@ html {
 
         &:focus-visible {
             outline: 3px solid hsl(213deg 81% 79%);
+            /* Override the base clip-path so the focus outline isn't
+               trimmed to a 1px square around the rounded button. */
+            clip-path: none;
         }
 
         &:disabled {
