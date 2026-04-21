@@ -55,6 +55,7 @@ from corporate.lib.stripe import (
     customer_has_last_n_invoices_open,
     downgrade_small_realms_behind_on_payments_as_needed,
     get_latest_seat_count,
+    get_next_billing_cycle_for_plan,
     get_plan_renewal_or_end_date,
     get_price_per_license,
     invoice_plans_as_needed,
@@ -6670,8 +6671,7 @@ class InvoiceTest(StripeTestCase):
         realm.refresh_from_db()
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_STANDARD)
 
-        billing_session = RealmBillingSession(user=hamlet, realm=realm)
-        next_billing_cycle = billing_session.get_next_billing_cycle(plan)
+        next_billing_cycle = get_next_billing_cycle_for_plan(plan)
         plan_end_date_string = next_billing_cycle.date().isoformat()
         plan_end_date = datetime.combine(
             date.fromisoformat(plan_end_date_string), time(0, 0, 0), tzinfo=timezone.utc

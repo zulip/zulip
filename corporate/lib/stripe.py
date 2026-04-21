@@ -286,6 +286,31 @@ def start_of_next_billing_cycle(plan: CustomerPlan, event_time: datetime) -> dat
     return dt
 
 
+def get_next_billing_cycle_for_plan(plan: CustomerPlan) -> datetime:
+    if plan.status in (
+        CustomerPlan.FREE_TRIAL,
+        CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
+        CustomerPlan.NEVER_STARTED,
+    ):
+        assert plan.next_invoice_date is not None
+        next_billing_cycle = plan.next_invoice_date
+    elif plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
+        assert plan.end_date is not None
+        next_billing_cycle = plan.end_date
+    else:
+        last_ledger_renewal = (
+            LicenseLedger.objects.filter(plan=plan, is_renewal=True).order_by("-id").first()
+        )
+        assert last_ledger_renewal is not None
+        last_renewal = last_ledger_renewal.event_time
+        next_billing_cycle = start_of_next_billing_cycle(plan, last_renewal)
+
+    if plan.end_date is not None:
+        next_billing_cycle = min(next_billing_cycle, plan.end_date)
+
+    return next_billing_cycle
+
+
 def next_invoice_date(plan: CustomerPlan) -> datetime | None:
     if plan.status == CustomerPlan.ENDED:
         return None
@@ -1486,7 +1511,7 @@ class BillingSession(ABC):
             # Handles the case when the current_plan is a fixed-price plan with
             # a monthly billing schedule. We can't schedule a new plan until the
             # invoice for the 12th month is processed.
-            if current_plan.end_date != self.get_next_billing_cycle(current_plan):
+            if current_plan.end_date != get_next_billing_cycle_for_plan(current_plan):
                 raise SupportRequestError(
                     f"New plan for {self.billing_entity_display_name} cannot be scheduled until all the invoices of the current plan are processed."
                 )
@@ -2262,30 +2287,6 @@ class BillingSession(ABC):
                 },
             )
 
-    def get_next_billing_cycle(self, plan: CustomerPlan) -> datetime:
-        if plan.status in (
-            CustomerPlan.FREE_TRIAL,
-            CustomerPlan.DOWNGRADE_AT_END_OF_FREE_TRIAL,
-            CustomerPlan.NEVER_STARTED,
-        ):
-            assert plan.next_invoice_date is not None
-            next_billing_cycle = plan.next_invoice_date
-        elif plan.status == CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END:
-            assert plan.end_date is not None
-            next_billing_cycle = plan.end_date
-        else:
-            last_ledger_renewal = (
-                LicenseLedger.objects.filter(plan=plan, is_renewal=True).order_by("-id").first()
-            )
-            assert last_ledger_renewal is not None
-            last_renewal = last_ledger_renewal.event_time
-            next_billing_cycle = start_of_next_billing_cycle(plan, last_renewal)
-
-        if plan.end_date is not None:
-            next_billing_cycle = min(next_billing_cycle, plan.end_date)
-
-        return next_billing_cycle
-
     def validate_plan_license_management(
         self, plan: CustomerPlan, renewal_license_count: int
     ) -> None:
@@ -2323,7 +2324,7 @@ class BillingSession(ABC):
             .order_by("-id")
             .first()
         )
-        next_billing_cycle = self.get_next_billing_cycle(plan)
+        next_billing_cycle = get_next_billing_cycle_for_plan(plan)
         event_in_next_billing_cycle = next_billing_cycle <= event_time
 
         if event_in_next_billing_cycle and last_ledger_entry is not None:
@@ -2553,7 +2554,7 @@ class BillingSession(ABC):
         last_ledger_entry: LicenseLedger,
     ) -> int:
         if plan.fixed_price is not None:
-            if plan.end_date == self.get_next_billing_cycle(plan):
+            if plan.end_date == get_next_billing_cycle_for_plan(plan):
                 return 0
             return get_amount_due_fixed_price_plan(plan.fixed_price, plan.billing_schedule)
         if last_ledger_entry.licenses_at_next_renewal is None:
@@ -6058,11 +6059,7 @@ def get_push_status_for_remote_request(
             message="Expiring plan few users",
         )
 
-    # TODO: Move get_next_billing_cycle to be plan.get_next_billing_cycle
-    # to avoid this somewhat evil use of a possibly non-matching billing session.
-    expected_end_timestamp = datetime_to_timestamp(
-        user_count_billing_session.get_next_billing_cycle(current_plan)
-    )
+    expected_end_timestamp = datetime_to_timestamp(get_next_billing_cycle_for_plan(current_plan))
     return PushNotificationsEnabledStatus(
         can_push=True,
         expected_end_timestamp=expected_end_timestamp,
