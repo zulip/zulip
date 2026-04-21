@@ -210,8 +210,8 @@ MICROSOFT_GRAPH_API_URL = "https://graph.microsoft.com/v1.0{endpoint}"
 
 # https://learn.microsoft.com/en-us/graph/api/chatmessagehostedcontent-get
 HOSTED_CONTENT_GRAPH_API_URL_REGEX = r"https://graph\.microsoft\.com/v1\.0/teams/[^/]+/channels/[^/]+/messages/[^/]+/hostedContents/[^/]+/\$value"
-HOSTED_CONTENT_FILE_REGEX = rf"""
-            \[
+HOSTED_CONTENT_MARKDOWN_IMAGE_SYNTAX_REGEX = rf"""
+            !\[
                (?P<file_name>[^\]]+)
             \]\(
                (?P<api_url>{HOSTED_CONTENT_GRAPH_API_URL_REGEX})
@@ -554,7 +554,7 @@ def process_hosted_content_attachments(
         return AttachmentConversionResult(updated_content=content, upload_records=upload_records)
     else:
         updated_content = regex.sub(
-            HOSTED_CONTENT_FILE_REGEX,
+            HOSTED_CONTENT_MARKDOWN_IMAGE_SYNTAX_REGEX,
             export_file_and_get_zulip_url,
             content,
             flags=re.VERBOSE,

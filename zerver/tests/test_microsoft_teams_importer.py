@@ -755,16 +755,16 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
             ),
             # Unprocessed converted html
             MessageFixture(
-                content="Normal text and an [image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/aWQ9eF8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZCx0eXBlPTEsdXJsPWh0dHBzOi8vdXMtYXBpLmFzbS5za3lwZS5jb20vdjEvb2JqZWN0cy8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZC92aWV3cy9pbWdv/$value)",
+                content="Normal text and an ![image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/aWQ9eF8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZCx0eXBlPTEsdXJsPWh0dHBzOi8vdXMtYXBpLmFzbS5za3lwZS5jb20vdjEvb2JqZWN0cy8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZC92aWV3cy9pbWdv/$value)",
                 hosted_content_count=1,
                 is_direct_message_type=False,
                 test_name="text and an image 2",
             ),
             MessageFixture(
                 content=(
-                    "First [image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/aWQ9eF8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZCx0eXBlPTEsdXJsPWh0dHBzOi8vdXMtYXBpLmFzbS5za3lwZS5jb20vdjEvb2JqZWN0cy8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZC92aWV3cy9pbWdv/$value)"
-                    "Second [image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/ABC/$value)"
-                    "Third [image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/DEF/$value)"
+                    "First ![image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/aWQ9eF8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZCx0eXBlPTEsdXJsPWh0dHBzOi8vdXMtYXBpLmFzbS5za3lwZS5jb20vdjEvb2JqZWN0cy8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZC92aWV3cy9pbWdv/$value)"
+                    "Second ![image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/ABC/$value)"
+                    "Third ![image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/DEF/$value)"
                 ),
                 hosted_content_count=3,
                 is_direct_message_type=False,
@@ -806,15 +806,15 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
                 test_name="text only",
             ),
             MessageFixture(
-                content="MS Sharepoint attachment URL [image](https://zulipchat.sharepoint.com/sites/Community/Shared Documents/General/wp12245700.jpg)",
+                content="MS Sharepoint attachment URL ![image](https://zulipchat.sharepoint.com/sites/Community/Shared Documents/General/wp12245700.jpg)",
                 hosted_content_count=0,
                 is_direct_message_type=False,
                 test_name="text and other URL",
             ),
             MessageFixture(
                 content=(
-                    "List all hosted content [invalid](https://graph.microsoft.com/v1.0/teams/FOO/channels/BAZ/hostedContents)"
-                    "Get a hosted content [valid](https://graph.microsoft.com/v1.0/teams/FOO/channels/BAZ/messages/BAR/hostedContents/QUX/$value)"
+                    "List all hosted content ![invalid](https://graph.microsoft.com/v1.0/teams/FOO/channels/BAZ/hostedContents)"
+                    "Get a hosted content ![valid](https://graph.microsoft.com/v1.0/teams/FOO/channels/BAZ/messages/BAR/hostedContents/QUX/$value)"
                 ),
                 hosted_content_count=1,
                 is_direct_message_type=False,
@@ -822,7 +822,7 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
             ),
             MessageFixture(
                 content=(
-                    "DM [image](https://graph.microsoft.com/v1.0/chats/{chat-id}/messages/{message-id}/hostedContents/{hosted-content-id}/$value)"
+                    "DM ![image](https://graph.microsoft.com/v1.0/chats/{chat-id}/messages/{message-id}/hostedContents/{hosted-content-id}/$value)"
                 ),
                 hosted_content_count=0,
                 is_direct_message_type=True,
