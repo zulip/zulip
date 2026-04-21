@@ -21,6 +21,7 @@ const $ = require("./lib/zjquery.cjs");
 const padded_widget = mock_esm("../src/padded_widget");
 const message_viewport = mock_esm("../src/message_viewport");
 const background_task = mock_esm("../src/background_task");
+mock_esm("../src/sidebar_header_sticky_shadow", {initialize() {}});
 
 const buddy_data = zrequire("buddy_data");
 const {BuddyList} = zrequire("buddy_list");

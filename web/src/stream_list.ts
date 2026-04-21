@@ -31,6 +31,7 @@ import * as popovers from "./popovers.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
+import * as sidebar_header_sticky_shadow from "./sidebar_header_sticky_shadow.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
@@ -1628,6 +1629,11 @@ export function set_event_handlers({
             pm_list.set_temporarily_collapsed(false);
         }
     }
+
+    sidebar_header_sticky_shadow.initialize(
+        scroll_util.get_left_sidebar_scroll_container(),
+        "#direct-messages-section-header, .stream-list-subsection-header",
+    );
 
     let mark_scroll_inactive_timeout: ReturnType<typeof setTimeout> | undefined;
     // check for user scrolls on streams list for first time
