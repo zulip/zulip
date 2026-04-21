@@ -326,6 +326,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
         user_ids.map((user_id) => people.get_by_user_id(user_id)),
     );
     reactions.update_user_full_names(new Set(user_ids));
+    compose_pm_pill.update_placeholder_user_pills();
     submessage.rerender_widgets_in_current_list();
     compose_recipient.update_compose_area_placeholder_text();
     activity_ui.handle_users_fetched(user_ids);

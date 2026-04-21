@@ -522,6 +522,7 @@ run_test("initialize registers users_fetched callback", ({override}) => {
     override(message_live_update, "update_full_names_and_avatars", (users) => {
         updated_users = users;
     });
+    override(compose_pm_pill, "update_placeholder_user_pills", noop);
     let widgets_rerendered = false;
     override(submessage, "rerender_widgets_in_current_list", () => {
         widgets_rerendered = true;

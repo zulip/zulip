@@ -134,6 +134,13 @@ export function update_user_pill_full_name(user_id: number, full_name: string): 
     user_pill.update_pill_full_name(widget, user_id, full_name);
 }
 
+export function update_placeholder_user_pills(): void {
+    if (!widget) {
+        return;
+    }
+    user_pill.update_placeholder_user_pills(widget);
+}
+
 export function rewire_widget(value: UserPillWidget): void {
     widget = value;
 }
