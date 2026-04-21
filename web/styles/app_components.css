@@ -1446,6 +1446,72 @@ input.invalid-input {
     }
 }
 
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+%loading-shimmer-static {
+    animation: none;
+    background-position: 50% 0;
+}
+
+.loading-shimmer,
+.pill-loading-shimmer::before {
+    background: linear-gradient(
+        90deg,
+        var(--shimmer-color-base) 25%,
+        var(--shimmer-color-highlight) 50%,
+        var(--shimmer-color-base) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2.5s infinite linear;
+
+    /* Detect if a user has enabled a setting on their device
+       to minimize the amount of non-essential motion. */
+    @media (prefers-reduced-motion) {
+        @extend %loading-shimmer-static;
+    }
+}
+
+.loading-shimmer {
+    --shimmer-color-base: var(--color-fill-loading-shimmer-base);
+    --shimmer-color-highlight: var(--color-fill-loading-shimmer-highlight);
+
+    display: inline-block;
+    height: 1em;
+    width: 6em;
+    border-radius: 4px;
+    vertical-align: middle;
+
+    /* In lists of users, the width varies from user to user, so
+       that the shimmers read as names of different lengths. */
+    &.loading-shimmer-width-0 {
+        width: 5em;
+    }
+
+    &.loading-shimmer-width-1 {
+        width: 7.5em;
+    }
+
+    &.loading-shimmer-width-2 {
+        width: 4.5em;
+    }
+
+    &.loading-shimmer-width-3 {
+        width: 6.5em;
+    }
+
+    &.loading-shimmer-width-4 {
+        width: 7em;
+    }
+}
+
 @keyframes spin {
     from {
         transform: rotate(0deg);
