@@ -446,7 +446,7 @@ html {
             clip-path: inset(1px round 4px);
         }
 
-        &:focus {
+        &:focus-visible {
             outline: 3px solid hsl(213deg 81% 79%);
         }
 
