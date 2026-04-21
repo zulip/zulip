@@ -45,13 +45,23 @@ export function up(): void {
 
     const $prev_message = message_lists.current.get_row(prev_msg_id);
     assert($prev_message.length > 0);
-    const prev_message_props = $prev_message.get_offset_to_window();
 
-    if (
-        is_long_message(prev_message_props.height) &&
-        prev_message_props.top < viewport_info.visible_top
-    ) {
-        page_up();
+    // Predict what the select-and-recenter scroll would do. If it
+    // would scroll upward by more than page_up's bounded amount
+    // (typically because the prev message is tall and recenter clamps
+    // its top to the viewport top, skipping past content the user
+    // wanted to read), move the selection to the prev message but
+    // skip the recenter scroll. That keeps the top of the previously
+    // selected message in view so the user can confirm they didn't
+    // miss anything, and subsequent up arrows fall into the
+    // "selected long message extends above viewport" branch above
+    // and page up through the prev message one screen at a time.
+    const recenter_delta = message_viewport.simulated_recenter_scroll_delta(
+        $prev_message,
+        viewport_info,
+    );
+    if (recenter_delta < -amount_to_paginate()) {
+        message_lists.current.select_id(prev_msg_id, {then_scroll: false});
         return;
     }
 
@@ -63,8 +73,8 @@ export function down(with_centering = false): void {
     message_viewport.set_last_movement_direction(1);
 
     const $selected_message = message_lists.current.selected_row();
+    const viewport_info = message_viewport.message_viewport_info();
     if ($selected_message.length > 0) {
-        const viewport_info = message_viewport.message_viewport_info();
         const message_props = $selected_message.get_offset_to_window();
         // We scroll down to show the hidden bottom of long messages.
         if (
@@ -95,6 +105,25 @@ export function down(with_centering = false): void {
     if (msg_id === undefined) {
         return;
     }
+
+    const $next_message = message_lists.current.get_row(msg_id);
+    assert($next_message.length > 0);
+
+    // See the corresponding block in up(): if select-and-recenter
+    // would scroll downward by more than page_down's bounded amount,
+    // move the selection without scrolling so the bottom of the
+    // previously selected message stays in view. Subsequent down
+    // arrows then fall into the "selected long message extends
+    // below viewport" branch above and page down one screen at a time.
+    const recenter_delta = message_viewport.simulated_recenter_scroll_delta(
+        $next_message,
+        viewport_info,
+    );
+    if (recenter_delta > amount_to_paginate()) {
+        message_lists.current.select_id(msg_id, {then_scroll: false});
+        return;
+    }
+
     go_to_row(msg_id);
 }
 

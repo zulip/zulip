@@ -173,6 +173,54 @@ export function set_message_position(
     scrollTop(new_scroll_top);
 }
 
+export function simulated_recenter_scroll_delta(
+    $message: JQuery,
+    viewport_info: MessageViewportInfo,
+): number {
+    // Returns the scroll delta (positive = down, negative = up) that
+    // recenter_view would apply if select_id were called now with
+    // {then_scroll: true, from_scroll: true} and force_center=false.
+    // Returns 0 when recenter_view would short-circuit or when no
+    // scroll is needed. The caller must have already updated
+    // last_movement_direction to match the navigation direction.
+    //
+    // Used by navigate.ts to substitute page_up / page_down when the
+    // simulated select-and-recenter would jump too far in one keypress.
+    const message_top = $message.get_offset_to_window().top;
+    const message_height = $message.outerHeight(true) ?? 0;
+    const message_bottom = message_top + message_height;
+
+    const is_above = message_top < viewport_info.visible_top;
+    const is_below = message_bottom > viewport_info.visible_bottom;
+
+    // Mirror recenter_view's from_scroll short-circuit.
+    if (is_above && last_movement_direction >= 0) {
+        return 0;
+    }
+    if (is_below && last_movement_direction <= 0) {
+        return 0;
+    }
+
+    let how_far_down_in_visible_page;
+    if (is_above) {
+        how_far_down_in_visible_page = viewport_info.visible_height * (1 / 2);
+    } else if (is_below) {
+        how_far_down_in_visible_page = viewport_info.visible_height * (1 / 7);
+    } else {
+        return 0;
+    }
+
+    // Mirror set_message_position's tall-message clamp.
+    if (how_far_down_in_visible_page + message_height > viewport_info.visible_height) {
+        how_far_down_in_visible_page = viewport_info.visible_height - message_height;
+        if (how_far_down_in_visible_page < 0) {
+            how_far_down_in_visible_page = 0;
+        }
+    }
+
+    return message_top - viewport_info.visible_top - how_far_down_in_visible_page;
+}
+
 function in_viewport_or_tall(
     rect: DOMRect,
     top_of_feed: number,
