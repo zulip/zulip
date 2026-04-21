@@ -735,7 +735,9 @@ class ConstructorGroupsVideoCallTest(ZulipTestCase):
         ]:
             with self.settings(**{setting_name: None}):
                 response = self.client_post("/json/calls/constructorgroups/create")
-                self.assert_json_error(response, "Failed to create Constructor Groups call")
+                self.assert_json_error(
+                    response, "Constructor Groups credentials have not been configured"
+                )
 
     @responses.activate
     def test_get_existing_room(self) -> None:

@@ -133,7 +133,7 @@ class ConstructorGroupsService:
             or (access_key := settings.CONSTRUCTOR_GROUPS_ACCESS_KEY) is None
             or (secret_key := settings.CONSTRUCTOR_GROUPS_SECRET_KEY) is None
         ):
-            raise CreateVideoCallFailedError("Constructor Groups")
+            raise VideoCallProviderNotConfiguredError("Constructor Groups")
 
         self.access_key = access_key
         self.secret_key = secret_key
