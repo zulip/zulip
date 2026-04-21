@@ -644,17 +644,6 @@ def process_messages(
         content = attachment_result.updated_content
         accumulated_batch_upload_records += attachment_result.upload_records
 
-        if attachment_result.upload_records != []:
-            # Currently process_hosted_content_attachments only supports processeing
-            # images so has_image is always true in this case.
-            has_image = True
-            has_link = True
-            has_attachments = True
-        else:
-            has_image = False
-            has_link = False
-            has_attachments = False
-
         zulip_message = build_message(
             topic_name=topic_name,
             date_sent=get_timestamp_from_message(message),
@@ -665,9 +654,10 @@ def process_messages(
             recipient_id=recipient_id,
             realm_id=realm_id,
             is_channel_message=not is_direct_message_type,
-            has_image=has_image,
-            has_link=has_link,
-            has_attachment=has_attachments,
+            # Import will correct the message's has_image and has_link attributes.
+            has_image=False,
+            has_link=False,
+            has_attachment=attachment_result.upload_records != [],
             is_direct_message_type=is_direct_message_type,
         )
         zerver_messages.append(zulip_message)

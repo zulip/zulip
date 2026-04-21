@@ -477,20 +477,19 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
                     message_with_attachment.has_image,
                     attachment.content_type in THUMBNAIL_ACCEPT_IMAGE_TYPES,
                 )
-                self.assertTrue(message_with_attachment.has_link)
                 assert isinstance(message_with_attachment.rendered_content, str)
                 self.assertIn(
                     f"/user_uploads/{attachment.path_id}", message_with_attachment.rendered_content
                 )
                 message_ids_with_attachment.add(message_with_attachment.id)
 
-        # Make sure no weird message conversion with wrong has_attachment, has_link
+        # Make sure no weird message conversion with wrong has_attachment
         # and has_image property.
         self.assertSetEqual(
             message_ids_with_attachment,
             set(
                 Message.objects.filter(
-                    realm=test_realm, has_link=True, has_attachment=True, has_image=True
+                    realm=test_realm, has_attachment=True, has_image=True
                 ).values_list("id", flat=True)
             ),
         )

@@ -484,7 +484,7 @@ def fix_customprofilefield(data: ImportedTableData) -> None:
             item["value"] = orjson.dumps(new_id_list).decode()
 
 
-def fix_message_rendered_content(
+def fix_message_content_attributes(
     realm: Realm,
     sender_map: dict[int, Record],
     messages: list[Record],
@@ -493,6 +493,8 @@ def fix_message_rendered_content(
 ) -> None:
     """
     This function sets the rendered_content of the messages we're importing.
+    For messages imported from a third-party export, it also corrects the
+    has_link and has_image attributes.
     """
     for message in messages:
         if content_key not in message:
@@ -573,13 +575,16 @@ def fix_message_rendered_content(
             realm_alert_words_automaton = None
 
             # This also enqueues thumbnailing for images that are referenced
-            rendered_content = markdown_convert(
+            rendering_result = markdown_convert(
                 content=content,
                 realm_alert_words_automaton=realm_alert_words_automaton,
                 message_realm=realm,
                 sent_by_bot=sent_by_bot,
                 translate_emoticons=translate_emoticons,
-            ).rendered_content
+            )
+            rendered_content = rendering_result.rendered_content
+            message["has_image"] = rendering_result.has_image
+            message["has_link"] = rendering_result.has_link
 
             message[rendered_content_key] = rendered_content
             if "scheduled_timestamp" not in message:
@@ -610,7 +615,7 @@ def fix_message_edit_history(
         for edit_history_message_dict in edit_history:
             edit_history_message_dict["user_id"] = user_id_map[edit_history_message_dict["user_id"]]
 
-        fix_message_rendered_content(
+        fix_message_content_attributes(
             realm,
             sender_map,
             messages=edit_history,
@@ -1982,7 +1987,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
         fix_upload_links(data, "zerver_scheduledmessage")
 
-        fix_message_rendered_content(
+        fix_message_content_attributes(
             realm=realm,
             sender_map=sender_map,
             messages=data["zerver_scheduledmessage"],
@@ -2321,7 +2326,7 @@ def _process_message_file(
     for row in data["zerver_usermessage"]:
         assert row["message"] in message_id_map
 
-    fix_message_rendered_content(
+    fix_message_content_attributes(
         realm=realm,
         sender_map=sender_map,
         messages=data["zerver_message"],
