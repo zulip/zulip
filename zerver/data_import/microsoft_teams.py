@@ -38,7 +38,7 @@ from zerver.data_import.import_util import (
 )
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
-from zerver.lib.markdown import get_markdown_link_for_url
+from zerver.lib.markdown import get_markdown_image_for_url
 from zerver.lib.mime_types import bare_content_type
 from zerver.lib.parallel import run_parallel_queue
 from zerver.lib.partial import partial
@@ -546,7 +546,7 @@ def process_hosted_content_attachments(
         )
         # Use inline thumbnail here since MS Teams only supports customizing the hosted
         # content image's alt tag.
-        return get_markdown_link_for_url(file_name, attachment_data.url, inline_thumbnail=True)
+        return get_markdown_image_for_url(file_name, attachment_data.url)
 
     if is_direct_message_type:
         # TODO: hosted content URL for private chats have a different format, we
