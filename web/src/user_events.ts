@@ -14,6 +14,7 @@ import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as composebox_typeahead from "./composebox_typeahead.ts";
+import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as message_live_update from "./message_live_update.ts";
 import * as message_view_header from "./message_view_header.ts";
@@ -337,6 +338,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     for (const user_id of user_ids) {
         recent_view_ui.rerender_conversations_with_user(user_id);
     }
+    drafts_overlay_ui.handle_users_fetched();
     search.handle_users_fetched();
     composebox_typeahead.handle_users_fetched();
     if (narrow_state.is_message_feed_visible()) {

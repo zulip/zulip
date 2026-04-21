@@ -233,6 +233,7 @@ function format_drafts(data: Record<string, LocalStorageDraft>): FormattedDraft[
 
 type NarrowDraftsHeaderContext = {
     is_dm_with_self?: boolean;
+    is_dm_with_placeholder_user?: boolean;
     dm_recipient_string?: string;
     stream?: StreamSubscription | undefined;
     channel_name_fallback?: string | undefined;
@@ -247,6 +248,12 @@ function get_header_context_for_narrow_drafts(): NarrowDraftsHeaderContext {
             if (user && people.is_direct_message_conversation_with_self([user.user_id])) {
                 return {is_dm_with_self: true};
             }
+        }
+        const has_placeholder_user = private_recipient_ids.some((id) =>
+            people.is_placeholder_user(id),
+        );
+        if (has_placeholder_user) {
+            return {is_dm_with_placeholder_user: true};
         }
         return {
             dm_recipient_string: people.user_ids_to_full_names_string(private_recipient_ids),
@@ -431,6 +438,33 @@ function rerender_drafts(): void {
     const {narrow_drafts, other_drafts, narrow_drafts_header} = get_formatted_drafts_data();
     render_widgets(narrow_drafts, other_drafts, narrow_drafts_header);
     setup_event_handlers();
+}
+
+export function handle_users_fetched(): void {
+    if (!overlays.drafts_open()) {
+        return;
+    }
+    const $loading_names = $("#drafts_table .loading-shimmer").closest(
+        ".private_message_header_name",
+    );
+    if ($loading_names.length === 0) {
+        return;
+    }
+    // We replace only the recipient names and the header of the drafts
+    // from this conversation, so that the selected drafts, the focused
+    // draft and the scroll position are kept.
+    const $rendered_list = $(render_drafts_list(get_formatted_drafts_data()));
+    $loading_names.each(function () {
+        const draft_id = $(this).closest(".draft-message-row").attr("data-draft-id");
+        $(this).replaceWith(
+            $rendered_list.find(
+                `.draft-message-row[data-draft-id="${draft_id}"] .private_message_header_name`,
+            ),
+        );
+    });
+    $(".drafts-from-conversation-header").replaceWith(
+        $rendered_list.find(".drafts-from-conversation-header"),
+    );
 }
 
 export function launch(): void {
