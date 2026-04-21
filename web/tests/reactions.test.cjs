@@ -291,6 +291,44 @@ test("reactions from unknown users", () => {
     assert.deepEqual(result, expected_result);
 });
 
+test("reactions from placeholder users", ({override}) => {
+    // When any reactor is a placeholder user, we can't render reactor
+    // names yet; show counts instead so the shimmer/text doesn't flash
+    // in once the user's data loads.
+    settings_data.user_can_access_all_other_users = () => true;
+    override(user_settings, "display_emoji_reaction_users", true);
+
+    const placeholder_user_id = 50;
+    const placeholder_user = make_user({
+        email: "placeholder@example.com",
+        user_id: placeholder_user_id,
+        full_name: "Loading…",
+        is_placeholder_user: true,
+    });
+    people.add_active_user(placeholder_user);
+
+    const message = {
+        id: 1001,
+        reactions: [
+            {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f604"},
+            {
+                emoji_name: "smile",
+                user_id: placeholder_user_id,
+                reaction_type: "unicode_emoji",
+                emoji_code: "1f604",
+            },
+        ],
+    };
+
+    convert_reactions_to_clean_reactions(message);
+    const result = reactions.get_message_reactions(message);
+    assert.equal(result.length, 1);
+    // vote_text is a count rather than names, which is what we'd
+    // otherwise get for a 2-reaction reaction with
+    // display_emoji_reaction_users enabled.
+    assert.equal(result[0].vote_text, "2");
+});
+
 test("unknown realm emojis (add)", () => {
     assert.throws(
         () =>
