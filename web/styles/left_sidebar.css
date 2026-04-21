@@ -1016,15 +1016,6 @@ ul.filters {
         opacity: var(--opacity-left-sidebar-muted);
     }
 
-    .zulip-icon-follow {
-        opacity: 0.5;
-
-        &:hover {
-            opacity: 1;
-            color: var(--color-left-sidebar-follow-icon-hover);
-        }
-    }
-
     & li.muted_topic {
         .sidebar-topic-check,
         .sidebar-topic-name,
