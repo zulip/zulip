@@ -241,6 +241,7 @@ export function process_reaction_click(message_id: number, local_id: string): vo
 }
 
 function generate_title(emoji_name: string, user_ids: number[]): string {
+    user_ids = people.merge_loading_user_ids(user_ids);
     const usernames = people.get_display_full_names(
         user_ids.filter((user_id) => user_id !== current_user.user_id),
     );
@@ -767,6 +768,13 @@ function check_should_display_reactors(
     reaction_counts_and_user_ids: ReactionUserIdAndCount[],
 ): boolean {
     if (!user_settings.display_emoji_reaction_users) {
+        return false;
+    }
+
+    const has_loading_full_name = reaction_counts_and_user_ids.some(({user_ids}) =>
+        user_ids.some((user_id) => people.is_display_full_name_loading(user_id)),
+    );
+    if (has_loading_full_name) {
         return false;
     }
 

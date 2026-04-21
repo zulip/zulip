@@ -89,6 +89,10 @@ mock_esm("../src/settings_realm_user_settings_defaults", {
 mock_esm("../src/settings_streams", {
     rerender_default_streams_for_role_change() {},
 });
+mock_esm("../src/reactions", {
+    update_user_full_name() {},
+    update_user_full_names() {},
+});
 const narrow_title = mock_esm("../src/narrow_title", {
     update_narrow_title() {},
 });

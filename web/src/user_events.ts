@@ -319,6 +319,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     message_live_update.update_full_names_and_avatars(
         user_ids.map((user_id) => people.get_by_user_id(user_id)),
     );
+    reactions.update_user_full_names(new Set(user_ids));
     if (narrow_state.is_message_feed_visible()) {
         narrow_title.update_narrow_title(narrow_state.filter());
     }
