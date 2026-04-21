@@ -2836,12 +2836,13 @@ def render_message_markdown(
     return rendering_result
 
 
-def get_markdown_link_for_url(filename: str, url: str, inline_thumbnail: bool = False) -> str:
+def get_markdown_link_for_url(filename: str, url: str) -> str:
     # Our markdown has no escaping, so we cannot link any
     # text containing brackets; strip them from the
     # filename we're linking.
     filename = re.sub(r"\[|\]", "", filename)
-    markdown_link = f"[{filename}]({url})"
-    if inline_thumbnail:
-        markdown_link = "!" + markdown_link
-    return markdown_link
+    return f"[{filename}]({url})"
+
+
+def get_markdown_image_for_url(filename: str, url: str) -> str:
+    return f"!{get_markdown_link_for_url(filename, url)}"
