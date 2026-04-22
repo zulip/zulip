@@ -29,7 +29,7 @@ from zerver.lib.scheduled_messages import access_scheduled_message
 from zerver.lib.string_validation import check_stream_topic
 from zerver.lib.timestamp import datetime_to_global_time
 from zerver.models import Client, Realm, ScheduledMessage, Subscription, UserProfile
-from zerver.models.users import get_system_bot
+from zerver.models.users import get_system_bot, is_cross_realm_bot_email
 from zerver.tornado.django_api import send_event_on_commit
 
 SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES = 10
@@ -472,6 +472,12 @@ def try_deliver_one_scheduled_message() -> bool:
                 # the sending user account has been deactivated.
                 and not isinstance(e, RealmDeactivatedError)
                 and not isinstance(e, UserDeactivatedError)
+                # Cross-realm system bots (welcome-bot, notification-bot,
+                # emailgateway) have no human behind them to read the
+                # notification, and notifying them leaves a stray
+                # notification-bot <-> system-bot DirectMessageGroup
+                # attached to no realm.
+                and not is_cross_realm_bot_email(scheduled_message.sender.delivery_email)
             ):
                 notify_update_scheduled_message(scheduled_message.sender, scheduled_message)
                 send_failed_scheduled_message_notification(
