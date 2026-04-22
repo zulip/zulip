@@ -151,6 +151,11 @@ jobs:
             os: noble
             extra-args: ""
 
+          - docker_image: zulip/ci:resolute
+            name: Ubuntu 26.04 production install
+            os: resolute
+            extra-args: ""
+
           - docker_image: zulip/ci:bookworm
             name: Debian 12 production install with custom db name and user
             os: bookworm
