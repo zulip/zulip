@@ -445,6 +445,13 @@ test("group_suggestions", () => {
     assert.deepEqual(suggestions, expected);
 });
 
+test("placeholder users are not suggested", () => {
+    people.add_active_user({...alice, is_placeholder_user: true});
+
+    const suggestions = get_suggestions("alice", `dm:${bob.user_id}`);
+    assert.deepEqual(suggestions, [`dm:${bob.user_id} alice`]);
+});
+
 test("empty_query_suggestions", () => {
     const query = "";
 

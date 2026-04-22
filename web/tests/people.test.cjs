@@ -1258,6 +1258,13 @@ run_test("get_people_for_search_bar", ({override}) => {
     // in message_user_ids, we will get a small result and not
     // search all people.
     assert.equal(small_results.length, 6);
+
+    // Placeholder users are never returned.
+    for (const user_id of user_ids) {
+        people.add_active_user({...people.get_by_user_id(user_id), is_placeholder_user: true});
+    }
+    const results_without_placeholders = people.get_people_for_search_bar("Jones");
+    assert.equal(results_without_placeholders.length, 14);
 });
 
 run_test("updates", () => {

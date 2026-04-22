@@ -143,6 +143,8 @@ export function typeahead_source(
     setting_type?: "realm" | "stream" | "group",
 ): UserPillData[] {
     let users = exclude_bots ? people.get_realm_active_human_users() : people.get_realm_users();
+    // Exclude placeholder users, whose names haven't loaded yet.
+    users = users.filter((user) => !user.is_placeholder_user);
     if (setting_name !== undefined) {
         assert(setting_type !== undefined);
         const group_setting_config = group_permission_settings.get_group_permission_setting_config(

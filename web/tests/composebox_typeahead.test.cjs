@@ -3535,6 +3535,15 @@ test("muted users excluded from results", () => {
     assert.deepEqual(results, [mention_all, call_center]);
 });
 
+test("placeholder users excluded from results", () => {
+    let results = ct.get_person_suggestions("corde", {});
+    assert.deepEqual(results, [cordelia_item]);
+
+    people.add_active_user({...cordelia, is_placeholder_user: true});
+    results = ct.get_person_suggestions("corde", {});
+    assert.deepEqual(results, []);
+});
+
 test("direct message recipients sorted according to stream / topic being viewed", () => {
     // This tests that direct message recipient results are sorted with
     // subscribers of the stream / topic being viewed being given priority.

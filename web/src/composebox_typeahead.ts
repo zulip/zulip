@@ -701,6 +701,8 @@ function filter_persons<T>(
 
     // Exclude muted users from typeaheads.
     persons = muted_users.filter_muted_users(persons);
+    // Exclude placeholder users, whose names haven't loaded yet.
+    persons = persons.filter((person) => !person.is_placeholder_user);
     const person_items: UserPillData[] = persons.map((person) => ({
         type: "user",
         user: person,
