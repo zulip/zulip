@@ -267,11 +267,13 @@ export let fetch_presence_for_popover = (user_id: number): void => {
             const response = parsed_data.data;
 
             if (response.result === "success" && response.presence) {
-                const {aggregated} = response.presence;
-                presence.presence_info.set(user_id, {
-                    status: aggregated.status,
-                    last_active: aggregated.timestamp,
-                });
+                const raw = {
+                    ...response.presence,
+                    server_timestamp: Date.now() / 1000,
+                };
+                const user = people.get_by_user_id(user_id);
+                const status = presence.status_from_raw(raw, user);
+                presence.presence_info.set(user_id, status);
 
                 // Update the user's last seen time in the user card
                 // popover once we have their presence information, if

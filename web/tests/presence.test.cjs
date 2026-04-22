@@ -370,3 +370,36 @@ test("update_info_from_event", () => {
         last_active: 1000,
     });
 });
+
+test("user_last_seen_response_schema", () => {
+    // Modern format with both timestamps — should parse successfully
+    const valid_modern = {
+        result: "success",
+        msg: "",
+        presence: {
+            active_timestamp: 1656958520,
+            idle_timestamp: 1656958530,
+        },
+    };
+    const result_modern = presence.user_last_seen_response_schema.safeParse(valid_modern);
+    assert.ok(result_modern.success);
+    assert.equal(result_modern.data.presence?.active_timestamp, 1656958520);
+    assert.equal(result_modern.data.presence?.idle_timestamp, 1656958530);
+
+    // Only active_timestamp present — should also parse successfully
+    const active_only = {
+        result: "success",
+        msg: "",
+        presence: {active_timestamp: 1656958520},
+    };
+    const result_active = presence.user_last_seen_response_schema.safeParse(active_only);
+    assert.ok(result_active.success);
+    assert.equal(result_active.data.presence?.active_timestamp, 1656958520);
+    assert.equal(result_active.data.presence?.idle_timestamp, undefined);
+
+    // Presence absent entirely (user with no presence data) — should parse successfully
+    const no_presence = {result: "success", msg: ""};
+    const result_no_presence = presence.user_last_seen_response_schema.safeParse(no_presence);
+    assert.ok(result_no_presence.success);
+    assert.equal(result_no_presence.data.presence, undefined);
+});

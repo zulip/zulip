@@ -31,12 +31,8 @@ export const user_last_seen_response_schema = z.object({
     msg: z.optional(z.string()),
     presence: z.optional(
         z.object({
-            /* We ignore the keys other than aggregated, since they just contain
-               duplicate data. */
-            aggregated: z.object({
-                status: z.enum(["active", "idle", "offline"]),
-                timestamp: z.number(),
-            }),
+            active_timestamp: z.optional(z.number()),
+            idle_timestamp: z.optional(z.number()),
         }),
     ),
 });
