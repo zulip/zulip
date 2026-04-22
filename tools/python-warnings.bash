@@ -11,6 +11,9 @@ PYTHONWARNINGS+=',default:Attribute s is deprecated and will be removed in Pytho
 PYTHONWARNINGS+=',ignore:invalid escape sequence '\'\\' '\'':DeprecationWarning'
 PYTHONWARNINGS+=',ignore:invalid escape sequence '\'\\' '\'':SyntaxWarning'
 
+# https://github.com/ipython/ipython/pull/14876
+PYTHONWARNINGS+=',ignore:'\''return'\'' in a '\''finally'\'' block:SyntaxWarning'
+
 # https://github.com/SAML-Toolkits/python3-saml/pull/420
 PYTHONWARNINGS+=',ignore:datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version.:DeprecationWarning:onelogin.saml2.utils'
 PYTHONWARNINGS+=',ignore:datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version.:DeprecationWarning:onelogin.saml2.utils'
