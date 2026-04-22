@@ -38,6 +38,17 @@ DATABASES["default"] = {
         "cursor_factory": TimeTrackingCursor,
     },
 }
+# In tests, the replica alias points at the same database (and uses
+# the same TEST_NAME so Django's test runner doesn't try to create a
+# second test DB for it). We still apply default_transaction_read_only
+# so the write-rejection behavior surfaces in tests rather than
+# waiting for production.
+DATABASES["replica"] = dict(DATABASES["default"])
+DATABASES["replica"]["OPTIONS"] = {
+    **DATABASES["replica"]["OPTIONS"],
+    "options": "-c default_transaction_read_only=on",
+}
+DATABASES["replica"]["TEST"] = {"MIRROR": "default"}
 
 
 if FULL_STACK_ZULIP_TEST:

@@ -52,6 +52,8 @@ from .configured_settings import (
     REGISTER_LINK_DISABLED,
     REMOTE_POSTGRES_HOST,
     REMOTE_POSTGRES_PORT,
+    REMOTE_POSTGRES_REPLICA_EXTRA_OPTIONS,
+    REMOTE_POSTGRES_REPLICA_HOST,
     REMOTE_POSTGRES_SSLMODE,
     ROOT_SUBDOMAIN_ALIASES,
     S3_REGION,
@@ -396,6 +398,40 @@ elif (
         PASSWORD=get_secret("postgres_password"),
         HOST="localhost",
     )
+
+# The "replica" alias mirrors "default" unless
+# REMOTE_POSTGRES_REPLICA_HOST is configured. It is only consulted
+# when USE_REPLICA_DB_FOR_MESSAGE_FETCH is true; having the alias
+# always present keeps code paths that reference it uniform across
+# deployments.
+#
+# Note on multi-host lists: libpq tries the hosts in REMOTE_POSTGRES_-
+# REPLICA_HOST sequentially and uses the first one that accepts the
+# connection. Combined with CONN_MAX_AGE, this means each worker
+# sticks with its first-choice host, so a comma-separated list is
+# effectively failover, not load balancing. Set
+# REMOTE_POSTGRES_REPLICA_EXTRA_OPTIONS = {"load_balance_hosts":
+# "random"} (libpq 16+) to spread load evenly across the listed hosts.
+DATABASES["replica"] = deepcopy(DATABASES["default"])
+if REMOTE_POSTGRES_REPLICA_HOST != "":
+    DATABASES["replica"].update(
+        HOST=REMOTE_POSTGRES_REPLICA_HOST,
+        PORT=REMOTE_POSTGRES_PORT,
+    )
+    if "," in REMOTE_POSTGRES_REPLICA_HOST:
+        DATABASES["replica"]["OPTIONS"]["target_session_attrs"] = "prefer-standby"
+    DATABASES["replica"]["OPTIONS"]["sslmode"] = REMOTE_POSTGRES_SSLMODE
+# Force the replica connection into read-only mode at the libpq level.
+# A real streaming standby rejects writes anyway, but this also
+# catches misrouted writes in environments where "replica" happens to
+# resolve to a writable server — dev, test, or a misconfigured host.
+# Combined with ReadReplicaRouter routing writes to this alias, a
+# stray write inside use_replica() raises a loud Postgres error
+# instead of silently committing.
+DATABASES["replica"]["OPTIONS"]["options"] = "-c default_transaction_read_only=on"
+DATABASES["replica"]["OPTIONS"].update(REMOTE_POSTGRES_REPLICA_EXTRA_OPTIONS)
+
+DATABASE_ROUTERS = ["zerver.lib.db_replica.ReadReplicaRouter"]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
