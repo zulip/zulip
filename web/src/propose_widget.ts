@@ -9,6 +9,7 @@ import type { AnyWidgetData, WidgetData } from "./widget_schema.ts";
 import type { Event } from "./widget_data.ts";
 import { MeetingAvailabilityData } from "./meeting_availability_data.ts";
 import type { AvailabilityEvent } from "./meeting_availability_data.ts";
+import * as availability_modal from "./availability_modal.ts";
 
 export function activate({
     any_data,
@@ -79,11 +80,18 @@ export function render({
     const { meeting_id, topic, invitees, submitted, i_have_submitted } =
         propose_data.get_widget_data();
 
+    const me = people.my_current_user_id();
     const responded_count = submitted.size;
     const total_count = invitees.length;
-    const is_invited = invitees.includes(propose_data.me);
-    const btn_label = i_have_submitted ? "Edit Meeting Availability" : "Submit Meeting Availability";
-    const deadline_action = i_have_submitted ? "Edit" : "Submit";
+    const is_invited = invitees.includes(me);
+    const owner_id = message.sender_id;
+    const is_owner = owner_id === me;
+    const btn_label = is_owner
+        ? "Review responses and confirm"
+        : i_have_submitted
+          ? "Edit Meeting Availability"
+          : "Submit Meeting Availability";
+    const deadline_action = is_owner ? "Review" : i_have_submitted ? "Edit" : "Submit";
 
     const invitees_html =
         invitees.length > 0
@@ -131,15 +139,33 @@ export function render({
         success(data) {
             const meeting = data as {
                 deadline: string;
+                owner_id: number;
+                status: string;
                 slots: { slot_id: number; start_time: string; end_time: string | null }[];
             };
 
             // show deadline
             $elem.find(".propose-deadline-text").text(format_deadline(meeting.deadline));
 
-            if (!is_invited) return;
+            const is_owner = meeting.owner_id === people.my_current_user_id();
+            if (!is_invited && !is_owner) {
+                return;
+            }
 
             $elem.find(".propose-availability-btn").on("click", () => {
+                if (is_owner) {
+                    availability_modal.open(meeting_id, () => {
+                        render({
+                            $elem,
+                            callback,
+                            widget_data,
+                            message,
+                            rerender: true,
+                        });
+                    });
+                    return;
+                }
+
                 // build dates and time range from slots
                 const dates = [
                     ...new Set(meeting.slots.map((s) => s.start_time.slice(0, 10))),
