@@ -14,6 +14,7 @@ import * as people from "./people.ts";
 import * as pill_typeahead from "./pill_typeahead.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_ui from "./settings_ui.ts";
+import type {CustomProfileField} from "./state_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as ui_report from "./ui_report.ts";
@@ -23,14 +24,12 @@ import {the} from "./util.ts";
 
 const user_value_schema = z.array(z.number());
 
-export function append_custom_profile_fields(element_id: string, user_id: number): void {
-    const person = people.get_by_user_id(user_id);
-    if (person.is_bot) {
-        return;
-    }
-    const all_custom_fields = realm.custom_profile_fields;
+export function render_custom_profile_field(
+    user_id: number,
+    field: CustomProfileField,
+    for_manage_user_modal: boolean,
+): string {
     const all_field_types = realm.custom_profile_field_types;
-
     const all_field_template_types = new Map([
         [all_field_types.PARAGRAPH.id, "text"],
         [all_field_types.SHORT_TEXT.id, "text"],
@@ -42,43 +41,54 @@ export function append_custom_profile_fields(element_id: string, user_id: number
         [all_field_types.PRONOUNS.id, "text"],
     ]);
 
-    for (const field of all_custom_fields) {
-        const field_value = people.get_custom_profile_data(user_id, field.id) ?? {
-            value: "",
-            rendered_value: "",
-        };
-        const editable_by_user = current_user.is_admin || field.editable_by_user;
-        const is_dropdown_field = field.type === all_field_types.DROPDOWN.id;
-        const field_choices = [];
+    const field_value = people.get_custom_profile_data(user_id, field.id) ?? {
+        value: "",
+        rendered_value: "",
+    };
+    const editable_by_user = current_user.is_admin || field.editable_by_user;
+    const is_dropdown_field = field.type === all_field_types.DROPDOWN.id;
+    const field_choices = [];
 
-        if (is_dropdown_field) {
-            const field_choice_dict = settings_components.custom_profile_field_choices_schema.parse(
-                JSON.parse(field.field_data),
-            );
-            for (const [value, {order, text}] of Object.entries(field_choice_dict)) {
-                field_choices[Number(order)] = {
-                    value,
-                    text,
-                    selected: value === field_value.value,
-                };
-            }
+    if (is_dropdown_field) {
+        const field_choice_dict = settings_components.custom_profile_field_choices_schema.parse(
+            JSON.parse(field.field_data),
+        );
+        for (const [value, {order, text}] of Object.entries(field_choice_dict)) {
+            field_choices[Number(order)] = {
+                value,
+                text,
+                selected: value === field_value.value,
+            };
         }
+    }
 
-        const html = render_settings_custom_user_profile_field({
-            field,
-            field_type: all_field_template_types.get(field.type),
-            field_value,
-            is_long_text_field: field.type === all_field_types.PARAGRAPH.id,
-            is_user_field: field.type === all_field_types.USER.id,
-            is_date_field: field.type === all_field_types.DATE.id,
-            is_url_field: field.type === all_field_types.URL.id,
-            is_pronouns_field: field.type === all_field_types.PRONOUNS.id,
-            is_dropdown_field,
-            field_choices,
-            for_manage_user_modal: element_id === "#edit-user-form .custom-profile-field-form",
-            is_empty_required_field: field.required && !field_value.value,
-            editable_by_user,
-        });
+    return render_settings_custom_user_profile_field({
+        field,
+        field_type: all_field_template_types.get(field.type),
+        field_value,
+        is_long_text_field: field.type === all_field_types.PARAGRAPH.id,
+        is_user_field: field.type === all_field_types.USER.id,
+        is_date_field: field.type === all_field_types.DATE.id,
+        is_url_field: field.type === all_field_types.URL.id,
+        is_pronouns_field: field.type === all_field_types.PRONOUNS.id,
+        is_dropdown_field,
+        field_choices,
+        for_manage_user_modal,
+        is_empty_required_field: field.required && !field_value.value,
+        editable_by_user,
+    });
+}
+
+export function append_custom_profile_fields(element_id: string, user_id: number): void {
+    const person = people.get_by_user_id(user_id);
+    if (person.is_bot) {
+        return;
+    }
+    const all_custom_fields = realm.custom_profile_fields;
+
+    for (const field of all_custom_fields) {
+        const for_manage_user_modal = element_id === "#edit-user-form .custom-profile-field-form";
+        const html = render_custom_profile_field(user_id, field, for_manage_user_modal);
         $(element_id).append($(html));
     }
 }
@@ -126,7 +136,7 @@ export type PillUpdateField = {
 };
 
 export function initialize_custom_user_type_fields(
-    element_id: string,
+    element_id: string | JQuery,
     user_id: number,
     is_target_element_editable: boolean,
     pill_update_handler?: (field: PillUpdateField, pills: UserPillWidget) => void,
@@ -139,6 +149,8 @@ export function initialize_custom_user_type_fields(
         return user_pills;
     }
 
+    const $container = typeof element_id === "string" ? $(element_id) : element_id;
+
     for (const field of realm.custom_profile_fields) {
         const field_value_raw = people.get_custom_profile_data(user_id, field.id)?.value;
 
@@ -148,11 +160,18 @@ export function initialize_custom_user_type_fields(
             field.type === field_types.USER.id &&
             (field_value_raw !== undefined || is_target_element_editable)
         ) {
-            const $pill_container = $(element_id)
-                .find(
-                    `.custom_user_field[data-field-id="${CSS.escape(`${field.id}`)}"] .pill-container`,
-                )
-                .expectOne();
+            let $pill_container = $container.find(
+                `.custom_user_field[data-field-id="${CSS.escape(`${field.id}`)}"] .pill-container`,
+            );
+            if (
+                $pill_container.length === 0 &&
+                $container.is(`.custom_user_field[data-field-id="${CSS.escape(`${field.id}`)}"]`)
+            ) {
+                $pill_container = $container.find(".pill-container");
+            }
+            if ($pill_container.length !== 1) {
+                continue;
+            }
             const pill_config = {
                 exclude_inaccessible_users: is_target_element_editable,
             };
@@ -186,14 +205,12 @@ export function initialize_custom_user_type_fields(
     }
 
     // Enable the label associated to this field to focus on the input when clicked.
-    $(element_id)
-        .find(".custom_user_field label.settings-field-label")
-        .on("click", function () {
-            const $input_element = $(this)
-                .closest(".custom_user_field")
-                .find(".person_picker.pill-container .input");
-            $input_element.trigger("focus");
-        });
+    $container.find(".custom_user_field label.settings-field-label").on("click", function () {
+        const $input_element = $(this)
+            .closest(".custom_user_field")
+            .find(".person_picker.pill-container .input");
+        $input_element.trigger("focus");
+    });
 
     return user_pills;
 }
@@ -248,11 +265,15 @@ function update_has_date_class($custom_user_field: JQuery): void {
 }
 
 export function initialize_custom_date_type_fields(
-    element_id: string,
+    element_id: string | JQuery,
     user_id: number,
     for_profile_settings_panel = false,
 ): void {
-    const $date_picker_elements = $(element_id).find(".custom_user_field .datepicker");
+    const $container = typeof element_id === "string" ? $(element_id) : element_id;
+    let $date_picker_elements = $container.find(".custom_user_field .datepicker");
+    if ($date_picker_elements.length === 0 && $container.hasClass("custom_user_field")) {
+        $date_picker_elements = $container.find(".datepicker");
+    }
     if ($date_picker_elements.length === 0) {
         return;
     }
@@ -372,45 +393,41 @@ export function initialize_custom_date_type_fields(
     // input. This occurs when pressing Enter while the input
     // is focused, and also when blurring the input by clicking
     // outside while the calendar popover is closed.
-    $(element_id)
+    $container
         .find<HTMLInputElement>("input.date-field-alt-input")
-        .on("change", function () {
+        .on("change", function (this: HTMLInputElement) {
             const instance = the($(this).parent().find(".datepicker"))._flatpickr;
             assert(instance !== undefined);
-            const date = new Date($(this).val()!);
+            const date = new Date($(this).val() ?? "");
             const date_str = format_date(date, "Y-m-d");
             update_date(instance, date_str);
         });
 
     // Enable the label associated to this field to open the datepicker when clicked.
-    $(element_id)
+    $container
         .find(".custom_user_field label.settings-field-label")
-        .on("click", function () {
+        .on("click", function (this: HTMLElement) {
             $(this).closest(".custom_user_field").find("input.datepicker").trigger("click");
         });
 
-    $(element_id)
-        .find(".custom_user_field .remove_date")
-        .on("click", function () {
-            const $custom_user_field = $(this).parent().find(".custom_user_field_value");
-            const $displayed_input = $(this).parent().find(".date-field-alt-input");
-            $displayed_input.val("");
-            $custom_user_field.val("");
-            update_has_date_class($(this).closest(".custom_user_field"));
-            $custom_user_field.trigger("input");
-        });
+    $container.find(".custom_user_field .remove_date").on("click", function (this: HTMLElement) {
+        const $custom_user_field = $(this).parent().find(".custom_user_field_value");
+        const $displayed_input = $(this).parent().find(".date-field-alt-input");
+        $displayed_input.val("");
+        $custom_user_field.val("");
+        update_has_date_class($(this).closest(".custom_user_field"));
+        $custom_user_field.trigger("input");
+    });
 
-    $(element_id)
+    $container
         .find<HTMLInputElement>("input.date-field-alt-input")
-        .on("input", function () {
+        .on("input", function (this: HTMLInputElement) {
             update_has_date_class($(this).closest(".custom_user_field"));
         });
 
-    $(element_id)
-        .find(".custom_user_field .datepicker")
-        .each(function () {
-            update_has_date_class($(this).closest(".custom_user_field"));
-        });
+    $container.find(".custom_user_field .datepicker").each(function (this: HTMLElement) {
+        update_has_date_class($(this).closest(".custom_user_field"));
+    });
 }
 
 export function initialize_custom_pronouns_type_fields(element_id: string): void {
