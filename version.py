@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 493
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (376, 2)  # bumped 2026-04-22 to add @types/postcss-import
+PROVISION_VERSION = (377, 0)  # bumped 2026-04-22 to remove backoff
