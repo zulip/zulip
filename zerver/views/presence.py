@@ -201,12 +201,19 @@ def update_active_status_backend(
     if ping_only:
         ret: dict[str, Any] = {}
     else:
-        ret = get_presence_response(
-            user_profile,
-            slim_presence,
-            last_update_id_fetched_by_client=last_update_id,
-            history_limit_days=history_limit_days,
-        )
+        # update_user_presence runs inside its own durable atomic
+        # block (see zerver/actions/presence.py), so its write has
+        # committed by the time we reach the read-back. That lets us
+        # route the response path to the replica independently; the
+        # client doesn't need to see its own just-written ping
+        # reflected in the response.
+        with _maybe_use_replica(request):
+            ret = get_presence_response(
+                user_profile,
+                slim_presence,
+                last_update_id_fetched_by_client=last_update_id,
+                history_limit_days=history_limit_days,
+            )
 
     return json_success(request, data=ret)
 

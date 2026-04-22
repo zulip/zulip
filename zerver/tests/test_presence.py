@@ -1186,3 +1186,59 @@ class PresenceReplicaRoutingTest(ZulipTestCase):
         call_count, result = self._call_with_spy(f"/json/users/{othello.id}/presence")
         self.assertIn(result.status_code, (200, 400))
         self.assertEqual(call_count, 0)
+
+    @override_settings(USE_REPLICA_DB_FOR_PRESENCE=True)
+    def test_post_presence_read_back_routes_to_replica(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        # Start from a clean slate so the post-POST existence check
+        # below can only succeed if this request's write landed.
+        UserPresence.objects.filter(user_profile=hamlet).delete()
+
+        call_count = 0
+        real_use_replica = use_replica
+
+        @contextmanager
+        def counting_use_replica() -> Iterator[None]:
+            nonlocal call_count
+            call_count += 1
+            with real_use_replica():
+                yield
+
+        with mock.patch("zerver.views.presence.use_replica", counting_use_replica):
+            result = self.client_post(
+                "/json/users/me/presence",
+                {"status": "active"},
+            )
+        self.assert_json_success(result)
+        # The write is always on the primary; only the read-back
+        # enters use_replica(). ping_only=False by default, so one
+        # invocation is expected.
+        self.assertEqual(call_count, 1)
+        # Confirms the write ran independently of use_replica(). If a
+        # future refactor accidentally wrapped the write too, the
+        # replica's read-only connection would reject the INSERT and
+        # this row would be missing.
+        self.assertTrue(UserPresence.objects.filter(user_profile=hamlet).exists())
+
+    @override_settings(USE_REPLICA_DB_FOR_PRESENCE=True)
+    def test_post_presence_ping_only_does_not_enter_replica(self) -> None:
+        """ping_only requests skip the read-back entirely, so no routing."""
+        self.login("hamlet")
+        with mock.patch("zerver.views.presence.use_replica") as spy:
+            result = self.client_post(
+                "/json/users/me/presence",
+                {"status": "active", "ping_only": "true"},
+            )
+        self.assert_json_success(result)
+        spy.assert_not_called()
+
+    def test_post_presence_flag_off_stays_on_primary(self) -> None:
+        self.login("hamlet")
+        with mock.patch("zerver.views.presence.use_replica") as spy:
+            result = self.client_post(
+                "/json/users/me/presence",
+                {"status": "active"},
+            )
+        self.assert_json_success(result)
+        spy.assert_not_called()
