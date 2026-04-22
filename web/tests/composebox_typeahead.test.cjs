@@ -2277,6 +2277,64 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     assert.ok(compose_textarea_typeahead_called);
 });
 
+test("handle_users_fetched", ({override}) => {
+    function make_fake_typeahead(active_item) {
+        return {
+            active_item,
+            rerun_args: undefined,
+            get_active_item() {
+                return this.active_item;
+            },
+            lookup_keeping_active_item(...args) {
+                this.rerun_args = args;
+            },
+        };
+    }
+    const pm_recipient_typeahead = make_fake_typeahead(undefined);
+    override(bootstrap_typeahead, "Typeahead", (input_element) => {
+        if (input_element.$element[0] === $("#private_message_recipient")[0]) {
+            return pm_recipient_typeahead;
+        }
+        return undefined;
+    });
+    ct.initialize({on_enter_send: noop});
+
+    const hamlet_item = user_item(hamlet);
+    const othello_item = user_item(othello);
+    const all_item = broadcast_item(ct.broadcast_mentions()[0]);
+    const everyone_item = broadcast_item(ct.broadcast_mentions()[1]);
+    const group_item = hamletcharacters;
+    const other_group_item = backend;
+
+    // The DM recipient box only lists users and groups, so it is
+    // always rerun.
+    compose_ui.compose_textarea_typeahead = undefined;
+    ct.handle_users_fetched();
+    const [is_same_item, force_lookup] = pm_recipient_typeahead.rerun_args;
+    assert.equal(force_lookup, true);
+
+    assert.ok(is_same_item({...hamlet_item}, hamlet_item));
+    assert.ok(!is_same_item(othello_item, hamlet_item));
+    assert.ok(is_same_item({...all_item}, all_item));
+    assert.ok(!is_same_item(everyone_item, all_item));
+    assert.ok(is_same_item({...group_item}, group_item));
+    assert.ok(!is_same_item(other_group_item, group_item));
+    assert.ok(!is_same_item(group_item, hamlet_item));
+
+    // The compose box is rerun only while it lists mentions.
+    for (const active_item of [hamlet_item, all_item, group_item]) {
+        compose_ui.compose_textarea_typeahead = make_fake_typeahead(active_item);
+        ct.handle_users_fetched();
+        assert.deepEqual(compose_ui.compose_textarea_typeahead.rerun_args, [is_same_item]);
+    }
+    for (const active_item of [undefined, make_emoji(emoji_tada), sweden_stream]) {
+        compose_ui.compose_textarea_typeahead = make_fake_typeahead(active_item);
+        ct.handle_users_fetched();
+        assert.equal(compose_ui.compose_textarea_typeahead.rerun_args, undefined);
+    }
+    compose_ui.compose_textarea_typeahead = undefined;
+});
+
 test("get_person_suggestion_for_topic_typeahead excludes deactivated users", ({override}) => {
     override(pm_conversations, "get_partners", () => []);
 
@@ -3533,6 +3591,15 @@ test("muted users excluded from results", () => {
     results = ct.get_person_suggestions("all", opts);
     const mention_all = broadcast_item(ct.broadcast_mentions()[0]);
     assert.deepEqual(results, [mention_all, call_center]);
+});
+
+test("placeholder users excluded from results", () => {
+    let results = ct.get_person_suggestions("corde", {});
+    assert.deepEqual(results, [cordelia_item]);
+
+    people.add_active_user({...cordelia, is_placeholder_user: true});
+    results = ct.get_person_suggestions("corde", {});
+    assert.deepEqual(results, []);
 });
 
 test("direct message recipients sorted according to stream / topic being viewed", () => {

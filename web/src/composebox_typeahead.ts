@@ -701,6 +701,8 @@ function filter_persons<T>(
 
     // Exclude muted users from typeaheads.
     persons = muted_users.filter_muted_users(persons);
+    // Exclude placeholder users, whose names haven't loaded yet.
+    persons = persons.filter((person) => !person.is_placeholder_user);
     const person_items: UserPillData[] = persons.map((person) => ({
         type: "user",
         user: person,
@@ -2003,4 +2005,37 @@ export function initialize({
     });
 
     initialize_compose_typeahead($("textarea#compose-textarea"));
+}
+
+function is_same_user_or_group(
+    item: TypeaheadSuggestion,
+    active_item: TypeaheadSuggestion,
+): boolean {
+    if (item.type === "user" && active_item.type === "user") {
+        return item.user.user_id === active_item.user.user_id;
+    }
+    if (item.type === "broadcast" && active_item.type === "broadcast") {
+        return item.user.special_item_text === active_item.user.special_item_text;
+    }
+    if (item.type === "user_group" && active_item.type === "user_group") {
+        return item.id === active_item.id;
+    }
+    return false;
+}
+
+export function handle_users_fetched(): void {
+    // Rerun the DM recipient and mention typeaheads if they are open,
+    // so that users whose data just loaded appear in them. Other
+    // lists, like emoji and topics, stay as they are.
+    private_message_recipient_typeahead.lookup_keeping_active_item(is_same_user_or_group, true);
+
+    const textarea_typeahead = compose_ui.compose_textarea_typeahead;
+    const active_item = textarea_typeahead?.get_active_item();
+    if (
+        textarea_typeahead !== undefined &&
+        active_item !== undefined &&
+        ["user", "broadcast", "user_group"].includes(active_item.type)
+    ) {
+        textarea_typeahead.lookup_keeping_active_item(is_same_user_or_group);
+    }
 }

@@ -311,6 +311,8 @@ export function set_up_combined(
                     // default user_pill.typeahead_source.
                     const users: UserPillData[] = opts
                         .user_source()
+                        // Exclude placeholder users, whose names haven't loaded yet.
+                        .filter((user) => !user.is_placeholder_user)
                         .map((user) => ({type: "user", user}));
                     source = [...source, ...users];
                 } else {

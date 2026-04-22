@@ -1135,7 +1135,9 @@ export function get_people_for_dm(opts: {
 }
 
 export function get_people_for_search_bar(query: string): User[] {
-    const pred = build_person_matcher(query);
+    const person_matcher = build_person_matcher(query);
+    // Exclude placeholder users, whose names haven't loaded yet.
+    const pred = (user: User): boolean => !user.is_placeholder_user && person_matcher(user);
 
     const message_people = get_message_people().filter(
         (user) => !user.is_inaccessible_user && !user.is_deleted,
