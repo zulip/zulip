@@ -48,6 +48,12 @@ jobs:
             os: noble
             include_documentation_tests: false
             include_frontend_tests: false
+          # Ubuntu 26.04 ships with Python 3.14.4.
+          - docker_image: zulip/ci:resolute
+            name: Ubuntu 26.04 (Python 3.14, backend)
+            os: resolute
+            include_documentation_tests: false
+            include_frontend_tests: false
           # Debian 13 ships with Python 3.13.5.
           - docker_image: zulip/ci:trixie
             name: Debian 13 (Python 3.13, backend)

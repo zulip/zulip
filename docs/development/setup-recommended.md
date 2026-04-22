@@ -59,7 +59,7 @@ the internet.)
 :::{tab-item} Ubuntu/Debian
 :sync: os-ubuntu
 
-- Ubuntu 22.04 or 24.04
+- Ubuntu 22.04, 24.04, or 26.04
 - Debian 12 or 13
   :::
 
