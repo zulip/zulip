@@ -14,6 +14,7 @@
     "@sentry/browser": "^10.5.0",
     "@sentry/core": "^10.5.0",
     "@sinonjs/fake-timers": "^15.1.1",
+    "@types/postcss-import": "^14.0.3",
     "@uppy/core": "^5.0.1",
     "@uppy/dashboard": "^5.0.4",
     "@uppy/image-editor": "^4.0.2",
