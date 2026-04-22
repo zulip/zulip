@@ -783,12 +783,21 @@ def do_delete_realm(realm: Realm) -> None:
         Recipient.objects.filter(id__in=orphan_dmg_recipient_ids).values_list("type_id", flat=True)
     )
 
+    # Stream Recipients have no FK back to Stream either, so the
+    # realm's Stream cascade strands them in the same way.  Capture
+    # them alongside the DMG Recipients.
+    orphan_stream_recipient_ids = set(
+        Stream.objects.filter(realm=realm)
+        .exclude(recipient__isnull=True)
+        .values_list("recipient_id", flat=True)
+    )
+
     realm.delete()
 
     # Recipient.delete() cascades Subscription and Message;
     # DirectMessageGroup.recipient is SET_NULL, so the DMG row
     # needs an explicit delete.
-    Recipient.objects.filter(id__in=orphan_dmg_recipient_ids).delete()
+    Recipient.objects.filter(id__in=orphan_dmg_recipient_ids | orphan_stream_recipient_ids).delete()
     DirectMessageGroup.objects.filter(id__in=orphan_huddle_ids).delete()
 
 
