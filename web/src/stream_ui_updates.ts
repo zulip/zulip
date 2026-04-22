@@ -20,6 +20,7 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_edit_toggler from "./stream_edit_toggler.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
 import * as stream_settings_containers from "./stream_settings_containers.ts";
+import * as stream_settings_data from "./stream_settings_data.ts";
 import type {SettingsSubscription} from "./stream_settings_data.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
@@ -373,6 +374,7 @@ export function enable_or_disable_permission_settings_in_edit_panel(
     update_default_stream_option_state($("#stream_settings"));
     update_history_public_to_subscribers_state($("#stream_settings"));
     update_can_create_topic_group_setting_state($("#stream_settings"));
+    enable_or_disable_message_content_allowed_in_email_notifications($("#stream_settings"), sub);
 
     const disable_message_retention_setting =
         !realm.zulip_plan_is_not_limited || !current_user.is_owner;
@@ -676,5 +678,47 @@ export function update_can_create_topic_group_on_history_public_to_subscribers_c
         $can_create_topic_group_elem
             .closest(".input-group")
             .removeClass("can_create_topic_group_disabled_tooltip");
+    }
+}
+
+export function enable_or_disable_message_content_allowed_in_email_notifications(
+    $container: JQuery,
+    sub?: SettingsSubscription,
+): void {
+    const $setting_element = $container.find(".message_content_allowed_in_email_notifications");
+    if (sub !== undefined && !sub.can_change_stream_permissions_requiring_metadata_access) {
+        $setting_element.prop("disabled", true);
+        $setting_element.closest(".input-group").addClass("control-label-disabled");
+        return;
+    }
+    const disable_setting = !realm.realm_message_content_allowed_in_email_notifications;
+    $setting_element.prop("disabled", disable_setting);
+    $setting_element
+        .closest(".input-group")
+        .toggleClass(
+            "message_content_allowed_in_email_notifications_disabled_tooltip",
+            disable_setting,
+        );
+    $setting_element.closest(".input-group").toggleClass("control-label-disabled", disable_setting);
+}
+
+export function update_message_content_allowed_in_email_notifications(): void {
+    if (!overlays.streams_open()) {
+        return;
+    }
+
+    if (hash_parser.is_create_new_stream_narrow()) {
+        enable_or_disable_message_content_allowed_in_email_notifications($("#stream-creation"));
+        return;
+    }
+
+    const active_stream_id = stream_settings_components.get_active_data().id;
+    if (active_stream_id) {
+        const slim_sub = sub_store.get(active_stream_id)!;
+        const sub = stream_settings_data.get_sub_for_settings(slim_sub);
+        enable_or_disable_message_content_allowed_in_email_notifications(
+            $("#stream_settings"),
+            sub,
+        );
     }
 }

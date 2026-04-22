@@ -455,6 +455,21 @@ test("update_property", ({override, override_rewire}) => {
         assert.equal(added_sidebar_rows, 1);
     }
 
+    // Test updating message_content_allowed_in_email_notifications
+    {
+        const stub = make_stub();
+        override(stream_ui_updates, "update_setting_element", stub.f);
+        stream_events.update_property(
+            stream_id,
+            "message_content_allowed_in_email_notifications",
+            false,
+        );
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("sub", "property");
+        assert.equal(args.sub.stream_id, stream_id);
+        assert.equal(args.property, "message_content_allowed_in_email_notifications");
+    }
+
     // Test deprecated properties for coverage.
     {
         stream_events.update_property(stream_id, "stream_post_policy", 2);

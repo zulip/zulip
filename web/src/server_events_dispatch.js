@@ -337,7 +337,8 @@ export function dispatch_normal_event(event) {
                 send_welcome_emails: noop,
                 topics_policy: noop,
                 require_e2ee_push_notifications: noop,
-                message_content_allowed_in_email_notifications: noop,
+                message_content_allowed_in_email_notifications:
+                    stream_ui_updates.update_message_content_allowed_in_email_notifications,
                 enable_spectator_access: noop,
                 send_channel_events_messages: noop,
                 signup_announcements_stream_id: noop,

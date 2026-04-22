@@ -147,3 +147,22 @@
         </div>
     {{/if}}
 </div>
+
+<div id="channel-notification-permissions" class="settings-subsection-parent">
+    <div class="channel-notification-permissions-title-container {{#if is_stream_edit}}subsection-header{{/if}}">
+        <h4 class="stream_setting_subsection_title">{{t "Notifications"}}</h4>
+        {{#if is_stream_edit}}
+            {{> ../settings/settings_save_discard_widget section_name="channel-notification-permissions" show_save_discard_buttons=true}}
+        {{/if}}
+    </div>
+
+    <div class="message-content-allowed-in-email-notifications">
+        {{> ../settings/settings_checkbox
+          prefix=prefix
+          setting_name="message_content_allowed_in_email_notifications"
+          is_checked=message_content_allowed_in_email_notifications
+          label=(t "Allow message content in message notification emails")
+          }}
+    </div>
+
+</div>

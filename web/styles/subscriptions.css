@@ -1533,7 +1533,8 @@ h4.user_group_setting_subsection_title {
 }
 
 #subscription_overlay .default-stream,
-#subscription_overlay .history-public-to-subscribers {
+#subscription_overlay .history-public-to-subscribers,
+#subscription_overlay .message-content-allowed-in-email-notifications {
     width: fit-content;
 
     .inline {
