@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import signal
+import sys
 from contextlib import AsyncExitStack
 from typing import Any
 from urllib.parse import SplitResult
@@ -15,7 +16,6 @@ from zerver.lib.management import ZulipBaseCommand
 if settings.PRODUCTION:
     settings.SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-from zerver.lib.async_utils import NoAutoCreateEventLoopPolicy
 from zerver.lib.debug import interactive_debug_listen
 from zerver.tornado.application import create_tornado_application, setup_tornado_rabbitmq
 from zerver.tornado.descriptors import set_current_port
@@ -31,7 +31,10 @@ from zerver.tornado.sharding import notify_tornado_queue_name
 if settings.USING_RABBITMQ:
     from zerver.lib.queue import TornadoQueueClient, set_queue_client
 
-asyncio.set_event_loop_policy(NoAutoCreateEventLoopPolicy())
+if sys.version_info < (3, 14):
+    from zerver.lib.async_utils import NoAutoCreateEventLoopPolicy
+
+    asyncio.set_event_loop_policy(NoAutoCreateEventLoopPolicy())
 
 
 class Command(ZulipBaseCommand):

@@ -3,6 +3,8 @@
 exclude_also =
     # Re-enable the standard coverage pragma
     nocoverage
+    # Allow excluding the entire file
+    \A(?ms:.*^# nocoverage$.*)\Z
     # Don't complain if non-runnable code isn't run:
     if False:
     # Don't require coverage for base class NotImplementedErrors
