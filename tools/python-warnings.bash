@@ -10,6 +10,7 @@ PYTHONWARNINGS+=',default:Attribute s is deprecated and will be removed in Pytho
 # https://github.com/mahmoud/glom/pull/258
 PYTHONWARNINGS+=',ignore:invalid escape sequence '\'\\' '\'':DeprecationWarning'
 PYTHONWARNINGS+=',ignore:invalid escape sequence '\'\\' '\'':SyntaxWarning'
+PYTHONWARNINGS+=',ignore:"\ " is an invalid escape sequence.:SyntaxWarning'
 
 # https://github.com/ipython/ipython/pull/14876
 PYTHONWARNINGS+=',ignore:'\''return'\'' in a '\''finally'\'' block:SyntaxWarning'
