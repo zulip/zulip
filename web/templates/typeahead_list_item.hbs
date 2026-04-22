@@ -32,6 +32,8 @@
         <strong class="typeahead-strong-section{{#if is_empty_string_topic}} empty-topic-display{{/if}}{{#if is_default_language}} default-language-display{{/if}}">
             {{~#if stream~}}
                 {{~> decorated_channel_name stream=stream ~}}
+                {{~else if is_placeholder_user~}}
+                <span class="loading-shimmer"></span>
                 {{~else~}}
                 {{~ primary ~}}
             {{~/if~}}

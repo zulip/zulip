@@ -60,6 +60,7 @@ type StreamData = {
 export let render_typeahead_item = (args: {
     primary?: string | undefined;
     is_person?: boolean;
+    is_placeholder_user?: boolean;
     img_src?: string;
     status_emoji_info?: UserStatusEmojiInfo | undefined;
     secondary?: string | null;
@@ -163,6 +164,7 @@ export let render_person = (
     }
     const typeahead_arguments = {
         primary: person.user.full_name,
+        is_placeholder_user: person.user.is_placeholder_user ?? false,
         img_src: avatar_url,
         user_circle_class,
         is_person: true,
