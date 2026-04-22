@@ -214,6 +214,7 @@ export const update_person = function update(event: UserUpdate): void {
     if ("custom_profile_field" in event) {
         people.set_custom_profile_field_data(event.user_id, event.custom_profile_field);
         user_profile.update_user_custom_profile_fields(user);
+        settings_account.update_custom_profile_field_ui(event.user_id, event.custom_profile_field);
         if (event.user_id === people.my_current_user_id()) {
             navbar_alerts.maybe_toggle_empty_required_profile_fields_banner();
 
