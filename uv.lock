@@ -1124,13 +1124,11 @@ wheels = [
 
 [[package]]
 name = "django-bitfield"
-version = "2.2.0"
-source = { registry = "https://pypi.org/simple" }
+version = "2.3.0"
+source = { git = "https://github.com/disqus/django-bitfield.git#17fbf76f8b331f89fd2f0bb2e4c3a4fd12c07484" }
 dependencies = [
     { name = "django" },
-    { name = "six" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1a/fc/872e9c94107a7ed3b9534c76be29cdc6697cc27332075fccc384e8c30b93/django-bitfield-2.2.0.tar.gz", hash = "sha256:1b21262acc4ec0af3f82ed04498a056cd9d5452532ac02771e004835a34e0b1b", size = 17365, upload-time = "2022-07-12T00:36:08.008Z" }
 
 [[package]]
 name = "django-bmemcached"
@@ -6782,7 +6780,7 @@ dev = [
     { name = "disposable-email-domains" },
     { name = "django", extras = ["argon2"], specifier = "==5.2.*" },
     { name = "django-auth-ldap" },
-    { name = "django-bitfield" },
+    { name = "django-bitfield", git = "https://github.com/disqus/django-bitfield.git" },
     { name = "django-bmemcached" },
     { name = "django-cte" },
     { name = "django-scim2" },
@@ -6928,7 +6926,7 @@ prod = [
     { name = "disposable-email-domains" },
     { name = "django", extras = ["argon2"], specifier = "==5.2.*" },
     { name = "django-auth-ldap" },
-    { name = "django-bitfield" },
+    { name = "django-bitfield", git = "https://github.com/disqus/django-bitfield.git" },
     { name = "django-bmemcached" },
     { name = "django-cte" },
     { name = "django-scim2" },
