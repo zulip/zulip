@@ -3,6 +3,7 @@
 import argparse
 import contextlib
 import glob
+import multiprocessing
 import os
 import shlex
 import subprocess
@@ -16,6 +17,8 @@ if TYPE_CHECKING:
     # This script does not have access to the zerver module during runtime.
     # We can only import this when type checking.
     from zerver.lib.test_runner import Runner
+
+multiprocessing.set_start_method("fork")
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(TOOLS_DIR))
