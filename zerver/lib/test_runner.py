@@ -147,6 +147,12 @@ def run_subsuite(args: SubsuiteArgs) -> tuple[int, Any]:
 def destroy_test_databases(worker_id: int | None = None) -> None:
     for alias in connections:
         connection = connections[alias]
+        # Mirrored aliases share an underlying test DB with their
+        # mirror target; creating/destroying them separately would
+        # double up, and on a read-only replica connection the DROP
+        # DATABASE would fail outright.
+        if connection.settings_dict.get("TEST", {}).get("MIRROR"):
+            continue
 
         try:
             # In the parallel mode, the test databases are created
@@ -179,6 +185,8 @@ def create_test_databases(worker_id: int) -> None:
     database_id = get_database_id(worker_id)
     for alias in connections:
         connection = connections[alias]
+        if connection.settings_dict.get("TEST", {}).get("MIRROR"):
+            continue
         connection.creation.clone_test_db(
             suffix=database_id,
             keepdb=True,
