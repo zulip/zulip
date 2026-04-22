@@ -3715,7 +3715,7 @@ class ScrubRealmTest(ZulipTestCase):
 
 
 class DeleteRealmTest(ZulipTestCase):
-    def test_do_delete_realm_cleans_up_orphan_direct_message_groups(self) -> None:
+    def test_do_delete_realm_cleans_up_orphan_recipients(self) -> None:
         zulip = get_realm("zulip")
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         hamlet = self.example_user("hamlet")
@@ -3735,6 +3735,15 @@ class DeleteRealmTest(ZulipTestCase):
         assert bot_dmg.recipient_id is not None
         assert zulip_only_dmg.recipient_id is not None
         assert lear_bot_dmg.recipient_id is not None
+
+        zulip_stream_recipient_ids = set(
+            Stream.objects.filter(realm=zulip).values_list("recipient_id", flat=True)
+        )
+        lear_stream_recipient_ids = set(
+            Stream.objects.filter(realm=get_realm("lear")).values_list("recipient_id", flat=True)
+        )
+        self.assertNotEqual(zulip_stream_recipient_ids, set())
+        self.assertNotEqual(lear_stream_recipient_ids, set())
 
         do_delete_realm(zulip)
 
@@ -3757,4 +3766,15 @@ class DeleteRealmTest(ZulipTestCase):
                 user_profile=welcome_bot, recipient_id=lear_bot_dmg.recipient_id
             ).exists()
         )
+
+        self.assertFalse(Recipient.objects.filter(id__in=zulip_stream_recipient_ids).exists())
+        self.assertEqual(
+            set(
+                Recipient.objects.filter(id__in=lear_stream_recipient_ids).values_list(
+                    "id", flat=True
+                )
+            ),
+            lear_stream_recipient_ids,
+        )
+
         self.assertTrue(UserProfile.objects.filter(id=welcome_bot.id).exists())
