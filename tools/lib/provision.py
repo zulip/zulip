@@ -159,10 +159,10 @@ if vendor == "debian" and os_version == "13":
         *UBUNTU_COMMON_APT_DEPENDENCIES,
         f"postgresql-{POSTGRESQL_VERSION}",
         # Dependency for building PGroonga from source
+        "meson",
         f"postgresql-server-dev-{POSTGRESQL_VERSION}",
         "libgroonga-dev",
         "libmsgpack-dev",
-        "clang",
         *VENV_DEPENDENCIES,
     ]
 elif "debian" in os_families():
