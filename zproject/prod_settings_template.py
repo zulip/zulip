@@ -698,6 +698,12 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # USE_REPLICA_DB_FOR_MESSAGE_FETCH = True
 # REMOTE_POSTGRES_REPLICA_EXTRA_OPTIONS = {"load_balance_hosts": "random"}
 
+## Route presence read endpoints (GET /users/<user>/presence,
+## GET /realm/presence) to the replica. Presence tolerates staleness
+## by design, so no watermark check is needed — enabling this is
+## independent of USE_REPLICA_DB_FOR_MESSAGE_FETCH.
+# USE_REPLICA_DB_FOR_PRESENCE = True
+
 ########
 ## RabbitMQ configuration.
 ##

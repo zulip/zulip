@@ -1,3 +1,4 @@
+from contextlib import AbstractContextManager, nullcontext
 from typing import Annotated, Any
 
 from django.conf import settings
@@ -9,6 +10,7 @@ from pydantic import Json, StringConstraints
 from zerver.actions.presence import update_user_presence
 from zerver.actions.user_status import do_update_user_status
 from zerver.decorator import human_users_only
+from zerver.lib.db_replica import use_replica
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.presence import get_presence_for_user, get_presence_response
 from zerver.lib.request import RequestNotes
@@ -23,6 +25,23 @@ from zerver.lib.user_status import check_update_user_status, get_user_status
 from zerver.lib.users import access_user_by_id, check_can_access_user
 from zerver.models import UserPresence, UserProfile
 from zerver.models.users import get_active_user, get_active_user_profile_by_id_in_realm
+
+
+def _maybe_use_replica(request: HttpRequest) -> AbstractContextManager[None]:
+    """Route the wrapped presence read to the replica when the flag is on.
+
+    Presence tolerates staleness by design, and the server's
+    echo-the-client's-cursor-when-no-new-rows behavior in
+    zerver/lib/presence.py keeps client cursors monotonic even on a
+    behind replica, so no watermark gating is needed.
+    """
+    if not settings.USE_REPLICA_DB_FOR_PRESENCE:
+        return nullcontext()
+    log_data = RequestNotes.get_notes(request).log_data
+    if log_data is not None:
+        existing = log_data.get("extra", "")
+        log_data["extra"] = f"{existing} (replica)" if existing else "(replica)"
+    return use_replica()
 
 
 @typed_endpoint_without_parameters
@@ -56,7 +75,8 @@ def get_presence_backend(
     ):
         raise JsonableError(_("Insufficient permission"))
 
-    presence_dict = get_presence_for_user(target.id, slim_presence=True)
+    with _maybe_use_replica(request):
+        presence_dict = get_presence_for_user(target.id, slim_presence=True)
     if len(presence_dict) == 0:
         raise JsonableError(
             _("No presence data for {user_id_or_email}").format(user_id_or_email=user_id_or_email)
@@ -195,7 +215,8 @@ def get_statuses_for_realm(request: HttpRequest, user_profile: UserProfile) -> H
     # This isn't used by the web app; it's available for API use by
     # bots and other clients.  We may want to add slim_presence
     # support for it (or just migrate its API wholesale) later.
-    data = get_presence_response(user_profile, slim_presence=False)
+    with _maybe_use_replica(request):
+        data = get_presence_response(user_profile, slim_presence=False)
 
     # We're not interested in the last_update_id field in this context.
     data.pop("presence_last_update_id", None)

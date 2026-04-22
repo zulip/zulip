@@ -250,6 +250,13 @@ REMOTE_POSTGRES_REPLICA_EXTRA_OPTIONS: dict[str, str] = {}
 # historical-scroll queries to the "replica" DB alias. Off by default;
 # operators flip this on once they've confirmed a replica is reachable.
 USE_REPLICA_DB_FOR_MESSAGE_FETCH = False
+# Gates whether presence read endpoints route to the "replica" DB
+# alias. Unlike the message-fetch flag, there is no watermark check:
+# presence tolerates staleness by design, and the existing server-
+# side "echo the client's cursor when no new rows" behavior
+# (zerver/lib/presence.py) keeps client cursors monotonic even when
+# the replica is behind.
+USE_REPLICA_DB_FOR_PRESENCE = False
 # Seconds to cache the replica's watermark (max replayed message id,
 # read via SELECT MAX(id) FROM zerver_message) before refreshing.
 # The tradeoff is replica query-rate vs forfeited shed-rate when the
