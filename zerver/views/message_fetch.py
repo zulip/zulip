@@ -1,9 +1,10 @@
 from collections.abc import Iterable
+from contextlib import nullcontext
 from typing import Annotated
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
-from django.db import connection, transaction
+from django.db import connections, transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from pydantic import Json, NonNegativeInt
@@ -11,6 +12,12 @@ from sqlalchemy.sql import column, func
 from sqlalchemy.types import Integer, Text
 
 from zerver.context_processors import get_valid_realm_from_request
+from zerver.lib.db_replica import (
+    DEFAULT_DB_ALIAS,
+    REPLICA_DB_ALIAS,
+    get_replica_message_id_watermark,
+    use_replica,
+)
 from zerver.lib.exceptions import (
     IncompatibleParametersError,
     JsonableError,
@@ -18,6 +25,8 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.message import get_first_visible_message_id, messages_for_ids
 from zerver.lib.narrow import (
+    LARGER_THAN_MAX_MESSAGE_ID,
+    AnchorInfo,
     NarrowParameter,
     add_narrow_conditions,
     clean_narrow_for_message_fetch,
@@ -85,6 +94,43 @@ def get_search_fields(
         "match_content": highlight_string(rendered_content, content_matches),
         MATCH_TOPIC: highlight_string(escaped_topic_name, topic_matches),
     }
+
+
+def replica_eligible_anchor(
+    anchor_info: AnchorInfo | None,
+    num_after: int,
+    client_requested_message_ids: list[int] | None,
+) -> int | None:
+    """Return the anchor id if this fetch is safe to serve from the replica.
+
+    The safe subset is: no interest in newer-than-anchor messages, and a
+    specific numeric anchor whose id has already been replicated. We
+    deliberately skip ``anchor=newest`` (definition-ally the tip, which
+    is what lags), ``first_unread`` (resolved via a query that must see
+    fresh ``UserMessage`` flags), and explicit ``message_ids`` lists
+    (mixed ages, not worth the bookkeeping for the prototype).
+    """
+    if not settings.USE_REPLICA_DB_FOR_MESSAGE_FETCH:
+        return None
+    if client_requested_message_ids is not None:
+        return None
+    if num_after > 0:
+        return None
+    if anchor_info is None or anchor_info["type"] != "message_id":
+        return None
+    anchor_value = anchor_info["value"]
+    if not isinstance(anchor_value, int):
+        # AnchorInfo's TypedDict permits int | datetime | None for any
+        # type; in practice parse_anchor_value always sets value to
+        # int when type is "message_id", so this branch is defensive
+        # and mypy-narrowing only.
+        return None  # nocoverage
+    if anchor_value <= 0 or anchor_value >= LARGER_THAN_MAX_MESSAGE_ID:
+        return None
+    watermark = get_replica_message_id_watermark()
+    if watermark is None or anchor_value > watermark:
+        return None
+    return anchor_value
 
 
 def clean_narrow_for_web_public_api(
@@ -212,7 +258,17 @@ def get_messages_backend(
         assert log_data is not None
         log_data["extra"] = "[{}]".format(",".join(verbose_operators))
 
-    with transaction.atomic(durable=True):
+    eligible_anchor = replica_eligible_anchor(anchor_info, num_after, client_requested_message_ids)
+    db_alias = REPLICA_DB_ALIAS if eligible_anchor is not None else DEFAULT_DB_ALIAS
+    replica_ctx = use_replica() if eligible_anchor is not None else nullcontext()
+    if eligible_anchor is not None:
+        # Surface the routing decision in the access log so operators
+        # can measure the shed rate.
+        log_data = RequestNotes.get_notes(request).log_data
+        assert log_data is not None
+        existing = log_data.get("extra", "")
+        log_data["extra"] = f"{existing} (replica)" if existing else "(replica)"
+    with replica_ctx, transaction.atomic(using=db_alias, durable=True):
         # We're about to perform a search, and then get results from
         # it; this is done across multiple queries.  To prevent race
         # conditions, we want the messages returned to be consistent
@@ -234,7 +290,7 @@ def get_messages_backend(
         # outer transaction for each test.  We thus skip this command
         # in tests, since it would fail.
         if not settings.TEST_SUITE:  # nocoverage
-            cursor = connection.cursor()
+            cursor = connections[db_alias].cursor()
             cursor.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
 
         query_info = fetch_messages(
