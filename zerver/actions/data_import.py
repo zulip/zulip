@@ -7,13 +7,13 @@ from datetime import timedelta
 from typing import Any
 
 from django.conf import settings
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 from django.utils.timezone import now as timezone_now
 
 from confirmation import settings as confirmation_settings
 from zerver.actions.create_realm import get_email_address_visibility_default
 from zerver.actions.create_user import do_reactivate_user
-from zerver.actions.realm_settings import do_delete_all_realm_attachments
+from zerver.actions.realm_settings import do_delete_realm
 from zerver.actions.users import do_change_user_role
 from zerver.context_processors import is_realm_import_enabled
 from zerver.data_import.slack import do_convert_zipfile
@@ -71,11 +71,9 @@ def import_slack_data(event: dict[str, Any]) -> None:
             logger.warning(
                 "(%s) Cleaning up our own orphaned realm from a prior import attempt", string_id
             )
-            with transaction.atomic(durable=True):
-                orphan = Realm.objects.select_for_update(no_key=False).get(id=existing_realm.id)
-                assert orphan.date_created >= timezone_now() - timedelta(hours=24)
-                do_delete_all_realm_attachments(orphan)
-                orphan.delete()
+            orphan = Realm.objects.get(id=existing_realm.id)
+            assert orphan.date_created >= timezone_now() - timedelta(hours=24)
+            do_delete_realm(orphan)
         else:
             # The subdomain is taken by an earlier or concurrent import of the
             # same subdomain that won the race to create the realm (string_id
@@ -226,11 +224,9 @@ def import_slack_data(event: dict[str, Any]) -> None:
             # so it is always far younger than a day by the time we get
             # here.
             if not subdomain_taken:
-                with transaction.atomic(durable=True):
-                    realm = Realm.objects.select_for_update(no_key=False).get(string_id=string_id)
-                    assert realm.date_created >= timezone_now() - timedelta(hours=24)
-                    do_delete_all_realm_attachments(realm)
-                    realm.delete()
+                realm = Realm.objects.get(string_id=string_id)
+                assert realm.date_created >= timezone_now() - timedelta(hours=24)
+                do_delete_realm(realm)
         except Realm.DoesNotExist:
             pass
         raise

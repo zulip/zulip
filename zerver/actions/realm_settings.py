@@ -750,6 +750,22 @@ def do_delete_all_realm_attachments(realm: Realm) -> None:
 
 
 @transaction.atomic(durable=True)
+def do_delete_realm(realm: Realm) -> None:
+    """Permanently delete a Realm.
+
+    Prefer do_deactivate_realm + do_scrub_realm for production use;
+    they preserve UserProfile rows.
+    """
+    realm = Realm.objects.select_for_update(no_key=False).get(id=realm.id)
+    do_delete_all_realm_attachments(realm)
+
+    # TODO: This approach leaks Recipient and DirectMessageGroup
+    # objects, because those don't have a foreign key to the Realm
+    # or any other model it cascades to (Realm/Stream/UserProfile/etc.).
+    realm.delete()
+
+
+@transaction.atomic(durable=True)
 def do_scrub_realm(realm: Realm, *, acting_user: UserProfile | None) -> None:
     if settings.BILLING_ENABLED:
         from corporate.lib.stripe import RealmBillingSession
