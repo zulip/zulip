@@ -1,6 +1,6 @@
 [report]
 # Regexes for lines to exclude from consideration
-exclude_lines =
+exclude_also =
     # Re-enable the standard coverage pragma
     nocoverage
     # Don't complain if non-runnable code isn't run:
@@ -13,12 +13,8 @@ exclude_lines =
     def __(repr|str)__[(]self[)] -> .*:
     # Don't require coverage for errors about unsupported webhook event types
     raise UnsupportedWebhookEventTypeError
-    # Don't require coverage for blocks only run when type-checking
-    if TYPE_CHECKING:
     # Don't require coverage for abstract methods; they're never called.
     @abstractmethod
-    # PEP 484 overloading syntax
-    ^\s*\.\.\.
     # Skipped unit tests
     @skip
 
