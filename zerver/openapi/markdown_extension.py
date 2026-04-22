@@ -265,6 +265,19 @@ cURL example."""
         return example_value
 
 
+INSECURE_OPERATIONS = [
+    "/dev_fetch_api_key:post",
+    "/fetch_api_key:post",
+    "/jwt/fetch_api_key:post",
+    "/dev_list_users:get",
+]
+
+
+def add_curl_auth_credentials_note(endpoint: str, method: str) -> bool:
+    operation = endpoint + ":" + method.lower()
+    return operation not in INSECURE_OPERATIONS
+
+
 def generate_curl_example(
     endpoint: str,
     method: str,
@@ -276,17 +289,8 @@ def generate_curl_example(
     operation_entry = openapi_spec.openapi()["paths"][endpoint][method.lower()]
     global_security = openapi_spec.openapi()["security"]
 
-    insecure_operations = [
-        "/dev_fetch_api_key:post",
-        "/fetch_api_key:post",
-        "/jwt/fetch_api_key:post",
-        "/dev_list_users:get",
-    ]
     lines = []
-    if operation in insecure_operations:
-        lines.append("```curl")
-    else:
-        lines.append("{!curl-auth-credentials.md!}\n\n```curl")
+    lines.append("```curl")
 
     parameters = get_openapi_parameters(endpoint, method)
     operation_request_body = operation_entry.get("requestBody", None)
@@ -318,7 +322,7 @@ def generate_curl_example(
                 "Unhandled global securityScheme. Please update the code to handle this scheme."
             )
     elif operation_security == []:
-        if operation in insecure_operations:
+        if operation in INSECURE_OPERATIONS:
             authentication_required = False
         else:
             raise AssertionError(
@@ -375,6 +379,8 @@ def render_curl_example(
     kwargs: dict[str, Any] = {}
     kwargs["api_url"] = api_url
     rendered_example = []
+    if add_curl_auth_credentials_note(endpoint, method):
+        rendered_example += ["{!curl-auth-credentials.md!}\n\n"]
     for element in get_curl_include_exclude(endpoint, method):
         kwargs["include"] = None
         kwargs["exclude"] = None
