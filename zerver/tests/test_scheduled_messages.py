@@ -7,6 +7,7 @@ from unittest import mock
 
 import orjson
 import time_machine
+from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.scheduled_messages import (
@@ -20,6 +21,7 @@ from zerver.lib.test_helpers import most_recent_message
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Attachment, Message, Recipient, ScheduledMessage, UserMessage
 from zerver.models.recipients import get_or_create_direct_message_group
+from zerver.models.users import get_system_bot
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -355,6 +357,47 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assertEqual(msg.recipient.type, msg.recipient.DIRECT_MESSAGE_GROUP)
         self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
         self.assertIn("Internal server error", msg.content)
+
+    def test_failed_to_deliver_scheduled_message_from_system_bot(self) -> None:
+        # Cross-realm system bots have no human reading their DMs, so
+        # they should not receive a failure notification -- doing so
+        # would leave a stray notification-bot <-> system-bot
+        # DirectMessageGroup attached to no realm.
+        self.create_scheduled_message()
+        scheduled_message = self.last_scheduled_message()
+        realm = scheduled_message.realm
+        welcome_bot = get_system_bot(settings.WELCOME_BOT, realm.id)
+        scheduled_message.sender = welcome_bot
+        scheduled_message.save(update_fields=["sender"])
+
+        more_than_scheduled_delivery_datetime = scheduled_message.scheduled_timestamp + timedelta(
+            minutes=1
+        )
+        with (
+            mock.patch(
+                "zerver.actions.scheduled_messages.send_scheduled_message",
+                side_effect=Exception(),
+            ),
+            time_machine.travel(more_than_scheduled_delivery_datetime, tick=False),
+            self.assertLogs(level="INFO"),
+        ):
+            self.assertTrue(try_deliver_one_scheduled_message())
+        scheduled_message.refresh_from_db()
+        self.assertTrue(scheduled_message.failed)
+
+        # No notification-bot -> welcome-bot message should have been
+        # sent.  internal_prep_private_message lands such a message in
+        # the sender's realm (the system bot realm) when the recipient
+        # is a cross-realm bot, so scope the check there.
+        notification_bot = self.notification_bot(realm)
+        notify_group = get_or_create_direct_message_group(
+            id_list=[welcome_bot.id, notification_bot.id]
+        )
+        self.assertFalse(
+            Message.objects.filter(
+                realm=notification_bot.realm, recipient=notify_group.recipient
+            ).exists()
+        )
 
     def test_editing_failed_send_scheduled_message(self) -> None:
         expected_failure_message = "Message could not be sent at the scheduled time."
