@@ -348,6 +348,9 @@ no-binary-package = [
 ]
 
 [tool.uv.sources]
+# Python 3.14 support: https://github.com/disqus/django-bitfield/pull/137
+django-bitfield = { git = "https://github.com/disqus/django-bitfield.git" }
+
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
 # and chardet, cchardet: https://github.com/mailgun/talon/pull/239
 # and fix invalid escape sequences: https://github.com/mailgun/talon/pull/245
