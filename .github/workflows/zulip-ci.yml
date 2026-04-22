@@ -31,25 +31,25 @@ jobs:
           # Base images are built using `tools/ci/Dockerfile`.
           # The comments at the top explain how to build and upload these images.
           # Ubuntu 22.04 ships with Python 3.10.12.
-          - docker_image: zulip/ci:jammy
+          - docker_image: zulip/ci:jammy # zizmor: ignore[unpinned-images]
             name: Ubuntu 22.04 (Python 3.10, backend + frontend)
             os: jammy
             include_documentation_tests: false
             include_frontend_tests: true
           # Debian 12 ships with Python 3.11.2.
-          - docker_image: zulip/ci:bookworm
+          - docker_image: zulip/ci:bookworm # zizmor: ignore[unpinned-images]
             name: Debian 12 (Python 3.11, backend + documentation)
             os: bookworm
             include_documentation_tests: true
             include_frontend_tests: false
           # Ubuntu 24.04 ships with Python 3.12.2.
-          - docker_image: zulip/ci:noble
+          - docker_image: zulip/ci:noble # zizmor: ignore[unpinned-images]
             name: Ubuntu 24.04 (Python 3.12, backend)
             os: noble
             include_documentation_tests: false
             include_frontend_tests: false
           # Debian 13 ships with Python 3.13.5.
-          - docker_image: zulip/ci:trixie
+          - docker_image: zulip/ci:trixie # zizmor: ignore[unpinned-images]
             name: Debian 13 (Python 3.13, backend)
             os: trixie
             include_documentation_tests: false
@@ -68,7 +68,9 @@ jobs:
       HOME: /home/github/
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Create cache directories
         run: |
@@ -77,20 +79,20 @@ jobs:
           sudo chown -R github "${dirs[@]}"
 
       - name: Restore pnpm store
-        uses: actions/cache@v4
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: /__w/.pnpm-store
           key: v1-pnpm-store-${{ matrix.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Restore uv cache
-        uses: actions/cache@v4
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: ~/.cache/uv
           key: uv-${{ matrix.os }}-${{ hashFiles('uv.lock') }}
           restore-keys: uv-${{ matrix.os }}-
 
       - name: Restore emoji cache
-        uses: actions/cache@v4
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: /srv/zulip-emoji-cache
           key: v1-emoji-${{ matrix.os }}-${{ hashFiles('tools/setup/emoji/emoji_map.json', 'tools/setup/emoji/build_emoji', 'tools/setup/emoji/emoji_setup_utils.py', 'tools/setup/emoji/emoji_names.py', 'package.json') }}
@@ -179,7 +181,9 @@ jobs:
       - name: Run backend tests
         run: |
           source tools/ci/activate-venv
-          ./tools/test-backend ${{ matrix.os != 'bookworm' && '--coverage' || '' }} --xml-report --no-html-report --include-webhooks --include-transaction-tests --no-cov-cleanup --ban-console-output
+          ./tools/test-backend "$COVERAGE_ARG" --xml-report --no-html-report --include-webhooks --include-transaction-tests --no-cov-cleanup --ban-console-output
+        env:
+          COVERAGE_ARG: ${{ matrix.os != 'bookworm' && '--coverage' || '' }}
 
       - name: Run mypy
         run: |
@@ -228,7 +232,7 @@ jobs:
         # Only upload coverage when both frontend and backend
         # tests are run.
         if: ${{ matrix.include_frontend_tests }}
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
           files: var/coverage.xml,var/node-coverage/lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -236,7 +240,7 @@ jobs:
       - name: Store Puppeteer artifacts
         # Upload these on failure, as well
         if: ${{ always() && matrix.include_frontend_tests }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: puppeteer
           path: ./var/puppeteer
@@ -261,7 +265,7 @@ jobs:
 
       - name: Report status to CZO
         if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
-        uses: zulip/github-actions-zulip/send-message@v1
+        uses: zulip/github-actions-zulip/send-message@e4c8f27c732ba9bd98ac6be0583096dea82feea5 # v1.0.2
         with:
           api-key: ${{ secrets.ZULIP_BOT_KEY }}
           email: "github-actions-bot@chat.zulip.org"
