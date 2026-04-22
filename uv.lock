@@ -371,15 +371,6 @@ wheels = [
 ]
 
 [[package]]
-name = "backoff"
-version = "2.2.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/47/d7/5bbeb12c44d7c4f2fb5b56abce497eb5ed9f34d85701de869acedd602619/backoff-2.2.1.tar.gz", hash = "sha256:03f829f5bb1923180821643f8753b0502c3b682293992485b0eef2807afa5cba", size = 17001, upload-time = "2022-10-05T19:19:32.061Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/df/73/b6e24bd22e6720ca8ee9a85a0c4a2971af8497d8f3193fa05390cbd46e09/backoff-2.2.1-py3-none-any.whl", hash = "sha256:63579f9a0628e06278f7e47b7d7d5b6ce20dc65c5e96a6f3ca99a6adca0396e8", size = 15148, upload-time = "2022-10-05T19:19:30.546Z" },
-]
-
-[[package]]
 name = "backports-datetime-fromisoformat"
 version = "2.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -5351,6 +5342,15 @@ wheels = [
 ]
 
 [[package]]
+name = "tenacity"
+version = "9.1.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/47/c6/ee486fd809e357697ee8a44d3d69222b344920433d3b6666ccd9b374630c/tenacity-9.1.4.tar.gz", hash = "sha256:adb31d4c263f2bd041081ab33b498309a57c77f9acf2db65aadf0898179cf93a", size = 49413, upload-time = "2026-02-07T10:45:33.841Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d7/c1/eb8f9debc45d3b7918a32ab756658a0904732f75e555402972246b0b8e71/tenacity-9.1.4-py3-none-any.whl", hash = "sha256:6095a360c919085f28c6527de529e76a06ad89b23659fa881ae0649b867a9d55", size = 28926, upload-time = "2026-02-07T10:45:32.24Z" },
+]
+
+[[package]]
 name = "tiktoken"
 version = "0.12.0"
 source = { registry = "https://pypi.org/simple" }
@@ -6523,7 +6523,6 @@ dev = [
     { name = "altcha" },
     { name = "annotated-types" },
     { name = "asgiref" },
-    { name = "backoff" },
     { name = "backports-datetime-fromisoformat", marker = "python_full_version < '3.11'" },
     { name = "beautifulsoup4" },
     { name = "black" },
@@ -6621,6 +6620,7 @@ dev = [
     { name = "stripe" },
     { name = "talon-core" },
     { name = "tblib" },
+    { name = "tenacity" },
     { name = "time-machine" },
     { name = "tlds" },
     { name = "tornado" },
@@ -6671,7 +6671,6 @@ prod = [
     { name = "altcha" },
     { name = "annotated-types" },
     { name = "asgiref" },
-    { name = "backoff" },
     { name = "backports-datetime-fromisoformat", marker = "python_full_version < '3.11'" },
     { name = "beautifulsoup4" },
     { name = "boto3" },
@@ -6739,6 +6738,7 @@ prod = [
     { name = "sqlalchemy" },
     { name = "stripe" },
     { name = "talon-core" },
+    { name = "tenacity" },
     { name = "tlds" },
     { name = "tornado" },
     { name = "typing-extensions" },
@@ -6767,7 +6767,6 @@ dev = [
     { name = "altcha" },
     { name = "annotated-types" },
     { name = "asgiref" },
-    { name = "backoff" },
     { name = "backports-datetime-fromisoformat", marker = "python_full_version < '3.11'" },
     { name = "beautifulsoup4" },
     { name = "black" },
@@ -6867,6 +6866,7 @@ dev = [
     { name = "stripe" },
     { name = "talon-core", git = "https://github.com/zulip/talon.git?subdirectory=talon-core&rev=e87a64dccc3c5ee1b8ea157d4b6e15ecd46f2bed" },
     { name = "tblib" },
+    { name = "tenacity" },
     { name = "time-machine" },
     { name = "tlds" },
     { name = "tornado" },
@@ -6917,7 +6917,6 @@ prod = [
     { name = "altcha" },
     { name = "annotated-types" },
     { name = "asgiref" },
-    { name = "backoff" },
     { name = "backports-datetime-fromisoformat", marker = "python_full_version < '3.11'" },
     { name = "beautifulsoup4" },
     { name = "boto3" },
@@ -6985,6 +6984,7 @@ prod = [
     { name = "sqlalchemy", specifier = "==1.4.*" },
     { name = "stripe" },
     { name = "talon-core", git = "https://github.com/zulip/talon.git?subdirectory=talon-core&rev=e87a64dccc3c5ee1b8ea157d4b6e15ecd46f2bed" },
+    { name = "tenacity" },
     { name = "tlds" },
     { name = "tornado" },
     { name = "typing-extensions" },
