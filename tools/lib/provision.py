@@ -88,6 +88,8 @@ elif vendor == "rhel" and os_version.startswith("7."):
     POSTGRESQL_VERSION = "10"
 elif vendor == "centos" and os_version == "7":
     POSTGRESQL_VERSION = "10"
+elif vendor == "pop" and os_version == "24.04":
+    POSTGRESQL_VERSION = "16"
 else:
     logging.critical("Unsupported platform: %s %s", vendor, os_version)
     sys.exit(1)
