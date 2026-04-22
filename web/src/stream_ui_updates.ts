@@ -345,6 +345,14 @@ export function enable_or_disable_permission_settings_in_edit_panel(
         .find("input, select")
         .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
 
+    $permissions_container
+        .find("input[type='checkbox']")
+        .closest(".input-group")
+        .toggleClass(
+            "control-label-disabled",
+            !sub.can_change_stream_permissions_requiring_metadata_access,
+        );
+
     $("#channel_privacy_widget_container")
         .find("button")
         .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
