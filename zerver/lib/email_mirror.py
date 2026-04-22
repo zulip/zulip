@@ -48,7 +48,7 @@ from zerver.models.streams import StreamTopicsPolicyEnum, get_stream_by_id_in_re
 from zerver.models.users import get_system_bot
 from zproject.backends import is_user_active
 
-if sys.version_info < (3, 14):
+if sys.version_info < (3, 14):  # nocoverage
     # https://github.com/python/cpython/issues/62824
     encodings.aliases.aliases.update(
         {
