@@ -1050,6 +1050,7 @@ function setup_page(callback: () => void): void {
                 ? undefined
                 : $t({defaultMessage: "Mobile push notifications are not enabled on this server."}),
             empty_string_topic_display_name: util.get_final_topic_display_name(""),
+            message_content_allowed_in_email_notifications: true,
         };
 
         const rendered = render_stream_settings_overlay(template_data);
