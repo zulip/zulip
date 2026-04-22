@@ -5,10 +5,10 @@
                 <input type="text" class="input-element left-sidebar-search-input" autocomplete="off" placeholder="{{t 'Filter left sidebar' }}" />
             {{/components/input_wrapper}}
         </div>
-        <span id="add_streams_button" class="add-stream-icon-container hidden-for-spectators">
+        <span id="add_streams_button" class="add-stream-icon-container hidden-for-spectators" tabindex="0">
             <i id="streams_inline_icon" class="add_stream_icon zulip-icon zulip-icon-square-plus" aria-hidden="true" ></i>
         </span>
-        <span class="sidebar-menu-icon channel-folders-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-more-vertical" aria-label="{{t 'Show channel folders'}}"></i></span>
+        <span class="sidebar-menu-icon channel-folders-sidebar-menu-icon hidden-for-spectators" tabindex="0"><i class="zulip-icon zulip-icon-more-vertical" aria-label="{{t 'Show channel folders'}}"></i></span>
     </div>
     <ul id="left-sidebar-empty-list-message" class="hidden">
         {{> empty_list_widget_for_list
@@ -45,7 +45,7 @@
                 <a class="show-all-direct-messages tippy-left-sidebar-tooltip-no-label-delay" href="#narrow/is/dm" data-tooltip-template-id="show-all-direct-messages-template">
                     <i class="zulip-icon zulip-icon-all-messages" aria-label="{{t 'Direct message feed' }}"></i>
                 </a>
-                <span class="compose-new-direct-message tippy-left-sidebar-tooltip-no-label-delay auto-hide-left-sidebar-overlay" data-tooltip-template-id="new_direct_message_button_tooltip_template">
+                <span class="compose-new-direct-message tippy-left-sidebar-tooltip-no-label-delay auto-hide-left-sidebar-overlay" tabindex="0" data-tooltip-template-id="new_direct_message_button_tooltip_template">
                     <i class="left-sidebar-new-direct-message-icon zulip-icon zulip-icon-square-plus" aria-label="{{t 'Start a new DM' }}"></i>
                 </span>
             </div>

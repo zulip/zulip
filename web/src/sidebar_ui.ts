@@ -443,33 +443,37 @@ export function initialize_right_sidebar(): void {
         }
     }
 
-    popover_menus.register_popover_menu("#buddy-list-menu-icon", {
-        theme: "popover-menu",
-        placement: "right",
-        onCreate(instance) {
-            popover_menus.popover_instances.buddy_list = instance;
-            instance.setContent(
-                ui_util.parse_html(
-                    render_buddy_list_popover({
-                        display_style_options: settings_config.user_list_style_values,
-                        can_invite_users:
-                            settings_data.user_can_invite_users_by_email() ||
-                            settings_data.user_can_create_multiuse_invite(),
-                    }),
-                ),
-            );
+    popover_menus.register_popover_menu(
+        "#buddy-list-menu-icon",
+        {
+            theme: "popover-menu",
+            placement: "right",
+            onCreate(instance) {
+                popover_menus.popover_instances.buddy_list = instance;
+                instance.setContent(
+                    ui_util.parse_html(
+                        render_buddy_list_popover({
+                            display_style_options: settings_config.user_list_style_values,
+                            can_invite_users:
+                                settings_data.user_can_invite_users_by_email() ||
+                                settings_data.user_can_create_multiuse_invite(),
+                        }),
+                    ),
+                );
+            },
+            onMount() {
+                const current_user_list_style =
+                    settings_preferences.user_settings_panel.settings_object.user_list_style;
+                $("#buddy-list-actions-menu-popover")
+                    .find(`.user_list_style_choice[value=${current_user_list_style}]`)
+                    .prop("checked", true);
+            },
+            onHidden() {
+                close_buddy_list_popover();
+            },
         },
-        onMount() {
-            const current_user_list_style =
-                settings_preferences.user_settings_panel.settings_object.user_list_style;
-            $("#buddy-list-actions-menu-popover")
-                .find(`.user_list_style_choice[value=${current_user_list_style}]`)
-                .prop("checked", true);
-        },
-        onHidden() {
-            close_buddy_list_popover();
-        },
-    });
+        {also_trigger_on_enter: true},
+    );
 
     $("body").on(
         "click",

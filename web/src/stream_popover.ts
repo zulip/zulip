@@ -21,6 +21,7 @@ import * as dialog_widget from "./dialog_widget.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
@@ -1223,7 +1224,10 @@ export async function build_move_topic_to_stream_popover(
 }
 
 export function initialize(): void {
-    function on_sidebar_menu_icon_click(element: HTMLElement, e: JQuery.ClickEvent): void {
+    function on_sidebar_menu_icon_press(
+        element: HTMLElement,
+        e: JQuery.ClickEvent | JQuery.KeyDownEvent,
+    ): void {
         e.preventDefault();
         const $stream_li = $(element).parents("li");
         const stream_id = elem_to_stream_id($stream_li);
@@ -1236,14 +1240,34 @@ export function initialize(): void {
         e.stopPropagation();
     }
     $("#stream_filters").on("click", ".stream-sidebar-menu-icon", function (this: HTMLElement, e) {
-        on_sidebar_menu_icon_click(this, e);
+        on_sidebar_menu_icon_press(this, e);
     });
+
+    $("#stream_filters").on(
+        "keydown",
+        ".stream-sidebar-menu-icon",
+        function (this: HTMLElement, e) {
+            if (keydown_util.is_enter_event(e)) {
+                on_sidebar_menu_icon_press(this, e);
+            }
+        },
+    );
 
     $("#left-sidebar-modal").on(
         "click",
         "#more-topics-modal .stream-sidebar-menu-icon",
         function (this: HTMLElement, e) {
-            on_sidebar_menu_icon_click(this, e);
+            on_sidebar_menu_icon_press(this, e);
+        },
+    );
+
+    $("#left-sidebar-modal").on(
+        "keydown",
+        "#more-topics-modal .stream-sidebar-menu-icon",
+        function (this: HTMLElement, e) {
+            if (keydown_util.is_enter_event(e)) {
+                on_sidebar_menu_icon_press(this, e);
+            }
         },
     );
 

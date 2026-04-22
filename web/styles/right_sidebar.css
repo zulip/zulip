@@ -95,6 +95,10 @@
             font-size: 1.0625em;
         }
 
+        &:focus-visible {
+            outline: 2px solid var(--color-outline-focus);
+        }
+
         /*
         Hover does not work for touch-based devices like mobile phones.
         Hence the icons does not appear, making the user unaware of its

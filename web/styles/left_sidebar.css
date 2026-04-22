@@ -68,6 +68,11 @@
         cursor: pointer;
     }
 
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+    }
+
     .add_stream_icon {
         /* We display as flex to center the icon while
            keeping the entire highlighted area clickable. */
@@ -430,6 +435,11 @@
             color: var(--color-vdots-hover);
             background-color: var(--color-background-sidebar-action-hover);
         }
+
+        &:focus-visible {
+            outline: 2px solid var(--color-outline-focus);
+            outline-offset: -2px;
+        }
     }
 }
 
@@ -487,7 +497,8 @@
         visibility: hidden;
     }
 
-    .add-stream-icon-container:focus-visible .add_stream_icon {
+    .add-stream-icon-container:focus-visible .add_stream_icon,
+    &:focus-within .add_stream_icon {
         visibility: visible;
     }
 
@@ -831,7 +842,8 @@
     }
 }
 
-.stream-list-toggle-inactive-or-muted-channels.highlighted_row {
+.stream-list-toggle-inactive-or-muted-channels.highlighted_row,
+.stream-list-toggle-inactive-or-muted-channels:focus-visible {
     outline: 2px solid var(--color-outline-focus);
     outline-offset: -2px;
     background-color: var(--color-background-sidebar-action-heading-hover);
@@ -2143,6 +2155,15 @@ li.active-sub-filter {
         /* Show dots on touchscreens in a less distracting,
            lighter shade. */
         color: var(--color-vdots-hint);
+    }
+}
+
+.bottom_left_row .sidebar-menu-icon,
+.bottom_left_row .channel-new-topic-button,
+.top_left_row .sidebar-menu-icon,
+.stream-list-section-container .sidebar-menu-icon {
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
     }
 }
 
