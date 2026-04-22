@@ -20,6 +20,7 @@ from django.db.models import Count, Q
 from django.utils.timezone import now as timezone_now
 from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Identifier
+from typing_extensions import override
 
 from analytics.models import RealmCount, StreamCount, UserCount
 from version import ZULIP_VERSION
@@ -1097,6 +1098,44 @@ def process_emojis(
         ).update(is_animated=True)
 
 
+@dataclass
+class UploadPlan:
+    source_path: str
+    relative_path: str
+    # Used only by S3Destination, but always populated so the plan
+    # is self-consistent regardless of the destination.
+    content_type: str
+    metadata: dict[str, str]
+
+
+class UploadDestination:
+    def execute(self, plan: UploadPlan) -> None:
+        raise NotImplementedError
+
+
+class S3Destination(UploadDestination):
+    def __init__(self, bucket_name: str) -> None:
+        self.bucket = get_bucket(bucket_name)
+
+    @override
+    def execute(self, plan: UploadPlan) -> None:
+        self.bucket.Object(plan.relative_path).upload_file(
+            Filename=plan.source_path,
+            ExtraArgs={"ContentType": plan.content_type, "Metadata": plan.metadata},
+        )
+
+
+class LocalDestination(UploadDestination):
+    def __init__(self, base_dir: str) -> None:
+        self.base_dir = base_dir
+
+    @override
+    def execute(self, plan: UploadPlan) -> None:
+        dest = os.path.join(self.base_dir, plan.relative_path)
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        shutil.copy(plan.source_path, dest)
+
+
 def import_uploads(
     realm: Realm,
     import_dir: Path,
@@ -1161,15 +1200,19 @@ def import_uploads(
             )
 
     s3_uploads = settings.LOCAL_UPLOADS_DIR is None
+    avatar_ish = processing_avatars or processing_emojis or processing_realm_icons
 
+    destination: UploadDestination
     if s3_uploads:
-        if processing_avatars or processing_emojis or processing_realm_icons:
-            bucket_name = settings.S3_AVATAR_BUCKET
-        else:
-            bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
-        bucket = get_bucket(bucket_name)
+        bucket_name = settings.S3_AVATAR_BUCKET if avatar_ish else settings.S3_AUTH_UPLOADS_BUCKET
+        destination = S3Destination(bucket_name)
+    else:
+        assert settings.LOCAL_AVATARS_DIR is not None
+        assert settings.LOCAL_FILES_DIR is not None
+        base_dir = settings.LOCAL_AVATARS_DIR if avatar_ish else settings.LOCAL_FILES_DIR
+        destination = LocalDestination(base_dir)
 
-    for count, sanitized_record in enumerate(sanitized_records, 1):
+    def build_plan(sanitized_record: SanitizedRecord) -> UploadPlan:
         if processing_avatars:
             # For avatars, we need to rehash the user ID with the
             # new server's avatar salt
@@ -1215,56 +1258,47 @@ def import_uploads(
                 sanitized_record.safe_resolved_source_path
             )
 
-        if s3_uploads:
-            key = bucket.Object(relative_path)
-            metadata = {}
-            if "user_profile_id" not in sanitized_record.raw_record:
-                # This should never happen for uploads or avatars; if
-                # so, it is an error, default_user_profile_id will be
-                # None, and we assert.  For emoji / realm icons, we
-                # fall back to default_user_profile_id.
-                assert default_user_profile_id is not None
-                metadata["user_profile_id"] = str(default_user_profile_id)
-            else:
-                user_profile_id = int(sanitized_record.raw_record["user_profile_id"])
-                # Support email gateway bot and other cross-realm messages
-                if user_profile_id in ID_MAP["user_profile"]:
-                    logging.info("Uploaded by ID mapped user: %s!", user_profile_id)
-                    user_profile_id = ID_MAP["user_profile"][user_profile_id]
-                user_profile = get_user_profile_by_id(user_profile_id)
-                metadata["user_profile_id"] = str(user_profile.id)
-
-            if "last_modified" in sanitized_record.raw_record:
-                metadata["orig_last_modified"] = str(sanitized_record.raw_record["last_modified"])
-            metadata["realm_id"] = str(sanitized_record.raw_record["realm_id"])
-
-            # Zulip exports will always have a content-type, but third-party exports might not.
-            content_type = sanitized_record.raw_record.get("content_type")
-            if content_type is None:
-                content_type = guess_type(sanitized_record.safe_resolved_source_path)[0]
-                if content_type is None:
-                    # This is the default for unknown data.  Note that
-                    # for `.original` files, this is the value we'll
-                    # set; that is OK, because those are never served
-                    # directly anyway.
-                    content_type = "application/octet-stream"
-
-            key.upload_file(
-                Filename=sanitized_record.safe_resolved_source_path,
-                ExtraArgs={"ContentType": content_type, "Metadata": metadata},
-            )
+        metadata: dict[str, str] = {}
+        if "user_profile_id" not in sanitized_record.raw_record:
+            # This should never happen for uploads or avatars; if
+            # so, it is an error, default_user_profile_id will be
+            # None, and we assert.  For emoji / realm icons, we
+            # fall back to default_user_profile_id.
+            assert default_user_profile_id is not None
+            metadata["user_profile_id"] = str(default_user_profile_id)
         else:
-            assert settings.LOCAL_UPLOADS_DIR is not None
-            assert settings.LOCAL_AVATARS_DIR is not None
-            assert settings.LOCAL_FILES_DIR is not None
-            if processing_avatars or processing_emojis or processing_realm_icons:
-                file_path = os.path.join(settings.LOCAL_AVATARS_DIR, relative_path)
-            else:
-                file_path = os.path.join(settings.LOCAL_FILES_DIR, relative_path)
-            orig_file_path = sanitized_record.safe_resolved_source_path
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-            shutil.copy(orig_file_path, file_path)
+            user_profile_id = int(sanitized_record.raw_record["user_profile_id"])
+            # Support email gateway bot and other cross-realm messages
+            if user_profile_id in ID_MAP["user_profile"]:
+                logging.info("Uploaded by ID mapped user: %s!", user_profile_id)
+                user_profile_id = ID_MAP["user_profile"][user_profile_id]
+            user_profile = get_user_profile_by_id(user_profile_id)
+            metadata["user_profile_id"] = str(user_profile.id)
 
+        if "last_modified" in sanitized_record.raw_record:
+            metadata["orig_last_modified"] = str(sanitized_record.raw_record["last_modified"])
+        metadata["realm_id"] = str(sanitized_record.raw_record["realm_id"])
+
+        # Zulip exports will always have a content-type, but third-party exports might not.
+        content_type = sanitized_record.raw_record.get("content_type")
+        if content_type is None:
+            content_type = guess_type(sanitized_record.safe_resolved_source_path)[0]
+            if content_type is None:
+                # This is the default for unknown data.  Note that
+                # for `.original` files, this is the value we'll
+                # set; that is OK, because those are never served
+                # directly anyway.
+                content_type = "application/octet-stream"
+
+        return UploadPlan(
+            source_path=sanitized_record.safe_resolved_source_path,
+            relative_path=relative_path,
+            content_type=content_type,
+            metadata=metadata,
+        )
+
+    for count, sanitized_record in enumerate(sanitized_records, 1):
+        destination.execute(build_plan(sanitized_record))
         if count % 1000 == 0:
             logging.info("Processed %s/%s uploads", count, len(sanitized_records))
 
