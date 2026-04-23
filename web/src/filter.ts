@@ -1368,6 +1368,8 @@ export class Filter {
                     return "/#narrow/topics/is/resolved";
                 case "is-followed":
                     return "/#narrow/topics/is/followed";
+                case "is-followed-user":
+                    return "/#narrow/is/followed-user";
                 // TODO: It is ambiguous how we want to handle the 'sender' case,
                 // we may remove it in the future based on design decisions
                 case "sender":

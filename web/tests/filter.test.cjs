@@ -24,6 +24,7 @@ const filter_util = zrequire("filter_util");
 const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 const muted_users = zrequire("muted_users");
+const followed_users_data = mock_esm("../src/followed_users_data");
 const state_data = zrequire("state_data");
 
 const realm = make_realm();
@@ -1233,6 +1234,15 @@ test("predicate_basics", ({override}) => {
 
     override(user_topics, "is_topic_followed", () => true);
     assert.ok(predicate({type: "stream", topic: "foo", stream_id: 5}));
+
+    predicate = get_predicate([["is", "followed-user"]]);
+
+    override(followed_users_data, "is_user_followed", (user_id) => user_id === joe.user_id);
+    assert.ok(predicate({sender_id: joe.user_id}));
+    assert.ok(!predicate({sender_id: steve.user_id}));
+
+    override(followed_users_data, "is_user_followed", () => false);
+    assert.ok(!predicate({sender_id: joe.user_id}));
 
     const unknown_stream_id = new_stream_id();
     override(user_topics, "is_topic_visible_in_home", () => false);
@@ -2459,6 +2469,7 @@ test("navbar_helpers", ({override}) => {
     const is_mentioned = [{operator: "is", operand: "mentioned"}];
     const is_resolved = [{operator: "is", operand: "resolved"}];
     const is_followed = [{operator: "is", operand: "followed"}];
+    const is_followed_user = [{operator: "is", operand: "followed-user"}];
     const channels_public = [{operator: "channels", operand: "public"}];
     const channels_web_public = [{operator: "channels", operand: "web-public"}];
     const channel_topic_terms = [
@@ -2611,6 +2622,15 @@ test("navbar_helpers", ({override}) => {
             redirect_url_with_search: "/#narrow/topics/is/followed",
             description: "translated: Messages in topics you follow.",
             link: "/help/follow-a-topic",
+        },
+        {
+            terms: is_followed_user,
+            is_common_narrow: true,
+            zulip_icon: "follow",
+            title: "translated: Following feed",
+            redirect_url_with_search: "/#narrow/is/followed-user",
+            description: "translated: Messages from users you follow.",
+            link: "/help/follow-a-user",
         },
         {
             terms: channel_topic_terms,
@@ -3207,6 +3227,12 @@ run_test("can_newly_match_moved_messages", () => {
     assert.deepEqual(filter.can_newly_match_moved_messages("something-else", "test"), true);
 
     filter = new Filter([{negated: true, operator: "is", operand: "followed"}]);
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "test"), true);
+
+    filter = new Filter([{operator: "is", operand: "followed-user"}]);
+    assert.deepEqual(filter.can_newly_match_moved_messages("general", "test"), true);
+
+    filter = new Filter([{negated: true, operator: "is", operand: "followed-user"}]);
     assert.deepEqual(filter.can_newly_match_moved_messages("general", "test"), true);
 });
 
