@@ -53,7 +53,6 @@ from zerver.data_import.import_util import (
 )
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack_message_conversion import (
-    convert_to_zulip_markdown,
     get_user_full_name,
     get_zulip_mention_for_slack_user,
     process_slack_block_and_attachment,
@@ -1150,22 +1149,14 @@ def channel_message_to_zerver_message(
             continue
 
         try:
-            if message["text"] and not message.get("blocks"):
-                # TODO: Don't support converting using convert_to_zulip_markdown, some
-                # tests with false fixture still use this code path.
-
-                content, mentioned_user_ids, has_link = convert_to_zulip_markdown(
-                    message["text"], users, added_channels, slack_user_id_to_zulip_user_id
-                )
-            else:
-                result = process_slack_block_and_attachment(
-                    to_wild_value("message", json.dumps(message)),
-                    channel_processor,
-                    user_processor,
-                )
-                content = result.content
-                mentioned_user_ids = result.mentioned_user_ids
-                has_link = result.has_link
+            result = process_slack_block_and_attachment(
+                to_wild_value("message", json.dumps(message)),
+                channel_processor,
+                user_processor,
+            )
+            content = result.content
+            mentioned_user_ids = result.mentioned_user_ids
+            has_link = result.has_link
         except Exception as e:
             print(f"Failed to process message: {e}")
             print(orjson.dumps(message, option=orjson.OPT_INDENT_2).decode())
