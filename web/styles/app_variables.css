@@ -1175,10 +1175,6 @@
             var(--recent-view-table-border-radius) -
                 var(--recent-view-table-border-bottom-width)
         );
-    --color-border-recent-view-row: light-dark(
-        hsl(0deg 0% 87%),
-        hsl(0deg 0% 0% / 20%)
-    );
     --color-border-recent-view-table: light-dark(
         hsl(0deg 0% 0% / 10%),
         hsl(0deg 0% 0% / 10%)
