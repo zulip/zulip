@@ -9,6 +9,30 @@
         .player-container {
             display: none;
         }
+
+        /* White "paper" card: pan/zoom on .zoom-element clips overflow (no inner scrollbars). */
+        .code-lightbox-hilite {
+            width: max-content;
+            max-width: none;
+            cursor: grab;
+            border-radius: 6px;
+            border: 1px solid hsl(0deg 0% 0% / 15%);
+            box-shadow: 0 4px 24px hsl(0deg 0% 0% / 35%);
+            background-color: hsl(0deg 0% 100%);
+
+            &:active {
+                cursor: grabbing;
+            }
+        }
+
+        .code-lightbox-content {
+            margin: 0;
+            max-width: none;
+            overflow: visible;
+            padding: 10px 12px;
+            background-color: hsl(0deg 0% 100%);
+            border: none;
+        }
     }
 
     .image-preview {
