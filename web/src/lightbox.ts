@@ -6,6 +6,7 @@ import type {PanZoom} from "panzoom";
 import render_lightbox_overlay from "../templates/lightbox_overlay.hbs";
 
 import * as blueslip from "./blueslip.ts";
+import {$t} from "./i18n.ts";
 import * as message_store from "./message_store.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
@@ -697,6 +698,20 @@ export function handle_overlay_media_element_click(
     handle_inline_media_element_click($media, true);
 }
 
+function update_code_lightbox_syntax_toggle_label($overlay: JQuery): void {
+    const $toggle = $overlay.find(".code-lightbox-theme-toggle");
+    if ($overlay.hasClass("code-lightbox-syntax-dark")) {
+        const label = $t({defaultMessage: "Light code theme"});
+        $toggle.attr("aria-pressed", "true");
+        $toggle.attr("aria-label", label);
+        $toggle.text(label);
+    } else {
+        const label = $t({defaultMessage: "Dark code theme"});
+        $toggle.attr("aria-pressed", "false");
+        $toggle.attr("aria-label", label);
+        $toggle.text(label);
+    }
+}
 
 export function show_code_lightbox(
     code_text: string,
@@ -709,9 +724,12 @@ export function show_code_lightbox(
     is_open = true;
 
     const $overlay = $("#lightbox_overlay");
-    $overlay.addClass("code-lightbox-mode");
+    $overlay.addClass("code-lightbox-mode code-lightbox-syntax-light");
+    $overlay.removeClass("code-lightbox-syntax-dark");
     $overlay.find(".video-player, .player-container").hide();
     $overlay.find(".image-preview").show();
+    $overlay.find(".media-actions .open, .media-actions .download").hide();
+    update_code_lightbox_syntax_toggle_label($overlay);
 
     const $zoom_element = $overlay.find(".zoom-element");
     $zoom_element.empty();
@@ -735,7 +753,10 @@ export function show_code_lightbox(
         $overlay,
         on_close() {
             is_open = false;
-            $overlay.removeClass("code-lightbox-mode");
+            $overlay.removeClass(
+                "code-lightbox-mode code-lightbox-syntax-light code-lightbox-syntax-dark",
+            );
+            $overlay.find(".media-actions .open, .media-actions .download").show();
             lightbox_pan_zoom?.reset();
             $zoom_element.empty();
         },
@@ -883,6 +904,27 @@ export function initialize(): void {
         }
     });
 
+    $("#lightbox_overlay").on(
+        "click",
+        ".code-lightbox-theme-toggle",
+        function (this: HTMLElement, e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const $overlay = $("#lightbox_overlay");
+            if ($overlay.hasClass("code-lightbox-syntax-dark")) {
+                $overlay
+                    .removeClass("code-lightbox-syntax-dark")
+                    .addClass("code-lightbox-syntax-light");
+            } else {
+                $overlay
+                    .removeClass("code-lightbox-syntax-light")
+                    .addClass("code-lightbox-syntax-dark");
+            }
+            update_code_lightbox_syntax_toggle_label($overlay);
+            this.blur();
+        },
+    );
+
     $("#lightbox_overlay .player-container").on("click", function () {
         if ($(this).is(".player-container")) {
             reset_lightbox_state();
@@ -904,11 +946,7 @@ export function initialize(): void {
         const clicked_code_block =
             $overlay.hasClass("code-lightbox-mode") &&
             $(e.target).closest(".codehilite").length > 0;
-        if (
-            !$(e.target).is("img") &&
-            !clicked_code_block &&
-            !$overlay.data("noclose")
-        ) {
+        if (!$(e.target).is("img") && !clicked_code_block && !$overlay.data("noclose")) {
             reset_lightbox_state();
             overlays.close_overlay("lightbox");
         }
