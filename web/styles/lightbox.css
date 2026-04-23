@@ -4,6 +4,13 @@
     flex-direction: column;
     height: 100dvh;
 
+    &.code-lightbox-mode {
+        .video-player,
+        .player-container {
+            display: none;
+        }
+    }
+
     .image-preview {
         flex: 1;
         display: flex;
