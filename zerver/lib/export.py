@@ -1712,7 +1712,7 @@ def fetch_usermessages(
     message_filename: Path,
     export_full_with_consent: bool,
     consented_user_ids: set[int] | None = None,
-) -> list[Record]:
+) -> Iterator[Record]:
     # UserMessage export security rule: You can export UserMessages
     # for the messages you exported for the users in your realm.
     # user_profile_ids comes from response["zerver_userprofile"] and
@@ -1722,17 +1722,17 @@ def fetch_usermessages(
     if export_full_with_consent:
         assert consented_user_ids is not None
         user_profile_ids = consented_user_ids & user_profile_ids
-    user_message_query = UserMessage.objects.filter(
-        user_profile_id__in=user_profile_ids, message_id__in=message_ids
-    ).iterator()
-    user_message_chunk = []
+    user_message_query = (
+        UserMessage.objects.filter(user_profile_id__in=user_profile_ids, message_id__in=message_ids)
+        .order_by("id")
+        .iterator()
+    )
+    logging.info("Fetching UserMessages for %s", message_filename)
     for user_message in user_message_query:
         user_message_obj = model_to_dict(user_message)
         user_message_obj["flags_mask"] = user_message.flags.mask
         del user_message_obj["flags"]
-        user_message_chunk.append(user_message_obj)
-    logging.info("Fetched UserMessages for %s", message_filename)
-    return user_message_chunk
+        yield user_message_obj
 
 
 def export_usermessages_batch(
