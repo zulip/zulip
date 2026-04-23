@@ -1,5 +1,7 @@
 # -*- mode: ruby -*-
 
+require "open3"
+
 Vagrant.require_version ">= 2.2.6"
 
 Vagrant.configure("2") do |config|
@@ -19,6 +21,11 @@ Vagrant.configure("2") do |config|
 
   config.vm.synced_folder ".", "/vagrant", disabled: true
   config.vm.synced_folder ".", __dir__, docker_consistency: "z"
+
+  git_dir, status = Open3.capture2("git", "rev-parse", "--path-format=absolute", "--git-common-dir")
+  raise unless status.success?
+  git_dir = git_dir.strip
+  config.vm.synced_folder git_dir, git_dir, docker_consistency: "z"
 
   vagrant_config_file = ENV["HOME"] + "/.zulip-vagrant-config"
   if File.file?(vagrant_config_file)
