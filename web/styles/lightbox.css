@@ -33,6 +33,35 @@
             background-color: hsl(0deg 0% 100%);
             border: none;
         }
+
+
+        &.code-lightbox-syntax-light {
+            .codehilite pre,
+            pre.code-lightbox-content {
+                color: hsl(0deg 0% 7%);
+            }
+
+            .codehilite pre code {
+                color: inherit;
+            }
+        }
+
+        &.code-lightbox-syntax-dark {
+            .code-lightbox-hilite {
+                border: 1px solid hsl(0deg 0% 100% / 12%);
+                box-shadow: 0 4px 24px hsl(0deg 0% 0% / 45%);
+                background-color: hsl(73deg 8% 15%);
+            }
+
+            .code-lightbox-content {
+                background-color: hsl(73deg 8% 15%);
+                color: hsl(60deg 9% 96%);
+            }
+        }
+    }
+
+    &:not(.code-lightbox-mode) .code-lightbox-theme-toggle {
+        display: none;
     }
 
     .image-preview {
