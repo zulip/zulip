@@ -6,7 +6,16 @@ Get Zulip notifications for your Jira projects!
 
 1. {!create-an-incoming-webhook.md!}
 
-1. {!generate-webhook-url-basic.md!}
+1. Decide where to send {{ integration_display_name }} notifications, and
+   [generate the integration URL](/help/generate-integration-url). To
+   generate a Jira API token, follow
+   [Atlassian's documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
+
+    !!! tip ""
+
+        If you also configure **Your Jira email** and **Your Jira API
+        token**, this integration will show display names for users
+        mentioned in Jira comments, instead of the `[~accountid:ACCOUNT_ID]`.
 
 1. Go to your Jira **Site administration** page. Click on the menu icon
    ( <i class="fa fa-ellipsis-h"></i> ) under **Actions** for your
@@ -20,6 +29,7 @@ Get Zulip notifications for your Jira projects!
    to be notified about, and click **Create**.
 
 {end_tabs}
+
 
 {!congrats.md!}
 

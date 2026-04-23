@@ -1,0 +1,94 @@
+{
+  "timestamp": 1722411493985,
+  "webhookEvent": "comment_created",
+  "comment": {
+    "self": "https://peteririri.atlassian.net/rest/api/2/issue/10002/comment/10003",
+    "id": "10003",
+    "author": {
+      "self": "https://peteririri.atlassian.net/rest/api/2/user?accountId=619a4432ebce470067f20384",
+      "accountId": "619a4432ebce470067f20384",
+      "avatarUrls": {
+        "48x48": "https://secure.gravatar.com/avatar/338c91613dac07cd4bd32682a494fe66?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FP-5.png",
+        "24x24": "https://secure.gravatar.com/avatar/338c91613dac07cd4bd32682a494fe66?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FP-5.png",
+        "16x16": "https://secure.gravatar.com/avatar/338c91613dac07cd4bd32682a494fe66?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FP-5.png",
+        "32x32": "https://secure.gravatar.com/avatar/338c91613dac07cd4bd32682a494fe66?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FP-5.png"
+      },
+      "displayName": "Peter",
+      "active": true,
+      "timeZone": "Asia/Jakarta",
+      "accountType": "atlassian"
+    },
+    "body": "[~accountid:619a4432ebce470067f20384] [~accountid:63a22fb348b367d78a14c15b] [~accountid:63a22fb348b367d78a14c15b] ",
+    "updateAuthor": {
+      "self": "https://peteririri.atlassian.net/rest/api/2/user?accountId=619a4432ebce470067f20384",
+      "accountId": "619a4432ebce470067f20384",
+      "avatarUrls": {
+        "48x48": "https://secure.gravatar.com/avatar/338c91613dac07cd4bd32682a494fe66?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FP-5.png",
+        "24x24": "https://secure.gravatar.com/avatar/338c91613dac07cd4bd32682a494fe66?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FP-5.png",
+        "16x16": "https://secure.gravatar.com/avatar/338c91613dac07cd4bd32682a494fe66?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FP-5.png",
+        "32x32": "https://secure.gravatar.com/avatar/338c91613dac07cd4bd32682a494fe66?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FP-5.png"
+      },
+      "displayName": "Peter",
+      "active": true,
+      "timeZone": "Asia/Jakarta",
+      "accountType": "atlassian"
+    },
+    "created": "2024-07-31T14:38:13.985+0700",
+    "updated": "2024-07-31T14:38:13.985+0700",
+    "jsdPublic": true
+  },
+  "issue": {
+    "id": "10002",
+    "self": "https://peteririri.atlassian.net/rest/api/2/10002",
+    "key": "SB-1",
+    "fields": {
+      "summary": "asdasd",
+      "issuetype": {
+        "self": "https://peteririri.atlassian.net/rest/api/2/issuetype/10002",
+        "id": "10002",
+        "description": "Functionality or a feature expressed as a user goal.",
+        "iconUrl": "https://peteririri.atlassian.net/rest/api/2/universal_avatar/view/type/issuetype/avatar/10315?size=medium",
+        "name": "Story",
+        "subtask": false,
+        "avatarId": 10315,
+        "hierarchyLevel": 0
+      },
+      "project": {
+        "self": "https://peteririri.atlassian.net/rest/api/2/project/10001",
+        "id": "10001",
+        "key": "SB",
+        "name": "scrum board",
+        "projectTypeKey": "software",
+        "simplified": false,
+        "avatarUrls": {
+          "48x48": "https://peteririri.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10401",
+          "24x24": "https://peteririri.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10401?size=small",
+          "16x16": "https://peteririri.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10401?size=xsmall",
+          "32x32": "https://peteririri.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10401?size=medium"
+        }
+      },
+      "assignee": null,
+      "priority": {
+        "self": "https://peteririri.atlassian.net/rest/api/2/priority/3",
+        "iconUrl": "https://peteririri.atlassian.net/images/icons/priorities/medium.svg",
+        "name": "Medium",
+        "id": "3"
+      },
+      "status": {
+        "self": "https://peteririri.atlassian.net/rest/api/2/status/10007",
+        "description": "",
+        "iconUrl": "https://peteririri.atlassian.net/",
+        "name": "To Do",
+        "id": "10007",
+        "statusCategory": {
+          "self": "https://peteririri.atlassian.net/rest/api/2/statuscategory/2",
+          "id": 2,
+          "key": "new",
+          "colorName": "blue-gray",
+          "name": "To Do"
+        }
+      }
+    }
+  },
+  "eventType": "primaryAction"
+}
