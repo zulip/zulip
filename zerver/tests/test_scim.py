@@ -1026,7 +1026,7 @@ class TestSCIMUser(SCIMTestCase):
 
     def test_custom_profile_field_value_truncation(self) -> None:
         hamlet = self.example_user("hamlet")
-        field_map = {"phone_number": "phoneNumber", "biography": "biography"}
+        field_map = {"favorite_food": "phoneNumber", "biography": "biography"}
         long_short_value = "x" * 60
         expected_short_value = "x" * 49 + "…"
         long_long_value = "y" * 510
@@ -1050,14 +1050,14 @@ class TestSCIMUser(SCIMTestCase):
         self.assertEqual(
             log_output.output,
             [
-                f"WARNING:zerver.lib.scim:Truncated value for custom profile field phone_number of user {hamlet.id} to 50 characters.",
+                f"WARNING:zerver.lib.scim:Truncated value for custom profile field favorite_food of user {hamlet.id} to 50 characters.",
                 f"WARNING:zerver.lib.scim:Truncated value for custom profile field biography of user {hamlet.id} to 500 characters.",
             ],
         )
 
-        phone_field = CustomProfileField.objects.get(realm=hamlet.realm, name="Phone number")
-        phone_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=phone_field)
-        self.assertEqual(phone_value.value, expected_short_value)
+        food_field = CustomProfileField.objects.get(realm=hamlet.realm, name="Favorite food")
+        food_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=food_field)
+        self.assertEqual(food_value.value, expected_short_value)
 
         biography_field = CustomProfileField.objects.get(realm=hamlet.realm, name="Biography")
         biography_value = CustomProfileFieldValue.objects.get(

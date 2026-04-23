@@ -2439,6 +2439,13 @@ class SocialAuthBaseWithSyncAttrTest(SocialAuthBase, ABC):
         # Verify that values for text fields are truncated if they're too long.
         long_value = "x" * 60
         expected_value = "x" * 49 + "…"
+        truncation_sync_dict = {
+            "zulip": {
+                self.BACKEND_CLASS.name: {
+                    "custom__favorite_food": "favoriteFood",
+                }
+            }
+        }
         with (
             self.assertLogs(self.logger_string, level="WARNING") as m,
         ):
@@ -2446,23 +2453,26 @@ class SocialAuthBaseWithSyncAttrTest(SocialAuthBase, ABC):
             result = self.social_auth_test_with_sync_attrs(
                 account_data_dict,
                 subdomain="zulip",
-                extra_attrs=dict(mobilePhone=long_value),
-                sync_attrs_config=sync_custom_attrs_dict,
+                extra_attrs=dict(favoriteFood=long_value),
+                sync_attrs_config=truncation_sync_dict,
             )
 
         data = load_subdomain_token(result)
         self.assertEqual(data["email"], self.email)
         self.assertIn(
             self.logger_output(
-                f"Truncated value for custom profile field phone_number of user {self.user_profile.id} to 50 characters.",
+                f"Truncated value for custom profile field favorite_food of user {self.user_profile.id} to 50 characters.",
                 type="warning",
             ),
             m.output,
         )
-        phone_field_value = CustomProfileFieldValue.objects.get(
-            user_profile=self.user_profile, field=phone_field
+        food_field = CustomProfileField.objects.get(
+            realm=self.user_profile.realm, name="Favorite food"
+        )
+        food_field_value = CustomProfileFieldValue.objects.get(
+            user_profile=self.user_profile, field=food_field
         ).value
-        self.assertEqual(phone_field_value, expected_value)
+        self.assertEqual(food_field_value, expected_value)
 
     def test_social_auth_group_sync(self) -> None:
         realm = get_realm("zulip")
@@ -8943,7 +8953,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             self.settings(
                 AUTH_LDAP_USER_ATTR_MAP={
                     "full_name": "cn",
-                    "custom_profile_field__phone_number": "homePhone",
+                    "custom_profile_field__favorite_food": "homePhone",
                 }
             ),
             self.assertLogs("zulip.ldap", "WARNING") as log_output,
@@ -8951,11 +8961,11 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             self.perform_ldap_sync(self.example_user("hamlet"))
 
         hamlet = self.example_user("hamlet")
-        phone_field = CustomProfileField.objects.get(realm=hamlet.realm, name="Phone number")
-        phone_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=phone_field)
-        self.assertEqual(phone_value.value, expected_value)
+        food_field = CustomProfileField.objects.get(realm=hamlet.realm, name="Favorite food")
+        food_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=food_field)
+        self.assertEqual(food_value.value, expected_value)
         self.assertIn(
-            f"WARNING:zulip.ldap:Truncated value for custom profile field phone_number of user {hamlet.id} to 50 characters.",
+            f"WARNING:zulip.ldap:Truncated value for custom profile field favorite_food of user {hamlet.id} to 50 characters.",
             log_output.output,
         )
 
