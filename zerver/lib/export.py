@@ -536,6 +536,48 @@ def make_raw(query: Iterable[Any], exclude: list[Field] | None = None) -> Iterat
         yield data
 
 
+# Configs whose include_rows filters on user-profile ids and which
+# are therefore candidates for temp-table routing in the realm
+# export path.
+CONFIG_USER_ID_INCLUDE_ROWS = frozenset(
+    {"user_profile_id__in", "user_id__in", "bot_profile_id__in"}
+)
+
+# Two session-local temp tables back the realm-export Config
+# framework's user-id filters.  "Realm" holds
+# zerver_userprofile ∪ zerver_userprofile_mirrordummy -- the full
+# set of exported user-profile rows including mirror dummies but
+# excluding cross-realm system bots, matching parent.return_ids
+# of the Config framework's user_profile_config.  "Consented"
+# holds the further consent-narrowed subset that
+# limit_to_consenting_users Configs used to compute inline.
+# Configs with limit_to_consenting_users=True use "consented";
+# others use "realm".  See setup_config_user_ids_temp_tables for
+# the exact contents by export type.
+CONFIG_CONSENTED_USER_IDS_TABLE = "_export_config_consented_user_ids"
+CONFIG_REALM_USER_IDS_TABLE = "_export_config_realm_user_ids"
+
+
+class ConfigConsentedUserIdsTempTable(models.Model):
+    user_profile_id = models.IntegerField(primary_key=True)
+    objects: models.Manager["ConfigConsentedUserIdsTempTable"] = models.Manager()
+
+    class Meta:
+        managed = False
+        db_table = CONFIG_CONSENTED_USER_IDS_TABLE
+        app_label = "zerver"
+
+
+class ConfigRealmUserIdsTempTable(models.Model):
+    user_profile_id = models.IntegerField(primary_key=True)
+    objects: models.Manager["ConfigRealmUserIdsTempTable"] = models.Manager()
+
+    class Meta:
+        managed = False
+        db_table = CONFIG_REALM_USER_IDS_TABLE
+        app_label = "zerver"
+
+
 def setup_user_ids_temp_table(table_name: str, user_profile_ids: Iterable[int]) -> None:
     """Populate a session-local temp table with user_profile_ids so
     export queries can reference it by name rather than inlining the
@@ -573,6 +615,48 @@ def setup_user_ids_temp_table(table_name: str, user_profile_ids: Iterable[int]) 
         # temp table otherwise has no statistics and the planner's
         # default-1000-rows guess can pick the wrong join strategy.
         cursor.execute(sql.SQL("ANALYZE {table}").format(table=table))
+
+
+def setup_config_user_ids_temp_tables(response: "TableData", context: "Context") -> None:
+    """Populate CONFIG_CONSENTED_USER_IDS_TABLE and
+    CONFIG_REALM_USER_IDS_TABLE from the already-fetched user-profile
+    rows in response.  Called from _get_rows_for_query on every
+    Config whose include_rows filters on user-profile ids; a flag
+    stored on the context dict makes the work after the first call
+    a no-op, since the contents don't change within a single
+    export.  The context is created fresh per export_from_config
+    call, so the flag is automatically scoped to one export run.
+
+    The "realm" temp table holds every user_profile_id the realm
+    is exporting: zerver_userprofile ∪
+    zerver_userprofile_mirrordummy (cross-realm bots are handled
+    separately and not in either set).  The "consented" temp table
+    is the "realm" set further restricted to the consenting subset
+    in WITH_CONSENT mode, emptied in PUBLIC, or equal to the
+    "realm" set in WITHOUT_CONSENT.
+    """
+    if context.get("_config_user_ids_tables_populated"):
+        return
+
+    export_type = context["export_type"]
+    exportable_user_ids = context["exportable_user_ids"]
+
+    zerver_userprofile_ids = {r["id"] for r in response["zerver_userprofile"]}
+    mirrordummy_ids = {r["id"] for r in response["zerver_userprofile_mirrordummy"]}
+    realm_user_ids = zerver_userprofile_ids | mirrordummy_ids
+
+    if export_type == RealmExport.EXPORT_PUBLIC:
+        consented_user_ids: set[int] = set()
+    elif export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
+        assert exportable_user_ids is not None
+        consented_user_ids = exportable_user_ids & realm_user_ids
+    else:
+        assert export_type == RealmExport.EXPORT_FULL_WITHOUT_CONSENT
+        consented_user_ids = realm_user_ids
+
+    setup_user_ids_temp_table(CONFIG_CONSENTED_USER_IDS_TABLE, consented_user_ids)
+    setup_user_ids_temp_table(CONFIG_REALM_USER_IDS_TABLE, realm_user_ids)
+    context["_config_user_ids_tables_populated"] = True
 
 
 def floatify_datetime_fields(item: Record, table: TableName) -> Record:
@@ -813,50 +897,27 @@ def export_from_config(
 
         if config.filter_args is not None:
             filter_params.update(config.filter_args)
-        if config.limit_to_consenting_users:
-            if "realm" in context:
-                realm = context["realm"]
-                export_type = context["export_type"]
-                assert isinstance(realm, Realm)
-                if export_type == RealmExport.EXPORT_PUBLIC:
-                    # In a public export, no private data is exported, so
-                    # no users are considered consenting.
-                    consenting_user_ids: set[int] | None = set()
-                elif export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
-                    consenting_user_ids = context["exportable_user_ids"]
-                else:
-                    assert export_type == RealmExport.EXPORT_FULL_WITHOUT_CONSENT
-                    # In a full export without consent, the concept is meaningless,
-                    # so set this to None. All private data will be exported without consulting
-                    # consenting_user_ids so we set this to None so that any code in this flow
-                    # which (incorrectly) tries to access them fails explicitly.
-                    consenting_user_ids = None
+
+        # For realm exports, route the realm-sized user-id IN filter
+        # through a temp table instead of inlining the set as a
+        # literal list.  Configs with limit_to_consenting_users=True
+        # use the "consented" table; the rest use the "realm" table
+        # (see setup_config_user_ids_temp_tables for contents).
+        #
+        # Single-user export takes no branch here: its parent_ids is
+        # already {user.id}, so filter_params[include_rows] is
+        # correct as set above.
+        if "realm" in context and config.include_rows in CONFIG_USER_ID_INCLUDE_ROWS:
+            setup_config_user_ids_temp_tables(response, context)
+            if config.limit_to_consenting_users:
+                filter_params[config.include_rows] = (
+                    ConfigConsentedUserIdsTempTable.objects.values_list(
+                        "user_profile_id", flat=True
+                    )
+                )
             else:
-                # Single user export. This should not be really relevant, because
-                # limit_to_consenting_users is unlikely to be used in Configs in that codepath,
-                # as we should be exporting only a single user's data anyway; but it's still
-                # useful to have this case written correctly for robustness.
-                assert "user" in context
-                assert isinstance(context["user"], UserProfile)
-                export_type = None
-                consenting_user_ids = {context["user"].id}
-
-            user_profile_id_in_key = config.include_rows
-
-            # Sanity check.
-            assert user_profile_id_in_key in [
-                "user_profile_id__in",
-                "user_id__in",
-                "bot_profile_id__in",
-            ]
-
-            user_profile_id_in = filter_params[user_profile_id_in_key]
-            assert isinstance(user_profile_id_in, set)
-
-            if export_type != RealmExport.EXPORT_FULL_WITHOUT_CONSENT:
-                assert consenting_user_ids is not None
-                filter_params[user_profile_id_in_key] = consenting_user_ids.intersection(
-                    user_profile_id_in
+                filter_params[config.include_rows] = (
+                    ConfigRealmUserIdsTempTable.objects.values_list("user_profile_id", flat=True)
                 )
 
         assert model is not None
