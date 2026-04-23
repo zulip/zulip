@@ -1217,7 +1217,7 @@
     );
     --color-background-recent-view-table-thead-th: light-dark(
         hsl(0deg 0% 97%),
-        hsl(0deg 0% 16%)
+        hsl(0deg 0% 17%)
     );
     --color-background-recent-view-table-thead-sort-header: light-dark(
         hsl(229deg 9% 36% / 7%),
