@@ -908,7 +908,10 @@ class TestSCIMUser(SCIMTestCase):
 
         expected_response_schema = self.generate_user_schema(
             new_user,
-            expected_custom_profile_fields={"phoneNumber": "+12345678900", "birthday": "2000-01-01"},
+            expected_custom_profile_fields={
+                "phoneNumber": "+12345678900",
+                "birthday": "2000-01-01",
+            },
         )
         self.assertEqual(output_data, expected_response_schema)
 
@@ -1004,7 +1007,7 @@ class TestSCIMUser(SCIMTestCase):
 
         # The response should include the standard schema plus the custom field.
         expected_response_schema = self.generate_user_schema(
-            hamlet, expected_custom_profile_fields={"phoneNumber": "gettest123"}
+            hamlet, expected_custom_profile_fields={"phoneNumber": "+12345678904"}
         )
         self.assertEqual(output_data, expected_response_schema)
 
