@@ -2183,7 +2183,7 @@
     );
     --color-background-inbox-row-hover: light-dark(
         color-mix(in srgb, hsl(0deg 0% 0%) 5%, hsl(0deg 0% 100%)),
-        color-mix(in srgb, hsl(0deg 0% 100%) 5%, hsl(0deg 0% 14.12%))
+        color-mix(in srgb, hsl(0deg 0% 100%) 5%, hsl(0deg 0% 14%))
     );
     --color-background-button-inbox-selected: light-dark(
         hsl(0deg 0% 0% / 5%),
