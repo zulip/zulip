@@ -22,7 +22,7 @@ from zerver.lib.workplace_users import (
     realm_eligible_for_non_workplace_pricing,
     realm_on_discounted_cloud_plan,
 )
-from zerver.models import Message, Realm, Stream, UserProfile
+from zerver.models import Realm, Stream, UserProfile
 from zerver.views.message_flags import get_latest_update_message_flag_activity
 
 
@@ -202,18 +202,6 @@ def build_page_params_for_home_page_load(
     page_params["state_data"] = state_data
 
     if narrow_stream is not None and state_data is not None:
-        # In narrow_stream context, initial pointer is just latest message
-        recipient = narrow_stream.recipient
-        state_data["max_message_id"] = -1
-        max_message = (
-            # Uses index: zerver_message_realm_recipient_id
-            Message.objects.filter(realm_id=realm.id, recipient=recipient)
-            .order_by("-id")
-            .only("id")
-            .first()
-        )
-        if max_message:
-            state_data["max_message_id"] = max_message.id
         page_params["narrow_stream"] = narrow_stream.name
         if narrow_topic_name is not None:
             page_params["narrow_topic"] = narrow_topic_name
