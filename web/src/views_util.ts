@@ -164,18 +164,18 @@ export function is_in_focus(): boolean {
     let can_current_view_steal_focus = true;
     const focused_element = document.activeElement;
     if (
+        // `document.body` is the active element when nothing is focused;
+        // in that case the view may take focus normally (e.g., so a
+        // hotkey can move focus into the conversations table).
+        focused_element !== document.body &&
         focused_element instanceof HTMLElement &&
-        // Pill input elements.
-        (focused_element.isContentEditable ||
-            // `<input>` elements.
-            focused_element.classList.contains("input-element")) &&
-        // The input element is outside the current view.
-        // We already check for compose box via compose_state.composing().
+        // Focus is outside the current view (e.g., in the left or right
+        // sidebar, or on a navbar/search element). The user is navigating
+        // elsewhere, so the current view shouldn't steal focus from them.
+        // The compose box lives inside the view, so it's handled
+        // separately below via compose_state.composing().
         focused_element.closest(".app .column-middle") === null
     ) {
-        // If the user is focused on an input element
-        // and it is not handled by current view,
-        // then we should not steal focus from them.
         can_current_view_steal_focus = false;
     }
 
@@ -185,8 +185,7 @@ export function is_in_focus(): boolean {
         !sidebar_ui.any_sidebar_expanded_as_overlay() &&
         !overlays.any_active() &&
         !modals.any_active_or_animating() &&
-        can_current_view_steal_focus &&
-        !$(".navbar-item").is(":focus")
+        can_current_view_steal_focus
     );
 }
 
