@@ -84,28 +84,28 @@ async function run(): Promise<void> {
         const marker = `.message-list[data-message-list-id="${CSS.escape(
             `${message_list_id}`,
         )}"] .unread_marker`;
-        await page.evaluate((sel) => {
-            globalThis.document.querySelector(sel)?.remove();
-        }, marker);
+        await page.$eval(marker, (element) => {
+            element.remove();
+        });
 
         const messageSelector = `#message-row-${message_list_id}-${CSS.escape(messageId)}`;
         await page.waitForSelector(messageSelector);
 
         const messageListBox = await page.$(messageListSelector);
         assert.ok(messageListBox !== null);
-        await page.evaluate((msg) => {
-            globalThis.document.querySelector(msg)?.classList.remove("selected_message");
-        }, messageSelector);
+        await page.$eval(messageSelector, (element) => {
+            element.classList.remove("selected_message");
+        });
 
         // This is done so as to get white background while capturing screenshots.
         const background_selectors = [".app-main", ".message-feed", ".message_header"];
-        await page.evaluate((selectors) => {
-            for (const selector of selectors) {
-                for (const element of globalThis.document.querySelectorAll<HTMLElement>(selector)) {
+        await page.$$eval(background_selectors.join(","), (elements) => {
+            for (const element of elements) {
+                if (element instanceof HTMLElement) {
                     element.style.backgroundColor = "white";
                 }
             }
-        }, background_selectors);
+        });
 
         // This is done so that the message control buttons are not visible.
         await page.hover(".compose_new_conversation_button");
