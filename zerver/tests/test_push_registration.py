@@ -979,13 +979,18 @@ class RegisterPushDeviceToServer(BouncerTestCase):
 
         token = "c0ffee"
 
-        # Create a legacy token with a different value
-        # to verify it is NOT removed.
+        # Create legacy tokens with a different value
+        # to verify they are NOT removed.
         PushDeviceToken.objects.create(
             user=hamlet,
             token="different_token",
             kind=PushDeviceToken.APNS,
             ios_app_id="example.app",
+        )
+        PushDeviceToken.objects.create(
+            user=hamlet,
+            token="different_fcm_token",
+            kind=PushDeviceToken.FCM,
         )
 
         # Create legacy PushDeviceToken and RemotePushDeviceToken
@@ -1004,7 +1009,7 @@ class RegisterPushDeviceToServer(BouncerTestCase):
             ios_app_id="example.app",
         )
 
-        self.assertEqual(PushDeviceToken.objects.count(), 2)
+        self.assertEqual(PushDeviceToken.objects.count(), 3)
         self.assertEqual(RemotePushDeviceToken.objects.count(), 1)
 
         payload = self.get_register_push_device_payload(token=token)
@@ -1014,10 +1019,100 @@ class RegisterPushDeviceToServer(BouncerTestCase):
 
         # The matching legacy tokens should be removed
         # on both server and bouncer.
-        remaining_tokens = PushDeviceToken.objects.filter(user=hamlet)
-        self.assert_length(remaining_tokens, 1)
-        self.assertEqual(remaining_tokens[0].token, "different_token")
+        remaining_tokens = PushDeviceToken.objects.filter(user=hamlet).order_by("token")
+        self.assert_length(remaining_tokens, 2)
+        self.assertEqual(remaining_tokens[0].token, "different_fcm_token")
+        self.assertEqual(remaining_tokens[1].token, "different_token")
 
+        self.assertEqual(RemotePushDeviceToken.objects.count(), 0)
+
+    @activate_push_notification_service()
+    @override_settings(ZILENCER_ENABLED=False)
+    @responses.activate
+    def test_legacy_apns_token_cleanup_is_case_insensitive(self) -> None:
+        # APNs treats its tokens as case-insensitive, and different
+        # client versions have sent the same token in different cases.
+        # When an E2EE registration comes in using one case, we still
+        # need to clean up a legacy registration using the other case;
+        # otherwise the device gets two copies of each notification.
+        self.add_mock_response()
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        legacy_token = "abcdef0123456789"
+        e2ee_token = legacy_token.upper()
+
+        PushDeviceToken.objects.create(
+            user=hamlet,
+            token=legacy_token,
+            kind=PushDeviceToken.APNS,
+            ios_app_id="example.app",
+        )
+        RemotePushDeviceToken.objects.create(
+            server=self.server,
+            user_uuid=str(hamlet.uuid),
+            token=legacy_token,
+            kind=RemotePushDeviceToken.APNS,
+            ios_app_id="example.app",
+        )
+
+        payload = self.get_register_push_device_payload(token=e2ee_token)
+        with self.capture_send_event_calls(expected_num_events=2):
+            result = self.client_post("/json/mobile_push/register", payload)
+        self.assert_json_success(result)
+
+        self.assertEqual(PushDeviceToken.objects.filter(user=hamlet).count(), 0)
+        self.assertEqual(RemotePushDeviceToken.objects.count(), 0)
+
+        # Same scenario with the cases reversed: legacy token in
+        # uppercase and E2EE registration in lowercase.
+        PushDeviceToken.objects.create(
+            user=hamlet,
+            token=e2ee_token,
+            kind=PushDeviceToken.APNS,
+            ios_app_id="example.app",
+        )
+        RemotePushDeviceToken.objects.create(
+            server=self.server,
+            user_uuid=str(hamlet.uuid),
+            token=e2ee_token,
+            kind=RemotePushDeviceToken.APNS,
+            ios_app_id="example.app",
+        )
+
+        payload = self.get_register_push_device_payload(token=legacy_token)
+        with self.capture_send_event_calls(expected_num_events=2):
+            result = self.client_post("/json/mobile_push/register", payload)
+        self.assert_json_success(result)
+
+        self.assertEqual(PushDeviceToken.objects.filter(user=hamlet).count(), 0)
+        self.assertEqual(RemotePushDeviceToken.objects.count(), 0)
+
+        # Mixed-case legacy token matched by the E2EE client in the
+        # same mixed case: migration 0740 made the database constraint
+        # case-insensitive but didn't normalize the stored casing, so
+        # rows like this can still exist from before that migration.
+        mixed_case_token = "AbCdEf0123456789"
+        PushDeviceToken.objects.create(
+            user=hamlet,
+            token=mixed_case_token,
+            kind=PushDeviceToken.APNS,
+            ios_app_id="example.app",
+        )
+        RemotePushDeviceToken.objects.create(
+            server=self.server,
+            user_uuid=str(hamlet.uuid),
+            token=mixed_case_token,
+            kind=RemotePushDeviceToken.APNS,
+            ios_app_id="example.app",
+        )
+
+        payload = self.get_register_push_device_payload(token=mixed_case_token)
+        with self.capture_send_event_calls(expected_num_events=2):
+            result = self.client_post("/json/mobile_push/register", payload)
+        self.assert_json_success(result)
+
+        self.assertEqual(PushDeviceToken.objects.filter(user=hamlet).count(), 0)
         self.assertEqual(RemotePushDeviceToken.objects.count(), 0)
 
     @activate_push_notification_service()

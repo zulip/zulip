@@ -70,16 +70,34 @@ def handle_registration_to_bouncer_failure(
         logging.error("Push registration request for device_id=%s expired.", device_id)
 
 
+def compute_token_id_int(token: str) -> int:
+    hash_bytes = hashlib.sha256(token.encode()).digest()
+    return b64decode_token_id_base64(base64.b64encode(hash_bytes[0:8]).decode())
+
+
 def cleanup_legacy_push_device_token(user_profile: UserProfile, token_id_int: int) -> None:
     MAX_REQUEST_RETRIES = 3
     legacy_tokens = PushDeviceToken.objects.filter(user=user_profile)
 
     for legacy_token in legacy_tokens:
-        hash_bytes = hashlib.sha256(legacy_token.token.encode()).digest()
-        computed_token_id_base64 = base64.b64encode(hash_bytes[0:8]).decode()
-        computed_token_id_int = b64decode_token_id_base64(computed_token_id_base64)
+        # APNs treats its tokens (hex strings) as case-insensitive, and
+        # different client versions have sent them in different cases; the
+        # rest of the legacy code path accordingly normalizes to lowercase
+        # (see `remove_push_device_token`).  Match on the stored casing
+        # as well as its lower- and upper-case forms so that E2EE
+        # registration reliably cleans up the matching legacy token
+        # regardless of which case the client used.
+        token = legacy_token.token
+        if legacy_token.kind == PushDeviceToken.APNS:
+            candidate_token_ids = {
+                compute_token_id_int(token),
+                compute_token_id_int(token.lower()),
+                compute_token_id_int(token.upper()),
+            }
+        else:
+            candidate_token_ids = {compute_token_id_int(token)}
 
-        if computed_token_id_int != token_id_int:
+        if token_id_int not in candidate_token_ids:
             continue
 
         for attempt in range(MAX_REQUEST_RETRIES):
