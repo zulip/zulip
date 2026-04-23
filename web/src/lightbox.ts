@@ -676,6 +676,36 @@ export function handle_overlay_media_element_click(
 }
 
 // this is a block of events that are required for the lightbox to work.
+export function show_code_lightbox(code_text: string, language: string): void {
+    if (is_open) {
+        return;
+    }
+    is_open = true;
+
+    const $overlay = $("#lightbox_overlay");
+    $overlay.addClass("code-lightbox-mode");
+
+    const $zoom_element = $overlay.find(".zoom-element");
+    $zoom_element.empty();
+    const $pre = $("<pre>").addClass("code-lightbox-content");
+    const $code = $("<code>").text(code_text);
+    $pre.append($code);
+    $zoom_element.append($pre);
+
+    $overlay.find(".title").text(language || "Code");
+    $overlay.find(".user").text("");
+
+    overlays.open_overlay({
+        name: "lightbox",
+        $overlay,
+        on_close() {
+            is_open = false;
+            $overlay.removeClass("code-lightbox-mode");
+            $zoom_element.empty();
+        },
+    });
+}
+
 export function initialize(): void {
     // Renders the DOM for the lightbox.
     const rendered_lightbox_overlay = render_lightbox_overlay();

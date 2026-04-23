@@ -26,6 +26,7 @@ import * as timerender from "./timerender.ts";
 import * as user_groups from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
+import * as lightbox from "./lightbox.ts";
 
 /*
     rendered_markdown
@@ -357,6 +358,13 @@ export const update_elements = ($content: JQuery): void => {
                 show_check_icon: true,
             });
         });
+        const $expand_button = $buttonContainer.find(".expand_codeblock");
+        $expand_button.on("click", () => {
+            const code_text = $codehilite.find("code").text();
+            const lang = fenced_code_lang ?? "";
+            lightbox.show_code_lightbox(code_text, lang);
+        });
+
         $codehilite.addClass("zulip-code-block");
     });
 

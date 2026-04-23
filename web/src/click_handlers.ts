@@ -148,7 +148,7 @@ export function initialize(): void {
         // Ideally, this should be done via ClipboardJS, but it doesn't support
         // feature of stopPropagation once clicked.
         // See https://github.com/zenorocha/clipboard.js/pull/475
-        if ($target.is(".copy_codeblock") || $target.parents(".copy_codeblock").length > 0) {
+        if ($target.is(".copy_codeblock, .expand_codeblock") || $target.parents(".copy_codeblock, .expand_codeblock").length > 0) {
             return true;
         }
 
@@ -1066,7 +1066,7 @@ export function initialize(): void {
 
         if (compose_state.composing() && $(e.target).parents("#compose").length === 0) {
             const is_click_within_link = $(e.target).closest("a").length > 0;
-            if (is_click_within_link || $(e.target).closest(".copy_codeblock").length > 0) {
+            if (is_click_within_link || $(e.target).closest(".copy_codeblock, .expand_codeblock").length > 0) {
                 const is_selecting_link_text = is_click_within_link && mouse_drag.is_drag(e);
                 if (is_selecting_link_text) {
                     // Avoid triggering the click handler for a link
