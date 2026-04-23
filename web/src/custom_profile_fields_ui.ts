@@ -329,7 +329,6 @@ export function initialize_custom_date_type_fields(
         altInputClass: "date-field-alt-input " + common_class_name,
         altFormat: "F j, Y",
         allowInput: true,
-        static: true,
         // This helps us in accepting inputs in other formats
         // like MM/DD/YYYY and basically any other format
         // which is accepted by Date.
