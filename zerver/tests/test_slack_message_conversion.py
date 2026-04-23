@@ -10,8 +10,7 @@ from zerver.data_import.slack_message_conversion import (
     LossyConversionError,
     RenderResult,
     UserMentionProcessorT,
-    convert_to_zulip_markdown,
-    get_user_full_name,
+    convert_slack_formatting,
     get_zulip_mention_for_slack_user,
     process_slack_block_and_attachment,
 )
@@ -51,96 +50,29 @@ class SlackMessageConversion(ZulipTestCase):
         for name, test in format_tests.items():
             # Check that there aren't any unexpected keys as those are often typos
             self.assert_length(set(test.keys()) - valid_keys, 0)
-            slack_user_map: dict[str, int] = {}
-            users: list[dict[str, Any]] = [{}]
-            channel_map: dict[str, tuple[str, int]] = {}
-            converted = convert_to_zulip_markdown(test["input"], users, channel_map, slack_user_map)
+            converted = convert_slack_formatting(test["input"])
             converted_text = converted[0]
             with self.subTest(slack_message_conversion=name):
                 self.assertEqual(converted_text, test["conversion_output"])
 
-    def test_mentioned_data(self) -> None:
-        slack_user_map = {"U08RGD1RD": 540, "U0CBK5KAT": 554, "U09TYF5SK": 571}
-        # For this test, only relevant keys are 'id', 'name', 'deleted'
-        # and 'real_name'
-        users = [
-            {
-                "id": "U0CBK5KAT",
-                "name": "aaron.anzalone",
-                "deleted": False,
-                "is_mirror_dummy": False,
-                "real_name": "",
-            },
-            {
-                "id": "U08RGD1RD",
-                "name": "john",
-                "deleted": False,
-                "is_mirror_dummy": False,
-                "real_name": "John Doe",
-            },
-            {
-                "id": "U09TYF5Sk",
-                "name": "Jane",
-                "is_mirror_dummy": False,
-                "deleted": True,  # Deleted users don't have 'real_name' key in Slack
-            },
-        ]
-        channel_map = {"general": ("C5Z73A7RA", 137)}
-        message = "Hi <@U08RGD1RD|john>: How are you? <#C5Z73A7RA|general>"
-        text, mentioned_users, _has_link = convert_to_zulip_markdown(
-            message, users, channel_map, slack_user_map
-        )
-        full_name = get_user_full_name(users[1])
-        self.assertEqual(full_name, "John Doe")
-        self.assertEqual(get_user_full_name(users[2]), "Jane")
-
-        self.assertEqual(text, f"Hi @**{full_name}**: How are you? #**general**")
-        self.assertEqual(mentioned_users, [540])
-
-        # multiple mentioning
-        message = "Hi <@U08RGD1RD|john>: How are you?<@U0CBK5KAT> asked."
-        text, mentioned_users, _has_link = convert_to_zulip_markdown(
-            message, users, channel_map, slack_user_map
-        )
-        self.assertEqual(text, "Hi @**John Doe**: How are you?@**aaron.anzalone** asked.")
-        self.assertEqual(mentioned_users, [540, 554])
-
-        # Check wrong mentioning
-        message = "Hi <@U08RGD1RD|jon>: How are you?"
-        text, mentioned_users, _has_link = convert_to_zulip_markdown(
-            message, users, channel_map, slack_user_map
-        )
-        self.assertEqual(text, message)
-        self.assertEqual(mentioned_users, [])
-
     def test_has_link(self) -> None:
-        slack_user_map: dict[str, int] = {}
-
         message = "<http://journals.plos.org/plosone/article>"
-        text, _mentioned_users, has_link = convert_to_zulip_markdown(
-            message, [], {}, slack_user_map
-        )
+        text, has_link = convert_slack_formatting(message)
         self.assertEqual(text, "http://journals.plos.org/plosone/article")
         self.assertEqual(has_link, True)
 
         message = "<http://chat.zulip.org/help/logging-in|Help logging in to CZO>"
-        text, _mentioned_users, has_link = convert_to_zulip_markdown(
-            message, [], {}, slack_user_map
-        )
+        text, has_link = convert_slack_formatting(message)
         self.assertEqual(text, "[Help logging in to CZO](http://chat.zulip.org/help/logging-in)")
         self.assertEqual(has_link, True)
 
         message = "<mailto:foo@foo.com>"
-        text, _mentioned_users, has_link = convert_to_zulip_markdown(
-            message, [], {}, slack_user_map
-        )
+        text, has_link = convert_slack_formatting(message)
         self.assertEqual(text, "mailto:foo@foo.com")
         self.assertEqual(has_link, True)
 
         message = "random message"
-        text, _mentioned_users, has_link = convert_to_zulip_markdown(
-            message, [], {}, slack_user_map
-        )
+        text, has_link = convert_slack_formatting(message)
         self.assertEqual(has_link, False)
 
 
