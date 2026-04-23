@@ -52,7 +52,7 @@ import * as unread from "./unread.ts";
 import * as unread_ui from "./unread_ui.ts";
 import * as util from "./util.ts";
 
-function filter_has_term_type(filter: Filter, term_type: string): boolean {
+export function filter_has_term_type(filter: Filter, term_type: string): boolean {
     return (
         filter.sorted_term_types().includes(term_type) ||
         filter.sorted_term_types().includes(`not-${term_type}`)

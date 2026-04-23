@@ -52,6 +52,7 @@ const descriptions: Record<string, string> = {
     "is:starred": "starred messages",
     "is:mentioned": "messages that mention you",
     "is:followed": "followed topics",
+    "is:followed-user": "messages from users you follow",
     "is:alerted": "alerted messages",
     "is:unread": "unread messages",
     "is:muted": "muted messages",
@@ -71,6 +72,7 @@ type SearchFilter =
     | "is:starred"
     | "is:mentioned"
     | "is:followed"
+    | "is:followed-user"
     | "is:alerted"
     | "is:unread"
     | "is:muted"
@@ -122,6 +124,12 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
     "is:mentioned": [{operator: "is", operand: "mentioned"}],
     "is:followed": [
         {operator: "is", operand: "followed"},
+        {operator: "is", operand: "dm"},
+        {operator: "dm"},
+        {operator: "dm-including"},
+    ],
+    "is:followed-user": [
+        {operator: "is", operand: "followed-user"},
         {operator: "is", operand: "dm"},
         {operator: "dm"},
         {operator: "dm-including"},
@@ -749,17 +757,18 @@ function get_is_filter_suggestions(
     if (page_params.is_spectator) {
         suggestions = filter_suggestions_by_criteria(terms, ["is:resolved", "-is:resolved"]);
     } else {
-        suggestions = filter_suggestions_by_criteria(terms, [
-            "is:dm",
-            "is:starred",
-            "is:mentioned",
-            "is:followed",
-            "is:alerted",
-            "is:unread",
-            "is:muted",
-            "is:resolved",
-            "-is:resolved",
-        ]);
+suggestions = filter_suggestions_by_criteria(terms, [
+                "is:dm",
+                "is:starred",
+                "is:mentioned",
+                "is:followed",
+                "is:followed-user",
+                "is:alerted",
+                "is:unread",
+                "is:muted",
+                "is:resolved",
+                "-is:resolved",
+            ]);
     }
     const special_filtered_suggestions = get_special_filter_suggestions(last, suggestions);
     // Suggest "is:dm" to anyone with "is:private" in their muscle memory

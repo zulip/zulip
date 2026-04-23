@@ -9,6 +9,7 @@ import render_empty_list_widget_for_list from "../templates/empty_list_widget_fo
 import render_presence_row from "../templates/presence_row.hbs";
 import render_presence_rows from "../templates/presence_rows.hbs";
 
+import * as activity_ui from "./activity_ui.ts";
 import * as background_task from "./background_task.ts";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
@@ -1204,27 +1205,26 @@ export class BuddyList extends BuddyListConf {
 $("body").on("click", ".follow-user-btn", function (e: JQuery.ClickEvent) {
     e.preventDefault();
     e.stopPropagation();
-    
+
     const $btn = $(this);
     const user_id = Number($btn.attr("data-user-id"));
     const isFollowing = $btn.hasClass("following");
-    
+
     const url = "/json/users/me/followed_users/" + user_id;
-    
+
     if (isFollowing) {
         // Unfollow
         void channel.del({
             url,
         });
-        $btn.removeClass("following");
-        $btn.text("Follow");
+        people.remove_follow(user_id);
     } else {
         // Follow
         void channel.post({
             url,
         });
-        $btn.addClass("following");
-        $btn.text("Following");
+        people.add_follow(user_id);
     }
+    activity_ui.redraw();
 });
 export const buddy_list = new BuddyList();

@@ -35,41 +35,16 @@ def get_following_users(followed_user_id: int) -> set[int]:
     )
 
 
-def get_followers_who_can_see_stream_message(
-    followed_user_id: int, stream_id: int, realm_id: int
-) -> set[int]:
+def get_following_user_ids(user_profile_id: int) -> list[int]:
+    """Return the IDs of all users that user_profile_id is following.
+
+    This is the inverse of get_following_users(): instead of returning who
+    follows a given user, this returns who a given user follows.
+
+    Used by the `is:followed-user` narrow to filter messages by sender.
     """
-    Get followers of a user who have followed user push notifications enabled
-    and have access to a specific stream.
-
-    This is used to determine which users should receive notifications when
-    the followed user posts a message to a stream.
-
-    Args:
-        followed_user_id: ID of the user being followed
-        stream_id: ID of the stream where message is being posted
-        realm_id: ID of the realm (for permission filtering)
-
-    Returns:
-        Set of user IDs (followers) who should be notified
-    """
-    # Get all followers with push notifications enabled
-    followers_with_push = FollowedUser.objects.filter(
-        followed_user_id=followed_user_id,
-        user_profile__enable_followed_user_push_notifications=True,
-    ).values_list("user_profile_id", flat=True)
-
-    # Get the stream recipient and its subscribers
-    try:
-        recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream_id)
-    except Recipient.DoesNotExist:
-        # Stream doesn't exist or was deleted
-        return set()
-
-    # Get subscribers to the stream
-    stream_subscribers = Subscription.objects.filter(recipient=recipient, active=True).values_list(
-        "user_profile_id", flat=True
+    return list(
+        FollowedUser.objects.filter(user_profile_id=user_profile_id).values_list(
+            "followed_user_id", flat=True
+        )
     )
-
-    # Return intersection: followers with push notifications AND subscribers to the stream
-    return set(followers_with_push) & set(stream_subscribers)

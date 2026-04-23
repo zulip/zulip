@@ -117,6 +117,27 @@ export const built_in_views_meta_data: Record<string, BuiltInViewBasicMetadata> 
         home_view_code: "",
         prioritize_in_condensed_view: true,
     },
+    following_feed: {
+        // Shows all messages sent by users the current user follows.
+        // Uses the is:followed-user narrow operator on both frontend and backend.
+        fragment: "narrow/is/followed-user",
+        name: $t({defaultMessage: "Following Feed"}),
+        is_pinned: true,
+        // Reuse the existing "follow" icon used in user-profile follow actions.
+        icon: "zulip-icon-follow",
+        css_class_suffix: "following_feed",
+        tooltip_template_id: "following-feed-tooltip-template",
+        // Unread counts for this view would require a per-user index; skip for now.
+        has_unread_count: false,
+        unread_count_type: "",
+        supports_masked_unread: false,
+        // Spectators cannot follow users, so hide this view for them.
+        hidden_for_spectators: true,
+        menu_icon_class: "",
+        menu_aria_label: "",
+        home_view_code: "",
+        prioritize_in_condensed_view: false,
+    },
     drafts: {
         fragment: "drafts",
         name: $t({defaultMessage: "Drafts"}),

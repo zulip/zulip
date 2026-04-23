@@ -33,6 +33,7 @@ from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.devices import get_devices
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import get_default_external_accounts
+from zerver.lib.followed_users import get_user_follows
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.integrations import (
     EMBEDDED_BOTS,

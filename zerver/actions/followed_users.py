@@ -1,6 +1,6 @@
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.followed_users import add_user_follow, get_user_follows, get_follow_object
+from zerver.lib.followed_users import add_user_follow, get_follow_object, get_user_follows
 from zerver.models import UserProfile
 from zerver.tornado.django_api import send_event_on_commit
 
