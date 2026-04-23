@@ -18,7 +18,7 @@ Vagrant.configure("2") do |config|
   config.vm.box = "bento/ubuntu-22.04"
 
   config.vm.synced_folder ".", "/vagrant", disabled: true
-  config.vm.synced_folder ".", "/srv/zulip", docker_consistency: "z"
+  config.vm.synced_folder ".", __dir__, docker_consistency: "z"
 
   vagrant_config_file = ENV["HOME"] + "/.zulip-vagrant-config"
   if File.file?(vagrant_config_file)
@@ -105,5 +105,5 @@ Vagrant.configure("2") do |config|
     # We want provision to be run with the permissions of the vagrant user.
     privileged: false,
     path: "tools/setup/vagrant-provision",
-    env: { "UBUNTU_MIRROR" => ubuntu_mirror }
+    env: { "UBUNTU_MIRROR" => ubuntu_mirror, "ZULIP_PATH" => __dir__ }
 end
