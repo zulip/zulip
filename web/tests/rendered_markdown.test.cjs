@@ -28,6 +28,7 @@ mock_cjs("clipboard", Clipboard);
 
 const realm_playground = mock_esm("../src/realm_playground");
 const copied_tooltip = mock_esm("../src/copied_tooltip");
+const lightbox = mock_esm("../src/lightbox");
 
 const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
@@ -792,6 +793,52 @@ function test_code_playground(mock_template, viewing_code) {
         $view_code: $view_code_in_playground,
     };
 }
+
+run_test("expand_codeblock passes highlighted HTML to lightbox", ({override, mock_template}) => {
+    override(realm_playground, "get_playground_info_for_languages", () => undefined);
+    override(copied_tooltip, "show_copied_confirmation", noop);
+
+    let captured;
+    override(lightbox, "show_code_lightbox", (code_text, lang, code_inner_html) => {
+        captured = {code_text, lang, code_inner_html};
+    });
+
+    mock_template("code_buttons_container.hbs", true, () => "<code-buttons-container-stub>");
+
+    const $content = get_content_element();
+    const $hilite = $.create("div.codehilite");
+    const $pre = $.create("hilite-pre");
+    const $code = $.create("hilite-code");
+    $code.html('<span class="k">def</span> foo()');
+    $code[0].textContent = "def foo()";
+
+    $content.set_find_results("div.codehilite", $hilite);
+    $hilite.set_find_results("pre", $pre);
+    $hilite.set_find_results("code", $code);
+    $hilite.attr("data-code-language", "Python");
+
+    const $button_container = $("<code-buttons-container-stub>");
+    const $expand_button = $("<expand-codeblock-stub>");
+    const $copy_button = $("<copy-codeblock-stub>");
+    $button_container.set_find_results(".expand_codeblock", $expand_button);
+    $button_container.set_find_results(".copy_codeblock", $copy_button);
+
+    const prepends = [];
+    $pre[0].prepend = (arg) => {
+        prepends.push(arg);
+    };
+
+    rm.update_elements($content);
+
+    const expand_click = $expand_button.get_on_handler("click");
+    expand_click();
+
+    assert.deepEqual(captured, {
+        code_text: "def foo()",
+        lang: "Python",
+        code_inner_html: '<span class="k">def</span> foo()',
+    });
+});
 
 run_test("code playground none", ({override, mock_template}) => {
     override(realm_playground, "get_playground_info_for_languages", (language) => {
