@@ -148,13 +148,13 @@ run_test("inline_image_galleries", ({override}) => {
             '<div class="message-media-preview-image">' +
             '<a href="/user_uploads/path/to/legacy-portrait-image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="legacy-portrait-image.png">' +
             '<img data-original-dimensions="1000x2000" src="/user_uploads/thumbnail/path/to/legacy-portrait-image.png/840x560.webp" ' +
-            'class="media-image-element portrait-thumbnail" loading="lazy" width="1000" height="2000" style="width: 5em;">' +
+            'class="media-image-element portrait-thumbnail" loading="lazy" width="1000" height="2000" style="width: 5em; aspect-ratio: 1000 / 2000;">' +
             "</a>" +
             "</div>" +
             '<div class="message-media-preview-image">' +
             '<a href="/user_uploads/path/to/legacy-landscape-image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="legacy-landscape-image.png">' +
             '<img data-original-dimensions="2000x1000" src="/user_uploads/thumbnail/path/to/legacy-landscape-image.png/840x560.webp" ' +
-            'class="media-image-element landscape-thumbnail" loading="lazy" width="2000" height="1000" style="width: 20em;">' +
+            'class="media-image-element landscape-thumbnail" loading="lazy" width="2000" height="1000" style="width: 20em; aspect-ratio: 2000 / 1000;">' +
             "</a>" +
             "</div>" +
             "</div>",
@@ -175,7 +175,7 @@ run_test("inline_image_galleries", ({override}) => {
             '<div class="message-media-preview-image">' +
             '<a href="/user_uploads/path/to/legacy-singleton-image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="legacy-singleton-image.png">' +
             '<img data-original-dimensions="1000x1000" src="/user_uploads/thumbnail/path/to/legacy-singleton-image.png/840x560.webp" ' +
-            'class="media-image-element portrait-thumbnail" loading="lazy" width="1000" height="1000" style="width: 10em;">' +
+            'class="media-image-element portrait-thumbnail" loading="lazy" width="1000" height="1000" style="width: 10em; aspect-ratio: 1000 / 1000;">' +
             "</a>" +
             "</div>" +
             "</div>",
@@ -195,7 +195,7 @@ run_test("inline_image_galleries", ({override}) => {
             '<a href="/user_uploads/path/to/inline-image-wide.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
             '<img alt="image" class="inline-image image-opens-message media-image-element landscape-thumbnail" data-original-content-type="image/png" ' +
             'data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/inline-image-wide.png" ' +
-            'src="/user_uploads/thumbnail/path/to/inline-image-wide.png/840x560.webp" loading="lazy" width="900" height="600" style="width: 15em;">' +
+            'src="/user_uploads/thumbnail/path/to/inline-image-wide.png/840x560.webp" loading="lazy" width="900" height="600" style="width: 15em; aspect-ratio: 900 / 600;">' +
             "</a>" +
             "</span>" +
             " or " +
@@ -203,7 +203,7 @@ run_test("inline_image_galleries", ({override}) => {
             '<a href="/user_uploads/path/to/inline-image-tall.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
             '<img alt="image" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" ' +
             'data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/inline-image-tall.png" ' +
-            'src="/user_uploads/thumbnail/path/to/inline-image-tall.png/840x560.webp" loading="lazy" width="600" height="900" style="width: 6.666666666666667em;">' +
+            'src="/user_uploads/thumbnail/path/to/inline-image-tall.png/840x560.webp" loading="lazy" width="600" height="900" style="width: 6.666666666666667em; aspect-ratio: 600 / 900;">' +
             "</a>" +
             "</span>" +
             "</p>",
@@ -224,14 +224,14 @@ run_test("inline_image_galleries", ({override}) => {
             '<a href="/user_uploads/path/to/inline-image-wide.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
             '<img alt="image" class="inline-image media-image-element landscape-thumbnail" data-original-content-type="image/png" ' +
             'data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/inline-image-wide.png" ' +
-            'src="/user_uploads/thumbnail/path/to/inline-image-wide.png/840x560.webp" loading="lazy" width="900" height="600" style="width: 15em;">' +
+            'src="/user_uploads/thumbnail/path/to/inline-image-wide.png/840x560.webp" loading="lazy" width="900" height="600" style="width: 15em; aspect-ratio: 900 / 600;">' +
             "</a>" +
             "</span>" +
             '<span class="message-media-inline-image message-media-gallery-image">' +
             '<a href="/user_uploads/path/to/inline-image-tall.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="image">' +
             '<img alt="image" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" ' +
             'data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/inline-image-tall.png" ' +
-            'src="/user_uploads/thumbnail/path/to/inline-image-tall.png/840x560.webp" loading="lazy" width="600" height="900" style="width: 6.666666666666667em;">' +
+            'src="/user_uploads/thumbnail/path/to/inline-image-tall.png/840x560.webp" loading="lazy" width="600" height="900" style="width: 6.666666666666667em; aspect-ratio: 600 / 900;">' +
             "</a>" +
             "</span>" +
             "</span>\n" +
@@ -251,14 +251,14 @@ run_test("inline_image_galleries", ({override}) => {
             '<img alt="inline-image-01.png" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" ' +
             'data-original-dimensions="800x800" data-original-src="/user_uploads/2/17/k0c4iGRefC2aCr4Jxf6NQdfH/inline-image-01.png" ' +
             'src="/user_uploads/thumbnail/2/17/k0c4iGRefC2aCr4Jxf6NQdfH/inline-image-01.png/840x560.webp" ' +
-            'loading="lazy" width="800" height="800" style="width: 10em;">' +
+            'loading="lazy" width="800" height="800" style="width: 10em; aspect-ratio: 800 / 800;">' +
             "</a></span>" +
             '<span class="message-media-inline-image message-media-gallery-image">' +
             '<a href="/user_uploads/2/3f/B0vUyCSpixMgDLG29fKeUkk6/inline-image-02.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="inline-image-02.png">' +
             '<img alt="inline-image-02.png" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" ' +
             'data-original-dimensions="800x800" data-original-src="/user_uploads/2/3f/B0vUyCSpixMgDLG29fKeUkk6/inline-image-02.png" ' +
             'src="/user_uploads/thumbnail/2/3f/B0vUyCSpixMgDLG29fKeUkk6/inline-image-02.png/840x560.webp" ' +
-            'loading="lazy" width="800" height="800" style="width: 10em;">' +
+            'loading="lazy" width="800" height="800" style="width: 10em; aspect-ratio: 800 / 800;">' +
             "</a></span></span>\n" +
             "\n" +
             "...and text after (again, line breaks only, no new paragraphs).</p>" +
@@ -267,14 +267,14 @@ run_test("inline_image_galleries", ({override}) => {
             '<img alt="inline-image-square.png" class="inline-image media-image-element portrait-thumbnail" data-original-content-type="image/png" ' +
             'data-original-dimensions="800x800" data-original-src="/user_uploads/2/48/mo114lAto6fft973UYWtik2T/inline-image-square.png" ' +
             'src="/user_uploads/thumbnail/2/48/mo114lAto6fft973UYWtik2T/inline-image-square.png/840x560.webp" ' +
-            'loading="lazy" width="800" height="800" style="width: 10em;">' +
+            'loading="lazy" width="800" height="800" style="width: 10em; aspect-ratio: 800 / 800;">' +
             "</a></span></span></p>" +
             '<p><span class="message-media-inline-image">' +
             '<a href="/user_uploads/2/1e/qsBe-4wztqriUHkB2ukYdauM/inline-image-03.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="inline-image-03.png">' +
             '<img alt="inline-image-03.png" class="inline-image image-opens-message media-image-element portrait-thumbnail" data-original-content-type="image/png" ' +
             'data-original-dimensions="800x800" data-original-src="/user_uploads/2/1e/qsBe-4wztqriUHkB2ukYdauM/inline-image-03.png" ' +
             'src="/user_uploads/thumbnail/2/1e/qsBe-4wztqriUHkB2ukYdauM/inline-image-03.png/840x560.webp" ' +
-            'loading="lazy" width="800" height="800" style="width: 10em;">' +
+            'loading="lazy" width="800" height="800" style="width: 10em; aspect-ratio: 800 / 800;">' +
             "</a></span> inline image with trailing text</p>",
         "** Inline image gallery with leading text, break separator failed to post-process",
     );
@@ -335,7 +335,7 @@ run_test("message_image_thumbnailing", ({override}) => {
             '<div class="message-media-preview-image">' +
             '<a href="/user_uploads/path/to/landscape-thumbnailed-image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="landscape-thumbnailed-image.png">' +
             '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/landscape-thumbnailed-image.png/300x200.webp" ' +
-            'class="media-image-element landscape-thumbnail" loading="lazy" width="3264" height="2448" style="width: 13.333333333333334em;">' +
+            'class="media-image-element landscape-thumbnail" loading="lazy" width="3264" height="2448" style="width: 13.333333333333334em; aspect-ratio: 3264 / 2448;">' +
             "</a>" +
             "</div>" +
             "</div>",
@@ -354,7 +354,7 @@ run_test("message_image_thumbnailing", ({override}) => {
             '<div class="message-media-preview-image">' +
             '<a href="/user_uploads/path/to/portrait-thumbnailed-image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="portrait-thumbnailed-image.png">' +
             '<img data-original-dimensions="100x200" src="/user_uploads/thumbnail/path/to/portrait-thumbnailed-image.png/300x200.webp" ' +
-            'class="media-image-element portrait-thumbnail" loading="lazy" width="100" height="200" style="width: 5em;">' +
+            'class="media-image-element portrait-thumbnail" loading="lazy" width="100" height="200" style="width: 5em; aspect-ratio: 100 / 200;">' +
             "</a>" +
             "</div>" +
             "</div>",
@@ -373,7 +373,7 @@ run_test("message_image_thumbnailing", ({override}) => {
             '<div class="message-media-preview-image">' +
             '<a href="/user_uploads/path/to/dinky-thumbnailed-image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="dinky-thumbnailed-image.png">' +
             '<img data-original-dimensions="1x10" src="/user_uploads/thumbnail/path/to/dinky-thumbnailed-image.png/300x200.webp" ' +
-            'class="media-image-element dinky-thumbnail extreme-aspect-ratio portrait-thumbnail" loading="lazy" width="1" height="10" style="width: 1px;">' +
+            'class="media-image-element dinky-thumbnail extreme-aspect-ratio portrait-thumbnail" loading="lazy" width="1" height="10" style="width: 1px; aspect-ratio: 1 / 10;">' +
             "</a>" +
             "</div>" +
             "</div>",
@@ -398,7 +398,7 @@ run_test("message_image_thumbnailing", ({override}) => {
             '<div class="message-media-preview-image">' +
             '<a href="/user_uploads/path/to/preview-animated-legacy-image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="preview-animated-legacy-image.png">' +
             '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/preview-animated-legacy-image.png/300x200-anim.webp" ' +
-            'data-animated="true" class="media-image-element landscape-thumbnail" loading="lazy" width="3264" height="2448" style="width: 13.333333333333334em;">' +
+            'data-animated="true" class="media-image-element landscape-thumbnail" loading="lazy" width="3264" height="2448" style="width: 13.333333333333334em; aspect-ratio: 3264 / 2448;">' +
             "</a>" +
             "</div>" +
             "</div>" +
@@ -408,7 +408,7 @@ run_test("message_image_thumbnailing", ({override}) => {
             '<img alt="preview-animated-image-landscape" class="inline-image image-opens-message media-image-element landscape-thumbnail" ' +
             'data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/preview-animated-image-landscape.png" ' +
             'src="/user_uploads/thumbnail/path/to/preview-animated-image-landscape.png/300x200-anim.webp" data-animated="true" ' +
-            'loading="lazy" width="900" height="600" style="width: 15em;">' +
+            'loading="lazy" width="900" height="600" style="width: 15em; aspect-ratio: 900 / 600;">' +
             "</a>" +
             "</span>" +
             " or " +
@@ -417,7 +417,7 @@ run_test("message_image_thumbnailing", ({override}) => {
             '<img alt="preview-animated-image-portrait" class="inline-image media-image-element portrait-thumbnail" ' +
             'data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/preview-animated-image-portrait.png" ' +
             'src="/user_uploads/thumbnail/path/to/preview-animated-image-portrait.png/300x200-anim.webp" data-animated="true" ' +
-            'loading="lazy" width="600" height="900" style="width: 6.666666666666667em;">' +
+            'loading="lazy" width="600" height="900" style="width: 6.666666666666667em; aspect-ratio: 600 / 900;">' +
             "</a>" +
             "</span>" +
             "</p>",
@@ -442,7 +442,7 @@ run_test("message_image_thumbnailing", ({override}) => {
             '<div class="message-media-preview-image message_inline_animated_image_still">' +
             '<a href="/user_uploads/path/to/preview-animated-legacy-image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="preview-animated-legacy-image.png">' +
             '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/preview-animated-legacy-image.png/300x200.webp" ' +
-            'data-animated="true" class="media-image-element landscape-thumbnail" loading="lazy" width="3264" height="2448" style="width: 13.333333333333334em;">' +
+            'data-animated="true" class="media-image-element landscape-thumbnail" loading="lazy" width="3264" height="2448" style="width: 13.333333333333334em; aspect-ratio: 3264 / 2448;">' +
             "</a>" +
             "</div>" +
             "</div>" +
@@ -452,7 +452,7 @@ run_test("message_image_thumbnailing", ({override}) => {
             '<img alt="preview-animated-image-landscape" class="inline-image image-opens-message media-image-element landscape-thumbnail" ' +
             'data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/preview-animated-image-landscape.png" ' +
             'src="/user_uploads/thumbnail/path/to/preview-animated-image-landscape.png/300x200.webp" ' +
-            'data-animated="true" loading="lazy" width="900" height="600" style="width: 15em;">' +
+            'data-animated="true" loading="lazy" width="900" height="600" style="width: 15em; aspect-ratio: 900 / 600;">' +
             "</a>" +
             "</span>" +
             " or " +
@@ -461,7 +461,7 @@ run_test("message_image_thumbnailing", ({override}) => {
             '<img alt="preview-animated-image-portrait" class="inline-image media-image-element portrait-thumbnail" ' +
             'data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/preview-animated-image-portrait.png" ' +
             'src="/user_uploads/thumbnail/path/to/preview-animated-image-portrait.png/300x200.webp" ' +
-            'data-animated="true" loading="lazy" width="600" height="900" style="width: 6.666666666666667em;">' +
+            'data-animated="true" loading="lazy" width="600" height="900" style="width: 6.666666666666667em; aspect-ratio: 600 / 900;">' +
             "</a>" +
             "</span>" +
             "</p>",
@@ -485,7 +485,7 @@ run_test("message_image_thumbnailing", ({override}) => {
             '<div class="message-media-preview-image message_inline_animated_image_still">' +
             '<a href="/user_uploads/path/to/preview-animated-legacy-image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="preview-animated-legacy-image.png">' +
             '<img data-original-dimensions="3264x2448" src="/user_uploads/thumbnail/path/to/preview-animated-legacy-image.png/300x200.webp" ' +
-            'data-animated="true" class="media-image-element landscape-thumbnail" loading="lazy" width="3264" height="2448" style="width: 13.333333333333334em;">' +
+            'data-animated="true" class="media-image-element landscape-thumbnail" loading="lazy" width="3264" height="2448" style="width: 13.333333333333334em; aspect-ratio: 3264 / 2448;">' +
             "</a>" +
             "</div>" +
             "</div>" +
@@ -495,7 +495,7 @@ run_test("message_image_thumbnailing", ({override}) => {
             '<img alt="preview-animated-image-landscape" class="inline-image image-opens-message media-image-element landscape-thumbnail" ' +
             'data-original-content-type="image/png" data-original-dimensions="900x600" data-original-src="/user_uploads/path/to/preview-animated-image-landscape.png" ' +
             'src="/user_uploads/thumbnail/path/to/preview-animated-image-landscape.png/300x200.webp" ' +
-            'data-animated="true" loading="lazy" width="900" height="600" style="width: 15em;">' +
+            'data-animated="true" loading="lazy" width="900" height="600" style="width: 15em; aspect-ratio: 900 / 600;">' +
             "</a>" +
             "</span>" +
             " or " +
@@ -504,7 +504,7 @@ run_test("message_image_thumbnailing", ({override}) => {
             '<img alt="preview-animated-image-portrait" class="inline-image media-image-element portrait-thumbnail" ' +
             'data-original-content-type="image/png" data-original-dimensions="600x900" data-original-src="/user_uploads/path/to/preview-animated-image-portrait.png" ' +
             'src="/user_uploads/thumbnail/path/to/preview-animated-image-portrait.png/300x200.webp" ' +
-            'data-animated="true" loading="lazy" width="600" height="900" style="width: 6.666666666666667em;">' +
+            'data-animated="true" loading="lazy" width="600" height="900" style="width: 6.666666666666667em; aspect-ratio: 600 / 900;">' +
             "</a>" +
             "</span>" +
             "</p>",
@@ -546,7 +546,7 @@ run_test("inline_images", ({override}) => {
             '<a href="/user_uploads/path/to/dinky-inline-image.png" target="_blank" rel="noopener noreferrer" class="media-anchor-element" aria-label="dinky-inline-image">' +
             '<img alt="dinky-inline-image" class="inline-image media-image-element dinky-thumbnail portrait-thumbnail" ' +
             'data-original-content-type="image/png" data-original-dimensions="128x128" data-original-src="/user_uploads/path/to/dinky-inline-image.png" ' +
-            'src="/user_uploads/thumbnail/path/to/dinky-inline-image.png/840x560.webp" loading="lazy" width="128" height="128" style="width: 128px;">' +
+            'src="/user_uploads/thumbnail/path/to/dinky-inline-image.png/840x560.webp" loading="lazy" width="128" height="128" style="width: 128px; aspect-ratio: 128 / 128;">' +
             "</a>" +
             "</span>",
     );
