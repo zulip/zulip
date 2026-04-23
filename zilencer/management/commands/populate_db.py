@@ -833,7 +833,7 @@ class Command(ZulipBaseCommand):
 
             # Create custom profile field data
             phone_number = try_add_realm_custom_profile_field(
-                zulip_realm, "Phone number", CustomProfileField.SHORT_TEXT, hint=""
+                zulip_realm, "Phone number", CustomProfileField.PHONE_NUMBER, hint=""
             )
             biography = try_add_realm_custom_profile_field(
                 zulip_realm,
@@ -879,7 +879,7 @@ class Command(ZulipBaseCommand):
             do_update_user_custom_profile_data_if_changed(
                 iago,
                 [
-                    {"id": phone_number.id, "value": "+1-234-567-8901"},
+                    {"id": phone_number.id, "value": "+12345678901"},
                     {"id": biography.id, "value": "Betrayer of Othello."},
                     {"id": favorite_food.id, "value": "Apples"},
                     {"id": favorite_editor.id, "value": "1"},
@@ -895,7 +895,7 @@ class Command(ZulipBaseCommand):
             do_update_user_custom_profile_data_if_changed(
                 hamlet,
                 [
-                    {"id": phone_number.id, "value": "+0-11-23-456-7890"},
+                    {"id": phone_number.id, "value": "+442079460958"},
                     {
                         "id": biography.id,
                         "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",

@@ -2335,7 +2335,9 @@ class SocialAuthBaseWithSyncAttrTest(SocialAuthBase, ABC):
         result = self.social_auth_test_with_sync_attrs(
             account_data_dict,
             subdomain="zulip",
-            extra_attrs=dict(mobilePhone="+442079460959", birthday="2021-01-01", zulip_role="owner"),
+            extra_attrs=dict(
+                mobilePhone="+442079460959", birthday="2021-01-01", zulip_role="owner"
+            ),
             sync_attrs_config=sync_custom_attrs_dict,
         )
 
@@ -8128,7 +8130,7 @@ class TestLDAP(ZulipLDAPTestCase):
         new_external_auth_id = external_auth_ids[0]
         self.assertEqual(new_external_auth_id.realm_id, realm.id)
         self.assertEqual(new_external_auth_id.external_auth_method_name, "ldap")
-        self.assertEqual(new_external_auth_id.external_auth_id, "123456789")
+        self.assertEqual(new_external_auth_id.external_auth_id, "+12345678900")
 
     @override_settings(
         AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
@@ -9042,7 +9044,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
 
         external_auth_ids = list(ExternalAuthID.objects.filter(user=hamlet))
         self.assert_length(external_auth_ids, 1)
-        self.assertEqual(external_auth_ids[0].external_auth_id, "123456789")
+        self.assertEqual(external_auth_ids[0].external_auth_id, "+12345678900")
 
         # If unique_account_id is not configured, no ExternalAuthID should be created.
         ExternalAuthID.objects.filter(user=hamlet).delete()
@@ -9170,10 +9172,10 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             sync_user_from_ldap(hamlet, mock.Mock())
 
         external_auth_id_obj = ExternalAuthID.objects.get(user=hamlet)
-        self.assertEqual(external_auth_id_obj.external_auth_id, "123456789")
+        self.assertEqual(external_auth_id_obj.external_auth_id, "+12345678900")
         self.assertIn(
             f"WARNING:zulip.auth.ldap:User {hamlet.id} had mismatched ExternalAuthID record. "
-            "Updating old_value => 123456789",
+            "Updating old_value => +12345678900",
             log_output.output,
         )
 
