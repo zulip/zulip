@@ -28,8 +28,8 @@ from urllib.parse import urlsplit
 import orjson
 from django.apps import apps
 from django.conf import settings
-from django.db import connection
-from django.db.models import Exists, Model, OuterRef, Q, QuerySet
+from django.db import connection, models
+from django.db.models import Exists, OuterRef, Q, QuerySet
 from django.forms.models import model_to_dict
 from django.utils.timezone import is_naive as timezone_is_naive
 from django.utils.timezone import now as timezone_now
@@ -375,7 +375,10 @@ def sanity_check_output(data: TableData) -> None:
         *apps.get_app_config("two_factor").get_models(include_auto_created=True),
         *apps.get_app_config("zerver").get_models(include_auto_created=True),
     ]
-    all_tables_db = {model._meta.db_table for model in target_models}
+    # Skip managed=False models -- they wrap session-scoped temp
+    # tables (e.g. DmgUserProfileIdsTempTable) that aren't part of
+    # the persisted schema and have nothing to export.
+    all_tables_db = {model._meta.db_table for model in target_models if model._meta.managed}
 
     # These assertion statements will fire when we add a new database
     # table that is not included in Zulip's data exports.  Generally,
@@ -902,8 +905,8 @@ def export_from_config(
             # If we need to collect the client-ids, we can't just stream the results
             response[table] = list(response[table])
 
-            model = cast(type[Model], model)
-            assert issubclass(model, Model)
+            model = cast(type[models.Model], model)
+            assert issubclass(model, models.Model)
             client_id_field_name = get_fk_field_name(model, Client)
             assert client_id_field_name is not None
             context["collected_client_ids_set"].update(
@@ -1555,6 +1558,24 @@ def fetch_submessage_data(response: TableData, message_ids: set[int]) -> None:
     response["zerver_submessage"] = make_raw(query.iterator())
 
 
+# The DMG export's Subscription probes reference this temp table by
+# name to avoid inlining a realm-sized user_profile_ids list in each
+# query.  The managed=False model wraps the table so Django can
+# generate IN (SELECT ...) subqueries through its ORM rather than
+# needing .extra() or raw SQL in the filter calls.
+DMG_USER_PROFILE_IDS_TABLE = "_export_dmg_user_profile_ids"
+
+
+class DmgUserProfileIdsTempTable(models.Model):
+    user_profile_id = models.IntegerField(primary_key=True)
+    objects: models.Manager["DmgUserProfileIdsTempTable"] = models.Manager()
+
+    class Meta:
+        managed = False
+        db_table = DMG_USER_PROFILE_IDS_TABLE
+        app_label = "zerver"
+
+
 def custom_fetch_direct_message_groups(response: TableData, context: Context) -> None:
     realm = context["realm"]
     export_type = context["export_type"]
@@ -1575,6 +1596,16 @@ def custom_fetch_direct_message_groups(response: TableData, context: Context) ->
         + list(response["zerver_userprofile_mirrordummy"])
         + list(response["zerver_userprofile_crossrealm"])
     }
+
+    # The Subscription probes below would otherwise inline this
+    # realm-sized set as a literal IN clause on every query, paying
+    # PostgreSQL's parse cost for every id.  Populate a named temp
+    # table once so each query references it by name via the
+    # DmgUserProfileIdsTempTable managed=False model.
+    setup_user_ids_temp_table(DMG_USER_PROFILE_IDS_TABLE, user_profile_ids)
+    dmg_user_ids_subquery = DmgUserProfileIdsTempTable.objects.values_list(
+        "user_profile_id", flat=True
+    )
 
     recipient_filter = Q()
     if export_type != RealmExport.EXPORT_FULL_WITHOUT_CONSENT:
@@ -1617,7 +1648,7 @@ def custom_fetch_direct_message_groups(response: TableData, context: Context) ->
         Subscription.objects.filter(
             recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
             user_profile__realm_id=realm.id,
-            user_profile__in=user_profile_ids,
+            user_profile_id__in=dmg_user_ids_subquery,
         )
         .filter(recipient_filter)
         .distinct("recipient_id")
@@ -1640,7 +1671,7 @@ def custom_fetch_direct_message_groups(response: TableData, context: Context) ->
         Subscription.objects.filter(
             recipient_id__in=realm_direct_message_group_recipient_ids,
         )
-        .exclude(user_profile_id__in=user_profile_ids)
+        .exclude(user_profile_id__in=dmg_user_ids_subquery)
         .distinct("recipient_id")
         .values_list("recipient_id", flat=True)
     )
@@ -1660,7 +1691,7 @@ def custom_fetch_direct_message_groups(response: TableData, context: Context) ->
     response["_huddle_subscription"] = make_raw(
         Subscription.objects.filter(
             recipient_id__in=direct_message_group_recipient_ids,
-            user_profile_id__in=user_profile_ids,
+            user_profile_id__in=dmg_user_ids_subquery,
         ).iterator()
     )
     response["zerver_huddle"] = make_raw(
