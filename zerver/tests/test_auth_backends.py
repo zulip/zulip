@@ -2321,6 +2321,7 @@ class SocialAuthBaseWithSyncAttrTest(SocialAuthBase, ABC):
             "zulip": {
                 self.BACKEND_CLASS.name: {
                     "custom__phone_number": "mobilePhone",
+                    "custom__favorite_food": "favoriteFood",
                     "role": "zulip_role",
                 }
             }
@@ -2334,7 +2335,7 @@ class SocialAuthBaseWithSyncAttrTest(SocialAuthBase, ABC):
         result = self.social_auth_test_with_sync_attrs(
             account_data_dict,
             subdomain="zulip",
-            extra_attrs=dict(mobilePhone="123412341234", birthday="2021-01-01", zulip_role="owner"),
+            extra_attrs=dict(mobilePhone="+442079460959", birthday="2021-01-01", zulip_role="owner"),
             sync_attrs_config=sync_custom_attrs_dict,
         )
 
@@ -2350,7 +2351,7 @@ class SocialAuthBaseWithSyncAttrTest(SocialAuthBase, ABC):
         phone_field_value = CustomProfileFieldValue.objects.get(
             user_profile=self.user_profile, field=phone_field
         ).value
-        self.assertEqual(phone_field_value, "123412341234")
+        self.assertEqual(phone_field_value, "+442079460959")
 
         # Verify the Birthday field doesn't get synced - because it isn't configured for syncing.
         new_birthday_field_value = CustomProfileFieldValue.objects.get(
@@ -2402,7 +2403,7 @@ class SocialAuthBaseWithSyncAttrTest(SocialAuthBase, ABC):
         phone_field_value = CustomProfileFieldValue.objects.get(
             user_profile=self.user_profile, field=phone_field
         ).value
-        self.assertEqual(phone_field_value, "123412341234")
+        self.assertEqual(phone_field_value, "+442079460959")
 
         # Verify with none of these attributes sent at all.
         result = self.social_auth_test_with_sync_attrs(
@@ -2418,7 +2419,7 @@ class SocialAuthBaseWithSyncAttrTest(SocialAuthBase, ABC):
         phone_field_value = CustomProfileFieldValue.objects.get(
             user_profile=self.user_profile, field=phone_field
         ).value
-        self.assertEqual(phone_field_value, "123412341234")
+        self.assertEqual(phone_field_value, "+442079460959")
 
         # Disable syncing of role in SOCIAL_AUTH_SYNC_ATTRS_DICT, while keeping
         # role in extra_attrs. This edge case means the attribute will be read from the
@@ -2446,7 +2447,7 @@ class SocialAuthBaseWithSyncAttrTest(SocialAuthBase, ABC):
             result = self.social_auth_test_with_sync_attrs(
                 account_data_dict,
                 subdomain="zulip",
-                extra_attrs=dict(mobilePhone=long_value),
+                extra_attrs=dict(favoriteFood=long_value),
                 sync_attrs_config=sync_custom_attrs_dict,
             )
 
@@ -2454,15 +2455,18 @@ class SocialAuthBaseWithSyncAttrTest(SocialAuthBase, ABC):
         self.assertEqual(data["email"], self.email)
         self.assertIn(
             self.logger_output(
-                f"Truncated value for custom profile field phone_number of user {self.user_profile.id} to 50 characters.",
+                f"Truncated value for custom profile field favorite_food of user {self.user_profile.id} to 50 characters.",
                 type="warning",
             ),
             m.output,
         )
-        phone_field_value = CustomProfileFieldValue.objects.get(
-            user_profile=self.user_profile, field=phone_field
+        food_field = CustomProfileField.objects.get(
+            realm=self.user_profile.realm, name="Favorite food"
+        )
+        food_field_value = CustomProfileFieldValue.objects.get(
+            user_profile=self.user_profile, field=food_field
         ).value
-        self.assertEqual(phone_field_value, expected_value)
+        self.assertEqual(food_field_value, expected_value)
 
     def test_social_auth_group_sync(self) -> None:
         realm = get_realm("zulip")
@@ -2818,7 +2822,7 @@ class SocialAuthBaseWithSyncAttrTest(SocialAuthBase, ABC):
                 subdomain="zulip",
                 is_signup=True,
                 extra_attrs=dict(
-                    mobilePhone="123412341234",
+                    mobilePhone="+442079460959",
                     birthday="2021-01-01",
                     zulip_role="owner",
                     zulip_groups=["testgroup1", "samlgroup3", "samlgroup99"],
@@ -3034,7 +3038,7 @@ class SocialAuthBaseWithSyncAttrTest(SocialAuthBase, ABC):
                 account_data_dict,
                 subdomain="zulip",
                 extra_attrs=dict(
-                    mobilePhone="123412341234", title="some title", birthday="2021-01-01"
+                    mobilePhone="+442079460959", title="some title", birthday="2021-01-01"
                 ),
                 sync_attrs_config=sync_custom_attrs_dict,
             )
@@ -8871,7 +8875,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         test_data = [
             {
                 "field_name": "Phone number",
-                "expected_value": "123456789",
+                "expected_value": "+12345678900",
             },
             {
                 "field_name": "Birthday",
@@ -8937,13 +8941,13 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
     def test_update_custom_profile_field_truncation(self) -> None:
         long_value = "x" * 60
         expected_value = "x" * 49 + "…"
-        self.change_ldap_user_attr("hamlet", "homePhone", long_value)
+        self.change_ldap_user_attr("hamlet", "description", long_value)
 
         with (
             self.settings(
                 AUTH_LDAP_USER_ATTR_MAP={
                     "full_name": "cn",
-                    "custom_profile_field__phone_number": "homePhone",
+                    "custom_profile_field__favorite_food": "description",
                 }
             ),
             self.assertLogs("zulip.ldap", "WARNING") as log_output,
@@ -8951,11 +8955,11 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             self.perform_ldap_sync(self.example_user("hamlet"))
 
         hamlet = self.example_user("hamlet")
-        phone_field = CustomProfileField.objects.get(realm=hamlet.realm, name="Phone number")
-        phone_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=phone_field)
-        self.assertEqual(phone_value.value, expected_value)
+        food_field = CustomProfileField.objects.get(realm=hamlet.realm, name="Favorite food")
+        food_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=food_field)
+        self.assertEqual(food_value.value, expected_value)
         self.assertIn(
-            f"WARNING:zulip.ldap:Truncated value for custom profile field phone_number of user {hamlet.id} to 50 characters.",
+            f"WARNING:zulip.ldap:Truncated value for custom profile field favorite_food of user {hamlet.id} to 50 characters.",
             log_output.output,
         )
 
