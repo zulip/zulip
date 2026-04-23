@@ -533,6 +533,45 @@ def make_raw(query: Iterable[Any], exclude: list[Field] | None = None) -> Iterat
         yield data
 
 
+def setup_user_ids_temp_table(table_name: str, user_profile_ids: Iterable[int]) -> None:
+    """Populate a session-local temp table with user_profile_ids so
+    export queries can reference it by name rather than inlining the
+    full set as literal SQL.  Inlining a realm-sized IN list costs
+    PostgreSQL hundreds of ms per call in parse time on large
+    realms; a named table makes the query text constant and the
+    planner can estimate selectivity against real statistics.
+
+    Each caller owns its own table name, because distinct use sites
+    (UserMessage export, DirectMessageGroup export, consenting-user
+    Config queries) need different sets and share a connection when
+    run_parallel is invoked with processes=1.
+
+    Callers should invoke this once per connection -- typically from
+    the run_parallel initializer for subprocess paths, or directly
+    in the main process before the first query that references the
+    table.
+    """
+    table = sql.Identifier(table_name)
+    with connection.cursor() as cursor:
+        cursor.execute(
+            sql.SQL(
+                "CREATE TEMP TABLE IF NOT EXISTS {table} "
+                "(user_profile_id int PRIMARY KEY) ON COMMIT PRESERVE ROWS"
+            ).format(table=table)
+        )
+        cursor.execute(sql.SQL("TRUNCATE {table}").format(table=table))
+        cursor.execute(
+            sql.SQL("INSERT INTO {table} (user_profile_id) SELECT unnest(%s::int[])").format(
+                table=table
+            ),
+            [list(user_profile_ids)],
+        )
+        # ANALYZE so the planner sees the real row count; a fresh
+        # temp table otherwise has no statistics and the planner's
+        # default-1000-rows guess can pick the wrong join strategy.
+        cursor.execute(sql.SQL("ANALYZE {table}").format(table=table))
+
+
 def floatify_datetime_fields(item: Record, table: TableName) -> Record:
     updates = {}
     for field in date_fields_for_table(table):
@@ -1727,23 +1766,22 @@ def custom_fetch_onboarding_usermessage(response: TableData, context: Context) -
     response["zerver_onboardingusermessage"] = rows()
 
 
+# fetch_usermessages references the temp table by this name; each
+# parallel worker populates its own copy once via the initializer.
+USERMESSAGE_EXPORT_USER_IDS_TABLE = "_export_usermessage_user_ids"
+
+
 def fetch_usermessages(
-    realm: Realm,
     message_ids: set[int],
-    user_profile_ids: set[int],
     message_filename: Path,
-    export_full_with_consent: bool,
-    consented_user_ids: set[int] | None = None,
 ) -> Iterator[Record]:
     # UserMessage export security rule: You can export UserMessages
     # for the messages you exported for the users in your realm.
-    # user_profile_ids comes from response["zerver_userprofile"] and
-    # is therefore already scoped to this realm's exported users, so
-    # filtering on user_profile_id directly is sufficient -- no JOIN
-    # to UserProfile is needed to reconfirm the realm.
-    if export_full_with_consent:
-        assert consented_user_ids is not None
-        user_profile_ids = consented_user_ids & user_profile_ids
+    # USERMESSAGE_EXPORT_USER_IDS_TABLE was populated once per
+    # subprocess connection by usermessage_process_initializer with
+    # exactly the set of users this export is allowed to include
+    # (the realm's exported users, narrowed by consent if
+    # applicable); the join below enforces the rule.
 
     # The hand-rolled SELECT below names UserMessage's columns
     # explicitly; this assert is to catch any future model column drift.
@@ -1755,24 +1793,25 @@ def fetch_usermessages(
     }, "UserMessage gained a field; update this SELECT and the yielded dict"
 
     # psycopg2 mogrifies an empty tuple to `IN ()`, which is a
-    # PostgreSQL syntax error; Django's __in lookup short-circuits
-    # an empty set via EmptyResultSet, and this matches that
-    # behavior.  EXPORT_FULL_WITH_CONSENT hits this whenever the
-    # consent intersection is empty.
-    if not user_profile_ids or not message_ids:
+    # PostgreSQL syntax error; this matches Django's __in
+    # short-circuit via EmptyResultSet.  An empty user id set is
+    # not a concern here because the JOIN against the (possibly
+    # empty) temp table just returns no rows.
+    if not message_ids:
         return
 
     logging.info("Fetching UserMessages for %s", message_filename)
     with connection.chunked_cursor() as cursor:
         cursor.execute(
-            """
-            SELECT id, user_profile_id, flags, message_id
-            FROM zerver_usermessage
-            WHERE user_profile_id IN %s
-              AND message_id IN %s
-            ORDER BY id
-            """,
-            [tuple(user_profile_ids), tuple(message_ids)],
+            sql.SQL("""
+            SELECT um.id, um.user_profile_id, um.flags, um.message_id
+            FROM zerver_usermessage um
+            JOIN {table} u
+              ON u.user_profile_id = um.user_profile_id
+            WHERE um.message_id IN %s
+            ORDER BY um.id
+            """).format(table=sql.Identifier(USERMESSAGE_EXPORT_USER_IDS_TABLE)),
+            [tuple(message_ids)],
         )
         for um_id, user_profile_id, flags, message_id in cursor:
             yield {
@@ -1791,10 +1830,6 @@ def export_usermessages_batch(
     objects.
 
     See write_message_partial_for_query for more context."""
-    context = usermessage_context.get()
-    export_full_with_consent = context.export_full_with_consent
-    consented_user_ids = context.consented_user_ids
-
     assert input_path.endswith(".partial")
     output_path = input_path.replace(".json.partial", ".json")
 
@@ -1803,16 +1838,7 @@ def export_usermessages_batch(
 
     messages = list(input_data["zerver_message"])
     message_ids = {item["id"] for item in messages}
-    user_profile_ids = set(input_data["zerver_userprofile_ids"])
-    realm = Realm.objects.get(id=input_data["realm_id"])
-    zerver_usermessage_data = fetch_usermessages(
-        realm,
-        message_ids,
-        user_profile_ids,
-        output_path,
-        export_full_with_consent,
-        consented_user_ids=consented_user_ids,
-    )
+    zerver_usermessage_data = fetch_usermessages(message_ids, output_path)
 
     output_data: TableData = dict(
         zerver_message=messages,
@@ -2620,12 +2646,20 @@ def do_export_realm(
         realm, attachments=attachments, user=None, output_dir=output_dir, processes=processes
     )
 
+    # Users whose UserMessage rows the export should include: the
+    # realm's normal exported users (mirror dummies and cross-realm
+    # bots are handled separately), narrowed by the consenting set
+    # in consent mode.
+    usermessage_user_profile_ids = {r["id"] for r in response["zerver_userprofile"]}
+    if export_type == RealmExport.EXPORT_FULL_WITH_CONSENT:
+        assert exportable_user_ids is not None
+        usermessage_user_profile_ids &= exportable_user_ids
+
     # Start parallel jobs to export the UserMessage objects.
     launch_user_message_subprocesses(
         processes=processes,
         output_dir=output_dir,
-        export_full_with_consent=export_type == RealmExport.EXPORT_FULL_WITH_CONSENT,
-        exportable_user_ids=exportable_user_ids,
+        user_profile_ids=usermessage_user_profile_ids,
     )
 
     do_common_export_processes(output_dir)
@@ -2662,26 +2696,14 @@ def export_attachment_table(
     return attachments
 
 
-@dataclass
-class UserMessageProcessState:
-    export_full_with_consent: bool
-    consented_user_ids: set[int] | None
-
-
-usermessage_context: ContextVar[UserMessageProcessState] = ContextVar("usermessage_context")
-
-
-def usermessage_process_initializer(
-    export_full_with_consent: bool, consented_user_ids: set[int] | None
-) -> None:
-    usermessage_context.set(UserMessageProcessState(export_full_with_consent, consented_user_ids))
+def usermessage_process_initializer(user_profile_ids: set[int]) -> None:
+    setup_user_ids_temp_table(USERMESSAGE_EXPORT_USER_IDS_TABLE, user_profile_ids)
 
 
 def launch_user_message_subprocesses(
     processes: int,
     output_dir: Path,
-    export_full_with_consent: bool,
-    exportable_user_ids: set[int] | None,
+    user_profile_ids: set[int],
 ) -> None:
     logging.info("Launching %d PARALLEL subprocesses to export UserMessage rows", processes)
 
@@ -2691,10 +2713,7 @@ def launch_user_message_subprocesses(
         files,
         processes,
         initializer=usermessage_process_initializer,
-        initargs=(
-            export_full_with_consent,
-            exportable_user_ids,
-        ),
+        initargs=(user_profile_ids,),
         report_every=10,
         report=lambda count: logging.info("Successfully processed %s message files", count),
     )
