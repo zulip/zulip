@@ -15332,6 +15332,15 @@ paths:
                               "required": false,
                               "editable_by_user": true,
                             },
+                            {
+                              "id": 10,
+                              "name": "Alternate phone",
+                              "type": 9,
+                              "hint": "An alternate phone number",
+                              "order": 10,
+                              "required": false,
+                              "editable_by_user": true,
+                            },
                           ],
                       }
     patch:
@@ -15405,8 +15414,11 @@ paths:
                     - **6**: Users
                     - **7**: External account
                     - **8**: Pronouns
+                    - **9**: Phone number
 
-                    **Changes**: Field type `8` added in Zulip 6.0 (feature level 151).
+                    **Changes**: Field type `9` added in Zulip 13.0 (feature level ZF-fb3f81).
+
+                    Field type `8` added in Zulip 6.0 (feature level 151).
                   type: integer
                   example: 3
                 hint:
@@ -18841,8 +18853,11 @@ paths:
                             - `EXTERNAL_ACCOUNT` for external accounts.
                             - `USER` for selecting a user for the field.
                             - `PRONOUNS` for a short text field with convenient typeahead for one's preferred pronouns.
+                            - `PHONE_NUMBER` for a short text field specifically formatted for phone numbers.
 
-                            **Changes**: `PRONOUNS` type added in Zulip 6.0 (feature level 151).
+                            **Changes**: `PHONE_NUMBER` type added in Zulip 13.0 (feature level ZF-fb3f81).
+
+                            `PRONOUNS` type added in Zulip 6.0 (feature level 151).
                           additionalProperties: false
                           properties:
                             id:
@@ -28245,8 +28260,11 @@ components:
             - **6**: Users
             - **7**: External account
             - **8**: Pronouns
+            - **9**: Phone number
 
-            **Changes**: Field type `8` added in Zulip 6.0 (feature level 151).
+            **Changes**: Field type `9` added in Zulip 13.0 (feature level ZF-fb3f81).
+
+            Field type `8` added in Zulip 6.0 (feature level 151).
         order:
           type: integer
           description: |

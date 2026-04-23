@@ -861,7 +861,7 @@ class PermissionTest(ZulipTestCase):
 
         # Test for all type of data
         fields = {
-            "Phone number": "short text data",
+            "Phone number": "+12345678900",
             "Biography": "long text data",
             "Favorite food": "short text data",
             "Favorite editor": "0",
@@ -899,7 +899,7 @@ class PermissionTest(ZulipTestCase):
         # Map field names to their expected display values in the notification.
         # Some field types convert their stored values to human-readable display text.
         expected_display_values = {
-            "Phone number": "short text data",
+            "Phone number": "+12345678900",
             "Biography": "long text data",
             "Favorite food": "short text data",
             "Favorite editor": "Vim",  # SELECT field: "0" -> "Vim"
@@ -1004,6 +1004,8 @@ class PermissionTest(ZulipTestCase):
             value: str | list[Any] | None = ""
             if field.field_type == CustomProfileField.USER:
                 value = []
+            elif field.field_type == CustomProfileField.PHONE_NUMBER:
+                value = None
             empty_profile_data.append(
                 {
                     "id": field.id,

@@ -78,8 +78,12 @@ def validate_use_for_user_matching_field(field_type: int, use_for_user_matching:
     if not use_for_user_matching:
         return
 
-    # Only SHORT_TEXT and EXTERNAL_ACCOUNT field types are supported for user matching.
-    if field_type not in (CustomProfileField.SHORT_TEXT, CustomProfileField.EXTERNAL_ACCOUNT):
+    # Only SHORT_TEXT, PHONE_NUMBER, and EXTERNAL_ACCOUNT field types are supported for user matching.
+    if field_type not in (
+        CustomProfileField.SHORT_TEXT,
+        CustomProfileField.PHONE_NUMBER,
+        CustomProfileField.EXTERNAL_ACCOUNT,
+    ):
         raise JsonableError(_("Field type not supported for use for user matching."))
 
 
