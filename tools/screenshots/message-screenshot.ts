@@ -73,14 +73,14 @@ async function run(): Promise<void> {
         await page.waitForSelector(messageSelector);
         // remove unread marker and don't select message
         const marker = `#message-row-${message_list_id}-${CSS.escape(messageId)} .unread_marker`;
-        await page.evaluate((sel) => {
-            globalThis.document.querySelector(sel)?.remove();
-        }, marker);
+        await page.$eval(marker, (element) => {
+            element.remove();
+        });
         const messageBox = await page.$(messageSelector);
         assert.ok(messageBox !== null);
-        await page.evaluate((msg) => {
-            globalThis.document.querySelector(msg)?.classList.remove("selected_message");
-        }, messageSelector);
+        await page.$eval(messageSelector, (element) => {
+            element.classList.remove("selected_message");
+        });
         const messageGroup = await messageBox.$("xpath/..");
         assert.ok(messageGroup !== null);
         // Compute screenshot area, with some padding around the message group
