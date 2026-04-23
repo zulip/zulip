@@ -1175,9 +1175,8 @@
             var(--recent-view-table-border-radius) -
                 var(--recent-view-table-border-bottom-width)
         );
-    --color-border-recent-view-table: light-dark(
-        hsl(0deg 0% 0% / 10%),
-        hsl(0deg 0% 0% / 10%)
+    --color-border-recent-view-table: var(
+        --color-border-inbox-folder-component
     );
     --color-background-recent-view-row: var(--color-background-inbox-row);
     --color-background-recent-view-row-hover: var(
@@ -2132,6 +2131,7 @@
     );
 
     /* Inbox view constants - Values from Figma design */
+    --inbox-view-folder-component-border-width: 0.5px;
     --width-inbox-search: calc(27.4375em); /* 439px / 16px em */
     --width-inbox-filters-dropdown: 10.7142em; /* 150px / 14px em */
     --color-background-inbox-no-unreads-illustration: light-dark(
@@ -2139,6 +2139,7 @@
         hsl(147deg 40% 55%)
     );
     --color-background-inbox: var(--color-background);
+    --color-border-inbox-folder-component: hsl(0deg 0% 0% / 13%);
     --color-icon-search-inbox: light-dark(hsl(0deg 0% 0%), hsl(0deg 0% 100%));
     --color-inbox-search-text: light-dark(hsl(0deg 0% 0%), hsl(0deg 0% 95%));
     --color-border-inbox-search: light-dark(

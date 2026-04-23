@@ -666,7 +666,8 @@
 
 .inbox-folder-components {
     border-radius: 5px;
-    border: 0.5px solid hsl(0deg 0% 0% / 13%);
+    border: var(--inbox-view-folder-component-border-width) solid
+        var(--color-border-inbox-folder-component);
     overflow: hidden;
 
     &:has(.inbox-row:not(.hidden_by_filters)),
