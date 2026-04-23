@@ -1722,17 +1722,43 @@ def fetch_usermessages(
     if export_full_with_consent:
         assert consented_user_ids is not None
         user_profile_ids = consented_user_ids & user_profile_ids
-    user_message_query = (
-        UserMessage.objects.filter(user_profile_id__in=user_profile_ids, message_id__in=message_ids)
-        .order_by("id")
-        .iterator()
-    )
+
+    # The hand-rolled SELECT below names UserMessage's columns
+    # explicitly; this assert is to catch any future model column drift.
+    assert {f.name for f in UserMessage._meta.concrete_fields} == {
+        "id",
+        "user_profile",
+        "flags",
+        "message",
+    }, "UserMessage gained a field; update this SELECT and the yielded dict"
+
+    # psycopg2 mogrifies an empty tuple to `IN ()`, which is a
+    # PostgreSQL syntax error; Django's __in lookup short-circuits
+    # an empty set via EmptyResultSet, and this matches that
+    # behavior.  EXPORT_FULL_WITH_CONSENT hits this whenever the
+    # consent intersection is empty.
+    if not user_profile_ids or not message_ids:
+        return
+
     logging.info("Fetching UserMessages for %s", message_filename)
-    for user_message in user_message_query:
-        user_message_obj = model_to_dict(user_message)
-        user_message_obj["flags_mask"] = user_message.flags.mask
-        del user_message_obj["flags"]
-        yield user_message_obj
+    with connection.chunked_cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT id, user_profile_id, flags, message_id
+            FROM zerver_usermessage
+            WHERE user_profile_id IN %s
+              AND message_id IN %s
+            ORDER BY id
+            """,
+            [tuple(user_profile_ids), tuple(message_ids)],
+        )
+        for um_id, user_profile_id, flags, message_id in cursor:
+            yield {
+                "id": um_id,
+                "user_profile": user_profile_id,
+                "flags_mask": flags,
+                "message": message_id,
+            }
 
 
 def export_usermessages_batch(

@@ -603,6 +603,21 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(exported_um["message"], um.message_id)
         self.assertEqual(exported_um["user_profile"], um.user_profile_id)
 
+        # Verify flags_mask on every exported UserMessage equals the
+        # int value BitHandler.mask returned for the model instance;
+        # fetch_usermessages reads flags as a raw int from the cursor
+        # rather than via the BitField wrapper, and this guards
+        # against that substitution diverging.
+        um_flags_by_id = dict(UserMessage.objects.values_list("id", "flags"))
+        for exported_um in data["zerver_usermessage"]:
+            self.assertEqual(exported_um["flags_mask"], um_flags_by_id[exported_um["id"]])
+        # And confirm the set actually spans both zero and non-zero
+        # values, so the loop above isn't vacuously checking only
+        # flags=0 rows.
+        flag_values = {r["flags_mask"] for r in data["zerver_usermessage"]}
+        self.assertGreater(max(flag_values), 0)
+        self.assertIn(0, flag_values)
+
         exported_message = self.find_by_id(data["zerver_message"], um.message_id)
         self.assertEqual(exported_message["content"], um.message.content)
 
