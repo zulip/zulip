@@ -428,8 +428,8 @@ ul.popover-group-menu-member-list {
         top: 0 !important;
         left: 0 !important;
 
-        width: 100vw;
-        height: 100vh;
+        width: var(--full-width-dynamic-viewport);
+        height: var(--full-height-dynamic-viewport);
 
         display: flex !important;
         justify-content: center;
@@ -918,7 +918,7 @@ ul.popover-group-menu-member-list {
 
 .popover-menu {
     margin: 0;
-    max-height: 85vh;
+    max-height: var(--popover-menu-max-height);
     overflow-x: hidden;
     user-select: none;
     border-radius: 6px;
