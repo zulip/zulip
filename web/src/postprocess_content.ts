@@ -324,12 +324,9 @@ export function postprocess_content(html: string): string {
             // set the `aspect-ratio`, which flexbox respects and will
             // therefore preserve exactly the correct amount of space
             // prior to the image loading.
-            // TODO: Correct our unit tests to not discard `aspect-ratio`;
-            // should that property be recognized, there will be test
-            // failures all over the place in `postprocess_content.test.cjs`
             message_media_image.style.setProperty(
                 "aspect-ratio",
-                `${original_width / original_height}`,
+                `${original_width} / ${original_height}`,
             );
 
             if (is_dinky_image) {
