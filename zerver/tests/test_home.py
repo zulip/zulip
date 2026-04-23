@@ -28,6 +28,7 @@ from zerver.lib.test_helpers import (
     queries_captured,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.users import max_message_id_for_user
 from zerver.models import DefaultStream, Draft, Realm, UserActivity, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -306,7 +307,7 @@ class HomeTest(ZulipTestCase):
 
         # Verify succeeds once logged-in
         with (
-            self.assert_database_query_count(58),
+            self.assert_database_query_count(56),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page(stream="Denmark")
@@ -1103,7 +1104,12 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         self.assertEqual(page_params["narrow_stream"], stream_name)
         self.assertEqual(page_params["narrow"], [dict(operator="stream", operand=stream_name)])
-        self.assertEqual(page_params["state_data"]["max_message_id"], -1)
+        # max_message_id is the user's global latest message id, not
+        # the narrow's; see local_message.ts for how it's consumed.
+        self.assertEqual(
+            page_params["state_data"]["max_message_id"],
+            max_message_id_for_user(user_profile),
+        )
 
     @activate_push_notification_service()
     def test_has_pending_sponsorship_request(self) -> None:
