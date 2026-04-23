@@ -148,23 +148,6 @@ def get_zulip_mention_for_slack_user(
     return None
 
 
-def get_user_mentions(
-    token: str,
-    users: list[ZerverFieldsT],
-    slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
-) -> tuple[str, int | None]:
-    slack_usermention_match = re.search(SLACK_USERMENTION_REGEX, token, re.VERBOSE)
-    assert slack_usermention_match is not None
-    short_name = slack_usermention_match.group(4)
-    slack_id = slack_usermention_match.group(2)
-    zulip_mention = get_zulip_mention_for_slack_user(slack_id, short_name, users)
-    if zulip_mention is not None:
-        token = re.sub(SLACK_USERMENTION_REGEX, zulip_mention, token, flags=re.VERBOSE)
-        user_id = slack_user_id_to_zulip_user_id[slack_id]
-        return token, user_id
-    return token, None
-
-
 def convert_link_format(text: str) -> tuple[str, bool]:
     """
     1. Converts '<https://foo.com>' to 'https://foo.com'
@@ -212,17 +195,6 @@ def convert_markdown_syntax(text: str, pattern: str, zulip_keyword: str) -> str:
     return regex.sub(pattern, replace_slack_format, text, flags=re.VERBOSE | re.MULTILINE)
 
 
-def convert_slack_workspace_mentions(text: str) -> str:
-    # Map Slack's '<!everyone>', '<!channel>' and '<!here>'
-    # mentions to Zulip's '@**all**' wildcard mention.
-    # No regex for these as they can be present anywhere
-    # in the sentence.
-    text = text.replace("<!everyone>", "@**all**")
-    text = text.replace("<!channel>", "@**all**")
-    text = text.replace("<!here>", "@**all**")
-    return text
-
-
 def convert_slack_formatting(text: str) -> tuple[str, bool]:
     text = convert_markdown_syntax(text, SLACK_BOLD_REGEX, "**")
     text = convert_markdown_syntax(text, SLACK_STRIKETHROUGH_REGEX, "~~")
@@ -232,38 +204,6 @@ def convert_slack_formatting(text: str) -> tuple[str, bool]:
     # convert `<mailto:foo@foo.com>` to `mailto:foo@foo.com`
     text, has_mailto_link = convert_mailto_format(text)
     return text, has_link or has_mailto_link
-
-
-# Markdown mapping
-def convert_to_zulip_markdown(
-    text: str,
-    users: list[ZerverFieldsT],
-    added_channels: AddedChannelsT,
-    slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
-) -> tuple[str, list[int], bool]:
-    mentioned_users_id = []
-    text, message_has_link = convert_slack_formatting(text)
-    text = convert_slack_workspace_mentions(text)
-
-    # Map Slack channel mention: '<#C5Z73A7RA|general>' to '#**general**'
-    for cname, ids in added_channels.items():
-        cid = ids[0]
-        text = text.replace(f"<#{cid}|{cname}>", "#**" + cname + "**")
-
-    tokens = text.split(" ")
-    for iterator in range(len(tokens)):
-        # Check user mentions and change mention format from
-        # '<@slack_id|short_name>' to '@**full_name**'
-        if re.findall(SLACK_USERMENTION_REGEX, tokens[iterator], re.VERBOSE):
-            tokens[iterator], user_id = get_user_mentions(
-                tokens[iterator], users, slack_user_id_to_zulip_user_id
-            )
-            if user_id is not None:
-                mentioned_users_id.append(user_id)
-
-    text = " ".join(tokens)
-
-    return text, mentioned_users_id, message_has_link
 
 
 class LossyConversionError(Exception):
