@@ -2,7 +2,9 @@ from unittest.mock import Mock, patch
 
 from bmemcached.exceptions import MemcachedException
 from django.conf import settings
+from django.core.cache import caches
 from django.db.models import QuerySet
+from typing_extensions import override
 
 from zerver.apps import flush_cache
 from zerver.lib.cache import (
@@ -349,3 +351,61 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
             id_fetcher=get_user_email,
         )
         self.assertEqual(result, {})
+
+
+class CASCapableBackendTest(ZulipTestCase):
+    """Round-trip tests for the gets/cas/add backend operations that the
+    read-through race-protection code relies on. These exercise the test
+    suite's CASCapableLocMemCache directly, since LocMemCache has no
+    gets/cas of its own."""
+
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        from zerver.lib.test_cache_backends import CASCapableLocMemCache
+
+        backend = caches["default"]
+        assert isinstance(backend, CASCapableLocMemCache)
+        self.backend = backend
+        self.key = "CASCapableBackendTest:key"
+        # Ensure a clean slate; prior tests may have populated this key.
+        self.backend.delete(self.key)
+
+    def test_gets_miss_returns_none_none(self) -> None:
+        value, cas_id = self.backend.gets(self.key)
+        self.assertIsNone(value)
+        self.assertIsNone(cas_id)
+
+    def test_gets_hit_returns_value_and_token(self) -> None:
+        self.backend.set(self.key, "hello")
+        value, cas_id = self.backend.gets(self.key)
+        self.assertEqual(value, "hello")
+        self.assertIsNotNone(cas_id)
+
+    def test_cas_succeeds_with_matching_token(self) -> None:
+        self.backend.set(self.key, "v1")
+        _, cas_id = self.backend.gets(self.key)
+        assert cas_id is not None
+        self.assertTrue(self.backend.cas(self.key, "v2", cas_id))
+        self.assertEqual(self.backend.get(self.key), "v2")
+
+    def test_cas_fails_after_concurrent_write(self) -> None:
+        self.backend.set(self.key, "v1")
+        _, stale_cas_id = self.backend.gets(self.key)
+        assert stale_cas_id is not None
+        self.backend.set(self.key, "intervening")
+        self.assertFalse(self.backend.cas(self.key, "v2", stale_cas_id))
+        self.assertEqual(self.backend.get(self.key), "intervening")
+
+    def test_cas_fails_after_delete(self) -> None:
+        self.backend.set(self.key, "v1")
+        _, cas_id = self.backend.gets(self.key)
+        assert cas_id is not None
+        self.backend.delete(self.key)
+        self.assertFalse(self.backend.cas(self.key, "v2", cas_id))
+        self.assertIsNone(self.backend.get(self.key))
+
+    def test_add_is_atomic(self) -> None:
+        self.assertTrue(self.backend.add(self.key, "first"))
+        self.assertFalse(self.backend.add(self.key, "second"))
+        self.assertEqual(self.backend.get(self.key), "first")
