@@ -713,6 +713,17 @@ function update_code_lightbox_syntax_toggle_label($overlay: JQuery): void {
     }
 }
 
+function is_dark_theme(): boolean {
+    const $root = $(":root");
+    if ($root.hasClass("dark-theme")) {
+        return true;
+    }
+    if ($root.hasClass("color-scheme-automatic")) {
+        return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
+    return false;
+}
+
 export function show_code_lightbox(
     code_text: string,
     language: string,
@@ -724,8 +735,13 @@ export function show_code_lightbox(
     is_open = true;
 
     const $overlay = $("#lightbox_overlay");
-    $overlay.addClass("code-lightbox-mode code-lightbox-syntax-light");
-    $overlay.removeClass("code-lightbox-syntax-dark");
+    if (is_dark_theme()) {
+        $overlay.addClass("code-lightbox-mode code-lightbox-syntax-dark");
+        $overlay.removeClass("code-lightbox-syntax-light");
+    } else {
+        $overlay.addClass("code-lightbox-mode code-lightbox-syntax-light");
+        $overlay.removeClass("code-lightbox-syntax-dark");
+    }
     $overlay.find(".video-player, .player-container").hide();
     $overlay.find(".image-preview").show();
     $overlay.find(".media-actions .open, .media-actions .download").hide();

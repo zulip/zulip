@@ -352,7 +352,7 @@ export function initialize(): void {
     });
 
     message_list_tooltip(
-        ".rendered_markdown .copy_codeblock, .rendered_markdown .code_external_link",
+        ".rendered_markdown .copy_codeblock, .rendered_markdown .expand_codeblock, .rendered_markdown .code_external_link",
         {
             onHidden(instance) {
                 instance.destroy();
