@@ -10,12 +10,14 @@ import * as channel from "./channel.ts";
 import * as compose_ui from "./compose_ui.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as left_sidebar_filter from "./left_sidebar_filter.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import {ListCursor} from "./list_cursor.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_reminder from "./message_reminder.ts";
 import * as message_viewport from "./message_viewport.ts";
+import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -353,6 +355,7 @@ export function initialize_left_sidebar(): void {
     left_sidebar_navigation_area.reorder_left_sidebar_navigation_list(user_settings.web_home_view);
     stream_list.update_unread_counts_visibility();
     initialize_left_sidebar_cursor();
+    left_sidebar_filter.setup_left_sidebar_filter_typeahead();
     set_event_handlers();
 }
 
@@ -592,8 +595,6 @@ function actually_update_left_sidebar_for_search(): void {
         is_left_sidebar_search_active
     ) {
         left_sidebar_navigation_area.expand_views($views_label_container, $views_label_icon);
-    } else if (!is_left_sidebar_search_active) {
-        left_sidebar_navigation_area.restore_views_state();
     }
 
     // Update left sidebar DM list.
@@ -610,34 +611,141 @@ function actually_update_left_sidebar_for_search(): void {
     );
 }
 
+type LeftSidebarSearchState = {
+    search_term: string;
+    topics_state: string;
+    narrow_stream_id: number | undefined;
+    narrow_topic: string | undefined;
+};
+
 // Scroll position before user started searching.
 let pre_search_scroll_position = 0;
-let previous_search_term = "";
+let previous_search_state: LeftSidebarSearchState = {
+    search_term: "",
+    topics_state: "",
+    narrow_stream_id: undefined,
+    narrow_topic: undefined,
+};
+
+// Current narrow affects which topic matches keep a stream visible during search.
+function get_left_sidebar_search_state(): LeftSidebarSearchState {
+    return {
+        search_term: ui_util.get_left_sidebar_search_term(),
+        topics_state: left_sidebar_filter.get_effective_topics_state_for_search(),
+        narrow_stream_id: narrow_state.stream_id(),
+        narrow_topic: narrow_state.topic(),
+    };
+}
+
+function same_left_sidebar_search_state(
+    search_state: LeftSidebarSearchState,
+    other_search_state: LeftSidebarSearchState,
+): boolean {
+    return (
+        search_state.search_term === other_search_state.search_term &&
+        search_state.topics_state === other_search_state.topics_state &&
+        search_state.narrow_stream_id === other_search_state.narrow_stream_id &&
+        search_state.narrow_topic === other_search_state.narrow_topic
+    );
+}
+
+function restore_left_sidebar_after_text_search(): void {
+    left_sidebar_navigation_area.restore_views_state();
+    scroll_util.get_left_sidebar_scroll_container().scrollTop(pre_search_scroll_position);
+}
+
+function apply_left_sidebar_search_ui_transition({
+    search_state,
+    was_left_sidebar_search_active,
+    use_request_animation_frame,
+}: {
+    search_state: LeftSidebarSearchState;
+    was_left_sidebar_search_active: boolean;
+    use_request_animation_frame: boolean;
+}): void {
+    const is_left_sidebar_search_active = search_state.search_term !== "";
+    const left_sidebar_scroll_container = scroll_util.get_left_sidebar_scroll_container();
+
+    if (is_left_sidebar_search_active && !was_left_sidebar_search_active) {
+        // Store original scroll position to be restored later.
+        pre_search_scroll_position = left_sidebar_scroll_container.scrollTop()!;
+    }
+
+    const apply_update = (): void => {
+        actually_update_left_sidebar_for_search();
+
+        if (!is_left_sidebar_search_active) {
+            if (was_left_sidebar_search_active) {
+                restore_left_sidebar_after_text_search();
+            }
+            return;
+        }
+
+        // Always scroll to top during stream-name search.
+        left_sidebar_scroll_container.scrollTop(0);
+    };
+
+    if (use_request_animation_frame) {
+        requestAnimationFrame(apply_update);
+        return;
+    }
+
+    apply_update();
+}
+
+function save_and_apply_left_sidebar_search_state({
+    search_state,
+    use_request_animation_frame,
+}: {
+    search_state: LeftSidebarSearchState;
+    use_request_animation_frame: boolean;
+}): void {
+    const was_left_sidebar_search_active = previous_search_state.search_term !== "";
+    previous_search_state = {...search_state};
+    apply_left_sidebar_search_ui_transition({
+        search_state,
+        was_left_sidebar_search_active,
+        use_request_animation_frame,
+    });
+}
 
 const update_left_sidebar_for_search = _.throttle(() => {
-    const search_term = ui_util.get_left_sidebar_search_term();
-    const is_previous_search_term_empty = previous_search_term === "";
-    previous_search_term = search_term;
-
-    const left_sidebar_scroll_container = scroll_util.get_left_sidebar_scroll_container();
+    const search_state = get_left_sidebar_search_state();
+    const search_term = search_state.search_term;
     if (search_term === "") {
-        requestAnimationFrame(() => {
-            actually_update_left_sidebar_for_search();
-            // Restore previous scroll position.
-            left_sidebar_scroll_container.scrollTop(pre_search_scroll_position);
-        });
-    } else {
-        if (is_previous_search_term_empty) {
-            // Store original scroll position to be restored later.
-            pre_search_scroll_position = left_sidebar_scroll_container.scrollTop()!;
-        }
-        requestAnimationFrame(() => {
-            actually_update_left_sidebar_for_search();
-            // Always scroll to top when there is a search term present.
-            left_sidebar_scroll_container.scrollTop(0);
-        });
+        // Contenteditable inputs may keep an empty <br>; clear it so
+        // empty-state placeholder styles continue to apply.
+        $("#left-sidebar-filter-query").empty();
     }
+    save_and_apply_left_sidebar_search_state({
+        search_state,
+        use_request_animation_frame: true,
+    });
 }, 50);
+
+export function refresh_left_sidebar_search_for_narrow_change(): void {
+    const search_state = get_left_sidebar_search_state();
+    if (
+        search_state.search_term === "" &&
+        search_state.topics_state === "" &&
+        previous_search_state.search_term === "" &&
+        previous_search_state.topics_state === ""
+    ) {
+        previous_search_state = {...search_state};
+        return;
+    }
+
+    if (same_left_sidebar_search_state(search_state, previous_search_state)) {
+        return;
+    }
+
+    // Apply narrow-transition changes immediately to avoid a visible
+    // intermediate state from throttled search-update scheduling.
+    save_and_apply_left_sidebar_search_state({
+        search_state,
+        use_request_animation_frame: false,
+    });
+}
 
 function focus_left_sidebar_filter(e: JQuery.ClickEvent): void {
     left_sidebar_cursor.reset();
@@ -652,7 +760,9 @@ export function focus_pm_search_filter(): void {
 }
 
 export function set_event_handlers(): void {
-    const $search_input = $(".left-sidebar-search-input").expectOne();
+    const $search_input = $("#left-sidebar-filter-query").expectOne();
+    const $pill_container = $("#left-sidebar-filter-input").expectOne();
+    const $close_button = $("#left-sidebar-search .input-close-filter-button").expectOne();
 
     function keydown_enter_key(): void {
         const $row = left_sidebar_cursor.get_key();
@@ -675,9 +785,10 @@ export function set_event_handlers(): void {
             $row.trigger("click");
             return;
         }
-        // Clear search input so that there is no confusion
-        // about which search input is active.
-        $search_input.val("");
+
+        const pre_navigation_search_state = get_left_sidebar_search_state();
+        // Keep topic-state pills while navigating; only clear typed query text.
+        left_sidebar_filter.clear_query_text();
         const $nearest_link = $row.find("a").first();
         if ($nearest_link.length > 0) {
             // If the row has a link, we click it.
@@ -687,9 +798,16 @@ export function set_event_handlers(): void {
             // let the browser handle it or add special
             // handling logic for it here.
         }
+        const search_state = get_left_sidebar_search_state();
         // Don't trigger `input` which confuses the search input
         // for zoomed in topic search.
-        actually_update_left_sidebar_for_search();
+        // Restore the pre-navigation state first so we still apply
+        // the correct text-search enter/exit transition below.
+        previous_search_state = {...pre_navigation_search_state};
+        save_and_apply_left_sidebar_search_state({
+            search_state,
+            use_request_animation_frame: false,
+        });
         $search_input.trigger("blur");
     }
 
@@ -697,14 +815,23 @@ export function set_event_handlers(): void {
         $elem: $search_input,
         handlers: {
             Enter() {
+                if (left_sidebar_filter.is_typeahead_shown()) {
+                    return false;
+                }
                 keydown_enter_key();
                 return true;
             },
             ArrowUp() {
+                if (left_sidebar_filter.is_typeahead_shown()) {
+                    return false;
+                }
                 left_sidebar_cursor.prev();
                 return true;
             },
             ArrowDown() {
+                if (left_sidebar_filter.is_typeahead_shown()) {
+                    return false;
+                }
                 left_sidebar_cursor.next();
                 return true;
             },
@@ -715,13 +842,14 @@ export function set_event_handlers(): void {
     $search_input.on("focusout", () => {
         left_sidebar_cursor.clear();
     });
-    $search_input.on("input", update_left_sidebar_for_search);
+    $close_button.on("click", left_sidebar_filter.handle_clear_left_sidebar_filter_click);
+    $pill_container.on("input", update_left_sidebar_for_search);
 }
 
 export function initiate_search(): void {
     popovers.hide_all();
 
-    const $filter = $(".left-sidebar-search-input").expectOne();
+    const $filter = $("#left-sidebar-filter-query").expectOne();
 
     show_left_sidebar();
     $filter.trigger("focus");
