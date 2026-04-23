@@ -675,7 +675,7 @@ export function handle_overlay_media_element_click(
     handle_inline_media_element_click($media, true);
 }
 
-// this is a block of events that are required for the lightbox to work.
+
 export function show_code_lightbox(code_text: string, language: string): void {
     if (is_open) {
         return;
@@ -684,6 +684,8 @@ export function show_code_lightbox(code_text: string, language: string): void {
 
     const $overlay = $("#lightbox_overlay");
     $overlay.addClass("code-lightbox-mode");
+    $overlay.find(".video-player, .player-container").hide();
+    $overlay.find(".image-preview").show();
 
     const $zoom_element = $overlay.find(".zoom-element");
     $zoom_element.empty();
