@@ -21,6 +21,7 @@ export type InputPillConfig = {
 type InputPillCreateOptions<ItemType> = {
     $container: JQuery;
     pill_config?: InputPillConfig | undefined;
+    focus_input_on_backspace_remove?: boolean;
     split_text_on_comma?: boolean;
     convert_to_pill_on_enter?: boolean;
     create_item_from_text: (
@@ -61,6 +62,7 @@ type InputPillStore<ItemType> = {
     onPillRemove?: (pill: InputPill<ItemType>, trigger: RemovePillTrigger) => void;
     onPillExpand?: (pill: JQuery) => void;
     createPillonPaste?: () => void;
+    focus_input_on_backspace_remove: boolean;
     split_text_on_comma: boolean;
     convert_to_pill_on_enter: boolean;
     show_outline_on_invalid_input: boolean;
@@ -108,6 +110,7 @@ export function create<ItemType extends {type: string}>(
         create_item_from_text: opts.create_item_from_text,
         get_text_from_item: opts.get_text_from_item,
         get_display_value_from_item: opts.get_display_value_from_item,
+        focus_input_on_backspace_remove: opts.focus_input_on_backspace_remove ?? false,
         split_text_on_comma: opts.split_text_on_comma ?? true,
         convert_to_pill_on_enter: opts.convert_to_pill_on_enter ?? true,
         generate_pill_html: opts.generate_pill_html,
@@ -458,7 +461,9 @@ export function create<ItemType extends {type: string}>(
                     const $prev = $pill.prev();
                     const $next = $pill.next();
                     funcs.removePill(util.the($pill), "backspace");
-                    if ($prev.length > 0) {
+                    if (store.focus_input_on_backspace_remove) {
+                        store.$input.trigger("focus");
+                    } else if ($prev.length > 0) {
                         $prev.trigger("focus");
                     } else {
                         $next.trigger("focus");
