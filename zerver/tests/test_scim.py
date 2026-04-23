@@ -849,7 +849,7 @@ class TestSCIMUser(SCIMTestCase):
             "userName": "newuser@zulip.com",
             "name": {"formatted": "New User"},
             "active": True,
-            "phoneNumber": "123456789",
+            "phoneNumber": "+12345678900",
             "birthday": "2000-01-01",
         }
 
@@ -864,7 +864,7 @@ class TestSCIMUser(SCIMTestCase):
 
         phone_field = CustomProfileField.objects.get(realm=new_user.realm, name="Phone number")
         phone_value = CustomProfileFieldValue.objects.get(user_profile=new_user, field=phone_field)
-        self.assertEqual(phone_value.value, "123456789")
+        self.assertEqual(phone_value.value, "+12345678900")
 
         birthday_field = CustomProfileField.objects.get(realm=new_user.realm, name="Birthday")
         birthday_value = CustomProfileFieldValue.objects.get(
@@ -874,7 +874,10 @@ class TestSCIMUser(SCIMTestCase):
 
         expected_response_schema = self.generate_user_schema(
             new_user,
-            expected_custom_profile_fields={"phoneNumber": "123456789", "birthday": "2000-01-01"},
+            expected_custom_profile_fields={
+                "phoneNumber": "+12345678900",
+                "birthday": "2000-01-01",
+            },
         )
         self.assertEqual(output_data, expected_response_schema)
 
@@ -887,7 +890,7 @@ class TestSCIMUser(SCIMTestCase):
             "userName": hamlet.delivery_email,
             "name": {"formatted": hamlet.full_name},
             "active": True,
-            "phoneNumber": "987654321",
+            "phoneNumber": "+12345678901",
         }
 
         with self.mock_custom_profile_field_map(field_map):
@@ -896,13 +899,13 @@ class TestSCIMUser(SCIMTestCase):
 
             output_data = orjson.loads(result.content)
             expected_response_schema = self.generate_user_schema(
-                hamlet, expected_custom_profile_fields={"phoneNumber": "987654321"}
+                hamlet, expected_custom_profile_fields={"phoneNumber": "+12345678901"}
             )
             self.assertEqual(output_data, expected_response_schema)
 
         phone_field = CustomProfileField.objects.get(realm=hamlet.realm, name="Phone number")
         phone_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=phone_field)
-        self.assertEqual(phone_value.value, "987654321")
+        self.assertEqual(phone_value.value, "+12345678901")
 
     def test_patch_custom_profile_fields(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -912,7 +915,7 @@ class TestSCIMUser(SCIMTestCase):
         payload = {
             "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
             "Operations": [
-                {"op": "replace", "path": "phoneNumber", "value": "111222333"},
+                {"op": "replace", "path": "phoneNumber", "value": "+12345678902"},
             ],
         }
 
@@ -922,20 +925,20 @@ class TestSCIMUser(SCIMTestCase):
 
             output_data = orjson.loads(result.content)
             expected_response_schema = self.generate_user_schema(
-                hamlet, expected_custom_profile_fields={"phoneNumber": "111222333"}
+                hamlet, expected_custom_profile_fields={"phoneNumber": "+12345678902"}
             )
             self.assertEqual(output_data, expected_response_schema)
 
         phone_field = CustomProfileField.objects.get(realm=hamlet.realm, name="Phone number")
         phone_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=phone_field)
-        self.assertEqual(phone_value.value, "111222333")
+        self.assertEqual(phone_value.value, "+12345678902")
 
         # Now test the other PATCH form, without path, specifying
         # the attribute to modify in the value dict.
         payload = {
             "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
             "Operations": [
-                {"op": "replace", "value": {"phoneNumber": "444555666"}},
+                {"op": "replace", "value": {"phoneNumber": "+12345678903"}},
             ],
         }
 
@@ -945,12 +948,12 @@ class TestSCIMUser(SCIMTestCase):
 
             output_data = orjson.loads(result.content)
             expected_response_schema = self.generate_user_schema(
-                hamlet, expected_custom_profile_fields={"phoneNumber": "444555666"}
+                hamlet, expected_custom_profile_fields={"phoneNumber": "+12345678903"}
             )
             self.assertEqual(output_data, expected_response_schema)
 
         phone_value.refresh_from_db()
-        self.assertEqual(phone_value.value, "444555666")
+        self.assertEqual(phone_value.value, "+12345678903")
 
     def test_get_with_custom_profile_fields(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -960,7 +963,7 @@ class TestSCIMUser(SCIMTestCase):
         CustomProfileFieldValue.objects.update_or_create(
             user_profile=hamlet,
             field=phone_field,
-            defaults={"value": "gettest123"},
+            defaults={"value": "+12345678904"},
         )
 
         with self.mock_custom_profile_field_map(field_map):
@@ -970,7 +973,7 @@ class TestSCIMUser(SCIMTestCase):
 
         # The response should include the standard schema plus the custom field.
         expected_response_schema = self.generate_user_schema(
-            hamlet, expected_custom_profile_fields={"phoneNumber": "gettest123"}
+            hamlet, expected_custom_profile_fields={"phoneNumber": "+12345678904"}
         )
         self.assertEqual(output_data, expected_response_schema)
 
@@ -1125,7 +1128,7 @@ class TestSCIMUser(SCIMTestCase):
             "userName": "newuser@zulip.com",
             "name": {"formatted": "New User"},
             "active": True,
-            "phoneNumber": "123456789",
+            "phoneNumber": "+12345678900",
         }
 
         result = self.client_post(
