@@ -12,6 +12,9 @@
 
         /* White "paper" card: pan/zoom on .zoom-element clips overflow (no inner scrollbars). */
         .code-lightbox-hilite {
+            display: flex !important;
+            flex-direction: row;
+            align-items: stretch;
             width: max-content;
             max-width: none;
             cursor: grab;
@@ -25,6 +28,24 @@
             }
         }
 
+        .code-lightbox-gutter {
+            display: flex;
+            flex-direction: column;
+            min-width: 2.5em;
+            padding: 10px 0.6em 10px 0.8em;
+            text-align: right;
+            user-select: none;
+            color: hsl(0deg 0% 60%);
+            font-size: 0.825em;
+            line-height: 1.4;
+            border-right: 1px solid hsl(0deg 0% 80% / 40%);
+            margin-right: 0.8em;
+
+            span {
+                display: block;
+            }
+        }
+
         .code-lightbox-content {
             margin: 0;
             max-width: none;
@@ -32,6 +53,8 @@
             padding: 10px 12px;
             background-color: hsl(0deg 0% 100%);
             border: none;
+            font-size: 0.825em;
+            line-height: 1.4;
         }
 
 

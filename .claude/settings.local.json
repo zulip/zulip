@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//mnt/wsl/instances/Ubuntu/home/zenho/code/zulip/web/**)",
+      "Read(//c/Users/zenho/code/zulip/web/**)"
+    ]
+  }
+}

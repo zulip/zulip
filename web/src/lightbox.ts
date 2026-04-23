@@ -733,7 +733,7 @@ export function show_code_lightbox(
 
     const $zoom_element = $overlay.find(".zoom-element");
     $zoom_element.empty();
-    const $hilite = $("<div>").addClass("codehilite").addClass("code-lightbox-hilite");
+    const $hilite = $("<div>").addClass("codehilite code-lightbox-hilite");
     const $pre = $("<pre>").addClass("code-lightbox-content");
     const $code = $("<code>");
     if (code_inner_html !== undefined) {
@@ -742,6 +742,13 @@ export function show_code_lightbox(
         $code.text(code_text);
     }
     $pre.append($code);
+
+    const line_count = code_text.trimEnd().split("\n").length;
+    const $gutter = $("<div>").addClass("code-lightbox-gutter");
+    for (let i = 1; i <= line_count; i += 1) {
+        $gutter.append($("<span>").text(String(i)));
+    }
+    $hilite.append($gutter);
     $hilite.append($pre);
     $zoom_element.append($hilite);
 
