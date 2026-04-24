@@ -13,6 +13,8 @@ from urllib.parse import parse_qs, urlsplit
 
 import orjson
 import responses
+from django.conf import settings
+from django.db.models import Q
 from django.utils.timezone import now as timezone_now
 from django_stubs_ext import QuerySetAny
 from requests import PreparedRequest
@@ -20,7 +22,8 @@ from typing_extensions import ParamSpec
 
 from zerver.data_import.import_util import AttachmentRecordData, convert_html_to_text, get_data_file
 from zerver.data_import.microsoft_teams import (
-    HOSTED_CONTENT_GRAPH_API_URL_REGEX,
+    CHANNELS_HOSTED_CONTENT_GRAPH_API_URL_REGEX,
+    CHATS_HOSTED_CONTENT_GRAPH_API_URL_REGEX,
     MICROSOFT_GRAPH_API_URL,
     ChannelMetadata,
     MicrosoftTeamsFieldsT,
@@ -37,6 +40,7 @@ from zerver.data_import.microsoft_teams import (
     get_user_roles,
     is_microsoft_teams_event_message,
     process_hosted_content_attachments,
+    process_messages,
 )
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.import_realm import do_import_realm
@@ -45,12 +49,13 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import read_test_image_file
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES
 from zerver.lib.topic import messages_for_topic
-from zerver.models.messages import Attachment, Message
+from zerver.lib.upload import sanitize_name
+from zerver.models.messages import Attachment, Message, UserMessage
 from zerver.models.realms import Realm, get_realm
+from zerver.models.recipients import Recipient
 from zerver.models.streams import Stream, Subscription
 from zerver.models.users import UserProfile, get_system_bot
 from zerver.tests.test_import_export import make_export_output_dir
-from zproject import settings
 
 ParamT = ParamSpec("ParamT")
 
@@ -100,6 +105,30 @@ class ImportableMessageResult:
     importable_sender_messages_map: dict[str, list[float]]
 
 
+def graph_api_list_chat_members(request: PreparedRequest) -> ResponseTuple:
+    assert request.url is not None
+    parsed = urlsplit(request.url)
+
+    # API path: /v1.0/chats/{chat_id}/members
+    chat_id = parsed.path.split("/chats/")[1].split("/members")[0]
+    test_class = ZulipTestCase()
+    fixture_filename = sanitize_name(f"{chat_id}.json")
+    try:
+        body = test_class.fixture_data(
+            fixture_filename,
+            "microsoft_graph_api_response_fixtures/list_chat_members",
+        )
+    except FileNotFoundError:  # nocoverage
+        raise AssertionError(
+            f"""
+Missing API response fixture for a direct message group.
+API url: {request.url}
+Add the fixture response with this file name:
+../microsoft_graph_api_response_fixtures/list_chat_members/{fixture_filename}
+"""
+        )
+    headers = {"Content-Type": "application/json"}
+    return 200, headers, body
 
 
 def mock_microsoft_graph_api_calls(
@@ -142,6 +171,7 @@ def mock_microsoft_graph_api_calls(
 
             headers = {"Content-Type": "application/json"}
             return 200, headers, body
+
         responses.add_callback(
             responses.GET,
             "https://graph.microsoft.com/v1.0/users",
@@ -169,10 +199,22 @@ def mock_microsoft_graph_api_calls(
         )
         responses.add(
             responses.GET,
-            re.compile(HOSTED_CONTENT_GRAPH_API_URL_REGEX),
+            re.compile(CHANNELS_HOSTED_CONTENT_GRAPH_API_URL_REGEX),
             body=read_test_image_file("img.png"),
             content_type="image/png",
             status=200,
+        )
+        responses.add(
+            responses.GET,
+            re.compile(CHATS_HOSTED_CONTENT_GRAPH_API_URL_REGEX),
+            body=read_test_image_file("img.png"),
+            content_type="image/png",
+            status=200,
+        )
+        responses.add_callback(
+            responses.GET,
+            re.compile(r"https://graph\.microsoft\.com/v1\.0/chats/[^/]+/members"),
+            callback=graph_api_list_chat_members,
         )
         test_func(self, *args, **kwargs)
 
@@ -257,6 +299,28 @@ class MicrosoftTeamsImportTestCase(ZulipTestCase):
                 team_id=team_id,
             )
         return microsoft_teams_channel_metadata
+
+    def get_all_user_dm(self, microsoft_user_id: str) -> list[MicrosoftTeamsFieldsT]:
+        return json.loads(
+            self.fixture_data(
+                f"messages_{microsoft_user_id}.json",
+                f"microsoft_teams_fixtures/TeamsData_ZulipChat/users/{microsoft_user_id}",
+            )
+        )
+
+    def get_all_exported_direct_messages(self) -> list[MicrosoftTeamsFieldsT]:
+        all_microsoft_teams_user_ids = []
+        user_data_dir = self.fixture_file_name(
+            "", "microsoft_teams_fixtures/TeamsData_ZulipChat/users"
+        )
+        for f in os.listdir(user_data_dir):
+            path = os.path.join(user_data_dir, f)
+            if os.path.isdir(path):
+                all_microsoft_teams_user_ids.append(f)
+        all_dms = []
+        for user_id in all_microsoft_teams_user_ids:
+            all_dms += self.get_all_user_dm(user_id)
+        return all_dms
 
 
 class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
@@ -365,12 +429,17 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
         imported_message_datetimes: list[float] = []
         imported_sender_messages_map: dict[str, list[float]] = defaultdict(list)
         last_date_sent: float = float("-inf")
+        last_recipient_type_id: int | None = None
         for imported_message in imported_messages:
             message_date_sent = imported_message.date_sent.timestamp()
 
-            # Imported messages are sorted chronologically.
-            self.assertLessEqual(last_date_sent, message_date_sent)
+            # Check imported messages are sorted chronologically if they're in the
+            # same group/channel, there are some inconsistencies since sorting is
+            # done per message file rather than globally.
+            if imported_message.recipient.type_id == last_recipient_type_id:
+                self.assertLessEqual(last_date_sent, message_date_sent)
             last_date_sent = message_date_sent
+            last_recipient_type_id = imported_message.recipient.type_id
 
             self.assertIsNotNone(imported_message.content)
             self.assertIsNotNone(imported_message.rendered_content)
@@ -391,6 +460,12 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
             self.assertListEqual(
                 sorted(importable_message_datetimes),
                 sorted(imported_sender_messages_map[sender_email]),
+            )
+
+        for message in imported_messages:
+            self.assertTrue(
+                UserMessage.objects.filter(message_id=message.id).exists(),
+                f"Missing UserMessage rows for message {message.id}",
             )
 
     def test_imported_users(self) -> None:
@@ -560,6 +635,34 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
             ),
         )
 
+    def test_imported_direct_messages(self) -> None:
+        self.do_import_realm_fixture()
+        test_realm = get_realm(self.test_realm_subdomain)
+
+        added_dms = []
+        exported_dm_data = []
+        # There are multiple copies of the same DM because every recipient has their own copy.
+        for dm in self.get_all_exported_direct_messages():
+            message_id = dm["Id"]
+            if message_id not in added_dms:
+                exported_dm_data.append(dm)
+                added_dms.append(message_id)
+
+        importable_dm_data = self.filter_and_collect_importable_messages(exported_dm_data)
+        imported_dm_messages = (
+            Message.objects.filter(
+                Q(sender__is_bot=False) | Q(sender__bot_type=UserProfile.DEFAULT_BOT),
+                realm=test_realm,
+            )
+            .exclude(
+                Q(recipient__type=Recipient.STREAM)
+                | Q(sender__email__in=settings.CROSS_REALM_BOT_EMAILS)
+            )
+            .order_by("id")
+        )
+        self.assertTrue(imported_dm_messages.exists())
+        self.assert_imported_messages_match_exported(importable_dm_data, imported_dm_messages)
+
 
 class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
     def convert_users_handler(
@@ -655,6 +758,185 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
             "Could not find email address for Microsoft Teams user {'BusinessPhones': [], 'JobTitle': None, 'Mail': None, 'MobilePhone': None, 'OfficeLocation': None, 'PreferredLanguage': None, 'UserPrincipalName': None, 'Id': '5dbe468a-1e96-4aaa-856d-cdf825081e11', 'UserId': None, 'DisplayName': 'zoe', 'UserName': None, 'PhoneNumber': None, 'Location': None, 'InterpretedUserType': None, 'DirectoryStatus': None, 'AudioConferencing': None, 'PhoneSystems': None, 'CallingPlan': None, 'AssignedPlans': None, 'OnlineDialinConferencingPolicy': None, 'FeatureTypes': None, 'State': None, 'City': None, 'Surname': None, 'GivenName': 'zoe'}",
             str(e.exception),
         )
+
+    @responses.activate
+    def test_skip_group_chat_with_duplicate_member_set(self) -> None:
+        # Microsoft Teams allows multiple group chats with an identical
+        # member set, but Zulip identifies a direct message group by its
+        # members. The importer converts the first such chat and skips the
+        # rest, since a second group with the same members can't be created.
+        realm: dict[str, Any] = {
+            "zerver_stream": [],
+            "zerver_defaultstream": [],
+            "zerver_recipient": [],
+            "zerver_subscription": [],
+            "zerver_huddle": [],
+        }
+        with self.assertLogs(level="INFO"):
+            microsoft_teams_user_id_to_zulip_user_id = self.convert_users_handler(realm=realm)
+
+        guest_microsoft_teams_id = "16741626-4cd8-46cc-bf36-42ecc2b5fdce"
+        pieter_microsoft_teams_id = "88cbf3c2-0810-4d32-aa19-863c12bf7be9"
+        chat_members_response = json.dumps(
+            {
+                "value": [
+                    {"userId": guest_microsoft_teams_id},
+                    {"userId": pieter_microsoft_teams_id},
+                ]
+            }
+        )
+
+        first_chat_id = "first-group-chat"
+        duplicate_chat_id = "duplicate-group-chat"
+        for chat_id in (first_chat_id, duplicate_chat_id):
+            responses.add(
+                responses.GET,
+                MICROSOFT_GRAPH_API_URL.format(endpoint=f"/chats/{chat_id}/members"),
+                chat_members_response,
+                content_type="application/json",
+            )
+
+        def build_direct_message(message_id: str, chat_id: str) -> MicrosoftTeamsFieldsT:
+            return {
+                "Id": message_id,
+                "MessageType": "message",
+                "CreatedDateTime": "2025-08-12T05:29:15.179+00:00",
+                "From": {"User": {"Id": pieter_microsoft_teams_id}},
+                "Body": {"ContentType": "html", "Content": "<p>Hello</p>"},
+                "ChatId": chat_id,
+                "ChannelIdentity": None,
+            }
+
+        # Both chats have the same two members, so they hash to the same
+        # direct message group. The duplicate chat has two messages to
+        # verify its later messages are skipped without re-fetching members.
+        messages = [
+            build_direct_message("1754976555179", first_chat_id),
+            build_direct_message("1754976555180", duplicate_chat_id),
+            build_direct_message("1754976555181", duplicate_chat_id),
+        ]
+
+        chat_id_to_zulip_recipient_id: dict[str, int] = {}
+        skipped_chat_ids: set[str] = set()
+        with self.assertLogs(level="WARNING") as warn_logs:
+            conversion_result = process_messages(
+                added_teams={},
+                channel_metadata=None,
+                chat_id_to_zulip_recipient_id=chat_id_to_zulip_recipient_id,
+                direct_message_group_hashes=set(),
+                do_download_and_export_upload_file=lambda parameter: None,
+                domain_name="zulip.example.com",
+                messages=messages,
+                microsoft_graph_api_token="MICROSOFT_GRAPH_API_TOKEN",
+                microsoft_teams_user_id_to_zulip_user_id=microsoft_teams_user_id_to_zulip_user_id,
+                processed_dm_ids=set(),
+                realm=realm,
+                realm_id=0,
+                skipped_chat_ids=skipped_chat_ids,
+                subscriber_map={},
+            )
+
+        # Only the first chat is converted into a direct message group, and
+        # only its message is imported; the duplicate chat is dropped.
+        self.assert_length(realm["zerver_huddle"], 1)
+        self.assertEqual(list(chat_id_to_zulip_recipient_id), [first_chat_id])
+        self.assertEqual(skipped_chat_ids, {duplicate_chat_id})
+        self.assert_length(conversion_result.zerver_messages, 1)
+        self.assertIn(
+            f"WARNING:root:Skipping group chat {duplicate_chat_id}; "
+            "there's already a converted group chat with the same members.",
+            warn_logs.output,
+        )
+
+    @responses.activate
+    def test_group_chat_message_from_deactivated_member_excludes_them_from_membership(
+        self,
+    ) -> None:
+        # When a deactivated member *did* send a message, a mirror dummy
+        # user is created for them and their message content is preserved.
+        # But the membership still comes from the members API, which omits
+        # them, so the dummy ends up as the sender of a message in a direct
+        # message group it is not a member of, and gets no UserMessage row.
+        realm: dict[str, Any] = {
+            "zerver_stream": [],
+            "zerver_defaultstream": [],
+            "zerver_recipient": [],
+            "zerver_subscription": [],
+            "zerver_huddle": [],
+        }
+        with self.assertLogs(level="INFO"):
+            microsoft_teams_user_id_to_zulip_user_id = self.convert_users_handler(realm=realm)
+        pieter_microsoft_teams_id = "88cbf3c2-0810-4d32-aa19-863c12bf7be9"
+        deactivated_microsoft_teams_id = DELETED_MICROSOFT_TEAMS_USERS[0]
+
+        # The members API omits the deactivated member.
+        chat_id = "group-chat-with-deactivated-sender"
+        responses.add(
+            responses.GET,
+            MICROSOFT_GRAPH_API_URL.format(endpoint=f"/chats/{chat_id}/members"),
+            json.dumps({"value": [{"userId": pieter_microsoft_teams_id}]}),
+            content_type="application/json",
+        )
+
+        def build_direct_message(message_id: str, sender_id: str) -> MicrosoftTeamsFieldsT:
+            return {
+                "Id": message_id,
+                "MessageType": "message",
+                "CreatedDateTime": "2025-08-12T05:29:15.179+00:00",
+                "From": {"User": {"Id": sender_id}},
+                "Body": {"ContentType": "html", "Content": "<p>Hello</p>"},
+                "ChatId": chat_id,
+                "ChannelIdentity": None,
+            }
+
+        messages = [
+            build_direct_message("1754976555179", pieter_microsoft_teams_id),
+            build_direct_message("1754976555180", deactivated_microsoft_teams_id),
+        ]
+
+        subscriber_map: dict[int, set[int]] = {}
+        conversion_result = process_messages(
+            added_teams={},
+            channel_metadata=None,
+            chat_id_to_zulip_recipient_id={},
+            direct_message_group_hashes=set(),
+            do_download_and_export_upload_file=lambda parameter: None,
+            domain_name="zulip.example.com",
+            messages=messages,
+            microsoft_graph_api_token="MICROSOFT_GRAPH_API_TOKEN",
+            microsoft_teams_user_id_to_zulip_user_id=microsoft_teams_user_id_to_zulip_user_id,
+            processed_dm_ids=set(),
+            realm=realm,
+            realm_id=0,
+            skipped_chat_ids=set(),
+            subscriber_map=subscriber_map,
+        )
+
+        # A mirror dummy user is created for the deactivated sender.
+        deactivated_zulip_id = microsoft_teams_user_id_to_zulip_user_id[
+            deactivated_microsoft_teams_id
+        ]
+        mirror_dummy_users = [
+            user for user in realm["zerver_userprofile"] if user["is_mirror_dummy"]
+        ]
+        self.assert_length(mirror_dummy_users, 1)
+        self.assertEqual(mirror_dummy_users[0]["id"], deactivated_zulip_id)
+        self.assertFalse(mirror_dummy_users[0]["is_active"])
+
+        # Both messages are converted, with the deactivated member's
+        # message attributed to their mirror dummy.
+        self.assert_length(conversion_result.zerver_messages, 2)
+        self.assertEqual(conversion_result.zerver_messages[1]["sender"], deactivated_zulip_id)
+
+        # But the dummy is not a member of the direct message group, so it
+        # has no UserMessage for the message it "sent".
+        recipient_id = realm["zerver_recipient"][0]["id"]
+        pieter_zulip_id = microsoft_teams_user_id_to_zulip_user_id[pieter_microsoft_teams_id]
+        self.assertEqual(subscriber_map[recipient_id], {pieter_zulip_id})
+        usermessage_user_ids = {
+            usermessage["user_profile"] for usermessage in conversion_result.zerver_usermessages
+        }
+        self.assertNotIn(deactivated_zulip_id, usermessage_user_ids)
 
     @responses.activate
     def test_failed_get_microsoft_graph_api_data(self) -> None:
@@ -775,7 +1057,15 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
     def test_process_hosted_content_attachments(self) -> None:
         responses.add(
             responses.GET,
-            re.compile(HOSTED_CONTENT_GRAPH_API_URL_REGEX),
+            re.compile(CHANNELS_HOSTED_CONTENT_GRAPH_API_URL_REGEX),
+            body=read_test_image_file("img.png"),
+            content_type="image/png",
+            status=200,
+        )
+
+        responses.add(
+            responses.GET,
+            re.compile(CHATS_HOSTED_CONTENT_GRAPH_API_URL_REGEX),
             body=read_test_image_file("img.png"),
             content_type="image/png",
             status=200,
@@ -889,9 +1179,19 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
                 content=(
                     "DM ![image](https://graph.microsoft.com/v1.0/chats/{chat-id}/messages/{message-id}/hostedContents/{hosted-content-id}/$value)"
                 ),
-                hosted_content_count=0,
+                hosted_content_count=1,
                 is_direct_message_type=True,
                 test_name="DM hosted content",
+            ),
+            MessageFixture(
+                content=(
+                    "DM ![image](https://graph.microsoft.com/v1.0/chats/{chat-id}/messages/{message-id}/hostedContents/{hosted-content-id}/$value)"
+                    "MS Sharepoint attachment URL [image](https://zulipchat.sharepoint.com/sites/Community/Shared Documents/General/wp12245700.jpg)"
+                    "Normal text and an ![image](https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755002994809/hostedContents/aWQ9eF8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZCx0eXBlPTEsdXJsPWh0dHBzOi8vdXMtYXBpLmFzbS5za3lwZS5jb20vdjEvb2JqZWN0cy8wLXd1cy1kNi0zZDZkYmNiODA0OGFhODhmMWMxY2Q1N2ZhYWIzYzRhZC92aWV3cy9pbWdv/$value)"
+                ),
+                hosted_content_count=1,
+                is_direct_message_type=True,
+                test_name="DM hosted content 2",
             ),
         ]
         output_dir = tempfile.mkdtemp()
