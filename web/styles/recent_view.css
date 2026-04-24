@@ -28,12 +28,10 @@
 }
 
 #recent-view-content-table {
-    border: var(--recent-view-table-border-side-width) solid
+    border: var(--recent-view-body-border-width) solid
         var(--color-border-recent-view-table);
     border-top: none;
-    border-bottom-width: var(--recent-view-table-border-bottom-width);
-    border-radius: 0 0 var(--recent-view-table-border-radius)
-        var(--recent-view-table-border-radius);
+    border-radius: 0 0 5px 5px;
     overflow: hidden;
 }
 
@@ -595,7 +593,7 @@
         .recent-view-header-wrapper {
             /* 0.75em left padding, 1px header width */
             --recent-view-channel-row-header-minus-body: calc(
-                0.75em + var(--recent-view-table-border-side-width) - 1px
+                0.75em + var(--recent-view-body-border-width) - 1px
             );
             /* Match the row grid so "Channel" and "Conversation" sort
                spans align with channel and topic text in rows. Sort

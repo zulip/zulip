@@ -111,6 +111,8 @@
     }
 
     #recent-view-content-table {
+        border-bottom-width: 1px;
+
         .unread_topic a {
             font-weight: 400;
         }
