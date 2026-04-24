@@ -239,8 +239,16 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
             },
         },
         {
-            get_focus_return_element: (reference) =>
-                util.the($(reference).closest(".selectable_sidebar_block")),
+            get_focus_return_element(reference) {
+                // When the popover is triggered from the left sidebar,
+                // return focus to the whole row. From inbox channel
+                // headers there is no `.selectable_sidebar_block`
+                // ancestor, so fall back to the nearest focusable
+                // ancestor (or the reference itself) rather than
+                // crashing in `util.the`.
+                const $block = $(reference).closest(".selectable_sidebar_block");
+                return $block[0] ?? $(reference).closest("[tabindex='0']")[0] ?? reference;
+            },
         },
     );
 }
