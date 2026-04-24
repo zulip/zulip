@@ -161,7 +161,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         super().setUp()
         self.bot_user = get_user("outgoing-webhook@zulip.com", get_realm("zulip"))
         self.stream_message_event = {
-            "command": "@**test**",
+            "command": "@**test** hello world",
             "user_profile_id": 12,
             "service_name": "test-service",
             "trigger": "mention",
@@ -222,9 +222,27 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         self.assertEqual(request_data[6][1], 123456)  # timestamp
         self.assertEqual(request_data[7][1], "U21")  # user_id
         self.assertEqual(request_data[8][1], "Sample User")  # user_name
-        self.assertEqual(request_data[9][1], "@**test**")  # text
+        self.assertEqual(request_data[9][1], "hello world")  # text
         self.assertEqual(request_data[10][1], "mention")  # trigger_word
-        self.assertEqual(request_data[11][1], 12)  # user_profile_id
+        self.assertEqual(request_data[11][1], 12)  # service_id
+        self.assertEqual(request_data[12], ("command", "/test"))  # command
+
+    def test_make_request_stream_message_no_mention(self) -> None:
+        event = {
+            **self.stream_message_event,
+            "command": "plain text with no mention",
+        }
+        test_url = "https://example.com/example"
+        with mock.patch.object(self.handler, "session") as session:
+            self.handler.make_request(
+                test_url,
+                event,
+                self.bot_user.realm,
+            )
+            request_data = session.post.call_args[1]["data"]
+
+        self.assertEqual(request_data[9][1], "plain text with no mention")  # text
+        self.assertEqual(len(request_data), 12)  # no command field
 
     @mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
     def test_make_request_private_message(self, mock_fail_with_message: mock.Mock) -> None:

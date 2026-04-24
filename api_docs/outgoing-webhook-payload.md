@@ -80,6 +80,12 @@ message into the Slack-compatible webhook format.
             <td><code>service_id</code></td>
             <td>ID of the bot user</td>
         </tr>
+        <tr>
+            <td><code>command</code></td>
+            <td>If the message starts with a bot mention, the mention
+            converted to a slash command (e.g., <code>/botname</code>).
+            Only present when the message begins with a mention.</td>
+        </tr>
     </tbody>
 </table>
 
@@ -95,9 +101,10 @@ The above data is posted as list of tuples (not JSON), here's an example:
  ('timestamp', 1532078950),
  ('user_id', 'U21'),
  ('user_name', 'Full Name'),
- ('text', '@**test**'),
+ ('text', 'What is the weather?'),
  ('trigger_word', 'mention'),
- ('service_id', 27)]
+ ('service_id', 27),
+ ('command', '/test')]
 ```
 
 * For successful requests, if data is returned, it returns that data,

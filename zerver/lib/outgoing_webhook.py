@@ -1,6 +1,7 @@
 import abc
 import json
 import logging
+import re
 from contextlib import suppress
 from dataclasses import dataclass
 from time import perf_counter
@@ -118,20 +119,20 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
             fail_with_message(event, failure_message)
             return None
 
-        # https://api.slack.com/legacy/custom-integrations/outgoing-webhooks#legacy-info__post-data
-        # documents the Slack outgoing webhook format:
+        # https://docs.slack.dev/interactivity/implementing-slash-commands/
         #
-        # token=XXXXXXXXXXXXXXXXXX
-        # team_id=T0001
-        # team_domain=example
-        # channel_id=C2147483705
-        # channel_name=test
-        # thread_ts=1504640714.003543
-        # timestamp=1504640775.000005
-        # user_id=U2147483697
-        # user_name=Steve
-        # text=googlebot: What is the air-speed velocity of an unladen swallow?
-        # trigger_word=googlebot:
+        # If the message starts with a bot mention (@**botname**), parse it
+        # into a slash command (/botname) in a separate "command" field,
+        # with the remainder of the message in "text". This matches the
+        # format Slack uses for slash commands.
+        raw_text = event["command"]
+        mention_match = re.match(r"^@\*\*(.*?)\*\*\s*(.*)", raw_text, flags=re.DOTALL)
+        if mention_match:
+            command = f"/{mention_match.group(1)}"
+            text = mention_match.group(2)
+        else:
+            command = None
+            text = raw_text
 
         request_data = [
             ("token", self.token),
@@ -143,9 +144,10 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
             ("timestamp", event["message"]["timestamp"]),
             ("user_id", f"U{event['message']['sender_id']}"),
             ("user_name", event["message"]["sender_full_name"]),
-            ("text", event["command"]),
+            ("text", text),
             ("trigger_word", event["trigger"]),
             ("service_id", event["user_profile_id"]),
+            *([("command", command)] if command else []),
         ]
         return self.session.post(base_url, data=request_data)
 
