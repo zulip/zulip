@@ -11695,24 +11695,110 @@ paths:
                       result: {}
                       msg: {}
                       ignored_parameters_unsupported: {}
+                      server_timestamp:
+                        type: number
+                        description: |
+                          The time when the server fetched the `presence` data
+                          included in the response. Matches the similar field
+                          in other presence responses.
+
+                          **Changes**: New in Zulip 12.0 (feature level
+                          ZF-25f246).
                       presence:
-                        allOf:
-                          - $ref: "#/components/schemas/ModernPresenceFormat"
+                        type: object
+                        additionalProperties: false
                         description: |
                           An object containing the presence details for the user.
 
-                          **Changes**: In Zulip 12.0 (feature level 487), the
-                          `active_timestamp` and `idle_timestamp` fields were added to
-                          this object, deprecating and removing the `website` and
-                          `aggregated` dictionaries, which contained a timestamp and
-                          a status string.
+                          The object contains both the modern format fields
+                          (`active_timestamp` and `idle_timestamp`) and the legacy
+                          format fields (`website` and `aggregated` dictionaries,
+                          which contain a timestamp and a status string). New
+                          integrations should use the modern fields; the legacy
+                          fields are retained for backwards compatibility.
+
+                          **Changes**: In Zulip 12.0 (feature level 497),
+                          the `website` and `aggregated` legacy dictionaries were
+                          restored alongside the modern fields, for backwards
+                          compatibility with integrations written against earlier
+                          versions of the API.
+
+                          In Zulip 12.0 (feature level 487), the `active_timestamp`
+                          and `idle_timestamp` fields were added to this object, and
+                          the `website` and `aggregated` dictionaries were
+                          temporarily removed.
+                        required:
+                          - website
+                          - aggregated
+                        properties:
+                          active_timestamp:
+                            type: integer
+                            description: |
+                              The UNIX timestamp of the last time a client connected
+                              to Zulip reported that the user was actually present.
+                          idle_timestamp:
+                            type: integer
+                            description: |
+                              The UNIX timestamp of the last time the user had a
+                              client connected to Zulip, including idle clients.
+                          website:
+                            type: object
+                            additionalProperties: false
+                            description: |
+                              Presence details for the user in the legacy format.
+                              Starting with Zulip 7.0 (feature level 178), the
+                              `website` and `aggregated` dictionaries always contain
+                              identical data, since the server no longer stores which
+                              client submitted presence updates.
+                            properties:
+                              status:
+                                type: string
+                                enum:
+                                  - idle
+                                  - active
+                                description: |
+                                  The status of the user. Will be either `"idle"` or
+                                  `"active"`.
+                              timestamp:
+                                type: integer
+                                description: |
+                                  The UNIX timestamp of when the user's presence data
+                                  was last updated.
+                          aggregated:
+                            type: object
+                            additionalProperties: false
+                            description: |
+                              Presence details for the user in the legacy format.
+                              Unlike `website`, the `status` will be `"offline"` if
+                              the most recent presence update is older than the
+                              server's offline threshold.
+                            properties:
+                              status:
+                                type: string
+                                enum:
+                                  - idle
+                                  - active
+                                  - offline
+                                description: |
+                                  The status of the user. Will be either `"idle"`,
+                                  `"active"`, or `"offline"`.
+                              timestamp:
+                                type: integer
+                                description: |
+                                  The UNIX timestamp of when the user's presence data
+                                  was last updated.
                 example:
                   {
                     "msg": "",
+                    "server_timestamp": 1656958540.123,
                     "presence":
                       {
                         "active_timestamp": 1656958520,
                         "idle_timestamp": 1656958530,
+                        "website":
+                          {"status": "active", "timestamp": 1656958520},
+                        "aggregated":
+                          {"status": "active", "timestamp": 1656958520},
                       },
                     "result": "success",
                   }
