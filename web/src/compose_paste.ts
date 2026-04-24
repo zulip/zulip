@@ -823,6 +823,13 @@ export function paste_handler(
                     // and also is required for undo, see above.
                     $banner.remove();
                 });
+                if (avoid_direct_paste) {
+                    // Using focus({focusVisible: true}) here ensures that :focus-visible
+                    // activates in Chrome.
+                    $banner
+                        .find(".main-view-banner-action-button.paste-to-compose")[0]
+                        ?.focus({focusVisible: true});
+                }
             }, 0);
         }
 
