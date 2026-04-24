@@ -389,10 +389,21 @@
 
         .inbox-row-visibility-policy-inherit {
             opacity: 0;
+        }
 
-            &.visibility-policy-popover-visible {
-                opacity: 1;
-            }
+        /* Stickiness: while a marker or action button has its popover
+           open, keep it in the direct-interaction tier (0.7) so the
+           user can see which element the open menu belongs to.
+           Substring match on `*-popover-visible` covers every class
+           the popover JS toggles — `topic-popover-visible` (added by
+           `topic_popover.ts` and `stream_popover.ts` on
+           `.inbox-action-button`) and `visibility-policy-popover-visible`
+           (added by `user_topic_popover.ts` on the visibility-policy
+           wrappers) — without enumerating element/class combinations,
+           and stays correct if a future popover follows the same
+           naming convention. */
+        [class*="-popover-visible"] {
+            opacity: 0.7;
         }
 
         .inbox-action-button {
