@@ -53,6 +53,7 @@ export type DisplayObject = {
     is_bot: boolean;
     has_unread_mention: boolean;
     includes_deactivated_user: boolean;
+    has_placeholder_user: boolean;
 };
 
 export function get_conversations(search_string = ""): DisplayObject[] {
@@ -96,6 +97,7 @@ export function get_conversations(search_string = ""): DisplayObject[] {
         const includes_deactivated_user = user_ids.some(
             (id) => !people.is_active_user_or_system_bot(id),
         );
+        const has_placeholder_user = user_ids.some((id) => people.is_display_full_name_loading(id));
 
         let user_circle_class: string | undefined;
         let status_emoji_info: UserStatusEmojiInfo | undefined;
@@ -131,6 +133,7 @@ export function get_conversations(search_string = ""): DisplayObject[] {
             is_bot,
             has_unread_mention,
             includes_deactivated_user,
+            has_placeholder_user,
             is_current_user,
         };
         display_objects.push(display_object);

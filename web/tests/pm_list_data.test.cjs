@@ -27,6 +27,7 @@ mock_esm("../src/user_status", {
     }),
 });
 
+const muted_users = zrequire("muted_users");
 const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
 const pm_conversations = zrequire("pm_conversations");
@@ -119,6 +120,7 @@ test("get_conversations", ({override}) => {
             is_current_user: true,
             is_active: false,
             includes_deactivated_user: false,
+            has_placeholder_user: false,
             is_group: false,
             is_zero: false,
             recipients: "Me Myself",
@@ -139,6 +141,7 @@ test("get_conversations", ({override}) => {
             is_zero: false,
             is_active: false,
             includes_deactivated_user: false,
+            has_placeholder_user: false,
             url: "#narrow/dm/101,102-group",
             user_circle_class: undefined,
             is_group: true,
@@ -170,6 +173,7 @@ test("get_conversations", ({override}) => {
         is_zero: true,
         is_active: true,
         includes_deactivated_user: false,
+        has_placeholder_user: false,
         is_current_user: false,
         url: "#narrow/dm/106-Iago",
         status_emoji_info: {emoji_code: "20"},
@@ -213,6 +217,7 @@ test("get_conversations bot", ({override}) => {
             is_zero: false,
             is_active: false,
             includes_deactivated_user: false,
+            has_placeholder_user: false,
             url: "#narrow/dm/314-Outgoing-webhook",
             status_emoji_info: undefined,
             user_circle_class: "user-circle-offline",
@@ -228,6 +233,7 @@ test("get_conversations bot", ({override}) => {
             is_zero: false,
             is_active: false,
             includes_deactivated_user: false,
+            has_placeholder_user: false,
             url: "#narrow/dm/101,102-group",
             user_circle_class: undefined,
             status_emoji_info: undefined,
@@ -239,6 +245,27 @@ test("get_conversations bot", ({override}) => {
 
     const pm_data = pm_list_data.get_conversations();
     assert.deepEqual(pm_data, expected_data);
+});
+
+test("get_conversations placeholder user", ({override}) => {
+    const placeholder_user = make_user({
+        email: "placeholder@zulip.com",
+        user_id: 107,
+        full_name: "Loading…",
+        is_placeholder_user: true,
+    });
+    people.add_active_user(placeholder_user, source);
+    pm_conversations.recent.insert([alice.user_id, placeholder_user.user_id], 1);
+    override(unread, "num_unread_for_user_ids_string", () => 0);
+
+    let pm_data = pm_list_data.get_conversations();
+    assert.equal(pm_data[0].has_placeholder_user, true);
+
+    muted_users.add_muted_user(placeholder_user.user_id);
+    pm_data = pm_list_data.get_conversations();
+    assert.equal(pm_data[0].has_placeholder_user, false);
+    assert.equal(pm_data[0].recipients, "Alice, translated: Muted user");
+    muted_users.remove_muted_user(placeholder_user.user_id);
 });
 
 test("get_active_user_ids_string", () => {
