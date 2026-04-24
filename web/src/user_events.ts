@@ -348,6 +348,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     drafts_overlay_ui.handle_users_fetched();
     search.handle_users_fetched();
     composebox_typeahead.handle_users_fetched();
+    user_profile.handle_users_fetched(user_ids);
     message_edit_history.handle_users_fetched(user_ids);
     message_report.handle_users_fetched(user_ids);
     stream_popover.handle_users_fetched(user_ids);

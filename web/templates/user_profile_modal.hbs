@@ -22,7 +22,7 @@
                         {{#if is_bot}}
                             <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
                         {{/if}}
-                        <span class="user-profile-name">{{> user_full_name name=full_name}}</span>
+                        <span class="user-profile-name">{{> user_full_name name=full_name is_placeholder_user=is_placeholder_user}}</span>
                         <span class="user-profile-header-actions">
                             {{> components/icon_button custom_classes="copy-link-to-user-profile tippy-zulip-delayed-tooltip" icon="link-alt" intent="neutral" data-tippy-content=(t "Copy link to profile") aria-label=(t "Copy link to profile") }}
                             {{#if is_me}}
@@ -62,7 +62,9 @@
                                     </div>
                                     <div id="user-type" class="default-field">
                                         <div class="name">{{t "Role" }}</div>
-                                        {{#if is_bot}}
+                                        {{#if is_placeholder_user}}
+                                            <div class="value"><span class="loading-shimmer"></span></div>
+                                        {{else if is_bot}}
                                             {{#if is_system_bot}}
                                             <div class="value">{{t "System bot" }}</div>
                                             {{else}}
@@ -84,7 +86,7 @@
                                                 {{t "Joined"}}
                                             {{/if}}
                                         </div>
-                                        <div class="value">{{date_joined}}</div>
+                                        <div class="value">{{#if is_placeholder_user}}<span class="loading-shimmer"></span>{{else}}{{date_joined}}{{/if}}</div>
                                     </div>
                                     {{#if user_time}}
                                     <div class="default-field">

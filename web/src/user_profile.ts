@@ -148,6 +148,22 @@ export function update_user_profile_groups_list_for_users(user_ids: number[]): v
     }
 }
 
+export function handle_users_fetched(user_ids: number[]): void {
+    const user_id = get_user_id_if_user_profile_modal_open();
+    // If the profile's own user was fetched, the profile was rendered
+    // for a placeholder, so it has no user-type fields to update.
+    if (user_id === undefined || user_ids.includes(user_id)) {
+        return;
+    }
+    const user = people.get_by_user_id(user_id);
+    if (!user.is_bot) {
+        custom_profile_fields_ui.initialize_profile_user_type_pills(user_id);
+    } else if (user.bot_owner_id && user_ids.includes(user.bot_owner_id)) {
+        $("#user-profile-modal .bot_owner_user_field .pill").remove();
+        initialize_bot_owner("#user-profile-modal #content", user_id);
+    }
+}
+
 export function update_profile_modal_ui(
     user: User,
     new_data: {
@@ -704,10 +720,12 @@ export function show_user_profile(user_id: number, default_tab_key = "profile-ta
         !user.is_system_bot;
     const args: Record<string, unknown> = {
         can_manage_profile,
-        date_joined: timerender.get_localized_date_or_time_for_format(
-            parseISO(user.date_joined),
-            "dayofyear_year",
-        ),
+        date_joined: user.is_placeholder_user
+            ? undefined
+            : timerender.get_localized_date_or_time_for_format(
+                  parseISO(user.date_joined),
+                  "dayofyear_year",
+              ),
         email: user.delivery_email,
         full_name: user.full_name,
         is_active: people.is_person_active(user.user_id),
@@ -724,6 +742,7 @@ export function show_user_profile(user_id: number, default_tab_key = "profile-ta
         user_type: people.get_user_type(user.user_id),
         is_imported_stub: user.is_imported_stub,
         is_deleted: user.is_deleted,
+        is_placeholder_user: user.is_placeholder_user ?? false,
     };
 
     if (user.is_bot) {
