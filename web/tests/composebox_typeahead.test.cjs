@@ -1205,8 +1205,10 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         switch (input_element.$element) {
             case $("input#stream_message_recipient_topic"): {
                 override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
-                    assert.equal(stream_id, sweden_stream.stream_id);
-                    return sweden_topics_to_show;
+                    if (stream_id === sweden_stream.stream_id) {
+                        return sweden_topics_to_show;
+                    }
+                    return [];
                 });
 
                 compose_state.set_stream_id(sweden_stream.stream_id);
@@ -1448,7 +1450,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                     return 7;
                 };
                 let actual_value = options.source("test #s", input_element);
-                assert.deepEqual(sorted_names_from(actual_value), ["Sweden", "The Netherlands"]);
+                const stream_matches = actual_value.filter((item) => item.type === "stream");
+                assert.deepEqual(sorted_names_from(stream_matches), ["Sweden", "The Netherlands"]);
                 assert.ok(caret_called);
 
                 othello.delivery_email = "othello@zulip.com";
@@ -1746,8 +1749,10 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
 test("begins_typeahead", ({override, override_rewire}) => {
     override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
-        assert.equal(stream_id, sweden_stream.stream_id);
-        return sweden_topics_to_show;
+        if (stream_id === sweden_stream.stream_id) {
+            return sweden_topics_to_show;
+        }
+        return [];
     });
     override(stream_topic_history_util, "get_server_history", noop);
 

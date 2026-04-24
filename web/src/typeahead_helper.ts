@@ -69,6 +69,7 @@ export let render_typeahead_item = (args: {
     stream?: StreamData;
     emoji_code?: string | undefined;
     topic_object?: TopicSuggestion;
+    topic?: string | undefined;
     is_stream_topic?: boolean;
     is_empty_string_topic?: boolean;
     is_default_language?: boolean;
