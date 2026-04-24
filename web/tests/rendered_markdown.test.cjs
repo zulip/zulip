@@ -188,10 +188,14 @@ run_test("message_inline_video", () => {
     };
 
     $content.set_find_results(".message_inline_video video", $elem);
+
+    assert.equal(window.GestureEvent, undefined);
     window.GestureEvent = true;
     rm.update_elements($content);
     assert.equal(load_called, true);
-    window.GestureEvent = false;
+    // Delete so "GestureEvent" in window — and thus is_client_safari() —
+    // returns false for other tests.
+    delete window.GestureEvent;
 });
 
 run_test("user-mention", ({override}) => {
