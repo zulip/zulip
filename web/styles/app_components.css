@@ -1470,7 +1470,7 @@ input.invalid-input {
         var(--shimmer-color-base) 75%
     );
     background-size: 200% 100%;
-    animation: shimmer 2.5s infinite linear;
+    animation: shimmer var(--shimmer-duration, 2.5s) infinite linear;
 
     /* Detect if a user has enabled a setting on their device
        to minimize the amount of non-essential motion. */
