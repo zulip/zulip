@@ -10,6 +10,7 @@ import * as activity_ui from "./activity_ui.ts";
 import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import {buddy_list} from "./buddy_list.ts";
+import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as message_live_update from "./message_live_update.ts";
@@ -325,6 +326,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     reactions.update_user_full_names(new Set(user_ids));
     submessage.rerender_widgets_in_current_list();
     if (narrow_state.is_message_feed_visible()) {
+        compose_closed_ui.update_reply_button();
         narrow_title.update_narrow_title(narrow_state.filter());
         narrow_banner.handle_users_fetched(user_ids);
         typing_events.render_notifications_for_narrow();

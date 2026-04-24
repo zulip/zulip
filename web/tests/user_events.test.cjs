@@ -96,6 +96,9 @@ mock_esm("../src/reactions", {
 const submessage = mock_esm("../src/submessage", {
     rerender_widgets_in_current_list() {},
 });
+const compose_closed_ui = mock_esm("../src/compose_closed_ui", {
+    update_reply_button() {},
+});
 const narrow_banner = mock_esm("../src/narrow_banner", {
     handle_users_fetched() {},
 });
@@ -517,6 +520,10 @@ run_test("initialize registers users_fetched callback", ({override}) => {
     override(submessage, "rerender_widgets_in_current_list", () => {
         widgets_rerendered = true;
     });
+    let reply_button_updated = false;
+    override(compose_closed_ui, "update_reply_button", () => {
+        reply_button_updated = true;
+    });
     let narrow_title_filter;
     override(narrow_title, "update_narrow_title", (filter) => {
         narrow_title_filter = filter;
@@ -541,13 +548,14 @@ run_test("initialize registers users_fetched callback", ({override}) => {
     people.add_valid_user_id(isaac.user_id);
 
     // Narrow to a DM with the fetched user so the callback refreshes the
-    // browser tab title.
+    // reply button and the browser tab title.
     message_lists.set_current(make_message_list([{operator: "dm", operand: [isaac.user_id]}]));
 
     user_events.initialize();
     people.notify_users_fetched([isaac.user_id]);
 
     assert.ok(widgets_rerendered);
+    assert.ok(reply_button_updated);
     assert.equal(narrow_title_filter, message_lists.current.data.filter);
     assert.deepEqual(narrow_banner_user_ids, [isaac.user_id]);
     assert.ok(typing_notifications_rendered);
