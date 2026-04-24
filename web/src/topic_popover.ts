@@ -114,9 +114,11 @@ export function initialize(): void {
                 const topic_display_name = context.topic_display_name;
                 const is_empty_string_topic = context.is_empty_string_topic;
 
-                const $elt = $(instance.reference).closest(".recent_view_focusable");
-                if ($elt.length === 1) {
-                    $elt.addClass("topic-popover-visible");
+                const $popover_trigger = $(instance.reference).closest(
+                    ".recent_view_focusable, .inbox-action-button",
+                );
+                if ($popover_trigger.length === 1) {
+                    $popover_trigger.addClass("topic-popover-visible");
                 }
 
                 if (!stream_id) {
@@ -261,9 +263,11 @@ export function initialize(): void {
                 );
             },
             onHidden(instance) {
-                const $elt = $(instance.reference).closest(".recent_view_focusable");
-                if ($elt.length === 1) {
-                    $elt.removeClass("topic-popover-visible");
+                const $popover_trigger = $(instance.reference).closest(
+                    ".recent_view_focusable, .inbox-action-button",
+                );
+                if ($popover_trigger.length === 1) {
+                    $popover_trigger.removeClass("topic-popover-visible");
                 }
                 instance.destroy();
                 popover_menus.popover_instances.topics_menu = null;

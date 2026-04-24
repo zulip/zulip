@@ -82,6 +82,12 @@ export function elem_to_stream_id($elem: JQuery): number {
 
 export function hide_stream_popover(instance: tippy.Instance): void {
     ui_util.hide_left_sidebar_menu_icon();
+    if (instance.reference instanceof HTMLElement) {
+        const $trigger = $(instance.reference).closest(".inbox-action-button");
+        if ($trigger.length === 1) {
+            $trigger.removeClass("topic-popover-visible");
+        }
+    }
     instance.destroy();
     popover_menus.popover_instances.stream_actions_popover = null;
 }
@@ -163,6 +169,14 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
                 const $popper = $(instance.popper);
                 popover_menus.popover_instances.stream_actions_popover = instance;
                 ui_util.show_left_sidebar_menu_icon(elt);
+
+                // Keep an inbox channel-header action button visible
+                // while its stream popover is open, same way
+                // topic_popover.ts does for topic rows.
+                const $trigger = $(instance.reference).closest(".inbox-action-button");
+                if ($trigger.length === 1) {
+                    $trigger.addClass("topic-popover-visible");
+                }
 
                 // Go to channel feed instead of first topic.
                 $popper.on("click", ".stream-popover-go-to-channel-feed", (e) => {
