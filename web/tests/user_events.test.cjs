@@ -91,6 +91,9 @@ mock_esm("../src/settings_realm_user_settings_defaults", {
 mock_esm("../src/settings_streams", {
     rerender_default_streams_for_role_change() {},
 });
+mock_esm("../src/inbox_ui", {
+    update() {},
+});
 mock_esm("../src/reactions", {
     update_user_full_name() {},
     update_user_full_names() {},
