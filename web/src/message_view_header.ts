@@ -2,20 +2,23 @@ import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_message_view_header from "../templates/message_view_header.hbs";
+import render_navbar_dm_title_users from "../templates/navbar_dm_title_users.hbs";
 
-import type {Filter} from "./filter.ts";
+import {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as inbox_util from "./inbox_util.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
+import * as people from "./people.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as search from "./search.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import * as util from "./util.ts";
 
 type MessageViewHeaderContext = {
     title?: string | undefined;
@@ -37,6 +40,25 @@ type MessageViewHeaderContext = {
           icon: string | undefined;
       }
 );
+
+function dm_narrow_has_loading_full_name(filter: Filter): boolean {
+    if (!filter.has_operator("dm")) {
+        return false;
+    }
+    const user_ids = filter.terms_with_operator("dm")[0]!.operand;
+    return user_ids.some((user_id) => people.is_display_full_name_loading(user_id));
+}
+
+function get_dm_title_html(filter: Filter): string {
+    const user_ids = filter.terms_with_operator("dm")[0]!.operand;
+    const users = user_ids
+        .map((user_id) => ({
+            name: Filter.get_dm_title_user_name(user_id),
+            is_full_name_loading: people.is_display_full_name_loading(user_id),
+        }))
+        .toSorted((a, b) => util.strcmp(a.name, b.name));
+    return render_navbar_dm_title_users({users});
+}
 
 function get_message_view_header_context(filter: Filter | undefined): MessageViewHeaderContext {
     if (recent_view_util.is_visible()) {
@@ -99,6 +121,14 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
         link,
         is_spectator: page_params.is_spectator,
     });
+
+    if (dm_narrow_has_loading_full_name(filter)) {
+        return {
+            ...context,
+            title: undefined,
+            title_html: get_dm_title_html(filter),
+        };
+    }
 
     if (filter.has_operator("channel")) {
         const current_stream = stream_data.get_sub_by_id_string(
@@ -222,6 +252,25 @@ export function initialize(): void {
 export function render_title_area(): void {
     const filter = narrow_state.filter();
     build_message_view_header(filter);
+}
+
+export function handle_users_fetched(user_ids: number[]): void {
+    if (!$("#message_view_header").hasClass("hidden")) {
+        render_title_area();
+        return;
+    }
+    // The header is hidden while the search bar is open, and
+    // render_title_area() would reset the search bar, so we update just
+    // the title. A DM title keeps a loading shimmer for each recipient
+    // that is still a placeholder.
+    const filter = narrow_state.filter();
+    if (filter !== undefined && dm_narrow_has_loading_full_name(filter)) {
+        $("#message_view_header .message-header-navbar-title").html(get_dm_title_html(filter));
+        return;
+    }
+    for (const user_id of user_ids) {
+        maybe_update_navbar_title_for_user(user_id);
+    }
 }
 
 // This function checks if "modified_sub" which is the stream whose values

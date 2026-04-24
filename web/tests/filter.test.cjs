@@ -2760,6 +2760,23 @@ test("navbar_helpers", ({override}) => {
     const dm_group_including_unknown_user_id = [
         {operator: "dm", operand: [filter_util.UNKNOWN_USER_ID, joe.user_id]},
     ];
+    const placeholder_user_one = make_user({
+        email: "placeholder-one@example.com",
+        user_id: 901,
+        full_name: "Loading…",
+        is_placeholder_user: true,
+    });
+    const placeholder_user_two = make_user({
+        email: "placeholder-two@example.com",
+        user_id: 902,
+        full_name: "Loading…",
+        is_placeholder_user: true,
+    });
+    people.add_active_user(placeholder_user_one, source);
+    people.add_active_user(placeholder_user_two, source);
+    const dm_group_of_placeholder_users = [
+        {operator: "dm", operand: [placeholder_user_one.user_id, placeholder_user_two.user_id]},
+    ];
     // not common narrows, but used for browser title updates
     const is_alerted = [{operator: "is", operand: "alerted"}];
     const is_unread = [{operator: "is", operand: "unread"}];
@@ -3010,6 +3027,18 @@ test("navbar_helpers", ({override}) => {
             zulip_icon: "user",
             title: "joe and translated: Muted user (guest)",
             redirect_url_with_search: "/#narrow/dm/" + joe.user_id + "," + annie.user_id + "-group",
+        },
+        {
+            terms: dm_group_of_placeholder_users,
+            is_common_narrow: true,
+            zulip_icon: "user",
+            title: "Loading…",
+            redirect_url_with_search:
+                "/#narrow/dm/" +
+                placeholder_user_one.user_id +
+                "," +
+                placeholder_user_two.user_id +
+                "-group",
         },
         {
             terms: dm_group_including_missing_person,

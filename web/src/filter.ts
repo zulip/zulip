@@ -1622,7 +1622,9 @@ export class Filter {
                     return $t({defaultMessage: "Messages with yourself"});
                 }
             }
-            const names = user_ids.map((user_id) => Filter.get_dm_title_user_name(user_id));
+            const names = people
+                .merge_loading_user_ids(user_ids)
+                .map((user_id) => Filter.get_dm_title_user_name(user_id));
             names.sort(util.make_strcmp());
             return util.format_array_as_list(names, "long", "conjunction");
         }

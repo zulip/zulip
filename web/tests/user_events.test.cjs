@@ -553,7 +553,11 @@ run_test("initialize registers users_fetched callback", ({override}) => {
     people.add_valid_user_id(isaac.user_id);
 
     // Narrow to a DM with the fetched user so the callback refreshes the
-    // reply button and the browser tab title.
+    // reply button and titles. Hide the header, as when the search bar
+    // is open, so that only its title text gets updated.
+    $("#message_view_header").addClass("hidden");
+    const $navbar_title = $("#message_view_header .message-header-navbar-title");
+    $navbar_title.text("");
     message_lists.set_current(make_message_list([{operator: "dm", operand: [isaac.user_id]}]));
 
     user_events.initialize();
@@ -565,6 +569,7 @@ run_test("initialize registers users_fetched callback", ({override}) => {
     assert.equal(narrow_title_filter, message_lists.current.data.filter);
     assert.deepEqual(narrow_banner_user_ids, [isaac.user_id]);
     assert.ok(typing_notifications_rendered);
+    assert.equal($navbar_title.text(), "Isaac Newton");
     assert.deepEqual(updated_users, [people.get_by_user_id(isaac.user_id)]);
 
     // The loading shimmers stop moving while requests for users fail.
@@ -572,4 +577,15 @@ run_test("initialize registers users_fetched callback", ({override}) => {
     assert.ok($("body").hasClass("users-fetch-failing"));
     people.notify_users_fetch_failing(false);
     assert.ok(!$("body").hasClass("users-fetch-failing"));
+
+    // A DM title keeps its loading shimmer while any recipient is
+    // still a placeholder.
+    const placeholder = people.add_placeholder_user(33);
+    people.add_valid_user_id(placeholder.user_id);
+    message_lists.set_current(
+        make_message_list([{operator: "dm", operand: [isaac.user_id, placeholder.user_id]}]),
+    );
+    $navbar_title.text("");
+    people.notify_users_fetched([isaac.user_id]);
+    assert.equal($navbar_title.text(), "");
 });
