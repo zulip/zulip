@@ -28,6 +28,7 @@ import * as integration_url_modal from "./integration_url_modal.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
+import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -78,6 +79,7 @@ type BotInfo = {
     | {
           bot_owner_id: number;
           is_bot_owner_active: boolean;
+          is_bot_owner_placeholder_user: boolean;
           owner_img_src: string;
       }
     | {
@@ -456,6 +458,7 @@ function bot_info(bot_user_id: number): BotInfo {
             ? {
                   bot_owner_id: owner_id,
                   is_bot_owner_active: people.is_person_active(owner_id),
+                  is_bot_owner_placeholder_user: people.is_placeholder_user(owner_id),
                   owner_img_src: people.small_avatar_url_for_user_id(owner_id),
               }
             : {
@@ -549,6 +552,29 @@ export function redraw_your_bots_list(): void {
     }
     if (personal_your_bots_section.list_widget) {
         personal_your_bots_section.list_widget.replace_list_data(bot_user_ids_for_current_owner);
+    }
+}
+
+export function handle_users_fetched(user_ids: number[]): void {
+    if (!overlays.settings_open()) {
+        return;
+    }
+    // Redrawing the lists scrolls them back to the top, so we only do
+    // it when the data of a bot or of a bot's owner has arrived.
+    const bot_owner_ids = new Set(
+        people.get_bot_ids().map((bot_id) => {
+            const bot_user = people.get_by_user_id(bot_id);
+            assert(bot_user.is_bot);
+            return bot_user.bot_owner_id;
+        }),
+    );
+    if (
+        user_ids.some(
+            (user_id) => people.get_by_user_id(user_id).is_bot || bot_owner_ids.has(user_id),
+        )
+    ) {
+        redraw_all_bots_list();
+        redraw_your_bots_list();
     }
 }
 

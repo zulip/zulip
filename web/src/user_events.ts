@@ -355,6 +355,7 @@ function refresh_ui_after_users_fetched(user_ids: number[]): void {
     composebox_typeahead.handle_users_fetched();
     stream_edit_subscribers.handle_users_fetched(user_ids);
     user_group_edit_members.handle_users_fetched(user_ids);
+    settings_bots.handle_users_fetched(user_ids);
     user_profile.handle_users_fetched(user_ids);
     custom_profile_fields_ui.handle_users_fetched();
     user_group_popover.handle_users_fetched();
