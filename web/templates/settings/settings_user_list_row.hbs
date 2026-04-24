@@ -20,7 +20,7 @@
             {{#if no_owner }}
             {{bot_owner_full_name}}
             {{else}}
-            {{> ../user_display_only_pill display_value=bot_owner_full_name user_id=bot_owner_id img_src=owner_img_src is_active=is_bot_owner_active}}
+            {{> ../user_display_only_pill display_value=bot_owner_full_name user_id=bot_owner_id img_src=owner_img_src is_active=is_bot_owner_active is_placeholder_user=is_bot_owner_placeholder}}
             {{/if}}
         </span>
     </td>
