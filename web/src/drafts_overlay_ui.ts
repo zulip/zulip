@@ -238,6 +238,12 @@ function get_header_for_narrow_drafts(): string {
                 return $t({defaultMessage: "Drafts from conversation with yourself"});
             }
         }
+        const has_placeholder_user = private_recipient_ids.some(
+            (id) => people.get_by_user_id(id).is_placeholder_user ?? false,
+        );
+        if (has_placeholder_user) {
+            return $t({defaultMessage: "Drafts from conversation"});
+        }
         return $t(
             {defaultMessage: "Drafts from conversation with {recipient}"},
             {
