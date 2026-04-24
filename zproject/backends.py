@@ -121,6 +121,7 @@ from zerver.models.users import (
     PasswordTooWeakError,
     get_user_by_delivery_email,
     get_user_profile_by_id,
+    is_cross_realm_bot_email,
     remote_user_to_email,
 )
 from zproject.settings_types import OIDCIdPConfigDict
@@ -816,7 +817,17 @@ def get_and_sync_user_profile_by_external_auth_id(
             user_profile.delivery_email,
             email,
         )
-        if (
+        if is_cross_realm_bot_email(email):
+            # Cross-realm bot emails are reserved for system bots; we
+            # must never let an external auth directory sync a regular
+            # user's delivery_email onto one, since is_cross_realm_bot_email
+            # is used as an authorization shortcut in several places.
+            logger.warning(
+                "Can't sync email for user %s: %s is reserved for system bots",
+                user_profile.id,
+                email,
+            )
+        elif (
             UserProfile.objects.filter(realm=realm, delivery_email__iexact=email)
             # The EXISTS query has a somewhat strange shape because we need
             # to again consider the edge case where we might be simply

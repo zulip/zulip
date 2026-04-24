@@ -4184,6 +4184,53 @@ class SAMLAuthBackendTest(SocialAuthBase):
             any("Can't sync email" in output for output in m.output),
         )
 
+    def test_external_auth_id_saml_cross_realm_bot_email(self) -> None:
+        """Test that email is NOT synced when the target email is reserved
+        for a cross-realm system bot."""
+        hamlet = self.example_user("hamlet")
+
+        idps_config_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
+        idps_config_dict["test_idp"]["attr_user_permanent_id"] = "uid"
+        uid_value = "testuid"
+
+        # Create ExternalAuthID for hamlet.
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        with (
+            self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_config_dict),
+            self.assertLogs(self.logger_string, level="INFO"),
+        ):
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+                extra_attributes={"uid": [uid_value]},
+            )
+        self.assertEqual(result.status_code, 302)
+
+        # Try to login with a cross-realm bot email - should find hamlet by
+        # ExternalAuthID but refuse to sync the email onto a reserved address.
+        bot_email = "notification-bot@zulip.com"
+        assert bot_email in settings.CROSS_REALM_BOT_EMAILS
+        bot_data = self.get_account_data_dict(email=bot_email, name=self.name)
+        with (
+            self.settings(SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_config_dict),
+            self.assertLogs(self.logger_string, level="INFO") as m,
+        ):
+            result = self.social_auth_test(
+                bot_data,
+                subdomain="zulip",
+                extra_attributes={"uid": [uid_value]},
+            )
+        self.assertEqual(result.status_code, 302)
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], hamlet.delivery_email)
+
+        hamlet.refresh_from_db()
+        # Email should NOT have changed.
+        self.assertEqual(hamlet.delivery_email, self.email)
+        self.assertTrue(
+            any("reserved for system bots" in output for output in m.output),
+        )
+
     def test_external_auth_id_saml_deactivated_user(self) -> None:
         """Test that a deactivated user can't log in even with ExternalAuthID."""
         hamlet = self.example_user("hamlet")
