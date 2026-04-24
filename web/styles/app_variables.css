@@ -1202,13 +1202,11 @@
     );
 
     /* Recent view */
-    --recent-view-table-border-side-width: 1px;
+    --recent-view-body-border-width: 1px;
     --recent-view-max-avatars: 4;
     --recent-view-participant-item-width: 1.5em; /* 24px at 16px / 1em */
     --recent-view-participant-item-padding-x: 0.0938em; /* 1.5px at 16px / 1em */
     --recent-view-participants-padding-x-start: 0.25em; /* 4px at 16px / 1em */
-    --recent-view-table-border-radius: 5px;
-    --recent-view-table-border-bottom-width: 1px;
     --color-border-recent-view-table: var(
         --color-border-inbox-folder-component
     );
@@ -3223,7 +3221,7 @@
 
     /* Zulip resizer handle svg */
     --svg-resize-handle: url("../images/resize-handle-white.svg");
-    --recent-view-table-border-side-width: 0.1875em; /* 3px at 16px/1em */
+    --recent-view-body-border-width: 0.1875em; /* 3px at 16px/1em */
 }
 
 @media screen {
