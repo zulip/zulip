@@ -317,6 +317,12 @@ def send_reminder(scheduled_message: ScheduledMessage) -> None:
         content,
         acting_user=current_user,
     )
+    if message_id is None:
+        # internal_send_private_message swallows JsonableError from
+        # check_message and returns None; surface that as a failure so
+        # the worker marks the row failed rather than delivered with a
+        # NULL delivered_message_id.
+        raise JsonableError(_("Reminder could not be sent."))
     scheduled_message.delivered_message_id = message_id
     scheduled_message.delivered = True
     scheduled_message.save(update_fields=["delivered", "delivered_message_id"])
@@ -327,17 +333,21 @@ def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
     assert not scheduled_message.delivered
     assert not scheduled_message.failed
 
-    if scheduled_message.delivery_type == ScheduledMessage.REMIND:
-        send_reminder(scheduled_message)
-        return
-
     # Repeat the checks from validate_account_and_subdomain, in case
-    # the state changed since the message as scheduled.
+    # the state changed since the message was scheduled.
     if scheduled_message.realm.deactivated:
         raise RealmDeactivatedError
 
     if not scheduled_message.sender.is_active:
         raise UserDeactivatedError
+
+    # Reminders go to the sender's own DMs from Notification Bot, so
+    # the late-cutoff concern (stale messages surprising other
+    # recipients) doesn't apply. Dispatch before the cutoff check so
+    # reminders still fire if the worker is backed up.
+    if scheduled_message.delivery_type == ScheduledMessage.REMIND:
+        send_reminder(scheduled_message)
+        return
 
     # Limit how late we're willing to send a scheduled message.
     latest_send_time = scheduled_message.scheduled_timestamp + timedelta(
