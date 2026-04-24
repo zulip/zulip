@@ -1334,6 +1334,8 @@
 }
 
 #report-message-preview-container {
+    margin: 0.9375em 0; /* 15px at 16px/1em */
+
     /* Hide most UI for interacting with a message in the report message preview UI. */
     .add-task-bar,
     .change_visibility_policy,
