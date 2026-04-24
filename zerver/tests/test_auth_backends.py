@@ -9216,6 +9216,25 @@ class EmailValidatorTestCase(ZulipTestCase):
         self.assertEqual(True, is_deactivated)
         self.assertEqual(error, "Account has been deactivated.")
 
+    def test_reject_malformed_domain(self) -> None:
+        realm = self.example_user("hamlet").realm
+        validator = get_realm_email_validator(realm)
+
+        for email in [
+            # Trailing Unicode format characters.
+            "user@gmail.com\u202c\u200f",
+            # Domain label starting with a hyphen.
+            "user@gmail.-com",
+            # Empty label.
+            "user@example..com",
+            # IP address literal.
+            "user@[192.168.0.1]",
+        ]:
+            self.assertEqual(validate_email_is_valid(email, validator), "Invalid address.")
+
+        # Non-ASCII IDN domains are still accepted.
+        self.assertIsNone(validate_email_is_valid("user@münchen.de", validator))
+
 
 class LDAPBackendTest(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))

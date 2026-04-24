@@ -2,6 +2,7 @@ from collections.abc import Callable
 from email.errors import HeaderParseError
 from email.headerregistry import Address
 
+import idna
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
@@ -101,6 +102,17 @@ def validate_email_is_valid(
     try:
         validators.validate_email(email)
     except ValidationError:
+        return _("Invalid address.")
+
+    # Django's EmailValidator is looser than IDNA 2008 about what it
+    # accepts in a domain, and also accepts RFC 5321 address-literal
+    # domains (user@[192.168.0.1]) which we don't want to deliver to.
+    # Require the domain to IDNA-encode cleanly, which is what SMTP
+    # delivery will need to do.
+    try:
+        domain = Address(addr_spec=email).domain
+        idna.encode(domain, uts46=True)
+    except (HeaderParseError, ValueError, idna.IDNAError):
         return _("Invalid address.")
 
     try:

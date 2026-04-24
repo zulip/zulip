@@ -129,6 +129,9 @@ prod = [
   # For checking whether email of the user is from a disposable email provider.
   "disposable-email-domains",
 
+  # For validating that email domains can be IDNA-encoded.
+  "idna",
+
   # Needed for parsing YAML with JSON references from the REST API spec files
   "jsonref",
 

@@ -9,7 +9,7 @@ resolution-markers = [
 ]
 
 [options]
-exclude-newer = "2026-04-23T17:19:05.217120702Z"
+exclude-newer = "2026-04-27T18:33:44.012006393Z"
 exclude-newer-span = "PT24H"
 
 [[package]]
@@ -6551,6 +6551,7 @@ dev = [
     { name = "google-re2-stubs" },
     { name = "greenlet" },
     { name = "html2text" },
+    { name = "idna" },
     { name = "ipython" },
     { name = "jinja2" },
     { name = "jsonref" },
@@ -6691,6 +6692,7 @@ prod = [
     { name = "google-re2" },
     { name = "greenlet" },
     { name = "html2text" },
+    { name = "idna" },
     { name = "ipython" },
     { name = "jinja2" },
     { name = "jsonref" },
@@ -6795,6 +6797,7 @@ dev = [
     { name = "google-re2-stubs" },
     { name = "greenlet" },
     { name = "html2text" },
+    { name = "idna" },
     { name = "ipython", specifier = "<9" },
     { name = "jinja2" },
     { name = "jsonref" },
@@ -6937,6 +6940,7 @@ prod = [
     { name = "google-re2" },
     { name = "greenlet" },
     { name = "html2text" },
+    { name = "idna" },
     { name = "ipython", specifier = "<9" },
     { name = "jinja2" },
     { name = "jsonref" },
