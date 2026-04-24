@@ -6581,7 +6581,9 @@ class FetchAuthBackends(ZulipTestCase):
             realm.save(update_fields=["deactivated_redirect"])
 
             with self.settings(ROOT_DOMAIN_LANDING_PAGE=False):
-                result = self.client_get("/api/v1/server_settings", subdomain="zulip", HTTP_USER_AGENT="")
+                result = self.client_get(
+                    "/api/v1/server_settings", subdomain="zulip", HTTP_USER_AGENT=""
+                )
 
             check_result(
                 result,
@@ -6594,6 +6596,7 @@ class FetchAuthBackends(ZulipTestCase):
             )
             response_dict = self.assert_json_success(result)
             self.assertEqual(response_dict["realm_deactivated_redirect"], "https://chat.zulip.org")
+
 
 class TestTwoFactor(ZulipTestCase):
     def test_direct_dev_login_with_2fa(self) -> None:
