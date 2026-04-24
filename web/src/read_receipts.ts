@@ -75,6 +75,7 @@ export function fetch_read_receipts(message_id: number): void {
                     user_id: user.user_id,
                     full_name: user.full_name,
                     avatar_url: people.small_avatar_url_for_person(user),
+                    is_placeholder_user: user.is_placeholder_user ?? false,
                 })),
             };
 
