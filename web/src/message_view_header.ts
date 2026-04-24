@@ -10,12 +10,15 @@ import * as inbox_util from "./inbox_util.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
+import * as people from "./people.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as search from "./search.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+
+const loading_shimmer_html = '<span class="loading-shimmer"></span>';
 
 type MessageViewHeaderContext = {
     title?: string | undefined;
@@ -99,6 +102,21 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
         link,
         is_spectator: page_params.is_spectator,
     });
+
+    if (filter.has_operator("dm")) {
+        const user_ids = filter.terms_with_operator("dm")[0]!.operand;
+        const has_placeholder = user_ids.some((user_id) => {
+            const person = people.maybe_get_user_by_id(user_id, true);
+            return person?.is_placeholder_user ?? false;
+        });
+        if (has_placeholder) {
+            return {
+                ...context,
+                title: undefined,
+                title_html: loading_shimmer_html,
+            };
+        }
+    }
 
     if (filter.has_operator("channel")) {
         const current_stream = stream_data.get_sub_by_id_string(
