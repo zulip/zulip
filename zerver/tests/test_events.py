@@ -4651,9 +4651,16 @@ class RealmPropertyActionTest(BaseAction):
         )
 
         othello = self.example_user("othello")
+        bot = self.example_user("default_bot")
         admins_group = system_user_groups_dict[SystemGroups.ADMINISTRATORS]
 
-        setting_group = self.create_or_update_anonymous_group_for_setting([othello], [admins_group])
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [othello, bot], [admins_group]
+        )
+
+        setting_group = self.create_or_update_anonymous_group_for_setting(
+            [othello, bot], [admins_group]
+        )
         now = timezone_now()
 
         with self.verify_action(state_change_expected=True, num_events=1) as events:
@@ -4673,7 +4680,7 @@ class RealmPropertyActionTest(BaseAction):
                 extra_data={
                     RealmAuditLog.OLD_VALUE: default_group.id,
                     RealmAuditLog.NEW_VALUE: {
-                        "direct_members": [othello.id],
+                        "direct_members": [othello.id, bot.id],
                         "direct_subgroups": [admins_group.id],
                     },
                     "property": setting_name,
@@ -4684,13 +4691,18 @@ class RealmPropertyActionTest(BaseAction):
         check_realm_update_dict("events[0]", events[0])
         self.assertEqual(
             events[0]["data"][setting_name],
-            UserGroupMembersDict(direct_members=[othello.id], direct_subgroups=[admins_group.id]),
+            UserGroupMembersDict(
+                direct_members=[othello.id, bot.id], direct_subgroups=[admins_group.id]
+            ),
+            UserGroupMembersDict(
+                direct_members=[othello.id, bot.id], direct_subgroups=[admins_group.id]
+            ),
         )
 
         old_setting_api_value = get_group_setting_value_for_api(setting_group)
         moderators_group = system_user_groups_dict[SystemGroups.MODERATORS]
         setting_group = self.create_or_update_anonymous_group_for_setting(
-            [self.user_profile], [moderators_group], existing_setting_group=setting_group
+            [self.user_profile, bot], [moderators_group], existing_setting_group=setting_group
         )
 
         # state_change_expected is False here because the initial state will
@@ -4713,11 +4725,11 @@ class RealmPropertyActionTest(BaseAction):
                 acting_user=self.user_profile,
                 extra_data={
                     RealmAuditLog.OLD_VALUE: {
-                        "direct_members": [othello.id],
+                        "direct_members": [othello.id, bot.id],
                         "direct_subgroups": [admins_group.id],
                     },
                     RealmAuditLog.NEW_VALUE: {
-                        "direct_members": [self.user_profile.id],
+                        "direct_members": [self.user_profile.id, bot.id],
                         "direct_subgroups": [moderators_group.id],
                     },
                     "property": setting_name,
@@ -4729,7 +4741,8 @@ class RealmPropertyActionTest(BaseAction):
         self.assertEqual(
             events[0]["data"][setting_name],
             UserGroupMembersDict(
-                direct_members=[self.user_profile.id], direct_subgroups=[moderators_group.id]
+                direct_members=[self.user_profile.id, bot.id],
+                direct_subgroups=[moderators_group.id],
             ),
         )
 
@@ -4749,7 +4762,7 @@ class RealmPropertyActionTest(BaseAction):
                 acting_user=self.user_profile,
                 extra_data={
                     RealmAuditLog.OLD_VALUE: {
-                        "direct_members": [self.user_profile.id],
+                        "direct_members": [self.user_profile.id, bot.id],
                         "direct_subgroups": [moderators_group.id],
                     },
                     RealmAuditLog.NEW_VALUE: default_group.id,
