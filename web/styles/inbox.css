@@ -293,17 +293,42 @@
                inherit` is also a `.visibility-policy-indicator`. */
             .inbox-row,
             .inbox-header {
-                /* Row hover or keyboard focus reveals/lifts wrappers
-                   to 0.45, matching the explicit-marker idle tier. */
-                &:hover,
-                &:focus-within:not(:focus),
-                &:focus-visible {
+                /* Mouse hover reveals/lifts wrappers to 0.45,
+                   matching the explicit-marker idle tier. */
+                &:hover {
                     :is(
                         .inbox-action-button,
                         .channel-visibility-policy-indicator,
                         .visibility-policy-indicator
                     ) {
                         opacity: 0.45;
+                    }
+                }
+
+                /* Keyboard selection alone (row focused but not
+                   mouse-hovered) reveals only the usually-hidden
+                   action buttons at a much quieter 0.2. Explicit
+                   state markers stay at their 0.45 idle — only the
+                   tertiary reveal needs this extra-quiet step. The
+                   `:not(:focus-visible)` exclusion ensures that when
+                   the button itself has keyboard focus (via arrow-
+                   right into the column), its own `:focus-visible`
+                   rule sets the direct-interaction tier instead. */
+                &:focus-within:not(:focus, :hover) {
+                    :is(
+                            .inbox-action-button,
+                            .inbox-row-visibility-policy-inherit
+                        ):not(:focus-visible) {
+                        opacity: 0.2;
+                    }
+                }
+
+                &:focus-visible:not(:hover) {
+                    :is(
+                        .inbox-action-button,
+                        .inbox-row-visibility-policy-inherit
+                    ) {
+                        opacity: 0.2;
                     }
                 }
 

@@ -48,13 +48,34 @@
         padding: 0.1875em 0.5em; /* 3px 8px at 16px/1em */
     }
 
-    /* Suppress focus rings when focus was set programmatically
-       (e.g., on page load or sidebar click). The class is removed
-       on the first keyboard navigation, restoring :focus outlines.
-       See focus_outline_util.ts. */
+    /* Suppress focus rings and the focus-driven vdots reveal when
+       focus was set programmatically (e.g., on page load or
+       sidebar click). The class is removed on the first keyboard
+       navigation, restoring :focus outlines and the icon reveals
+       below. See focus_outline_util.ts. The icon-opacity rules
+       mirror the selectors they override (in `.recent_view_focusable`
+       below) so each wins on specificity from the extra class. */
     &.no-visible-focus-outlines .recent_view_focusable {
         &:focus {
             outline: 0;
+        }
+
+        &:focus
+            > .change_visibility_policy
+            :is(
+                .recent-view-row-topic-menu,
+                .visibility-status-icon[data-vdots-original-icon-class]
+            ) {
+            opacity: 0;
+        }
+
+        &.recent-view-body-row:focus:not(:hover)
+            .change_visibility_policy
+            :is(
+                .recent-view-row-topic-menu,
+                .visibility-status-icon[data-vdots-original-icon-class]
+            ) {
+            opacity: 0;
         }
     }
 
@@ -66,10 +87,19 @@
         &:focus {
             outline: var(--focus-ring-outline);
 
-            > .change_visibility_policy .recent-view-row-topic-menu {
-                /* Tertiary action reveal tier: row hover / keyboard
-                   focus — visible affordance, subordinate to content. */
-                opacity: 0.4;
+            /* Match both the natively-rendered vdots icon and the
+               swapped vdots (signaled by the data attribute set in
+               `recent_view_ui.update_visibility_icon_swap_state`) so
+               the wrapper-focus tier reads the same regardless of
+               whether the row has a status marker. */
+            > .change_visibility_policy
+                :is(
+                    .recent-view-row-topic-menu,
+                    .visibility-status-icon[data-vdots-original-icon-class]
+                ) {
+                /* Wrapper focus = direct interaction on the
+                   menu button; top of the tier. */
+                opacity: 0.7;
             }
         }
 
@@ -80,6 +110,20 @@
             > .change_visibility_policy
             .visibility-status-icon {
             opacity: 0.7;
+        }
+
+        /* Row keyboard-selected but not mouse-hovered: extra-quiet
+           reveal of the default-state 3-dots icon, so keyboard
+           navigation doesn't loudly advertise an action the user
+           rarely needs. Mouse hover's 0.4 rule below overrides
+           whenever the mouse is on the row. */
+        &.recent-view-body-row:focus:not(:hover)
+            .change_visibility_policy
+            :is(
+                .recent-view-row-topic-menu,
+                .visibility-status-icon[data-vdots-original-icon-class]
+            ) {
+            opacity: 0.2;
         }
 
         &.recent-view-topic-visibility {
