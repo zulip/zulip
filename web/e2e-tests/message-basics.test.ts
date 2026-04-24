@@ -195,7 +195,8 @@ async function search_silent_user(page: Page, str: string, item: string): Promis
     // Enter to trigger search
     await page.keyboard.press("Enter");
     await page.waitForSelector(".empty_feed_notice", {visible: true});
-    const expect_message = "You haven't received any messages sent by Email Gateway yet.";
+    const expect_message =
+        "You haven't received any messages sent by Email Gateway yet.\nSearch all public channels";
     assert.strictEqual(
         await common.get_text_from_selector(page, ".empty_feed_notice"),
         expect_message,
