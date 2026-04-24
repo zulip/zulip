@@ -1553,6 +1553,7 @@ h4.user_group_setting_subsection_title {
 #deactivation-confirm-modal {
     .alert {
         padding-right: 14px;
+        background-color: var(--color-background-error-main-view-banner);
     }
 
     .cannot-deactivate-group-banner {
