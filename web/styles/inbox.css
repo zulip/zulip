@@ -257,6 +257,82 @@
                 margin-left: 3px;
             }
 
+            /* Normalize the inner icon's opacity to 1 so the outer
+               wrapper is the single source of truth for opacity.
+               Overrides `.recipient_bar_icon`'s 0.2 idle / 0.4
+               hover from message_header.css for every marker
+               wrapper — follow, mute, unmute, and the inherit
+               (default) placeholder that becomes visible on row
+               hover. */
+            .channel-visibility-policy-indicator > .recipient_bar_icon,
+            .visibility-policy-indicator > .recipient_bar_icon {
+                opacity: 1;
+
+                /* Beat `.recipient_bar_icon:hover`'s !important. */
+                &:hover {
+                    opacity: 1 !important;
+                }
+            }
+
+            /* Explicit topic/channel state markers are secondary
+               information: visible at a glance, quieter than primary
+               content. 0.45 is the lowest opacity that meets WCAG
+               1.4.11's 3:1 non-text contrast against both the light
+               (~3.4:1) and dark (~3.9:1) inbox row backgrounds. */
+            .channel-visibility-policy-indicator,
+            .visibility-policy-indicator:not(
+                    .inbox-row-visibility-policy-inherit
+                ) {
+                opacity: 0.45;
+            }
+
+            /* Row-level interaction tiers for the icon-style wrapper
+               types: action menu, channel-level marker, topic-level
+               marker. The inherit subclass is reached via the
+               topic-level marker since `.inbox-row-visibility-policy-
+               inherit` is also a `.visibility-policy-indicator`. */
+            .inbox-row,
+            .inbox-header {
+                /* Row hover or keyboard focus reveals/lifts wrappers
+                   to 0.45, matching the explicit-marker idle tier. */
+                &:hover,
+                &:focus-within:not(:focus),
+                &:focus-visible {
+                    :is(
+                        .inbox-action-button,
+                        .channel-visibility-policy-indicator,
+                        .visibility-policy-indicator
+                    ) {
+                        opacity: 0.45;
+                    }
+                }
+
+                /* Direct hover on a wrapper lifts to 0.7. Compound
+                   selector beats the row-wide reveal on specificity. */
+                &:hover
+                    :is(
+                        .inbox-action-button,
+                        .channel-visibility-policy-indicator,
+                        .visibility-policy-indicator
+                    ):hover {
+                    opacity: 0.7;
+                }
+
+                /* Wrapper keyboard focus = full opacity so the focus
+                   ring renders at full blue saturation (WCAG 1.4.11
+                   3:1 contrast). The inner icon dims to 0.7
+                   separately via the rule under `&:focus-visible > i`
+                   above. */
+                &:focus-within
+                    :is(
+                        .inbox-action-button,
+                        .channel-visibility-policy-indicator,
+                        .visibility-policy-indicator
+                    ):focus-visible {
+                    opacity: 1;
+                }
+            }
+
             .unread-count-focus-outline {
                 /* Because the inbox view font-size will
                    never be smaller than the em-equivalent
@@ -401,16 +477,6 @@
             }
         }
 
-        .inbox-row,
-        .inbox-header {
-            &:hover {
-                .inbox-row-visibility-policy-inherit,
-                .inbox-action-button {
-                    opacity: 1;
-                }
-            }
-        }
-
         .inbox-row-visibility-policy-inherit {
             opacity: 0;
         }
@@ -433,23 +499,18 @@
         .inbox-action-button {
             outline: none;
             opacity: 0;
+            cursor: pointer;
 
             &.hide {
                 display: none;
             }
 
             & i {
-                opacity: 0.3;
                 /* Match the color used by `.recipient_bar_icon` on
                    the state marker icons, so the 3-dots and the
                    follow/mute/unmute markers render in the same hue
                    as row-attention elevates both to visible. */
                 color: var(--color-message-header-icon-interactive);
-
-                &:hover {
-                    opacity: 1;
-                    cursor: pointer;
-                }
             }
         }
     }
@@ -777,17 +838,6 @@
             outline: var(--focus-ring-outline);
             outline-offset: var(--focus-ring-outline-offset-in-views);
             border-radius: 0.625em; /* 10px at 16px/1em */
-        }
-
-        /* Don't show the icons unless user is visibly focused
-            on the element or one of the elements within it. */
-        &:focus-within:not(:focus),
-        &:focus-visible {
-            .channel-visibility-policy-indicator,
-            .inbox-row-visibility-policy-inherit,
-            .inbox-action-button {
-                opacity: 1;
-            }
         }
     }
 

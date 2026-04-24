@@ -67,19 +67,30 @@
             outline: var(--focus-ring-outline);
 
             > .change_visibility_policy .recent-view-row-topic-menu {
-                opacity: 0.2;
-            }
-        }
-
-        > .change_visibility_policy.topic-popover-visible {
-            .visibility-status-icon {
+                /* Tertiary action reveal tier: row hover / keyboard
+                   focus — visible affordance, subordinate to content. */
                 opacity: 0.4;
             }
         }
 
+        /* Stickiness: while the 3-dots topic menu has its popover
+           open, keep the icon in the direct-interaction tier (0.7)
+           so the user can see which row the open menu belongs to. */
+        &.topic-popover-visible
+            > .change_visibility_policy
+            .visibility-status-icon {
+            opacity: 0.7;
+        }
+
         &.recent-view-topic-visibility {
             border-radius: 0.3125em; /* 5px at 16px/1em */
-            outline-offset: 0.3125em; /* 5px at 16px/1em */
+            /* 3px rather than 5px: the wrapper sits hard against
+               the recent-view table's right edge (the table has
+               overflow:hidden), so a 5px outset left the outline's
+               right side clipped. 3px gives comfortable clearance
+               while still matching the inbox's 22×22 effective
+               ring size around a 16×16 icon. */
+            outline-offset: 0.1875em; /* 3px at 16px/1em */
         }
 
         > .change_visibility_policy {
@@ -87,8 +98,14 @@
         }
 
         > .change_visibility_policy .recent-view-row-topic-menu {
+            /* Tertiary action: hidden at rest, revealed on row
+               hover / focus, brightened on direct interaction. */
             opacity: 0;
             cursor: pointer;
+
+            &:hover {
+                opacity: 0.7;
+            }
 
             &:not(.visibility-status-icon) {
                 display: none;
@@ -338,6 +355,23 @@
         padding-left: 0;
     }
 
+    /* Topic state markers (follow/mute/unmute) are secondary
+       information: visible at a glance, but quieter than primary
+       content. Overrides `.recipient_bar_icon`'s 0.2 idle / 0.4
+       hover from message_header.css. */
+    .recent_topic_actions
+        .visibility-status-icon:not(.recent-view-row-topic-menu) {
+        /* 0.45 is the lowest opacity that meets WCAG 1.4.11's 3:1
+           non-text contrast against both light and dark row
+           backgrounds. */
+        opacity: 0.45;
+
+        &:hover {
+            /* Beat `.recipient_bar_icon:hover`'s !important. */
+            opacity: 0.7 !important;
+        }
+    }
+
     .recent_view_participants {
         display: inline-flex; /* Causes LI items to display in row. */
         /* Keep avatars centered on the line. */
@@ -429,7 +463,8 @@
                 background-color: var(--color-background-recent-view-row-hover);
 
                 .change_visibility_policy .recent-view-row-topic-menu {
-                    opacity: 0.4;
+                    /* Tertiary action reveal tier (row hover). */
+                    opacity: 0.45;
                 }
             }
         }
