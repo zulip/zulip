@@ -24,6 +24,7 @@ import * as popovers from "./popovers.ts";
 import * as read_receipts from "./read_receipts.ts";
 import * as rows from "./rows.ts";
 import * as stream_popover from "./stream_popover.ts";
+import * as task_message_store from "./task_message_store.ts";
 import {parse_html} from "./ui_util.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {the} from "./util.ts";
@@ -32,7 +33,7 @@ let message_actions_popover_keyboard_toggle = false;
 
 function create_task_from_message(message_id: number, title: string, description: string): void {
     const url = `/json/messages/${message_id}/tasks`;
-    
+
     channel.post({
         url,
         data: {
@@ -41,8 +42,10 @@ function create_task_from_message(message_id: number, title: string, description
         },
         success: (response: any) => {
             blueslip.info("Task created successfully from message", response);
-            
-            // Show success feedback to user
+
+            // Persist added state (with task_id) so re-clicking can remove it
+            task_message_store.add_message_task(message_id, response.task_id);
+
             feedback_widget.show({
                 title_text: "Task added successfully!",
                 populate: ($content: JQuery) => {
@@ -53,6 +56,30 @@ function create_task_from_message(message_id: number, title: string, description
         },
         error: (xhr: JQuery.jqXHR) => {
             blueslip.error("Failed to create task from message", {status: xhr.status, responseText: xhr.responseText});
+        },
+    });
+}
+
+function remove_task_from_message(message_id: number): void {
+    const task_id = task_message_store.get_message_task_id(message_id);
+    if (task_id === undefined) {
+        return;
+    }
+
+    channel.post({
+        url: `/json/tasks/${task_id}/delete`,
+        success: () => {
+            task_message_store.remove_message_task(message_id);
+            feedback_widget.show({
+                title_text: "Task removed",
+                populate: ($content: JQuery) => {
+                    $content.text("The task has been removed from your task list.");
+                },
+                hide_delay: 2500,
+            });
+        },
+        error: (xhr: JQuery.jqXHR) => {
+            blueslip.error("Failed to remove task", {status: xhr.status, responseText: xhr.responseText});
         },
     });
 }
@@ -272,29 +299,34 @@ export function initialize({
 
             $popper.one("click", ".add-message-to-tasks", (e) => {
                 const message_id = Number($(e.currentTarget).attr("data-message-id"));
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Toggle: if already added, remove the task
+                if (task_message_store.message_has_task(message_id)) {
+                    remove_task_from_message(message_id);
+                    popover_menus.hide_current_popover_if_visible(instance);
+                    return;
+                }
+
                 assert(message_lists.current !== undefined);
                 const message = message_lists.current.get(message_id);
                 assert(message !== undefined);
-                
-                // Extract message content for task creation
-                // Strip HTML tags and get clean text
+
+                // Strip HTML tags to get plain text
                 const tempDiv = document.createElement("div");
                 tempDiv.innerHTML = message.content || "";
                 const plainText = tempDiv.textContent || tempDiv.innerText || "";
-                
-                // Create title (first 100 characters of plain text)
-                const title = plainText.length > 100 
-                    ? plainText.substring(0, 97) + "..." 
+
+                // Create title from first 100 characters of plain text
+                const title = plainText.length > 100
+                    ? plainText.substring(0, 97) + "..."
                     : plainText;
-                
-                // Use full plain text as description
+
                 const description = plainText;
-                
-                // Create task from message
+
                 create_task_from_message(message_id, title, description);
-                
-                e.preventDefault();
-                e.stopPropagation();
                 popover_menus.hide_current_popover_if_visible(instance);
             });
 

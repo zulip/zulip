@@ -7,7 +7,7 @@ from bitfield.types import Bit, BitHandler
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.db import models
-from django.db.models import CASCADE, F, Q, QuerySet
+from django.db.models import CASCADE, SET_NULL, F, Q, QuerySet
 from django.db.models.functions import Upper
 from django.db.models.signals import post_delete, post_save
 from django.utils.timezone import now as timezone_now
@@ -842,8 +842,8 @@ class OnboardingUserMessage(models.Model):
 
 #Model for our Tasks
 class Task(models.Model):
-    #each task belongs to one Zulip message
-    message = models.ForeignKey(Message, on_delete=CASCADE)
+    # Nullable: standalone tasks (created via the assignment form) have no source message
+    message = models.ForeignKey(Message, null=True, blank=True, on_delete=SET_NULL)
     #each task is assigned to one user, we can use "user.assigned_tasks.all()" later to implement MyTasks
     assignee = models.ForeignKey(UserProfile, on_delete=CASCADE, related_name='assigned_tasks')
     creator = models.ForeignKey(UserProfile, on_delete=CASCADE, related_name='created_tasks')

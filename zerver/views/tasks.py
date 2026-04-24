@@ -4,11 +4,23 @@ from django.http import JsonResponse, HttpRequest, HttpResponse
 from django.views.decorators.http import require_GET, require_POST
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.message import access_message
+from zerver.actions.message_send import internal_send_stream_message
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint, typed_endpoint_without_parameters
+from zerver.models import Recipient
 from zerver.models.messages import Task, Message, TaskTimeLog
+from zerver.models.streams import Stream
 from zerver.models.users import UserProfile
+
+
+def _resolve_assignee(assignee_email: str, current_user: UserProfile) -> tuple[UserProfile, HttpResponse | None]:
+    """Return (assignee, error_response). error_response is None on success."""
+    if not assignee_email:
+        return current_user, None
+    try:
+        return UserProfile.objects.get(email=assignee_email), None
+    except UserProfile.DoesNotExist:
+        return current_user, JsonResponse({"error": f"User {assignee_email} not found"}, status=404)
 
 
 #TASKS.PY BY YANG LU
@@ -20,7 +32,7 @@ def create_task(
     *,
     message_id: int,
 ) -> HttpResponse:
-
+    """Create a task linked to a specific channel message."""
     title = request.POST.get("title")
     description = request.POST.get("description", "")
     assignee_email = request.POST.get("assignee", "")
@@ -30,34 +42,91 @@ def create_task(
         return JsonResponse({"error": "Missing title"}, status=400)
 
     try:
-        message = Message.objects.get(id=message_id)
+        message = Message.objects.select_related("recipient").get(id=message_id)
     except Message.DoesNotExist:
         return JsonResponse({"error": "Invalid message"}, status=404)
 
-    user = user_profile
-    assignee = user  # default to current user
+    assignee, err = _resolve_assignee(assignee_email, user_profile)
+    if err:
+        return err
 
-    # Handle assignment to different user
-    if assignee_email:
-        try:
-            assignee = UserProfile.objects.get(email=assignee_email)
-        except UserProfile.DoesNotExist:
-            return JsonResponse({"error": f"User {assignee_email} not found"}, status=404)
-
-    # Parse due date if provided
     due_date = None
     if due_date_str:
         try:
-            from datetime import datetime
             due_date = datetime.fromisoformat(due_date_str.replace('Z', '+00:00'))
         except ValueError:
             return JsonResponse({"error": "Invalid due date format"}, status=400)
 
-    #create a task and insert into postgresql
     task = Task.objects.create(
         message=message,
         assignee=assignee,
-        creator=user,
+        creator=user_profile,
+        title=title,
+        description=description,
+        due_date=due_date,
+    )
+
+    # Post a notification to the channel where this message lives so the
+    # assignment is visible in the stream alongside the original message.
+    if message.recipient.type == Recipient.STREAM:
+        try:
+            stream = Stream.objects.get(id=message.recipient.type_id)
+            topic_name = message.subject
+            assignee_display = (
+                assignee.full_name if assignee.id != user_profile.id
+                else "themselves"
+            )
+            notification_content = (
+                f"**Task assigned** by {user_profile.full_name} to "
+                f"{assignee_display}: **{title}**"
+            )
+            internal_send_stream_message(
+                sender=user_profile,
+                stream=stream,
+                topic_name=topic_name,
+                content=notification_content,
+            )
+        except Stream.DoesNotExist:
+            pass  # Silently skip notification if stream lookup fails
+
+    return JsonResponse({
+        "task_id": task.id,
+        "title": task.title,
+        "description": task.description,
+        "completed": task.completed,
+        "due_date": task.due_date.isoformat() if task.due_date else None,
+    })
+
+
+@require_POST
+def create_standalone_task(
+    request: HttpRequest,
+    user_profile: UserProfile,
+) -> HttpResponse:
+    """Create a task that is not linked to any channel message (e.g. from the Users overlay)."""
+    title = request.POST.get("title")
+    description = request.POST.get("description", "")
+    assignee_email = request.POST.get("assignee", "")
+    due_date_str = request.POST.get("due_date", "")
+
+    if not title:
+        return JsonResponse({"error": "Missing title"}, status=400)
+
+    assignee, err = _resolve_assignee(assignee_email, user_profile)
+    if err:
+        return err
+
+    due_date = None
+    if due_date_str:
+        try:
+            due_date = datetime.fromisoformat(due_date_str.replace('Z', '+00:00'))
+        except ValueError:
+            return JsonResponse({"error": "Invalid due date format"}, status=400)
+
+    task = Task.objects.create(
+        message=None,
+        assignee=assignee,
+        creator=user_profile,
         title=title,
         description=description,
         due_date=due_date,
@@ -71,6 +140,7 @@ def create_task(
         "due_date": task.due_date.isoformat() if task.due_date else None,
     })
 
+
 @require_GET
 @typed_endpoint
 def list_my_tasks(
@@ -79,31 +149,29 @@ def list_my_tasks(
     *,
     assignee: str = "",
 ) -> HttpResponse:
-    """Get tasks assigned to current user or specified assignee"""
+    """Get tasks assigned to current user or specified assignee."""
     if assignee:
-        # Get tasks for specified assignee
         try:
             target_user = UserProfile.objects.get(email=assignee)
         except UserProfile.DoesNotExist:
             return JsonResponse({"error": f"User {assignee} not found"}, status=404)
-        
-        # For now, allow any user to view tasks for any user (can add permissions later)
-            
-        tasks = Task.objects.filter(assignee=target_user).select_related('message', 'creator')
+        tasks = Task.objects.filter(assignee=target_user).select_related("message__recipient", "creator")
     else:
-        # Get tasks for current user (original behavior)
-        tasks = Task.objects.filter(assignee=user_profile).select_related('message', 'creator')
-    
+        tasks = Task.objects.filter(assignee=user_profile).select_related("message__recipient", "creator")
+
     task_data = []
     for task in tasks:
         message = task.message
-        # Get stream and topic info for navigation
         stream_id = None
         topic = None
-        if message.type == "stream":
-            stream_id = message.recipient.type_id
-            topic = message.subject
-        
+        message_id = None
+
+        if message is not None:
+            message_id = message.id
+            if message.recipient.type == Recipient.STREAM:
+                stream_id = message.recipient.type_id
+                topic = message.subject
+
         # Get time tracking information for this task (safe fallback if table doesn't exist)
         total_time_seconds = 0
         active_timer = False
@@ -112,15 +180,14 @@ def list_my_tasks(
             total_time_seconds = sum(log.duration_seconds for log in time_logs)
             active_timer = time_logs.filter(end_time__isnull=True).exists()
         except Exception:
-            # TaskTimeLog table doesn't exist yet or other database issue
             pass
-        
+
         task_data.append({
             "task_id": task.id,
             "title": task.title,
             "completed": task.completed,
             "due_date": task.due_date.isoformat() if task.due_date else None,
-            "message_id": task.message.id,
+            "message_id": message_id,
             "stream_id": stream_id,
             "topic": topic,
             "creator_email": task.creator.email,
@@ -129,9 +196,10 @@ def list_my_tasks(
             "total_time_formatted": format_duration(total_time_seconds),
             "active_timer": active_timer,
         })
-    
+
     return json_success(request, {"tasks": task_data})
- 
+
+
 @require_POST
 @typed_endpoint
 @transaction.atomic(durable=True)
@@ -141,36 +209,31 @@ def update_task(
     *,
     task_id: int,
 ) -> HttpResponse:
-    """Update task completion status"""
-    # Check if this is actually a DELETE request
-    if request.POST.get('_method') == 'DELETE':
+    """Update task completion status."""
+    if request.POST.get("_method") == "DELETE":
         return delete_task(request, user_profile, task_id=task_id)
-    
+
     try:
-        task = Task.objects.select_related('assignee', 'creator').get(id=task_id)
+        task = Task.objects.select_related("assignee", "creator").get(id=task_id)
     except Task.DoesNotExist:
         return JsonResponse({"error": "Task not found"}, status=404)
-    
-    # Only assignee or creator can update
+
     if user_profile.id not in [task.assignee.id, task.creator.id]:
         return JsonResponse({"error": "Permission denied"}, status=403)
-    
-    # Handle completion toggle
-    if 'completed' in request.POST:
-        completed = request.POST.get('completed') == 'true'
+
+    if "completed" in request.POST:
+        completed = request.POST.get("completed") == "true"
         task.completed = completed
-        if completed:
-            task.completed_at = datetime.now()
-        else:
-            task.completed_at = None
+        task.completed_at = datetime.now() if completed else None
         task.save()
-    
+
     return JsonResponse({
         "task_id": task.id,
         "title": task.title,
         "completed": task.completed,
         "completed_at": task.completed_at.isoformat() if task.completed_at else None,
     })
+
 
 @require_POST
 @typed_endpoint
@@ -181,23 +244,17 @@ def delete_task(
     *,
     task_id: int,
 ) -> HttpResponse:
-    """Delete a task"""
+    """Delete a task."""
     try:
-        task = Task.objects.select_related('assignee', 'creator').get(id=task_id)
+        task = Task.objects.select_related("assignee", "creator").get(id=task_id)
     except Task.DoesNotExist:
         return JsonResponse({"error": "Task not found"}, status=404)
-    
-    # Only assignee or creator can delete
+
     if user_profile.id not in [task.assignee.id, task.creator.id]:
         return JsonResponse({"error": "Permission denied"}, status=403)
-    
-    task.delete()
-    return json_success(request, {"message": "Task deleted successfully"})
 
-# TIME TRACKING ENDPOINTS
-@require_POST
-@typed_endpoint
-@transaction.atomic(durable=True)
+    task.delete()
+    return json_success(request, {"message": "Task deleted successfully"})@transaction.atomic(durable=True)
 def start_time_tracking(
     request: HttpRequest,
     user_profile: UserProfile,

@@ -1428,9 +1428,6 @@ function showSimpleTaskForm(userName, userEmail) {
 
 // Create task for user function
 function createTaskForUser(userEmail, title, description, userName) {
-    // Use a system message ID for task creation (we'll use message ID 1 as a placeholder)
-    const messageId = 1;
-
     const data = {
         title: title,
         description: description,
@@ -1438,7 +1435,7 @@ function createTaskForUser(userEmail, title, description, userName) {
     };
 
     channel.post({
-        url: "/json/messages/" + messageId + "/tasks",
+        url: "/json/tasks",
         data: data,
         success: function (response) {
             blueslip.info("Task created successfully", response);

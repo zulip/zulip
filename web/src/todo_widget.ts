@@ -14,6 +14,7 @@ import type {Message} from "./message_store.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as channel from "./channel.ts";
+import * as task_message_store from "./task_message_store.ts";
 import type {Event} from "./widget_data.ts";
 import type {AnyWidgetData} from "./widget_schema.ts";
 
@@ -21,47 +22,66 @@ import type {AnyWidgetData} from "./widget_schema.ts";
 // to a todo list. We arbitrarily pick this value.
 const MAX_IDX = 1000;
 
-function create_task_from_todo(message_id: number, title: string, description: string, dueDate: Date | null = null): void {
+function mark_todo_button_added($btn: JQuery): void {
+    $btn
+        .addClass("task-added")
+        .prop("disabled", false)
+        .text("\u2713 Added — click to remove")
+        .css("background-color", "#28a745")
+        .css("color", "white");
+}
+
+function revert_todo_button($btn: JQuery): void {
+    $btn
+        .removeClass("task-added")
+        .prop("disabled", false)
+        .text("Add to My Tasks")
+        .css("background-color", "")
+        .css("color", "");
+}
+
+function create_task_from_todo(message_id: number, title: string, description: string, $btn: JQuery, dueDate: Date | null = null): void {
     const url = `/json/messages/${message_id}/tasks`;
-    
-    // Check if task already exists by checking for buttons with checkmark
-    const $btn = $(`.convert-to-task-btn[data-task="${title.replace(/"/g, '\\"')}"]`);
-    if ($btn.hasClass('task-added')) {
-        blueslip.warn("Task already added");
-        return;
-    }
-    
-    // Disable button and show loading
-    $btn.prop('disabled', true).text('Adding...');
-    
-    const data: any = {
-        title,
-        description,
-    };
-    
-    // Add due date if provided
+
+    $btn.prop("disabled", true).text("Adding...");
+
+    const data: Record<string, string> = { title, description };
     if (dueDate) {
-        data.due_date = dueDate.toISOString();
+        data["due_date"] = dueDate.toISOString();
     }
-    
+
     channel.post({
         url,
         data,
         success: (response: any) => {
-            blueslip.info("Task created successfully", response);
-            
-            // Mark button as added with checkmark
-            $btn.addClass('task-added')
-                .prop('disabled', true)
-                .text('✓ Added')
-                .css('background-color', '#28a745')
-                .css('color', 'white');
+            blueslip.info("Task created successfully from todo item", response);
+            task_message_store.add_todo_item_task(message_id, title, response.task_id);
+            mark_todo_button_added($btn);
         },
         error: (xhr: JQuery.jqXHR) => {
-            blueslip.error("Failed to create task", xhr);
-            
-            // Restore button on error
-            $btn.prop('disabled', false).text('Add to My Tasks');
+            blueslip.error("Failed to create task from todo item", {status: xhr.status});
+            $btn.prop("disabled", false).text("Add to My Tasks");
+        },
+    });
+}
+
+function remove_task_from_todo(message_id: number, title: string, $btn: JQuery): void {
+    const task_id = task_message_store.get_todo_item_task_id(message_id, title);
+    if (task_id === undefined) {
+        return;
+    }
+
+    $btn.prop("disabled", true).text("Removing...");
+
+    channel.post({
+        url: `/json/tasks/${task_id}/delete`,
+        success: () => {
+            task_message_store.remove_todo_item_task(message_id, title);
+            revert_todo_button($btn);
+        },
+        error: (xhr: JQuery.jqXHR) => {
+            blueslip.error("Failed to remove task from todo item", {status: xhr.status});
+            mark_todo_button_added($btn);
         },
     });
 }
@@ -334,7 +354,7 @@ export class TaskData {
     } {
         const all_tasks = [...this.task_map.values()].map((task) => ({
             ...task,
-            date: task.date ? task.date.toISOString().split("T")[0] : null,
+            date: task.date ? (task.date.toISOString().split("T")[0] ?? null) : null,
         }));
         return { all_tasks };
     }
@@ -570,6 +590,15 @@ export function activate({
         $elem.find("ul.todo-widget").html(html);
         $elem.find(".widget-error").text("");
 
+        // Restore persisted state for each convert button after re-render
+        $elem.find(".convert-to-task-btn").each(function () {
+            const $btn = $(this);
+            const title = $btn.attr("data-task") ?? "";
+            if (task_message_store.todo_item_has_task(message.id, title)) {
+                mark_todo_button_added($btn);
+            }
+        });
+
         $elem.find("input.task").on("click", (e) => {
             e.stopPropagation();
 
@@ -590,29 +619,32 @@ export function activate({
             callback(data);
         });
 
-        // Handle "Convert to Task" button clicks
+        // Handle "Convert to Task" button clicks — toggle add/remove
         $elem.find(".convert-to-task-btn").on("click", (e) => {
             e.stopPropagation();
-            
-            const $btn = $(e.target);
+
+            const $btn = $(e.currentTarget as HTMLElement);
             const taskTitle = $btn.attr("data-task");
-            const taskDesc = $btn.attr("data-desc") || "";
-            const taskKey = $btn.attr("data-key") || "";
-            
+            const taskDesc = $btn.attr("data-desc") ?? "";
+            const taskKey = $btn.attr("data-key") ?? "";
+
             if (!taskTitle) {
-                blueslip.warn("No task title found");
+                blueslip.warn("No task title found on convert button");
                 return;
             }
-            
-            // Look up the date from task_data using the key
+
+            // Look up the due date from the task map
             let taskDueDate: Date | null = null;
             const taskEntry = task_data.task_map.get(taskKey);
             if (taskEntry?.date) {
                 taskDueDate = taskEntry.date instanceof Date ? taskEntry.date : new Date(taskEntry.date);
             }
-            
-            // Call the backend API to create a task
-            create_task_from_todo(message.id, taskTitle, taskDesc, taskDueDate);
+
+            if (task_message_store.todo_item_has_task(message.id, taskTitle)) {
+                remove_task_from_todo(message.id, taskTitle, $btn);
+            } else {
+                create_task_from_todo(message.id, taskTitle, taskDesc, $btn, taskDueDate);
+            }
         });
 
         update_add_task_button();

@@ -1,3 +1,16 @@
+/* "Added to My Tasks" state in the message-actions popover — still clickable to remove */
+.add-message-to-tasks.task-already-added {
+    opacity: 0.85;
+}
+
+.add-message-to-tasks.task-already-added .popover-menu-label {
+    color: var(--color-icon-purple, #6c63ff);
+}
+
+.add-message-to-tasks.task-already-added .popover-menu-icon {
+    color: var(--color-icon-purple, #6c63ff);
+}
+
 /* Tasks Overlay Styles */
 #tasks-overlay {
     position: fixed;
