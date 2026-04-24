@@ -165,6 +165,22 @@ export class TasksView {
                 task.completed = new_completed;
                 task.completed_at = new_completed ? new Date().toISOString() : null;
                 this.render_modal();
+
+                // Sync to the todo widget in the channel by posting a strike
+                // submessage, which toggles the checkbox for all viewers.
+                if (task.message_id !== null) {
+                    const key = task_message_store.get_todo_item_key(task.message_id, task.title);
+                    if (key !== undefined) {
+                        channel.post({
+                            url: "/json/submessage",
+                            data: {
+                                message_id: task.message_id,
+                                msg_type: "widget",
+                                content: JSON.stringify({type: "strike", key}),
+                            },
+                        });
+                    }
+                }
             },
             error: (xhr: JQuery.jqXHR) => {
                 blueslip.error("Failed to update task", {status: xhr.status, responseText: xhr.responseText});
@@ -238,7 +254,7 @@ export class TasksView {
                         .removeClass("task-added")
                         .prop("disabled", false)
                         .text("Add to My Tasks")
-                        .css({"background-color": "", "color": ""});
+                        .removeAttr("style");
                 }
 
                 this.render_modal();
@@ -411,11 +427,13 @@ export class TasksView {
         const due_date_str = task.due_date ? format_date_string(task.due_date) : null;
         const created_date_str = new Date(task.created_at).toLocaleDateString();
 
-        // Build a navigation link to the originating message (only for channel tasks)
+        // Build a navigation link/button to the originating message (only for channel tasks)
         let message_link_html = "";
-        if (task.stream_id && task.topic && task.message_id) {
+        let view_message_btn_html = "";
+        if (task.stream_id !== null && task.message_id !== null && task.topic !== null) {
             const href = `#narrow/channel/${task.stream_id}/topic/${encodeURIComponent(task.topic)}/near/${task.message_id}`;
-            message_link_html = `<a href="${href}" class="task-message-link" style="color: #007bff; text-decoration: none; font-weight: 500;">View Message</a>`;
+            message_link_html = `<a href="${href}" class="task-message-link" style="color: #007bff; text-decoration: none; font-weight: 500;">View Message ↗</a>`;
+            view_message_btn_html = `<a href="${href}" class="task-view-message-btn" style="background: #0d6efd; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px; text-decoration: none; display: inline-block; text-align: center;">View</a>`;
         }
 
         return `
@@ -444,6 +462,7 @@ export class TasksView {
                         `<button class="start-timer-btn" title="Start timer" style="background: #28a745; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px;">Start</button>`
                     }
                     <button class="time-logs-btn" title="View time logs" style="background: #007bff; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 11px;">Logs</button>
+                    ${view_message_btn_html}
                     <button class="delete-task-btn" title="Delete task" style="background: #dc3545; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;">×</button>
                 </div>
             </div>
@@ -614,6 +633,11 @@ export class TasksView {
             this.show_delete_confirmation(task_id);
         });
 
+        // Close modal when navigating to the source message
+        $("#tasks-modal .task-item").on("click", ".task-view-message-btn", () => {
+            $("#tasks-modal").remove();
+        });
+
         // Time tracking handlers for modal
         $("#tasks-modal .task-item").on("click", ".start-timer-btn", (e) => {
             e.stopPropagation();
@@ -661,17 +685,16 @@ export class TasksView {
     }
 }
 
-// Initialize when DOM is ready
-$(() => {
+const tasks_view = new TasksView();
+export { tasks_view };
+
+export function initialize(): void {
     // Pre-load which messages already have tasks so button states are
     // correct before the user opens the My Tasks panel.
     task_message_store.initialize();
 
-    // Use event delegation - works even if button is created later
+    // Use event delegation so the button can be rendered after load.
     $(document).on("click", "#tasks-toggle-button", () => {
         tasks_view.show();
     });
-});
-
-const tasks_view = new TasksView();
-export { tasks_view };
+}

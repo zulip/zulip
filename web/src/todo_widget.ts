@@ -55,7 +55,8 @@ function create_task_from_todo(message_id: number, title: string, description: s
         data,
         success: (response: any) => {
             blueslip.info("Task created successfully from todo item", response);
-            task_message_store.add_todo_item_task(message_id, title, response.task_id);
+            // Pass the widget key so the store can later emit a strike submessage
+            task_message_store.add_todo_item_task(message_id, title, response.task_id, $btn.attr("data-key"));
             mark_todo_button_added($btn);
         },
         error: (xhr: JQuery.jqXHR) => {
@@ -617,6 +618,21 @@ export function activate({
 
             const data = task_data.handle.strike.outbound(key);
             callback(data);
+
+            // Sync completion state to the My Tasks board if this widget item
+            // has a corresponding task in the store.
+            const taskEntry = task_data.task_map.get(key);
+            const itemTitle = taskEntry?.task ?? "";
+            if (itemTitle && task_message_store.todo_item_has_task(message.id, itemTitle)) {
+                const task_id = task_message_store.get_todo_item_task_id(message.id, itemTitle);
+                if (task_id !== undefined) {
+                    const completed = $(e.target).is(":checked");
+                    channel.post({
+                        url: `/json/tasks/${task_id}`,
+                        data: {completed: String(completed)},
+                    });
+                }
+            }
         });
 
         // Handle "Convert to Task" button clicks — toggle add/remove

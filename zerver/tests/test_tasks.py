@@ -1,6 +1,6 @@
 from django.utils.timezone import now
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Task, TaskTimeLog
+from zerver.models.messages import Task, TaskTimeLog
 
 
 class TasksViewTest(ZulipTestCase):
@@ -10,12 +10,15 @@ class TasksViewTest(ZulipTestCase):
             {
                 "task_id",
                 "title",
+                "description",
                 "completed",
+                "completed_at",
                 "due_date",
                 "message_id",
                 "stream_id",
                 "topic",
                 "creator_email",
+                "creator_full_name",
                 "created_at",
                 "total_time_seconds",
                 "total_time_formatted",
@@ -65,7 +68,7 @@ class TasksViewTest(ZulipTestCase):
         data = self.assert_json_success(result)
 
         tasks = data["tasks"]
-        self.assertLength(tasks, 2)
+        self.assert_length(tasks, 2)
         self.assertCountEqual([task["title"] for task in tasks], ["Fix bug", "Follow up"])
 
     def test_list_my_tasks_stream_message_includes_navigation_fields(self) -> None:
@@ -87,7 +90,7 @@ class TasksViewTest(ZulipTestCase):
         result = self.api_get(hamlet, "/api/v1/users/me/tasks")
         data = self.assert_json_success(result)
 
-        self.assertLength(data["tasks"], 1)
+        self.assert_length(data["tasks"], 1)
         task = data["tasks"][0]
 
         self.assertEqual(task["task_id"], created_task.id)
@@ -115,7 +118,7 @@ class TasksViewTest(ZulipTestCase):
         result = self.api_get(hamlet, "/api/v1/users/me/tasks")
         data = self.assert_json_success(result)
 
-        self.assertLength(data["tasks"], 1)
+        self.assert_length(data["tasks"], 1)
         task = data["tasks"][0]
 
         self.assertIsNone(task["stream_id"])
@@ -162,7 +165,7 @@ class TasksViewTest(ZulipTestCase):
 
         othello_result = self.api_get(othello, "/api/v1/users/me/tasks")
         othello_data = self.assert_json_success(othello_result)
-        self.assertLength(othello_data["tasks"], 1)
+        self.assert_length(othello_data["tasks"], 1)
         self.assertEqual(othello_data["tasks"][0]["title"], "Othello task")
 
     def test_list_my_tasks_includes_creator_when_assigned_by_other_member(self) -> None:
@@ -181,7 +184,7 @@ class TasksViewTest(ZulipTestCase):
 
         result = self.api_get(hamlet, "/api/v1/users/me/tasks")
         data = self.assert_json_success(result)
-        self.assertLength(data["tasks"], 1)
+        self.assert_length(data["tasks"], 1)
 
         task = data["tasks"][0]
         self._assert_my_tasks_payload_shape(task)
@@ -210,7 +213,7 @@ class TasksViewTest(ZulipTestCase):
 
         result = self.api_get(hamlet, "/api/v1/users/me/tasks")
         data = self.assert_json_success(result)
-        self.assertLength(data["tasks"], 1)
+        self.assert_length(data["tasks"], 1)
         task = data["tasks"][0]
 
         self.assertEqual(task["task_id"], hamlet_task.id)
@@ -249,7 +252,7 @@ class TasksViewTest(ZulipTestCase):
 
         result = self.api_get(hamlet, "/api/v1/users/me/tasks")
         data = self.assert_json_success(result)
-        self.assertLength(data["tasks"], 1)
+        self.assert_length(data["tasks"], 1)
         task = data["tasks"][0]
 
         self._assert_my_tasks_payload_shape(task)
@@ -282,7 +285,7 @@ class TasksViewTest(ZulipTestCase):
 
         result = self.api_get(hamlet, "/api/v1/users/me/tasks")
         data = self.assert_json_success(result)
-        self.assertLength(data["tasks"], 2)
+        self.assert_length(data["tasks"], 2)
 
         task_by_id = {task["task_id"]: task for task in data["tasks"]}
         self.assertEqual(task_by_id[completed_task.id]["completed"], True)
@@ -324,7 +327,7 @@ class TasksViewTest(ZulipTestCase):
         result = self.api_get(hamlet, "/api/v1/users/me/tasks")
         data = self.assert_json_success(result)
 
-        self.assertLength(data["tasks"], 1)
+        self.assert_length(data["tasks"], 1)
         task_data = data["tasks"][0]
 
         self.assertEqual(task_data["task_id"], task.id)
@@ -368,8 +371,9 @@ class TasksViewTest(ZulipTestCase):
             title="Timer stop test",
         )
 
-        # Start timer first
-        start_time = now()
+        # Start timer first (use a past start_time to guarantee duration > 0)
+        from datetime import timedelta
+        start_time = now() - timedelta(seconds=5)
         TaskTimeLog.objects.create(
             task=task,
             user=hamlet,
@@ -427,7 +431,149 @@ class TasksViewTest(ZulipTestCase):
         self.assertEqual(data["total_time_seconds"], 1800)
         self.assertEqual(data["total_time_formatted"], "30m 0s")
         self.assertEqual(data["active_timer_count"], 1)
-        self.assertLength(data["time_logs"], 2)
+        self.assert_length(data["time_logs"], 2)
+
+    # ------------------------------------------------------------------ #
+    # update_task (completion toggle) tests
+    # ------------------------------------------------------------------ #
+
+    def test_update_task_completion_by_assignee(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        message_id = self.send_stream_message(iago, "Verona", content="Please do this")
+        task = Task.objects.create(
+            message_id=message_id,
+            assignee=hamlet,
+            creator=iago,
+            title="Complete me",
+        )
+        self.assertFalse(task.completed)
+
+        result = self.api_post(hamlet, f"/api/v1/tasks/{task.id}", {"completed": "true"})
+        data = self.assert_json_success(result)
+
+        self.assertTrue(data["completed"])
+        task.refresh_from_db()
+        self.assertTrue(task.completed)
+        self.assertIsNotNone(task.completed_at)
+
+    def test_update_task_completion_unmarks_by_assignee(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        message_id = self.send_stream_message(iago, "Verona", content="Already done")
+        task = Task.objects.create(
+            message_id=message_id,
+            assignee=hamlet,
+            creator=iago,
+            title="Unmark me",
+            completed=True,
+        )
+
+        result = self.api_post(hamlet, f"/api/v1/tasks/{task.id}", {"completed": "false"})
+        data = self.assert_json_success(result)
+
+        self.assertFalse(data["completed"])
+        task.refresh_from_db()
+        self.assertFalse(task.completed)
+        self.assertIsNone(task.completed_at)
+
+    def test_update_task_completion_by_creator(self) -> None:
+        """Task creator (who is not the assignee) can also toggle completion."""
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        message_id = self.send_stream_message(hamlet, "Verona", content="Do this")
+        task = Task.objects.create(
+            message_id=message_id,
+            assignee=iago,
+            creator=hamlet,
+            title="Creator toggles",
+        )
+
+        result = self.api_post(hamlet, f"/api/v1/tasks/{task.id}", {"completed": "true"})
+        self.assert_json_success(result)
+        task.refresh_from_db()
+        self.assertTrue(task.completed)
+
+    def test_update_task_completion_denied_for_third_party(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+
+        message_id = self.send_stream_message(iago, "Verona", content="Private task")
+        task = Task.objects.create(
+            message_id=message_id,
+            assignee=hamlet,
+            creator=iago,
+            title="Deny third party",
+        )
+
+        result = self.api_post(cordelia, f"/api/v1/tasks/{task.id}", {"completed": "true"})
+        self.assert_json_error(result, "Permission denied")
+        task.refresh_from_db()
+        self.assertFalse(task.completed)
+
+    # ------------------------------------------------------------------ #
+    # delete_task tests
+    # ------------------------------------------------------------------ #
+
+    def test_delete_task_by_assignee_succeeds(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        message_id = self.send_stream_message(iago, "Verona", content="Delete me")
+        task = Task.objects.create(
+            message_id=message_id,
+            assignee=hamlet,
+            creator=iago,
+            title="To be deleted",
+        )
+        task_id = task.id
+
+        result = self.api_post(hamlet, f"/api/v1/tasks/{task_id}/delete", {})
+        self.assert_json_success(result)
+        self.assertFalse(Task.objects.filter(id=task_id).exists())
+
+    def test_delete_task_by_creator_succeeds(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+
+        message_id = self.send_stream_message(hamlet, "Verona", content="Creator deletes")
+        task = Task.objects.create(
+            message_id=message_id,
+            assignee=iago,
+            creator=hamlet,
+            title="Creator-initiated delete",
+        )
+        task_id = task.id
+
+        result = self.api_post(hamlet, f"/api/v1/tasks/{task_id}/delete", {})
+        self.assert_json_success(result)
+        self.assertFalse(Task.objects.filter(id=task_id).exists())
+
+    def test_delete_task_denied_for_third_party(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+
+        message_id = self.send_stream_message(iago, "Verona", content="Deny delete")
+        task = Task.objects.create(
+            message_id=message_id,
+            assignee=hamlet,
+            creator=iago,
+            title="Third party cannot delete",
+        )
+
+        result = self.api_post(cordelia, f"/api/v1/tasks/{task.id}/delete", {})
+        self.assert_json_error(result, "Permission denied")
+        self.assertTrue(Task.objects.filter(id=task.id).exists())
+
+    def test_delete_task_not_found(self) -> None:
+        hamlet = self.example_user("hamlet")
+        result = self.api_post(hamlet, "/api/v1/tasks/999999/delete", {})
+        self.assert_json_error(result, "Task not found")
 
     def test_get_my_time_stats(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -480,7 +626,7 @@ class TasksViewTest(ZulipTestCase):
         self.assertEqual(data["total_time_formatted"], "1h 30m")
         self.assertEqual(data["completed_sessions"], 2)
         self.assertEqual(data["active_sessions"], 1)
-        self.assertLength(data["task_breakdown"], 2)
+        self.assert_length(data["task_breakdown"], 2)
 
         # Check task breakdown
         task_breakdown = {task["task_id"]: task for task in data["task_breakdown"]}

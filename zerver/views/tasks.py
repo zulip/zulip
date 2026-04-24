@@ -5,6 +5,7 @@ from django.views.decorators.http import require_GET, require_POST
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_send import internal_send_stream_message
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint, typed_endpoint_without_parameters
 from zerver.models import Recipient
@@ -13,14 +14,14 @@ from zerver.models.streams import Stream
 from zerver.models.users import UserProfile
 
 
-def _resolve_assignee(assignee_email: str, current_user: UserProfile) -> tuple[UserProfile, HttpResponse | None]:
-    """Return (assignee, error_response). error_response is None on success."""
+def _resolve_assignee(assignee_email: str, current_user: UserProfile) -> UserProfile:
+    """Return the assignee UserProfile, defaulting to current_user if email is empty."""
     if not assignee_email:
-        return current_user, None
+        return current_user
     try:
-        return UserProfile.objects.get(email=assignee_email), None
+        return UserProfile.objects.get(email=assignee_email)
     except UserProfile.DoesNotExist:
-        return current_user, JsonResponse({"error": f"User {assignee_email} not found"}, status=404)
+        raise JsonableError(f"User {assignee_email} not found")
 
 
 #TASKS.PY BY YANG LU
@@ -39,23 +40,21 @@ def create_task(
     due_date_str = request.POST.get("due_date", "")
 
     if not title:
-        return JsonResponse({"error": "Missing title"}, status=400)
+        raise JsonableError("Missing title")
 
     try:
         message = Message.objects.select_related("recipient").get(id=message_id)
     except Message.DoesNotExist:
-        return JsonResponse({"error": "Invalid message"}, status=404)
+        raise JsonableError("Invalid message")
 
-    assignee, err = _resolve_assignee(assignee_email, user_profile)
-    if err:
-        return err
+    assignee = _resolve_assignee(assignee_email, user_profile)
 
     due_date = None
     if due_date_str:
         try:
             due_date = datetime.fromisoformat(due_date_str.replace('Z', '+00:00'))
         except ValueError:
-            return JsonResponse({"error": "Invalid due date format"}, status=400)
+            raise JsonableError("Invalid due date format")
 
     task = Task.objects.create(
         message=message,
@@ -89,7 +88,7 @@ def create_task(
         except Stream.DoesNotExist:
             pass  # Silently skip notification if stream lookup fails
 
-    return JsonResponse({
+    return json_success(request, {
         "task_id": task.id,
         "title": task.title,
         "description": task.description,
@@ -110,18 +109,16 @@ def create_standalone_task(
     due_date_str = request.POST.get("due_date", "")
 
     if not title:
-        return JsonResponse({"error": "Missing title"}, status=400)
+        raise JsonableError("Missing title")
 
-    assignee, err = _resolve_assignee(assignee_email, user_profile)
-    if err:
-        return err
+    assignee = _resolve_assignee(assignee_email, user_profile)
 
     due_date = None
     if due_date_str:
         try:
             due_date = datetime.fromisoformat(due_date_str.replace('Z', '+00:00'))
         except ValueError:
-            return JsonResponse({"error": "Invalid due date format"}, status=400)
+            raise JsonableError("Invalid due date format")
 
     task = Task.objects.create(
         message=None,
@@ -132,7 +129,7 @@ def create_standalone_task(
         due_date=due_date,
     )
 
-    return JsonResponse({
+    return json_success(request, {
         "task_id": task.id,
         "title": task.title,
         "description": task.description,
@@ -154,7 +151,7 @@ def list_my_tasks(
         try:
             target_user = UserProfile.objects.get(email=assignee)
         except UserProfile.DoesNotExist:
-            return JsonResponse({"error": f"User {assignee} not found"}, status=404)
+            raise JsonableError(f"User {assignee} not found")
         tasks = Task.objects.filter(assignee=target_user).select_related("message__recipient", "creator")
     else:
         tasks = Task.objects.filter(assignee=user_profile).select_related("message__recipient", "creator")
@@ -185,12 +182,15 @@ def list_my_tasks(
         task_data.append({
             "task_id": task.id,
             "title": task.title,
+            "description": task.description,
             "completed": task.completed,
+            "completed_at": task.completed_at.isoformat() if task.completed_at else None,
             "due_date": task.due_date.isoformat() if task.due_date else None,
             "message_id": message_id,
             "stream_id": stream_id,
             "topic": topic,
-            "creator_email": task.creator.email,
+            "creator_email": task.creator.delivery_email,
+            "creator_full_name": task.creator.full_name,
             "created_at": task.created_at.isoformat(),
             "total_time_seconds": total_time_seconds,
             "total_time_formatted": format_duration(total_time_seconds),
@@ -208,6 +208,7 @@ def update_task(
     user_profile: UserProfile,
     *,
     task_id: int,
+    completed: str | None = None,
 ) -> HttpResponse:
     """Update task completion status."""
     if request.POST.get("_method") == "DELETE":
@@ -216,18 +217,18 @@ def update_task(
     try:
         task = Task.objects.select_related("assignee", "creator").get(id=task_id)
     except Task.DoesNotExist:
-        return JsonResponse({"error": "Task not found"}, status=404)
+        raise JsonableError("Task not found")
 
     if user_profile.id not in [task.assignee.id, task.creator.id]:
-        return JsonResponse({"error": "Permission denied"}, status=403)
+        raise JsonableError("Permission denied")
 
-    if "completed" in request.POST:
-        completed = request.POST.get("completed") == "true"
-        task.completed = completed
-        task.completed_at = datetime.now() if completed else None
+    if completed is not None:
+        is_completed = completed == "true"
+        task.completed = is_completed
+        task.completed_at = datetime.now() if is_completed else None
         task.save()
 
-    return JsonResponse({
+    return json_success(request, {
         "task_id": task.id,
         "title": task.title,
         "completed": task.completed,
@@ -248,13 +249,18 @@ def delete_task(
     try:
         task = Task.objects.select_related("assignee", "creator").get(id=task_id)
     except Task.DoesNotExist:
-        return JsonResponse({"error": "Task not found"}, status=404)
+        raise JsonableError("Task not found")
 
     if user_profile.id not in [task.assignee.id, task.creator.id]:
-        return JsonResponse({"error": "Permission denied"}, status=403)
+        raise JsonableError("Permission denied")
 
     task.delete()
-    return json_success(request, {"message": "Task deleted successfully"})@transaction.atomic(durable=True)
+    return json_success(request, {"message": "Task deleted successfully"})
+
+
+@require_POST
+@typed_endpoint
+@transaction.atomic(durable=True)
 def start_time_tracking(
     request: HttpRequest,
     user_profile: UserProfile,
@@ -265,11 +271,11 @@ def start_time_tracking(
     try:
         task = Task.objects.select_related('assignee', 'creator').get(id=task_id)
     except Task.DoesNotExist:
-        return JsonResponse({"error": "Task not found"}, status=404)
+        raise JsonableError("Task not found")
     
     # Only assignee or creator can track time
     if user_profile.id not in [task.assignee.id, task.creator.id]:
-        return JsonResponse({"error": "Permission denied"}, status=403)
+        raise JsonableError("Permission denied")
     
     # Check if there's already an active timer for this task and user
     active_timer = None
@@ -281,10 +287,10 @@ def start_time_tracking(
         ).first()
     except Exception:
         # TaskTimeLog table doesn't exist yet
-        return JsonResponse({"error": "Time tracking feature not available - database migration not applied"}, status=503)
+        raise JsonableError("Time tracking feature not available")
     
     if active_timer:
-        return JsonResponse({"error": "Timer already running for this task"}, status=400)
+        raise JsonableError("Timer already running for this task")
     
     # Create new time log entry
     try:
@@ -296,13 +302,13 @@ def start_time_tracking(
         )
     except Exception:
         # TaskTimeLog table doesn't exist yet
-        return JsonResponse({"error": "Time tracking feature not available - database migration not applied"}, status=503)
+        raise JsonableError("Time tracking feature not available")
     
-    return JsonResponse({
+    return json_success(request, {
         "time_log_id": time_log.id,
         "task_id": task.id,
         "start_time": time_log.start_time.isoformat(),
-        "is_active": True
+        "is_active": True,
     })
 
 @require_POST
@@ -318,11 +324,11 @@ def stop_time_tracking(
     try:
         task = Task.objects.select_related('assignee', 'creator').get(id=task_id)
     except Task.DoesNotExist:
-        return JsonResponse({"error": "Task not found"}, status=404)
+        raise JsonableError("Task not found")
     
     # Only assignee or creator can track time
     if user_profile.id not in [task.assignee.id, task.creator.id]:
-        return JsonResponse({"error": "Permission denied"}, status=403)
+        raise JsonableError("Permission denied")
     
     # Find active timer
     active_timer = None
@@ -334,10 +340,10 @@ def stop_time_tracking(
         ).first()
     except Exception:
         # TaskTimeLog table doesn't exist yet
-        return JsonResponse({"error": "Time tracking feature not available - database migration not applied"}, status=503)
+        raise JsonableError("Time tracking feature not available")
     
     if not active_timer:
-        return JsonResponse({"error": "No active timer found for this task"}, status=400)
+        raise JsonableError("No active timer found for this task")
     
     # Stop the timer
     try:
@@ -349,15 +355,15 @@ def stop_time_tracking(
         active_timer.save()
     except Exception:
         # TaskTimeLog table doesn't exist yet
-        return JsonResponse({"error": "Time tracking feature not available - database migration not applied"}, status=503)
+        raise JsonableError("Time tracking feature not available")
     
-    return JsonResponse({
+    return json_success(request, {
         "time_log_id": active_timer.id,
         "task_id": task.id,
         "start_time": active_timer.start_time.isoformat(),
         "end_time": active_timer.end_time.isoformat(),
         "duration_seconds": duration_seconds,
-        "duration_formatted": format_duration(duration_seconds)
+        "duration_formatted": format_duration(duration_seconds),
     })
 
 @require_GET
@@ -372,17 +378,17 @@ def get_task_time_logs(
     try:
         task = Task.objects.select_related('assignee', 'creator').get(id=task_id)
     except Task.DoesNotExist:
-        return JsonResponse({"error": "Task not found"}, status=404)
+        raise JsonableError("Task not found")
     
     # Only assignee or creator can view time logs
     if user_profile.id not in [task.assignee.id, task.creator.id]:
-        return JsonResponse({"error": "Permission denied"}, status=403)
+        raise JsonableError("Permission denied")
     
     try:
         time_logs = TaskTimeLog.objects.filter(task=task).order_by('-created_at')
     except Exception:
         # TaskTimeLog table doesn't exist yet
-        return JsonResponse({"error": "Time tracking feature not available - database migration not applied"}, status=503)
+        raise JsonableError("Time tracking feature not available")
     
     logs_data = []
     for log in time_logs:
@@ -401,12 +407,12 @@ def get_task_time_logs(
     # Calculate total time
     total_seconds = sum(log.duration_seconds for log in time_logs)
     
-    return JsonResponse({
+    return json_success(request, {
         "task_id": task.id,
         "time_logs": logs_data,
         "total_time_seconds": total_seconds,
         "total_time_formatted": format_duration(total_seconds),
-        "active_timer_count": len([log for log in time_logs if log.end_time is None])
+        "active_timer_count": len([log for log in time_logs if log.end_time is None]),
     })
 
 @require_GET
@@ -421,7 +427,7 @@ def get_my_time_stats(
         time_logs = TaskTimeLog.objects.filter(user=user_profile)
     except Exception:
         # TaskTimeLog table doesn't exist yet
-        return JsonResponse({"error": "Time tracking feature not available - database migration not applied"}, status=503)
+        raise JsonableError("Time tracking feature not available")
     
     # Calculate statistics
     total_seconds = sum(log.duration_seconds for log in time_logs)
@@ -459,14 +465,14 @@ def get_my_time_stats(
     # Sort by total time spent
     task_breakdown.sort(key=lambda x: x['total_seconds'], reverse=True)
     
-    return JsonResponse({
+    return json_success(request, {
         "total_time_seconds": total_seconds,
         "total_time_formatted": format_duration(total_seconds),
         "completed_sessions": completed_sessions,
         "active_sessions": active_sessions,
         "recent_week_seconds": recent_seconds,
         "recent_week_formatted": format_duration(recent_seconds),
-        "task_breakdown": task_breakdown[:10]  # Top 10 tasks
+        "task_breakdown": task_breakdown[:10],
     })
 
 def format_duration(seconds: int) -> str:

@@ -3,8 +3,9 @@
  * added as tasks, keyed by message ID (for the message-actions popover)
  * and by "messageId:title" (for individual todo-widget items).
  *
- * Stores task_id alongside so tasks can be deleted (toggled off) without
- * opening the My Tasks panel.
+ * Stores task_id and widget key alongside so tasks can be deleted (toggled
+ * off) and the corresponding todo-widget checkbox can be struck without
+ * re-querying the DOM.
  *
  * Populated once at startup from GET /json/users/me/tasks, then kept in
  * sync as the user adds or deletes tasks during the session.
@@ -16,8 +17,14 @@ import * as channel from "./channel.ts";
 // message_id → task_id (the task created from this message via the popover)
 const message_tasks = new Map<number, number>();
 
-// "messageId:title" → task_id (tasks created from individual todo-widget items)
-const todo_item_tasks = new Map<string, number>();
+type TodoItemEntry = {
+    task_id: number;
+    // widget key (e.g. "0", "1") needed to post a strike submessage
+    key: string | undefined;
+};
+
+// "messageId:title" → {task_id, key}
+const todo_item_tasks = new Map<string, TodoItemEntry>();
 
 export function initialize(): void {
     channel.get({
@@ -30,7 +37,8 @@ export function initialize(): void {
                     message_tasks.set(message_id, task_id);
                 }
                 if (message_id != null && title) {
-                    todo_item_tasks.set(`${message_id}:${title}`, task_id);
+                    // key is unknown at init time (widget may not be rendered yet)
+                    todo_item_tasks.set(`${message_id}:${title}`, {task_id, key: undefined});
                 }
             }
         },
@@ -65,11 +73,25 @@ export function todo_item_has_task(message_id: number, title: string): boolean {
 }
 
 export function get_todo_item_task_id(message_id: number, title: string): number | undefined {
-    return todo_item_tasks.get(`${message_id}:${title}`);
+    return todo_item_tasks.get(`${message_id}:${title}`)?.task_id;
 }
 
-export function add_todo_item_task(message_id: number, title: string, task_id: number): void {
-    todo_item_tasks.set(`${message_id}:${title}`, task_id);
+/**
+ * Returns the todo-widget key (e.g. "0", "1") for this task entry.
+ * The key is only available when the task was added from an active widget
+ * session (not from initialization). Returns undefined if unknown.
+ */
+export function get_todo_item_key(message_id: number, title: string): string | undefined {
+    return todo_item_tasks.get(`${message_id}:${title}`)?.key;
+}
+
+export function add_todo_item_task(
+    message_id: number,
+    title: string,
+    task_id: number,
+    key?: string,
+): void {
+    todo_item_tasks.set(`${message_id}:${title}`, {task_id, key});
     // Also register at the message level so the popover reflects "already added"
     if (!message_tasks.has(message_id)) {
         message_tasks.set(message_id, task_id);
