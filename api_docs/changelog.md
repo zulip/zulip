@@ -20,6 +20,19 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 12.0
 
+**Feature level 496**
+
+* [`GET /user_groups`](/api/get-user-groups),
+  [`POST /user_groups/create`](/api/create-user-group),
+  [`PATCH /user_groups/{user_group_id}`](/api/update-user-group),
+  [`POST /user_groups/{user_group_id}/members`](/api/update-user-group-members),
+  [`GET /user_groups/{user_group_id}/members`](/api/get-user-group-members),
+  [`GET /user_groups/{user_group_id}/members/{user_id}`](/api/get-is-user-group-member),
+  [`POST /user_groups/{user_group_id}/subgroups`](/api/update-user-group-subgroups),
+  [`GET /user_groups/{user_group_id}/subgroups`](/api/get-user-group-subgroups):
+  Bot users are now permitted to call these endpoints. Previously, they
+  were restricted to human users; guest users remain blocked.
+
 **Feature level 495**
 
 * [Message formatting](/api/message-formatting): Uploaded videos with
