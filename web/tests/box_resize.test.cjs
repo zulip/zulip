@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const {JSDOM} = require("jsdom");
 
-const {zrequire} = require("./lib/namespace.cjs");
+const {set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const {window} = new JSDOM("");
@@ -13,9 +13,14 @@ const {window} = new JSDOM("");
 // overwritten: index.cjs already points it at its own JSDOM's
 // HTMLElement, and later tests such as `compose_paste.test.cjs`
 // rely on `instanceof HTMLElement` matching elements parsed via
-// their DOMParser.
-global.document = window.document;
-global.getComputedStyle = window.getComputedStyle.bind(window);
+// their DOMParser. Routing the assignments through `set_global`
+// ensures the globals are restored after this test, since later
+// tests in the same process can be sensitive to seeing a real
+// `document.createElement` (e.g., it makes simplebar's `canUseDOM`
+// check true, causing it to call `window.addEventListener` at
+// module load time, which the test environment doesn't provide).
+set_global("document", window.document);
+set_global("getComputedStyle", window.getComputedStyle.bind(window));
 
 // `setPointerCapture` / `releasePointerCapture` are not implemented by
 // jsdom; stub them on this test's own HTMLElement prototype so our
