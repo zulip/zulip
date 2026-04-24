@@ -9,6 +9,9 @@
 {{#if title_html}}
 <span class="message-header-navbar-title">{{{title_html}}}</span>
 {{/if}}
+{{#if has_placeholder_user}}
+<span class="message-header-navbar-title"><span class="loading-shimmer"></span></span>
+{{/if}}
 {{#if stream}}
     {{#if stream.is_archived}}
     <span class="message-header-archived">

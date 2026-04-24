@@ -10,6 +10,7 @@ import * as inbox_util from "./inbox_util.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
+import * as people from "./people.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as search from "./search.ts";
@@ -20,6 +21,7 @@ import type {StreamSubscription} from "./sub_store.ts";
 type MessageViewHeaderContext = {
     title?: string | undefined;
     title_html?: string | undefined;
+    has_placeholder_user?: boolean;
     description?: string;
     link?: string;
     is_spectator?: boolean;
@@ -37,6 +39,14 @@ type MessageViewHeaderContext = {
           icon: string | undefined;
       }
 );
+
+function dm_narrow_has_placeholder_user(filter: Filter): boolean {
+    if (!filter.has_operator("dm")) {
+        return false;
+    }
+    const user_ids = filter.terms_with_operator("dm")[0]!.operand;
+    return user_ids.some((user_id) => people.is_display_full_name_loading(user_id));
+}
 
 function get_message_view_header_context(filter: Filter | undefined): MessageViewHeaderContext {
     if (recent_view_util.is_visible()) {
@@ -99,6 +109,14 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
         link,
         is_spectator: page_params.is_spectator,
     });
+
+    if (dm_narrow_has_placeholder_user(filter)) {
+        return {
+            ...context,
+            title: undefined,
+            has_placeholder_user: true,
+        };
+    }
 
     if (filter.has_operator("channel")) {
         const current_stream = stream_data.get_sub_by_id_string(
